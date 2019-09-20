@@ -1,2 +1,2 @@
 # vuu
-Vuu - An Open Source HTML 5 View Server and UI Framework
+Vuu - An open source HTML 5 based view server and UI framework
