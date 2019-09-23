@@ -1,5 +1,5 @@
 # vuu
-####An open source view server implemented in Scala and HTML5
+###An open source view server implemented in Scala and HTML5
 
 **How to get started**
 
