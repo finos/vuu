@@ -1,0 +1,1 @@
+chris in [ "foo","bar", "fizz"] or foo=1000 and twang = "banana" or cheese = "wheel"

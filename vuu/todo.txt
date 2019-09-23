@@ -1,0 +1,27 @@
+CJS:
+
+--Calculated Columns
+
+- can be local to viewport in my humble (i.e. in CreateViewPortRequest I can add a column definition that will get parsed
+- or can be statically defined in the table def
+
+-static definition is easy
+-dynamic (vp) definition, it would be cool to do something like this:
+
+  CalculatedColumns = [
+    MyColumn    = "bid - ask"          // this would need to be inferred that it is a math operation
+    MyColumn2   = "ric + currency"     //this would need to be inferred to be a concat operation
+    MyColumn3   = "average(bid)"       //these type of operations would also be cool
+    MyColumn4   = "max(bid)"
+    MyColumn5   = "min(bid)"
+  ]
+
+A more interesting question, is would we support
+stuff like "min(bid) + (ask * fxToGBP)" and other more complicate math's bits...
+
+--- Lucene Search
+
+https://gist.github.com/madan712/3776391
+
+
+

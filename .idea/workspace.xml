@@ -1,0 +1,1482 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="20915b40-8d9f-4a66-b26a-9d02110612be" name="Default Changelist" comment="#1 Adding first version in new namespace.">
+      <change afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/scala_compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/keystore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/bitbucket-pipelines.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/CoalescingQueue.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/NamedThreadFactory.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/NiaveImmutableArray.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/SafeUtil.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/collection/MapDiffUtils.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/consensus/Election.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/consensus/PathCache.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/consensus/zk/ZooKeeperElection.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/consensus/zk/ZooKeeperPathCache.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/consensus/zk/ZooKeeperTreeCacheListener.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/jmx/JmxAble.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/jmx/MetricsProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/json/JsonUtil.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/lifecycle/LifecycleContainer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/logging/LogAtFrequency.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/logging/LogFirst.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/http2/Http2Server.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/tcp/FreeTcpPortChecker.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/ws/FrameHandlerFactory.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/ws/WebSocketClient.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/ws/WebSocketClientHandler.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/ws/WebSocketConstants.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/ws/WebSocketServer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/ws/WebSocketServerHandler.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/ws/WebSocketServerIndexPage.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/ws/WebSocketServerInitializer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/text/AsciiUtil.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/text/CodeGenUtil.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/thread/Async.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/thread/LifeCycleRunner.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/thread/RunInThread.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/thread/Runner.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/time/DateTimeScheduler.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/time/TestFriendlyTimeProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/time/TimeIt.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/time/TimeProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/resources/logback-test.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/collection/ImmutableArrayTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/consensus/ZooKeeperElectionTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/consensus/ZooKeeperPathCacheTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/consensus/ZooKeeperTestBlock.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/lifecycle/LifecycleDAGTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/lifecycle/LifecycleTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/metrics/MetricsProviderTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/net/tcp/FreeTcpPortCheckerTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/net/ws/WebSocketServerClientTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/time/DateTimeSchedulerTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/time/TimeItTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/src/main/scala/io/venuu/vuu/example/ExampleMain.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/target/classes.timestamp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/target/classes/io/venuu/vuu/example/ExampleMain$.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/target/classes/io/venuu/vuu/example/ExampleMain$delayedInit$body.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/target/classes/io/venuu/vuu/example/ExampleMain.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/target/classes/org/whitebox/venuu/app/module/VenuuViewServerModule.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/target/maven-archiver/pom.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/target/view-server-venuu-1.0-SNAPSHOT-tests.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu-example/target/view-server-venuu-1.0-SNAPSHOT.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/bitbucket-pipelines.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/foo.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/keystore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/antlr4/io/venuu/vuu/grammer/CalculatedColumn.g4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/antlr4/io/venuu/vuu/grammer/Filter.g4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/java/sandbox/ExtendedDnDDemo.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/java/sandbox/TestSplitPane.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/java/sandbox/TreeTableInJTable.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/FilterSpec.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/down.gif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/icon-arrow-right.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/logback.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/right.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/sort-arrow-down.gif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/sort-arrow-up.gif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/static/ftse.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/www/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/www/pixel_test.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/www/ws-example.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/SimulMain.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/api/TableDef.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/ClientConnectionContainer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/ClientHelperFns.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/headless/HeadlessClient.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/headless/RequestBlocks.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/headless/ViewPortSink.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/ClientConstants.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/EventBus.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/SwingClientMain.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/RpcDataEntry.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/SwingThread.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/VSChangeVpPanel.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/VSMainFrame.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerTreeGridPanel.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/CellEditors.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/FilterBarPanel.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/MutableComboBox.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/MutableMultiSelectComboBox.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/PopupMenu.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/renderer/SortedColumnRenderer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/renderer/TreeGridCellRenderer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/treegrid/SampleTreeModelApp.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/treegrid/TreeGrid.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/treegrid/TreeTable.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/treegrid/ViewServerTreeModel.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/messages/ClientMessage.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/model/Model.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/CoreServerApiHander.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/DataConstants.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/ViewServer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/FilterSpecParser.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/FilterTreeVisitor.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/Filters.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/MultiConditionFilter.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/groupby/GroupBySessionTable.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/Builder.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/ModuleContainer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/VsModule.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/SimulationModule.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/provider/OrdersSimulProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/sort/FilterAndSort.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/sort/Sorts.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/AutoSubscribeTable.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/Column.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/JoinTable.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/KeyedObservable.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/MergeFunctions.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/SimpleDataTable.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/TableContainer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/Authenticator.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ClientConnectionCreator.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/CoreJsonSerializationMixin.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/JsonVsSerializer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/LoginTokenValidator.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/Messages.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/RequestProcessor.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ServerApi.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ViewServerClient.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ViewServerHandler.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/auth/AlwaysHappyAuthenticator.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/flowcontrol/FlowController.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/http/Http2Server.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/rpc/JsonSubTypeRegistry.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/rpc/RpcHandler.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/IncomingWebSocketHandler.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketClient.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketClientHandler.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketConstants.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketServer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketServerHandler.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketServerIndexPage.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketServerInitializer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/JoinTableProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/MockProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/Provider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/ProviderContainer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/RpcProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/simulation/SimulatedInstrumentProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/simulation/SimulatedPricesProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/util/PublishQueue.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/GroupBy.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/GroupByTreeBuilder.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/RowSource.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPortContainer.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/resources/logback-test.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/resources/ws.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/api/ApiTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/api/TableTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/filter/FilterGrammerTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/filter/TreeFilterGrammerTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/groupBy/BuildBigGroupByTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/module/TestModule.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/module/core/CoreModuleTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/sort/FilterAndSortFixture.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/sort/GenericSortTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/AutoSubscribeTableTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/DataTableTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/DataTypesTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/JoinManagerTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/JoinTableTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/JoinsOfJoinsTableTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/MultiJoinTableTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/RowDeleteTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/RpcTableTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/TableTestHelper.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/column/CalculatedColumnParseTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/json/JsonVsSerializerTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/json/ObjectMappingTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/WebSocketApiTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/flowcontrol/FlowControllerTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/http/HttpServerTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/rpc/RpcModuleTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/rpc/RpcTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/ws/WebSocketServerClientTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/provider/TestFriendlyJoinTableProvider.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/provider/simulation/SimulatedPricesProviderTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/util/MapUtils.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/util/table/TableAsserts.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/AmendViewPortToTreeTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/ChangeViewPortTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/CreateViewPortScenarioTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/FilterAndSortTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByAndAggregate2Test.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByAndAggregateTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByTreeBuilderTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/OrdersAndPricesScenarioFixture.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/ViewPortTestFns.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/test.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/todo.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    </list>
+    <ignored path="$PROJECT_DIR$/out/" />
+    <ignored path="$PROJECT_DIR$/vuu/target/" />
+    <ignored path="$PROJECT_DIR$/target/" />
+    <ignored path="$PROJECT_DIR$/vuu-example/target/" />
+    <ignored path="$PROJECT_DIR$/toolbox/target/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DefaultGradleProjectSettings">
+    <option name="testRunner" value="GRADLE" />
+    <option name="delegatedBuild" value="true" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vuu/pom.xml">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/sort/FilterAndSortFixture.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="184">
+              <caret line="63" selection-start-line="63" selection-end-line="63" />
+              <folding>
+                <element signature="e#146#193#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/module/core/CoreModuleTest.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="90">
+              <caret line="18" column="2" selection-start-line="18" selection-start-column="2" selection-end-line="18" selection-end-column="46" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/groupBy/BuildBigGroupByTest.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="20" column="39" selection-start-line="20" selection-start-column="39" selection-end-line="20" selection-end-column="39" />
+              <folding>
+                <element signature="e#35#81#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/ClientHelperFns.scala">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/sort/GenericSortTest.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="462">
+              <caret line="89" lean-forward="true" selection-start-line="89" selection-end-line="89" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/AmendViewPortToTreeTest.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="240">
+              <caret line="27" column="38" lean-forward="true" selection-start-line="27" selection-start-column="38" selection-end-line="27" selection-end-column="38" />
+              <folding>
+                <element signature="e#31#97#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/provider/TestFriendlyJoinTableProvider.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="105">
+              <caret line="9" column="6" selection-start-line="9" selection-start-column="6" selection-end-line="9" selection-end-column="6" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/ChangeViewPortTest.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="105">
+              <caret line="54" column="6" selection-start-line="54" selection-start-column="6" selection-end-line="54" selection-end-column="6" />
+              <folding>
+                <element signature="e#31#97#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/CreateViewPortScenarioTest.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="195">
+              <caret line="127" column="32" lean-forward="true" selection-start-line="127" selection-start-column="32" selection-end-line="127" selection-end-column="32" />
+              <folding>
+                <element signature="e#145#221#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>changeVpRangeAsync</find>
+      <find>auth(</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/http/Http2Server.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/headless/RequestBlocks.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketClient.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/VSMainFrame.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/RpcDataEntry.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerTreeGridPanel.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/VSChangeVpPanel.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/simulation/SimulatedPricesProvider.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/simulation/SimulatedInstrumentProvider.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/provider/OrdersSimulProvider.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketServer.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ViewServerHandler.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/flowcontrol/FlowController.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/RequestProcessor.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ClientConnectionCreator.scala" />
+        <option value="$PROJECT_DIR$/vuu-example/src/main/scala/io/venuu/vuu/example/ExampleMain.scala" />
+        <option value="$PROJECT_DIR$/vuu/pom.xml" />
+        <option value="$PROJECT_DIR$/vuu-example/pom.xml" />
+        <option value="$PROJECT_DIR$/vuu-example/.gitignore" />
+        <option value="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/collection/ImmutableArrayTest.scala" />
+        <option value="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/time/DateTimeSchedulerTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/ViewPortTestFns.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/http/HttpServerTest.scala" />
+        <option value="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/net/ws/WebSocketServerClientTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/JoinTableTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/OrdersAndPricesScenarioFixture.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/AutoSubscribeTableTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/DataTableTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/JoinsOfJoinsTableTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/MultiJoinTableTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/RowDeleteTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/RpcTableTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/TableTestHelper.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/flowcontrol/FlowControllerTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/rpc/RpcModuleTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/ws/WebSocketServerClientTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/provider/simulation/SimulatedPricesProviderTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/util/table/TableAsserts.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/AmendViewPortToTreeTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/ChangeViewPortTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/CreateViewPortScenarioTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/FilterAndSortTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByTreeBuilderTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByAndAggregateTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByAndAggregate2Test.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/sort/FilterAndSortFixture.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/module/core/CoreModuleTest.scala" />
+        <option value="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/groupBy/BuildBigGroupByTest.scala" />
+      </list>
+    </option>
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="createModuleGroups" value="true" />
+        <option name="importAutomatically" value="true" />
+      </MavenImportingSettings>
+    </option>
+  </component>
+  <component name="MavenProjectNavigator">
+    <treeState>
+      <expand>
+        <path>
+          <item name="" type="16c1761:MavenProjectsStructure$RootNode" />
+          <item name="example" type="9519ce18:MavenProjectsStructure$ProjectNode" />
+        </path>
+        <path>
+          <item name="" type="16c1761:MavenProjectsStructure$RootNode" />
+          <item name="vuu-parent" type="9519ce18:MavenProjectsStructure$ProjectNode" />
+        </path>
+        <path>
+          <item name="" type="16c1761:MavenProjectsStructure$RootNode" />
+          <item name="vuu-parent" type="9519ce18:MavenProjectsStructure$ProjectNode" />
+          <item name="Lifecycle" type="58874e2:MavenProjectsStructure$LifecycleNode" />
+        </path>
+        <path>
+          <item name="" type="16c1761:MavenProjectsStructure$RootNode" />
+          <item name="vuu" type="9519ce18:MavenProjectsStructure$ProjectNode" />
+        </path>
+        <path>
+          <item name="" type="16c1761:MavenProjectsStructure$RootNode" />
+          <item name="vuu" type="9519ce18:MavenProjectsStructure$ProjectNode" />
+          <item name="Dependencies" type="f4be9f2a:MavenProjectsStructure$DependenciesNode" />
+        </path>
+      </expand>
+      <select />
+    </treeState>
+  </component>
+  <component name="MavenRunner">
+    <option name="skipTests" value="true" />
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="1434" />
+    <option name="y" value="53" />
+    <option name="width" value="2060" />
+    <option name="height" value="1232" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="jmx" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="collection" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="consensus" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
+              <item name="ws" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="toolbox" type="462c0819:PsiDirectoryNode" />
+              <item name="time" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="client" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
+              <item name="auth" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
+              <item name="ws" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+              <item name="groupBy" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+              <item name="module" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+              <item name="module" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+              <item name="sort" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+              <item name="table" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="json" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
+              <item name="flowcontrol" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
+              <item name="http" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
+              <item name="rpc" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
+              <item name="ws" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="provider" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="provider" type="462c0819:PsiDirectoryNode" />
+              <item name="simulation" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="util" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="util" type="462c0819:PsiDirectoryNode" />
+              <item name="table" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="vuu" type="462c0819:PsiDirectoryNode" />
+              <item name="viewport" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="Maven: junit:junit:4.11" type="70bed36:NamedLibraryElementNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="Maven: junit:junit:4.11" type="70bed36:NamedLibraryElementNode" />
+              <item name="junit-4.11.jar" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="Maven: junit:junit:4.11" type="70bed36:NamedLibraryElementNode" />
+              <item name="junit-4.11.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="junit" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="vuu-parent" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="Maven: junit:junit:4.11" type="70bed36:NamedLibraryElementNode" />
+              <item name="junit-4.11.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="junit" type="462c0819:PsiDirectoryNode" />
+              <item name="runner" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/vuu-example" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
+    <property name="settings.editor.splitter.proportion" value="0.2" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/vuu-example" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/vuu/toolbox" />
+      <recent name="$PROJECT_DIR$/vuu/src/main/antlr4/io/venuu/vuu/grammer" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="Applet">
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application">
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JUnit" factoryName="JUnit">
+      <option name="TEST_OBJECT" value="class" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="TestNG">
+      <option name="TEST_OBJECT" value="CLASS" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <properties />
+      <listeners />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType">
+      <module name="" />
+      <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m -ea" />
+      <option name="PROGRAM_PARAMETERS" />
+      <predefined_log_file enabled="true" id="idea.log" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="20915b40-8d9f-4a66-b26a-9d02110612be" name="Default Changelist" comment="" />
+      <created>1569265239350</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1569265239350</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="1434" y="53" width="2060" height="1232" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Image Layers" />
+      <window_info id="Designer" />
+      <window_info id="UI Designer" />
+      <window_info id="Capture Tool" />
+      <window_info id="Favorites" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19821605" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Tool Output" />
+      <window_info anchor="bottom" id="Version Control" />
+      <window_info anchor="bottom" id="ANTLR Preview" />
+      <window_info anchor="bottom" id="Terminal" />
+      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Messages" weight="0.7517544" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32982457" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.47192982" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="right" id="Palette" />
+      <window_info anchor="right" id="Theme Preview" />
+      <window_info anchor="right" id="Capture Analysis" />
+      <window_info anchor="right" id="Palette&#9;" />
+      <window_info anchor="right" id="Maven" visible="true" weight="0.12983152" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="#1 Adding first version in new namespace." />
+    <option name="LAST_COMMIT_MESSAGE" value="#1 Adding first version in new namespace." />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketClientHandler.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="12" column="6" selection-start-line="12" selection-start-column="6" selection-end-line="12" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketConstants.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="9" column="7" selection-start-line="9" selection-start-column="7" selection-end-line="9" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/jmx/MetricsProvider.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="20" column="25" selection-start-line="20" selection-start-column="25" selection-end-line="20" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/net/ws/WebSocketServerClientTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="184">
+          <caret line="51" selection-start-line="51" selection-end-line="51" />
+          <folding>
+            <element signature="e#33#59#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/consensus/ZooKeeperElectionTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="27" lean-forward="true" selection-start-line="27" selection-end-line="27" />
+          <folding>
+            <element signature="e#150#204#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/AutoSubscribeTableTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="9" column="6" selection-start-line="9" selection-start-column="6" selection-end-line="9" selection-end-column="6" />
+          <folding>
+            <element signature="e#33#80#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/DataTableTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="27" lean-forward="true" selection-start-line="27" selection-end-line="27" />
+          <folding>
+            <element signature="e#141#188#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/DataTypesTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="11" column="6" selection-start-line="11" selection-start-column="6" selection-end-line="11" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/JoinsOfJoinsTableTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="27" column="6" selection-start-line="27" selection-start-column="6" selection-end-line="27" selection-end-column="6" />
+          <folding>
+            <element signature="e#147#213#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/JoinTableTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="114" selection-start-line="114" selection-end-line="114" />
+          <folding>
+            <element signature="e#141#188#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/MultiJoinTableTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="17" column="6" selection-start-line="17" selection-start-column="6" selection-end-line="17" selection-end-column="6" />
+          <folding>
+            <element signature="e#141#207#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/RowDeleteTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="165" column="44" lean-forward="true" selection-start-line="165" selection-start-column="44" selection-end-line="165" selection-end-column="44" />
+          <folding>
+            <element signature="e#153#200#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/RpcTableTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="31" column="49" lean-forward="true" selection-start-line="31" selection-start-column="49" selection-end-line="31" selection-end-column="49" />
+          <folding>
+            <element signature="e#147#194#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/TableTestHelper.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="75" lean-forward="true" selection-start-line="75" selection-end-line="75" />
+          <folding>
+            <element signature="e#33#80#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/json/JsonVsSerializerTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/json/ObjectMappingTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="6" selection-start-line="7" selection-start-column="6" selection-end-line="7" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/flowcontrol/FlowControllerTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="9" column="6" selection-start-line="9" selection-start-column="6" selection-end-line="9" selection-end-column="6" />
+          <folding>
+            <element signature="e#38#91#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/LICENSE">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/http/HttpServerTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="21" column="5" lean-forward="true" selection-start-line="21" selection-start-column="5" selection-end-line="21" selection-end-column="5" />
+          <folding>
+            <element signature="e#31#83#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/Authenticator.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="6" selection-start-line="5" selection-start-column="6" selection-end-line="5" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/CoreJsonSerializationMixin.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="469">
+          <caret line="46" column="6" selection-start-line="46" selection-start-column="6" selection-end-line="46" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/LoginTokenValidator.scala">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/RequestProcessor.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="191">
+          <caret line="26" selection-start-line="26" selection-end-line="26" />
+          <folding>
+            <element signature="e#26#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ViewServerClient.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret lean-forward="true" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ViewServerHandler.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="484">
+          <caret line="54" selection-start-line="54" selection-end-line="54" />
+          <folding>
+            <element signature="e#140#186#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/Messages.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/JoinManagerTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="191">
+          <caret line="28" column="6" selection-start-line="28" selection-start-column="6" selection-end-line="28" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/rpc/RpcModuleTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="60" lean-forward="true" selection-start-line="60" selection-end-line="60" />
+          <folding>
+            <element signature="e#30#96#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/rpc/RpcTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="12" column="6" selection-start-line="12" selection-start-column="6" selection-end-line="12" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/ws/WebSocketServerClientTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="63" lean-forward="true" selection-start-line="63" selection-end-line="63" />
+          <folding>
+            <element signature="e#29#95#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/WebSocketApiTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="6" selection-start-line="7" selection-start-column="6" selection-end-line="7" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/provider/simulation/SimulatedPricesProviderTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="82" lean-forward="true" selection-start-line="82" selection-end-line="82" />
+          <folding>
+            <element signature="e#42#108#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/util/MapUtils.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="9" column="7" selection-start-line="9" selection-start-column="7" selection-end-line="9" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/util/table/TableAsserts.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="65" column="2" lean-forward="true" selection-start-line="65" selection-start-column="2" selection-end-line="65" selection-end-column="2" />
+          <folding>
+            <element signature="e#147#194#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/junit/junit/4.11/junit-4.11.jar!/org/junit/runner/Runner.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="10" column="11" selection-start-line="10" selection-start-column="11" selection-end-line="10" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/ViewPortTestFns.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="18" column="1" lean-forward="true" selection-start-line="18" selection-start-column="1" selection-end-line="18" selection-end-column="1" />
+          <folding>
+            <element signature="e#31#74#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/OrdersAndPricesScenarioFixture.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="7" column="8" selection-start-line="7" selection-start-column="8" selection-end-line="7" selection-end-column="29" />
+          <folding>
+            <element signature="e#145#188#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByTreeBuilderTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="87" column="2" selection-start-line="87" selection-start-column="2" selection-end-line="87" selection-end-column="2" />
+          <folding>
+            <element signature="e#31#97#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByAndAggregateTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="166" column="4" lean-forward="true" selection-start-line="166" selection-start-column="4" selection-end-line="166" selection-end-column="4" />
+          <folding>
+            <element signature="e#31#97#0" expanded="true" />
+            <element signature="e#747#795#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByAndAggregate2Test.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="240" lean-forward="true" selection-start-line="240" selection-end-line="240" />
+          <folding>
+            <element signature="e#151#217#0" expanded="true" />
+            <element signature="e#820#868#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/FilterAndSortTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="61" column="42" selection-start-line="61" selection-start-column="42" selection-end-line="61" selection-end-column="42" />
+          <folding>
+            <element signature="e#145#211#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/CreateViewPortScenarioTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="127" column="32" lean-forward="true" selection-start-line="127" selection-start-column="32" selection-end-line="127" selection-end-column="32" />
+          <folding>
+            <element signature="e#145#221#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/ChangeViewPortTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="54" column="6" selection-start-line="54" selection-start-column="6" selection-end-line="54" selection-end-column="6" />
+          <folding>
+            <element signature="e#31#97#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/AmendViewPortToTreeTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="27" column="38" lean-forward="true" selection-start-line="27" selection-start-column="38" selection-end-line="27" selection-end-column="38" />
+          <folding>
+            <element signature="e#31#97#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/provider/TestFriendlyJoinTableProvider.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="9" column="6" selection-start-line="9" selection-start-column="6" selection-end-line="9" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/pom.xml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/sort/GenericSortTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="89" lean-forward="true" selection-start-line="89" selection-end-line="89" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/sort/FilterAndSortFixture.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="184">
+          <caret line="63" selection-start-line="63" selection-end-line="63" />
+          <folding>
+            <element signature="e#146#193#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/ClientHelperFns.scala">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/module/core/CoreModuleTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="18" column="2" selection-start-line="18" selection-start-column="2" selection-end-line="18" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/groupBy/BuildBigGroupByTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="20" column="39" selection-start-line="20" selection-start-column="39" selection-end-line="20" selection-end-column="39" />
+          <folding>
+            <element signature="e#35#81#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ProjectJDKs.UI">
+        <settings>
+          <last-edited>11</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>

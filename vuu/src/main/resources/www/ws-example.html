@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript">
+
+        var socket = new WebSocket("ws://localhost:8090/websocket")
+
+        sendLogin = function(socket){
+            {requestId : '',sessionId :'', token : '12345', user : '', body :{type : 'AUTH', username :'chris', password : 'chris' } }
+
+            socket.send()
+        };
+
+        socket.onmessage = function (event) {
+            console.log(event.data);
+
+            var msg = JSON.parse(event.data);
+
+            switch(msg.body.type){
+                case "AUTH_SUCCESS":
+                    console.log("Got auth success");
+                    break;
+
+            }
+
+        }
+
+        socket.onopen = function (event) {
+                var object = {requestId : '',sessionId :'', token : '', user : '', body :{type : 'AUTH', username :'chris', password : 'chris' } };
+
+                socket.send(JSON.stringify( object ));
+        };
+
+
+
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>
