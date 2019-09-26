@@ -10,6 +10,7 @@ package io.venuu.vuu
 import io.venuu.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{DefaultTimeProvider, TimeProvider}
+import io.venuu.vuu.core.module.metrics.MetricsModule
 import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
 
@@ -29,6 +30,7 @@ object SimulMain extends App{
 
   val config = ViewServerConfig(8080, 8443, 8090, "/Users/chris/GitHub/react-enterprise/examples")
                   .withModule(SimulationModule())
+                  .withModule(MetricsModule())
 
   val viewServer = new ViewServer(config)
 

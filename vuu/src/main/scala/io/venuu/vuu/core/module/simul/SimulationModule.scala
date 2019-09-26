@@ -99,7 +99,7 @@ object SimulationModule {
       )
       .setRpcHandler(new TheSimulRpcHander)
 
-      .setProvidersCallback(table => {
+      .setProvidersCallback((table, vs) => {
             table.name match {
               case "instruments" => new SimulatedBigInstrumentsProvider(table)
               case "prices" => new SimulatedPricesProvider(table, maxSleep = 800)

@@ -222,7 +222,6 @@ class LifecycleContainer extends StrictLogging {
 
   val dependencyGraph = new DirectedAcyclicGraph[LifecycleEnabled]()
 
-
   def autoShutdownHook(): Unit = {
     val container = this
     Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {

@@ -57,6 +57,10 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit
   def processDelete(rowKey: String): Unit
 
+  def size(): Long = {
+    primaryKeys.length
+  }
+
   def toAscii(count: Int) = {
     val columns = getTableDef.columns
     val keys    = primaryKeys
@@ -176,6 +180,8 @@ class SimpleDataTable(val tableDef: TableDef, joinProvider: JoinTableProvider)(i
   private val onUpdateMeter = metrics.meter(plusName("processUpdates.Meter"))
 
   private val onDeleteMeter = metrics.meter(plusName("processDeletes.Meter"))
+
+  private val onUpdateCounter = metrics.counter(plusName("processUpdates.Counter"))
 
   override def name: String = tableDef.name
 
@@ -302,6 +308,8 @@ class SimpleDataTable(val tableDef: TableDef, joinProvider: JoinTableProvider)(i
 
     onUpdateMeter.mark()
 
+    onUpdateCounter.inc()
+
     update(rowKey, rowData)
 
     sendToJoinSink(rowKey, rowData)
@@ -314,6 +322,8 @@ class SimpleDataTable(val tableDef: TableDef, joinProvider: JoinTableProvider)(i
   def processDelete(rowKey: String) = {
 
     onDeleteMeter.mark()
+
+    onUpdateCounter.inc()
 
     val rowData = data.data.get(rowKey)
 

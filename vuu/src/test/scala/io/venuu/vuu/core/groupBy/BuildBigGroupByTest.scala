@@ -57,7 +57,7 @@ class BuildBigGroupByTest extends FeatureSpec with Matchers with StrictLogging {
 
       val client = new ClientSessionId("A", "B")
 
-      val groupByTable = new GroupBySessionTable(table, client, joinProvider)
+      val groupByTable = new GroupBySessionTable(table, client, joinProvider)(metrics)
 
       val exchange = table.getTableDef.columnForName("exchange")
 

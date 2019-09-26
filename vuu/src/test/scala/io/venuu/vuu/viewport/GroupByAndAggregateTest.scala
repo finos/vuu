@@ -73,6 +73,8 @@ class GroupByAndAggregateTest extends FeatureSpec with Matchers with GivenWhenTh
           .asClause()
       )
 
+      Thread.sleep(1000)
+
       //expect nothing
       viewPortContainer.runOnce()
 
@@ -83,7 +85,7 @@ class GroupByAndAggregateTest extends FeatureSpec with Matchers with GivenWhenTh
       viewPortContainer.openNode(viewport.id, "$root/steve")
       viewPortContainer.openNode(viewport.id, "$root/steve/BT.L")
 
-
+      Thread.sleep(1000)
 
       //expect realised rows
       viewPortContainer.runOnce()
@@ -107,8 +109,7 @@ class GroupByAndAggregateTest extends FeatureSpec with Matchers with GivenWhenTh
           (false     ,3         ,"$root/chris/VOD.L/NYC-0004",true      ,0         ,"NYC-0004","NYC-0004","chris"   ,"VOD.L"   ,1437732000000l,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
           (false     ,3         ,"$root/chris/VOD.L/NYC-0005",true      ,0         ,"NYC-0005","NYC-0005","chris"   ,"VOD.L"   ,1437732000000l,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
           (true      ,1         ,"$root/steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Sum: 2100.0",""        ,""        ,""        ,""        ,""        ),
-          (true      ,2         ,"$root/steve/VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Sum: 600.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,3         ,"$root/steve/VOD.L/NYC-0006",true      ,0         ,"NYC-0006","NYC-0006","steve"   ,"VOD.L"   ,1437732000000l,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          (false     ,2         ,"$root/steve/VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Sum: 600.0",""        ,""        ,""        ,""        ,""        ),
           (true      ,2         ,"$root/steve/BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Sum: 1500.0",""        ,""        ,""        ,""        ,""        ),
           (false     ,3         ,"$root/steve/BT.L/NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1437732000000l,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
           (false     ,3         ,"$root/steve/BT.L/NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1437732000000l,500       ,500.0     ,501.0     ,null      ,null      ,null      )
@@ -142,8 +143,7 @@ class GroupByAndAggregateTest extends FeatureSpec with Matchers with GivenWhenTh
       assertVpEq(updates3) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (true      ,2         ,"$root/steve/VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Sum: 600.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,3         ,"$root/steve/VOD.L/NYC-0006",true      ,0         ,"NYC-0006","NYC-0006","steve"   ,"VOD.L"   ,1437732000000l,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          (false     ,2         ,"$root/steve/VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Sum: 600.0",""        ,""        ,""        ,""        ,""        ),
           (true      ,2         ,"$root/steve/BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Sum: 1500.0",""        ,""        ,""        ,""        ,""        ),
           (false     ,3         ,"$root/steve/BT.L/NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1437732000000l,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
           (false     ,3         ,"$root/steve/BT.L/NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1437732000000l,500       ,500.0     ,501.0     ,null      ,null      ,null      )

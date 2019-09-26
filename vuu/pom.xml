@@ -348,7 +348,7 @@
                 <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                 <junitxml>.</junitxml>
                 <filereports>test-reports.txt</filereports>
-                <argLine>-Xbootclasspath/p:/Users/chris/.m2/repository/org/mortbay/jetty/alpn/alpn-boot/8.1.3.v20150130/alpn-boot-8.1.3.v20150130.jar -XX:+UnlockCommercialFeatures -Xmx4G -Xms2G -XX:+FlightRecorder -XX:+UseG1GC -verbosegc</argLine>
+                <!--argLine>-Xbootclasspath/p:/Users/chris/.m2/repository/org/mortbay/jetty/alpn/alpn-boot/8.1.3.v20150130/alpn-boot-8.1.3.v20150130.jar -XX:+UnlockCommercialFeatures -Xmx4G -Xms2G -XX:+FlightRecorder -XX:+UseG1GC -verbosegc</argLine-->
               </configuration>
               <executions>
                 <execution>

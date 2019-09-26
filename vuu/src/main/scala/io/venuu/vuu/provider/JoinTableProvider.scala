@@ -281,7 +281,7 @@ class JoinTableProviderImpl(implicit timeProvider: TimeProvider, lifecyle: Lifec
     }
     })
 
-    cep = EPServiceProviderManager.getProvider("joinEsper@" + this.hashCode(), cepConfig);
+    cep = EPServiceProviderManager.getProvider("joinEsper@" + System.currentTimeMillis(), cepConfig);
     cepAdm = cep.getEPAdministrator();
 
     joinDevToCreateEpl.foreach(joinDef =>{

@@ -43,7 +43,7 @@ object TestModule{
 
       .setRpcHandler(new MyCustomRpcHandler)
 
-      .setProvidersCallback( table => {
+      .setProvidersCallback( (table, _ ) => {
         table.name match {
           case "instruments" => new MockProvider(table)
         }

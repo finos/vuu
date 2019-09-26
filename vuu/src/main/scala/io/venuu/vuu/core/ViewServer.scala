@@ -106,13 +106,13 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
 
       case tableDef: TableDef if tableDef.autosubscribe =>
         val table = createAutoSubscribeTable(tableDef)
-        val provider = module.getProviderForTable(table)
+        val provider = module.getProviderForTable(table, this)
         registerProvider(table, provider)
 
       case tableDef: TableDef if !tableDef.autosubscribe =>
         val table = createTable(tableDef)
         logger.info(s"Loading provider for table ${table.name}...")
-        val provider = module.getProviderForTable(table)
+        val provider = module.getProviderForTable(table, this)
         registerProvider(table, provider)
 
     })
