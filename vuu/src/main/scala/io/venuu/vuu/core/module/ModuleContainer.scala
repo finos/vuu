@@ -9,11 +9,11 @@ import io.venuu.toolbox.lifecycle.DefaultLifecycleEnabled
   */
 class ModuleContainer extends DefaultLifecycleEnabled{
 
-  private val modules = new ConcurrentHashMap[String, ViewServerModule]()
+  private val modules = new ConcurrentHashMap[String, RealizedViewServerModule]()
 
-  def register(module: ViewServerModule): Unit = modules.put(module.name, module)
+  def register(module: RealizedViewServerModule): Unit = modules.put(module.name, module)
 
-  def get(name: String): Option[ViewServerModule] = {
+  def get(name: String): Option[RealizedViewServerModule] = {
     Option(modules.get(name))
   }
 

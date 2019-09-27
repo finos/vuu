@@ -15,10 +15,14 @@ import io.venuu.vuu.core.table.DataTable
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.provider.Provider
 
+trait RealizedViewServerModule extends ViewServerModule{
+  def rpcHandler: RpcHandler
+}
+
 trait ViewServerModule {
   def name: String
   def tableDefs: List[TableDef]
   def serializationMixin: Object
-  def rpcHandler:RpcHandler
+  def rpcHandlerUnrealized: ViewServer => RpcHandler
   def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: TimeProvider, lifecycleContainer: LifecycleContainer): Provider
 }
