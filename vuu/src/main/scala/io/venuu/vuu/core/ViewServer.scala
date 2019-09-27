@@ -117,9 +117,6 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
 
     })
 
-
-
-
     this
   }
 
