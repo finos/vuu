@@ -80,7 +80,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
     }
   }
 
-  val logReq = new LogAtFrequency(2000)
+  val logReq = new LogAtFrequency(60000)
 
   def receiveFromServer(msg: JsonViewServerMessage): Unit = {
 
@@ -112,8 +112,11 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
       case body: TableRowUpdates =>
 
-//        if(logReq.shouldLog())
-//          logger.info(s"Got updates ${body.rows.length} for ${body.rows(0).viewPortId} rowSize = ${body.rows(0).vpSize}")
+        if(logReq.shouldLog()){
+          logger.info(s"Got updates ${body.rows.length} for ${body.rows(0).viewPortId} rowSize = ${body.rows(0).vpSize} example below..")
+          logger.info(JsonVsSerializer.serialize(msg))
+        }
+
 
         //logger.info("Got table row updates: " + body.rows.size)
         body.rows.foreach(ru => eventBus.publish(ClientServerRowUpdate(ru.viewPortId, ru.rowIndex, ru.data.asInstanceOf[Array[AnyRef]], ru.vpSize)))
