@@ -27,27 +27,18 @@ class MyCustomRpcHandler extends DefaultLifecycleEnabled with RpcHandler with An
 object TestModule{
 
   def apply()(implicit time: TimeProvider, lifecycle: LifecycleContainer): ViewServerModule = {
-
-    ViewServerModuleBuilder("TEST")
-
-      .addTableDef(
-
-        TableDef(
-          name = "instruments",
-          keyField = "ric",
-          columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Double"),
-          joinFields = "ric"
+    ModuleFactory.withNamespace("TEST")
+        .addTable(
+          TableDef(
+            name = "instruments",
+            keyField = "ric",
+            columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Double"),
+            joinFields = "ric"
+          )
+        , (table, vs) => new MockProvider(table)
         )
-
-      )
-
-      .setRpcHandler(new MyCustomRpcHandler)
-
-      .setProvidersCallback( (table, _ ) => {
-        table.name match {
-          case "instruments" => new MockProvider(table)
-        }
-      } )
+      .addRpcHandler(vs => new MyCustomRpcHandler)
+      .asModule()
   }
 }
 

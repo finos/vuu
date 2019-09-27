@@ -44,18 +44,17 @@ class WebSocketServerClientTest extends FeatureSpec with Matchers {
       val serverApi = new CoreServerApiHander(viewPortContainer, tableContainer, providerContainer)
 
       val moduleContainer = new ModuleContainer
-
-
-      //val processor = new RequestProcessor(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer)
-
-      //val handler = new ViewServerHandler(serializer, processor)
-
+      
       val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
 
       //order of creation here is important
-      val server = new WebSocketServer(8090, factory)
-      val client = new WebSocketClient("ws://localhost:8090/websocket", 8090)
+      val server = new WebSocketServer(18090, factory)
+
+      val client = new WebSocketClient("ws://localhost:8090/websocket", 18090)
       implicit val vsClient = new WebSocketViewServerClient(client, JsonVsSerializer)
+
+      //set up a dependency on ws server from ws client.
+      lifecycle(client).dependsOn(server)
 
       //lifecycle registration is done in constructor of service classes, so sequence of create is important
       lifecycle.start()

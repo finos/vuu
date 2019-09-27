@@ -6,12 +6,12 @@ import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import io.venuu.toolbox.thread.LifeCycleRunner
 import io.venuu.toolbox.time.TimeProvider
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
-import io.venuu.vuu.core.module.{ModuleContainer, ViewServerModule}
+import io.venuu.vuu.core.module.{ModuleContainer, RealizedViewServerModule, ViewServerModule}
 import io.venuu.vuu.core.table.{DataTable, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
 import io.venuu.vuu.net.http.Http2Server
-import io.venuu.vuu.net.rpc.JsonSubTypeRegistry
+import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import io.venuu.vuu.net.ws.WebSocketServer
 import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer}
 import io.venuu.vuu.viewport.ViewPortContainer
@@ -95,7 +95,20 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
 
   private def registerModule(module: ViewServerModule): ViewServer = {
 
-    moduleContainer.register(module)
+    val vs = this;
+
+    val realized = new RealizedViewServerModule{
+      override def rpcHandler: RpcHandler = module.rpcHandlerUnrealized.apply(vs)
+      override def name: String = module.name
+      override def tableDefs: List[TableDef] = module.tableDefs
+      override def serializationMixin: AnyRef = module.serializationMixin
+      override def rpcHandlerUnrealized: ViewServer => RpcHandler = module.rpcHandlerUnrealized
+      override def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: TimeProvider, life: LifecycleContainer): Provider = {
+        module.getProviderForTable(table, viewserver)(time, life)
+      }
+    }
+
+    moduleContainer.register(realized)
 
     logger.info(s"[VIEW SERVER] registering module ${module.name} which contains ${module.tableDefs.size} tables")
 

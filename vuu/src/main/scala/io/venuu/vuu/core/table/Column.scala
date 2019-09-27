@@ -87,7 +87,7 @@ trait Column{
   override def hashCode(): Int = name.hashCode()
 }
 
-class SimpleColumn(val name: String, val index: Int, val dataType: Class[_]) extends Column {
+case class SimpleColumn(val name: String, val index: Int, val dataType: Class[_]) extends Column {
   override def getData(data: RowData): Any = {
     data.get(name)
   }
