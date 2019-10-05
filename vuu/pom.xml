@@ -279,8 +279,10 @@
             </plugin>
 
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
+                <groupId>net.alchim31.maven</groupId>
+                <!--groupId>org.scala-tools</groupId-->
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>4.2.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -382,8 +384,10 @@
                 <reporting>
                     <plugins>
                         <plugin>
-                            <groupId>org.scala-tools</groupId>
-                            <artifactId>maven-scala-plugin</artifactId>
+                            <groupId>net.alchim31.maven</groupId>
+                            <!--groupId>org.scala-tools</groupId-->
+                            <artifactId>scala-maven-plugin</artifactId>
+                            <version>4.2.0</version>
                             <configuration>
                                 <scalaVersion>${scala.version}</scalaVersion>
                             </configuration>
