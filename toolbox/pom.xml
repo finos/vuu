@@ -89,17 +89,27 @@
             <version>${metrics.version}</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>org.scalactic</groupId>
             <artifactId>scalactic_2.12</artifactId>
             <version>${scalatest.version}</version>
-        </dependency>
+        </dependency-->
         
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.12</artifactId>
             <version>${scalatest.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+                <!--exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion-->
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -389,6 +399,7 @@
               <artifactId>scalatest-maven-plugin</artifactId>
               <version>1.0</version>
               <configuration>
+                <skipTests>true</skipTests>
                 <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                 <junitxml>.</junitxml>
                 <filereports>test-reports.txt</filereports>

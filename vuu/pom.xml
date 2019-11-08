@@ -46,11 +46,11 @@
             <version>${metrics.version}</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>org.scalactic</groupId>
             <artifactId>scalactic_2.12</artifactId>
             <version>${scalatest.version}</version>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>org.scalatest</groupId>
