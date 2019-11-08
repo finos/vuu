@@ -84,8 +84,7 @@ class GroupByAndAggregateTest extends FeatureSpec with Matchers with GivenWhenTh
       viewPortContainer.openNode(viewport.id, "$root/chris/VOD.L")
       viewPortContainer.openNode(viewport.id, "$root/steve")
       viewPortContainer.openNode(viewport.id, "$root/steve/BT.L")
-
-      Thread.sleep(1000)
+      viewPortContainer.closeNode(viewport.id, "$root/steve/VOD.L")
 
       //expect realised rows
       viewPortContainer.runOnce()
