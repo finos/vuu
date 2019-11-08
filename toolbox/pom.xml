@@ -69,11 +69,11 @@
             <version>2.11.0-M7</version>
         </dependency-->
 
-        <dependency>
+        <!--dependency>
             <groupId>com.google.code.java-allocation-instrumenter</groupId>
             <artifactId>java-allocation-instrumenter</artifactId>
             <version>3.2.0</version>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>junit</groupId>
@@ -137,8 +137,6 @@
             <artifactId>log4j-over-slf4j</artifactId>
             <version>1.7.7</version>
         </dependency>
-
-
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
