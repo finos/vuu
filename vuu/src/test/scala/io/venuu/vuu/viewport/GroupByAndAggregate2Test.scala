@@ -83,18 +83,16 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
     viewPortContainer.openNode(viewport.id, "$root/chris")
     viewPortContainer.openNode(viewport.id, "$root/chris/VOD.L")
     viewPortContainer.openNode(viewport.id, "$root/steve")
-
+    viewPortContainer.closeNode(viewport.id, "$root/steve/BT.L")
+    
     viewPortContainer.runOnce()
-
     viewPortContainer.runGroupByOnce()
 
     //expect realised rows
     viewPortContainer.runOnce()
-
     ordersProvider.tick("NYC-0008", Map("orderId" -> "NYC-0008", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 700, "ric" -> "BT.L"))
 
     viewPortContainer.runOnce()
-
     viewPortContainer.runGroupByOnce()
 
     //viewport.combinedQueueLength should be(14) //as have no keys

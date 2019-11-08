@@ -13,6 +13,11 @@ import io.venuu.vuu.viewport.{ViewPort, ViewPortUpdate}
   */
 object TableTestHelper {
 
+  def emptyQueues(viewPort: ViewPort) = {
+    viewPort.highPriorityQ.popUpTo(1000)
+    viewPort.outboundQ.popUpTo(1000)
+  }
+
   def combineQs(queue: PublishQueue[ViewPortUpdate], highPriorityQueue: PublishQueue[ViewPortUpdate]) = {
     highPriorityQueue.popUpTo(20) ++ queue.popUpTo(20)
   }

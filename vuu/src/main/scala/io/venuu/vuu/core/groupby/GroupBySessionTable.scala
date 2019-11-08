@@ -63,19 +63,6 @@ class GroupBySessionTable(source: RowSource, session: ClientSessionId, joinProvi
 
   override def processDelete(rowKey: String): Unit = super.processDelete(rowKey)
 
-//  override def processRawUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
-//    //    logger.info(s"processRawUpdate $rowKey")
-//    //    //TODO CJS Add raw update and push to tree builder
-//    //    processUpdate(rowKey, rowUpdate, timeStamp)
-//    //    onRowUpdateFn(rowKey, rowUpdate)
-//  }
-//
-//  override def processRawDelete(rowKey: String): Unit = {
-//    //    //TODO CJS Add raw update and push to tree builder
-//    //    processDelete(rowKey)
-//    //    onRowDeleteFn(rowKey)
-//  }
-
   override def toAscii(count: Int) = {
 
     val columns = getTableDef.columns
@@ -228,22 +215,7 @@ class GroupBySessionTable(source: RowSource, session: ClientSessionId, joinProvi
 
       val originalKey = node.originalKey
 
-      //    val pos = key.lastIndexOf("/")
-      //
-      //    val realKey = if(pos != -1)
-      //                    key.substring(pos + 1, key.length)
-      //                  else
-      //                    null
-
       logger.debug(s"Adding key observer${originalKey} for tree key ${key}")
-
-      //val keysByTable = getFKForPK(key)
-
-      //    if (keysByTable == null) {
-      //      logger.warn(s"tried to subscribe to key $key in join table ${getTableDef.name} but couldn't as not in keys")
-      //      true
-      //    }
-      //    else {
 
       if (originalKey != null) {
 
@@ -254,22 +226,6 @@ class GroupBySessionTable(source: RowSource, session: ClientSessionId, joinProvi
       }
       else false
 
-      //
-      //          case Some(null) => logger.trace("Foreign key not ready yet")
-      //          case None => logger.error(s"Could not load foreign key for ${table.getTableDef.name} (in join with ${this.getTableDef.name} key = $key")
-      //        }
-      //
-      //      }
-      //      })
-
-      //      if (originalKey != null)
-      //        super.addKeyObserver(originalKey, observer)
-      //      else
-      //        true
-      //    }
-
-      //    }else
-      //      false
     }
     else false
   }
