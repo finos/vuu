@@ -16,7 +16,7 @@ class DateTimeSchedulerTest extends FeatureSpec with Matchers with GivenWhenThen
     scenario("test parsing"){
 
       Given("this time 20th/Oct/2016 at 10:14am")
-      implicit val time = new TestFriendlyTimeProvider(1476951221856l)
+      implicit val time = new TestFriendlyClock(1476951221856l)
 
       val scheduler = new DateTimeScheduler("Mo Tu We", List("09:00:01", "15:00:00"), "Europe/London")
 

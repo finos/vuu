@@ -9,7 +9,7 @@ package io.venuu.vuu.viewport
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultTimeProvider, TimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, Clock}
 import io.venuu.vuu.core.filter.{EqFilter, LessThanFilter}
 import io.venuu.vuu.core.sort.{AlphaSort, SortDirection, UserDefinedFilterAndSort}
 import io.venuu.vuu.net.ClientSessionId
@@ -21,7 +21,7 @@ import org.scalatest.{FeatureSpec, Matchers}
 
 class FilterAndSortTest extends FeatureSpec with Matchers {
 
-  implicit val timeProvider: TimeProvider = new DefaultTimeProvider
+  implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
   feature("check the filter and sort infra"){

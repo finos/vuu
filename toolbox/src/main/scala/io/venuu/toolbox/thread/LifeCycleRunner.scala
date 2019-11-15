@@ -8,9 +8,9 @@
 package io.venuu.toolbox.thread
 
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 
-class LifeCycleRunner(name: String, func: () => Unit, minCycleTime: Long = 100)(implicit lifecycle: LifecycleContainer, timeProvider: TimeProvider) extends Runner(name, func, minCycleTime) with LifecycleEnabled {
+class LifeCycleRunner(name: String, func: () => Unit, minCycleTime: Long = 100)(implicit lifecycle: LifecycleContainer, timeProvider: Clock) extends Runner(name, func, minCycleTime) with LifecycleEnabled {
 
   lifecycle(this)
 
@@ -31,7 +31,7 @@ class LifeCycleRunner(name: String, func: () => Unit, minCycleTime: Long = 100)(
   * @param lifecycle
   * @param timeProvider
   */
-class RunOnceLifeCycleRunner(name: String, func: () => Unit, minCycleTime: Long = 100)(implicit lifecycle: LifecycleContainer, timeProvider: TimeProvider) extends Runner(name, func, minCycleTime, runOnce = true) with LifecycleEnabled {
+class RunOnceLifeCycleRunner(name: String, func: () => Unit, minCycleTime: Long = 100)(implicit lifecycle: LifecycleContainer, timeProvider: Clock) extends Runner(name, func, minCycleTime, runOnce = true) with LifecycleEnabled {
 
   lifecycle(this)
 

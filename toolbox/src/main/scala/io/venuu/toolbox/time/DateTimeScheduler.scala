@@ -15,7 +15,7 @@ object DateTimeScheduler{
                           DayOfWeek.THURSDAY.getValue, DayOfWeek.FRIDAY.getValue, DayOfWeek.SATURDAY.getValue, DayOfWeek.SUNDAY.getValue)
 }
 
-class DateTimeScheduler(days: String, times: List[String], timeZone: String)(implicit time: TimeProvider) {
+class DateTimeScheduler(days: String, times: List[String], timeZone: String)(implicit time: Clock) {
 
   import DateTimeScheduler._
 

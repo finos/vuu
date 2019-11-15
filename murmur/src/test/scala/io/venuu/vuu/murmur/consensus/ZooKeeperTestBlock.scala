@@ -5,7 +5,7 @@
   * Created by chris on 26/02/2016.
 
   */
-package io.venuu.toolbox.consensus
+package io.venuu.vuu.murmur.consensus
 
 import org.apache.curator.test.TestingServer
 
@@ -15,11 +15,14 @@ object ZooKeeperTestBlock {
 
     val zookeeperSvr = new TestingServer(2181)
 
-    zookeeperSvr.start()
+    try{
+      zookeeperSvr.start()
 
-    block(zookeeperSvr)
-
-    zookeeperSvr.stop()
+      block(zookeeperSvr)
+    }finally{
+      zookeeperSvr.stop()
+      zookeeperSvr.close()
+    }
 
   }
 

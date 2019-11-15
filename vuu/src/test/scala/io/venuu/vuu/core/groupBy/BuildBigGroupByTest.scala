@@ -3,7 +3,7 @@ package io.venuu.vuu.core.groupBy
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultTimeProvider, TimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, Clock}
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.groupby.GroupBySessionTable
 import io.venuu.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
@@ -26,7 +26,7 @@ class BuildBigGroupByTest extends FeatureSpec with Matchers with StrictLogging {
 
       implicit val lifecycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl
-      implicit val timeProvider: TimeProvider = new DefaultTimeProvider
+      implicit val timeProvider: Clock = new DefaultClock
 
       val joinProvider   = new JoinTableProviderImpl()
 

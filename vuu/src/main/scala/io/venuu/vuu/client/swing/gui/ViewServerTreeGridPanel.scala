@@ -1,6 +1,6 @@
 package io.venuu.vuu.client.swing.gui
 
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.components.renderer.TreeGridCellRenderer
 import io.venuu.vuu.client.swing.messages.{ClientCloseTreeNodeRequest, ClientMessage, ClientOpenTreeNodeRequest, RequestId}
@@ -26,7 +26,7 @@ object TreeColumns{
   */
 class ViewServerTreeGridPanel(requestId: String, tableName: String, availableColumns: Array[String],
                               columns: Array[String], theModel: ViewPortedModel, treeColumns: Array[String])
-                             (implicit override val eventBus: EventBus[ClientMessage], timeProvider: TimeProvider) extends ViewServerGridPanel(requestId, tableName, availableColumns, columns, theModel) {
+                             (implicit override val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends ViewServerGridPanel(requestId, tableName, availableColumns, columns, theModel) {
 
 
   if(treeColumns.length > 0)

@@ -9,7 +9,7 @@ package io.venuu.vuu.client.swing.gui
 
 import java.awt.Dimension
 
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.components.{MutableComboBox, MutableModel, MutableMultiSelectComboBox}
 import io.venuu.vuu.client.swing.messages._
@@ -20,7 +20,7 @@ import scala.swing.TabbedPane.Page
 import scala.swing._
 import scala.swing.event.{ButtonClicked, SelectionChanged}
 
-class VSMainFrame(columns: Array[String])(implicit eventBus: EventBus[ClientMessage], timeProvider: TimeProvider) extends MainFrame {
+class VSMainFrame(columns: Array[String])(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends MainFrame {
 
   import SwingThread._
 

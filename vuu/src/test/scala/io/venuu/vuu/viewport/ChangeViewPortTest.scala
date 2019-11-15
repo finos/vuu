@@ -2,7 +2,7 @@ package io.venuu.vuu.viewport
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultTimeProvider, TimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, Clock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.core.table.{Columns, TableContainer}
@@ -18,7 +18,7 @@ import org.scalatest.prop.Tables.Table
   */
 class ChangeViewPortTest extends FeatureSpec{
 
-  implicit val timeProvider: TimeProvider = new DefaultTimeProvider
+  implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
   def setupViewPort(tableContainer: TableContainer) = {

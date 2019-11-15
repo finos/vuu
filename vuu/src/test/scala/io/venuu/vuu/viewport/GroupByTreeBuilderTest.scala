@@ -2,7 +2,7 @@ package io.venuu.vuu.viewport
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.DefaultTimeProvider
+import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.core.groupby.GroupBySessionTable
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
 import org.joda.time.{DateTime, DateTimeZone}
@@ -20,7 +20,7 @@ class GroupByTreeBuilderTest extends FeatureSpec with Matchers {
     scenario("build simple groupby tree"){
 
       implicit val lifecycle = new LifecycleContainer
-      implicit val timeProvider = new DefaultTimeProvider
+      implicit val timeProvider = new DefaultClock
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis

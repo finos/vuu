@@ -5,10 +5,10 @@
   * Created by chris on 26/02/2016.
 
   */
-package io.venuu.toolbox.consensus.zk
+package io.venuu.vuu.murmur.consensus.zk
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.consensus.{ClusterChangeListener, Election}
+import io.venuu.vuu.murmur.consensus.{ClusterChangeListener, Election}
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.recipes.leader.{LeaderSelector, LeaderSelectorListener}
 import org.apache.curator.framework.state.ConnectionState

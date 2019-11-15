@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.LifeCycleRunner
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData}
 import io.venuu.vuu.provider.Provider
 
@@ -25,7 +25,7 @@ case class Curve(points: Array[(Long, Int)])
 case class OrderDetail(orderId: String, side: Char, ccy: String, ric: String,
                        location: String, quantity: Double, trader: String, filledQuantity: Double, lastUpdate: Long, created: Long)
 
-class OrderSimulator(table: DataTable)(implicit time: TimeProvider){
+class OrderSimulator(table: DataTable)(implicit time: Clock){
 
   private val orders = new util.Hashtable[String, OrderDetail]()
   private val orderCount = new AtomicInteger(0)
@@ -168,7 +168,7 @@ class OrderSimulator(table: DataTable)(implicit time: TimeProvider){
 /**
   * Created by chris on 11/09/2016.
   */
-class OrdersSimulProvider(table: DataTable)(implicit timeProvider: TimeProvider, lifecycleContainer: LifecycleContainer) extends Provider {
+class OrdersSimulProvider(table: DataTable)(implicit timeProvider: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
 
   private val simulator = new OrderSimulator(table)
   private val runner = new LifeCycleRunner("ordersSimulProvider", () => simulator.runOnce )

@@ -5,7 +5,7 @@ import java.util.UUID
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.Channel
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.module.ModuleContainer
 import io.venuu.vuu.net.flowcontrol.DefaultFlowController
 import io.venuu.vuu.util.{OutboundRowPublishQueue, PublishQueue}
@@ -24,7 +24,7 @@ class RequestProcessor(authenticator: Authenticator,
                        serverApi: ServerApi,
                        serializer: Serializer[String, MessageBody],
                        moduleContainer: ModuleContainer
-                      )(implicit timeProvider: TimeProvider) extends StrictLogging {
+                      )(implicit timeProvider: Clock) extends StrictLogging {
 
   @volatile private var session: ClientSessionId = null
 

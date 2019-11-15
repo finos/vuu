@@ -3,7 +3,7 @@ package io.venuu.vuu.client.swing.gui
 import java.awt.Dimension
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.components.{MutableModel, MutableMultiSelectComboBox}
 import io.venuu.vuu.client.swing.messages.{ClientChangeViewPortRequest, ClientMessage, RequestId}
@@ -16,7 +16,7 @@ import scala.swing.event.ButtonClicked
 /**
   * Created by chris on 17/03/2016.
   */
-class VSChangeVpPanel(context: GridPanelViewPortContext)(implicit eventBus: EventBus[ClientMessage], timeProvider: TimeProvider) extends Frame with StrictLogging {
+class VSChangeVpPanel(context: GridPanelViewPortContext)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Frame with StrictLogging {
 
   this.preferredSize = new Dimension(700, 800)
 

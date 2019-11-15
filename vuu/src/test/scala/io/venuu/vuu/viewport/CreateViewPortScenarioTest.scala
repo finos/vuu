@@ -11,7 +11,7 @@ import io.venuu.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.json.JsonUtil
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.{LifeCycleRunner, Runner}
-import io.venuu.toolbox.time.{DefaultTimeProvider, TimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, Clock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.{Columns, DataTable}
 import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
@@ -41,7 +41,7 @@ class CreateViewPortScenarioTest extends FeatureSpec with Matchers {
       array
     }
 
-    def getInstProvider(data: Array[Array[String]], table: DataTable)(implicit timeProvider: TimeProvider, lifecycleContainer: LifecycleContainer): Provider = {
+    def getInstProvider(data: Array[Array[String]], table: DataTable)(implicit timeProvider: Clock, lifecycleContainer: LifecycleContainer): Provider = {
       new SimulatedBigInstrumentsProvider(table)
     }
 
@@ -82,7 +82,7 @@ class CreateViewPortScenarioTest extends FeatureSpec with Matchers {
 
       JmxInfra.enableJmx()
 
-      implicit val timeProvider: TimeProvider = new DefaultTimeProvider
+      implicit val timeProvider: Clock = new DefaultClock
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 

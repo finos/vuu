@@ -11,13 +11,13 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.logging.LogAtFrequency
 import io.venuu.toolbox.thread.RunOnceLifeCycleRunner
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData}
 import io.venuu.vuu.provider.Provider
 
 import scala.util.Random
 
-class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: TimeProvider, lifecycle:  LifecycleContainer) extends Provider with StrictLogging {
+class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle:  LifecycleContainer) extends Provider with StrictLogging {
 
   private var runner: RunOnceLifeCycleRunner = new RunOnceLifeCycleRunner( "simulInstrumentsProvider", () => build() )
 

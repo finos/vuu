@@ -1,6 +1,6 @@
 package io.venuu.vuu.net.flowcontrol
 
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.net.ViewServerMessage
 
 trait FlowControlOp
@@ -16,7 +16,7 @@ trait FlowController {
   def shouldSend():FlowControlOp
 }
 
-class DefaultFlowController(implicit timeProvider: TimeProvider) extends FlowController{
+class DefaultFlowController(implicit timeProvider: Clock) extends FlowController{
 
   @volatile private var lastMsgTime: Long = -1
   @volatile private var lastHeartBeatSentTime: Long = -1

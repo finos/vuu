@@ -5,7 +5,7 @@
   * Created by chris on 13/10/2016.
   *
   */
-package io.venuu.toolbox.consensus
+package io.venuu.vuu.murmur.consensus
 
 import org.apache.curator.framework.recipes.cache.TreeCache
 

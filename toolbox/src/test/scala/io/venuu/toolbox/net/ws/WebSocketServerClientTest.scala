@@ -9,7 +9,7 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.net.tcp.FreeTcpPortChecker
 import io.venuu.toolbox.thread.Async
-import io.venuu.toolbox.time.{DefaultTimeProvider, TimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, Clock}
 import org.scalatest._
 import org.slf4j.LoggerFactory
 
@@ -40,7 +40,7 @@ class WebSocketServerClientTest extends FeatureSpec with Matchers {
     scenario("create web socket server and client and send data between"){
 
       implicit val lifecycle = new LifecycleContainer
-      implicit val timeProvider: TimeProvider = new DefaultTimeProvider
+      implicit val timeProvider: Clock = new DefaultClock
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       //order of creation here is important

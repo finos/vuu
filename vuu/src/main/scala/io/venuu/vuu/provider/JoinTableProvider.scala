@@ -17,7 +17,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import io.venuu.toolbox.thread.RunInThread
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.{DataTable, JoinTable, JoinTableUpdate, RowWithData}
 
@@ -30,7 +30,7 @@ trait JoinTableProvider extends RunInThread with LifecycleEnabled{
   def start(): Unit
 }
 
-class JoinTableProviderImpl(implicit timeProvider: TimeProvider, lifecyle: LifecycleContainer, metrics: MetricsProvider) extends UpdateListener with StrictLogging with JoinTableProvider{
+class JoinTableProviderImpl(implicit timeProvider: Clock, lifecyle: LifecycleContainer, metrics: MetricsProvider) extends UpdateListener with StrictLogging with JoinTableProvider{
 
   lifecyle(this)
 

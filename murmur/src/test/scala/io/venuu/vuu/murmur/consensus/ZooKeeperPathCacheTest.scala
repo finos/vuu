@@ -5,14 +5,14 @@
   * Created by chris on 13/10/2016.
   *
   */
-package io.venuu.toolbox.consensus
+package io.venuu.vuu.murmur.consensus
 
-import io.venuu.toolbox.consensus.zk.ZooKeeperPathCache
+import io.venuu.vuu.murmur.consensus.zk.ZooKeeperPathCache
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.RetryNTimes
+import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Span}
-import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
 
 class ZooKeeperPathCacheTest extends FeatureSpec with GivenWhenThen with Matchers with Eventually{
 
@@ -49,15 +49,14 @@ class ZooKeeperPathCacheTest extends FeatureSpec with GivenWhenThen with Matcher
         eventually(timeout(Span(600, Millis)), interval(Span(100, Millis))) {
           val children = pathCache.listChildren("/apps/siren")
           children.size should equal(3)
+
+          children(0).getData should equal("CCCCC".getBytes)
+          children(1).getData should equal("AAABBBCCC".getBytes)
+          children(2).getData should equal("AAABBBCCC".getBytes)
+
+          client.close()
         }
-
-        children(0).getData should equal("CCCCC".getBytes)
-        children(1).getData should equal("AAABBBCCC".getBytes)
-        children(2).getData should equal("AAABBBCCC".getBytes)
-
-        client.close()
       }
-
     }
       scenario("create toop level child and iterate through"){
 

@@ -5,7 +5,7 @@
   * Created by chris on 29/02/2016.
 
   */
-package io.venuu.toolbox.consensus.zk
+package io.venuu.vuu.murmur.consensus.zk
 
 import java.nio.charset.StandardCharsets
 

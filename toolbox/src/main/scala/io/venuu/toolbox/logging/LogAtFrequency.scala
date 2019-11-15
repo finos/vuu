@@ -7,9 +7,9 @@
   */
 package io.venuu.toolbox.logging
 
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 
-class LogAtFrequency(millis: Long)(implicit val timeProvider: TimeProvider) {
+class LogAtFrequency(millis: Long)(implicit val timeProvider: Clock) {
 
   @volatile private var lastLog: Long = -1
 

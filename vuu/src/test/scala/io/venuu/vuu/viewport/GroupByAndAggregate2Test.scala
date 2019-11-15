@@ -9,7 +9,7 @@ package io.venuu.vuu.viewport
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.DefaultTimeProvider
+import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.core.table.RowWithData
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import io.venuu.vuu.provider.{JoinTableProvider, MockProvider}
@@ -49,7 +49,7 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
   scenario("test groupBy tree structure update") {
 
     implicit val lifeCycle = new LifecycleContainer
-    implicit val timeProvider = new DefaultTimeProvider
+    implicit val timeProvider = new DefaultClock
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
     val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -159,7 +159,7 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
   scenario("test groupBy with source table update") {
 
     implicit val lifeCycle = new LifecycleContainer
-    implicit val timeProvider = new DefaultTimeProvider
+    implicit val timeProvider = new DefaultClock
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
     val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()

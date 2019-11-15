@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.module.ModuleContainer
 import io.venuu.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
 import io.venuu.vuu.util.PublishQueue
@@ -34,7 +34,7 @@ class DefaultMessageHandler(val channel: Channel,
                             serializer: Serializer[String, MessageBody],
                             flowController: FlowController,
                             sessionContainer: ClientSessionContainer,
-                            moduleContainer: ModuleContainer)(implicit timeProvider: TimeProvider) extends MessageHandler with StrictLogging {
+                            moduleContainer: ModuleContainer)(implicit timeProvider: Clock) extends MessageHandler with StrictLogging {
 
   val closeFuture = channel.closeFuture()
 

@@ -5,12 +5,12 @@
   * Created by chris on 13/10/2016.
   *
   */
-package io.venuu.toolbox.consensus.zk
+package io.venuu.vuu.murmur.consensus.zk
 
 import java.util.concurrent.ConcurrentHashMap
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.consensus.PathCache
+import io.venuu.vuu.murmur.consensus.PathCache
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.recipes.cache._
 

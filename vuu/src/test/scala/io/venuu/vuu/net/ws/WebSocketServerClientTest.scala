@@ -2,7 +2,7 @@ package io.venuu.vuu.net.ws
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultTimeProvider, TimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, Clock}
 import io.venuu.vuu.core.CoreServerApiHander
 import io.venuu.vuu.core.module.ModuleContainer
 import io.venuu.vuu.core.table.TableContainer
@@ -24,7 +24,7 @@ class WebSocketServerClientTest extends FeatureSpec with Matchers {
     ignore("create web socket server and client and send data between"){
 
       implicit val lifecycle = new LifecycleContainer
-      implicit val timeProvider: TimeProvider = new DefaultTimeProvider
+      implicit val timeProvider: Clock = new DefaultClock
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val serializer = JsonVsSerializer

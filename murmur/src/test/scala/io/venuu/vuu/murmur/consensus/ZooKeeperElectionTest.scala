@@ -5,14 +5,13 @@
   * Created by chris on 26/02/2016.
 
   */
-package io.venuu.toolbox.consensus
+package io.venuu.vuu.murmur.consensus
 
-import io.venuu.toolbox.consensus.zk.ZooKeeperElection
+import io.venuu.vuu.murmur.consensus.zk.ZooKeeperElection
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.RetryNTimes
 import org.apache.curator.test.TestingServer
-import org.scalatest.FeatureSpec
-
+import org.scalatest._
 
 class ZooKeeperElectionTest extends FeatureSpec {
 

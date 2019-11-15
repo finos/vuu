@@ -7,7 +7,7 @@
   */
 package io.venuu.vuu.client.headless
 
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.messages.RequestId
 import io.venuu.vuu.net.{FilterSpec, SortDef, SortSpec, ViewServerClient}
 import io.venuu.vuu.viewport.{DefaultRange, ViewPortRange}
@@ -23,7 +23,7 @@ case class CreateViewPortRequestBlock(ctx: HeadlessContext,
                                       private val range: ViewPortRange = DefaultRange,
                                       private val groupBy: Array[String] = Array(),
                                       private val filter: FilterSpec = FilterSpec("")
-                                     )(implicit val vsClient: ViewServerClient, time: TimeProvider){
+                                     )(implicit val vsClient: ViewServerClient, time: Clock){
   import io.venuu.vuu.client.ClientHelperFns._
 
 
@@ -58,7 +58,7 @@ case class ChangeViewPortRangeRequestBlock(ctx: HeadlessContext,
                                headless: HeadlessClient,
                                private val range: ViewPortRange = new ViewPortRange(1, 100)
                               )
-                              (implicit val vsClient: ViewServerClient, time: TimeProvider){
+                              (implicit val vsClient: ViewServerClient, time: Clock){
 
   import io.venuu.vuu.client.ClientHelperFns.changeVpRangeAsync;
 
@@ -82,7 +82,7 @@ case class ChangeViewPortRequestBlock(ctx: HeadlessContext,
                                       private val range: ViewPortRange = DefaultRange,
                                       private val groupBy: Array[String] = Array(),
                                       private val filter: FilterSpec = FilterSpec("")
-                                    )(implicit val vsClient: ViewServerClient, time: TimeProvider){
+                                    )(implicit val vsClient: ViewServerClient, time: Clock){
   import io.venuu.vuu.client.ClientHelperFns._
 
 

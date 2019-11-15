@@ -8,7 +8,7 @@
 package io.venuu.vuu.client.swing
 
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.DefaultTimeProvider
+import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.client.swing.client.Worker
 import io.venuu.vuu.client.swing.gui.VSMainFrame
 import io.venuu.vuu.client.swing.messages.ClientMessage
@@ -25,7 +25,7 @@ import scala.swing._
 object SwingClientMain extends SimpleSwingApplication {
 
   implicit val eventBus = new EventBus[ClientMessage]()
-  implicit val timeProvider = new DefaultTimeProvider
+  implicit val timeProvider = new DefaultClock
   implicit val lifecycle = new LifecycleContainer
 
   val client = new WebSocketClient("ws://localhost:8090/websocket", 8090)

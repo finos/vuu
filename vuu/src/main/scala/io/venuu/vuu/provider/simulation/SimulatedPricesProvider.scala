@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.{LifeCycleRunner, RunInThread}
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData}
 import io.venuu.vuu.provider.Provider
 
@@ -49,7 +49,7 @@ object PricesFields{
   final val Scenario = "scenario"
 }
 
-class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implicit val timeProvider: TimeProvider, lifecycle:  LifecycleContainer) extends Provider with StrictLogging with RunInThread {
+class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implicit val timeProvider: Clock, lifecycle:  LifecycleContainer) extends Provider with StrictLogging with RunInThread {
   private val currentModes = new ConcurrentHashMap[String, Simulation]()
   private val states = new ConcurrentHashMap[String, Map[String, Any]]()
 

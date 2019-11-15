@@ -1,7 +1,7 @@
 package io.venuu.vuu.core.module
 
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{Columns, DataTable}
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
 import io.venuu.vuu.core.ViewServer
@@ -70,7 +70,7 @@ case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[ViewSer
         rpc.head
       }
 
-      override def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: TimeProvider, lifecycleContainer: LifecycleContainer): Provider = {
+      override def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = {
         baseTables.find({case(td, func) => td.name == table.name }).get._2(table, viewserver)
       }
     }

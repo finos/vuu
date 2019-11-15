@@ -9,7 +9,7 @@ package io.venuu.vuu.viewport
 
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.{Columns, TableContainer}
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
@@ -17,7 +17,7 @@ import org.joda.time.LocalDateTime
 
 object OrdersAndPricesScenarioFixture {
 
-  def setup()(implicit lifecycleContainer: LifecycleContainer, timeProvider: TimeProvider, metrics : MetricsProvider) = {
+  def setup()(implicit lifecycleContainer: LifecycleContainer, timeProvider: Clock, metrics : MetricsProvider) = {
 
     val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 

@@ -3,7 +3,7 @@ package io.venuu.toolbox.time
 /**
   * Created by chris on 22/12/2015.
   */
-class TestFriendlyTimeProvider(start: Long) extends TimeProvider{
+class TestFriendlyClock(start: Long) extends Clock{
 
   @volatile private var currentTime = start
 

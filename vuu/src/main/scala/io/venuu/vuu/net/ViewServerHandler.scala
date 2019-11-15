@@ -11,7 +11,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.Channel
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.venuu.toolbox.json.JsonUtil
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.module.ModuleContainer
 
 trait ViewServerHandlerFactory{
@@ -21,7 +21,7 @@ trait ViewServerHandlerFactory{
 class ViewServerHandlerFactoryImpl(authenticator: Authenticator,
                                    tokenValidator: LoginTokenValidator, sessionContainer: ClientSessionContainer,
                                    serverApi: ServerApi, jsonVsSerializer: Serializer[String, MessageBody],
-                                   moduleContainer: ModuleContainer)(implicit val timeProvider: TimeProvider) extends ViewServerHandlerFactory{
+                                   moduleContainer: ModuleContainer)(implicit val timeProvider: Clock) extends ViewServerHandlerFactory{
   override def create(): ViewServerHandler = {
       val requestProcessor = new RequestProcessor(authenticator, tokenValidator, sessionContainer, serverApi, jsonVsSerializer, moduleContainer)
       new ViewServerHandler(jsonVsSerializer, requestProcessor)

@@ -5,7 +5,7 @@
   * Created by chris on 26/02/2016.
 
   */
-package io.venuu.toolbox.consensus
+package io.venuu.vuu.murmur.consensus
 
 trait ClusterChangeListener{
   def onChange()

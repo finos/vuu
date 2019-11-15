@@ -9,7 +9,7 @@ package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.DefaultTimeProvider
+import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
@@ -20,7 +20,7 @@ import org.scalatest.{FeatureSpec, Matchers}
 
 class DataTableTest extends FeatureSpec with Matchers {
 
-  implicit val timeProvider = new DefaultTimeProvider
+  implicit val timeProvider = new DefaultClock
 
   feature("Test data table functionality"){
 

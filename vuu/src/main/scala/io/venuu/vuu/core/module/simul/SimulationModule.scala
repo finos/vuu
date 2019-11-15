@@ -8,7 +8,7 @@
 package io.venuu.vuu.core.module.simul
 
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.module.simul.provider.OrdersSimulProvider
 import io.venuu.vuu.core.module.{ModuleFactory, ViewServerModule}
@@ -35,7 +35,7 @@ object SimulationModule {
 
   final val NAME = "SIMUL"
 
-  def apply()(implicit time: TimeProvider, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit time: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
     ModuleFactory.withNamespace(NAME)
       .addTable(
           TableDef(

@@ -7,10 +7,10 @@
   */
 package io.venuu.vuu.provider
 
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData}
 
-class RpcProvider(table: DataTable)(implicit timeProvider: TimeProvider) extends Provider {
+class RpcProvider(table: DataTable)(implicit timeProvider: Clock) extends Provider {
 
   def tick(key: String, row: Map[String, Any]) = {
     table.processUpdate(key, new RowWithData(key, row), timeProvider.now())
