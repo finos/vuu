@@ -56,7 +56,6 @@ case class ZooKeeperElection(name: String, client: CuratorFramework, clusterName
     selector.start()
 
     cache = new ZooKeeperTreeCacheListener(name, client, internalClusterName)
-
     cache.connect()
     this
   }

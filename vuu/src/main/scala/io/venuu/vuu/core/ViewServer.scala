@@ -6,7 +6,7 @@ import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import io.venuu.toolbox.thread.LifeCycleRunner
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
-import io.venuu.vuu.core.module.{ModuleContainer, RealizedViewServerModule, ViewServerModule}
+import io.venuu.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, ViewServerModule}
 import io.venuu.vuu.core.table.{DataTable, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
@@ -106,6 +106,7 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
       override def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }
+      override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
     }
 
     moduleContainer.register(realized)

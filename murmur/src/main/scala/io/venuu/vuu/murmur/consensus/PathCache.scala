@@ -15,11 +15,13 @@ trait PathChangedListener{
 
 trait PathCache {
   def createPath(path: String, data: Array[Byte]): PathCache
+  def createPath(path: String): PathCache
   def updatePath(path: String, data: Array[Byte]): PathCache
   def deletePath(path: String): PathCache
   //def setPath(path: String): PathCache
   def listeningTo: List[TreeCache]
   def connect(): PathCache
   def listenTo(path: String): PathCache
+  def listenTo(path: String, listener: PathListener): PathCache
   def disconnect(): Unit
 }

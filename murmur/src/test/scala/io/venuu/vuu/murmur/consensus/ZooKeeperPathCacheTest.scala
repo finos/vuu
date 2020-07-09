@@ -7,6 +7,8 @@
   */
 package io.venuu.vuu.murmur.consensus
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import io.venuu.vuu.murmur.consensus.zk.ZooKeeperPathCache
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.RetryNTimes
@@ -43,8 +45,6 @@ class ZooKeeperPathCacheTest extends FeatureSpec with GivenWhenThen with Matcher
         Thread.sleep(100)
 
         pathCache.updatePath("/apps/siren/test", "CCCCC".getBytes)
-
-        val children = pathCache.listChildren("/apps/siren")
 
         eventually(timeout(Span(600, Millis)), interval(Span(100, Millis))) {
           val children = pathCache.listChildren("/apps/siren")
@@ -88,6 +88,43 @@ class ZooKeeperPathCacheTest extends FeatureSpec with GivenWhenThen with Matcher
         }
 
       }
+
+    scenario("listen on whole director structure"){
+
+      withZkSvr(2183) { svr =>
+
+        val client = CuratorFrameworkFactory.newClient(svr.getConnectString, new RetryNTimes(10, 300))
+
+        client.start()
+
+        val pathCache = new ZooKeeperPathCache(client)
+
+        pathCache.connect()
+
+        val counter = new AtomicInteger()
+
+        pathCache
+          .createPath("/apps/murmur/version", Array[Byte]())
+          .listenTo("/apps/murmur/version", new PathListener {
+            override def onChildAdded(path: String, data: Array[Byte]): Unit = {
+              super.onChildAdded(path, data)
+              counter.addAndGet(1)
+            }
+          })
+          .createPath("/apps/murmur/version/version-1.0", "AAABBBCCC".getBytes)
+          .createPath("/apps/murmur/version/version-1.1", "AAABBBCCC".getBytes)
+          .createPath("/apps/murmur/version/version-1.2", "AAABBBCCC".getBytes)
+          .createPath("/apps/vuu/version-1.0", "AAABBBCCC".getBytes)
+          .createPath("/apps/vuu/version-1.0", "AAABBBCCC".getBytes)
+
+        eventually{
+          counter.get() should equal(4) // we get a callback for the original path also
+        }
+      }
+
+    }
+
+
   }
 
 }

@@ -28,6 +28,11 @@ object MasterOrdering extends Ordering[String]{
 
 class ZooKeeperTreeCacheListener(name: String, client: CuratorFramework, path: String) extends TreeCache(client, path) with TreeCacheListener {
 
+  @volatile
+  private var leader: Option[String]  = None
+  @volatile
+  private var members: List[String]  = List()
+
   override def childEvent(client: CuratorFramework, event: TreeCacheEvent): Unit = {
 
     val children = this.getCurrentChildren(path)

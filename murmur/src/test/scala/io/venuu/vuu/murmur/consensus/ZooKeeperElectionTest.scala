@@ -54,8 +54,6 @@ class ZooKeeperElectionTest extends FeatureSpec {
            ems1.disconnect()
 
            Thread.sleep(10000)
-
-           //client.close()
          }
     }
 

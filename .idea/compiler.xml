@@ -7,8 +7,8 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="murmur" />
-        <module name="vuu" />
         <module name="toolbox" />
+        <module name="vuu (1)" />
       </profile>
     </annotationProcessing>
   </component>

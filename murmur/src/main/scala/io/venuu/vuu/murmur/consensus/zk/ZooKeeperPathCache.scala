@@ -10,13 +10,13 @@ package io.venuu.vuu.murmur.consensus.zk
 import java.util.concurrent.ConcurrentHashMap
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.vuu.murmur.consensus.PathCache
+import io.venuu.vuu.murmur.consensus.{PathCache, PathListener}
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.recipes.cache._
 
 import scala.util.{Failure, Success, Try}
 
-class ZooKeeperPathCache(client: CuratorFramework) extends PathCache with StrictLogging{
+class ZooKeeperPathCache(client: CuratorFramework) extends PathCache with StrictLogging with PathListener {
 
   val paths = new ConcurrentHashMap[String, TreeCache]()
 
@@ -37,6 +37,11 @@ class ZooKeeperPathCache(client: CuratorFramework) extends PathCache with Strict
         client.create().creatingParentContainersIfNeeded().forPath(path, data)
     }
     this
+  }
+
+
+  override def createPath(path: String): PathCache = {
+      createEmptyPath(path)
   }
 
   private def createEmptyPath(path: String): PathCache = {
@@ -97,41 +102,23 @@ class ZooKeeperPathCache(client: CuratorFramework) extends PathCache with Strict
   }
 
   override def listenTo(path: String): PathCache = {
-
     val cache = new TreeCache(client, path)
     cache.start()
-    addListener(cache)
+    addListener(cache, this)
     paths.put(path, cache)
     this
   }
 
-  private def onChildAdded(path: String, data: Array[Byte]) = {
-    logger.info(s"onChildAdded Path = $path")
+
+  override def listenTo(path: String, listener: PathListener): PathCache = {
+    val cache = new TreeCache(client, path)
+    cache.start()
+    addListener(cache, listener)
+    paths.put(path, cache)
+    this
   }
 
-  private def onChildRemoved(path: String, data: Array[Byte]) = {
-    logger.info(s"onChildRemoved Path = $path")
-  }
-
-  private def onChildUpdated(path: String, data: Array[Byte]) = {
-    logger.info(s"onChildUpdated Path = $path")
-  }
-
-  private def onConnectionSuspended() = {
-    logger.info(s"onConnectionSuspended")
-  }
-  private def onConnectionLost() = {
-    logger.info(s"onConnectionLost")
-  }
-  private def onConnectionReconnected() = {
-    logger.info(s"onConnectionReconnected")
-  }
-
-  private def onInitialized() = {
-    logger.info(s"onInitialized")
-  }
-
-  private def addListener(cache: TreeCache): Unit = {
+  private def addListener(cache: TreeCache, pathListener: PathListener): Unit = {
 
     val listener = new TreeCacheListener {
 
@@ -140,13 +127,13 @@ class ZooKeeperPathCache(client: CuratorFramework) extends PathCache with Strict
       override def childEvent(client: CuratorFramework, event: TreeCacheEvent): Unit = {
 
         event.getType match {
-          case NODE_ADDED => onChildAdded(event.getData.getPath, event.getData.getData)
-          case NODE_UPDATED => onChildUpdated(event.getData.getPath, event.getData.getData)
-          case NODE_REMOVED => onChildRemoved(event.getData.getPath, event.getData.getData)
-          case CONNECTION_SUSPENDED => onConnectionSuspended()
-          case CONNECTION_LOST => onConnectionLost()
-          case CONNECTION_RECONNECTED => onConnectionReconnected()
-          case INITIALIZED => onInitialized()
+          case NODE_ADDED => pathListener.onChildAdded(event.getData.getPath, event.getData.getData)
+          case NODE_UPDATED => pathListener.onChildUpdated(event.getData.getPath, event.getData.getData)
+          case NODE_REMOVED => pathListener.onChildRemoved(event.getData.getPath, event.getData.getData)
+          case CONNECTION_SUSPENDED => pathListener.onConnectionSuspended()
+          case CONNECTION_LOST => pathListener.onConnectionLost()
+          case CONNECTION_RECONNECTED => pathListener.onConnectionReconnected()
+          case INITIALIZED => pathListener.onInitialized()
           case _ => logger.warn("Got message don't know wht it is:" + event.toString)
         }
       }

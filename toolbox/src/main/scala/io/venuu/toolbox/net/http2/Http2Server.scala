@@ -1,6 +1,7 @@
 package io.venuu.toolbox.net.http2
 
 import java.lang.management.ManagementFactory
+import java.nio.file.Paths
 
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.eclipse.jetty.alpn.ALPN
@@ -10,12 +11,13 @@ import org.eclipse.jetty.http2.server.{HTTP2CServerConnectionFactory, HTTP2Serve
 import org.eclipse.jetty.jmx.MBeanContainer
 import org.eclipse.jetty.server._
 import org.eclipse.jetty.server.handler.ResourceHandler
+import org.eclipse.jetty.util.resource.PathResource
 import org.eclipse.jetty.util.ssl.SslContextFactory
 
 /**
  * Created by chris on 12/11/2015.
  */
-class Http2Server(httpPort: Int, httpsPort: Int, webRoot: String)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled{
+class Http2Server(httpPort: Int, httpsPort: Int, staticWebRoots: Array[(String, String)])(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled{
 
   private val server: Server = new Server
 
@@ -24,7 +26,6 @@ class Http2Server(httpPort: Int, httpsPort: Int, webRoot: String)(implicit lifec
   override def doStart(): Unit = {
     server.start
     //server.join
-
   }
 
   def join(): Unit = {
@@ -40,14 +41,30 @@ class Http2Server(httpPort: Int, httpsPort: Int, webRoot: String)(implicit lifec
     val mbContainer: MBeanContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer)
     server.addBean(mbContainer)
 
+    val contexts =  staticWebRoots.map({ case (webRoot: String, alias: String) => {
+      val resource_handler = new ResourceHandler();
+      // Configure the ResourceHandler. Setting the resource base indicates where the files should be served out of.
+      // In this example it is the current directory but it can be configured to anything that the jvm has access to.
+      resource_handler.setDirectoriesListed(true);
+      resource_handler.setWelcomeFiles(Array( "index.html" )); // can set this, but don't need to
+      resource_handler.setResourceBase(webRoot)//"src/main/resources/www")
+      //server.setHandler(resource_handler)
 
-    val resource_handler = new ResourceHandler();
-    // Configure the ResourceHandler. Setting the resource base indicates where the files should be served out of.
-    // In this example it is the current directory but it can be configured to anything that the jvm has access to.
-    resource_handler.setDirectoriesListed(true);
-    resource_handler.setWelcomeFiles(Array( "index.html" ));
-    resource_handler.setResourceBase(webRoot)//"src/main/resources/www")
+      import org.eclipse.jetty.server.handler.ContextHandler
+      val context0 = new ContextHandler
+      context0.setContextPath(alias)
 
+      val baseResource = new PathResource(Paths.get(webRoot) )
+      context0.setBaseResource(baseResource)
+      context0.setHandler(resource_handler)
+      context0
+    }})
+
+    import org.eclipse.jetty.server.handler.ContextHandlerCollection
+    val collection = new ContextHandlerCollection()
+    collection.setHandlers(contexts.toArray)
+
+    server.setHandler(collection)
 
     ALPN.debug=true;
 
@@ -61,7 +78,7 @@ class Http2Server(httpPort: Int, httpsPort: Int, webRoot: String)(implicit lifec
     //    context.addServlet(new ServletHolder(servlet), "/test/*")
     //    context.addServlet(classOf[DefaultServlet], "/").setInitParameter("maxCacheSize", "81920")
     //    server.setHandler(context)
-    server.setHandler(resource_handler)
+    //server.setHandler(resource_handler)
 
     val http_config: HttpConfiguration = new HttpConfiguration
     http_config.setSecureScheme("https")
