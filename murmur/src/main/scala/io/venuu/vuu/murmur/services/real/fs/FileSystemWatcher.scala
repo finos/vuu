@@ -7,12 +7,12 @@
  */
 package io.venuu.vuu.murmur.services.real.fs
 
-import java.nio.file._
-import java.nio.file.StandardWatchEventKinds._
-import java.nio.file.LinkOption._
-import java.nio.file.attribute._
 import java.io._
+import java.nio.file.StandardWatchEventKinds._
+import java.nio.file._
 import java.util.HashMap
+
+import scala.collection.JavaConverters
 
 
 /**
@@ -58,9 +58,9 @@ class LoggingDirListener extends DirListener{
 
 class WatchDir(val dir: Path, val listener: DirListener, val listChildrenOnStart: Boolean) {
 
-  val watcher = FileSystems.getDefault.newWatchService
-  val keys = new HashMap[WatchKey, Path]()
-  var trace  = false
+  private val watcher = FileSystems.getDefault.newWatchService
+  private val keys = new HashMap[WatchKey, Path]()
+  private var trace  = false
   
   register(dir)
 
@@ -107,8 +107,10 @@ class WatchDir(val dir: Path, val listener: DirListener, val listChildrenOnStart
       if (dir == null) {
         println("WatchKey not recognized!!")
       }
-      import scala.collection.JavaConversions._
-      for (event <- key.pollEvents) {
+
+      val pollEvents = JavaConverters.asScalaIterator(key.pollEvents().iterator()).toList
+
+      for (event <- pollEvents) {
         val kind  = event.kind
 
         kind match {

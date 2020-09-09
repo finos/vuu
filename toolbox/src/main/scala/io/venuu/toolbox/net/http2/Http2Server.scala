@@ -112,7 +112,6 @@ class Http2Server(httpPort: Int, httpsPort: Int, staticWebRoots: Array[(String, 
     val http2Connector: ServerConnector = new ServerConnector(server, ssl, alpn, h2, new HttpConnectionFactory(https_config))
     http2Connector.setPort(8443)
     server.addConnector(http2Connector)
-
   }
 
   override def doDestroy(): Unit = {

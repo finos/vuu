@@ -1,61 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#7 Adding in more murmur detail">
-      <change afterPath="$PROJECT_DIR$/murmur/doc/adding-a-new-app.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/doc/design.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/doc/startup-at-terminal.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/doc/startup-internal.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/Murmur.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/PathListener.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/model/ModelConfig.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/DistributedCacheService.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/FileSystemService.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/HttpService.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/ProcessMonitorService.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/ScheduleService.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/UpgradeService.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/fake/FakeDistributedCacheService.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/fake/FakeFileSystemService.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/fake/FakeHttpService.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/real/RealHttpService.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/real/fs/FileSystemWatcher.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/viewserver/MurmurModule.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/model/ModelRoundtripTest.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/reactive/ReactiveStreamTest.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/DistributedCacheServiceTest.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/FileSystemServiceTest.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/RealHttp2ServiceTest.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/fs/FileSystemWatcherTest.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/toolbox/keystore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/http2/Http2ClientLib.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/toolbox/src/test/resources/www/murmur/deploy/murmur-0.1.tar.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/toolbox/src/test/resources/www/murmur/deploy/murmur-0.2.tar.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/toolbox/src/test/resources/www/murmur/deploy/murmur-0.3.tar.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/net/http2/Http2ClientTest.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/net/http2/Http2ServerTest.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/www/deploy/murmur-v0.1.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/www/deploy/murmur-v0.2.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/www/deploy/murmur-v0.3.zip" afterDir="false" />
+    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/scala_compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/scala_compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/design.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/PathCache.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/PathCache.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/zk/ZooKeeperElection.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/zk/ZooKeeperElection.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/zk/ZooKeeperPathCache.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/zk/ZooKeeperPathCache.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/zk/ZooKeeperTreeCacheListener.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/zk/ZooKeeperTreeCacheListener.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/consensus/ZooKeeperElectionTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/consensus/ZooKeeperElectionTest.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/consensus/ZooKeeperPathCacheTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/consensus/ZooKeeperPathCacheTest.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/toolbox/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/toolbox/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/real/fs/FileSystemWatcher.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/real/fs/FileSystemWatcher.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/http2/Http2Server.scala" beforeDir="false" afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/http2/Http2Server.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/ViewServer.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/ViewServer.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/ModuleFactory.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/ModuleFactory.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/VsModule.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/VsModule.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/http/HttpServerTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/net/http/HttpServerTest.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,7 +96,7 @@
       <recent name="$PROJECT_DIR$/vuu/src/main/resources/www/deploy" />
     </key>
   </component>
-  <component name="RunManager" selected="ScalaTest.FileSystemWatcherTest.Feature: FS Watcher Scenario: FS Watcher Test">
+  <component name="RunManager" selected="ScalaTest.HttpServerTest.Feature: check we can start the http2 server Scenario: start http2 server (1)">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -193,28 +162,6 @@
         <option name="BSP.BeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="HttpServerTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="vuu (1)" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="testKind" value="Class" />
-      <option name="envs">
-        <map />
-      </option>
-      <option name="javaOptions" value="" />
-      <option name="jrePath" />
-      <option name="searchTest" value="Across module dependencies" />
-      <option name="shortenClasspath" />
-      <option name="showProgressMessages" value="true" />
-      <option name="testArgs" value="" />
-      <option name="testClassPath" value="io.venuu.vuu.net.http.HttpServerTest" />
-      <option name="useSbt" value="false" />
-      <option name="useUiWithSbt" value="false" />
-      <option name="workingDirectory" value="$PROJECT_DIR$/vuu" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-        <option name="BSP.BeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="HttpServerTest.Feature: check we can start the http2 server Scenario: start http2 server (1)" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" show_console_on_std_err="false" show_console_on_std_out="false">
       <module name="toolbox" />
       <option name="allowRunningInParallel" value="false" />
@@ -261,6 +208,28 @@
         <option name="BSP.BeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="ReactiveStreamTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="murmur" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="testKind" value="Class" />
+      <option name="envs">
+        <map />
+      </option>
+      <option name="javaOptions" value="" />
+      <option name="jrePath" />
+      <option name="searchTest" value="Across module dependencies" />
+      <option name="shortenClasspath" />
+      <option name="showProgressMessages" value="true" />
+      <option name="testArgs" value="" />
+      <option name="testClassPath" value="io.venuu.vuu.murmur.reactive.ReactiveStreamTest" />
+      <option name="useSbt" value="false" />
+      <option name="useUiWithSbt" value="false" />
+      <option name="workingDirectory" value="$PROJECT_DIR$/murmur" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+        <option name="BSP.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest" show_console_on_std_err="false" show_console_on_std_out="false">
       <option name="allowRunningInParallel" value="false" />
       <option name="testKind" value="Class" />
@@ -302,11 +271,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="ScalaTest.HttpServerTest.Feature: check we can start the http2 server Scenario: start http2 server (1)" />
+        <item itemvalue="ScalaTest.ReactiveStreamTest" />
         <item itemvalue="ScalaTest.FileSystemWatcherTest.Feature: FS Watcher Scenario: FS Watcher Test" />
         <item itemvalue="ScalaTest.Http2ClientTest.Feature: check we can start the http2 server Scenario: start http2 server" />
-        <item itemvalue="ScalaTest.HttpServerTest.Feature: check we can start the http2 server Scenario: start http2 server (1)" />
         <item itemvalue="ScalaTest.HttpServerTest.Feature: check we can start the http2 server Scenario: start http2 server" />
-        <item itemvalue="ScalaTest.HttpServerTest" />
       </list>
     </recent_temporary>
   </component>
@@ -377,10 +346,33 @@
       <option name="project" value="LOCAL" />
       <updated>1574063903310</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="#7 Adding in more murmur detail">
+      <created>1594285073194</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1594285073194</updated>
+    </task>
+    <task id="LOCAL-00010" summary="#7 Adding in more murmur detail">
+      <created>1594285098720</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1594285098720</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
     <option name="RECENT_FILTERS">
       <map>
         <entry key="Branch">
@@ -438,22 +430,26 @@
       <screen x="0" y="23" width="2560" height="1361" />
     </state>
     <state x="973" y="572" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592568440598" />
-    <state width="2518" height="379" key="GridCell.Tab.0.bottom" timestamp="1592647925266">
+    <state x="838" y="279" key="CommitChangelistDialog2" timestamp="1594285098471">
       <screen x="0" y="23" width="2560" height="1361" />
     </state>
-    <state width="2518" height="379" key="GridCell.Tab.0.bottom/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592647925266" />
-    <state width="2518" height="379" key="GridCell.Tab.0.center" timestamp="1592647925266">
+    <state x="838" y="279" key="CommitChangelistDialog2/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594285098471" />
+    <state width="2518" height="555" key="GridCell.Tab.0.bottom" timestamp="1594304808880">
       <screen x="0" y="23" width="2560" height="1361" />
     </state>
-    <state width="2518" height="379" key="GridCell.Tab.0.center/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592647925266" />
-    <state width="2518" height="379" key="GridCell.Tab.0.left" timestamp="1592647925265">
+    <state width="2518" height="555" key="GridCell.Tab.0.bottom/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594304808880" />
+    <state width="2518" height="555" key="GridCell.Tab.0.center" timestamp="1594304808879">
       <screen x="0" y="23" width="2560" height="1361" />
     </state>
-    <state width="2518" height="379" key="GridCell.Tab.0.left/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592647925265" />
-    <state width="2518" height="379" key="GridCell.Tab.0.right" timestamp="1592647925266">
+    <state width="2518" height="555" key="GridCell.Tab.0.center/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594304808879" />
+    <state width="2518" height="555" key="GridCell.Tab.0.left" timestamp="1594304808879">
       <screen x="0" y="23" width="2560" height="1361" />
     </state>
-    <state width="2518" height="379" key="GridCell.Tab.0.right/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592647925266" />
+    <state width="2518" height="555" key="GridCell.Tab.0.left/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594304808879" />
+    <state width="2518" height="555" key="GridCell.Tab.0.right" timestamp="1594304808880">
+      <screen x="0" y="23" width="2560" height="1361" />
+    </state>
+    <state width="2518" height="555" key="GridCell.Tab.0.right/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594304808880" />
     <state width="2518" height="548" key="GridCell.Tab.1.bottom" timestamp="1592647925262">
       <screen x="0" y="23" width="2560" height="1361" />
     </state>
@@ -470,6 +466,10 @@
       <screen x="0" y="23" width="2560" height="1361" />
     </state>
     <state width="2518" height="548" key="GridCell.Tab.1.right/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592647925261" />
+    <state x="880" y="443" key="Vcs.Push.Dialog.v2" timestamp="1594285111337">
+      <screen x="0" y="23" width="2560" height="1361" />
+    </state>
+    <state x="880" y="443" key="Vcs.Push.Dialog.v2/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594285111337" />
     <state x="971" y="460" width="617" height="486" key="find.popup" timestamp="1588846178764">
       <screen x="0" y="23" width="2560" height="1361" />
     </state>
