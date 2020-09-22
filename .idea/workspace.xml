@@ -23,28 +23,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#9 Added assembly build">
-      <change afterPath="$PROJECT_DIR$/zk/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/assembly/assembly.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/main/resources/conf/configuration.xsl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/main/resources/conf/log4j.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/main/resources/conf/zoo_sample.cfg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/README.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkCleanup.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkCli.cmd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkCli.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkEnv.cmd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkEnv.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkServer-initialize.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkServer.cmd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkServer.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkSnapShotToolkit.cmd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkSnapShotToolkit.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkTxnLogToolkit.cmd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/zk/src/scripts/bin/zkTxnLogToolkit.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -309,7 +289,14 @@
       <option name="project" value="LOCAL" />
       <updated>1600784547471</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="#9 Added assembly build">
+      <created>1600788144682</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1600788144682</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -355,46 +342,46 @@
     <option name="LAST_COMMIT_MESSAGE" value="#9 Added assembly build" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="759" y="287" key="#Project_Structure" timestamp="1600772193461">
+    <state x="759" y="287" key="#Project_Structure" timestamp="1600789667641">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="759" y="287" key="#Project_Structure/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600772193461" />
+    <state x="759" y="287" key="#Project_Structure/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789667641" />
     <state x="100" y="128" width="2342" height="1155" key="DiffContextDialog" timestamp="1600786195672">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
     <state x="100" y="128" width="2342" height="1155" key="DiffContextDialog/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600786195672" />
-    <state width="2500" height="232" key="GridCell.Tab.0.bottom" timestamp="1600787827181">
+    <state width="2500" height="335" key="GridCell.Tab.0.bottom" timestamp="1600789611091">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state width="2500" height="232" key="GridCell.Tab.0.bottom/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600787827181" />
-    <state width="2500" height="232" key="GridCell.Tab.0.center" timestamp="1600787827181">
+    <state width="2500" height="335" key="GridCell.Tab.0.bottom/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789611091" />
+    <state width="2500" height="335" key="GridCell.Tab.0.center" timestamp="1600789611090">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state width="2500" height="232" key="GridCell.Tab.0.center/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600787827181" />
-    <state width="2500" height="232" key="GridCell.Tab.0.left" timestamp="1600787827180">
+    <state width="2500" height="335" key="GridCell.Tab.0.center/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789611090" />
+    <state width="2500" height="335" key="GridCell.Tab.0.left" timestamp="1600789611090">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state width="2500" height="232" key="GridCell.Tab.0.left/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600787827180" />
-    <state width="2500" height="232" key="GridCell.Tab.0.right" timestamp="1600787827181">
+    <state width="2500" height="335" key="GridCell.Tab.0.left/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789611090" />
+    <state width="2500" height="335" key="GridCell.Tab.0.right" timestamp="1600789611090">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state width="2500" height="232" key="GridCell.Tab.0.right/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600787827181" />
+    <state width="2500" height="335" key="GridCell.Tab.0.right/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789611090" />
     <state x="1136" y="415" key="RollbackChangesDialog" timestamp="1600786107958">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
     <state x="1136" y="415" key="RollbackChangesDialog/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600786107958" />
-    <state x="871" y="432" key="Vcs.Push.Dialog.v2" timestamp="1600784551231">
+    <state x="871" y="432" key="Vcs.Push.Dialog.v2" timestamp="1600788158749">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="871" y="432" key="Vcs.Push.Dialog.v2/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600784551231" />
+    <state x="871" y="432" key="Vcs.Push.Dialog.v2/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600788158749" />
     <state x="100" y="128" width="2342" height="1155" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1600777091185">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
     <state x="100" y="128" width="2342" height="1155" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600777091185" />
-    <state x="978" y="338" width="586" height="735" key="find.popup" timestamp="1600778014863">
+    <state x="978" y="338" width="734" height="735" key="find.popup" timestamp="1600789643837">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="978" y="338" width="586" height="735" key="find.popup/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600778014863" />
+    <state x="978" y="338" width="734" height="735" key="find.popup/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789643837" />
     <state x="911" y="328" key="new project wizard" timestamp="1600784999788">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
