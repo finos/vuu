@@ -33,6 +33,7 @@
         <module>toolbox</module>
         <module>vuu</module>
         <module>murmur</module>
+        <module>zk</module>
         <!--module>allocation-tools</module-->
     </modules>
 

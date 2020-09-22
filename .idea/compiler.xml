@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="toolbox" />
         <module name="vuu (1)" />
+        <module name="zk" />
         <module name="murmur" />
       </profile>
     </annotationProcessing>
