@@ -3,7 +3,7 @@ package io.venuu.vuu.core.groupBy
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultClock, Clock}
+import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.groupby.GroupBySessionTable
 import io.venuu.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
@@ -32,10 +32,9 @@ class BuildBigGroupByTest extends FeatureSpec with Matchers with StrictLogging {
 
       val tableContainer = new TableContainer(joinProvider)
 
-      val outQueue          = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
-
-      val viewPortContainer = new ViewPortContainer(tableContainer)
+//      val outQueue          = new OutboundRowPublishQueue()
+//      val highPriorityQueue = new OutboundRowPublishQueue()
+//      val viewPortContainer = new ViewPortContainer(tableContainer)
 
       val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "exchange:String"), "ric")
 
@@ -50,18 +49,18 @@ class BuildBigGroupByTest extends FeatureSpec with Matchers with StrictLogging {
         else if(i % 4 == 0) "C"
         else "D"
 
-        val row = new RowWithData(ric, Map("ask" -> 100, "bid" -> 101, "last" -> 105, "exchange" -> exchange))
+        val row = RowWithData(ric, Map("ask" -> 100, "bid" -> 101, "last" -> 105, "exchange" -> exchange))
 
         table.processUpdate(ric, row, 1l)
       })
 
-      val client = new ClientSessionId("A", "B")
+      val client = ClientSessionId("A", "B")
 
-      val groupByTable = new GroupBySessionTable(table, client, joinProvider)(metrics)
+      val groupByTable = GroupBySessionTable(table, client, joinProvider)(metrics)
 
       val exchange = table.getTableDef.columnForName("exchange")
 
-      val builder = GroupByTreeBuilder.apply(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None)
+      val builder = GroupByTreeBuilder(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None)
 
       logger.info("Starting tree build")
 
@@ -69,15 +68,13 @@ class BuildBigGroupByTest extends FeatureSpec with Matchers with StrictLogging {
 
       logger.info(s"Complete tree build in $millis ms")
 
-      val builder2 = GroupByTreeBuilder.apply(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), None)
+      val builder2 = GroupByTreeBuilder(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), None)
 
       logger.info("Starting tree build")
 
       val (millis2, _) = timeIt{ builder2.build() }
 
       logger.info(s"Complete tree build 2 in $millis2 ms")
-
-      println()
 
     }
 

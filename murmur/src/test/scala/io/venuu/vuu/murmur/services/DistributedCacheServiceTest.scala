@@ -18,7 +18,7 @@ class DistributedCacheServiceTest extends FeatureSpec with Matchers {
 
   feature("Create a distributed cache instance (ZK)") {
 
-    scenario("Test the logic for the distributed cache instance") {
+    ignore("Test the logic for the distributed cache instance") {
 
       val cacheService = new FakeDistributedCacheService
       val fileSystem = new FakeFileSystemService

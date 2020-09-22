@@ -8,10 +8,14 @@
 package io.venuu.vuu.murmur.services.fake
 
 import java.nio.file.Path
+import java.util.concurrent.CopyOnWriteArrayList
 
 import io.venuu.vuu.murmur.services.definition.FileSystemService
 import monix.eval.Task
 import monix.reactive.Observable
+
+import scala.collection.JavaConverters
+import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 
 class EventableIterator[TYPE] extends Iterator[TYPE]{
 
@@ -59,7 +63,8 @@ class FakeFileSystemService extends FileSystemService {
   @volatile
   private var paths = Map[Path, Path]();
 
-  private var iterables = List[EventableIterator[Path]]()
+  @volatile
+  private var iterables = new CopyOnWriteArrayList[EventableIterator[Path]]()
 
   private val lock = new Object
 
@@ -84,7 +89,7 @@ class FakeFileSystemService extends FileSystemService {
   override def deployObservable: Observable[Path] = {
     val task = Task{
       val iterable = getDeployIter()
-      iterables = iterables ++ List(iterable)
+      iterables.add(iterable)
       iterable
     }
     Observable.defer{

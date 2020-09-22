@@ -18,9 +18,9 @@ class FileSystemWatcherTest extends FeatureSpec with Matchers {
 
     scenario("FS Watcher Test") {
 
-         val watcher = new WatchDir(Paths.get("/Users/chris/Documents/GitHub/vuu/toolbox/src/test/resources/www/murmur/deploy"), new LoggingDirListener, true)
+         //val watcher = new WatchDir(Paths.get("/Users/chris/Documents/GitHub/vuu/toolbox/src/test/resources/www/murmur/deploy"), new LoggingDirListener, true)
 
-          watcher.processEvents()
+          //watcher.processEvents()
       
     }
 

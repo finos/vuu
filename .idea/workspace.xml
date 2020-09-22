@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="BranchesTreeState">
     <expand>
       <path>
@@ -19,12 +22,22 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="">
+    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#9 Added assembly build">
+      <change afterPath="$PROJECT_DIR$/murmur/src/assembly/assembly.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/murmur/src/main/resources/zk/conf/zoo.cfg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/murmur/src/main/scripts/start-zk.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/real/fs/FileSystemWatcher.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/real/fs/FileSystemWatcher.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/http2/Http2Server.scala" beforeDir="false" afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/http2/Http2Server.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/murmur/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/fake/FakeFileSystemService.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/fake/FakeFileSystemService.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/DistributedCacheServiceTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/DistributedCacheServiceTest.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/fs/FileSystemWatcherTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/fs/FileSystemWatcherTest.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/toolbox/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/toolbox/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/groupby/GroupBySessionTable.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/groupby/GroupBySessionTable.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/SimpleDataTable.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/SimpleDataTable.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/groupBy/BuildBigGroupByTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/groupBy/BuildBigGroupByTest.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,14 +51,19 @@
     <option name="isMigrated" value="true" />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHome" value="$APPLICATION_HOME_DIR$/plugins/maven/lib/maven3" />
+      </MavenGeneralSettings>
+    </option>
     <option name="importingSettings">
       <MavenImportingSettings>
         <option name="createModuleGroups" value="true" />
@@ -54,17 +72,13 @@
     </option>
   </component>
   <component name="MavenRunner">
-    <option name="runMavenInBackground" value="false" />
+    <option name="skipTests" value="true" />
   </component>
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="1" />
   </component>
-  <component name="ProjectId" id="1aiEq9FKWWExnayYBGwlpkPQ5jx" />
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
-    <option name="autoscrollToSource" value="true" />
-    <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
     <property name="GoToClass.includeLibraries" value="false" />
@@ -76,35 +90,14 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Scala" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/toolbox/src/test/resources/www/murmur/deploy" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="reference.settings.project.maven.runner" />
+    <property name="settings.editor.selected.configurable" value="Errors" />
   </component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/murmur/doc" />
-    </key>
-    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
-      <recent name="io.venue.vuu.murmur.consensus" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/toolbox/src/test/resources/www/murmur/deploy" />
-      <recent name="$PROJECT_DIR$/toolbox" />
-      <recent name="$PROJECT_DIR$/vuu/src/main/resources/www/deploy" />
-    </key>
-  </component>
-  <component name="RunManager" selected="ScalaTest.HttpServerTest.Feature: check we can start the http2 server Scenario: start http2 server (1)">
+  <component name="RunManager" selected="ScalaTest.FileSystemServiceTest">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="Application" factoryName="Application">
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -116,139 +109,72 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="FileSystemWatcherTest.Feature: FS Watcher Scenario: FS Watcher Test" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="murmur" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="testKind" value="Test name" />
-      <option name="envs">
-        <map />
-      </option>
-      <option name="javaOptions" value="" />
-      <option name="jrePath" />
-      <option name="searchTest" value="Across module dependencies" />
-      <option name="shortenClasspath" />
-      <option name="showProgressMessages" value="true" />
-      <option name="testArgs" value="" />
-      <option name="testClassPath" value="io.venuu.vuu.murmur.services.fs.FileSystemWatcherTest" />
-      <option name="testName" value="Feature: FS Watcher Scenario: FS Watcher Test" />
-      <option name="useSbt" value="false" />
-      <option name="useUiWithSbt" value="false" />
-      <option name="workingDirectory" value="$PROJECT_DIR$/murmur" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-        <option name="BSP.BeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Http2ClientTest.Feature: check we can start the http2 server Scenario: start http2 server" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="toolbox" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="testKind" value="Test name" />
-      <option name="envs">
-        <map />
-      </option>
-      <option name="javaOptions" value="" />
-      <option name="jrePath" />
-      <option name="searchTest" value="Across module dependencies" />
-      <option name="shortenClasspath" />
-      <option name="showProgressMessages" value="true" />
-      <option name="testArgs" value="" />
-      <option name="testClassPath" value="io.venuu.toolbox.net.http2.Http2ClientTest" />
-      <option name="testName" value="Feature: check we can start the http2 server Scenario: start http2 server" />
-      <option name="useSbt" value="false" />
-      <option name="useUiWithSbt" value="false" />
-      <option name="workingDirectory" value="$PROJECT_DIR$/toolbox" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-        <option name="BSP.BeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="HttpServerTest.Feature: check we can start the http2 server Scenario: start http2 server (1)" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="toolbox" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="testKind" value="Test name" />
-      <option name="envs">
-        <map />
-      </option>
-      <option name="javaOptions" value="" />
-      <option name="jrePath" />
-      <option name="searchTest" value="Across module dependencies" />
-      <option name="shortenClasspath" />
-      <option name="showProgressMessages" value="true" />
-      <option name="testArgs" value="" />
-      <option name="testClassPath" value="io.venuu.toolbox.net.http2.HttpServerTest" />
-      <option name="testName" value="Feature: check we can start the http2 server Scenario: start http2 server" />
-      <option name="useSbt" value="false" />
-      <option name="useUiWithSbt" value="false" />
-      <option name="workingDirectory" value="$PROJECT_DIR$/toolbox" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-        <option name="BSP.BeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="HttpServerTest.Feature: check we can start the http2 server Scenario: start http2 server" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" show_console_on_std_err="false" show_console_on_std_out="false">
+    <configuration name="BuildBigGroupByTest.Feature: check big groupby's Scenario: create big group by and build table" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
       <module name="vuu (1)" />
       <option name="allowRunningInParallel" value="false" />
-      <option name="testKind" value="Test name" />
-      <option name="envs">
-        <map />
+      <option name="selectedOptions">
+        <set />
       </option>
-      <option name="javaOptions" value="" />
-      <option name="jrePath" />
-      <option name="searchTest" value="Across module dependencies" />
-      <option name="shortenClasspath" />
-      <option name="showProgressMessages" value="true" />
-      <option name="testArgs" value="" />
-      <option name="testClassPath" value="io.venuu.vuu.net.http.HttpServerTest" />
-      <option name="testName" value="Feature: check we can start the http2 server Scenario: start http2 server" />
-      <option name="useSbt" value="false" />
-      <option name="useUiWithSbt" value="false" />
+      <option name="testKind" value="Test name" />
+      <option name="testClassPath" value="io.venuu.vuu.core.groupBy.BuildBigGroupByTest" />
+      <option name="testName" value="Feature: check big groupby's Scenario: create big group by and build table" />
+      <option name="workingDirectory" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FileSystemServiceTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="murmur" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="selectedOptions">
+        <set />
+      </option>
+      <option name="testKind" value="Class" />
+      <option name="testClassPath" value="io.venuu.vuu.murmur.services.FileSystemServiceTest" />
+      <option name="workingDirectory" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FileSystemServiceTest.Feature: Test a reactive observer for fake file system Scenario: set up a simple observer and poke in a new deploy version" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="murmur" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="selectedOptions">
+        <set />
+      </option>
+      <option name="testKind" value="Test name" />
+      <option name="testClassPath" value="io.venuu.vuu.murmur.services.FileSystemServiceTest" />
+      <option name="testName" value="Feature: Test a reactive observer for fake file system Scenario: set up a simple observer and poke in a new deploy version" />
+      <option name="workingDirectory" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ZooKeeperElectionTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="murmur" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="selectedOptions">
+        <set />
+      </option>
+      <option name="testKind" value="Class" />
+      <option name="testClassPath" value="io.venuu.vuu.murmur.consensus.ZooKeeperElectionTest" />
+      <option name="workingDirectory" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ZooKeeperPathCacheTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="toolbox" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="selectedOptions">
+        <set />
+      </option>
+      <option name="testKind" value="Class" />
+      <option name="jrePath" value="" />
+      <option name="testClassPath" value="io.venuu.toolbox.consensus.ZooKeeperPathCacheTest" />
       <option name="workingDirectory" value="$PROJECT_DIR$/vuu" />
       <method v="2">
         <option name="Make" enabled="true" />
-        <option name="BSP.BeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ReactiveStreamTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="murmur" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="testKind" value="Class" />
-      <option name="envs">
-        <map />
-      </option>
-      <option name="javaOptions" value="" />
-      <option name="jrePath" />
-      <option name="searchTest" value="Across module dependencies" />
-      <option name="shortenClasspath" />
-      <option name="showProgressMessages" value="true" />
-      <option name="testArgs" value="" />
-      <option name="testClassPath" value="io.venuu.vuu.murmur.reactive.ReactiveStreamTest" />
-      <option name="useSbt" value="false" />
-      <option name="useUiWithSbt" value="false" />
-      <option name="workingDirectory" value="$PROJECT_DIR$/murmur" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-        <option name="BSP.BeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest" show_console_on_std_err="false" show_console_on_std_out="false">
-      <option name="allowRunningInParallel" value="false" />
-      <option name="testKind" value="Class" />
-      <option name="envs">
-        <map />
-      </option>
-      <option name="javaOptions" value="" />
-      <option name="jrePath" />
-      <option name="searchTest" value="Across module dependencies" />
-      <option name="shortenClasspath" />
-      <option name="showProgressMessages" value="true" />
-      <option name="testArgs" value="" />
-      <option name="testClassPath" value="" />
-      <option name="useSbt" value="false" />
-      <option name="useUiWithSbt" value="false" />
-      <option name="workingDirectory" value="" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-        <option name="BSP.BeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration default="true" type="TestNG">
@@ -271,14 +197,15 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="ScalaTest.HttpServerTest.Feature: check we can start the http2 server Scenario: start http2 server (1)" />
-        <item itemvalue="ScalaTest.ReactiveStreamTest" />
-        <item itemvalue="ScalaTest.FileSystemWatcherTest.Feature: FS Watcher Scenario: FS Watcher Test" />
-        <item itemvalue="ScalaTest.Http2ClientTest.Feature: check we can start the http2 server Scenario: start http2 server" />
-        <item itemvalue="ScalaTest.HttpServerTest.Feature: check we can start the http2 server Scenario: start http2 server" />
+        <item itemvalue="ScalaTest.FileSystemServiceTest" />
+        <item itemvalue="ScalaTest.FileSystemServiceTest.Feature: Test a reactive observer for fake file system Scenario: set up a simple observer and poke in a new deploy version" />
+        <item itemvalue="ScalaTest.BuildBigGroupByTest.Feature: check big groupby's Scenario: create big group by and build table" />
+        <item itemvalue="ScalaTest.ZooKeeperElectionTest" />
+        <item itemvalue="ScalaTest.ZooKeeperPathCacheTest" />
       </list>
     </recent_temporary>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -368,7 +295,13 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="CUSTOM_BOOLEAN_PROPERTIES">
+                <map>
+                  <entry key="Show.Git.Branches" value="false" />
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -396,119 +329,38 @@
     <MESSAGE value="#6 renamed server CI build" />
     <MESSAGE value="#6 resolving issue with allocator project." />
     <MESSAGE value="#6 explicitly removed sleep and closed node." />
-    <MESSAGE value="#7 Creating murmur test app." />
-    <MESSAGE value="#7 Adding in sample config." />
-    <MESSAGE value="#7 Adding in more murmur detail" />
-    <option name="LAST_COMMIT_MESSAGE" value="#7 Adding in more murmur detail" />
+    <MESSAGE value="#9 Added assembly build" />
+    <option name="LAST_COMMIT_MESSAGE" value="#9 Added assembly build" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="768" y="285" key="#Project_Structure" timestamp="1592559334117">
-      <screen x="0" y="23" width="2560" height="1361" />
+    <state x="759" y="287" key="#Project_Structure" timestamp="1600772193461">
+      <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="768" y="285" key="#Project_Structure/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592559334117" />
-    <state x="1018" y="465" key="#com.intellij.codeInsight.editorActions.RestoreReferencesDialog" timestamp="1592578423642">
-      <screen x="0" y="23" width="2560" height="1361" />
+    <state x="759" y="287" key="#Project_Structure/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600772193461" />
+    <state width="2500" height="437" key="GridCell.Tab.0.bottom" timestamp="1600784332492">
+      <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="1018" y="465" key="#com.intellij.codeInsight.editorActions.RestoreReferencesDialog/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592578423642" />
-    <state x="744" y="365" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1592564479783">
-      <screen x="0" y="23" width="2560" height="1361" />
+    <state width="2500" height="437" key="GridCell.Tab.0.bottom/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600784332492" />
+    <state width="2500" height="437" key="GridCell.Tab.0.center" timestamp="1600784332491">
+      <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="744" y="365" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592564479783" />
-    <state x="959" y="512" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1592569812909">
-      <screen x="0" y="23" width="2560" height="1361" />
+    <state width="2500" height="437" key="GridCell.Tab.0.center/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600784332491" />
+    <state width="2500" height="437" key="GridCell.Tab.0.left" timestamp="1600784332491">
+      <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="959" y="512" key="#com.intellij.fileTypes.FileTypeChooser/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592569812909" />
-    <state x="1093" y="417" key="#com.intellij.ide.util.MemberChooser" timestamp="1592578839830">
-      <screen x="0" y="23" width="2560" height="1361" />
+    <state width="2500" height="437" key="GridCell.Tab.0.left/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600784332491" />
+    <state width="2500" height="437" key="GridCell.Tab.0.right" timestamp="1600784332492">
+      <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="1093" y="417" key="#com.intellij.ide.util.MemberChooser/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592578839830" />
-    <state x="968" y="447" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1591969543277">
-      <screen x="0" y="23" width="2560" height="1361" />
+    <state width="2500" height="437" key="GridCell.Tab.0.right/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600784332492" />
+    <state x="100" y="128" width="2342" height="1155" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1600777091185">
+      <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="968" y="447" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1591969543277" />
-    <state x="973" y="572" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1592568440598">
-      <screen x="0" y="23" width="2560" height="1361" />
+    <state x="100" y="128" width="2342" height="1155" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600777091185" />
+    <state x="978" y="338" width="586" height="735" key="find.popup" timestamp="1600778014863">
+      <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="973" y="572" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592568440598" />
-    <state x="838" y="279" key="CommitChangelistDialog2" timestamp="1594285098471">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state x="838" y="279" key="CommitChangelistDialog2/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594285098471" />
-    <state width="2518" height="555" key="GridCell.Tab.0.bottom" timestamp="1594304808880">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state width="2518" height="555" key="GridCell.Tab.0.bottom/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594304808880" />
-    <state width="2518" height="555" key="GridCell.Tab.0.center" timestamp="1594304808879">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state width="2518" height="555" key="GridCell.Tab.0.center/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594304808879" />
-    <state width="2518" height="555" key="GridCell.Tab.0.left" timestamp="1594304808879">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state width="2518" height="555" key="GridCell.Tab.0.left/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594304808879" />
-    <state width="2518" height="555" key="GridCell.Tab.0.right" timestamp="1594304808880">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state width="2518" height="555" key="GridCell.Tab.0.right/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594304808880" />
-    <state width="2518" height="548" key="GridCell.Tab.1.bottom" timestamp="1592647925262">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state width="2518" height="548" key="GridCell.Tab.1.bottom/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592647925262" />
-    <state width="2518" height="548" key="GridCell.Tab.1.center" timestamp="1592647925261">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state width="2518" height="548" key="GridCell.Tab.1.center/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592647925261" />
-    <state width="2518" height="548" key="GridCell.Tab.1.left" timestamp="1592647925261">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state width="2518" height="548" key="GridCell.Tab.1.left/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592647925261" />
-    <state width="2518" height="548" key="GridCell.Tab.1.right" timestamp="1592647925261">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state width="2518" height="548" key="GridCell.Tab.1.right/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592647925261" />
-    <state x="880" y="443" key="Vcs.Push.Dialog.v2" timestamp="1594285111337">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state x="880" y="443" key="Vcs.Push.Dialog.v2/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1594285111337" />
-    <state x="971" y="460" width="617" height="486" key="find.popup" timestamp="1588846178764">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state x="971" y="460" width="617" height="486" key="find.popup/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1588846178764" />
-    <state x="945" y="334" width="670" height="676" key="search.everywhere.popup" timestamp="1592573086243">
-      <screen x="0" y="23" width="2560" height="1361" />
-    </state>
-    <state x="945" y="334" width="670" height="676" key="search.everywhere.popup/0.23.2560.1361/2560.23.2560.1417@0.23.2560.1361" timestamp="1592573086243" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/consensus/ZooKeeperPathCacheTest.scala</url>
-          <line>110</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/fake/FakeFileSystemService.scala</url>
-          <line>26</line>
-          <option name="timeStamp" value="14" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/FileSystemServiceTest.scala</url>
-          <line>65</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/net/http2/Http2Server.scala</url>
-          <line>44</line>
-          <option name="timeStamp" value="19" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/net/http2/Http2ClientTest.scala</url>
-          <line>24</line>
-          <option name="timeStamp" value="20" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <state x="978" y="338" width="586" height="735" key="find.popup/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600778014863" />
   </component>
   <component name="atlassian-ide-plugin-workspace-issues">
     <option name="view">
