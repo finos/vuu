@@ -23,8 +23,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#9 Added assembly build">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zk/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/zk/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,6 +64,7 @@
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="1" />
   </component>
+  <component name="ProjectId" id="1htxDLRtsOzvMvfhATVf2saEMlU" />
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
   </component>
@@ -296,7 +297,14 @@
       <option name="project" value="LOCAL" />
       <updated>1600788144682</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="#9 Added assembly build">
+      <created>1600789768888</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1600789768888</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -350,30 +358,30 @@
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
     <state x="100" y="128" width="2342" height="1155" key="DiffContextDialog/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600786195672" />
-    <state width="2500" height="335" key="GridCell.Tab.0.bottom" timestamp="1600789611091">
+    <state width="2500" height="409" key="GridCell.Tab.0.bottom" timestamp="1600848612925">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state width="2500" height="335" key="GridCell.Tab.0.bottom/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789611091" />
-    <state width="2500" height="335" key="GridCell.Tab.0.center" timestamp="1600789611090">
+    <state width="2500" height="409" key="GridCell.Tab.0.bottom/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600848612925" />
+    <state width="2500" height="409" key="GridCell.Tab.0.center" timestamp="1600848612924">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state width="2500" height="335" key="GridCell.Tab.0.center/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789611090" />
-    <state width="2500" height="335" key="GridCell.Tab.0.left" timestamp="1600789611090">
+    <state width="2500" height="409" key="GridCell.Tab.0.center/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600848612924" />
+    <state width="2500" height="409" key="GridCell.Tab.0.left" timestamp="1600848612924">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state width="2500" height="335" key="GridCell.Tab.0.left/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789611090" />
-    <state width="2500" height="335" key="GridCell.Tab.0.right" timestamp="1600789611090">
+    <state width="2500" height="409" key="GridCell.Tab.0.left/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600848612924" />
+    <state width="2500" height="409" key="GridCell.Tab.0.right" timestamp="1600848612924">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state width="2500" height="335" key="GridCell.Tab.0.right/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789611090" />
+    <state width="2500" height="409" key="GridCell.Tab.0.right/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600848612924" />
     <state x="1136" y="415" key="RollbackChangesDialog" timestamp="1600786107958">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
     <state x="1136" y="415" key="RollbackChangesDialog/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600786107958" />
-    <state x="871" y="432" key="Vcs.Push.Dialog.v2" timestamp="1600788158749">
+    <state x="871" y="432" key="Vcs.Push.Dialog.v2" timestamp="1600789770648">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
-    <state x="871" y="432" key="Vcs.Push.Dialog.v2/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600788158749" />
+    <state x="871" y="432" key="Vcs.Push.Dialog.v2/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600789770648" />
     <state x="100" y="128" width="2342" height="1155" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1600777091185">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
@@ -386,6 +394,10 @@
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
     <state x="911" y="328" key="new project wizard/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600784999788" />
+    <state x="936" y="332" width="670" height="675" key="run.anything.popup" timestamp="1600790433071">
+      <screen x="0" y="23" width="2560" height="1360" />
+    </state>
+    <state x="936" y="332" width="670" height="675" key="run.anything.popup/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1600790433071" />
   </component>
   <component name="atlassian-ide-plugin-workspace-issues">
     <option name="view">
