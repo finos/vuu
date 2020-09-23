@@ -273,7 +273,7 @@
                     <execution>
                         <goals>
                             <goal>compile</goal>
-                            <!--goal>testCompile</goal-->
+                            <goal>testCompile</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -325,7 +325,7 @@
               <artifactId>maven-surefire-plugin</artifactId>
               <version>2.7</version>
               <configuration>
-                <skipTests>true</skipTests>
+                <!--skipTests>true</skipTests-->
               </configuration>
             </plugin>
             <!-- enable scalatest -->

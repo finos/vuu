@@ -341,7 +341,7 @@
               <artifactId>maven-surefire-plugin</artifactId>
               <version>2.7</version>
               <configuration>
-                <skipTests>true</skipTests>
+                <!--skipTests>false</skipTests-->
               </configuration>
             </plugin>
             <!-- enable scalatest -->
@@ -350,7 +350,7 @@
               <artifactId>scalatest-maven-plugin</artifactId>
               <version>1.0</version>
               <configuration>
-                <skipTests>true</skipTests>
+                <!--skipTests>true</skipTests-->
                 <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                 <junitxml>.</junitxml>
                 <filereports>test-reports.txt</filereports>
