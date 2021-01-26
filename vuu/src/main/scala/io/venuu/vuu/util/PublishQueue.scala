@@ -7,7 +7,7 @@
  */
 package io.venuu.vuu.util
 
-import io.venuu.toolbox.{BetterCoalescingQueue, CoalescingQueueNaiveImpl}
+import io.venuu.toolbox.CoalescingQueueNaiveImpl
 import io.venuu.vuu.viewport.{ViewPortUpdate, ViewPortUpdateType}
 
 trait PublishQueue[T] {

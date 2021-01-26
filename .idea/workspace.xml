@@ -8,14 +8,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#9 Added assembly build">
-      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/BetterCoalescingQueue.scala" afterDir="false" />
+    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#9 Added fix to not send stale rows iv view port has moved on.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/CoalescingQueue.scala" beforeDir="false" afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/CoalescingQueueNaiveImpl.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/ViewServer.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/ViewServer.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ClientConnectionCreator.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ClientConnectionCreator.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/util/PublishQueue.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/util/PublishQueue.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/assembly/assembly.xml" beforeDir="false" afterPath="$PROJECT_DIR$/zk/src/assembly/assembly.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -305,7 +299,14 @@
       <option name="project" value="LOCAL" />
       <updated>1600852360026</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="#9 Added fix to not send stale rows iv view port has moved on.">
+      <created>1611670550711</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1611670550711</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -350,7 +351,8 @@
     <MESSAGE value="#9 Added assembly build" />
     <MESSAGE value="#9 Added support for SCP to dev host" />
     <MESSAGE value="#9 Enabled tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="#9 Enabled tests" />
+    <MESSAGE value="#9 Added fix to not send stale rows iv view port has moved on." />
+    <option name="LAST_COMMIT_MESSAGE" value="#9 Added fix to not send stale rows iv view port has moved on." />
   </component>
   <component name="WindowStateProjectService">
     <state x="735" y="360" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1611062900947">
@@ -361,42 +363,54 @@
       <screen x="0" y="25" width="2560" height="1352" />
     </state>
     <state x="1092" y="398" key="#com.intellij.ide.util.MemberChooser/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611590228157" />
-    <state width="2500" height="411" key="GridCell.Tab.0.bottom" timestamp="1611645955510">
-      <screen x="0" y="25" width="2560" height="1352" />
+    <state width="2500" height="411" key="GridCell.Tab.0.bottom" timestamp="1611670465624">
+      <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state width="2500" height="411" key="GridCell.Tab.0.bottom/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955510" />
     <state width="2500" height="606" key="GridCell.Tab.0.bottom/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336552" />
-    <state width="2500" height="411" key="GridCell.Tab.0.center" timestamp="1611645955509">
-      <screen x="0" y="25" width="2560" height="1352" />
+    <state width="2500" height="411" key="GridCell.Tab.0.bottom/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465624" />
+    <state width="2500" height="411" key="GridCell.Tab.0.center" timestamp="1611670465622">
+      <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state width="2500" height="411" key="GridCell.Tab.0.center/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955509" />
     <state width="2500" height="606" key="GridCell.Tab.0.center/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336551" />
-    <state width="2500" height="411" key="GridCell.Tab.0.left" timestamp="1611645955508">
-      <screen x="0" y="25" width="2560" height="1352" />
+    <state width="2500" height="411" key="GridCell.Tab.0.center/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465622" />
+    <state width="2500" height="411" key="GridCell.Tab.0.left" timestamp="1611670465622">
+      <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state width="2500" height="411" key="GridCell.Tab.0.left/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955508" />
     <state width="2500" height="606" key="GridCell.Tab.0.left/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336551" />
-    <state width="2500" height="411" key="GridCell.Tab.0.right" timestamp="1611645955509">
-      <screen x="0" y="25" width="2560" height="1352" />
+    <state width="2500" height="411" key="GridCell.Tab.0.left/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465622" />
+    <state width="2500" height="411" key="GridCell.Tab.0.right" timestamp="1611670465623">
+      <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state width="2500" height="411" key="GridCell.Tab.0.right/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955509" />
     <state width="2500" height="606" key="GridCell.Tab.0.right/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336552" />
-    <state width="2500" height="411" key="GridCell.Tab.1.bottom" timestamp="1611645955512">
-      <screen x="0" y="25" width="2560" height="1352" />
+    <state width="2500" height="411" key="GridCell.Tab.0.right/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465623" />
+    <state width="2500" height="411" key="GridCell.Tab.1.bottom" timestamp="1611670465626">
+      <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state width="2500" height="411" key="GridCell.Tab.1.bottom/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955512" />
-    <state width="2500" height="411" key="GridCell.Tab.1.center" timestamp="1611645955511">
-      <screen x="0" y="25" width="2560" height="1352" />
+    <state width="2500" height="411" key="GridCell.Tab.1.bottom/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465626" />
+    <state width="2500" height="411" key="GridCell.Tab.1.center" timestamp="1611670465625">
+      <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state width="2500" height="411" key="GridCell.Tab.1.center/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955511" />
-    <state width="2500" height="411" key="GridCell.Tab.1.left" timestamp="1611645955510">
-      <screen x="0" y="25" width="2560" height="1352" />
+    <state width="2500" height="411" key="GridCell.Tab.1.center/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465625" />
+    <state width="2500" height="411" key="GridCell.Tab.1.left" timestamp="1611670465624">
+      <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state width="2500" height="411" key="GridCell.Tab.1.left/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955510" />
-    <state width="2500" height="411" key="GridCell.Tab.1.right" timestamp="1611645955512">
-      <screen x="0" y="25" width="2560" height="1352" />
+    <state width="2500" height="411" key="GridCell.Tab.1.left/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465624" />
+    <state width="2500" height="411" key="GridCell.Tab.1.right" timestamp="1611670465625">
+      <screen x="0" y="25" width="2560" height="1415" />
     </state>
     <state width="2500" height="411" key="GridCell.Tab.1.right/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955512" />
+    <state width="2500" height="411" key="GridCell.Tab.1.right/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465625" />
+    <state x="879" y="438" key="Vcs.Push.Dialog.v2" timestamp="1611670559573">
+      <screen x="0" y="25" width="2560" height="1415" />
+    </state>
+    <state x="879" y="438" key="Vcs.Push.Dialog.v2/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670559573" />
     <state x="911" y="328" key="new project wizard" timestamp="1603380289166">
       <screen x="0" y="23" width="2560" height="1360" />
     </state>
@@ -405,17 +419,6 @@
       <screen x="0" y="25" width="2560" height="1352" />
     </state>
     <state x="944" y="334" width="670" height="676" key="search.everywhere.popup/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611588783160" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/BetterCoalescingQueue.scala</url>
-          <line>14</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
   <component name="atlassian-ide-plugin-workspace-issues">
     <option name="view">
