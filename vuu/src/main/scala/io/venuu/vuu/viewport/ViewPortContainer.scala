@@ -15,7 +15,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{JmxAble, MetricsProvider}
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.thread.RunInThread
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTable
 import io.venuu.vuu.core.sort._
@@ -41,7 +41,7 @@ trait ViewPortContainerMBean {
   def closeGroupByKey(vpId: String, treeKey: String): String
 }
 
-class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: TimeProvider, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
+class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
 
   private val groupByhistogram = metrics.histogram("org.whitebox.vs.thread.groupby.cycleTime")
   private val viewPorthistogram = metrics.histogram("org.whitebox.vs.thread.viewport.cycleTime")

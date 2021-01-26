@@ -1,7 +1,7 @@
 package io.venuu.toolbox.collection
 
 import io.venuu.toolbox.ImmutableArray
-import io.venuu.toolbox.time.{DefaultTimeProvider, TimeIt, TimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, TimeIt, Clock}
 import org.scalatest.{FeatureSpec, Matchers}
 
 /**
@@ -9,7 +9,7 @@ import org.scalatest.{FeatureSpec, Matchers}
   */
 class ImmutableArrayTest extends FeatureSpec with Matchers {
 
-  implicit val time: TimeProvider = new DefaultTimeProvider
+  implicit val time: Clock = new DefaultClock
 
   feature("check immutable array impl"){
 

@@ -8,11 +8,11 @@
 package io.venuu.vuu.provider.simulation
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData}
 import io.venuu.vuu.provider.Provider
 
-class SimulatedInstrumentProvider(instruments: Array[Array[String]], table: DataTable)(implicit timeProvider: TimeProvider) extends Provider with StrictLogging {
+class SimulatedInstrumentProvider(instruments: Array[Array[String]], table: DataTable)(implicit timeProvider: Clock) extends Provider with StrictLogging {
 
   override def subscribe(key: String): Unit = ???
 

@@ -12,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.ClientHelperFns
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport.ViewPortRange
@@ -25,7 +25,7 @@ case class HeadlessContext(token: String = "", user: String = "", sessionId: Str
 
 case class HeadlessClient(vsClient: ViewServerClient,
                           private val ctx: HeadlessContext = new HeadlessContext(),
-                          private val sinkData: ViewPortSinks = new ViewPortSinks)(implicit lifecycleContainer: LifecycleContainer, time: TimeProvider) extends DefaultLifecycleEnabled with StrictLogging {
+                          private val sinkData: ViewPortSinks = new ViewPortSinks)(implicit lifecycleContainer: LifecycleContainer, time: Clock) extends DefaultLifecycleEnabled with StrictLogging {
 
   import io.venuu.vuu.client.ClientHelperFns._
 

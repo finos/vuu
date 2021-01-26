@@ -4,14 +4,15 @@ import com.codahale.metrics.Meter
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.LifeCycleRunner
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import io.venuu.vuu.provider.Provider
 
-class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(implicit timeProvider: TimeProvider, lifecycleContainer: LifecycleContainer,
-                                              metrics: MetricsProvider ) extends Provider {
+class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
+                                                                              metrics: MetricsProvider ) extends Provider {
 
   private val runner = new LifeCycleRunner("metricsTableProvider", () => runOnce )
+  
   lifecycleContainer(this).dependsOn(runner)
 
   override def subscribe(key: String): Unit = {}
@@ -39,9 +40,9 @@ class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(im
 
       val upMap = Map("table" -> tableName, "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
 
-      table.processUpdate(tableName, RowWithData(tableName, upMap), timeProvider.now())
+      table.processUpdate(tableName, RowWithData(tableName, upMap), clock.now())
 
-      Thread.sleep(500);
+      clock.sleep(500)
     })
 
   }

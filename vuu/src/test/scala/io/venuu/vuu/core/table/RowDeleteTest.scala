@@ -9,7 +9,7 @@ package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultTimeProvider, TestFriendlyTimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, TestFriendlyClock}
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
@@ -26,7 +26,7 @@ class RowDeleteTest extends FeatureSpec with Matchers with OneInstancePerTest wi
 
     scenario("check a delete from a simple data table"){
 
-      implicit val timeProvider = new DefaultTimeProvider
+      implicit val timeProvider = new DefaultClock
 
       implicit val lifecycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl
@@ -91,7 +91,7 @@ class RowDeleteTest extends FeatureSpec with Matchers with OneInstancePerTest wi
 
     scenario("check we correct delete from a primary key join table"){
 
-      implicit val timeProvider = new TestFriendlyTimeProvider(1000000)
+      implicit val timeProvider = new TestFriendlyClock(1000000)
       implicit val lifecycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl
 
@@ -165,7 +165,7 @@ class RowDeleteTest extends FeatureSpec with Matchers with OneInstancePerTest wi
 
     scenario("Create a groupby ontop of a join table, delete all rows from the source, add another set, and check we subscribe to updates"){
 
-      implicit val timeProvider = new TestFriendlyTimeProvider(1000000)
+      implicit val timeProvider = new TestFriendlyClock(1000000)
       implicit val lifecycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl
 

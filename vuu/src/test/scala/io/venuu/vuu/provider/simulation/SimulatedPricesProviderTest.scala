@@ -3,7 +3,7 @@ package io.venuu.vuu.provider.simulation
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.text.AsciiUtil
-import io.venuu.toolbox.time.TestFriendlyTimeProvider
+import io.venuu.toolbox.time.TestFriendlyClock
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.table.{Columns, SimpleDataTable}
 import io.venuu.vuu.provider.TestFriendlyJoinTableProvider
@@ -40,7 +40,7 @@ class SimulatedPricesProviderTest extends FeatureSpec with Matchers {
 
     scenario("check basic operation works"){
 
-      implicit val timeProvider = new TestFriendlyTimeProvider(TEST_TIME)
+      implicit val timeProvider = new TestFriendlyClock(TEST_TIME)
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
       implicit val lifecycleContainer = new LifecycleContainer
 

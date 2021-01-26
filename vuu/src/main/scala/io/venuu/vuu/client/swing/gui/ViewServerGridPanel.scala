@@ -12,7 +12,7 @@ import java.awt.{Color, Dimension, Point}
 import java.util.UUID
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.gui.components.FilterBarPanel
 import io.venuu.vuu.client.swing.gui.components.renderer.{SortedColumnRenderer, TreeGridCellRenderer}
 import io.venuu.vuu.client.swing.messages._
@@ -37,7 +37,7 @@ case class GridPanelViewPortContext(requestId: String, vpId: String, table: Stri
                                     sortBy: SortSpec = SortSpec(List()), filter: String = "", groupBy: Array[String] = Array(),
                                     currentColumn: Option[TableColumn] = None)
 
-class ViewServerGridPanel(requestId: String, tableName: String, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: TimeProvider) extends BorderPanel with StrictLogging {
+class ViewServerGridPanel(requestId: String, tableName: String, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends BorderPanel with StrictLogging {
 
   //private var vpId: String = ""
 

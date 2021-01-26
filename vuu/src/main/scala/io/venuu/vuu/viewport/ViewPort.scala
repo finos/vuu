@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.typesafe.scalalogging.LazyLogging
 import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.sort.FilterAndSort
 import io.venuu.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
@@ -78,7 +78,7 @@ case class ViewPortImpl(id: String,
                         highPriorityQ: PublishQueue[ViewPortUpdate],
                         structuralFields: AtomicReference[ViewPortStructuralFields],
                         range: AtomicReference[ViewPortRange]
-                       )(implicit timeProvider: TimeProvider) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging{
+                       )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging{
 
   override def table: RowSource = structuralFields.get().table
 

@@ -3,7 +3,7 @@ package io.venuu.vuu.core.module.core
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultTimeProvider, TimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, Clock}
 import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
 import io.venuu.vuu.net.ws.WebSocketClient
@@ -21,7 +21,7 @@ class CoreModuleTest extends FeatureSpec with Matchers with StrictLogging with G
   def setupServer: (String, String, ViewServerClient, LifecycleContainer) = {
 
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
-    implicit val timeProvider: TimeProvider = new DefaultTimeProvider
+    implicit val timeProvider: Clock = new DefaultClock
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
     lifecycle.autoShutdownHook()

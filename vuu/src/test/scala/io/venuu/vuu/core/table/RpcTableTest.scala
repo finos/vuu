@@ -9,7 +9,7 @@ package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.DefaultTimeProvider
+import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
@@ -27,7 +27,7 @@ class RpcTableTest extends FeatureSpec with Matchers with OneInstancePerTest {
 
       //println(sessionTable.isInstanceOf[SessionTable])
 
-      implicit val time = new DefaultTimeProvider
+      implicit val time = new DefaultClock
       implicit val lifecycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl
 

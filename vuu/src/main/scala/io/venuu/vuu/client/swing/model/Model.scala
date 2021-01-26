@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.logging.LogAtFrequency
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.gui.SwingThread
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
@@ -148,7 +148,7 @@ object ViewPortModel{
   final val LoadingString = "-"
 }
 
-class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit val eventBus: EventBus[ClientMessage], timeProvider: TimeProvider) extends AbstractTableModel with StrictLogging {
+class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends AbstractTableModel with StrictLogging {
 
   import ViewPortModel._
 

@@ -9,7 +9,7 @@ package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultTimeProvider, TimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, Clock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
@@ -22,7 +22,7 @@ import org.scalatest.{FeatureSpec, Matchers}
 
 class JoinTableTest extends FeatureSpec with Matchers {
 
-  implicit val timeProvider: TimeProvider = new DefaultTimeProvider
+  implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics = new MetricsProviderImpl
 
   case class NamedKeyObserver(name: String) extends KeyObserver[RowKeyUpdate]{

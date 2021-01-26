@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.logging.LogAtFrequency
 import io.venuu.toolbox.thread.LifeCycleRunner
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.net._
@@ -21,7 +21,7 @@ import io.venuu.vuu.viewport.ViewPortRange
 
 case class UserPrincipal(user: String, token: String, sessionId: String)
 
-class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: LifecycleContainer, timeProvider: TimeProvider, vsClient: ViewServerClient) extends StrictLogging {
+class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: LifecycleContainer, timeProvider: Clock, vsClient: ViewServerClient) extends StrictLogging {
 
   private val dequeueThread = new LifeCycleRunner("clientDequeThread", () => dequeue(), minCycleTime = 100 )
 

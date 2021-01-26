@@ -170,7 +170,7 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primary
 }
 
 
-class SimpleDataTable(val tableDef: TableDef, joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate]
+class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate]
 {
 
   def plusName(s: String) = tableDef.name + "." + s

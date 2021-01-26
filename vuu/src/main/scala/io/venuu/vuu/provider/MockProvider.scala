@@ -11,10 +11,10 @@ import java.util.concurrent.ConcurrentHashMap
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData}
 
-class MockProvider(table: DataTable)(implicit timeProvider: TimeProvider, lifecycle: LifecycleContainer) extends Provider with StrictLogging{
+class MockProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging{
 
   lifecycle(this)
 

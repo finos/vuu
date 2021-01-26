@@ -9,7 +9,7 @@ package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultTimeProvider, TimeProvider}
+import io.venuu.toolbox.time.{DefaultClock, Clock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import org.joda.time.LocalDateTime
@@ -21,7 +21,7 @@ class MultiJoinTableTest extends FeatureSpec with Matchers with OneInstancePerTe
 
     scenario("simple multi table join"){
 
-      implicit val timeProvider: TimeProvider = new DefaultTimeProvider
+      implicit val timeProvider: Clock = new DefaultClock
 
       implicit val lifecycle = new LifecycleContainer
 

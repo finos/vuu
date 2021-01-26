@@ -7,7 +7,7 @@
  */
 package io.venuu.vuu.util
 
-import io.venuu.toolbox.CoalescingQueue
+import io.venuu.toolbox.CoalescingQueueNaiveImpl
 import io.venuu.vuu.viewport.{ViewPortUpdate, ViewPortUpdateType}
 
 trait PublishQueue[T] {
@@ -27,7 +27,7 @@ class OutboundRowPublishQueue extends PublishQueue[ViewPortUpdate]{
 
   private def toKeyFunc(vpu: ViewPortUpdate) = new CollKey(vpu.vp.id, vpu.vpUpdate, vpu.key.key)
 
-  private val coallescingQ = new CoalescingQueue[ViewPortUpdate, CollKey](toKeyFunc, mergeFn)
+  private val coallescingQ = new CoalescingQueueNaiveImpl[ViewPortUpdate, CollKey](toKeyFunc, mergeFn)
 
   override def push(entry: ViewPortUpdate): Unit = coallescingQ.push(entry)
 

@@ -11,14 +11,14 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.NamedThreadFactory
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 
 import scala.util.control.NonFatal
 
 /**
   * Runner is just a wrapper around thread currently, which some nicer error handling.
   */
-class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce: Boolean = false)(implicit timeProvider: TimeProvider) extends StrictLogging {
+class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce: Boolean = false)(implicit timeProvider: Clock) extends StrictLogging {
 
   private val thread = new NamedThreadFactory(name).newThread(getRunnable)
 

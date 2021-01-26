@@ -5,7 +5,7 @@ package io.venuu.toolbox.time
   */
 object TimeIt {
 
-  def timeIt[R](block: => R)(implicit timeProvider: TimeProvider): (Long, R) = {
+  def timeIt[R](block: => R)(implicit timeProvider: Clock): (Long, R) = {
 
     val start = timeProvider.now()
 

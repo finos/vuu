@@ -1,7 +1,7 @@
 package io.venuu.vuu.core.module
 
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.table.Columns
 import io.venuu.vuu.net.rpc.RpcHandler
@@ -26,7 +26,7 @@ class MyCustomRpcHandler extends DefaultLifecycleEnabled with RpcHandler with An
   */
 object TestModule{
 
-  def apply()(implicit time: TimeProvider, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit time: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
     ModuleFactory.withNamespace("TEST")
         .addTable(
           TableDef(

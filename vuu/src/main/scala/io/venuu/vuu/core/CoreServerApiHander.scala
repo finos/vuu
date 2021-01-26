@@ -8,7 +8,7 @@
 package io.venuu.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataType, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
 //class CoreServerApiHander(viewPortContainer: ViewPortContainer, tableContainer: TableContainer, providers: ProviderContainer)(implicit timeProvider: TimeProvider) extends ServerApi with StrictLogging{
 class CoreServerApiHander(viewPortContainer: ViewPortContainer,
                     tableContainer: TableContainer,
-                    providers: ProviderContainer)(implicit timeProvider: TimeProvider) extends ServerApi with StrictLogging{
+                    providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging{
 
   def vsMsg(body: MessageBody)(ctx: RequestContext): Option[JsonViewServerMessage] = {
     Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, body))

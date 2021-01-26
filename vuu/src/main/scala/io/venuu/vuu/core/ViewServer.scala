@@ -4,9 +4,9 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import io.venuu.toolbox.thread.LifeCycleRunner
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
-import io.venuu.vuu.core.module.{ModuleContainer, RealizedViewServerModule, ViewServerModule}
+import io.venuu.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, ViewServerModule}
 import io.venuu.vuu.core.table.{DataTable, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
@@ -25,7 +25,7 @@ case class ViewServerConfig(httpPort: Int, httpsPort: Int, wsPort: Int, webRoot:
 /**
  * View Server
  */
-class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: TimeProvider, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging{
+class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging{
 
   val serializer = JsonVsSerializer
 
@@ -61,13 +61,13 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
 
   val httpServer = new Http2Server(config.httpPort, config.httpsPort, config.webRoot)
 
-  val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce() )
+  val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
 
   val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce() )
   lifecycle(handlerRunner).dependsOn(joinProviderRunner)
 
-  val viewPortRunner = new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce() )
+  val viewPortRunner = new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
   lifecycle(viewPortRunner).dependsOn(server)
 
   val groupByRunner = new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce() )
@@ -103,9 +103,10 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
       override def tableDefs: List[TableDef] = module.tableDefs
       override def serializationMixin: AnyRef = module.serializationMixin
       override def rpcHandlerUnrealized: ViewServer => RpcHandler = module.rpcHandlerUnrealized
-      override def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: TimeProvider, life: LifecycleContainer): Provider = {
+      override def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }
+      override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
     }
 
     moduleContainer.register(realized)

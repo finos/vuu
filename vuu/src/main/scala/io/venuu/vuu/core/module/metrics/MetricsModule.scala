@@ -2,7 +2,7 @@ package io.venuu.vuu.core.module.metrics
 
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.Columns
@@ -11,7 +11,7 @@ object MetricsModule extends DefaultModule {
 
   final val NAME = "METRICS"
 
-  def apply()(implicit time: TimeProvider, lifecycle: LifecycleContainer, metrics: MetricsProvider): ViewServerModule = {
+  def apply()(implicit time: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider): ViewServerModule = {
 
     ModuleFactory.withNamespace(NAME)
       .addTable(

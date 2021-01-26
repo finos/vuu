@@ -1,12 +1,15 @@
 package io.venuu.vuu.core.module
 
+import java.nio.file.Path
+
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{Columns, DataTable}
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
 import io.venuu.vuu.core.ViewServer
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.provider.Provider
+
 
 case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: List[(TableDef, (DataTable, ViewServer) => Provider)], joinDefs: List[TableDefs => JoinTableDef]){
 
@@ -31,18 +34,29 @@ case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: Lis
   }
 }
 
-case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[ViewServer => RpcHandler], vsName: String){
+case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[ViewServer => RpcHandler], vsName: String, staticServedResources: List[StaticServedResource]){
 
   def addTable(tableDef: TableDef, func: (DataTable, ViewServer) => Provider): ModuleFactoryNode ={
-    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName)
+    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources)
   }
 
   def addJoinTable(func: TableDefs => JoinTableDef): ModuleFactoryNode ={
-    ModuleFactoryNode(tableDefs.addJoin(func), rpc, vsName)
+    ModuleFactoryNode(tableDefs.addJoin(func), rpc, vsName, staticServedResources)
   }
 
   def addRpcHandler(rpcFunc: ViewServer => RpcHandler): ModuleFactoryNode ={
-    ModuleFactoryNode(tableDefs, rpc ++ List(rpcFunc), vsName)
+    ModuleFactoryNode(tableDefs, rpc ++ List(rpcFunc), vsName, staticServedResources)
+  }
+
+  /**
+   * Add a statically served path to the view server.
+   *
+   * @param uriDirectory example /foo/bar/ (which will end up being served as https://your-server/<MODULE_NAME>/foo/bar
+   * @param path path to the directory on the machine you'd like to serve
+   * @param canBrowse can users browse the contents of the directory (listings)
+   */
+  def addStaticResource(uriDirectory: String, path: Path, canBrowse: Boolean): ModuleFactoryNode ={
+    ModuleFactoryNode(tableDefs, rpc, vsName, staticServedResources ++ List(StaticServedResource(uriDirectory, path, canBrowse)))
   }
 
   def asModule(): ViewServerModule = {
@@ -70,9 +84,10 @@ case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[ViewSer
         rpc.head
       }
 
-      override def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: TimeProvider, lifecycleContainer: LifecycleContainer): Provider = {
+      override def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = {
         baseTables.find({case(td, func) => td.name == table.name }).get._2(table, viewserver)
       }
+      override def staticFileResources(): List[StaticServedResource] = staticServedResources
     }
 
   }
@@ -83,7 +98,7 @@ object ModuleFactory {
   implicit def stringToString(s: String) = new FieldDefString(s)
 
   def withNamespace(ns: String): ModuleFactoryNode ={
-    return ModuleFactoryNode(TableDefs(List(), List(), List()), List(), ns);
+    return ModuleFactoryNode(TableDefs(List(), List(), List()), List(), ns, List());
   }
 
 }

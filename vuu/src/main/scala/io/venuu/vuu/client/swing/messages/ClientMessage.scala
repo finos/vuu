@@ -9,12 +9,12 @@ package io.venuu.vuu.client.swing.messages
 
 import java.util.UUID
 
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.client.UserPrincipal
 import io.venuu.vuu.net.{FilterSpec, SortSpec}
 
 object RequestId{
-  def oneNew()(implicit timeProvider: TimeProvider) = {
+  def oneNew()(implicit timeProvider: Clock) = {
     "REQ-" + UUID.randomUUID().toString
   }
 }

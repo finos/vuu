@@ -8,7 +8,7 @@
 package io.venuu.vuu.client.swing.gui
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.time.TimeProvider
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.components.MutableComboBox
 import io.venuu.vuu.client.swing.messages._
@@ -18,7 +18,7 @@ import scala.swing.BorderPanel.Position._
 import scala.swing._
 import scala.swing.event.{ButtonClicked, SelectionChanged}
 
-class RpcDataEntry(name: String)(implicit val eventBus: EventBus[ClientMessage], timeProvider: TimeProvider) extends Dialog with StrictLogging{
+class RpcDataEntry(name: String)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Dialog with StrictLogging{
 
   val tablesCombo = new MutableComboBox[String]()
   //val columnsCombo = new MutableComboBox[String]()

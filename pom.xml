@@ -32,7 +32,8 @@
     <modules>
         <module>toolbox</module>
         <module>vuu</module>
-        <module>vuu-example</module>
+        <module>murmur</module>
+        <module>zk</module>
         <!--module>allocation-tools</module-->
     </modules>
 
@@ -106,9 +107,6 @@
             <artifactId>asm</artifactId>
             <version>6.2</version> <!-- Use newer version of ASM -->
         </dependency>
-
-
-
     </dependencies>
 	</plugin>
 

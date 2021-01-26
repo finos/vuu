@@ -13,7 +13,7 @@ class TimeItTest extends FeatureSpec with Matchers {
 
       import TimeIt._
 
-      implicit val timeProvider = new TestFriendlyTimeProvider(100l)
+      implicit val timeProvider = new TestFriendlyClock(100l)
 
       def aFunc(i: Int): Int = i * 2
 

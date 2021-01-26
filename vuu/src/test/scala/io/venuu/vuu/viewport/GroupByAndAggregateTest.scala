@@ -2,7 +2,7 @@ package io.venuu.vuu.viewport
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.DefaultTimeProvider
+import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.core.table.RowWithData
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import io.venuu.vuu.provider.{JoinTableProvider, MockProvider}
@@ -47,7 +47,7 @@ class GroupByAndAggregateTest extends FeatureSpec with Matchers with GivenWhenTh
     scenario("check we can create a simple groupby tree viewport"){
 
       implicit val lifeCycle = new LifecycleContainer
-      implicit val timeProvider = new DefaultTimeProvider
+      implicit val timeProvider = new DefaultClock
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -169,7 +169,7 @@ class GroupByAndAggregateTest extends FeatureSpec with Matchers with GivenWhenTh
   scenario("test filter in groupBy") {
 
     implicit val lifeCycle = new LifecycleContainer
-    implicit val timeProvider = new DefaultTimeProvider
+    implicit val timeProvider = new DefaultClock
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
     val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()

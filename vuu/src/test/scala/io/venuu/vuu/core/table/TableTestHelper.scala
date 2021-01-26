@@ -2,7 +2,7 @@ package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.TestFriendlyTimeProvider
+import io.venuu.toolbox.time.TestFriendlyClock
 import io.venuu.vuu.api._
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.{OutboundRowPublishQueue, PublishQueue}
@@ -35,7 +35,7 @@ object TableTestHelper {
   def createOrderPricesScenario() = {
 
     implicit val lifecycle = new LifecycleContainer
-    implicit val timeProvider = new TestFriendlyTimeProvider(100001l)
+    implicit val timeProvider = new TestFriendlyClock(100001l)
     implicit val metrics = new MetricsProviderImpl
 
     val ordersDef = TableDef(
