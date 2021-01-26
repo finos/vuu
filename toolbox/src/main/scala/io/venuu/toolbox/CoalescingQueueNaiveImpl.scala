@@ -9,7 +9,16 @@ package io.venuu.toolbox
 
 import scala.collection.mutable
 
-class CoalescingQueue[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge: (VALUE,VALUE) => VALUE) {
+trait CoalescingQueue[VALUE <: AnyRef, KEY]{
+  def push(item: VALUE)
+  def isEmpty(): Boolean
+  def popUpTo(i: Int): Seq[VALUE]
+  def pop(): VALUE
+  def popOption(): Option[VALUE]
+  def length: Int
+}
+
+class CoalescingQueueNaiveImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge: (VALUE,VALUE) => VALUE) extends CoalescingQueue[VALUE, KEY] {
 
   private val keysInOrder = new mutable.Queue[KEY]
   private val values = new java.util.HashMap[KEY, VALUE]()

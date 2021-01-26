@@ -61,13 +61,13 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
 
   val httpServer = new Http2Server(config.httpPort, config.httpsPort, config.webRoot)
 
-  val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce() )
+  val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
 
   val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce() )
   lifecycle(handlerRunner).dependsOn(joinProviderRunner)
 
-  val viewPortRunner = new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce() )
+  val viewPortRunner = new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
   lifecycle(viewPortRunner).dependsOn(server)
 
   val groupByRunner = new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce() )

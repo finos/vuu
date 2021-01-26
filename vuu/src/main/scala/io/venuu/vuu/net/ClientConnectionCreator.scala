@@ -116,6 +116,12 @@ class DefaultMessageHandler(val channel: Channel,
       }
 
       case RowUpdateType =>
+
+        //if viewport has changed while we're processing the queue
+        if( ! update.vp.getRange.contains( update.index ) ){
+          return None
+        }
+
         val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns)
 
         if(dataToSend.size > 0 &&  dataToSend(0) == null)
