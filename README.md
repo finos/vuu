@@ -13,7 +13,7 @@
 
 **Running the View Server**
 
-1) Go to the SimulMain.scala, right click and run
+1) Go to the SimulMain.scala, right click and run (add these into JVM args -Xmx10G -Xms5G -XX:UseG1GC)
 2) Go to the SwingClientMain.scala, right click and run
 
 
