@@ -38,6 +38,24 @@ case class ViewPortRange(from: Int, to: Int){
   def contains(i: Int): Boolean = {
     i >= from && i < to
   }
+
+  def subtract(newRange: ViewPortRange): ViewPortRange ={
+        var from = newRange.from
+        var to = newRange.to
+
+        if(newRange.from > this.from && newRange.from < this.to){
+            from = this.to
+            to = newRange.to
+        }
+
+        if(newRange.from < this.from && newRange.to < this.to && newRange.to > this.from){
+            from = newRange.from
+            to   = this.from
+        }
+
+        ViewPortRange(from, to)
+  }
+
 }
 
 case class ViewPortUpdate(vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, ts: Long)
@@ -97,22 +115,22 @@ case class ViewPortImpl(id: String,
     structuralFields.set(newStructuralFields)
 
     if(!onlySortOrFilterChange)
-      sendUpdatesOnChange()
+      sendUpdatesOnChange(range.get())
   }
 
   def setRange(newRange: ViewPortRange): Unit = {
+    val oldRange = range.get()
     range.set(newRange)
-    sendUpdatesOnChange()
+    val diffRange = oldRange.subtract(newRange)
+    sendUpdatesOnChange(diffRange)
   }
 
   //def setColumns(columns: List[Column])
   override def filterSpec: FilterSpec = structuralFields.get().filterSpec
 
-  def sendUpdatesOnChange() = {
+  def sendUpdatesOnChange(currentRange: ViewPortRange) = {
 
     val currentKeys = keys.toArray
-
-    val currentRange = range.get()
 
     val from = currentRange.from
     val to = currentRange.to

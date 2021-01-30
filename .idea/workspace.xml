@@ -8,8 +8,21 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#9 Added fix to not send stale rows iv view port has moved on.">
+    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="jmh-java-benchmark-archetype">
+      <change afterPath="$PROJECT_DIR$/benchmark/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/benchmark/src/test/scala/io/venuu/vuu/benchmark/QueueBenchmark.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/AbstractViewPortTestCase.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/OnlySendDiffRowsViewPortTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/RangeSubtractTest.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/scala_compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/scala_compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/util/table/TableAsserts.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/util/table/TableAsserts.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,7 +38,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="stevec-murmur-example" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -73,7 +86,7 @@
       <recent name="$PROJECT_DIR$/zk/src/assembly" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.SimulMain">
+  <component name="RunManager" selected="ScalaTest.OnlySendDiffRowsViewPortTest.Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -83,6 +96,7 @@
     <configuration name="SimulMain" type="Application" factoryName="Application" temporary="true">
       <option name="MAIN_CLASS_NAME" value="io.venuu.vuu.SimulMain" />
       <module name="vuu (1)" />
+      <option name="VM_PARAMETERS" value="-Xmx10G -Xms5G -XX:UseG1GC" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="io.venuu.vuu.*" />
@@ -113,42 +127,42 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="BuildBigGroupByTest.Feature: check big groupby's Scenario: create big group by and build table" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+    <configuration name="OnlySendDiffRowsViewPortTest.Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
       <module name="vuu (1)" />
       <option name="allowRunningInParallel" value="false" />
       <option name="selectedOptions">
         <set />
       </option>
       <option name="testKind" value="Test name" />
-      <option name="testClassPath" value="io.venuu.vuu.core.groupBy.BuildBigGroupByTest" />
-      <option name="testName" value="Feature: check big groupby's Scenario: create big group by and build table" />
+      <option name="testClassPath" value="io.venuu.vuu.viewport.OnlySendDiffRowsViewPortTest" />
+      <option name="testName" value="Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" />
       <option name="workingDirectory" value="$PROJECT_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="FileSystemServiceTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="murmur" />
+    <configuration name="RangeSubtractTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="vuu (1)" />
       <option name="allowRunningInParallel" value="false" />
       <option name="selectedOptions">
         <set />
       </option>
       <option name="testKind" value="Class" />
-      <option name="testClassPath" value="io.venuu.vuu.murmur.services.FileSystemServiceTest" />
+      <option name="testClassPath" value="io.venuu.vuu.viewport.RangeSubtractTest" />
       <option name="workingDirectory" value="$PROJECT_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="FileSystemServiceTest.Feature: Test a reactive observer for fake file system Scenario: set up a simple observer and poke in a new deploy version" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="murmur" />
+    <configuration name="RangeTest.Feature: Subtract one range from another and get the keys Scenario: Range underlaps" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="vuu (1)" />
       <option name="allowRunningInParallel" value="false" />
       <option name="selectedOptions">
         <set />
       </option>
       <option name="testKind" value="Test name" />
-      <option name="testClassPath" value="io.venuu.vuu.murmur.services.FileSystemServiceTest" />
-      <option name="testName" value="Feature: Test a reactive observer for fake file system Scenario: set up a simple observer and poke in a new deploy version" />
+      <option name="testClassPath" value="io.venuu.vuu.viewport.RangeTest" />
+      <option name="testName" value="Feature: Subtract one range from another and get the keys Scenario: Range underlaps" />
       <option name="workingDirectory" value="$PROJECT_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -172,13 +186,20 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Application.SimulMain" />
+      <item itemvalue="ScalaTest.OnlySendDiffRowsViewPortTest.Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" />
+      <item itemvalue="ScalaTest.RangeTest.Feature: Subtract one range from another and get the keys Scenario: Range underlaps" />
+      <item itemvalue="Application.SwingClientMain" />
+      <item itemvalue="ScalaTest.RangeSubtractTest" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.SimulMain" />
+        <item itemvalue="ScalaTest.OnlySendDiffRowsViewPortTest.Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" />
         <item itemvalue="Application.SwingClientMain" />
-        <item itemvalue="ScalaTest.FileSystemServiceTest" />
-        <item itemvalue="ScalaTest.FileSystemServiceTest.Feature: Test a reactive observer for fake file system Scenario: set up a simple observer and poke in a new deploy version" />
-        <item itemvalue="ScalaTest.BuildBigGroupByTest.Feature: check big groupby's Scenario: create big group by and build table" />
+        <item itemvalue="Application.SimulMain" />
+        <item itemvalue="ScalaTest.RangeSubtractTest" />
+        <item itemvalue="ScalaTest.RangeTest.Feature: Subtract one range from another and get the keys Scenario: Range underlaps" />
       </list>
     </recent_temporary>
   </component>
@@ -306,7 +327,14 @@
       <option name="project" value="LOCAL" />
       <updated>1611670550711</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="#9 Added fix to not send stale rows iv view port has moved on.">
+      <created>1611671140473</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1611671140473</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -355,70 +383,135 @@
     <option name="LAST_COMMIT_MESSAGE" value="#9 Added fix to not send stale rows iv view port has moved on." />
   </component>
   <component name="WindowStateProjectService">
-    <state x="735" y="360" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1611062900947">
+    <state x="880" y="377" key="#Plugins" timestamp="1611748614645">
+      <screen x="0" y="25" width="2560" height="1415" />
+    </state>
+    <state x="880" y="377" key="#Plugins/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611748614645" />
+    <state x="768" y="279" key="#Project_Structure" timestamp="1611914224149">
       <screen x="0" y="25" width="2560" height="1352" />
     </state>
+    <state x="768" y="279" key="#Project_Structure/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611914224149" />
+    <state x="-1542" y="535" key="#com.intellij.codeInsight.editorActions.RestoreReferencesDialog" timestamp="1612016760222">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state x="-1542" y="535" key="#com.intellij.codeInsight.editorActions.RestoreReferencesDialog/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612016760222" />
+    <state x="1018" y="474" key="#com.intellij.codeInsight.editorActions.RestoreReferencesDialog/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611914074803" />
+    <state x="-2126" y="338" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1612018799623">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state x="-2126" y="338" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612018799623" />
+    <state x="434" y="286" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611954318270" />
     <state x="735" y="360" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.25.2560.1352@0.25.2560.1352" timestamp="1611062900947" />
+    <state x="735" y="376" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611847798435" />
+    <state x="1014" y="619" key="#com.intellij.framework.addSupport.AddSupportForSingleFrameworkDialog" timestamp="1611914477470">
+      <screen x="0" y="25" width="2560" height="1352" />
+    </state>
+    <state x="1014" y="619" key="#com.intellij.framework.addSupport.AddSupportForSingleFrameworkDialog/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611914477470" />
     <state x="1092" y="398" key="#com.intellij.ide.util.MemberChooser" timestamp="1611590228157">
       <screen x="0" y="25" width="2560" height="1352" />
     </state>
     <state x="1092" y="398" key="#com.intellij.ide.util.MemberChooser/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611590228157" />
-    <state width="2500" height="411" key="GridCell.Tab.0.bottom" timestamp="1611670465624">
-      <screen x="0" y="25" width="2560" height="1415" />
-    </state>
-    <state width="2500" height="411" key="GridCell.Tab.0.bottom/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955510" />
-    <state width="2500" height="606" key="GridCell.Tab.0.bottom/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336552" />
-    <state width="2500" height="411" key="GridCell.Tab.0.bottom/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465624" />
-    <state width="2500" height="411" key="GridCell.Tab.0.center" timestamp="1611670465622">
-      <screen x="0" y="25" width="2560" height="1415" />
-    </state>
-    <state width="2500" height="411" key="GridCell.Tab.0.center/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955509" />
-    <state width="2500" height="606" key="GridCell.Tab.0.center/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336551" />
-    <state width="2500" height="411" key="GridCell.Tab.0.center/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465622" />
-    <state width="2500" height="411" key="GridCell.Tab.0.left" timestamp="1611670465622">
-      <screen x="0" y="25" width="2560" height="1415" />
-    </state>
-    <state width="2500" height="411" key="GridCell.Tab.0.left/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955508" />
-    <state width="2500" height="606" key="GridCell.Tab.0.left/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336551" />
-    <state width="2500" height="411" key="GridCell.Tab.0.left/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465622" />
-    <state width="2500" height="411" key="GridCell.Tab.0.right" timestamp="1611670465623">
-      <screen x="0" y="25" width="2560" height="1415" />
-    </state>
-    <state width="2500" height="411" key="GridCell.Tab.0.right/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955509" />
-    <state width="2500" height="606" key="GridCell.Tab.0.right/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336552" />
-    <state width="2500" height="411" key="GridCell.Tab.0.right/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465623" />
-    <state width="2500" height="411" key="GridCell.Tab.1.bottom" timestamp="1611670465626">
-      <screen x="0" y="25" width="2560" height="1415" />
-    </state>
-    <state width="2500" height="411" key="GridCell.Tab.1.bottom/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955512" />
-    <state width="2500" height="411" key="GridCell.Tab.1.bottom/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465626" />
-    <state width="2500" height="411" key="GridCell.Tab.1.center" timestamp="1611670465625">
-      <screen x="0" y="25" width="2560" height="1415" />
-    </state>
-    <state width="2500" height="411" key="GridCell.Tab.1.center/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955511" />
-    <state width="2500" height="411" key="GridCell.Tab.1.center/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465625" />
-    <state width="2500" height="411" key="GridCell.Tab.1.left" timestamp="1611670465624">
-      <screen x="0" y="25" width="2560" height="1415" />
-    </state>
-    <state width="2500" height="411" key="GridCell.Tab.1.left/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955510" />
-    <state width="2500" height="411" key="GridCell.Tab.1.left/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465624" />
-    <state width="2500" height="411" key="GridCell.Tab.1.right" timestamp="1611670465625">
-      <screen x="0" y="25" width="2560" height="1415" />
-    </state>
-    <state width="2500" height="411" key="GridCell.Tab.1.right/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611645955512" />
-    <state width="2500" height="411" key="GridCell.Tab.1.right/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465625" />
-    <state x="879" y="438" key="Vcs.Push.Dialog.v2" timestamp="1611670559573">
-      <screen x="0" y="25" width="2560" height="1415" />
-    </state>
-    <state x="879" y="438" key="Vcs.Push.Dialog.v2/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670559573" />
-    <state x="911" y="328" key="new project wizard" timestamp="1603380289166">
-      <screen x="0" y="23" width="2560" height="1360" />
-    </state>
-    <state x="911" y="328" key="new project wizard/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1603380289166" />
-    <state x="944" y="334" width="670" height="676" key="search.everywhere.popup" timestamp="1611588783160">
+    <state x="968" y="441" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1611934461537">
       <screen x="0" y="25" width="2560" height="1352" />
     </state>
-    <state x="944" y="334" width="670" height="676" key="search.everywhere.popup/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611588783160" />
+    <state x="968" y="441" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611934461537" />
+    <state width="1996" height="953" key="GridCell.Tab.0.bottom" timestamp="1612021339564">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state width="1996" height="953" key="GridCell.Tab.0.bottom/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612021339564" />
+    <state width="1259" height="850" key="GridCell.Tab.0.bottom/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611957478953" />
+    <state width="2500" height="606" key="GridCell.Tab.0.bottom/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336552" />
+    <state width="2518" height="789" key="GridCell.Tab.0.bottom/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611849665017" />
+    <state width="1996" height="953" key="GridCell.Tab.0.center" timestamp="1612021339563">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state width="1996" height="953" key="GridCell.Tab.0.center/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612021339563" />
+    <state width="1259" height="850" key="GridCell.Tab.0.center/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611957478951" />
+    <state width="2500" height="606" key="GridCell.Tab.0.center/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336551" />
+    <state width="2518" height="789" key="GridCell.Tab.0.center/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611849665016" />
+    <state width="1996" height="953" key="GridCell.Tab.0.left" timestamp="1612021339562">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state width="1996" height="953" key="GridCell.Tab.0.left/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612021339562" />
+    <state width="1259" height="850" key="GridCell.Tab.0.left/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611957478951" />
+    <state width="2500" height="606" key="GridCell.Tab.0.left/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336551" />
+    <state width="2518" height="789" key="GridCell.Tab.0.left/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611849665015" />
+    <state width="1996" height="953" key="GridCell.Tab.0.right" timestamp="1612021339563">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state width="1996" height="953" key="GridCell.Tab.0.right/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612021339563" />
+    <state width="1259" height="850" key="GridCell.Tab.0.right/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611957478952" />
+    <state width="2500" height="606" key="GridCell.Tab.0.right/0.25.2560.1352@0.25.2560.1352" timestamp="1611063336552" />
+    <state width="2518" height="789" key="GridCell.Tab.0.right/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611849665017" />
+    <state width="1894" height="576" key="GridCell.Tab.1.bottom" timestamp="1612021263184">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state width="1894" height="576" key="GridCell.Tab.1.bottom/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612021263184" />
+    <state width="2500" height="411" key="GridCell.Tab.1.bottom/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611740495428" />
+    <state width="2500" height="411" key="GridCell.Tab.1.bottom/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465626" />
+    <state width="1894" height="576" key="GridCell.Tab.1.center" timestamp="1612021263183">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state width="1894" height="576" key="GridCell.Tab.1.center/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612021263183" />
+    <state width="2500" height="411" key="GridCell.Tab.1.center/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611740495427" />
+    <state width="2500" height="411" key="GridCell.Tab.1.center/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465625" />
+    <state width="1894" height="576" key="GridCell.Tab.1.left" timestamp="1612021263182">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state width="1894" height="576" key="GridCell.Tab.1.left/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612021263182" />
+    <state width="2500" height="411" key="GridCell.Tab.1.left/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611740495426" />
+    <state width="2500" height="411" key="GridCell.Tab.1.left/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465624" />
+    <state width="1894" height="576" key="GridCell.Tab.1.right" timestamp="1612021263183">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state width="1894" height="576" key="GridCell.Tab.1.right/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612021263183" />
+    <state width="2500" height="411" key="GridCell.Tab.1.right/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611740495427" />
+    <state width="2500" height="411" key="GridCell.Tab.1.right/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611670465625" />
+    <state x="768" y="311" key="SettingsEditor" timestamp="1611847653275">
+      <screen x="0" y="25" width="2560" height="1415" />
+    </state>
+    <state x="768" y="311" key="SettingsEditor/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611847653275" />
+    <state x="879" y="438" key="Vcs.Push.Dialog.v2" timestamp="1611671147274">
+      <screen x="0" y="25" width="2560" height="1415" />
+    </state>
+    <state x="879" y="438" key="Vcs.Push.Dialog.v2/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611671147274" />
+    <state x="911" y="328" key="new project wizard" timestamp="1611738885142">
+      <screen x="0" y="25" width="2560" height="1352" />
+    </state>
+    <state x="911" y="328" key="new project wizard/0.23.2560.1360/2560.23.2560.1417@0.23.2560.1360" timestamp="1603380289166" />
+    <state x="911" y="328" key="new project wizard/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611738885142" />
+    <state x="-1616" y="388" width="670" height="708" key="search.everywhere.popup" timestamp="1612019353288">
+      <screen x="-2560" y="65" width="2560" height="1415" />
+    </state>
+    <state x="-1616" y="388" width="670" height="708" key="search.everywhere.popup/0.25.2560.1352/-2560.65.2560.1415@-2560.65.2560.1415" timestamp="1612019353288" />
+    <state x="944" y="334" width="670" height="676" key="search.everywhere.popup/0.25.2560.1352/-2560.65.2560.1415@0.25.2560.1352" timestamp="1611954786251" />
+    <state x="944" y="348" width="670" height="708" key="search.everywhere.popup/0.25.2560.1415/-2560.65.2560.1352@0.25.2560.1415" timestamp="1611672342190" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala</url>
+          <line>42</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/OnlySendDiffRowsViewPortTest.scala</url>
+          <line>29</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/OnlySendDiffRowsViewPortTest.scala</url>
+          <line>39</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala</url>
+          <line>132</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="atlassian-ide-plugin-workspace-issues">
     <option name="view">
