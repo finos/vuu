@@ -48,7 +48,7 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: HeartBeatResponse)(ctx: RequestContext): Option[ViewServerMessage] = {
-    logger.info("Got hearbeat, diff:" + (timeProvider.now() - msg.ts) )
+    logger.info("HB [" + (timeProvider.now() - msg.ts) + "]")
     None
   }
 
@@ -157,8 +157,6 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
 
 
   override def process(msg: ChangeViewPortRange)(ctx: RequestContext): Option[ViewServerMessage] = {
-
-    logger.info("Request to change vp range:" + msg)
 
     Try(viewPortContainer.changeRange(ctx.session, ctx.queue, msg.viewPortId, ViewPortRange(msg.from, msg.to))) match {
       case Success(vp) =>

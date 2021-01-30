@@ -225,6 +225,8 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
     val vp = viewPorts.get(vpId)
 
+    logger.info("VP Range [{}] {}->{}, was {}->{}", vpId, range.from, range.to, vp.getRange().from, vp.getRange().to)
+
     vp.setRange(range)
 
     vp

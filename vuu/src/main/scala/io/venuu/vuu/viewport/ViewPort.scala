@@ -98,6 +98,8 @@ case class ViewPortImpl(id: String,
                         range: AtomicReference[ViewPortRange]
                        )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging{
 
+  private val rangeLock = new Object
+
   override def table: RowSource = structuralFields.get().table
 
   override def getStructure: ViewPortStructuralFields = structuralFields.get()
@@ -119,10 +121,12 @@ case class ViewPortImpl(id: String,
   }
 
   def setRange(newRange: ViewPortRange): Unit = {
-    val oldRange = range.get()
-    range.set(newRange)
-    val diffRange = oldRange.subtract(newRange)
-    sendUpdatesOnChange(diffRange)
+    rangeLock.synchronized{
+      val oldRange = range.get()
+      range.set(newRange)
+      val diffRange = oldRange.subtract(newRange)
+      sendUpdatesOnChange(diffRange)
+    }
   }
 
   //def setColumns(columns: List[Column])
@@ -212,6 +216,8 @@ case class ViewPortImpl(id: String,
 
     var newlyAddedObs = 0
 
+    var removedObs = 0
+
     while(index < newKeys.length){
 
       val key = newKeys(index)
@@ -234,13 +240,14 @@ case class ViewPortImpl(id: String,
 
       }else{
         removeObserver(key)
+        removedObs += 1
       }
 
       index += 1
     }
 
     if(newlyAddedObs > 0 )
-      logger.info(s"[VP] ${this.id} Added $newlyAddedObs observers on key change to ${this.table}")
+      logger.info(s"[VP] ${this.id} Added $newlyAddedObs Removed ${removedObs} Obs ${this.table}")
 
   }
 

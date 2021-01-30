@@ -56,7 +56,7 @@ class ViewServerTreeGridPanel(requestId: String, tableName: String, availableCol
           else if(!isLeaf && isOpen)
             eventBus.publish(ClientCloseTreeNodeRequest(RequestId.oneNew(), this.context.vpId, treeKey))
 
-          println(s">> depth ${depth} isOpen ${isOpen} treeKey ${treeKey} isLeaf ${isLeaf} caption ${caption}")
+          //println(s">> depth ${depth} isOpen ${isOpen} treeKey ${treeKey} isLeaf ${isLeaf} caption ${caption}")
 
         }
       }

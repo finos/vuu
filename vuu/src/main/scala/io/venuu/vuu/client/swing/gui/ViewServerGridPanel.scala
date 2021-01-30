@@ -190,7 +190,7 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
 
       val last = table.peer.rowAtPoint(new Point(0, rectangle.y + rectangle.height))
 
-      logger.info(s"state changed: view rect = $rectangle, firstrow = $firstRow, lastrow = $last")
+      logger.trace(s"state changed: view rect = $rectangle, firstrow = $firstRow, lastrow = $last")
 
       if(firstRow == lastFirst && lastLast == last){
         //do nothing
@@ -199,7 +199,7 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
         //getTable().model.asInstanceOf[ViewPortedModel].setRange(0, 0, 100)
 
         if(context.vpId != ""){
-          logger.info("sending VP update from Grid")
+          logger.info(s"[VP] Range Req ${firstRow}->${last + ClientConstants.OVERLAP}")
           eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), context.vpId, firstRow, last + ClientConstants.OVERLAP))
         }
 
