@@ -112,7 +112,7 @@ class DefaultMessageHandler(val channel: Channel,
     update.vpUpdate match {
       case SizeUpdateType =>{
         logger.info(s"[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
-        Some(RowUpdate(update.vp.id, update.vp.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), Array.empty))
+        Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), Array.empty))
       }
 
       case RowUpdateType =>
@@ -130,7 +130,7 @@ class DefaultMessageHandler(val channel: Channel,
         if(dataToSend.size == 0)
           None
         else
-          Some(RowUpdate(update.vp.id, update.vp.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), dataToSend))
+          Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), dataToSend))
     }
 
   }

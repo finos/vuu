@@ -8,7 +8,27 @@
         </encoder>
     </appender>
 
+    <appender name="roll-by-time" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>target/vuu.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>target/vuu/roll-by-time/app.%d{yyyy-MM-dd-HH}.log.zip
+            </fileNamePattern>
+            <maxHistory>20</maxHistory>
+            <totalSizeCap>1MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="io.venuu.vuu.client.swing.client.Worker" level="INFO" >
+        <appender-ref ref="roll-by-time" />
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
+
+
+
 </configuration>

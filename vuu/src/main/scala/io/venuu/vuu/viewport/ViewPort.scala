@@ -58,7 +58,7 @@ case class ViewPortRange(from: Int, to: Int){
 
 }
 
-case class ViewPortUpdate(vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, ts: Long)
+case class ViewPortUpdate(vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, size: Int, ts: Long)
 
 trait ViewPort {
   def hasGroupBy: Boolean = getGroupBy != NoGroupBy
@@ -182,24 +182,26 @@ case class ViewPortImpl(id: String,
 
   override def setKeys(newKeys: ImmutableArray[String]): Unit = {
 
-    //add logic to denote a view port size change
-    if(newKeys.length != keys.length){
-      highPriorityQ.push(new ViewPortUpdate(this, null, new RowKeyUpdate("SIZE", null), -1, SizeUpdateType, timeProvider.now()))
-    }
+    val sendSizeUpdate = newKeys.length != keys.length
 
     //send ViewPort
     removeNoLongerSubscribedKeys(newKeys)
 
+    keys = newKeys
+
+    if(sendSizeUpdate){
+      highPriorityQ.push(new ViewPortUpdate(this, null, new RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
+    }
+
     subscribeToNewKeys(newKeys)
 
-    keys = newKeys
   }
 
   override def onUpdate(update: RowKeyUpdate): Unit = {
     val index = rowKeyToIndex.get(update.key)
 
     if(index != null && isInRange(index)){
-      outboundQ.push(new ViewPortUpdate(this, update.source, new RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, timeProvider.now()))
+      outboundQ.push(new ViewPortUpdate(this, update.source, new RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
 
   }
@@ -284,7 +286,7 @@ case class ViewPortImpl(id: String,
 
   def publishUpdate(key: String, index: Int) = {
     logger.trace(s"publishing update ${key}")
-    highPriorityQ.push(new ViewPortUpdate(this, table, new RowKeyUpdate(key, table), index, RowUpdateType, timeProvider.now))
+    highPriorityQ.push(new ViewPortUpdate(this, table, new RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now))
   }
 
   private def addObserver(key: String) = {

@@ -27,6 +27,8 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
       val combinedUpdates = combineQs(viewPort)
 
+      combinedUpdates(0).size should equal(10)
+
       assertVpEq(combinedUpdates){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),

@@ -7,8 +7,6 @@
   */
 package io.venuu.vuu.client.swing.client
 
-import java.util.concurrent.ConcurrentHashMap
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.logging.LogAtFrequency
@@ -19,6 +17,8 @@ import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport.ViewPortRange
 
+import java.util.concurrent.ConcurrentHashMap
+
 case class UserPrincipal(user: String, token: String, sessionId: String)
 
 class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: LifecycleContainer, timeProvider: Clock, vsClient: ViewServerClient) extends StrictLogging {
@@ -28,6 +28,8 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
   private val vpChangeThread = new LifeCycleRunner("vpChangeThread", () => sendVpUpdates(), minCycleTime = 200 )
 
   private val vpChangeRequests = new ConcurrentHashMap[String, ClientUpdateVPRange]()
+
+
 
   import io.venuu.vuu.client.ClientHelperFns._
 
@@ -64,7 +66,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
     vpChangeRequests.foreach({case(key, msg) =>
       vpChangeRequests.remove(key)
-      logger.info(s"VP Range Change Send from ${msg.from} to ${msg.to} ")
+      logger.info(s"VP Range Change -> ${msg.from} to ${msg.to} ")
       changeVpRangeAsync(principal.sessionId, principal.token, principal.user, msg.vpId, ViewPortRange(msg.from, msg.to))
     })
   }
@@ -110,11 +112,14 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         logger.info(s"[VP] Range Resp ${body.from}->${body.to}")
         //eventBus.pubish(ClientChange)
 
+
+
       case body: TableRowUpdates =>
 
         //if(logReq.shouldLog()){
           logger.info(s"[VP] updates ${body.rows.length} for ${body.rows(0).viewPortId} rowSize = ${body.rows(0).vpSize}")
-          //logger.info(JsonVsSerializer.serialize(msg))
+          //body.rows.foreach(r => logger.info("ROW: ix {} key {}, vpSize {}, data {}", r.rowIndex, r.rowKey, r.vpSize, r.data))
+        //logger.info(JsonVsSerializer.serialize(msg))
         //}
 
 

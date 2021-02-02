@@ -31,7 +31,8 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
   //def charMaker = ((48 to 57).toSeq ++ ( 65 to 90 )).map( i => i.toChar )
   def charMaker = ( 65 to 90 ).map( i => i.toChar )
 
-  def suffixes  = List(".L", ".N", ".OQ", ".AS", ".OE", ".MI", ".A", ".PA", ".MC", ".DE")
+  //def suffixes  = List(".L", ".N", ".OQ", ".AS", ".OE", ".MI", ".A", ".PA", ".MC", ".DE")
+  def suffixes  = List(".L", ".N", ".OQ", ".AS")
 
   def ricBuilder = for( c1 <- charMaker; c2 <- charMaker ; c3 <- charMaker; suff <- suffixes) yield new String(Array(c1.toChar, c2.toChar, c3.toChar ) ) + suff
 

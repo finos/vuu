@@ -13,8 +13,6 @@
     <bytecodeTargetLevel>
       <module name="benchmark" target="1.6" />
       <module name="example" target="1.8" />
-      <module name="murmur" target="11" />
-      <module name="zk" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

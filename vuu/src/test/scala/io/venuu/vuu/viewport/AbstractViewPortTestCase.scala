@@ -80,7 +80,7 @@ class AbstractViewPortTestCase extends FeatureSpec {
   }
 
   def createNOrderRows(ordersProvider: MockProvider, n: Int)(implicit clock: Clock) = {
-    (0 to n).foreach( i=>{
+    (0 to n - 1).foreach( i=>{
       val iAsString = i.toString
       val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString
       val quantity = 100 + i
