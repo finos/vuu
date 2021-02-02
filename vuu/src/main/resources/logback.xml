@@ -8,7 +8,8 @@
         </encoder>
     </appender>
 
-    <appender name="roll-by-time" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- required for debugging messages off the wire -->
+    <!--appender name="roll-by-time" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>target/vuu.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>target/vuu/roll-by-time/app.%d{yyyy-MM-dd-HH}.log.zip
@@ -19,11 +20,12 @@
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
-    </appender>
+    </appender -->
 
-    <logger name="io.venuu.vuu.client.swing.client.Worker" level="INFO" >
+    <!-- required for debugging messages off the wire -->
+    <!--logger name="io.venuu.vuu.client.swing.client.Worker" level="INFO" >
         <appender-ref ref="roll-by-time" />
-    </logger>
+    </logger-->
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />
