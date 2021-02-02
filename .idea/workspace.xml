@@ -8,83 +8,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#11 Added optimized row publish, only rows that have changed. there are still further optimizations to come.">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/runconfigurations/SimulMain.run.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/doc/adding-a-new-app.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/doc/design.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/doc/startup-at-terminal.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/doc/startup-internal.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/assembly/assembly.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/resources/zk/conf/zoo.cfg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/ExampleMain.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/Murmur.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/Election.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/PathCache.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/PathListener.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/zk/ZooKeeperElection.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/zk/ZooKeeperPathCache.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/consensus/zk/ZooKeeperTreeCacheListener.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/model/ModelConfig.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/DistributedCacheService.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/FileSystemService.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/HttpService.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/ProcessMonitorService.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/ScheduleService.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/definition/UpgradeService.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/fake/FakeDistributedCacheService.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/fake/FakeFileSystemService.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/fake/FakeHttpService.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/real/RealHttpService.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/services/real/fs/FileSystemWatcher.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scala/io/venuu/vuu/murmur/viewserver/MurmurModule.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/main/scripts/start-zk.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/resources/murmur.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/consensus/ZooKeeperElectionTest.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/consensus/ZooKeeperPathCacheTest.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/consensus/ZooKeeperTestBlock.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/model/ModelRoundtripTest.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/reactive/ReactiveStreamTest.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/DistributedCacheServiceTest.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/FileSystemServiceTest.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/RealHttp2ServiceTest.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/murmur/src/test/scala/io/venuu/vuu/murmur/services/fs/FileSystemWatcherTest.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/toolbox/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/toolbox/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/antlr4/io/venuu/vuu/grammer/CalculatedColumn.g4" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/antlr4/io/venuu/vuu/grammer/CalculatedColumn.g4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/resources/logback.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/treegrid/ViewServerTreeModel.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/components/treegrid/ViewServerTreeModel.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ClientConnectionCreator.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ClientConnectionCreator.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/AbstractViewPortTestCase.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/AbstractViewPortTestCase.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByAndAggregateTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByAndAggregateTest.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/OnlySendDiffRowsViewPortTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/OnlySendDiffRowsViewPortTest.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/assembly/assembly.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/main/resources/conf/configuration.xsl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/main/resources/conf/log4j.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/main/resources/conf/zoo_sample.cfg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/README.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkCleanup.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkCli.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkCli.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkEnv.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkEnv.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkServer-initialize.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkServer.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkServer.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkSnapShotToolkit.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkSnapShotToolkit.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkTxnLogToolkit.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zk/src/scripts/bin/zkTxnLogToolkit.sh" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -152,7 +78,7 @@
       <recent name="$PROJECT_DIR$/zk/src/assembly" />
     </key>
   </component>
-  <component name="RunManager" selected="ScalaTest.GroupByAndAggregateTest">
+  <component name="RunManager" selected="Application.SwingClientMain">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -174,20 +100,6 @@
       </option>
       <option name="testKind" value="Class" />
       <option name="testClassPath" value="io.venuu.vuu.viewport.GroupByAndAggregateTest" />
-      <option name="workingDirectory" value="$PROJECT_DIR$" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="GroupByAndAggregateTest.Scenario: check we can create a simple groupby tree viewport" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="vuu (1)" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="selectedOptions">
-        <list />
-      </option>
-      <option name="testKind" value="Test name" />
-      <option name="testClassPath" value="io.venuu.vuu.viewport.GroupByAndAggregateTest" />
-      <option name="testName" value="Scenario: check we can create a simple groupby tree viewport" />
       <option name="workingDirectory" value="$PROJECT_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -253,8 +165,9 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Application.SimulMain" />
+      <item itemvalue="Application.SwingClientMain" />
       <item itemvalue="ScalaTest.GroupByAndAggregateTest" />
-      <item itemvalue="ScalaTest.GroupByAndAggregateTest.Scenario: check we can create a simple groupby tree viewport" />
       <item itemvalue="ScalaTest.JoinsOfJoinsTableTest" />
       <item itemvalue="ScalaTest.JoinsOfJoinsTableTest.Scenario: check a tick all the way through from source to join table" />
       <item itemvalue="ScalaTest.OnlySendDiffRowsViewPortTest.Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" />
@@ -265,7 +178,6 @@
         <item itemvalue="ScalaTest.OnlySendDiffRowsViewPortTest.Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" />
         <item itemvalue="ScalaTest.JoinsOfJoinsTableTest.Scenario: check a tick all the way through from source to join table" />
         <item itemvalue="ScalaTest.JoinsOfJoinsTableTest" />
-        <item itemvalue="ScalaTest.GroupByAndAggregateTest.Scenario: check we can create a simple groupby tree viewport" />
       </list>
     </recent_temporary>
   </component>
@@ -407,7 +319,14 @@
       <option name="project" value="LOCAL" />
       <updated>1612021415109</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="#13 Resolved issue with size update being wrong and removed unneccesary sub-projects">
+      <created>1612262113424</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1612262113425</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -454,7 +373,8 @@
     <MESSAGE value="#9 Enabled tests" />
     <MESSAGE value="#9 Added fix to not send stale rows iv view port has moved on." />
     <MESSAGE value="#11 Added optimized row publish, only rows that have changed. there are still further optimizations to come." />
-    <option name="LAST_COMMIT_MESSAGE" value="#11 Added optimized row publish, only rows that have changed. there are still further optimizations to come." />
+    <MESSAGE value="#13 Resolved issue with size update being wrong and removed unneccesary sub-projects" />
+    <option name="LAST_COMMIT_MESSAGE" value="#13 Resolved issue with size update being wrong and removed unneccesary sub-projects" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
