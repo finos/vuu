@@ -117,7 +117,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
       case body: TableRowUpdates =>
 
         //if(logReq.shouldLog()){
-          logger.info(s"[VP] updates ${body.rows.length} for ${body.rows(0).viewPortId} rowSize = ${body.rows(0).vpSize}")
+          //logger.info(s"[VP] updates ${body.rows.length} for ${body.rows(0).viewPortId} rowSize = ${body.rows(0).vpSize}")
           //body.rows.foreach(r => logger.info("ROW: ix {} key {}, vpSize {}, data {}", r.rowIndex, r.rowKey, r.vpSize, r.data))
         //logger.info(JsonVsSerializer.serialize(msg))
         //}

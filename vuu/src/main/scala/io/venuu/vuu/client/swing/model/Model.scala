@@ -243,18 +243,19 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
     rowCount = ru.size
     vpId = ru.vpId
 
+    if(addedRowLog.shouldLog())
+      logger.debug(s"put value into cache: ${ru.index} ${ru.data}")
+
+    localCache.put(ru.index, ru.data)
+
     if(range.isRowWithin(ru.index)){
 
-      if(addedRowLog.shouldLog())
-        logger.debug(s"put value into cache: ${ru.index} ${ru.data}")
-
-      localCache.put(ru.index, ru.data)
-      SwingThread.swing(() => {
-        model.fireTableRowsUpdated(ru.index, ru.index)
-      })
+//      SwingThread.swing(() => {
+//        model.fireTableRowsUpdated(ru.index, ru.index)
+//      })
 
     }else{
-      logger.debug(s"dropped $ru as not in range ${range}")
+      //logger.info(s"dropped $ru as not in range ${range}")
     }
     SwingThread.swing(() => {
       model.fireTableRowsUpdated(ru.index, ru.index)
@@ -277,7 +278,7 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
         val overlap = if(rowIndex - 100 < 0) 0 else rowIndex - 100
 
         println(s"Added to queue... $rowIndex,$columnIndex")
-        localCache.clear()
+        //localCache.clear()
 
         if(vpId != ""){
           logger.info("sending VP update from Model")

@@ -9,8 +9,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/vuu/src/main/resources/runconfigurations/SimulMain.run.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/model/Model.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/model/Model.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/SimulationModule.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/SimulationModule.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -326,7 +328,14 @@
       <option name="project" value="LOCAL" />
       <updated>1612262113425</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="#13 Added run configs.">
+      <created>1612262521811</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1612262521811</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -374,7 +383,8 @@
     <MESSAGE value="#9 Added fix to not send stale rows iv view port has moved on." />
     <MESSAGE value="#11 Added optimized row publish, only rows that have changed. there are still further optimizations to come." />
     <MESSAGE value="#13 Resolved issue with size update being wrong and removed unneccesary sub-projects" />
-    <option name="LAST_COMMIT_MESSAGE" value="#13 Resolved issue with size update being wrong and removed unneccesary sub-projects" />
+    <MESSAGE value="#13 Added run configs." />
+    <option name="LAST_COMMIT_MESSAGE" value="#13 Added run configs." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
