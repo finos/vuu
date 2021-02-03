@@ -131,7 +131,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         eventBus.publish(ClientGetTableMetaResponse(msg.requestId, body.table, body.columns, body.dataTypes, body.key))
 
       case body: RpcSuccess =>
-        logger.info("Update success...")
+        logger.info("[RPC] success...")
 
       case body: ChangeViewPortSuccess =>
         eventBus.publish(ClientChangeViewPortSuccess(msg.requestId, body.viewPortId, body.columns, body.sort, body.groupBy, body.filterSpec))

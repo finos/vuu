@@ -285,7 +285,7 @@ case class ViewPortImpl(id: String,
   }
 
   def publishUpdate(key: String, index: Int) = {
-    logger.trace(s"publishing update ${key}")
+    logger.debug(s"publishing update ${key}")
     highPriorityQ.push(new ViewPortUpdate(this, table, new RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now))
   }
 

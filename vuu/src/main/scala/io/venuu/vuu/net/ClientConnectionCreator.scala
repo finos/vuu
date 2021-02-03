@@ -57,10 +57,12 @@ class DefaultMessageHandler(val channel: Channel,
 
       val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, "", session.user, formatted))
 
-      if(highPriority)
-        logger.info(s"[VP] HIGHPR updates : ${session.user} ${updates.size}")
-      else
-        logger.debug(s"[VP] updates: ${session.user} ${updates.size}")
+//      if(highPriority)
+//        logger.info(s"[VP] HIGHPR updates : ${session.user} ${updates.size}")
+//      else
+//        logger.debug(s"[VP] updates: ${session.user} ${updates.size}")
+
+      logger.debug("ASYNC-SVR-OUT:" + json)
 
       channel.writeAndFlush(new TextWebSocketFrame(json))
     }
@@ -111,7 +113,7 @@ class DefaultMessageHandler(val channel: Channel,
 
     update.vpUpdate match {
       case SizeUpdateType =>{
-        logger.info(s"[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
+        //logger.debug(s"SVR[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
         Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), Array.empty))
       }
 
