@@ -38,9 +38,27 @@ case class ViewPortRange(from: Int, to: Int){
   def contains(i: Int): Boolean = {
     i >= from && i < to
   }
+
+  def subtract(newRange: ViewPortRange): ViewPortRange ={
+        var from = newRange.from
+        var to = newRange.to
+
+        if(newRange.from > this.from && newRange.from < this.to){
+            from = this.to
+            to = newRange.to
+        }
+
+        if(newRange.from < this.from && newRange.to < this.to && newRange.to > this.from){
+            from = newRange.from
+            to   = this.from
+        }
+
+        ViewPortRange(from, to)
+  }
+
 }
 
-case class ViewPortUpdate(vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, ts: Long)
+case class ViewPortUpdate(vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, size: Int, ts: Long)
 
 trait ViewPort {
   def hasGroupBy: Boolean = getGroupBy != NoGroupBy
@@ -80,6 +98,8 @@ case class ViewPortImpl(id: String,
                         range: AtomicReference[ViewPortRange]
                        )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging{
 
+  private val rangeLock = new Object
+
   override def table: RowSource = structuralFields.get().table
 
   override def getStructure: ViewPortStructuralFields = structuralFields.get()
@@ -97,22 +117,24 @@ case class ViewPortImpl(id: String,
     structuralFields.set(newStructuralFields)
 
     if(!onlySortOrFilterChange)
-      sendUpdatesOnChange()
+      sendUpdatesOnChange(range.get())
   }
 
   def setRange(newRange: ViewPortRange): Unit = {
-    range.set(newRange)
-    sendUpdatesOnChange()
+    rangeLock.synchronized{
+      val oldRange = range.get()
+      range.set(newRange)
+      val diffRange = oldRange.subtract(newRange)
+      sendUpdatesOnChange(diffRange)
+    }
   }
 
   //def setColumns(columns: List[Column])
   override def filterSpec: FilterSpec = structuralFields.get().filterSpec
 
-  def sendUpdatesOnChange() = {
+  def sendUpdatesOnChange(currentRange: ViewPortRange) = {
 
     val currentKeys = keys.toArray
-
-    val currentRange = range.get()
 
     val from = currentRange.from
     val to = currentRange.to
@@ -160,24 +182,26 @@ case class ViewPortImpl(id: String,
 
   override def setKeys(newKeys: ImmutableArray[String]): Unit = {
 
-    //add logic to denote a view port size change
-    if(newKeys.length != keys.length){
-      highPriorityQ.push(new ViewPortUpdate(this, null, new RowKeyUpdate("SIZE", null), -1, SizeUpdateType, timeProvider.now()))
-    }
+    val sendSizeUpdate = newKeys.length != keys.length
 
     //send ViewPort
     removeNoLongerSubscribedKeys(newKeys)
 
+    keys = newKeys
+
+    if(sendSizeUpdate){
+      highPriorityQ.push(new ViewPortUpdate(this, null, new RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
+    }
+
     subscribeToNewKeys(newKeys)
 
-    keys = newKeys
   }
 
   override def onUpdate(update: RowKeyUpdate): Unit = {
     val index = rowKeyToIndex.get(update.key)
 
     if(index != null && isInRange(index)){
-      outboundQ.push(new ViewPortUpdate(this, update.source, new RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, timeProvider.now()))
+      outboundQ.push(new ViewPortUpdate(this, update.source, new RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
 
   }
@@ -193,6 +217,8 @@ case class ViewPortImpl(id: String,
     var index = 0
 
     var newlyAddedObs = 0
+
+    var removedObs = 0
 
     while(index < newKeys.length){
 
@@ -216,13 +242,14 @@ case class ViewPortImpl(id: String,
 
       }else{
         removeObserver(key)
+        removedObs += 1
       }
 
       index += 1
     }
 
     if(newlyAddedObs > 0 )
-      logger.info(s"[VP] ${this.id} Added $newlyAddedObs observers on key change to ${this.table}")
+      logger.info(s"[VP] ${this.id} Added $newlyAddedObs Removed ${removedObs} Obs ${this.table}")
 
   }
 
@@ -258,8 +285,8 @@ case class ViewPortImpl(id: String,
   }
 
   def publishUpdate(key: String, index: Int) = {
-    logger.trace(s"publishing update ${key}")
-    highPriorityQ.push(new ViewPortUpdate(this, table, new RowKeyUpdate(key, table), index, RowUpdateType, timeProvider.now))
+    logger.debug(s"publishing update ${key}")
+    highPriorityQ.push(new ViewPortUpdate(this, table, new RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now))
   }
 
   private def addObserver(key: String) = {

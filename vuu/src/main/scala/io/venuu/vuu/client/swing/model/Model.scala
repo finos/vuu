@@ -1,23 +1,22 @@
 /**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 06/01/2016.
-
-  */
+ * Copyright Whitebox Software Ltd. 2014
+ * All Rights Reserved.
+ *
+ * Created by chris on 06/01/2016.
+ *
+ */
 package io.venuu.vuu.client.swing.model
 
-import java.util.concurrent.ConcurrentHashMap
-
 import com.typesafe.scalalogging.StrictLogging
+import io.venuu.toolbox.collection.window.ArrayBackedMovingWindow
 import io.venuu.toolbox.logging.LogAtFrequency
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.SwingThread
 import io.venuu.vuu.client.swing.messages._
-import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
 import io.venuu.vuu.net.SortDef
-import javax.swing.table.AbstractTableModel
 
+import javax.swing.table.AbstractTableModel
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.swing.Table
 import scala.util.{Failure, Success, Try}
@@ -60,12 +59,15 @@ class VSHackedTable extends Table(0, 0) {
   //this.peer.getTableHeader.addMouseListener()
 
   override def apply(row: Int, column: Int): Any = model.getValueAt(viewToModelRow(row), modelToViewRow(column))
+
   override def viewToModelRow(idx: Int) = peer.convertRowIndexToModel(idx)
+
   override def modelToViewRow(idx: Int) = peer.convertRowIndexToView(idx)
+
   //peer.setRowSorter(new TableRowSorter(model))
 }
 
-object DataFormatter{
+object DataFormatter {
 
   protected def isEmpty(s: String): Boolean = {
     s == null || s.isEmpty
@@ -74,16 +76,16 @@ object DataFormatter{
   def format(data: String, dataType: String): Any = {
     dataType match {
       case "string" => data
-      case "double" => if(isEmpty(data)) Double.NaN else data.toDouble
-      case "long" => if(isEmpty(data)) 0l else data.toLong
-      case "int" => if(isEmpty(data)) 0 else  data.toInt
+      case "double" => if (isEmpty(data)) Double.NaN else data.toDouble
+      case "long" => if (isEmpty(data)) 0l else data.toLong
+      case "int" => if (isEmpty(data)) 0 else data.toInt
       case "boolean" => data.toBoolean
     }
   }
 }
 
 
-class RpcModel() extends AbstractTableModel(){
+class RpcModel() extends AbstractTableModel() {
 
   @volatile private var currentColumns: Array[String] = Array()
   @volatile private var currentDataTypes: Array[String] = Array()
@@ -96,9 +98,9 @@ class RpcModel() extends AbstractTableModel(){
     import DataFormatter._
 
     val rowsAsMaps = data.map(row => {
-      val asMap = row.zip(currentColumns.zip(currentDataTypes)).map({case(value, (key, dataType)) => (key -> format(value.toString, dataType))}).toMap
+      val asMap = row.zip(currentColumns.zip(currentDataTypes)).map({ case (value, (key, dataType)) => (key -> format(value.toString, dataType)) }).toMap
       (asMap.get(currentKey).get.asInstanceOf[String], asMap)
-    } ).toList
+    }).toList
     rowsAsMaps
   }
 
@@ -137,14 +139,14 @@ class RpcModel() extends AbstractTableModel(){
   override def getColumnCount: Int = currentColumns.length
 
   override def getValueAt(rowIndex: Int, columnIndex: Int): AnyRef = {
-    if(rowIndex + 1 > data.size)
+    if (rowIndex + 1 > data.size)
       ""
     else
       data(rowIndex)(columnIndex)
   }
 }
 
-object ViewPortModel{
+object ViewPortModel {
   final val LoadingString = "-"
 }
 
@@ -175,57 +177,59 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
   @volatile private var vpId: String = ""
 
   eventBus.register({
-      case msg: ClientCreateViewPortSuccess if msg.requestId == requestId =>
-        logger.info(s"setting vpId to $vpId")
-        vpId = msg.vpId
-        sorts = msg.sortBy.sortDefs.map(sd => sd.column -> sd).toMap
-        groupBy = msg.groupBy
-        columns = if(!msg.groupBy.isEmpty)
-                    Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("rowIndex") ++ msg.columns
-                  else
-                    Array("rowIndex") ++ msg.columns
 
-        //val groupByColumns = Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ columns
-        SwingThread.swing(() => {
-          fireTableStructureChanged()
-          fireTableDataChanged()
-        })
+    case msg: ClientChangeViewPortRangeSuccess if msg.vpId == vpId =>
+      logger.info(s"Updated VP range in model ${vpId} from ${msg.from} to ${msg.to}")
+      this.setRange(msg.from, msg.to)
 
-      case ru: ClientServerRowUpdate if ru.vpId == vpId =>
-        handleRowUpdate(ru)
-      //case ru: ClientServerRowUpdate => handleRowUpdate(ru)
-      case msg: ClientChangeViewPortSuccess =>
-        logger.info(s"Client Change VP Success ${msg} ")
+    case msg: ClientCreateViewPortSuccess if msg.requestId == requestId =>
+      logger.info(s"setting vpId to $vpId")
+      vpId = msg.vpId
+      sorts = msg.sortBy.sortDefs.map(sd => sd.column -> sd).toMap
+      groupBy = msg.groupBy
+      columns = if (!msg.groupBy.isEmpty)
+        Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("rowIndex") ++ msg.columns
+      else
+        Array("rowIndex") ++ msg.columns
 
-        columns = if(!msg.groupBy.isEmpty)
-          Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("rowIndex") ++ msg.columns
-        else
-          Array("rowIndex") ++ msg.columns
+      //val groupByColumns = Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ columns
+      SwingThread.swing(() => {
+        fireTableStructureChanged()
+        fireTableDataChanged()
+      })
 
-        sorts = msg.sortBy.sortDefs.map(sd => sd.column -> sd).toMap
-        groupBy = msg.groupBy
+    case ru: ClientServerRowUpdate if ru.vpId == vpId =>
+      handleRowUpdate(ru)
+    //case ru: ClientServerRowUpdate => handleRowUpdate(ru)
+    case msg: ClientChangeViewPortSuccess =>
+      logger.info(s"Client Change VP Success ${msg} ")
 
-        //dump the cache
-        localCache.clear()
+      columns = if (!msg.groupBy.isEmpty)
+        Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("rowIndex") ++ msg.columns
+      else
+        Array("rowIndex") ++ msg.columns
 
-        SwingThread.swing(() => {
-          fireTableStructureChanged()
-          fireTableDataChanged()
-        })
+      sorts = msg.sortBy.sortDefs.map(sd => sd.column -> sd).toMap
+      groupBy = msg.groupBy
 
-      case _ =>
+      SwingThread.swing(() => {
+        fireTableStructureChanged()
+        fireTableDataChanged()
+      })
+
+    case _ =>
   })
 
   private val model = this
 
   @volatile
-  private var range = new Range(0, 100)
-  @volatile
   private var rowCount = 0
 
-  def setRange(start: Int, end: Int) = range = new Range(start, end)
+  def setRange(start: Int, end: Int) = {
+    this.movingWindow.setRange(start, end)
+  }
 
-  private val localCache = new ConcurrentHashMap[Int, Array[AnyRef]]()
+  private val movingWindow = new ArrayBackedMovingWindow[Array[AnyRef]](200)
 
   case class RangeUpdate(from: Int, to: Int)
 
@@ -234,7 +238,6 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
     def isRowWithin(r: Int): Boolean = {
       r >= row && r <= row + size
     }
-
   }
 
   val addedRowLog = new LogAtFrequency(1000)
@@ -243,24 +246,19 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
     rowCount = ru.size
     vpId = ru.vpId
 
-    if(range.isRowWithin(ru.index)){
+    //logger.info(s"Data In Cache ${ru.index} ${ru.data}")
 
-      if(addedRowLog.shouldLog())
-        logger.debug(s"put value into cache: ${ru.index} ${ru.data}")
-
-      localCache.put(ru.index, ru.data)
-      SwingThread.swing(() => {
-        model.fireTableRowsUpdated(ru.index, ru.index)
-      })
-
-    }else{
-      logger.debug(s"dropped $ru as not in range ${range}")
+    if (movingWindow.isWithinRange(ru.index)) {
+      logger.debug(s"Adding ${ru.index} row to window")
+      movingWindow.setAtIndex(ru.index, ru.data)
+    } else {
+      logger.debug(s"Dropping ${ru.index} row, not in range" + movingWindow.getRange().from + "->" + movingWindow.getRange().to)
     }
+
     SwingThread.swing(() => {
       model.fireTableRowsUpdated(ru.index, ru.index)
     })
   }
-
 
 
   override def getRowCount: Int = rowCount
@@ -269,47 +267,30 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
 
   override def getValueAt(rowIndex: Int, columnIndex: Int): AnyRef = {
 
-    if(columnIndex == 0) rowIndex.toString
+    if (columnIndex == 0) {
+      rowIndex.toString
+    } else {
 
-    else{
-
-      if (!range.isRowWithin(rowIndex)) {
-        val overlap = if(rowIndex - 100 < 0) 0 else rowIndex - 100
-
-        println(s"Added to queue... $rowIndex,$columnIndex")
-        localCache.clear()
-
-        if(vpId != ""){
-          logger.info("sending VP update from Model")
-          range = Range(overlap, rowIndex + 200)
-          eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), vpId, overlap, rowIndex + ClientConstants.OVERLAP))
-        }
-
-
-        //range = Range(overlap, rowIndex + 100, 100)
-        LoadingString
-      } else {
-
-        //if(this.gr)
-
-        val entry = localCache.get(rowIndex)
-        if(entry != null){
-          if(columnIndex  > entry.size)
+      movingWindow.getAtIndex(rowIndex) match {
+        case Some(entry: Array[AnyRef]) =>
+          if (entry != null) {
+            if (columnIndex > entry.size)
+              LoadingString
+            else
+              Try(entry(columnIndex - 1)) match {
+                case Success(value) => value
+                case Failure(e) =>
+                  logger.error("error on get data", e)
+                  LoadingString
+              }
+          } else {
             LoadingString
-          else
-            Try(entry(columnIndex - 1)) match {
-              case Success(value) => value
-              case Failure(e) =>
-                logger.error("error on get data", e)
-                LoadingString
-            }
-        }else{
+          }
+
+        case None =>
           LoadingString
-        }
-
       }
+
     }
-
   }
-
 }

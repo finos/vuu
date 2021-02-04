@@ -9,7 +9,7 @@ expression
    ;
 
 multiplyingExpression
-   : powExpression ((TIMES | DIV) powExpression)*
+   : powExpression ((TIMES | DIV) powExpression)
    ;
 
 powExpression

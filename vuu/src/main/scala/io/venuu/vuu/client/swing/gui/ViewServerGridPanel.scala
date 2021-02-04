@@ -10,7 +10,6 @@ package io.venuu.vuu.client.swing.gui
 import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.{Color, Dimension, Point}
 import java.util.UUID
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.gui.components.FilterBarPanel
@@ -19,13 +18,13 @@ import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
 import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
 import io.venuu.vuu.net.{FilterSpec, SortDef, SortSpec}
-import javax.swing.JComponent
-import javax.swing.event.{ChangeEvent, ChangeListener}
-import javax.swing.table.TableColumn
 
+import javax.swing.{DefaultListSelectionModel, JComponent, JTable}
+import javax.swing.event.{ChangeEvent, ChangeListener, ListSelectionEvent, ListSelectionListener}
+import javax.swing.table.TableColumn
 import scala.swing.BorderPanel.Position
 import scala.swing._
-import scala.swing.event.{MouseClicked, TableEvent}
+import scala.swing.event.{MouseClicked, SelectionChanged, TableEvent}
 
 class ComponentWithContext(val component: Component, val context: Object) extends Component{
   override lazy val peer: JComponent = component.peer
@@ -115,6 +114,14 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
 
   listenTo(table.mouse.clicks)
   listenTo(table)
+  listenTo(table.selection)
+
+  table.peer.getSelectionModel.addListSelectionListener(new ListSelectionListener {
+    override def valueChanged(e: ListSelectionEvent): Unit = {
+      val selected = e.getSource.asInstanceOf[DefaultListSelectionModel].getSelectedIndices
+      println("List selection changed, selected from: " + selected.mkString(","))
+    }
+  })
 
   reactions += {
 
@@ -199,8 +206,13 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
         //getTable().model.asInstanceOf[ViewPortedModel].setRange(0, 0, 100)
 
         if(context.vpId != ""){
-          logger.info("sending VP update from Grid")
-          eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), context.vpId, firstRow, last + ClientConstants.OVERLAP))
+          logger.info(s"[VP] Range Req ${firstRow}->${last + ClientConstants.OVERLAP}")
+          if(firstRow == -1 && last == -1){
+            eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), context.vpId, 0, 100))
+          }else{
+            eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), context.vpId, firstRow, last + ClientConstants.OVERLAP))
+          }
+
         }
 
       }

@@ -2,16 +2,10 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/murmur" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/murmur/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/murmur/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/toolbox" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/toolbox/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/vuu" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/vuu/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/vuu/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/zk/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/zk/src/main/resources" charset="UTF-8" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>

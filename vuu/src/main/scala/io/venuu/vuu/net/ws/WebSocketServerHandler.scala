@@ -97,7 +97,7 @@ class WebSocketServerHandler(handler: ViewServerHandler) extends SimpleChannelIn
     }
 
     val request = (frame.asInstanceOf[TextWebSocketFrame]).text();
-    logger.info("[WS SERVER] on msg " + request)
+    logger.debug("[WS SERVER] on msg " + request)
     handler.handle(request, ctx.channel())
     //System.err.printf("%s received %s%n", ctx.channel(), request);
     //ctx.channel().write(new TextWebSocketFrame(request.toUpperCase()));

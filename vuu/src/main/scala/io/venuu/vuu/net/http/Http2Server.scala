@@ -15,7 +15,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory
 /**
  * Created by chris on 12/11/2015.
  */
-class Http2Server(httpPort: Int, httpsPort: Int, webRoot: String)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled{
+class Http2Server(val httpPort: Int, val httpsPort: Int, webRoot: String)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled{
 
   private val server: Server = new Server
 

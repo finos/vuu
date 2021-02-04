@@ -7,8 +7,6 @@
   */
 package io.venuu.vuu.client.swing.client
 
-import java.util.concurrent.ConcurrentHashMap
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.logging.LogAtFrequency
@@ -19,15 +17,19 @@ import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport.ViewPortRange
 
+import java.util.concurrent.ConcurrentHashMap
+
 case class UserPrincipal(user: String, token: String, sessionId: String)
 
 class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: LifecycleContainer, timeProvider: Clock, vsClient: ViewServerClient) extends StrictLogging {
 
-  private val dequeueThread = new LifeCycleRunner("clientDequeThread", () => dequeue(), minCycleTime = 100 )
+  private val dequeueThread = new LifeCycleRunner("clientDequeThread", () => dequeue(), minCycleTime = 50 )
 
   private val vpChangeThread = new LifeCycleRunner("vpChangeThread", () => sendVpUpdates(), minCycleTime = 200 )
 
   private val vpChangeRequests = new ConcurrentHashMap[String, ClientUpdateVPRange]()
+
+
 
   import io.venuu.vuu.client.ClientHelperFns._
 
@@ -64,7 +66,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
     vpChangeRequests.foreach({case(key, msg) =>
       vpChangeRequests.remove(key)
-      logger.warn(s"Client VP Range Change ${key} from ${msg.from} to ${msg.to} ")
+      logger.info(s"VP Range Change -> ${msg.from} to ${msg.to} ")
       changeVpRangeAsync(principal.sessionId, principal.token, principal.user, msg.vpId, ViewPortRange(msg.from, msg.to))
     })
   }
@@ -86,47 +88,48 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
     msg.body match {
       case body: HeartBeat =>
-        logger.info("HB")
+        logger.info("[HB]")
         heartbeatRespAsync(principal.sessionId, principal.token, principal.user, body.ts)
 
       case body: AuthenticateSuccess =>
-        logger.info("Auth successful, now logging in" + body)
+        logger.info("[AUTH] success")
         loginAsync(body.token, msg.user)
 
       case body: LoginSuccess =>
         principal = new UserPrincipal(msg.user, msg.token, msg.sessionId)
-        logger.info(s"Logged in ${principal}")
+        logger.info(s"[LOGIN] success ${principal}")
         eventBus.publish(LogonSuccess(principal))
 
       case body: CreateViewPortSuccess =>
-        logger.info("Got create viewport success")
+        logger.info("[VP] Create Success")
         eventBus.publish(ClientCreateViewPortSuccess(msg.requestId, body.viewPortId, body.columns, body.sort, body.groupBy, if(body.filterSpec == null) "" else body.filterSpec.filter))
 
       case body: GetTableListResponse =>
-        logger.info("Got table list from server")
+        logger.info("TABLELIST")
         eventBus.publish(ClientGetTableListResponse(msg.requestId, body.tables))
 
       case body: ChangeViewPortRangeSuccess =>
-        logger.info(s"Successfully changed viewport: " + body)
-        //eventBus.pubish(ClientChange)
+        logger.info(s"[VP] Range Resp ${body.from}->${body.to}")
+        eventBus.publish(ClientChangeViewPortRangeSuccess(body.viewPortId, body.from, body.to))
 
       case body: TableRowUpdates =>
 
-        if(logReq.shouldLog()){
-          logger.info(s"Got updates ${body.rows.length} for ${body.rows(0).viewPortId} rowSize = ${body.rows(0).vpSize} example below..")
-          logger.info(JsonVsSerializer.serialize(msg))
-        }
+        //if(logReq.shouldLog()){
+          //logger.info(s"[VP] updates ${body.rows.length} for ${body.rows(0).viewPortId} rowSize = ${body.rows(0).vpSize}")
+          //body.rows.foreach(r => logger.info("ROW: ix {} key {}, vpSize {}, data {}", r.rowIndex, r.rowKey, r.vpSize, r.data))
+        //logger.info(JsonVsSerializer.serialize(msg))
+        //}
 
 
         //logger.info("Got table row updates: " + body.rows.size)
         body.rows.foreach(ru => eventBus.publish(ClientServerRowUpdate(ru.viewPortId, ru.rowIndex, ru.data.asInstanceOf[Array[AnyRef]], ru.vpSize)))
 
       case body: GetTableMetaResponse =>
-        logger.info(s"Got column list for table ${body.table} from server")
+        logger.info(s"[TABLEMETA] ${body.table} from server")
         eventBus.publish(ClientGetTableMetaResponse(msg.requestId, body.table, body.columns, body.dataTypes, body.key))
 
       case body: RpcSuccess =>
-        logger.info("Update success...")
+        logger.info("[RPC] success...")
 
       case body: ChangeViewPortSuccess =>
         eventBus.publish(ClientChangeViewPortSuccess(msg.requestId, body.viewPortId, body.columns, body.sort, body.groupBy, body.filterSpec))

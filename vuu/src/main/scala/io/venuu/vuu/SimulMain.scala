@@ -9,10 +9,12 @@ package io.venuu.vuu
 
 import io.venuu.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultClock, Clock}
+import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.metrics.MetricsModule
 import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
+
+import java.nio.file.Paths
 
 /*
 -Xbootclasspath/p:/Users/chris/.m2/repository/org/mortbay/jetty/alpn/alpn-boot/8.1.3.v20150130/alpn-boot-8.1.3.v20150130.jar -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -XX:+UseG1GC -verbosegc
@@ -28,7 +30,7 @@ object SimulMain extends App{
 
   lifecycle.autoShutdownHook()
 
-  val config = ViewServerConfig(8080, 8443, 8090, "/Users/chris/GitHub/react-enterprise/examples")
+  val config = ViewServerConfig(8080, 8443, 8090, Paths.get("vuu/src/main/resources/www").toAbsolutePath.toString)
                   .withModule(SimulationModule())
                   .withModule(MetricsModule())
 

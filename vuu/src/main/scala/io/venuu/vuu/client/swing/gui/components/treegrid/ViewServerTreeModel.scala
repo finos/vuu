@@ -43,14 +43,15 @@ class ViewServerTreeModel() extends AbstractTreeTableModel(){
           case 0 => node.name
           case _ => "-"
         }
-      case node: LeafNode =>
-        i match {
-          case 0 => node.name
-          case 1 => node.data(0)
-          case 2 => node.data(1)
-          case 3 => node.data(3)
-          case 4 => node.data(4)
-        }
+//code is never executed as Leaf extends Tree
+//      case node: LeafNode =>
+//        i match {
+//          case 0 => node.name
+//          case 1 => node.data(0)
+//          case 2 => node.data(1)
+//          case 3 => node.data(3)
+//          case 4 => node.data(4)
+//        }
     }
   }
 

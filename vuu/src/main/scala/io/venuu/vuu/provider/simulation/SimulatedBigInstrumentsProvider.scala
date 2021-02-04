@@ -15,6 +15,7 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData}
 import io.venuu.vuu.provider.Provider
 
+import scala.concurrent.duration.DurationInt
 import scala.util.Random
 
 class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle:  LifecycleContainer) extends Provider with StrictLogging {
@@ -27,9 +28,10 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
 
   override def subscribe(key: String): Unit = {}
 
+  //def charMaker = ((48 to 57).toSeq ++ ( 65 to 90 )).map( i => i.toChar )
   def charMaker = ( 65 to 90 ).map( i => i.toChar )
-  //def charMaker = ( 65 to 66 ).map( i => i.toChar )
 
+  //def suffixes  = List(".L", ".N", ".OQ", ".AS", ".OE", ".MI", ".A", ".PA", ".MC", ".DE")
   def suffixes  = List(".L", ".N", ".OQ", ".AS")
 
   def ricBuilder = for( c1 <- charMaker; c2 <- charMaker ; c3 <- charMaker; suff <- suffixes) yield new String(Array(c1.toChar, c2.toChar, c3.toChar ) ) + suff
@@ -59,6 +61,9 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
   }
 
   def build() = {
+
+    Thread.sleep(5.seconds.toMillis)
+
     val rics = ricBuilder
 
     val rows = rics.map(mkRow(_))

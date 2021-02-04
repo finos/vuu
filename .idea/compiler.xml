@@ -8,11 +8,10 @@
         <outputRelativeToContentRoot value="true" />
         <module name="toolbox" />
         <module name="vuu (1)" />
-        <module name="zk" />
-        <module name="murmur" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="benchmark" target="1.6" />
       <module name="example" target="1.8" />
     </bytecodeTargetLevel>
   </component>

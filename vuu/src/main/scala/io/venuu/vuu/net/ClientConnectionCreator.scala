@@ -57,10 +57,12 @@ class DefaultMessageHandler(val channel: Channel,
 
       val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, "", session.user, formatted))
 
-      if(highPriority)
-        logger.info(s"Sending HIGH PRIORITY updates to client: ${session.user} ${updates.size} update(s)...")
-      else
-        logger.info(s"Sending updates to client: ${session.user} ${updates.size} update(s)...")
+//      if(highPriority)
+//        logger.info(s"[VP] HIGHPR updates : ${session.user} ${updates.size}")
+//      else
+//        logger.debug(s"[VP] updates: ${session.user} ${updates.size}")
+
+      logger.debug("ASYNC-SVR-OUT:" + json)
 
       channel.writeAndFlush(new TextWebSocketFrame(json))
     }
@@ -72,12 +74,12 @@ class DefaultMessageHandler(val channel: Channel,
 
     flowController.shouldSend() match {
       case op: SendHeartbeat =>
-        logger.info("Sending heartbeat")
+        logger.debug("Sending heartbeat")
         val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, "", session.user, HeartBeat(timeProvider.now())))
         channel.writeAndFlush(new TextWebSocketFrame(json))
       case op: Disconnect =>
 
-        logger.info("Disconnecting")
+        logger.warn("Disconnecting")
         disconnect()
 
       case BatchSize(size) =>
@@ -111,8 +113,8 @@ class DefaultMessageHandler(val channel: Channel,
 
     update.vpUpdate match {
       case SizeUpdateType =>{
-        logger.info(s"SizeUpdate: vpid=${update.vp.id} size=${update.vp.size}")
-        Some(RowUpdate(update.vp.id, update.vp.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), Array.empty))
+        //logger.debug(s"SVR[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
+        Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), Array.empty))
       }
 
       case RowUpdateType =>
@@ -130,7 +132,7 @@ class DefaultMessageHandler(val channel: Channel,
         if(dataToSend.size == 0)
           None
         else
-          Some(RowUpdate(update.vp.id, update.vp.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), dataToSend))
+          Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), dataToSend))
     }
 
   }

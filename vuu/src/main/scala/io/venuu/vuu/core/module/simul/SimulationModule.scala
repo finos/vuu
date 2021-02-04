@@ -41,7 +41,7 @@ object SimulationModule {
           TableDef(
             name = "instruments",
             keyField = "ric",
-            columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Double"),
+            columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Int"),
             joinFields = "ric"
           ),
           (table, vs) => new SimulatedBigInstrumentsProvider(table)

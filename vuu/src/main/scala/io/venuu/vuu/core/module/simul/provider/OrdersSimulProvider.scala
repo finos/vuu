@@ -30,6 +30,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
   private val orders = new util.Hashtable[String, OrderDetail]()
   private val orderCount = new AtomicInteger(0)
   private val seededRandom = new SeededRandom(time.now())
+  private val ordersCount = new SeededRandom(time.now())
 
   def createOrderNyc(i: Int) = {
     createOrder(i, "NYC", "USD","AAPL.N")
@@ -100,7 +101,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 
       table.processUpdate(od.orderId, RowWithData(od.orderId, upMap), time.now())
 
-      time.sleep(secsPerFill * 300)
+      time.sleep(secsPerFill * 50)
     }
   }
 
@@ -129,7 +130,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 
       orders.remove(od.orderId)
 
-      time.sleep(deletePerSec * 200)
+      time.sleep(deletePerSec * 100)
     } )
 
   }
@@ -139,15 +140,17 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 
     //1.
     //allocate a quantity of orders to create
-    val quantity = 10
+    val quantityNY =  ordersCount.seededRand(0, 50)
+
+    val quantityLN =  ordersCount.seededRand(0, 20)
 
     val ratePerSecond = 0.5
 
     val sleepInterval: Long = (1 / ratePerSecond).toLong
 
-    (0 to quantity).foreach( i => { createOrderNyc(i); time.sleep(sleepInterval * 100) })
+    (0 to quantityNY).foreach( i => { createOrderNyc(i); time.sleep(sleepInterval * 50) })
 
-    (0 to quantity).foreach( i => { createOrderLdn(i); time.sleep(sleepInterval * 100) })
+    (0 to quantityLN).foreach( i => { createOrderLdn(i); time.sleep(sleepInterval * 50) })
 
     time.sleep(1000)
 
