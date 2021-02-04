@@ -76,7 +76,10 @@ case class ChangeViewPortRange(viewPortId: String, from: Int, to: Int) extends M
 case class ChangeViewPortRangeSuccess(viewPortId: String, from: Int, to: Int) extends MessageBody
 
 case class OpenTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
+
 case class CloseTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
+case class CloseTreeNodeSuccess(vpId: String, treeKey: String) extends MessageBody
+case class CloseTreeNodeReject(vpId: String, treeKey: String) extends MessageBody
 
 case class HeartBeat(ts: Long) extends MessageBody
 case class HeartBeatResponse(ts: Long) extends MessageBody
@@ -91,6 +94,9 @@ case class RpcSuccess(table: String, key: String) extends MessageBody
 case class RpcReject(table: String, key: String, reason: String) extends MessageBody
 
 case class TableRowUpdates(batch: String, isLast: Boolean, timeStamp: Long, rows: Array[RowUpdate]) extends MessageBody
+
+case class OpenTreeNodeSuccess(vpId: String, treeKey: String) extends MessageBody
+case class OpenTreeNodeReject(vpId: String, treeKey: String) extends MessageBody
 
 object UpdateType{
   final val SizeOnly = "SIZE"

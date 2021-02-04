@@ -70,6 +70,7 @@ class JsonVsSerializerTest extends FeatureSpec with Matchers{
       roundTrip(RpcUpdate("orderEntry", "Foo", Map("Foo" -> 123, "Bar" -> true, "Whizzle" -> "TANG", "HooHa" -> 344567l)))
       roundTrip(RpcSuccess("orderEntry", "Foo"))
       roundTrip(RpcReject("orderEntry", "Foo", "cause you aint pretty"))
+      roundTrip(OpenTreeNodeSuccess("orderEntry", "..."))
       //roundTrip(RpcCall("doSomething", Array("foo", 123.12d), Map()))
 
       //table row update.data comes back as strings when deserialized, need to add special compare check
