@@ -112,6 +112,10 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         logger.info(s"[VP] Range Resp ${body.from}->${body.to}")
         eventBus.publish(ClientChangeViewPortRangeSuccess(body.viewPortId, body.from, body.to))
 
+      case body: OpenTreeNodeSuccess =>
+
+      case body: CloseTreeNodeSuccess =>
+
       case body: TableRowUpdates =>
 
         //if(logReq.shouldLog()){

@@ -42,6 +42,11 @@ import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
   new Type(value = classOf[RpcReject], name = "RPC_REJECT"),
   new Type(value = classOf[HeartBeatResponse], name = "HB_RESP"),
   new Type(value = classOf[RpcCall], name = "RPC_CALL"),
-  new Type(value = classOf[RpcResponse], name = "RPC_RESP")
+  new Type(value = classOf[RpcResponse], name = "RPC_RESP"),
+  new Type(value = classOf[OpenTreeNodeSuccess], name = "OPEN_TREE_SUCCESS"),
+  new Type(value = classOf[OpenTreeNodeReject], name = "OPEN_TREE_REJECT"),
+  new Type(value = classOf[CloseTreeNodeSuccess], name = "CLOSE_TREE_SUCCESS"),
+  new Type(value = classOf[CloseTreeNodeReject], name = "CLOSE_TREE_REJECT"),
+
 ))
 trait CoreJsonSerializationMixin {}

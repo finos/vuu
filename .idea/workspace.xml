@@ -8,16 +8,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#17 Replaced concurrent map with moving window class">
+    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/toolbox/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/toolbox/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/www/deploy/murmur-v0.1.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/www/deploy/murmur-v0.2.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/www/deploy/murmur-v0.3.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/SimulMain.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/SimulMain.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/http/Http2Server.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/http/Http2Server.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/CoreServerApiHander.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/CoreServerApiHander.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/CoreJsonSerializationMixin.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/CoreJsonSerializationMixin.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/Messages.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/Messages.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ViewServerHandler.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ViewServerHandler.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/json/JsonVsSerializerTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/json/JsonVsSerializerTest.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,6 +97,34 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="GroupByTreeBuilderTest.Feature: check tree building Scenario: build simple groupby tree" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="vuu (1)" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="selectedOptions">
+        <list />
+      </option>
+      <option name="testKind" value="Test name" />
+      <option name="testClassPath" value="io.venuu.vuu.viewport.GroupByTreeBuilderTest" />
+      <option name="testName" value="Feature: check tree building Scenario: build simple groupby tree" />
+      <option name="workingDirectory" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JsonVsSerializerTest.Feature: test serialization Scenario: test login message" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="vuu (1)" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="selectedOptions">
+        <list />
+      </option>
+      <option name="testKind" value="Test name" />
+      <option name="testClassPath" value="io.venuu.vuu.json.JsonVsSerializerTest" />
+      <option name="testName" value="Feature: test serialization Scenario: test login message" />
+      <option name="workingDirectory" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="MovingVisibleWindowTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
       <module name="toolbox" />
       <option name="allowRunningInParallel" value="false" />
@@ -107,20 +133,6 @@
       </option>
       <option name="testKind" value="Class" />
       <option name="testClassPath" value="io.venuu.toolbox.collection.window.MovingVisibleWindowTest" />
-      <option name="workingDirectory" value="$PROJECT_DIR$" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="MovingVisibleWindowTest.Feature: test windowed array Scenario: check basic behaviour" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="toolbox" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="selectedOptions">
-        <list />
-      </option>
-      <option name="testKind" value="Test name" />
-      <option name="testClassPath" value="io.venuu.toolbox.collection.window.MovingVisibleWindowTest" />
-      <option name="testName" value="Feature: test windowed array Scenario: check basic behaviour" />
       <option name="workingDirectory" value="$PROJECT_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -154,20 +166,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="MovingVisibleWindowTest.Feature: test windowed array Scenario: test range setting" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="toolbox" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="selectedOptions">
-        <list />
-      </option>
-      <option name="testKind" value="Test name" />
-      <option name="testClassPath" value="io.venuu.toolbox.collection.window.MovingVisibleWindowTest" />
-      <option name="testName" value="Feature: test windowed array Scenario: test range setting" />
-      <option name="workingDirectory" value="$PROJECT_DIR$" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration default="true" type="TestNG">
       <option name="TEST_OBJECT" value="CLASS" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -187,21 +185,21 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Application.SimulMain" />
-      <item itemvalue="Application.SwingClientMain" />
-      <item itemvalue="ScalaTest.MovingVisibleWindowTest.Feature: test windowed array Scenario: check basic behaviour" />
-      <item itemvalue="ScalaTest.MovingVisibleWindowTest.Feature: test windowed array Scenario: test range setting" />
       <item itemvalue="ScalaTest.MovingVisibleWindowTest.Feature: test windowed array Scenario: test preserving data" />
       <item itemvalue="ScalaTest.MovingVisibleWindowTest" />
       <item itemvalue="ScalaTest.MovingVisibleWindowTest.Feature: test windowed array Scenario: test preserving data backwards" />
+      <item itemvalue="ScalaTest.GroupByTreeBuilderTest.Feature: check tree building Scenario: build simple groupby tree" />
+      <item itemvalue="Application.SimulMain" />
+      <item itemvalue="Application.SwingClientMain" />
+      <item itemvalue="ScalaTest.JsonVsSerializerTest.Feature: test serialization Scenario: test login message" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="ScalaTest.JsonVsSerializerTest.Feature: test serialization Scenario: test login message" />
+        <item itemvalue="ScalaTest.GroupByTreeBuilderTest.Feature: check tree building Scenario: build simple groupby tree" />
         <item itemvalue="ScalaTest.MovingVisibleWindowTest" />
         <item itemvalue="ScalaTest.MovingVisibleWindowTest.Feature: test windowed array Scenario: test preserving data backwards" />
         <item itemvalue="ScalaTest.MovingVisibleWindowTest.Feature: test windowed array Scenario: test preserving data" />
-        <item itemvalue="ScalaTest.MovingVisibleWindowTest.Feature: test windowed array Scenario: test range setting" />
-        <item itemvalue="ScalaTest.MovingVisibleWindowTest.Feature: test windowed array Scenario: check basic behaviour" />
       </list>
     </recent_temporary>
   </component>
@@ -385,7 +383,14 @@
       <option name="project" value="LOCAL" />
       <updated>1612433216972</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="#17 Last cleanup before merge">
+      <created>1612458803352</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1612458803352</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -438,7 +443,8 @@
     <MESSAGE value="#15 Turned off file log as could get v big" />
     <MESSAGE value="#16 Added in/out log for debugging diffs in swing an javscript versions" />
     <MESSAGE value="#17 Replaced concurrent map with moving window class" />
-    <option name="LAST_COMMIT_MESSAGE" value="#17 Replaced concurrent map with moving window class" />
+    <MESSAGE value="#17 Last cleanup before merge" />
+    <option name="LAST_COMMIT_MESSAGE" value="#17 Last cleanup before merge" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -492,6 +498,16 @@
           <url>file://$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/collection/window/ArrayBackedMovingWindow.scala</url>
           <line>38</line>
           <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/rpc/JsonSubTypeRegistry.scala</url>
+          <line>95</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8-sources.jar!/com/fasterxml/jackson/databind/ser/std/BeanSerializerBase.java</url>
+          <line>725</line>
+          <option name="timeStamp" value="23" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

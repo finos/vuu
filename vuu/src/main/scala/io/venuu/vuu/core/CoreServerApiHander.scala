@@ -169,11 +169,11 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
 
   override def process(msg: OpenTreeNodeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     viewPortContainer.openNode(msg.vpId, msg.treeKey)
-    vsMsg(ChangeViewPortRangeSuccess(msg.vpId, -1,-1))(ctx)
+    vsMsg(OpenTreeNodeSuccess(msg.vpId, msg.treeKey))(ctx)
   }
 
   override def process(msg: CloseTreeNodeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     viewPortContainer.closeNode(msg.vpId, msg.treeKey)
-    vsMsg(ChangeViewPortRangeSuccess(msg.vpId, -1,-1))(ctx)
+    vsMsg(CloseTreeNodeSuccess(msg.vpId, msg.treeKey))(ctx)
   }
 }

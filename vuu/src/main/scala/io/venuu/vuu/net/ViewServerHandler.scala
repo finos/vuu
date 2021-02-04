@@ -44,7 +44,7 @@ class ViewServerHandler(serializer: Serializer[String, MessageBody], processor: 
 
     val response = processor.handle(json, channel)
 
-    response.foreach( msg => logger.debug("SVR OUT:" + JsonUtil.toRawJson(msg) ) )
+    response.foreach( msg => logger.info("SVR OUT:" + JsonUtil.toRawJson(msg) ) )
 
     response.foreach( resp => {
       channel.writeAndFlush(new TextWebSocketFrame(serializer.serialize(resp)))
