@@ -110,9 +110,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
       case body: ChangeViewPortRangeSuccess =>
         logger.info(s"[VP] Range Resp ${body.from}->${body.to}")
-        //eventBus.pubish(ClientChange)
-
-
+        eventBus.publish(ClientChangeViewPortRangeSuccess(body.viewPortId, body.from, body.to))
 
       case body: TableRowUpdates =>
 

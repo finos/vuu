@@ -190,7 +190,7 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
 
       val last = table.peer.rowAtPoint(new Point(0, rectangle.y + rectangle.height))
 
-      logger.trace(s"state changed: view rect = $rectangle, firstrow = $firstRow, lastrow = $last")
+      logger.info(s"state changed: view rect = $rectangle, firstrow = $firstRow, lastrow = $last")
 
       if(firstRow == lastFirst && lastLast == last){
         //do nothing

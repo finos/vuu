@@ -8,18 +8,30 @@
         </encoder>
     </appender>
 
+    <!-- uncomment this whole section if you want socket level logging
     <appender name="server-inout" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>target/vuu-server-inout.log</file>
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-        <fileNamePattern>target/vuu/roll-by-time/inout.%d{yyyy-MM-dd-HH}.log
-        </fileNamePattern>
-        <maxHistory>20</maxHistory>
-        <totalSizeCap>20MB</totalSizeCap>
-    </rollingPolicy>
-    <encoder>
-        <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-    </encoder>
-</appender>
+        <faile>target/vuu-server-inout.log</faile>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>target/vuu/roll-by-time/inout.%d{yyyy-MM-dd-HH}.log
+            </fileNamePattern>
+            <maxHistory>20</maxHistory>
+            <totalSizeCap>20MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="io.venuu.vuu.net.ViewServerHandler" level="DEBUG">
+        <appender-ref ref="server-inout"/>
+    </logger>
+
+    <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
+        <appender-ref ref="server-inout"/>
+    </logger>
+
+    TO HERE
+    -->
 
     <!-- required for debugging messages off the wire -->
     <!--appender name="roll-by-time" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -40,18 +52,11 @@
         <appender-ref ref="roll-by-time" />
     </logger-->
 
-    <logger name="io.venuu.vuu.net.ViewServerHandler" level="DEBUG" >
-        <appender-ref ref="server-inout" />
-    </logger>
 
-    <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG" >
-        <appender-ref ref="server-inout" />
-    </logger>
 
     <root level="INFO">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDOUT"/>
     </root>
-
 
 
 </configuration>

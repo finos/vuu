@@ -50,3 +50,5 @@ case class ClientRpcTableUpdateSuccess(requestId: String, table: String, key: St
 
 case class ClientOpenTreeNodeRequest(requestId: String, vpId: String, treeKey: String) extends ClientMessage with ToServer
 case class ClientCloseTreeNodeRequest(requestId: String, vpId: String, treeKey: String) extends ClientMessage with ToServer
+
+case class ClientChangeViewPortRangeSuccess(vpId: String, from: Int, to: Int) extends ClientMessage
