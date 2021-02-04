@@ -8,16 +8,16 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/collection/window/ArrayBackedMovingWindow.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/collection/window/MovingWindow.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/toolbox/src/test/scala/io/venuu/toolbox/collection/window/MovingWindowTest.scala" afterDir="false" />
+    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#17 Replaced concurrent map with moving window class">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/resources/logback.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/todo.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/toolbox/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/toolbox/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/www/deploy/murmur-v0.1.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/www/deploy/murmur-v0.2.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/www/deploy/murmur-v0.3.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/SimulMain.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/SimulMain.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/messages/ClientMessage.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/messages/ClientMessage.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/model/Model.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/model/Model.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/http/Http2Server.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/http/Http2Server.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,7 +85,7 @@
       <recent name="$PROJECT_DIR$/zk/src/assembly" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.SwingClientMain">
+  <component name="RunManager" selected="Application.SimulMain">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -378,7 +378,14 @@
       <option name="project" value="LOCAL" />
       <updated>1612345557200</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="#17 Replaced concurrent map with moving window class">
+      <created>1612433216972</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1612433216972</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -430,7 +437,8 @@
     <MESSAGE value="#15 Resolved issue with cache disappearing sometimes with eroneous call to clear the map, also foixed sort on lotSize column as its an int not a double." />
     <MESSAGE value="#15 Turned off file log as could get v big" />
     <MESSAGE value="#16 Added in/out log for debugging diffs in swing an javscript versions" />
-    <option name="LAST_COMMIT_MESSAGE" value="#16 Added in/out log for debugging diffs in swing an javscript versions" />
+    <MESSAGE value="#17 Replaced concurrent map with moving window class" />
+    <option name="LAST_COMMIT_MESSAGE" value="#17 Replaced concurrent map with moving window class" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
