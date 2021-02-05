@@ -10,12 +10,16 @@
   <component name="ChangeListManager">
     <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/CoreServerApiHander.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/CoreServerApiHander.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/CoreJsonSerializationMixin.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/CoreJsonSerializationMixin.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/toolbox/bitbucket-pipelines.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/toolbox/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/toolbox/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/bitbucket-pipelines.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/runconfigurations/SimulMain.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/resources/runconfigurations/SimulMain.run.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/Messages.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/Messages.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ViewServerHandler.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ViewServerHandler.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/json/JsonVsSerializerTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/json/JsonVsSerializerTest.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketClient.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketClient.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketClientHandler.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketClientHandler.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketServerHandler.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ws/WebSocketServerHandler.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +35,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="issue_19_groupbyfix" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -60,6 +64,7 @@
     <option name="autoscrollFromSource" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="Git.Branch.Popup.ShowAllRemotes" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="GoToFile.includeJavaFiles" value="false" />
@@ -83,7 +88,7 @@
       <recent name="$PROJECT_DIR$/zk/src/assembly" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.SimulMain">
+  <component name="RunManager" selected="Application.SwingClientMain">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -189,9 +194,9 @@
       <item itemvalue="ScalaTest.MovingVisibleWindowTest" />
       <item itemvalue="ScalaTest.MovingVisibleWindowTest.Feature: test windowed array Scenario: test preserving data backwards" />
       <item itemvalue="ScalaTest.GroupByTreeBuilderTest.Feature: check tree building Scenario: build simple groupby tree" />
+      <item itemvalue="ScalaTest.JsonVsSerializerTest.Feature: test serialization Scenario: test login message" />
       <item itemvalue="Application.SimulMain" />
       <item itemvalue="Application.SwingClientMain" />
-      <item itemvalue="ScalaTest.JsonVsSerializerTest.Feature: test serialization Scenario: test login message" />
     </list>
     <recent_temporary>
       <list>
@@ -390,7 +395,14 @@
       <option name="project" value="LOCAL" />
       <updated>1612458803352</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="#19 Fixed issue with GroupBy table after refactor.">
+      <created>1612462519392</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1612462519392</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -444,7 +456,8 @@
     <MESSAGE value="#16 Added in/out log for debugging diffs in swing an javscript versions" />
     <MESSAGE value="#17 Replaced concurrent map with moving window class" />
     <MESSAGE value="#17 Last cleanup before merge" />
-    <option name="LAST_COMMIT_MESSAGE" value="#17 Last cleanup before merge" />
+    <MESSAGE value="#19 Fixed issue with GroupBy table after refactor." />
+    <option name="LAST_COMMIT_MESSAGE" value="#19 Fixed issue with GroupBy table after refactor." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

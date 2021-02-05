@@ -123,7 +123,7 @@ class RowUpdateDeserializer extends JsonDeserializer[RowUpdate]{
     val rowKey = node.get("rowKey").asText()
     val updateType = node.get("updateType").asText()
 
-    val data = node.withArray("data").elements().toList
+    val data = node.withArray("data").asInstanceOf[JsonNode].elements().toList
 
     val dataAsArray = data.map(_.asText()).toArray[Any]
 

@@ -26,10 +26,6 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
     queue.poll(10.seconds.toMillis, TimeUnit.MILLISECONDS)
   }
 
-//  def handshakeFuture: ChannelFuture = {
-//
-//  }
-
   override def handlerAdded(ctx: ChannelHandlerContext) {
     handshakeFuture = ctx.newPromise
   }
@@ -42,7 +38,8 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
     logger.info("WebSocket Client disconnected!")
   }
 
-  def messageReceived(ctx: ChannelHandlerContext, msg: AnyRef) {
+
+  override def channelRead0(ctx: ChannelHandlerContext, msg: scala.AnyRef): Unit = {
     val ch: Channel = ctx.channel
     if (!handshaker.isHandshakeComplete) {
       handshaker.finishHandshake(ch, msg.asInstanceOf[FullHttpResponse])

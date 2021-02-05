@@ -24,7 +24,8 @@ class WebSocketServerHandler(handler: ViewServerHandler) extends SimpleChannelIn
   private final val WEBSOCKET_PATH = "/websocket";
   private var handshaker: WebSocketServerHandshaker = _
 
-  override def messageReceived(ctx: ChannelHandlerContext, msg: Object) {
+
+  override def channelRead0(ctx: ChannelHandlerContext, msg: Object): Unit = {
     if (msg.isInstanceOf[FullHttpRequest]) {
       handleHttpRequest(ctx, msg.asInstanceOf[FullHttpRequest]);
     } else if (msg.isInstanceOf[WebSocketFrame]) {
@@ -118,11 +119,6 @@ class WebSocketServerHandler(handler: ViewServerHandler) extends SimpleChannelIn
 
     // Send the response and close the connection if necessary.
     val f = ctx.channel().writeAndFlush(res);
-
-
-    //if (!HttpUtil.k(req) || res.status().code() != 200) {
-    //f.addListener(ChannelFutureListener.CLOSE);
-    //}
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
