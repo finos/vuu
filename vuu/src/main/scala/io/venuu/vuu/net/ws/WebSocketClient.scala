@@ -48,7 +48,7 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
           //        if (sslCtx != null) {
           //          p.addLast(sslCtx.newHandler(ch.alloc, host, port))
           //        }
-          p.addLast(new HttpClientCodec, new HttpObjectAggregator(8192), new WebSocketClientCompressionHandler, handler)
+          p.addLast(new HttpClientCodec, new HttpObjectAggregator(8192), WebSocketClientCompressionHandler.INSTANCE, handler)
         }
       })
 
@@ -127,7 +127,7 @@ object WebSocketClient {
 //        if (sslCtx != null) {
 //          p.addLast(sslCtx.newHandler(ch.alloc, host, port))
 //        }
-        p.addLast(new HttpClientCodec, new HttpObjectAggregator(8192), new WebSocketClientCompressionHandler, handler)
+        p.addLast(new HttpClientCodec, new HttpObjectAggregator(8192), WebSocketClientCompressionHandler.INSTANCE, handler)
       }
     })
       val ch: Channel = b.connect(uri.getHost, port).sync.channel
