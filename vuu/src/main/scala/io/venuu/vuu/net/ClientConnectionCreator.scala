@@ -57,11 +57,6 @@ class DefaultMessageHandler(val channel: Channel,
 
       val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, "", session.user, formatted))
 
-//      if(highPriority)
-//        logger.info(s"[VP] HIGHPR updates : ${session.user} ${updates.size}")
-//      else
-//        logger.debug(s"[VP] updates: ${session.user} ${updates.size}")
-
       logger.debug("ASYNC-SVR-OUT:" + json)
 
       channel.writeAndFlush(new TextWebSocketFrame(json))
@@ -124,7 +119,7 @@ class DefaultMessageHandler(val channel: Channel,
           return None
         }
 
-        val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns)
+        val dataToSend = update.table.pullRowAsArrayWithSelection(update.key.key, update.vp.getColumns, update.vp.getSelection)
 
         if(dataToSend.size > 0 &&  dataToSend(0) == null)
           println("ChrisChris>>" + update.table.name + " " + update.key.key + " " + update.index)
@@ -149,6 +144,7 @@ class DefaultMessageHandler(val channel: Channel,
       case req: ChangeViewPortRange => serverApi.process(req)(ctx)
       case req: OpenTreeNodeRequest => serverApi.process(req)(ctx)
       case req: CloseTreeNodeRequest => serverApi.process(req)(ctx)
+      case req: SetSelectionRequest => serverApi.process(req)(ctx)
       case req: GetTableList => serverApi.process(req)(ctx)
       case req: GetTableMetaRequest => serverApi.process(req)(ctx)
       case req: HeartBeatResponse => serverApi.process(req)(ctx)

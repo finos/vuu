@@ -9,11 +9,10 @@ package io.venuu.vuu.core.table
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
-
 import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.text.AsciiUtil
-import io.venuu.vuu.api.TableDef
+import io.venuu.vuu.api.{SpecialColumns, TableDef}
 import io.venuu.vuu.provider.{JoinTableProvider, Provider}
 import io.venuu.vuu.viewport.{RowProcessor, RowSource}
 
@@ -56,6 +55,18 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   def getTableDef: TableDef
   def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit
   def processDelete(rowKey: String): Unit
+
+  override def pullRowWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): RowData = {
+    pullRow(key, columns).set(SpecialColumns.selected.name, isSelectedVal(key, selected) )
+  }
+
+  def isSelectedVal(key: String, selected: Map[String, Any]): Int = {
+    if(selected.contains(key)) 1 else 0
+  }
+
+  override def pullRowAsArrayWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): Array[Any] = {
+    Array.concat( Array(isSelectedVal(key, selected)), pullRowAsArray(key, columns) )
+  }
 
   def size(): Long = {
     primaryKeys.length
@@ -100,6 +111,7 @@ trait RowData{
   def get(field: String): Any
   def get(column: Column): Any
   def getFullyQualified(column: Column): Any
+  def set(field: String, value: Any): RowData
 }
 
 case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: Long)
@@ -127,6 +139,7 @@ object EmptyRowData extends RowData{
   override def get(field: String): Any = null
   override def get(column: Column): Any = null
   override def getFullyQualified(column: Column): Any = null
+  override def set(field: String, value: Any): RowData = EmptyRowData
 }
 
 
@@ -197,7 +210,12 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
         EmptyRowData
       case row =>
         val rowData = columns.map(c => (c.name -> row.get(c))).toMap
-        RowWithData(key, rowData)
+        if(columns.contains(SpecialColumns.selected)){
+          RowWithData(key, rowData)
+        }else{
+          RowWithData(key, rowData)
+        }
+
     }
   }
 

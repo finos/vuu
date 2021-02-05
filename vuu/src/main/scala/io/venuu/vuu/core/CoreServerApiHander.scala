@@ -9,6 +9,7 @@ package io.venuu.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.api.SpecialColumns
 import io.venuu.vuu.core.table.{DataType, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
@@ -29,6 +30,8 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
   override def process(msg: GetTableList)(ctx: RequestContext): Option[ViewServerMessage] = {
     vsMsg(GetTableListResponse(tableContainer.getTableNames()))(ctx)
   }
+
+
 
   override def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage] = {
     val table = tableContainer.getTable(msg.table)
@@ -63,8 +66,8 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
       errorMsg(s"Table ${msg.table} not found in container")(ctx)
     else{
       val table = tableContainer.getTable(msg.table)
-      val columnNames = table.getTableDef.columns.map(_.name)
-      val dataTypes = table.getTableDef.columns.map(col => DataType.asString(col.dataType))
+      val columnNames = Array.concat(Array(SpecialColumns.selected.name), table.getTableDef.columns.map(_.name))
+      val dataTypes = Array.concat(Array(DataType.asString(SpecialColumns.selected.dataType)), table.getTableDef.columns.map(col => DataType.asString(col.dataType)))
       vsMsg(GetTableMetaResponse(table.name, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
     }
   }
@@ -164,6 +167,16 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
       case Failure(e) =>
         logger.error("Could not change VP range:", e.getMessage)
         errorMsg("Could not change VP range:" + e.getMessage)(ctx)
+    }
+  }
+
+  override def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelection(msg.selection))) match{
+      case Success(vp) =>
+        vsMsg(SetSelectionSuccess(vp.id, vp.getSelection.map( tup => tup._2).toArray))(ctx)
+      case Failure(e) =>
+        logger.error("Could not change VP selection:", e.getMessage)
+        errorMsg("Could not change VP selection:" + e.getMessage)(ctx)
     }
   }
 

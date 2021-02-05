@@ -47,6 +47,8 @@ import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
   new Type(value = classOf[OpenTreeNodeReject], name = "OPEN_TREE_REJECT"),
   new Type(value = classOf[CloseTreeNodeSuccess], name = "CLOSE_TREE_SUCCESS"),
   new Type(value = classOf[CloseTreeNodeReject], name = "CLOSE_TREE_REJECT"),
-
+  new Type(value = classOf[SetSelectionRequest], name = "SET_SELECTION"),
+  new Type(value = classOf[SetSelectionSuccess], name = "SET_SELECTION_SUCCESS"),
+  new Type(value = classOf[ErrorResponse], name = "ERROR"),
 ))
 trait CoreJsonSerializationMixin {}

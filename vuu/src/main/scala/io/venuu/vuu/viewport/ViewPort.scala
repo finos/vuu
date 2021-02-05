@@ -34,6 +34,8 @@ case object SizeUpdateType extends ViewPortUpdateType
 
 object DefaultRange extends ViewPortRange(0, 123)
 
+case class ViewPortSelection(indices: Array[Int])
+
 case class ViewPortRange(from: Int, to: Int){
   def contains(i: Int): Boolean = {
     i >= from && i < to
@@ -68,6 +70,7 @@ trait ViewPort {
   def session: ClientSessionId
   def table: RowSource
   def setRange(range: ViewPortRange)
+  def setSelection(rowIndices: Array[Int])
   def getRange(): ViewPortRange
   def setKeys(keys: ImmutableArray[String])
   def getKeys() : ImmutableArray[String]
@@ -75,6 +78,7 @@ trait ViewPort {
   def outboundQ: PublishQueue[ViewPortUpdate]
   def highPriorityQ: PublishQueue[ViewPortUpdate]
   def getColumns: List[Column]
+  def getSelection: Map[String, Int]
   def getRowKeyMappingSize_ForTest: Int
   def getGroupBy: GroupBy
   def combinedQueueLength = highPriorityQ.length + outboundQ.length
@@ -83,7 +87,7 @@ trait ViewPort {
   def getTreeNodeState: TreeNodeState
   def getStructure: ViewPortStructuralFields
   def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String]
-  def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Integer]
+  def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int]
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
@@ -119,6 +123,18 @@ case class ViewPortImpl(id: String,
     if(!onlySortOrFilterChange)
       sendUpdatesOnChange(range.get())
   }
+
+  override def setSelection(rowIndices: Array[Int]): Unit = {
+    rangeLock.synchronized{
+      val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)) ).toMap[String, Int]
+      selection = rowIndices.map( idx => (this.keys(idx), idx) ).toMap
+      for( (key, idx ) <- selection ++ oldSelection ){
+        publishUpdate(key, idx)
+      }
+    }
+  }
+
+  override def getSelection: Map[String, Int] = selection
 
   def setRange(newRange: ViewPortRange): Unit = {
     rangeLock.synchronized{
@@ -158,9 +174,11 @@ case class ViewPortImpl(id: String,
 
   @volatile
   private var keys : ImmutableArray[String] = new NiaiveImmutableArray[String](new Array[String](0))
+  @volatile
+  private var selection : Map[String, Int] = Map()
 
   private val subscribedKeys = new ConcurrentHashMap[String, String]()
-  private val rowKeyToIndex = new ConcurrentHashMap[String, Integer]()
+  private val rowKeyToIndex = new ConcurrentHashMap[String, Int]()
 
   override def ForTest_getSubcribedKeys = subscribedKeys
   override def ForTest_getRowKeyToRowIndex = rowKeyToIndex

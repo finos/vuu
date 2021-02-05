@@ -98,6 +98,9 @@ case class TableRowUpdates(batch: String, isLast: Boolean, timeStamp: Long, rows
 case class OpenTreeNodeSuccess(vpId: String, treeKey: String) extends MessageBody
 case class OpenTreeNodeReject(vpId: String, treeKey: String) extends MessageBody
 
+case class SetSelectionRequest(vpId: String, selection: Array[Int]) extends MessageBody
+case class SetSelectionSuccess(vpId: String, selection: Array[Int]) extends MessageBody
+
 object UpdateType{
   final val SizeOnly = "SIZE"
   final val Update = "U"

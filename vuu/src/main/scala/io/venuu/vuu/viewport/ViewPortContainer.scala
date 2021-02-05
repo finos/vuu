@@ -328,6 +328,12 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     }
   }
 
+  def changeSelection(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], vpId: String, selection: ViewPortSelection): ViewPort = {
+    val viewPort = viewPorts.get(vpId)
+    viewPort.setSelection(selection.indices)
+    viewPort
+  }
+
   /**
     * Called by dedicated viewport runner thread to populate viewport keys.
     */

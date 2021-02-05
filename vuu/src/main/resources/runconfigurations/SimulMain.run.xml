@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="SimulMain" type="Application" factoryName="Application" folderName="runConfigs">
     <option name="MAIN_CLASS_NAME" value="io.venuu.vuu.SimulMain" />
-    <module name="vuu server" />
+    <module name="vuu (1)" />
     <option name="PROGRAM_PARAMETERS" value="-Xmx5G" />
     <extension name="coverage">
       <pattern>

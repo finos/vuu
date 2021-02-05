@@ -31,7 +31,9 @@ trait RowSource extends KeyedObservable[RowKeyUpdate]{
   def readRow(key: String, columns:List[String], processor: RowProcessor): Unit
   def primaryKeys: ImmutableArray[String]
   def pullRow(key: String, columns: List[Column]): RowData
+  def pullRowWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): RowData
   def pullRowAsArray(key: String, columns: List[Column]): Array[Any]
+  def pullRowAsArrayWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): Array[Any]
   def asTable: DataTable
 //  def addSessionListener(listener: SessionListener): Unit
 //  def removeSessionListener(listener: SessionListener): Unit

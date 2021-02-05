@@ -31,7 +31,7 @@ class AbstractViewPortTestCase extends FeatureSpec {
     val ordersDef = TableDef(
     name = "orders",
     keyField = "orderId",
-    columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+    columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
     joinFields =  "ric", "orderId")
 
     val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")

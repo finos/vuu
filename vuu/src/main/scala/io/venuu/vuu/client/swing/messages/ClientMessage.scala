@@ -52,3 +52,5 @@ case class ClientOpenTreeNodeRequest(requestId: String, vpId: String, treeKey: S
 case class ClientCloseTreeNodeRequest(requestId: String, vpId: String, treeKey: String) extends ClientMessage with ToServer
 
 case class ClientChangeViewPortRangeSuccess(vpId: String, from: Int, to: Int) extends ClientMessage
+
+case class ClientSetSelection(requestId: String, vpId: String, selection : Array[Int]) extends ClientMessage with ToServer

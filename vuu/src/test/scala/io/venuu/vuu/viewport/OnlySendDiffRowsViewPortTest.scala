@@ -65,10 +65,6 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
     }
 
-    scenario("Change viewport from 20-40 to 10-30 nd check we only get 10 rows"){
-
-    }
-
   }
 
 }

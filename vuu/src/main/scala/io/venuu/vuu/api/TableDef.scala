@@ -13,6 +13,13 @@ object Fields{
   val All = List("*")
 }
 
+object SpecialColumns{
+  final val selected = SimpleColumn("_selected", 0, DataType.IntegerDataType)
+  def isSpecial(column: Column): Boolean = {
+    column.equals(selected)
+  }
+}
+
 
 object TableDef{
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
@@ -50,11 +57,16 @@ class GroupByTableDef(name: String, sourceTableDef: TableDef) extends TableDef(n
 
 class TableDef(val name: String, val keyField: String, val columns: Array[Column], val joinFields: Seq[String], val autosubscribe: Boolean = false) {
 
+  import SpecialColumns.selected
+
   def deleteColumnName() = s"$name._isDeleted"
 
   def columnForName(name: String): Column = {
     val column = columns.find(c => c.name == name )
-    if(column.isEmpty)
+    if(name.equals(selected.name)){
+      selected
+    }
+    else if(column.isEmpty)
       null
     else
       column.get

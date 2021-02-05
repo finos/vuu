@@ -13,7 +13,7 @@ class RangeSubtractTest extends FeatureSpec with Matchers with GivenWhenThen{
 
   feature("Subtract one range from another and get the keys"){
 
-    scenario("Range underlaps"){
+    scenario("Check the differences between 2 ranges"){
 
       scenarios.foreach {
         case (firstRange, secondRange, expectedSubtract) => {

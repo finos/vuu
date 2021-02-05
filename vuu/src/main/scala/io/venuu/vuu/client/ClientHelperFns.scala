@@ -34,6 +34,10 @@ object ClientHelperFns {
     vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, OpenTreeNodeRequest(vpId, treeKey)))
   }
 
+  def setSelection(sessionId: String, token: String, user: String, requestId: String, vpId: String, selection: Array[Int])(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, SetSelectionRequest(vpId, selection)))
+  }
+
   def closeTreeNodeAsync(sessionId: String, token: String, user: String, requestId: String, vpId: String, treeKey: String)(implicit vsClient: ViewServerClient): Unit = {
     vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, CloseTreeNodeRequest(vpId, treeKey)))
   }

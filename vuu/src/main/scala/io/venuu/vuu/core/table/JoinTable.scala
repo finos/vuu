@@ -9,11 +9,10 @@ package io.venuu.vuu.core.table
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.{ImmutableArray, ImmutableArrays}
-import io.venuu.vuu.api.{JoinTableDef, TableDef}
+import io.venuu.vuu.api.{JoinTableDef, SpecialColumns, TableDef}
 import io.venuu.vuu.provider.JoinTableProvider
 import io.venuu.vuu.viewport.RowProcessor
 
@@ -412,7 +411,13 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
-    val columnsByTable = columns.map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name).toMap
+
+    val nonSpecialColumns = columns
+                              .filter(c => !SpecialColumns.isSpecial(c) )
+
+    val columnsByTable = nonSpecialColumns
+                            .map(c => c.asInstanceOf[JoinColumn])
+                            .groupBy(_.sourceTable.name).toMap
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
@@ -444,7 +449,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     }
     })
 
-    val orderedArray = columns.map(c => foldedMap.get(c.asInstanceOf[JoinColumn]) match {
+    val orderedArray = nonSpecialColumns.map(c => foldedMap.get(c.asInstanceOf[JoinColumn]) match {
       case None => ""
       case Some(x) => x
     } ).toArray[Any]
