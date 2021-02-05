@@ -1,5 +1,5 @@
 # vuu
-###An open source view server implemented in Scala and HTML5
+### An open source view server implemented in Scala and HTML5
 
 **How to get started**
 
@@ -13,7 +13,7 @@
 
 **Running the View Server**
 
-1) Go to the SimulMain.scala, right click and run (add these into JVM args -Xmx10G -Xms5G -XX:UseG1GC)
+1) Go to the SimulMain.scala, right click and run (add these into JVM args -Xmx10G -Xms5G)
 2) Go to the SwingClientMain.scala, right click and run
 
 
