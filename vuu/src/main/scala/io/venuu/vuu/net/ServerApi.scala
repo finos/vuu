@@ -10,5 +10,6 @@ trait ServerApi{
   def process(msg: GetTableMetaRequest)(ctx: RequestContext): Option[ViewServerMessage]
   def process(msg: HeartBeatResponse)(ctx: RequestContext): Option[ViewServerMessage]
   def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage]
+  def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage]
   def disconnect(session: ClientSessionId): Unit
 }

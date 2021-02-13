@@ -13,7 +13,6 @@ object Fields{
   val All = List("*")
 }
 
-
 object TableDef{
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
     new TableDef(name, keyField,columns, joinFields.toSeq)

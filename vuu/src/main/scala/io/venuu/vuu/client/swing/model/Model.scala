@@ -188,7 +188,7 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
       sorts = msg.sortBy.sortDefs.map(sd => sd.column -> sd).toMap
       groupBy = msg.groupBy
       columns = if (!msg.groupBy.isEmpty)
-        Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("rowIndex") ++ msg.columns
+        Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ msg.columns
       else
         Array("rowIndex") ++ msg.columns
 
@@ -205,7 +205,7 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
       logger.info(s"Client Change VP Success ${msg} ")
 
       columns = if (!msg.groupBy.isEmpty)
-        Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("rowIndex") ++ msg.columns
+        Array("rowIndex") ++ Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ msg.columns
       else
         Array("rowIndex") ++ msg.columns
 
@@ -246,11 +246,9 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
     rowCount = ru.size
     vpId = ru.vpId
 
-    //logger.info(s"Data In Cache ${ru.index} ${ru.data}")
-
     if (movingWindow.isWithinRange(ru.index)) {
       logger.debug(s"Adding ${ru.index} row to window")
-      movingWindow.setAtIndex(ru.index, ru.data)
+      movingWindow.setAtIndex(ru.index, Array.concat(Array(ru.index.asInstanceOf[AnyRef]), ru.data))
     } else {
       logger.debug(s"Dropping ${ru.index} row, not in range" + movingWindow.getRange().from + "->" + movingWindow.getRange().to)
     }
@@ -277,7 +275,7 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
             if (columnIndex > entry.size)
               LoadingString
             else
-              Try(entry(columnIndex - 1)) match {
+              Try(entry(columnIndex)) match {
                 case Success(value) => value
                 case Failure(e) =>
                   logger.error("error on get data", e)

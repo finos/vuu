@@ -58,14 +58,8 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
         Table(
           //don't send 2,3 as they already existed in client cache
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544840l,104       ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850l,105       )
         )
       }
-
-    }
-
-    scenario("Change viewport from 20-40 to 10-30 nd check we only get 10 rows"){
 
     }
 

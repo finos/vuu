@@ -29,8 +29,6 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
   private val vpChangeRequests = new ConcurrentHashMap[String, ClientUpdateVPRange]()
 
-
-
   import io.venuu.vuu.client.ClientHelperFns._
 
   eventBus.register( {
@@ -51,6 +49,8 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         createVpAsync(principal.sessionId, principal.token, principal.user, msg.requestId, msg.table, msg.columns, sortBy = msg.sortBy, range = ViewPortRange(msg.from, msg.to), filterSpec = FilterSpec(msg.filter), groupBy = msg.groupBy)
       case msg: ClientRpcTableUpdate =>
         rpcTableUpdate(principal.sessionId, principal.token, principal.user, msg.table, msg.key, msg.data)
+      case msg: ClientSetSelection =>
+        setSelection(principal.sessionId, principal.token, principal.user, msg.requestId, msg.vpId, msg.selection)
 
       case msg: ClientUpdateVPRange =>
         vpChangeRequests.put(msg.vpId, msg)
@@ -137,6 +137,12 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
       case body: ChangeViewPortSuccess =>
         eventBus.publish(ClientChangeViewPortSuccess(msg.requestId, body.viewPortId, body.columns, body.sort, body.groupBy, body.filterSpec))
+
+      case body: SetSelectionSuccess =>
+        logger.info("[SELECTION] success...")
+
+      case body: ErrorResponse =>
+        logger.info("[ERROR] " + body)
     }
   }
 

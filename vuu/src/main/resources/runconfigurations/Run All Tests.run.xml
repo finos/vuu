@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run All Tests" type="ScalaTestRunConfiguration" factoryName="ScalaTest" show_console_on_std_err="false" show_console_on_std_out="false">
+    <module name="vuu" />
+    <option name="allowRunningInParallel" value="false" />
+    <option name="selectedOptions">
+      <list />
+    </option>
+    <option name="testKind" value="All in package" />
+    <option name="searchTest" value="In whole project" />
+    <option name="testPackagePath" value="io.venuu.vuu" />
+    <option name="workingDirectory" value="$PROJECT_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

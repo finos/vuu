@@ -57,11 +57,6 @@ class DefaultMessageHandler(val channel: Channel,
 
       val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, "", session.user, formatted))
 
-//      if(highPriority)
-//        logger.info(s"[VP] HIGHPR updates : ${session.user} ${updates.size}")
-//      else
-//        logger.debug(s"[VP] updates: ${session.user} ${updates.size}")
-
       logger.debug("ASYNC-SVR-OUT:" + json)
 
       channel.writeAndFlush(new TextWebSocketFrame(json))
@@ -114,7 +109,7 @@ class DefaultMessageHandler(val channel: Channel,
     update.vpUpdate match {
       case SizeUpdateType =>{
         //logger.debug(s"SVR[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
-        Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), Array.empty))
+        Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), 0, Array.empty))
       }
 
       case RowUpdateType =>
@@ -129,10 +124,12 @@ class DefaultMessageHandler(val channel: Channel,
         if(dataToSend.size > 0 &&  dataToSend(0) == null)
           println("ChrisChris>>" + update.table.name + " " + update.key.key + " " + update.index)
 
+        val isSelected = if( update.vp.getSelection.contains(update.key.key) ) 1 else 0
+
         if(dataToSend.size == 0)
           None
         else
-          Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), dataToSend))
+          Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), isSelected, dataToSend))
     }
 
   }
@@ -149,6 +146,7 @@ class DefaultMessageHandler(val channel: Channel,
       case req: ChangeViewPortRange => serverApi.process(req)(ctx)
       case req: OpenTreeNodeRequest => serverApi.process(req)(ctx)
       case req: CloseTreeNodeRequest => serverApi.process(req)(ctx)
+      case req: SetSelectionRequest => serverApi.process(req)(ctx)
       case req: GetTableList => serverApi.process(req)(ctx)
       case req: GetTableMetaRequest => serverApi.process(req)(ctx)
       case req: HeartBeatResponse => serverApi.process(req)(ctx)

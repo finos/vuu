@@ -8,7 +8,7 @@
         </encoder>
     </appender>
 
-    <!-- uncomment this whole section if you want socket level logging
+    <!-- uncomment this whole section if you want socket level logging -->
     <appender name="server-inout" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <faile>target/vuu-server-inout.log</faile>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -29,7 +29,7 @@
     <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
         <appender-ref ref="server-inout"/>
     </logger>
-
+    <!--
     TO HERE
     -->
 

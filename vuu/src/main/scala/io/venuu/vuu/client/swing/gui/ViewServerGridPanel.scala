@@ -118,8 +118,9 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
 
   table.peer.getSelectionModel.addListSelectionListener(new ListSelectionListener {
     override def valueChanged(e: ListSelectionEvent): Unit = {
-      val selected = e.getSource.asInstanceOf[DefaultListSelectionModel].getSelectedIndices
-      println("List selection changed, selected from: " + selected.mkString(","))
+      val selected = e.getSource.asInstanceOf[DefaultListSelectionModel].getSelectedIndices.toArray
+      // eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), context.vpId, 0, 100))
+      eventBus.publish(ClientSetSelection(RequestId.oneNew(), context.vpId, selected))
     }
   })
 

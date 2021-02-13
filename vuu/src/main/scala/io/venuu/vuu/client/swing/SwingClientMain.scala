@@ -34,11 +34,9 @@ object SwingClientMain extends SimpleSwingApplication {
 
   val worker = new Worker()
 
-  val columns = Array("ric", "description", "currency", "exchange", "bid", "ask", "scenario")
-
   lifecycle.start()
 
-  override def top: Frame = new VSMainFrame(columns)
+  override def top: Frame = new VSMainFrame(false, "")
 }
 
 

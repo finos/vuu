@@ -30,6 +30,8 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
     vsMsg(GetTableListResponse(tableContainer.getTableNames()))(ctx)
   }
 
+
+
   override def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage] = {
     val table = tableContainer.getTable(msg.table)
 
@@ -85,7 +87,6 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
           msg.columns.map(table.getTableDef.columnForName(_)).toList
 
         //TODO: CJS add support for changing flat viewport to GroupBy Viewport
-
         val sort = msg.sort
         val filter = msg.filterSpec
         val groupBy = msg.groupBy
@@ -164,6 +165,16 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
       case Failure(e) =>
         logger.error("Could not change VP range:", e.getMessage)
         errorMsg("Could not change VP range:" + e.getMessage)(ctx)
+    }
+  }
+
+  override def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelection(msg.selection))) match{
+      case Success(vp) =>
+        vsMsg(SetSelectionSuccess(vp.id, vp.getSelection.map( tup => tup._2).toArray))(ctx)
+      case Failure(e) =>
+        logger.error("Could not change VP selection:", e.getMessage)
+        errorMsg("Could not change VP selection:" + e.getMessage)(ctx)
     }
   }
 

@@ -77,6 +77,7 @@ class WebSocketServerClientTest extends FeatureSpec with Matchers {
 
       msg should equal("Chris Was here")
 
+      lifecycle.stop()
     }
 
   }

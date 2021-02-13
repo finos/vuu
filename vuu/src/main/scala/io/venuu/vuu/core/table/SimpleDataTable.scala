@@ -1,61 +1,72 @@
 /**
  * Copyright Whitebox Software Ltd. 2014
  * All Rights Reserved.
-
+ *
  * Created by chris on 26/02/2014.
-
+ *
  */
 package io.venuu.vuu.core.table
 
-import java.util
-import java.util.concurrent.ConcurrentHashMap
-
-import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.text.AsciiUtil
+import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.provider.{JoinTableProvider, Provider}
 import io.venuu.vuu.viewport.{RowProcessor, RowSource}
+
+import java.util
+import java.util.concurrent.ConcurrentHashMap
 
 
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   @volatile private var provider: Provider = null
 
-//  private val sessionListeners = new CopyOnWriteArraySet[SessionListener]()
-//
-//  override def addSessionListener(listener: SessionListener): Unit = {
-//    sessionListeners.add(listener)
-//  }
-//
-//  override def removeSessionListener(listener: SessionListener): Unit = {
-//    sessionListeners.remove(listener)
-//  }
-//
-//  def notifySessionTablesUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
-//    val iterator = sessionListeners.iterator()
-//    while(iterator.hasNext){
-//      iterator.next().processRawUpdate(rowKey, rowUpdate, timeStamp)
-//    }
-//  }
-//
-//  def notifySessionTablesDelete(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
-//    val iterator = sessionListeners.iterator()
-//    while(iterator.hasNext){
-//      iterator.next().processRawDelete(rowKey)
-//    }
-//  }
+  //  private val sessionListeners = new CopyOnWriteArraySet[SessionListener]()
+  //
+  //  override def addSessionListener(listener: SessionListener): Unit = {
+  //    sessionListeners.add(listener)
+  //  }
+  //
+  //  override def removeSessionListener(listener: SessionListener): Unit = {
+  //    sessionListeners.remove(listener)
+  //  }
+  //
+  //  def notifySessionTablesUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
+  //    val iterator = sessionListeners.iterator()
+  //    while(iterator.hasNext){
+  //      iterator.next().processRawUpdate(rowKey, rowUpdate, timeStamp)
+  //    }
+  //  }
+  //
+  //  def notifySessionTablesDelete(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
+  //    val iterator = sessionListeners.iterator()
+  //    while(iterator.hasNext){
+  //      iterator.next().processRawDelete(rowKey)
+  //    }
+  //  }
 
   def setProvider(aProvider: Provider): Unit = provider = aProvider
+
   def getProvider: Provider = provider
 
   def asTable = this
+
   def columnForName(name: String): Column = getTableDef.columnForName(name)
+
   def columnsForNames(names: String*): List[Column] = names.map(getTableDef.columnForName(_)).toList
+
   def columnsForNames(names: List[String]): List[Column] = names.map(getTableDef.columnForName(_)).toList
+
   def getTableDef: TableDef
+
   def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit
+
   def processDelete(rowKey: String): Unit
+
+  def isSelectedVal(key: String, selected: Map[String, Any]): Int = {
+    if (selected.contains(key)) 1 else 0
+  }
 
   def size(): Long = {
     primaryKeys.length
@@ -63,7 +74,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   def toAscii(count: Int) = {
     val columns = getTableDef.columns
-    val keys    = primaryKeys
+    val keys = primaryKeys
 
     val selectedKeys = keys.toArray.take(count)
 
@@ -76,7 +87,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   def toAscii(start: Int, end: Int) = {
     val columns = getTableDef.columns
-    val keys    = primaryKeys
+    val keys = primaryKeys
 
     val selectedKeys = keys.toArray.drop(start).take(end - start)
 
@@ -96,24 +107,28 @@ case class RowUpdate(key: String, data: Map[String, Any]) {
   def toRowData = ???
 }
 
-trait RowData{
+trait RowData {
   def get(field: String): Any
+
   def get(column: Column): Any
+
   def getFullyQualified(column: Column): Any
+
+  def set(field: String, value: Any): RowData
 }
 
 case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: Long)
 
-case class RowWithData(key: String, data: Map[String, Any]) extends RowData{
+case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
   override def getFullyQualified(column: Column): Any = column.getDataFullyQualified(this)
 
   override def get(column: Column): Any = column.getData(this)
 
   def get(column: String): Any = {
-    data.get(column) match{
+    data.get(column) match {
       case Some(x) => x
-      case None => null//throw new Exception(s"column $column doesn't exist in data $data")
+      case None => null //throw new Exception(s"column $column doesn't exist in data $data")
     }
   }
 
@@ -123,16 +138,20 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData{
 
 }
 
-object EmptyRowData extends RowData{
+object EmptyRowData extends RowData {
   override def get(field: String): Any = null
+
   override def get(column: Column): Any = null
+
   override def getFullyQualified(column: Column): Any = null
+
+  override def set(field: String, value: Any): RowData = EmptyRowData
 }
 
 
-case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primaryKeyValues: ImmutableArray[String] ) {
+case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primaryKeyValues: ImmutableArray[String]) {
 
-   def dataByKey(key: String): RowData = data.get(key)
+  def dataByKey(key: String): RowData = data.get(key)
 
   //protected def merge(update: RowUpdate, data: RowData): RowData = MergeFunctions.mergeLeftToRight(update, data)
 
@@ -141,9 +160,9 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primary
 
   def update(key: String, update: RowWithData): SimpleDataTableData = {
 
-    val table = data.synchronized{
+    val table = data.synchronized {
 
-       data.getOrDefault(key, EmptyRowData) match {
+      data.getOrDefault(key, EmptyRowData) match {
         case row: RowWithData =>
           val mergedData = merge(update, row)
           data.put(key, mergedData)
@@ -170,12 +189,11 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primary
 }
 
 
-class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate]
-{
+class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate] {
 
   def plusName(s: String) = tableDef.name + "." + s
 
-  private val eventIntoEsper =  metrics.counter(plusName("JoinTableProviderImpl.eventIntoEsper.count"))
+  private val eventIntoEsper = metrics.counter(plusName("JoinTableProviderImpl.eventIntoEsper.count"))
 
   private val onUpdateMeter = metrics.meter(plusName("processUpdates.Meter"))
 
@@ -192,7 +210,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
   @volatile private var data = new SimpleDataTableData(new ConcurrentHashMap[String, RowData](), new NiaiveImmutableArray[String](new Array[String](0)))
 
   override def pullRow(key: String, columns: List[Column]): RowData = {
-    data.dataByKey(key) match{
+    data.dataByKey(key) match {
       case null =>
         EmptyRowData
       case row =>
@@ -200,7 +218,6 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
         RowWithData(key, rowData)
     }
   }
-
 
   override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
     data.dataByKey(key) match {
@@ -213,19 +230,19 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   override def readRow(key: String, columns: List[String], rowProcessor: RowProcessor): Unit = {
 
-      data.dataByKey(key) match {
-        case null => rowProcessor.missingRow()
-        case row =>
-          columns.foreach(f => {
-            val column = tableDef.columnForName(f)
-            sendColumnToProcessor(key, column, row.get(column), rowProcessor)
-          })
+    data.dataByKey(key) match {
+      case null => rowProcessor.missingRow()
+      case row =>
+        columns.foreach(f => {
+          val column = tableDef.columnForName(f)
+          sendColumnToProcessor(key, column, row.get(column), rowProcessor)
+        })
 
-      }
+    }
 
   }
 
-  protected def sendColumnToProcessor(key: String, column: Column, value: Any, rowProcessor: RowProcessor) =  {
+  protected def sendColumnToProcessor(key: String, column: Column, value: Any, rowProcessor: RowProcessor) = {
     rowProcessor.processColumn(column, value)
   }
 
@@ -247,7 +264,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
     val ev = new util.HashMap[String, Any]()
 
-    this.tableDef.joinFields.foreach( field => {
+    this.tableDef.joinFields.foreach(field => {
       val column = this.tableDef.columnForName(field)
       ev.put(column.name, rowData.get(column))
     }
@@ -264,7 +281,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
     val ev = new util.HashMap[String, Any]()
 
-    this.tableDef.joinFields.foreach( field => {
+    this.tableDef.joinFields.foreach(field => {
       val column = this.tableDef.columnForName(field)
       ev.put(column.name, rowData.get(column))
     }
@@ -283,7 +300,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     eventIntoEsper.inc()
 
     //only send to Esper when esper cares
-    if(joinProvider.hasJoins(this.tableDef.name)){
+    if (joinProvider.hasJoins(this.tableDef.name)) {
 
       val event = toEvent(rowKey, rowData)
 
@@ -296,7 +313,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     eventIntoEsper.inc()
 
     //only send to Esper when esper cares
-    if(joinProvider.hasJoins(this.tableDef.name)){
+    if (joinProvider.hasJoins(this.tableDef.name)) {
 
       val event = toDeleteEvent(rowKey, rowData)
 
@@ -315,8 +332,6 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     sendToJoinSink(rowKey, rowData)
 
     notifyListeners(rowKey)
-
-    //notifySessionTablesUpdate(rowKey, rowData, timeStamp)
   }
 
   def processDelete(rowKey: String) = {
@@ -329,7 +344,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
     delete(rowKey)
 
-    if(rowData != null )
+    if (rowData != null)
       sendDeleteToJoinSink(rowKey, rowData)
 
     notifyListeners(rowKey, isDelete = true)
