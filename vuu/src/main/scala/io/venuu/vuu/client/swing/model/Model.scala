@@ -188,7 +188,7 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
       sorts = msg.sortBy.sortDefs.map(sd => sd.column -> sd).toMap
       groupBy = msg.groupBy
       columns = if (!msg.groupBy.isEmpty)
-        Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("rowIndex") ++ msg.columns
+        Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ msg.columns
       else
         Array("rowIndex") ++ msg.columns
 
@@ -205,7 +205,7 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
       logger.info(s"Client Change VP Success ${msg} ")
 
       columns = if (!msg.groupBy.isEmpty)
-        Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("rowIndex") ++ msg.columns
+        Array("rowIndex") ++ Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ msg.columns
       else
         Array("rowIndex") ++ msg.columns
 

@@ -123,7 +123,7 @@ class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: Event
       val filter = filterTextBox.text
 
       if(groupBy.size > 0){
-        val columnsForTree = Array("_selected", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("RowIndex") ++ columns
+        val columnsForTree = Array("RowIndex") ++ Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ columns
         val model = new ViewPortedModel(requestId, columnsForTree)
         model.setRange(0, 100)
         tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
