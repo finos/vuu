@@ -56,16 +56,8 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit
   def processDelete(rowKey: String): Unit
 
-  override def pullRowWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): RowData = {
-    pullRow(key, columns).set(SpecialColumns.selected.name, isSelectedVal(key, selected) )
-  }
-
   def isSelectedVal(key: String, selected: Map[String, Any]): Int = {
     if(selected.contains(key)) 1 else 0
-  }
-
-  override def pullRowAsArrayWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): Array[Any] = {
-    Array.concat( Array(isSelectedVal(key, selected)), pullRowAsArray(key, columns) )
   }
 
   def size(): Long = {

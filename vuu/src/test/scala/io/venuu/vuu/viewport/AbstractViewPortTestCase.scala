@@ -87,7 +87,13 @@ class AbstractViewPortTestCase extends FeatureSpec {
       ordersProvider.tick(orderId, Map("orderId" -> orderId, "trader" -> "chris", "tradeTime" -> clock.now(), "quantity" -> quantity, "ric" -> "VOD.L"))
       clock.sleep(10)
     })
+  }
 
+  def buildOrderRowUpdate(i : Int, quantity: Int): (String, Map[String, Any]) = {
+    val iAsString = i.toString
+    val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString
+    val update = Map("orderId" -> orderId, "quantity" -> quantity)
+    (orderId, update)
   }
 
 

@@ -207,9 +207,23 @@ object TableAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  def generic6AssertSelect(updates: Seq[ViewPortUpdate], expectation: TableFor6[_, _, _, _, _, _]) = {
+  def generic6AssertWithMeta(updates: Seq[ViewPortUpdate], expectation: TableFor6[_, _, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRowWithSelection(vpu.key.key, vpu.vp.getColumns, vpu.vp.getSelection)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
+//    val vpId = node.get("viewPortId").asText()
+//    val vpSize = node.get("vpSize").asInt()
+//    val rowIndex = node.get("rowIndex").asInt()
+//    val ts = node.get("ts").asLong()
+//    val rowKey = node.get("rowKey").asText()
+//    val updateType = node.get("updateType").asText()
+//    val selected = node.get("sel").asInt()
+    val addVpuMeta = (vpu: ViewPortUpdate) => {
+      val isSel = if( vpu.vp.getSelection.contains(vpu.key.key) ) 1 else 0
+      Map("sel" -> isSel)
+    }
+
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
+                              .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).isInstanceOf[RowWithData])
+                              .map( vpu =>   addVpuMeta(vpu) ++ vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data ).toArray
 
     val heading = expectation.heading
 
@@ -279,11 +293,11 @@ object TableAsserts {
 
    }
 
-  def assertVpEqWithSelected(updates: Seq[ViewPortUpdate])(expectation:Any): Unit = {
+  def assertVpEqWithMeta(updates: Seq[ViewPortUpdate])(expectation:Any): Unit = {
 
     //val expectation = block()
     val typedexpectation = expectation match {
-      case exp: TableFor6[_, _, _, _, _, _] => generic6AssertSelect(updates, exp)
+      case exp: TableFor6[_, _, _, _, _, _] => generic6AssertWithMeta(updates, exp)
 
     }
 

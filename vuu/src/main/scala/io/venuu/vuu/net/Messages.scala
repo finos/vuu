@@ -109,7 +109,7 @@ object UpdateType{
 
 @JsonSerialize(using = classOf[RowUpdateSerializer])
 @JsonDeserialize(using = classOf[RowUpdateDeserializer])
-case class RowUpdate(viewPortId: String, vpSize: Int, rowIndex: Int, rowKey: String, updateType: String, ts: Long, data: Array[Any])
+case class RowUpdate(viewPortId: String, vpSize: Int, rowIndex: Int, rowKey: String, updateType: String, ts: Long, selected: Int, data: Array[Any])
 
 class RowUpdateDeserializer extends JsonDeserializer[RowUpdate]{
 
@@ -125,12 +125,13 @@ class RowUpdateDeserializer extends JsonDeserializer[RowUpdate]{
     val ts = node.get("ts").asLong()
     val rowKey = node.get("rowKey").asText()
     val updateType = node.get("updateType").asText()
+    val selected = node.get("sel").asInt()
 
     val data = node.withArray("data").asInstanceOf[JsonNode].elements().toList
 
     val dataAsArray = data.map(_.asText()).toArray[Any]
 
-    RowUpdate(vpId, vpSize, rowIndex, rowKey, updateType, ts, dataAsArray)
+    RowUpdate(vpId, vpSize, rowIndex, rowKey, updateType, ts, selected, dataAsArray)
   }
 }
 
@@ -144,6 +145,7 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
     gen.writeStringField("rowKey", value.rowKey)
     gen.writeStringField("updateType", value.updateType)
     gen.writeNumberField("ts", value.ts)
+    gen.writeNumberField("sel", value.selected)
     gen.writeArrayFieldStart("data")
 
     value.data.foreach( datum => datum match{

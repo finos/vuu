@@ -139,10 +139,30 @@ case class ViewPortImpl(id: String,
   def setRange(newRange: ViewPortRange): Unit = {
     rangeLock.synchronized{
       val oldRange = range.get()
+
+      removeSubscriptionsForRange(oldRange)
+
       range.set(newRange)
+
+      addSubscriptionsForRange(newRange)
+
       val diffRange = oldRange.subtract(newRange)
       sendUpdatesOnChange(diffRange)
     }
+  }
+
+  def removeSubscriptionsForRange(range: ViewPortRange) = {
+    (range.from to (range.to - 1 )).foreach( i=>{
+      val key = keys(i)
+      unsubscribeForKey(key)
+    })
+  }
+
+  def addSubscriptionsForRange(range: ViewPortRange) = {
+    (range.from to (range.to - 1 )).foreach( i=>{
+      val key = keys(i)
+      subscribeForKey(key, i)
+    })
   }
 
   //def setColumns(columns: List[Column])
@@ -278,28 +298,31 @@ case class ViewPortImpl(id: String,
     var i = 0
 
     while(i < newKeys.length){
-
       newKeySet.add(newKeys(i))
-
       i += 1
     }
 
     val iterator = subscribedKeys.entrySet().iterator()
 
     while(iterator.hasNext){
-
       val oldEntry = iterator.next()
-
       val oldKey = oldEntry.getKey
-
       if(!newKeySet.contains(oldKey)){
-        subscribedKeys.remove(oldKey)
-        rowKeyToIndex.remove(oldKey)
-        removeObserver(oldKey)
+        unsubscribeForKey(oldKey)
       }
-
     }
+  }
 
+  def unsubscribeForKey(key: String){
+    subscribedKeys.remove(key)
+    rowKeyToIndex.remove(key)
+    removeObserver(key)
+  }
+
+  def subscribeForKey(key: String, index: Int){
+    subscribedKeys.put(key, "-")
+    rowKeyToIndex.put(key, index)
+    addObserver(key)
   }
 
   def publishUpdate(key: String, index: Int) = {

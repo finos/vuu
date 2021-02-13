@@ -140,6 +140,9 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
       case body: SetSelectionSuccess =>
         logger.info("[SELECTION] success...")
+
+      case body: ErrorResponse =>
+        logger.info("[ERROR] " + body)
     }
   }
 

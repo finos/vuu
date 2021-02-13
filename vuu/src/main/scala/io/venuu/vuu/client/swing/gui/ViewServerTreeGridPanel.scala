@@ -13,12 +13,13 @@ case class Column(index: Int, name: String)
 object TreeColumns{
     //Map("_depth" -> depth, "_isOpen" -> isOpen, "_treeKey" -> key, "_isLeaf" -> isLeaf, "_caption" -> originalKey)
     final val RowIndex = Column(0, "rowIndex")
-    final val Depth = Column(1, "_depth")
-    final val IsOpen = Column(2, "_isOpen")
-    final val TreeKey = Column(3, "_treeKey")
-    final val IsLeaf = Column(4, "_isLeaf")
-    final val Caption = Column(5, "_caption")
-    final val ChildCount = Column(6, "_childCount")
+    final val Selected = Column(1, "_selected")
+    final val Depth = Column(2, "_depth")
+    final val IsOpen = Column(3, "_isOpen")
+    final val TreeKey = Column(4, "_treeKey")
+    final val IsLeaf = Column(5, "_isLeaf")
+    final val Caption = Column(6, "_caption")
+    final val ChildCount = Column(7, "_childCount")
 }
 
 /**

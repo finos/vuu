@@ -66,8 +66,8 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
       errorMsg(s"Table ${msg.table} not found in container")(ctx)
     else{
       val table = tableContainer.getTable(msg.table)
-      val columnNames = Array.concat(Array(SpecialColumns.selected.name), table.getTableDef.columns.map(_.name))
-      val dataTypes = Array.concat(Array(DataType.asString(SpecialColumns.selected.dataType)), table.getTableDef.columns.map(col => DataType.asString(col.dataType)))
+      val columnNames = table.getTableDef.columns.map(_.name)
+      val dataTypes = table.getTableDef.columns.map(col => DataType.asString(col.dataType))
       vsMsg(GetTableMetaResponse(table.name, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
     }
   }
@@ -88,7 +88,6 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
           msg.columns.map(table.getTableDef.columnForName(_)).toList
 
         //TODO: CJS add support for changing flat viewport to GroupBy Viewport
-
         val sort = msg.sort
         val filter = msg.filterSpec
         val groupBy = msg.groupBy

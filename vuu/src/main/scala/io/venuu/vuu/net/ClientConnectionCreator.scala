@@ -109,7 +109,7 @@ class DefaultMessageHandler(val channel: Channel,
     update.vpUpdate match {
       case SizeUpdateType =>{
         //logger.debug(s"SVR[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
-        Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), Array.empty))
+        Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), 0, Array.empty))
       }
 
       case RowUpdateType =>
@@ -119,15 +119,17 @@ class DefaultMessageHandler(val channel: Channel,
           return None
         }
 
-        val dataToSend = update.table.pullRowAsArrayWithSelection(update.key.key, update.vp.getColumns, update.vp.getSelection)
+        val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns)
 
         if(dataToSend.size > 0 &&  dataToSend(0) == null)
           println("ChrisChris>>" + update.table.name + " " + update.key.key + " " + update.index)
 
+        val isSelected = if( update.vp.getSelection.contains(update.key.key) ) 1 else 0
+
         if(dataToSend.size == 0)
           None
         else
-          Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), dataToSend))
+          Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), isSelected, dataToSend))
     }
 
   }

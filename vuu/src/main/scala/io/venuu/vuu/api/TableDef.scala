@@ -63,10 +63,7 @@ class TableDef(val name: String, val keyField: String, val columns: Array[Column
 
   def columnForName(name: String): Column = {
     val column = columns.find(c => c.name == name )
-    if(name.equals(selected.name)){
-      selected
-    }
-    else if(column.isEmpty)
+    if(column.isEmpty)
       null
     else
       column.get

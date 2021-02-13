@@ -7,10 +7,10 @@
   */
 package io.venuu.vuu.client.swing.gui
 
-import java.awt.Dimension
-
+import java.awt.{Dimension, Frame}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.EventBus
+import io.venuu.vuu.client.swing.client.UserPrincipal
 import io.venuu.vuu.client.swing.gui.components.{MutableComboBox, MutableModel, MutableMultiSelectComboBox}
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.ViewPortedModel
@@ -20,13 +20,13 @@ import scala.swing.TabbedPane.Page
 import scala.swing._
 import scala.swing.event.{ButtonClicked, SelectionChanged}
 
-class VSMainFrame(columns: Array[String])(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends MainFrame {
+class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends MainFrame {
 
   import SwingThread._
 
   this.preferredSize = new Dimension(1024, 768)
 
-  title = "VS Client"
+  title = if(isChild) "Child" else "VS Client"
 
   val connect = new Button("Login")
 
@@ -37,23 +37,31 @@ class VSMainFrame(columns: Array[String])(implicit eventBus: EventBus[ClientMess
   val sessionLabel = new Label("Not logged in.")
   val createViewPort = new Button("Create VP")
   val editRpcTableButton = new Button("Edit Rpc")
+  val openNewWindow = new Button("New Window")
   val filterTextBox = new TextField()
   var allColumnsAvailable = Array[String]()
+  var sessionId: String = sessId
 
-  disableControls
+  if(!isChild){
+    disableControls
+  } else{
+    enableControls(sessionId)
+  }
 
   def disableControls = {
     createViewPort.enabled = false
     tablesCombo.enabled = false
     editRpcTableButton.enabled = false
+    openNewWindow.enabled = true
   }
 
-  def enableControls(msg: LogonSuccess) = {
+  def enableControls(sessionId: String) = {
     createViewPort.enabled = true
     tablesCombo.enabled = true
     connect.enabled = false
-    sessionLabel.text = msg.body.toString
+    sessionLabel.text = sessionId
     editRpcTableButton.enabled = true
+    openNewWindow.enabled = true
   }
 
   def setTablesComboContents(msg: ClientGetTableListResponse): Unit = {
@@ -76,7 +84,8 @@ class VSMainFrame(columns: Array[String])(implicit eventBus: EventBus[ClientMess
   eventBus.register({
     case msg: LogonSuccess =>
       eventBus.publish(ClientGetTableList(RequestId.oneNew()))
-      swing( () => enableControls(msg) )
+      sessionId = msg.body.sessionId
+      swing( () => enableControls(msg.body.sessionId) )
     case msg: ClientCreateViewPortSuccess =>
       //swing( () => addVpPanel(msg) )
     case msg: ClientGetTableListResponse =>
@@ -91,8 +100,13 @@ class VSMainFrame(columns: Array[String])(implicit eventBus: EventBus[ClientMess
   listenTo(`createViewPort`)
   listenTo(`tablesCombo`)
   listenTo(`editRpcTableButton`)
+  listenTo(`openNewWindow`)
 
   reactions += {
+    case ButtonClicked(`openNewWindow`) =>
+      val frame = new VSMainFrame(true, this.sessionId)
+      frame.open()
+
     case SelectionChanged(`tablesCombo`) =>
       eventBus.publish(ClientGetTableMeta(RequestId.oneNew(), tablesCombo.item))
     case ButtonClicked(`connect`) =>
@@ -109,7 +123,7 @@ class VSMainFrame(columns: Array[String])(implicit eventBus: EventBus[ClientMess
       val filter = filterTextBox.text
 
       if(groupBy.size > 0){
-        val columnsForTree = Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("RowIndex") ++ columns
+        val columnsForTree = Array("_selected", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ Array("RowIndex") ++ columns
         val model = new ViewPortedModel(requestId, columnsForTree)
         model.setRange(0, 100)
         tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
@@ -124,13 +138,14 @@ class VSMainFrame(columns: Array[String])(implicit eventBus: EventBus[ClientMess
       eventBus.publish(ClientCreateViewPort(requestId, table, columns, spec, groupBy, 0, 100, filter))
   }
 
-  val buttonPanel = new GridPanel(2, 8){
+  val buttonPanel = new GridPanel(2, 9){
     contents += new Label("")
     contents += new Label("Tables")
     contents += new Label("Columns")
     contents += new Label("Sort By")
     contents += new Label("Group By")
     contents += new Label("Filter")
+    contents += new Label("")
     contents += new Label("")
     contents += new Label("")
 
@@ -142,6 +157,7 @@ class VSMainFrame(columns: Array[String])(implicit eventBus: EventBus[ClientMess
     contents += filterTextBox
     contents += createViewPort
     contents += editRpcTableButton
+    contents += openNewWindow
 
   }
 
