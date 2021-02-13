@@ -9,7 +9,6 @@ package io.venuu.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.api.SpecialColumns
 import io.venuu.vuu.core.table.{DataType, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
