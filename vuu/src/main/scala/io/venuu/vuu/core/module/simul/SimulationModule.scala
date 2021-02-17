@@ -30,7 +30,6 @@ class TheSimulRpcHander extends DefaultLifecycleEnabled with RpcHandler with Sim
   }
 }
 
-
 object SimulationModule {
 
   final val NAME = "SIMUL"
@@ -42,6 +41,7 @@ object SimulationModule {
             name = "instruments",
             keyField = "ric",
             columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Int"),
+            VisualLinks(),
             joinFields = "ric"
           ),
           (table, vs) => new SimulatedBigInstrumentsProvider(table)
@@ -60,13 +60,22 @@ object SimulationModule {
           name = "orders",
           keyField = "orderId",
           Columns.fromNames("orderId:String", "side:Char", "ric:String", "ccy:String", "quantity:Double", "trader:String", "filledQuantity:Double", "lastUpdate: Long", "created: Long"),
+          VisualLinks(
+            Link("ric", "instruments", "ric")
+          ),
           joinFields = "orderId", "ric"
         ),
         (table, vs) => new OrdersSimulProvider(table)
       )
       .addTable(
-        TableDef("orderEntry", "clOrderId",
-            Columns.fromNames("clOrderId:String", "ric:String", "quantity: Double", "orderType:String", "price: Double", "priceLevel: String"), "ric"
+        TableDef(
+          name = "orderEntry",
+          keyField = "clOrderId",
+          Columns.fromNames("clOrderId:String", "ric:String", "quantity: Double", "orderType:String", "price: Double", "priceLevel: String"),
+          VisualLinks(
+            Link("ric", "instruments", "ric")
+          ),
+          joinFields =  "ric"
         ),
         (table, vs) => new RpcProvider(table)
       )

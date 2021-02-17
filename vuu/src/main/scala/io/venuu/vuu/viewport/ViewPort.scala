@@ -10,12 +10,11 @@ package io.venuu.vuu.viewport
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
-
 import com.typesafe.scalalogging.LazyLogging
 import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
 import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.core.sort.FilterAndSort
-import io.venuu.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
+import io.venuu.vuu.core.sort.{FilterAndSort, TwoStepCompoundFilter, UserDefinedFilterAndSort, VisualLinkedFilter}
+import io.venuu.vuu.core.table.{Column, Columns, KeyObserver, NoColumn, RowKeyUpdate}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
 import io.venuu.vuu.util.PublishQueue
 
@@ -35,6 +34,10 @@ case object SizeUpdateType extends ViewPortUpdateType
 object DefaultRange extends ViewPortRange(0, 123)
 
 case class ViewPortSelection(indices: Array[Int])
+
+case class ViewPortVisualLink(childVp: ViewPort, parentVp: ViewPort, childColumn: Column, parentColumn: Column){
+  override def toString: String = "ViewPortVisualLink(" + childVp.id + "->" + parentVp.id + ", on " + childColumn.name + " = " + parentColumn.name + ")"
+}
 
 case class ViewPortRange(from: Int, to: Int){
   def contains(i: Int): Boolean = {
@@ -71,10 +74,13 @@ trait ViewPort {
   def table: RowSource
   def setRange(range: ViewPortRange)
   def setSelection(rowIndices: Array[Int])
+  def setVisualLink(link: ViewPortVisualLink)
+  def removeVisualLink()
   def getRange(): ViewPortRange
   def setKeys(keys: ImmutableArray[String])
   def getKeys() : ImmutableArray[String]
   def getKeysInRange() : ImmutableArray[String]
+  def getVisualLink(): Option[ViewPortVisualLink]
   def outboundQ: PublishQueue[ViewPortUpdate]
   def highPriorityQ: PublishQueue[ViewPortUpdate]
   def getColumns: List[Column]
@@ -102,7 +108,10 @@ case class ViewPortImpl(id: String,
                         range: AtomicReference[ViewPortRange]
                        )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging{
 
-  private val rangeLock = new Object
+  private val viewPortLock = new Object
+
+  @volatile
+  private var viewPortVisualLink: Option[ViewPortVisualLink] = None
 
   override def table: RowSource = structuralFields.get().table
 
@@ -125,7 +134,7 @@ case class ViewPortImpl(id: String,
   }
 
   override def setSelection(rowIndices: Array[Int]): Unit = {
-    rangeLock.synchronized{
+    viewPortLock.synchronized{
       val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)) ).toMap[String, Int]
       selection = rowIndices.map( idx => (this.keys(idx), idx) ).toMap
       for( (key, idx ) <- selection ++ oldSelection ){
@@ -137,7 +146,7 @@ case class ViewPortImpl(id: String,
   override def getSelection: Map[String, Int] = selection
 
   def setRange(newRange: ViewPortRange): Unit = {
-    rangeLock.synchronized{
+    viewPortLock.synchronized{
       val oldRange = range.get()
 
       removeSubscriptionsForRange(oldRange)
@@ -339,4 +348,26 @@ case class ViewPortImpl(id: String,
       table.removeKeyObserver(oldKey, this)
   }
 
+  override def setVisualLink(link: ViewPortVisualLink): Unit = {
+    viewPortLock.synchronized{
+      val fields = this.structuralFields.get()
+      val newFilterSort = fields.filtAndSort match {
+        case udfs: UserDefinedFilterAndSort =>
+          UserDefinedFilterAndSort(TwoStepCompoundFilter( VisualLinkedFilter(link), udfs.filter), udfs.sort)
+        case x =>
+          x
+      }
+
+      //set the filter and sort to include the selection filter
+      this.structuralFields.set(fields.copy( filtAndSort = newFilterSort))
+    }
+  }
+
+  override def removeVisualLink(): Unit = {
+    viewPortLock.synchronized{
+      this.viewPortVisualLink = None
+    }
+  }
+
+  override def getVisualLink(): Option[ViewPortVisualLink] = this.viewPortVisualLink
 }

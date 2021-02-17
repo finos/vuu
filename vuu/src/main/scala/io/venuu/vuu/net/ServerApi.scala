@@ -11,5 +11,6 @@ trait ServerApi{
   def process(msg: HeartBeatResponse)(ctx: RequestContext): Option[ViewServerMessage]
   def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage]
   def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage]
+  def process(msg: GetViewPortVisualLinksRequest)(ctx: RequestContext): Option[ViewServerMessage]
   def disconnect(session: ClientSessionId): Unit
 }

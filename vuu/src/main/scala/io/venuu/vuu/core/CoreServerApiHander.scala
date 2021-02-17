@@ -86,7 +86,6 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
         else
           msg.columns.map(table.getTableDef.columnForName(_)).toList
 
-        //TODO: CJS add support for changing flat viewport to GroupBy Viewport
         val sort = msg.sort
         val filter = msg.filterSpec
         val groupBy = msg.groupBy
@@ -177,6 +176,8 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
         errorMsg("Could not change VP selection:" + e.getMessage)(ctx)
     }
   }
+
+  override def process(msg: GetViewPortVisualLinksRequest)(ctx: RequestContext): Option[ViewServerMessage] = ???
 
   override def process(msg: OpenTreeNodeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     viewPortContainer.openNode(msg.vpId, msg.treeKey)

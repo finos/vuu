@@ -232,79 +232,6 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     vp
   }
 
-//  def create(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], highPriorityQ: PublishQueue[ViewPortUpdate],
-//             sourceTable: RowSource, range: ViewPortRange, columns: List[Column], groupBy: GroupBy, filterSpec: FilterSpec): ViewPort = {
-//
-//    val id = createId(clientSession.user)
-//
-//    val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
-//
-//    val viewPort = ViewPortImpl(id, sessionTable, clientSession, outboundQ, highPriorityQ, columns, range, groupBy = groupBy, filterSpec = filterSpec)
-//
-//    viewPorts.put(id, viewPort)
-//
-//    groupByContainer.add(sessionTable, viewPort)
-//
-//    //    sessionTable.onRawUpdate( (key, rowData) => {
-//    //      logger.info(s"sending row update to groupby container ${key} ${rowData} ")
-//    //      groupByContainer.enqueueUpdate(viewPort, sessionTable, key, rowData)
-//    //    } )
-//
-//    //TODO CJS complete this
-//    //sessionTable.onRawDelete( (key) => groupByContainer.enqueueUpdate(viewPort, sessionTable, key, EmptyRowData) )
-//
-//    //sessionTable.
-//
-//    viewPort
-//  }
-
-//  def amendNoGroupBy(existing: ViewPort, clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], highPriorityQ: PublishQueue[ViewPortUpdate], table: RowSource, range: ViewPortRange, columns: List[Column], sort: SortSpec, filterSpec: FilterSpec): ViewPort = {
-//
-//    val id = existing.id
-//
-//    val viewPort = ViewPortImpl(id, table, clientSession, outboundQ, highPriorityQ, columns, range)
-//
-//    val aSort = if (!sort.sortDefs.isEmpty)
-//      GenericSort(sort, table.asTable.columnsForNames(sort.sortDefs.map(sd => sd.column)))
-//    else
-//      NoSort
-//
-//    val aFilter = if (filterSpec.filter == "")
-//      NoFilter
-//    else {
-//      Try(FilterSpecParser.parse(filterSpec.filter)) match {
-//        case Success(clause) =>
-//          AntlrBasedFilter(clause)
-//        case Failure(err) =>
-//          logger.error(s"could not parse filter ${filterSpec.filter}", err)
-//          NoFilter
-//      }
-//    }
-//
-//    if (aSort != NoSort || aFilter != NoFilter)
-//      viewPort.setFilterAndSort(UserDefinedFilterAndSort(aFilter, aSort))
-//
-//    viewPorts.put(id, viewPort)
-//
-//    viewPort
-//  }
-//
-//
-//  def amendWithGroupBy(existing: ViewPort, clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], highPriorityQ: PublishQueue[ViewPortUpdate], sourceTable: RowSource, range: ViewPortRange, columns: List[Column], groupBy: GroupBy): ViewPort = {
-//
-//    val id = existing.id
-//
-//    val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
-//
-//    val viewPort = ViewPortImpl(id, sessionTable, clientSession, outboundQ, highPriorityQ, columns, range, groupBy = groupBy)
-//
-//    viewPorts.put(id, viewPort)
-//
-//    //groupByContainer.modifyGroupBy(viewPort, sessionTable, groupBy)
-//
-//    viewPort
-//  }
-
   def openNode(viewPortId: String, treeKey: String): Unit = {
 
     logger.info(s"Had request to change vp ${viewPortId} node state $treeKey")
@@ -315,8 +242,6 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
       case gbsTable: GroupBySessionTable => gbsTable.openTreeKey(treeKey)
       case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
     }
-
-    //groupByContainer.enqueueChangeNodeState(treeKey, true, viewPort)
   }
 
   def closeNode(viewPortId: String, treeKey: String): Unit = {
@@ -332,6 +257,22 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     val viewPort = viewPorts.get(vpId)
     viewPort.setSelection(selection.indices)
     viewPort
+  }
+
+  def linkViewPorts(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String) = {
+    get(clientSession, childVpId) match {
+      case Some(child) =>
+        get(clientSession, parentVpId) match {
+          case Some(parent) =>
+            val parentColumn = parent.table.asTable.columnForName(parentColumnName)
+            val childColumn = child.table.asTable.columnForName(childColumnName)
+            child.setVisualLink(ViewPortVisualLink(child, parent, childColumn, parentColumn))
+          case None =>
+            throw new Exception("Could not find parent viewport" + parentVpId)
+        }
+      case None =>
+        throw new Exception("Could not find child viewport" + childVpId)
+    }
   }
 
   /**

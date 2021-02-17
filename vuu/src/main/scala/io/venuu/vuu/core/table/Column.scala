@@ -16,6 +16,7 @@ object DataType{
   val IntegerDataType = classOf[Int]
   val LongDataType = classOf[Long]
   val DoubleDataType = classOf[Double]
+  val NoDataType = classOf[AnyRef]
 
   def fromString(s: String): Class[_] = {
     s.trim.toLowerCase match {
@@ -63,8 +64,7 @@ object Columns{
 
   def aliased(table: TableDef, aliases:(String, String)*): Array[Column] = {
     val aliased = aliases.map(tuple => (tuple._1 -> tuple._2)).toMap
-
-    table.columns.filter(c => aliased.contains(c.name)) map( c => new AliasedJoinColumn(aliased.get(c.name).get, c.index, c.dataType, table, c)  )
+    table.columns.filter(c => aliased.contains(c.name)) map( c => new AliasedJoinColumn(aliased.get(c.name).get, c.index, c.dataType, table, c).asInstanceOf[Column]  )
   }
 
   def calculated(name: String, definition: String): Array[Column] = ???
@@ -85,6 +85,14 @@ trait Column{
   def getData(data: RowData): Any
   def getDataFullyQualified(data: RowData): Any
   override def hashCode(): Int = name.hashCode()
+}
+
+object NoColumn extends Column{
+  override def name: String = "NoColumn"
+  override def index: Int = -1
+  override def dataType: Class[_] = DataType.NoDataType
+  override def getData(data: RowData): Any = None
+  override def getDataFullyQualified(data: RowData): Any = None
 }
 
 case class SimpleColumn(val name: String, val index: Int, val dataType: Class[_]) extends Column {
