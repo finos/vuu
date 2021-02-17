@@ -12,5 +12,7 @@ trait ServerApi{
   def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage]
   def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage]
   def process(msg: GetViewPortVisualLinksRequest)(ctx: RequestContext): Option[ViewServerMessage]
+  def process(msg: CreateVisualLinkRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
   def disconnect(session: ClientSessionId): Unit
 }

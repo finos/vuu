@@ -52,5 +52,7 @@ import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
   new Type(value = classOf[ErrorResponse], name = "ERROR"),
   new Type(value = classOf[GetViewPortVisualLinksRequest], name = "GET_VP_VISUAL_LINKS"),
   new Type(value = classOf[GetViewPortVisualLinksResponse], name = "VP_VISUAL_LINKS_RESP"),
+  new Type(value = classOf[CreateVisualLinkRequest], name = "CREATE_VISUAL_LINK"),
+  new Type(value = classOf[CreateVisualLinkSuccess], name = "CREATE_VISUAL_LINK_SUCCESS"),
 ))
 trait CoreJsonSerializationMixin {}

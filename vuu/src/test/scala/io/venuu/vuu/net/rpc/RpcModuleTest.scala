@@ -2,7 +2,7 @@ package io.venuu.vuu.net.rpc
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultClock, Clock}
+import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.{MyObjectParam, TestModule}
 import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
 import io.venuu.vuu.net.ws.WebSocketClient

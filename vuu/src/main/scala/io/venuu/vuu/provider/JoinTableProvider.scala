@@ -7,10 +7,6 @@
  */
 package io.venuu.vuu.provider
 
-import java.util
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
-
 import com.espertech.esper.client._
 import com.espertech.esper.event.map.MapEventBean
 import com.typesafe.scalalogging.StrictLogging
@@ -21,6 +17,9 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.{DataTable, JoinTable, JoinTableUpdate, RowWithData}
 
+import java.util
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
 import scala.util.{Failure, Success, Try}
 
 trait JoinTableProvider extends RunInThread with LifecycleEnabled{

@@ -1,8 +1,5 @@
 package io.venuu.vuu.viewport
 
-import java.util.concurrent.ConcurrentHashMap
-import java.util.{LinkedList => JList}
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.logging.LogAtFrequency
 import io.venuu.toolbox.time.Clock
@@ -12,6 +9,8 @@ import io.venuu.vuu.core.sort.AntlrBasedFilter
 import io.venuu.vuu.core.table.{Column, RowData}
 import io.venuu.vuu.net.FilterSpec
 
+import java.util.concurrent.ConcurrentHashMap
+import java.util.{LinkedList => JList}
 import scala.util.{Failure, Success, Try}
 /**
   * Created by chris on 23/11/2015.

@@ -1,8 +1,5 @@
 package io.venuu.vuu.net
 
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
@@ -11,6 +8,9 @@ import io.venuu.vuu.core.module.ModuleContainer
 import io.venuu.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
+
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 trait InboundMessageHandler{
   def handle(msg: ViewServerMessage): Option[ViewServerMessage]
@@ -152,6 +152,8 @@ class DefaultMessageHandler(val channel: Channel,
       case req: HeartBeatResponse => serverApi.process(req)(ctx)
       case req: RpcUpdate => serverApi.process(req)(ctx)
       case req: RpcCall => handleModuleRpcMsg(msg, req)(ctx)
+      case req: GetViewPortVisualLinksRequest => serverApi.process(req)(ctx)
+      case req: CreateVisualLinkRequest => serverApi.process(req)(ctx)
     }
   }
 

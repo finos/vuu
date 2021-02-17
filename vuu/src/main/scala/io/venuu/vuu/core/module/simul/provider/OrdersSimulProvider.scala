@@ -1,14 +1,14 @@
 package io.venuu.vuu.core.module.simul.provider
 
-import java.util
-import java.util.Random
-import java.util.concurrent.atomic.AtomicInteger
-
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.LifeCycleRunner
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData}
 import io.venuu.vuu.provider.Provider
+
+import java.util
+import java.util.Random
+import java.util.concurrent.atomic.AtomicInteger
 
 class SeededRandom(seed: Long){
 

@@ -61,7 +61,8 @@ object SimulationModule {
           keyField = "orderId",
           Columns.fromNames("orderId:String", "side:Char", "ric:String", "ccy:String", "quantity:Double", "trader:String", "filledQuantity:Double", "lastUpdate: Long", "created: Long"),
           VisualLinks(
-            Link("ric", "instruments", "ric")
+            Link("ric", "instruments", "ric"),
+            Link("ric", "prices", "ric")
           ),
           joinFields = "orderId", "ric"
         ),

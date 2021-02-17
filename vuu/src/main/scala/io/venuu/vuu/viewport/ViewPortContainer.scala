@@ -7,15 +7,13 @@
   */
 package io.venuu.vuu.viewport
 
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicReference
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{JmxAble, MetricsProvider}
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.thread.RunInThread
 import io.venuu.toolbox.time.Clock
+import io.venuu.toolbox.time.TimeIt.timeIt
+import io.venuu.vuu.api.Link
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTable
 import io.venuu.vuu.core.sort._
@@ -23,21 +21,20 @@ import io.venuu.vuu.core.table.{Column, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.{core, viewport}
-import io.venuu.toolbox.time.TimeIt.timeIt
 
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicReference
+import scala.collection.JavaConverters
 import scala.util.{Failure, Success, Try}
 
 trait ViewPortContainerMBean {
   def listViewPorts: String
-
+  def listViewPortsForSession(clientSession: ClientSessionId): List[ViewPort]
   def toAscii(vpId: String): String
-
   def subscribedKeys(vpId: String): String
-
   def setRange(vpId: String, start: Int, end: Int): String
-
   def openGroupByKey(vpId: String, treeKey: String): String
-
   def closeGroupByKey(vpId: String, treeKey: String): String
 }
 
@@ -85,6 +82,10 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     ""
   }
 
+  override def listViewPortsForSession(clientSession: ClientSessionId): List[ViewPort] = {
+    JavaConverters.asScalaIterator(viewPorts.values().iterator()).filter( vp => vp.session.equals(clientSession)).toList
+  }
+
   override def listViewPorts: String = {
     import scala.collection.JavaConversions._
 
@@ -119,10 +120,6 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     val id = user + "-" + UUID.randomUUID().toString
     id
   }
-
-  //  def createRpc(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], highPriorityQ: PublishQueue[ViewPortUpdate], table: RowSource, range: ViewPortRange, columns: List[Column]): ViewPort = {
-  //    null
-  //  }
 
   def get(clientSession: ClientSessionId, id: String): Option[ViewPort] = {
 
@@ -348,4 +345,16 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
     viewports.foreach(entry => viewPorts.remove(entry.getKey))
   }
+
+  def getViewPortVisualLinks(clientSession: ClientSessionId, vpId: String): List[(Link, ViewPort)] = {
+    Option(viewPorts.get(vpId)) match {
+      case Some(vp) =>
+        val viewPorts = listViewPortsForSession(clientSession)
+        val vpLinks = for(link <- vp.table.asTable.getTableDef.links.links ; vp <- viewPorts ;  if link.toTable == vp.table.name) yield (link, vp)
+        vpLinks
+      case None =>
+        List()
+    }
+  }
+
 }

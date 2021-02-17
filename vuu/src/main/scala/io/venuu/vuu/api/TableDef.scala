@@ -65,9 +65,12 @@ object GroupByColumns {
 class GroupByTableDef(name: String, sourceTableDef: TableDef) extends TableDef(name, sourceTableDef.keyField, sourceTableDef.columns, Seq()) {
 }
 
-class Link(val fromColumn: String, val toTable: String, val toField: String)
+case class Link(fromColumn: String, toTable: String, toColumn: String)
 
-class VisualLinks(val links: List[Link])
+case class VisualLinks(links: List[Link])
+case class AvailableViewPortVisualLink(parentVpId: String, link: Link){
+  override def toString: String = link.fromColumn + " to " + link.toTable + "." + link.toColumn
+}
 
 class TableDef(val name: String, val keyField: String, val columns: Array[Column], val joinFields: Seq[String], val autosubscribe: Boolean = false, val links: VisualLinks = VisualLinks()) {
 

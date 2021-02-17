@@ -9,23 +9,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#27 Added first working test case with visual linking of viewports.">
-      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/VisualLinkedViewPortTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/VSChildFrame.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/jmx/MetricsProvider.scala" beforeDir="false" afterPath="$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/jmx/MetricsProvider.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/resources/logback.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/api/TableDef.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/api/TableDef.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/ClientHelperFns.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/ClientHelperFns.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/VSMainFrame.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/VSMainFrame.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/messages/ClientMessage.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/messages/ClientMessage.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/CoreServerApiHander.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/CoreServerApiHander.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/SimulationModule.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/SimulationModule.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/sort/FilterAndSort.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/sort/FilterAndSort.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/Column.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/Column.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/SimpleDataTable.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/SimpleDataTable.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ClientConnectionCreator.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ClientConnectionCreator.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/CoreJsonSerializationMixin.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/CoreJsonSerializationMixin.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/Messages.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/Messages.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ServerApi.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/ServerApi.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPortContainer.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPortContainer.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/api/ApiTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/api/CoreServerApiTest.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/api/TableTest.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/TableTestHelper.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/TableTestHelper.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/AbstractViewPortTestCase.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/AbstractViewPortTestCase.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/VisualLinkedViewPortTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/VisualLinkedViewPortTest.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,7 +95,7 @@
       <recent name="$PROJECT_DIR$/zk/src/assembly" />
     </key>
   </component>
-  <component name="RunManager" selected="ScalaTest.VisualLinkedViewPortTest.Feature: Check our maintenance of selection on the server side Scenario: create viewport, update selection, see selection come back">
+  <component name="RunManager" selected="Application.SwingClientMain">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -231,8 +234,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="ScalaTest.VisualLinkedViewPortTest.Feature: Check our maintenance of selection on the server side Scenario: create viewport, update selection, see selection come back" />
         <item itemvalue="ScalaTest.VisualLinkedViewPortTest" />
+        <item itemvalue="ScalaTest.VisualLinkedViewPortTest.Feature: Check our maintenance of selection on the server side Scenario: create viewport, update selection, see selection come back" />
         <item itemvalue="Application.SwingClientMain" />
         <item itemvalue="Application.SimulMain" />
         <item itemvalue="ScalaTest.OnlySendDiffRowsViewPortTest.Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" />
@@ -398,7 +401,14 @@
       <option name="project" value="LOCAL" />
       <updated>1613247450695</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="#27 Added first working test case with visual linking of viewports.">
+      <created>1613575539945</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1613575539945</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -470,24 +480,20 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="scala-line">
           <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala</url>
-          <line>181</line>
+          <line>186</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/VisualLinkedViewPortTest.scala</url>
-          <line>63</line>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPort.scala</url>
-          <line>231</line>
-          <option name="timeStamp" value="16" />
+          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPortContainer.scala</url>
+          <line>352</line>
+          <option name="timeStamp" value="18" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
         <PinnedItemInfo parentTag="io.venuu.vuu.client.swing.model.ViewPortedModel" memberName="columns" />
+        <PinnedItemInfo parentTag="io.venuu.vuu.api.VisualLinks" memberName="links" />
       </pinned-members>
     </pin-to-top-manager>
   </component>

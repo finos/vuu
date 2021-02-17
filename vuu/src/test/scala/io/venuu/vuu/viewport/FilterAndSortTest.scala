@@ -9,7 +9,7 @@ package io.venuu.vuu.viewport
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultClock, Clock}
+import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.filter.{EqFilter, LessThanFilter}
 import io.venuu.vuu.core.sort.{AlphaSort, SortDirection, UserDefinedFilterAndSort}
 import io.venuu.vuu.net.ClientSessionId

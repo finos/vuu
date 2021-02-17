@@ -7,14 +7,14 @@
   */
 package io.venuu.vuu.net.rpc
 
-import java.util.concurrent.ConcurrentHashMap
-
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id
 import com.fasterxml.jackson.databind.`type`.TypeFactory
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver
 import com.fasterxml.jackson.databind.{DatabindContext, JavaType}
 import com.typesafe.scalalogging.StrictLogging
+
+import java.util.concurrent.ConcurrentHashMap
 
 class VsJsonTypeResolver extends TypeIdResolver with StrictLogging {
 

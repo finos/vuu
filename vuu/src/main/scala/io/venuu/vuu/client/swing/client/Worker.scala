@@ -51,6 +51,10 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         rpcTableUpdate(principal.sessionId, principal.token, principal.user, msg.table, msg.key, msg.data)
       case msg: ClientSetSelection =>
         setSelection(principal.sessionId, principal.token, principal.user, msg.requestId, msg.vpId, msg.selection)
+      case msg: ClientGetVisualLinks =>
+        getVisualLinks(principal.sessionId, principal.token, principal.user, msg.requestId, msg.vpId)
+      case msg: ClientCreateVisualLink =>
+        createVisualLink(principal.sessionId, principal.token, principal.user, msg.requestId, msg.childVpId, msg.parentVpId, msg.childColumnName, msg.parentColumnName)
 
       case msg: ClientUpdateVPRange =>
         vpChangeRequests.put(msg.vpId, msg)
@@ -140,6 +144,12 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
       case body: SetSelectionSuccess =>
         logger.info("[SELECTION] success...")
+
+      case body: GetViewPortVisualLinksResponse =>
+        eventBus.publish(ClientGetVisualLinksResponse(msg.requestId, body.vpId, body.links))
+
+      case body: CreateVisualLinkSuccess =>
+        eventBus.publish(ClientCreateVisualLinkSuccess(msg.requestId, body.childVpId, body.parentVpId, body.childColumnName, body.parentColumnName))
 
       case body: ErrorResponse =>
         logger.info("[ERROR] " + body)

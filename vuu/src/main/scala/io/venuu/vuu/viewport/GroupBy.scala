@@ -1,12 +1,12 @@
 package io.venuu.vuu.viewport
 
-import java.util
-import java.util.concurrent.ConcurrentHashMap
-import java.util.{LinkedList => JList}
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.ImmutableArray
 import io.venuu.vuu.core.table.{Column, DataTable, RowData}
+
+import java.util
+import java.util.concurrent.ConcurrentHashMap
+import java.util.{LinkedList => JList}
 
 object Aggregation{
   def createAggregations(groupBy: GroupBy): List[NodeAggregation] = {

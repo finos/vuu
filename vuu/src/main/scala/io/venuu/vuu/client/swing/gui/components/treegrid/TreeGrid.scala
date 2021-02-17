@@ -1,8 +1,8 @@
 package io.venuu.vuu.client.swing.gui.components.treegrid
 
-import javax.swing.{JComponent, JTable}
 import org.jdesktop.swingx.JXTreeTable
 
+import javax.swing.{JComponent, JTable}
 import scala.swing.Component
 
 /**

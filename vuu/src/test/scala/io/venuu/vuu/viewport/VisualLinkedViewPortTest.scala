@@ -60,6 +60,10 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
         )
       }
 
+      val results = viewPortContainer.getViewPortVisualLinks(session, viewPortOrders.id)
+      results.size shouldEqual(1)
+      results.head._2.table.name shouldEqual("prices")
+
       Then("we link the viewports, with nothing selected in the parent grid yet")
       viewPortContainer.linkViewPorts(session, highPriorityQueue, childVpId = viewPortOrders.id, parentVpId = viewPortPrices.id, "ric", "ric")
 
@@ -113,7 +117,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       Then("check we now have 9 keys in the viewport")
       viewPortOrders.getKeys().length shouldEqual(9)
 
-      And("if we expend the selection to include BP.L in the prices table")
+      And("if we set selection to none")
       viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPrices.id, ViewPortSelection(Array()))
       viewPortContainer.runOnce()
 

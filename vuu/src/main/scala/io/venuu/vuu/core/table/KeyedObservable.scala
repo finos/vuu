@@ -7,9 +7,9 @@
   */
 package io.venuu.vuu.core.table
 
-import java.util.concurrent.ConcurrentHashMap
-
 import org.slf4j.LoggerFactory
+
+import java.util.concurrent.ConcurrentHashMap
 
 trait KeyedObservable[T] {
   def getObserversByKey(): Map[String, Array[KeyObserver[T]]]

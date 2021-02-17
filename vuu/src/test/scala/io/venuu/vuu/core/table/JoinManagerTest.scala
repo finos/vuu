@@ -7,11 +7,11 @@
  */
 package io.venuu.vuu.core.table
 
-import java.util
-
 import com.espertech.esper.client.{Configuration, EPServiceProviderManager, EventBean, UpdateListener}
 import com.espertech.esper.event.map.MapEventBean
 import org.scalatest._
+
+import java.util
 
 //Some details on esper handling removes
 //http://www.espertech.com/esper/release-5.3.0/esper-reference/html/processingmodel.html

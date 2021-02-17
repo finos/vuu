@@ -1,8 +1,8 @@
 package io.venuu.vuu.provider
 
-import java.util
-
 import io.venuu.vuu.core.table.DataTable
+
+import java.util
 
 /**
   * Created by chris on 22/12/2015.

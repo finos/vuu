@@ -7,9 +7,9 @@
   */
 package io.venuu.vuu.client.headless
 
-import java.util.concurrent.{ConcurrentHashMap, CopyOnWriteArrayList}
-
 import io.venuu.vuu.viewport.ViewPortRange
+
+import java.util.concurrent.{ConcurrentHashMap, CopyOnWriteArrayList}
 
 
 class SinkData(data: CopyOnWriteArrayList[Array[Any]]){

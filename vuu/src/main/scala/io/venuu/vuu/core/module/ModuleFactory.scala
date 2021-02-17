@@ -1,14 +1,14 @@
 package io.venuu.vuu.core.module
 
-import java.nio.file.Path
-
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.core.table.{Columns, DataTable}
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
 import io.venuu.vuu.core.ViewServer
+import io.venuu.vuu.core.table.DataTable
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.provider.Provider
+
+import java.nio.file.Path
 
 
 case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: List[(TableDef, (DataTable, ViewServer) => Provider)], joinDefs: List[TableDefs => JoinTableDef]){

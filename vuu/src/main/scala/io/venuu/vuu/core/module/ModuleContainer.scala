@@ -1,8 +1,8 @@
 package io.venuu.vuu.core.module
 
-import java.util.concurrent.ConcurrentHashMap
-
 import io.venuu.toolbox.lifecycle.DefaultLifecycleEnabled
+
+import java.util.concurrent.ConcurrentHashMap
 
 /**
   * Created by chris on 17/08/2016.

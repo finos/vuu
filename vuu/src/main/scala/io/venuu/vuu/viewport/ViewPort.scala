@@ -7,16 +7,17 @@
  */
 package io.venuu.vuu.viewport
 
+import com.typesafe.scalalogging.LazyLogging
+import io.venuu.toolbox.time.Clock
+import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
+import io.venuu.vuu.core.sort.{FilterAndSort, TwoStepCompoundFilter, UserDefinedFilterAndSort, VisualLinkedFilter}
+import io.venuu.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
+import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
+import io.venuu.vuu.util.PublishQueue
+
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
-import com.typesafe.scalalogging.LazyLogging
-import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
-import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.core.sort.{FilterAndSort, TwoStepCompoundFilter, UserDefinedFilterAndSort, VisualLinkedFilter}
-import io.venuu.vuu.core.table.{Column, Columns, KeyObserver, NoColumn, RowKeyUpdate}
-import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
-import io.venuu.vuu.util.PublishQueue
 
 //trait ClientSession{
 //  def id: String
@@ -94,6 +95,7 @@ trait ViewPort {
   def getStructure: ViewPortStructuralFields
   def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String]
   def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int]
+  override def toString: String = "VP(user:" + session.user + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
@@ -162,15 +164,19 @@ case class ViewPortImpl(id: String,
 
   def removeSubscriptionsForRange(range: ViewPortRange) = {
     (range.from to (range.to - 1 )).foreach( i=>{
-      val key = keys(i)
-      unsubscribeForKey(key)
+      val key = if(keys.length > i ) keys(i) else null
+      if(key != null ) {
+        unsubscribeForKey(key)
+      }
     })
   }
 
   def addSubscriptionsForRange(range: ViewPortRange) = {
     (range.from to (range.to - 1 )).foreach( i=>{
-      val key = keys(i)
-      subscribeForKey(key, i)
+      val key = if(keys.length > i ) keys(i) else null
+      if(key != null) {
+        subscribeForKey(key, i)
+      }
     })
   }
 

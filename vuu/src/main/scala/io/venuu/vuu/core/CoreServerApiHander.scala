@@ -9,6 +9,7 @@ package io.venuu.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.core.table.{DataType, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
@@ -29,8 +30,6 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
   override def process(msg: GetTableList)(ctx: RequestContext): Option[ViewServerMessage] = {
     vsMsg(GetTableListResponse(tableContainer.getTableNames()))(ctx)
   }
-
-
 
   override def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage] = {
     val table = tableContainer.getTable(msg.table)
@@ -162,7 +161,7 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
       case Success(vp) =>
         vsMsg(ChangeViewPortRangeSuccess(vp.id, msg.from, msg.to))(ctx)
       case Failure(e) =>
-        logger.error("Could not change VP range:", e.getMessage)
+        logger.error("Could not change VP range:", e)
         errorMsg("Could not change VP range:" + e.getMessage)(ctx)
     }
   }
@@ -177,7 +176,25 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
     }
   }
 
-  override def process(msg: GetViewPortVisualLinksRequest)(ctx: RequestContext): Option[ViewServerMessage] = ???
+  override def process(msg: GetViewPortVisualLinksRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.getViewPortVisualLinks(ctx.session, msg.vpId)) match {
+      case Success(linksAndViewPorts) =>
+        vsMsg(GetViewPortVisualLinksResponse(msg.vpId, linksAndViewPorts.map({ case(link, viewPort) => AvailableViewPortVisualLink(viewPort.id, link)})))(ctx)
+      case Failure(e) =>
+        logger.error("Could not load links for viewport:", e.getMessage)
+        errorMsg("Could not load links for viewport" + e.getMessage)(ctx)
+    }
+  }
+
+  override def process(msg: CreateVisualLinkRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.linkViewPorts(ctx.session, ctx.queue, msg.childVpId, msg.parentVpId, msg.childColumnName, msg.parentColumnName)) match {
+      case Success(_) =>
+        vsMsg(CreateVisualLinkSuccess(childVpId = msg.childVpId, parentVpId = msg.parentVpId, childColumnName = msg.childColumnName, parentColumnName = msg.parentColumnName))(ctx)
+      case Failure(e) =>
+        logger.error("Could not establish Visual Link:", e.getMessage)
+        errorMsg("Could not establish Visual Link" + e.getMessage)(ctx)
+    }
+  }
 
   override def process(msg: OpenTreeNodeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     viewPortContainer.openNode(msg.vpId, msg.treeKey)

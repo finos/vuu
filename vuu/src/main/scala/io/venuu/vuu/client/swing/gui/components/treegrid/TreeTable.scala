@@ -9,8 +9,8 @@ package io.venuu.vuu.client.swing.gui.components.treegrid
 
 import de.sciss.treetable.TreeTable.Path
 import de.sciss.treetable.{TreeColumnModel, TreeModel, TreeTable}
-import javax.swing.{JSeparator, JTree, UIManager}
 
+import javax.swing.{JSeparator, JTree, UIManager}
 import scala.annotation.switch
 import scala.swing._
 import scala.util.control.NonFatal

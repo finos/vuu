@@ -7,11 +7,10 @@
   */
 package io.venuu.vuu.client
 
-import java.util.UUID
-
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport.{DefaultRange, ViewPortRange}
 
+import java.util.UUID
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
@@ -36,6 +35,14 @@ object ClientHelperFns {
 
   def setSelection(sessionId: String, token: String, user: String, requestId: String, vpId: String, selection: Array[Int])(implicit vsClient: ViewServerClient): Unit = {
     vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, SetSelectionRequest(vpId, selection)))
+  }
+
+  def getVisualLinks(sessionId: String, token: String, user: String, requestId: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, GetViewPortVisualLinksRequest(vpId)))
+  }
+
+  def createVisualLink(sessionId: String, token: String, user: String, requestId: String, childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String)(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, CreateVisualLinkRequest(childVpId, parentVpId, childColumnName, parentColumnName)))
   }
 
   def closeTreeNodeAsync(sessionId: String, token: String, user: String, requestId: String, vpId: String, treeKey: String)(implicit vsClient: ViewServerClient): Unit = {

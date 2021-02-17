@@ -7,9 +7,6 @@
   */
 package io.venuu.vuu.client.swing.gui
 
-import java.awt.event.{MouseAdapter, MouseEvent}
-import java.awt.{Color, Dimension, Point}
-import java.util.UUID
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.gui.components.FilterBarPanel
@@ -19,12 +16,15 @@ import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
 import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
 import io.venuu.vuu.net.{FilterSpec, SortDef, SortSpec}
 
-import javax.swing.{DefaultListSelectionModel, JComponent, JTable}
+import java.awt.event.{MouseAdapter, MouseEvent}
+import java.awt.{Color, Dimension, Point}
+import java.util.UUID
 import javax.swing.event.{ChangeEvent, ChangeListener, ListSelectionEvent, ListSelectionListener}
 import javax.swing.table.TableColumn
+import javax.swing.{DefaultListSelectionModel, JComponent}
 import scala.swing.BorderPanel.Position
 import scala.swing._
-import scala.swing.event.{MouseClicked, SelectionChanged, TableEvent}
+import scala.swing.event.{MouseClicked, TableEvent}
 
 class ComponentWithContext(val component: Component, val context: Object) extends Component{
   override lazy val peer: JComponent = component.peer
@@ -198,14 +198,11 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
 
       val last = table.peer.rowAtPoint(new Point(0, rectangle.y + rectangle.height))
 
-      logger.info(s"state changed: view rect = $rectangle, firstrow = $firstRow, lastrow = $last")
+      logger.debug(s"state changed: view rect = $rectangle, firstrow = $firstRow, lastrow = $last")
 
       if(firstRow == lastFirst && lastLast == last){
-        //do nothing
       }
       else{
-        //getTable().model.asInstanceOf[ViewPortedModel].setRange(0, 0, 100)
-
         if(context.vpId != ""){
           logger.info(s"[VP] Range Req ${firstRow}->${last + ClientConstants.OVERLAP}")
           if(firstRow == -1 && last == -1){
@@ -213,7 +210,6 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
           }else{
             eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), context.vpId, firstRow, last + ClientConstants.OVERLAP))
           }
-
         }
 
       }

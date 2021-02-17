@@ -3,8 +3,8 @@ package io.venuu.vuu.json
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
-import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, VsJsonTypeResolver}
 import io.venuu.vuu.net._
+import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, VsJsonTypeResolver}
 import org.scalatest._
 
 

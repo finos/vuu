@@ -1,6 +1,5 @@
 package io.venuu.vuu.core.module.metrics
 
-import com.codahale.metrics.Meter
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.LifeCycleRunner

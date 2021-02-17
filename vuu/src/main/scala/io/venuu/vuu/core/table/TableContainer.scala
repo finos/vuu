@@ -1,7 +1,5 @@
 package io.venuu.vuu.core.table
 
-import java.util.concurrent.ConcurrentHashMap
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{JmxAble, MetricsProvider}
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
@@ -9,6 +7,8 @@ import io.venuu.vuu.core.groupby.{GroupBySessionTable, SessionTable}
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.JoinTableProvider
 import io.venuu.vuu.viewport.RowSource
+
+import java.util.concurrent.ConcurrentHashMap
 
 trait TableContainerMBean{
   def tableList: String

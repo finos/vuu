@@ -8,6 +8,7 @@
 package io.venuu.vuu.client.swing.gui
 
 import com.typesafe.scalalogging.StrictLogging
+
 import javax.swing.SwingUtilities
 
 object SwingThread extends StrictLogging {

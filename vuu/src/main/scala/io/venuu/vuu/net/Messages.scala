@@ -11,10 +11,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
 import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize, JsonTypeIdResolver}
-import io.venuu.vuu.api.VisualLinks
+import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.net.rpc.VsJsonTypeResolver
 import io.venuu.vuu.viewport.ViewPortRange
-import jdk.javadoc.internal.doclets.formats.html.markup.Links
 
 trait FailureMessage{
   def error: String
@@ -104,8 +103,9 @@ case class SetSelectionRequest(vpId: String, selection: Array[Int]) extends Mess
 case class SetSelectionSuccess(vpId: String, selection: Array[Int]) extends MessageBody
 
 case class GetViewPortVisualLinksRequest(vpId: String) extends MessageBody
-case class GetViewPortVisualLinksResponse(vpId: String, links: VisualLinks) extends MessageBody
-
+case class GetViewPortVisualLinksResponse(vpId: String, links: List[AvailableViewPortVisualLink]) extends MessageBody
+case class CreateVisualLinkRequest(childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String) extends MessageBody
+case class CreateVisualLinkSuccess(childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String) extends MessageBody
 
 object UpdateType{
   final val SizeOnly = "SIZE"

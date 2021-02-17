@@ -1,13 +1,8 @@
-/**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 06/01/2016.
-
-  */
 package io.venuu.vuu.client.swing.gui
 
+import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.components.{MutableComboBox, MutableModel, MutableMultiSelectComboBox}
 import io.venuu.vuu.client.swing.messages._
@@ -16,16 +11,16 @@ import io.venuu.vuu.net.{SortDef, SortSpec}
 
 import java.awt.Dimension
 import scala.swing.TabbedPane.Page
-import scala.swing._
 import scala.swing.event.{ButtonClicked, SelectionChanged}
+import scala.swing.{BorderPanel, Button, Frame, GridPanel, Label, TabbedPane, TextField}
 
-class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends MainFrame {
+class VSChildFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Frame with StrictLogging{
 
   import SwingThread._
 
   this.preferredSize = new Dimension(1024, 768)
 
-  title = if(isChild) "Child" else "VS Client"
+  title = "Child Window"
 
   val connect = new Button("Login")
 
@@ -41,9 +36,17 @@ class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: Event
   var allColumnsAvailable = Array[String]()
   var sessionId: String = sessId
 
-  if(!isChild){
-    disableControls
-  } else{
+  val linkButton = new Button("Link")
+  val unLinkButton = new Button("Unlink")
+  val availableLinksCombo = new MutableComboBox[AvailableViewPortVisualLink]()
+  val linkChildColumn = new Label("-")
+  val linkParentColumn = new Label("-")
+
+  @volatile
+  var viewPortInfo: Option[ClientCreateViewPortSuccess] = None
+
+  swing{ () =>
+    eventBus.publish(ClientGetTableList(RequestId.oneNew()))
     enableControls(sessionId)
   }
 
@@ -86,11 +89,16 @@ class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: Event
       sessionId = msg.body.sessionId
       swing( () => enableControls(msg.body.sessionId) )
     case msg: ClientCreateViewPortSuccess =>
-      //swing( () => addVpPanel(msg) )
+      viewPortInfo = Some(msg)
+      eventBus.publish(ClientGetVisualLinks(RequestId.oneNew(), msg.vpId))
     case msg: ClientGetTableListResponse =>
       swing( () => setTablesComboContents(msg) )
     case msg: ClientGetTableMetaResponse =>
       swing( () => setColumnsComboContents(msg) )
+    case msg: ClientGetVisualLinksResponse =>
+      swing( () => availableLinksCombo.items = msg.vpLinks )
+    case msg: ClientCreateViewPortSuccess =>
+      logger.info("-->" + msg)
 
     case _ =>
   })
@@ -100,10 +108,19 @@ class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: Event
   listenTo(`tablesCombo`)
   listenTo(`editRpcTableButton`)
   listenTo(`openNewWindow`)
+  listenTo(`linkButton`)
 
   reactions += {
+    case ButtonClicked(`linkButton`) =>
+      val link = availableLinksCombo.item
+      viewPortInfo match {
+        case Some(vpInfo) =>
+          eventBus.publish(ClientCreateVisualLink(RequestId.oneNew(), vpInfo.vpId, link.parentVpId, link.link.fromColumn, link.link.toColumn))
+        case None =>
+          logger.error("No Viewport Registered with Grid, can't create Visual Link")
+      }
     case ButtonClicked(`openNewWindow`) =>
-      val frame = new VSChildFrame(this.sessionId)
+      val frame = new VSMainFrame(true, this.sessionId)
       frame.open()
 
     case SelectionChanged(`tablesCombo`) =>
@@ -138,6 +155,7 @@ class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: Event
   }
 
   val buttonPanel = new GridPanel(2, 9){
+
     contents += new Label("")
     contents += new Label("Tables")
     contents += new Label("Columns")
@@ -157,7 +175,18 @@ class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: Event
     contents += createViewPort
     contents += editRpcTableButton
     contents += openNewWindow
+  }
 
+  val buttonPanel2 = new GridPanel(1, 9){
+    contents += new Label("Link To:")
+    contents += availableLinksCombo
+    contents += new Label("Child Col:")
+    contents += linkChildColumn
+    contents += new Label("Parent Col:")
+    contents += linkParentColumn
+    contents += linkButton
+    contents += unLinkButton
+    contents += new Label("")
   }
 
   //val buttonPanel = new FlowPanel(connect, tablesCombo, columnsCombo, createViewPort, testCombo, sessionLabel)
@@ -166,10 +195,12 @@ class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: Event
 
     import scala.swing.BorderPanel.Position._
 
+    add(buttonPanel2, North)
     add(tabbedPanel, Center)
     add(buttonPanel, South)
 
   }
 
   pack()
+
 }

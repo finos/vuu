@@ -1,7 +1,6 @@
 package io.venuu.vuu.client.swing.gui.components
 
 import javax.swing.JComboBox
-
 import scala.swing.{Component, Swing, event}
 
 /**

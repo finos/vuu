@@ -7,9 +7,9 @@
   */
 package io.venuu.vuu.net.rpc
 
-import java.lang.reflect.Method
-
 import io.venuu.vuu.net._
+
+import java.lang.reflect.Method
 
 trait RpcHandler {
 
