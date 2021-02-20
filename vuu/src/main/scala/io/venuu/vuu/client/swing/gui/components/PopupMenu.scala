@@ -1,7 +1,6 @@
 package io.venuu.vuu.client.swing.gui.components
 
 import javax.swing.JPopupMenu
-
 import scala.swing.Component
 import scala.swing.SequentialContainer.Wrapper
 

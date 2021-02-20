@@ -3,12 +3,11 @@ package io.venuu.vuu.core.module.core
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultClock, Clock}
+import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
-import io.venuu.vuu.net.ws.WebSocketClient
 import io.venuu.vuu.net._
-import io.venuu.vuu.net.auth._
+import io.venuu.vuu.net.ws.WebSocketClient
 import org.scalatest.{FeatureSpec, _}
 
 /**

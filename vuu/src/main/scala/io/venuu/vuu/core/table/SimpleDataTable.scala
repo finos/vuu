@@ -22,30 +22,6 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   @volatile private var provider: Provider = null
 
-  //  private val sessionListeners = new CopyOnWriteArraySet[SessionListener]()
-  //
-  //  override def addSessionListener(listener: SessionListener): Unit = {
-  //    sessionListeners.add(listener)
-  //  }
-  //
-  //  override def removeSessionListener(listener: SessionListener): Unit = {
-  //    sessionListeners.remove(listener)
-  //  }
-  //
-  //  def notifySessionTablesUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
-  //    val iterator = sessionListeners.iterator()
-  //    while(iterator.hasNext){
-  //      iterator.next().processRawUpdate(rowKey, rowUpdate, timeStamp)
-  //    }
-  //  }
-  //
-  //  def notifySessionTablesDelete(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
-  //    val iterator = sessionListeners.iterator()
-  //    while(iterator.hasNext){
-  //      iterator.next().processRawDelete(rowKey)
-  //    }
-  //  }
-
   def setProvider(aProvider: Provider): Unit = provider = aProvider
 
   def getProvider: Provider = provider
@@ -123,12 +99,23 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
   override def getFullyQualified(column: Column): Any = column.getDataFullyQualified(this)
 
-  override def get(column: Column): Any = column.getData(this)
+  override def get(column: Column): Any = {
+    if(column != null ){
+      column.getData(this)
+    }else{
+      null
+    }
+  }
 
   def get(column: String): Any = {
-    data.get(column) match {
-      case Some(x) => x
-      case None => null //throw new Exception(s"column $column doesn't exist in data $data")
+    if(data == null){
+      null
+    }
+    else{
+      data.get(column) match {
+        case Some(x) => x
+        case None => null //throw new Exception(s"column $column doesn't exist in data $data")
+      }
     }
   }
 

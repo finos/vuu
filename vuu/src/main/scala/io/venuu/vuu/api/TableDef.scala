@@ -1,36 +1,54 @@
 /**
  * Copyright Whitebox Software Ltd. 2014
  * All Rights Reserved.
-
+ *
  * Created by chris on 15/12/14.
-
+ *
  */
 package io.venuu.vuu.api
 
 import io.venuu.vuu.core.table._
 
-object Fields{
+object Fields {
   val All = List("*")
 }
 
-object TableDef{
-  def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
-    new TableDef(name, keyField,columns, joinFields.toSeq)
+object VisualLinks {
+  def apply(link: Link*): VisualLinks = {
+    new VisualLinks(link.toList)
   }
 }
 
-object AutoSubscribeTableDef{
+object Link {
+  def apply(fromColumn: String, toTable: String, toField: String): Link = {
+    new Link(fromColumn, toTable, toField)
+  }
+}
+
+object TableDef {
+
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields.toSeq, links = links)
+  }
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
-    new TableDef(name, keyField,columns, joinFields.toSeq, autosubscribe = true)
+    new TableDef(name, keyField, columns, joinFields.toSeq)
+  }
+}
+
+object AutoSubscribeTableDef {
+  def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields.toSeq, autosubscribe = true)
   }
 }
 
 
-object GroupByColumns{
+object GroupByColumns {
   def addTo(columns: Array[Column]): Array[Column] = get(columns.length) ++ columns
 
   private def newBoolean(name: String, index: Int) = new SimpleColumn(name, index, DataType.fromString("boolean"))
+
   private def newColumn(name: String, index: Int) = new SimpleColumn(name, index, DataType.fromString("int"))
+
   private def newColumnStr(name: String, index: Int) = new SimpleColumn(name, index, DataType.fromString("string"))
 
   def get(origColumnSize: Int) =
@@ -44,16 +62,23 @@ object GroupByColumns{
     )
 }
 
-class GroupByTableDef(name: String, sourceTableDef: TableDef) extends TableDef(name, sourceTableDef.keyField, sourceTableDef.columns, Seq()){
+class GroupByTableDef(name: String, sourceTableDef: TableDef) extends TableDef(name, sourceTableDef.keyField, sourceTableDef.columns, Seq()) {
 }
 
-class TableDef(val name: String, val keyField: String, val columns: Array[Column], val joinFields: Seq[String], val autosubscribe: Boolean = false) {
+case class Link(fromColumn: String, toTable: String, toColumn: String)
+
+case class VisualLinks(links: List[Link])
+case class AvailableViewPortVisualLink(parentVpId: String, link: Link){
+  override def toString: String = link.fromColumn + " to " + link.toTable + "." + link.toColumn
+}
+
+class TableDef(val name: String, val keyField: String, val columns: Array[Column], val joinFields: Seq[String], val autosubscribe: Boolean = false, val links: VisualLinks = VisualLinks()) {
 
   def deleteColumnName() = s"$name._isDeleted"
 
   def columnForName(name: String): Column = {
-    val column = columns.find(c => c.name == name )
-    if(column.isEmpty)
+    val column = columns.find(c => c.name == name)
+    if (column.isEmpty)
       null
     else
       column.get
@@ -70,6 +95,7 @@ class TableDef(val name: String, val keyField: String, val columns: Array[Column
 trait JoinType
 
 object LeftOuterJoin extends JoinType
+
 object InnerJoin extends JoinType
 
 
@@ -77,29 +103,29 @@ case class JoinSpec(left: String, right: String, joinType: JoinType = InnerJoin)
 
 case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
-case class JoinTableDef(override val name: String, baseTable: TableDef, joinColumns: Array[Column], override val joinFields: Seq[String], joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinFields){
+case class JoinTableDef(override val name: String, baseTable: TableDef, joinColumns: Array[Column], override val joinFields: Seq[String], joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinFields) {
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()
   lazy val rightTables = joins.map(join => join.table.name).toArray
   lazy val joinFieldNames = getJoinDefinitionColumns().map(_.name)
   lazy val joinTableNames = (1 to baseTable.joinFields.size).map(i => baseTable.name) ++ rightTables
 
-  def getJoinDefinitionColumns():Array[Column] = joinTableColumns
+  def getJoinDefinitionColumns(): Array[Column] = joinTableColumns
 
-  private def getJoinDefinitionColumnsInternal():Array[Column] = {
+  private def getJoinDefinitionColumnsInternal(): Array[Column] = {
 
-    val baseColumns  =  Columns.from(baseTable, baseTable.joinFields )
+    val baseColumns = Columns.from(baseTable, baseTable.joinFields)
 
     val startIndex = baseColumns.size - 1
-    val endIndex   = startIndex + joins.toArray.size - 1
+    val endIndex = startIndex + joins.toArray.size - 1
 
-    val joinFieldColumns =  joins.toArray.zip( startIndex to endIndex ).map({ case(join, index) => {
+    val joinFieldColumns = joins.toArray.zip(startIndex to endIndex).map({ case (join, index) => {
       val baseColumn = join.table.columnForName(join.joinSpec.right)
       new JoinColumn(baseColumn.name, index, baseColumn.dataType, join.table, baseColumn)
     }
     })
 
-    baseColumns ++  joinFieldColumns
+    baseColumns ++ joinFieldColumns
   }
 }
 

@@ -23,7 +23,7 @@ object TableTestHelper {
   }
 
   def combineQs(viewPort: ViewPort) = {
-    viewPort.highPriorityQ.popUpTo(20) ++ viewPort.outboundQ.popUpTo(20)
+    (viewPort.highPriorityQ.popUpTo(20) ++ viewPort.outboundQ.popUpTo(20))
   }
 
   def getQueues = {

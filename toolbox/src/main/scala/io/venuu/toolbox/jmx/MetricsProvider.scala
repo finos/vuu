@@ -16,8 +16,6 @@ trait MetricsProvider{
   def histogram(name: String): Histogram
 }
 
-
-
 class MetricsProviderImpl() extends MetricsProvider{
   final val metrics = new MetricRegistry()
 
@@ -33,3 +31,4 @@ class MetricsProviderImpl() extends MetricsProvider{
   }
 
 }
+

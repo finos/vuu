@@ -9,7 +9,7 @@ package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultClock, Clock}
+import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}

@@ -1,8 +1,8 @@
 package io.venuu.vuu.client.swing.gui.components.renderer
 
-import java.awt.Component
-
 import io.venuu.vuu.client.swing.model.ViewPortedModel
+
+import java.awt.Component
 import javax.swing.table.{DefaultTableCellRenderer, TableCellRenderer}
 import javax.swing.{ImageIcon, JLabel, JTable}
 

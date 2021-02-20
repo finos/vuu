@@ -7,9 +7,6 @@
   */
 package io.venuu.vuu.client.headless
 
-import java.lang.reflect.{InvocationHandler, Method}
-import java.util.concurrent.CopyOnWriteArrayList
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
@@ -17,6 +14,8 @@ import io.venuu.vuu.client.ClientHelperFns
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport.ViewPortRange
 
+import java.lang.reflect.{InvocationHandler, Method}
+import java.util.concurrent.CopyOnWriteArrayList
 import scala.reflect.ClassTag
 
 object TestContext extends RequestContext("TEST", ClientSessionId("TEST", "CLIENT-TEST"), null, null, "TTESTTESTETSTE")

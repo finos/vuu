@@ -7,11 +7,10 @@
   */
 package io.venuu.vuu.client.swing.gui.components
 
-import java.awt.Color
-
 import com.typesafe.scalalogging.StrictLogging
-import javax.swing.{DefaultCellEditor, InputVerifier, JComponent, JTextField}
 
+import java.awt.Color
+import javax.swing.{DefaultCellEditor, InputVerifier, JComponent, JTextField}
 import scala.util.{Failure, Success, Try}
 
 trait CellValidator extends InputVerifier with StrictLogging{

@@ -1,8 +1,8 @@
 package io.venuu.vuu.client.swing.gui.components.renderer
 
-import java.awt.{Color, Component}
-
 import io.venuu.vuu.client.swing.gui.TreeColumns
+
+import java.awt.{Color, Component}
 import javax.swing.border.EmptyBorder
 import javax.swing.table.TableCellRenderer
 import javax.swing.{ImageIcon, JLabel, JTable}

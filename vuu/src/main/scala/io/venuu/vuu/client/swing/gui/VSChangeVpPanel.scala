@@ -1,7 +1,5 @@
 package io.venuu.vuu.client.swing.gui
 
-import java.awt.Dimension
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.EventBus
@@ -9,6 +7,7 @@ import io.venuu.vuu.client.swing.gui.components.{MutableModel, MutableMultiSelec
 import io.venuu.vuu.client.swing.messages.{ClientChangeViewPortRequest, ClientMessage, RequestId}
 import io.venuu.vuu.net.FilterSpec
 
+import java.awt.Dimension
 import scala.collection.mutable.ListBuffer
 import scala.swing._
 import scala.swing.event.ButtonClicked

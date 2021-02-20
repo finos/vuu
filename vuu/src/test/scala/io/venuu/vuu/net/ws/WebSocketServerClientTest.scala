@@ -2,12 +2,12 @@ package io.venuu.vuu.net.ws
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultClock, Clock}
+import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.CoreServerApiHander
 import io.venuu.vuu.core.module.ModuleContainer
 import io.venuu.vuu.core.table.TableContainer
-import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
 import io.venuu.vuu.net._
+import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
 import io.venuu.vuu.provider.{JoinTableProviderImpl, ProviderContainer}
 import io.venuu.vuu.viewport.ViewPortContainer
 import org.scalatest._

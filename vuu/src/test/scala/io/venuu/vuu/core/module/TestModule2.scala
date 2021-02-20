@@ -7,7 +7,7 @@
   */
 package io.venuu.vuu.core.module
 
-import io.venuu.vuu.api.{AutoSubscribeTableDef, JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef}
+import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.{Columns, DataTable, TableContainer}
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.provider.Provider

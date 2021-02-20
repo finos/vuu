@@ -7,11 +7,11 @@
  */
 package io.venuu.vuu.provider
 
-import java.util.concurrent.ConcurrentHashMap
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import io.venuu.vuu.core.table.DataTable
+
+import java.util.concurrent.ConcurrentHashMap
 
 class ProviderContainer(joinTableProvider: JoinTableProvider)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging{
 

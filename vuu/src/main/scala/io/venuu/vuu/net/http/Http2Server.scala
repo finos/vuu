@@ -1,7 +1,5 @@
 package io.venuu.vuu.net.http
 
-import java.lang.management.ManagementFactory
-
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.eclipse.jetty.alpn.ALPN
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory
@@ -11,6 +9,8 @@ import org.eclipse.jetty.jmx.MBeanContainer
 import org.eclipse.jetty.server._
 import org.eclipse.jetty.server.handler.ResourceHandler
 import org.eclipse.jetty.util.ssl.SslContextFactory
+
+import java.lang.management.ManagementFactory
 
 /**
  * Created by chris on 12/11/2015.

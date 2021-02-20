@@ -7,15 +7,15 @@
   */
 package io.venuu.vuu.provider.simulation
 
-import java.util.Random
-import java.util.concurrent.ConcurrentHashMap
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.{LifeCycleRunner, RunInThread}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData}
 import io.venuu.vuu.provider.Provider
+
+import java.util.Random
+import java.util.concurrent.ConcurrentHashMap
 
 trait SimulationMode{
   def asCode: Int

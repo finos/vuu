@@ -1,6 +1,5 @@
 package io.venuu.vuu.net.http
 
-import io.venuu.toolbox.lifecycle.LifecycleContainer
 import org.scalatest.{FeatureSpec, Matchers}
 
 class HttpServerTest extends FeatureSpec with Matchers{

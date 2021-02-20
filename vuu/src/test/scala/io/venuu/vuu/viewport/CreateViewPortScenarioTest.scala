@@ -11,7 +11,7 @@ import io.venuu.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.json.JsonUtil
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.{LifeCycleRunner, Runner}
-import io.venuu.toolbox.time.{DefaultClock, Clock}
+import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.{Columns, DataTable}
 import io.venuu.vuu.core.{ViewServer, ViewServerConfig}

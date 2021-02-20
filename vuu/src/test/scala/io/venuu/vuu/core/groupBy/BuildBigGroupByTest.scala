@@ -9,8 +9,7 @@ import io.venuu.vuu.core.groupby.GroupBySessionTable
 import io.venuu.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
 import io.venuu.vuu.provider.JoinTableProviderImpl
-import io.venuu.vuu.util.OutboundRowPublishQueue
-import io.venuu.vuu.viewport.{GroupBy, GroupByTreeBuilder, ViewPortContainer}
+import io.venuu.vuu.viewport.{GroupBy, GroupByTreeBuilder}
 import org.scalatest._
 
 /**

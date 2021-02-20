@@ -7,9 +7,9 @@
   */
 package io.venuu.vuu.net.auth
 
-import java.util.UUID
-
 import io.venuu.vuu.net.{AuthenticateSuccess, Authenticator, JsonViewServerMessage, ViewServerMessage}
+
+import java.util.UUID
 
 class AlwaysHappyAuthenticator extends Authenticator {
 

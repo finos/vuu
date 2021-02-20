@@ -10,7 +10,7 @@ package io.venuu.vuu.core.module.simul
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
-import io.venuu.vuu.core.module.simul.provider.OrdersSimulProvider
+import io.venuu.vuu.core.module.simul.provider.{ChildOrdersProvider, OrdersSimulProvider, ParentChildOrdersModel, ParentOrdersProvider, SeededRandomNumbers}
 import io.venuu.vuu.core.module.{ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.Columns
 import io.venuu.vuu.net.RequestContext
@@ -30,18 +30,22 @@ class TheSimulRpcHander extends DefaultLifecycleEnabled with RpcHandler with Sim
   }
 }
 
-
 object SimulationModule {
 
   final val NAME = "SIMUL"
 
-  def apply()(implicit time: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+    implicit val randomNumbers = new SeededRandomNumbers(clock.now())
+
+    val ordersModel = new ParentChildOrdersModel()
+
     ModuleFactory.withNamespace(NAME)
       .addTable(
           TableDef(
             name = "instruments",
             keyField = "ric",
             columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Int"),
+            VisualLinks(),
             joinFields = "ric"
           ),
           (table, vs) => new SimulatedBigInstrumentsProvider(table)
@@ -60,13 +64,50 @@ object SimulationModule {
           name = "orders",
           keyField = "orderId",
           Columns.fromNames("orderId:String", "side:Char", "ric:String", "ccy:String", "quantity:Double", "trader:String", "filledQuantity:Double", "lastUpdate: Long", "created: Long"),
+          VisualLinks(
+            Link("ric", "instruments", "ric"),
+            Link("ric", "prices", "ric")
+          ),
           joinFields = "orderId", "ric"
         ),
         (table, vs) => new OrdersSimulProvider(table)
       )
       .addTable(
-        TableDef("orderEntry", "clOrderId",
-            Columns.fromNames("clOrderId:String", "ric:String", "quantity: Double", "orderType:String", "price: Double", "priceLevel: String"), "ric"
+        TableDef(
+          name = "parentOrders",
+          keyField = "id",
+          Columns.fromNames("id:String", "idAsInt: Int", "ric:String", "childCount: Int", "price:Double", "quantity:Int", "side:String", "account:String", "exchange: String",
+                                    "ccy: String", "algo: String", "volLimit:Double", "filledQty:Int", "openQty:Int", "averagePrice: Double", "status:String",
+                                    "lastUpdate:Long"),
+          VisualLinks(
+            Link("ric", "prices", "ric")
+          ),
+          joinFields = "id", "ric"
+        ),
+        (table, vs) => new ParentOrdersProvider(table, ordersModel)
+      )
+      .addTable(
+        TableDef(
+          name = "childOrders",
+          keyField = "id",
+          Columns.fromNames("parentOrderId:Int", "id:String", "idAsInt: Int", "ric:String", "price:Double", "quantity:Int", "side:String", "account:String", "exchange: String",
+            "ccy: String", "strategy: String", "volLimit:Double", "filledQty:Int", "openQty:Int", "averagePrice: Double", "status:String", "lastUpdate:Long"),
+          VisualLinks(
+            Link("parentOrderId", "parentOrders", "idAsInt")
+          ),
+          joinFields = "id", "ric"
+        ),
+        (table, vs) => new ChildOrdersProvider(table, ordersModel)
+      )
+      .addTable(
+        TableDef(
+          name = "orderEntry",
+          keyField = "clOrderId",
+          Columns.fromNames("clOrderId:String", "ric:String", "quantity: Double", "orderType:String", "price: Double", "priceLevel: String"),
+          VisualLinks(
+            Link("ric", "instruments", "ric")
+          ),
+          joinFields =  "ric"
         ),
         (table, vs) => new RpcProvider(table)
       )

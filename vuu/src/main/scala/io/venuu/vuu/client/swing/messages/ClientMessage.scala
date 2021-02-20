@@ -7,11 +7,12 @@
   */
 package io.venuu.vuu.client.swing.messages
 
-import java.util.UUID
-
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.client.swing.client.UserPrincipal
 import io.venuu.vuu.net.{FilterSpec, SortSpec}
+
+import java.util.UUID
 
 object RequestId{
   def oneNew()(implicit timeProvider: Clock) = {
@@ -37,7 +38,7 @@ case class ClientChangeViewPortSuccess(requestId: String, viewPortId: String, co
 case class ClientChangeViewPortFailure(requestId: String, viewPortId: String, columns: Array[String], sortBy: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends ClientMessage with FromServer
 
 case class ClientUpdateVPRange(requestId: String, vpId: String, from: Int, to: Int) extends ClientMessage with ToServer
-case class ClientServerRowUpdate(vpId: String, index: Int, data: Array[AnyRef], size: Int) extends ClientMessage with FromServer
+case class ClientServerRowUpdate(vpId: String, index: Int, data: Array[AnyRef], size: Int, selected: Int) extends ClientMessage with FromServer
 
 case class ClientGetTableList(requestId: String) extends ClientMessage
 case class ClientGetTableListResponse(requestId: String, tables: Array[String]) extends ClientMessage
@@ -54,3 +55,8 @@ case class ClientCloseTreeNodeRequest(requestId: String, vpId: String, treeKey: 
 case class ClientChangeViewPortRangeSuccess(vpId: String, from: Int, to: Int) extends ClientMessage
 
 case class ClientSetSelection(requestId: String, vpId: String, selection : Array[Int]) extends ClientMessage with ToServer
+
+case class ClientGetVisualLinks(requestId: String, vpId: String) extends ClientMessage with ToServer
+case class ClientGetVisualLinksResponse(requestId: String, vpId: String, vpLinks: List[AvailableViewPortVisualLink]) extends ClientMessage with ToServer
+case class ClientCreateVisualLink(requestId: String, childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String) extends ClientMessage with ToServer
+case class ClientCreateVisualLinkSuccess(requestId: String, childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String) extends ClientMessage with ToServer

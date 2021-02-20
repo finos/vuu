@@ -51,6 +51,10 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         rpcTableUpdate(principal.sessionId, principal.token, principal.user, msg.table, msg.key, msg.data)
       case msg: ClientSetSelection =>
         setSelection(principal.sessionId, principal.token, principal.user, msg.requestId, msg.vpId, msg.selection)
+      case msg: ClientGetVisualLinks =>
+        getVisualLinks(principal.sessionId, principal.token, principal.user, msg.requestId, msg.vpId)
+      case msg: ClientCreateVisualLink =>
+        createVisualLink(principal.sessionId, principal.token, principal.user, msg.requestId, msg.childVpId, msg.parentVpId, msg.childColumnName, msg.parentColumnName)
 
       case msg: ClientUpdateVPRange =>
         vpChangeRequests.put(msg.vpId, msg)
@@ -126,7 +130,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
 
         //logger.info("Got table row updates: " + body.rows.size)
-        body.rows.foreach(ru => eventBus.publish(ClientServerRowUpdate(ru.viewPortId, ru.rowIndex, ru.data.asInstanceOf[Array[AnyRef]], ru.vpSize)))
+        body.rows.foreach(ru => eventBus.publish(ClientServerRowUpdate(ru.viewPortId, ru.rowIndex, ru.data.asInstanceOf[Array[AnyRef]], ru.vpSize, ru.selected)))
 
       case body: GetTableMetaResponse =>
         logger.info(s"[TABLEMETA] ${body.table} from server")
@@ -139,7 +143,13 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         eventBus.publish(ClientChangeViewPortSuccess(msg.requestId, body.viewPortId, body.columns, body.sort, body.groupBy, body.filterSpec))
 
       case body: SetSelectionSuccess =>
-        logger.info("[SELECTION] success...")
+        logger.info("[SELECTION] success." + body.selection.mkString(",") )
+
+      case body: GetViewPortVisualLinksResponse =>
+        eventBus.publish(ClientGetVisualLinksResponse(msg.requestId, body.vpId, body.links))
+
+      case body: CreateVisualLinkSuccess =>
+        eventBus.publish(ClientCreateVisualLinkSuccess(msg.requestId, body.childVpId, body.parentVpId, body.childColumnName, body.parentColumnName))
 
       case body: ErrorResponse =>
         logger.info("[ERROR] " + body)

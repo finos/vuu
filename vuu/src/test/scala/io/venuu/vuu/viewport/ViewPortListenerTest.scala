@@ -2,8 +2,8 @@ package io.venuu.vuu.viewport
 
 import io.venuu.vuu.core.table.TableTestHelper.combineQs
 import io.venuu.vuu.util.table.TableAsserts.assertVpEq
-import org.scalatest.{GivenWhenThen, Matchers}
 import org.scalatest.prop.Tables.Table
+import org.scalatest.{GivenWhenThen, Matchers}
 
 class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen{
 

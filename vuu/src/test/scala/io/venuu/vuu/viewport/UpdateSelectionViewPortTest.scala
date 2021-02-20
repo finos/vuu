@@ -1,10 +1,10 @@
 package io.venuu.vuu.viewport
 
 import io.venuu.vuu.core.table.TableTestHelper.combineQs
-import io.venuu.vuu.net.{FilterSpec, SortDef, SortSpec}
-import io.venuu.vuu.util.table.TableAsserts.{assertVpEq, assertVpEqWithMeta}
-import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
+import io.venuu.vuu.net.{SortDef, SortSpec}
+import io.venuu.vuu.util.table.TableAsserts.assertVpEqWithMeta
 import org.scalatest.prop.Tables.Table
+import org.scalatest.{GivenWhenThen, Matchers}
 
 class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen{
 
