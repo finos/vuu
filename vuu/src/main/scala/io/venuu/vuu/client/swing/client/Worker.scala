@@ -130,7 +130,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
 
         //logger.info("Got table row updates: " + body.rows.size)
-        body.rows.foreach(ru => eventBus.publish(ClientServerRowUpdate(ru.viewPortId, ru.rowIndex, ru.data.asInstanceOf[Array[AnyRef]], ru.vpSize)))
+        body.rows.foreach(ru => eventBus.publish(ClientServerRowUpdate(ru.viewPortId, ru.rowIndex, ru.data.asInstanceOf[Array[AnyRef]], ru.vpSize, ru.selected)))
 
       case body: GetTableMetaResponse =>
         logger.info(s"[TABLEMETA] ${body.table} from server")
@@ -143,7 +143,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         eventBus.publish(ClientChangeViewPortSuccess(msg.requestId, body.viewPortId, body.columns, body.sort, body.groupBy, body.filterSpec))
 
       case body: SetSelectionSuccess =>
-        logger.info("[SELECTION] success...")
+        logger.info("[SELECTION] success." + body.selection.mkString(",") )
 
       case body: GetViewPortVisualLinksResponse =>
         eventBus.publish(ClientGetVisualLinksResponse(msg.requestId, body.vpId, body.links))

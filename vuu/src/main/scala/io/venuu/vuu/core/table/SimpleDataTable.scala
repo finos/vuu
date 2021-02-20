@@ -99,12 +99,23 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
   override def getFullyQualified(column: Column): Any = column.getDataFullyQualified(this)
 
-  override def get(column: Column): Any = column.getData(this)
+  override def get(column: Column): Any = {
+    if(column != null ){
+      column.getData(this)
+    }else{
+      null
+    }
+  }
 
   def get(column: String): Any = {
-    data.get(column) match {
-      case Some(x) => x
-      case None => null //throw new Exception(s"column $column doesn't exist in data $data")
+    if(data == null){
+      null
+    }
+    else{
+      data.get(column) match {
+        case Some(x) => x
+        case None => null //throw new Exception(s"column $column doesn't exist in data $data")
+      }
     }
   }
 

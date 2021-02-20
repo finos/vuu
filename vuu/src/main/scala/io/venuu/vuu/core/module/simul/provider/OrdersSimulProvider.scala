@@ -10,9 +10,32 @@ import java.util
 import java.util.Random
 import java.util.concurrent.atomic.AtomicInteger
 
-class SeededRandom(seed: Long){
+trait RandomNumbers {
+  def nextInt(): Int
+  def seededRand(low: Int, high: Int): Int
+}
+
+class TestFriendlyRandomNumbers() extends RandomNumbers {
+  private var nextInteger = 0;
+
+  def setNextInt(i: Int) = {
+    nextInteger = i;
+  }
+
+  override def nextInt(): Int = {
+    nextInteger
+  }
+
+  override def seededRand(low: Int, high: Int): Int = {
+    nextInteger
+  }
+}
+
+class SeededRandomNumbers(seed: Long) extends RandomNumbers {
 
   val random = new Random(seed)
+
+  override def nextInt(): Int = random.nextInt();
 
   def seededRand(low: Int, high: Int): Int = {
     random.nextInt(high-low) + low;
@@ -29,8 +52,8 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 
   private val orders = new util.Hashtable[String, OrderDetail]()
   private val orderCount = new AtomicInteger(0)
-  private val seededRandom = new SeededRandom(time.now())
-  private val ordersCount = new SeededRandom(time.now())
+  private val seededRandom = new SeededRandomNumbers(time.now())
+  private val ordersCount = new SeededRandomNumbers(time.now())
 
   def createOrderNyc(i: Int) = {
     createOrder(i, "NYC", "USD","AAPL.N")
@@ -64,11 +87,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
     val asMap     = toMap(od)
 
     table.processUpdate(od.orderId, RowWithData(od.orderId, asMap), time.now())
-
-
   }
-
-
 
   private def toMap(od: OrderDetail): Map[String, Any] = {
 

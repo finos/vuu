@@ -10,7 +10,7 @@ package io.venuu.vuu.core.module.simul
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
-import io.venuu.vuu.core.module.simul.provider.OrdersSimulProvider
+import io.venuu.vuu.core.module.simul.provider.{ChildOrdersProvider, OrdersSimulProvider, ParentChildOrdersModel, ParentOrdersProvider, SeededRandomNumbers}
 import io.venuu.vuu.core.module.{ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.Columns
 import io.venuu.vuu.net.RequestContext
@@ -34,7 +34,11 @@ object SimulationModule {
 
   final val NAME = "SIMUL"
 
-  def apply()(implicit time: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+    implicit val randomNumbers = new SeededRandomNumbers(clock.now())
+
+    val ordersModel = new ParentChildOrdersModel()
+
     ModuleFactory.withNamespace(NAME)
       .addTable(
           TableDef(
@@ -67,6 +71,33 @@ object SimulationModule {
           joinFields = "orderId", "ric"
         ),
         (table, vs) => new OrdersSimulProvider(table)
+      )
+      .addTable(
+        TableDef(
+          name = "parentOrders",
+          keyField = "id",
+          Columns.fromNames("id:String", "idAsInt: Int", "ric:String", "childCount: Int", "price:Double", "quantity:Int", "side:String", "account:String", "exchange: String",
+                                    "ccy: String", "algo: String", "volLimit:Double", "filledQty:Int", "openQty:Int", "averagePrice: Double", "status:String",
+                                    "lastUpdate:Long"),
+          VisualLinks(
+            Link("ric", "prices", "ric")
+          ),
+          joinFields = "id", "ric"
+        ),
+        (table, vs) => new ParentOrdersProvider(table, ordersModel)
+      )
+      .addTable(
+        TableDef(
+          name = "childOrders",
+          keyField = "id",
+          Columns.fromNames("parentOrderId:Int", "id:String", "idAsInt: Int", "ric:String", "price:Double", "quantity:Int", "side:String", "account:String", "exchange: String",
+            "ccy: String", "strategy: String", "volLimit:Double", "filledQty:Int", "openQty:Int", "averagePrice: Double", "status:String", "lastUpdate:Long"),
+          VisualLinks(
+            Link("parentOrderId", "parentOrders", "idAsInt")
+          ),
+          joinFields = "id", "ric"
+        ),
+        (table, vs) => new ChildOrdersProvider(table, ordersModel)
       )
       .addTable(
         TableDef(

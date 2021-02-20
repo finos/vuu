@@ -121,6 +121,7 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
       val selected = e.getSource.asInstanceOf[DefaultListSelectionModel].getSelectedIndices.toArray
       // eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), context.vpId, 0, 100))
       eventBus.publish(ClientSetSelection(RequestId.oneNew(), context.vpId, selected))
+      logger.info("Setting Selected" + selected.mkString(",") + " e(first:" + e.getFirstIndex + ",last:" + e.getLastIndex + ",adjusting:" + e.getValueIsAdjusting + ")" + e.getSource)
     }
   })
 
@@ -196,7 +197,7 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
 
       val firstRow = table.peer.rowAtPoint(new Point(0, rectangle.y))
 
-      val last = table.peer.rowAtPoint(new Point(0, rectangle.y + rectangle.height))
+      val last = if( table.peer.rowAtPoint(new Point(0, rectangle.y + rectangle.height)) > firstRow ) table.peer.rowAtPoint(new Point(0, rectangle.y + rectangle.height)) else theModel.getRowCount
 
       logger.debug(s"state changed: view rect = $rectangle, firstrow = $firstRow, lastrow = $last")
 
@@ -205,7 +206,7 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
       else{
         if(context.vpId != ""){
           logger.info(s"[VP] Range Req ${firstRow}->${last + ClientConstants.OVERLAP}")
-          if(firstRow == -1 && last == -1){
+          if(firstRow == -1 || last == -1){
             eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), context.vpId, 0, 100))
           }else{
             eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), context.vpId, firstRow, last + ClientConstants.OVERLAP))

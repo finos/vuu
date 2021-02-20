@@ -38,7 +38,7 @@ case class ClientChangeViewPortSuccess(requestId: String, viewPortId: String, co
 case class ClientChangeViewPortFailure(requestId: String, viewPortId: String, columns: Array[String], sortBy: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends ClientMessage with FromServer
 
 case class ClientUpdateVPRange(requestId: String, vpId: String, from: Int, to: Int) extends ClientMessage with ToServer
-case class ClientServerRowUpdate(vpId: String, index: Int, data: Array[AnyRef], size: Int) extends ClientMessage with FromServer
+case class ClientServerRowUpdate(vpId: String, index: Int, data: Array[AnyRef], size: Int, selected: Int) extends ClientMessage with FromServer
 
 case class ClientGetTableList(requestId: String) extends ClientMessage
 case class ClientGetTableListResponse(requestId: String, tables: Array[String]) extends ClientMessage
