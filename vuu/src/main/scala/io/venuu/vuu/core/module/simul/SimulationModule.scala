@@ -95,6 +95,9 @@ object SimulationModule {
           VisualLinks(
             Link("parentOrderId", "parentOrders", "idAsInt")
           ),
+          indices = Indices(
+            Index("parentOrderId")
+          ),
           joinFields = "id", "ric"
         ),
         (table, vs) => new ChildOrdersProvider(table, ordersModel)

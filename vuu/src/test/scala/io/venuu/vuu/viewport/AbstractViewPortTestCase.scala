@@ -85,6 +85,9 @@ class AbstractViewPortTestCase extends FeatureSpec {
       links = VisualLinks(
         Link("ric", "prices", "ric")
       ),
+      indices = Indices(
+        Index("ric")
+      ),
       joinFields =  "ric", "orderId"
     )
 

@@ -11,6 +11,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.{ImmutableArray, ImmutableArrays}
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
+import io.venuu.vuu.core.index.IndexedField
 import io.venuu.vuu.provider.JoinTableProvider
 import io.venuu.vuu.viewport.RowProcessor
 
@@ -323,6 +324,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   override def name: String = tableDef.name
 
   private val onUpdateMeter = metrics.meter(name + ".processUpdates.Meter")
+
+  override def indexForColumn(column: Column): Option[IndexedField[_]] = None
 
   val joinColumns = tableDef.joins.size + tableDef.baseTable.joinFields.size
 

@@ -9,7 +9,7 @@
     </appender>
 
     <!-- uncomment this whole section if you want socket level logging -->
-    <!--appender name="server-inout" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="server-inout" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <faile>target/vuu-server-inout.log</faile>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>target/vuu/roll-by-time/inout.%d{yyyy-MM-dd-HH}.log
@@ -22,13 +22,13 @@
         </encoder>
     </appender>
 
-    <logger name="io.venuu.vuu.net.ViewServerHandler" level="DEBUG">
+    <logger name="io.venuu.vuu.net.ViewServerHandler" level="INFO">
         <appender-ref ref="server-inout"/>
     </logger>
 
-    <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
+    <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="INFO">
         <appender-ref ref="server-inout"/>
-    </logger -->
+    </logger>
     <!--
     TO HERE
     -->

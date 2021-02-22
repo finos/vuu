@@ -1,10 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
- *
- * Created by chris on 15/12/14.
- *
- */
 package io.venuu.vuu.api
 
 import io.venuu.vuu.core.table._
@@ -28,16 +21,24 @@ object Link {
 object TableDef {
 
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, joinFields: String*): TableDef = {
-    new TableDef(name, keyField, columns, joinFields.toSeq, links = links)
+    new TableDef(name, keyField, columns, joinFields.toSeq, links = links, indices = Indices())
+  }
+
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields.toSeq, links = links, indices = indices)
+  }
+
+  def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields.toSeq, indices = indices)
   }
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
-    new TableDef(name, keyField, columns, joinFields.toSeq)
+    new TableDef(name, keyField, columns, joinFields.toSeq, indices = Indices())
   }
 }
 
 object AutoSubscribeTableDef {
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
-    new TableDef(name, keyField, columns, joinFields.toSeq, autosubscribe = true)
+    new TableDef(name, keyField, columns, joinFields.toSeq, autosubscribe = true, indices = Indices())
   }
 }
 
@@ -62,17 +63,24 @@ object GroupByColumns {
     )
 }
 
-class GroupByTableDef(name: String, sourceTableDef: TableDef) extends TableDef(name, sourceTableDef.keyField, sourceTableDef.columns, Seq()) {
+class GroupByTableDef(name: String, sourceTableDef: TableDef) extends TableDef(name, sourceTableDef.keyField, sourceTableDef.columns, Seq(), indices = Indices()) {
 }
 
 case class Link(fromColumn: String, toTable: String, toColumn: String)
 
 case class VisualLinks(links: List[Link])
+case class Indices(indices: Index*)
+case class Index(column: String)
+
+
 case class AvailableViewPortVisualLink(parentVpId: String, link: Link){
   override def toString: String = link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
-class TableDef(val name: String, val keyField: String, val columns: Array[Column], val joinFields: Seq[String], val autosubscribe: Boolean = false, val links: VisualLinks = VisualLinks()) {
+class TableDef(val name: String, val keyField: String, val columns: Array[Column], val joinFields: Seq[String],
+               val autosubscribe: Boolean = false,
+               val links: VisualLinks = VisualLinks(),
+               val indices: Indices) {
 
   def deleteColumnName() = s"$name._isDeleted"
 
@@ -103,7 +111,7 @@ case class JoinSpec(left: String, right: String, joinType: JoinType = InnerJoin)
 
 case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
-case class JoinTableDef(override val name: String, baseTable: TableDef, joinColumns: Array[Column], override val joinFields: Seq[String], joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinFields) {
+case class JoinTableDef(override val name: String, baseTable: TableDef, joinColumns: Array[Column], override val joinFields: Seq[String], joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices()) {
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()
   lazy val rightTables = joins.map(join => join.table.name).toArray

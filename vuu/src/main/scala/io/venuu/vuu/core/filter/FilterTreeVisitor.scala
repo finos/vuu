@@ -1,14 +1,30 @@
 package io.venuu.vuu.core.filter
 
-import io.venuu.vuu.core.table.RowData
+import com.ibm.icu.impl.LocaleDisplayNamesImpl.DataTableType
+import io.venuu.toolbox.ImmutableArray
+import io.venuu.vuu.core.index.IndexedField
+import io.venuu.vuu.core.table.{DataType, RowData}
 import io.venuu.vuu.grammer.FilterParser._
 import io.venuu.vuu.grammer.{FilterBaseVisitor, FilterParser}
+import io.venuu.vuu.viewport.RowSource
 import org.antlr.v4.runtime.tree.TerminalNode
 
 import scala.collection.JavaConversions._
 
 trait FilterClause{
   def filter(data: RowData): Boolean
+  def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+
+    val columns = source.asTable.getTableDef.columns.toList
+
+    val pks = primaryKeys.toArray
+
+    val filtered = pks.filter( key => {
+      this.filter(source.pullRow(key, columns))
+    })
+
+    ImmutableArray.from(filtered)
+  }
 }
 trait DataAndTypeClause extends FilterClause{
 
@@ -27,6 +43,15 @@ trait DataAndTypeClause extends FilterClause{
 
 case class OrClause(and: FilterClause, ors: List[FilterClause]) extends FilterClause{
 
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+    (and.filterAll(source, primaryKeys) ++ filterAllByOrs(source, primaryKeys)).distinct
+  }
+
+  def filterAllByOrs(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+    val resultOrs = ors.map( or => or.filterAll(source, primaryKeys) ).foldLeft(ImmutableArray.empty[String])((left, right) => left.++(right) )
+    (resultOrs).distinct
+  }
+
   def filterByOrs(data: RowData): Boolean = {
     ors.find( fc => fc.filter(data) ) match {
       case Some(fc) => true
@@ -41,16 +66,21 @@ case class OrClause(and: FilterClause, ors: List[FilterClause]) extends FilterCl
 
 case class AndClause(terms: List[FilterClause]) extends FilterClause {
 
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+    terms.foldLeft(primaryKeys)((prePks, term) => term.filterAll(source, prePks))
+  }
+
   override def filter(data: RowData): Boolean = {
-    var allTrue = true
-
     val successTerms = for(term <- terms if term.filter(data) ) yield term
-
     successTerms.size == terms.size
   }
 }
 
 case class TermClause(column: String, dataAndTypeClause: DataAndTypeClause) extends FilterClause{
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+    dataAndTypeClause.filterAll(source, primaryKeys)
+  }
+
   override def filter(data: RowData): Boolean = dataAndTypeClause.filter(data)
 }
 
@@ -58,9 +88,22 @@ case class EqualsClause(column: String, dataType: Int, value: String) extends Da
 
   val toType: Any = toType(value, dataType)
 
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+    val asColumn = source.asTable.columnForName(column)
+    source.asTable.indexForColumn(asColumn) match {
+      case Some(ix: IndexedField[String]) if asColumn.dataType == DataType.StringDataType =>
+        ix.rowKeysForValue(value)
+      case Some(ix: IndexedField[Int]) if asColumn.dataType == DataType.IntegerDataType =>
+        ix.rowKeysForValue(value.toInt)
+      case Some(ix: IndexedField[Long]) if asColumn.dataType == DataType.LongDataType =>
+        ix.rowKeysForValue(value.toLong)
+      case None =>
+        EqualsClause.super.filterAll(source, primaryKeys)
+    }
+  }
+
   override def filter(data: RowData): Boolean = {
     val datum = data.get(column)
-
     if( datum != null && datum.equals(toType)) true
     else false
   }

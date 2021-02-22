@@ -26,6 +26,8 @@ trait ImmutableArray[T] {
 
   def -(element: T): ImmutableArray[T]
 
+  def ++(arr: ImmutableArray[T]) : ImmutableArray[T]
+
   def toArray: Array[T]
 
   def toList: List[T]
@@ -42,9 +44,18 @@ trait ImmutableArray[T] {
 
   def remove(index: Int): ImmutableArray[T]
 
+  def distinct: ImmutableArray[T]
 }
 
 class NiaiveImmutableArray[T :ClassTag](val array: Array[T] = Array.empty) extends ImmutableArray[T]{
+
+  override def ++(arr: ImmutableArray[T]): ImmutableArray[T] = {
+    new NiaiveImmutableArray[T](array = Array.concat(this.array, arr.toArray ))
+  }
+
+  override def distinct: ImmutableArray[T] = {
+    ImmutableArray.from(this.array.distinct)
+  }
 
   override def equals(obj: scala.Any): Boolean = {
     if(obj.isInstanceOf[NiaiveImmutableArray[T]]){

@@ -33,6 +33,7 @@
     <modules>
         <module>toolbox</module>
         <module>vuu</module>
+        <!--module>benchmark</module-->
     </modules>
 
     <repositories>

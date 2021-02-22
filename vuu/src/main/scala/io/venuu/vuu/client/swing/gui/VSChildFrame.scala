@@ -97,8 +97,6 @@ class VSChildFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], t
       swing( () => setColumnsComboContents(msg) )
     case msg: ClientGetVisualLinksResponse =>
       swing( () => availableLinksCombo.items = msg.vpLinks )
-    case msg: ClientCreateViewPortSuccess =>
-      logger.info("-->" + msg)
 
     case _ =>
   })
