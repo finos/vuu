@@ -38,7 +38,7 @@ class SkipListIndexedStringField(val column: Column) extends IndexedField[String
       case null =>
         skipList.put(indexKeyHash, ImmutableArray.from(Array(rowKey)))
       case arr: ImmutableArray[String] =>
-        skipList.put(indexKeyHash, arr.+(rowKey))
+        skipList.put(indexKeyHash, arr.+(rowKey).distinct)
     }
   }
 
