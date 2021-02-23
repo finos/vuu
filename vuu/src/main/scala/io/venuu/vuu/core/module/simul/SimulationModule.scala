@@ -96,7 +96,8 @@ object SimulationModule {
             Link("parentOrderId", "parentOrders", "idAsInt")
           ),
           indices = Indices(
-            Index("parentOrderId")
+            Index("parentOrderId"),
+            Index("quantity")
           ),
           joinFields = "id", "ric"
         ),

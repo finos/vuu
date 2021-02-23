@@ -40,7 +40,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
   }
 
   def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: List[TYPE]): ImmutableArray[String] = {
-    index.rowKeysForValues(parentSelected)
+    index.find(parentSelected)
   }
 
 
@@ -85,9 +85,9 @@ case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogg
 
     val pks = primaryKeys.toArray
 
-    logger.info(s"starting filter with ${pks.length}")
+    logger.debug(s"starting filter with ${pks.length}")
     val filtered = clause.filterAll(source: RowSource, primaryKeys: ImmutableArray[String])
-    logger.info(s"complete filter with ${filtered.length}")
+    logger.debug(s"complete filter with ${filtered.length}")
     filtered
   }
 }

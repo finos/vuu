@@ -1,10 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
- *
- * Created by chris on 26/02/2014.
- *
- */
 package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.MetricsProvider
@@ -210,7 +203,12 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
   override def getTableDef: TableDef = tableDef
 
   override def indexForColumn(column: Column): Option[IndexedField[_]] = {
-    indices.get(column)
+    indices.get(column) match {
+      case null =>
+        None
+      case Some(index: IndexedField[_]) =>
+        Some(index)
+    }
   }
 
   override def primaryKeys: ImmutableArray[String] = data.primaryKeyValues
@@ -266,9 +264,9 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
         case x: Any =>
           column.dataType match {
             case DataType.StringDataType =>
-              index.asInstanceOf[IndexedField[String]].insertIndexedValue(x.asInstanceOf[String], rowkey)
+              index.asInstanceOf[IndexedField[String]].insert(x.asInstanceOf[String], rowkey)
             case DataType.IntegerDataType =>
-              index.asInstanceOf[IndexedField[Int]].insertIndexedValue(x.asInstanceOf[Int], rowkey)
+              index.asInstanceOf[IndexedField[Int]].insert(x.asInstanceOf[Int], rowkey)
           }
       }
     })
@@ -284,9 +282,9 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
         case x: Any =>
           column.dataType match {
             case DataType.StringDataType =>
-              index.asInstanceOf[IndexedField[String]].removedIndexedValue(x.asInstanceOf[String], rowkey)
+              index.asInstanceOf[IndexedField[String]].remove(x.asInstanceOf[String], rowkey)
             case DataType.IntegerDataType =>
-              index.asInstanceOf[IndexedField[Int]].removedIndexedValue(x.asInstanceOf[Int], rowkey)
+              index.asInstanceOf[IndexedField[Int]].remove(x.asInstanceOf[Int], rowkey)
           }
       }
     })

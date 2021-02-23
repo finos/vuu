@@ -8,7 +8,6 @@
         <outputRelativeToContentRoot value="true" />
         <module name="toolbox" />
         <module name="vuu (1)" />
-        <module name="vuu" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
