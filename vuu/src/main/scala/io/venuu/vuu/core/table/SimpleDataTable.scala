@@ -203,12 +203,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
   override def getTableDef: TableDef = tableDef
 
   override def indexForColumn(column: Column): Option[IndexedField[_]] = {
-    indices.get(column) match {
-      case null =>
-        None
-      case Some(index: IndexedField[_]) =>
-        Some(index)
-    }
+    indices.get(column)
   }
 
   override def primaryKeys: ImmutableArray[String] = data.primaryKeyValues
