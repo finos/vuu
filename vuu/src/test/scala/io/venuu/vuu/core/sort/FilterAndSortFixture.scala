@@ -109,6 +109,8 @@ object FilterAndSortFixture {
       indices = Indices(
         Index("orderId"),
         Index("ric"),
+        Index("tradeTime"),
+        Index("onMkt")
       ),
       joinFields =  "ric", "orderId", "ccyCross"
     )

@@ -92,6 +92,10 @@ case class EqualsClause(column: String, dataType: Int, value: String) extends Da
         ix.find(value.toInt)
       case Some(ix: IndexedField[Long]) if asColumn.dataType == DataType.LongDataType =>
         ix.find(value.toLong)
+      case Some(ix: IndexedField[Double]) if asColumn.dataType == DataType.DoubleDataType =>
+        ix.find(value.toDouble)
+      case Some(ix: IndexedField[Boolean]) if asColumn.dataType == DataType.BooleanDataType =>
+        ix.find(value.toBoolean)
       case None =>
         EqualsClause.super.filterAll(source, primaryKeys)
     }
@@ -127,7 +131,11 @@ case class GreaterThanClause(column: String, dataType: Int, value: String)  exte
       case Some(ix: IndexedField[Int]) if asColumn.dataType == DataType.IntegerDataType =>
         ix.greaterThan(value.toInt)
       case Some(ix: IndexedField[Long]) if asColumn.dataType == DataType.LongDataType =>
-        GreaterThanClause.super.filterAll(source, primaryKeys)
+        ix.greaterThan(value.toLong)
+      case Some(ix: IndexedField[Double]) if asColumn.dataType == DataType.DoubleDataType =>
+        ix.greaterThan(value.toDouble)
+      case Some(ix: IndexedField[Boolean]) if asColumn.dataType == DataType.BooleanDataType =>
+        ix.greaterThan(value.toBoolean)
       case None =>
         GreaterThanClause.super.filterAll(source, primaryKeys)
     }
@@ -179,7 +187,11 @@ case class LessThanClause(column: String, dataType: Int, value: String)  extends
       case Some(ix: IndexedField[Int]) if asColumn.dataType == DataType.IntegerDataType =>
         ix.lessThan(value.toInt)
       case Some(ix: IndexedField[Long]) if asColumn.dataType == DataType.LongDataType =>
-        LessThanClause.super.filterAll(source, primaryKeys)
+        ix.lessThan(value.toInt)
+      case Some(ix: IndexedField[Boolean]) if asColumn.dataType == DataType.BooleanDataType =>
+        ix.lessThan(value.toBoolean)
+      case Some(ix: IndexedField[Double]) if asColumn.dataType == DataType.DoubleDataType =>
+        ix.lessThan(value.toDouble)
       case None =>
         LessThanClause.super.filterAll(source, primaryKeys)
     }
@@ -206,6 +218,10 @@ case class InClause(column: String, dataType: Int, values: List[String])  extend
         ix.find(values.map(s => s.toInt))
       case Some(ix: IndexedField[Long]) if asColumn.dataType == DataType.LongDataType =>
         ix.find(values.map(s => s.toLong))
+      case Some(ix: IndexedField[Double]) if asColumn.dataType == DataType.DoubleDataType =>
+        ix.find(values.map(s => s.toDouble))
+      case Some(ix: IndexedField[Boolean]) if asColumn.dataType == DataType.BooleanDataType =>
+        ix.find(values.map(s => s.toBoolean))
       case None =>
         InClause.super.filterAll(source, primaryKeys)
     }

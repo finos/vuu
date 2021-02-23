@@ -9,20 +9,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/FilterClause.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/benchmark/benchmark.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/benchmark/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/benchmark/src/test/scala/io/venuu/vuu/benchmark/QueueBenchmark.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/runconfigurations/SimulMain.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/resources/runconfigurations/SimulMain.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/FilterTreeVisitor.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/FilterTreeVisitor.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/FilterClause.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/FilterClause.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/index/IndexedField.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/index/IndexedField.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/SimulationModule.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/SimulationModule.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/sort/FilterAndSort.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/sort/FilterAndSort.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/SimpleDataTable.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/SimpleDataTable.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/index/IndexedFieldTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/index/IndexedFieldTest.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/filter/FilterGrammerTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/filter/FilterGrammerTest.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/sort/FilterAndSortFixture.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/sort/FilterAndSortFixture.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,6 +61,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="ScalaLocalFindUsagesOptions.isSearchForTextOccurrences" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/vuu/src/main/resources/issue" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
@@ -83,7 +76,7 @@
       <recent name="$PROJECT_DIR$/zk/src/assembly" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.SwingClientMain">
+  <component name="RunManager" selected="ScalaTest.FilterGrammerTest">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -93,6 +86,19 @@
     <configuration default="true" type="JUnit" factoryName="JUnit">
       <option name="TEST_OBJECT" value="class" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FilterGrammerTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="vuu (1)" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="selectedOptions">
+        <list />
+      </option>
+      <option name="testKind" value="Class" />
+      <option name="testClassPath" value="io.venuu.vuu.core.filter.FilterGrammerTest" />
+      <option name="workingDirectory" value="$PROJECT_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -152,19 +158,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="VisualLinkedViewPortTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="vuu (1)" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="selectedOptions">
-        <list />
-      </option>
-      <option name="testKind" value="Class" />
-      <option name="testClassPath" value="io.venuu.vuu.viewport.VisualLinkedViewPortTest" />
-      <option name="workingDirectory" value="$PROJECT_DIR$" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration default="true" type="TestNG">
       <option name="TEST_OBJECT" value="CLASS" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -187,19 +180,19 @@
       <item itemvalue="Application.SimulMain" />
       <item itemvalue="Application.SwingClientMain" />
       <item itemvalue="ScalaTest.Run All Tests" />
-      <item itemvalue="ScalaTest.VisualLinkedViewPortTest" />
       <item itemvalue="ScalaTest.IndexedFieldTest.Feature: test the creation and querying of indexed fields Scenario: Index the parent order id from a table of child orders for fast access" />
       <item itemvalue="ScalaTest.IndexedFieldTest" />
       <item itemvalue="ScalaTest.IndexedFieldTest.Feature: test the creation and querying of indexed fields Scenario: Create a string based index using SkipList" />
       <item itemvalue="ScalaTest.IndexedFieldTest.Feature: test the creation and querying of indexed fields Scenario: Check less than on an int index" />
+      <item itemvalue="ScalaTest.FilterGrammerTest" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="ScalaTest.FilterGrammerTest" />
         <item itemvalue="ScalaTest.IndexedFieldTest.Feature: test the creation and querying of indexed fields Scenario: Check less than on an int index" />
         <item itemvalue="ScalaTest.IndexedFieldTest" />
         <item itemvalue="ScalaTest.IndexedFieldTest.Feature: test the creation and querying of indexed fields Scenario: Create a string based index using SkipList" />
         <item itemvalue="ScalaTest.IndexedFieldTest.Feature: test the creation and querying of indexed fields Scenario: Index the parent order id from a table of child orders for fast access" />
-        <item itemvalue="ScalaTest.VisualLinkedViewPortTest" />
       </list>
     </recent_temporary>
   </component>
@@ -418,7 +411,28 @@
       <option name="project" value="LOCAL" />
       <updated>1614011598605</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="#30 Added greaterThan and lessThan.">
+      <created>1614099512869</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1614099512869</updated>
+    </task>
+    <task id="LOCAL-00031" summary="#30 Added greaterThan and lessThan.">
+      <created>1614099822531</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1614099822531</updated>
+    </task>
+    <task id="LOCAL-00032" summary="#30 Added greaterThan and lessThan.">
+      <created>1614099960129</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1614099960129</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -486,7 +500,8 @@
     <MESSAGE value="#25 Cleaned up old versions of Jackson and netty and removed diff vrsions of scala from build" />
     <MESSAGE value="#18 Added First Cut of Server Side Selection Model" />
     <MESSAGE value="#30 Added indexing for String and Int fields." />
-    <option name="LAST_COMMIT_MESSAGE" value="#30 Added indexing for String and Int fields." />
+    <MESSAGE value="#30 Added greaterThan and lessThan." />
+    <option name="LAST_COMMIT_MESSAGE" value="#30 Added greaterThan and lessThan." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -530,6 +545,11 @@
           <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/FilterTreeVisitor.scala</url>
           <line>7</line>
           <option name="timeStamp" value="65" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/filter/FilterGrammerTest.scala</url>
+          <line>97</line>
+          <option name="timeStamp" value="70" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8-sources.jar!/com/fasterxml/jackson/databind/ser/std/BeanSerializerBase.java</url>

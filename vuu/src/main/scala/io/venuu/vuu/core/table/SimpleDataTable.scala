@@ -4,7 +4,7 @@ import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
 import io.venuu.vuu.api.TableDef
-import io.venuu.vuu.core.index.{IndexedField, SkipListIndexedIntField, SkipListIndexedStringField}
+import io.venuu.vuu.core.index.{IndexedField, SkipListIndexedBooleanField, SkipListIndexedDoubleField, SkipListIndexedIntField, SkipListIndexedLongField, SkipListIndexedStringField}
 import io.venuu.vuu.provider.{JoinTableProvider, Provider}
 import io.venuu.vuu.viewport.{RowProcessor, RowSource}
 
@@ -184,9 +184,14 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
         new SkipListIndexedStringField(c)
       case DataType.IntegerDataType =>
         new SkipListIndexedIntField(c)
+      case DataType.LongDataType =>
+        new SkipListIndexedLongField(c)
+      case DataType.DoubleDataType =>
+        new SkipListIndexedDoubleField(c)
+      case DataType.BooleanDataType =>
+        new SkipListIndexedBooleanField(c)
     }
   }
-
 
   def plusName(s: String) = tableDef.name + "." + s
 
@@ -262,6 +267,12 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
               index.asInstanceOf[IndexedField[String]].insert(x.asInstanceOf[String], rowkey)
             case DataType.IntegerDataType =>
               index.asInstanceOf[IndexedField[Int]].insert(x.asInstanceOf[Int], rowkey)
+            case DataType.LongDataType =>
+              index.asInstanceOf[IndexedField[Long]].insert(x.asInstanceOf[Long], rowkey)
+            case DataType.DoubleDataType =>
+              index.asInstanceOf[IndexedField[Double]].insert(x.asInstanceOf[Double], rowkey)
+            case DataType.BooleanDataType =>
+              index.asInstanceOf[IndexedField[Boolean]].insert(x.asInstanceOf[Boolean], rowkey)
           }
       }
     })
