@@ -344,8 +344,6 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     sendToJoinSink(rowKey, rowUpdate)
 
     notifyListeners(rowKey)
-
-    //notifySessionTablesUpdate(rowKey, rowUpdate, timeStamp)
   }
 
   private def toEvent(rowKey: String, rowData: RowData): java.util.HashMap[String, Any] = {

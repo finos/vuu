@@ -19,9 +19,7 @@ object Aggregation{
 
 class SumAggregation(val column: Column) extends NodeAggregation{
   private var value: Double = 0d
-
-  //override def column: Column = ???
-  override def toValue: String = "Sum: " + value.toString
+  override def toValue: String = "\u03A3 " + value.toString
   override def processLeaf(row: RowData): Unit = {
     val colData = column.getData(row)
 

@@ -61,15 +61,22 @@ case class ErrorResponse(msg: String) extends MessageBody
 case class SortDef(column: String, sortType:Char)
 case class SortSpec(sortDefs: List[SortDef])
 case class FilterSpec(filter: String)
+case class Aggregations(column: String, aggType: Int)
+
+object AggType{
+  val Sum = 1
+  val Average = 2
+  val Count = 3
+}
 
 case class GroupBySpec(columns: Array[String], aggregations: List[AggregationSpec] = List())
 case class AggregationSpec(aggregationType: String, column: String)
 
-case class CreateViewPortRequest(table: String, range: ViewPortRange, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends MessageBody
+case class CreateViewPortRequest(table: String, range: ViewPortRange, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null, aggregations: Array[Aggregations] = Array()) extends MessageBody
 case class CreateViewPortSuccess(viewPortId: String, table: String, range: ViewPortRange, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends MessageBody
 case class CreateViewPortReject(table: String, msg: String) extends MessageBody
 
-case class ChangeViewPortRequest(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends MessageBody
+case class ChangeViewPortRequest(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null, aggregations: Array[Aggregations] = Array()) extends MessageBody
 case class ChangeViewPortSuccess(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends MessageBody
 case class ChangeViewPortReject(viewPortId: String, msg: String) extends MessageBody
 

@@ -350,8 +350,10 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     Option(viewPorts.get(vpId)) match {
       case Some(vp) =>
         val viewPorts = listViewPortsForSession(clientSession)
+        val groupByViewPorts = viewPorts.filter( p => p.table.isInstanceOf[GroupBySessionTable]).toList
+        val vpLinksGpBy = for(link <- vp.table.asTable.asInstanceOf[GroupBySessionTable].source.asTable.getTableDef.links.links; vp <- groupByViewPorts; if link.toTable == vp.table.asTable.asInstanceOf[GroupBySessionTable].source.asTable.name ) yield(link, vp)
         val vpLinks = for(link <- vp.table.asTable.getTableDef.links.links ; vp <- viewPorts ;  if link.toTable == vp.table.name) yield (link, vp)
-        vpLinks
+        vpLinks ++ vpLinksGpBy
       case None =>
         List()
     }
