@@ -37,11 +37,7 @@ class GroupBySessionTable(val source: RowSource, val session: ClientSessionId, j
   extends SimpleDataTable(new GroupByTableDef("", source.asTable.getTableDef), joinProvider)
     with SessionTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
-//  def this(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider){
-//    this()
-//  }
-
-  //source.addSessionListener(this)
+  override def linkableName: String = source.linkableName
 
   @volatile
   private var keys = ImmutableArray.empty[String]

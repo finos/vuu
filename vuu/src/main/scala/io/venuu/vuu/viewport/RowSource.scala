@@ -28,6 +28,13 @@ trait SessionListener{
 
 trait RowSource extends KeyedObservable[RowKeyUpdate]{
   def name: String
+
+  /**
+   * Link table name is the name of the underlying table that we can link to.
+   * In a session table this would be the underlying table.
+   * @return
+   */
+  def linkableName: String
   def readRow(key: String, columns:List[String], processor: RowProcessor): Unit
   def primaryKeys: ImmutableArray[String]
   def pullRow(key: String, columns: List[Column]): RowData

@@ -205,6 +205,8 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   override def name: String = tableDef.name
 
+  override def linkableName: String = name
+
   override def getTableDef: TableDef = tableDef
 
   override def indexForColumn(column: Column): Option[IndexedField[_]] = {

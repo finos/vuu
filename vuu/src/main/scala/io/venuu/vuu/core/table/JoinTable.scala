@@ -323,6 +323,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   override def name: String = tableDef.name
 
+  override def linkableName: String = name
+
   private val onUpdateMeter = metrics.meter(name + ".processUpdates.Meter")
 
   override def indexForColumn(column: Column): Option[IndexedField[_]] = None
