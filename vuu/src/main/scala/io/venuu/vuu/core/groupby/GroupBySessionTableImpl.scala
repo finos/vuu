@@ -24,16 +24,16 @@ class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped:
 }
 
 object GroupBySessionTable{
-  def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider): GroupBySessionTable = {
-     new GroupBySessionTable(source, session, joinProvider)(metrics)
+  def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider): GroupBySessionTableImpl = {
+     new GroupBySessionTableImpl(source, session, joinProvider)(metrics)
   }
 }
 
 /**
   * Created by chris on 21/11/2015.
   */
-class GroupBySessionTable(val source: RowSource, val session: ClientSessionId, joinProvider: JoinTableProvider)
-                         (implicit metrics: MetricsProvider)
+class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionId, joinProvider: JoinTableProvider)
+                             (implicit metrics: MetricsProvider)
   extends SimpleDataTable(new GroupByTableDef("", source.asTable.getTableDef), joinProvider)
     with SessionTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 

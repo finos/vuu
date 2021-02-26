@@ -15,13 +15,15 @@ import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, RpcProvider}
 import io.venuu.vuu.viewport.{DefaultRange, ViewPortContainer}
-import org.scalatest.{FeatureSpec, Matchers, OneInstancePerTest}
+import org.scalatest.OneInstancePerTest
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class RpcTableTest extends FeatureSpec with Matchers with OneInstancePerTest {
+class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest {
 
-  feature("Check we can create rpc tables and tick them") {
+  Feature("Check we can create rpc tables and tick them") {
 
-    scenario("simple rpc table") {
+    Scenario("simple rpc table") {
 
       //val sessionTable = new GroupBySessionTable(null, null)
 

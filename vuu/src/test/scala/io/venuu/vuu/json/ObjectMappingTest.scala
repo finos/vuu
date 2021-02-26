@@ -1,11 +1,12 @@
 package io.venuu.vuu.json
 
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Created by chris on 03/11/2015.
  */
-class ObjectMappingTest extends FeatureSpec with Matchers{
+class ObjectMappingTest extends AnyFeatureSpec with Matchers{
 
   import com.fasterxml.jackson.annotation.JsonSubTypes.Type
   import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
@@ -66,9 +67,9 @@ class ObjectMappingTest extends FeatureSpec with Matchers{
 //    }
 //  }
 
-  feature("test jackson"){
+  Feature("test jackson"){
 
-    scenario("simple object map test"){
+    Scenario("simple object map test"){
 
 //      val mapper = new ObjectMapper()
 //
@@ -80,7 +81,7 @@ class ObjectMappingTest extends FeatureSpec with Matchers{
 
     }
 
-    scenario("check a request packet"){
+    Scenario("check a request packet"){
 
 //      val mapper = new ObjectMapper()
 //
@@ -111,7 +112,7 @@ class ObjectMappingTest extends FeatureSpec with Matchers{
       //println(request2)
     }
 
-    scenario("check we can mutate object node"){
+    Scenario("check we can mutate object node"){
 
       val mapper = new ObjectMapper()
 

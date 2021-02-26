@@ -7,7 +7,8 @@ import io.venuu.vuu.core.module.{MyObjectParam, TestModule}
 import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
 import io.venuu.vuu.net.ws.WebSocketClient
 import io.venuu.vuu.net.{JsonVsSerializer, WebSocketViewServerClient}
-import org.scalatest.{FeatureSpec, _}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.ExecutionContext
 
@@ -51,11 +52,11 @@ import scala.concurrent.ExecutionContext
 /**
   * Created by chris on 17/08/2016.
   */
-class RpcModuleTest extends FeatureSpec with Matchers {
+class RpcModuleTest extends AnyFeatureSpec with Matchers {
 
-  feature("check we can install a new module into the viewserver and call it"){
+  Feature("check we can install a new module into the viewserver and call it"){
 
-    scenario("add module and call an rpc call"){
+    Scenario("add module and call an rpc call"){
 
       import io.venuu.vuu.client.ClientHelperFns._
 

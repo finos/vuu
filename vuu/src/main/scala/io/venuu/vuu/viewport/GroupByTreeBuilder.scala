@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.logging.LogAtFrequency
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.filter.{FilterSpecParser, NoFilter}
-import io.venuu.vuu.core.groupby.GroupBySessionTable
+import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort.AntlrBasedFilter
 import io.venuu.vuu.core.table.{Column, RowData}
 import io.venuu.vuu.net.FilterSpec
@@ -20,14 +20,14 @@ trait GroupByTreeBuilder {
 }
 
 object GroupByTreeBuilder{
-  def apply(table: GroupBySessionTable, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): GroupByTreeBuilder = {
+  def apply(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): GroupByTreeBuilder = {
     new GroupByTreeBuilderImpl(table, groupBy, filter, previousTree)
   }
 }
 
 
 
-class GroupByTreeBuilderImpl(table: GroupBySessionTable, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock) extends GroupByTreeBuilder with StrictLogging{
+class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock) extends GroupByTreeBuilder with StrictLogging{
 
   final val EMPTY_TREE_NODE_STATE = new ConcurrentHashMap[String, TreeNodeState]()
 

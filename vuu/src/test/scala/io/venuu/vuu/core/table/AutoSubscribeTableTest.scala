@@ -2,16 +2,17 @@ package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import org.joda.time.LocalDateTime
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by chris on 11/12/2015.
   */
-class AutoSubscribeTableTest extends FeatureSpec with Matchers {
+class AutoSubscribeTableTest extends AnyFeatureSpec with Matchers {
 
-  feature("tables should support ability to subscribe when join requires it"){
+  Feature("tables should support ability to subscribe when join requires it"){
 
-    scenario("create 2 tables, check 2nd has subscription requested when first is hydrated"){
+    Scenario("create 2 tables, check 2nd has subscription requested when first is hydrated"){
 
       implicit val metrics = new MetricsProviderImpl
 

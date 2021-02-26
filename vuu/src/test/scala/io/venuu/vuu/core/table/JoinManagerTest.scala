@@ -9,7 +9,8 @@ package io.venuu.vuu.core.table
 
 import com.espertech.esper.client.{Configuration, EPServiceProviderManager, EventBean, UpdateListener}
 import com.espertech.esper.event.map.MapEventBean
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 import java.util
 
@@ -26,11 +27,11 @@ import java.util
   *
   * that is bad, but will need to revist when we have a mega-data use case.
   */
-class JoinManagerTest extends FeatureSpec with Matchers {
+class JoinManagerTest extends AnyFeatureSpec with Matchers {
 
-  feature("check esper output when passing scala maps"){
+  Feature("check esper output when passing scala maps"){
 
-    scenario("check scala map handling"){
+    Scenario("check scala map handling"){
 
       val leftEventType = "instrument"
       val rightEventType = "prices"

@@ -2,8 +2,9 @@ package io.venuu.vuu.viewport
 
 import io.venuu.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
 import io.venuu.vuu.util.table.TableAsserts.assertVpEq
+import org.scalatest.GivenWhenThen
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
-import org.scalatest.{GivenWhenThen, Matchers}
 
 /**
  * When we update a viewport range, moving from say 0-20 to 10-30, we only want to send updates for the additional rows,
@@ -11,9 +12,9 @@ import org.scalatest.{GivenWhenThen, Matchers}
  */
 class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen{
 
-  feature("Check when we update view port ranges, we only send the new rows"){
+  Feature("Check when we update view port ranges, we only send the new rows"){
 
-    scenario("Change viewport from 0-20 to 10-30 and check we only get 10 rows"){
+    Scenario("Change viewport from 0-20 to 10-30 and check we only get 10 rows"){
 
       val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
 

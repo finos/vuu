@@ -1,12 +1,13 @@
 package io.venuu.toolbox.lifecycle
 
 import com.typesafe.scalalogging.StrictLogging
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Created by chris on 15/10/2015.
  */
-class LifecycleDAGTest extends FeatureSpec with Matchers {
+class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
 
   class CompA()(implicit val lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging{
     override def doStart(): Unit = {
@@ -55,9 +56,9 @@ class LifecycleDAGTest extends FeatureSpec with Matchers {
     }
   }
 
-  feature("Test that a lifecycle DAG is possible"){
+  Feature("Test that a lifecycle DAG is possible"){
 
-    scenario("check that we can create a DAG"){
+    Scenario("check that we can create a DAG"){
 
       implicit val lifecycle = new LifecycleContainer
 
@@ -72,7 +73,7 @@ class LifecycleDAGTest extends FeatureSpec with Matchers {
 
 
 
-    scenario("check our DAG works") {
+    Scenario("check our DAG works") {
 
       val graph = new DirectedAcyclicGraph[String]
 

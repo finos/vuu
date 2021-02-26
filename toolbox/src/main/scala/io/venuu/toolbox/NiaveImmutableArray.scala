@@ -62,7 +62,7 @@ class NiaiveImmutableArray[T :ClassTag](val array: Array[T] = Array.empty) exten
 
       val toCheck = obj.asInstanceOf[NiaiveImmutableArray[T]].array
 
-      val isEq = toCheck.deep == array.deep
+      val isEq = toCheck == array
 
       isEq
 

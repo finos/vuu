@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.{DatabindContext, JavaType}
 import com.typesafe.scalalogging.StrictLogging
 
 import java.util.concurrent.ConcurrentHashMap
+import scala.jdk.CollectionConverters._
 
 class VsJsonTypeResolver extends TypeIdResolver with StrictLogging {
 
@@ -82,11 +83,9 @@ object JsonSubTypeRegistry extends StrictLogging {
 
   def getTypeForClass(genericType: Class[_], specificType: Class[_]): String = {
 
-    import scala.collection.JavaConversions._
-
     if(genericsToConcreteTypes.get(genericType).containsValue(specificType)){
 
-      genericsToConcreteTypes.get(genericType).entrySet().find( entry => entry.getValue.equals(specificType) ) match{
+      SetHasAsScala(genericsToConcreteTypes.get(genericType).entrySet()).asScala.find( entry => entry.getValue.equals(specificType) ) match{
         case Some(theMatch) => theMatch.getKey
         case None =>
           throw new Exception(s"no mapping found for ${specificType} to generic ${genericType}")
@@ -100,11 +99,9 @@ object JsonSubTypeRegistry extends StrictLogging {
 
   def getClassForType(genericType: Class[_], typeStr: String): Class[_] = {
 
-    import scala.collection.JavaConversions._
-
     if(genericsToConcreteTypes.get(genericType).containsKey(typeStr)){
 
-      genericsToConcreteTypes.get(genericType).entrySet().find( entry => entry.getKey.equals(typeStr) ) match{
+      SetHasAsScala(genericsToConcreteTypes.get(genericType).entrySet()).asScala.find( entry => entry.getKey.equals(typeStr) ) match{
         case Some(theMatch) => theMatch.getValue
         case None =>
           throw new Exception(s"no mapping found for ${typeStr} to generic ${genericType}")

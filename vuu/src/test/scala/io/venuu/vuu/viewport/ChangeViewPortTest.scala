@@ -10,13 +10,13 @@ import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts._
-import org.scalatest.FeatureSpec
+import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.prop.Tables.Table
 
 /**
   * Created by chris on 12/03/2016.
   */
-class ChangeViewPortTest extends FeatureSpec{
+class ChangeViewPortTest extends AnyFeatureSpec{
 
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
@@ -28,9 +28,9 @@ class ChangeViewPortTest extends FeatureSpec{
     viewPortContainer
   }
 
-  feature("Check we can modify a view port"){
+  Feature("Check we can modify a view port"){
 
-    scenario("Change the columns check view port reflects this"){
+    Scenario("Change the columns check view port reflects this"){
 
       implicit val lifecycle = new LifecycleContainer
 

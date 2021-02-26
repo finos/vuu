@@ -19,16 +19,17 @@ import io.venuu.vuu.net.ws.WebSocketClient
 import io.venuu.vuu.net.{CreateViewPortSuccess, JsonVsSerializer, TableRowUpdates, WebSocketViewServerClient}
 import io.venuu.vuu.provider.Provider
 import io.venuu.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 
-class CreateViewPortScenarioTest extends FeatureSpec with Matchers {
+class CreateViewPortScenarioTest extends AnyFeatureSpec with Matchers {
 
   import io.venuu.vuu.client.ClientHelperFns._
 
-  feature("check creation of view port via client api") {
+  Feature("check creation of view port via client api") {
 
     def loadStatic: Array[Array[String]] = {
 

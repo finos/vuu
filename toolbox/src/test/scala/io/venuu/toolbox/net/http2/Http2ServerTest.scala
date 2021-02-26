@@ -7,10 +7,10 @@
  */
 package io.venuu.toolbox.net.http2
 
-import io.venuu.toolbox.lifecycle.LifecycleContainer
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class HttpServerTest extends FeatureSpec with Matchers {
+class HttpServerTest extends AnyFeatureSpec with Matchers {
 
   ignore("check we can start the http2 server") {
 

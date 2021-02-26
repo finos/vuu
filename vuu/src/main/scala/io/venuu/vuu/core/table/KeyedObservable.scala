@@ -10,6 +10,7 @@ package io.venuu.vuu.core.table
 import org.slf4j.LoggerFactory
 
 import java.util.concurrent.ConcurrentHashMap
+import scala.jdk.CollectionConverters._
 
 trait KeyedObservable[T] {
   def getObserversByKey(): Map[String, Array[KeyObserver[T]]]
@@ -36,8 +37,7 @@ trait KeyObserver[T] {
 trait KeyedObservableHelper[T] extends KeyedObservable[T] {
 
   override def getObserversByKey(): Map[String, Array[KeyObserver[T]]] = {
-    import scala.collection.JavaConversions._
-    observersByKey.toMap
+    MapHasAsScala(observersByKey).asScala.toMap
   }
 
   private val logger = LoggerFactory.getLogger(getClass)

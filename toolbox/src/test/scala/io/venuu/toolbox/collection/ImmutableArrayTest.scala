@@ -1,41 +1,43 @@
 package io.venuu.toolbox.collection
 
 import io.venuu.toolbox.ImmutableArray
-import io.venuu.toolbox.time.{DefaultClock, TimeIt, Clock}
-import org.scalatest.{FeatureSpec, Matchers}
+import io.venuu.toolbox.time.{Clock, DefaultClock, TimeIt}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
+
 
 /**
   * Created by chris on 22/12/2015.
   */
-class ImmutableArrayTest extends FeatureSpec with Matchers {
+class ImmutableArrayTest extends AnyFeatureSpec with Matchers {
 
   implicit val time: Clock = new DefaultClock
 
-  feature("check immutable array impl"){
+  Feature("check immutable array impl"){
 
-    scenario("check array subtraction"){
+    Scenario("check array subtraction"){
 
       val a1 = ImmutableArray.from[String]( Array("1", "2", "3"))
 
       val a2 = a1.-("2")
 
-      a2 should equal(a1.-("2"))
+      a2.toArray.sameElements((a1.-("2").toArray)) shouldBe(true)
 
-      a2 should not equal(a1)
+      a2 shouldNot equal(a1)
     }
 
-    scenario("remove a value by index"){
+    Scenario("remove a value by index"){
       val a1 = ImmutableArray.from[String]( Array("1", "2", "3"))
 
       val a2 = a1.remove(1)
 
-      a2 should equal(a1.-("2"))
+      a2.toArray.sameElements(a1.-("2").toArray) shouldBe(true)
 
     }
 
-    scenario("build very big immutable array and then remove an item"){
+    Scenario("build very big immutable array and then remove an item"){
 
-      val numbers = (0 to 100000) toArray
+      val numbers = (0 to 100000).toArray
 
       val immute = ImmutableArray.from[Int](numbers)
 

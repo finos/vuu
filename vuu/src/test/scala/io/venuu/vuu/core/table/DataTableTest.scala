@@ -16,15 +16,16 @@ import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.viewport.{DefaultRange, ViewPortContainer}
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class DataTableTest extends FeatureSpec with Matchers {
+class DataTableTest extends AnyFeatureSpec with Matchers {
 
   implicit val timeProvider = new DefaultClock
 
-  feature("Test data table functionality"){
+  Feature("Test data table functionality"){
 
-    scenario("When we tick a value through our mock provider, check it arrives in our listener"){
+    Scenario("When we tick a value through our mock provider, check it arrives in our listener"){
 
       implicit val lifecycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl

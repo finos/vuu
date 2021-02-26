@@ -2,14 +2,15 @@ package io.venuu.vuu.viewport
 
 import io.venuu.vuu.core.table.TableTestHelper.combineQs
 import io.venuu.vuu.util.table.TableAsserts.assertVpEqWithMeta
+import org.scalatest.GivenWhenThen
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
-import org.scalatest.{GivenWhenThen, Matchers}
 
 class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen {
 
-  feature("Check our maintenance of selection on the server side") {
+  Feature("Check our maintenance of selection on the server side") {
 
-    scenario("create viewport, update selection, see selection come back") {
+    Scenario("create viewport, update selection, see selection come back") {
 
       Given("we've created a viewport with orders in")
       val (viewPortContainer, orders, ordersProvider, prices, pricesProvider, session, outQueue, highPriorityQueue) = createDefaultOrderPricesViewPortInfra()

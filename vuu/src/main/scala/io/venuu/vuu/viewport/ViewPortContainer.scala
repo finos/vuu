@@ -15,7 +15,7 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.vuu.api.Link
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
-import io.venuu.vuu.core.groupby.GroupBySessionTable
+import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort._
 import io.venuu.vuu.core.table.{Column, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
@@ -25,7 +25,7 @@ import io.venuu.vuu.{core, viewport}
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
-import scala.collection.JavaConverters
+import scala.jdk.CollectionConverters.{CollectionHasAsScala, IteratorHasAsScala, SetHasAsScala}
 import scala.util.{Failure, Success, Try}
 
 trait ViewPortContainerMBean {
@@ -83,15 +83,18 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
   }
 
   override def listViewPortsForSession(clientSession: ClientSessionId): List[ViewPort] = {
-    JavaConverters.asScalaIterator(viewPorts.values().iterator()).filter( vp => vp.session.equals(clientSession)).toList
+    IteratorHasAsScala(viewPorts.values().iterator())
+      .asScala
+      .filter( vp => vp.session.equals(clientSession)).toList
   }
 
   override def listViewPorts: String = {
-    import scala.collection.JavaConversions._
 
     val headers = Array("id", "table", "rangeFrom", "rangeTo")
 
-    val data = viewPorts.entrySet().map(vp => Array[Any](vp.getKey, vp.getValue.table.name, vp.getValue.getRange().from, vp.getValue.getRange().to)).toArray[Array[Any]]
+    val data = SetHasAsScala(viewPorts.entrySet())
+                .asScala
+                .map(vp => Array[Any](vp.getKey, vp.getValue.table.name, vp.getValue.getRange().from, vp.getValue.getRange().to)).toArray[Array[Any]]
 
     AsciiUtil.asAsciiTable(headers, data)
   }
@@ -178,7 +181,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
       //or if we've reverted back to non-group by from group-by
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
 
-      val sourceTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTable].sourceTable
+      val sourceTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTableImpl].sourceTable
 
       viewport.ViewPortStructuralFields(table = sourceTable, columns = columns, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
 
@@ -236,7 +239,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     val viewPort = viewPorts.get(viewPortId)
 
     viewPort.table match {
-      case gbsTable: GroupBySessionTable => gbsTable.openTreeKey(treeKey)
+      case gbsTable: GroupBySessionTableImpl => gbsTable.openTreeKey(treeKey)
       case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
     }
   }
@@ -245,7 +248,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     val viewPort = viewPorts.get(viewPortId)
 
     viewPort.table match {
-      case gbsTable: GroupBySessionTable => gbsTable.closeTreeKey(treeKey)
+      case gbsTable: GroupBySessionTableImpl => gbsTable.closeTreeKey(treeKey)
       case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
     }
   }
@@ -277,10 +280,8 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     */
   def runOnce(): Unit = {
 
-    import scala.collection.JavaConversions._
-
     val (millis, _ ) = timeIt {
-      viewPorts.values().filter(!_.hasGroupBy).foreach(vp => refreshOneViewPort(vp))
+      CollectionHasAsScala(viewPorts.values()).asScala.filter(!_.hasGroupBy).foreach(vp => refreshOneViewPort(vp))
     }
 
     viewPorthistogram.update(millis)
@@ -292,10 +293,8 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     */
   def runGroupByOnce(): Unit = {
 
-    import scala.collection.JavaConversions._
-
     val (millis, _ ) = timeIt{
-      viewPorts.values().filter(_.hasGroupBy).foreach(vp => refreshOneGroupByViewPort(vp))
+      CollectionHasAsScala(viewPorts.values()).asScala.filter(_.hasGroupBy).foreach(vp => refreshOneGroupByViewPort(vp))
     }
 
     groupByhistogram.update(millis)
@@ -308,7 +307,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     logger.debug("Building tree for groupBy")
 
     table match {
-      case tbl: GroupBySessionTable =>
+      case tbl: GroupBySessionTableImpl =>
 
         val tree = GroupByTreeBuilder(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
 
@@ -337,9 +336,11 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
   def removeForSession(clientSession: ClientSessionId) = {
 
-    import scala.collection.JavaConversions._
 
-    val viewports = viewPorts.entrySet().filter(entry => entry.getValue.session == clientSession).toArray
+
+    val viewports = SetHasAsScala(viewPorts.entrySet())
+                      .asScala
+                      .filter(entry => entry.getValue.session == clientSession).toArray
 
     logger.info(s"Removing ${viewports.length} on disconnect of $clientSession")
 

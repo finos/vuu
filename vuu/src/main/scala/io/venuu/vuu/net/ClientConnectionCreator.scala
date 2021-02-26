@@ -11,6 +11,7 @@ import io.venuu.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
 
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import scala.jdk.CollectionConverters._
 
 trait InboundMessageHandler{
   def handle(msg: ViewServerMessage): Option[ViewServerMessage]
@@ -211,8 +212,7 @@ class ClientSessionContainerImpl() extends ClientSessionContainer with StrictLog
   }
 
   def runOnce(): Unit = {
-    import scala.collection.JavaConversions._
-    sessions.entrySet().foreach(entry => entry.getValue.sendUpdates() )
+    SetHasAsScala(sessions.entrySet()).asScala.foreach(entry => entry.getValue.sendUpdates() )
   }
 }
 

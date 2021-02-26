@@ -7,13 +7,15 @@
   */
 package io.venuu.toolbox.time
 
-import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
+import org.scalatest.GivenWhenThen
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class DateTimeSchedulerTest extends FeatureSpec with Matchers with GivenWhenThen{
+class DateTimeSchedulerTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
 
-  feature("check date time scheduler"){
+  Feature("check date time scheduler"){
 
-    scenario("test parsing"){
+    Scenario("test parsing"){
 
       Given("this time 20th/Oct/2016 at 10:14am")
       implicit val time = new TestFriendlyClock(1476951221856l)

@@ -4,24 +4,25 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
-import io.venuu.vuu.api.{Indices, TableDef}
-import io.venuu.vuu.core.groupby.GroupBySessionTable
+import io.venuu.vuu.api.TableDef
+import io.venuu.vuu.core.groupby.{GroupBySessionTable, GroupBySessionTableImpl}
 import io.venuu.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
 import io.venuu.vuu.provider.JoinTableProviderImpl
 import io.venuu.vuu.viewport.{GroupBy, GroupByTreeBuilder}
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by chris on 10/04/2016.
   */
-class BuildBigGroupByTest extends FeatureSpec with Matchers with StrictLogging {
+class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
   import io.venuu.toolbox.time.TimeIt._
 
-  feature("check big groupby's"){
+  Feature("check big groupby's"){
 
-    scenario("create big group by and build table"){
+    Scenario("create big group by and build table"){
 
       implicit val lifecycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl

@@ -8,19 +8,18 @@
 package io.venuu.vuu.client.swing
 
 import java.util.concurrent.CopyOnWriteArrayList
+import scala.jdk.CollectionConverters._
 
 class EventBus[T] {
 
   private val callbacks = new CopyOnWriteArrayList[T => Unit ]()
-
-  import scala.collection.JavaConversions._
 
   def register(callback: T => Unit): Unit = {
     callbacks.add(callback)
   }
 
   def publish(message: T) = {
-    callbacks.foreach( c => c.apply(message) )
+    ListHasAsScala(callbacks).asScala.foreach( c => c.apply(message) )
   }
 
 }

@@ -15,18 +15,19 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-    <scala.version>2.12.12</scala.version>
+    <maven.compiler.source>15</maven.compiler.source>
+    <maven.compiler.target>15</maven.compiler.target>
+    <scala.version>2.13.5</scala.version>
     <jetty.version>9.4.18.v20190429</jetty.version>
     <metrics.version>3.1.2</metrics.version>
     <curator.version>3.1.0</curator.version>
-    <scalatest.version>3.0.5</scalatest.version>
+    <scalatest.version>3.2.5</scalatest.version>
     <scala.logging>3.9.2</scala.logging>
     <jackson.version>2.12.1</jackson.version>
     <aeron.version>1.17.0</aeron.version>
     <antlr.version>4.7.2</antlr.version>
     <netty.version>4.1.58.Final</netty.version>
+    <maven.scala.plugin>2.15.2</maven.scala.plugin>
   </properties>
 
 
@@ -74,9 +75,35 @@
 
       <dependency>
           <groupId>com.fasterxml.jackson.module</groupId>
-          <artifactId>jackson-module-scala_2.12</artifactId>
+          <artifactId>jackson-module-scala_2.13</artifactId>
           <version>${jackson.version}</version>
       </dependency>
+
+      <dependency>
+          <groupId>org.scalatest</groupId>
+          <artifactId>scalatest_2.13</artifactId>
+          <version>${scalatest.version}</version>
+          <scope>test</scope>
+          <exclusions>
+              <exclusion>
+                  <groupId>org.scala-lang</groupId>
+                  <artifactId>scala-library</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.scala-lang</groupId>
+                  <artifactId>scala-reflect</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/org.scalatest/scalatest-featurespec -->
+      <dependency>
+          <groupId>org.scalatest</groupId>
+          <artifactId>scalatest-featurespec_2.13</artifactId>
+          <version>3.2.5</version>
+          <scope>test</scope>
+      </dependency>
+
 
   </dependencies>
 
@@ -93,7 +120,8 @@
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.8.0</version>
     <configuration>
-        <release>11</release>
+        <source>${maven.compiler.source}</source>
+        <release>${maven.compiler.target}</release>
     </configuration>
     <dependencies>
         <dependency>

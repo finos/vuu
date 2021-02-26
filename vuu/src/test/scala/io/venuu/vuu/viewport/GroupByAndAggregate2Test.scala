@@ -16,10 +16,12 @@ import io.venuu.vuu.provider.{JoinTableProvider, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts._
 import org.joda.time.{DateTime, DateTimeZone}
+import org.scalatest.GivenWhenThen
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
-import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
 
-class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenThen {
+class GroupByAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenThen {
 
   import io.venuu.vuu.core.table.TableTestHelper._
   import io.venuu.vuu.viewport.OrdersAndPricesScenarioFixture._
@@ -46,7 +48,7 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
     pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
   }
 
-  scenario("test groupBy tree structure update") {
+  Scenario("test groupBy tree structure update") {
 
     implicit val lifeCycle = new LifecycleContainer
     implicit val timeProvider = new DefaultClock
@@ -156,7 +158,7 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
 
   }
 
-  scenario("test groupBy with source table update") {
+  Scenario("test groupBy with source table update") {
 
     implicit val lifeCycle = new LifecycleContainer
     implicit val timeProvider = new DefaultClock

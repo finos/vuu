@@ -1,7 +1,5 @@
 package io.venuu.toolbox.net.ws
 
-import java.nio.ByteBuffer
-
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.websocketx.{BinaryWebSocketFrame, TextWebSocketFrame}
 import io.netty.util.CharsetUtil
@@ -9,9 +7,12 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.net.tcp.FreeTcpPortChecker
 import io.venuu.toolbox.thread.Async
-import io.venuu.toolbox.time.{DefaultClock, Clock}
-import org.scalatest._
+import io.venuu.toolbox.time.{Clock, DefaultClock}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 import org.slf4j.LoggerFactory
+
+import java.nio.ByteBuffer
 
 class SimpleServerFrameHandlerFactory extends FrameHandlerFactory{
   override def create(ctx: ChannelHandlerContext): FrameHandler = new FrameHandler {
@@ -33,11 +34,11 @@ class SimpleServerFrameHandlerFactory extends FrameHandlerFactory{
 /**
  * Created by chris on 25/10/2015.
  */
-class WebSocketServerClientTest extends FeatureSpec with Matchers {
+class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
-  feature("Check that we can create a websocket server and client"){
+  Feature("Check that we can create a websocket server and client"){
 
-    scenario("create web socket server and client and send data between"){
+    Scenario("create web socket server and client and send data between"){
 
       implicit val lifecycle = new LifecycleContainer
       implicit val timeProvider: Clock = new DefaultClock
@@ -81,5 +82,4 @@ class WebSocketServerClientTest extends FeatureSpec with Matchers {
     }
 
   }
-
 }

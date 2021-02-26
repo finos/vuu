@@ -15,6 +15,8 @@ import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.net.rpc.VsJsonTypeResolver
 import io.venuu.vuu.viewport.ViewPortRange
 
+import scala.jdk.CollectionConverters._
+
 trait FailureMessage{
   def error: String
 }
@@ -128,8 +130,6 @@ class RowUpdateDeserializer extends JsonDeserializer[RowUpdate]{
 
   override def deserialize(jsonParser: JsonParser, deserializationContext: DeserializationContext): RowUpdate = {
 
-    import scala.collection.JavaConversions._
-
     val node: JsonNode = jsonParser.getCodec.readTree(jsonParser)
 
     val vpId = node.get("viewPortId").asText()
@@ -140,7 +140,7 @@ class RowUpdateDeserializer extends JsonDeserializer[RowUpdate]{
     val updateType = node.get("updateType").asText()
     val selected = node.get("sel").asInt()
 
-    val data = node.withArray("data").asInstanceOf[JsonNode].elements().toList
+    val data = IteratorHasAsScala(node.withArray("data").asInstanceOf[JsonNode].elements()).asScala.toList
 
     val dataAsArray = data.map(_.asText()).toArray[Any]
 
@@ -153,7 +153,7 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
   override def serialize(value: RowUpdate, gen: JsonGenerator, serializerProvider: SerializerProvider): Unit = {
     gen.writeStartObject()
     gen.writeStringField("viewPortId", value.viewPortId)
-    gen.writeNumberField("vpSize", value.vpSize)
+    gen.writeNumberField("vpS ize", value.vpSize)
     gen.writeNumberField("rowIndex", value.rowIndex)
     gen.writeStringField("rowKey", value.rowKey)
     gen.writeStringField("updateType", value.updateType)

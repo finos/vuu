@@ -1,15 +1,16 @@
 package io.venuu.vuu.core.filter
 
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by chris on 17/04/2016.
   */
-class TreeFilterGrammerTest extends FeatureSpec with Matchers {
+class TreeFilterGrammerTest extends AnyFeatureSpec with Matchers {
 
-  feature("test filtering on trees"){
+  Feature("test filtering on trees"){
 
-    scenario("test a simple tree filter"){
+    Scenario("test a simple tree filter"){
 
 
 

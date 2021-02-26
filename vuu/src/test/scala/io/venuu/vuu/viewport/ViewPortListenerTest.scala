@@ -2,14 +2,15 @@ package io.venuu.vuu.viewport
 
 import io.venuu.vuu.core.table.TableTestHelper.combineQs
 import io.venuu.vuu.util.table.TableAsserts.assertVpEq
+import org.scalatest.GivenWhenThen
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
-import org.scalatest.{GivenWhenThen, Matchers}
 
 class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen{
 
-  feature("Check that when we move a viewport range around in vp, the keys are correctly subscribed"){
+  Feature("Check that when we move a viewport range around in vp, the keys are correctly subscribed"){
 
-    scenario("Check when we move vp down and back and tick, rows come through"){
+    Scenario("Check when we move vp down and back and tick, rows come through"){
 
       val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
 

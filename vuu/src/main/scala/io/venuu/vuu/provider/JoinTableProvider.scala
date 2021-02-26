@@ -20,6 +20,7 @@ import io.venuu.vuu.core.table.{DataTable, JoinTable, JoinTableUpdate, RowWithDa
 import java.util
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 trait JoinTableProvider extends RunInThread with LifecycleEnabled{
@@ -104,15 +105,13 @@ class JoinTableProviderImpl(implicit timeProvider: Clock, lifecyle: LifecycleCon
 
   override def update(eventBeans: Array[EventBean], eventBeans1: Array[EventBean]): Unit = {
 
-    import scala.collection.JavaConversions._
-
     eventBeans.foreach(evb => {
 
       val bean = evb.asInstanceOf[MapEventBean]
 
       val map = bean.getProperties
 
-      val immutable = map.toMap
+      val immutable = MapHasAsScala(map).asScala.toMap
 
       logger.debug(s"[join] Got event ${immutable}")
 
@@ -274,8 +273,7 @@ class JoinTableProviderImpl(implicit timeProvider: Clock, lifecyle: LifecycleCon
     val cepConfig = new Configuration();
 
     eventsToRegister.foreach({case(key, map) => {
-      import scala.collection.JavaConversions._
-      logger.info(s"registering event: $key definition " + map.toMap)
+      logger.info(s"registering event: $key definition " + MapHasAsScala(map).asScala.toMap)
       cepConfig.addEventType(key, map)
     }
     })

@@ -16,6 +16,7 @@ import io.venuu.vuu.provider.Provider
 
 import java.util.Random
 import java.util.concurrent.ConcurrentHashMap
+import scala.jdk.CollectionConverters._
 
 trait SimulationMode{
   def asCode: Int
@@ -71,13 +72,10 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
 
   override def runOnce(): Unit = {
 
-    import scala.collection.JavaConversions._
+    val entrySet = SetHasAsScala(currentModes.entrySet()).asScala
 
-    val entrySet = currentModes.entrySet()
-
-    entrySet.iterator().foreach(me => {
+    entrySet.foreach(me => {
       processOne(me.getKey, me.getValue)
-      //Thread.sleep(1l)
     })
 
     timeProvider.sleep(seededRand(timeProvider.now(), 0, maxSleep))

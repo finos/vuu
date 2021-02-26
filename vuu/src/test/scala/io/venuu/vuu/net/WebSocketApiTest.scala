@@ -1,19 +1,20 @@
 package io.venuu.vuu.net
 
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Created by chris on 26/10/2015.
  */
-class WebSocketApiTest extends FeatureSpec with Matchers {
+class WebSocketApiTest extends AnyFeatureSpec with Matchers {
 
   def awaitMsg[TYPE](implicit client: ViewServerClient): Option[TYPE] = {
     None
   }
 
-  feature("test server api shape"){
+  Feature("test server api shape"){
 
-    scenario("test login and creation of view port"){
+    Scenario("test login and creation of view port"){
 
 //      implicit val serverApi: ServerApi = null
 //      implicit val client: Client = null

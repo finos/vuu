@@ -19,6 +19,7 @@ import io.venuu.vuu.viewport.ViewPortRange
 
 import java.util.concurrent.ConcurrentHashMap
 
+
 case class UserPrincipal(user: String, token: String, sessionId: String)
 
 class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: LifecycleContainer, timeProvider: Clock, vsClient: ViewServerClient) extends StrictLogging {
@@ -66,9 +67,10 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
   private def sendVpUpdates() = {
 
-    import scala.collection.JavaConversions._
+    import scala.jdk.CollectionConverters.MapHasAsScala
+    // scala.collection.JavaConversions._
 
-    vpChangeRequests.foreach({case(key, msg) =>
+    MapHasAsScala(vpChangeRequests).asScala.foreach({case(key, msg) =>
       vpChangeRequests.remove(key)
       logger.info(s"VP Range Change -> ${msg.from} to ${msg.to} ")
       changeVpRangeAsync(principal.sessionId, principal.token, principal.user, msg.vpId, ViewPortRange(msg.from, msg.to))

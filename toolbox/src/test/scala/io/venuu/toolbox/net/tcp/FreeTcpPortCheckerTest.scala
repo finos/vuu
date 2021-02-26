@@ -7,13 +7,14 @@
   */
 package io.venuu.toolbox.net.tcp
 
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class FreeTcpPortCheckerTest extends FeatureSpec with Matchers {
+class FreeTcpPortCheckerTest extends AnyFeatureSpec with Matchers {
 
-  feature("check the port allocator"){
+  Feature("check the port allocator"){
 
-    scenario("check some free ports, then block one and check it fails"){
+    Scenario("check some free ports, then block one and check it fails"){
 
       import FreeTcpPortChecker._
 

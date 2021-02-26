@@ -10,13 +10,13 @@ import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts._
-import org.scalatest.FeatureSpec
+import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.prop.Tables.Table
 
 /**
   * Created by chris on 02/09/2016.
   */
-class AmendViewPortToTreeTest extends FeatureSpec {
+class AmendViewPortToTreeTest extends AnyFeatureSpec {
 
   import ViewPortTestFns._
 
@@ -143,9 +143,9 @@ class AmendViewPortToTreeTest extends FeatureSpec {
 
   }
 
-  feature("test amending a view port from normal to tree and back") {
+  Feature("test amending a view port from normal to tree and back") {
 
-    scenario("create view port (flat) then tree it, then return to flat") {
+    Scenario("create view port (flat) then tree it, then return to flat") {
       runTest()
     }
 

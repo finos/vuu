@@ -2,16 +2,17 @@ package io.venuu.vuu.net.flowcontrol
 
 import io.venuu.toolbox.time.TestFriendlyClock
 import io.venuu.vuu.net.{HeartBeatResponse, VsMsg}
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by chris on 10/01/2016.
   */
-class FlowControllerTest extends FeatureSpec with Matchers {
+class FlowControllerTest extends AnyFeatureSpec with Matchers {
 
-  feature("check flow control logic"){
+  Feature("check flow control logic"){
 
-    scenario("check simple flow controller"){
+    Scenario("check simple flow controller"){
 
       implicit val timeProvider = new TestFriendlyClock(100l)
 
