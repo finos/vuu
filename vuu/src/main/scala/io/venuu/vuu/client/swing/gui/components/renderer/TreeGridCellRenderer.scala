@@ -53,7 +53,6 @@ class TreeGridCellRenderer extends JLabel with TableCellRenderer {
         setIcon(null)
       } else {
 
-
         val depth = table.getModel.getValueAt(row, Depth.index).toString.toInt
         val isLeaf = table.getModel.getValueAt(row, IsLeaf.index).toString.toBoolean
         val isOpen = table.getModel.getValueAt(row, IsOpen.index).toString.toBoolean

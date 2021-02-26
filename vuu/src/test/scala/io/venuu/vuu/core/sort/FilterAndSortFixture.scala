@@ -10,7 +10,7 @@ package io.venuu.vuu.core.sort
 import io.venuu.toolbox.collection.MapDiffUtils
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.text.{AsciiUtil, CodeGenUtil}
-import io.venuu.vuu.api.TableDef
+import io.venuu.vuu.api.{Index, Indices, TableDef}
 import io.venuu.vuu.core.table.{Columns, RowWithData, SimpleDataTable}
 import io.venuu.vuu.provider.TestFriendlyJoinTableProvider
 
@@ -106,7 +106,14 @@ object FilterAndSortFixture {
       name = "orders",
       keyField = "orderId",
       columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String", "onMkt:Boolean"),
-      joinFields =  "ric", "orderId", "ccyCross")
+      indices = Indices(
+        Index("orderId"),
+        Index("ric"),
+        Index("tradeTime"),
+        Index("onMkt")
+      ),
+      joinFields =  "ric", "orderId", "ccyCross"
+    )
 
     implicit val metrics = new MetricsProviderImpl
 

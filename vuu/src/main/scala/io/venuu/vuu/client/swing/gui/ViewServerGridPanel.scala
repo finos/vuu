@@ -14,7 +14,7 @@ import io.venuu.vuu.client.swing.gui.components.renderer.{SortedColumnRenderer, 
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
 import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
-import io.venuu.vuu.net.{FilterSpec, SortDef, SortSpec}
+import io.venuu.vuu.net.{AggType, Aggregations, FilterSpec, SortDef, SortSpec}
 
 import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.{Color, Dimension, Point}
@@ -34,7 +34,8 @@ case class ColumnHeaderClicked(override val source: Table, column: Int, e: Mouse
 
 case class GridPanelViewPortContext(requestId: String, vpId: String, table: String, availableColumns: Array[String], columns: Array[String] = Array(),
                                     sortBy: SortSpec = SortSpec(List()), filter: String = "", groupBy: Array[String] = Array(),
-                                    currentColumn: Option[TableColumn] = None)
+                                    currentColumn: Option[TableColumn] = None,
+                                    aggregations: Array[Aggregations] = Array())
 
 class ViewServerGridPanel(requestId: String, tableName: String, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends BorderPanel with StrictLogging {
 
@@ -75,28 +76,78 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
     contents += editViewPort
   }
 
-  val popUpGroupBy = new components.PopupMenu {
-    val addToGroupBy = new MenuItem(Action("Add To GroupBy") {
-      //val invoker = this.peer.getInvoker.asInstanceOf[JComponentWithContext]
+  val popUpGroupBy = new components.PopupMenu{
 
-      //val column = table.peer.columnAtPoint(this. )
-      //val name = table.peer.getColumnName(column);
-      context.currentColumn match {
-        case Some(column) =>
-          val name = column.getIdentifier.asInstanceOf[String]
-          context = context.copy(groupBy = context.groupBy ++ Array(name))
-          onChangeViewPort(context.filter, None)
-        case None => println("bad")
-      }
+    val addToGroupByMenu: Menu = new Menu("Add to GroupBy") {
+      val addNoAgg = new MenuItem(Action("No Aggregate") {
+        context.currentColumn match {
+          case Some(column) =>
+            val name = column.getIdentifier.asInstanceOf[String]
+            context = context.copy(groupBy = context.groupBy ++ Array(name))
+            onChangeViewPort(context.filter, None)
+          case None => println("bad")
+        }
+      })
+      val addWithSum = new MenuItem(Action("Sum Aggregate") {
+        context.currentColumn match {
+          case Some(column) =>
+            val name = column.getIdentifier.asInstanceOf[String]
+            context = context.copy(groupBy = context.groupBy ++ Array(name), aggregations = context.aggregations ++ Array(Aggregations(name, AggType.Sum)))
+            onChangeViewPort(context.filter, None)
+          case None => println("bad")
+        }
+      })
 
-      //context = context.copy(groupBy = context.groupBy ++ Array)
-    })
+      val addWithCount = new MenuItem(Action("Count Aggregate") {
+        context.currentColumn match {
+          case Some(column) =>
+            val name = column.getIdentifier.asInstanceOf[String]
+            context = context.copy(groupBy = context.groupBy ++ Array(name), aggregations = context.aggregations ++ Array(Aggregations(name, AggType.Count)))
+            onChangeViewPort(context.filter, None)
+          case None => println("bad")
+        }
 
-    val removeFromGroupBy = new MenuItem(Action("Remove From GroupBy") {
-      println("was here")
-    })
+      })
 
-    contents += addToGroupBy
+
+      contents += addNoAgg
+      contents += addWithCount
+      contents += addWithSum
+    }
+
+    val addToAggregates: Menu = new Menu("Add to Aggregates") {
+      val addWithSum = new MenuItem(Action("Sum") {
+        context.currentColumn match {
+          case Some(column) =>
+            val name = column.getIdentifier.asInstanceOf[String]
+            context = context.copy(aggregations = context.aggregations ++ Array(Aggregations(name, AggType.Sum)))
+            onChangeViewPort(context.filter, None)
+          case None =>
+            println("bad")
+        }
+      })
+
+      val addWithCount = new MenuItem(Action("Count") {
+        context.currentColumn match {
+          case Some(column) =>
+            val name = column.getIdentifier.asInstanceOf[String]
+            context = context.copy(aggregations = context.aggregations ++ Array(Aggregations(name, AggType.Count)))
+            onChangeViewPort(context.filter, None)
+          case None =>
+            println("bad")
+        }
+
+      })
+      contents += addWithSum
+      contents += addWithCount
+    }
+
+      val removeFromGroupBy = new MenuItem(Action("Remove From GroupBy") {
+        println("was here")
+      })
+
+    contents += addToGroupByMenu
+    contents += addToAggregates
     contents += removeFromGroupBy
   }
 
@@ -238,7 +289,7 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
       toggleRenderer()
     })
 
-    eventBus.publish(ClientChangeViewPortRequest(reqId, context.vpId, context.columns, filterSpec = filterSpec, sortBy = sortSpec, groupBy = context.groupBy))
+    eventBus.publish(ClientChangeViewPortRequest(reqId, context.vpId, context.columns, filterSpec = filterSpec, sortBy = sortSpec, groupBy = context.groupBy, aggregations = context.aggregations))
   }
 
   layout(filter) = Position.North

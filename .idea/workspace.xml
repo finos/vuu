@@ -8,21 +8,16 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#27 Added basic working UI to visual linking.">
-      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/provider/ChildOrdersProvider.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/provider/ParentChildOrdersModel.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/provider/ParentOrdersProvider.scala" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/module/simul/ParentChildOrdersModelTest.scala" afterDir="false" />
+    <list default="true" id="ad341159-b342-4216-bb17-846e12db56ce" name="Default Changelist" comment="#30 resolved aggregations for group bys">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/resources/runconfigurations/SimulMain.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/resources/runconfigurations/SimulMain.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerTreeGridPanel.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerTreeGridPanel.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/messages/ClientMessage.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/messages/ClientMessage.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/model/Model.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/model/Model.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/SimulationModule.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/SimulationModule.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/provider/OrdersSimulProvider.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/provider/OrdersSimulProvider.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/groupby/GroupBySessionTable.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/groupby/GroupBySessionTable.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/JoinTable.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/JoinTable.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/SimpleDataTable.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/table/SimpleDataTable.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/RowSource.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/RowSource.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPortContainer.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPortContainer.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/RowDeleteTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/RowDeleteTest.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByAndAggregate2Test.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByAndAggregate2Test.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByTreeBuilderTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/GroupByTreeBuilderTest.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,14 +46,6 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
-  <component name="MavenImportPreferences">
-    <option name="importingSettings">
-      <MavenImportingSettings>
-        <option name="createModuleGroups" value="true" />
-        <option name="jdkForImporter" value="11" />
-      </MavenImportingSettings>
-    </option>
-  </component>
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="1" />
   </component>
@@ -67,6 +54,7 @@
     <option name="autoscrollFromSource" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="Git.Branch.Popup.ShowAllRemotes" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="GoToFile.includeJavaFiles" value="false" />
@@ -76,49 +64,24 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/zk/src/main/resources" />
+    <property name="ScalaLocalFindUsagesOptions.isSearchForTextOccurrences" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/vuu/src/main/resources/issue" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="Errors" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/vuu/src/main/resources/issue" />
       <recent name="$PROJECT_DIR$/zk/src/main/resources" />
       <recent name="$PROJECT_DIR$/zk/src/scripts" />
       <recent name="$PROJECT_DIR$/zk/src/assembly" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.SwingClientMain">
+  <component name="RunManager" selected="ScalaTest.GroupByAndAggregate2Test">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="SimulMain" type="Application" factoryName="Application" temporary="true">
-      <option name="MAIN_CLASS_NAME" value="io.venuu.vuu.SimulMain" />
-      <module name="vuu (1)" />
-      <option name="VM_PARAMETERS" value="-Xmx10G -Xms5G -XX:UseG1GC" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="io.venuu.vuu.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="SwingClientMain" type="Application" factoryName="Application" temporary="true">
-      <option name="MAIN_CLASS_NAME" value="io.venuu.vuu.client.swing.SwingClientMain" />
-      <module name="vuu (1)" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="io.venuu.vuu.client.swing.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -130,49 +93,47 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="OnlySendDiffRowsViewPortTest.Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="vuu (1)" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="selectedOptions">
-        <list />
-      </option>
-      <option name="testKind" value="Test name" />
-      <option name="testClassPath" value="io.venuu.vuu.viewport.OnlySendDiffRowsViewPortTest" />
-      <option name="testName" value="Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" />
-      <option name="workingDirectory" value="$PROJECT_DIR$" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="RangeSubtractTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+    <configuration name="FilterGrammerTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
       <module name="vuu (1)" />
       <option name="allowRunningInParallel" value="false" />
       <option name="selectedOptions">
         <list />
       </option>
       <option name="testKind" value="Class" />
-      <option name="testClassPath" value="io.venuu.vuu.viewport.RangeSubtractTest" />
+      <option name="testClassPath" value="io.venuu.vuu.core.filter.FilterGrammerTest" />
       <option name="workingDirectory" value="$PROJECT_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="RangeTest.Feature: Subtract one range from another and get the keys Scenario: Range underlaps" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+    <configuration name="GroupByAndAggregate2Test" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
       <module name="vuu (1)" />
       <option name="allowRunningInParallel" value="false" />
       <option name="selectedOptions">
         <list />
       </option>
-      <option name="testKind" value="Test name" />
-      <option name="testClassPath" value="io.venuu.vuu.viewport.RangeTest" />
-      <option name="testName" value="Feature: Subtract one range from another and get the keys Scenario: Range underlaps" />
+      <option name="testKind" value="Class" />
+      <option name="testClassPath" value="io.venuu.vuu.viewport.GroupByAndAggregate2Test" />
+      <option name="workingDirectory" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GroupByAndAggregateTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="vuu (1)" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="selectedOptions">
+        <list />
+      </option>
+      <option name="testKind" value="Class" />
+      <option name="testClassPath" value="io.venuu.vuu.viewport.GroupByAndAggregateTest" />
       <option name="workingDirectory" value="$PROJECT_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
     <configuration name="VisualLinkedViewPortTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="vuu" />
+      <module name="vuu (1)" />
       <option name="allowRunningInParallel" value="false" />
       <option name="selectedOptions">
         <list />
@@ -185,7 +146,7 @@
       </method>
     </configuration>
     <configuration name="VisualLinkedViewPortTest.Feature: Check our maintenance of selection on the server side Scenario: create viewport, update selection, see selection come back" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="vuu" />
+      <module name="vuu (1)" />
       <option name="allowRunningInParallel" value="false" />
       <option name="selectedOptions">
         <list />
@@ -217,22 +178,22 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="ScalaTest.FilterGrammerTest" />
       <item itemvalue="Application.SimulMain" />
-      <item itemvalue="Application.SwingClientMain" />
       <item itemvalue="ScalaTest.Run All Tests" />
-      <item itemvalue="ScalaTest.OnlySendDiffRowsViewPortTest.Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" />
-      <item itemvalue="ScalaTest.RangeTest.Feature: Subtract one range from another and get the keys Scenario: Range underlaps" />
-      <item itemvalue="ScalaTest.RangeSubtractTest" />
-      <item itemvalue="ScalaTest.VisualLinkedViewPortTest.Feature: Check our maintenance of selection on the server side Scenario: create viewport, update selection, see selection come back" />
+      <item itemvalue="Application.SwingClientMain" />
+      <item itemvalue="ScalaTest.GroupByAndAggregateTest" />
       <item itemvalue="ScalaTest.VisualLinkedViewPortTest" />
+      <item itemvalue="ScalaTest.VisualLinkedViewPortTest.Feature: Check our maintenance of selection on the server side Scenario: create viewport, update selection, see selection come back" />
+      <item itemvalue="ScalaTest.GroupByAndAggregate2Test" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="ScalaTest.VisualLinkedViewPortTest" />
+        <item itemvalue="ScalaTest.GroupByAndAggregate2Test" />
         <item itemvalue="ScalaTest.VisualLinkedViewPortTest.Feature: Check our maintenance of selection on the server side Scenario: create viewport, update selection, see selection come back" />
-        <item itemvalue="Application.SwingClientMain" />
-        <item itemvalue="Application.SimulMain" />
-        <item itemvalue="ScalaTest.OnlySendDiffRowsViewPortTest.Feature: Check when we update view port ranges, we only send the new rows Scenario: Change viewport from 0-20 to 10-30 and check we only get 10 rows" />
+        <item itemvalue="ScalaTest.VisualLinkedViewPortTest" />
+        <item itemvalue="ScalaTest.GroupByAndAggregateTest" />
+        <item itemvalue="ScalaTest.FilterGrammerTest" />
       </list>
     </recent_temporary>
   </component>
@@ -374,43 +335,130 @@
       <option name="project" value="LOCAL" />
       <updated>1612021415109</updated>
     </task>
-    <task id="LOCAL-00019" summary="#18 Fixed Tree grids also.">
-      <created>1613246582685</created>
+    <task id="LOCAL-00019" summary="#13 Resolved issue with size update being wrong and removed unneccesary sub-projects">
+      <created>1612262113424</created>
       <option name="number" value="00019" />
       <option name="presentableId" value="LOCAL-00019" />
       <option name="project" value="LOCAL" />
-      <updated>1613246582685</updated>
+      <updated>1612262113425</updated>
     </task>
-    <task id="LOCAL-00020" summary="#18 Cleaned up last references to Special Column, now in meta.">
-      <created>1613247348444</created>
+    <task id="LOCAL-00020" summary="#13 Added run configs.">
+      <created>1612262521811</created>
       <option name="number" value="00020" />
       <option name="presentableId" value="LOCAL-00020" />
       <option name="project" value="LOCAL" />
-      <updated>1613247348444</updated>
+      <updated>1612262521811</updated>
     </task>
-    <task id="LOCAL-00021" summary="#18 Cleaned up last references to Special Column, now in meta.">
-      <created>1613247450695</created>
+    <task id="LOCAL-00021" summary="#15 Resolved issue with cache disappearing sometimes with eroneous call to clear the map, also foixed sort on lotSize column as its an int not a double.">
+      <created>1612264897691</created>
       <option name="number" value="00021" />
       <option name="presentableId" value="LOCAL-00021" />
       <option name="project" value="LOCAL" />
-      <updated>1613247450695</updated>
+      <updated>1612264897692</updated>
     </task>
-    <task id="LOCAL-00022" summary="#27 Added first working test case with visual linking of viewports.">
-      <created>1613575539945</created>
+    <task id="LOCAL-00022" summary="#15 Turned off file log as could get v big">
+      <created>1612265257250</created>
       <option name="number" value="00022" />
       <option name="presentableId" value="LOCAL-00022" />
       <option name="project" value="LOCAL" />
-      <updated>1613575539945</updated>
+      <updated>1612265257250</updated>
     </task>
-    <task id="LOCAL-00023" summary="#27 Added basic working UI to visual linking.">
-      <created>1613594863369</created>
+    <task id="LOCAL-00023" summary="#16 Added in/out log for debugging diffs in swing an javscript versions">
+      <created>1612345557200</created>
       <option name="number" value="00023" />
       <option name="presentableId" value="LOCAL-00023" />
       <option name="project" value="LOCAL" />
-      <updated>1613594863369</updated>
+      <updated>1612345557200</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="#17 Replaced concurrent map with moving window class">
+      <created>1612433216972</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1612433216972</updated>
+    </task>
+    <task id="LOCAL-00025" summary="#17 Last cleanup before merge">
+      <created>1612458803352</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1612458803352</updated>
+    </task>
+    <task id="LOCAL-00026" summary="#19 Fixed issue with GroupBy table after refactor.">
+      <created>1612462519392</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1612462519392</updated>
+    </task>
+    <task id="LOCAL-00027" summary="#25 Cleaned up old versions of Jackson and netty and removed diff vrsions of scala from build">
+      <created>1612516740479</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1612516740479</updated>
+    </task>
+    <task id="LOCAL-00028" summary="#18 Added First Cut of Server Side Selection Model">
+      <created>1612540613575</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1612540613575</updated>
+    </task>
+    <task id="LOCAL-00029" summary="#30 Added indexing for String and Int fields.">
+      <created>1614011598605</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1614011598605</updated>
+    </task>
+    <task id="LOCAL-00030" summary="#30 Added greaterThan and lessThan.">
+      <created>1614099512869</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1614099512869</updated>
+    </task>
+    <task id="LOCAL-00031" summary="#30 Added greaterThan and lessThan.">
+      <created>1614099822531</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1614099822531</updated>
+    </task>
+    <task id="LOCAL-00032" summary="#30 Added greaterThan and lessThan.">
+      <created>1614099960129</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1614099960129</updated>
+    </task>
+    <task id="LOCAL-00033" summary="#30 Added boolean, double, long data type support.">
+      <created>1614102774241</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1614102774241</updated>
+    </task>
+    <task id="LOCAL-00034" summary="#30 resolved aggregations for group bys">
+      <created>1614267685517</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1614267685517</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+      </list>
+    </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -456,58 +504,76 @@
     <MESSAGE value="#9 Enabled tests" />
     <MESSAGE value="#9 Added fix to not send stale rows iv view port has moved on." />
     <MESSAGE value="#11 Added optimized row publish, only rows that have changed. there are still further optimizations to come." />
-    <MESSAGE value="#18 Fixed Tree grids also." />
-    <MESSAGE value="#18 Cleaned up last references to Special Column, now in meta." />
-    <MESSAGE value="#27 Added first working test case with visual linking of viewports." />
-    <MESSAGE value="#27 Added basic working UI to visual linking." />
-    <option name="LAST_COMMIT_MESSAGE" value="#27 Added basic working UI to visual linking." />
+    <MESSAGE value="#13 Resolved issue with size update being wrong and removed unneccesary sub-projects" />
+    <MESSAGE value="#13 Added run configs." />
+    <MESSAGE value="#15 Resolved issue with cache disappearing sometimes with eroneous call to clear the map, also foixed sort on lotSize column as its an int not a double." />
+    <MESSAGE value="#15 Turned off file log as could get v big" />
+    <MESSAGE value="#16 Added in/out log for debugging diffs in swing an javscript versions" />
+    <MESSAGE value="#17 Replaced concurrent map with moving window class" />
+    <MESSAGE value="#17 Last cleanup before merge" />
+    <MESSAGE value="#19 Fixed issue with GroupBy table after refactor." />
+    <MESSAGE value="#25 Cleaned up old versions of Jackson and netty and removed diff vrsions of scala from build" />
+    <MESSAGE value="#18 Added First Cut of Server Side Selection Model" />
+    <MESSAGE value="#30 Added indexing for String and Int fields." />
+    <MESSAGE value="#30 Added greaterThan and lessThan." />
+    <MESSAGE value="#30 Added boolean, double, long data type support." />
+    <MESSAGE value="#30 resolved aggregations for group bys" />
+    <option name="LAST_COMMIT_MESSAGE" value="#30 resolved aggregations for group bys" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/OnlySendDiffRowsViewPortTest.scala</url>
-          <line>29</line>
-          <option name="timeStamp" value="6" />
+          <url>file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/DataTableTest.scala</url>
+          <line>60</line>
+          <option name="timeStamp" value="17" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/OnlySendDiffRowsViewPortTest.scala</url>
-          <line>41</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/viewport/ViewPortContainer.scala</url>
-          <line>352</line>
+          <url>file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/table/JoinTableTest.scala</url>
+          <line>108</line>
           <option name="timeStamp" value="18" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="scala-line">
-          <condition expression="po == null || table == null" language="Scala" />
-          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/module/simul/provider/ParentOrdersProvider.scala</url>
-          <line>32</line>
-          <option name="timeStamp" value="27" />
+          <url>file://$PROJECT_DIR$/toolbox/src/main/scala/io/venuu/toolbox/collection/window/ArrayBackedMovingWindow.scala</url>
+          <line>38</line>
+          <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/client/Worker.scala</url>
-          <line>60</line>
-          <option name="timeStamp" value="31" />
+          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/net/rpc/JsonSubTypeRegistry.scala</url>
+          <line>95</line>
+          <option name="timeStamp" value="24" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="scala-line">
-          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/gui/ViewServerGridPanel.scala</url>
-          <line>120</line>
-          <option name="timeStamp" value="34" />
+          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/client/swing/model/Model.scala</url>
+          <line>272</line>
+          <option name="timeStamp" value="46" />
         </line-breakpoint>
-        <breakpoint enabled="true" type="java-exception">
-          <properties class="java.lang.NullPointerException" package="java.lang" />
-          <option name="timeStamp" value="26" />
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/viewport/ViewPortListenerTest.scala</url>
+          <line>121</line>
+          <option name="timeStamp" value="51" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/vuu/src/main/scala/io/venuu/vuu/core/filter/FilterTreeVisitor.scala</url>
+          <line>7</line>
+          <option name="timeStamp" value="65" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/vuu/src/test/scala/io/venuu/vuu/core/filter/FilterGrammerTest.scala</url>
+          <line>97</line>
+          <option name="timeStamp" value="70" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8-sources.jar!/com/fasterxml/jackson/databind/ser/std/BeanSerializerBase.java</url>
+          <line>725</line>
+          <option name="timeStamp" value="23" />
+        </line-breakpoint>
+        <breakpoint type="java-exception">
+          <properties class="scala.MatchError" package="scala" />
+          <option name="timeStamp" value="32" />
         </breakpoint>
       </breakpoints>
     </breakpoint-manager>
-    <pin-to-top-manager>
-      <pinned-members>
-        <PinnedItemInfo parentTag="io.venuu.vuu.client.swing.model.ViewPortedModel" memberName="columns" />
-        <PinnedItemInfo parentTag="io.venuu.vuu.api.VisualLinks" memberName="links" />
-      </pinned-members>
-    </pin-to-top-manager>
   </component>
   <component name="atlassian-ide-plugin-workspace-issues">
     <option name="view">

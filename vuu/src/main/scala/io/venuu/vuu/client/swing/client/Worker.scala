@@ -37,7 +37,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
       case msg: ClientCloseTreeNodeRequest =>
           closeTreeNodeAsync(principal.sessionId, principal.token, principal.user, msg.requestId, msg.vpId, msg.treeKey)
       case msg: ClientChangeViewPortRequest =>
-        changeVpAsync(principal.sessionId, principal.token, principal.user, msg.requestId, msg.viewPortId, msg.columns, msg.sortBy, msg.groupBy, msg.filterSpec)
+        changeVpAsync(principal.sessionId, principal.token, principal.user, msg.requestId, msg.viewPortId, msg.columns, msg.sortBy, msg.groupBy, msg.filterSpec, msg.aggregations)
       case msg: ClientGetTableMeta =>
         tableMetaAsync(principal.sessionId, principal.token, principal.user, msg.table, msg.requestId)
       case msg: ClientGetTableList =>

@@ -49,8 +49,8 @@ object ClientHelperFns {
     vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, CloseTreeNodeRequest(vpId, treeKey)))
   }
 
-  def changeVpAsync(sessionId: String, token: String, user: String, requestId: String, vpId: String, columns: Array[String], sortBy: SortSpec, groupBy: Array[String] = Array(), filterSpec: FilterSpec)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ChangeViewPortRequest(vpId, columns, sort = sortBy, filterSpec = filterSpec, groupBy = groupBy)))
+  def changeVpAsync(sessionId: String, token: String, user: String, requestId: String, vpId: String, columns: Array[String], sortBy: SortSpec, groupBy: Array[String] = Array(), filterSpec: FilterSpec, aggregations: Array[Aggregations] = Array())(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ChangeViewPortRequest(vpId, columns, sort = sortBy, filterSpec = filterSpec, groupBy = groupBy, aggregations = aggregations)))
   }
 
 

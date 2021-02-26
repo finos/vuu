@@ -10,7 +10,7 @@ package io.venuu.vuu.client.swing.messages
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.client.swing.client.UserPrincipal
-import io.venuu.vuu.net.{FilterSpec, SortSpec}
+import io.venuu.vuu.net.{Aggregations, FilterSpec, SortSpec}
 
 import java.util.UUID
 
@@ -33,7 +33,7 @@ case class ClientCreateViewPort(requestId: String, table: String, columns: Array
 case class ClientCreateViewPortSuccess(requestId: String, vpId: String, columns: Array[String], sortBy: SortSpec, groupBy: Array[String], filter: String) extends ClientMessage with FromServer
 case class ClientCreateViewPortFailure(requestId: String, vpId: String, error: String) extends ClientMessage with FromServer
 
-case class ClientChangeViewPortRequest(requestId: String, viewPortId: String, columns: Array[String], sortBy: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends ClientMessage with ToServer
+case class ClientChangeViewPortRequest(requestId: String, viewPortId: String, columns: Array[String], sortBy: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null, aggregations : Array[Aggregations] = Array()) extends ClientMessage with ToServer
 case class ClientChangeViewPortSuccess(requestId: String, viewPortId: String, columns: Array[String], sortBy: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends ClientMessage with FromServer
 case class ClientChangeViewPortFailure(requestId: String, viewPortId: String, columns: Array[String], sortBy: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends ClientMessage with FromServer
 

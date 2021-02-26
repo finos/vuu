@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
-import io.venuu.vuu.api.TableDef
+import io.venuu.vuu.api.{Indices, TableDef}
 import io.venuu.vuu.core.groupby.GroupBySessionTable
 import io.venuu.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}

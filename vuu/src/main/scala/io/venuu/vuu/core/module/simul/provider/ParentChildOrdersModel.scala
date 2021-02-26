@@ -60,7 +60,7 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
   private final var cycleNumber = 0l
   private var orderId = 0
   private var childOrderId = 0
-  private final val MAX_ORDERS = 700000
+  private final val MAX_ORDERS = 7000
   private var parentOrderCount = 0;
 
   private final val MAX_EVENTS_PER_CYCLE = 100
@@ -171,11 +171,11 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
         activeOrders.put(parent.id, parent)
         val timeToAmend = randomNumbers.seededRand(1000, 10000)
         val timeToCancel = randomNumbers.seededRand(10000, 120000)
-        queue.offer(AmendParent(parent, clock.now() + timeToAmend, clock))
-        queue.offer(CancelParent(parent, clock.now() + timeToCancel, clock))
+        //queue.offer(AmendParent(parent, clock.now() + timeToAmend, clock))
+        //queue.offer(CancelParent(parent, clock.now() + timeToCancel, clock))
 
         var timeToCreateChild = randomNumbers.seededRand(1000, 3000)
-        val childrenToCreate = randomNumbers.seededRand(4, 30)
+        val childrenToCreate = randomNumbers.seededRand(100, 150)
 
         (0 to childrenToCreate - 1).foreach( i => {
           queue.offer(InsertChild(createChild(parent), parent, clock.now() + timeToCreateChild, clock))
@@ -183,43 +183,43 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
         })
 
       case DeleteParent(parent, _, _) =>
-        if(activeOrders.size() < MAX_ORDERS){
-          val timeToDelete = 5000
-          queue.offer(DeleteParent(parent, clock.now() + timeToDelete, clock))
-        }else{
-          notifyOnParentDelete(parent)
-          activeOrders.remove(parent.id)
-        }
+//        if(activeOrders.size() < MAX_ORDERS){
+//          val timeToDelete = 5000
+//          queue.offer(DeleteParent(parent, clock.now() + timeToDelete, clock))
+//        }else{
+//          notifyOnParentDelete(parent)
+//          activeOrders.remove(parent.id)
+//        }
       case AmendParent(parent, _, _) =>
-        if(activeOrders.get(parent.id) != null){
-          val amended = amendParent(parent)
-
-          activeChildrenByParentId.get(parent.id) match {
-            case null =>
-            case children: List[ChildOrder] =>
-              children.foreach(child => {
-                val timeToAmend = randomNumbers.seededRand(1000, 10000)
-                queue.offer(AmendChild(amendChild(child), parent, clock.now + timeToAmend, clock))
-              })
-          }
-
-          activeOrders.put(parent.id, amended)
-          notifyOnParentAmend(amended)
-          randomNumbers.seededRand(0, 10) match {
-            case i: Int =>
-              val timeToAmend = randomNumbers.seededRand(3000, 10000)
-              queue.offer(AmendParent(amended, clock.now() + timeToAmend, clock))
-          }
-        }else{
-          //order dead, no more amends
-        }
+//        if(activeOrders.get(parent.id) != null){
+//          val amended = amendParent(parent)
+//
+//          activeChildrenByParentId.get(parent.id) match {
+//            case null =>
+//            case children: List[ChildOrder] =>
+//              children.foreach(child => {
+//                val timeToAmend = randomNumbers.seededRand(1000, 10000)
+//                queue.offer(AmendChild(amendChild(child), parent, clock.now + timeToAmend, clock))
+//              })
+//          }
+//
+//          activeOrders.put(parent.id, amended)
+//          notifyOnParentAmend(amended)
+//          randomNumbers.seededRand(0, 10) match {
+//            case i: Int =>
+//              val timeToAmend = randomNumbers.seededRand(3000, 10000)
+//              queue.offer(AmendParent(amended, clock.now() + timeToAmend, clock))
+//          }
+//        }else{
+//          //order dead, no more amends
+//        }
 
       case CancelParent(parent, _, _) =>
-        val cancelled = parent.copy(status = "CXLD")
-        activeOrders.put(parent.id, cancelled)
-        notifyOnParentCancel(cancelled)
-        val timeToDelete = 5000
-        queue.offer(DeleteParent(cancelled, clock.now() + timeToDelete, clock))
+//        val cancelled = parent.copy(status = "CXLD")
+//        activeOrders.put(parent.id, cancelled)
+//        notifyOnParentCancel(cancelled)
+//        val timeToDelete = 5000
+//        queue.offer(DeleteParent(cancelled, clock.now() + timeToDelete, clock))
 
       case InsertChild(child, parent, _, _) =>
         notifyOnChildInsert(child)
@@ -233,7 +233,7 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
         }
 
       case AmendChild(child, parent, _, _) =>
-        notifyOnChildAmend(child)
+        //notifyOnChildAmend(child)
     }
   }
 

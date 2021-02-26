@@ -350,7 +350,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     Option(viewPorts.get(vpId)) match {
       case Some(vp) =>
         val viewPorts = listViewPortsForSession(clientSession)
-        val vpLinks = for(link <- vp.table.asTable.getTableDef.links.links ; vp <- viewPorts ;  if link.toTable == vp.table.name) yield (link, vp)
+        val vpLinks = for(link <- vp.table.asTable.getTableDef.links.links ; vp <- viewPorts ;  if link.toTable == vp.table.linkableName) yield (link, vp)
         vpLinks
       case None =>
         List()

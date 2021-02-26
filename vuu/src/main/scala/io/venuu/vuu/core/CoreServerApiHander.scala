@@ -18,7 +18,6 @@ import io.venuu.vuu.viewport._
 
 import scala.util.{Failure, Success, Try}
 
-//class CoreServerApiHander(viewPortContainer: ViewPortContainer, tableContainer: TableContainer, providers: ProviderContainer)(implicit timeProvider: TimeProvider) extends ServerApi with StrictLogging{
 class CoreServerApiHander(viewPortContainer: ViewPortContainer,
                     tableContainer: TableContainer,
                     providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging{
@@ -91,9 +90,15 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
 
         val newViewPort = if(!groupBy.isEmpty){
 
-          val groupByColumns = msg.groupBy.map(table.getTableDef.columnForName(_)).toList
+          val groupByColumns = msg.groupBy
+            .filter(table.getTableDef.columnExists(_))
+            .map(table.getTableDef.columnForName(_)).toList
 
-          val groupBy = new GroupBy(groupByColumns, List())
+          val aggregations   = msg.aggregations
+            .filter( agg => table.getTableDef.columnExists(agg.column))
+            .map(agg => Aggregation(table.getTableDef.columnForName(agg.column), agg.aggType.toShort)).toList
+
+          val groupBy = new GroupBy(groupByColumns, aggregations)
 
           viewPortContainer.change(ctx.session, msg.viewPortId, viewport.getRange(), columns, sort, filter, groupBy = groupBy)
         }

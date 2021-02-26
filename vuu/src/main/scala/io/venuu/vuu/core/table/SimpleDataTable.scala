@@ -1,16 +1,10 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
- *
- * Created by chris on 26/02/2014.
- *
- */
 package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
 import io.venuu.vuu.api.TableDef
+import io.venuu.vuu.core.index.{IndexedField, SkipListIndexedBooleanField, SkipListIndexedDoubleField, SkipListIndexedIntField, SkipListIndexedLongField, SkipListIndexedStringField}
 import io.venuu.vuu.provider.{JoinTableProvider, Provider}
 import io.venuu.vuu.viewport.{RowProcessor, RowSource}
 
@@ -21,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   @volatile private var provider: Provider = null
+
+  def indexForColumn(column: Column): Option[IndexedField[_]]
 
   def setProvider(aProvider: Provider): Unit = provider = aProvider
 
@@ -100,18 +96,18 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
   override def getFullyQualified(column: Column): Any = column.getDataFullyQualified(this)
 
   override def get(column: Column): Any = {
-    if(column != null ){
+    if (column != null) {
       column.getData(this)
-    }else{
+    } else {
       null
     }
   }
 
   def get(column: String): Any = {
-    if(data == null){
+    if (data == null) {
       null
     }
-    else{
+    else {
       data.get(column) match {
         case Some(x) => x
         case None => null //throw new Exception(s"column $column doesn't exist in data $data")
@@ -178,6 +174,25 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primary
 
 class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate] {
 
+  private final val indices = tableDef.indices.indices
+    .map(index => tableDef.columnForName(index.column))
+    .map(c => (c -> buildIndexForColumn(c))).toMap[Column, IndexedField[_]]
+
+  private def buildIndexForColumn(c: Column): IndexedField[_] = {
+    c.dataType match {
+      case DataType.StringDataType =>
+        new SkipListIndexedStringField(c)
+      case DataType.IntegerDataType =>
+        new SkipListIndexedIntField(c)
+      case DataType.LongDataType =>
+        new SkipListIndexedLongField(c)
+      case DataType.DoubleDataType =>
+        new SkipListIndexedDoubleField(c)
+      case DataType.BooleanDataType =>
+        new SkipListIndexedBooleanField(c)
+    }
+  }
+
   def plusName(s: String) = tableDef.name + "." + s
 
   private val eventIntoEsper = metrics.counter(plusName("JoinTableProviderImpl.eventIntoEsper.count"))
@@ -190,7 +205,13 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   override def name: String = tableDef.name
 
+  override def linkableName: String = name
+
   override def getTableDef: TableDef = tableDef
+
+  override def indexForColumn(column: Column): Option[IndexedField[_]] = {
+    indices.get(column)
+  }
 
   override def primaryKeys: ImmutableArray[String] = data.primaryKeyValues
 
@@ -235,12 +256,60 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   def columns(): Array[Column] = tableDef.columns
 
+  def updateIndices(rowkey: String, rowUpdate: RowWithData) = {
+    this.indices.foreach(colTup => {
+      val column = colTup._1
+      val index = colTup._2
+
+      rowUpdate.get(column) match {
+        case null =>
+        case x: Any =>
+          column.dataType match {
+            case DataType.StringDataType =>
+              index.asInstanceOf[IndexedField[String]].insert(x.asInstanceOf[String], rowkey)
+            case DataType.IntegerDataType =>
+              index.asInstanceOf[IndexedField[Int]].insert(x.asInstanceOf[Int], rowkey)
+            case DataType.LongDataType =>
+              index.asInstanceOf[IndexedField[Long]].insert(x.asInstanceOf[Long], rowkey)
+            case DataType.DoubleDataType =>
+              index.asInstanceOf[IndexedField[Double]].insert(x.asInstanceOf[Double], rowkey)
+            case DataType.BooleanDataType =>
+              index.asInstanceOf[IndexedField[Boolean]].insert(x.asInstanceOf[Boolean], rowkey)
+          }
+      }
+    })
+  }
+
+  def removeFromIndices(rowkey: String, rowDeleted: RowWithData): Unit = {
+    this.indices.foreach(colTup => {
+      val column = colTup._1
+      val index = colTup._2
+
+      rowDeleted.get(column) match {
+        case null =>
+        case x: Any =>
+          column.dataType match {
+            case DataType.StringDataType =>
+              index.asInstanceOf[IndexedField[String]].remove(x.asInstanceOf[String], rowkey)
+            case DataType.IntegerDataType =>
+              index.asInstanceOf[IndexedField[Int]].remove(x.asInstanceOf[Int], rowkey)
+          }
+      }
+    })
+  }
+
   def update(rowkey: String, rowUpdate: RowWithData) = {
     data = data.update(rowkey, rowUpdate)
+    updateIndices(rowkey, rowUpdate)
   }
 
   def delete(rowKey: String) = {
-    data = data.delete(rowKey)
+    data.dataByKey(rowKey) match {
+      case EmptyRowData =>
+      case x: RowWithData =>
+        removeFromIndices(rowKey, x)
+        data = data.delete(rowKey)
+    }
   }
 
   def notifyListeners(rowKey: String, isDelete: Boolean = false) = {
