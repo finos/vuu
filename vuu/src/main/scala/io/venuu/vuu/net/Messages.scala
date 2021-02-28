@@ -153,7 +153,7 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
   override def serialize(value: RowUpdate, gen: JsonGenerator, serializerProvider: SerializerProvider): Unit = {
     gen.writeStartObject()
     gen.writeStringField("viewPortId", value.viewPortId)
-    gen.writeNumberField("vpS ize", value.vpSize)
+    gen.writeNumberField("vpSize", value.vpSize)
     gen.writeNumberField("rowIndex", value.rowIndex)
     gen.writeStringField("rowKey", value.rowKey)
     gen.writeStringField("updateType", value.updateType)

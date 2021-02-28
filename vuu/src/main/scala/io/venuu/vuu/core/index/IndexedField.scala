@@ -5,7 +5,7 @@ import io.venuu.toolbox.ImmutableArray
 import io.venuu.vuu.core.table.Column
 
 import java.util.concurrent.ConcurrentSkipListMap
-import scala.collection.JavaConverters
+import scala.jdk.CollectionConverters._
 
 trait IndexedField[TYPE]{
   def insert(indexedValue: TYPE, rowKeys: String)
@@ -87,24 +87,24 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   def lessThan(bound: TYPE): ImmutableArray[String] = {
     logger.debug("Hit Index (LT): " + this.column.name)
     val result = (skipList.headMap(bound, false))
-    JavaConverters.asScalaIterator(result.values().iterator()).foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
   }
 
   def lessThanOrEqual(bound: TYPE): ImmutableArray[String] = {
 
     val result = (skipList.headMap(bound, true))
-    JavaConverters.asScalaIterator(result.values().iterator()).foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
   }
 
   def greaterThan(bound: TYPE): ImmutableArray[String] = {
     logger.debug("Hit Index (GT): " + this.column.name)
     val result = (skipList.tailMap(bound, false))
-    JavaConverters.asScalaIterator(result.values().iterator()).foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
   }
 
   def greaterThanOrEqual(bound: TYPE): ImmutableArray[String] = {
     val result = (skipList.tailMap(bound, true))
-    JavaConverters.asScalaIterator(result.values().iterator()).foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
   }
 
   override def find(indexedValues: List[TYPE]): ImmutableArray[String] = super.find(indexedValues)

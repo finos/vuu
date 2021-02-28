@@ -51,7 +51,7 @@ class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[Stri
       Try(serializer.deserialize(msg)) match {
         case Success(vsMsg) => vsMsg
         case Failure(e) =>
-          logger.error(s"could not deserialize ${msg} going to return null")
+          logger.error(s"could not deserialize ${msg} going to return null", e)
           null
       }
     }
