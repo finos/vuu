@@ -74,7 +74,7 @@ case class Index(column: String)
 
 
 case class AvailableViewPortVisualLink(parentVpId: String, link: Link){
-  override def toString: String = link.fromColumn + " to " + link.toTable + "." + link.toColumn
+  override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
 class TableDef(val name: String, val keyField: String, val columns: Array[Column], val joinFields: Seq[String],
