@@ -155,6 +155,9 @@ class DefaultMessageHandler(val channel: Channel,
       case req: RpcCall => handleModuleRpcMsg(msg, req)(ctx)
       case req: GetViewPortVisualLinksRequest => serverApi.process(req)(ctx)
       case req: CreateVisualLinkRequest => serverApi.process(req)(ctx)
+      case req: RemoveViewPortRequest => serverApi.process(req)(ctx)
+      case req: EnableViewPortRequest => serverApi.process(req)(ctx)
+      case req: DisableViewPortRequest => serverApi.process(req)(ctx)
     }
   }
 

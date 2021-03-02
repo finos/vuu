@@ -43,6 +43,36 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
   private val groupByhistogram = metrics.histogram("org.whitebox.vs.thread.groupby.cycleTime")
   private val viewPorthistogram = metrics.histogram("org.whitebox.vs.thread.viewport.cycleTime")
 
+  def removeViewPort(vpId: String) = {
+    this.viewPorts.get(vpId) match {
+      case null =>
+        logger.error(s"Could not find viewport to remove ${vpId}")
+      case vp: ViewPort =>
+        logger.info(s"Removing ${vpId} from container")
+        this.viewPorts.remove(vp.id)
+    }
+  }
+
+  def disableViewPort(vpId: String) = {
+    this.viewPorts.get(vpId) match {
+      case null =>
+        logger.error(s"Could not find viewport to disable ${vpId}")
+      case vp: ViewPort =>
+        vp.setEnabled(false)
+        logger.info(s"Disabled ${vpId} in container")
+    }
+  }
+
+  def enableViewPort(vpId: String) = {
+    this.viewPorts.get(vpId) match {
+      case null =>
+        logger.error(s"Could not find viewport to enable ${vpId}")
+      case vp: ViewPort =>
+        vp.setEnabled(true)
+        logger.info(s"Enabled ${vpId} in container")
+    }
+  }
+
   override def openGroupByKey(vpId: String, treeKey: String): String = {
     Try(this.openNode(vpId, treeKey)) match {
       case Success(_) => "Done"
@@ -281,7 +311,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
   def runOnce(): Unit = {
 
     val (millis, _ ) = timeIt {
-      CollectionHasAsScala(viewPorts.values()).asScala.filter(!_.hasGroupBy).foreach(vp => refreshOneViewPort(vp))
+      CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => !vp.hasGroupBy && vp.isEnabled).foreach(vp => refreshOneViewPort(vp))
     }
 
     viewPorthistogram.update(millis)
@@ -294,7 +324,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
   def runGroupByOnce(): Unit = {
 
     val (millis, _ ) = timeIt{
-      CollectionHasAsScala(viewPorts.values()).asScala.filter(_.hasGroupBy).foreach(vp => refreshOneGroupByViewPort(vp))
+      CollectionHasAsScala(viewPorts.values()).asScala.filter( vp => vp.hasGroupBy && vp.isEnabled).foreach(vp => refreshOneGroupByViewPort(vp))
     }
 
     groupByhistogram.update(millis)

@@ -56,6 +56,12 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         getVisualLinks(principal.sessionId, principal.token, principal.user, msg.requestId, msg.vpId)
       case msg: ClientCreateVisualLink =>
         createVisualLink(principal.sessionId, principal.token, principal.user, msg.requestId, msg.childVpId, msg.parentVpId, msg.childColumnName, msg.parentColumnName)
+      case msg: ClientEnableViewPort =>
+        enableViewPort(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId)
+      case msg: ClientDisableViewPort =>
+        disableViewPort(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId)
+      case msg: ClientRemoveViewPort =>
+        removeViewPort(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId)
 
       case msg: ClientUpdateVPRange =>
         vpChangeRequests.put(msg.vpId, msg)
@@ -68,7 +74,6 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
   private def sendVpUpdates() = {
 
     import scala.jdk.CollectionConverters.MapHasAsScala
-    // scala.collection.JavaConversions._
 
     MapHasAsScala(vpChangeRequests).asScala.foreach({case(key, msg) =>
       vpChangeRequests.remove(key)
@@ -155,7 +160,24 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
       case body: ErrorResponse =>
         logger.info("[ERROR] " + body)
+
+      case body: EnableViewPortSuccess =>
+        logger.info("[Enable View Port Success] " + body)
+
+      case body: EnableViewPortReject =>
+        logger.info("[Enable View Port Reject] " + body)
+
+      case body: DisableViewPortSuccess =>
+        logger.info("[Disable View Port Success] " + body)
+
+      case body: DisableViewPortReject =>
+        logger.info("[Disable View Port Reject] " + body)
+
+      case body: RemoveViewPortSuccess =>
+        logger.info("[Remove View Port Success] " + body)
+
+      case body: RemoveViewPortReject =>
+        logger.info("[Remove View Port Reject] " + body)
     }
   }
-
 }

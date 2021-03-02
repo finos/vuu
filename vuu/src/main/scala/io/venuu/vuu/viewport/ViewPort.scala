@@ -19,15 +19,6 @@ import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
-//trait ClientSession{
-//  def id: String
-//  def user: String
-//}
-//
-//class ClientSessionImpl(val id: String, val user: String) extends ClientSession{
-//
-//}
-
 class ViewPortUpdateType
 case object RowUpdateType extends ViewPortUpdateType
 case object SizeUpdateType extends ViewPortUpdateType
@@ -67,6 +58,8 @@ case class ViewPortRange(from: Int, to: Int){
 case class ViewPortUpdate(vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, size: Int, ts: Long)
 
 trait ViewPort {
+  def setEnabled(enabled: Boolean)
+  def isEnabled: Boolean
   def hasGroupBy: Boolean = getGroupBy != NoGroupBy
   def size: Int
   def id: String
@@ -112,6 +105,14 @@ case class ViewPortImpl(id: String,
 
   private val viewPortLock = new Object
 
+  @volatile private var enabled = true
+
+  override def setEnabled(enabled: Boolean): Unit = {
+    this.enabled = enabled
+  }
+
+  override def isEnabled: Boolean = this.enabled
+
   @volatile
   private var viewPortVisualLink: Option[ViewPortVisualLink] = None
 
@@ -140,7 +141,7 @@ case class ViewPortImpl(id: String,
       val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)) ).toMap[String, Int]
       selection = rowIndices.map( idx => (this.keys(idx), idx) ).toMap
       for( (key, idx ) <- selection ++ oldSelection ){
-        publishUpdate(key, idx)
+        publishHighPriorityUpdate(key, idx)
       }
     }
   }
@@ -192,7 +193,7 @@ case class ViewPortImpl(id: String,
 
     val inrangeKeys = currentKeys.drop(from).take(to - from)
 
-    inrangeKeys.zip((from to to)).foreach({ case(key, index) => publishUpdate(key, index)})
+    inrangeKeys.zip((from to to)).foreach({ case(key, index) => publishHighPriorityUpdate(key, index)})
   }
 
   override def getColumns: List[Column] = structuralFields.get().columns
@@ -253,8 +254,8 @@ case class ViewPortImpl(id: String,
   override def onUpdate(update: RowKeyUpdate): Unit = {
     val index = rowKeyToIndex.get(update.key)
 
-    if(isInRange(index)){
-      outboundQ.push(new ViewPortUpdate(this, update.source, new RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
+    if(isInRange(index) && this.enabled){
+        outboundQ.push(new ViewPortUpdate(this, update.source, new RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
 
   }
@@ -287,10 +288,10 @@ case class ViewPortImpl(id: String,
 
           newlyAddedObs += 1
 
-          publishUpdate(key, index)
+          publishHighPriorityUpdate(key, index)
 
         }else if(hasChangedIndex(oldIndex, index)){
-          publishUpdate(key, index)
+          publishHighPriorityUpdate(key, index)
         }
 
       }else{
@@ -340,9 +341,11 @@ case class ViewPortImpl(id: String,
     addObserver(key)
   }
 
-  def publishUpdate(key: String, index: Int) = {
+  def publishHighPriorityUpdate(key: String, index: Int) = {
     logger.debug(s"publishing update ${key}")
-    highPriorityQ.push(new ViewPortUpdate(this, table, new RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now))
+    if(this.enabled) {
+      highPriorityQ.push(new ViewPortUpdate(this, table, new RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now))
+    }
   }
 
   private def addObserver(key: String) = {

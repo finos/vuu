@@ -73,7 +73,17 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
       modal.open()
     })
 
+    val disableViewPort = new MenuItem(Action("Disable ViewPort"){
+        eventBus.publish(ClientDisableViewPort(RequestId.oneNew(), context.vpId))
+    })
+
+    val enableViewPort = new MenuItem(Action("Enable ViewPort"){
+      eventBus.publish(ClientEnableViewPort(RequestId.oneNew(), context.vpId))
+    })
+
     contents += editViewPort
+    contents += disableViewPort
+    contents += enableViewPort
   }
 
   val popUpGroupBy = new components.PopupMenu{
@@ -138,6 +148,8 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
         }
 
       })
+
+
       contents += addWithSum
       contents += addWithCount
     }

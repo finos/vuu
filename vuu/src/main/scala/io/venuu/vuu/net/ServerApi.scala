@@ -1,6 +1,9 @@
 package io.venuu.vuu.net
 
 trait ServerApi{
+  def process(msg: RemoveViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
+  def process(msg: DisableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
+  def process(msg: EnableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
   def process(msg: ChangeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
   def process(msg: CreateViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
   def process(msg: ChangeViewPortRange)(ctx: RequestContext): Option[ViewServerMessage]

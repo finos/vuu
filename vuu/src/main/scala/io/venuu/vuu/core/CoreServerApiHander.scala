@@ -22,6 +22,39 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
                     tableContainer: TableContainer,
                     providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging{
 
+  override def process(msg: RemoveViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.removeViewPort(msg.viewPortId)) match{
+      case Success(_) =>
+        logger.info("View port removed")
+        vsMsg(RemoveViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(RemoveViewPortReject(msg.viewPortId))(ctx)
+    }
+  }
+
+  override def process(msg: EnableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.enableViewPort(msg.viewPortId)) match{
+      case Success(_) =>
+        logger.info("View port enabled")
+        vsMsg(EnableViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to enable viewport", e)
+        vsMsg(RemoveViewPortReject(msg.viewPortId))(ctx)
+    }
+  }
+
+  override def process(msg: DisableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.disableViewPort(msg.viewPortId)) match{
+      case Success(_) =>
+        logger.info("View port disabled")
+        vsMsg(DisableViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to enable viewport", e)
+        vsMsg(DisableViewPortReject(msg.viewPortId))(ctx)
+    }
+  }
+
   def vsMsg(body: MessageBody)(ctx: RequestContext): Option[JsonViewServerMessage] = {
     Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, body))
   }

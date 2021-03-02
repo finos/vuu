@@ -78,6 +78,18 @@ case class CreateViewPortRequest(table: String, range: ViewPortRange, columns: A
 case class CreateViewPortSuccess(viewPortId: String, table: String, range: ViewPortRange, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends MessageBody
 case class CreateViewPortReject(table: String, msg: String) extends MessageBody
 
+case class RemoveViewPortRequest(viewPortId: String) extends MessageBody
+case class RemoveViewPortSuccess(viewPortId: String) extends MessageBody
+case class RemoveViewPortReject(viewPortId: String) extends MessageBody
+
+case class DisableViewPortRequest(viewPortId: String) extends MessageBody
+case class DisableViewPortSuccess(viewPortId: String) extends MessageBody
+case class DisableViewPortReject(viewPortId: String) extends MessageBody
+
+case class EnableViewPortRequest(viewPortId: String) extends MessageBody
+case class EnableViewPortSuccess(viewPortId: String) extends MessageBody
+case class EnableViewPortReject(viewPortId: String) extends MessageBody
+
 case class ChangeViewPortRequest(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null, aggregations: Array[Aggregations] = Array()) extends MessageBody
 case class ChangeViewPortSuccess(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends MessageBody
 case class ChangeViewPortReject(viewPortId: String, msg: String) extends MessageBody
