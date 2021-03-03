@@ -1,7 +1,7 @@
 package io.venuu.vuu.viewport
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.ImmutableArray
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.vuu.core.table.{Column, DataTable, RowData}
 
 import java.util

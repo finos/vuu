@@ -1,6 +1,6 @@
 package io.venuu.toolbox.collection
 
-import io.venuu.toolbox.ImmutableArray
+import io.venuu.toolbox.collection.array.{ChunkedImmutableArray, ImmutableArray}
 import io.venuu.toolbox.time.{Clock, DefaultClock, TimeIt}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -21,7 +21,7 @@ class ImmutableArrayTest extends AnyFeatureSpec with Matchers {
 
       val a2 = a1.-("2")
 
-      a2.toArray.sameElements((a1.-("2").toArray)) shouldBe(true)
+      a2.toArray.sameElements((a1.-("2").iterator.toArray[String])) shouldBe(true)
 
       a2 shouldNot equal(a1)
     }
@@ -31,7 +31,7 @@ class ImmutableArrayTest extends AnyFeatureSpec with Matchers {
 
       val a2 = a1.remove(1)
 
-      a2.toArray.sameElements(a1.-("2").toArray) shouldBe(true)
+      a2.toArray.sameElements(a1.-("2").iterator.toArray[String]) shouldBe(true)
 
     }
 
@@ -47,5 +47,19 @@ class ImmutableArrayTest extends AnyFeatureSpec with Matchers {
 
       println(s"$millis to remove 1000 items")
     }
+
+
+//    Scenario("add items one by one for a hundred thousand items"){
+//
+//      var array = ImmutableArray.empty[String]
+//
+//      val (millis, _ ) = TimeIt.timeIt{
+//
+//        val numbers = (0 to 1_000_000).foreach( i=> {
+//          array = array.+(i.toString)
+//        })
+//      }
+//      println(s"$millis millis to add 100,000 items")
+//    }
   }
 }

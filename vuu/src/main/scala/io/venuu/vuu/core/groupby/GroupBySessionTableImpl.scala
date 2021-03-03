@@ -1,7 +1,7 @@
 package io.venuu.vuu.core.groupby
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.ImmutableArray
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.vuu.api.{GroupByColumns, GroupByTableDef, TableDef}

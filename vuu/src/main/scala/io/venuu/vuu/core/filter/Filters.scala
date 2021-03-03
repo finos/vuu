@@ -7,7 +7,7 @@
   */
 package io.venuu.vuu.core.filter
 
-import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.vuu.core.table.Column
 import io.venuu.vuu.viewport.RowSource
 
@@ -36,7 +36,7 @@ case class LessThanFilter(column: Column, compareValue: Double) extends Filter{
 
     })
 
-    new NiaiveImmutableArray(filteredKeys)
+    ImmutableArray.from(filteredKeys)
   }
 
 }
@@ -49,6 +49,6 @@ case class EqFilter(column: Column, compareValue: String) extends Filter{
       val value = row.get(column.name)
       (value != null && value.toString.equals(compareValue))
     } )
-    new NiaiveImmutableArray(filteredKeys)
+    ImmutableArray.from(filteredKeys)
   }
 }

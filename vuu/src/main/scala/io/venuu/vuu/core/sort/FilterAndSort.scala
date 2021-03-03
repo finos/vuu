@@ -8,7 +8,7 @@
 package io.venuu.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.ImmutableArray
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.vuu.core.filter.{Filter, FilterClause}
 import io.venuu.vuu.core.index.{IndexedField, QueryOptimizer}
 import io.venuu.vuu.core.table.{Column, DataType}

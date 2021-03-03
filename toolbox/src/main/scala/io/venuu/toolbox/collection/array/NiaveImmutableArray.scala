@@ -5,53 +5,22 @@
  * Created by chris on 12/02/15.
 
  */
-package io.venuu.toolbox
+package io.venuu.toolbox.collection.array
 
 import scala.reflect.ClassTag
 
-object ImmutableArray{
-  def empty[T](implicit c: ClassTag[T]): ImmutableArray[T] = new NiaiveImmutableArray(Array[T]())
-  def from[T](array: Array[T])(implicit c: ClassTag[T]) = new NiaiveImmutableArray[T](array)
-}
 
-object ImmutableArrays{
-  def empty[T :ClassTag](i: Int): Array[ImmutableArray[T]] = {
-    (0 to (i - 1)).map( i=> new NiaiveImmutableArray[T](Array[T]())).toArray
-  }
-}
-
-trait ImmutableArray[T] {
-  //
-  def +(element: T) : ImmutableArray[T]
-
-  def -(element: T): ImmutableArray[T]
-
-  def ++(arr: ImmutableArray[T]) : ImmutableArray[T]
-
-  def toArray: Array[T]
-
-  def toList: List[T]
-
-  def getIndex(index: Int): T
-
-  def indexOf(element: T): Int
-
-  def length: Int
-
-  def apply(i: Int): T
-
-  def set(index: Int, element: T): ImmutableArray[T]
-
-  def remove(index: Int): ImmutableArray[T]
-
-  def distinct: ImmutableArray[T]
-}
 
 class NiaiveImmutableArray[T :ClassTag](val array: Array[T] = Array.empty) extends ImmutableArray[T]{
+
+  override def remove(element: T): ImmutableArray[T] = this.-(element)
+  override def addAll(arr: ImmutableArray[T]): ImmutableArray[T] = this.++(arr)
 
   override def ++(arr: ImmutableArray[T]): ImmutableArray[T] = {
     new NiaiveImmutableArray[T](array = Array.concat(this.array, arr.toArray ))
   }
+
+  override def iterator: Iterator[T] = array.iterator
 
   override def distinct: ImmutableArray[T] = {
     ImmutableArray.from(this.array.distinct)
@@ -78,10 +47,6 @@ class NiaiveImmutableArray[T :ClassTag](val array: Array[T] = Array.empty) exten
   override def indexOf(element: T): Int = array.indexOf(element)
 
   override def getIndex(index: Int): T = array(index)
-
-  override def toArray: Array[T] = array
-
-  override def toList: List[T] = array.toList
 
   override def -(element: T) : ImmutableArray[T] = {
     new NiaiveImmutableArray[T]( array = array.filterNot( e => e == element) )

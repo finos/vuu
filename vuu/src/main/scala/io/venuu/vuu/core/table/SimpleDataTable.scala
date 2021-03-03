@@ -1,10 +1,10 @@
 package io.venuu.vuu.core.table
 
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.text.AsciiUtil
-import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
 import io.venuu.vuu.api.TableDef
-import io.venuu.vuu.core.index.{IndexedField, SkipListIndexedBooleanField, SkipListIndexedDoubleField, SkipListIndexedIntField, SkipListIndexedLongField, SkipListIndexedStringField}
+import io.venuu.vuu.core.index._
 import io.venuu.vuu.provider.{JoinTableProvider, Provider}
 import io.venuu.vuu.viewport.{RowProcessor, RowSource}
 
@@ -215,7 +215,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   override def primaryKeys: ImmutableArray[String] = data.primaryKeyValues
 
-  @volatile private var data = new SimpleDataTableData(new ConcurrentHashMap[String, RowData](), new NiaiveImmutableArray[String](new Array[String](0)))
+  @volatile private var data = new SimpleDataTableData(new ConcurrentHashMap[String, RowData](), ImmutableArray.from(new Array[String](0)))
 
   override def pullRow(key: String, columns: List[Column]): RowData = {
     data.dataByKey(key) match {

@@ -8,8 +8,8 @@
 package io.venuu.vuu.viewport
 
 import com.typesafe.scalalogging.LazyLogging
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.time.Clock
-import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
 import io.venuu.vuu.core.sort.{FilterAndSort, TwoStepCompoundFilter, UserDefinedFilterAndSort, VisualLinkedFilter}
 import io.venuu.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
@@ -209,7 +209,7 @@ case class ViewPortImpl(id: String,
   override def filterAndSort: FilterAndSort = structuralFields.get().filtAndSort
 
   @volatile
-  private var keys : ImmutableArray[String] = new NiaiveImmutableArray[String](new Array[String](0))
+  private var keys : ImmutableArray[String] = ImmutableArray.from[String](new Array[String](0))
   @volatile
   private var selection : Map[String, Int] = Map()
 
@@ -304,7 +304,6 @@ case class ViewPortImpl(id: String,
 
     if(newlyAddedObs > 0 )
       logger.info(s"[VP] ${this.id} Added $newlyAddedObs Removed ${removedObs} Obs ${this.table}")
-
   }
 
 
@@ -313,6 +312,8 @@ case class ViewPortImpl(id: String,
 
     var i = 0
 
+    //TODO: CJS this is not correct, we should only subscribe to keys within the VP range
+    //this will check every key and remove it
     while(i < newKeys.length){
       newKeySet.add(newKeys(i))
       i += 1

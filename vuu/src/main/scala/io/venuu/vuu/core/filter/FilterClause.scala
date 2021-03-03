@@ -1,6 +1,6 @@
 package io.venuu.vuu.core.filter
 
-import io.venuu.toolbox.ImmutableArray
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.vuu.core.index.IndexedField
 import io.venuu.vuu.core.table.{DataType, RowData}
 import io.venuu.vuu.grammer.FilterParser

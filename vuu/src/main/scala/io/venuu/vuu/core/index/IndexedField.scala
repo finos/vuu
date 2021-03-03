@@ -1,7 +1,8 @@
 package io.venuu.vuu.core.index
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.ImmutableArray
+import io.venuu.toolbox.collection.array.ImmutableArray
+import io.venuu.toolbox.collection.set.ImmutableUniqueArraySet
 import io.venuu.vuu.core.table.Column
 
 import java.util.concurrent.ConcurrentSkipListMap
@@ -15,7 +16,7 @@ trait IndexedField[TYPE]{
   def greaterThan(bound: TYPE): ImmutableArray[String]
   def find(indexedValue: TYPE): ImmutableArray[String]
   def find(indexedValues: List[TYPE]): ImmutableArray[String] = {
-    indexedValues.foldLeft(ImmutableArray.empty[String])((array, indexedKey) => array.++(find(indexedKey)))
+    indexedValues.foldLeft(ImmutableUniqueArraySet.empty[String]())((array, indexedKey) => array.++(find(indexedKey)))
   }
 }
 
@@ -35,7 +36,7 @@ class SkipListIndexedStringField(val column: Column) extends IndexedField[String
     val indexKeyHash = indexKey.hashCode
     skipList.get(indexKeyHash) match {
       case null =>
-        skipList.put(indexKeyHash, ImmutableArray.from(Array(rowKey)))
+        skipList.put(indexKeyHash, ImmutableUniqueArraySet.from(Array(rowKey)))
       case arr: ImmutableArray[String] =>
         skipList.put(indexKeyHash, arr.+(rowKey).distinct)
     }
@@ -68,7 +69,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     logger.debug("Update Index: " + this.column.name)
     skipList.get(indexKey) match {
       case null =>
-        skipList.put(indexKey, ImmutableArray.from(Array(rowKey)))
+        skipList.put(indexKey, ImmutableUniqueArraySet.from(Array(rowKey)))
       case arr: ImmutableArray[String] =>
         skipList.put(indexKey, arr.+(rowKey).distinct)
     }
@@ -78,7 +79,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     logger.debug("Hit Index: " + this.column.name)
     skipList.get(indexKey) match {
       case null =>
-        ImmutableArray.empty[String]
+        ImmutableUniqueArraySet.empty[String](chunkSize = 5000)
       case arr: ImmutableArray[String] =>
         arr
     }
@@ -87,24 +88,24 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   def lessThan(bound: TYPE): ImmutableArray[String] = {
     logger.debug("Hit Index (LT): " + this.column.name)
     val result = (skipList.headMap(bound, false))
-    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.addAll(arr)).distinct
   }
 
   def lessThanOrEqual(bound: TYPE): ImmutableArray[String] = {
 
     val result = (skipList.headMap(bound, true))
-    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
   }
 
   def greaterThan(bound: TYPE): ImmutableArray[String] = {
     logger.debug("Hit Index (GT): " + this.column.name)
     val result = (skipList.tailMap(bound, false))
-    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
   }
 
   def greaterThanOrEqual(bound: TYPE): ImmutableArray[String] = {
     val result = (skipList.tailMap(bound, true))
-    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArray.empty[String])((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
   }
 
   override def find(indexedValues: List[TYPE]): ImmutableArray[String] = super.find(indexedValues)
