@@ -45,9 +45,16 @@ class VSChildFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], t
   @volatile
   var viewPortInfo: Option[ClientCreateViewPortSuccess] = None
 
+
+
   swing{ () =>
     eventBus.publish(ClientGetTableList(RequestId.oneNew()))
     enableControls(sessionId)
+  }
+
+  override def closeOperation(): Unit = {
+    eventBus.publish(ClientRemoveViewPort(RequestId.oneNew(), viewPortInfo.get.vpId))
+    super.closeOperation()
   }
 
   def disableControls = {

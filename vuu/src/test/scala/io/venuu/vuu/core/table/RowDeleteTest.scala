@@ -17,14 +17,16 @@ import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts._
 import io.venuu.vuu.viewport.{DefaultRange, GroupBy, ViewPortContainer}
+import org.scalatest.{GivenWhenThen, OneInstancePerTest}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
-import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers, OneInstancePerTest}
 
-class RowDeleteTest extends FeatureSpec with Matchers with OneInstancePerTest with GivenWhenThen {
+class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest with GivenWhenThen {
 
-  feature("check we can delete rows from tables and join tables"){
+  Feature("check we can delete rows from tables and join tables"){
 
-    scenario("check a delete from a simple data table"){
+    Scenario("check a delete from a simple data table"){
 
       implicit val timeProvider = new DefaultClock
 
@@ -89,7 +91,7 @@ class RowDeleteTest extends FeatureSpec with Matchers with OneInstancePerTest wi
 
     }
 
-    scenario("check we correct delete from a primary key join table"){
+    Scenario("check we correct delete from a primary key join table"){
 
       implicit val timeProvider = new TestFriendlyClock(1000000)
       implicit val lifecycle = new LifecycleContainer
@@ -163,7 +165,7 @@ class RowDeleteTest extends FeatureSpec with Matchers with OneInstancePerTest wi
 
     }
 
-    scenario("Create a groupby ontop of a join table, delete all rows from the source, add another set, and check we subscribe to updates"){
+    Scenario("Create a groupby ontop of a join table, delete all rows from the source, add another set, and check we subscribe to updates"){
 
       implicit val timeProvider = new TestFriendlyClock(1000000)
       implicit val lifecycle = new LifecycleContainer

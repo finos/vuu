@@ -16,7 +16,8 @@ import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.viewport.{DefaultRange, RowProcessor, RowUpdateType, ViewPortContainer}
 import org.joda.time.LocalDateTime
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * This fixture deals with the scenario where we want to create a table
@@ -25,7 +26,7 @@ import org.scalatest._
   * This involves being able to base join tables onto of existing Join tables.
   *
   */
-class JoinsOfJoinsTableTest extends FeatureSpec with Matchers {
+class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers {
 
   implicit val lifecycle = new LifecycleContainer
   implicit val timeProvider: Clock = new DefaultClock
@@ -40,7 +41,7 @@ class JoinsOfJoinsTableTest extends FeatureSpec with Matchers {
     viewPortContainer
   }
 
-  scenario("check a tick all the way through from source to join table"){
+  Scenario("check a tick all the way through from source to join table"){
 
     val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 

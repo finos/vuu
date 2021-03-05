@@ -13,13 +13,16 @@ import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import org.joda.time.LocalDateTime
-import org.scalatest.{FeatureSpec, Matchers, OneInstancePerTest}
+import org.scalatest.OneInstancePerTest
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class MultiJoinTableTest extends FeatureSpec with Matchers with OneInstancePerTest {
 
-  feature("Check we can create multi table joins"){
+class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest {
 
-    scenario("simple multi table join"){
+  Feature("Check we can create multi table joins"){
+
+    Scenario("simple multi table join"){
 
       implicit val timeProvider: Clock = new DefaultClock
 

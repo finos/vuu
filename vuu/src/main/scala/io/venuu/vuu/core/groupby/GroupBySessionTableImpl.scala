@@ -1,7 +1,7 @@
 package io.venuu.vuu.core.groupby
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.ImmutableArray
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.vuu.api.{GroupByColumns, GroupByTableDef, TableDef}
@@ -24,16 +24,16 @@ class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped:
 }
 
 object GroupBySessionTable{
-  def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider): GroupBySessionTable = {
-     new GroupBySessionTable(source, session, joinProvider)(metrics)
+  def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider): GroupBySessionTableImpl = {
+     new GroupBySessionTableImpl(source, session, joinProvider)(metrics)
   }
 }
 
 /**
   * Created by chris on 21/11/2015.
   */
-class GroupBySessionTable(val source: RowSource, val session: ClientSessionId, joinProvider: JoinTableProvider)
-                         (implicit metrics: MetricsProvider)
+class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionId, joinProvider: JoinTableProvider)
+                             (implicit metrics: MetricsProvider)
   extends SimpleDataTable(new GroupByTableDef("", source.asTable.getTableDef), joinProvider)
     with SessionTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
@@ -180,13 +180,13 @@ class GroupBySessionTable(val source: RowSource, val session: ClientSessionId, j
 
   override def toString: String = name
 
-  override def primaryKeys: ImmutableArray[String] = tree.toKeys()
+  override def primaryKeys: ImmutableArray[String] = keys
 
   def sourceTableKeys: ImmutableArray[String] = source.primaryKeys
 
-  def setTree(tree: Tree): Unit = {
+  def setTree(tree: Tree, keys: ImmutableArray[String]): Unit = {
     logger.debug("set tree")
-    keys = tree.toKeys()
+    this.keys = keys
     this.tree = tree
   }
 

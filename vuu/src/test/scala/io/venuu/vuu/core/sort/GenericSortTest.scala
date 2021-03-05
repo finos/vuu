@@ -9,15 +9,16 @@ package io.venuu.vuu.core.sort
 
 import io.venuu.vuu.core.table.RowWithData
 import io.venuu.vuu.net.{SortDef, SortSpec}
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class GenericSortTest extends FeatureSpec with Matchers {
+class GenericSortTest extends AnyFeatureSpec with Matchers {
 
   import FilterAndSortFixture._
 
-  feature("test scala sorts") {
+  Feature("test scala sorts") {
 
-    scenario("test a numeric scala sort") {
+    Scenario("test a numeric scala sort") {
 
       val table = setupTable
 

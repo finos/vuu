@@ -10,16 +10,17 @@ import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
 import io.venuu.vuu.provider.{JoinTableProviderImpl, ProviderContainer}
 import io.venuu.vuu.viewport.ViewPortContainer
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Created by chris on 25/10/2015.
  */
-class WebSocketServerClientTest extends FeatureSpec with Matchers {
+class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
   import io.venuu.vuu.client.ClientHelperFns._
 
-  feature("Check that we can create a websocket server and client"){
+  Feature("Check that we can create a websocket server and client"){
 
     ignore("create web socket server and client and send data between"){
 

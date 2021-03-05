@@ -3,12 +3,13 @@ package io.venuu.vuu.core.table
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{JmxAble, MetricsProvider}
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
-import io.venuu.vuu.core.groupby.{GroupBySessionTable, SessionTable}
+import io.venuu.vuu.core.groupby.{GroupBySessionTableImpl, SessionTable}
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.JoinTableProvider
 import io.venuu.vuu.viewport.RowSource
 
 import java.util.concurrent.ConcurrentHashMap
+import scala.jdk.CollectionConverters._
 
 trait TableContainerMBean{
   def tableList: String
@@ -59,8 +60,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
 
 
   override def tableList: String = {
-    import scala.collection.JavaConversions._
-    tables.keySet().iterator().mkString("\n")
+    IteratorHasAsScala(tables.keySet().iterator()).asScala.mkString("\n")
   }
 
 //  override def sessionTableList: String = {
@@ -69,8 +69,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
 //  }
 
   def getTableNames(): Array[String] = {
-    import scala.collection.JavaConversions._
-    tables.keys().map(_.toString).toArray[String]
+    EnumerationHasAsScala(tables.keys()).asScala.map(_.toString).toArray[String].sorted
   }
 
   def getTable(name: String): DataTable = {
@@ -92,8 +91,8 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     table
   }
 
-  def createGroupBySessionTable(source: RowSource, session: ClientSessionId): GroupBySessionTable = {
-    val table = new GroupBySessionTable(source, session, joinTableProvider)
+  def createGroupBySessionTable(source: RowSource, session: ClientSessionId): GroupBySessionTableImpl = {
+    val table = new GroupBySessionTableImpl(source, session, joinTableProvider)
     //source.addSessionListener(table)
     val existing = tables.put(table.name, table)
     assert(existing == null, "we should never replace an existing table with session id")
@@ -119,8 +118,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
   }
 
   def removeSessionTables(session:ClientSessionId): Unit = {
-    import scala.collection.JavaConversions._
-    val sessionTables = tables.entrySet()
+    val sessionTables = SetHasAsScala(tables.entrySet()).asScala
       .filter( entry => entry.getValue.isInstanceOf[SessionTable])
       .filter( entry => entry.getValue.asInstanceOf[SessionTable].sessionId == session )
       .map(_.getValue.asInstanceOf[SessionTable])

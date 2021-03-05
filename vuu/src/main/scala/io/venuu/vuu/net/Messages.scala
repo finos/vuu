@@ -15,6 +15,8 @@ import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.net.rpc.VsJsonTypeResolver
 import io.venuu.vuu.viewport.ViewPortRange
 
+import scala.jdk.CollectionConverters._
+
 trait FailureMessage{
   def error: String
 }
@@ -76,6 +78,18 @@ case class CreateViewPortRequest(table: String, range: ViewPortRange, columns: A
 case class CreateViewPortSuccess(viewPortId: String, table: String, range: ViewPortRange, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends MessageBody
 case class CreateViewPortReject(table: String, msg: String) extends MessageBody
 
+case class RemoveViewPortRequest(viewPortId: String) extends MessageBody
+case class RemoveViewPortSuccess(viewPortId: String) extends MessageBody
+case class RemoveViewPortReject(viewPortId: String) extends MessageBody
+
+case class DisableViewPortRequest(viewPortId: String) extends MessageBody
+case class DisableViewPortSuccess(viewPortId: String) extends MessageBody
+case class DisableViewPortReject(viewPortId: String) extends MessageBody
+
+case class EnableViewPortRequest(viewPortId: String) extends MessageBody
+case class EnableViewPortSuccess(viewPortId: String) extends MessageBody
+case class EnableViewPortReject(viewPortId: String) extends MessageBody
+
 case class ChangeViewPortRequest(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null, aggregations: Array[Aggregations] = Array()) extends MessageBody
 case class ChangeViewPortSuccess(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null) extends MessageBody
 case class ChangeViewPortReject(viewPortId: String, msg: String) extends MessageBody
@@ -128,8 +142,6 @@ class RowUpdateDeserializer extends JsonDeserializer[RowUpdate]{
 
   override def deserialize(jsonParser: JsonParser, deserializationContext: DeserializationContext): RowUpdate = {
 
-    import scala.collection.JavaConversions._
-
     val node: JsonNode = jsonParser.getCodec.readTree(jsonParser)
 
     val vpId = node.get("viewPortId").asText()
@@ -140,7 +152,7 @@ class RowUpdateDeserializer extends JsonDeserializer[RowUpdate]{
     val updateType = node.get("updateType").asText()
     val selected = node.get("sel").asInt()
 
-    val data = node.withArray("data").asInstanceOf[JsonNode].elements().toList
+    val data = IteratorHasAsScala(node.withArray("data").asInstanceOf[JsonNode].elements()).asScala.toList
 
     val dataAsArray = data.map(_.asText()).toArray[Any]
 

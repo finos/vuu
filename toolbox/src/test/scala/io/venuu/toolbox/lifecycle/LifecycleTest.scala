@@ -8,9 +8,10 @@
 package io.venuu.toolbox.lifecycle
 
 import com.typesafe.scalalogging.StrictLogging
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class LifecycleTest extends FeatureSpec with Matchers {
+class LifecycleTest extends AnyFeatureSpec with Matchers {
 
   val startSeq = new scala.collection.mutable.ListBuffer[String]()
 
@@ -46,9 +47,9 @@ class LifecycleTest extends FeatureSpec with Matchers {
   }
 
 
-  feature("check that the lifecycle behaves as we expect on startup"){
+  Feature("check that the lifecycle behaves as we expect on startup"){
 
-    scenario("add non-dependent components at same level and check the start order"){
+    Scenario("add non-dependent components at same level and check the start order"){
 
       implicit val lifecycle = new LifecycleContainer
 

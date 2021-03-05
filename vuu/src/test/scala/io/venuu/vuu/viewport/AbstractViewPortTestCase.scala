@@ -8,10 +8,10 @@ import io.venuu.vuu.core.table.{Columns, TableContainer}
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
-import org.scalatest.FeatureSpec
+import org.scalatest.featurespec.AnyFeatureSpec
 
 
-class AbstractViewPortTestCase extends FeatureSpec {
+class AbstractViewPortTestCase extends AnyFeatureSpec {
 
   implicit val timeProvider: Clock = new TestFriendlyClock(1311544800)
   implicit val metrics: MetricsProvider = new MetricsProviderImpl

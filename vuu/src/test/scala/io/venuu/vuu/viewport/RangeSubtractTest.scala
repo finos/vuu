@@ -1,8 +1,10 @@
 package io.venuu.vuu.viewport
 
-import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
+import org.scalatest.GivenWhenThen
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class RangeSubtractTest extends FeatureSpec with Matchers with GivenWhenThen{
+class RangeSubtractTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
 
   val scenarios = List(
                       (ViewPortRange(0, 10), ViewPortRange(5, 15), ViewPortRange(10, 15)),
@@ -11,9 +13,9 @@ class RangeSubtractTest extends FeatureSpec with Matchers with GivenWhenThen{
                       (ViewPortRange(20, 30), ViewPortRange(0, 10), ViewPortRange(0, 10)),
   )
 
-  feature("Subtract one range from another and get the keys"){
+  Feature("Subtract one range from another and get the keys"){
 
-    scenario("Check the differences between 2 ranges"){
+    Scenario("Check the differences between 2 ranges"){
 
       scenarios.foreach {
         case (firstRange, secondRange, expectedSubtract) => {

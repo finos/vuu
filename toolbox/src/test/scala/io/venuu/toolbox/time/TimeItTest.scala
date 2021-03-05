@@ -1,15 +1,16 @@
 package io.venuu.toolbox.time
 
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by chris on 25/07/2016.
   */
-class TimeItTest extends FeatureSpec with Matchers {
+class TimeItTest extends AnyFeatureSpec with Matchers {
 
-  feature("Test TimeIt"){
+  Feature("Test TimeIt"){
 
-    scenario("default usage"){
+    Scenario("default usage"){
 
       import TimeIt._
 

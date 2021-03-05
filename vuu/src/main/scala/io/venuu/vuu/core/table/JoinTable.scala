@@ -9,7 +9,7 @@ package io.venuu.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProvider
-import io.venuu.toolbox.{ImmutableArray, ImmutableArrays}
+import io.venuu.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
 import io.venuu.vuu.core.index.IndexedField
 import io.venuu.vuu.provider.JoinTableProvider

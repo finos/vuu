@@ -8,12 +8,13 @@ import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.ws.WebSocketClient
-import org.scalatest.{FeatureSpec, _}
-
+import org.scalatest.GivenWhenThen
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 /**
   * Created by chris on 18/09/2016.
   */
-class CoreModuleTest extends FeatureSpec with Matchers with StrictLogging with GivenWhenThen {
+class CoreModuleTest extends AnyFeatureSpec with Matchers with StrictLogging with GivenWhenThen {
 
   import io.venuu.vuu.client.ClientHelperFns._
 
@@ -50,7 +51,7 @@ class CoreModuleTest extends FeatureSpec with Matchers with StrictLogging with G
     (token, session, vsClient, lifecycle)
   }
 
-  feature("Check user interation vs the real running server"){
+  Feature("Check user interation vs the real running server"){
 
     ignore("check we can swap a viewport from non-tree to tree and back"){
 
@@ -73,7 +74,7 @@ class CoreModuleTest extends FeatureSpec with Matchers with StrictLogging with G
 
       val successChange = changeResult.body.asInstanceOf[ChangeViewPortSuccess]
 
-      successChange.groupBy.deep should equal( Array("currency").deep )
+      successChange.groupBy should equal( Array("currency") )
 
       lifecycle.stop()
     }

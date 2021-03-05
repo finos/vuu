@@ -8,7 +8,7 @@
 package io.venuu.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.vuu.core.table.{Column, DataType, RowData}
 import io.venuu.vuu.net.SortSpec
 import io.venuu.vuu.viewport.RowSource
@@ -38,7 +38,7 @@ case class NumericSort(direction: SortDirection.TYPE, column: Column) extends So
     else
       primaryKeys.toArray.sortBy(sortOneRow(_, source))(Ordering[Double].reverse)
 
-    new NiaiveImmutableArray(sortedKeys)
+    ImmutableArray.from(sortedKeys)
   }
 
   def sortOneRow(key: String, source: RowSource): Double = {
@@ -73,7 +73,7 @@ case class GenericSort(spec: SortSpec, columns: List[Column]) extends Sort with 
 
     val sortedArray = primaryKeys.toArray.sortWith(curried)
 
-    new NiaiveImmutableArray(sortedArray)
+    ImmutableArray.from(sortedArray)
   }
 
 }
@@ -195,7 +195,7 @@ case class AlphaSort(direction: SortDirection.TYPE, column: Column) extends Sort
                      else
                           primaryKeys.toArray.sortBy(sortOneRow(_, source))(Ordering[String].reverse)
 
-    new NiaiveImmutableArray(sortedKeys)
+    ImmutableArray.from(sortedKeys)
   }
 
   def sortOneRow(key: String, source: RowSource): String = {

@@ -4,7 +4,7 @@ import io.venuu.vuu.grammer.FilterBaseVisitor
 import io.venuu.vuu.grammer.FilterParser._
 import org.antlr.v4.runtime.tree.TerminalNode
 
-import scala.collection.JavaConverters
+import scala.jdk.CollectionConverters._
 
 class FilterTreeVisitor extends FilterBaseVisitor[FilterClause]{
 
@@ -15,13 +15,13 @@ class FilterTreeVisitor extends FilterBaseVisitor[FilterClause]{
   override def visitOr_expression(ctx: Or_expressionContext): FilterClause = {
     println("Or")
     val and = visit(ctx.and_expression())
-    val ors = JavaConverters.asScalaBuffer(ctx.or_expression()).toList.map(or => visit(or) ).toList
+    val ors = ListHasAsScala(ctx.or_expression()).asScala.map(or => visit(or) ).toList
     OrClause(and, ors)
   }
 
   override def visitAnd_expression(ctx: And_expressionContext): FilterClause = {
     println("And")
-    val terms = JavaConverters.asScalaBuffer(ctx.term()).map( term => visit(term)).toList
+    val terms = ListHasAsScala(ctx.term()).asScala.map( term => visit(term)).toList
     AndClause(terms)
   }
 
@@ -35,32 +35,32 @@ class FilterTreeVisitor extends FilterBaseVisitor[FilterClause]{
     var atomType = -1
     var value =
 
-      JavaConverters.asScalaBuffer(ctx.atom()).drop(1).foreach( atom => {
+      ListHasAsScala(ctx.atom()).asScala.drop(1).foreach( atom => {
 
       atomType = atom.getChild(0).asInstanceOf[TerminalNode].getSymbol.getType
     })
 
     val termClause = op.getText match {
       case ">"  =>
-        val (dt, value) = parseTypeAndValue(JavaConverters.asScalaBuffer(ctx.atom()).drop(1).head)
+        val (dt, value) = parseTypeAndValue(ListHasAsScala(ctx.atom()).asScala.drop(1).head)
         GreaterThanClause(column, dt, value)
       case "="  =>
-        val (dt, value) = parseTypeAndValue(JavaConverters.asScalaBuffer(ctx.atom()).drop(1).head)
+        val (dt, value) = parseTypeAndValue(ListHasAsScala(ctx.atom()).asScala.drop(1).head)
         EqualsClause(column, dt, value)
       case "!=" =>
-        val (dt, value) = parseTypeAndValue(JavaConverters.asScalaBuffer(ctx.atom()).drop(1).head)
+        val (dt, value) = parseTypeAndValue(ListHasAsScala(ctx.atom()).asScala.drop(1).head)
         NotEqualsClause(column, dt, value)
       case "<"  =>
-        val (dt, value) = parseTypeAndValue(JavaConverters.asScalaBuffer(ctx.atom()).drop(1).head)
+        val (dt, value) = parseTypeAndValue(ListHasAsScala(ctx.atom()).asScala.drop(1).head)
         LessThanClause(column, dt, value)
       case "in" =>
-        val (dt, value) = parseTypeAndValueList(JavaConverters.asScalaBuffer(ctx.atom()).drop(1).toList)
+        val (dt, value) = parseTypeAndValueList(ListHasAsScala(ctx.atom()).asScala.drop(1).toList)
         InClause(column, dt, value)
       case "starts" =>
-        val (dt, value) = parseTypeAndValue(JavaConverters.asScalaBuffer(ctx.atom()).drop(1).head)
+        val (dt, value) = parseTypeAndValue(ListHasAsScala(ctx.atom()).asScala.drop(1).head)
         StartsClause(column, dt, value)
       case "ends" =>
-        val (dt, value) = parseTypeAndValue(JavaConverters.asScalaBuffer(ctx.atom()).drop(1).head)
+        val (dt, value) = parseTypeAndValue(ListHasAsScala(ctx.atom()).asScala.drop(1).head)
         EndsClause(column, dt, value)
 
     }

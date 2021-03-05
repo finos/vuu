@@ -7,12 +7,13 @@ import io.venuu.toolbox.time.TestFriendlyClock
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.table.{Columns, SimpleDataTable}
 import io.venuu.vuu.provider.TestFriendlyJoinTableProvider
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by chris on 21/12/2015.
   */
-class SimulatedPricesProviderTest extends FeatureSpec with Matchers {
+class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
 
   final val TEST_TIME = 1450770869442l
 
@@ -36,9 +37,9 @@ class SimulatedPricesProviderTest extends FeatureSpec with Matchers {
     pricesDef
   }
 
-  feature("check simulated provider"){
+  Feature("check simulated provider"){
 
-    scenario("check basic operation works"){
+    Scenario("check basic operation works"){
 
       implicit val timeProvider = new TestFriendlyClock(TEST_TIME)
       implicit val metrics: MetricsProvider = new MetricsProviderImpl

@@ -7,19 +7,14 @@
  */
 package io.venuu.toolbox.net.http2
 
-import java.io.File
-import java.nio.ByteBuffer
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-import org.eclipse.jetty.client.HttpClient
-import org.eclipse.jetty.client.api.{Response, Result}
-import org.eclipse.jetty.http.HttpMethod
-import org.scalatest.{FeatureSpec, Matchers}
+class Http2ClientTest extends AnyFeatureSpec with Matchers {
 
-class Http2ClientTest extends FeatureSpec with Matchers {
+  Feature("check we can start the http2 server") {
 
-  feature("check we can start the http2 server") {
-
-    scenario("start http2 server") {
+    Scenario("start http2 server") {
 
       //Http2ClientLib.httpGetToFile("https://www.google.com", new File("google.com.txt"))
 

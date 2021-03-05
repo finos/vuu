@@ -16,17 +16,18 @@ import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts
 import org.joda.time.{DateTime, DateTimeZone}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
-import org.scalatest.{FeatureSpec, Matchers}
 
-class FilterAndSortTest extends FeatureSpec with Matchers {
+class FilterAndSortTest extends AnyFeatureSpec with Matchers {
 
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-  feature("check the filter and sort infra"){
+  Feature("check the filter and sort infra"){
 
-    scenario("check we can filter and sort as part of viewport"){
+    Scenario("check we can filter and sort as part of viewport"){
 
       import OrdersAndPricesScenarioFixture._
       import TableAsserts._

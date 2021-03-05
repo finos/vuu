@@ -8,13 +8,15 @@
 package io.venuu.vuu.core.module
 
 import io.venuu.vuu.core.table.Columns
-import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
+import org.scalatest.GivenWhenThen
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class ModuleSyntaxTest extends FeatureSpec with Matchers with GivenWhenThen{
+class ModuleSyntaxTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
 
-  feature("check the new builder syntax for view server modules"){
+  Feature("check the new builder syntax for view server modules"){
 
-    scenario("check we can parse the module"){
+    Scenario("check we can parse the module"){
 
       Given("A test module which several tables defined, which takes some parameters (these are simple example params but could be complicated lifecycle stuff)")
       val module = TestModule2.apply("foo", 100)

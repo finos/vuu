@@ -1,16 +1,17 @@
 package io.venuu.toolbox.metrics
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by chris on 25/07/2016.
   */
-class MetricsProviderTest extends FeatureSpec with Matchers {
+class MetricsProviderTest extends AnyFeatureSpec with Matchers {
 
-  feature("Test metrics provider"){
+  Feature("Test metrics provider"){
 
-    scenario("test histogram"){
+    Scenario("test histogram"){
 
       val metrics: MetricsProvider = new MetricsProviderImpl()
 

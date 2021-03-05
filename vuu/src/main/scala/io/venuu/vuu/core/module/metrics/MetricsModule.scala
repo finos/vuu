@@ -16,13 +16,33 @@ object MetricsModule extends DefaultModule {
     ModuleFactory.withNamespace(NAME)
       .addTable(
         TableDef(
-            name = "metrics",
+            name = "metricsTables",
             keyField = "table",
             columns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".long()),
             indices = Indices(),
             joinFields = "table"
           ),
         (table, vs) => new MetricsTableProvider(table, vs.tableContainer)
+      )
+      .addTable(
+        TableDef(
+          name = "metricsViewports",
+          keyField = "id",
+          columns = Columns.fromNames("id".string(), "table".string(), "mean".long(), "max".long(), "75Perc".long(), "99Perc".long(), "99_9Perc".long()),
+          indices = Indices(),
+          joinFields = "id"
+        ),
+        (table, vs) => new MetricsViewPortProvider(table, vs.viewPortContainer)
+      )
+      .addTable(
+        TableDef(
+          name = "metricsGroupBy",
+          keyField = "id",
+          columns = Columns.fromNames("id".string(), "table".string(), "mean".long(), "max".long(), "75Perc".long(), "99Perc".long(), "99_9Perc".long()),
+          indices = Indices(),
+          joinFields = "id"
+        ),
+        (table, vs) => new MetricsGroupByProvider(table, vs.viewPortContainer)
       )
       .asModule()
   }

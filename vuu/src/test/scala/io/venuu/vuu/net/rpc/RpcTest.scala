@@ -8,9 +8,10 @@
 package io.venuu.vuu.net.rpc
 
 import io.venuu.vuu.net._
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class RpcTest extends FeatureSpec with Matchers {
+class RpcTest extends AnyFeatureSpec with Matchers {
 
   class MyCustomRpcHandler extends RpcHandler{
     def doSomething(param1: String, param2: Double)(ctx: RequestContext): Boolean = {
@@ -46,9 +47,9 @@ class RpcTest extends FeatureSpec with Matchers {
     JsonViewServerMessage("REQ:123", "SESS:456", "AAA", "chris", body)
   }
 
-  feature("check rpc method handling"){
+  Feature("check rpc method handling"){
 
-    scenario("check we can process an rpc call via api"){
+    Scenario("check we can process an rpc call via api"){
 
       val myRpcHandler = new MyCustomRpcHandler
 

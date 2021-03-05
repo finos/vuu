@@ -8,12 +8,12 @@
 package io.venuu.vuu.client.swing.gui.components
 
 import javax.swing.{AbstractListModel, ComboBoxModel, JComboBox}
+import scala.jdk.CollectionConverters.SetHasAsScala
 
 class MutableModel[T] extends AbstractListModel[T] with ComboBoxModel[T] {
 
   def getItems[T] = {
-    import scala.collection.JavaConversions._
-    selected.toSet
+    SetHasAsScala(selected).asScala.toSet
   }
 
   def setItems(items: Array[T]) = {
@@ -24,8 +24,7 @@ class MutableModel[T] extends AbstractListModel[T] with ComboBoxModel[T] {
   @volatile private var values = List[T]()
 
   override def getSelectedItem: AnyRef = {
-    import scala.collection.JavaConversions._
-    selected.mkString(",")
+    SetHasAsScala(selected).asScala.mkString(",")
   }
 
   override def setSelectedItem(anItem: scala.Any): Unit = {

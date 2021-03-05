@@ -60,3 +60,15 @@ case class ClientGetVisualLinks(requestId: String, vpId: String) extends ClientM
 case class ClientGetVisualLinksResponse(requestId: String, vpId: String, vpLinks: List[AvailableViewPortVisualLink]) extends ClientMessage with ToServer
 case class ClientCreateVisualLink(requestId: String, childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String) extends ClientMessage with ToServer
 case class ClientCreateVisualLinkSuccess(requestId: String, childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String) extends ClientMessage with ToServer
+
+case class ClientRemoveViewPort(requestId: String, vpId: String) extends ClientMessage with ToServer
+case class ClientRemoveViewPortSuccess(vpId: String) extends ClientMessage
+case class ClientRemoveViewPortReject(vpId: String) extends ClientMessage
+
+case class ClientDisableViewPort(requestId: String, vpId: String) extends ClientMessage with ToServer
+case class ClientDisableViewPortSuccess(vpId: String) extends ClientMessage
+case class ClientDisableViewPortReject(vpId: String) extends ClientMessage
+
+case class ClientEnableViewPort(requestId: String, vpId: String) extends ClientMessage with ToServer
+case class ClientEnableViewPortSuccess(vpId: String) extends ClientMessage
+case class ClientEnableViewPortReject(vpId: String) extends ClientMessage

@@ -17,10 +17,11 @@ import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.viewport.{DefaultRange, RowProcessor, RowUpdateType, ViewPortContainer}
 import org.joda.time.LocalDateTime
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 
-class JoinTableTest extends FeatureSpec with Matchers {
+class JoinTableTest extends AnyFeatureSpec with Matchers {
 
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics = new MetricsProviderImpl
@@ -33,7 +34,7 @@ class JoinTableTest extends FeatureSpec with Matchers {
     }
   }
 
-  feature("check we can create join tables and tick data through"){
+  Feature("check we can create join tables and tick data through"){
 
     def setupViewPort(tableContainer: TableContainer) = {
 
@@ -42,7 +43,7 @@ class JoinTableTest extends FeatureSpec with Matchers {
       viewPortContainer
     }
 
-    scenario("check a tick all the way through from source to join table"){
+    Scenario("check a tick all the way through from source to join table"){
 
       implicit val lifecycle = new LifecycleContainer
 
@@ -120,7 +121,7 @@ class JoinTableTest extends FeatureSpec with Matchers {
       updates.filter( vp => vp.vpUpdate == RowUpdateType).foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask"), printToConsoleProcessor ))
     }
 
-    scenario("check that registering and deregistering listeners on join table propagates to source tables"){
+    Scenario("check that registering and deregistering listeners on join table propagates to source tables"){
 
       import io.venuu.vuu.viewport.OrdersAndPricesScenarioFixture._
 

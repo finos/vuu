@@ -2,12 +2,13 @@ package io.venuu.vuu.core.table.column
 
 import io.venuu.vuu.grammer.{CalculatedColumnParser, FilterLexer}
 import org.antlr.v4.runtime.{ANTLRInputStream, CommonTokenStream}
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by chris on 16/09/2016.
   */
-class CalculatedColumnParseTest extends FeatureSpec with Matchers {
+class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
 
   def parse(s: String) = {
 
@@ -21,9 +22,9 @@ class CalculatedColumnParseTest extends FeatureSpec with Matchers {
     System.out.println(tree.toStringTree(parser)); // print LISP-style tree
   }
 
-  feature("check calc column grammer"){
+  Feature("check calc column grammer"){
 
-    scenario("run samples of grammer, and check parse or fail"){
+    Scenario("run samples of grammer, and check parse or fail"){
 
       val samples = List(
         "1+2",

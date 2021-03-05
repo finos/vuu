@@ -1,15 +1,15 @@
 package io.venuu.vuu.core.index
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.ImmutableArray
 import io.venuu.vuu.core.table.{DataType, SimpleColumn}
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class IndexedFieldTest extends FeatureSpec with Matchers with StrictLogging {
+class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
-  feature("test the creation and querying of indexed fields") {
+  Feature("test the creation and querying of indexed fields") {
 
-    scenario("Index the parent order id from a table of child orders for fast access") {
+    Scenario("Index the parent order id from a table of child orders for fast access") {
 
       val index = new SkipListIndexedIntField(new SimpleColumn("parentOrderId", 0, DataType.IntegerDataType))
 
@@ -38,7 +38,7 @@ class IndexedFieldTest extends FeatureSpec with Matchers with StrictLogging {
       rowKeys2.indexOf("1302") shouldEqual(-1)
     }
 
-    scenario("Create a string based index using SkipList") {
+    Scenario("Create a string based index using SkipList") {
 
       val index = new SkipListIndexedStringField(new SimpleColumn("ric", 0, DataType.StringDataType))
 
@@ -59,7 +59,7 @@ class IndexedFieldTest extends FeatureSpec with Matchers with StrictLogging {
       values2.toList shouldEqual (List("BT.L0", "BT.L1", "BT.L2", "BT.L3", "BT.L4"))
     }
 
-    scenario("Check less than on an int index"){
+    Scenario("Check less than on an int index"){
 
       val index = new SkipListIndexedIntField(new SimpleColumn("parentOrderId", 0, DataType.IntegerDataType))
 
@@ -74,7 +74,7 @@ class IndexedFieldTest extends FeatureSpec with Matchers with StrictLogging {
       index.lessThan(400).toArray.sorted shouldEqual(Array("ORDER-1","ORDER-2", "ORDER-3", "ORDER-6", "ORDER-7"))
     }
 
-    scenario("Check greater than on an int index"){
+    Scenario("Check greater than on an int index"){
 
       val index = new SkipListIndexedIntField(new SimpleColumn("parentOrderId", 0, DataType.IntegerDataType))
 

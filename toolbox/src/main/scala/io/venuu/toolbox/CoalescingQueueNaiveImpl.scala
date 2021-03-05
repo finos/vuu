@@ -51,7 +51,7 @@ class CoalescingQueueNaiveImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge: (V
     }
   }
 
-  def isEmpty = lock.synchronized{
+  def isEmpty() = lock.synchronized{
     values.isEmpty
   }
 
@@ -65,13 +65,8 @@ class CoalescingQueueNaiveImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge: (V
 
   def popUpTo(i: Int): Seq[VALUE] = {
     lock.synchronized{
-      var count = 0
-      val seq = new mutable.ArraySeq[VALUE](i)
-
       val entries = for(i <- 0 to (i - 1) if(keysInOrder.size > 0) ) yield keysInOrder.dequeue()
-
       entries.map(values.remove(_))
-
       }
   }
 

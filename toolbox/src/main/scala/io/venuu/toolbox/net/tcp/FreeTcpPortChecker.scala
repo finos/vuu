@@ -7,10 +7,9 @@
   */
 package io.venuu.toolbox.net.tcp
 
-import java.net.ServerSocket
-
 import com.typesafe.scalalogging.StrictLogging
 
+import java.net.ServerSocket
 import scala.util.{Failure, Success, Try}
 
 object FreeTcpPortChecker extends StrictLogging{
@@ -29,7 +28,7 @@ object FreeTcpPortChecker extends StrictLogging{
     val range = 1024 to 5200
 
     (1024 to 5200).find( i => {
-      val random = range(rnd.nextInt(range length))
+      val random = range(rnd.nextInt(range.length))
       available( random )
     }).head
   }

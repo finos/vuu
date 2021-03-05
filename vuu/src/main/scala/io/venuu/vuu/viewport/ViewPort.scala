@@ -8,8 +8,8 @@
 package io.venuu.vuu.viewport
 
 import com.typesafe.scalalogging.LazyLogging
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.time.Clock
-import io.venuu.toolbox.{ImmutableArray, NiaiveImmutableArray}
 import io.venuu.vuu.core.sort.{FilterAndSort, TwoStepCompoundFilter, UserDefinedFilterAndSort, VisualLinkedFilter}
 import io.venuu.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
@@ -18,15 +18,6 @@ import io.venuu.vuu.util.PublishQueue
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
-
-//trait ClientSession{
-//  def id: String
-//  def user: String
-//}
-//
-//class ClientSessionImpl(val id: String, val user: String) extends ClientSession{
-//
-//}
 
 class ViewPortUpdateType
 case object RowUpdateType extends ViewPortUpdateType
@@ -67,6 +58,8 @@ case class ViewPortRange(from: Int, to: Int){
 case class ViewPortUpdate(vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, size: Int, ts: Long)
 
 trait ViewPort {
+  def setEnabled(enabled: Boolean)
+  def isEnabled: Boolean
   def hasGroupBy: Boolean = getGroupBy != NoGroupBy
   def size: Int
   def id: String
@@ -96,6 +89,7 @@ trait ViewPort {
   def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String]
   def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int]
   override def toString: String = "VP(user:" + session.user + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
+
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
@@ -111,6 +105,14 @@ case class ViewPortImpl(id: String,
                        )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging{
 
   private val viewPortLock = new Object
+
+  @volatile private var enabled = true
+
+  override def setEnabled(enabled: Boolean): Unit = {
+    this.enabled = enabled
+  }
+
+  override def isEnabled: Boolean = this.enabled
 
   @volatile
   private var viewPortVisualLink: Option[ViewPortVisualLink] = None
@@ -140,7 +142,7 @@ case class ViewPortImpl(id: String,
       val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)) ).toMap[String, Int]
       selection = rowIndices.map( idx => (this.keys(idx), idx) ).toMap
       for( (key, idx ) <- selection ++ oldSelection ){
-        publishUpdate(key, idx)
+        publishHighPriorityUpdate(key, idx)
       }
     }
   }
@@ -192,7 +194,7 @@ case class ViewPortImpl(id: String,
 
     val inrangeKeys = currentKeys.drop(from).take(to - from)
 
-    inrangeKeys.zip((from to to)).foreach({ case(key, index) => publishUpdate(key, index)})
+    inrangeKeys.zip((from to to)).foreach({ case(key, index) => publishHighPriorityUpdate(key, index)})
   }
 
   override def getColumns: List[Column] = structuralFields.get().columns
@@ -208,7 +210,7 @@ case class ViewPortImpl(id: String,
   override def filterAndSort: FilterAndSort = structuralFields.get().filtAndSort
 
   @volatile
-  private var keys : ImmutableArray[String] = new NiaiveImmutableArray[String](new Array[String](0))
+  private var keys : ImmutableArray[String] = ImmutableArray.from[String](new Array[String](0))
   @volatile
   private var selection : Map[String, Int] = Map()
 
@@ -253,8 +255,8 @@ case class ViewPortImpl(id: String,
   override def onUpdate(update: RowKeyUpdate): Unit = {
     val index = rowKeyToIndex.get(update.key)
 
-    if(isInRange(index)){
-      outboundQ.push(new ViewPortUpdate(this, update.source, new RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
+    if(isInRange(index) && this.enabled){
+        outboundQ.push(new ViewPortUpdate(this, update.source, new RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
 
   }
@@ -287,10 +289,10 @@ case class ViewPortImpl(id: String,
 
           newlyAddedObs += 1
 
-          publishUpdate(key, index)
+          publishHighPriorityUpdate(key, index)
 
         }else if(hasChangedIndex(oldIndex, index)){
-          publishUpdate(key, index)
+          publishHighPriorityUpdate(key, index)
         }
 
       }else{
@@ -303,7 +305,6 @@ case class ViewPortImpl(id: String,
 
     if(newlyAddedObs > 0 )
       logger.info(s"[VP] ${this.id} Added $newlyAddedObs Removed ${removedObs} Obs ${this.table}")
-
   }
 
 
@@ -312,6 +313,8 @@ case class ViewPortImpl(id: String,
 
     var i = 0
 
+    //TODO: CJS this is not correct, we should only subscribe to keys within the VP range
+    //this will check every key and remove it
     while(i < newKeys.length){
       newKeySet.add(newKeys(i))
       i += 1
@@ -340,9 +343,11 @@ case class ViewPortImpl(id: String,
     addObserver(key)
   }
 
-  def publishUpdate(key: String, index: Int) = {
+  def publishHighPriorityUpdate(key: String, index: Int) = {
     logger.debug(s"publishing update ${key}")
-    highPriorityQ.push(new ViewPortUpdate(this, table, new RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now))
+    if(this.enabled) {
+      highPriorityQ.push(new ViewPortUpdate(this, table, new RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now))
+    }
   }
 
   private def addObserver(key: String) = {

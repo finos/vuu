@@ -3,21 +3,22 @@ package io.venuu.vuu.viewport
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.DefaultClock
-import io.venuu.vuu.core.groupby.GroupBySessionTable
+import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
 import org.joda.time.{DateTime, DateTimeZone}
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by chris on 23/11/2015.
   */
-class GroupByTreeBuilderTest extends FeatureSpec with Matchers {
+class GroupByTreeBuilderTest extends AnyFeatureSpec with Matchers {
 
   import io.venuu.vuu.viewport.OrdersAndPricesScenarioFixture._
 
-  feature("check tree building"){
+  Feature("check tree building"){
 
-    scenario("build simple groupby tree"){
+    Scenario("build simple groupby tree"){
 
       implicit val lifecycle = new LifecycleContainer
       implicit val timeProvider = new DefaultClock
@@ -43,7 +44,7 @@ class GroupByTreeBuilderTest extends FeatureSpec with Matchers {
 
       joinProvider.runOnce()
 
-      val sessionTable = new GroupBySessionTable(orderPrices, ClientSessionId("A", "B"), joinProvider)
+      val sessionTable = new GroupBySessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
 
       val tree = GroupByTreeBuilder(sessionTable, GroupBy(orderPrices, "trader", "ric")
         .withSum("quantity")

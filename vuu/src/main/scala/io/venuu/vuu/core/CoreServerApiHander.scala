@@ -22,6 +22,39 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
                     tableContainer: TableContainer,
                     providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging{
 
+  override def process(msg: RemoveViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.removeViewPort(msg.viewPortId)) match{
+      case Success(_) =>
+        logger.info("View port removed")
+        vsMsg(RemoveViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(RemoveViewPortReject(msg.viewPortId))(ctx)
+    }
+  }
+
+  override def process(msg: EnableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.enableViewPort(msg.viewPortId)) match{
+      case Success(_) =>
+        logger.info("View port enabled")
+        vsMsg(EnableViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to enable viewport", e)
+        vsMsg(RemoveViewPortReject(msg.viewPortId))(ctx)
+    }
+  }
+
+  override def process(msg: DisableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.disableViewPort(msg.viewPortId)) match{
+      case Success(_) =>
+        logger.info("View port disabled")
+        vsMsg(DisableViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to enable viewport", e)
+        vsMsg(DisableViewPortReject(msg.viewPortId))(ctx)
+    }
+  }
+
   def vsMsg(body: MessageBody)(ctx: RequestContext): Option[JsonViewServerMessage] = {
     Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, body))
   }
@@ -63,8 +96,8 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
       errorMsg(s"Table ${msg.table} not found in container")(ctx)
     else{
       val table = tableContainer.getTable(msg.table)
-      val columnNames = table.getTableDef.columns.map(_.name)
-      val dataTypes = table.getTableDef.columns.map(col => DataType.asString(col.dataType))
+      val columnNames = table.getTableDef.columns.map(_.name).sorted
+      val dataTypes = columnNames.map(table.getTableDef.columnForName(_)).map(col => DataType.asString(col.dataType))
       vsMsg(GetTableMetaResponse(table.name, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
     }
   }
@@ -138,7 +171,7 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
         viewPortContainer.create(ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, NoGroupBy)
       else {
 
-        val groupByColumns = msg.groupBy.map(table.getTableDef.columnForName(_)).toList
+        val groupByColumns = msg.groupBy.filter(table.getTableDef.columnForName(_) != null).map(table.getTableDef.columnForName(_)).toList
 
         val aggregations   = groupByColumns.map( col => {
           if( col.dataType == DataType.DoubleDataType || col.dataType == DataType.LongDataType || col.dataType == DataType.IntegerDataType) Aggregation(col, AggregationType.Sum)

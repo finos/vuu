@@ -1,12 +1,13 @@
 package io.venuu.toolbox.collection.window
 
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class MovingWindowTest extends FeatureSpec with Matchers {
+class MovingWindowTest extends AnyFeatureSpec with Matchers {
 
-  feature("test windowed array") {
+  Feature("test windowed array") {
 
-    scenario("check basic behaviour") {
+    Scenario("check basic behaviour") {
 
       val window = new ArrayBackedMovingWindow[Array[AnyRef]](10)
 
@@ -21,7 +22,7 @@ class MovingWindowTest extends FeatureSpec with Matchers {
       window.getAtIndex(10) should equal(None)
     }
 
-    scenario("test range setting"){
+    Scenario("test range setting"){
 
       val window = new ArrayBackedMovingWindow[Array[AnyRef]](10)
 
@@ -32,7 +33,7 @@ class MovingWindowTest extends FeatureSpec with Matchers {
       window.range.overlap(0, 12) should equal((10,12))
     }
 
-    scenario("test preserving data"){
+    Scenario("test preserving data"){
 
       val window = new ArrayBackedMovingWindow[Array[AnyRef]](10)
 
@@ -52,7 +53,7 @@ class MovingWindowTest extends FeatureSpec with Matchers {
       window.isWithinRange(10) should equal(true)
     }
 
-    scenario("test preserving data backwards"){
+    Scenario("test preserving data backwards"){
 
       val window = new ArrayBackedMovingWindow[Array[AnyRef]](10)
 

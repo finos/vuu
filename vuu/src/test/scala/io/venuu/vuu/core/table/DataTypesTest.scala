@@ -7,13 +7,15 @@
   */
 package io.venuu.vuu.core.table
 
-import org.scalatest.{FeatureSpec, Matchers, OneInstancePerTest}
+import org.scalatest.OneInstancePerTest
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
-class DataTypesTest extends FeatureSpec with Matchers with OneInstancePerTest {
+class DataTypesTest extends AnyFeatureSpec with Matchers with OneInstancePerTest {
 
-  feature("Check data type roundtripping") {
+  Feature("Check data type roundtripping") {
 
-    scenario("data types") {
+    Scenario("data types") {
 
       val inputs = List("string", "boolean", "long", "int", "double")
 

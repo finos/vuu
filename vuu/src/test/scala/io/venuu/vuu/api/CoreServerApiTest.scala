@@ -14,13 +14,13 @@ import io.venuu.vuu.core.CoreServerApiHander
 import io.venuu.vuu.core.table.TableContainer
 import io.venuu.vuu.provider.{JoinTableProviderImpl, ProviderContainer}
 import io.venuu.vuu.viewport.ViewPortContainer
-import org.scalatest.FeatureSpec
+import org.scalatest.featurespec.AnyFeatureSpec
 
-class CoreServerApiTest extends FeatureSpec {
+class CoreServerApiTest extends AnyFeatureSpec {
 
-  feature("Check core server api") {
+  Feature("Check core server api") {
 
-    scenario("Check when loading meta for viewport") {
+    Scenario("Check when loading meta for viewport") {
 
       implicit val clock = new TestFriendlyClock(1311544800l)
       implicit val lifecycle = new LifecycleContainer

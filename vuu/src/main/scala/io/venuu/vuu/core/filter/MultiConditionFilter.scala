@@ -7,7 +7,7 @@
   */
 package io.venuu.vuu.core.filter
 
-import io.venuu.toolbox.ImmutableArray
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.vuu.viewport.RowSource
 
 

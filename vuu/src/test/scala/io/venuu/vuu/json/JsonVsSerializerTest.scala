@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, VsJsonTypeResolver}
-import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -38,7 +39,7 @@ case class Container(animal: Animal)
 /**
  * Created by chris on 09/11/2015.
  */
-class JsonVsSerializerTest extends FeatureSpec with Matchers{
+class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
 
   def roundTrip(body: MessageBody) = {
 
@@ -55,9 +56,9 @@ class JsonVsSerializerTest extends FeatureSpec with Matchers{
     println("from Json = " + o)
   }
 
-  feature("test serialization"){
+  Feature("test serialization"){
 
-    scenario("test login message"){
+    Scenario("test login message"){
 
       JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
 
@@ -81,7 +82,7 @@ class JsonVsSerializerTest extends FeatureSpec with Matchers{
 
     }
 
-    scenario("test mixing registry"){
+    Scenario("test mixing registry"){
 
       JsonSubTypeRegistry.register(classOf[Animal], classOf[LandAnimalMixin])
       JsonSubTypeRegistry.register(classOf[Animal], classOf[SeaAnimalMixin])

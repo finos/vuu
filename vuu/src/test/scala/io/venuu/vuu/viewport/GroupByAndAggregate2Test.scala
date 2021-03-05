@@ -16,10 +16,12 @@ import io.venuu.vuu.provider.{JoinTableProvider, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts._
 import org.joda.time.{DateTime, DateTimeZone}
+import org.scalatest.GivenWhenThen
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
-import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
 
-class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenThen {
+class GroupByAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenThen {
 
   import io.venuu.vuu.core.table.TableTestHelper._
   import io.venuu.vuu.viewport.OrdersAndPricesScenarioFixture._
@@ -46,7 +48,7 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
     pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
   }
 
-  scenario("test groupBy tree structure update") {
+  Scenario("test groupBy tree structure update") {
 
     implicit val lifeCycle = new LifecycleContainer
     implicit val timeProvider = new DefaultClock
@@ -84,7 +86,9 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
     viewPortContainer.openNode(viewport.id, "$root/chris/VOD.L")
     viewPortContainer.openNode(viewport.id, "$root/steve")
     viewPortContainer.closeNode(viewport.id, "$root/steve/BT.L")
-    
+
+    emptyQueues(viewport)
+
     viewPortContainer.runOnce()
     viewPortContainer.runGroupByOnce()
 
@@ -95,15 +99,12 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
     viewPortContainer.runOnce()
     viewPortContainer.runGroupByOnce()
 
-    //viewport.combinedQueueLength should be(14) //as have no keys
-
     val updates = combineQs(viewport)
 
     assertVpEq(updates) {
 
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (true      ,0         ,"$root"   ,false     ,2         ,""        ,""        ,"[2]"     ,""        ,""        ,"Σ 3800.0",""        ,""        ,""        ,""        ,""        ),
         (true      ,1         ,"$root/chris",false     ,2         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2200.0",""        ,""        ,""        ,""        ,""        ),
         (true      ,2         ,"$root/chris/VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
         (false     ,3         ,"$root/chris/VOD.L/NYC-0001",true      ,0         ,"NYC-0001","NYC-0001","chris"   ,"VOD.L"   ,1437732000000l,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
@@ -112,9 +113,9 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
         (false     ,3         ,"$root/chris/VOD.L/NYC-0004",true      ,0         ,"NYC-0004","NYC-0004","chris"   ,"VOD.L"   ,1437732000000l,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
         (false     ,3         ,"$root/chris/VOD.L/NYC-0005",true      ,0         ,"NYC-0005","NYC-0005","chris"   ,"VOD.L"   ,1437732000000l,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
         (true      ,1         ,"$root/steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1600.0",""        ,""        ,""        ,""        ,""        ),
-        (false     ,2         ,"$root/steve/VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 600.0",""        ,""        ,""        ,""        ,""        ),
+        (false     ,2         ,"$root/steve/VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 600.0" ,""        ,""        ,""        ,""        ,""        ),
         (false     ,2         ,"$root/steve/BT.L",false     ,1         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1000.0",""        ,""        ,""        ,""        ,""        ),
-        (false     ,2         ,"$root/chris/BT.L",false     ,1         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 700.0",""        ,""        ,""        ,""        ,""        )
+        (false     ,2         ,"$root/chris/BT.L",false     ,1         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 700.0" ,""        ,""        ,""        ,""        ,""        )
       )
 
     }
@@ -128,8 +129,9 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
 
     viewPortContainer.openNode(viewport.id, "$root/steve/VOD.L")
 
-    viewPortContainer.runOnce()
+    emptyQueues(viewport)
 
+    viewPortContainer.runOnce()
     viewPortContainer.runGroupByOnce()
 
     val updates2 = combineQs(viewport)
@@ -156,7 +158,7 @@ class GroupByAndAggregate2Test extends FeatureSpec with Matchers with GivenWhenT
 
   }
 
-  scenario("test groupBy with source table update") {
+  Scenario("test groupBy with source table update") {
 
     implicit val lifeCycle = new LifecycleContainer
     implicit val timeProvider = new DefaultClock

@@ -5,14 +5,15 @@ import io.venuu.vuu.core.sort.FilterAndSortFixture._
 import io.venuu.vuu.core.table.{RowWithData, SimpleDataTable}
 import io.venuu.vuu.grammer.{FilterLexer, FilterParser}
 import org.antlr.v4.runtime.{ANTLRInputStream, CommonTokenStream}
-import org.scalatest.{FeatureSpec, Matchers}
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by chris on 05/02/2016.
   */
-class FilterGrammerTest extends FeatureSpec with Matchers {
+class FilterGrammerTest extends AnyFeatureSpec with Matchers {
 
-  feature("Check the grammer"){
+  Feature("Check the grammer"){
 
     def parse(s: String) = {
 
@@ -71,7 +72,7 @@ class FilterGrammerTest extends FeatureSpec with Matchers {
       expectRows(result, expected)
     }
 
-    scenario("test normal filter scenarios"){
+    Scenario("test normal filter scenarios"){
 
       withFilter("ric = AAPL.L"){
         List(

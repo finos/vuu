@@ -1,12 +1,13 @@
 package io.venuu.vuu.viewport
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.ImmutableArray
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.vuu.core.table.{Column, DataTable, RowData}
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.{LinkedList => JList}
+import scala.jdk.CollectionConverters._
 
 object Aggregation{
   def createAggregations(groupBy: GroupBy): List[NodeAggregation] = {
@@ -77,8 +78,6 @@ case class TreeNodeImpl(isLeaf: Boolean, key: String, originalKey: String, child
 
   import TreeNode._
 
-  import scala.collection.JavaConversions._
-
   lazy val aggregationsByColumn = aggregations.map( a => a.column -> a).toMap
 
   override def getAggregationFor(column: Column): String = {
@@ -88,7 +87,7 @@ case class TreeNodeImpl(isLeaf: Boolean, key: String, originalKey: String, child
     }
   }
 
-  override def getChildren: List[TreeNode] = children.toList
+  override def getChildren: List[TreeNode] = ListHasAsScala(children).asScala.toList
 
   def addChild(node: TreeNode): TreeNode = {
     children.add(node)
@@ -217,26 +216,21 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
 
 
   def immutate = {
-
-    import scala.collection.JavaConversions._
-
-    ImmutableTreeImpl(rootNode, lookup.toMap[String, TreeNode], lookupOrigKeyToTreeKey.toMap[String, TreeNode], nodeState)
+    ImmutableTreeImpl(rootNode, MapHasAsScala(lookup).asScala.toMap[String, TreeNode], MapHasAsScala(lookupOrigKeyToTreeKey).asScala.toMap[String, TreeNode], nodeState)
   }
 
   def openAll() = {
-    import scala.collection.JavaConversions._
-    this.lookup.values().foreach(node => if(!node.isRoot) open(node.key) )
+    CollectionHasAsScala(this.lookup.values()).asScala.foreach(node => if(!node.isRoot) open(node.key) )
   }
 
   def closeAll() = {
-    import scala.collection.JavaConversions._
-    this.lookup.values().foreach(node => if(!node.isRoot) close(node.key))
+    CollectionHasAsScala(this.lookup.values()).asScala.foreach(node => if(!node.isRoot) close(node.key))
   }
 
   def root = getNode("$root")
 
-  private val lookup = new java.util.HashMap[String, TreeNode]()
-  private val lookupOrigKeyToTreeKey = new java.util.HashMap[String, TreeNode]()
+  private val lookup = new ConcurrentHashMap[String, TreeNode](100_000, 0.1f)
+  private val lookupOrigKeyToTreeKey = new ConcurrentHashMap[String, TreeNode](100_000, 0.1f)
 
   setNode(rootNode)
 
@@ -268,8 +262,8 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
   }
 
   def setNode(node: TreeNode): Unit = {
-    lookup.put(node.key, node)
-    lookupOrigKeyToTreeKey.put(node.originalKey, node)
+    lookup.putIfAbsent(node.key, node)
+    lookupOrigKeyToTreeKey.putIfAbsent(node.originalKey, node)
   }
 
   def hasChild(parent: TreeNode, child: TreeNode): Boolean = parent.getChildren.contains(child)
@@ -281,12 +275,6 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
     setNode(child)
     child
   }
-
-//  def addLeafData(node: TreeNode, leafKey: String): TreeNode = {
-//    logger.info(s"adding leaf key node ${leafKey} to parent ${node.key}")
-//    TreeNode(true, leafKey)
-//    node.addChild()
-//  }
 
 }
 

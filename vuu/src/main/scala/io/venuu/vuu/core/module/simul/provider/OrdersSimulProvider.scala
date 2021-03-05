@@ -9,6 +9,7 @@ import io.venuu.vuu.provider.Provider
 import java.util
 import java.util.Random
 import java.util.concurrent.atomic.AtomicInteger
+import scala.jdk.CollectionConverters._
 
 trait RandomNumbers {
   def nextInt(): Int
@@ -137,9 +138,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 
   def deleteOrders() = {
 
-    import scala.collection.JavaConversions._
-
-    val entries = orders.elements().toList
+    val entries = EnumerationHasAsScala(orders.elements()).asScala.toList
 
     val deletePerSec = seededRandom.seededRand(1 ,2)
 
