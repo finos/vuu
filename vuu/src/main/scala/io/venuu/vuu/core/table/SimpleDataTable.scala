@@ -222,10 +222,10 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
       case null =>
         EmptyRowData
       case row =>
-          row
+          //row
         //CJS Check perf of this
-        //val rowData = columns.map(c => (c.name -> row.get(c))).toMap
-        //RowWithData(key, rowData)
+        val rowData = columns.map(c => (c.name -> row.get(c))).toMap
+        RowWithData(key, rowData)
     }
   }
 
