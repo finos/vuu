@@ -180,13 +180,13 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
   override def toString: String = name
 
-  override def primaryKeys: ImmutableArray[String] = tree.toKeys()
+  override def primaryKeys: ImmutableArray[String] = keys
 
   def sourceTableKeys: ImmutableArray[String] = source.primaryKeys
 
-  def setTree(tree: Tree): Unit = {
+  def setTree(tree: Tree, keys: ImmutableArray[String]): Unit = {
     logger.debug("set tree")
-    keys = tree.toKeys()
+    this.keys = keys
     this.tree = tree
   }
 

@@ -203,7 +203,7 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
       handleRowUpdate(ru)
 
 
-    case msg: ClientChangeViewPortSuccess =>
+    case msg: ClientChangeViewPortSuccess  if msg.viewPortId == vpId =>
       logger.info(s"Client Change VP Success ${msg} ")
 
       columns = if (!msg.groupBy.isEmpty)

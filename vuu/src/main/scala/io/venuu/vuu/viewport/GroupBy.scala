@@ -216,7 +216,6 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
 
 
   def immutate = {
-
     ImmutableTreeImpl(rootNode, MapHasAsScala(lookup).asScala.toMap[String, TreeNode], MapHasAsScala(lookupOrigKeyToTreeKey).asScala.toMap[String, TreeNode], nodeState)
   }
 
@@ -230,8 +229,8 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
 
   def root = getNode("$root")
 
-  private val lookup = new java.util.HashMap[String, TreeNode]()
-  private val lookupOrigKeyToTreeKey = new java.util.HashMap[String, TreeNode]()
+  private val lookup = new ConcurrentHashMap[String, TreeNode](100_000, 0.1f)
+  private val lookupOrigKeyToTreeKey = new ConcurrentHashMap[String, TreeNode](100_000, 0.1f)
 
   setNode(rootNode)
 
@@ -263,8 +262,8 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
   }
 
   def setNode(node: TreeNode): Unit = {
-    lookup.put(node.key, node)
-    lookupOrigKeyToTreeKey.put(node.originalKey, node)
+    lookup.putIfAbsent(node.key, node)
+    lookupOrigKeyToTreeKey.putIfAbsent(node.originalKey, node)
   }
 
   def hasChild(parent: TreeNode, child: TreeNode): Boolean = parent.getChildren.contains(child)
@@ -276,12 +275,6 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
     setNode(child)
     child
   }
-
-//  def addLeafData(node: TreeNode, leafKey: String): TreeNode = {
-//    logger.info(s"adding leaf key node ${leafKey} to parent ${node.key}")
-//    TreeNode(true, leafKey)
-//    node.addChild()
-//  }
 
 }
 

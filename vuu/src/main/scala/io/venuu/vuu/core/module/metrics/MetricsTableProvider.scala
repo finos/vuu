@@ -1,5 +1,6 @@
 package io.venuu.vuu.core.module.metrics
 
+import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.LifeCycleRunner
@@ -7,11 +8,13 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import io.venuu.vuu.provider.Provider
 
-class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
-                                                                              metrics: MetricsProvider ) extends Provider {
+import scala.util.Try
 
-  private val runner = new LifeCycleRunner("metricsTableProvider", () => runOnce )
-  
+class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
+                                                                              metrics: MetricsProvider ) extends Provider with StrictLogging {
+
+  private val runner = new LifeCycleRunner("metricsTableProvider", () => runOnce, minCycleTime = 1_000)
+
   lifecycleContainer(this).dependsOn(runner)
 
   override def subscribe(key: String): Unit = {}
@@ -28,22 +31,26 @@ class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(im
 
   def runOnce(): Unit ={
 
-    val tables = tableContainer.getTableNames()
+    try {
 
-    tables.foreach( tableName => {
+      val tables = tableContainer.getTableNames()
 
-      val counter = metrics.counter(tableName + ".processUpdates.Counter");
-      val size = tableContainer.getTable(tableName).size()
+      tables.foreach(tableName => {
 
-      val meter = metrics.meter(tableName + ".processUpdates.Meter")
+        val counter = metrics.counter(tableName + ".processUpdates.Counter");
+        val size = tableContainer.getTable(tableName).size()
 
-      val upMap = Map("table" -> tableName, "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
+        val meter = metrics.meter(tableName + ".processUpdates.Meter")
 
-      table.processUpdate(tableName, RowWithData(tableName, upMap), clock.now())
+        val upMap = Map("table" -> tableName, "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
 
-      clock.sleep(500)
-    })
+        table.processUpdate(tableName, RowWithData(tableName, upMap), clock.now())
 
+      })
+
+    } catch {
+      case e: Exception =>
+        logger.error("Error occured in metrics", e)
+    }
   }
-
 }

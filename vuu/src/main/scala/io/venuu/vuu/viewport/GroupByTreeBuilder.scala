@@ -1,6 +1,7 @@
 package io.venuu.vuu.viewport
 
 import com.typesafe.scalalogging.StrictLogging
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.logging.LogAtFrequency
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.filter.{FilterSpecParser, NoFilter}
@@ -35,11 +36,8 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
 
   import io.venuu.vuu.core.DataConstants._
 
-  override def build(): Tree = {
-
-    logger.debug("In tree build()")
-
-    val keys = if(filter != null && !isEmptyString(filter.filter))
+  private def applyFilter(): ImmutableArray[String] = {
+    if(filter != null && !isEmptyString(filter.filter))
     {
 
       logger.debug("has filter, parsing")
@@ -58,6 +56,15 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
 
     }else
       table.sourceTable.primaryKeys
+  }
+
+
+  override def build(): Tree = {
+
+    logger.debug("In tree build()")
+    logger.debug("Applying FIlter()")
+
+    val keys = applyFilter()
 
     logger.debug("building tree")
 
@@ -73,7 +80,7 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
 
     var count = 0
 
-    keys.toArray.foreach(key => {
+    keys.foreach(key => {
 
       if(logEvery.shouldLog()) logger.debug(s"Done nodes ${count}")
 
@@ -95,7 +102,7 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
 
     logger.debug("complete building tree")
 
-    tree.immutate
+    tree//.immutate
   }
 
   def processBranchColumn(tree: TreeImpl, parent: TreeNodeImpl, data: Any, isLeaf: Boolean, column: Column, row: RowData): Option[TreeNode] = {

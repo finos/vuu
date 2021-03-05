@@ -40,7 +40,7 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val table = new SimpleDataTable(pricesDef, joinProvider)
 
-      (1 to 100000).foreach( i => {
+      (1 to 100_000).foreach( i => {
 
         val ric = "TST-" + i
 
@@ -64,18 +64,21 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       logger.info("Starting tree build")
 
-      val (millis, _) = timeIt{ builder.build() }
+      val (millis, tree) = timeIt{ builder.build() }
 
       logger.info(s"Complete tree build in $millis ms")
 
       val builder2 = GroupByTreeBuilder(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), None)
+
+      val (sizeMillis, _) = timeIt{ groupByTable.size() }
+
+      logger.info(s"Calling size on groupBy: $sizeMillis ms")
 
       logger.info("Starting tree build")
 
       val (millis2, _) = timeIt{ builder2.build() }
 
       logger.info(s"Complete tree build 2 in $millis2 ms")
-
     }
 
   }

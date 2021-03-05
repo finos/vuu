@@ -96,8 +96,8 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
       errorMsg(s"Table ${msg.table} not found in container")(ctx)
     else{
       val table = tableContainer.getTable(msg.table)
-      val columnNames = table.getTableDef.columns.map(_.name)
-      val dataTypes = table.getTableDef.columns.map(col => DataType.asString(col.dataType))
+      val columnNames = table.getTableDef.columns.map(_.name).sorted
+      val dataTypes = columnNames.map(table.getTableDef.columnForName(_)).map(col => DataType.asString(col.dataType))
       vsMsg(GetTableMetaResponse(table.name, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
     }
   }
@@ -171,7 +171,7 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
         viewPortContainer.create(ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, NoGroupBy)
       else {
 
-        val groupByColumns = msg.groupBy.map(table.getTableDef.columnForName(_)).toList
+        val groupByColumns = msg.groupBy.filter(table.getTableDef.columnForName(_) != null).map(table.getTableDef.columnForName(_)).toList
 
         val aggregations   = groupByColumns.map( col => {
           if( col.dataType == DataType.DoubleDataType || col.dataType == DataType.LongDataType || col.dataType == DataType.IntegerDataType) Aggregation(col, AggregationType.Sum)

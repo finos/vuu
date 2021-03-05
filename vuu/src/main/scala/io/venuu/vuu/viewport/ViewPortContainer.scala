@@ -7,11 +7,12 @@
   */
 package io.venuu.vuu.viewport
 
+import com.codahale.metrics.Histogram
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{JmxAble, MetricsProvider}
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.thread.RunInThread
-import io.venuu.toolbox.time.Clock
+import io.venuu.toolbox.time.{Clock, TimeIt}
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.vuu.api.Link
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
@@ -21,6 +22,8 @@ import io.venuu.vuu.core.table.{Column, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.{core, viewport}
+
+
 
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -40,8 +43,15 @@ trait ViewPortContainerMBean {
 
 class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
 
-  private val groupByhistogram = metrics.histogram("org.whitebox.vs.thread.groupby.cycleTime")
-  private val viewPorthistogram = metrics.histogram("org.whitebox.vs.thread.viewport.cycleTime")
+  private val groupByhistogram = metrics.histogram("io.venuu.vuu.thread.groupby.cycleTime")
+  private val viewPorthistogram = metrics.histogram("io.venuu.vuu.thread.viewport.cycleTime")
+
+  val groupByHistograms = new ConcurrentHashMap[String, Histogram]()
+  val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
+
+  def getViewPortById(vpId: String): ViewPort ={
+    this.viewPorts.get(vpId)
+  }
 
   def removeViewPort(vpId: String) = {
     this.viewPorts.get(vpId) match {
@@ -269,7 +279,9 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     val viewPort = viewPorts.get(viewPortId)
 
     viewPort.table match {
-      case gbsTable: GroupBySessionTableImpl => gbsTable.openTreeKey(treeKey)
+      case gbsTable: GroupBySessionTableImpl =>
+        gbsTable.openTreeKey(treeKey)
+        viewPort.setKeys(gbsTable.getTree.toKeys())
       case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
     }
   }
@@ -278,7 +290,9 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     val viewPort = viewPorts.get(viewPortId)
 
     viewPort.table match {
-      case gbsTable: GroupBySessionTableImpl => gbsTable.closeTreeKey(treeKey)
+      case gbsTable: GroupBySessionTableImpl =>
+        gbsTable.closeTreeKey(treeKey)
+        viewPort.setKeys(gbsTable.getTree.toKeys())
       case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
     }
   }
@@ -339,12 +353,26 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     table match {
       case tbl: GroupBySessionTableImpl =>
 
-        val tree = GroupByTreeBuilder(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
+        val (millis, tree) = timeIt {
+          GroupByTreeBuilder(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
+        }
+        val (millis2, keys) = timeIt {
+          //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
+          tree.toKeys()
+        }
 
-        //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
-        tbl.setTree(tree)
+        val (millis3, _) = timeIt {
+          //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
+          tbl.setTree(tree, keys)
+        }
+        val (millis4, _) = timeIt {
+          //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
+          viewPort.setKeys(keys)
+        }
 
-        viewPort.setKeys(tree.toKeys())
+        logger.info(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
+
+        //groupByHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
 
       case tbl =>
         logger.error(s"GROUP-BY: table ${tbl.name} has a groupBy but doesn't have a groupBySessionTable associated. Going to ignore build request.")
@@ -359,9 +387,13 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
     val filterAndSort = viewPort.filterAndSort
 
-    val sorted = filterAndSort.filterAndSort(viewPort.table, keys)
+    val (millis, _ ) = TimeIt.timeIt{
+      val sorted = filterAndSort.filterAndSort(viewPort.table, keys)
 
-    viewPort.setKeys(sorted)
+      viewPort.setKeys(sorted)
+    }
+
+    viewPortHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
   }
 
   def removeForSession(clientSession: ClientSessionId) = {

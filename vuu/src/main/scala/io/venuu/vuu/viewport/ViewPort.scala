@@ -89,6 +89,7 @@ trait ViewPort {
   def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String]
   def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int]
   override def toString: String = "VP(user:" + session.user + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
+
 }
 
 //when we make a structural change to the viewport, it is via one of these fields

@@ -69,7 +69,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
 //  }
 
   def getTableNames(): Array[String] = {
-    EnumerationHasAsScala(tables.keys()).asScala.map(_.toString).toArray[String]
+    EnumerationHasAsScala(tables.keys()).asScala.map(_.toString).toArray[String].sorted
   }
 
   def getTable(name: String): DataTable = {
