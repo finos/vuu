@@ -41,13 +41,14 @@ class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortConta
           if(vp != null){
             val upMap = Map("id" -> key, "table" -> vp.table.name, "mean" -> snapshot.getMean, "max" -> snapshot.getMax, "75Perc" -> snapshot.get75thPercentile(), "99Perc" -> snapshot.get99thPercentile(), "99_9Perc" -> snapshot.get999thPercentile());
             table.processUpdate(key, RowWithData(key, upMap), clock.now())
+          }else{
+            //table.processDelete(key)
           }
         }})
 
     } catch {
       case e: Exception =>
         logger.error("Error occured in metrics", e)
-
     }
   }
 }
