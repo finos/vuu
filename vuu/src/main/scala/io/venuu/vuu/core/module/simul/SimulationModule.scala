@@ -54,7 +54,7 @@ object SimulationModule {
         AutoSubscribeTableDef(
           name = "prices",
           keyField = "ric",
-          Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "scenario: String"),
+          Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "scenario: String", "phase:String"),
           joinFields = "ric"
         ),
         (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800)

@@ -175,6 +175,7 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
 
     value.data.foreach( datum => datum match{
       case null => gen.writeString("")
+      case None => gen.writeString("")
       case s: String => gen.writeString(s)
       case i: Int => gen.writeNumber(i)
       case d: Double => gen.writeNumber(d)

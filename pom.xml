@@ -77,6 +77,12 @@
           <groupId>com.fasterxml.jackson.module</groupId>
           <artifactId>jackson-module-scala_2.13</artifactId>
           <version>${jackson.version}</version>
+          <exclusions>
+              <exclusion>
+                  <groupId>org.scala-lang</groupId>
+                  <artifactId>scala-library</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
 
       <dependency>
@@ -102,6 +108,16 @@
           <artifactId>scalatest-featurespec_2.13</artifactId>
           <version>3.2.5</version>
           <scope>test</scope>
+          <exclusions>
+              <exclusion>
+                  <groupId>org.scala-lang</groupId>
+                  <artifactId>scala-library</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.scala-lang</groupId>
+                  <artifactId>scala-reflect</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
 
 
