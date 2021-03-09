@@ -66,7 +66,6 @@ class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce:
 
         }catch{
           case int: java.lang.InterruptedException => logger.info(s"[$name] interrupted, going to exit")
-          case int: InterruptedException => logger.info(s"[$name] interrupted, going to exit")
           case NonFatal(e) => logger.error(s"[$name] threw an exception in run", e)
         }
 
