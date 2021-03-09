@@ -20,7 +20,7 @@ trait OrderListener{
   def onCancelChildOrder(child: ChildOrder)
 }
 
-trait OrderAction extends Delayed{
+trait DelayQueueAction extends Delayed{
 
   def timeToRun: Long
   def clock: Clock
@@ -39,15 +39,15 @@ trait OrderAction extends Delayed{
   }
 }
 
-case class InsertParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends OrderAction
-case class AmendParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends OrderAction
-case class CancelParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends OrderAction
-case class DeleteParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends OrderAction
+case class InsertParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+case class AmendParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+case class CancelParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+case class DeleteParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
 
-case class InsertChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends OrderAction
-case class AmendChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends OrderAction
-case class CancelChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends OrderAction
-case class DeleteChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends OrderAction
+case class InsertChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+case class AmendChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+case class CancelChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+case class DeleteChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
 
 case class Instrument(ric: String, exchange: String, ccy: String, seedPrice: Double)
 case class Account(name: String)
@@ -56,7 +56,7 @@ case class Strategy(name: String)
 
 class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: LifecycleContainer, randomNumbers: RandomNumbers) {
 
-  private final val queue = new DelayQueue[OrderAction]()
+  private final val queue = new DelayQueue[DelayQueueAction]()
   private final var cycleNumber = 0l
   private var orderId = 0
   private var childOrderId = 0
@@ -164,7 +164,7 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
     }
   }
 
-  def processOneAction(action: OrderAction) = {
+  def processOneAction(action: DelayQueueAction) = {
     action match {
       case InsertParent(parent, _, _) =>
         notifyOnParentInsert(parent)

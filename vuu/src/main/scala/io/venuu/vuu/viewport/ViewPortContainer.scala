@@ -59,6 +59,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
         logger.error(s"Could not find viewport to remove ${vpId}")
       case vp: ViewPort =>
         logger.info(s"Removing ${vpId} from container")
+        vp.delete()
         this.viewPorts.remove(vp.id)
     }
   }
