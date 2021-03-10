@@ -10,9 +10,10 @@ package io.venuu.vuu.viewport
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
-import io.venuu.vuu.core.filter.{EqFilter, LessThanFilter}
-import io.venuu.vuu.core.sort.{AlphaSort, SortDirection, UserDefinedFilterAndSort}
+import io.venuu.vuu.core.filter.{EqFilter, LessThanFilter, NoFilter}
+import io.venuu.vuu.core.sort.{AlphaSort, NoSort, SortDirection, UserDefinedFilterAndSort}
 import io.venuu.vuu.net.ClientSessionId
+import io.venuu.vuu.provider.MockProvider
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts
 import org.joda.time.{DateTime, DateTimeZone}
@@ -25,7 +26,130 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers {
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
+  def addRicSortableOrder(ordersProvider: MockProvider, index: Int, time: Long): Unit ={
+    val orderId = "NYC-000" + index.toString.padTo(2, "0").mkString("")
+    ordersProvider.tick(orderId, Map("orderId" -> orderId, "trader" -> "chris", "tradeTime" -> time,
+                                                     "quantity" -> 100, "ric" -> (index.toString.padTo(2, "0").mkString("") + "VOD.L")))
+  }
+
+  def tickOrders(ordersProvider: MockProvider, orderId: String, quantity: Int): Unit = {
+    ordersProvider.tick(orderId, Map("orderId" -> orderId, "quantity" -> quantity))
+  }
+
   Feature("check the filter and sort infra"){
+
+    Scenario("Check if we sort viewport 3x ASC, DESC, ASC in 3 cycles, do we lose the ticking"){
+
+      import OrdersAndPricesScenarioFixture._
+      import TableAsserts._
+      import io.venuu.vuu.core.table.TableTestHelper._
+
+      implicit val lifecycle = new LifecycleContainer
+
+      val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
+
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
+
+      joinProvider.start()
+
+      (0 until 50).foreach( i => addRicSortableOrder(ordersProvider, i, dateTime))
+
+      val queue = new OutboundRowPublishQueue()
+      val highPriorityQueue  = new OutboundRowPublishQueue()
+
+      val columns = orders.getTableDef.columns
+
+      val viewport = viewPortContainer.create(ClientSessionId("A", "B"), queue, highPriorityQueue, orders, ViewPortRange(0, 5), columns.toList)
+
+      viewPortContainer.runOnce()
+
+      assertVpEq(combineQs(viewport)){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-00000","chris"   ,"00VOD.L" ,1437732000000l,100       ),
+          ("NYC-00010","chris"   ,"10VOD.L" ,1437732000000l,100       ),
+          ("NYC-00020","chris"   ,"20VOD.L" ,1437732000000l,100       ),
+          ("NYC-00030","chris"   ,"30VOD.L" ,1437732000000l,100       ),
+          ("NYC-00040","chris"   ,"40VOD.L" ,1437732000000l,100       )
+        )
+      }
+
+      tickOrders(ordersProvider, "NYC-00040", 300)
+
+      assertVpEq(combineQs(viewport)){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-00040","chris"   ,"40VOD.L" ,1437732000000l,300      )
+        )
+      }
+
+      val ricColumn = orders.getTableDef.columnForName("ric")
+
+      //viewPortContainer.change()
+
+      viewport.changeStructure(
+        viewport.getStructure.copy(filtAndSort =
+          UserDefinedFilterAndSort(
+            NoFilter,
+            AlphaSort(SortDirection.Descending, ricColumn)
+          )
+        )
+      )
+
+      viewPortContainer.runOnce()
+
+      assertVpEq(combineQs(viewport)){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-00090","chris"   ,"90VOD.L" ,1437732000000l,100       ),
+          ("NYC-00080","chris"   ,"80VOD.L" ,1437732000000l,100       ),
+          ("NYC-00070","chris"   ,"70VOD.L" ,1437732000000l,100       ),
+          ("NYC-00060","chris"   ,"60VOD.L" ,1437732000000l,100       ),
+          ("NYC-00050","chris"   ,"50VOD.L" ,1437732000000l,100       )
+        )
+      }
+
+      tickOrders(ordersProvider, "NYC-00050", 300)
+
+      assertVpEq(combineQs(viewport)){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-00050","chris"   ,"50VOD.L" ,1437732000000l,300      )
+        )
+      }
+
+      viewport.changeStructure(
+        viewport.getStructure.copy(filtAndSort =
+          UserDefinedFilterAndSort(
+            NoFilter,
+            AlphaSort(SortDirection.Ascending, ricColumn)
+          )
+        )
+      )
+
+      viewPortContainer.runOnce()
+
+      assertVpEq(combineQs(viewport)){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-00000","chris"   ,"00VOD.L" ,1437732000000l,100       ),
+          ("NYC-00010","chris"   ,"10VOD.L" ,1437732000000l,100       ),
+          ("NYC-00011","chris"   ,"11VOD.L" ,1437732000000l,100       ),
+          ("NYC-00012","chris"   ,"12VOD.L" ,1437732000000l,100       ),
+          ("NYC-00013","chris"   ,"13VOD.L" ,1437732000000l,100       )
+        )
+      }
+
+      tickOrders(ordersProvider, "NYC-00011", 300)
+
+      assertVpEq(combineQs(viewport)){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-00011","chris"   ,"11VOD.L" ,1437732000000l,300      )
+        )
+      }
+
+    }
 
     Scenario("check we can filter and sort as part of viewport"){
 
