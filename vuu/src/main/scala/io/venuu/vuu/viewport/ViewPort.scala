@@ -289,7 +289,7 @@ case class ViewPortImpl(id: String,
 
         if(!isObservedAlready(key)){
 
-          addObserver(key)
+          subscribeForKey(key, index)
 
           newlyAddedObs += 1
 
@@ -300,7 +300,7 @@ case class ViewPortImpl(id: String,
         }
 
       }else{
-        removeObserver(key)
+        unsubscribeForKey(key)
         removedObs += 1
       }
 
