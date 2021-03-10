@@ -267,7 +267,7 @@ case class ViewPortImpl(id: String,
 
   protected def isInRange(i: Int) = range.get().contains(i)
 
-  protected def isObservedAlready(key: String): Boolean = subscribedKeys.put(key, "-") != null
+  protected def isObservedAlready(key: String): Boolean = subscribedKeys.get(key) != null
 
   protected def hasChangedIndex(oldIndex: Int, newIndex: Int) = oldIndex != newIndex
 
@@ -355,12 +355,15 @@ case class ViewPortImpl(id: String,
   }
 
   private def addObserver(key: String) = {
+    //logger.info("adding observer for key:" + key)
     table.addKeyObserver(key, this)
   }
 
   private def removeObserver(oldKey: String) = {
-    if(table.isKeyObservedBy(oldKey, this))
+    if(table.isKeyObservedBy(oldKey, this)) {
+      //logger.info("removing observer for key:" + oldKey)
       table.removeKeyObserver(oldKey, this)
+    }
   }
 
   override def setVisualLink(link: ViewPortVisualLink): Unit = {
