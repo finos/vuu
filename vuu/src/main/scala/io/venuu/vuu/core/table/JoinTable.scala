@@ -377,6 +377,17 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
 
+  /**
+    * Pull row ith only a key returns the immutable RowData object as its stored within the table.
+    * When doing bulk operations on data such as index hits or filters.
+    *
+    * @param key
+    * @return
+    */
+  override def pullRow(key: String): RowData = {
+    pullRow(key, this.tableDef.columns.toList)
+  }
+
   override def pullRow(key: String, columns: List[Column]): RowData = {
 
     val columnsByTable = columns.map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name).toMap

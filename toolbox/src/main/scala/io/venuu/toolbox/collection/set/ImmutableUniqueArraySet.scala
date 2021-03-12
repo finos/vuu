@@ -130,45 +130,50 @@ class ChunkedUniqueImmutableArraySet[T :ClassTag](private val uniqueCheck: Set[T
   }
 
   override def ++(arr: ImmutableArray[T]): ImmutableArray[T] = {
-    val currentLength = length
-    val currentFullChunks = (currentLength / chunkSize)
-    val currentChunks = if (currentLength % chunkSize > 0) currentFullChunks + 1 else currentFullChunks
-    val indexInCurrentChunk = currentLength % chunkSize
+    if(arr == null){
+      this
+    }else {
 
-    val requiredLength = indexPlusOne() + arr.length
-    val requiredChunks = if (requiredLength % chunkSize > 0) (requiredLength / chunkSize) + 1 else (requiredLength / chunkSize)
+      val currentLength = length
+      val currentFullChunks = (currentLength / chunkSize)
+      val currentChunks = if (currentLength % chunkSize > 0) currentFullChunks + 1 else currentFullChunks
+      val indexInCurrentChunk = currentLength % chunkSize
 
-    val newChunks = new Array[Array[T]](requiredChunks)
-    setFullChunks(chunks, newChunks)
+      val requiredLength = indexPlusOne() + arr.length
+      val requiredChunks = if (requiredLength % chunkSize > 0) (requiredLength / chunkSize) + 1 else (requiredLength / chunkSize)
 
-    //if last chunk was partially filled, take a copy, and set it back
-    if (indexInCurrentChunk > 0) {
-      val newChunk = new Array[T](chunkSize)
-      System.arraycopy(chunks(currentFullChunks), 0, newChunk, 0, chunks(currentFullChunks).length)
-      newChunks(currentFullChunks) = newChunk
-    }
+      val newChunks = new Array[Array[T]](requiredChunks)
+      setFullChunks(chunks, newChunks)
 
-    //create any empty chunks required till we get to required chunks
-    //create empty chunks
-    (currentChunks to requiredChunks - 1).foreach(i =>
-      newChunks(i) = new Array[T](chunkSize)
-    )
-
-    //at this point I should have full chunks for all previous items, now I need to add in place
-    var targetIdx = currentLength
-
-    var unique = this.uniqueCheck
-
-    for (a <- 0 until arr.length) {
-      val elem = arr.getIndex(a)
-      if(! unique.contains(elem)){
-        setElementInPlace(targetIdx, newChunks, elem)
-        targetIdx += 1
-        unique = unique.+(elem)
+      //if last chunk was partially filled, take a copy, and set it back
+      if (indexInCurrentChunk > 0) {
+        val newChunk = new Array[T](chunkSize)
+        System.arraycopy(chunks(currentFullChunks), 0, newChunk, 0, chunks(currentFullChunks).length)
+        newChunks(currentFullChunks) = newChunk
       }
-    }
 
-    new ChunkedUniqueImmutableArraySet[T](uniqueCheck = unique, newChunks, targetIdx, chunkSize = this.chunkSize)
+      //create any empty chunks required till we get to required chunks
+      //create empty chunks
+      (currentChunks to requiredChunks - 1).foreach(i =>
+        newChunks(i) = new Array[T](chunkSize)
+      )
+
+      //at this point I should have full chunks for all previous items, now I need to add in place
+      var targetIdx = currentLength
+
+      var unique = this.uniqueCheck
+
+      for (a <- 0 until arr.length) {
+        val elem = arr.getIndex(a)
+        if (!unique.contains(elem)) {
+          setElementInPlace(targetIdx, newChunks, elem)
+          targetIdx += 1
+          unique = unique.+(elem)
+        }
+      }
+
+      new ChunkedUniqueImmutableArraySet[T](uniqueCheck = unique, newChunks, targetIdx, chunkSize = this.chunkSize)
+    }
   }
 
   private def setChunksUpTo(oldChunks: Array[Array[T]], newChunks: Array[Array[T]], chunkIndex: Int): Unit = {

@@ -96,6 +96,10 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
   override def sessionId: ClientSessionId = session
 
+  override def pullRow(key: String): RowData = {
+    pullRow(key, this.columns().toList)
+  }
+
   override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
     val node = tree.getNode(key)
 
