@@ -199,10 +199,12 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
   //def getNodeState = this.tree.getNodeState()
   def openTreeKey(treeKey: String) = {
     this.tree.open(treeKey)
+    this.notifyListeners(treeKey, false)
   }
 
   def closeTreeKey(treeKey: String) = {
     this.tree.close(treeKey)
+    this.notifyListeners(treeKey, false)
   }
 
   def mapKeyToTreeKey(rowUpdate: RowKeyUpdate): RowKeyUpdate = {
@@ -225,18 +227,20 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
     if (node != null) {
 
-      val originalKey = node.originalKey
+      if (node.isLeaf) {
 
-      logger.debug(s"Adding key observer${originalKey} for tree key ${key}")
+        val originalKey = node.originalKey
 
-      if (originalKey != null) {
+        logger.debug(s"Adding key observer${originalKey} for tree key ${key}")
 
         val wappedObserver = new WrappedUpdateHandlingKeyObserver[RowKeyUpdate](mapKeyToTreeKey, observer)
 
         //val wrapped = WrappedKeyObserver(observer)
         sourceTable.addKeyObserver(originalKey, wappedObserver)
       }
-      else false
+      else {
+        super.addKeyObserver(key, observer)
+      }
 
     }
     else false

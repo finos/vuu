@@ -219,7 +219,7 @@ class GroupByAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWh
     assertVpEq(updates) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (true      ,0         ,"$root"   ,false     ,2         ,""        ,""        ,"[2]"     ,""        ,""        ,"Σ 3800.0",""        ,""        ,""        ,""        ,""        ),
+        //(true      ,0         ,"$root"   ,false     ,2         ,""        ,""        ,"[2]"     ,""        ,""        ,"Σ 3800.0",""        ,""        ,""        ,""        ,""        ),
         (true      ,1         ,"$root/chris",false     ,2         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2200.0",""        ,""        ,""        ,""        ,""        ),
         (true      ,2         ,"$root/chris/VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
         (false     ,3         ,"$root/chris/VOD.L/NYC-0001",true      ,0         ,"NYC-0001","NYC-0001","chris"   ,"VOD.L"   ,1437732000000l,100       ,220.0     ,222.0     ,null      ,null      ,null      ),

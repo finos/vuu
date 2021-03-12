@@ -100,7 +100,7 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
       assertVpEq(updates) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (true      ,0         ,"$root"   ,false     ,2         ,""        ,""        ,"[2]"     ,""        ,""        ,"Σ 3600.0",""        ,""        ,""        ,""        ,""        ),
+//          (true      ,0         ,"$root"   ,false     ,2         ,""        ,""        ,"[2]"     ,""        ,""        ,"Σ 3600.0",""        ,""        ,""        ,""        ,""        ),
           (true      ,1         ,"$root/chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
           (true      ,2         ,"$root/chris/VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
           (false     ,3         ,"$root/chris/VOD.L/NYC-0001",true      ,0         ,"NYC-0001","NYC-0001","chris"   ,"VOD.L"   ,1437732000000l,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
@@ -116,16 +116,31 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
         )
       }
 
+      When("we close a node")
       viewPortContainer.closeNode(viewport.id, "$root/steve")
 
-      viewPortContainer.runGroupByOnce()
+      Then("we should expect to get a vp update for that node")
+      assertVpEq(combineQs(viewport)) {
+        Table(
+          ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
+          (false     ,1         ,"$root/steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
+        )
+      }
 
+      And("When the container has run again")
+      viewPortContainer.runGroupByOnce()
       //expect realised rows
       viewPortContainer.runOnce()
 
-      //queue.length should be(13) //as have no keys
+//      Then("we should see the children added")
+//      assertVpEq(combineQs(viewport)) {
+//        Table(
+//          ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
+//          (false     ,1         ,"$root/steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
+//        )
+//      }
 
-      val updates2 = combineQs(viewport)
+
 
 //      updates2.size should be (1)
 //      updates2(0).vpUpdate should equal(SizeUpdateType)
@@ -143,10 +158,11 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
       assertVpEq(updates3) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (false     ,2         ,"$root/steve/VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 600.0",""        ,""        ,""        ,""        ,""        ),
+          (false     ,2         ,"$root/steve/VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 600.0" ,""        ,""        ,""        ,""        ,""        ),
           (true      ,2         ,"$root/steve/BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
           (false     ,3         ,"$root/steve/BT.L/NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1437732000000l,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
-          (false     ,3         ,"$root/steve/BT.L/NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1437732000000l,500       ,500.0     ,501.0     ,null      ,null      ,null      )
+          (false     ,3         ,"$root/steve/BT.L/NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1437732000000l,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
+          (true      ,1         ,"$root/steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
         )
       }
 
@@ -222,7 +238,6 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
     assertVpEq(updates) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (true      ,0         ,"$root"   ,false     ,2         ,""        ,""        ,"[2]"     ,""        ,""        ,"Σ 3600.0",""        ,""        ,""        ,""        ,""        ),
         (true      ,1         ,"$root/chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
         (true      ,2         ,"$root/chris/VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
         (false     ,3         ,"$root/chris/VOD.L/NYC-0001",true      ,0         ,"NYC-0001","NYC-0001","chris"   ,"VOD.L"   ,1437732000000l,100       ,220.0     ,222.0     ,null      ,null      ,null      ),

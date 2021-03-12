@@ -140,7 +140,7 @@ case class ViewPortImpl(id: String,
   override def setSelection(rowIndices: Array[Int]): Unit = {
     viewPortLock.synchronized{
       val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)) ).toMap[String, Int]
-      selection = rowIndices.map( idx => (this.keys(idx), idx) ).toMap
+      selection = rowIndices.filter(this.keys(_) != null).map( idx => (this.keys(idx), idx) ).toMap
       for( (key, idx ) <- selection ++ oldSelection ){
         publishHighPriorityUpdate(key, idx)
       }

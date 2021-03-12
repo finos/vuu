@@ -332,7 +332,9 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
   }
 
   def notifyListeners(rowKey: String, isDelete: Boolean = false) = {
-    getObserversByKey(rowKey).foreach(obs => obs.onUpdate(new RowKeyUpdate(rowKey, this, isDelete)))
+    getObserversByKey(rowKey).foreach(obs => {
+      obs.onUpdate(new RowKeyUpdate(rowKey, this, isDelete))
+    })
   }
 
   private def toEvent(rowKey: String, rowData: RowData): java.util.HashMap[String, Any] = {

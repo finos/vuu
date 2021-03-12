@@ -217,7 +217,6 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       assertVpEq(updates) {
         Table(
           ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          (1         ,0         ,""        ,true      ,"$root"   ,false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0",""        ,""        ,""        ,""        ),
           (4         ,1         ,"chris"   ,true      ,"$root/chris",false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0",""        ,""        ,""        ,""        ),
           (0         ,2         ,"NYC-0001",false     ,"$root/chris/NYC-0001",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
           (0         ,2         ,"NYC-0002",false     ,"$root/chris/NYC-0002",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),

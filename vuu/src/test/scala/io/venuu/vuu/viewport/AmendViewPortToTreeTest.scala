@@ -115,7 +115,6 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec {
     assertVpEq(combinedUpdates2) {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (0, true, "$root", false, true, "", 1, "", "", "", "", "", "", "", "", ""),
         (1, false, "$root/chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
       )
     }
@@ -135,7 +134,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec {
     assertVpEq(combinedUpdates3) {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (0, true, "$root", false, true, "", 2, "", "", "", "", "", "", "", "", ""),
+        //(0, true, "$root", false, true, "", 2, "", "", "", "", "", "", "", "", ""),
         (1, false, "$root/VOD.L", false, false, "VOD.L", 1, "", "", "VOD.L", "", "", "", "", "", ""),
         (1, false, "$root/BT.L", false, false, "BT.L", 1, "", "", "BT.L", "", "", "", "", "", "")
       )

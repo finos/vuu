@@ -155,7 +155,7 @@ trait Tree {
 
     if(latestNode.getChildren.isEmpty){
       if(node.isRoot)
-        Array(node.key) //++ latestNode.childKeys.toArray
+        Array() //don't include root node
       else if(!isOpen(latestNode))
         Array(node.key)
       else
@@ -163,6 +163,9 @@ trait Tree {
     }
     else if(!node.isRoot && !isOpen(latestNode))
       Array(node.key)
+    else if(node.isRoot){
+      Array() ++ latestNode.getChildren.flatMap(child => processNode(child))
+    }
     else{
       Array(node.key) ++ latestNode.getChildren.flatMap(child => processNode(child))
     }

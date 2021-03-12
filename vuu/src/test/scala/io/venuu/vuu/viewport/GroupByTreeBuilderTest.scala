@@ -68,7 +68,7 @@ class GroupByTreeBuilderTest extends AnyFeatureSpec with Matchers {
       val keys = tree.toKeys()
 
       //Array("root", "$chris", "$VOD.L", "$NYC-0001", "$NYC-0002", "$NYC-0003", "$NYC-0004", "$NYC-0005", "$NYC-0006", "$steve", "$BT.L", "$NYC-0007", "$NYC-0008")
-      val expected = Array("$root", "$root/chris", "$root/chris/VOD.L", "$root/chris/VOD.L/NYC-0001", "$root/chris/VOD.L/NYC-0002", "$root/chris/VOD.L/NYC-0003", "$root/chris/VOD.L/NYC-0004", "$root/chris/VOD.L/NYC-0005", "$root/steve", "$root/steve/VOD.L", "$root/steve/VOD.L/NYC-0006", "$root/steve/BT.L", "$root/steve/BT.L/NYC-0007", "$root/steve/BT.L/NYC-0008")
+      val expected = Array("$root/chris", "$root/chris/VOD.L", "$root/chris/VOD.L/NYC-0001", "$root/chris/VOD.L/NYC-0002", "$root/chris/VOD.L/NYC-0003", "$root/chris/VOD.L/NYC-0004", "$root/chris/VOD.L/NYC-0005", "$root/steve", "$root/steve/VOD.L", "$root/steve/VOD.L/NYC-0006", "$root/steve/BT.L", "$root/steve/BT.L/NYC-0007", "$root/steve/BT.L/NYC-0008")
 
       keys.toArray should equal (expected)
 
@@ -84,7 +84,7 @@ class GroupByTreeBuilderTest extends AnyFeatureSpec with Matchers {
       tree2.open("$root/chris/VOD.L")
 
       //Array("$root", "$root/chris", "$root/chris/VOD.L", "$root/chris/VOD.L/NYC-0001", "$root/chris/VOD.L/NYC-0002", "$root/chris/VOD.L/NYC-0003", "$root/chris/VOD.L/NYC-0004", "$root/chris/VOD.L/NYC-0005", "$root/steve")
-      val expected2 = Array("$root", "$root/chris", "$root/chris/VOD.L", "$root/chris/VOD.L/NYC-0001", "$root/chris/VOD.L/NYC-0002", "$root/chris/VOD.L/NYC-0003", "$root/chris/VOD.L/NYC-0004", "$root/chris/VOD.L/NYC-0005", "$root/steve")
+      val expected2 = Array("$root/chris", "$root/chris/VOD.L", "$root/chris/VOD.L/NYC-0001", "$root/chris/VOD.L/NYC-0002", "$root/chris/VOD.L/NYC-0003", "$root/chris/VOD.L/NYC-0004", "$root/chris/VOD.L/NYC-0005", "$root/steve")
 
       val keys2 = tree2.toKeys()
 
