@@ -45,7 +45,7 @@
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
-    </appender -->
+    </appender-->
 
     <!-- required for debugging messages off the wire -->
     <!--logger name="io.venuu.vuu.client.swing.client.Worker" level="INFO" >

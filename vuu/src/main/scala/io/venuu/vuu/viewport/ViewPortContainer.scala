@@ -9,6 +9,7 @@ package io.venuu.vuu.viewport
 
 import com.codahale.metrics.Histogram
 import com.typesafe.scalalogging.StrictLogging
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.jmx.{JmxAble, MetricsProvider}
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.thread.RunInThread
@@ -22,8 +23,6 @@ import io.venuu.vuu.core.table.{Column, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.{core, viewport}
-
-
 
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -326,7 +325,9 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
   def runOnce(): Unit = {
 
     val (millis, _ ) = timeIt {
-      CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => !vp.hasGroupBy && vp.isEnabled).foreach(vp => refreshOneViewPort(vp))
+      CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => !vp.hasGroupBy).foreach(vp => {
+        refreshOneViewPort(vp)
+      })
     }
 
     viewPorthistogram.update(millis)
@@ -384,17 +385,20 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
   protected def refreshOneViewPort(viewPort: ViewPort) = {
 
-    val keys = viewPort.table.primaryKeys
+    if(viewPort.isEnabled){
+      val keys = viewPort.table.primaryKeys
 
-    val filterAndSort = viewPort.filterAndSort
+      val filterAndSort = viewPort.filterAndSort
 
-    val (millis, _ ) = TimeIt.timeIt{
-      val sorted = filterAndSort.filterAndSort(viewPort.table, keys)
+      val (millis, _ ) = TimeIt.timeIt{
+        val sorted = filterAndSort.filterAndSort(viewPort.table, keys)
+        viewPort.setKeys(sorted)
+      }
 
-      viewPort.setKeys(sorted)
+      viewPortHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+    }else{
+      viewPort.setKeys(ImmutableArray.empty[String])
     }
-
-    viewPortHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
   }
 
   def removeForSession(clientSession: ClientSessionId) = {

@@ -16,6 +16,10 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
   implicit val timeProvider: Clock = new TestFriendlyClock(1311544800)
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
+  def filterByVpId(vpUps: Seq[ViewPortUpdate], vp: ViewPort): Seq[ViewPortUpdate] = {
+    vpUps.filter( vpu => vpu.vp.id == vp.id )
+  }
+
   def setupViewPort(tableContainer: TableContainer) = {
 
     val viewPortContainer = new ViewPortContainer(tableContainer)
@@ -91,7 +95,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
       joinFields =  "ric", "orderId"
     )
 
-    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "exchange:String"), "ric")
 
     val joinDef = JoinTableDef(
       name          = "orderPrices",
@@ -132,6 +136,9 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
   def createPricesRow(pricesProvider: MockProvider, ric: String, bid: Double, ask: Double, last: Double, close: Double) = {
     pricesProvider.tick(ric, Map("ric" -> ric, "bid" -> bid, "ask" -> ask, "last" -> last, "close" -> close))
+  }
+  def createPricesRow(pricesProvider: MockProvider, ric: String, bid: Double, ask: Double, last: Double, close: Double, exchange: String) = {
+    pricesProvider.tick(ric, Map("ric" -> ric, "bid" -> bid, "ask" -> ask, "last" -> last, "close" -> close, "exchange" -> exchange))
   }
 
   def createNOrderRows(ordersProvider: MockProvider, n: Int, ric: String = "VOD.L", idOffset: Int = 0)(implicit clock: Clock) = {

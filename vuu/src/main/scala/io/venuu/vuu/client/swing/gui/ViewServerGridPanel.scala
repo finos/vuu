@@ -158,9 +158,14 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
         println("was here")
       })
 
+    val enableViewPort = new MenuItem(Action("Enable ViewPort"){
+      eventBus.publish(ClientEnableViewPort(RequestId.oneNew(), context.vpId))
+    })
+
     contents += addToGroupByMenu
     contents += addToAggregates
     contents += removeFromGroupBy
+    contents += enableViewPort
   }
 
   val table = getTable()

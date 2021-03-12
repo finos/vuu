@@ -217,6 +217,23 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   @volatile private var data = new SimpleDataTableData(new ConcurrentHashMap[String, RowData](), ImmutableArray.from(new Array[String](0)))
 
+
+  /**
+    * Pull row ith only a key returns the immutable RowData object as its stored within the table.
+    * When doing bulk operations on data such as index hits or filters.
+    *
+    * @param key
+    * @return
+    */
+  override def pullRow(key: String): RowData = {
+    data.dataByKey(key) match {
+      case null =>
+        EmptyRowData
+      case row =>
+        row
+    }
+  }
+
   override def pullRow(key: String, columns: List[Column]): RowData = {
     data.dataByKey(key) match {
       case null =>

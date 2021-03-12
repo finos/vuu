@@ -38,6 +38,13 @@ trait RowSource extends KeyedObservable[RowKeyUpdate]{
   def readRow(key: String, columns:List[String], processor: RowProcessor): Unit
   def primaryKeys: ImmutableArray[String]
   def pullRow(key: String, columns: List[Column]): RowData
+  /**
+    * Pull row ith only a key returns the immutable RowData object as its stored within the table.
+    * When doing bulk operations on data such as index hits or filters.
+    * @param key
+    * @return
+    */
+  def pullRow(key: String): RowData
   //def pullRowWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): RowData
   def pullRowAsArray(key: String, columns: List[Column]): Array[Any]
   //def pullRowAsArrayWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): Array[Any]

@@ -24,16 +24,16 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     } else {
       source.asTable.indexForColumn(childColumn) match {
         case Some(index: IndexedField[String]) if childColumn.dataType == DataType.StringDataType =>
-          val parentSelField = parentSelectionKeys.map(key => (viewPortVisualLink.parentVp.table.pullRowAsArray(key._1, List(parentColumn))(0).asInstanceOf[String])).toList
+          val parentSelField = parentSelectionKeys.map(key => (viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn).asInstanceOf[String])).toList
           filterIndexByValues[String](index, parentSelField)
         case Some(index: IndexedField[Int]) if childColumn.dataType == DataType.IntegerDataType =>
-          val parentSelField = parentSelectionKeys.map(key => (viewPortVisualLink.parentVp.table.pullRowAsArray(key._1, List(parentColumn))(0).asInstanceOf[Int])).toList
+          val parentSelField = parentSelectionKeys.map(key => (viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn).asInstanceOf[Int])).toList
           filterIndexByValues(index, parentSelField)
         case Some(index: IndexedField[Long]) if childColumn.dataType == DataType.LongDataType =>
-          val parentSelField = parentSelectionKeys.map(key => (viewPortVisualLink.parentVp.table.pullRowAsArray(key._1, List(parentColumn))(0).asInstanceOf[Long])).toList
+          val parentSelField = parentSelectionKeys.map(key => (viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn).asInstanceOf[Long])).toList
           filterIndexByValues(index, parentSelField)
         case None =>
-          val parentDataValues = parentSelectionKeys.map(key => (viewPortVisualLink.parentVp.table.pullRowAsArray(key._1, List(parentColumn))(0) -> 0)).toMap
+          val parentDataValues = parentSelectionKeys.map(key => (viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn) -> 0)).toMap
           doFilterByBruteForce(parentDataValues, childColumn, source, primaryKeys)
       }
     }
