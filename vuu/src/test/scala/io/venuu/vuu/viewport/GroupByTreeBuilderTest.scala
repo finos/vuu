@@ -12,9 +12,7 @@ import org.scalatest.matchers.should.Matchers
 /**
   * Created by chris on 23/11/2015.
   */
-class GroupByTreeBuilderTest extends AnyFeatureSpec with Matchers {
-
-  import io.venuu.vuu.viewport.OrdersAndPricesScenarioFixture._
+class GroupByTreeBuilderTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
   Feature("check tree building"){
 
@@ -46,7 +44,7 @@ class GroupByTreeBuilderTest extends AnyFeatureSpec with Matchers {
 
       val sessionTable = new GroupBySessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
 
-      val tree = GroupByTreeBuilder(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val tree = GroupByTreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
         .withSum("quantity")
         .withCount("trader")
         .asClause(),
@@ -72,7 +70,7 @@ class GroupByTreeBuilderTest extends AnyFeatureSpec with Matchers {
 
       keys.toArray should equal (expected)
 
-      val tree2 = GroupByTreeBuilder(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val tree2 = GroupByTreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
         .withSum("quantity")
         .withCount("trader")
         .asClause(),

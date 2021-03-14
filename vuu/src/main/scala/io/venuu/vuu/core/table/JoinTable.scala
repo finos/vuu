@@ -8,8 +8,8 @@
 package io.venuu.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
+import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
 import io.venuu.vuu.core.index.IndexedField
 import io.venuu.vuu.provider.JoinTableProvider
@@ -334,6 +334,10 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   var joinData = new JoinDataTableData(tableDef, ImmutableArrays.empty[String](joinColumns))
 
   override def getTableDef: TableDef = tableDef
+
+  override def notifyListeners(rowKey: String, isDelete: Boolean): Unit = {
+    notifyListeners(rowKey)
+  }
 
   override def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
 

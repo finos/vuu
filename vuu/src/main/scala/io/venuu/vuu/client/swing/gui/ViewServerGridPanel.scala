@@ -14,7 +14,7 @@ import io.venuu.vuu.client.swing.gui.components.renderer.{SortedColumnRenderer, 
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
 import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
-import io.venuu.vuu.net.{AggType, Aggregations, FilterSpec, SortDef, SortSpec}
+import io.venuu.vuu.net._
 
 import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.{Color, Dimension, Point}

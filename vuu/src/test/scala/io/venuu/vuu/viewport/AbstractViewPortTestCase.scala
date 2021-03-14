@@ -10,6 +10,9 @@ import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import org.scalatest.featurespec.AnyFeatureSpec
 
+object TestTimeStamp{
+  def EPOCH_DEFAULT = 1311544800000l
+}
 
 class AbstractViewPortTestCase extends AnyFeatureSpec {
 

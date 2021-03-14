@@ -10,7 +10,7 @@ package io.venuu.vuu.core.module.simul
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
-import io.venuu.vuu.core.module.simul.provider.{ChildOrdersProvider, OrdersSimulProvider, ParentChildOrdersModel, ParentOrdersProvider, SeededRandomNumbers}
+import io.venuu.vuu.core.module.simul.provider._
 import io.venuu.vuu.core.module.{ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.Columns
 import io.venuu.vuu.net.RequestContext

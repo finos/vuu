@@ -3,8 +3,8 @@ package io.venuu.vuu.core.groupBy
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.toolbox.time.TimeIt.timeIt
+import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.groupby.GroupBySessionTable
 import io.venuu.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
@@ -16,7 +16,7 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
 
   implicit val lifecycle = new LifecycleContainer
   implicit val metrics = new MetricsProviderImpl
-  implicit val timeProvider: Clock = new DefaultClock
+  implicit val clock: Clock = new DefaultClock
 
   val joinProvider   = new JoinTableProviderImpl()
 
@@ -46,11 +46,11 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
 
   val client = ClientSessionId("A", "B")
 
-  val groupByTable = GroupBySessionTable(table, client, joinProvider)(metrics)
+  val groupByTable = GroupBySessionTable(table, client, joinProvider)(metrics, clock)
 
   val exchange = table.getTableDef.columnForName("exchange")
 
-  val builder = GroupByTreeBuilder(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None)
+  val builder = GroupByTreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None)
 
   for(a <- 0 until 5000){
     logger.info("Starting tree build")

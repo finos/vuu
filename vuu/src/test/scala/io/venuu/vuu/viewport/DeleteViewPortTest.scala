@@ -1,6 +1,6 @@
 package io.venuu.vuu.viewport
 
-import io.venuu.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
+import io.venuu.vuu.core.table.TableTestHelper.combineQs
 import io.venuu.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers

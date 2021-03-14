@@ -11,7 +11,7 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.filter.{EqFilter, LessThanFilter, NoFilter}
-import io.venuu.vuu.core.sort.{AlphaSort, NoSort, SortDirection, UserDefinedFilterAndSort}
+import io.venuu.vuu.core.sort.{AlphaSort, SortDirection, UserDefinedFilterAndSort}
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.MockProvider
 import io.venuu.vuu.util.OutboundRowPublishQueue
@@ -21,7 +21,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
-class FilterAndSortTest extends AnyFeatureSpec with Matchers {
+class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
@@ -40,9 +40,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Check if we sort viewport 3x ASC, DESC, ASC in 3 cycles, do we lose the ticking"){
 
-      import OrdersAndPricesScenarioFixture._
       import TableAsserts._
-      import io.venuu.vuu.core.table.TableTestHelper._
 
       implicit val lifecycle = new LifecycleContainer
 
@@ -153,9 +151,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers {
 
     Scenario("check we can filter and sort as part of viewport"){
 
-      import OrdersAndPricesScenarioFixture._
       import TableAsserts._
-      import io.venuu.vuu.core.table.TableTestHelper._
 
       implicit val lifecycle = new LifecycleContainer
 

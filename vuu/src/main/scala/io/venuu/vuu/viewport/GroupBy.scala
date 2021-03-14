@@ -124,7 +124,16 @@ case class TreeNodeImpl(isLeaf: Boolean, key: String, originalKey: String, child
   override def toString: String = s"TreeNode($key)"
 }
 
-object EmptyTree extends TreeImpl(TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), List()), new ConcurrentHashMap[String, TreeNodeState](), NoGroupBy){
+object EmptyTree extends Tree{
+  override def nodeState: ConcurrentHashMap[String, TreeNodeState] = ???
+  override def openAll(): Unit = {}
+  override def closeAll(): Unit = {}
+  override def root: TreeNode = null
+  override def getNode(key: String): TreeNode = null
+  override def getNodeByOriginalKey(key: String): TreeNode = null
+  override def hasChild(parent: TreeNode, child: TreeNode): Boolean = false
+  override def toKeys(): ImmutableArray[String] = ImmutableArray.empty[String]
+  override def isOpen(latestNode: TreeNode): Boolean = false
 }
 
 trait Tree {
@@ -213,9 +222,6 @@ case class ImmutableTreeImpl(root: TreeNode, lookup: Map[String, TreeNode], look
 }
 
 case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap[String, TreeNodeState], groupBy: GroupBy) extends StrictLogging with Tree{
-
-  //@volatile private var nodeState = treeNodeState
-
 
 
   def immutate = {

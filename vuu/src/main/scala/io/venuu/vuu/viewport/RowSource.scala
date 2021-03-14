@@ -28,6 +28,10 @@ trait SessionListener{
 
 trait RowSource extends KeyedObservable[RowKeyUpdate]{
   def name: String
+  /**
+    * notify listeners explicit when a rowKey changes
+    */
+  def notifyListeners(rowKey: String, isDelete: Boolean = false)
 
   /**
    * Link table name is the name of the underlying table that we can link to.

@@ -16,10 +16,9 @@ import io.venuu.vuu.client.swing.gui.SwingThread
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.net.SortDef
 
-import javax.swing.{JComponent, JTable}
 import javax.swing.table.{AbstractTableModel, TableCellEditor, TableCellRenderer}
+import javax.swing.{JComponent, JTable}
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-import scala.swing
 import scala.swing.Table
 import scala.util.{Failure, Success, Try}
 

@@ -21,9 +21,13 @@ trait GroupByTreeBuilder {
 }
 
 object GroupByTreeBuilder{
-  def apply(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): GroupByTreeBuilder = {
+//  def apply(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): GroupByTreeBuilder = {
+//    new GroupByTreeBuilderImpl(table, groupBy, filter, previousTree)
+//  }
+  def create(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): GroupByTreeBuilder = {
     new GroupByTreeBuilderImpl(table, groupBy, filter, previousTree)
   }
+
 }
 
 
@@ -69,7 +73,9 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
     logger.debug("building tree")
 
     val nodeState = previousTree match {
-      case Some(tree) =>
+      case Some(EmptyTree) =>
+        new ConcurrentHashMap[String, TreeNodeState]()
+      case Some(tree: TreeImpl) =>
         tree.nodeState
       case None =>
         EMPTY_TREE_NODE_STATE

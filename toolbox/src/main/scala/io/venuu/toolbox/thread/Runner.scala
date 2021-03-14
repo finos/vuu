@@ -7,12 +7,11 @@
   */
 package io.venuu.toolbox.thread
 
-import java.util.concurrent.atomic.AtomicBoolean
-
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.NamedThreadFactory
 import io.venuu.toolbox.time.Clock
 
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.util.control.NonFatal
 
 /**

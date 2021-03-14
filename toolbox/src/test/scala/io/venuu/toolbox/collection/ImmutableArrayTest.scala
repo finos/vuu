@@ -1,6 +1,6 @@
 package io.venuu.toolbox.collection
 
-import io.venuu.toolbox.collection.array.{ChunkedImmutableArray, ImmutableArray}
+import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.time.{Clock, DefaultClock, TimeIt}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers

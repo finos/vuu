@@ -7,13 +7,12 @@
  */
 package io.venuu.toolbox.net.http2
 
-import java.io.File
-import java.nio.ByteBuffer
-
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.client.api.{Response, Result}
 import org.eclipse.jetty.http.HttpMethod
-import java.io.FileOutputStream
+
+import java.io.{File, FileOutputStream}
+import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 
 object Http2ClientLib {

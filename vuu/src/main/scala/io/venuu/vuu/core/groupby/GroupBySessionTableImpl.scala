@@ -4,14 +4,19 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.text.AsciiUtil
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.{GroupByColumns, GroupByTableDef, TableDef}
 import io.venuu.vuu.core.table._
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.JoinTableProvider
 import io.venuu.vuu.viewport._
 
+import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
+import scala.jdk.CollectionConverters._
+
 trait SessionTable extends DataTable with SessionListener {
   def sessionId: ClientSessionId
+  def delete(): Unit
 }
 
 class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped: KeyObserver[T]) extends WrappedKeyObserver[T](wrapped){
@@ -24,8 +29,8 @@ class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped:
 }
 
 object GroupBySessionTable{
-  def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider): GroupBySessionTableImpl = {
-     new GroupBySessionTableImpl(source, session, joinProvider)(metrics)
+  def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider, clock: Clock): GroupBySessionTableImpl = {
+     new GroupBySessionTableImpl(source, session, joinProvider)(metrics, clock)
   }
 }
 
@@ -33,11 +38,15 @@ object GroupBySessionTable{
   * Created by chris on 21/11/2015.
   */
 class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionId, joinProvider: JoinTableProvider)
-                             (implicit metrics: MetricsProvider)
+                             (implicit metrics: MetricsProvider, clock: Clock)
   extends SimpleDataTable(new GroupByTableDef("", source.asTable.getTableDef), joinProvider)
     with SessionTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
+  final val createInstant = clock.now()
+
   override def linkableName: String = source.linkableName
+
+  private var wrappedObservers: ConcurrentMap[String, WrappedKeyObserver[RowKeyUpdate]] = new ConcurrentHashMap[String, WrappedKeyObserver[RowKeyUpdate]]()
 
   @volatile
   private var keys = ImmutableArray.empty[String]
@@ -93,8 +102,14 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
   override def asTable: DataTable = this
 
-
   override def sessionId: ClientSessionId = session
+
+  override def delete(): Unit = {
+      this.removeAllObservers()
+      MapHasAsScala(this.wrappedObservers).asScala.foreach({ case(key, v) =>
+        this.sourceTable.removeKeyObserver(key, v)
+      })
+  }
 
   override def pullRow(key: String): RowData = {
     pullRow(key, this.columns().toList)
@@ -178,7 +193,7 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
     } ).toArray[Any]
   }
 
-  override def name: String = s"session:$session/groupBy-" + source.name
+  override def name: String = s"session:$session/groupBy-" + source.name + "_" + createInstant.toString
 
   def tableId: String = name + "@" + hashCode()
 
@@ -199,12 +214,12 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
   //def getNodeState = this.tree.getNodeState()
   def openTreeKey(treeKey: String) = {
     this.tree.open(treeKey)
-    this.notifyListeners(treeKey, false)
+    //this.notifyListeners(treeKey, false)
   }
 
   def closeTreeKey(treeKey: String) = {
     this.tree.close(treeKey)
-    this.notifyListeners(treeKey, false)
+    //this.notifyListeners(treeKey, false)
   }
 
   def mapKeyToTreeKey(rowUpdate: RowKeyUpdate): RowKeyUpdate = {
@@ -235,7 +250,7 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
         val wappedObserver = new WrappedUpdateHandlingKeyObserver[RowKeyUpdate](mapKeyToTreeKey, observer)
 
-        //val wrapped = WrappedKeyObserver(observer)
+        wrappedObservers.put(key, wappedObserver)
         sourceTable.addKeyObserver(originalKey, wappedObserver)
       }
       else {
@@ -248,15 +263,26 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
   //in a join table, we must propogate the removal of registration to all child tables also
   override def removeKeyObserver(key: String, observer: KeyObserver[RowKeyUpdate]): Boolean = {
-
-    //val wrapped = WrappedKeyObserver(observer)
-
-    //if(this.tree.getNode(key).isLeaf){
-    sourceTable.removeKeyObserver(key, observer)
-    //}
-
-    super.removeKeyObserver(key, observer)
-
+        //if this is a wrapped observer, observing the underlying table, then...
+    wrappedObservers.get(key) match {
+      //remove it
+      case wo: WrappedKeyObserver[RowKeyUpdate] =>
+        this.wrappedObservers.remove(key)
+        val node = this.tree.getNode(key)
+        if (node != null) {
+          if (node.isLeaf) {
+            val originalKey = node.originalKey
+            sourceTable.removeKeyObserver(originalKey, wo)
+          }else{
+            false
+          }
+        }else{
+          false
+        }
+      //otherwise it must be a tree key, i.e. not a real row in underlying table
+      case null =>
+        //so remove that from our list of observers
+        super.removeKeyObserver(key, observer)
+    }
   }
-
 }
