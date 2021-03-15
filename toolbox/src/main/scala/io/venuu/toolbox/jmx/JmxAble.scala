@@ -1,7 +1,6 @@
 package io.venuu.toolbox.jmx
 
 import java.lang.management.ManagementFactory
-
 import javax.management.ObjectName
 
 /**

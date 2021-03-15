@@ -29,7 +29,9 @@ class OutboundRowPublishQueue extends PublishQueue[ViewPortUpdate]{
 
   private val coallescingQ = new CoalescingQueueNaiveImpl[ViewPortUpdate, CollKey](toKeyFunc, mergeFn)
 
-  override def push(entry: ViewPortUpdate): Unit = coallescingQ.push(entry)
+  override def push(entry: ViewPortUpdate): Unit = {
+    coallescingQ.push(entry)
+  }
 
   override def popUpTo(i: Int): Seq[ViewPortUpdate] = coallescingQ.popUpTo(i)
 

@@ -17,10 +17,10 @@ import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts._
 import io.venuu.vuu.viewport.{DefaultRange, GroupBy, ViewPortContainer}
-import org.scalatest.{GivenWhenThen, OneInstancePerTest}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
+import org.scalatest.{GivenWhenThen, OneInstancePerTest}
 
 class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest with GivenWhenThen {
 
@@ -208,21 +208,21 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       joinProvider.runOnce()
 
-      viewPortContainer.openNode(viewPort.id, "$root/chris")
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
+      viewPortContainer.openNode(viewPort.id, "$root/chris")
 
       val updates = combineQs(viewPort)
 
       assertVpEq(updates) {
         Table(
           ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          (1         ,0         ,""        ,true      ,"$root"   ,false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0",""        ,""        ,""        ,""        ),
-          (4         ,1         ,"chris"   ,true      ,"$root/chris",false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0",""        ,""        ,""        ,""        ),
+          (4         ,1         ,"chris"   ,true      ,"$root/chris",false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0" ,""        ,""        ,""        ,""        ),
           (0         ,2         ,"NYC-0001",false     ,"$root/chris/NYC-0001",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
           (0         ,2         ,"NYC-0002",false     ,"$root/chris/NYC-0002",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
           (0         ,2         ,"NYC-0003",false     ,"$root/chris/NYC-0003",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          (0         ,2         ,"NYC-0004",false     ,"$root/chris/NYC-0004",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l)
+          (0         ,2         ,"NYC-0004",false     ,"$root/chris/NYC-0004",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
+          (4         ,1         ,"chris"   ,true      ,"$root/chris",false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0" ,""        ,""        ,""        ,""        )
         )
       }
 

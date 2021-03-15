@@ -13,8 +13,8 @@ import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.jmx.{JmxAble, MetricsProvider}
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.thread.RunInThread
-import io.venuu.toolbox.time.{Clock, TimeIt}
 import io.venuu.toolbox.time.TimeIt.timeIt
+import io.venuu.toolbox.time.{Clock, TimeIt}
 import io.venuu.vuu.api.Link
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
@@ -209,7 +209,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
     val filtAndSort = UserDefinedFilterAndSort(aFilter, aSort)
 
-    //if we're flipping between a non-group by and a group by
+    //we are not grouped by, but we want to change to a group by
     val structure = if (viewPort.getGroupBy == NoGroupBy && groupBy != NoGroupBy) {
 
       val sourceTable = viewPort.table
@@ -218,14 +218,19 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
       viewport.ViewPortStructuralFields(table = sessionTable, columns = columns, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
 
-      //or if we've reverted back to non-group by from group-by
+    //we are groupBy but we want to revert to no groupBy
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
 
+      val groupByTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTableImpl]
       val sourceTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTableImpl].sourceTable
+      //delete all observers and references
+      groupByTable.delete()
+      //then remove it from table container
+      tableContainer.removeGroupBySessionTable(groupByTable)
 
       viewport.ViewPortStructuralFields(table = sourceTable, columns = columns, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
 
-    } else {
+    } else{
 
       viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
     }
@@ -281,7 +286,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     viewPort.table match {
       case gbsTable: GroupBySessionTableImpl =>
         gbsTable.openTreeKey(treeKey)
-        viewPort.setKeys(gbsTable.getTree.toKeys())
+        viewPort.setKeysAndNotify(treeKey, gbsTable.getTree.toKeys())
       case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
     }
   }
@@ -292,7 +297,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     viewPort.table match {
       case gbsTable: GroupBySessionTableImpl =>
         gbsTable.closeTreeKey(treeKey)
-        viewPort.setKeys(gbsTable.getTree.toKeys())
+        viewPort.setKeysAndNotify(treeKey, gbsTable.getTree.toKeys())
       case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
     }
   }
@@ -356,7 +361,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
       case tbl: GroupBySessionTableImpl =>
 
         val (millis, tree) = timeIt {
-          GroupByTreeBuilder(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
+          new GroupByTreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
         }
         val (millis2, keys) = timeIt {
           //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
@@ -372,7 +377,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
           viewPort.setKeys(keys)
         }
 
-        logger.info(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
+        logger.debug(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
 
         //groupByHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
 

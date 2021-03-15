@@ -5,9 +5,10 @@ import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.LifeCycleRunner
 import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.core.table.{DataTable, RowWithData, TableContainer}
+import io.venuu.vuu.core.table.{DataTable, RowWithData}
 import io.venuu.vuu.provider.Provider
 import io.venuu.vuu.viewport.ViewPortContainer
+
 import scala.jdk.CollectionConverters._
 
 class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,

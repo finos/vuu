@@ -28,6 +28,8 @@ trait KeyedObservable[T] {
   def notifyObservers(key: String, observers: List[KeyObserver[T]], msg: T) = {
     observers.foreach(_.onUpdate(msg))
   }
+
+  def removeAllObservers(): Unit
 }
 
 trait KeyObserver[T] {
@@ -125,6 +127,12 @@ trait KeyedObservableHelper[T] extends KeyedObservable[T] {
       val observersForKey = observersByKey.get(key)
       if (observersForKey == null) List[KeyObserver[T]]()
       else observersForKey.toList
+    }
+  }
+
+  override def removeAllObservers(): Unit = {
+    observersLock.synchronized {
+      observersByKey.clear()
     }
   }
 

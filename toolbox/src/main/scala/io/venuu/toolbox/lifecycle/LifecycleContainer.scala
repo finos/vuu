@@ -1,9 +1,8 @@
 package io.venuu.toolbox.lifecycle
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import com.typesafe.scalalogging.StrictLogging
 
+import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 

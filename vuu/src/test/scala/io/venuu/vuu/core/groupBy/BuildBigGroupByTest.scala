@@ -5,7 +5,7 @@ import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api.TableDef
-import io.venuu.vuu.core.groupby.{GroupBySessionTable, GroupBySessionTableImpl}
+import io.venuu.vuu.core.groupby.GroupBySessionTable
 import io.venuu.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
 import io.venuu.vuu.provider.JoinTableProviderImpl
@@ -22,11 +22,11 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
   Feature("check big groupby's"){
 
-    Scenario("create big group by and build table"){
+    ignore("create big group by and build table"){
 
       implicit val lifecycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl
-      implicit val timeProvider: Clock = new DefaultClock
+      implicit val clock: Clock = new DefaultClock
 
       val joinProvider   = new JoinTableProviderImpl()
 
@@ -56,11 +56,11 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val client = ClientSessionId("A", "B")
 
-      val groupByTable = GroupBySessionTable(table, client, joinProvider)(metrics)
+      val groupByTable = GroupBySessionTable(table, client, joinProvider)(metrics, clock)
 
       val exchange = table.getTableDef.columnForName("exchange")
 
-      val builder = GroupByTreeBuilder(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None)
+      val builder = GroupByTreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None)
 
       logger.info("Starting tree build")
 
@@ -68,7 +68,7 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       logger.info(s"Complete tree build in $millis ms")
 
-      val builder2 = GroupByTreeBuilder(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), None)
+      val builder2 = GroupByTreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), None)
 
       val (sizeMillis, _) = timeIt{ groupByTable.size() }
 

@@ -2,6 +2,7 @@ package io.venuu.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{JmxAble, MetricsProvider}
+import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
 import io.venuu.vuu.core.groupby.{GroupBySessionTableImpl, SessionTable}
 import io.venuu.vuu.net.ClientSessionId
@@ -23,7 +24,7 @@ trait TableContainerMBean{
 /**
  * Created by chris on 26/02/2014.
  */
-class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends JmxAble with TableContainerMBean with StrictLogging{
+class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, clock: Clock) extends JmxAble with TableContainerMBean with StrictLogging{
 
   private val tables = new ConcurrentHashMap[String, DataTable]()
 
@@ -97,6 +98,10 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     val existing = tables.put(table.name, table)
     assert(existing == null, "we should never replace an existing table with session id")
     table
+  }
+
+  def removeGroupBySessionTable(source: RowSource): Unit = {
+    assert(tables.remove(source.name) != null)
   }
 
   def createJoinTable(table: JoinTableDef): DataTable = {

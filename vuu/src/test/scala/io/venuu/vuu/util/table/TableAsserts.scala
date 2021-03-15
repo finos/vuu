@@ -9,7 +9,7 @@ package io.venuu.vuu.util.table
 
 import io.venuu.toolbox.collection.MapDiffUtils
 import io.venuu.toolbox.text.AsciiUtil
-import io.venuu.vuu.core.table.RowWithData
+import io.venuu.vuu.core.table.{EmptyRowData, RowWithData}
 import io.venuu.vuu.viewport.{RowUpdateType, ViewPortUpdate}
 import org.scalatest.prop._
 
@@ -183,7 +183,9 @@ object TableAsserts {
 
   def generic11Assert(updates: Seq[ViewPortUpdate], expectation: TableFor11[_, _, _, _, _, _, _, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
+      .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns) != EmptyRowData)
+      .map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 

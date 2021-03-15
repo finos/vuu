@@ -72,6 +72,7 @@ trait ViewPort {
   def removeVisualLink()
   def getRange(): ViewPortRange
   def setKeys(keys: ImmutableArray[String])
+  def setKeysAndNotify(key: String, keys: ImmutableArray[String])
   def getKeys() : ImmutableArray[String]
   def getKeysInRange() : ImmutableArray[String]
   def getVisualLink(): Option[ViewPortVisualLink]
@@ -140,7 +141,7 @@ case class ViewPortImpl(id: String,
   override def setSelection(rowIndices: Array[Int]): Unit = {
     viewPortLock.synchronized{
       val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)) ).toMap[String, Int]
-      selection = rowIndices.map( idx => (this.keys(idx), idx) ).toMap
+      selection = rowIndices.filter(this.keys(_) != null).map( idx => (this.keys(idx), idx) ).toMap
       for( (key, idx ) <- selection ++ oldSelection ){
         publishHighPriorityUpdate(key, idx)
       }
@@ -239,21 +240,36 @@ case class ViewPortImpl(id: String,
     ImmutableArray.from(inrangeKeys)
   }
 
-  override def setKeys(newKeys: ImmutableArray[String]): Unit = {
-
-    val sendSizeUpdate = newKeys.length != keys.length
-
+  def setKeysPre(newKeys: ImmutableArray[String]): Unit ={
     //send ViewPort
     removeNoLongerSubscribedKeys(newKeys)
+  }
 
+  def setKeysInternal(newKeys: ImmutableArray[String]): Unit ={
     keys = newKeys
+  }
 
+  def setKeysPost(sendSizeUpdate: Boolean, newKeys: ImmutableArray[String]): Unit = {
     if(sendSizeUpdate){
       highPriorityQ.push(new ViewPortUpdate(this, null, new RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
     }
-
     subscribeToNewKeys(newKeys)
+  }
 
+  override def setKeysAndNotify(key: String, newKeys: ImmutableArray[String]): Unit = {
+    val sendSizeUpdate = newKeys.length != keys.length
+    setKeysPre(newKeys)
+    setKeysInternal(newKeys)
+    table.notifyListeners(key, false)
+    setKeysPost(sendSizeUpdate, newKeys)
+  }
+
+  override def setKeys(newKeys: ImmutableArray[String]): Unit = {
+    val sendSizeUpdate = newKeys.length != keys.length
+    setKeysPre(newKeys)
+    setKeysInternal(newKeys)
+    //keys = newKeys
+    setKeysPost(sendSizeUpdate, newKeys)
   }
 
   override def onUpdate(update: RowKeyUpdate): Unit = {

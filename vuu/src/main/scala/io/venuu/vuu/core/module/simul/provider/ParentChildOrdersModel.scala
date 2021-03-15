@@ -3,8 +3,7 @@ package io.venuu.vuu.core.module.simul.provider
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.Clock
 
-import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap, DelayQueue, Delayed, TimeUnit}
-import scala.Int
+import java.util.concurrent.{ConcurrentHashMap, DelayQueue, Delayed, TimeUnit}
 
 case class ParentOrder(id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String, remainingQty: Int, activeChildren: Int)
 case class ChildOrder(parentId: Int, id: Int, ric: String, price: Double, quantity: Int, side: String, strategy: String, exchange: String, ccy: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String)

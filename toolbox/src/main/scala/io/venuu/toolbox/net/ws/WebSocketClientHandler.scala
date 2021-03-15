@@ -1,14 +1,13 @@
 package io.venuu.toolbox.net.ws
 
-import java.nio.ByteBuffer
-import java.util.concurrent.{ArrayBlockingQueue, TimeUnit}
-
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.{Channel, ChannelHandlerContext, ChannelPromise, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.websocketx._
 import io.netty.util.CharsetUtil
 
+import java.nio.ByteBuffer
+import java.util.concurrent.{ArrayBlockingQueue, TimeUnit}
 import scala.concurrent.duration._
 
 class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with StrictLogging {

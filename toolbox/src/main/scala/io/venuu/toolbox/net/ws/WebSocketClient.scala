@@ -1,7 +1,5 @@
 package io.venuu.toolbox.net.ws
 
-import java.nio.ByteBuffer
-
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.Unpooled
 import io.netty.channel._
@@ -12,6 +10,8 @@ import io.netty.handler.codec.http.websocketx._
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler
 import io.netty.handler.codec.http.{DefaultHttpHeaders, HttpClientCodec, HttpObjectAggregator}
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
+
+import java.nio.ByteBuffer
 
 //import io.netty.handler.ssl.SslContext
 //import io.netty.handler.ssl.SslContextBuilder

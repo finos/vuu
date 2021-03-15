@@ -8,8 +8,6 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import io.venuu.vuu.provider.Provider
 
-import scala.util.Try
-
 class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
                                                                               metrics: MetricsProvider ) extends Provider with StrictLogging {
 

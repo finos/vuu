@@ -4,7 +4,6 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
-import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.core.table.{Columns, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
@@ -16,7 +15,7 @@ import org.scalatest.prop.Tables.Table
 /**
   * Created by chris on 02/09/2016.
   */
-class AmendViewPortToTreeTest extends AnyFeatureSpec {
+class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
   import ViewPortTestFns._
 
@@ -28,7 +27,6 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec {
     implicit val lifecycle = new LifecycleContainer
 
     val dateTime = 1437728400000l //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
-
 
     val ordersDef = TableDef(
       name = "orders",
@@ -82,12 +80,9 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec {
 
     val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
-    viewPortContainer.runOnce()
-    viewPortContainer.runGroupByOnce()
+    runContainersOnce(viewPortContainer, joinProvider)
 
-    val combinedUpdates = combineQs(viewPort)
-
-    assertVpEq(combinedUpdates) {
+    assertVpEq(combineQs(viewPort)) {
       Table(
         ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask"),
         ("NYC-0001", "chris", "VOD.L", 1437728400000l, 100, 220.0, 222.0),
@@ -104,6 +99,15 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec {
       FilterSpec(""),
       GroupBy(groupByColumns, List()))
 
+    runContainersOnce(viewPortContainer, joinProvider)
+
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
+      Table(
+        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
+        (1, false, "$root/chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
+      )
+    }
+
     emptyQueues(viewPort);
 
     viewPortContainer.closeNode(viewPort2.id, "$root/chris")
@@ -115,7 +119,6 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec {
     assertVpEq(combinedUpdates2) {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (0, true, "$root", false, true, "", 1, "", "", "", "", "", "", "", "", ""),
         (1, false, "$root/chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
       )
     }
@@ -135,7 +138,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec {
     assertVpEq(combinedUpdates3) {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (0, true, "$root", false, true, "", 2, "", "", "", "", "", "", "", "", ""),
+        //(0, true, "$root", false, true, "", 2, "", "", "", "", "", "", "", "", ""),
         (1, false, "$root/VOD.L", false, false, "VOD.L", 1, "", "", "VOD.L", "", "", "", "", "", ""),
         (1, false, "$root/BT.L", false, false, "BT.L", 1, "", "", "BT.L", "", "", "", "", "", "")
       )

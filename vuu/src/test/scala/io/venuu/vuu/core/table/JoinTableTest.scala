@@ -11,17 +11,16 @@ import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
-import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
-import io.venuu.vuu.viewport.{DefaultRange, RowProcessor, RowUpdateType, ViewPortContainer}
+import io.venuu.vuu.viewport._
 import org.joda.time.LocalDateTime
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 
-class JoinTableTest extends AnyFeatureSpec with Matchers {
+class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics = new MetricsProviderImpl
@@ -122,8 +121,6 @@ class JoinTableTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("check that registering and deregistering listeners on join table propagates to source tables"){
-
-      import io.venuu.vuu.viewport.OrdersAndPricesScenarioFixture._
 
       implicit val lifecycle = new LifecycleContainer
 
