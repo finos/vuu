@@ -6,7 +6,7 @@ import io.venuu.toolbox.time.Clock
 import java.util.concurrent.{ConcurrentHashMap, DelayQueue, Delayed, TimeUnit}
 
 case class ParentOrder(id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String, remainingQty: Int, activeChildren: Int)
-case class ChildOrder(parentId: Int, id: Int, ric: String, price: Double, quantity: Int, side: String, strategy: String, exchange: String, ccy: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String)
+case class ChildOrder(parentId: Int, id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, strategy: String, exchange: String, ccy: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String)
 
 trait OrderListener{
   def onNewParentOrder(parentOrder: ParentOrder)
@@ -286,7 +286,7 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
     val account = parentOrder.account
     val strategy = strategies(randomNumbers.seededRand(0, strategies.length - 1))
     val volLimit = parentOrder.volLimit
-    ChildOrder(parentOrder.id, childId, parentOrder.ric, parentOrder.price, quantity, side, strategy.name, parentOrder.exchange, parentOrder.ccy, volLimit, 0, quantity, 0.0, "NEW")
+    ChildOrder(parentOrder.id, childId, parentOrder.ric, parentOrder.price, quantity, side, account, strategy.name, parentOrder.exchange, parentOrder.ccy, volLimit, 0, quantity, 0.0, "NEW")
   }
 
 

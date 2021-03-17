@@ -113,7 +113,7 @@ class JoinTableProviderImpl(implicit timeProvider: Clock, lifecyle: LifecycleCon
 
       val immutable = MapHasAsScala(map).asScala.toMap
 
-      logger.debug(s"[join] Got event ${immutable}")
+      logger.debug(s"[join] Got event from queue ${immutable}")
 
       val sourceTableList = immutable.keySet.map( tableAndField => tableAndField.split("\\.")(0) ).toList.distinct
 
@@ -148,13 +148,17 @@ class JoinTableProviderImpl(implicit timeProvider: Clock, lifecyle: LifecycleCon
         case _ => null
       }   //.get.asInstanceOf[String]
 
-      logger.debug(s"key = $key")
+      //logger.debug(s"Generating joint table event for key")
 
       if(key != null){
         val rowWithData = RowWithData(key, immutable)
 
+        val jtu = JoinTableUpdate(jt, rowWithData, timeProvider.now())
+
+        logger.debug("[JoinTableProvider] Submitting joint table event:" + jtu)
+
         //get the processing off the esper thread
-        queue.offer(JoinTableUpdate(jt, rowWithData, timeProvider.now()))
+        queue.offer(jtu)
       }
 
     } )

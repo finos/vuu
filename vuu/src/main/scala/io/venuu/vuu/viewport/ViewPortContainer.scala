@@ -269,10 +269,11 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
   def changeRange(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], vpId: String, range: ViewPortRange): ViewPort = {
 
     val vp = viewPorts.get(vpId)
+    val old = vp.getRange()
 
-    logger.info("VP Range [{}] {}->{}, was {}->{}", vpId, range.from, range.to, vp.getRange().from, vp.getRange().to)
+    val (millis, _ ) = timeIt{ vp.setRange(range) }
 
-    vp.setRange(range)
+    logger.info("VP Change Range [{}] {}->{}, was {}->{}, took: {} millis", vpId, range.from, range.to, old.from, old.to, millis)
 
     vp
   }

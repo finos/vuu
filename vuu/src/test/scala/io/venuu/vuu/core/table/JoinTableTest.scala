@@ -14,10 +14,12 @@ import io.venuu.vuu.api._
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.OutboundRowPublishQueue
+import io.venuu.vuu.util.table.TableAsserts.assertVpEq
 import io.venuu.vuu.viewport._
 import org.joda.time.LocalDateTime
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.Tables.Table
 
 
 class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
@@ -168,6 +170,79 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       prices.isKeyObservedBy("BT.L", ko2) should be (false)
       prices.isKeyObservedBy("VOD.L", ko2) should be (true)
+    }
+
+    Scenario("Check deleting keys from join table and see if it propogates correctly"){
+
+      implicit val lifecycle = new LifecycleContainer
+
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, vpContainer) = setup()
+
+      val queue = new OutboundRowPublishQueue()
+      val highPriorityQueue = new OutboundRowPublishQueue()
+
+      joinProvider.start()
+
+      tickInData(ordersProvider, pricesProvider)
+
+      val orderPricesViewport = vpContainer.create(ClientSessionId("A", "B"), queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), orderPrices.getTableDef.columns.toList)
+
+      runContainersOnce(vpContainer, joinProvider)
+
+      assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
+          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000l,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000l,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000l,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000l,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000l,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000l,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000l,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
+          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000l,500       ,500.0     ,501.0     ,null      ,null      ,null      )
+        )
+      }
+
+      ordersProvider.delete("NYC-0001")
+      ordersProvider.delete("NYC-0002")
+
+      emptyQueues(orderPricesViewport)
+      joinProvider.runOnce()
+
+      println("Ticking VOD.L after delete.")
+      val joinDataKeys = orderPrices.asInstanceOf[JoinTable].joinData.getKeyValuesByTable("NYC-0001")
+
+      joinDataKeys shouldBe null
+      orderPricesViewport.getKeys().iterator.contains("NYC-0001") should equal(true)
+      vpContainer.runOnce()
+      orderPricesViewport.getKeys().iterator.contains("NYC-0001") should equal(false)
+
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 230))
+
+      runContainersOnce(vpContainer, joinProvider)
+
+      orderPricesViewport.getKeys().iterator.contains("NYC-0001") should equal(false)
+
+      val array = orderPrices.pullRowAsArray("NYC-0001", orderPrices.getTableDef.columns.toList)
+
+      println()
+
+      assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000l,300       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000l,400       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000l,500       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000l,600       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000l,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
+          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000l,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000l,300       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000l,400       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000l,500       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000l,600       ,230       ,222.0     ,null      ,null      ,null      )
+        )
+      }
+
     }
 
   }

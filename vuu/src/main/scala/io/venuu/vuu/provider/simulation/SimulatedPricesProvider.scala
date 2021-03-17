@@ -74,6 +74,8 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
 
   val logAt = new LogAtFrequency(10_000)
 
+  val doEvery5Mins = new LogAtFrequency(1000 * 60 * 3)
+
   override def subscribe(key: String): Unit = {
     //logger.info(s"Prices Subscribe Called: ${key}")
     val began = timeProvider.now()
@@ -90,11 +92,11 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
 
     val entrySet = SetHasAsScala(currentModes.entrySet()).asScala
 
-    if(logAt.shouldLog()){
-      logger.info("Cycle Count = " + cycleCount)
-    }
+//    if(logAt.shouldLog()){
+//      logger.info("Cycle Count = " + cycleCount)
+//    }
 
-    if( cycleCount > 0 && cycleCount % 20 == 0 )
+    if( doEvery5Mins.shouldLog() )
     {
       val startOfOpen = timeProvider.now() + 5_000
       logger.info("[PRICES] Moving into Closed Market...")
@@ -109,7 +111,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
 
     cycleCount += 1
 
-    timeProvider.sleep(seededRand(timeProvider.now(), 0, maxSleep))
+    timeProvider.sleep(seededRand(timeProvider.now(), 10, maxSleep))
   }
 
   protected def closeMarket(ric: String, timeToOpen: Long): Unit = {

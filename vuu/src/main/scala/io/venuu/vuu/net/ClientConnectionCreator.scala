@@ -75,13 +75,19 @@ class DefaultMessageHandler(val channel: Channel,
         channel.writeAndFlush(new TextWebSocketFrame(json))
       case op: Disconnect =>
 
-        logger.warn("Disconnecting")
+        logger.warn("Disconnecting due to flow controller")
         disconnect()
 
       case BatchSize(size) =>
         if(hasHighPriorityUpdates){
           val updates = highPriorityQueue.popUpTo(size)
           sendUpdatesInternal(updates, highPriority = true)
+          val remaining = size - updates.size
+          if(remaining > 0){
+            val lpUpdates = outboundQueue.popUpTo(remaining)
+            sendUpdatesInternal(lpUpdates, highPriority = true)
+          }
+
         }else{
           val updates = outboundQueue.popUpTo(size)
           sendUpdatesInternal(updates)
@@ -123,7 +129,7 @@ class DefaultMessageHandler(val channel: Channel,
         val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns)
 
         if(dataToSend.size > 0 &&  dataToSend(0) == null)
-          println("ChrisChris>>" + update.table.name + " " + update.key.key + " " + update.index)
+          println("ChrisChris>>" + update.table.name + " " + update.key.key + " " + update.index + " data: " + dataToSend.mkString(","))
 
         val isSelected = if( update.vp.getSelection.contains(update.key.key) ) 1 else 0
 

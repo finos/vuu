@@ -3,7 +3,7 @@
     <option name="ALTERNATIVE_JRE_PATH" value="15" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="io.venuu.vuu.client.swing.SwingClientMain" />
-    <module name="vuu (1)" />
+    <module name="vuu" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="io.venuu.vuu.client.swing.*" />

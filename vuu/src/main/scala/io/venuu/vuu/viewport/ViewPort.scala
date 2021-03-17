@@ -273,10 +273,13 @@ case class ViewPortImpl(id: String,
   }
 
   override def onUpdate(update: RowKeyUpdate): Unit = {
+
     val index = rowKeyToIndex.get(update.key)
 
+    logger.debug(s"VP got update for ${update.key} update, index = ${index} isDeleted = ${update.isDelete}, $update, pushing to queue")
+
     if(isInRange(index) && this.enabled){
-        outboundQ.push(new ViewPortUpdate(this, update.source, new RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
+        outboundQ.push(new ViewPortUpdate(this, update.source, RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
 
   }
