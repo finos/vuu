@@ -29,7 +29,7 @@ class ChildOrdersProvider(val table: DataTable, model: ParentChildOrdersModel)(i
     table.processUpdate(co.id.toString, RowWithData( co.id.toString, Map("id" -> co.id.toString, "idAsInt" -> co.id, "ric" -> co.ric, "price" -> co.price, "quantity" -> co.quantity,
       "side" -> co.side, "parentOrderId" -> co.parentId, "exchange" -> co.exchange, "ccy" -> co.ccy,
       "strategy" -> co.strategy, "volLimit" -> co.volLimit, "filledQty" -> co.filledQty, "openQty" -> co.openQty,
-      "averagePrice" -> co.averagePrice, "status" -> co.status, "lastUpdate" -> clock.now()
+      "averagePrice" -> co.averagePrice, "status" -> co.status, "lastUpdate" -> clock.now(), "account" -> co.account
     )),clock.now() )
   }
 

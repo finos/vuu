@@ -100,7 +100,9 @@ object SimulationModule {
           ),
           indices = Indices(
             Index("parentOrderId"),
-            Index("quantity")
+            Index("quantity"),
+            Index("exchange"),
+            Index("ccy"),
           ),
           joinFields = "id", "ric"
         ),

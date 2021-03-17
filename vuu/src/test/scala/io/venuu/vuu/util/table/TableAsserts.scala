@@ -169,7 +169,9 @@ object TableAsserts {
 
   def generic10Assert(updates: Seq[ViewPortUpdate], expectation: TableFor10[_, _, _, _, _, _, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
+      .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns) != EmptyRowData)
+      .map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 

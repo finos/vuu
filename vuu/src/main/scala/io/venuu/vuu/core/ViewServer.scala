@@ -64,7 +64,7 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
   val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
 
-  val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce() )
+  val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = 1)
   lifecycle(handlerRunner).dependsOn(joinProviderRunner)
 
   val viewPortRunner = new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())

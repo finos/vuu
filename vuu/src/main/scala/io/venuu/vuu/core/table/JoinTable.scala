@@ -168,6 +168,9 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
         this
 
       case index: Integer =>
+
+        logger.debug(s"processing rowKey delete, key = $rowKey, index = $index")
+
         var joinFieldIndex = 0
 
         val newKeysByJoinIndex = new Array[ImmutableArray[String]](joinFields.length)
@@ -176,10 +179,14 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
           //val keyToRemove = keysByJoinIndex(joinFieldIndex).getIndex(index)
 
+          logger.debug(s"Removing rowKey $rowKey from keys by row index, ix = $joinFieldIndex value = ${keysByJoinIndex(joinFieldIndex)}")
+
           newKeysByJoinIndex(joinFieldIndex) = keysByJoinIndex(joinFieldIndex).remove(index)
 
           joinFieldIndex += 1
         }
+
+        logger.debug(s"Removing rowKey $rowKey from keyToIndexMap")
 
         keyToIndexMap.remove(rowKey)
 
@@ -335,8 +342,10 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   override def getTableDef: TableDef = tableDef
 
-  override def notifyListeners(rowKey: String, isDelete: Boolean): Unit = {
-    notifyListeners(rowKey)
+  def notifyListeners(rowKey: String, isDelete: Boolean = false) = {
+    getObserversByKey(rowKey).foreach(obs => {
+      obs.onUpdate(RowKeyUpdate(rowKey, this, isDelete))
+    })
   }
 
   override def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
@@ -392,13 +401,32 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     pullRow(key, this.tableDef.columns.toList)
   }
 
+  private def keyExistsInLeftMostSourceTable(key: String): Boolean = {
+    val keysByTable = joinData.getKeyValuesByTable(key)
+    if(keysByTable == null){
+      false
+    }else {
+      val leftTable = this.tableDef.baseTable.name
+      keysByTable.getOrElse(leftTable, null) match {
+        case null =>
+          false
+        case key: String => {
+            sourceTables.get(leftTable).get.pullRow(key) match {
+              case EmptyRowData => false
+              case x: RowWithData => true
+            }
+        }
+      }
+    }
+  }
+
   override def pullRow(key: String, columns: List[Column]): RowData = {
 
     val columnsByTable = columns.map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name).toMap
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
-    if(keysByTable == null)
+    if(keysByTable == null || ! keyExistsInLeftMostSourceTable(key))
       EmptyRowData
     else{
       val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({ case (previous, (tableName, columnList)) => {
@@ -428,6 +456,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     }
   }
 
+
   override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
 
     val columnsByTable = columns
@@ -436,50 +465,92 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
-    val foldedMap = columnsByTable.foldLeft(Map[JoinColumn, Any]())({ case (previous, (tableName, columnList)) => {
+    if(keysByTable == null || ! keyExistsInLeftMostSourceTable(key))
+      Array()
+    else{
 
-      val table = sourceTables.get(tableName).get
+      val foldedMap = columnsByTable.foldLeft(Map[JoinColumn, Any]())({ case (previous, (tableName, columnList)) => {
 
-      val fk = if(keysByTable == null) null
-               else
-                  keysByTable.get(tableName) match {
-                    case Some(fk) => fk
-                    case None => null
-                  }
+        val table = sourceTables.get(tableName).get
 
-      val sourceColumns = columnList.map(jc => jc.sourceColumn)
+        val fk = if(keysByTable == null) null
+        else
+          keysByTable.get(tableName) match {
+            case Some(fk) => fk
+            case None => null
+          }
 
-      if (fk == null) {
-        logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key ${key}")
-        previous
-      }
-      else {
-        table.pullRow(fk, sourceColumns) match {
-          case EmptyRowData =>
-            previous
-          case data: RowWithData =>
-            previous ++ columnList.map(column => (column -> column.sourceColumn.getData(data)))
+        val sourceColumns = columnList.map(jc => jc.sourceColumn)
+
+        if (fk == null) {
+          logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key ${key}")
+          previous
+        }
+        else {
+          table.pullRow(fk, sourceColumns) match {
+            case EmptyRowData =>
+              previous
+            case data: RowWithData =>
+              previous ++ columnList.map(column => (column -> column.sourceColumn.getData(data)))
+          }
         }
       }
+      })
+
+      if(foldedMap.isEmpty){
+        Array()
+      }else{
+        columns.map(c => foldedMap.get(c.asInstanceOf[JoinColumn]) match {
+          case None => ""
+          case Some(x) => x
+        } ).toArray[Any]
+      }
     }
-    })
-
-    val orderedArray = columns.map(c => foldedMap.get(c.asInstanceOf[JoinColumn]) match {
-      case None => ""
-      case Some(x) => x
-    } ).toArray[Any]
-
-    orderedArray
   }
-
-
 
   def notifyListeners(rowKey: String) = {
     getObserversByKey(rowKey).foreach(obs => obs.onUpdate(new RowKeyUpdate(rowKey, this)))
   }
 
   override def processDelete(rowKey: String): Unit = {
+
+    val rowData = this.pullRow(rowKey)
+
     joinData = joinData.processDelete(rowKey)
+
+    if (rowData != null && rowData != EmptyRowData)
+      sendDeleteToJoinSink(rowKey, rowData)
+
+    notifyListeners(rowKey, isDelete = true)
+  }
+
+  def sendDeleteToJoinSink(rowKey: String, rowData: RowData) = {
+
+    //only send to Esper when esper cares
+    if (joinProvider.hasJoins(this.tableDef.name)) {
+
+      val event = toDeleteEvent(rowKey, rowData)
+
+      joinProvider.sendEvent(this.tableDef.name, event)
+    }
+  }
+
+  private def toDeleteEvent(rowKey: String, rowData: RowData): java.util.HashMap[String, Any] = {
+
+    val ev = new util.HashMap[String, Any]()
+
+    this.tableDef.joinFields.foreach(field => {
+      val column = this.tableDef.columnForName(field)
+      ev.put(column.name, rowData.get(column))
+    }
+    )
+
+    //always add this primary key
+    val pk = this.tableDef.columnForName(this.tableDef.keyField)
+    ev.put(pk.name, rowData.get(pk))
+    ev.put("_isDeleted", true)
+
+    ev
   }
 
   override def readRow(key: String, fields: List[String], processor: RowProcessor): Unit = {
@@ -554,12 +625,11 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     val keysByTable = getFKForPK(key)
 
     if (keysByTable == null) {
-      logger.warn(s"tried to subscribe to key $key in join table ${getTableDef.name} but couldn't as not in keys")
+      logger.warn(s"tried to remove key $key in join table ${getTableDef.name} but couldn't as not in keys")
       true
     }
     else {
       val wrapped = WrappedKeyObserver(observer)
-
       sourceTables.foreach({ case (name, table) => {
         keysByTable.get(name) match {
           case null =>
