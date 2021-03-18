@@ -24,9 +24,9 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
     ignore("create big group by and build table"){
 
+      implicit val clock: Clock = new DefaultClock
       implicit val lifecycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl
-      implicit val clock: Clock = new DefaultClock
 
       val joinProvider   = new JoinTableProviderImpl()
 

@@ -10,7 +10,7 @@ package io.venuu.vuu.core.module
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.TableDef
-import io.venuu.vuu.core.ViewServer
+import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.table.DataTable
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.provider.Provider
@@ -27,7 +27,7 @@ trait ViewServerModule {
   def name: String
   def tableDefs: List[TableDef]
   def serializationMixin: Object
-  def rpcHandlerUnrealized: ViewServer => RpcHandler
-  def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider
+  def rpcHandlerUnrealized: VuuServer => RpcHandler
+  def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider
   def staticFileResources():  List[StaticServedResource]
 }

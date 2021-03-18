@@ -9,9 +9,20 @@
   <version>0.1-SNAPSHOT</version>
 
   <name>vuu-parent</name>
-  <!-- FIXME change it to the project's website -->
   <url>http://venuu.io/vuu</url>
   <packaging>pom</packaging>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-stack-depchain</artifactId>
+                <version>${vertx.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,8 +37,9 @@
     <jackson.version>2.12.1</jackson.version>
     <aeron.version>1.17.0</aeron.version>
     <antlr.version>4.7.2</antlr.version>
-    <netty.version>4.1.58.Final</netty.version>
+    <netty.version>4.1.60.Final</netty.version>
     <maven.scala.plugin>2.15.2</maven.scala.plugin>
+    <vertx.version>4.0.3</vertx.version>
   </properties>
 
 
@@ -64,6 +76,12 @@
       <dependency>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
+          <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
           <version>${jackson.version}</version>
       </dependency>
 

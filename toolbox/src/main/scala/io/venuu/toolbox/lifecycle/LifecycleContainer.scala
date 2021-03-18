@@ -1,6 +1,8 @@
 package io.venuu.toolbox.lifecycle
 
 import com.typesafe.scalalogging.StrictLogging
+import io.venuu.toolbox.thread.{LifeCycleRunner, Runner}
+import io.venuu.toolbox.time.Clock
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
@@ -217,7 +219,9 @@ abstract class DefaultLifecycleEnabled extends LifecycleEnabled {
   override val lifecycleId: String = ""
 }
 
-class LifecycleContainer extends StrictLogging {
+class LifecycleContainer(implicit clock: Clock) extends StrictLogging {
+
+  val thread = new Runner("lifeCycleThread", () => {Thread.sleep(10)})
 
   val dependencyGraph = new DirectedAcyclicGraph[LifecycleEnabled]()
 
@@ -225,6 +229,7 @@ class LifecycleContainer extends StrictLogging {
     val container = this
     Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
       override def run(): Unit = {
+        thread.interrupt()
         container.stop()
       }
     }, "lcShutdownHook"))
@@ -298,6 +303,10 @@ class LifecycleContainer extends StrictLogging {
       logger.info(s"Destroying ${comp.getClass}")
       comp.doDestroy()
     })
+  }
+
+  def join() = {
+    thread.join()
   }
 
   def stop() = {

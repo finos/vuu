@@ -3,7 +3,7 @@ package io.venuu.vuu.core.module
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
-import io.venuu.vuu.core.ViewServer
+import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.table.DataTable
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.provider.Provider
@@ -11,9 +11,9 @@ import io.venuu.vuu.provider.Provider
 import java.nio.file.Path
 
 
-case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: List[(TableDef, (DataTable, ViewServer) => Provider)], joinDefs: List[TableDefs => JoinTableDef]){
+case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: List[(TableDef, (DataTable, VuuServer) => Provider)], joinDefs: List[TableDefs => JoinTableDef]){
 
-  def add(tableDef: TableDef, func: (DataTable, ViewServer) => Provider) : TableDefs = {
+  def add(tableDef: TableDef, func: (DataTable, VuuServer) => Provider) : TableDefs = {
       TableDefs(realizedTableDefs, tableDefs ++ List((tableDef, func)), joinDefs)
   }
 
@@ -34,9 +34,9 @@ case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: Lis
   }
 }
 
-case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[ViewServer => RpcHandler], vsName: String, staticServedResources: List[StaticServedResource]){
+case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[VuuServer => RpcHandler], vsName: String, staticServedResources: List[StaticServedResource]){
 
-  def addTable(tableDef: TableDef, func: (DataTable, ViewServer) => Provider): ModuleFactoryNode ={
+  def addTable(tableDef: TableDef, func: (DataTable, VuuServer) => Provider): ModuleFactoryNode ={
     ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources)
   }
 
@@ -44,7 +44,7 @@ case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[ViewSer
     ModuleFactoryNode(tableDefs.addJoin(func), rpc, vsName, staticServedResources)
   }
 
-  def addRpcHandler(rpcFunc: ViewServer => RpcHandler): ModuleFactoryNode ={
+  def addRpcHandler(rpcFunc: VuuServer => RpcHandler): ModuleFactoryNode ={
     ModuleFactoryNode(tableDefs, rpc ++ List(rpcFunc), vsName, staticServedResources)
   }
 
@@ -80,11 +80,11 @@ case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[ViewSer
       override def name: String =  theName
       override def tableDefs: List[TableDef] = mutableTableDefs.realizedTableDefs
       override def serializationMixin: AnyRef = null
-      override def rpcHandlerUnrealized: ViewServer => RpcHandler = {
+      override def rpcHandlerUnrealized: VuuServer => RpcHandler = {
         rpc.head
       }
 
-      override def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = {
+      override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = {
         baseTables.find({case(td, func) => td.name == table.name }).get._2(table, viewserver)
       }
       override def staticFileResources(): List[StaticServedResource] = staticServedResources

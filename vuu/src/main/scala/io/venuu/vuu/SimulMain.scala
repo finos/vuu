@@ -12,7 +12,8 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.metrics.MetricsModule
 import io.venuu.vuu.core.module.simul.SimulationModule
-import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
+import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 
 import java.nio.file.Paths
 
@@ -30,13 +31,21 @@ object SimulMain extends App{
 
   lifecycle.autoShutdownHook()
 
-  val config = ViewServerConfig(8080, 8443, 8090, Paths.get("vuu/src/main/resources/www").toAbsolutePath.toString)
-                  .withModule(SimulationModule())
-                  .withModule(MetricsModule())
+  val config = VuuServerConfig(
+    VuuHttp2ServerOptions()
+      //.withWebRoot("../vuu/src/main/resources/www")
+      .withWebRoot("../vuu-ui/dist/app")
+      .withSsl("vuu/src/main/resources/certs/cert.pem",
+               "vuu/src/main/resources/certs/key.pem")
+      .withDirectoryListings(true)
+      .withPort(8443),
+    VuuWebSocketOptions()
+      .withUri("websocket")
+      .withWsPort(8090)
+  ).withModule(SimulationModule())
+   .withModule(MetricsModule())
 
-  val viewServer = new ViewServer(config)
-
+  val viewServer = new VuuServer(config)
   lifecycle.start()
-
   viewServer.join()
 }

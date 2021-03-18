@@ -13,8 +13,10 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.{LifeCycleRunner, Runner}
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
+import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.table.{Columns, DataTable}
-import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
+import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.net.ws.WebSocketClient
 import io.venuu.vuu.net.{CreateViewPortSuccess, JsonVsSerializer, TableRowUpdates, WebSocketViewServerClient}
 import io.venuu.vuu.provider.Provider
@@ -46,7 +48,7 @@ class CreateViewPortScenarioTest extends AnyFeatureSpec with Matchers {
       new SimulatedBigInstrumentsProvider(table)
     }
 
-    def createTables(viewServer: ViewServer): (DataTable, DataTable, DataTable) = {
+    def createTables(viewServer: VuuServer): (DataTable, DataTable, DataTable) = {
       val instrumentDef = TableDef(
         name = "instruments",
         keyField = "ric",
@@ -87,9 +89,17 @@ class CreateViewPortScenarioTest extends AnyFeatureSpec with Matchers {
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-      val config = ViewServerConfig(8080, 8443, 8090, "src/main/resources/www")
+      val config = VuuServerConfig(
+        VuuHttp2ServerOptions()
+          .withWebRoot("vuu/src/main/resources/www")
+          .withSsl("vuu/vuu/src/main/resources/certs/cert.pem", "vuu/vuu/src/main/resources/certs/key.pem")
+          .withDirectoryListings(true),
+        VuuWebSocketOptions()
+          .withUri("websocket")
+          .withWsPort(8090)
+      ).withModule(SimulationModule())
 
-      val viewServer = new ViewServer(config)
+      val viewServer = new VuuServer(config)
 
       val client = new WebSocketClient("ws://localhost:8090/websocket", 8090)
 

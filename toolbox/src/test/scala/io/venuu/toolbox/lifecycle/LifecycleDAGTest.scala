@@ -1,6 +1,7 @@
 package io.venuu.toolbox.lifecycle
 
 import com.typesafe.scalalogging.StrictLogging
+import io.venuu.toolbox.time.TestFriendlyClock
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -59,6 +60,8 @@ class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
   Feature("Test that a lifecycle DAG is possible"){
 
     Scenario("check that we can create a DAG"){
+
+      implicit val clock = new TestFriendlyClock(1000l)
 
       implicit val lifecycle = new LifecycleContainer
 

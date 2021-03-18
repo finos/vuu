@@ -26,8 +26,8 @@ class GroupByAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWh
 
   Scenario("test groupBy tree structure update") {
 
+    implicit val clock = new DefaultClock
     implicit val lifeCycle = new LifecycleContainer
-    implicit val timeProvider = new DefaultClock
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
     val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -149,8 +149,8 @@ class GroupByAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWh
 
   Scenario("test groupBy with source table update") {
 
-    implicit val lifeCycle = new LifecycleContainer
     implicit val timeProvider = new DefaultClock
+    implicit val lifeCycle = new LifecycleContainer
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
     val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()

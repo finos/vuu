@@ -23,8 +23,8 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
 
     Scenario("check we can create a simple groupby tree viewport"){
 
+      implicit val clock = new DefaultClock
       implicit val lifeCycle = new LifecycleContainer
-      implicit val timeProvider = new DefaultClock
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -161,8 +161,8 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
 
   Scenario("test filter in groupBy") {
 
-    implicit val lifeCycle = new LifecycleContainer
     implicit val timeProvider = new DefaultClock
+    implicit val lifeCycle = new LifecycleContainer
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
     val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()

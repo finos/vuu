@@ -9,6 +9,8 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.websocketx._
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler
 import io.netty.handler.codec.http.{DefaultHttpHeaders, HttpClientCodec, HttpObjectAggregator}
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory
+import io.netty.handler.ssl.{SslContext, SslContextBuilder}
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 
 import java.nio.ByteBuffer
@@ -72,20 +74,6 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
   override val lifecycleId: String = "webSocketClient"
 }
 
-
-/**
- * This is an example of a WebSocket client.
- * <p>
- * In order to run this example you need a compatible WebSocket server.
- * Therefore you can either start the WebSocket server from the examples
- * by running {@link io.netty.example.http.websocketx.server.WebSocketServer}
- * or connect to an existing WebSocket server such as
- * <a href="http://www.websocket.org/echo.html">ws://echo.websocket.org</a>.
- * <p>
- * The client will attempt to connect to the URI passed to it as the first argument.
- * You don't have to specify any arguments if you want to connect to the example WebSocket server,
- * as this is the default.
- */
 object WebSocketClient {
   val URL: String = System.getProperty("url", "ws://127.0.0.1:8080/websocket")
 
@@ -114,13 +102,13 @@ object WebSocketClient {
       return
     }
     val ssl: Boolean = "wss".equalsIgnoreCase(scheme)
-//    val sslCtx: SslContext = null
-//    if (ssl) {
-//      sslCtx = SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE).build
-//    }
-//    else {
-//      sslCtx = null
-//    }
+    var sslCtx: SslContext = null
+    if (ssl) {
+      sslCtx = SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE).build
+    }
+    else {
+      sslCtx = null
+    }
     val group: EventLoopGroup = new NioEventLoopGroup
     try {
       val handler: WebSocketClientHandler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders))

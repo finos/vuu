@@ -10,14 +10,35 @@ import io.venuu.vuu.core.module.{ModuleContainer, RealizedViewServerModule, Stat
 import io.venuu.vuu.core.table.{DataTable, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
-import io.venuu.vuu.net.http.Http2Server
+import io.venuu.vuu.net.http.{Http2Server, VuuHttp2Server, VuuHttp2ServerOptions}
 import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import io.venuu.vuu.net.ws.WebSocketServer
 import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer}
 import io.venuu.vuu.viewport.ViewPortContainer
 
-case class ViewServerConfig(httpPort: Int, httpsPort: Int, wsPort: Int, webRoot: String, modules: List[ViewServerModule] = List()){
-  def withModule(module: ViewServerModule): ViewServerConfig = {
+object VuuWebSocketOptions{
+  def apply(): VuuWebSocketOptions = {
+    VuuWebSocketOptionsImpl(8090, "/websocket")
+  }
+}
+
+trait VuuWebSocketOptions{
+
+  def wsPort: Int
+  def uri: String
+
+  def withWsPort(port: Int): VuuWebSocketOptions
+  def withUri(uri: String): VuuWebSocketOptions
+
+}
+
+case class VuuWebSocketOptionsImpl(wsPort: Int, uri: String) extends VuuWebSocketOptions{
+  override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
+  override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
+}
+
+case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions, wsOptions: VuuWebSocketOptions, modules: List[ViewServerModule] = List()){
+  def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
 }
@@ -25,7 +46,7 @@ case class ViewServerConfig(httpPort: Int, httpsPort: Int, wsPort: Int, webRoot:
 /**
  * View Server
  */
-class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging{
+class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging{
 
   val serializer = JsonVsSerializer
 
@@ -57,9 +78,9 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
   val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
 
   //order of creation here is important
-  val server = new WebSocketServer(config.wsPort, factory)
+  val server = new WebSocketServer(config.wsOptions.wsPort, factory)
 
-  val httpServer = new Http2Server(config.httpPort, config.httpsPort, config.webRoot)
+  val httpServer = VuuHttp2Server(config.httpOptions)
 
   val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
@@ -93,7 +114,7 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
     table.setProvider(provider)
   }
 
-  private def registerModule(module: ViewServerModule): ViewServer = {
+  private def registerModule(module: ViewServerModule): VuuServer = {
 
     val vs = this;
 
@@ -102,8 +123,8 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
       override def name: String = module.name
       override def tableDefs: List[TableDef] = module.tableDefs
       override def serializationMixin: AnyRef = module.serializationMixin
-      override def rpcHandlerUnrealized: ViewServer => RpcHandler = module.rpcHandlerUnrealized
-      override def getProviderForTable(table: DataTable, viewserver: ViewServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
+      override def rpcHandlerUnrealized: VuuServer => RpcHandler = module.rpcHandlerUnrealized
+      override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
@@ -136,7 +157,9 @@ class ViewServer(config: ViewServerConfig)(implicit lifecycle: LifecycleContaine
 
   lifecycle(this).dependsOn(httpServer, server,joinProviderRunner, handlerRunner, viewPortRunner, joinProvider)
 
-  def join() = httpServer.join()
+  def join() = {
+    lifecycle.join()
+  }
 
   override def doStart(): Unit = {}
   override def doStop(): Unit = {}

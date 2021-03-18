@@ -29,8 +29,8 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
     Scenario("create groupby, remove, create, remove") {
 
+      implicit val clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
       implicit val lifeCycle = new LifecycleContainer
-      implicit val timeProvider = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()

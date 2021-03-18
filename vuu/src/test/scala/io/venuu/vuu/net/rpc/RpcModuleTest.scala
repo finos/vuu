@@ -4,7 +4,8 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.{MyObjectParam, TestModule}
-import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
+import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.net.ws.WebSocketClient
 import io.venuu.vuu.net.{JsonVsSerializer, WebSocketViewServerClient}
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -74,10 +75,18 @@ class RpcModuleTest extends AnyFeatureSpec with Matchers {
       val https = 10002
       val ws = 10003
 
-      val config = ViewServerConfig(http, https, ws, "src/main/resources/www")
-                        .withModule(TestModule())
+      val config = VuuServerConfig(
+        VuuHttp2ServerOptions()
+          .withWebRoot("vuu/src/main/resources/www")
+          .withSsl("vuu/vuu/src/main/resources/certs/cert.pem", "vuu/vuu/src/main/resources/certs/key.pem")
+          .withDirectoryListings(true)
+          .withPort(https),
+        VuuWebSocketOptions()
+          .withUri("websocket")
+          .withWsPort(ws)
+      ).withModule(TestModule())
 
-      val viewServer = new ViewServer(config)
+      val viewServer = new VuuServer(config)
 
       val client = new WebSocketClient(s"ws://localhost:${ws}/websocket", ws)
 

@@ -8,6 +8,7 @@
 package io.venuu.toolbox.lifecycle
 
 import com.typesafe.scalalogging.StrictLogging
+import io.venuu.toolbox.time.TestFriendlyClock
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -50,6 +51,8 @@ class LifecycleTest extends AnyFeatureSpec with Matchers {
   Feature("check that the lifecycle behaves as we expect on startup"){
 
     Scenario("add non-dependent components at same level and check the start order"){
+
+      implicit val clock = new TestFriendlyClock(1000l)
 
       implicit val lifecycle = new LifecycleContainer
 

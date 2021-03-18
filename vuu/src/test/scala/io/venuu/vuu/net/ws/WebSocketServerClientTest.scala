@@ -24,8 +24,8 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
     ignore("create web socket server and client and send data between"){
 
-      implicit val lifecycle = new LifecycleContainer
       implicit val timeProvider: Clock = new DefaultClock
+      implicit val lifecycle = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val serializer = JsonVsSerializer

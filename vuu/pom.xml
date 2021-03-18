@@ -98,7 +98,20 @@
             <artifactId>log4j-over-slf4j</artifactId>
             <version>1.7.12</version>
         </dependency>
+
         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>${vertx.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+            <version>${vertx.version}</version>
+        </dependency>
+
+        <!--dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-util-ajax</artifactId>
             <version>${jetty.version}</version>
@@ -122,7 +135,7 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-alpn-java-server</artifactId>
             <version>${jetty.version}</version>
-            <!--scope>test</scope-->
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -190,7 +203,7 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>apache-jstl</artifactId>
             <version>${jetty.version}</version>
-        </dependency>
+        </dependency -->
 
         <dependency>
             <groupId>org.antlr</groupId>

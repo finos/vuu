@@ -40,8 +40,8 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
     Scenario("create web socket server and client and send data between"){
 
+      implicit val clock: Clock = new DefaultClock
       implicit val lifecycle = new LifecycleContainer
-      implicit val timeProvider: Clock = new DefaultClock
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       //order of creation here is important
