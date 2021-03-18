@@ -61,12 +61,12 @@ class RpcModuleTest extends AnyFeatureSpec with Matchers {
 
       //viewServer.join()
 
-      Thread.sleep(100)
+      //Thread.sleep(100)
 
       val token = auth("chris", "chris")
       val session = login(token, "chris")
 
-      Thread.sleep(200)
+      //Thread.sleep(200)
 
       val returnVal = rpcCall(session, token, "chris", "onSendToMarket", Array(new MyObjectParam("foo", "bar")), "TEST")
 
