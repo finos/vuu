@@ -13,43 +13,6 @@ import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.ExecutionContext
 
-//class TestModule extends ViewServerModule{
-//
-//  def name: String = "TEST"
-//  def tableDefs: List[TableDef] = {
-//    List(
-//      TableDef(
-//        name = "instruments",
-//        keyField = "ric",
-//        columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Double"),
-//        joinFields = "ric"
-//      )
-//    )
-//  }
-//
-//  def serializationMixin: AnyRef = {
-//    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-//    @JsonSubTypes(Array(
-//      new Type(value = classOf[MyObjectParam], name = "MY_OBJ")
-//    ))
-//    trait TestJsonSerializationMixin {}
-//
-//    new TestJsonSerializationMixin{}
-//  }
-//
-//  def rpcHandler: RpcHandler = {
-//    new MyCustomRpcHandler
-//  }
-//
-//  override def getProviderForTable(table: DataTable)(implicit time: TimeProvider, lifecycleContainer: LifecycleContainer): Provider = {
-//    table.name match {
-//      case "instruments" => new MockProvider(table)
-//    }
-//  }
-//}
-
-
-
 /**
   * Created by chris on 17/08/2016.
   */
@@ -78,7 +41,7 @@ class RpcModuleTest extends AnyFeatureSpec with Matchers {
       val config = VuuServerConfig(
         VuuHttp2ServerOptions()
           .withWebRoot("vuu/src/main/resources/www")
-          .withSsl("vuu/vuu/src/main/resources/certs/cert.pem", "vuu/vuu/src/main/resources/certs/key.pem")
+          .withSsl("vuu/src/main/resources/certs/cert.pem", "vuu/src/main/resources/certs/key.pem")
           .withDirectoryListings(true)
           .withPort(https),
         VuuWebSocketOptions()
