@@ -11,6 +11,7 @@ import io.venuu.vuu.core.table.{DataTable, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
 import io.venuu.vuu.net.http.{Http2Server, VuuHttp2Server, VuuHttp2ServerOptions}
+import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import io.venuu.vuu.net.ws.WebSocketServer
 import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer}
@@ -80,7 +81,9 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   //order of creation here is important
   val server = new WebSocketServer(config.wsOptions.wsPort, factory)
 
-  val httpServer = VuuHttp2Server(config.httpOptions)
+  val restServices = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
+
+  val httpServer = VuuHttp2Server(config.httpOptions, restServices)
 
   val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
@@ -120,10 +123,12 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
     val realized = new RealizedViewServerModule{
       override def rpcHandler: RpcHandler = module.rpcHandlerUnrealized.apply(vs)
+      override def restServices: List[RestService] = module.restServicesUnrealized.map(_.apply(vs))
       override def name: String = module.name
       override def tableDefs: List[TableDef] = module.tableDefs
       override def serializationMixin: AnyRef = module.serializationMixin
       override def rpcHandlerUnrealized: VuuServer => RpcHandler = module.rpcHandlerUnrealized
+      override def restServicesUnrealized: List[VuuServer => RestService] = module.restServicesUnrealized
       override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }

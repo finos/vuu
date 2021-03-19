@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentHashMap
   */
 class ModuleContainer extends DefaultLifecycleEnabled{
 
+  import scala.jdk.CollectionConverters._
+
   private val modules = new ConcurrentHashMap[String, RealizedViewServerModule]()
 
   def register(module: RealizedViewServerModule): Unit = modules.put(module.name, module)
@@ -16,5 +18,7 @@ class ModuleContainer extends DefaultLifecycleEnabled{
   def get(name: String): Option[RealizedViewServerModule] = {
     Option(modules.get(name))
   }
+
+  def getAll() = CollectionHasAsScala(modules.values()).asScala.toList
 
 }

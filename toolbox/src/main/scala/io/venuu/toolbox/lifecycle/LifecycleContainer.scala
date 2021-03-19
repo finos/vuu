@@ -221,7 +221,8 @@ abstract class DefaultLifecycleEnabled extends LifecycleEnabled {
 
 class LifecycleContainer(implicit clock: Clock) extends StrictLogging {
 
-  val thread = new Runner("lifeCycleThread", () => {Thread.sleep(10)})
+  val thread = new Runner("lifeCycleJoinRunner", () => {Thread.sleep(1000)})
+  thread.runInBackground()
 
   val dependencyGraph = new DirectedAcyclicGraph[LifecycleEnabled]()
 
@@ -229,7 +230,7 @@ class LifecycleContainer(implicit clock: Clock) extends StrictLogging {
     val container = this
     Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
       override def run(): Unit = {
-        thread.interrupt()
+        thread.stop()
         container.stop()
       }
     }, "lcShutdownHook"))

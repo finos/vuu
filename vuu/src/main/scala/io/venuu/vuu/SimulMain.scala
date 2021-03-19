@@ -12,8 +12,10 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.metrics.MetricsModule
 import io.venuu.vuu.core.module.simul.SimulationModule
+import io.venuu.vuu.core.module.vui.VuiStateModule
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
+import io.venuu.vuu.state.{MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, VuiState, VuiStateStore}
 
 import java.nio.file.Paths
 
@@ -26,8 +28,12 @@ object SimulMain extends App{
   JmxInfra.enableJmx()
 
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
-  implicit val timeProvider: Clock = new DefaultClock
+  implicit val clock: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+
+  val store = new MemoryBackedVuiStateStore()
+
+  store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
 
   lifecycle.autoShutdownHook()
 
@@ -44,8 +50,11 @@ object SimulMain extends App{
       .withWsPort(8090)
   ).withModule(SimulationModule())
    .withModule(MetricsModule())
+   .withModule(VuiStateModule(store))
 
-  val viewServer = new VuuServer(config)
+  val vuuServer = new VuuServer(config)
+
   lifecycle.start()
-  viewServer.join()
+
+  vuuServer.join()
 }

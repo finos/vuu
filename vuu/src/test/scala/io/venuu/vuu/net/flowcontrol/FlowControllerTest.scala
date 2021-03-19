@@ -14,7 +14,7 @@ class FlowControllerTest extends AnyFeatureSpec with Matchers {
 
     Scenario("check simple flow controller"){
 
-      implicit val timeProvider = new TestFriendlyClock(100l)
+      implicit val clock = new TestFriendlyClock(100l)
 
       val flowController = new DefaultFlowController
 
@@ -24,11 +24,11 @@ class FlowControllerTest extends AnyFeatureSpec with Matchers {
 
       flowController.shouldSend() shouldBe(BatchSize(300))
 
-      timeProvider.sleep(5001)
+      clock.sleep(5001)
 
       flowController.shouldSend() shouldBe(SendHeartbeat())
 
-      timeProvider.sleep(15000)
+      clock.sleep(15000)
 
       flowController.shouldSend() shouldBe(Disconnect())
     }

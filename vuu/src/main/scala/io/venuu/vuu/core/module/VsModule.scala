@@ -12,6 +12,7 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.table.DataTable
+import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.provider.Provider
 
@@ -19,6 +20,7 @@ import java.nio.file.Path
 
 trait RealizedViewServerModule extends ViewServerModule{
   def rpcHandler: RpcHandler
+  def restServices: List[RestService]
 }
 
 case class StaticServedResource(url: String, directory: Path, canBrowse: Boolean)
@@ -30,4 +32,5 @@ trait ViewServerModule {
   def rpcHandlerUnrealized: VuuServer => RpcHandler
   def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider
   def staticFileResources():  List[StaticServedResource]
+  def restServicesUnrealized: List[VuuServer => RestService]
 }
