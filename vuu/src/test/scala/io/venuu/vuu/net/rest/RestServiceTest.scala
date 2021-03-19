@@ -25,7 +25,7 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
   Feature("check we can add rest services and call them") {
 
-    Scenario("add the ui state rest service") {
+    ignore("add the ui state rest service") {
 
       import io.venuu.vuu.client.ClientHelperFns._
 
