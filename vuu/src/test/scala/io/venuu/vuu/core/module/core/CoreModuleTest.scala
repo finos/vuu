@@ -5,8 +5,9 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.simul.SimulationModule
-import io.venuu.vuu.core.{ViewServer, ViewServerConfig}
+import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net._
+import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.net.ws.WebSocketClient
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -26,10 +27,17 @@ class CoreModuleTest extends AnyFeatureSpec with Matchers with StrictLogging wit
 
     lifecycle.autoShutdownHook()
 
-    val config = ViewServerConfig(8080, 8443, 8090, "src/main/resources/www")
-      .withModule(SimulationModule())
+    val config = VuuServerConfig(
+      VuuHttp2ServerOptions()
+        .withWebRoot("vuu/src/main/resources/www")
+        .withSsl("vuu/vuu/src/main/resources/certs/cert.pem", "vuu/vuu/src/main/resources/certs/key.pem")
+        .withDirectoryListings(true),
+      VuuWebSocketOptions()
+        .withUri("websocket")
+        .withWsPort(8090)
+    ).withModule(SimulationModule())
 
-    val viewServer = new ViewServer(config)
+    val viewServer = new VuuServer(config)
 
     val client = new WebSocketClient("ws://localhost:8090/websocket", 8090)
 

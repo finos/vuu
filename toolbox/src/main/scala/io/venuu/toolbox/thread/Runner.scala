@@ -17,7 +17,7 @@ import scala.util.control.NonFatal
 /**
   * Runner is just a wrapper around thread currently, which some nicer error handling.
   */
-class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce: Boolean = false)(implicit timeProvider: Clock) extends StrictLogging {
+class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce: Boolean = false)(implicit clock: Clock) extends StrictLogging {
 
   private val thread = new NamedThreadFactory(name).newThread(getRunnable)
 
@@ -28,7 +28,7 @@ class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce:
     if(takenMillis < minCycleTime){
 
       val sleep = minCycleTime - takenMillis
-      timeProvider.sleep(sleep)
+      clock.sleep(sleep)
     }
 
   }
@@ -53,13 +53,13 @@ class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce:
       override def run(): Unit = {
         try{
           while(shouldContinue.get()){
-            val start = timeProvider.now()
+            val start = clock.now()
             func()
-            val end = timeProvider.now()
+            val end = clock.now()
             doMinCycleTime(start, end)
             if(Thread.interrupted() || runOnce == true ){
               shouldContinue.set(false)
-              logger.info(s"[$name] interrupted or rune once, going to exit")
+              logger.info(s"[$name] interrupted or run once, going to exit")
             }
           }
 

@@ -27,7 +27,7 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
     Scenario("run samples of grammer, and check parse or fail"){
 
       val samples = List(
-        "1+2",
+        "1 + 2",
         "3*4",
         "(bid * ask) / 2"
       )

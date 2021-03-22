@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.provider.JoinTableProvider
-import org.eclipse.jetty.util.ConcurrentHashSet
+import io.vertx.core.impl.ConcurrentHashSet
 
 /**
   * Created by chris on 22/12/2015.

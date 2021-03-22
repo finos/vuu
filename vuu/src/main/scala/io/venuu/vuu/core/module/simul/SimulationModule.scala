@@ -25,7 +25,7 @@ trait SimulRpcHandler{
 
 class TheSimulRpcHander extends DefaultLifecycleEnabled with RpcHandler with SimulRpcHandler{
   def onSendToMarket(param1: Map[String , Any])(ctx: RequestContext): Boolean = {
-    println("doing something false ." + param1)
+    println("onSendToMarket called:" + param1)
     false
   }
 }

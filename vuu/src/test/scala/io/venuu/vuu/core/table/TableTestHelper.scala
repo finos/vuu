@@ -34,8 +34,8 @@ object TableTestHelper {
 
   def createOrderPricesScenario() = {
 
+    implicit val clock = new TestFriendlyClock(100000000l)
     implicit val lifecycle = new LifecycleContainer
-    implicit val timeProvider = new TestFriendlyClock(100001l)
     implicit val metrics = new MetricsProviderImpl
 
     val ordersDef = TableDef(
