@@ -4,9 +4,11 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import io.venuu.vuu.net.rest.RestService
 import io.vertx.core.{AbstractVerticle, Handler, Vertx, VertxOptions}
-import io.vertx.core.http.HttpServerOptions
+import io.vertx.core.http.{HttpMethod, HttpServerOptions}
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
+
+import java.util
 
 object VuuHttp2Server{
   def apply(options: VuuHttp2ServerOptions, services: List[RestService])(implicit lifecycle: LifecycleContainer): Http2Server = {
@@ -35,9 +37,9 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
     router.get(service.getUriGet).handler(req => service.onGet(req))
     router.get(service.getUriGetAll).handler(req => service.onGetAll(req))
-    router.get(service.getUriDelete).handler(req => service.onDelete(req))
-    router.get(service.getUriPost).handler(req => service.onPost(req))
-    router.get(service.getUriPut).handler(req => service.onPut(req))
+    router.delete(service.getUriDelete).handler(req => service.onDelete(req))
+    router.post(service.getUriPost).handler(req => service.onPost(req))
+    router.put(service.getUriPut).handler(req => service.onPut(req))
   }
 
 
@@ -58,13 +60,38 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
         .setSsl(true)
         .setUseAlpn(true)
 
+      import io.vertx.ext.web.handler.CorsHandler
+      val allowedHeaders = new util.HashSet[String]()
+      allowedHeaders.add("x-requested-with")
+      allowedHeaders.add("Access-Control-Allow-Origin")
+      allowedHeaders.add("origin")
+      allowedHeaders.add("Content-Type")
+      allowedHeaders.add("accept")
+      allowedHeaders.add("X-PINGARUNER")
+
+      val allowedMethods = new util.HashSet[HttpMethod]()
+      allowedMethods.add(HttpMethod.GET)
+      allowedMethods.add(HttpMethod.POST)
+      allowedMethods.add(HttpMethod.OPTIONS)
+      /*
+       * these methods aren't necessary for this sample,
+       * but you may need them for your projects
+       */
+      allowedMethods.add(HttpMethod.DELETE)
+      allowedMethods.add(HttpMethod.PATCH)
+      allowedMethods.add(HttpMethod.PUT)
+
+      router.route.handler(CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods))
+
       services.foreach( service => addRestService(router, service))
 
       // Serve the static pages
       router.route("/*").handler(StaticHandler.create()
         .setWebRoot(options.webRoot)
-        .setDirectoryListing(true)
+        .setDirectoryListing(options.allowDirectoryListings)
       )
+
+
 
       vertx.createHttpServer(httpOpts).requestHandler(router).listen(options.port);
 

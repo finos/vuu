@@ -20,7 +20,9 @@ import io.venuu.vuu.state.{MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, V
 import java.nio.file.Paths
 
 /*
--Xbootclasspath/p:/Users/chris/.m2/repository/org/mortbay/jetty/alpn/alpn-boot/8.1.3.v20150130/alpn-boot-8.1.3.v20150130.jar -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -XX:+UseG1GC -verbosegc
+//to allow self signed certs
+chrome://flags/#allow-insecure-localhost
+
  */
 
 object SimulMain extends App{
