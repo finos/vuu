@@ -200,6 +200,16 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
     }
   }
 
+  def BidAskSize(): Map[String, Any] = {
+    val bidSize = seededRand(timeProvider.now(), 1, 20) * 100
+    val askSize = seededRand(timeProvider.now(), 1, 20) * 100
+    Map(f.BidSize -> bidSize, f.AskSize -> askSize)
+  }
+
+  def BidAskSizeNull(): Map[String, Any] = {
+    Map(f.BidSize -> null, f.AskSize -> null)
+  }
+
   protected def mergeLeft(existing: Map[String, Any], newMap: Map[String, Any]): Map[String, Any] = {
     existing ++ newMap
   }
@@ -212,7 +222,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
     val askSize = seededRand(timeProvider.now(), 0, 1000)
     val bidSize = seededRand(timeProvider.now(), 0, 2000)
 
-    Map(f.Ric -> ric, f.Ask -> (adjusted + adjustedSpread), f.Bid -> (adjusted - adjustedSpread), f.AskSize -> askSize, f.BidSize -> bidSize, f.Phase -> "C")
+    Map(f.Ric -> ric, f.Ask -> (adjusted + adjustedSpread), f.Bid -> (adjusted - adjustedSpread), f.Phase -> "C") ++ BidAskSize()
   }
 
   final val MaxSpread = 100
@@ -235,7 +245,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
           val newBid = bid - activeSpread
           val newAsk = ask + activeSpread
 
-          Map(f.Ric -> ric, f.Ask -> newAsk, f.Bid -> newBid, f.Scenario -> "widenBidAndAsk", f.Phase -> "C")
+          Map(f.Ric -> ric, f.Ask -> newAsk, f.Bid -> newBid, f.Scenario -> "widenBidAndAsk", f.Phase -> "C") ++ BidAskSize()
         case None => throw new Exception("shouldn't get here")
       }
     }
@@ -251,7 +261,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
       val bid     = states.get(ric).get(f.Bid).get.asInstanceOf[Double] + bidAdjust
       val ask     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + askAdjust
       val last     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + (askAdjust / 2)
-      Map(f.Ric -> ric, f.Ask -> ask, f.Bid -> bid, f.Scenario -> "fastTick", f.Last -> last, f.Phase -> "C")
+      Map(f.Ric -> ric, f.Ask -> ask, f.Bid -> bid, f.Scenario -> "fastTick", f.Last -> last, f.Phase -> "C") ++ BidAskSize()
     }
   }
 
@@ -265,7 +275,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
       val bid     = states.get(ric).get(f.Bid).get.asInstanceOf[Double] + bidAdjust
       val ask     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + askAdjust
       val open     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + (askAdjust / 2)
-      Map(f.Ric -> ric, f.Scenario -> "open", f.Open -> open, f.Phase -> "O")
+      Map(f.Ric -> ric, f.Scenario -> "open", f.Open -> open, f.Phase -> "O") ++ BidAskSize()
     }
   }
 
@@ -279,7 +289,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
       val bid     = states.get(ric).get(f.Bid).get.asInstanceOf[Double] + bidAdjust
       val ask     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + askAdjust
       val open     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + (askAdjust / 2)
-      Map(f.Ric -> ric, f.Scenario -> "close", f.Phase -> "X")
+      Map(f.Ric -> ric, f.Scenario -> "close", f.Phase -> "X") ++ BidAskSizeNull()
     }
   }
 
@@ -288,7 +298,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
     val ask: Double = bid + (bid / 100)
     val bidSize = seededRand(timeProvider.now(), 0, 1000)
     val askSize = seededRand(timeProvider.now(), 0, 1000)
-    Map(f.Ric -> ric, f.Ask -> ask, f.Bid -> bid, f.BidSize -> bidSize, f.AskSize -> askSize, f.Phase -> "C")
+    Map(f.Ric -> ric, f.Ask -> ask, f.Bid -> bid, f.Phase -> "C") ++ BidAskSize()
   }
 
   protected def doNoOp(ric: String): Map[String, Any] = {

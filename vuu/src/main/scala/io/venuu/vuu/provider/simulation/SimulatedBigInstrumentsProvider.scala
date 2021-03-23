@@ -31,8 +31,8 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
   //def charMaker = ((48 to 57).toSeq ++ ( 65 to 90 )).map( i => i.toChar )
   def charMaker = ( 65 to 90 ).map( i => i.toChar )
 
-  //def suffixes  = List(".L", ".N", ".OQ", ".AS", ".OE", ".MI", ".A", ".PA", ".MC", ".DE")
-  def suffixes  = List(".L", ".N", ".OQ", ".AS")
+  def suffixes  = List(".L", ".N", ".OQ", ".AS", ".OE", ".MI", ".A", ".PA", ".MC", ".DE")
+  //def suffixes  = List(".L", ".N", ".OQ", ".AS")
 
   def ricBuilder = for( c1 <- charMaker; c2 <- charMaker ; c3 <- charMaker; suff <- suffixes) yield new String(Array(c1.toChar, c2.toChar, c3.toChar ) ) + suff
 
@@ -54,10 +54,11 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
 
     val exchange = if(ric.endsWith(".L")) "XLON/LSE-SETS" else if(ric.endsWith(".N")) "XNGS/NAS-GSM" else if(ric.endsWith(".AS")) "XAMS/ENA-MAIN" else "XNYS/NYS-MAIN"
 
+    val bbg      = if(ric.endsWith(".L")) ric.replace(".L", " LN") else if(ric.endsWith(".N")) ric.replace(".N", " US") else if(ric.endsWith(".AS")) ric.replace(".AS", " NL") else ric.replace(".", " ")
+
     val lotsize = random.nextInt(1000)
 
-    Map("ric"  -> ric, "description" -> (ric + desc), "currency" -> ccy, "exchange" -> exchange, "lotSize" -> lotsize)
-
+    Map("ric"  -> ric, "description" -> (ric + desc), "currency" -> ccy, "exchange" -> exchange, "lotSize" -> lotsize, "bbg" -> bbg)
   }
 
   def build() = {
