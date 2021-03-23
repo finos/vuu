@@ -174,7 +174,7 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
         //queue.offer(CancelParent(parent, clock.now() + timeToCancel, clock))
 
         var timeToCreateChild = randomNumbers.seededRand(1000, 3000)
-        val childrenToCreate = randomNumbers.seededRand(100, 150)
+        val childrenToCreate = randomNumbers.seededRand(100, 250)
 
         (0 to childrenToCreate - 1).foreach( i => {
           queue.offer(InsertChild(createChild(parent), parent, clock.now() + timeToCreateChild, clock))

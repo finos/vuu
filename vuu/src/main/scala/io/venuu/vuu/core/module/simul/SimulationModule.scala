@@ -11,7 +11,7 @@ import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.module.simul.provider._
-import io.venuu.vuu.core.module.{ModuleFactory, ViewServerModule}
+import io.venuu.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.Columns
 import io.venuu.vuu.net.RequestContext
 import io.venuu.vuu.net.rpc.RpcHandler
@@ -30,7 +30,7 @@ class TheSimulRpcHander extends DefaultLifecycleEnabled with RpcHandler with Sim
   }
 }
 
-object SimulationModule {
+object SimulationModule extends DefaultModule {
 
   final val NAME = "SIMUL"
 
@@ -44,7 +44,7 @@ object SimulationModule {
           TableDef(
             name = "instruments",
             keyField = "ric",
-            columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Int"),
+            columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(), "currency".string(), "exchange".string(), "lotSize".int()),
             VisualLinks(),
             joinFields = "ric"
           ),
@@ -54,7 +54,7 @@ object SimulationModule {
         AutoSubscribeTableDef(
           name = "prices",
           keyField = "ric",
-          Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "scenario: String", "phase:String"),
+          Columns.fromNames("ric".string(), "bid".double(), "bidSize".int(), "ask".double(), "askSize".int(), "last".double(), "open".double(), "close".double(), "scenario".string(), "phase".string()),
           joinFields = "ric"
         ),
         (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800)
