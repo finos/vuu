@@ -84,7 +84,7 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with StrictLogging {
             .put("firstName", "Yo")
             .put("lastName", "Stevo"))
         .onSuccess( res => {
-            logger.info("SUCCESS:" + res)
+          println("SUCCESS:" + res.statusCode() + " " + res.statusMessage())
         }).onFailure( res =>{
           logger.error("FAIL:" + res.toString, res)
         })
@@ -96,30 +96,12 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with StrictLogging {
             .put("firstName", "Yo")
             .put("lastName", "Stevo"))
         .onSuccess( res => {
-          println("SUCCESS:" + res)
+
+
+          println("SUCCESS:" + res.statusCode() + " " + res.statusMessage())
         }).onFailure( res =>{
         println("FAIL:" + res)
       })
-
-      client.get(https, "localhost", "/api/vui/chris")
-        .ssl(true)
-        .send()
-        .onSuccess( res => {
-          println("GET SUCCESS:" + res.body().toString(CharsetUtil.UTF_8) )
-        }).onFailure( res =>{
-        println("GET FAIL:" + res)
-      })
-
-      client.get(https, "localhost", "/api/vui/chris")
-        .ssl(true)
-        .send()
-        .onSuccess( res => {
-          println("GET SUCCESS:" + res.body().toString(CharsetUtil.UTF_8))
-        }).onFailure( res =>{
-        println("GET FAIL:" + res)
-      })
-
-      Thread.sleep(100_000)
 
       lifecycle.stop()
     }
