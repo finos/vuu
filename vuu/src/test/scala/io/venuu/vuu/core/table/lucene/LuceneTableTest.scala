@@ -54,7 +54,7 @@ class LuceneTableTest extends AnyFeatureSpec with Matchers with BeforeAndAfterAl
 
       val table = new LuceneTable(tableDef, joinTableProvider)
 
-      val rowCount = 1000
+      val rowCount = 10
 
       val (millis, _ ) = timeIt {
         (0 to rowCount).foreach(i => {
