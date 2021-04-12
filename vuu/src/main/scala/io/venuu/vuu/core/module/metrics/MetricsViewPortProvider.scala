@@ -30,13 +30,19 @@ class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortConta
 
   override val lifecycleId: String = "metricsViewPortProvider"
 
+  private var viewportIds = Map[String, String]()
+
   def runOnce(): Unit ={
 
     try {
 
-        val histograms = viewPortContainer.viewPortHistograms
+      val histograms = viewPortContainer.viewPortHistograms
 
-        MapHasAsScala(histograms).asScala.foreach({case(key, histogram) => {
+      val mapOfHistograms = MapHasAsScala(histograms).asScala
+
+      val toDelete = viewportIds.filterNot(kv => mapOfHistograms.contains(kv._1)).toMap
+
+      mapOfHistograms.foreach({case(key, histogram) => {
           val snapshot = histogram.getSnapshot
           val vp = viewPortContainer.getViewPortById(key)
           if(vp != null){
@@ -46,6 +52,12 @@ class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortConta
             //table.processDelete(key)
           }
         }})
+
+      toDelete.foreach({case(key, _) =>
+        table.processDelete(key)
+      })
+
+      viewportIds = mapOfHistograms.map({case(key, _) => (key -> key)}).toMap
 
     } catch {
       case e: Exception =>
