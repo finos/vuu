@@ -55,7 +55,7 @@ class RpcTest extends AnyFeatureSpec with Matchers {
 
       val ctx = new RequestContext("", ClientSessionId("",""), null, null, "")
 
-      val vsMsg = toVsMsg(RpcCall("doSomething", Array("test", 1234.34), Map()))
+      val vsMsg = toVsMsg(RpcCall("RpcHandler", "doSomething", Array("test", 1234.34), Map()))
 
       val ret = myRpcHandler.processRpcCall(vsMsg, vsMsg.body.asInstanceOf[RpcCall])(ctx)
 
@@ -64,7 +64,7 @@ class RpcTest extends AnyFeatureSpec with Matchers {
 
       println(ret)
 
-      val vsMsg2 = toVsMsg(RpcCall("doSomething", Array(true), Map()))
+      val vsMsg2 = toVsMsg(RpcCall("RpcHandler", "doSomething", Array(true), Map()))
 
       val ret2 = myRpcHandler.processRpcCall(vsMsg2, vsMsg2.body.asInstanceOf[RpcCall])(ctx)
 
@@ -73,7 +73,7 @@ class RpcTest extends AnyFeatureSpec with Matchers {
       ret2.get.body.asInstanceOf[RpcResponse].result should equal(false)
 
 
-      val vsMsg3 = toVsMsg(RpcCall("doSomethingElse", Array(), Map()))
+      val vsMsg3 = toVsMsg(RpcCall("RpcHandler", "doSomethingElse", Array(), Map()))
 
       val ret3 = myRpcHandler.processRpcCall(vsMsg3, vsMsg3.body.asInstanceOf[RpcCall])(ctx)
       println(ret3)
@@ -82,7 +82,7 @@ class RpcTest extends AnyFeatureSpec with Matchers {
 
       println(ret3)
 
-      val vsMsg4 = toVsMsg(RpcCall("onClick", Array(Map[String, Any]("field" -> "value", "field2" -> 123)), Map()))
+      val vsMsg4 = toVsMsg(RpcCall("RpcHandler", "onClick", Array(Map[String, Any]("field" -> "value", "field2" -> 123)), Map()))
 
       val ret4 = myRpcHandler.processRpcCall(vsMsg4, vsMsg4.body.asInstanceOf[RpcCall])(ctx)
 
@@ -91,7 +91,7 @@ class RpcTest extends AnyFeatureSpec with Matchers {
       ret4.isEmpty should be (false)
       ret4.get.body.asInstanceOf[RpcResponse].result should be("got map Map(field -> value, field2 -> 123)")
 
-      val vsMsg5 = toVsMsg(RpcCall("onClickArray", Array(Array("Foo", "Bar", "Ping")), Map()))
+      val vsMsg5 = toVsMsg(RpcCall("RpcHandler", "onClickArray", Array(Array("Foo", "Bar", "Ping")), Map()))
 
       val ret5 = myRpcHandler.processRpcCall(vsMsg5, vsMsg5.body.asInstanceOf[RpcCall])(ctx)
 

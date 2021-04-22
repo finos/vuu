@@ -7,16 +7,20 @@
   */
 package io.venuu.vuu.core.module.simul
 
+import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.module.simul.provider._
 import io.venuu.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
-import io.venuu.vuu.core.table.Columns
+import io.venuu.vuu.core.table.{Columns, TableContainer}
 import io.venuu.vuu.net.RequestContext
 import io.venuu.vuu.net.rpc.RpcHandler
-import io.venuu.vuu.provider.RpcProvider
+import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
 import io.venuu.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
+import io.venuu.vuu.viewport.ViewPortContainer
+
+import java.util.UUID
 
 trait SimulRpcHandler{
   def onSendToMarket(param1: Map[String , Any])(ctx: RequestContext): Boolean
@@ -27,6 +31,34 @@ class TheSimulRpcHander extends DefaultLifecycleEnabled with RpcHandler with Sim
   def onSendToMarket(param1: Map[String , Any])(ctx: RequestContext): Boolean = {
     println("onSendToMarket called:" + param1)
     false
+  }
+}
+
+trait OrderEntryRpcHandler{
+  def addRowsFromInstruments(sourceVpId: String)(ctx: RequestContext): List[String]
+}
+
+
+class OrderEntryRpcHandlerImpl(val vpContainer: ViewPortContainer, val tableContainer: TableContainer, val providerContainer: ProviderContainer) extends DefaultLifecycleEnabled with OrderEntryRpcHandler with RpcHandler with StrictLogging {
+  override def addRowsFromInstruments(sourceVpId: String)(ctx: RequestContext): List[String] = {
+    vpContainer.get(ctx.session, sourceVpId) match {
+      case Some(vp) =>
+        val rics = vp.getSelection.map({ case(key, rowIndex) => key}).toList
+        providerContainer.getProviderForTable("orderEntry") match {
+          case Some(provider) =>
+            rics.foreach( ric => {
+              val uuid = UUID.randomUUID().toString
+              provider.asInstanceOf[RpcProvider].tick(uuid, Map("clOrderId" -> uuid, "ric" -> ric, "quantity" -> 10_000, "orderType" -> "Limit"))
+            } )
+            rics
+          case None =>
+            logger.error("Could not find provider for table: orderEntry")
+            throw new Exception("could not find provider for table")
+        }
+      case None =>
+          logger.error("could not find vp to get selection")
+          throw new Exception("could not find vp to get selection")
+    }
   }
 }
 
@@ -122,6 +154,18 @@ object SimulationModule extends DefaultModule {
       )
       .addJoinTable(tableDefs =>
         JoinTableDef(
+          name = "orderEntryPrices",
+          baseTable = tableDefs.get("orderEntry"),
+          joinColumns = Columns.allFrom(tableDefs.get("orderEntry")) ++ Columns.allFromExcept(tableDefs.get("prices"), "ric"),
+          joins =
+            JoinTo(
+              table = tableDefs.get("prices"),
+              joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+            ),
+          joinFields = Seq()
+        ))
+      .addJoinTable(tableDefs =>
+        JoinTableDef(
             name = "instrumentPrices",
             baseTable = tableDefs.get("instruments"),
             joinColumns = Columns.allFrom(tableDefs.get("instruments")) ++ Columns.allFromExcept(tableDefs.get("prices"), "ric"),
@@ -145,6 +189,7 @@ object SimulationModule extends DefaultModule {
           joinFields = Seq()
         ))
       .addRpcHandler(vs => new TheSimulRpcHander)
+      .addRpcHandler(vs => new OrderEntryRpcHandlerImpl(vs.viewPortContainer, vs.tableContainer, vs.providerContainer))
       .asModule()
   }
 }

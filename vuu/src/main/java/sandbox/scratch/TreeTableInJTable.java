@@ -1,4 +1,4 @@
-package sandbox;
+package sandbox.scratch;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

@@ -9,11 +9,13 @@ package io.venuu.vuu.client.swing.gui
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.swing.client.RpcServiceClientFactory
 import io.venuu.vuu.client.swing.gui.components.FilterBarPanel
 import io.venuu.vuu.client.swing.gui.components.renderer.{SortedColumnRenderer, TreeGridCellRenderer}
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
 import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
+import io.venuu.vuu.core.module.simul.OrderEntryRpcHandler
 import io.venuu.vuu.net._
 
 import java.awt.event.{MouseAdapter, MouseEvent}
@@ -37,7 +39,7 @@ case class GridPanelViewPortContext(requestId: String, vpId: String, table: Stri
                                     currentColumn: Option[TableColumn] = None,
                                     aggregations: Array[Aggregations] = Array())
 
-class ViewServerGridPanel(requestId: String, tableName: String, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends BorderPanel with StrictLogging {
+class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: String, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends BorderPanel with StrictLogging {
 
   //private var vpId: String = ""
 
@@ -67,10 +69,25 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
   this.background = Color.YELLOW
   this.preferredSize = new Dimension(400, 500)
 
+  val parent = this
+
   val popUp = new components.PopupMenu{
     val editViewPort = new MenuItem(Action("Edit"){
       val modal = new VSChangeVpPanel(context)
       modal.open()
+    })
+
+    val rpcViewPort = new MenuItem(Action("Open RPC"){
+
+      val orderEntryRpc = RpcServiceClientFactory.createRpcService[OrderEntryRpcHandler]("SIMUL")
+
+      val result = orderEntryRpc.addRowsFromInstruments(context.vpId)(null)
+
+      logger.info("Got result:" + result.mkString(","))
+
+      val modalRpc = new VSModalRPCFrame(parentFrame, "orderEntry", Array("clOrderId", "ric", "quantity", "orderType", "price", "priceLevel"))
+      modalRpc.pack()
+      modalRpc.visible = true
     })
 
     val disableViewPort = new MenuItem(Action("Disable ViewPort"){
@@ -82,6 +99,7 @@ class ViewServerGridPanel(requestId: String, tableName: String, availableColumns
     })
 
     contents += editViewPort
+    contents += rpcViewPort
     contents += disableViewPort
     contents += enableViewPort
   }

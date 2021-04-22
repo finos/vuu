@@ -43,6 +43,9 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         tableMetaAsync(principal.sessionId, principal.token, principal.user, msg.table, msg.requestId)
       case msg: ClientGetTableList =>
         tableListAsync(principal.sessionId, principal.token, principal.user)
+      case msg: ClientRpcCall =>
+        logger.info("making rpc call: " + msg)
+        rpcCallAsync(principal.sessionId, principal.token, principal.user, msg.service, msg.method, msg.params, msg.module)
       case msg: Logon =>
         authAsync(msg.user, msg.password)
       //case ur : UpdateRange => requests.put(current, ur)
@@ -178,6 +181,10 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
       case body: RemoveViewPortReject =>
         logger.info("[Remove View Port Reject] " + body)
+
+      case body: RpcResponse =>
+        logger.info("[RPC Response] " + body)
+        eventBus.publish(ClientRpcResponse(msg.requestId, "", body.method, body.result, body.error))
     }
   }
 }

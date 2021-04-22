@@ -14,7 +14,7 @@ trait AnRpcHandler{
   def onSendToMarket(param1: Map[String , Any])(context: RequestContext): Boolean
 }
 
-class MyCustomRpcHandler extends DefaultLifecycleEnabled with RpcHandler with AnRpcHandler{
+class MyCustomRpcHandler extends DefaultLifecycleEnabled with AnRpcHandler with RpcHandler {
   def onSendToMarket(param1: Map[String , Any])(context: RequestContext): Boolean = {
     println("doing something false ." + param1)
     false

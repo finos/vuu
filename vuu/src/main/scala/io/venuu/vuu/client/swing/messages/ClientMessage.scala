@@ -10,7 +10,7 @@ package io.venuu.vuu.client.swing.messages
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.client.swing.client.UserPrincipal
-import io.venuu.vuu.net.{Aggregations, FilterSpec, SortSpec}
+import io.venuu.vuu.net.{Aggregations, Error, FilterSpec, SortSpec}
 
 import java.util.UUID
 
@@ -48,6 +48,9 @@ case class ClientGetTableMetaResponse(requestId: String, table: String, columns:
 
 case class ClientRpcTableUpdate(requestId: String, table: String, key: String, data: Map[String, Any]) extends ClientMessage
 case class ClientRpcTableUpdateSuccess(requestId: String, table: String, key: String, data: Map[String, Any]) extends ClientMessage
+
+case class ClientRpcCall(requestId: String, service: String, method: String, params: Array[Any], namedParams: Map[String, Any], module: String) extends ClientMessage
+case class ClientRpcResponse(requestId: String, service: String, method: String, result: Any, error: Error) extends ClientMessage
 
 case class ClientOpenTreeNodeRequest(requestId: String, vpId: String, treeKey: String) extends ClientMessage with ToServer
 case class ClientCloseTreeNodeRequest(requestId: String, vpId: String, treeKey: String) extends ClientMessage with ToServer
