@@ -14,7 +14,7 @@ import scala.swing.TabbedPane.Page
 import scala.swing.event.{ButtonClicked, SelectionChanged}
 import scala.swing.{BorderPanel, Button, Frame, GridPanel, Label, TabbedPane, TextField}
 
-class VSChildFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Frame with StrictLogging{
+class VSChildFrame(parentFrame: Frame, sessId: String)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Frame with StrictLogging{
 
   import SwingThread._
 
@@ -125,7 +125,7 @@ class VSChildFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], t
           logger.error("No Viewport Registered with Grid, can't create Visual Link")
       }
     case ButtonClicked(`openNewWindow`) =>
-      val frame = new VSMainFrame(true, this.sessionId)
+      val frame = new VSMainFrame(this.sessionId)
       frame.open()
 
     case SelectionChanged(`tablesCombo`) =>
@@ -147,12 +147,12 @@ class VSChildFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], t
         val columnsForTree = Array("RowIndex") ++ Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ columns
         val model = new ViewPortedModel(requestId, columnsForTree)
         model.setRange(0, 100)
-        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
+        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(parentFrame, requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
       }
       else{
         val model = new ViewPortedModel(requestId, Array("RowIndex") ++ columns)
         model.setRange(0, 100)
-        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(requestId, table, allColumnsAvailable, Array("RowIndex") ++ columns, model, groupBy)))
+        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(parentFrame, requestId, table, allColumnsAvailable, Array("RowIndex") ++ columns, model, groupBy)))
       }
 
       val spec = SortSpec(sortBy.map(column => SortDef(column, 'A')).toList)

@@ -122,12 +122,12 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     val vs = this;
 
     val realized = new RealizedViewServerModule{
-      override def rpcHandler: RpcHandler = module.rpcHandlerUnrealized.apply(vs)
+      override def rpcHandlers: List[RpcHandler] = module.rpcHandlersUnrealized.map(_.apply(vs))
       override def restServices: List[RestService] = module.restServicesUnrealized.map(_.apply(vs))
       override def name: String = module.name
       override def tableDefs: List[TableDef] = module.tableDefs
       override def serializationMixin: AnyRef = module.serializationMixin
-      override def rpcHandlerUnrealized: VuuServer => RpcHandler = module.rpcHandlerUnrealized
+      override def rpcHandlersUnrealized: List[VuuServer => RpcHandler] = module.rpcHandlersUnrealized
       override def restServicesUnrealized: List[VuuServer => RestService] = module.restServicesUnrealized
       override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)

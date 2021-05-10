@@ -13,6 +13,10 @@ import java.lang.reflect.Method
 
 trait RpcHandler {
 
+  def implementsService(serviceIf:String):Boolean = {
+    this.getClass.getInterfaces.exists(_.getSimpleName == serviceIf)
+  }
+
   val methodsAndParams = this.getClass.getMethods.map(method => (method.getName, method.getGenericParameterTypes, method) ).groupBy(_._1).toMap
 
   def processRpcCall(msg: ViewServerMessage, rpc: RpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
@@ -32,11 +36,17 @@ trait RpcHandler {
       else if(rpc.params.size == 2)
         method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), ctx)
       else if(rpc.params.size == 3)
-        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)))
+        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), ctx)
       else if(rpc.params.size == 4)
-        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)))
+        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), ctx)
       else if(rpc.params.size == 5)
-        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)))
+        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), ctx)
+      else if(rpc.params.size == 6)
+        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), ctx)
+      else if(rpc.params.size == 7)
+        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), toO(rpc.params(6)), ctx)
+      else if(rpc.params.size == 8)
+        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), toO(rpc.params(6)), toO(rpc.params(7)), ctx)
 
       Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, r, null), module = msg.module))
 

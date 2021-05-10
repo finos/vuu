@@ -85,8 +85,8 @@ case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[VuuServ
       override def name: String =  theName
       override def tableDefs: List[TableDef] = mutableTableDefs.realizedTableDefs
       override def serializationMixin: AnyRef = null
-      override def rpcHandlerUnrealized: VuuServer => RpcHandler = {
-        rpc.head
+      override def rpcHandlersUnrealized: List[VuuServer => RpcHandler] = {
+        rpc
       }
       override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = {
         baseTables.find({case(td, func) => td.name == table.name }).get._2(table, viewserver)

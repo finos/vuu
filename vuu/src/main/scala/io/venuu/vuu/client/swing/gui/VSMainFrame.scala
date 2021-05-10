@@ -19,13 +19,13 @@ import scala.swing.TabbedPane.Page
 import scala.swing._
 import scala.swing.event.{ButtonClicked, SelectionChanged}
 
-class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends MainFrame {
+class VSMainFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends MainFrame {
 
   import SwingThread._
 
   this.preferredSize = new Dimension(1024, 768)
 
-  title = if(isChild) "Child" else "VS Client"
+  title = "VS Client"
 
   val connect = new Button("Login")
 
@@ -41,11 +41,7 @@ class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: Event
   var allColumnsAvailable = Array[String]()
   var sessionId: String = sessId
 
-  if(!isChild){
-    disableControls
-  } else{
-    enableControls(sessionId)
-  }
+  disableControls
 
   def disableControls = {
     createViewPort.enabled = false
@@ -103,7 +99,7 @@ class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: Event
 
   reactions += {
     case ButtonClicked(`openNewWindow`) =>
-      val frame = new VSChildFrame(this.sessionId)
+      val frame = new VSChildFrame(this, this.sessionId)
       frame.open()
 
     case SelectionChanged(`tablesCombo`) =>
@@ -125,12 +121,13 @@ class VSMainFrame(var isChild: Boolean, sessId: String)(implicit eventBus: Event
         val columnsForTree = Array("RowIndex") ++ Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ columns
         val model = new ViewPortedModel(requestId, columnsForTree)
         model.setRange(0, 100)
-        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
+        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(this, requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
       }
       else{
         val model = new ViewPortedModel(requestId, Array("RowIndex") ++ columns)
         model.setRange(0, 100)
-        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(requestId, table, allColumnsAvailable, Array("RowIndex") ++ columns, model, groupBy)))
+        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(this, requestId, table, allColumnsAvailable, Array("RowIndex") ++ columns, model, groupBy)))
+
       }
 
       val spec = SortSpec(sortBy.map(column => SortDef(column, 'A')).toList)

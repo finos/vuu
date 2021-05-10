@@ -91,9 +91,13 @@ object ClientHelperFns {
     vsClient.awaitMsg.body.asInstanceOf[AuthenticateSuccess].token
   }
 
-  def rpcCall(sessionId: String, token: String, user: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): RpcResponse = {
+  def rpcCallAsync(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, RpcCall(service, method, params, Map()), module = module))
+  }
 
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, RpcCall(method, params, Map()), module = module))
+  def rpcCall(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): RpcResponse = {
+
+    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, RpcCall(service, method, params, Map()), module = module))
 
     def awaitMsg(vsClient: ViewServerClient): RpcResponse = {
       vsClient.awaitMsg.body match {

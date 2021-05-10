@@ -6,6 +6,7 @@ import io.venuu.vuu.client.swing.gui.components.renderer.TreeGridCellRenderer
 import io.venuu.vuu.client.swing.messages.{ClientCloseTreeNodeRequest, ClientMessage, ClientOpenTreeNodeRequest, RequestId}
 import io.venuu.vuu.client.swing.model.ViewPortedModel
 
+import scala.swing.Frame
 import scala.swing.event.MouseClicked
 
 case class Column(index: Int, name: String)
@@ -25,9 +26,9 @@ object TreeColumns{
 /**
   * Created by chris on 10/04/2016.
   */
-class ViewServerTreeGridPanel(requestId: String, tableName: String, availableColumns: Array[String],
+class ViewServerTreeGridPanel(parentFrame: Frame, requestId: String, tableName: String, availableColumns: Array[String],
                               columns: Array[String], theModel: ViewPortedModel, treeColumns: Array[String])
-                             (implicit override val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends ViewServerGridPanel(requestId, tableName, availableColumns, columns, theModel) {
+                             (implicit override val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends ViewServerGridPanel(parentFrame, requestId, tableName, availableColumns, columns, theModel) {
 
 
   if(treeColumns.length > 0)

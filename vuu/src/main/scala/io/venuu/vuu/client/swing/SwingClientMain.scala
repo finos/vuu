@@ -36,7 +36,7 @@ object SwingClientMain extends SimpleSwingApplication {
 
   lifecycle.start()
 
-  override def top: Frame = new VSMainFrame(false, "")
+  override def top: Frame = new VSMainFrame("")
 }
 
 

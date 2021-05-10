@@ -68,12 +68,12 @@ class RpcModuleTest extends AnyFeatureSpec with Matchers {
 
       //Thread.sleep(200)
 
-      val returnVal = rpcCall(session, token, "chris", "onSendToMarket", Array(new MyObjectParam("foo", "bar")), "TEST")
+      val returnVal = rpcCall(session, token, "chris", "AnRpcHandler", "onSendToMarket", Array(new MyObjectParam("foo", "bar")), "TEST")
 
       returnVal.result should equal(false)
       returnVal.error should be(null)
 
-      val returnVal2 = rpcCall(session, token, "chris", "onSendToMarket", Array(new MyObjectParam("foo", "bar")), "NOT_EXISTS")
+      val returnVal2 = rpcCall(session, token, "chris", "AnRpcHandler", "onSendToMarket", Array(new MyObjectParam("foo", "bar")), "NOT_EXISTS")
 
       returnVal2.error.message.take(17).toString should equal("Handler not found")
 

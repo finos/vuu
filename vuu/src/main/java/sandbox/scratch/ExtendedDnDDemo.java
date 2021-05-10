@@ -4,7 +4,7 @@
  * <p>
  * Created by chris on 26/03/2016.
  */
-package sandbox;
+package sandbox.scratch;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

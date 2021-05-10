@@ -108,7 +108,7 @@ case class HeartBeatResponse(ts: Long) extends MessageBody
 
 case class Error(message: String, code: Int)
 
-case class RpcCall(method: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
+case class RpcCall(service: String, method: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
 case class RpcResponse(method: String, result: Any, error: Error) extends MessageBody
 
 case class RpcUpdate(table: String, key: String, data: Map[String, Any]) extends MessageBody

@@ -44,8 +44,6 @@ class TreeGridCellRenderer extends JLabel with TableCellRenderer {
       val depthAsString = table.getModel.getValueAt(row, Depth.index).toString
       val isLeafAsString = table.getModel.getValueAt(row, IsLeaf.index).toString
       val isOpenAsString = table.getModel.getValueAt(row, IsOpen.index).toString
-      val captionAsString = table.getModel.getValueAt(row, Caption.index).toString
-      val childCountAsString = table.getModel.getValueAt(row, ChildCount.index).toString
 
       if (depthAsString == "" || isLeafAsString == "" || isOpenAsString == "") {
         setBorder(new EmptyBorder(0, 0, 0, 0))

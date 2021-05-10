@@ -206,18 +206,18 @@ case class HeadlessClient(vsClient: ViewServerClient,
 
     val clazz = t.runtimeClass.asInstanceOf[Class[INTERFACE]]
 
-    assert(clazz.isInterface, "interfaceClass should be an inteface class")
+    assert(clazz.isInterface, "interfaceClass should be an interface class")
 
     val context = this.ctx
 
     java.lang.reflect.Proxy.newProxyInstance(clazz.getClassLoader, Array(clazz), new InvocationHandler() {
       def invoke(proxy:Object, method:Method, args:scala.Array[Object]) = {
 
-        println("calling: " + method.getName + "() args:" + args.map(_.toString).mkString(",") )
+        println("calling: " + method.getName + " on " + proxy.getClass.getSimpleName + "() args:" + args.map(_.toString).mkString(",") )
 
         val args2scala = args.dropRight(1).map(_.asInstanceOf[Any])
 
-        val response = rpcCall(context.sessionId, context.token, context.user, method.getName, args2scala, module)
+        val response = rpcCall(context.sessionId, context.token, context.user, proxy.getClass.getSimpleName, method.getName, args2scala, module)
 
         //val rClazz = method.getReturnType
 
