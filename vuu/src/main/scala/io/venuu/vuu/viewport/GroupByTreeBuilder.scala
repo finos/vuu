@@ -37,6 +37,7 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
   final val EMPTY_TREE_NODE_STATE = new ConcurrentHashMap[String, TreeNodeState]()
 
   private val logEvery = new LogAtFrequency(3000)
+  private final val separator = "|"
 
   import io.venuu.vuu.core.DataConstants._
 
@@ -66,7 +67,7 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
   override def build(): Tree = {
 
     logger.debug("In tree build()")
-    logger.debug("Applying FIlter()")
+    logger.debug("Applying Filter()")
 
     val keys = applyFilter()
 
@@ -117,7 +118,7 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
       None
     else {
 
-      val treeKey = parent.key + "/" + data.toString
+      val treeKey = parent.key + separator + data.toString
 
       tree.getNode(treeKey) match {
         case null =>

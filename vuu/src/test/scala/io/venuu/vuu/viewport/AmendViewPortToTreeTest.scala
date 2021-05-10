@@ -104,13 +104,13 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (1, false, "$root/chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
+        (1, false, "$root|chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
       )
     }
 
     emptyQueues(viewPort);
 
-    viewPortContainer.closeNode(viewPort2.id, "$root/chris")
+    viewPortContainer.closeNode(viewPort2.id, "$root|chris")
     viewPortContainer.runGroupByOnce()
     viewPortContainer.runOnce()
 
@@ -119,7 +119,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     assertVpEq(combinedUpdates2) {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (1, false, "$root/chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
+        (1, false, "$root|chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
       )
     }
 
@@ -139,8 +139,8 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
         //(0, true, "$root", false, true, "", 2, "", "", "", "", "", "", "", "", ""),
-        (1, false, "$root/VOD.L", false, false, "VOD.L", 1, "", "", "VOD.L", "", "", "", "", "", ""),
-        (1, false, "$root/BT.L", false, false, "BT.L", 1, "", "", "BT.L", "", "", "", "", "", "")
+        (1, false, "$root|VOD.L", false, false, "VOD.L", 1, "", "", "VOD.L", "", "", "", "", "", ""),
+        (1, false, "$root|BT.L", false, false, "BT.L", 1, "", "", "BT.L", "", "", "", "", "", "")
       )
     }
 

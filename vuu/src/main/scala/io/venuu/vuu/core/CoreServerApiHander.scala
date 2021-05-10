@@ -173,10 +173,10 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
 
         val groupByColumns = msg.groupBy.filter(table.getTableDef.columnForName(_) != null).map(table.getTableDef.columnForName(_)).toList
 
-        val aggregations   = groupByColumns.map( col => {
-          if( col.dataType == DataType.DoubleDataType || col.dataType == DataType.LongDataType || col.dataType == DataType.IntegerDataType) Aggregation(col, AggregationType.Sum)
-          else viewport.Aggregation(col, AggregationType.Count)
-        })
+        val aggregations   = List()//groupByColumns.map( col => {
+//          if( col.dataType == DataType.DoubleDataType || col.dataType == DataType.LongDataType || col.dataType == DataType.IntegerDataType) Aggregation(col, AggregationType.Sum)
+//          else viewport.Aggregation(col, AggregationType.Count)
+//        })
 
         val groupBy = new GroupBy(groupByColumns, aggregations)
 

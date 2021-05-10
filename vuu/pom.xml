@@ -8,6 +8,10 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <lucene.version>8.8.1</lucene.version>
+    </properties>
+
     <artifactId>vuu</artifactId>
     <name>vuu</name>
     <inceptionYear>2014</inceptionYear>
@@ -18,6 +22,19 @@
             <groupId>io.venuu</groupId>
             <artifactId>toolbox</artifactId>
             <version>0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${lucene.version}</version>
         </dependency>
 
         <dependency>

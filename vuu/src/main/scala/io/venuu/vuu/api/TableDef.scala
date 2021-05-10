@@ -6,6 +6,8 @@ object Fields {
   val All = List("*")
 }
 
+
+
 object VisualLinks {
   def apply(link: Link*): VisualLinks = {
     new VisualLinks(link.toList)
@@ -71,7 +73,12 @@ case class Link(fromColumn: String, toTable: String, toColumn: String)
 case class VisualLinks(links: List[Link])
 case class Indices(indices: Index*)
 case class Index(column: String)
+case class IndexFilePath(path: String)
 
+trait CleanupPolicy
+
+object DeleteIndexOnShutdown extends CleanupPolicy
+object PreserveIndexOnShutdown extends CleanupPolicy
 
 case class AvailableViewPortVisualLink(parentVpId: String, link: Link){
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
@@ -98,6 +105,12 @@ class TableDef(val name: String, val keyField: String, val columns: Array[Column
 
   def fullyQuallifiedColumnName(column: String): String = s"$name.$column"
 
+}
+
+class LuceneTableDef(name: String, keyField: String, columns: Array[Column], joinFields: Seq[String],
+                     autosubscribe: Boolean = false, links: VisualLinks = VisualLinks(),
+                     val indexPath: IndexFilePath, val cleanupPolicy: CleanupPolicy)
+                     extends TableDef(name, keyField, columns, joinFields, false, links, Indices()){
 }
 
 trait JoinType

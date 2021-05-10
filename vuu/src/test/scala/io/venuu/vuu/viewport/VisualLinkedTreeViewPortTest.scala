@@ -57,9 +57,9 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
         Table(
           ("sel", "_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","ric"     ,"bid"     ,"ask"     ,"last"    ,"open"),
 //          (0, true      ,0         ,"$root"   ,false       ,3         ,""        ,""        ,""        ,""        ,""        ,"" ),
-          (0, false     ,1         ,"$root/XLON",false     ,1         ,"XLON"    ,""        ,""        ,""        ,""        ,"" ),
-          (0, false     ,1         ,"$root/NYSE",false     ,1         ,"NYSE"    ,""        ,""        ,""        ,""        ,"" ),
-          (0, false     ,1         ,"$root/XAMS",false     ,1         ,"XAMS"    ,""        ,""        ,""        ,""        ,"" )
+          (0, false     ,1         ,"$root|XLON",false     ,1         ,"XLON"    ,""        ,""        ,""        ,""        ,"" ),
+          (0, false     ,1         ,"$root|NYSE",false     ,1         ,"NYSE"    ,""        ,""        ,""        ,""        ,"" ),
+          (0, false     ,1         ,"$root|XAMS",false     ,1         ,"XAMS"    ,""        ,""        ,""        ,""        ,"" )
         )
       }
 
@@ -67,9 +67,9 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       results.size shouldEqual (1)
       results.head._2.table.linkableName shouldEqual ("prices")
 
-      viewPortContainer.openNode(viewPortPricesGroupBy.id, "$root/XLON")
-      viewPortContainer.openNode(viewPortPricesGroupBy.id, "$root/NYSE")
-      viewPortContainer.openNode(viewPortPricesGroupBy.id, "$root/XAMS")
+      viewPortContainer.openNode(viewPortPricesGroupBy.id, "$root|XLON")
+      viewPortContainer.openNode(viewPortPricesGroupBy.id, "$root|NYSE")
+      viewPortContainer.openNode(viewPortPricesGroupBy.id, "$root|XAMS")
 
       Then("we link the viewports, with nothing selected in the parent grid yet")
       viewPortContainer.linkViewPorts(session, highPriorityQueue, childVpId = viewPortOrders.id, parentVpId = viewPortPricesGroupBy.id, "ric", "ric")
@@ -87,14 +87,14 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       assertVpEqWithMeta(filterByVpId(combineQs(viewPortPricesGroupBy), viewPortPricesGroupBy)) {
         Table(
           ("sel"     ,"_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","ric"     ,"bid"     ,"ask"     ,"last"    ,"open"    ),
-          (0         ,false     ,2         ,"$root/XLON/VOD.L",true      ,0         ,"VOD.L"   ,"VOD.L"   ,100.0     ,101.0     ,100.5     ,null      ),
-          (0         ,true      ,1         ,"$root/NYSE",false     ,1         ,"NYSE"    ,""        ,""        ,""        ,""        ,""        ),
-          (0         ,true      ,1         ,"$root/XAMS",false     ,1         ,"XAMS"    ,""        ,""        ,""        ,""        ,""        ),
-          (0         ,false     ,2         ,"$root/NYSE/BT.L",true      ,0         ,"BT.L"    ,"BT.L"    ,200.0     ,201.0     ,200.5     ,null      ),
-          (1         ,false     ,2         ,"$root/XAMS/BP.L",true      ,0         ,"BP.L"    ,"BP.L"    ,300.0     ,301.0     ,300.5     ,null      ),
-          (0         ,true      ,1         ,"$root/XLON",false     ,1         ,"XLON"    ,""        ,""        ,""        ,""        ,""        ),
-          (0         ,true      ,1         ,"$root/NYSE",false     ,1         ,"NYSE"    ,""        ,""        ,""        ,""        ,""        ),
-          (0         ,true      ,1         ,"$root/XAMS",false     ,1         ,"XAMS"    ,""        ,""        ,""        ,""        ,""        )
+          (0         ,false     ,2         ,"$root|XLON|VOD.L",true      ,0         ,"VOD.L"   ,"VOD.L"   ,100.0     ,101.0     ,100.5     ,null      ),
+          (0         ,true      ,1         ,"$root|NYSE",false     ,1         ,"NYSE"    ,""        ,""        ,""        ,""        ,""        ),
+          (0         ,true      ,1         ,"$root|XAMS",false     ,1         ,"XAMS"    ,""        ,""        ,""        ,""        ,""        ),
+          (0         ,false     ,2         ,"$root|NYSE|BT.L",true      ,0         ,"BT.L"    ,"BT.L"    ,200.0     ,201.0     ,200.5     ,null      ),
+          (1         ,false     ,2         ,"$root|XAMS|BP.L",true      ,0         ,"BP.L"    ,"BP.L"    ,300.0     ,301.0     ,300.5     ,null      ),
+          (0         ,true      ,1         ,"$root|XLON",false     ,1         ,"XLON"    ,""        ,""        ,""        ,""        ,""        ),
+          (0         ,true      ,1         ,"$root|NYSE",false     ,1         ,"NYSE"    ,""        ,""        ,""        ,""        ,""        ),
+          (0         ,true      ,1         ,"$root|XAMS",false     ,1         ,"XAMS"    ,""        ,""        ,""        ,""        ,""        )
         )
       }
 
@@ -126,8 +126,8 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       assertVpEqWithMeta(filterByVpId(updates, viewPortPricesGroupBy)) {
         Table(
           ("sel"     ,"_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","ric"     ,"bid"     ,"ask"     ,"last"    ,"open"    ),
-          (1         ,false     ,2         ,"$root/NYSE/BT.L",true      ,0         ,"BT.L"    ,"BT.L"    ,200.0     ,201.0     ,200.5     ,null      ),
-          (1         ,false     ,2         ,"$root/XAMS/BP.L",true      ,0         ,"BP.L"    ,"BP.L"    ,300.0     ,301.0     ,300.5     ,null      )
+          (1         ,false     ,2         ,"$root|NYSE|BT.L",true      ,0         ,"BT.L"    ,"BT.L"    ,200.0     ,201.0     ,200.5     ,null      ),
+          (1         ,false     ,2         ,"$root|XAMS|BP.L",true      ,0         ,"BP.L"    ,"BP.L"    ,300.0     ,301.0     ,300.5     ,null      )
         )
       }
 

@@ -66,5 +66,5 @@ class NiaiveImmutableArray[T :ClassTag](val array: Array[T] = Array.empty) exten
     new NiaiveImmutableArray[T](previous ++ after)
   }
 
-  override def toString: String = "ImmutableArray(" + array.mkString(",") + ")"
+  override def toString: String = "ImmutableArray(" + array.take(5).mkString(",") + "...)"
 }
