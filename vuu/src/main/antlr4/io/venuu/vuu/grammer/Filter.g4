@@ -23,7 +23,7 @@ or_expression : and_expression (OR or_expression)*;
 
 and_expression : term (AND term)*;
 
-term : atom ( operator atom)? | LPAREN expression RPAREN | atom operator LBRACK atom (',' atom)* RBRACK ;
+term : atom ( operator atom)? | LPAREN or_expression RPAREN | atom operator LBRACK atom (',' atom)* RBRACK ;
 
 atom : ID | INT | FLOAT | STRING | TRUE | FALSE;
 
