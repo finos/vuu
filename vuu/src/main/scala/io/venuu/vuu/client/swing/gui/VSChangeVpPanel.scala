@@ -15,7 +15,7 @@ import scala.swing.event.ButtonClicked
 /**
   * Created by chris on 17/03/2016.
   */
-class VSChangeVpPanel(context: GridPanelViewPortContext)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Frame with StrictLogging {
+class VSChangeVpPanel(context: ViewPortContext)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Frame with StrictLogging {
 
   this.preferredSize = new Dimension(700, 800)
 

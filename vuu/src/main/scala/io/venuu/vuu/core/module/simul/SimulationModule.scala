@@ -137,7 +137,13 @@ object SimulationModule extends DefaultModule {
             Index("ccy"),
           ),
           joinFields = "id", "ric"
-        ),
+        ),//.viewport(
+        //    Menu("Edit"
+        //      MenuItem("Copy Row", GenericRpcService.copyRow)
+        //      MenuItem("Delete Row", GenericRpcService.DeleteRow)
+        //      MenuItem("Delete Row", GenericRpcService.DeleteRow)
+        //    )
+        //
         (table, vs) => new ChildOrdersProvider(table, ordersModel)
       )
       .addTable(

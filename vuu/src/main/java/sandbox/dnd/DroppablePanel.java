@@ -27,14 +27,17 @@ public class DroppablePanel extends JPanel {
 
     private final PanelPosition position;
     private final DroppablePanel selfRef = this;
+    private DroppablePanelListener listener;
 
-    public DroppablePanel(PanelPosition position){
+    public DroppablePanel(PanelPosition position, DroppablePanelListener listener){
         this.position = position;
-        this.setBackground(new Color(0,255, 0, 65));
+        this.listener = listener;
+        this.setBackground(new Color(0,0, 0, 0));
         this.setBounds(0, 0, 100, 500);
         this.setOpaque(true);
         this.setVisible(false);
         this.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        //this.add(new JButton("Foo"));
 
         this.setTransferHandler(new TestSplitPane.ValueImportTransferHandler());
 
@@ -42,8 +45,10 @@ public class DroppablePanel extends JPanel {
             @Override
             public void dragEnter(DropTargetDragEvent dtde) {
                 System.out.println("HIGHLIGHT:" + Thread.currentThread().getName() + ": dragEnter: source:" + dtde.getSource() + " loc:" + dtde.getLocation());
-                selfRef.highLightMe();
-                selfRef.invalidate();
+                SwingUtilities.invokeLater(() -> {
+                    selfRef.highLightMe();
+                    listener.onPanelEnter(dtde);
+                });
             }
 
             @Override
@@ -51,9 +56,16 @@ public class DroppablePanel extends JPanel {
 
                 if(selfRef.hasPoint((int)dtde.getLocation().getX(), (int)dtde.getLocation().getY())){
                     System.out.println("HIGHLIGHT:" + Thread.currentThread().getName() + ": dragOver: source:" + dtde.getSource() + " loc:" + dtde.getLocation());
-                    selfRef.highLightMe();
-                    selfRef.invalidate();
+                    SwingUtilities.invokeLater(() -> {
+                        selfRef.highLightMe();
+                        listener.onPanelOver(dtde);
+                    });
+                    //selfRef.invalidate();
                 }else{
+                    SwingUtilities.invokeLater(() -> {
+                        selfRef.deHighlightMe();
+                        listener.onPanelOver(dtde);
+                    });
                     //selfRef.deHighlightMe();
                     //selfRef.invalidate();
                 }
@@ -69,8 +81,7 @@ public class DroppablePanel extends JPanel {
             @Override
             public void dragExit(DropTargetEvent dte) {
                 System.out.println("dragExit");
-                selfRef.deHighlightMe();
-                //selfRef.hideMe();
+                SwingUtilities.invokeLater(() -> selfRef.deHighlightMe());
             }
 
             @Override
@@ -78,7 +89,10 @@ public class DroppablePanel extends JPanel {
                 String value = "";
                 try {
                     value =(String) dtde.getTransferable().getTransferData(DataFlavor.stringFlavor);
-                    System.out.println("dropped:" + value);
+                    listener.onDrop(value, selfRef.position);
+                    dtde.acceptDrop(dtde.getDropAction());
+                    dtde.dropComplete(true);
+                    //System.out.println("dropped:" + value);
 
                 }catch(Exception ex){
                     System.out.println("Exception:" + ex.getMessage());
@@ -99,11 +113,21 @@ public class DroppablePanel extends JPanel {
     }
 
     public void highLightMe(){
-        this.setBackground(new Color(255,0, 0, 65));
+        //this.setBackground(new Color(0,255, 0, 65));
+        //this.setBackground(Color.WHITE);
+        //this.setBackground(new Color(0,0, 0, 0));
+        this.setBorder(BorderFactory.createLineBorder(Color.BLUE, 3));
+        //this.repaint(this.getVisibleRect());
+        //this.setBackground(new Color(255,0, 0, 65));
     }
 
     public void deHighlightMe(){
-        this.setBackground(new Color(0,255, 0, 65));
+        //this.setBackground(new Color(0,0, 0, 0));
+        //this.setBackground(Color.WHITE);
+        //this.setBackground(new Color(0,0, 0, 0));
+        this.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        //this.repaint(this.getVisibleRect());
+        //this.setBackground(new Color(0,255, 0, 65));
     }
 
     public void hideMe(){

@@ -2,13 +2,14 @@ package sandbox.dnd;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.dnd.DropTargetDragEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.Arrays;
 
-public class BorderDropLayeredPanel extends JLayeredPane {
+public class BorderDropLayeredPanel extends JLayeredPane implements DroppablePanelListener {
 
     public static void hide(DroppablePanel... panels){
         Arrays.stream(panels).forEach(DroppablePanel::hideMe);
@@ -18,7 +19,9 @@ public class BorderDropLayeredPanel extends JLayeredPane {
         Arrays.stream(panels).forEach(DroppablePanel::showMe);
     }
 
-    private final JFrame parent;
+    private final JFrame ultimateParent;
+    private final JComponent parent;
+
     private BorderDropLayeredPanel selfRef = this;
 
     private final DroppablePanel leftPanel;
@@ -26,26 +29,68 @@ public class BorderDropLayeredPanel extends JLayeredPane {
     private final DroppablePanel topPanel;
     private final DroppablePanel bottomPanel;
     private final DroppablePanel centerPanel;
+    private final JPanel backPanel;
 
+    @Override
+    public void onDrop(String dropInfo, DroppablePanel.PanelPosition position) {
+        SwingUtilities.invokeLater(() -> {
+            if(position == DroppablePanel.PanelPosition.Center){
+                backPanel.add(new JButton(dropInfo), BorderLayout.CENTER);
+            }else if(position == DroppablePanel.PanelPosition.Left){
+                JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+                pane.add(new BorderDropLayeredPanel(ultimateParent, this), JSplitPane.RIGHT);
+                pane.add(new JButton(dropInfo), JSplitPane.LEFT);
+                backPanel.add(pane);
+            }else if(position == DroppablePanel.PanelPosition.Right){
+                JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+                pane.add(new BorderDropLayeredPanel(ultimateParent, this), JSplitPane.LEFT);
+                pane.add(new JButton(dropInfo), JSplitPane.RIGHT);
+                backPanel.add(pane);
+            }else if(position == DroppablePanel.PanelPosition.Top){
+                JSplitPane pane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+                pane.add(new BorderDropLayeredPanel(ultimateParent, this), JSplitPane.BOTTOM);
+                pane.add(new JButton(dropInfo), JSplitPane.TOP);
+                backPanel.add(pane);
+            }else if(position == DroppablePanel.PanelPosition.Bottom){
+                JSplitPane pane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+                pane.add(new BorderDropLayeredPanel(ultimateParent, this), JSplitPane.TOP);
+                pane.add(new JButton(dropInfo), JSplitPane.BOTTOM);
+                backPanel.add(pane);
+            }
 
-    public BorderDropLayeredPanel(JFrame parent) {
+            //backPanel.add(new JButton(dropInfo), BorderLayout.CENTER);
+            hide(leftPanel, rightPanel, topPanel, bottomPanel, centerPanel);
+            parent.repaint();
+        });
+    }
+
+    @Override
+    public void onPanelOver(DropTargetDragEvent dtde) {
+        //parent.repaint();
+    }
+
+    @Override
+    public void onPanelEnter(DropTargetDragEvent dtde) {
+        //parent.repaint();
+    }
+
+    public BorderDropLayeredPanel(JFrame ultimateParent, JComponent parent) {
         super();
         this.parent = parent;
+        this.ultimateParent = ultimateParent;
 
-        JPanel panel1 = new JPanel(new BorderLayout());
-        panel1.setBounds(0, 0, 5000, 5000);
+        backPanel = new JPanel(new BorderLayout());
+        //backPanel.setBounds(0, 0, 5000, 5000);
 
-        panel1.setBackground(Color.WHITE);
-
-        leftPanel = new DroppablePanel(DroppablePanel.PanelPosition.Left);
-        rightPanel = new DroppablePanel(DroppablePanel.PanelPosition.Right);
-        topPanel = new DroppablePanel(DroppablePanel.PanelPosition.Top);
-        bottomPanel = new DroppablePanel(DroppablePanel.PanelPosition.Bottom);
-        centerPanel = new DroppablePanel(DroppablePanel.PanelPosition.Center);
+        leftPanel = new DroppablePanel(DroppablePanel.PanelPosition.Left, this);
+        rightPanel = new DroppablePanel(DroppablePanel.PanelPosition.Right, this);
+        topPanel = new DroppablePanel(DroppablePanel.PanelPosition.Top, this);
+        bottomPanel = new DroppablePanel(DroppablePanel.PanelPosition.Bottom, this);
+        centerPanel = new DroppablePanel(DroppablePanel.PanelPosition.Center, this);
 
         this.setPreferredSize(new Dimension(800, 800));
 
-        this.add(panel1, 1);
+        this.add(backPanel, 1);
         this.add(leftPanel, 0);
         this.add(rightPanel, 0);
         this.add(topPanel, 0);
@@ -57,12 +102,12 @@ public class BorderDropLayeredPanel extends JLayeredPane {
             public void componentResized(ComponentEvent e) {
                 super.componentResized(e);
                 selfRef.setSize(parent.getWidth(), parent.getHeight());
-                panel1.setSize(parent.getWidth(), parent.getHeight());
-                leftPanel.setBounds(parent);
-                rightPanel.setBounds(parent);
-                topPanel.setBounds(parent);
-                bottomPanel.setBounds(parent);
-                centerPanel.setBounds(parent);
+                backPanel.setSize(parent.getWidth(), parent.getHeight());
+                leftPanel.setBounds(parent.getBounds());
+                rightPanel.setBounds(parent.getBounds());
+                topPanel.setBounds(parent.getBounds());
+                bottomPanel.setBounds(parent.getBounds());
+                centerPanel.setBounds(parent.getBounds());
             }
         });
 
