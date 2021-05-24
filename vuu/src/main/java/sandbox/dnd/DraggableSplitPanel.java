@@ -18,7 +18,7 @@ public class DraggableSplitPanel extends JSplitPane {
     public DraggableSplitPanel(JFrame parent){
         super();
         left = createLeft();
-        right = new BorderDropLayeredPanel(parent);
+        right = new BorderDropLayeredPanel(parent, parent.getRootPane());
 
         setLeftComponent(left);
         setRightComponent(right);

@@ -1,5 +1,11 @@
 package io.venuu.vuu.client.swing.gui.components
 
+import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.swing.EventBus
+import io.venuu.vuu.client.swing.gui.ViewPortContextProvider
+import io.venuu.vuu.client.swing.gui.components.popup.ViewServerPopupMenus
+import io.venuu.vuu.client.swing.messages.ClientMessage
+
 import scala.swing.GridBagPanel.Fill
 import scala.swing.event.ButtonClicked
 import scala.swing.{Button, GridBagPanel, Label, TextArea}
@@ -7,7 +13,7 @@ import scala.swing.{Button, GridBagPanel, Label, TextArea}
 /**
   * Created by chris on 20/03/2016.
   */
-class FilterBarPanel(onGoClick: (String) => Unit) extends GridBagPanel {
+class FilterBarPanel(ctxtProvider: ViewPortContextProvider)(implicit eventBus: EventBus[ClientMessage], clock: Clock) extends GridBagPanel {
 
   private val c = new Constraints
   private val shouldFill = true
@@ -47,7 +53,10 @@ class FilterBarPanel(onGoClick: (String) => Unit) extends GridBagPanel {
   listenTo(`goButton`)
 
   reactions += {
-    case ButtonClicked(`goButton`) => onGoClick(filterText.text)
+    case ButtonClicked(`goButton`) => {
+      ctxtProvider.setContext(ctxtProvider.context().copy(filter = filterText.text))
+      ViewServerPopupMenus.mutateViewPort(ctxtProvider)
+    }
   }
 
 }

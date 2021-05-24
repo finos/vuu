@@ -25,7 +25,5 @@ object VuiStateModule extends DefaultModule{
       )
       .addRestService(_ => new VuiStateRestService(store))
       .asModule()
-
   }
-
 }

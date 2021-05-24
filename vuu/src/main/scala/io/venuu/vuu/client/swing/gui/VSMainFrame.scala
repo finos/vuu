@@ -157,8 +157,6 @@ class VSMainFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], ti
 
   }
 
-  //val buttonPanel = new FlowPanel(connect, tablesCombo, columnsCombo, createViewPort, testCombo, sessionLabel)
-
   contents = new BorderPanel {
 
     import scala.swing.BorderPanel.Position._

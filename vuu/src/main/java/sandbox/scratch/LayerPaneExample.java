@@ -1,13 +1,15 @@
 package sandbox.scratch;
 
 import sandbox.dnd.DroppablePanel;
+import sandbox.dnd.DroppablePanelListener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.dnd.DropTargetDragEvent;
 import java.awt.event.*;
 import java.util.Arrays;
 
-public class LayerPaneExample {
+public class LayerPaneExample implements DroppablePanelListener {
 
     public static void hide(DroppablePanel... panels){
         Arrays.stream(panels).forEach(DroppablePanel::hideMe);
@@ -17,11 +19,27 @@ public class LayerPaneExample {
         Arrays.stream(panels).forEach(DroppablePanel::showMe);
     }
 
+    @Override
+    public void onDrop(String dropInfo, DroppablePanel.PanelPosition position) {
+
+    }
+
+    @Override
+    public void onPanelOver(DropTargetDragEvent dtde) {
+
+    }
+
+    @Override
+    public void onPanelEnter(DropTargetDragEvent dtde) {
+
+    }
+
     public LayerPaneExample() {
+
+        LayerPaneExample example = this;
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-
 
                 JLayeredPane pane = new JLayeredPane();
 
@@ -30,11 +48,11 @@ public class LayerPaneExample {
 
                 panel1.setBackground(Color.WHITE);
 
-                DroppablePanel leftPanel = new DroppablePanel(DroppablePanel.PanelPosition.Left);
-                DroppablePanel rightPanel = new DroppablePanel(DroppablePanel.PanelPosition.Right);
-                DroppablePanel topPanel = new DroppablePanel(DroppablePanel.PanelPosition.Top);
-                DroppablePanel bottomPanel = new DroppablePanel(DroppablePanel.PanelPosition.Bottom);
-                DroppablePanel centerPanel = new DroppablePanel(DroppablePanel.PanelPosition.Center);
+                DroppablePanel leftPanel = new DroppablePanel(DroppablePanel.PanelPosition.Left, example);
+                DroppablePanel rightPanel = new DroppablePanel(DroppablePanel.PanelPosition.Right, example);
+                DroppablePanel topPanel = new DroppablePanel(DroppablePanel.PanelPosition.Top, example);
+                DroppablePanel bottomPanel = new DroppablePanel(DroppablePanel.PanelPosition.Bottom, example);
+                DroppablePanel centerPanel = new DroppablePanel(DroppablePanel.PanelPosition.Center, example);
 
                 centerPanel.showMe();
 

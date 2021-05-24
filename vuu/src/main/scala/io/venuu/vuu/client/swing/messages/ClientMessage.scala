@@ -15,7 +15,7 @@ import io.venuu.vuu.net.{Aggregations, Error, FilterSpec, SortSpec}
 import java.util.UUID
 
 object RequestId{
-  def oneNew()(implicit timeProvider: Clock) = {
+  def oneNew()(implicit clock: Clock) = {
     "REQ-" + UUID.randomUUID().toString
   }
 }

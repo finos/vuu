@@ -11,6 +11,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.client.RpcServiceClientFactory
 import io.venuu.vuu.client.swing.gui.components.FilterBarPanel
+import io.venuu.vuu.client.swing.gui.components.popup.ViewServerPopupMenus
 import io.venuu.vuu.client.swing.gui.components.renderer.{SortedColumnRenderer, TreeGridCellRenderer}
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
@@ -28,22 +29,23 @@ import scala.swing.BorderPanel.Position
 import scala.swing._
 import scala.swing.event.{MouseClicked, TableEvent}
 
-class ComponentWithContext(val component: Component, val context: Object) extends Component{
+class ComponentWithContext(val component: Component, val context: Object) extends Component {
   override lazy val peer: JComponent = component.peer
 }
 
 case class ColumnHeaderClicked(override val source: Table, column: Int, e: MouseEvent) extends TableEvent(source)
 
-case class GridPanelViewPortContext(requestId: String, vpId: String, table: String, availableColumns: Array[String], columns: Array[String] = Array(),
-                                    sortBy: SortSpec = SortSpec(List()), filter: String = "", groupBy: Array[String] = Array(),
-                                    currentColumn: Option[TableColumn] = None,
-                                    aggregations: Array[Aggregations] = Array())
+case class ViewPortContext(requestId: String, vpId: String, table: String, availableColumns: Array[String], columns: Array[String] = Array(),
+                           sortBy: SortSpec = SortSpec(List()), filter: String = "", groupBy: Array[String] = Array(),
+                           currentColumn: Option[TableColumn] = None,
+                           aggregations: Array[Aggregations] = Array())
 
-class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: String, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends BorderPanel with StrictLogging {
+class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: String, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock)
+  extends BorderPanel with ViewPortContextProvider with StrictLogging {
 
-  //private var vpId: String = ""
+  private final val selfReference = this;
 
-  @volatile var context = GridPanelViewPortContext(requestId, "", tableName, availableColumns)
+  @volatile var context: ViewPortContext = ViewPortContext(requestId, "", tableName, availableColumns)
 
   eventBus.register( {
       //case ru: ClientServerRowUpdate if ru.vpId == vpId => handleRowUpdate(ru)
@@ -55,7 +57,9 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: Stri
       case _ =>
   })
 
-  //final val FETCH_COUNT = 100
+  override def setContext(viewPortContext: ViewPortContext): Unit = {
+    this.context = viewPortContext
+  }
 
   final val componentId: String = UUID.randomUUID().toString
 
@@ -71,120 +75,19 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: Stri
 
   val parent = this
 
-  val popUp = new components.PopupMenu{
-    val editViewPort = new MenuItem(Action("Edit"){
-      val modal = new VSChangeVpPanel(context)
-      modal.open()
-    })
-
-    val rpcViewPort = new MenuItem(Action("Open RPC"){
-
-      val orderEntryRpc = RpcServiceClientFactory.createRpcService[OrderEntryRpcHandler]("SIMUL")
-
-      val result = orderEntryRpc.addRowsFromInstruments(context.vpId)(null)
-
-      logger.info("Got result:" + result.mkString(","))
-
-      val modalRpc = new VSModalRPCFrame(parentFrame, "orderEntry", Array("clOrderId", "ric", "quantity", "orderType", "price", "priceLevel"))
-      modalRpc.pack()
-      modalRpc.visible = true
-    })
-
-    val disableViewPort = new MenuItem(Action("Disable ViewPort"){
-        eventBus.publish(ClientDisableViewPort(RequestId.oneNew(), context.vpId))
-    })
-
-    val enableViewPort = new MenuItem(Action("Enable ViewPort"){
-      eventBus.publish(ClientEnableViewPort(RequestId.oneNew(), context.vpId))
-    })
-
-    contents += editViewPort
-    contents += rpcViewPort
-    contents += disableViewPort
-    contents += enableViewPort
+  def popMenu:components.PopupMenu = {
+    new components.PopupMenu{
+      contents += ViewServerPopupMenus.defaultPopup(selfReference)
+      //    contents += rpcViewPort
+      //    contents += disableViewPort
+      //    contents += enableViewPort
+    }
   }
 
-  val popUpGroupBy = new components.PopupMenu{
 
-    val addToGroupByMenu: Menu = new Menu("Add to GroupBy") {
-      val addNoAgg = new MenuItem(Action("No Aggregate") {
-        context.currentColumn match {
-          case Some(column) =>
-            val name = column.getIdentifier.asInstanceOf[String]
-            context = context.copy(groupBy = context.groupBy ++ Array(name))
-            onChangeViewPort(context.filter, None)
-          case None => println("bad")
-        }
-      })
-      val addWithSum = new MenuItem(Action("Sum Aggregate") {
-        context.currentColumn match {
-          case Some(column) =>
-            val name = column.getIdentifier.asInstanceOf[String]
-            context = context.copy(groupBy = context.groupBy ++ Array(name), aggregations = context.aggregations ++ Array(Aggregations(name, AggType.Sum)))
-            onChangeViewPort(context.filter, None)
-          case None => println("bad")
-        }
-      })
+  lazy val popUp = popMenu
 
-      val addWithCount = new MenuItem(Action("Count Aggregate") {
-        context.currentColumn match {
-          case Some(column) =>
-            val name = column.getIdentifier.asInstanceOf[String]
-            context = context.copy(groupBy = context.groupBy ++ Array(name), aggregations = context.aggregations ++ Array(Aggregations(name, AggType.Count)))
-            onChangeViewPort(context.filter, None)
-          case None => println("bad")
-        }
-
-      })
-
-
-      contents += addNoAgg
-      contents += addWithCount
-      contents += addWithSum
-    }
-
-    val addToAggregates: Menu = new Menu("Add to Aggregates") {
-      val addWithSum = new MenuItem(Action("Sum") {
-        context.currentColumn match {
-          case Some(column) =>
-            val name = column.getIdentifier.asInstanceOf[String]
-            context = context.copy(aggregations = context.aggregations ++ Array(Aggregations(name, AggType.Sum)))
-            onChangeViewPort(context.filter, None)
-          case None =>
-            println("bad")
-        }
-      })
-
-      val addWithCount = new MenuItem(Action("Count") {
-        context.currentColumn match {
-          case Some(column) =>
-            val name = column.getIdentifier.asInstanceOf[String]
-            context = context.copy(aggregations = context.aggregations ++ Array(Aggregations(name, AggType.Count)))
-            onChangeViewPort(context.filter, None)
-          case None =>
-            println("bad")
-        }
-
-      })
-
-
-      contents += addWithSum
-      contents += addWithCount
-    }
-
-      val removeFromGroupBy = new MenuItem(Action("Remove From GroupBy") {
-        println("was here")
-      })
-
-    val enableViewPort = new MenuItem(Action("Enable ViewPort"){
-      eventBus.publish(ClientEnableViewPort(RequestId.oneNew(), context.vpId))
-    })
-
-    contents += addToGroupByMenu
-    contents += addToAggregates
-    contents += removeFromGroupBy
-    contents += enableViewPort
-  }
+  val popUpGroupBy = ViewServerPopupMenus.groupByPopup(this)
 
   val table = getTable()
 
@@ -205,7 +108,6 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: Stri
   table.peer.getSelectionModel.addListSelectionListener(new ListSelectionListener {
     override def valueChanged(e: ListSelectionEvent): Unit = {
       val selected = e.getSource.asInstanceOf[DefaultListSelectionModel].getSelectedIndices.toArray
-      // eventBus.publish(ClientUpdateVPRange(RequestId.oneNew(), context.vpId, 0, 100))
       eventBus.publish(ClientSetSelection(RequestId.oneNew(), context.vpId, selected))
       logger.info("Setting Selected" + selected.mkString(",") + " e(first:" + e.getFirstIndex + ",last:" + e.getLastIndex + ",adjusting:" + e.getValueIsAdjusting + ")" + e.getSource)
     }
@@ -265,7 +167,9 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: Stri
 
     val asList = sortsAsMap.values.toList
 
-    onChangeViewPort("", Some(asList))
+    setContext(context.copy(sortBy = SortSpec(asList)))
+
+    onChangeViewPort(selfReference)
   }
 
   val pane = new ScrollPane(table)
@@ -306,25 +210,10 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: Stri
     }
   })
 
-  val filter = new FilterBarPanel(onChangeViewPort(_, None))
+  val filter = new FilterBarPanel(this)
 
-  def onChangeViewPort(filterText: String, sort: Option[List[SortDef]]): Unit = {
-
-    val filterSpec = if(filter.getFilterText != "") FilterSpec(filter.getFilterText)
-                     else null
-
-    val sortSpec = sort match {
-      case Some(fields) => SortSpec(fields)
-      case None => SortSpec(List())
-    }
-
-    val reqId = RequestId.oneNew()
-
-    SwingThread.swing(() => {
-      toggleRenderer()
-    })
-
-    eventBus.publish(ClientChangeViewPortRequest(reqId, context.vpId, context.columns, filterSpec = filterSpec, sortBy = sortSpec, groupBy = context.groupBy, aggregations = context.aggregations))
+  def onChangeViewPort(contextProvider: ViewPortContextProvider): Unit = {
+    ViewServerPopupMenus.mutateViewPort(contextProvider)
   }
 
   layout(filter) = Position.North
