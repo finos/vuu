@@ -20,7 +20,13 @@ trait IndexedField[TYPE]{
   }
 }
 
-class SkipListIndexedStringField(val column: Column) extends IndexedField[String] with StrictLogging {
+trait DoubleIndexedField extends IndexedField[Double]
+trait BooleanIndexedField extends IndexedField[Boolean]
+trait LongIndexedField extends IndexedField[Long]
+trait IntIndexedField extends IndexedField[Int]
+trait StringIndexedField extends IndexedField[String]
+
+class SkipListIndexedStringField(val column: Column) extends StringIndexedField with StrictLogging {
   private final val skipList = new ConcurrentSkipListMap[Int, ImmutableArray[String]]()
 
   override def remove(indexKey: String, rowKey: String): Unit = {
@@ -112,7 +118,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
 }
 
 
-class SkipListIndexedDoubleField(column: Column) extends SkipListIndexedField[Double](column){}
-class SkipListIndexedIntField(column: Column) extends SkipListIndexedField[Int](column){}
-class SkipListIndexedLongField(column: Column) extends SkipListIndexedField[Long](column){}
-class SkipListIndexedBooleanField(column: Column) extends SkipListIndexedField[Boolean](column){}
+class SkipListIndexedDoubleField(column: Column) extends SkipListIndexedField[Double](column) with DoubleIndexedField{}
+class SkipListIndexedIntField(column: Column) extends SkipListIndexedField[Int](column) with IntIndexedField {}
+class SkipListIndexedLongField(column: Column) extends SkipListIndexedField[Long](column) with LongIndexedField {}
+class SkipListIndexedBooleanField(column: Column) extends SkipListIndexedField[Boolean](column) with BooleanIndexedField {}
