@@ -68,9 +68,6 @@ object ViewServerPopupMenus {
             mutateViewPort(ctxProvider)
           case None =>
             throw new Exception("Column Not Found")
-            eventBus.publish(ClientEnableViewPort(RequestId.oneNew(), ctx.vpId))
-          case None =>
-            throw new Exception("Context has not been set")
         }
       })
 
@@ -83,8 +80,6 @@ object ViewServerPopupMenus {
             mutateViewPort(ctxProvider)
           case None =>
             throw new Exception("Column Not Found")
-          case None =>
-            throw new Exception("Context has not been set")
         }
       })
       contents += addWithSum

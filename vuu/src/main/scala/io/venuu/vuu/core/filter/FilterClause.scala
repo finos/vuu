@@ -1,7 +1,7 @@
 package io.venuu.vuu.core.filter
 
 import io.venuu.toolbox.collection.array.ImmutableArray
-import io.venuu.vuu.core.index.IndexedField
+import io.venuu.vuu.core.index.{BooleanIndexedField, DoubleIndexedField, IndexedField, IntIndexedField, LongIndexedField, StringIndexedField}
 import io.venuu.vuu.core.table.{DataType, RowData}
 import io.venuu.vuu.grammer.FilterParser
 import io.venuu.vuu.viewport.RowSource
@@ -86,24 +86,26 @@ case class EqualsClause(column: String, dataType: Int, value: String) extends Da
   override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
-      case Some(ix: IndexedField[String]) if asColumn.dataType == DataType.StringDataType =>
+      case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
         ix.find(value)
-      case Some(ix: IndexedField[Int]) if asColumn.dataType == DataType.IntegerDataType =>
+      case Some(ix: IntIndexedField) if asColumn.dataType == DataType.IntegerDataType =>
         ix.find(value.toInt)
-      case Some(ix: IndexedField[Long]) if asColumn.dataType == DataType.LongDataType =>
+      case Some(ix: LongIndexedField) if asColumn.dataType == DataType.LongDataType =>
         ix.find(value.toLong)
-      case Some(ix: IndexedField[Double]) if asColumn.dataType == DataType.DoubleDataType =>
+      case Some(ix: DoubleIndexedField) if asColumn.dataType == DataType.DoubleDataType =>
         ix.find(value.toDouble)
-      case Some(ix: IndexedField[Boolean]) if asColumn.dataType == DataType.BooleanDataType =>
+      case Some(ix: BooleanIndexedField) if asColumn.dataType == DataType.BooleanDataType =>
         ix.find(value.toBoolean)
-      case None =>
+      case Some(ix: IndexedField[_]) =>
+        EqualsClause.super.filterAll(source, primaryKeys)
+      case _ =>
         EqualsClause.super.filterAll(source, primaryKeys)
     }
   }
 
   override def filter(data: RowData): Boolean = {
     val datum = data.get(column)
-    if( datum != null && datum.equals(toType)) true
+    if( datum != null && datum == toType) true
     else false
   }
 }
@@ -115,7 +117,7 @@ case class NotEqualsClause(column: String, dataType: Int, value: String)  extend
   override def filter(data: RowData): Boolean = {
     val datum = data.get(column)
 
-    if( datum == null || !datum.equals(toType)) true
+    if( datum == null || datum != toType) true
     else false
   }
 }
@@ -126,17 +128,17 @@ case class GreaterThanClause(column: String, dataType: Int, value: String)  exte
   override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
-      case Some(ix: IndexedField[String]) if asColumn.dataType == DataType.StringDataType =>
+      case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
         GreaterThanClause.super.filterAll(source, primaryKeys)
-      case Some(ix: IndexedField[Int]) if asColumn.dataType == DataType.IntegerDataType =>
+      case Some(ix: IntIndexedField) if asColumn.dataType == DataType.IntegerDataType =>
         ix.greaterThan(value.toInt)
-      case Some(ix: IndexedField[Long]) if asColumn.dataType == DataType.LongDataType =>
+      case Some(ix: LongIndexedField) if asColumn.dataType == DataType.LongDataType =>
         ix.greaterThan(value.toLong)
-      case Some(ix: IndexedField[Double]) if asColumn.dataType == DataType.DoubleDataType =>
+      case Some(ix: DoubleIndexedField) if asColumn.dataType == DataType.DoubleDataType =>
         ix.greaterThan(value.toDouble)
-      case Some(ix: IndexedField[Boolean]) if asColumn.dataType == DataType.BooleanDataType =>
+      case Some(ix: BooleanIndexedField) if asColumn.dataType == DataType.BooleanDataType =>
         ix.greaterThan(value.toBoolean)
-      case None =>
+      case _ =>
         GreaterThanClause.super.filterAll(source, primaryKeys)
     }
   }
@@ -182,17 +184,17 @@ case class LessThanClause(column: String, dataType: Int, value: String)  extends
   override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
-      case Some(ix: IndexedField[String]) if asColumn.dataType == DataType.StringDataType =>
+      case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
         LessThanClause.super.filterAll(source, primaryKeys)
-      case Some(ix: IndexedField[Int]) if asColumn.dataType == DataType.IntegerDataType =>
+      case Some(ix: IntIndexedField) if asColumn.dataType == DataType.IntegerDataType =>
         ix.lessThan(value.toInt)
-      case Some(ix: IndexedField[Long]) if asColumn.dataType == DataType.LongDataType =>
+      case Some(ix: LongIndexedField) if asColumn.dataType == DataType.LongDataType =>
         ix.lessThan(value.toInt)
-      case Some(ix: IndexedField[Boolean]) if asColumn.dataType == DataType.BooleanDataType =>
+      case Some(ix: BooleanIndexedField) if asColumn.dataType == DataType.BooleanDataType =>
         ix.lessThan(value.toBoolean)
-      case Some(ix: IndexedField[Double]) if asColumn.dataType == DataType.DoubleDataType =>
+      case Some(ix: DoubleIndexedField) if asColumn.dataType == DataType.DoubleDataType =>
         ix.lessThan(value.toDouble)
-      case None =>
+      case _ =>
         LessThanClause.super.filterAll(source, primaryKeys)
     }
   }
@@ -212,17 +214,17 @@ case class InClause(column: String, dataType: Int, values: List[String])  extend
   override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
-      case Some(ix: IndexedField[String]) if asColumn.dataType == DataType.StringDataType =>
+      case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
         ix.find(values)
-      case Some(ix: IndexedField[Int]) if asColumn.dataType == DataType.IntegerDataType =>
+      case Some(ix: IntIndexedField) if asColumn.dataType == DataType.IntegerDataType =>
         ix.find(values.map(s => s.toInt))
-      case Some(ix: IndexedField[Long]) if asColumn.dataType == DataType.LongDataType =>
+      case Some(ix: LongIndexedField) if asColumn.dataType == DataType.LongDataType =>
         ix.find(values.map(s => s.toLong))
-      case Some(ix: IndexedField[Double]) if asColumn.dataType == DataType.DoubleDataType =>
+      case Some(ix: DoubleIndexedField) if asColumn.dataType == DataType.DoubleDataType =>
         ix.find(values.map(s => s.toDouble))
-      case Some(ix: IndexedField[Boolean]) if asColumn.dataType == DataType.BooleanDataType =>
+      case Some(ix: BooleanIndexedField) if asColumn.dataType == DataType.BooleanDataType =>
         ix.find(values.map(s => s.toBoolean))
-      case None =>
+      case _ =>
         InClause.super.filterAll(source, primaryKeys)
     }
   }

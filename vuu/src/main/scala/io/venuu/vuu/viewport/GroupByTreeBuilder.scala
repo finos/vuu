@@ -78,7 +78,7 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
         new ConcurrentHashMap[String, TreeNodeState]()
       case Some(tree: TreeImpl) =>
         tree.nodeState
-      case None =>
+      case _ =>
         EMPTY_TREE_NODE_STATE
     }
 

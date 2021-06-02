@@ -608,7 +608,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         keysByTable.get(name) match {
           case Some(foreignKey) if foreignKey != null => table.addKeyObserver(foreignKey, wrapped)
           case Some(null) => logger.trace("Foreign key not ready yet")
-          case None => logger.error(s"Could not load foreign key for ${table.getTableDef.name} (in join with ${this.getTableDef.name} key = $key")
+          case _ =>
+            logger.error(s"Could not load foreign key for ${table.getTableDef.name} (in join with ${this.getTableDef.name} key = $key")
         }
 
       }
