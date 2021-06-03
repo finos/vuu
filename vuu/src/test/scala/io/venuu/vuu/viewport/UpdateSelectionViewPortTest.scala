@@ -43,7 +43,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       }
 
       And("we select some rows in the grid")
-      viewPortContainer.changeSelection(session, highPriorityQueue, viewPort.id, ViewPortSelection(Array(0, 2)))
+      viewPortContainer.changeSelection(session, highPriorityQueue, viewPort.id, ViewPortSelectedIndices(Array(0, 2)))
 
       Then("Check the selected rows is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -54,7 +54,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
         )
       }
 
-      viewPortContainer.changeSelection(session, highPriorityQueue, viewPort.id, ViewPortSelection(Array(2)))
+      viewPortContainer.changeSelection(session, highPriorityQueue, viewPort.id, ViewPortSelectedIndices(Array(2)))
 
       assertVpEqWithMeta(combineQs(viewPort)) {
           Table(

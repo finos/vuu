@@ -205,7 +205,7 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelection(msg.selection))) match{
+    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelectedIndices(msg.selection))) match{
       case Success(vp) =>
         vsMsg(SetSelectionSuccess(vp.id, vp.getSelection.map( tup => tup._2).toArray))(ctx)
       case Failure(e) =>

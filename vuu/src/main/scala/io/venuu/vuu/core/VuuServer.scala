@@ -5,7 +5,7 @@ import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import io.venuu.toolbox.thread.LifeCycleRunner
 import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.api.{JoinTableDef, TableDef}
+import io.venuu.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import io.venuu.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, ViewServerModule}
 import io.venuu.vuu.core.table.{DataTable, TableContainer}
 import io.venuu.vuu.net._
@@ -14,7 +14,7 @@ import io.venuu.vuu.net.http.{Http2Server, VuuHttp2Server, VuuHttp2ServerOptions
 import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import io.venuu.vuu.net.ws.WebSocketServer
-import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer, RpcProvider}
 import io.venuu.vuu.viewport.ViewPortContainer
 
 object VuuWebSocketOptions{
@@ -133,6 +133,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
         module.getProviderForTable(table, viewserver)(time, life)
       }
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
+      override def viewPortDefs: Map[String, (DataTable, RpcProvider, VuuServer) => ViewPortDef] = module.viewPortDefs
     }
 
     moduleContainer.register(realized)
@@ -156,6 +157,8 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
         registerProvider(table, provider)
 
     })
+
+    module.viewPortDefs.foreach({case(table, vpFunc) => viewPortContainer.addViewPortDefinition(table, vpFunc)})
 
     this
   }

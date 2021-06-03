@@ -8,10 +8,13 @@
 package io.venuu.vuu.net.rpc
 
 import io.venuu.vuu.net._
+import io.venuu.vuu.viewport.{EmptyViewPortMenu, ViewPortMenu}
 
 import java.lang.reflect.Method
 
 trait RpcHandler {
+
+  def menuItems(): ViewPortMenu = EmptyViewPortMenu
 
   def implementsService(serviceIf:String):Boolean = {
     this.getClass.getInterfaces.exists(_.getSimpleName == serviceIf)

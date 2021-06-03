@@ -81,7 +81,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       viewPortOrders.getKeys().length shouldEqual (0)
 
       When("we select some rows in the grid")
-      viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPricesGroupBy.id, ViewPortSelection(Array(5)))
+      viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(5)))
 
       Then("Check the selected rows is updated in the vp")
       assertVpEqWithMeta(filterByVpId(combineQs(viewPortPricesGroupBy), viewPortPricesGroupBy)) {
@@ -115,7 +115,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       }
 
       And("if we expend the selection to include BP.L in the prices table")
-      viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPricesGroupBy.id, ViewPortSelection(Array(3,5)))
+      viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(3,5)))
 
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
@@ -151,7 +151,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       viewPortOrders.getKeys().length shouldEqual (9)
 
       And("if we set selection to none")
-      viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPricesGroupBy.id, ViewPortSelection(Array()))
+      viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array()))
       viewPortContainer.runOnce()
 
       Then("we should have nothing available in the viewport")

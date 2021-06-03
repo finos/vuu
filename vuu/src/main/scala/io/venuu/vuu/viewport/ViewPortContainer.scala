@@ -15,12 +15,14 @@ import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.thread.RunInThread
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.toolbox.time.{Clock, TimeIt}
-import io.venuu.vuu.api.Link
+import io.venuu.vuu.api.{Link, ViewPortDef}
+import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort._
-import io.venuu.vuu.core.table.{Column, TableContainer}
+import io.venuu.vuu.core.table.{Column, DataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
+import io.venuu.vuu.provider.RpcProvider
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.{core, viewport}
 
@@ -47,6 +49,16 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
   val groupByHistograms = new ConcurrentHashMap[String, Histogram]()
   val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
+
+  val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, RpcProvider, VuuServer) => ViewPortDef]()
+
+  def addViewPortDefinition(table: String, vpDefFunc: (DataTable, RpcProvider, VuuServer) => ViewPortDef): Unit ={
+    viewPortDefinitions.put(table, vpDefFunc)
+  }
+
+  def getViewPortDefinition(table: String): (DataTable, RpcProvider, VuuServer) => ViewPortDef = {
+    viewPortDefinitions.get(table)
+  }
 
   def getViewPortById(vpId: String): ViewPort ={
     this.viewPorts.get(vpId)
@@ -304,7 +316,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     }
   }
 
-  def changeSelection(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], vpId: String, selection: ViewPortSelection): ViewPort = {
+  def changeSelection(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], vpId: String, selection: ViewPortSelectedIndices): ViewPort = {
     val viewPort = viewPorts.get(vpId)
     viewPort.setSelection(selection.indices)
     viewPort
