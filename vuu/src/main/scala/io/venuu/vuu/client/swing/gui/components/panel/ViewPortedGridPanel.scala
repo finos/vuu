@@ -7,12 +7,13 @@ import io.venuu.vuu.client.swing.gui.ViewServerGridPanel
 import io.venuu.vuu.client.swing.messages.{ClientCreateViewPort, ClientMessage, RequestId}
 import io.venuu.vuu.client.swing.model.ViewPortedModel
 import io.venuu.vuu.net.SortSpec
+import io.venuu.vuu.viewport.ViewPortTable
 
 import java.awt.Dimension
 import scala.swing.BorderPanel.Position.Center
 import scala.swing.{BorderPanel, Frame}
 
-class ViewPortedGridPanel(owner: Frame, tableName: String, columns: Array[String])(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends BorderPanel with StrictLogging {
+class ViewPortedGridPanel(owner: Frame, tableName: ViewPortTable, columns: Array[String])(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends BorderPanel with StrictLogging {
 
   this.preferredSize = new Dimension(1024, 768)
   val requestId = RequestId.oneNew()

@@ -12,7 +12,7 @@ import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.ClientHelperFns
 import io.venuu.vuu.net._
-import io.venuu.vuu.viewport.ViewPortRange
+import io.venuu.vuu.viewport.{ViewPortRange, ViewPortTable}
 
 import java.lang.reflect.{InvocationHandler, Method}
 import java.util.concurrent.CopyOnWriteArrayList
@@ -228,7 +228,7 @@ case class HeadlessClient(vsClient: ViewServerClient,
   }
 
 
-  def createViewPort(table: String): CreateViewPortRequestBlock = CreateViewPortRequestBlock(ctx, table, this)(client, time)
+  def createViewPort(table: ViewPortTable): CreateViewPortRequestBlock = CreateViewPortRequestBlock(ctx, table, this)(client, time)
 
   def changeViewPort(viewportId: String): ChangeViewPortRequestBlock = ChangeViewPortRequestBlock(ctx, vpId = viewportId, this)
 

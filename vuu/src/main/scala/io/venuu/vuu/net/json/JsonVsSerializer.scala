@@ -1,8 +1,9 @@
-package io.venuu.vuu.net
+package io.venuu.vuu.net.json
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import io.venuu.vuu.net.{JsonViewServerMessage, MessageBody, ViewServerMessage}
 
 trait Serializer[R,SERTYPE]{
   def serialize(message: ViewServerMessage): R

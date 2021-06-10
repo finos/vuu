@@ -2,6 +2,7 @@ package io.venuu.vuu.net
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
+import io.venuu.vuu.net.json.{CoreJsonSerializationMixin, Serializer}
 import io.venuu.vuu.net.rpc.JsonSubTypeRegistry
 import io.venuu.vuu.net.ws.WebSocketClient
 

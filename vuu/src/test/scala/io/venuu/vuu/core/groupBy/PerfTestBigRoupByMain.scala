@@ -14,9 +14,9 @@ import io.venuu.vuu.viewport.{GroupBy, GroupByTreeBuilder}
 
 object PerfTestBigRoupByMain extends App with StrictLogging {
 
+  implicit val clock: Clock = new DefaultClock
   implicit val lifecycle = new LifecycleContainer
   implicit val metrics = new MetricsProviderImpl
-  implicit val clock: Clock = new DefaultClock
 
   val joinProvider   = new JoinTableProviderImpl()
 

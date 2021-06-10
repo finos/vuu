@@ -11,6 +11,7 @@ import io.venuu.vuu.core.table.{DataTable, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
 import io.venuu.vuu.net.http.{Http2Server, VuuHttp2Server, VuuHttp2ServerOptions}
+import io.venuu.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
 import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import io.venuu.vuu.net.ws.WebSocketServer
@@ -133,7 +134,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
         module.getProviderForTable(table, viewserver)(time, life)
       }
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
-      override def viewPortDefs: Map[String, (DataTable, RpcProvider, VuuServer) => ViewPortDef] = module.viewPortDefs
+      override def viewPortDefs: Map[String, (DataTable, Provider) => ViewPortDef] = module.viewPortDefs
     }
 
     moduleContainer.register(realized)
@@ -143,22 +144,26 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     module.tableDefs.foreach( tableDef => tableDef match {
 
       case tableDef: JoinTableDef =>
+        tableDef.setModule(module)
         createJoinTable(tableDef)
 
       case tableDef: TableDef if tableDef.autosubscribe =>
+        tableDef.setModule(module)
         val table = createAutoSubscribeTable(tableDef)
         val provider = module.getProviderForTable(table, this)
         registerProvider(table, provider)
 
       case tableDef: TableDef if !tableDef.autosubscribe =>
+        tableDef.setModule(module)
         val table = createTable(tableDef)
         logger.info(s"Loading provider for table ${table.name}...")
         val provider = module.getProviderForTable(table, this)
         registerProvider(table, provider)
-
     })
 
-    module.viewPortDefs.foreach({case(table, vpFunc) => viewPortContainer.addViewPortDefinition(table, vpFunc)})
+    module.viewPortDefs.foreach({case(table, vpFunc) => {
+      viewPortContainer.addViewPortDefinition(table, vpFunc)
+    }})
 
     this
   }

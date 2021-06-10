@@ -7,7 +7,8 @@ import io.venuu.vuu.core.module.{MyObjectParam, TestModule}
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.net.ws.WebSocketClient
-import io.venuu.vuu.net.{JsonVsSerializer, WebSocketViewServerClient}
+import io.venuu.vuu.net.WebSocketViewServerClient
+import io.venuu.vuu.net.json.JsonVsSerializer
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -65,8 +66,6 @@ class RpcModuleTest extends AnyFeatureSpec with Matchers {
 
       val token = auth("chris", "chris")
       val session = login(token, "chris")
-
-      //Thread.sleep(200)
 
       val returnVal = rpcCall(session, token, "chris", "AnRpcHandler", "onSendToMarket", Array(new MyObjectParam("foo", "bar")), "TEST")
 

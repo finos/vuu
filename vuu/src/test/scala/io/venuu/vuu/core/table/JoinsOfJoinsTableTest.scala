@@ -28,8 +28,8 @@ import org.scalatest.matchers.should.Matchers
   */
 class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers {
 
-  implicit val lifecycle = new LifecycleContainer
   implicit val timeProvider: Clock = new DefaultClock
+  implicit val lifecycle = new LifecycleContainer
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
   import TableTestHelper._

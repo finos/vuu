@@ -31,18 +31,18 @@ class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(im
 
     try {
 
-      val tables = tableContainer.getTableNames()
+      val tables = tableContainer.getTables()
 
-      tables.foreach(tableName => {
+      tables.foreach(tableDef => {
 
-        val counter = metrics.counter(tableName + ".processUpdates.Counter");
-        val size = tableContainer.getTable(tableName).size()
+        val counter = metrics.counter(tableDef + ".processUpdates.Counter");
+        val size = tableContainer.getTable(tableDef.table).size()
 
-        val meter = metrics.meter(tableName + ".processUpdates.Meter")
+        val meter = metrics.meter(tableDef + ".processUpdates.Meter")
 
-        val upMap = Map("table" -> tableName, "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
+        val upMap = Map("table" -> tableDef, "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
 
-        table.processUpdate(tableName, RowWithData(tableName, upMap), clock.now())
+        table.processUpdate(tableDef.table, RowWithData(tableDef.table, upMap), clock.now())
 
       })
 

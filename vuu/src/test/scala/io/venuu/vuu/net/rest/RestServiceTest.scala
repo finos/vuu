@@ -8,7 +8,7 @@ import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.core.module.TestModule
 import io.venuu.vuu.core.module.vui.VuiStateModule
-import io.venuu.vuu.net.{JsonVsSerializer, WebSocketViewServerClient}
+import io.venuu.vuu.net.WebSocketViewServerClient
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.net.ws.WebSocketClient
 import io.venuu.vuu.state.MemoryBackedVuiStateStore

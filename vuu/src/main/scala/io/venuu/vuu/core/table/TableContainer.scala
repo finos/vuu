@@ -7,7 +7,7 @@ import io.venuu.vuu.api.{JoinTableDef, TableDef}
 import io.venuu.vuu.core.groupby.{GroupBySessionTableImpl, SessionTable}
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.JoinTableProvider
-import io.venuu.vuu.viewport.RowSource
+import io.venuu.vuu.viewport.{RowSource, ViewPortTable}
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
@@ -16,7 +16,7 @@ trait TableContainerMBean{
   def tableList: String
   def toAscii(name: String): String
   def toAsciiRange(name: String, start: Int, end: Int): String
-  def getTableNames(): Array[String]
+  def getTables(): Array[ViewPortTable]
   def getSubscribedKeys(name: String): String
 }
 
@@ -69,8 +69,9 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
 //    sessionTables.keySet().iterator().mkString("\n")
 //  }
 
-  def getTableNames(): Array[String] = {
-    EnumerationHasAsScala(tables.keys()).asScala.map(_.toString).toArray[String].sorted
+  def getTables(): Array[ViewPortTable] = {
+    val tableList = IteratorHasAsScala(tables.values().iterator()).asScala
+    tableList.map(table => ViewPortTable(table.getTableDef.name, table.getTableDef.getModule().name) ).toArray[ViewPortTable].sortBy(_.table)
   }
 
   def getTable(name: String): DataTable = {

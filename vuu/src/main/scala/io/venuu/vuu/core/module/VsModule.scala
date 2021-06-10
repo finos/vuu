@@ -37,5 +37,5 @@ trait ViewServerModule {
   def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider
   def staticFileResources():  List[StaticServedResource]
   def restServicesUnrealized: List[VuuServer => RestService]
-  def viewPortDefs: Map[String, (DataTable, RpcProvider, VuuServer) => ViewPortDef]
+  def viewPortDefs: Map[String, (DataTable, Provider) => ViewPortDef]
 }

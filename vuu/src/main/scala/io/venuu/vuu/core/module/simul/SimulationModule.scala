@@ -18,9 +18,39 @@ import io.venuu.vuu.net.RequestContext
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
 import io.venuu.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
-import io.venuu.vuu.viewport.ViewPortContainer
+import io.venuu.vuu.viewport.{CellViewPortMenuItem, NoAction, RowViewPortMenuItem, SelectionViewPortMenuItem, TableViewPortMenuItem, ViewPortAction, ViewPortContainer, ViewPortMenu, ViewPortSelection}
 
 import java.util.UUID
+
+class InstrumentsService extends RpcHandler {
+
+  def testSelect(selection: ViewPortSelection, ctx: RequestContext): ViewPortAction = {
+    println("In testSelect")
+    NoAction
+  }
+
+  def testCell(rowKey: String, field: String, value: Object, ctx: RequestContext): ViewPortAction = {
+    println("In testCell")
+    NoAction
+  }
+
+  def testTable(ctx: RequestContext): ViewPortAction = {
+    println("In testTable")
+    NoAction
+  }
+
+  def testRow(rowKey: String, row:Map[String, Any], ctx: RequestContext): ViewPortAction = {
+    println("In testRow")
+    NoAction
+  }
+
+  override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",
+    new SelectionViewPortMenuItem("Test Select", "", this.testSelect, "TEST_SELECT"),
+    new CellViewPortMenuItem("Test Select", "", this.testCell, "TEST_CELL"),
+    new TableViewPortMenuItem("Test Select", "", this.testTable, "TEST_TABLE"),
+    new RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW")
+  )
+}
 
 trait SimulRpcHandler{
   def onSendToMarket(param1: Map[String , Any])(ctx: RequestContext): Boolean
@@ -80,7 +110,11 @@ object SimulationModule extends DefaultModule {
             VisualLinks(),
             joinFields = "ric"
           ),
-          (table, vs) => new SimulatedBigInstrumentsProvider(table)
+          (table, vs) => new SimulatedBigInstrumentsProvider(table),
+          (table, provider) => ViewPortDef(
+            columns = table.getTableDef.columns,
+            service = new InstrumentsService
+          )
       )
       .addTable(
         AutoSubscribeTableDef(

@@ -13,6 +13,7 @@ import io.venuu.vuu.client.swing.gui.components.{MutableComboBox, MutableModel, 
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.ViewPortedModel
 import io.venuu.vuu.net.{SortDef, SortSpec}
+import io.venuu.vuu.viewport.ViewPortTable
 
 import java.awt.Dimension
 import scala.swing.TabbedPane.Page
@@ -29,7 +30,7 @@ class VSMainFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], ti
 
   val connect = new Button("Login")
 
-  val tablesCombo = new MutableComboBox[String]()
+  val tablesCombo = new MutableComboBox[ViewPortTable]()
   val columnsCombo = new MutableComboBox[String]()
   val groupByCombo = new MutableMultiSelectComboBox[String](new MutableModel[String])
   val sortByCombo = new MutableMultiSelectComboBox[String](new MutableModel[String])
@@ -121,12 +122,12 @@ class VSMainFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], ti
         val columnsForTree = Array("RowIndex") ++ Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ columns
         val model = new ViewPortedModel(requestId, columnsForTree)
         model.setRange(0, 100)
-        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(this, requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
+        tabbedPanel.pages.+=(new Page(table.table, new ViewServerTreeGridPanel(this, requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
       }
       else{
         val model = new ViewPortedModel(requestId, Array("RowIndex") ++ columns)
         model.setRange(0, 100)
-        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(this, requestId, table, allColumnsAvailable, Array("RowIndex") ++ columns, model, groupBy)))
+        tabbedPanel.pages.+=(new Page(table.table, new ViewServerTreeGridPanel(this, requestId, table, allColumnsAvailable, Array("RowIndex") ++ columns, model, groupBy)))
 
       }
 

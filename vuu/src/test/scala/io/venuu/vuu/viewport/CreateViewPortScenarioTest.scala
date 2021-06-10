@@ -17,8 +17,9 @@ import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.table.{Columns, DataTable}
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
+import io.venuu.vuu.net.json.JsonVsSerializer
 import io.venuu.vuu.net.ws.WebSocketClient
-import io.venuu.vuu.net.{CreateViewPortSuccess, JsonVsSerializer, TableRowUpdates, WebSocketViewServerClient}
+import io.venuu.vuu.net.{CreateViewPortSuccess, TableRowUpdates, WebSocketViewServerClient}
 import io.venuu.vuu.provider.Provider
 import io.venuu.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -125,7 +126,7 @@ class CreateViewPortScenarioTest extends AnyFeatureSpec with Matchers {
 
       val session = login(token, "chris")
 
-      val result = createVp(session, token, "chris", "instrumentPrices", Array("ric", "description", "bid", "ask", "scenario"), range = ViewPortRange(0, 10))
+      val result = createVp(session, token, "chris", ViewPortTable("instrumentPrices", "SIMUL"), Array("ric", "description", "bid", "ask", "scenario"), range = ViewPortRange(0, 10))
 
       Future{
         (1 to 10) foreach { i =>

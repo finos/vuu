@@ -18,6 +18,7 @@ import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
 import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
 import io.venuu.vuu.core.module.simul.OrderEntryRpcHandler
 import io.venuu.vuu.net._
+import io.venuu.vuu.viewport.ViewPortTable
 
 import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.{Color, Dimension, Point}
@@ -35,12 +36,12 @@ class ComponentWithContext(val component: Component, val context: Object) extend
 
 case class ColumnHeaderClicked(override val source: Table, column: Int, e: MouseEvent) extends TableEvent(source)
 
-case class ViewPortContext(requestId: String, vpId: String, table: String, availableColumns: Array[String], columns: Array[String] = Array(),
+case class ViewPortContext(requestId: String, vpId: String, table: ViewPortTable, availableColumns: Array[String], columns: Array[String] = Array(),
                            sortBy: SortSpec = SortSpec(List()), filter: String = "", groupBy: Array[String] = Array(),
                            currentColumn: Option[TableColumn] = None,
                            aggregations: Array[Aggregations] = Array())
 
-class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: String, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock)
+class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: ViewPortTable, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock)
   extends BorderPanel with ViewPortContextProvider with StrictLogging {
 
   private final val selfReference = this;
@@ -51,9 +52,13 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: Stri
       //case ru: ClientServerRowUpdate if ru.vpId == vpId => handleRowUpdate(ru)
       case msg: ClientCreateViewPortSuccess =>
         if(msg.requestId == requestId) context = context.copy(vpId = msg.vpId, columns = msg.columns, sortBy = msg.sortBy, filter = msg.filter, groupBy = msg.groupBy)
+        eventBus.publish(ClientGetViewPortMenusRequest(RequestId.oneNew(), this.context.vpId))
       case msg: ClientChangeViewPortSuccess =>
         if(msg.requestId == requestId) context = context.copy(columns = msg.columns, sortBy = msg.sortBy, filter = msg.filterSpec.filter, groupBy = msg.groupBy)
+        eventBus.publish(ClientGetViewPortMenusRequest(RequestId.oneNew(), this.context.vpId))
         toggleRenderer()
+      case msg: ClientGetViewPortMenusResponse =>
+        println("Viewport response")
       case _ =>
   })
 

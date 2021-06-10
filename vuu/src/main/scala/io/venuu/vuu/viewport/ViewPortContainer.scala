@@ -15,14 +15,14 @@ import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.thread.RunInThread
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.toolbox.time.{Clock, TimeIt}
-import io.venuu.vuu.api.{Link, ViewPortDef}
+import io.venuu.vuu.api.{Link, NoViewPortDef, ViewPortDef}
 import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort._
 import io.venuu.vuu.core.table.{Column, DataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
-import io.venuu.vuu.provider.RpcProvider
+import io.venuu.vuu.provider.{Provider, RpcProvider}
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.{core, viewport}
 
@@ -50,13 +50,14 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
   val groupByHistograms = new ConcurrentHashMap[String, Histogram]()
   val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
 
-  val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, RpcProvider, VuuServer) => ViewPortDef]()
+  val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider) => ViewPortDef]()
 
-  def addViewPortDefinition(table: String, vpDefFunc: (DataTable, RpcProvider, VuuServer) => ViewPortDef): Unit ={
+  def addViewPortDefinition(table: String, vpDefFunc: (DataTable, Provider) => ViewPortDef): Unit ={
+    println("CJS: Add View Port Definition" + table)
     viewPortDefinitions.put(table, vpDefFunc)
   }
 
-  def getViewPortDefinition(table: String): (DataTable, RpcProvider, VuuServer) => ViewPortDef = {
+  def getViewPortDefinition(table: String): (DataTable, Provider) => ViewPortDef = {
     viewPortDefinitions.get(table)
   }
 
@@ -229,7 +230,14 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
 
-      viewport.ViewPortStructuralFields(table = sessionTable, columns = columns, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
+      viewport.ViewPortStructuralFields(table = sessionTable,
+        columns = columns,
+        viewPort.getStructure.viewPortDef,
+        filtAndSort = filtAndSort,
+        filterSpec = filterSpec,
+        groupBy = groupBy,
+        viewPort.getTreeNodeState
+      )
 
     //we are groupBy but we want to revert to no groupBy
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
@@ -241,11 +249,18 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
       //then remove it from table container
       tableContainer.removeGroupBySessionTable(groupByTable)
 
-      viewport.ViewPortStructuralFields(table = sourceTable, columns = columns, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
+      viewport.ViewPortStructuralFields(table = sourceTable,
+        columns = columns,
+        viewPort.getStructure.viewPortDef,
+        filtAndSort = filtAndSort,
+        filterSpec = filterSpec,
+        groupBy = groupBy,
+        viewPort.getTreeNodeState
+      )
 
     } else{
 
-      viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
+      viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, viewPortDef = viewPort.getStructure.viewPortDef, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
     }
 
     viewPort.changeStructure(structure)
@@ -270,7 +285,11 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
       tableContainer.createGroupBySessionTable(table, clientSession)
     }
 
-    val structural = viewport.ViewPortStructuralFields(aTable, columns, filtAndSort, filterSpec, groupBy, ClosedTreeNodeState)
+    val viewPortDefFunc = getViewPortDefinition(table.name);
+
+    val viewPortDef = if( viewPortDefFunc == null ) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider)
+
+    val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, groupBy, ClosedTreeNodeState)
 
     val viewPort = ViewPortImpl(id, clientSession, outboundQ, highPriorityQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
 

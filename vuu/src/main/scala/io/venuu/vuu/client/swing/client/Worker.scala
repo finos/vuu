@@ -41,6 +41,8 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         changeVpAsync(principal.sessionId, principal.token, principal.user, msg.requestId, msg.viewPortId, msg.columns, msg.sortBy, msg.groupBy, msg.filterSpec, msg.aggregations)
       case msg: ClientGetTableMeta =>
         tableMetaAsync(principal.sessionId, principal.token, principal.user, msg.table, msg.requestId)
+      case msg: ClientGetViewPortMenusRequest =>
+        getViewPortMenusAsync(principal.sessionId, principal.token, principal.user, msg.vpId)
       case msg: ClientGetTableList =>
         tableListAsync(principal.sessionId, principal.token, principal.user)
       case msg: ClientRpcCall =>
@@ -185,6 +187,10 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
       case body: RpcResponse =>
         logger.info("[RPC Response] " + body)
         eventBus.publish(ClientRpcResponse(msg.requestId, "", body.method, body.result, body.error))
+
+      case body: GetViewPortMenusResponse =>
+        logger.info("[ViewPort Menus] " + body)
+        eventBus.publish(ClientGetViewPortMenusResponse(msg.requestId, body.vpId, body.menu))
     }
   }
 }

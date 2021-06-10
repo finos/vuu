@@ -11,6 +11,7 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.client.swing.client.UserPrincipal
 import io.venuu.vuu.net.{Aggregations, Error, FilterSpec, SortSpec}
+import io.venuu.vuu.viewport.{ViewPortMenu, ViewPortTable}
 
 import java.util.UUID
 
@@ -29,7 +30,7 @@ case class Logon(user: String, password: String) extends ClientMessage with ToSe
 case class LogonSuccess(body: UserPrincipal) extends ClientMessage with FromServer
 case class LogonFailure(err: String) extends ClientMessage with FromServer
 
-case class ClientCreateViewPort(requestId: String, table: String, columns: Array[String], sortBy: SortSpec, groupBy: Array[String], from: Int, to: Int, filter: String) extends ClientMessage  with ToServer
+case class ClientCreateViewPort(requestId: String, table: ViewPortTable, columns: Array[String], sortBy: SortSpec, groupBy: Array[String], from: Int, to: Int, filter: String) extends ClientMessage  with ToServer
 case class ClientCreateViewPortSuccess(requestId: String, vpId: String, columns: Array[String], sortBy: SortSpec, groupBy: Array[String], filter: String) extends ClientMessage with FromServer
 case class ClientCreateViewPortFailure(requestId: String, vpId: String, error: String) extends ClientMessage with FromServer
 
@@ -41,13 +42,18 @@ case class ClientUpdateVPRange(requestId: String, vpId: String, from: Int, to: I
 case class ClientServerRowUpdate(vpId: String, index: Int, data: Array[AnyRef], size: Int, selected: Int) extends ClientMessage with FromServer
 
 case class ClientGetTableList(requestId: String) extends ClientMessage
-case class ClientGetTableListResponse(requestId: String, tables: Array[String]) extends ClientMessage
+case class ClientGetTableListResponse(requestId: String, tables: Array[ViewPortTable]) extends ClientMessage
 
-case class ClientGetTableMeta(requestId: String, table: String) extends ClientMessage
-case class ClientGetTableMetaResponse(requestId: String, table: String, columns: Array[String], dataTypes: Array[String], key: String) extends ClientMessage
+case class ClientGetTableMeta(requestId: String, table: ViewPortTable) extends ClientMessage
+case class ClientGetTableMetaResponse(requestId: String, table: ViewPortTable, columns: Array[String], dataTypes: Array[String], key: String) extends ClientMessage
 
-case class ClientRpcTableUpdate(requestId: String, table: String, key: String, data: Map[String, Any]) extends ClientMessage
-case class ClientRpcTableUpdateSuccess(requestId: String, table: String, key: String, data: Map[String, Any]) extends ClientMessage
+case class ClientGetViewPortMenusRequest(requestId: String, vpId: String) extends ClientMessage
+case class ClientGetViewPortMenusResponse(requestId: String, vpId: String, menu: ViewPortMenu) extends ClientMessage
+
+//GetViewPortMenusRequest
+
+case class ClientRpcTableUpdate(requestId: String, table: ViewPortTable, key: String, data: Map[String, Any]) extends ClientMessage
+case class ClientRpcTableUpdateSuccess(requestId: String, table: ViewPortTable, key: String, data: Map[String, Any]) extends ClientMessage
 
 case class ClientRpcCall(requestId: String, service: String, method: String, params: Array[Any], namedParams: Map[String, Any], module: String) extends ClientMessage
 case class ClientRpcResponse(requestId: String, service: String, method: String, result: Any, error: Error) extends ClientMessage

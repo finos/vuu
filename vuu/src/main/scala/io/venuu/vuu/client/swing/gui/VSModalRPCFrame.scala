@@ -5,11 +5,12 @@ import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.messages.{ClientCreateViewPort, ClientMessage, RequestId}
 import io.venuu.vuu.client.swing.model.ViewPortedModel
 import io.venuu.vuu.net.SortSpec
+import io.venuu.vuu.viewport.ViewPortTable
 
 import java.awt.Dimension
 import scala.swing.{BorderPanel, Dialog, Frame, Window}
 
-class VSModalRPCFrame(owner: Frame, tableName: String, columns: Array[String])(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Dialog(owner) {
+class VSModalRPCFrame(owner: Frame, tableName: ViewPortTable, columns: Array[String])(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Dialog(owner) {
 
   this.preferredSize = new Dimension(1024, 768)
   val requestId = RequestId.oneNew()

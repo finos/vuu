@@ -85,8 +85,11 @@ object JsonSubTypeRegistry extends StrictLogging {
 
     if(genericsToConcreteTypes.get(genericType).containsValue(specificType)){
 
-      SetHasAsScala(genericsToConcreteTypes.get(genericType).entrySet()).asScala.find( entry => entry.getValue.equals(specificType) ) match{
-        case Some(theMatch) => theMatch.getKey
+      val entrySet = SetHasAsScala(genericsToConcreteTypes.get(genericType).entrySet()).asScala
+
+      entrySet.find( entry => entry.getValue.equals(specificType) ) match{
+        case Some(theMatch) =>
+          theMatch.getKey
         case None =>
           throw new Exception(s"no mapping found for ${specificType} to generic ${genericType}")
       }

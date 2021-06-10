@@ -8,6 +8,7 @@ import io.venuu.vuu.client.swing.gui.components.{MutableComboBox, MutableModel, 
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.ViewPortedModel
 import io.venuu.vuu.net.{SortDef, SortSpec}
+import io.venuu.vuu.viewport.ViewPortTable
 
 import java.awt.Dimension
 import scala.swing.TabbedPane.Page
@@ -24,7 +25,7 @@ class VSChildFrame(parentFrame: Frame, sessId: String)(implicit eventBus: EventB
 
   val connect = new Button("Login")
 
-  val tablesCombo = new MutableComboBox[String]()
+  val tablesCombo = new MutableComboBox[ViewPortTable]()
   val columnsCombo = new MutableComboBox[String]()
   val groupByCombo = new MutableMultiSelectComboBox[String](new MutableModel[String])
   val sortByCombo = new MutableMultiSelectComboBox[String](new MutableModel[String])
@@ -44,8 +45,6 @@ class VSChildFrame(parentFrame: Frame, sessId: String)(implicit eventBus: EventB
 
   @volatile
   var viewPortInfo: Option[ClientCreateViewPortSuccess] = None
-
-
 
   swing{ () =>
     eventBus.publish(ClientGetTableList(RequestId.oneNew()))
@@ -147,12 +146,12 @@ class VSChildFrame(parentFrame: Frame, sessId: String)(implicit eventBus: EventB
         val columnsForTree = Array("RowIndex") ++ Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ columns
         val model = new ViewPortedModel(requestId, columnsForTree)
         model.setRange(0, 100)
-        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(parentFrame, requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
+        tabbedPanel.pages.+=(new Page(table.table, new ViewServerTreeGridPanel(parentFrame, requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
       }
       else{
         val model = new ViewPortedModel(requestId, Array("RowIndex") ++ columns)
         model.setRange(0, 100)
-        tabbedPanel.pages.+=(new Page(table, new ViewServerTreeGridPanel(parentFrame, requestId, table, allColumnsAvailable, Array("RowIndex") ++ columns, model, groupBy)))
+        tabbedPanel.pages.+=(new Page(table.table, new ViewServerTreeGridPanel(parentFrame, requestId, table, allColumnsAvailable, Array("RowIndex") ++ columns, model, groupBy)))
       }
 
       val spec = SortSpec(sortBy.map(column => SortDef(column, 'A')).toList)

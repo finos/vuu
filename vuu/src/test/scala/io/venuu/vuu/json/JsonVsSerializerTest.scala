@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import io.venuu.vuu.net._
+import io.venuu.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
 import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, VsJsonTypeResolver}
+import io.venuu.vuu.viewport.ViewPortTable
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -68,9 +70,9 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
       roundTrip(LoginSuccess("AAA11122233"))
       roundTrip(HeartBeat(123l))
       roundTrip(HeartBeatResponse(123l))
-      roundTrip(RpcUpdate("orderEntry", "Foo", Map("Foo" -> 123, "Bar" -> true, "Whizzle" -> "TANG", "HooHa" -> 344567l)))
-      roundTrip(RpcSuccess("orderEntry", "Foo"))
-      roundTrip(RpcReject("orderEntry", "Foo", "cause you aint pretty"))
+      roundTrip(RpcUpdate(ViewPortTable("orderEntry", "CORE"), "Foo", Map("Foo" -> 123, "Bar" -> true, "Whizzle" -> "TANG", "HooHa" -> 344567l)))
+      roundTrip(RpcSuccess(ViewPortTable("orderEntry", "CORE"), "Foo"))
+      roundTrip(RpcReject(ViewPortTable("orderEntry", "CORE"), "Foo", "cause you aint pretty"))
       roundTrip(OpenTreeNodeSuccess("orderEntry", "..."))
       //roundTrip(RpcCall("doSomething", Array("foo", 123.12d), Map()))
 

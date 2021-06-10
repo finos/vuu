@@ -13,7 +13,8 @@ import io.venuu.vuu.client.swing.client.Worker
 import io.venuu.vuu.client.swing.gui.VSMainFrame
 import io.venuu.vuu.client.swing.messages.ClientMessage
 import io.venuu.vuu.net.ws.WebSocketClient
-import io.venuu.vuu.net.{JsonVsSerializer, WebSocketViewServerClient}
+import io.venuu.vuu.net.WebSocketViewServerClient
+import io.venuu.vuu.net.json.JsonVsSerializer
 
 import scala.swing._
 

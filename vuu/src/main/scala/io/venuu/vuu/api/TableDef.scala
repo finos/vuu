@@ -1,5 +1,6 @@
 package io.venuu.vuu.api
 
+import io.venuu.vuu.core.module.ViewServerModule
 import io.venuu.vuu.core.table._
 
 object Fields {
@@ -23,24 +24,24 @@ object Link {
 object TableDef {
 
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, joinFields: String*): TableDef = {
-    new TableDef(name, keyField, columns, joinFields.toSeq, links = links, indices = Indices())
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = Indices())
   }
 
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices, joinFields: String*): TableDef = {
-    new TableDef(name, keyField, columns, joinFields.toSeq, links = links, indices = indices)
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = indices)
   }
 
   def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, joinFields: String*): TableDef = {
-    new TableDef(name, keyField, columns, joinFields.toSeq, indices = indices)
+    new TableDef(name, keyField, columns, joinFields, indices = indices)
   }
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
-    new TableDef(name, keyField, columns, joinFields.toSeq, indices = Indices())
+    new TableDef(name, keyField, columns, joinFields, indices = Indices())
   }
 }
 
 object AutoSubscribeTableDef {
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
-    new TableDef(name, keyField, columns, joinFields.toSeq, autosubscribe = true, indices = Indices())
+    new TableDef(name, keyField, columns, joinFields, autosubscribe = true, indices = Indices())
   }
 }
 
@@ -84,10 +85,15 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link){
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
-class TableDef(val name: String, val keyField: String, val columns: Array[Column], val joinFields: Seq[String],
+class TableDef(val name: String,
+               val keyField: String,
+               val columns: Array[Column],
+               val joinFields: Seq[String],
                val autosubscribe: Boolean = false,
                val links: VisualLinks = VisualLinks(),
                val indices: Indices) {
+
+  private var module: ViewServerModule = null;
 
   def deleteColumnName() = s"$name._isDeleted"
 
@@ -105,6 +111,10 @@ class TableDef(val name: String, val keyField: String, val columns: Array[Column
 
   def fullyQuallifiedColumnName(column: String): String = s"$name.$column"
 
+  def setModule(module: ViewServerModule) = {
+    this.module = module
+  }
+  def getModule(): ViewServerModule = this.module
 }
 
 class LuceneTableDef(name: String, keyField: String, columns: Array[Column], joinFields: Seq[String],

@@ -10,6 +10,7 @@ package io.venuu.vuu.viewport
 import com.typesafe.scalalogging.LazyLogging
 import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.api.ViewPortDef
 import io.venuu.vuu.core.sort.{FilterAndSort, TwoStepCompoundFilter, UserDefinedFilterAndSort, VisualLinkedFilter}
 import io.venuu.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
@@ -96,7 +97,10 @@ trait ViewPort {
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
-case class ViewPortStructuralFields(table: RowSource, columns: List[Column], filtAndSort: FilterAndSort, filterSpec: FilterSpec, groupBy: GroupBy, theTreeNodeState: TreeNodeState)
+case class ViewPortStructuralFields(table: RowSource, columns: List[Column],
+                                    viewPortDef: ViewPortDef,
+                                    filtAndSort: FilterAndSort, filterSpec: FilterSpec,
+                                    groupBy: GroupBy, theTreeNodeState: TreeNodeState)
 
 case class ViewPortImpl(id: String,
                         //table: RowSource,
