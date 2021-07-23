@@ -4,12 +4,52 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.components.popup.ViewServerPopupMenus.mutateViewPort
 import io.venuu.vuu.client.swing.gui.{SwingThread, ViewPortContextProvider, components}
-import io.venuu.vuu.client.swing.messages.{ClientChangeViewPortRequest, ClientDisableViewPort, ClientEnableViewPort, ClientMessage, RequestId}
+import io.venuu.vuu.client.swing.messages.{ClientChangeViewPortRequest, ClientDisableViewPort, ClientEnableViewPort, ClientGetViewPortMenusResponse, ClientMessage, RequestId}
 import io.venuu.vuu.net.{AggType, Aggregations, FilterSpec, SortDef, SortSpec}
+import io.venuu.vuu.viewport.{EmptyViewPortMenu, ViewPortMenu, ViewPortMenuFolder, ViewPortMenuItem}
 
 import scala.swing.{Action, Menu, MenuItem, PopupMenu}
 
 object ViewServerPopupMenus {
+
+  def parseViewPortMenu(menu : Option[ClientGetViewPortMenusResponse]): components.PopupMenu  = {
+
+    val menuObject = new components.PopupMenu()
+
+    def recursiveAdd(root: components.PopupMenu, parent: Menu, menu: ViewPortMenu) :components.PopupMenu = {
+
+      menu match {
+        case EmptyViewPortMenu =>
+          println("empty: ->" + menu)
+          root
+        case folder: ViewPortMenuFolder =>
+          println("folder: ->" + folder)
+          val folderMenuItem: Menu = new Menu(folder.name)
+          folder.menus.foreach( item => recursiveAdd(root, folderMenuItem, item))
+          root.contents += folderMenuItem
+          root
+        case item: ViewPortMenuItem =>
+          println("item: ->" + item.name + "[" + item.rpcName + "]")
+          val menuItem = new MenuItem(Action(item.name) {
+            println("Do Action -> " + item.name)
+            //eventBus.publish(ClientDisableViewPort(RequestId.oneNew(), ctxProvider.context().vpId))
+          })
+          parent.contents += menuItem
+          root
+        case _ =>
+          root
+      }
+    }
+
+    menu match {
+      case Some(resp) => recursiveAdd(menuObject, null, resp.menu)
+      case None =>
+        menuObject.contents += new MenuItem("Empty"){
+            println("Empty")
+        }
+        menuObject
+    }
+  }
 
   def mutateViewPort(ctxtProvider: ViewPortContextProvider)(implicit eventBus: EventBus[ClientMessage], clock: Clock): Unit = {
     //}, filterText: String, sort: Option[List[SortDef]]): Unit = {

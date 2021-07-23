@@ -39,7 +39,8 @@ case class ColumnHeaderClicked(override val source: Table, column: Int, e: Mouse
 case class ViewPortContext(requestId: String, vpId: String, table: ViewPortTable, availableColumns: Array[String], columns: Array[String] = Array(),
                            sortBy: SortSpec = SortSpec(List()), filter: String = "", groupBy: Array[String] = Array(),
                            currentColumn: Option[TableColumn] = None,
-                           aggregations: Array[Aggregations] = Array())
+                           aggregations: Array[Aggregations] = Array(),
+                           menus: Option[ClientGetViewPortMenusResponse] = None)
 
 class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: ViewPortTable, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock)
   extends BorderPanel with ViewPortContextProvider with StrictLogging {
@@ -59,6 +60,7 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: View
         toggleRenderer()
       case msg: ClientGetViewPortMenusResponse =>
         println("Viewport response")
+        context = context.copy(menus = Some(msg))
       case _ =>
   })
 
@@ -81,12 +83,15 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: View
   val parent = this
 
   def popMenu:components.PopupMenu = {
-    new components.PopupMenu{
-      contents += ViewServerPopupMenus.defaultPopup(selfReference)
-      //    contents += rpcViewPort
-      //    contents += disableViewPort
-      //    contents += enableViewPort
-    }
+
+    ViewServerPopupMenus.parseViewPortMenu(context.menus)
+//
+//    new components.PopupMenu{
+//      contents += ViewServerPopupMenus.defaultPopup(selfReference)
+//      //    contents += rpcViewPort
+//      //    contents += disableViewPort
+//      //    contents += enableViewPort
+//    }
   }
 
 
@@ -167,6 +172,12 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: View
     val sortsAsMap = if(x.e.isShiftDown){
       theModel.getSortsMap().++(Map(name -> sortDef))
     }else{
+    new components.PopupMenu{
+      contents += ViewServerPopupMenus.defaultPopup(selfReference)
+      //    contents += rpcViewPort
+      //    contents += disableViewPort
+      //    contents += enableViewPort
+    }
       Map(name -> sortDef)
     }
 

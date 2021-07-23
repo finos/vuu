@@ -45,9 +45,9 @@ class InstrumentsService extends RpcHandler {
   }
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",
-    new SelectionViewPortMenuItem("Test Select", "", this.testSelect, "TEST_SELECT"),
-    new CellViewPortMenuItem("Test Select", "", this.testCell, "TEST_CELL"),
-    new TableViewPortMenuItem("Test Select", "", this.testTable, "TEST_TABLE"),
+    new SelectionViewPortMenuItem("Test Selection", "", this.testSelect, "TEST_SELECT"),
+    new CellViewPortMenuItem("Test Cell", "", this.testCell, "TEST_CELL"),
+    new TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE"),
     new RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW")
   )
 }
