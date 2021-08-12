@@ -5,23 +5,23 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.{TableDef, ViewPortDef}
 import io.venuu.vuu.core.table.Columns
 import io.venuu.vuu.net.rpc.RpcHandler
-import io.venuu.vuu.net.{MessageBody, RequestContext}
+import io.venuu.vuu.net.{ClientSessionId, MessageBody}
 import io.venuu.vuu.provider.MockProvider
-import io.venuu.vuu.viewport.{NoAction, SelectionViewPortMenuItem, ViewPortAction, ViewPortMenu, ViewPortSelection}
+import io.venuu.vuu.viewport._
 
 case class MyObjectParam(foo: String, bar: String) extends MessageBody
 
 trait AnRpcHandler{
-  def onSendToMarket(param1: Map[String , Any])(context: RequestContext): Boolean
+  def onSendToMarket(param1: Map[String , Any])(sessionId: ClientSessionId): Boolean
 }
 
 class MyCustomRpcHandler extends DefaultLifecycleEnabled with AnRpcHandler with RpcHandler {
-  def onSendToMarket(param1: Map[String , Any])(context: RequestContext): Boolean = {
+  def onSendToMarket(param1: Map[String , Any])(sessionId: ClientSessionId): Boolean = {
     println("doing something false ." + param1)
     false
   }
 
-  def testSel(selection: ViewPortSelection,ctx: RequestContext) : ViewPortAction = {
+  def testSel(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 

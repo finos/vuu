@@ -12,9 +12,9 @@ import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.client.swing.client.Worker
 import io.venuu.vuu.client.swing.gui.VSMainFrame
 import io.venuu.vuu.client.swing.messages.ClientMessage
-import io.venuu.vuu.net.ws.WebSocketClient
 import io.venuu.vuu.net.WebSocketViewServerClient
 import io.venuu.vuu.net.json.JsonVsSerializer
+import io.venuu.vuu.net.ws.WebSocketClient
 
 import scala.swing._
 

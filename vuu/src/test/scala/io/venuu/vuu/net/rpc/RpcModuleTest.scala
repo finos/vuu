@@ -5,10 +5,10 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.{MyObjectParam, TestModule}
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
-import io.venuu.vuu.net.http.VuuHttp2ServerOptions
-import io.venuu.vuu.net.ws.WebSocketClient
 import io.venuu.vuu.net.WebSocketViewServerClient
+import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.net.json.JsonVsSerializer
+import io.venuu.vuu.net.ws.WebSocketClient
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 

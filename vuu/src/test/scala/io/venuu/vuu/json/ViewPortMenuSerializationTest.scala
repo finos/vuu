@@ -1,7 +1,7 @@
 package io.venuu.vuu.json
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.vuu.net.RequestContext
+import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.net.json.JsonVsSerializer
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.viewport._
@@ -11,27 +11,27 @@ import org.scalatest.matchers.should.Matchers
 
 class TestRpcServer extends RpcHandler with StrictLogging {
 
-  def duplicate(selection: ViewPortSelection,context: RequestContext) : ViewPortAction = {
+  def duplicate(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 
-  def deleteRows(selection: ViewPortSelection,context: RequestContext) : ViewPortAction = {
+  def deleteRows(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 
-  def deleteAll(context: RequestContext) : ViewPortAction = {
+  def deleteAll(sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 
-  def editCell(rowKey: String, field:String, value: Object, context: RequestContext) : ViewPortAction = {
+  def editCell(rowKey: String, field:String, value: Object, sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 
-  def editRow(rowKey: String, fields:Map[String, AnyRef], context: RequestContext) : ViewPortAction = {
+  def editRow(rowKey: String, fields:Map[String, AnyRef], sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 
-  def showDetails(selection: ViewPortSelection,context: RequestContext) : ViewPortAction = {
+  def showDetails(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 

@@ -16,13 +16,12 @@ import io.venuu.toolbox.thread.RunInThread
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.toolbox.time.{Clock, TimeIt}
 import io.venuu.vuu.api.{Link, NoViewPortDef, ViewPortDef}
-import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort._
 import io.venuu.vuu.core.table.{Column, DataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
-import io.venuu.vuu.provider.{Provider, RpcProvider}
+import io.venuu.vuu.provider.Provider
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.{core, viewport}
 
@@ -51,6 +50,27 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
   val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
 
   val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider) => ViewPortDef]()
+
+  def callRpc(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
+
+    val viewPort = this.getViewPortById(vpId)
+
+    val viewPortDef = viewPort.getStructure.viewPortDef
+
+    val asMap = viewPortDef.service.menuMap
+
+    asMap.get(rpcName) match {
+      case Some(menuItem) =>
+        menuItem match {
+          case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection), session)
+          case cell: CellViewPortMenuItem => cell.func("", "", "", session)
+          case table: TableViewPortMenuItem => table.func(session)
+          case row: RowViewPortMenuItem => row.func("", Map(), session)
+        }
+      case None =>
+        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+    }
+  }
 
   def addViewPortDefinition(table: String, vpDefFunc: (DataTable, Provider) => ViewPortDef): Unit ={
     println("CJS: Add View Port Definition" + table)

@@ -8,7 +8,7 @@ import io.venuu.vuu.net.SortSpec
 import io.venuu.vuu.viewport.ViewPortTable
 
 import java.awt.Dimension
-import scala.swing.{BorderPanel, Dialog, Frame, Window}
+import scala.swing.{BorderPanel, Dialog, Frame}
 
 class VSModalRPCFrame(owner: Frame, tableName: ViewPortTable, columns: Array[String])(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Dialog(owner) {
 

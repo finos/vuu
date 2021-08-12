@@ -8,15 +8,11 @@
 package io.venuu.vuu.net
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
-import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize, JsonTypeIdResolver}
 import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.net.json.{RowUpdateDeserializer, RowUpdateSerializer}
 import io.venuu.vuu.net.rpc.VsJsonTypeResolver
 import io.venuu.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortRange, ViewPortTable}
-
-import scala.jdk.CollectionConverters._
 
 trait FailureMessage{
   def error: String

@@ -10,12 +10,12 @@ import io.venuu.vuu.core.module.{ModuleContainer, RealizedViewServerModule, Stat
 import io.venuu.vuu.core.table.{DataTable, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
-import io.venuu.vuu.net.http.{Http2Server, VuuHttp2Server, VuuHttp2ServerOptions}
+import io.venuu.vuu.net.http.{VuuHttp2Server, VuuHttp2ServerOptions}
 import io.venuu.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
 import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import io.venuu.vuu.net.ws.WebSocketServer
-import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer, RpcProvider}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer}
 import io.venuu.vuu.viewport.ViewPortContainer
 
 object VuuWebSocketOptions{

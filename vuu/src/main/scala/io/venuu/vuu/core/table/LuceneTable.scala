@@ -9,7 +9,7 @@ import io.venuu.vuu.viewport.RowProcessor
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.{Document, Field, TextField}
 import org.apache.lucene.index.{DirectoryReader, IndexWriter, IndexWriterConfig, Term}
-import org.apache.lucene.search.{IndexSearcher, MatchAllDocsQuery, TermQuery}
+import org.apache.lucene.search.{IndexSearcher, TermQuery}
 import org.apache.lucene.store.MMapDirectory
 
 import java.nio.file.Paths

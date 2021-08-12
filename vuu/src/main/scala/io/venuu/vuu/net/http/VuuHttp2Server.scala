@@ -3,8 +3,8 @@ package io.venuu.vuu.net.http
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import io.venuu.vuu.net.rest.RestService
-import io.vertx.core.{AbstractVerticle, Handler, Vertx, VertxOptions}
 import io.vertx.core.http.{HttpMethod, HttpServerOptions}
+import io.vertx.core.{AbstractVerticle, Vertx, VertxOptions}
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
 

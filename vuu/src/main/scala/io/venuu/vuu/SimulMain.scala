@@ -15,9 +15,7 @@ import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.module.vui.VuiStateModule
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
-import io.venuu.vuu.state.{MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, VuiState, VuiStateStore}
-
-import java.nio.file.Paths
+import io.venuu.vuu.state.{MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, VuiState}
 
 /*
 //to allow self signed certs

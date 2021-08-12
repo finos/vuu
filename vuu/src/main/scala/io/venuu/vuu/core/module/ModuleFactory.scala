@@ -7,7 +7,7 @@ import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.table.DataTable
 import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.RpcHandler
-import io.venuu.vuu.provider.{Provider, RpcProvider}
+import io.venuu.vuu.provider.Provider
 
 import java.nio.file.Path
 

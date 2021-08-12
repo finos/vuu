@@ -9,14 +9,12 @@ package io.venuu.vuu.client.swing.gui
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.client.swing.client.RpcServiceClientFactory
 import io.venuu.vuu.client.swing.gui.components.FilterBarPanel
 import io.venuu.vuu.client.swing.gui.components.popup.ViewServerPopupMenus
 import io.venuu.vuu.client.swing.gui.components.renderer.{SortedColumnRenderer, TreeGridCellRenderer}
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
 import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
-import io.venuu.vuu.core.module.simul.OrderEntryRpcHandler
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport.ViewPortTable
 
@@ -82,19 +80,6 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: View
 
   val parent = this
 
-  def popMenu:components.PopupMenu = {
-
-    ViewServerPopupMenus.parseViewPortMenu(context.menus)
-//
-//    new components.PopupMenu{
-//      contents += ViewServerPopupMenus.defaultPopup(selfReference)
-//      //    contents += rpcViewPort
-//      //    contents += disableViewPort
-//      //    contents += enableViewPort
-//    }
-  }
-
-
   lazy val popUp = popMenu
 
   val popUpGroupBy = ViewServerPopupMenus.groupByPopup(this)
@@ -102,6 +87,18 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: View
   val table = getTable()
 
   val header = table.peer.getTableHeader
+
+  def popMenu:components.PopupMenu = {
+
+    ViewServerPopupMenus.parseViewPortMenu(context.menus, eventBus)
+
+    //    new components.PopupMenu{
+    //      contents += ViewServerPopupMenus.defaultPopup(selfReference)
+    //      //    contents += rpcViewPort
+    //      //    contents += disableViewPort
+    //      //    contents += enableViewPort
+    //    }
+  }
 
   table.peer.getTableHeader.addMouseListener(new MouseAdapter() {
     override def mouseClicked(e: MouseEvent) {

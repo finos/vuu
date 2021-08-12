@@ -1,11 +1,9 @@
 package io.venuu.vuu.viewport
 
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type
-import com.fasterxml.jackson.annotation.{JsonIgnoreProperties, JsonSubTypes, JsonTypeInfo}
-import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize, JsonTypeIdResolver}
-import io.venuu.vuu.net.RequestContext
-import io.venuu.vuu.net.json.{RowUpdateDeserializer, RowUpdateSerializer, ViewPortMenuDeserializer, ViewPortMenuSerializer}
-import io.venuu.vuu.net.rpc.VsJsonTypeResolver
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
+import io.venuu.vuu.net.ClientSessionId
+import io.venuu.vuu.net.json.{ViewPortMenuDeserializer, ViewPortMenuSerializer}
 
 //@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 //@JsonSubTypes(Array(
@@ -49,22 +47,22 @@ object Selection extends Scope
 object Field extends Scope
 
 @JsonIgnoreProperties(Array("func", "menus"))
-class SelectionViewPortMenuItem(override val name: String, filter: String, val func: (ViewPortSelection,RequestContext) => ViewPortAction, rpcName: String) extends ViewPortMenuItem(name, filter, rpcName){
+class SelectionViewPortMenuItem(override val name: String, filter: String, val func: (ViewPortSelection,ClientSessionId) => ViewPortAction, rpcName: String) extends ViewPortMenuItem(name, filter, rpcName){
   val context: String = "selected-rows"
 }
 
 @JsonIgnoreProperties(Array("func", "menus"))
-class CellViewPortMenuItem(override val name: String, filter: String, val func: (String, String, Object,RequestContext) => ViewPortAction, rpcName: String) extends ViewPortMenuItem(name, filter, rpcName){
+class CellViewPortMenuItem(override val name: String, filter: String, val func: (String, String, Object,ClientSessionId) => ViewPortAction, rpcName: String) extends ViewPortMenuItem(name, filter, rpcName){
   val context: String = "cell"
 }
 
 @JsonIgnoreProperties(Array("func", "menus"))
-class TableViewPortMenuItem(override val name: String, filter: String, val func: (RequestContext) => ViewPortAction, rpcName: String) extends ViewPortMenuItem(name, filter, rpcName){
+class TableViewPortMenuItem(override val name: String, filter: String, val func: (ClientSessionId) => ViewPortAction, rpcName: String) extends ViewPortMenuItem(name, filter, rpcName){
   val context: String = "grid"
 }
 
 @JsonIgnoreProperties(Array("func", "menus"))
-class RowViewPortMenuItem(override val name: String, filter: String, val func: (String, Map[String, AnyRef],RequestContext) => ViewPortAction, rpcName: String) extends ViewPortMenuItem(name, filter, rpcName){
+class RowViewPortMenuItem(override val name: String, filter: String, val func: (String, Map[String, AnyRef],ClientSessionId) => ViewPortAction, rpcName: String) extends ViewPortMenuItem(name, filter, rpcName){
   val context: String = "row"
 }
 

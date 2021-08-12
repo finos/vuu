@@ -1,7 +1,7 @@
 package io.venuu.vuu.core.filter
 
 import io.venuu.toolbox.collection.array.ImmutableArray
-import io.venuu.vuu.core.index.{BooleanIndexedField, DoubleIndexedField, IndexedField, IntIndexedField, LongIndexedField, StringIndexedField}
+import io.venuu.vuu.core.index._
 import io.venuu.vuu.core.table.{DataType, RowData}
 import io.venuu.vuu.grammer.FilterParser
 import io.venuu.vuu.viewport.RowSource

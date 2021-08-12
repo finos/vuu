@@ -6,7 +6,10 @@ import sandbox.dnd.DroppablePanelListener;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.dnd.DropTargetDragEvent;
-import java.awt.event.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.Arrays;
 
 public class LayerPaneExample implements DroppablePanelListener {

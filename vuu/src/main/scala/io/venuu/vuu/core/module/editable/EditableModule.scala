@@ -3,11 +3,9 @@ package io.venuu.vuu.core.module.editable
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.{TableDef, ViewPortDef, VisualLinks}
-import io.venuu.vuu.core.module.simul.SimulationModule.NAME
 import io.venuu.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.Columns
 import io.venuu.vuu.provider.RpcProvider
-import io.venuu.vuu.provider.simulation.SimulatedBigInstrumentsProvider
 
 class EditableModule extends DefaultModule {
 

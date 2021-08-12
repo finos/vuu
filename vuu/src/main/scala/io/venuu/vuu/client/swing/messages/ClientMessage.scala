@@ -50,6 +50,13 @@ case class ClientGetTableMetaResponse(requestId: String, table: ViewPortTable, c
 case class ClientGetViewPortMenusRequest(requestId: String, vpId: String) extends ClientMessage
 case class ClientGetViewPortMenusResponse(requestId: String, vpId: String, menu: ViewPortMenu) extends ClientMessage
 
+case class ClientMenuSelectionRpcCall(requestId: String, vpId: String, rpcName: String) extends ClientMessage
+case class ClientMenuCellRpcCall(requestId: String, vpId: String) extends ClientMessage
+case class ClientMenuTableRpcCall(requestId: String, vpId: String) extends ClientMessage
+case class ClientMenuRowRpcCall(requestId: String, vpId: String) extends ClientMessage
+
+case class ClientMenuRpcResponse(requestId: String, vpId: String) extends ClientMessage
+
 //GetViewPortMenusRequest
 
 case class ClientRpcTableUpdate(requestId: String, table: ViewPortTable, key: String, data: Map[String, Any]) extends ClientMessage

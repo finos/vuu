@@ -14,32 +14,32 @@ import io.venuu.vuu.api._
 import io.venuu.vuu.core.module.simul.provider._
 import io.venuu.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.{Columns, TableContainer}
-import io.venuu.vuu.net.RequestContext
 import io.venuu.vuu.net.rpc.RpcHandler
-import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
+import io.venuu.vuu.net.{ClientSessionId, RequestContext}
 import io.venuu.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
-import io.venuu.vuu.viewport.{CellViewPortMenuItem, NoAction, RowViewPortMenuItem, SelectionViewPortMenuItem, TableViewPortMenuItem, ViewPortAction, ViewPortContainer, ViewPortMenu, ViewPortSelection}
+import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
+import io.venuu.vuu.viewport._
 
 import java.util.UUID
 
 class InstrumentsService extends RpcHandler {
 
-  def testSelect(selection: ViewPortSelection, ctx: RequestContext): ViewPortAction = {
+  def testSelect(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     println("In testSelect")
     NoAction
   }
 
-  def testCell(rowKey: String, field: String, value: Object, ctx: RequestContext): ViewPortAction = {
+  def testCell(rowKey: String, field: String, value: Object, sessionId: ClientSessionId): ViewPortAction = {
     println("In testCell")
     NoAction
   }
 
-  def testTable(ctx: RequestContext): ViewPortAction = {
+  def testTable(sessionId: ClientSessionId): ViewPortAction = {
     println("In testTable")
     NoAction
   }
 
-  def testRow(rowKey: String, row:Map[String, Any], ctx: RequestContext): ViewPortAction = {
+  def testRow(rowKey: String, row:Map[String, Any], sessionId: ClientSessionId): ViewPortAction = {
     println("In testRow")
     NoAction
   }

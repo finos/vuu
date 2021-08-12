@@ -2,34 +2,34 @@ package io.venuu.vuu.core.module.editable
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.vuu.core.table.DataTable
-import io.venuu.vuu.net.{RequestContext, RpcResponse, RpcSuccess}
+import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.provider.RpcProvider
-import io.venuu.vuu.viewport.{CellViewPortMenuItem, NoAction, RowViewPortMenuItem, Selection, SelectionViewPortMenuItem, TableViewPortMenuItem, ViewPortAction, ViewPortMenu, ViewPortMenuItem, ViewPortSelectedIndices, ViewPortSelection}
+import io.venuu.vuu.viewport._
 
 class EditOrdersRpcService(val table: DataTable, val provider: RpcProvider) extends RpcHandler with StrictLogging {
 
-  def showDetails(selection: ViewPortSelection,context: RequestContext): ViewPortAction = {
+  def showDetails(selection: ViewPortSelection,sessionId: ClientSessionId): ViewPortAction = {
     NoAction
   }
 
-  def deleteRows(selection: ViewPortSelection,context: RequestContext): ViewPortAction = {
+  def deleteRows(selection: ViewPortSelection,sessionId: ClientSessionId): ViewPortAction = {
     NoAction
   }
 
-  def duplicate(selection: ViewPortSelection,context: RequestContext) : ViewPortAction = {
+  def duplicate(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 
-  def editCell(rowKey: String, key: String, value: Object, context: RequestContext) : ViewPortAction = {
+  def editCell(rowKey: String, key: String, value: Object, sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 
-  def editRow(key: String, row: Map[String, Object],context: RequestContext) : ViewPortAction = {
+  def editRow(key: String, row: Map[String, Object],sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 
-  def deleteAll(context: RequestContext) : ViewPortAction = {
+  def deleteAll(sessionId: ClientSessionId) : ViewPortAction = {
     NoAction
   }
 
