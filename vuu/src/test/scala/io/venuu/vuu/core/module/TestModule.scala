@@ -22,7 +22,7 @@ class MyCustomRpcHandler extends DefaultLifecycleEnabled with AnRpcHandler with 
   }
 
   def testSel(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   override def menuItems(): ViewPortMenu = {

@@ -18,5 +18,10 @@ trait ServerApi{
   def process(msg: GetViewPortVisualLinksRequest)(ctx: RequestContext): Option[ViewServerMessage]
   def process(msg: CreateVisualLinkRequest)(ctx: RequestContext): Option[ViewServerMessage]
 
+  def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
+  def process(msg: ViewPortMenuRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
+  def process(msg: ViewPortMenuTableRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
+  def process(msg: ViewPortMenuSelectionRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
+
   def disconnect(session: ClientSessionId): Unit
 }

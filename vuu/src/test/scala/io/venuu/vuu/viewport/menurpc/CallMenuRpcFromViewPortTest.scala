@@ -34,22 +34,22 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
     new RpcHandler {
       def testSelect(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
         println("In testSelect" + selection.map.mkString(","))
-        NoAction
+        NoAction()
       }
 
       def testCell(rowKey: String, field: String, value: Object, sessionId: ClientSessionId): ViewPortAction = {
         println("In testCell")
-        NoAction
+        NoAction()
       }
 
       def testTable(sessionId: ClientSessionId): ViewPortAction = {
         println("In testTable")
-        NoAction
+        NoAction()
       }
 
       def testRow(rowKey: String, row: Map[String, Any], sessionId: ClientSessionId): ViewPortAction = {
         println("In testRow")
-        NoAction
+        NoAction()
       }
 
       override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",
@@ -123,11 +123,11 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
       vpContainer.changeSelection(session, outQueue, viewPort.id, ViewPortSelectedIndices(Array(0)))
 
-      val result = vpContainer.callRpc(viewPort.id, "TEST_SELECT", session)
+      val result = vpContainer.callRpcSession(viewPort.id, "TEST_SELECT", session)
 
       result shouldEqual NoAction
 
-      Try(vpContainer.callRpc(viewPort.id, "FOO_BAR", session)) match {
+      Try(vpContainer.callRpcSession(viewPort.id, "FOO_BAR", session)) match {
         case Success(_) =>
           assert(true == false, "I should never get here, it should be an exception")
         case Failure(e) =>

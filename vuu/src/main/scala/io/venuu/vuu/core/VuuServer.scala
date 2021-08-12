@@ -16,7 +16,7 @@ import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import io.venuu.vuu.net.ws.WebSocketServer
 import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer}
-import io.venuu.vuu.viewport.ViewPortContainer
+import io.venuu.vuu.viewport.{ViewPortAction, ViewPortActionMixin, ViewPortContainer}
 
 object VuuWebSocketOptions{
   def apply(): VuuWebSocketOptions = {
@@ -53,6 +53,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   val serializer = JsonVsSerializer
 
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
+  JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
   val authenticator = new AlwaysHappyAuthenticator
   val tokenValidator = new AlwaysHappyLoginValidator

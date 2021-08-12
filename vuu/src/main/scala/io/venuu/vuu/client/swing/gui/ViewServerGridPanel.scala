@@ -89,15 +89,7 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: View
   val header = table.peer.getTableHeader
 
   def popMenu:components.PopupMenu = {
-
-    ViewServerPopupMenus.parseViewPortMenu(context.menus, eventBus)
-
-    //    new components.PopupMenu{
-    //      contents += ViewServerPopupMenus.defaultPopup(selfReference)
-    //      //    contents += rpcViewPort
-    //      //    contents += disableViewPort
-    //      //    contents += enableViewPort
-    //    }
+    ViewServerPopupMenus.parseViewPortMenu(context.menus, eventBus, this.context)
   }
 
   table.peer.getTableHeader.addMouseListener(new MouseAdapter() {

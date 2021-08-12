@@ -61,5 +61,11 @@ import io.venuu.vuu.net._
   new Type(value = classOf[CreateVisualLinkSuccess], name = "CREATE_VISUAL_LINK_SUCCESS"),
   new Type(value = classOf[GetViewPortMenusRequest], name = "GET_VIEW_PORT_MENUS"),
   new Type(value = classOf[GetViewPortMenusResponse], name = "VIEW_PORT_MENUS_RESP"),
+  new Type(value = classOf[ViewPortMenuSelectionRpcCall], name = "VIEW_PORT_MENUS_SELECT_RPC"),
+  new Type(value = classOf[ViewPortMenuTableRpcCall], name = "VIEW_PORT_MENU_TABLE_RPC"),
+  new Type(value = classOf[ViewPortMenuRowRpcCall], name = "VIEW_PORT_MENU_ROW_RPC"),
+  new Type(value = classOf[ViewPortMenuCellRpcCall], name = "VIEW_PORT_MENU_CELL_RPC"),
+  new Type(value = classOf[ViewPortMenuRpcResponse], name = "VIEW_PORT_MENU_RESP"),
+  new Type(value = classOf[ViewPortMenuRpcReject], name = "VIEW_PORT_MENU_REJ"),
 ))
 trait CoreJsonSerializationMixin {}

@@ -2,8 +2,8 @@ package io.venuu.vuu.client.swing.gui.components.popup
 
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.EventBus
-import io.venuu.vuu.client.swing.gui.{SwingThread, ViewPortContextProvider, components}
-import io.venuu.vuu.client.swing.messages._
+import io.venuu.vuu.client.swing.gui.{SwingThread, ViewPortContext, ViewPortContextProvider, components}
+import io.venuu.vuu.client.swing.messages.{RequestId, _}
 import io.venuu.vuu.net.{AggType, Aggregations, FilterSpec}
 import io.venuu.vuu.viewport._
 
@@ -11,11 +11,11 @@ import scala.swing.{Action, Menu, MenuItem}
 
 object ViewServerPopupMenus {
 
-  def parseViewPortMenu(menu : Option[ClientGetViewPortMenusResponse], eventBus: EventBus[ClientMessage]): components.PopupMenu  = {
+  def parseViewPortMenu(menu : Option[ClientGetViewPortMenusResponse], eventBus: EventBus[ClientMessage], ctx: ViewPortContext)(implicit clock: Clock): components.PopupMenu  = {
 
     val menuObject = new components.PopupMenu()
 
-    def recursiveAdd(root: components.PopupMenu, parent: Menu, menu: ViewPortMenu) :components.PopupMenu = {
+    def recursiveAdd(root: components.PopupMenu, parent: Menu, menu: ViewPortMenu, ctx: ViewPortContext) :components.PopupMenu = {
 
       menu match {
         case EmptyViewPortMenu =>
@@ -24,13 +24,13 @@ object ViewServerPopupMenus {
         case folder: ViewPortMenuFolder =>
           println("folder: ->" + folder)
           val folderMenuItem: Menu = new Menu(folder.name)
-          folder.menus.foreach( item => recursiveAdd(root, folderMenuItem, item))
+          folder.menus.foreach( item => recursiveAdd(root, folderMenuItem, item, ctx))
           root.contents += folderMenuItem
           root
         case item: SelectionViewPortMenuItem =>
-          println("item: ->" + item.name + "[" + item.rpcName + "]")
           val menuItem = new MenuItem(Action(item.name) {
-            //eventBus.publish()
+            println("Call RPC: ->" + item.name + "[" + item.rpcName + "]")
+            eventBus.publish(ClientMenuSelectionRpcCall(RequestId.oneNew(), ctx.vpId, item.rpcName))
           })
           parent.contents += menuItem
           root
@@ -48,7 +48,7 @@ object ViewServerPopupMenus {
     }
 
     menu match {
-      case Some(resp) => recursiveAdd(menuObject, null, resp.menu)
+      case Some(resp) => recursiveAdd(menuObject, null, resp.menu, ctx)
       case None =>
         menuObject.contents += new MenuItem("Empty"){
             println("Empty")

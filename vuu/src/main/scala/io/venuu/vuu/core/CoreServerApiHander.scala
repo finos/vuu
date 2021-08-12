@@ -21,6 +21,51 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
                           val tableContainer: TableContainer,
                           val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging{
 
+
+  override def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcCell(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.field, msg.value)) match{
+      case Success(action) =>
+        logger.info("Processed VP Menu Cell RPC call" + msg)
+        vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: ViewPortMenuRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcRow(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.row)) match{
+      case Success(action) =>
+        logger.info("Processed VP Menu Row RPC call" + msg)
+        vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: ViewPortMenuTableRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcTable(msg.vpId, msg.rpcName, ctx.session)) match{
+      case Success(action) =>
+        logger.info("Processed VP Menu Table RPC call" + msg)
+        vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: ViewPortMenuSelectionRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcSession(msg.vpId, msg.rpcName, ctx.session)) match{
+      case Success(action) =>
+        logger.info("Processed VP Menu Selection RPC call" + msg)
+        vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
+
   override def process(msg: RemoveViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.removeViewPort(msg.viewPortId)) match{
       case Success(_) =>

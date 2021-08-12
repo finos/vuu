@@ -10,27 +10,27 @@ import io.venuu.vuu.viewport._
 class EditOrdersRpcService(val table: DataTable, val provider: RpcProvider) extends RpcHandler with StrictLogging {
 
   def showDetails(selection: ViewPortSelection,sessionId: ClientSessionId): ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   def deleteRows(selection: ViewPortSelection,sessionId: ClientSessionId): ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   def duplicate(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   def editCell(rowKey: String, key: String, value: Object, sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   def editRow(key: String, row: Map[String, Object],sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   def deleteAll(sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   override def menuItems(): ViewPortMenu = {

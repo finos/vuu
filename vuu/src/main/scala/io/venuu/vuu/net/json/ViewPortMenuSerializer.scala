@@ -76,10 +76,10 @@ class ViewPortMenuDeserializer extends JsonDeserializer[ViewPortMenu]{
       val filter = node.get("filter").asText()
       val rpcName = node.get("rpcName").asText()
       context match {
-        case "selected-rows" => new SelectionViewPortMenuItem(name, filter, (s,r) =>NoAction, rpcName)
-        case "row" => new RowViewPortMenuItem(name, filter, (s,m,r) =>NoAction, rpcName)
-        case "grid" => new TableViewPortMenuItem(name, filter, (r) =>NoAction, rpcName)
-        case "cell" => new CellViewPortMenuItem(name, filter, (s1, s2, o, r) =>NoAction, rpcName)
+        case "selected-rows" => new SelectionViewPortMenuItem(name, filter, (s,r) =>NoAction(), rpcName)
+        case "row" => new RowViewPortMenuItem(name, filter, (s,m,r) =>NoAction(), rpcName)
+        case "grid" => new TableViewPortMenuItem(name, filter, (r) =>NoAction(), rpcName)
+        case "cell" => new CellViewPortMenuItem(name, filter, (s1, s2, o, r) =>NoAction(), rpcName)
       }
     }
   }

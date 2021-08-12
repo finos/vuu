@@ -10,6 +10,7 @@ package io.venuu.vuu.net
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize, JsonTypeIdResolver}
 import io.venuu.vuu.api.AvailableViewPortVisualLink
+import io.venuu.vuu.client.swing.messages.ClientMessage
 import io.venuu.vuu.net.json.{RowUpdateDeserializer, RowUpdateSerializer}
 import io.venuu.vuu.net.rpc.VsJsonTypeResolver
 import io.venuu.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortRange, ViewPortTable}
@@ -97,6 +98,16 @@ case class ChangeViewPortRange(viewPortId: String, from: Int, to: Int) extends M
 case class ChangeViewPortRangeSuccess(viewPortId: String, from: Int, to: Int) extends MessageBody
 
 case class OpenTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
+
+case class ViewPortMenuRpcCall()
+
+case class ViewPortMenuSelectionRpcCall(vpId: String, rpcName: String) extends MessageBody
+case class ViewPortMenuCellRpcCall(vpId: String, rpcName: String, rowKey: String, field: String, value: Object) extends MessageBody
+case class ViewPortMenuTableRpcCall(vpId: String, rpcName: String) extends MessageBody
+case class ViewPortMenuRowRpcCall(vpId: String, rpcName: String, rowKey: String, row: Map[String, Object]) extends MessageBody
+
+case class ViewPortMenuRpcResponse(vpId: String, rpcName: String, action: ViewPortAction) extends MessageBody
+case class ViewPortMenuRpcReject(vpId: String, rpcName: String, error: String) extends MessageBody
 
 case class CloseTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
 case class CloseTreeNodeSuccess(vpId: String, treeKey: String) extends MessageBody

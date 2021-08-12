@@ -67,10 +67,16 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         disableViewPort(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId)
       case msg: ClientRemoveViewPort =>
         removeViewPort(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId)
-
       case msg: ClientUpdateVPRange =>
         vpChangeRequests.put(msg.vpId, msg)
-
+      case msg: ClientMenuSelectionRpcCall =>
+        viewPortMenuSelectionRpcCall(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId, msg.rpcName)
+      case msg: ClientMenuTableRpcCall =>
+        viewPortMenuTableRpcCall(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId, msg.rpcName)
+      case msg: ClientMenuCellRpcCall =>
+        viewPortMenuCellRpcCall(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId, msg.rpcName, msg.rowKey, msg.field, msg.value)
+      case msg: ClientMenuRowRpcCall =>
+        viewPortMenuRowRpcCall(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId, msg.rpcName, msg.rowKey, msg.row)
       case _ =>
   })
 
@@ -191,6 +197,10 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
       case body: GetViewPortMenusResponse =>
         logger.info("[ViewPort Menus] " + body)
         eventBus.publish(ClientGetViewPortMenusResponse(msg.requestId, body.vpId, body.menu))
+
+      case body: ViewPortMenuRpcResponse =>
+        logger.info("[ViewPort Menus Response] " + body)
+        eventBus.publish(ClientMenuRpcResponse(msg.requestId, body.vpId, body.action))
     }
   }
 }

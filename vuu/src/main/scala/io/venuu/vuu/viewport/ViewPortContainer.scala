@@ -51,20 +51,63 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
   val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider) => ViewPortDef]()
 
-  def callRpc(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String = "", field: String = "", singleValue: Object = "", rowRecord: Map[String, Object] = Map()): ViewPortAction = {
+  def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
 
     val viewPort = this.getViewPortById(vpId)
-
     val viewPortDef = viewPort.getStructure.viewPortDef
+    val asMap = viewPortDef.service.menuMap
 
+    asMap.get(rpcName) match {
+      case Some(menuItem) =>
+        menuItem match {
+          case cell: CellViewPortMenuItem => cell.func(rowKey, field, singleValue, session)
+        }
+      case None =>
+        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+    }
+  }
+
+  def callRpcSession(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
+
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
     val asMap = viewPortDef.service.menuMap
 
     asMap.get(rpcName) match {
       case Some(menuItem) =>
         menuItem match {
           case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection), session)
-          case cell: CellViewPortMenuItem => cell.func(rowKey, field, singleValue, session)
+        }
+      case None =>
+        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+    }
+  }
+
+  def callRpcTable(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
+
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val asMap = viewPortDef.service.menuMap
+
+    asMap.get(rpcName) match {
+      case Some(menuItem) =>
+        menuItem match {
           case table: TableViewPortMenuItem => table.func(session)
+        }
+      case None =>
+        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+    }
+  }
+
+  def callRpcRow(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, rowRecord: Map[String, Object] = Map()): ViewPortAction = {
+
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val asMap = viewPortDef.service.menuMap
+
+    asMap.get(rpcName) match {
+      case Some(menuItem) =>
+        menuItem match {
           case row: RowViewPortMenuItem => row.func(rowKey, rowRecord, session)
         }
       case None =>

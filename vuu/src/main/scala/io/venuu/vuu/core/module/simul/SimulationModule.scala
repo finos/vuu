@@ -26,22 +26,22 @@ class InstrumentsService extends RpcHandler {
 
   def testSelect(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     println("In testSelect")
-    NoAction
+    NoAction()
   }
 
   def testCell(rowKey: String, field: String, value: Object, sessionId: ClientSessionId): ViewPortAction = {
     println("In testCell")
-    NoAction
+    NoAction()
   }
 
   def testTable(sessionId: ClientSessionId): ViewPortAction = {
     println("In testTable")
-    NoAction
+    NoAction()
   }
 
   def testRow(rowKey: String, row:Map[String, Any], sessionId: ClientSessionId): ViewPortAction = {
     println("In testRow")
-    NoAction
+    NoAction()
   }
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",

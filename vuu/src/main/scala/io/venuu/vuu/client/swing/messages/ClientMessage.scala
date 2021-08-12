@@ -11,7 +11,7 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.client.swing.client.UserPrincipal
 import io.venuu.vuu.net.{Aggregations, Error, FilterSpec, SortSpec}
-import io.venuu.vuu.viewport.{ViewPortMenu, ViewPortTable}
+import io.venuu.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortTable}
 
 import java.util.UUID
 
@@ -51,11 +51,11 @@ case class ClientGetViewPortMenusRequest(requestId: String, vpId: String) extend
 case class ClientGetViewPortMenusResponse(requestId: String, vpId: String, menu: ViewPortMenu) extends ClientMessage
 
 case class ClientMenuSelectionRpcCall(requestId: String, vpId: String, rpcName: String) extends ClientMessage
-case class ClientMenuCellRpcCall(requestId: String, vpId: String) extends ClientMessage
-case class ClientMenuTableRpcCall(requestId: String, vpId: String) extends ClientMessage
-case class ClientMenuRowRpcCall(requestId: String, vpId: String) extends ClientMessage
+case class ClientMenuCellRpcCall(requestId: String, vpId: String, rpcName: String, rowKey: String, field: String, value: Object) extends ClientMessage
+case class ClientMenuTableRpcCall(requestId: String, vpId: String, rpcName: String) extends ClientMessage
+case class ClientMenuRowRpcCall(requestId: String, vpId: String, rpcName: String, rowKey: String, row: Map[String, Object]) extends ClientMessage
 
-case class ClientMenuRpcResponse(requestId: String, vpId: String) extends ClientMessage
+case class ClientMenuRpcResponse(requestId: String, vpId: String, action: ViewPortAction) extends ClientMessage
 
 //GetViewPortMenusRequest
 

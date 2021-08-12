@@ -12,27 +12,27 @@ import org.scalatest.matchers.should.Matchers
 class TestRpcServer extends RpcHandler with StrictLogging {
 
   def duplicate(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   def deleteRows(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   def deleteAll(sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   def editCell(rowKey: String, field:String, value: Object, sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   def editRow(rowKey: String, fields:Map[String, AnyRef], sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   def showDetails(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
-    NoAction
+    NoAction()
   }
 
   override def menuItems(): ViewPortMenu = {

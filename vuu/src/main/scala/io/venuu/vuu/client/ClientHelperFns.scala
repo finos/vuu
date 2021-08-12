@@ -49,6 +49,22 @@ object ClientHelperFns {
     vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, RemoveViewPortRequest(vpId)))
   }
 
+  def viewPortMenuSelectionRpcCall(sessionId: String, token: String, user: String, requestId: String, vpId: String, rpcName: String)(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ViewPortMenuSelectionRpcCall(vpId, rpcName)))
+  }
+
+  def viewPortMenuRowRpcCall(sessionId: String, token: String, user: String, requestId: String, vpId: String, rpcName: String, rowKey: String, row: Map[String, Object])(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ViewPortMenuRowRpcCall(vpId, rpcName, rowKey, row)))
+  }
+
+  def viewPortMenuCellRpcCall(sessionId: String, token: String, user: String, requestId: String, vpId: String, rpcName: String, rowKey: String, field: String, value: Object)(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ViewPortMenuCellRpcCall(vpId, rpcName, rowKey, field, value)))
+  }
+
+  def viewPortMenuTableRpcCall(sessionId: String, token: String, user: String, requestId: String, vpId: String, rpcName: String)(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ViewPortMenuTableRpcCall(vpId, rpcName)))
+  }
+
   def enableViewPort(sessionId: String, token: String, user: String, requestId: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
     vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, EnableViewPortRequest(vpId)))
   }
