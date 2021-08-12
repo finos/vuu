@@ -50,7 +50,6 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         rpcCallAsync(principal.sessionId, principal.token, principal.user, msg.service, msg.method, msg.params, msg.module)
       case msg: Logon =>
         authAsync(msg.user, msg.password)
-      //case ur : UpdateRange => requests.put(current, ur)
       case msg: ClientCreateViewPort =>
         createVpAsync(principal.sessionId, principal.token, principal.user, msg.requestId, msg.table, msg.columns, sortBy = msg.sortBy, range = ViewPortRange(msg.from, msg.to), filterSpec = FilterSpec(msg.filter), groupBy = msg.groupBy)
       case msg: ClientRpcTableUpdate =>
