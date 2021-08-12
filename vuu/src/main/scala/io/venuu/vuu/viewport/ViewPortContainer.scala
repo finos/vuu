@@ -51,7 +51,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
   val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider) => ViewPortDef]()
 
-  def callRpc(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
+  def callRpc(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String = "", field: String = "", singleValue: Object = "", rowRecord: Map[String, Object] = Map()): ViewPortAction = {
 
     val viewPort = this.getViewPortById(vpId)
 
@@ -63,17 +63,16 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
       case Some(menuItem) =>
         menuItem match {
           case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection), session)
-          case cell: CellViewPortMenuItem => cell.func("", "", "", session)
+          case cell: CellViewPortMenuItem => cell.func(rowKey, field, singleValue, session)
           case table: TableViewPortMenuItem => table.func(session)
-          case row: RowViewPortMenuItem => row.func("", Map(), session)
+          case row: RowViewPortMenuItem => row.func(rowKey, rowRecord, session)
         }
       case None =>
         throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
     }
   }
 
-  def addViewPortDefinition(table: String, vpDefFunc: (DataTable, Provider) => ViewPortDef): Unit ={
-    println("CJS: Add View Port Definition" + table)
+  def addViewPortDefinition(table: String, vpDefFunc: (DataTable, Provider) => ViewPortDef): Unit = {
     viewPortDefinitions.put(table, vpDefFunc)
   }
 
