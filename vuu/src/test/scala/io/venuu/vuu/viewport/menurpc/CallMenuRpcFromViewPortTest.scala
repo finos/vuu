@@ -125,7 +125,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
       val result = vpContainer.callRpcSession(viewPort.id, "TEST_SELECT", session)
 
-      result shouldEqual NoAction
+      result.getClass shouldEqual classOf[NoAction]
 
       Try(vpContainer.callRpcSession(viewPort.id, "FOO_BAR", session)) match {
         case Success(_) =>
