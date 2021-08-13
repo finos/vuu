@@ -43,8 +43,7 @@ class VSChildFrame(parentFrame: Frame, sessId: String)(implicit eventBus: EventB
   val linkChildColumn = new Label("-")
   val linkParentColumn = new Label("-")
 
-  @volatile
-  var viewPortInfo: Option[ClientCreateViewPortSuccess] = None
+  @volatile var viewPortInfo: Option[ClientCreateViewPortSuccess] = None
 
   swing{ () =>
     eventBus.publish(ClientGetTableList(RequestId.oneNew()))
@@ -52,7 +51,12 @@ class VSChildFrame(parentFrame: Frame, sessId: String)(implicit eventBus: EventB
   }
 
   override def closeOperation(): Unit = {
-    eventBus.publish(ClientRemoveViewPort(RequestId.oneNew(), viewPortInfo.get.vpId))
+    viewPortInfo match {
+      case Some(vpInfo) =>
+        eventBus.publish(ClientRemoveViewPort(RequestId.oneNew(), viewPortInfo.get.vpId))
+      case None =>
+        println("Closed before VP Created")
+    }
     super.closeOperation()
   }
 

@@ -16,7 +16,7 @@ import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
 import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
 import io.venuu.vuu.net._
-import io.venuu.vuu.viewport.ViewPortTable
+import io.venuu.vuu.viewport.{CloseDialogViewPortAction, NoAction, OpenDialogViewPortAction, ViewPortAction, ViewPortTable}
 
 import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.{Color, Dimension, Point}
@@ -27,6 +27,7 @@ import javax.swing.{DefaultListSelectionModel, JComponent}
 import scala.swing.BorderPanel.Position
 import scala.swing._
 import scala.swing.event.{MouseClicked, TableEvent}
+import SwingThread._
 
 class ComponentWithContext(val component: Component, val context: Object) extends Component {
   override lazy val peer: JComponent = component.peer
@@ -40,7 +41,8 @@ case class ViewPortContext(requestId: String, vpId: String, table: ViewPortTable
                            aggregations: Array[Aggregations] = Array(),
                            menus: Option[ClientGetViewPortMenusResponse] = None)
 
-class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: ViewPortTable, availableColumns: Array[String], columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock)
+class ViewServerGridPanel(val parentFrame: Frame, requestId: String, tableName: ViewPortTable, availableColumns: Array[String],
+                          val columns: Array[String], theModel: ViewPortedModel)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock)
   extends BorderPanel with ViewPortContextProvider with StrictLogging {
 
   private final val selfReference = this;
@@ -59,8 +61,24 @@ class ViewServerGridPanel(parentFrame: Frame, requestId: String, tableName: View
       case msg: ClientGetViewPortMenusResponse =>
         println("Viewport response")
         context = context.copy(menus = Some(msg))
+      case msg: ClientMenuRpcResponse =>
+        swing{ () =>
+          processRpcAction(msg.action)
+        }
       case _ =>
   })
+
+  def processRpcAction(action: ViewPortAction) = {
+    action match {
+      case noAction: NoAction =>
+        println("No Action from RPC")
+      case open: OpenDialogViewPortAction =>
+          val frame = new VSChildFrame(parentFrame, "")
+          frame.open()
+      case close: CloseDialogViewPortAction =>
+        println("I Would close the window now")
+    }
+  }
 
   override def setContext(viewPortContext: ViewPortContext): Unit = {
     this.context = viewPortContext

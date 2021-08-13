@@ -26,7 +26,7 @@ class InstrumentsService extends RpcHandler {
 
   def testSelect(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     println("In testSelect")
-    NoAction()
+    OpenDialogViewPortAction("prices")
   }
 
   def testCell(rowKey: String, field: String, value: Object, sessionId: ClientSessionId): ViewPortAction = {
