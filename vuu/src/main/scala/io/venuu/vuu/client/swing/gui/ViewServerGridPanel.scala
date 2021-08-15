@@ -73,8 +73,10 @@ class ViewServerGridPanel(val parentFrame: Frame, requestId: String, tableName: 
       case noAction: NoAction =>
         println("No Action from RPC")
       case open: OpenDialogViewPortAction =>
-          val frame = new VSChildFrame(parentFrame, "")
-          frame.open()
+          val dialog = new VSModalRPCFrame(parentFrame, open.table, Array("*"))
+          dialog.open()
+//        val frame = new VSChildFrame(parentFrame, "")
+//        frame.open()
       case close: CloseDialogViewPortAction =>
         println("I Would close the window now")
     }

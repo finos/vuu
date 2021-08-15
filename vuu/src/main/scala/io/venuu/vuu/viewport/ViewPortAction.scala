@@ -10,7 +10,7 @@ import io.venuu.vuu.net.rpc.VsJsonTypeResolver
 trait ViewPortAction {}
 
 case class NoAction() extends ViewPortAction
-case class OpenDialogViewPortAction(tableName: String) extends ViewPortAction
+case class OpenDialogViewPortAction(table: ViewPortTable) extends ViewPortAction
 case class CloseDialogViewPortAction(vpId: String) extends ViewPortAction
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
