@@ -8,6 +8,7 @@ import io.venuu.vuu.core.module.ModuleContainer
 import io.venuu.vuu.core.table.TableContainer
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
+import io.venuu.vuu.net.json.JsonVsSerializer
 import io.venuu.vuu.provider.{JoinTableProviderImpl, ProviderContainer}
 import io.venuu.vuu.viewport.ViewPortContainer
 import org.scalatest.featurespec.AnyFeatureSpec

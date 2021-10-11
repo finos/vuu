@@ -2,8 +2,10 @@ package io.venuu.vuu.net
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
+import io.venuu.vuu.net.json.{CoreJsonSerializationMixin, Serializer}
 import io.venuu.vuu.net.rpc.JsonSubTypeRegistry
 import io.venuu.vuu.net.ws.WebSocketClient
+import io.venuu.vuu.viewport.{ViewPortAction, ViewPortActionMixin}
 
 import scala.util.{Failure, Success, Try}
 
@@ -18,6 +20,7 @@ trait ViewServerClient extends LifecycleEnabled {
 class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[String, MessageBody])(implicit lifecycle: LifecycleContainer) extends ViewServerClient  with StrictLogging{
 
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
+  JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
   lifecycle(this).dependsOn(ws)
 

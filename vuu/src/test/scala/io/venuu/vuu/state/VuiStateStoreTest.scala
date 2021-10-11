@@ -1,7 +1,7 @@
 package io.venuu.vuu.state
 
 import io.venuu.toolbox.time.{Clock, TestFriendlyClock}
-import io.venuu.vuu.viewport.{TestTimeStamp, ViewPortSetup}
+import io.venuu.vuu.viewport.TestTimeStamp
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 

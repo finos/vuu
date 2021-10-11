@@ -8,10 +8,37 @@
 package io.venuu.vuu.net.rpc
 
 import io.venuu.vuu.net._
+import io.venuu.vuu.viewport._
 
 import java.lang.reflect.Method
 
 trait RpcHandler {
+
+  def menuItems(): ViewPortMenu = EmptyViewPortMenu
+
+  def menusAsMap() = {
+
+    val menus = menuItems()
+
+    def foldMenus(viewPortMenu: ViewPortMenu)(result: Map[String,ViewPortMenuItem]) : Map[String,ViewPortMenuItem] ={
+      viewPortMenu match {
+        case folder: ViewPortMenuFolder =>
+            folder.menus.foldLeft( result )((soFar, vpMenu) => soFar ++ foldMenus(vpMenu)(result))
+        case selection: SelectionViewPortMenuItem =>
+            result ++ Map(selection.rpcName -> selection)
+        case table: TableViewPortMenuItem =>
+          result ++ Map(table.rpcName -> table)
+        case cell: CellViewPortMenuItem =>
+          result ++ Map(cell.rpcName -> cell)
+        case row: RowViewPortMenuItem =>
+          result ++ Map(row.rpcName -> row)
+      }
+    }
+
+    foldMenus(menus)(Map())
+  }
+
+  lazy val menuMap = menusAsMap()
 
   def implementsService(serviceIf:String):Boolean = {
     this.getClass.getInterfaces.exists(_.getSimpleName == serviceIf)

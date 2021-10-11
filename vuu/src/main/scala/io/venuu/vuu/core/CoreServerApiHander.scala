@@ -13,14 +13,58 @@ import io.venuu.vuu.api.AvailableViewPortVisualLink
 import io.venuu.vuu.core.table.{DataType, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
-import io.venuu.vuu.viewport
 import io.venuu.vuu.viewport._
 
 import scala.util.{Failure, Success, Try}
 
-class CoreServerApiHander(viewPortContainer: ViewPortContainer,
-                    tableContainer: TableContainer,
-                    providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging{
+class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
+                          val tableContainer: TableContainer,
+                          val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging{
+
+
+  override def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcCell(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.field, msg.value)) match{
+      case Success(action) =>
+        logger.info("Processed VP Menu Cell RPC call" + msg)
+        vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: ViewPortMenuRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcRow(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.row)) match{
+      case Success(action) =>
+        logger.info("Processed VP Menu Row RPC call" + msg)
+        vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: ViewPortMenuTableRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcTable(msg.vpId, msg.rpcName, ctx.session)) match{
+      case Success(action) =>
+        logger.info("Processed VP Menu Table RPC call" + msg)
+        vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: ViewPortMenuSelectionRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcSession(msg.vpId, msg.rpcName, ctx.session)) match{
+      case Success(action) =>
+        logger.info("Processed VP Menu Selection RPC call" + msg)
+        vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
 
   override def process(msg: RemoveViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.removeViewPort(msg.viewPortId)) match{
@@ -60,16 +104,16 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: GetTableList)(ctx: RequestContext): Option[ViewServerMessage] = {
-    vsMsg(GetTableListResponse(tableContainer.getTableNames()))(ctx)
+    vsMsg(GetTableListResponse(tableContainer.getTables()))(ctx)
   }
 
   override def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage] = {
-    val table = tableContainer.getTable(msg.table)
+    val table = tableContainer.getTable(msg.table.table)
 
     if(table == null)
       vsMsg(RpcReject(msg.table, msg.key, s"could not find table ${msg.table} to update in table container"))(ctx)
     else{
-      Try(providers.getProviderForTable(msg.table).get.asInstanceOf[RpcProvider].tick(msg.key, msg.data)) match{
+      Try(providers.getProviderForTable(msg.table.table).get.asInstanceOf[RpcProvider].tick(msg.key, msg.data)) match{
         case Success(_) =>
           logger.info(s"Rpc update success ${msg.table} ${msg.key}")
           vsMsg(RpcSuccess(msg.table, msg.key))(ctx)
@@ -91,14 +135,28 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
     tableContainer.removeSessionTables(session)
   }
 
+
+  override def process(msg: GetViewPortMenusRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    if(msg.vpId == null || msg.vpId == ""){
+      errorMsg(s"VpId is empty")(ctx)
+    }else{
+      viewPortContainer.get(ctx.session, msg.vpId) match {
+        case Some(vp: ViewPort) =>
+          vsMsg(GetViewPortMenusResponse(msg.vpId, vp.getStructure.viewPortDef.service.menuItems()))(ctx)
+        case None =>
+          errorMsg(s"Viewport not found")(ctx)
+      }
+    }
+  }
+
   override def process(msg: GetTableMetaRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     if(msg.table == null)
       errorMsg(s"Table ${msg.table} not found in container")(ctx)
     else{
-      val table = tableContainer.getTable(msg.table)
+      val table = tableContainer.getTable(msg.table.table)
       val columnNames = table.getTableDef.columns.map(_.name).sorted
       val dataTypes = columnNames.map(table.getTableDef.columnForName(_)).map(col => DataType.asString(col.dataType))
-      vsMsg(GetTableMetaResponse(table.name, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
+      vsMsg(GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
     }
   }
 
@@ -151,7 +209,7 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
 
   override def process(msg: CreateViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
 
-    val table = tableContainer.getTable(msg.table)
+    val table = tableContainer.getTable(msg.table.table)
 
     if(table == null)
       errorMsg(s"no table found for ${msg.table}")(ctx)
@@ -205,7 +263,7 @@ class CoreServerApiHander(viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelection(msg.selection))) match{
+    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelectedIndices(msg.selection))) match{
       case Success(vp) =>
         vsMsg(SetSelectionSuccess(vp.id, vp.getSelection.map( tup => tup._2).toArray))(ctx)
       case Failure(e) =>

@@ -8,7 +8,9 @@ import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
+import io.venuu.vuu.net.json.JsonVsSerializer
 import io.venuu.vuu.net.ws.WebSocketClient
+import io.venuu.vuu.viewport.ViewPortTable
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -69,7 +71,8 @@ class CoreModuleTest extends AnyFeatureSpec with Matchers with StrictLogging wit
 
       val columns = Array("ric", "description", "currency", "exchange", "lotSize")
 
-      val result = createVp(session, token, "chris", "instruments", columns)
+
+      val result = createVp(session, token, "chris", ViewPortTable("instruments", "SIMUL"), columns)
 
       val success: CreateViewPortSuccess = result.body match {
         case success: CreateViewPortSuccess => success

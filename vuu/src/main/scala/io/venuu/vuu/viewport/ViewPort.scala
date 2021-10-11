@@ -10,6 +10,7 @@ package io.venuu.vuu.viewport
 import com.typesafe.scalalogging.LazyLogging
 import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.api.ViewPortDef
 import io.venuu.vuu.core.sort.{FilterAndSort, TwoStepCompoundFilter, UserDefinedFilterAndSort, VisualLinkedFilter}
 import io.venuu.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
@@ -25,7 +26,9 @@ case object SizeUpdateType extends ViewPortUpdateType
 
 object DefaultRange extends ViewPortRange(0, 123)
 
-case class ViewPortSelection(indices: Array[Int])
+case class ViewPortSelectedIndices(indices: Array[Int])
+
+case class ViewPortSelection(map: Map[String, Int])
 
 case class ViewPortVisualLink(childVp: ViewPort, parentVp: ViewPort, childColumn: Column, parentColumn: Column){
   override def toString: String = "ViewPortVisualLink(" + childVp.id + "->" + parentVp.id + ", on " + childColumn.name + " = " + parentColumn.name + ")"
@@ -94,7 +97,10 @@ trait ViewPort {
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
-case class ViewPortStructuralFields(table: RowSource, columns: List[Column], filtAndSort: FilterAndSort, filterSpec: FilterSpec, groupBy: GroupBy, theTreeNodeState: TreeNodeState)
+case class ViewPortStructuralFields(table: RowSource, columns: List[Column],
+                                    viewPortDef: ViewPortDef,
+                                    filtAndSort: FilterAndSort, filterSpec: FilterSpec,
+                                    groupBy: GroupBy, theTreeNodeState: TreeNodeState)
 
 case class ViewPortImpl(id: String,
                         //table: RowSource,

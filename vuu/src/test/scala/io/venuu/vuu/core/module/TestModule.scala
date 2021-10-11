@@ -2,22 +2,35 @@ package io.venuu.vuu.core.module
 
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.api.TableDef
+import io.venuu.vuu.api.{TableDef, ViewPortDef}
 import io.venuu.vuu.core.table.Columns
 import io.venuu.vuu.net.rpc.RpcHandler
-import io.venuu.vuu.net.{MessageBody, RequestContext}
+import io.venuu.vuu.net.{ClientSessionId, MessageBody}
 import io.venuu.vuu.provider.MockProvider
+import io.venuu.vuu.viewport._
 
 case class MyObjectParam(foo: String, bar: String) extends MessageBody
 
 trait AnRpcHandler{
-  def onSendToMarket(param1: Map[String , Any])(context: RequestContext): Boolean
+  def onSendToMarket(param1: Map[String , Any])(sessionId: ClientSessionId): Boolean
 }
 
 class MyCustomRpcHandler extends DefaultLifecycleEnabled with AnRpcHandler with RpcHandler {
-  def onSendToMarket(param1: Map[String , Any])(context: RequestContext): Boolean = {
+  def onSendToMarket(param1: Map[String , Any])(sessionId: ClientSessionId): Boolean = {
     println("doing something false ." + param1)
     false
+  }
+
+  def testSel(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
+    NoAction()
+  }
+
+  override def menuItems(): ViewPortMenu = {
+    ViewPortMenu(
+      ViewPortMenu("Test Menu",
+        new SelectionViewPortMenuItem("Test Selection", "", this.testSel, "TEST_SEL")
+      ),
+    )
   }
 }
 
@@ -35,7 +48,12 @@ object TestModule{
             columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Double"),
             joinFields = "ric"
           )
-        , (table, vs) => new MockProvider(table)
+        ,
+        (table, vs) => new MockProvider(table),
+        (table, provider) => ViewPortDef(
+            columns = table.getTableDef.columns,
+            service = new MyCustomRpcHandler
+          )
         )
       .addRpcHandler(vs => new MyCustomRpcHandler)
       .asModule()

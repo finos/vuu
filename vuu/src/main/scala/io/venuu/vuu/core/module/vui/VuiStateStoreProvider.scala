@@ -5,7 +5,7 @@ import io.venuu.toolbox.thread.LifeCycleRunner
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData}
 import io.venuu.vuu.provider.Provider
-import io.venuu.vuu.state.{VuiHeader, VuiState, VuiStateStore}
+import io.venuu.vuu.state.{VuiHeader, VuiStateStore}
 
 class VuiStateStoreProvider(val table: DataTable, val store: VuiStateStore)(implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
 

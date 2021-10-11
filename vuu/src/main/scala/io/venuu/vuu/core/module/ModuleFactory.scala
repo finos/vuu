@@ -2,7 +2,7 @@ package io.venuu.vuu.core.module
 
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.api.{JoinTableDef, TableDef}
+import io.venuu.vuu.api.{JoinTableDef, NoViewPortDef, TableDef, ViewPortDef}
 import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.table.DataTable
 import io.venuu.vuu.net.rest.RestService
@@ -35,22 +35,26 @@ case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: Lis
   }
 }
 
-case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[VuuServer => RpcHandler], vsName: String, staticServedResources: List[StaticServedResource], rest: List[VuuServer => RestService]){
+case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[VuuServer => RpcHandler], vsName: String, staticServedResources: List[StaticServedResource], rest: List[VuuServer => RestService], viewPortDefs: Map[String, (DataTable, Provider) => ViewPortDef]){
 
-  def addTable(tableDef: TableDef, func: (DataTable, VuuServer) => Provider): ModuleFactoryNode ={
-    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest)
+  def addTable(tableDef: TableDef, func: (DataTable, VuuServer) => Provider): ModuleFactoryNode = {
+    val noViewPortDefFunc = (dt:DataTable, prov: Provider) => NoViewPortDef
+    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> noViewPortDefFunc))
+  }
+  def addTable(tableDef: TableDef, func: (DataTable, VuuServer) => Provider, func2: (DataTable, Provider) => ViewPortDef ): ModuleFactoryNode ={
+    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2))
   }
 
   def addJoinTable(func: TableDefs => JoinTableDef): ModuleFactoryNode ={
-    ModuleFactoryNode(tableDefs.addJoin(func), rpc, vsName, staticServedResources, rest)
+    ModuleFactoryNode(tableDefs.addJoin(func), rpc, vsName, staticServedResources, rest, viewPortDefs)
   }
 
   def addRpcHandler(rpcFunc: VuuServer => RpcHandler): ModuleFactoryNode ={
-    ModuleFactoryNode(tableDefs, rpc ++ List(rpcFunc), vsName, staticServedResources, rest)
+    ModuleFactoryNode(tableDefs, rpc ++ List(rpcFunc), vsName, staticServedResources, rest, viewPortDefs)
   }
 
   def addRestService(restFunc: VuuServer => RestService): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs, rpc, vsName, staticServedResources, rest ++ List(restFunc))
+    ModuleFactoryNode(tableDefs, rpc, vsName, staticServedResources, rest ++ List(restFunc), viewPortDefs)
   }
 
   /**
@@ -61,7 +65,7 @@ case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[VuuServ
    * @param canBrowse can users browse the contents of the directory (listings)
    */
   def addStaticResource(uriDirectory: String, path: Path, canBrowse: Boolean): ModuleFactoryNode ={
-    ModuleFactoryNode(tableDefs, rpc, vsName, staticServedResources ++ List(StaticServedResource(uriDirectory, path, canBrowse)), rest)
+    ModuleFactoryNode(tableDefs, rpc, vsName, staticServedResources ++ List(StaticServedResource(uriDirectory, path, canBrowse)), rest, viewPortDefs)
   }
 
   def asModule(): ViewServerModule = {
@@ -80,6 +84,7 @@ case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[VuuServ
     })
 
     val theName = vsName
+    val parentRef = this
 
     new ViewServerModule {
       override def name: String =  theName
@@ -93,6 +98,7 @@ case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[VuuServ
       }
       override def staticFileResources(): List[StaticServedResource] = staticServedResources
       override def restServicesUnrealized: List[VuuServer => RestService] = rest
+      override def viewPortDefs: Map[String, (DataTable, Provider) => ViewPortDef] = parentRef.viewPortDefs
     }
 
   }
@@ -103,7 +109,7 @@ object ModuleFactory {
   implicit def stringToString(s: String) = new FieldDefString(s)
 
   def withNamespace(ns: String): ModuleFactoryNode ={
-    return ModuleFactoryNode(TableDefs(List(), List(), List()), List(), ns, List(), List());
+    return ModuleFactoryNode(TableDefs(List(), List(), List()), List(), ns, List(), List(), Map());
   }
 
 }

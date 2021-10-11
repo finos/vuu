@@ -10,13 +10,13 @@ package io.venuu.vuu.client.headless
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.messages.RequestId
 import io.venuu.vuu.net.{FilterSpec, SortDef, SortSpec, ViewServerClient}
-import io.venuu.vuu.viewport.{DefaultRange, ViewPortRange}
+import io.venuu.vuu.viewport.{DefaultRange, ViewPortRange, ViewPortTable}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
 
 case class CreateViewPortRequestBlock(ctx: HeadlessContext,
-                                      table: String,
+                                      table: ViewPortTable,
                                       headless: HeadlessClient,
                                       private val columns: Array[String] = Array(),
                                       private val sort: SortSpec = SortSpec(List()),

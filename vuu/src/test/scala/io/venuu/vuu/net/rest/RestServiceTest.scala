@@ -1,16 +1,12 @@
 package io.venuu.vuu.net.rest
 
 import com.typesafe.scalalogging.StrictLogging
-import io.netty.util.CharsetUtil
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
-import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
-import io.venuu.vuu.core.module.TestModule
 import io.venuu.vuu.core.module.vui.VuiStateModule
-import io.venuu.vuu.net.{JsonVsSerializer, WebSocketViewServerClient}
+import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
-import io.venuu.vuu.net.ws.WebSocketClient
 import io.venuu.vuu.state.MemoryBackedVuiStateStore
 import io.vertx.core.json.JsonObject
 import io.vertx.core.{Vertx, VertxOptions}
@@ -18,7 +14,6 @@ import io.vertx.ext.web.client.WebClientOptions
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-import java.nio.charset.Charset
 import scala.concurrent.ExecutionContext
 
 class RestServiceTest extends AnyFeatureSpec with Matchers with StrictLogging {
@@ -26,8 +21,6 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with StrictLogging {
   Feature("check we can add rest services and call them") {
 
     ignore("add the ui state rest service") {
-
-      import io.venuu.vuu.client.ClientHelperFns._
 
       implicit val ctx = ExecutionContext.global
 

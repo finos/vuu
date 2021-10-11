@@ -13,6 +13,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.venuu.toolbox.json.JsonUtil
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.module.ModuleContainer
+import io.venuu.vuu.net.json.Serializer
 
 trait ViewServerHandlerFactory{
   def create(): ViewServerHandler

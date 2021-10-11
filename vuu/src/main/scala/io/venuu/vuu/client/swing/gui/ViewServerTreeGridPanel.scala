@@ -5,6 +5,7 @@ import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.components.renderer.TreeGridCellRenderer
 import io.venuu.vuu.client.swing.messages.{ClientCloseTreeNodeRequest, ClientMessage, ClientOpenTreeNodeRequest, RequestId}
 import io.venuu.vuu.client.swing.model.ViewPortedModel
+import io.venuu.vuu.viewport.ViewPortTable
 
 import scala.swing.Frame
 import scala.swing.event.MouseClicked
@@ -26,7 +27,7 @@ object TreeColumns{
 /**
   * Created by chris on 10/04/2016.
   */
-class ViewServerTreeGridPanel(parentFrame: Frame, requestId: String, tableName: String, availableColumns: Array[String],
+class ViewServerTreeGridPanel(parentFrame: Frame, requestId: String, tableName: ViewPortTable, availableColumns: Array[String],
                               columns: Array[String], theModel: ViewPortedModel, treeColumns: Array[String])
                              (implicit override val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends ViewServerGridPanel(parentFrame, requestId, tableName, availableColumns, columns, theModel) {
 

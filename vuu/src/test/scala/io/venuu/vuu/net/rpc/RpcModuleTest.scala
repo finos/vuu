@@ -5,22 +5,24 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.{MyObjectParam, TestModule}
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import io.venuu.vuu.net.WebSocketViewServerClient
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
+import io.venuu.vuu.net.json.JsonVsSerializer
 import io.venuu.vuu.net.ws.WebSocketClient
-import io.venuu.vuu.net.{JsonVsSerializer, WebSocketViewServerClient}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.ExecutionContext
 
 /**
-  * Created by chris on 17/08/2016.
+  * RPC Functionality is being moved to the viewport, this test and old style RPC functionality should be removed.
+ * TODO: Chris, Delete Me
   */
 class RpcModuleTest extends AnyFeatureSpec with Matchers {
 
   Feature("check we can install a new module into the viewserver and call it"){
 
-    Scenario("add module and call an rpc call"){
+    ignore("add module and call an rpc call"){
 
       import io.venuu.vuu.client.ClientHelperFns._
 
@@ -65,8 +67,6 @@ class RpcModuleTest extends AnyFeatureSpec with Matchers {
 
       val token = auth("chris", "chris")
       val session = login(token, "chris")
-
-      //Thread.sleep(200)
 
       val returnVal = rpcCall(session, token, "chris", "AnRpcHandler", "onSendToMarket", Array(new MyObjectParam("foo", "bar")), "TEST")
 

@@ -10,7 +10,7 @@ package io.venuu.vuu.core.sort
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.vuu.core.filter.{Filter, FilterClause}
-import io.venuu.vuu.core.index.{BooleanIndexedField, DoubleIndexedField, IndexedField, IntIndexedField, LongIndexedField, StringIndexedField}
+import io.venuu.vuu.core.index._
 import io.venuu.vuu.core.table.{Column, DataType}
 import io.venuu.vuu.viewport.{RowSource, ViewPortVisualLink}
 

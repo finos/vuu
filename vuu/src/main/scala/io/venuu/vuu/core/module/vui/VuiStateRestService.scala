@@ -4,7 +4,6 @@ import io.venuu.toolbox.json.JsonUtil
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.state.{VuiHeader, VuiJsonState, VuiState, VuiStateStore}
-import io.vertx.core.json.Json
 import io.vertx.ext.web.RoutingContext
 
 class VuiStateRestService(val store: VuiStateStore)(implicit clock: Clock) extends RestService {

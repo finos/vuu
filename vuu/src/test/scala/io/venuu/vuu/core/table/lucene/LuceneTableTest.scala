@@ -4,16 +4,16 @@ import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.TestFriendlyClock
 import io.venuu.toolbox.time.TimeIt.timeIt
-import io.venuu.vuu.api.{DeleteIndexOnShutdown, IndexFilePath, LuceneTableDef, TableDef, VisualLinks}
+import io.venuu.vuu.api.{DeleteIndexOnShutdown, IndexFilePath, LuceneTableDef, VisualLinks}
 import io.venuu.vuu.core.table.{Columns, LuceneTable, RowWithData}
 import io.venuu.vuu.provider.JoinTableProviderImpl
 import io.venuu.vuu.viewport.TestTimeStamp
 import org.apache.lucene.analysis.standard.StandardAnalyzer
-import org.apache.lucene.document.{Document, DoublePoint, Field, IntPoint, LongPoint, TextField}
+import org.apache.lucene.document._
 import org.apache.lucene.index.{DirectoryReader, IndexWriter, IndexWriterConfig, Term}
 import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.store.MMapDirectory
-import org.scalatest.{BeforeAndAfterAll, Ignore}
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 

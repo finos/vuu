@@ -1,7 +1,7 @@
 package io.venuu.toolbox.lifecycle
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.thread.{LifeCycleRunner, Runner}
+import io.venuu.toolbox.thread.Runner
 import io.venuu.toolbox.time.Clock
 
 import java.util.concurrent.atomic.AtomicInteger

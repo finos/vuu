@@ -20,6 +20,10 @@ class RpcProvider(table: DataTable)(implicit timeProvider: Clock) extends Provid
     table.processDelete(key)
   }
 
+  def deleteAll() = {
+    //table.processDelete(key)
+  }
+
   protected def validateInput(key: String, row: Map[String, Any]) = {
     row.keys.foreach( key => if(!table.getTableDef.columnExists(key)) throw new Exception(s"Column ${key} doesn't exist in table"))
   }

@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.module.ModuleContainer
 import io.venuu.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
+import io.venuu.vuu.net.json.Serializer
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
 
@@ -164,6 +165,11 @@ class DefaultMessageHandler(val channel: Channel,
       case req: RemoveViewPortRequest => serverApi.process(req)(ctx)
       case req: EnableViewPortRequest => serverApi.process(req)(ctx)
       case req: DisableViewPortRequest => serverApi.process(req)(ctx)
+      case req: GetViewPortMenusRequest => serverApi.process(req)(ctx)
+      case req: ViewPortMenuSelectionRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortMenuRowRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortMenuTableRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortMenuCellRpcCall => serverApi.process(req)(ctx)
     }
   }
 

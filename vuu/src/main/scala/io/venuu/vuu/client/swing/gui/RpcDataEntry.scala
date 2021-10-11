@@ -13,6 +13,7 @@ import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.components.MutableComboBox
 import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.{RpcModel, VSHackedTable}
+import io.venuu.vuu.viewport.ViewPortTable
 
 import scala.swing.BorderPanel.Position._
 import scala.swing._
@@ -20,7 +21,7 @@ import scala.swing.event.{ButtonClicked, SelectionChanged}
 
 class RpcDataEntry(name: String)(implicit val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Dialog with StrictLogging{
 
-  val tablesCombo = new MutableComboBox[String]()
+  val tablesCombo = new MutableComboBox[ViewPortTable]()
   //val columnsCombo = new MutableComboBox[String]()
   val update = new Button("Update")
   val emptylabel = new Label("")

@@ -14,13 +14,43 @@ import io.venuu.vuu.api._
 import io.venuu.vuu.core.module.simul.provider._
 import io.venuu.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.{Columns, TableContainer}
-import io.venuu.vuu.net.RequestContext
 import io.venuu.vuu.net.rpc.RpcHandler
-import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
+import io.venuu.vuu.net.{ClientSessionId, RequestContext}
 import io.venuu.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
-import io.venuu.vuu.viewport.ViewPortContainer
+import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
+import io.venuu.vuu.viewport._
 
 import java.util.UUID
+
+class InstrumentsService extends RpcHandler {
+
+  def testSelect(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
+    println("In testSelect")
+    OpenDialogViewPortAction(ViewPortTable("prices", "SIMUL"))
+  }
+
+  def testCell(rowKey: String, field: String, value: Object, sessionId: ClientSessionId): ViewPortAction = {
+    println("In testCell")
+    NoAction()
+  }
+
+  def testTable(sessionId: ClientSessionId): ViewPortAction = {
+    println("In testTable")
+    NoAction()
+  }
+
+  def testRow(rowKey: String, row:Map[String, Any], sessionId: ClientSessionId): ViewPortAction = {
+    println("In testRow")
+    NoAction()
+  }
+
+  override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",
+    new SelectionViewPortMenuItem("Test Selection", "", this.testSelect, "TEST_SELECT"),
+    new CellViewPortMenuItem("Test Cell", "", this.testCell, "TEST_CELL"),
+    new TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE"),
+    new RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW")
+  )
+}
 
 trait SimulRpcHandler{
   def onSendToMarket(param1: Map[String , Any])(ctx: RequestContext): Boolean
@@ -80,7 +110,11 @@ object SimulationModule extends DefaultModule {
             VisualLinks(),
             joinFields = "ric"
           ),
-          (table, vs) => new SimulatedBigInstrumentsProvider(table)
+          (table, vs) => new SimulatedBigInstrumentsProvider(table),
+          (table, provider) => ViewPortDef(
+            columns = table.getTableDef.columns,
+            service = new InstrumentsService
+          )
       )
       .addTable(
         AutoSubscribeTableDef(

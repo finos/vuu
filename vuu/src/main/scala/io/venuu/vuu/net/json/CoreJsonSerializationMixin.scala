@@ -1,18 +1,12 @@
-/**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 15/02/2016.
-
-  */
-package io.venuu.vuu.net
+package io.venuu.vuu.net.json
 
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
+import io.venuu.vuu.net._
 
 /**
-  * Mixing represents the mapping for all core functionality in VS.
-  */
+ * Mixing represents the mapping for all core functionality in VS.
+ */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(Array(
   new Type(value = classOf[AuthenticateRequest], name = "AUTH"),
@@ -51,6 +45,8 @@ import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
   new Type(value = classOf[RpcReject], name = "RPC_REJECT"),
   new Type(value = classOf[HeartBeatResponse], name = "HB_RESP"),
   new Type(value = classOf[RpcCall], name = "RPC_CALL"),
+  new Type(value = classOf[MenuRpcCall], name = "MENU_RPC_CALL"),
+  new Type(value = classOf[MenuRpcResponse], name = "MENU_RPC_RESP"),
   new Type(value = classOf[RpcResponse], name = "RPC_RESP"),
   new Type(value = classOf[OpenTreeNodeSuccess], name = "OPEN_TREE_SUCCESS"),
   new Type(value = classOf[OpenTreeNodeReject], name = "OPEN_TREE_REJECT"),
@@ -63,5 +59,13 @@ import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
   new Type(value = classOf[GetViewPortVisualLinksResponse], name = "VP_VISUAL_LINKS_RESP"),
   new Type(value = classOf[CreateVisualLinkRequest], name = "CREATE_VISUAL_LINK"),
   new Type(value = classOf[CreateVisualLinkSuccess], name = "CREATE_VISUAL_LINK_SUCCESS"),
+  new Type(value = classOf[GetViewPortMenusRequest], name = "GET_VIEW_PORT_MENUS"),
+  new Type(value = classOf[GetViewPortMenusResponse], name = "VIEW_PORT_MENUS_RESP"),
+  new Type(value = classOf[ViewPortMenuSelectionRpcCall], name = "VIEW_PORT_MENUS_SELECT_RPC"),
+  new Type(value = classOf[ViewPortMenuTableRpcCall], name = "VIEW_PORT_MENU_TABLE_RPC"),
+  new Type(value = classOf[ViewPortMenuRowRpcCall], name = "VIEW_PORT_MENU_ROW_RPC"),
+  new Type(value = classOf[ViewPortMenuCellRpcCall], name = "VIEW_PORT_MENU_CELL_RPC"),
+  new Type(value = classOf[ViewPortMenuRpcResponse], name = "VIEW_PORT_MENU_RESP"),
+  new Type(value = classOf[ViewPortMenuRpcReject], name = "VIEW_PORT_MENU_REJ"),
 ))
 trait CoreJsonSerializationMixin {}

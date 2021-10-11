@@ -41,6 +41,8 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         changeVpAsync(principal.sessionId, principal.token, principal.user, msg.requestId, msg.viewPortId, msg.columns, msg.sortBy, msg.groupBy, msg.filterSpec, msg.aggregations)
       case msg: ClientGetTableMeta =>
         tableMetaAsync(principal.sessionId, principal.token, principal.user, msg.table, msg.requestId)
+      case msg: ClientGetViewPortMenusRequest =>
+        getViewPortMenusAsync(principal.sessionId, principal.token, principal.user, msg.vpId)
       case msg: ClientGetTableList =>
         tableListAsync(principal.sessionId, principal.token, principal.user)
       case msg: ClientRpcCall =>
@@ -48,7 +50,6 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         rpcCallAsync(principal.sessionId, principal.token, principal.user, msg.service, msg.method, msg.params, msg.module)
       case msg: Logon =>
         authAsync(msg.user, msg.password)
-      //case ur : UpdateRange => requests.put(current, ur)
       case msg: ClientCreateViewPort =>
         createVpAsync(principal.sessionId, principal.token, principal.user, msg.requestId, msg.table, msg.columns, sortBy = msg.sortBy, range = ViewPortRange(msg.from, msg.to), filterSpec = FilterSpec(msg.filter), groupBy = msg.groupBy)
       case msg: ClientRpcTableUpdate =>
@@ -65,10 +66,16 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         disableViewPort(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId)
       case msg: ClientRemoveViewPort =>
         removeViewPort(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId)
-
       case msg: ClientUpdateVPRange =>
         vpChangeRequests.put(msg.vpId, msg)
-
+      case msg: ClientMenuSelectionRpcCall =>
+        viewPortMenuSelectionRpcCall(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId, msg.rpcName)
+      case msg: ClientMenuTableRpcCall =>
+        viewPortMenuTableRpcCall(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId, msg.rpcName)
+      case msg: ClientMenuCellRpcCall =>
+        viewPortMenuCellRpcCall(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId, msg.rpcName, msg.rowKey, msg.field, msg.value)
+      case msg: ClientMenuRowRpcCall =>
+        viewPortMenuRowRpcCall(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId, msg.rpcName, msg.rowKey, msg.row)
       case _ =>
   })
 
@@ -185,6 +192,14 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
       case body: RpcResponse =>
         logger.info("[RPC Response] " + body)
         eventBus.publish(ClientRpcResponse(msg.requestId, "", body.method, body.result, body.error))
+
+      case body: GetViewPortMenusResponse =>
+        logger.info("[ViewPort Menus] " + body)
+        eventBus.publish(ClientGetViewPortMenusResponse(msg.requestId, body.vpId, body.menu))
+
+      case body: ViewPortMenuRpcResponse =>
+        logger.info("[ViewPort Menus Response] " + body)
+        eventBus.publish(ClientMenuRpcResponse(msg.requestId, body.vpId, body.action))
     }
   }
 }

@@ -22,12 +22,13 @@
         </encoder>
     </appender>
 
-    <logger name="io.venuu.vuu.net.ViewServerHandler" level="INFO">
+    <logger name="io.venuu.vuu.net.ViewServerHandler" level="DEBUG">
         <appender-ref ref="server-inout"/>
     </logger>
 
-    <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="INFO">
+    <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
         <appender-ref ref="server-inout"/>
+        <totalSizeCap>20MB</totalSizeCap>
     </logger>
     <!--
     TO HERE
@@ -48,9 +49,9 @@
     </appender-->
 
     <!-- required for debugging messages off the wire -->
-    <!--logger name="io.venuu.vuu.client.swing.client.Worker" level="INFO" >
+    <logger name="io.venuu.vuu.client.swing.client.Worker" level="INFO" >
         <appender-ref ref="roll-by-time" />
-    </logger-->
+    </logger>
 
 
 

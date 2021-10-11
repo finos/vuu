@@ -15,12 +15,13 @@ import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.thread.RunInThread
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.toolbox.time.{Clock, TimeIt}
-import io.venuu.vuu.api.Link
+import io.venuu.vuu.api.{Link, NoViewPortDef, ViewPortDef}
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort._
-import io.venuu.vuu.core.table.{Column, TableContainer}
+import io.venuu.vuu.core.table.{Column, DataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
+import io.venuu.vuu.provider.Provider
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.{core, viewport}
 
@@ -47,6 +48,80 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
   val groupByHistograms = new ConcurrentHashMap[String, Histogram]()
   val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
+
+  val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider) => ViewPortDef]()
+
+  def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
+
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val asMap = viewPortDef.service.menuMap
+
+    asMap.get(rpcName) match {
+      case Some(menuItem) =>
+        menuItem match {
+          case cell: CellViewPortMenuItem => cell.func(rowKey, field, singleValue, session)
+        }
+      case None =>
+        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+    }
+  }
+
+  def callRpcSession(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
+
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val asMap = viewPortDef.service.menuMap
+
+    asMap.get(rpcName) match {
+      case Some(menuItem) =>
+        menuItem match {
+          case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection), session)
+        }
+      case None =>
+        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+    }
+  }
+
+  def callRpcTable(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
+
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val asMap = viewPortDef.service.menuMap
+
+    asMap.get(rpcName) match {
+      case Some(menuItem) =>
+        menuItem match {
+          case table: TableViewPortMenuItem => table.func(session)
+        }
+      case None =>
+        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+    }
+  }
+
+  def callRpcRow(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, rowRecord: Map[String, Object] = Map()): ViewPortAction = {
+
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val asMap = viewPortDef.service.menuMap
+
+    asMap.get(rpcName) match {
+      case Some(menuItem) =>
+        menuItem match {
+          case row: RowViewPortMenuItem => row.func(rowKey, rowRecord, session)
+        }
+      case None =>
+        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+    }
+  }
+
+  def addViewPortDefinition(table: String, vpDefFunc: (DataTable, Provider) => ViewPortDef): Unit = {
+    viewPortDefinitions.put(table, vpDefFunc)
+  }
+
+  def getViewPortDefinition(table: String): (DataTable, Provider) => ViewPortDef = {
+    viewPortDefinitions.get(table)
+  }
 
   def getViewPortById(vpId: String): ViewPort ={
     this.viewPorts.get(vpId)
@@ -217,7 +292,14 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
 
-      viewport.ViewPortStructuralFields(table = sessionTable, columns = columns, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
+      viewport.ViewPortStructuralFields(table = sessionTable,
+        columns = columns,
+        viewPort.getStructure.viewPortDef,
+        filtAndSort = filtAndSort,
+        filterSpec = filterSpec,
+        groupBy = groupBy,
+        viewPort.getTreeNodeState
+      )
 
     //we are groupBy but we want to revert to no groupBy
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
@@ -229,11 +311,18 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
       //then remove it from table container
       tableContainer.removeGroupBySessionTable(groupByTable)
 
-      viewport.ViewPortStructuralFields(table = sourceTable, columns = columns, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
+      viewport.ViewPortStructuralFields(table = sourceTable,
+        columns = columns,
+        viewPort.getStructure.viewPortDef,
+        filtAndSort = filtAndSort,
+        filterSpec = filterSpec,
+        groupBy = groupBy,
+        viewPort.getTreeNodeState
+      )
 
     } else{
 
-      viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
+      viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, viewPortDef = viewPort.getStructure.viewPortDef, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
     }
 
     viewPort.changeStructure(structure)
@@ -258,7 +347,11 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
       tableContainer.createGroupBySessionTable(table, clientSession)
     }
 
-    val structural = viewport.ViewPortStructuralFields(aTable, columns, filtAndSort, filterSpec, groupBy, ClosedTreeNodeState)
+    val viewPortDefFunc = getViewPortDefinition(table.name);
+
+    val viewPortDef = if( viewPortDefFunc == null ) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider)
+
+    val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, groupBy, ClosedTreeNodeState)
 
     val viewPort = ViewPortImpl(id, clientSession, outboundQ, highPriorityQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
 
@@ -304,7 +397,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     }
   }
 
-  def changeSelection(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], vpId: String, selection: ViewPortSelection): ViewPort = {
+  def changeSelection(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], vpId: String, selection: ViewPortSelectedIndices): ViewPort = {
     val viewPort = viewPorts.get(vpId)
     viewPort.setSelection(selection.indices)
     viewPort
