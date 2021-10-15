@@ -36,7 +36,7 @@
     <scala.logging>3.9.2</scala.logging>
     <jackson.version>2.12.1</jackson.version>
     <aeron.version>1.17.0</aeron.version>
-    <antlr.version>4.7.2</antlr.version>
+    <antlr.version>4.9.1</antlr.version>
     <netty.version>4.1.60.Final</netty.version>
     <maven.scala.plugin>2.15.2</maven.scala.plugin>
     <vertx.version>4.0.3</vertx.version>
