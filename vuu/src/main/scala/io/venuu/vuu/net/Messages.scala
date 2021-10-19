@@ -10,7 +10,6 @@ package io.venuu.vuu.net
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize, JsonTypeIdResolver}
 import io.venuu.vuu.api.AvailableViewPortVisualLink
-import io.venuu.vuu.client.swing.messages.ClientMessage
 import io.venuu.vuu.net.json.{RowUpdateDeserializer, RowUpdateSerializer}
 import io.venuu.vuu.net.rpc.VsJsonTypeResolver
 import io.venuu.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortRange, ViewPortTable}

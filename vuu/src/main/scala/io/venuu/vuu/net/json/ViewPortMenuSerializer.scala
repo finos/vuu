@@ -2,7 +2,7 @@ package io.venuu.vuu.net.json
 
 import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
 import com.fasterxml.jackson.databind._
-import io.venuu.vuu.viewport.{RowViewPortMenuItem, _}
+import io.venuu.vuu.viewport._
 
 import scala.jdk.CollectionConverters.IteratorHasAsScala
 

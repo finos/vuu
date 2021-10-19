@@ -12,8 +12,8 @@ import io.venuu.vuu.viewport.ViewPortTable
 
 import java.awt.Dimension
 import scala.swing.TabbedPane.Page
-import scala.swing.event.{ButtonClicked, SelectionChanged}
 import scala.swing._
+import scala.swing.event.{ButtonClicked, SelectionChanged}
 
 class VSChildFrame(parentFrame: Frame, sessId: String)(implicit eventBus: EventBus[ClientMessage], timeProvider: Clock) extends Frame with StrictLogging{
 
