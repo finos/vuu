@@ -12,7 +12,7 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.{Columns, TableContainer}
-import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.joda.time.LocalDateTime
 
 object OrdersAndPricesScenarioFixture {
@@ -52,7 +52,9 @@ object OrdersAndPricesScenarioFixture {
     val ordersProvider = new MockProvider(orders)
     val pricesProvider = new MockProvider(prices)
 
-    val viewPortContainer = new ViewPortContainer(tableContainer)
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
     //val viewPortContainer = setupViewPort()
 

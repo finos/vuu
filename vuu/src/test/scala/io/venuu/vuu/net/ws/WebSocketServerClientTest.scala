@@ -39,9 +39,9 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
       val tableContainer = new TableContainer(joinProvider)
 
-      val viewPortContainer = new ViewPortContainer(tableContainer)
-
       val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
       val serverApi = new CoreServerApiHander(viewPortContainer, tableContainer, providerContainer)
 

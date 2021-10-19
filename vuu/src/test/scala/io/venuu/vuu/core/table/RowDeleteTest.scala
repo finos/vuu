@@ -13,7 +13,7 @@ import io.venuu.toolbox.time.{DefaultClock, TestFriendlyClock}
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
-import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts._
 import io.venuu.vuu.viewport.{DefaultRange, GroupBy, ViewPortContainer}
@@ -40,7 +40,9 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       val outQueue          = new OutboundRowPublishQueue()
       val highPriorityQueue = new OutboundRowPublishQueue()
 
-      val viewPortContainer = new ViewPortContainer(tableContainer)
+      val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
       val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
@@ -106,7 +108,9 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       val outQueue          = new OutboundRowPublishQueue()
       val highPriorityQueue = new OutboundRowPublishQueue()
 
-      val viewPortContainer = new ViewPortContainer(tableContainer)
+      val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
       joinProvider.start()
 
@@ -180,7 +184,9 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       val outQueue          = new OutboundRowPublishQueue()
       val highPriorityQueue = new OutboundRowPublishQueue()
 
-      val viewPortContainer = new ViewPortContainer(tableContainer)
+      val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
       joinProvider.start()
 

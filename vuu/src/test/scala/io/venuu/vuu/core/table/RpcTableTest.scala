@@ -13,7 +13,7 @@ import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
-import io.venuu.vuu.provider.{JoinTableProviderImpl, RpcProvider}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, ProviderContainer, RpcProvider}
 import io.venuu.vuu.viewport.{DefaultRange, ViewPortContainer}
 import org.scalatest.OneInstancePerTest
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -40,7 +40,9 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
       val (outQueue, highPriorityQueue) = getQueues
       //val highPriorityQueue = new OutboundRowPublishQueue()
 
-      val viewPortContainer = new ViewPortContainer(tableContainer)
+      val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
       val orderEntryDef = TableDef("orderEntry", "clOrderId", Columns.fromNames("clOrderId:String", "ric:String", "quantity: Double", "orderType:String", "price: Double", "priceLevel: String"), "ric")
 

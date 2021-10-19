@@ -6,7 +6,7 @@ import io.venuu.toolbox.time.{Clock, TestFriendlyClock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.{Columns, TableContainer}
 import io.venuu.vuu.net.ClientSessionId
-import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import org.scalatest.featurespec.AnyFeatureSpec
 
@@ -23,9 +23,9 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     vpUps.filter( vpu => vpu.vp.id == vp.id )
   }
 
-  def setupViewPort(tableContainer: TableContainer) = {
+  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer) = {
 
-    val viewPortContainer = new ViewPortContainer(tableContainer)
+    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
     viewPortContainer
   }
@@ -66,7 +66,9 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     val ordersProvider = new MockProvider(orders)
     val pricesProvider = new MockProvider(prices)
 
-    val viewPortContainer = setupViewPort(tableContainer)
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
 
     joinProvider.start()
 
@@ -123,7 +125,9 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     val ordersProvider = new MockProvider(orders)
     val pricesProvider = new MockProvider(prices)
 
-    val viewPortContainer = setupViewPort(tableContainer)
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
 
     joinProvider.start()
 

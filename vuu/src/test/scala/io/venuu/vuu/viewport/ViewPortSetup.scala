@@ -5,7 +5,7 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.{Columns, TableContainer}
-import io.venuu.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider}
+import io.venuu.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider, ProviderContainer}
 import io.venuu.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.joda.time.LocalDateTime
 
@@ -92,7 +92,9 @@ trait ViewPortSetup {
     val ordersProvider = new MockProvider(orders)
     val pricesProvider = new MockProvider(prices)
 
-    val viewPortContainer = new ViewPortContainer(tableContainer)
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
     //val viewPortContainer = setupViewPort()
 

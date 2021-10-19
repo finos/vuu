@@ -11,9 +11,10 @@ import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.api.TableDef
+import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
-import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.viewport.{DefaultRange, ViewPortContainer}
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -37,7 +38,9 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
       val outQueue          = new OutboundRowPublishQueue()
       val highPriorityQueue = new OutboundRowPublishQueue()
 
-      val viewPortContainer = new ViewPortContainer(tableContainer)
+      val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
       val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 

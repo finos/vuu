@@ -6,7 +6,7 @@ import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.core.table.{Columns, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
-import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts._
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -59,7 +59,9 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     val ordersProvider = new MockProvider(orders)
     val pricesProvider = new MockProvider(prices)
 
-    val (viewPortContainer) = setupViewPort(tableContainer)
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val (viewPortContainer) = setupViewPort(tableContainer, providerContainer)
 
     joinProvider.start()
 

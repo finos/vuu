@@ -16,12 +16,13 @@ import io.venuu.toolbox.thread.RunInThread
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.toolbox.time.{Clock, TimeIt}
 import io.venuu.vuu.api.{Link, NoViewPortDef, ViewPortDef}
+import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort._
 import io.venuu.vuu.core.table.{Column, DataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
-import io.venuu.vuu.provider.Provider
+import io.venuu.vuu.provider.{Provider, ProviderContainer}
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.{core, viewport}
 
@@ -41,7 +42,7 @@ trait ViewPortContainerMBean {
   def closeGroupByKey(vpId: String, treeKey: String): String
 }
 
-class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
+class ViewPortContainer(val tableContainer: TableContainer, val providerContainer: ProviderContainer)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
 
   private val groupByhistogram = metrics.histogram("io.venuu.vuu.thread.groupby.cycleTime")
   private val viewPorthistogram = metrics.histogram("io.venuu.vuu.thread.viewport.cycleTime")
@@ -49,7 +50,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
   val groupByHistograms = new ConcurrentHashMap[String, Histogram]()
   val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
 
-  val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider) => ViewPortDef]()
+  val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]()
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
 
@@ -115,11 +116,11 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
     }
   }
 
-  def addViewPortDefinition(table: String, vpDefFunc: (DataTable, Provider) => ViewPortDef): Unit = {
+  def addViewPortDefinition(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer) => ViewPortDef): Unit = {
     viewPortDefinitions.put(table, vpDefFunc)
   }
 
-  def getViewPortDefinition(table: String): (DataTable, Provider) => ViewPortDef = {
+  def getViewPortDefinition(table: String): (DataTable, Provider, ProviderContainer) => ViewPortDef = {
     viewPortDefinitions.get(table)
   }
 
@@ -349,7 +350,7 @@ class ViewPortContainer(tableContainer: TableContainer)(implicit timeProvider: C
 
     val viewPortDefFunc = getViewPortDefinition(table.name);
 
-    val viewPortDef = if( viewPortDefFunc == null ) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider)
+    val viewPortDef = if( viewPortDefFunc == null ) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer)
 
     val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, groupBy, ClosedTreeNodeState)
 

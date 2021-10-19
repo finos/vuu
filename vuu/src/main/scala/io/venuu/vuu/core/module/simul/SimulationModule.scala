@@ -11,9 +11,10 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
+import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.module.simul.provider._
 import io.venuu.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
-import io.venuu.vuu.core.table.{Columns, TableContainer}
+import io.venuu.vuu.core.table.{Columns, DataTable, TableContainer}
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.net.{ClientSessionId, RequestContext}
 import io.venuu.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
@@ -22,7 +23,22 @@ import io.venuu.vuu.viewport._
 
 import java.util.UUID
 
-class InstrumentsService extends RpcHandler {
+class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer) extends RpcHandler with StrictLogging {
+
+  def addRowsFromInstruments(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
+    val rics = selection.rowKeyIndex.map({ case(key, _) => key}).toList
+    providerContainer.getProviderForTable("orderEntry") match {
+      case Some(provider) =>
+        rics.foreach( ric => {
+          val uuid = UUID.randomUUID().toString
+          provider.asInstanceOf[RpcProvider].tick(uuid, Map("clOrderId" -> uuid, "ric" -> ric, "quantity" -> 10_000, "orderType" -> "Limit"))
+        } )
+        OpenDialogViewPortAction(ViewPortTable("orderEntry", "SIMUL"))
+      case None =>
+        logger.error("Could not find provider for table: orderEntry")
+        throw new Exception("could not find provider for table")
+    }
+  }
 
   def testSelect(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     println("In testSelect")
@@ -45,6 +61,7 @@ class InstrumentsService extends RpcHandler {
   }
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",
+    new SelectionViewPortMenuItem("Add Rows To Orders", "", this.addRowsFromInstruments, "ADD_ROWS_TO_ORDERS"),
     new SelectionViewPortMenuItem("Test Selection", "", this.testSelect, "TEST_SELECT"),
     new CellViewPortMenuItem("Test Cell", "", this.testCell, "TEST_CELL"),
     new TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE"),
@@ -111,9 +128,9 @@ object SimulationModule extends DefaultModule {
             joinFields = "ric"
           ),
           (table, vs) => new SimulatedBigInstrumentsProvider(table),
-          (table, provider) => ViewPortDef(
+          (table, provider, providerContainer) => ViewPortDef(
             columns = table.getTableDef.columns,
-            service = new InstrumentsService
+            service = new InstrumentsService(table, providerContainer)
           )
       )
       .addTable(

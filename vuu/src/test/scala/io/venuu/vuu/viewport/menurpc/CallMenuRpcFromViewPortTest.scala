@@ -8,7 +8,7 @@ import io.venuu.vuu.core.module.ModuleFactory.stringToString
 import io.venuu.vuu.core.table.{Columns, DataTable, TableContainer}
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.net.rpc.RpcHandler
-import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, Provider}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts.assertVpEq
 import io.venuu.vuu.viewport._
@@ -23,9 +23,9 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
   implicit val timeProvider: Clock = new TestFriendlyClock(1311544800)
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-  def setupViewPort(tableContainer: TableContainer) = {
+  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer) = {
 
-    val viewPortContainer = new ViewPortContainer(tableContainer)
+    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
     viewPortContainer
   }
@@ -33,7 +33,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
   def createRpcHandler(mockProvider: MockProvider): RpcHandler = {
     new RpcHandler {
       def testSelect(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
-        println("In testSelect" + selection.map.mkString(","))
+        println("In testSelect" + selection.rowKeyIndex.mkString(","))
         NoAction()
       }
 
@@ -81,7 +81,9 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
     val instrumentsProvider = new MockProvider(instruments)
 
-    val viewPortContainer = setupViewPort(tableContainer)
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
 
     val session = ClientSessionId("sess-01", "chris")
 
@@ -91,8 +93,8 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
     (viewPortContainer, instruments, instrumentsProvider, session, outQueue, highPriorityQueue)
   }
 
-  def createViewPortDef(): (DataTable, Provider) => ViewPortDef = {
-    val func = (t: DataTable, provider: Provider) => ViewPortDef(t.getTableDef.columns, createRpcHandler(provider.asInstanceOf[MockProvider]))
+  def createViewPortDef(): (DataTable, Provider, ProviderContainer) => ViewPortDef = {
+    val func = (t: DataTable, provider: Provider, pc: ProviderContainer) => ViewPortDef(t.getTableDef.columns, createRpcHandler(provider.asInstanceOf[MockProvider]))
     func
   }
 

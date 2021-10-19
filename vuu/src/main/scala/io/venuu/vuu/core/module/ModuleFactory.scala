@@ -7,7 +7,7 @@ import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.table.DataTable
 import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.RpcHandler
-import io.venuu.vuu.provider.Provider
+import io.venuu.vuu.provider.{Provider, ProviderContainer}
 
 import java.nio.file.Path
 
@@ -35,13 +35,13 @@ case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: Lis
   }
 }
 
-case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[VuuServer => RpcHandler], vsName: String, staticServedResources: List[StaticServedResource], rest: List[VuuServer => RestService], viewPortDefs: Map[String, (DataTable, Provider) => ViewPortDef]){
+case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[VuuServer => RpcHandler], vsName: String, staticServedResources: List[StaticServedResource], rest: List[VuuServer => RestService], viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]){
 
   def addTable(tableDef: TableDef, func: (DataTable, VuuServer) => Provider): ModuleFactoryNode = {
-    val noViewPortDefFunc = (dt:DataTable, prov: Provider) => NoViewPortDef
+    val noViewPortDefFunc = (dt:DataTable, prov: Provider, providerContainer: ProviderContainer) => NoViewPortDef
     ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> noViewPortDefFunc))
   }
-  def addTable(tableDef: TableDef, func: (DataTable, VuuServer) => Provider, func2: (DataTable, Provider) => ViewPortDef ): ModuleFactoryNode ={
+  def addTable(tableDef: TableDef, func: (DataTable, VuuServer) => Provider, func2: (DataTable, Provider, ProviderContainer) => ViewPortDef ): ModuleFactoryNode ={
     ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2))
   }
 
@@ -98,7 +98,7 @@ case class  ModuleFactoryNode protected (tableDefs: TableDefs, rpc: List[VuuServ
       }
       override def staticFileResources(): List[StaticServedResource] = staticServedResources
       override def restServicesUnrealized: List[VuuServer => RestService] = rest
-      override def viewPortDefs: Map[String, (DataTable, Provider) => ViewPortDef] = parentRef.viewPortDefs
+      override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer) => ViewPortDef] = parentRef.viewPortDefs
     }
 
   }
