@@ -16,7 +16,6 @@ import io.venuu.toolbox.thread.RunInThread
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.toolbox.time.{Clock, TimeIt}
 import io.venuu.vuu.api.{Link, NoViewPortDef, ViewPortDef}
-import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort._

@@ -3,7 +3,7 @@ package io.venuu.vuu.client.swing.gui.components.popup
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.{SwingThread, ViewPortContext, ViewPortContextProvider, components}
-import io.venuu.vuu.client.swing.messages.{RequestId, _}
+import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.net.{AggType, Aggregations, FilterSpec}
 import io.venuu.vuu.viewport._
 

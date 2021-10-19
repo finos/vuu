@@ -7,13 +7,6 @@
  */
 package io.venuu.vuu.api
 
-import io.venuu.toolbox.jmx.MetricsProviderImpl
-import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.TestFriendlyClock
-import io.venuu.vuu.core.CoreServerApiHander
-import io.venuu.vuu.core.table.TableContainer
-import io.venuu.vuu.provider.{JoinTableProviderImpl, ProviderContainer}
-import io.venuu.vuu.viewport.ViewPortContainer
 import org.scalatest.featurespec.AnyFeatureSpec
 
 class CoreServerApiTest extends AnyFeatureSpec {

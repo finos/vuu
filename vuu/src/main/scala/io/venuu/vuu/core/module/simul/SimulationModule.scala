@@ -11,7 +11,6 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
-import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.module.simul.provider._
 import io.venuu.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.{Columns, DataTable, TableContainer}
@@ -188,13 +187,7 @@ object SimulationModule extends DefaultModule {
             Index("ccy"),
           ),
           joinFields = "id", "ric"
-        ),//.viewport(
-        //    Menu("Edit"
-        //      MenuItem("Copy Row", GenericRpcService.copyRow)
-        //      MenuItem("Delete Row", GenericRpcService.DeleteRow)
-        //      MenuItem("Delete Row", GenericRpcService.DeleteRow)
-        //    )
-        //
+        ),
         (table, vs) => new ChildOrdersProvider(table, ordersModel)
       )
       .addTable(
@@ -245,8 +238,8 @@ object SimulationModule extends DefaultModule {
             ),
           joinFields = Seq()
         ))
-      .addRpcHandler(vs => new TheSimulRpcHander)
-      .addRpcHandler(vs => new OrderEntryRpcHandlerImpl(vs.viewPortContainer, vs.tableContainer, vs.providerContainer))
+      //.addRpcHandler(vs => new TheSimulRpcHander)
+      //.addRpcHandler(vs => new OrderEntryRpcHandlerImpl(vs.viewPortContainer, vs.tableContainer, vs.providerContainer))
       .asModule()
   }
 }

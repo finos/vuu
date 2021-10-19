@@ -11,7 +11,6 @@ import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.api.TableDef
-import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}

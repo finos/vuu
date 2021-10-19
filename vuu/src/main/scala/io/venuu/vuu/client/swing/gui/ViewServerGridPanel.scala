@@ -9,6 +9,7 @@ package io.venuu.vuu.client.swing.gui
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.swing.gui.SwingThread._
 import io.venuu.vuu.client.swing.gui.components.FilterBarPanel
 import io.venuu.vuu.client.swing.gui.components.popup.ViewServerPopupMenus
 import io.venuu.vuu.client.swing.gui.components.renderer.{SortedColumnRenderer, TreeGridCellRenderer}
@@ -16,7 +17,7 @@ import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
 import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
 import io.venuu.vuu.net._
-import io.venuu.vuu.viewport.{CloseDialogViewPortAction, NoAction, OpenDialogViewPortAction, ViewPortAction, ViewPortTable}
+import io.venuu.vuu.viewport._
 
 import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.{Color, Dimension, Point}
@@ -27,7 +28,6 @@ import javax.swing.{DefaultListSelectionModel, JComponent}
 import scala.swing.BorderPanel.Position
 import scala.swing._
 import scala.swing.event.{MouseClicked, TableEvent}
-import SwingThread._
 
 class ComponentWithContext(val component: Component, val context: Object) extends Component {
   override lazy val peer: JComponent = component.peer
