@@ -64,9 +64,9 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   val tableContainer = new TableContainer(joinProvider)
 
-  val viewPortContainer = new ViewPortContainer(tableContainer)
-
   val providerContainer = new ProviderContainer(joinProvider)
+
+  val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
   val moduleContainer = new ModuleContainer
 
@@ -135,7 +135,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
         module.getProviderForTable(table, viewserver)(time, life)
       }
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
-      override def viewPortDefs: Map[String, (DataTable, Provider) => ViewPortDef] = module.viewPortDefs
+      override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer) => ViewPortDef] = module.viewPortDefs
     }
 
     moduleContainer.register(realized)

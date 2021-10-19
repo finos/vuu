@@ -14,7 +14,7 @@ import io.venuu.vuu.core.VuuServer
 import io.venuu.vuu.core.table.DataTable
 import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.RpcHandler
-import io.venuu.vuu.provider.Provider
+import io.venuu.vuu.provider.{Provider, ProviderContainer}
 
 import java.nio.file.Path
 
@@ -37,5 +37,5 @@ trait ViewServerModule {
   def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider
   def staticFileResources():  List[StaticServedResource]
   def restServicesUnrealized: List[VuuServer => RestService]
-  def viewPortDefs: Map[String, (DataTable, Provider) => ViewPortDef]
+  def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]
 }

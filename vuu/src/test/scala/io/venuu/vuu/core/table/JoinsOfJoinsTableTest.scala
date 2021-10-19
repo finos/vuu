@@ -12,7 +12,7 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.net.ClientSessionId
-import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.viewport.{DefaultRange, RowProcessor, RowUpdateType, ViewPortContainer}
 import org.joda.time.LocalDateTime
@@ -34,9 +34,9 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers {
 
   import TableTestHelper._
 
-  def setupViewPort(tableContainer: TableContainer) = {
+  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer) = {
 
-    val viewPortContainer = new ViewPortContainer(tableContainer)
+    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
     viewPortContainer
   }
@@ -94,7 +94,9 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers {
     val pricesProvider = new MockProvider(prices)
     val fxProvider = new MockProvider(fx)
 
-    val viewPortContainer = setupViewPort(tableContainer)
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
 
     joinProvider.start()
 

@@ -28,7 +28,7 @@ object DefaultRange extends ViewPortRange(0, 123)
 
 case class ViewPortSelectedIndices(indices: Array[Int])
 
-case class ViewPortSelection(map: Map[String, Int])
+case class ViewPortSelection(rowKeyIndex: Map[String, Int])
 
 case class ViewPortVisualLink(childVp: ViewPort, parentVp: ViewPort, childColumn: Column, parentColumn: Column){
   override def toString: String = "ViewPortVisualLink(" + childVp.id + "->" + parentVp.id + ", on " + childColumn.name + " = " + parentColumn.name + ")"

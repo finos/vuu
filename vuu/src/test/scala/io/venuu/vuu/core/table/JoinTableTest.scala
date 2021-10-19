@@ -12,7 +12,7 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
 import io.venuu.vuu.net.ClientSessionId
-import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
+import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts.assertVpEq
 import io.venuu.vuu.viewport._
@@ -37,9 +37,9 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
   Feature("check we can create join tables and tick data through"){
 
-    def setupViewPort(tableContainer: TableContainer) = {
+    def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer) = {
 
-      val viewPortContainer = new ViewPortContainer(tableContainer)
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
       viewPortContainer
     }
@@ -83,7 +83,9 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val ordersProvider = new MockProvider(orders)
       val pricesProvider = new MockProvider(prices)
 
-      val viewPortContainer = setupViewPort(tableContainer)
+      val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = setupViewPort(tableContainer, providerContainer)
 
       joinProvider.start()
 
