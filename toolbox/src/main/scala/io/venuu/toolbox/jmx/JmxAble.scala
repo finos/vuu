@@ -27,7 +27,7 @@ object JmxInfra{
 
   def register(jmxAble: JmxAble) = {
     val mBeanServer = ManagementFactory.getPlatformMBeanServer();
-    mBeanServer.registerMBean(jmxAble, new ObjectName("Whitebox:type="+jmxAble.name));
+    mBeanServer.registerMBean(jmxAble, new ObjectName("Venuu.Vuu:type="+jmxAble.name));
   }
 
 }
