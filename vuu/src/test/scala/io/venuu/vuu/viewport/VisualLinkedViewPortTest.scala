@@ -1,6 +1,7 @@
 package io.venuu.vuu.viewport
 
 import io.venuu.vuu.core.table.TableTestHelper.combineQs
+import io.venuu.vuu.net.{SortDef, SortSpec}
 import io.venuu.vuu.util.table.TableAsserts.assertVpEqWithMeta
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
@@ -124,6 +125,23 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
 
       Then("we should have nothing available in the viewport")
       viewPortOrders.getKeys().length shouldEqual(0)
+
+      Then("Change the viewport to sort by quantity")
+      viewPortContainer.change(session, viewPortOrders.id, ViewPortRange(0, 10), vpcolumnsOrders, SortSpec(List(SortDef("quantity", 'A'))))
+      viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPrices.id, ViewPortSelectedIndices(Array(1)))
+
+      viewPortContainer.runOnce()
+
+      Then("Check we still maintain the selection even with a new sort or filter")
+      assertVpEqWithMeta(combineQs(viewPortOrders).filter(vpu => vpu.vp.id == viewPortOrders.id)) {
+        Table(
+          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544860l,103       ),
+          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544850l,102       ),
+          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544840l,101       ),
+          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544830l,100       )
+        )
+      }
     }
   }
 }
