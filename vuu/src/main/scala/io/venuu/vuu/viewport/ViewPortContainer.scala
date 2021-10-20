@@ -283,7 +283,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val aFilter = parseFilter(filterSpec)
 
-    val filtAndSort = UserDefinedFilterAndSort(aFilter, aSort)
+    val filtAndSort = viewPort.getVisualLink() match {
+      case Some(visualLink) =>
+        UserDefinedFilterAndSort(TwoStepCompoundFilter( VisualLinkedFilter(visualLink), aFilter), aSort)
+      case None =>
+        UserDefinedFilterAndSort(aFilter, aSort)
+    }
 
     //we are not grouped by, but we want to change to a group by
     val structure = if (viewPort.getGroupBy == NoGroupBy && groupBy != NoGroupBy) {

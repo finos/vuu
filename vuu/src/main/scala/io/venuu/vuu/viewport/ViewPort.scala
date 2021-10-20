@@ -403,6 +403,7 @@ case class ViewPortImpl(id: String,
 
       //set the filter and sort to include the selection filter
       this.structuralFields.set(fields.copy( filtAndSort = newFilterSort))
+      this.viewPortVisualLink = Some(link)
     }
   }
 
