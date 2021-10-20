@@ -40,7 +40,7 @@ class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(im
 
         val meter = metrics.meter(tableDef + ".processUpdates.Meter")
 
-        val upMap = Map("table" -> tableDef, "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
+        val upMap = Map("table" -> (tableDef.module + "-" + tableDef.table), "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
 
         table.processUpdate(tableDef.table, RowWithData(tableDef.table, upMap), clock.now())
 

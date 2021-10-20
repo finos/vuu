@@ -25,10 +25,10 @@ class MetricsProviderImpl() extends MetricsProvider{
   override def meter(name: String): Meter = metrics.meter(name)
   override def counter(name: String): Counter = metrics.counter(name)
 
-//  if(JmxInfra.isJmxEnabled){
-//    reporter = JmxReporter.forRegistry(metrics).build()
-//    reporter.start()
-//  }
+  if(JmxInfra.isJmxEnabled){
+    reporter = JmxReporter.forRegistry(metrics).build()
+    reporter.start()
+  }
 
 }
 

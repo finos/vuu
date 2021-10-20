@@ -50,6 +50,8 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
       case l: Long => gen.writeNumber(l)
       case b: Boolean => gen.writeBoolean(b)
       case c: Char => gen.writeString(c.toString)
+      case _ =>
+        println("WTF...")
     }
     )
 
