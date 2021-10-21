@@ -13,6 +13,10 @@ case class NoAction() extends ViewPortAction
 case class OpenDialogViewPortAction(table: ViewPortTable) extends ViewPortAction
 case class CloseDialogViewPortAction(vpId: String) extends ViewPortAction
 
+case class TypeAheadColumnResultsAction(results: List[String]) extends ViewPortAction
+
+case class ErrorViewPortAction(error: String) extends ViewPortAction
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(Array(
   new Type(value = classOf[OpenDialogViewPortAction], name = "OPEN_DIALOG_ACTION"),

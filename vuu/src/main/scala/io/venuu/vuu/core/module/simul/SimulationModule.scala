@@ -108,6 +108,11 @@ object SimulationModule extends DefaultModule {
             keyField = "ric",
             columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(), "currency".string(), "exchange".string(), "lotSize".int()),
             VisualLinks(),
+            indices = Indices(
+              Index("ric"),
+              Index("currency"),
+              Index("bbg")
+            ),
             joinFields = "ric"
           ),
           (table, vs) => new SimulatedBigInstrumentsProvider(table),
@@ -171,13 +176,7 @@ object SimulationModule extends DefaultModule {
             Index("ccy"),
           ),
           joinFields = "id", "ric"
-        ),//.viewport(
-        //    Menu("Edit"
-        //      MenuItem("Copy Row", GenericRpcService.copyRow)
-        //      MenuItem("Delete Row", GenericRpcService.DeleteRow)
-        //      MenuItem("Delete Row", GenericRpcService.DeleteRow)
-        //    )
-        //
+        ),
         (table, vs) => new ChildOrdersProvider(table, ordersModel)
       )
       .addTable(

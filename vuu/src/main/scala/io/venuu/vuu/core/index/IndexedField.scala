@@ -5,6 +5,7 @@ import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.collection.set.ImmutableUniqueArraySet
 import io.venuu.vuu.core.table.Column
 
+import java.util
 import java.util.concurrent.ConcurrentSkipListMap
 import scala.jdk.CollectionConverters._
 
@@ -18,6 +19,9 @@ trait IndexedField[TYPE]{
   def find(indexedValues: List[TYPE]): ImmutableArray[String] = {
     indexedValues.foldLeft(ImmutableUniqueArraySet.empty[String]())((array, indexedKey) => array.++(find(indexedKey)))
   }
+  def keys(): List[TYPE] = {
+    List()
+  }
 }
 
 trait DoubleIndexedField extends IndexedField[Double]
@@ -28,6 +32,11 @@ trait StringIndexedField extends IndexedField[String]
 
 class SkipListIndexedStringField(val column: Column) extends StringIndexedField with StrictLogging {
   private final val skipList = new ConcurrentSkipListMap[Int, ImmutableArray[String]]()
+  @volatile private var uniqueKeys = ImmutableUniqueArraySet.empty[String]()
+
+  override def keys(): List[String] = {
+    uniqueKeys.toList
+  }
 
   override def remove(indexKey: String, rowKey: String): Unit = {
     val indexKeyHash = indexKey.hashCode
@@ -35,6 +44,7 @@ class SkipListIndexedStringField(val column: Column) extends StringIndexedField 
       case null =>
       case arr: ImmutableArray[String] =>
         skipList.put(indexKeyHash, arr.-(rowKey))
+        uniqueKeys = uniqueKeys.-(indexKey)
     }
   }
 
@@ -43,8 +53,10 @@ class SkipListIndexedStringField(val column: Column) extends StringIndexedField 
     skipList.get(indexKeyHash) match {
       case null =>
         skipList.put(indexKeyHash, ImmutableUniqueArraySet.from(Array(rowKey)))
+        uniqueKeys = uniqueKeys.+(indexKey)
       case arr: ImmutableArray[String] =>
         skipList.put(indexKeyHash, arr.+(rowKey).distinct)
+        uniqueKeys = uniqueKeys.+(indexKey)
     }
   }
 
