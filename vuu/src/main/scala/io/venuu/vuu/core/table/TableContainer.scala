@@ -71,7 +71,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
 
   def getTables(): Array[ViewPortTable] = {
     val tableList = IteratorHasAsScala(tables.values().iterator()).asScala
-    tableList.map(table => ViewPortTable(table.getTableDef.name, table.getTableDef.getModule().name) ).toArray[ViewPortTable].sortBy(_.table)
+    tableList.map(table => ViewPortTable(table.getTableDef.name, if(table.getTableDef.getModule() != null) table.getTableDef.getModule().name else "null" )).toArray[ViewPortTable].sortBy(_.table)
   }
 
   def getTable(name: String): DataTable = {
