@@ -30,7 +30,7 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
       implicit val lifecycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl
 
-      val joinProvider   = new JoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 

@@ -1,6 +1,6 @@
 package io.venuu.vuu.provider
 
-import io.venuu.vuu.core.table.DataTable
+import io.venuu.vuu.core.table.{DataTable, JoinTableUpdate}
 
 import java.util
 
@@ -19,4 +19,5 @@ class TestFriendlyJoinTableProvider extends JoinTableProvider {
   override def doInitialize(): Unit = ???
   override def doDestroy(): Unit = ???
   override val lifecycleId: String = "testFriendlyJoinProvider"
+  override def drainQueue_ForTesting(): (Int, util.ArrayList[JoinTableUpdate]) = ???
 }

@@ -73,7 +73,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
       joinFields = "ric"
     )
 
-    val joinProvider   = new JoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()// EsperJoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 

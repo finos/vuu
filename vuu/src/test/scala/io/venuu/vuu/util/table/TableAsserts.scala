@@ -75,11 +75,7 @@ object TableAsserts {
       println(AsciiUtil.asAsciiTable(headers, data))
 
     }
-
     assert(diff.hasDiff == false, "check we have no diffs")
-
-
-
   }
 
 

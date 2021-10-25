@@ -79,7 +79,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers {
       joinFields = Seq()
     )
 
-    val joinProvider   = new JoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -109,7 +109,6 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers {
     pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
     ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L", "ccyCross" -> "USDEUR"))
 
-    joinProvider.runOnce()
     joinProvider.runOnce()
 
     val session = new ClientSessionId("sess-01", "chris")

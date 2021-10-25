@@ -72,7 +72,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       //val joinDef =  JoinTableDef("ordersPrices", ordersDef, pricesDef, JoinSpec("ric", "ric"), Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") )
 
-      val joinProvider   = new JoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()//new EsperJoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 
