@@ -35,10 +35,10 @@ class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(im
 
       tables.foreach(tableDef => {
 
-        val counter = metrics.counter(tableDef + ".processUpdates.Counter");
+        val counter = metrics.counter(tableDef.table + ".processUpdates.Counter");
         val size = tableContainer.getTable(tableDef.table).size()
 
-        val meter = metrics.meter(tableDef + ".processUpdates.Meter")
+        val meter = metrics.meter(tableDef.table + ".processUpdates.Meter")
 
         val upMap = Map("table" -> (tableDef.module + "-" + tableDef.table), "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
 
