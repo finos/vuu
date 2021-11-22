@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
-  @volatile private var provider: Provider = new NullProvider()
+  @volatile private var provider: Provider = null
 
   def indexForColumn(column: Column): Option[IndexedField[_]]
 
