@@ -14,10 +14,12 @@ import io.venuu.vuu.api._
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import io.venuu.vuu.util.OutboundRowPublishQueue
-import io.venuu.vuu.viewport.{DefaultRange, RowProcessor, RowUpdateType, ViewPortContainer}
+import io.venuu.vuu.util.table.TableAsserts.assertVpEq
+import io.venuu.vuu.viewport.{DefaultRange, RowProcessor, RowUpdateType, ViewPortContainer, ViewPortSetup}
 import org.joda.time.LocalDateTime
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.Tables.Table
 
 /**
   * This fixture deals with the scenario where we want to create a table
@@ -26,15 +28,15 @@ import org.scalatest.matchers.should.Matchers
   * This involves being able to base join tables onto of existing Join tables.
   *
   */
-class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers {
+class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup{
 
   implicit val timeProvider: Clock = new DefaultClock
-  implicit val lifecycle = new LifecycleContainer
+  implicit val lifecycle: LifecycleContainer = new LifecycleContainer
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
   import TableTestHelper._
 
-  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer) = {
+  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer): ViewPortContainer = {
 
     val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
@@ -43,7 +45,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers {
 
   Scenario("check a tick all the way through from source to join table"){
 
-    val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+    val dateTime = 1437728400000L
 
     val ordersDef = TableDef(
       name = "orders",
@@ -69,17 +71,20 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers {
 
     val joinDefFx = JoinTableDef(
       name          = "orderPricesFx",
-      baseTable     = joinDef,
-      joinColumns   = Columns.allFrom(joinDef) ++ Columns.allFrom(fxDef),
-      joins  =
+      baseTable     = ordersDef,
+      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
+      joinFields = Seq("ccyCross", "orderId"),
         JoinTo(
-          table = fxDef,
-          joinSpec = JoinSpec( left = "ccyCross", right = "cross", LeftOuterJoin)
+          table = pricesDef,
+          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
         ),
-      joinFields = Seq()
+      JoinTo(
+        table = fxDef,
+        joinSpec = JoinSpec( left = "ccyCross", right = "cross", LeftOuterJoin)
+      )
     )
 
-    val joinProvider   = new JoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -110,35 +115,25 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers {
     ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L", "ccyCross" -> "USDEUR"))
 
     joinProvider.runOnce()
-    joinProvider.runOnce()
 
-    val session = new ClientSessionId("sess-01", "chris")
+    val session = ClientSessionId("sess-01", "chris")
 
     val outQueue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask").map(orderPrices.getTableDef.columnForName(_)).toList
+    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask").map(orderPricesFx.getTableDef.columnForName(_))
 
     val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orderPricesFx, DefaultRange, vpcolumns)
 
     viewPortContainer.runOnce()
 
-    val combinedUpdates = combineQs(viewPort)
-
-    combinedUpdates.length should be (3)
-
-    val updates = combinedUpdates.take(2)
-
-    val printToConsoleProcessor = new RowProcessor {
-      override def processColumn(column: Column, value: Any): Unit = println(s"Column: ${column.name} = $value")
-      override def missingRow(): Unit = println("missing row")
-
-      override def missingRowData(rowKey: String, column: Column): Unit = {
-        assert(true == false, s"Column ${column.name} not found in results for $rowKey, that means a problem has occured.")
-      }
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
+      Table(
+        ("orderId" ,"trader"  ,"tradeTime","quantity","ric"     ,"fxbid"   ,"fxask"   ),
+        ("NYC-0001","chris"   ,1437728400000L,100       ,"VOD.L"   ,0.703     ,0.703     ),
+        ("NYC-0002","chris"   ,1437728400000L,100       ,"BT.L"    ,1.213     ,1.223     )
+      )
     }
-
-    updates.filter( vp => vp.vpUpdate == RowUpdateType).foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask", "fxbid", "fxask"), printToConsoleProcessor ))
   }
 
 }

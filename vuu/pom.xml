@@ -74,11 +74,11 @@
             <version>${scala.logging}</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>com.espertech</groupId>
             <artifactId>esper</artifactId>
             <version>5.2.0</version>
-        </dependency>
+        </dependency -->
 
         <dependency>
             <groupId>joda-time</groupId>

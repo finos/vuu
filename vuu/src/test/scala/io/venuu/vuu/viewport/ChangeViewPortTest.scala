@@ -56,7 +56,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
         joinFields = Seq()
       )
 
-      val joinProvider   = new JoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()// new EsperJoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 
@@ -81,7 +81,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
 
       joinProvider.runOnce()
 
-      val session = new ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris")
 
       val outQueue = new OutboundRowPublishQueue()
       val highPriorityQueue = new OutboundRowPublishQueue()

@@ -49,13 +49,13 @@
     </appender-->
 
     <!-- required for debugging messages off the wire -->
-    <logger name="io.venuu.vuu.client.swing.client.Worker" level="INFO" >
+    <logger name="io.venuu.vuu.client.swing.client.Worker" level="WARN" >
         <appender-ref ref="roll-by-time" />
     </logger>
 
 
 
-    <root level="INFO">
+    <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
 

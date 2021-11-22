@@ -141,7 +141,32 @@ case class JoinTableDef(override val name: String, baseTable: TableDef, joinColu
   lazy val joinFieldNames = getJoinDefinitionColumns().map(_.name)
   lazy val joinTableNames = (1 to baseTable.joinFields.size).map(i => baseTable.name) ++ rightTables
 
+
+  override def toString: String = s"JoinTableDef(name=$name)"
+
   def getJoinDefinitionColumns(): Array[Column] = joinTableColumns
+
+  def containsTable(tableName: String): Boolean = {
+    if(baseTable.name == tableName) {
+      true
+    } else{
+      rightTables.contains(tableName)
+    }
+  }
+
+  def keyFieldForTable(tableName: String): String = {
+    joins.find( joinTo => joinTo.table.name == tableName ) match {
+      case Some(joinTo: JoinTo) => joinTo.table.keyField
+      case None => null
+    }
+  }
+
+  def isLeftTable(tableName: String): Boolean = {
+    this.baseTable.name == tableName
+  }
+  def isRightTable(tableName: String): Boolean = {
+    this.rightTables.contains(tableName)
+  }
 
   private def getJoinDefinitionColumnsInternal(): Array[Column] = {
 

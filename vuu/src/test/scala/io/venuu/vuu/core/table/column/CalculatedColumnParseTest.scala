@@ -1,7 +1,7 @@
 package io.venuu.vuu.core.table.column
 
 import io.venuu.vuu.grammer.{CalculatedColumnParser, FilterLexer}
-import org.antlr.v4.runtime.{ANTLRInputStream, CommonTokenStream}
+import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -10,21 +10,21 @@ import org.scalatest.matchers.should.Matchers
   */
 class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
 
-  def parse(s: String) = {
+  def parse(s: String): Unit = {
 
-    val input = new ANTLRInputStream(s);
-    val lexer = new FilterLexer(input);
-    val tokens = new CommonTokenStream(lexer);
-    val parser = new CalculatedColumnParser(tokens);
+    val input = CharStreams.fromString(s)
+    val lexer = new FilterLexer(input)
+    val tokens = new CommonTokenStream(lexer)
+    val parser = new CalculatedColumnParser(tokens)
 
-    val tree = parser.expression(); // begin parsing at init rule
+    val tree = parser.expression() // begin parsing at init rule
 
-    System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+    System.out.println(tree.toStringTree(parser)) // print LISP-style tree
   }
 
-  Feature("check calc column grammer"){
+  ignore("check calc column grammer"){
 
-    Scenario("run samples of grammer, and check parse or fail"){
+    ignore("run samples of grammer, and check parse or fail"){
 
       val samples = List(
         "1 + 2",
@@ -32,7 +32,7 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
         "(bid * ask) / 2"
       )
 
-      samples.foreach( parse(_) )
+      samples.foreach( parse )
 
     }
 

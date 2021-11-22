@@ -10,8 +10,8 @@ import java.util.List;
 
 public class ThreeByThreeGridBag extends JPanel {
 
-        private JPanel[][] panels = new JPanel[3][3];
-        private List<JPanel> panelList = new LinkedList<JPanel>();
+        private final JPanel[][] panels = new JPanel[3][3];
+        private final List<JPanel> panelList = new LinkedList<JPanel>();
 
     public ThreeByThreeGridBag(){
             super(new GridBagLayout());

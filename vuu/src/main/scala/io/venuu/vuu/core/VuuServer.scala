@@ -60,7 +60,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   val sessionContainer = new ClientSessionContainerImpl()
 
-  val joinProvider = new JoinTableProviderImpl()
+  val joinProvider = JoinTableProviderImpl()//new EsperJoinTableProviderImpl()
 
   val tableContainer = new TableContainer(joinProvider)
 

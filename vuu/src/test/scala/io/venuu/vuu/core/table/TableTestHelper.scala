@@ -60,7 +60,7 @@ object TableTestHelper {
 
     //val joinDef =  JoinTableDef("ordersPrices", ordersDef, pricesDef, JoinSpec("ric", "ric"), Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") )
 
-    val joinProvider   = new JoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()//EsperJoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 

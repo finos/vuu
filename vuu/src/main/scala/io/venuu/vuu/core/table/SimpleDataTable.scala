@@ -5,7 +5,7 @@ import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.index._
-import io.venuu.vuu.provider.{JoinTableProvider, Provider}
+import io.venuu.vuu.provider.{JoinTableProvider, NullProvider, Provider}
 import io.venuu.vuu.viewport.{RowProcessor, RowSource}
 
 import java.util
@@ -22,13 +22,13 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   def getProvider: Provider = provider
 
-  def asTable = this
+  def asTable: DataTable = this
 
   def columnForName(name: String): Column = getTableDef.columnForName(name)
 
   def columnsForNames(names: String*): List[Column] = names.map(getTableDef.columnForName(_)).toList
 
-  def columnsForNames(names: List[String]): List[Column] = names.map(getTableDef.columnForName(_)).toList
+  def columnsForNames(names: List[String]): List[Column] = names.map(getTableDef.columnForName(_))
 
   def getTableDef: TableDef
 
@@ -44,7 +44,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
     primaryKeys.length
   }
 
-  def toAscii(count: Int) = {
+  def toAscii(count: Int): String = {
     val columns = getTableDef.columns
     val keys = primaryKeys
 
@@ -57,11 +57,11 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
     AsciiUtil.asAsciiTable(columnNames, rows)
   }
 
-  def toAscii(start: Int, end: Int) = {
+  def toAscii(start: Int, end: Int): String = {
     val columns = getTableDef.columns
     val keys = primaryKeys
 
-    val selectedKeys = keys.toArray.drop(start).take(end - start)
+    val selectedKeys = keys.toArray.slice(start, end)//.slice(start, end)//drop(start).take(end - start)
 
     val rows = selectedKeys.map(key => pullRowAsArray(key, columns.toList))
 
@@ -75,10 +75,6 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
 case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = false)
 
-case class RowUpdate(key: String, data: Map[String, Any]) {
-  def toRowData = ???
-}
-
 trait RowData {
   def get(field: String): Any
 
@@ -89,7 +85,9 @@ trait RowData {
   def set(field: String, value: Any): RowData
 }
 
-case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: Long)
+case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: Long){
+  override def toString: String = "JoinTableUpdate(" + joinTable.toString + ",updates=" + rowUpdate.data.size + ")"
+}
 
 case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
@@ -116,7 +114,7 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
   }
 
   def set(field: String, value: Any): RowWithData = {
-    new RowWithData(key, data ++ Map[String, Any](field -> value))
+    RowWithData(key, data ++ Map[String, Any](field -> value))
   }
 
 }
@@ -176,7 +174,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   private final val indices = tableDef.indices.indices
     .map(index => tableDef.columnForName(index.column))
-    .map(c => (c -> buildIndexForColumn(c))).toMap[Column, IndexedField[_]]
+    .map(c => c -> buildIndexForColumn(c)).toMap[Column, IndexedField[_]]
 
   private def buildIndexForColumn(c: Column): IndexedField[_] = {
     c.dataType match {
@@ -193,7 +191,10 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     }
   }
 
-  def plusName(s: String) = tableDef.name + "." + s
+  def plusName(s: String): String = tableDef.name + "." + s
+
+
+  override def toString: String = s"SimpleDataTable($name, rows=${this.primaryKeys.length})"
 
   private val eventIntoEsper = metrics.counter(plusName("JoinTableProviderImpl.eventIntoEsper.count"))
 
@@ -215,16 +216,8 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   override def primaryKeys: ImmutableArray[String] = data.primaryKeyValues
 
-  @volatile private var data = new SimpleDataTableData(new ConcurrentHashMap[String, RowData](), ImmutableArray.from(new Array[String](0)))
+  @volatile private var data = SimpleDataTableData(new ConcurrentHashMap[String, RowData](), ImmutableArray.from(new Array[String](0)))
 
-
-  /**
-    * Pull row ith only a key returns the immutable RowData object as its stored within the table.
-    * When doing bulk operations on data such as index hits or filters.
-    *
-    * @param key
-    * @return
-    */
   override def pullRow(key: String): RowData = {
     data.dataByKey(key) match {
       case null =>
@@ -241,7 +234,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
       case row =>
           //row
         //CJS Check perf of this
-        val rowData = columns.map(c => (c.name -> row.get(c))).toMap
+        val rowData = columns.map(c => c.name -> row.get(c)).toMap
         RowWithData(key, rowData)
     }
   }
@@ -269,13 +262,13 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   }
 
-  protected def sendColumnToProcessor(key: String, column: Column, value: Any, rowProcessor: RowProcessor) = {
+  protected def sendColumnToProcessor(key: String, column: Column, value: Any, rowProcessor: RowProcessor): Unit = {
     rowProcessor.processColumn(column, value)
   }
 
   def columns(): Array[Column] = tableDef.columns
 
-  def updateIndices(rowkey: String, rowUpdate: RowWithData) = {
+  def updateIndices(rowkey: String, rowUpdate: RowWithData): Unit = {
     this.indices.foreach(colTup => {
       val column = colTup._1
       val index = colTup._2
@@ -317,12 +310,12 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     })
   }
 
-  def update(rowkey: String, rowUpdate: RowWithData) = {
+  def update(rowkey: String, rowUpdate: RowWithData): Unit = {
     data = data.update(rowkey, rowUpdate)
     updateIndices(rowkey, rowUpdate)
   }
 
-  def delete(rowKey: String) = {
+  def delete(rowKey: String): Unit = {
     data.dataByKey(rowKey) match {
       case EmptyRowData =>
       case x: RowWithData =>
@@ -331,9 +324,9 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     }
   }
 
-  def notifyListeners(rowKey: String, isDelete: Boolean = false) = {
+  def notifyListeners(rowKey: String, isDelete: Boolean = false): Unit = {
     getObserversByKey(rowKey).foreach(obs => {
-      obs.onUpdate(new RowKeyUpdate(rowKey, this, isDelete))
+      obs.onUpdate(RowKeyUpdate(rowKey, this, isDelete))
     })
   }
 
@@ -372,7 +365,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     ev
   }
 
-  def sendToJoinSink(rowKey: String, rowData: RowData) = {
+  def sendToJoinSink(rowKey: String, rowData: RowData): Unit = {
 
     eventIntoEsper.inc()
 
@@ -385,7 +378,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     }
   }
 
-  def sendDeleteToJoinSink(rowKey: String, rowData: RowData) = {
+  def sendDeleteToJoinSink(rowKey: String, rowData: RowData): Unit = {
 
     eventIntoEsper.inc()
 
@@ -398,7 +391,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     }
   }
 
-  def processUpdate(rowKey: String, rowData: RowWithData, timeStamp: Long) = {
+  def processUpdate(rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {
 
     onUpdateMeter.mark()
 
@@ -411,7 +404,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     notifyListeners(rowKey)
   }
 
-  def processDelete(rowKey: String) = {
+  def processDelete(rowKey: String): Unit = {
 
     onDeleteMeter.mark()
 

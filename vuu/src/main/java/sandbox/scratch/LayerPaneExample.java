@@ -100,11 +100,7 @@ public class LayerPaneExample implements DroppablePanelListener {
                             hide(rightPanel, bottomPanel, leftPanel, topPanel);
                         }
 
-                        if(e.getX() <= 150){
-                            leftPanel.setVisible(true);
-                        }else{
-                            leftPanel.setVisible(false);
-                        }
+                        leftPanel.setVisible(e.getX() <= 150);
                     }
                 });
 

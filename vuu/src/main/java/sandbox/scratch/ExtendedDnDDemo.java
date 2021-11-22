@@ -456,8 +456,7 @@ class TransferableTableColumn implements Transferable {
     public boolean isDataFlavorSupported(DataFlavor flavor) {
 
 //        if (flavor.equals(tableColumnFlavor) ||
-                if(flavor.equals(DataFlavor.stringFlavor)) return true;
-        return false;
+        return flavor.equals(DataFlavor.stringFlavor);
     }
 
 

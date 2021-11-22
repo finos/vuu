@@ -81,7 +81,7 @@ trait ViewPortSetup {
       joinFields = Seq()
     )
 
-    val joinProvider   = new JoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()//new EsperJoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
