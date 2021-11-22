@@ -45,7 +45,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
   Scenario("check a tick all the way through from source to join table"){
 
-    val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+    val dateTime = 1437728400000L
 
     val ordersDef = TableDef(
       name = "orders",
