@@ -63,7 +63,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           case cell: CellViewPortMenuItem => cell.func(rowKey, field, singleValue, session)
         }
       case None =>
-        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+        throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
     }
   }
 
@@ -79,7 +79,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection), session)
         }
       case None =>
-        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+        throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
     }
   }
 
@@ -95,7 +95,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           case table: TableViewPortMenuItem => table.func(session)
         }
       case None =>
-        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+        throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
     }
   }
 
@@ -111,7 +111,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           case row: RowViewPortMenuItem => row.func(rowKey, rowRecord, session)
         }
       case None =>
-        throw new Exception(s"No RPC Call for ${rpcName} found in viewPort ${vpId}")
+        throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
     }
   }
 
@@ -127,35 +127,35 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     this.viewPorts.get(vpId)
   }
 
-  def removeViewPort(vpId: String) = {
+  def removeViewPort(vpId: String): Any = {
     this.viewPorts.get(vpId) match {
       case null =>
-        logger.error(s"Could not find viewport to remove ${vpId}")
+        logger.error(s"Could not find viewport to remove $vpId")
       case vp: ViewPort =>
-        logger.info(s"Removing ${vpId} from container")
+        logger.info(s"Removing $vpId from container")
         viewPortHistograms.remove(vpId)
         vp.delete()
         this.viewPorts.remove(vp.id)
     }
   }
 
-  def disableViewPort(vpId: String) = {
+  def disableViewPort(vpId: String): Unit = {
     this.viewPorts.get(vpId) match {
       case null =>
-        logger.error(s"Could not find viewport to disable ${vpId}")
+        logger.error(s"Could not find viewport to disable $vpId")
       case vp: ViewPort =>
         vp.setEnabled(false)
-        logger.info(s"Disabled ${vpId} in container")
+        logger.info(s"Disabled $vpId in container")
     }
   }
 
-  def enableViewPort(vpId: String) = {
+  def enableViewPort(vpId: String): Unit = {
     this.viewPorts.get(vpId) match {
       case null =>
-        logger.error(s"Could not find viewport to enable ${vpId}")
+        logger.error(s"Could not find viewport to enable $vpId")
       case vp: ViewPort =>
         vp.setEnabled(true)
-        logger.info(s"Enabled ${vpId} in container")
+        logger.info(s"Enabled $vpId in container")
     }
   }
 
@@ -180,7 +180,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   override def setRange(vpId: String, start: Int, end: Int): String = {
     viewPorts.get(vpId) match {
       case null =>
-        s"No viewport found for id ${vpId}"
+        s"No viewport found for id $vpId"
       case vp: ViewPort =>
         vp.setRange(ViewPortRange(start, end))
         "Done"
@@ -210,17 +210,17 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val data = SetHasAsScala(viewPorts.entrySet())
                 .asScala
-                .map(vp => Array[Any](vp.getKey, vp.getValue.table.name, vp.getValue.getRange().from, vp.getValue.getRange().to)).toArray[Array[Any]]
+                .map(vp => Array[Any](vp.getKey, vp.getValue.table.name, vp.getValue.getRange.from, vp.getValue.getRange.to)).toArray[Array[Any]]
 
     AsciiUtil.asAsciiTable(headers, data)
   }
 
   override def toAscii(vpId: String): String = {
     viewPorts.get(vpId) match {
-      case null => s"No viewport found for id ${vpId}"
+      case null => s"No viewport found for id $vpId"
       case vp: ViewPort =>
         val columns = vp.getColumns
-        val keys = vp.getKeysInRange()
+        val keys = vp.getKeysInRange
 
         val rows = keys.toArray.map(key => vp.table.pullRowAsArray(key, columns))
 
@@ -251,7 +251,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   private def parseSort(sort: SortSpec, table: RowSource): Sort = {
-    if (!sort.sortDefs.isEmpty)
+    if (sort.sortDefs.nonEmpty)
       GenericSort(sort, table.asTable.columnsForNames(sort.sortDefs.map(sd => sd.column)))
     else
       NoSort
@@ -271,19 +271,19 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def change(clientSession: ClientSessionId, id: String, range: ViewPortRange, columns: List[Column], sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy) = {
+  def change(clientSession: ClientSessionId, id: String, range: ViewPortRange, columns: List[Column], sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
 
     val viewPort = viewPorts.get(id)
 
     if (viewPort == null) {
-      throw new Exception(s"view port not found ${id}")
+      throw new Exception(s"view port not found $id")
     }
 
     val aSort = parseSort(sort, viewPort.table)
 
     val aFilter = parseFilter(filterSpec)
 
-    val filtAndSort = viewPort.getVisualLink() match {
+    val filtAndSort = viewPort.getVisualLink match {
       case Some(visualLink) =>
         UserDefinedFilterAndSort(TwoStepCompoundFilter( VisualLinkedFilter(visualLink), aFilter), aSort)
       case None =>
@@ -368,7 +368,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def changeRange(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], vpId: String, range: ViewPortRange): ViewPort = {
 
     val vp = viewPorts.get(vpId)
-    val old = vp.getRange()
+    val old = vp.getRange
 
     val (millis, _ ) = timeIt{ vp.setRange(range) }
 
@@ -379,7 +379,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   def openNode(viewPortId: String, treeKey: String): Unit = {
 
-    logger.info(s"Had request to change vp ${viewPortId} node state $treeKey")
+    logger.info(s"Had request to change vp $viewPortId node state $treeKey")
 
     val viewPort = viewPorts.get(viewPortId)
 
@@ -408,7 +408,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPort
   }
 
-  def linkViewPorts(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String) = {
+  def linkViewPorts(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String): Unit = {
     get(clientSession, childVpId) match {
       case Some(child) =>
         get(clientSession, parentVpId) match {
@@ -451,7 +451,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     groupByhistogram.update(millis)
   }
 
-  protected def refreshOneGroupByViewPort(viewPort: ViewPort) = {
+  protected def refreshOneGroupByViewPort(viewPort: ViewPort): Unit = {
 
     val table = viewPort.table.asTable
 
@@ -488,7 +488,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
 
-  protected def refreshOneViewPort(viewPort: ViewPort) = {
+  protected def refreshOneViewPort(viewPort: ViewPort): Unit = {
 
     if(viewPort.isEnabled){
       val keys = viewPort.table.primaryKeys
@@ -506,7 +506,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def removeForSession(clientSession: ClientSessionId) = {
+  def removeForSession(clientSession: ClientSessionId): Unit = {
 
 
 

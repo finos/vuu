@@ -44,20 +44,15 @@ import java.util.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
  * instruments -> [ "VOD.L" ]
  * },
  * }
- *
- * @param timeProvider
- * @param lifecyle
- * @param metrics
  */
 class VuuJoinTableProvider(implicit timeProvider: Clock, lifecyle: LifecycleContainer, metrics: MetricsProvider) extends JoinTableProvider with StrictLogging {
 
   lifecyle(this)
 
   private val outboundQueue = new ArrayBlockingQueue[JoinTableUpdate](20000)
-  //private final val data = new JoinEventData()
   private val joinRelations = new JoinRelations()
   private val joinSink = new JoinManagerEventDataSink()
-  private val rightToLeftKeys = new RightToLeftKeys();
+  private val rightToLeftKeys = new RightToLeftKeys()
 
   @volatile private var joinDefs = List[JoinDefToJoinTable]()
 
@@ -88,12 +83,13 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecyle: LifecycleCont
 
       val rightKeyValue = leftKeys.get(joinTableDef.baseTable.name + "." + joinTo.joinSpec.left) match {
         case null =>
-          logger.info("get right key, null")
+          logger.warn("get right key, null")
           null
         case None =>
-          logger.info("get right key, None")
+          logger.warn("get right key, None")
           null
         case Some(x: String) => x
+        case Some(x) => x.toString
       }
 
       val sinkData = joinSink.getEventDataSink(rightTable).getEventState(rightKeyValue)
@@ -118,19 +114,17 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecyle: LifecycleCont
 
     logger.debug("join table data:" + toPublishData)
 
-    //at this point we roughly have the same as what we have from Esper...
-
     val rowWithData = RowWithData(leftKey, toPublishData)
 
     val jtu = JoinTableUpdate(JoinTable, rowWithData, timeProvider.now())
 
-    //logger.info("[JoinTableProvider] Submitting joint table event:" + jtu)
+    logger.debug("[JoinTableProvider] Submitting joint table event:" + jtu)
 
     //get the processing off the esper thread
     outboundQueue.offer(jtu)
   }
 
-  def eventToRightKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], rightColumn: String) = {
+  def eventToRightKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], rightColumn: String): String = {
     //val keyName = joinTableDef.keyFieldForTable(tableName)
 
     ev.get(rightColumn) match {
@@ -140,9 +134,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecyle: LifecycleCont
     }
   }
 
-  def leftColumnAsRightKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], leftColumn: String) = {
-    //val keyName = joinTableDef.keyFieldForTable(tableName)
-
+  def leftColumnAsRightKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], leftColumn: String): String = {
     ev.get(leftColumn) match {
       case null => null
       case s: String => s
@@ -159,7 +151,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecyle: LifecycleCont
     ev.get(keyField).toString
   }
 
-  def addRightKeysForLeftKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any]) = {
+  def addRightKeysForLeftKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any]): Unit = {
 
     val leftKeyName = joinTableDef.baseTable.keyField
     val leftTable = tableName
@@ -262,17 +254,14 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecyle: LifecycleCont
     outboundQueue.drainTo(updates) match {
 
       case 0 => //is fine, means no work today
-      case count: Int =>  {
-        (0 to (count - 1)).map( i => {
+      case count: Int =>
+        (0 until count).foreach(i => {
           val jtu = updates.get(i)
 
-          if(isPrimaryKeyDeleted(jtu)){
-            jtu.joinTable.processDelete(jtu.rowUpdate.key)
-          }
+          if(isPrimaryKeyDeleted(jtu)) jtu.joinTable.processDelete(jtu.rowUpdate.key)
           else
             jtu.joinTable.processUpdate(jtu.rowUpdate.key, jtu.rowUpdate, jtu.time)
         })
-      }
     }
   }
 

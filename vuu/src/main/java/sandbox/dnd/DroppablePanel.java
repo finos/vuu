@@ -19,7 +19,7 @@ public class DroppablePanel extends JPanel {
 
         private final int i;
 
-        private PanelPosition(int i){
+        PanelPosition(int i){
             this.i = i;
         }
 
@@ -27,7 +27,7 @@ public class DroppablePanel extends JPanel {
 
     private final PanelPosition position;
     private final DroppablePanel selfRef = this;
-    private DroppablePanelListener listener;
+    private final DroppablePanelListener listener;
 
     public DroppablePanel(PanelPosition position, DroppablePanelListener listener){
         this.position = position;

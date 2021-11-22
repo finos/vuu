@@ -22,7 +22,7 @@ public class BorderDropLayeredPanel extends JLayeredPane implements DroppablePan
     private final JFrame ultimateParent;
     private final JComponent parent;
 
-    private BorderDropLayeredPanel selfRef = this;
+    private final BorderDropLayeredPanel selfRef = this;
 
     private final DroppablePanel leftPanel;
     private final DroppablePanel rightPanel;

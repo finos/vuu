@@ -337,7 +337,7 @@ object TableAsserts {
       map.get(key).get match {
         case str: String => "\"" + str + "\""
         case d: Double => if(d.isNaN) "Double.NaN" else d.toString
-        case l: Long => l.toString + "l"
+        case l: Long => l.toString + "L"
         case null => "null"
         case x => x.toString
       }

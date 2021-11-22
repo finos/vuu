@@ -20,14 +20,14 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable
 
 /**
-  * When we are a ViewPort listenining on a join table, we want to register our interest
+  * When we are a ViewPort listening on a join table, we want to register our interest
   * but we want updates via esper, not via the underlying tables (at mo)
   *
   * So we wrap the listener and discard the message.
   */
 case class WrappedKeyObserver[T](wrapped: KeyObserver[T]) extends KeyObserver[T] with StrictLogging{
   override def onUpdate(update: T): Unit = {
-     logger.debug(s"suppressing tick for ${update} as am wrapped")
+     logger.debug(s"suppressing tick for $update as am wrapped")
   }
 
   override def hashCode(): Int = wrapped.hashCode()
@@ -49,15 +49,15 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
   val rightTables: Array[String] = tableDef.rightTables
 
-  val joinTableNames = tableDef.joinTableNames
-  val joinFields = tableDef.joinFieldNames
-  val columns = tableDef.getJoinDefinitionColumns
+  val joinTableNames: Seq[String] = tableDef.joinTableNames
+  val joinFields: Array[String] = tableDef.joinFieldNames
+  val columns: Array[Column] = tableDef.getJoinDefinitionColumns()
 
-  val primaryKeyMask = primaryKeyIndicesByTable
+  val primaryKeyMask: Seq[Boolean] = primaryKeyIndicesByTable
 
-  assert(joinTableNames.size == columns.size)
-  assert(joinFields.size == columns.size)
-  assert(primaryKeyMask.size == columns.size)
+  assert(joinTableNames.size == columns.length)
+  assert(joinFields.length == columns.length)
+  assert(primaryKeyMask.length == columns.length)
 
   def isPrimaryKeyColumn(col : JoinColumn): Boolean = {
      val source = col.sourceTable
@@ -98,7 +98,7 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
       val isPrimaryKey = primaryKeyMask(keyIndex)
 
       if(isPrimaryKey){
-        logger.debug(s"found foreign key ${key} in table ${tableName} for primary key ${origPrimaryKey} ")
+        logger.debug(s"found foreign key $key in table $tableName for primary key $origPrimaryKey ")
         map.put(tableName, key)
       }
 
@@ -108,10 +108,6 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
     map.toMap
   }
-
-  //private val keyToIndexMap = new ConcurrentHashMap[String, Integer]()
-
-  //private val foreignKeyToPkMap = new ConcurrentHashMap[ForeignKeyRef, ConcurrentHashMap[String, String]]()
 
   def rowUpdateToArray(update: RowWithData): Array[Any] = {
     //val data    = columns.map(update.get(_))
@@ -137,8 +133,10 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
   }
 
   protected def checkAndAutosubscribe(foreignKey: String, table: DataTable): Unit = {
-    if(table.isInstanceOf[AutoSubscribeTable])
-      table.asInstanceOf[AutoSubscribeTable].tryAndSubscribe(foreignKey)
+    table match {
+      case autoTable: AutoSubscribeTable => autoTable.tryAndSubscribe(foreignKey)
+      case _ =>
+    }
   }
 
   /**
@@ -150,10 +148,10 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
     val leftColumn = joinTo.joinSpec.left
     val tableName  = joinDef.baseTable.name
 
-    val tuple = joinColumns.zipWithIndex.map({case(c,i) => (c.asInstanceOf[JoinColumn], i)}).find({case(c, index) => {
-      val maybeColumn = c.asInstanceOf[JoinColumn]
+    val tuple = joinColumns.zipWithIndex.map({case(c,i) => (c.asInstanceOf[JoinColumn], i)}).find({case(c, _) =>
+      val maybeColumn = c
       maybeColumn.sourceColumn.name == leftColumn && maybeColumn.sourceTable.name == tableName
-    }} ).get
+    } ).get
 
     tuple
   }
@@ -164,7 +162,7 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
     keyToIndexMap.get(rowKey) match {
       case null =>
         //do nothing means key doesn't exist
-        logger.debug(s"got a process delete message for key ${rowKey} but doesn't exist")
+        logger.debug(s"got a process delete message for key $rowKey but doesn't exist")
         this
 
       case index: Integer =>
@@ -176,8 +174,6 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
         val newKeysByJoinIndex = new Array[ImmutableArray[String]](joinFields.length)
 
         while (joinFieldIndex < joinFields.length) {
-
-          //val keyToRemove = keysByJoinIndex(joinFieldIndex).getIndex(index)
 
           logger.debug(s"Removing rowKey $rowKey from keys by row index, ix = $joinFieldIndex value = ${keysByJoinIndex(joinFieldIndex)}")
 
@@ -202,7 +198,7 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
     val updateByKeyIndex = rowUpdateToArray(rowUpdate)
 
-    assert(keysByJoinIndex.size == updateByKeyIndex.size)
+    assert(keysByJoinIndex.size == updateByKeyIndex.length)
 
     keyToIndexMap.get(rowKey) match {
 
@@ -246,7 +242,7 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
             val sourceTableName = this.columns(joinFieldIndex).asInstanceOf[JoinColumn].sourceTable.name
 
-            val sourceTable     = sourceTables.get(sourceTableName).get
+            val sourceTable     = sourceTables(sourceTableName)
 
             //if this table is an on-demand autosubscribe table (like market data)
             //then try once to subscribe
@@ -254,9 +250,9 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
               val column         = columns(joinFieldIndex).asInstanceOf[JoinColumn]
 
-              val (joinLeftColumn, joinIndex) = findJoinColumn(column, joinTable.getTableDef.asInstanceOf[JoinTableDef], columns)
+              val (_, joinIndex) = findJoinColumn(column, joinTable.getTableDef.asInstanceOf[JoinTableDef], columns)
 
-              val rightValue                  = newKeysByJoinIndex(joinIndex)(index).asInstanceOf[String]
+              val rightValue                  = newKeysByJoinIndex(joinIndex)(index)
 
               checkAndAutosubscribe(rightValue, sourceTable)
             }
@@ -277,7 +273,7 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
           val oldKeysByJoinIndex = keysByJoinIndex(joinFieldIndex)
 
           if(index >= oldKeysByJoinIndex.length)
-            logger.trace(s"no foreign key found for primary key ix=${index}")
+            logger.trace(s"no foreign key found for primary key ix=$index")
 
           val oldKey = if(index >= oldKeysByJoinIndex.length) null else oldKeysByJoinIndex(index)
 
@@ -287,24 +283,20 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
             if (newKey != null) {
 
-              //val newKeysByJoinIndexData = keysByJoinIndex(joinFieldIndex).+(newKey.asInstanceOf[String])
-
-              //newKeysByJoinIndex(joinFieldIndex) =  newKeysByJoinIndexData
-
               val newKeysByJoinIndex = oldKeysByJoinIndex.set(index, newKey.asInstanceOf[String])
 
               keysByJoinIndex(joinFieldIndex) = newKeysByJoinIndex
 
               val foreignTableName = joinTableNames(joinFieldIndex)
 
-              val foreignTable = joinTable.sourceTables.get(foreignTableName).get
+              val foreignTable = joinTable.sourceTables(foreignTableName)
 
               val observers = joinTable.getObserversByKey(rowKey)
 
               //remove all the observers that were added as part of this table
               //and repoint them to the new key
               observers.foreach(ob => {
-                logger.info(s"[join] changing observer $ob to point from $oldKey to $newKey based on esper join update")
+                logger.debug(s"[join] changing observer $ob to point from $oldKey to $newKey based on join provider update")
                 val wrapped = WrappedKeyObserver(ob)
                 foreignTable.removeKeyObserver(oldKey, wrapped)
                 if (newKey != null) foreignTable.addKeyObserver(newKey.asInstanceOf[String], wrapped)
@@ -336,13 +328,13 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   override def indexForColumn(column: Column): Option[IndexedField[_]] = None
 
-  val joinColumns = tableDef.joins.size + tableDef.baseTable.joinFields.size
+  val joinColumns: Int = tableDef.joins.size + tableDef.baseTable.joinFields.size
 
-  var joinData = new JoinDataTableData(tableDef, ImmutableArrays.empty[String](joinColumns))
+  var joinData: JoinDataTableData = JoinDataTableData(tableDef, ImmutableArrays.empty[String](joinColumns))
 
   override def getTableDef: TableDef = tableDef
 
-  def notifyListeners(rowKey: String, isDelete: Boolean = false) = {
+  def notifyListeners(rowKey: String, isDelete: Boolean = false): Unit = {
     getObserversByKey(rowKey).foreach(obs => {
       obs.onUpdate(RowKeyUpdate(rowKey, this, isDelete))
     })
@@ -352,16 +344,16 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
     onUpdateMeter.mark()
 
-    logger.debug(s"${name} processing row update:" + rowKey + " " + rowUpdate)
+    logger.debug(s"$name processing row update:" + rowKey + " " + rowUpdate)
 
     joinData = joinData.processUpdate(rowKey, rowUpdate, this, sourceTables)
 
-    sendToJoinSink(rowKey, rowUpdate)
+    sendToJoinSink(rowUpdate)
 
     notifyListeners(rowKey)
   }
 
-  private def toEvent(rowKey: String, rowData: RowData): java.util.HashMap[String, Any] = {
+  private def toEvent(rowData: RowData): java.util.HashMap[String, Any] = {
 
     val ev = new util.HashMap[String, Any]()
 
@@ -378,12 +370,12 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     ev
   }
 
-  def sendToJoinSink(rowKey: String, rowData: RowData) = {
+  def sendToJoinSink(rowData: RowData): Unit = {
 
     //only send to Esper when esper cares
     if(joinProvider.hasJoins(this.tableDef.name)){
 
-      val event = toEvent(rowKey, rowData)
+      val event = toEvent(rowData)
 
       joinProvider.sendEvent(this.tableDef.name, event)
     }
@@ -410,34 +402,33 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       keysByTable.getOrElse(leftTable, null) match {
         case null =>
           false
-        case key: String => {
-            sourceTables.get(leftTable).get.pullRow(key) match {
-              case EmptyRowData => false
-              case x: RowWithData => true
-            }
-        }
+        case key: String =>
+          sourceTables(leftTable).pullRow(key) match {
+            case EmptyRowData => false
+            case x: RowWithData => true
+          }
       }
     }
   }
 
   override def pullRow(key: String, columns: List[Column]): RowData = {
 
-    val columnsByTable = columns.map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name).toMap
+    val columnsByTable = columns.map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name)
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
     if(keysByTable == null || ! keyExistsInLeftMostSourceTable(key))
       EmptyRowData
     else{
-      val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({ case (previous, (tableName, columnList)) => {
+      val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({ case (previous, (tableName, columnList)) =>
 
-        val table = sourceTables.get(tableName).get
-        val fk = keysByTable.get(tableName).get
+        val table = sourceTables(tableName)
+        val fk = keysByTable(tableName)
 
         val sourceColumns = columnList.map(jc => jc.sourceColumn)
 
         if (fk == null) {
-          logger.debug(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key ${key}")
+          logger.debug(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
           previous
         }
         else {
@@ -445,11 +436,10 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
             case EmptyRowData =>
               previous
             case data: RowWithData =>
-              previous ++ columnList.map(column => (column.name -> column.sourceColumn.getData(data) )).toMap
+              previous ++ columnList.map(column => column.name -> column.sourceColumn.getData(data)).toMap
 
           }
         }
-      }
       })
 
       RowWithData(key, foldedMap)
@@ -460,8 +450,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
 
     val columnsByTable = columns
-                            .map(c => c.asInstanceOf[JoinColumn])
-                            .groupBy(_.sourceTable.name).toMap
+      .map(c => c.asInstanceOf[JoinColumn])
+      .groupBy(_.sourceTable.name)
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
@@ -469,9 +459,9 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       Array()
     else{
 
-      val foldedMap = columnsByTable.foldLeft(Map[JoinColumn, Any]())({ case (previous, (tableName, columnList)) => {
+      val foldedMap = columnsByTable.foldLeft(Map[JoinColumn, Any]())({ case (previous, (tableName, columnList)) =>
 
-        val table = sourceTables.get(tableName).get
+        val table = sourceTables(tableName)
 
         val fk = if(keysByTable == null) null
         else
@@ -483,7 +473,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         val sourceColumns = columnList.map(jc => jc.sourceColumn)
 
         if (fk == null) {
-          logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key ${key}")
+          logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
           previous
         }
         else {
@@ -494,7 +484,6 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
               previous ++ columnList.map(column => (column -> column.sourceColumn.getData(data)))
           }
         }
-      }
       })
 
       if(foldedMap.isEmpty){
@@ -508,8 +497,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     }
   }
 
-  def notifyListeners(rowKey: String) = {
-    getObserversByKey(rowKey).foreach(obs => obs.onUpdate(new RowKeyUpdate(rowKey, this)))
+  def notifyListeners(rowKey: String): Unit = {
+    getObserversByKey(rowKey).foreach(obs => obs.onUpdate(RowKeyUpdate(rowKey, this)))
   }
 
   override def processDelete(rowKey: String): Unit = {
@@ -524,7 +513,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     notifyListeners(rowKey, isDelete = true)
   }
 
-  def sendDeleteToJoinSink(rowKey: String, rowData: RowData) = {
+  def sendDeleteToJoinSink(rowKey: String, rowData: RowData): Unit = {
 
     //only send to Esper when esper cares
     if (joinProvider.hasJoins(this.tableDef.name)) {
@@ -549,25 +538,24 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     val pk = this.tableDef.columnForName(this.tableDef.keyField)
     ev.put(pk.name, rowData.get(pk))
     ev.put("_isDeleted", true)
-
     ev
   }
 
   override def readRow(key: String, fields: List[String], processor: RowProcessor): Unit = {
     val columns = fields.map(column => joinData.tableDef.columnForName(column).asInstanceOf[JoinColumn])
 
-    val columnsByTable = columns.groupBy(_.sourceTable.name).toMap
+    val columnsByTable = columns.groupBy(_.sourceTable.name)
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
-    columnsByTable.foreach({ case (tableName, columnList) => {
-      val table = sourceTables.get(tableName).get
-      val fk = keysByTable.get(tableName).get
+    columnsByTable.foreach({ case (tableName, columnList) =>
+      val table = sourceTables(tableName)
+      val fk = keysByTable(tableName)
 
       val sourceColumns = columnList.map(jc => jc.sourceColumn)
 
       if (fk == null) {
-        logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key ${key}")
+        logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
       }
       else {
         table.pullRow(fk, sourceColumns) match {
@@ -582,7 +570,6 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
             })
         }
       }
-    }
     })
   }
 
@@ -604,15 +591,13 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     else {
       val wrapped = WrappedKeyObserver(observer)
 
-      sourceTables.foreach({ case (name, table) => {
+      sourceTables.foreach({ case (name, table) =>
         keysByTable.get(name) match {
           case Some(foreignKey) if foreignKey != null => table.addKeyObserver(foreignKey, wrapped)
           case Some(null) => logger.trace("Foreign key not ready yet")
           case _ =>
             logger.error(s"Could not load foreign key for ${table.getTableDef.name} (in join with ${this.getTableDef.name} key = $key")
         }
-
-      }
       })
 
       super.addKeyObserver(key, observer)
@@ -631,16 +616,14 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     }
     else {
       val wrapped = WrappedKeyObserver(observer)
-      sourceTables.foreach({ case (name, table) => {
+      sourceTables.foreach({ case (name, table) =>
         keysByTable.get(name) match {
           case null =>
-            logger.trace(s"no foreign key for primary key ${key}")
+            logger.trace(s"no foreign key for primary key $key")
           case Some(foreignKey) =>
             if(table.isKeyObservedBy(foreignKey, wrapped)) table.removeKeyObserver(foreignKey, wrapped)
           case None => logger.error(s"Could not load foreign key for ${table.getTableDef.name} (in join with ${this.getTableDef.name} key = $key")
         }
-
-      }
       })
 
       super.removeKeyObserver(key, observer)

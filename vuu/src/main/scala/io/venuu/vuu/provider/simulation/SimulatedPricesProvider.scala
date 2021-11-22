@@ -23,7 +23,7 @@ trait SimulationMode{
   def asCode: Int
 }
 
-case class Simulation(val mode: SimulationMode, beganAt: Long, endAt: Long)
+case class Simulation(mode: SimulationMode, beganAt: Long, endAt: Long)
 
 case object TakeAWalk extends SimulationMode{
   override def asCode: Int = 1
@@ -62,7 +62,7 @@ object PricesFields{
   final val Phase = "phase"
 }
 
-class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implicit val timeProvider: Clock, lifecycle:  LifecycleContainer) extends Provider with StrictLogging with RunInThread {
+class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implicit val timeProvider: Clock, lifecycle:  LifecycleContainer) extends Provider with StrictLogging with RunInThread {
   private val currentModes = new ConcurrentHashMap[String, Simulation]()
   private val states = new ConcurrentHashMap[String, Map[String, Any]]()
 
@@ -84,8 +84,8 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
   }
 
   private def seededRand(seed: Long, low: Int, high: Int): Int = {
-    val r = new Random(seed);
-    r.nextInt(high-low) + low;
+    val r = new Random(seed)
+    r.nextInt(high-low) + low
   }
 
   override def runOnce(): Unit = {
@@ -159,7 +159,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
   }
 
   protected def doTakeAWalk(ric: String): Map[String, Any] = {
-    val smallInc = seededRand(timeProvider.now, 0, 100)
+    val smallInc = seededRand(timeProvider.now(), 0, 100)
 
     val newRow = getState(ric) match {
       case Some(row) => mergeLeft(row, walkBidAndAsk(ric, row))
@@ -168,7 +168,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
     newRow
   }
 
-  val f = PricesFields
+  val f: PricesFields.type = PricesFields
 
   private def close(ric: String, existing: Map[String, Any]): Map[String, Any] ={
 
@@ -188,10 +188,10 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
 
   private def walkBidAndAsk(ric: String, existing: Map[String, Any]) = {
     if(!existing.contains(f.Bid))
-      buildSampleRow(existing.get(f.Ric).get.asInstanceOf[String])
+      buildSampleRow(existing(f.Ric).asInstanceOf[String])
     else{
-      val bid = existing.get(f.Bid).get.asInstanceOf[Double]
-      val ask = existing.get(f.Ask).get.asInstanceOf[Double]
+      val bid = existing(f.Bid).asInstanceOf[Double]
+      val ask = existing(f.Ask).asInstanceOf[Double]
       val diff = ask - bid
       val inc = seededRand(timeProvider.now(), 0, 50)
       val delta = (inc / 100).asInstanceOf[Double]
@@ -234,9 +234,9 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
       val spread = seededRand(timeProvider.now(), 1, 567)
       getState(ric) match {
         case Some(state) =>
-          val bid     = state.get(f.Bid).get.asInstanceOf[Double]
-          val ask     = state.get(f.Ask).get.asInstanceOf[Double]
-          val spread  = (ask - bid)
+          val bid     = state(f.Bid).asInstanceOf[Double]
+          val ask     = state(f.Ask).asInstanceOf[Double]
+          val spread  = ask - bid
           val activeSpread = if(spread > MaxSpread)
             0.0
           else
@@ -258,9 +258,9 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
     else{
       val bidAdjust = seededRand(timeProvider.now(), 0, 10)
       val askAdjust = seededRand(timeProvider.now(), 0, 20)
-      val bid     = states.get(ric).get(f.Bid).get.asInstanceOf[Double] + bidAdjust
-      val ask     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + askAdjust
-      val last     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + (askAdjust / 2)
+      val bid     = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
+      val ask     = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
+      val last     = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
       Map(f.Ric -> ric, f.Ask -> ask, f.Bid -> bid, f.Scenario -> "fastTick", f.Last -> last, f.Phase -> "C") ++ BidAskSize()
     }
   }
@@ -272,9 +272,9 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
     else{
       val bidAdjust = seededRand(timeProvider.now(), 0, 10)
       val askAdjust = seededRand(timeProvider.now(), 0, 20)
-      val bid     = states.get(ric).get(f.Bid).get.asInstanceOf[Double] + bidAdjust
-      val ask     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + askAdjust
-      val open     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + (askAdjust / 2)
+      val bid     = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
+      val ask     = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
+      val open     = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
       Map(f.Ric -> ric, f.Scenario -> "open", f.Open -> open, f.Phase -> "O") ++ BidAskSize()
     }
   }
@@ -286,9 +286,9 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
     else{
       val bidAdjust = seededRand(timeProvider.now(), 0, 10)
       val askAdjust = seededRand(timeProvider.now(), 0, 20)
-      val bid     = states.get(ric).get(f.Bid).get.asInstanceOf[Double] + bidAdjust
-      val ask     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + askAdjust
-      val open     = states.get(ric).get(f.Ask).get.asInstanceOf[Double] + (askAdjust / 2)
+      val bid     = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
+      val ask     = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
+      val open     = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
       Map(f.Ric -> ric, f.Scenario -> "close", f.Phase -> "X") ++ BidAskSizeNull()
     }
   }
@@ -342,20 +342,9 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 200)(implici
     else
       existing
   }
+  override def doStop(): Unit = {}
 
-
-  //no epxlicit doStop or doDestroy required as is handled by running in thread.
-  override def doStop(): Unit = {
-    //runner.stop()
-  }
-
-  //var runner: LifeCycleRunner = null
-
-  override def doStart(): Unit = {
-
-
-
-  }
+  override def doStart(): Unit = {}
 
   override def doInitialize(): Unit = {}
 

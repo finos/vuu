@@ -1,7 +1,7 @@
 package io.venuu.vuu.core.table.join
 
 import com.typesafe.scalalogging.StrictLogging
-import io.venuu.toolbox.jmx.MetricsProviderImpl
+import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
@@ -19,7 +19,7 @@ import java.util
 class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging with ViewPortSetup {
 
   implicit val timeProvider: Clock = new DefaultClock
-  implicit val metrics = new MetricsProviderImpl
+  implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
   final val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
@@ -33,56 +33,63 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     }
   }
 
-  def makeOrderEvent(orderId: String, ric: String, isDeleted: Boolean = false) = {
-    val event = new java.util.HashMap[String, Any]();
+  def makeOrderEvent(orderId: String, ric: String, isDeleted: Boolean = false): util.HashMap[String, Any] = {
+    val event = new java.util.HashMap[String, Any]()
     event.put("orderId", orderId)
     event.put("ric", ric)
-    //event.put("instrument.description", "Vodaphone");
-    event.put("_isDeleted", isDeleted);
+    event.put("currencyPair", "USDGBP")
+    event.put("_isDeleted", isDeleted)
     event
   }
 
-  def makeOrders2Event(orderId: String, ric: String, currencyPair: String, isDeleted: Boolean = false) = {
-    val event = new java.util.HashMap[String, Any]();
+  def makeOrders2Event(orderId: String, ric: String, currencyPair: String, isDeleted: Boolean = false): util.HashMap[String, Any] = {
+    val event = new java.util.HashMap[String, Any]()
     event.put("orderId", orderId)
     event.put("ric", ric)
     event.put("currencyPair", currencyPair)
     //event.put("instrument.description", "Vodaphone");
-    event.put("_isDeleted", isDeleted);
+    event.put("_isDeleted", isDeleted)
     event
   }
 
-  def makeCurrencyParisEvent(ccyPair: String, rate: Double, isDeleted: Boolean = false) = {
-    val event = new java.util.HashMap[String, Any]();
+  def makeCurrencyParisEvent(ccyPair: String, rate: Double, isDeleted: Boolean = false): util.HashMap[String, Any] = {
+    val event = new java.util.HashMap[String, Any]()
     event.put("currencyPair", ccyPair)
-    event.put("_isDeleted", isDeleted);
+    event.put("_isDeleted", isDeleted)
     event
   }
 
-  def makePricesEvent(ric: String, isDeleted: Boolean = false) = {
-    val event = new java.util.HashMap[String, Any]();
+  def makePricesEvent(ric: String, isDeleted: Boolean = false): util.HashMap[String, Any] = {
+    val event = new java.util.HashMap[String, Any]()
     event.put("ric", ric)
-    event.put("_isDeleted", isDeleted);
+    event.put("_isDeleted", isDeleted)
     event
   }
 
-  def makeChildOrdersEvent(orderId: String, childOrderId: String, isDeleted: Boolean = false) = {
-    val event = new java.util.HashMap[String, Any]();
+  def makeChildOrdersEvent(orderId: String, childOrderId: String, isDeleted: Boolean = false): util.HashMap[String, Any] = {
+    val event = new java.util.HashMap[String, Any]()
     event.put("orderId", orderId)
     event.put("childOrderId", childOrderId)
-    event.put("_isDeleted", isDeleted);
+    event.put("_isDeleted", isDeleted)
     event
   }
 
-  def mkeOrdersDef() = {
+  def makeFxEvent(cross: String, isDeleted: Boolean = false): util.HashMap[String, Any] = {
+    val event = new java.util.HashMap[String, Any]()
+    event.put("cross", cross)
+    event.put("_isDeleted", isDeleted)
+    event
+  }
+
+  def mkeOrdersDef(): TableDef = {
     TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields = "ric", "orderId")
+      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "currencyPair:String"),
+      joinFields = "ric", "orderId", "currencyPair")
   }
 
-  def mkeChildOrdersDef() = {
+  def mkeChildOrdersDef(): TableDef = {
     TableDef(
       name = "childOrders",
       keyField = "childOrderId",
@@ -90,7 +97,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
       joinFields = "childOrderId", "orderId")
   }
 
-  def mkeOrders2Def() = {
+  def mkeOrders2Def(): TableDef = {
     TableDef(
       name = "orders2",
       keyField = "orderId",
@@ -100,7 +107,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
       joinFields = "ric", "orderId", "currencyPair")
   }
 
-  def mkeCcyPairDef() = {
+  def mkeCcyPairDef(): TableDef = {
     TableDef(
       name = "fxRates",
       keyField = "currencyPair",
@@ -108,12 +115,19 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
       joinFields = "currencyPair")
   }
 
+  def mkeFxDef(): TableDef = {
+    TableDef(
+      name = "fx",
+      keyField = "cross",
+      columns = Columns.fromNames("cross:String", "fxBid:Double", "fxOffer:Double"),
+      joinFields = "cross")
+  }
 
-  def mkePricesDef() = {
+  def mkePricesDef(): TableDef = {
     TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
   }
 
-  def mkeOrderPricesDef(ordersDef: TableDef, pricesDef: TableDef) = {
+  def mkeOrderPricesDef(ordersDef: TableDef, pricesDef: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
@@ -123,11 +137,28 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
-      joinFields = Seq("orderId")
+      joinFields = Seq("orderId", "currencyPair", "ric")
     )
   }
 
-  def mkeChildOrdersToOrderPricesDef(childOrders: TableDef, orderPrices: TableDef) = {
+  def mkeOrderPricesFxDef(ordersDef: TableDef, pricesDef: TableDef, fxDef: TableDef): JoinTableDef = {
+    JoinTableDef(
+      name = "orderPricesFx",
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFromExcept(fxDef, "ric"),
+      joinFields = Seq("orderId"),
+      JoinTo(
+        table = pricesDef,
+        joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+      ),
+      JoinTo(
+        table = fxDef,
+        joinSpec = JoinSpec(left = "currencyPair", right = "cross", LeftOuterJoin)
+      )
+    )
+  }
+
+  def mkeChildOrdersToOrderPricesDef(childOrders: TableDef, orderPrices: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "childOrderPrices",
       baseTable = childOrders,
@@ -141,7 +172,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     )
   }
 
-  def mkeOrder2PricesRatesDef(orders2Def: TableDef, pricesDef: TableDef, fxRates: TableDef) = {
+  def mkeOrder2PricesRatesDef(orders2Def: TableDef, pricesDef: TableDef, fxRates: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "order2PricesAndFx",
       baseTable = orders2Def,
@@ -161,7 +192,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     )
   }
 
-  def sendEvent(table: String, event: util.HashMap[String, Any])(implicit joinTableProvider: JoinTableProvider) = {
+  def sendEvent(table: String, event: util.HashMap[String, Any])(implicit joinTableProvider: JoinTableProvider): Unit = {
     joinTableProvider.sendEvent(table, event)
   }
 
@@ -169,9 +200,9 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
 
     Scenario("Left Outer Join") {
 
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider: JoinTableProvider = new VuuJoinTableProvider()
 
       val ordersDef = mkeOrdersDef()
 
@@ -221,9 +252,9 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     }
 
     Scenario("Left Outer Join, Right key update") {
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider: JoinTableProvider = new VuuJoinTableProvider()
 
       val ordersDef = mkeOrdersDef()
 
@@ -270,9 +301,9 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
 
     Scenario("Left Outer Join, Orders to Prices Instruments and Fx Rates") {
 
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider: JoinTableProvider = new VuuJoinTableProvider()
 
       val ordersDef = mkeOrders2Def()
       val pricesDef = mkePricesDef()
@@ -318,14 +349,13 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
           ("3"       ,"VOD.L"   ,"USDGBP"  ,false     ,"VOD.L"   ,false     ,"USDGBP"  ,false     )
         )
       )
-
     }
 
     Scenario("Left Outer Join, Delete Left Record") {
 
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider: JoinTableProvider = new VuuJoinTableProvider()
 
       val ordersDef = mkeOrdersDef()
 
@@ -359,7 +389,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
         )
       )
 
-      sendEvent("orders", makeOrderEvent("3", "VOD.L", true))
+      sendEvent("orders", makeOrderEvent("3", "VOD.L", isDeleted = true))
 
       assertJoins("orderPrices", joinTableProvider)(
         Table(
@@ -368,7 +398,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
         )
       )
 
-      sendEvent("orders", makeOrderEvent("2", "VOD.L", true))
+      sendEvent("orders", makeOrderEvent("2", "VOD.L", isDeleted = true))
 
       assertJoins("orderPrices", joinTableProvider)(
         Table(
@@ -379,9 +409,9 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     }
 
     Scenario("Left Outer Join, Delete Right Record") {
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider : JoinTableProvider = new VuuJoinTableProvider()
 
       val ordersDef = mkeOrdersDef()
 
@@ -415,7 +445,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
         )
       )
 
-      sendEvent("prices", makePricesEvent("VOD.L", true))
+      sendEvent("prices", makePricesEvent("VOD.L", isDeleted = true))
 
       assertJoins("orderPrices", joinTableProvider)(
         Table(
@@ -429,25 +459,23 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     }
 
     Scenario("Left Outer Join of Joins") {
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider: VuuJoinTableProvider = new VuuJoinTableProvider()
 
       val ordersDef = mkeOrdersDef()
       val pricesDef = mkePricesDef()
-      val childOrdersDef = mkeChildOrdersDef()
+      val fxDef = mkeFxDef()
 
-      val joinDef = mkeOrderPricesDef(ordersDef, pricesDef)
-
-      val childOrderPricesDef = mkeChildOrdersToOrderPricesDef(childOrdersDef, joinDef)
+      val orderPricesDef = mkeOrderPricesDef(ordersDef, pricesDef)
+      val orderPricesFxDef = mkeOrderPricesFxDef(ordersDef, pricesDef, fxDef)
 
       val tableContainer = new TableContainer(joinTableProvider)
 
       val orders = tableContainer.createTable(ordersDef)
       val prices = tableContainer.createTable(pricesDef)
-      val childOrders = tableContainer.createTable(childOrdersDef)
-      val orderPrices = tableContainer.createJoinTable(joinDef)
-      val childOrderPrices = tableContainer.createJoinTable(childOrderPricesDef)
+      val orderPrices = tableContainer.createJoinTable(orderPricesDef)
+      val orderPricesFx = tableContainer.createJoinTable(orderPricesFxDef)
 
       joinTableProvider.start()
 
@@ -456,16 +484,20 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
       sendEvent("orders", makeOrderEvent("3", "VOD.L"))
       sendEvent("prices", makePricesEvent("VOD.L"))
       sendEvent("prices", makePricesEvent("BT.L"))
+      sendEvent("fx", makeFxEvent("USDGBP"))
 
-      //we have to propagate the join data to the tables here or the subsequent event won't work, rather than empty and assert
-      joinTableProvider.runOnce()
-
-      sendEvent("childOrders", makeChildOrdersEvent("1", "100"))
-
-      assertJoins("childOrderPrices", joinTableProvider)(
+      assertJoins("orderPricesFx", joinTableProvider)(
         Table(
-          ("childOrders.orderId","orderPrices.orderId","orderPrices._isDeleted","childOrders._isDeleted","childOrders.childOrderId"),
-          ("1"       ,"1"       ,null      ,false     ,"100"     )
+          ("orders.orderId","orders.ric","orders._isDeleted","prices.ric","prices._isDeleted","fx.cross","fx._isDeleted","orders.currencyPair"),
+          ("1"       ,"VOD.L"   ,false     ,null      ,null      ,null      ,null      ,"USDGBP"  ),
+          ("2"       ,"VOD.L"   ,false     ,null      ,null      ,null      ,null      ,"USDGBP"  ),
+          ("3"       ,"VOD.L"   ,false     ,null      ,null      ,null      ,null      ,"USDGBP"  ),
+          ("1"       ,"VOD.L"   ,false     ,"VOD.L"   ,false     ,null      ,null      ,"USDGBP"  ),
+          ("2"       ,"VOD.L"   ,false     ,"VOD.L"   ,false     ,null      ,null      ,"USDGBP"  ),
+          ("3"       ,"VOD.L"   ,false     ,"VOD.L"   ,false     ,null      ,null      ,"USDGBP"  ),
+          ("1"       ,"VOD.L"   ,false     ,"VOD.L"   ,false     ,"USDGBP"  ,false     ,"USDGBP"  ),
+          ("2"       ,"VOD.L"   ,false     ,"VOD.L"   ,false     ,"USDGBP"  ,false     ,"USDGBP"  ),
+          ("3"       ,"VOD.L"   ,false     ,"VOD.L"   ,false     ,"USDGBP"  ,false     ,"USDGBP"  )
         )
       )
     }

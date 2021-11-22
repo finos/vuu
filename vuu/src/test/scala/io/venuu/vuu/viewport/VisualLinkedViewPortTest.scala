@@ -23,7 +23,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       createPricesRow(pricesProvider, "BT.L", 200, 201, 200.5, 199.5)
       createPricesRow(pricesProvider, "BP.L", 300, 301, 300.5, 299.5)
 
-      createNOrderRows(ordersProvider, 3, ric = "VOD.L", idOffset = 0)(timeProvider)
+      createNOrderRows(ordersProvider, 3)(timeProvider)
       createNOrderRows(ordersProvider, 4, ric = "BT.L", idOffset = 3)(timeProvider)
       createNOrderRows(ordersProvider, 5, ric = "BP.L", idOffset = 7)(timeProvider)
 
@@ -40,16 +40,16 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       assertVpEqWithMeta(orderUpdates) {
         Table(
           ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544800l,100       ),
-          (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544810l,101       ),
-          (0         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544820l,102       ),
-          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544830l,100       ),
-          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544840l,101       ),
-          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544850l,102       ),
-          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544860l,103       ),
-          (0         ,"NYC-0007","chris"   ,"BP.L"    ,1311544870l,100       ),
-          (0         ,"NYC-0008","chris"   ,"BP.L"    ,1311544880l,101       ),
-          (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544890l,102       )
+          (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       ),
+          (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ),
+          (0         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ),
+          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544830L,100       ),
+          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544840L,101       ),
+          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544850L,102       ),
+          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544860L,103       ),
+          (0         ,"NYC-0007","chris"   ,"BP.L"    ,1311544870L,100       ),
+          (0         ,"NYC-0008","chris"   ,"BP.L"    ,1311544880L,101       ),
+          (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544890L,102       )
         )
       }
 
@@ -63,8 +63,8 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       }
 
       val results = viewPortContainer.getViewPortVisualLinks(session, viewPortOrders.id)
-      results.size shouldEqual(1)
-      results.head._2.table.name shouldEqual("prices")
+      results.size shouldEqual 1
+      results.head._2.table.name shouldEqual "prices"
 
       Then("we link the viewports, with nothing selected in the parent grid yet")
       viewPortContainer.linkViewPorts(session, highPriorityQueue, childVpId = viewPortOrders.id, parentVpId = viewPortPrices.id, "ric", "ric")
@@ -73,7 +73,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortContainer.runOnce()
 
       Then("we should have nothing available in the viewport")
-      viewPortOrders.getKeys().length shouldEqual(0)
+      viewPortOrders.getKeys.length shouldEqual 0
 
       When("we select some rows in the grid")
       viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPrices.id, ViewPortSelectedIndices(Array(1)))
@@ -92,10 +92,10 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       assertVpEqWithMeta(combineQs(viewPortOrders)) {
         Table(
           ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544830l,100       ),
-          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544840l,101       ),
-          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544850l,102       ),
-          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544860l,103       )
+          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544830L,100       ),
+          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544840L,101       ),
+          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544850L,102       ),
+          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544860L,103       )
         )
       }
 
@@ -108,23 +108,23 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       assertVpEqWithMeta(combineQs(viewPortOrders).filter(vpu => vpu.vp.id == viewPortOrders.id)) {
         Table(
           ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0007","chris"   ,"BP.L"    ,1311544870l,100       ),
-          (0         ,"NYC-0008","chris"   ,"BP.L"    ,1311544880l,101       ),
-          (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544890l,102       ),
-          (0         ,"NYC-0010","chris"   ,"BP.L"    ,1311544900l,103       ),
-          (0         ,"NYC-0011","chris"   ,"BP.L"    ,1311544910l,104       )
+          (0         ,"NYC-0007","chris"   ,"BP.L"    ,1311544870L,100       ),
+          (0         ,"NYC-0008","chris"   ,"BP.L"    ,1311544880L,101       ),
+          (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544890L,102       ),
+          (0         ,"NYC-0010","chris"   ,"BP.L"    ,1311544900L,103       ),
+          (0         ,"NYC-0011","chris"   ,"BP.L"    ,1311544910L,104       )
         )
       }
 
       Then("check we now have 9 keys in the viewport")
-      viewPortOrders.getKeys().length shouldEqual(9)
+      viewPortOrders.getKeys.length shouldEqual 9
 
       And("if we set selection to none")
       viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPrices.id, ViewPortSelectedIndices(Array()))
       viewPortContainer.runOnce()
 
       Then("we should have nothing available in the viewport")
-      viewPortOrders.getKeys().length shouldEqual(0)
+      viewPortOrders.getKeys.length shouldEqual 0
 
       Then("Change the viewport to sort by quantity")
       viewPortContainer.change(session, viewPortOrders.id, ViewPortRange(0, 10), vpcolumnsOrders, SortSpec(List(SortDef("quantity", 'A'))))
@@ -136,10 +136,10 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       assertVpEqWithMeta(combineQs(viewPortOrders).filter(vpu => vpu.vp.id == viewPortOrders.id)) {
         Table(
           ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544860l,103       ),
-          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544850l,102       ),
-          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544840l,101       ),
-          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544830l,100       )
+          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544860L,103       ),
+          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544850L,102       ),
+          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544840L,101       ),
+          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544830L,100       )
         )
       }
     }

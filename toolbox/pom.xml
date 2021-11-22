@@ -8,7 +8,6 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>io.venuu</groupId>
     <artifactId>toolbox</artifactId>
     <name>toolbox</name>
     <inceptionYear>2013</inceptionYear>
@@ -36,11 +35,11 @@
         </dependency>
 
 
-        <dependency>
+        <!--dependency>
             <groupId>com.espertech</groupId>
             <artifactId>esper</artifactId>
             <version>5.2.0</version>
-        </dependency>
+        </dependency -->
 
         <dependency>
             <groupId>joda-time</groupId>

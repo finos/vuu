@@ -7,7 +7,7 @@
  */
 package io.venuu.vuu.core.table
 
-import io.venuu.toolbox.jmx.MetricsProviderImpl
+import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
@@ -25,7 +25,7 @@ import org.scalatest.prop.Tables.Table
 class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
   implicit val timeProvider: Clock = new DefaultClock
-  implicit val metrics = new MetricsProviderImpl
+  implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
   case class NamedKeyObserver(name: String) extends KeyObserver[RowKeyUpdate]{
     override def onUpdate(update: RowKeyUpdate): Unit = {}
@@ -46,7 +46,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
     Scenario("check a tick all the way through from source to join table"){
 
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
       val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
@@ -97,12 +97,12 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       joinProvider.runOnce()
 
-      val session = new ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris")
 
       val outQueue = new OutboundRowPublishQueue()
       val highPriorityQueue = new OutboundRowPublishQueue()
 
-      val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orderPrices.getTableDef.columnForName(_)).toList
+      val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orderPrices.getTableDef.columnForName(_))
 
       val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -126,7 +126,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
     Scenario("check that registering and deregistering listeners on join table propagates to source tables"){
 
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
       val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
@@ -176,7 +176,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
     Scenario("Check deleting keys from join table and see if it propogates correctly"){
 
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, vpContainer) = setup()
 
@@ -194,14 +194,14 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000l,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000l,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000l,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000l,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000l,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000l,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000l,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000l,500       ,500.0     ,501.0     ,null      ,null      ,null      )
+          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000L,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000L,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
+          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      )
         )
       }
 
@@ -215,15 +215,15 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val joinDataKeys = orderPrices.asInstanceOf[JoinTable].joinData.getKeyValuesByTable("NYC-0001")
 
       joinDataKeys shouldBe null
-      orderPricesViewport.getKeys().iterator.contains("NYC-0001") should equal(true)
+      orderPricesViewport.getKeys.iterator.contains("NYC-0001") should equal(true)
       vpContainer.runOnce()
-      orderPricesViewport.getKeys().iterator.contains("NYC-0001") should equal(false)
+      orderPricesViewport.getKeys.iterator.contains("NYC-0001") should equal(false)
 
       pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 230))
 
       runContainersOnce(vpContainer, joinProvider)
 
-      orderPricesViewport.getKeys().iterator.contains("NYC-0001") should equal(false)
+      orderPricesViewport.getKeys.iterator.contains("NYC-0001") should equal(false)
 
       val array = orderPrices.pullRowAsArray("NYC-0001", orderPrices.getTableDef.columns.toList)
 
@@ -232,16 +232,16 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000l,300       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000l,400       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000l,500       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000l,600       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000l,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000l,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000l,300       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000l,400       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000l,500       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000l,600       ,230       ,222.0     ,null      ,null      ,null      )
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
+          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,230       ,222.0     ,null      ,null      ,null      )
         )
       }
 

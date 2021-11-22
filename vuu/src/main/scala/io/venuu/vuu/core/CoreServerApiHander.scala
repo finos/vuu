@@ -191,10 +191,10 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
           val groupBy = new GroupBy(groupByColumns, aggregations)
 
-          viewPortContainer.change(ctx.session, msg.viewPortId, viewport.getRange(), columns, sort, filter, groupBy = groupBy)
+          viewPortContainer.change(ctx.session, msg.viewPortId, viewport.getRange, columns, sort, filter, groupBy = groupBy)
         }
         else
-          viewPortContainer.change(ctx.session, msg.viewPortId, viewport.getRange(), columns, sort, filter)
+          viewPortContainer.change(ctx.session, msg.viewPortId, viewport.getRange, columns, sort, filter)
 
         logger.info(s"Setting columns to ${columns.map(_.name).mkString(",")} ")
 

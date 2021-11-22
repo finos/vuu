@@ -281,7 +281,7 @@ public class TestSplitPane implements DragGestureListener{
                         }else{
                             right.getPanelList().forEach( c -> {
 
-                                JPanel panel = (JPanel) c;
+                                JPanel panel = c;
 
                                 int x = c.getX();
                                 int y = c.getY();
@@ -478,7 +478,7 @@ public class TestSplitPane implements DragGestureListener{
     public static class ValueExportTransferHandler extends TransferHandler {
 
         public static final DataFlavor SUPPORTED_DATE_FLAVOR = DataFlavor.stringFlavor;
-        private String value;
+        private final String value;
 
         public ValueExportTransferHandler(String value) {
             this.value = value;
@@ -544,10 +544,10 @@ public class TestSplitPane implements DragGestureListener{
                                     c.weightx = 1.0;
                                     c.weighty = 1.0;
 
-                                    JButton button = new JButton(">>>>" + value.toString() + "<<<<<");
+                                    JButton button = new JButton(">>>>" + value + "<<<<<");
                                     ((JPanel)component).add(button, c);
-                                    ((JPanel)component).invalidate();
-                                    ((JPanel)component).repaint();
+                                    component.invalidate();
+                                    component.repaint();
 
                                 }
                             });
@@ -562,4 +562,4 @@ public class TestSplitPane implements DragGestureListener{
         }
     }
 
-};
+}

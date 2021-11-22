@@ -33,16 +33,16 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
       assertVpEq(combinedUpdates){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0000","chris"   ,"VOD.L"   ,1311544800l,100       ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1311544810l,101       ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1311544820l,102       ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544830l,103       )
+          ("NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       ),
+          ("NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ),
+          ("NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544830L,103       )
         )
       }
 
       val viewPortv2 = viewPortContainer.changeRange(session, highPriorityQueue, viewPort.id, ViewPortRange(2, 6))
 
-      assertVpEq(viewPortv2.highPriorityQ.popUpTo(20)){
+      assertVpEq(combineQs(viewPortv2)){
         Table(
           //don't send 2,3 as they already existed in client cache
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
@@ -57,11 +57,18 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
       assertVpEq(combineQs(viewPortv2)){
         Table(
-          //don't send 2,3 as they already existed in client cache
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850l,105       )
         )
       }
 
+      viewPortContainer.runOnce()
+
+      assertVpEq(combineQs(viewPortv2)){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity")
+        )
+      }
     }
 
   }
