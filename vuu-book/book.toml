@@ -1,0 +1,6 @@
+[book]
+authors = ["chris", "stevec"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Vuu - The Realtime View Server"
