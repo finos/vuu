@@ -1,0 +1,28 @@
+.hwHeader {
+  --hw-button-width: 28px;
+  --hw-header-height: 24px;
+
+  align-items: center;
+  background-color: var(--hw-header-bg, inherit);
+  border-bottom: solid 1px var(--hw-layout-border-color, #ccc);
+  display: flex;
+  height: var(--hw-header-height);
+  padding: 0 1px 0 3px;
+}
+
+.hwHeader-title-container {
+  font-size: var(--hw-layout-font-size, 12px);
+  margin-right: auto;
+  padding-left: var(--hw-layout-space, 6px);
+}
+
+.hwHeader .hwButton {
+  --button-height: var(--hw-header-height);
+  --button-width: var(--hw-header-height);
+  min-width: 20px;
+}
+
+.hwHeader-path {
+  font-family: verdana;
+  font-size: 10px;
+}

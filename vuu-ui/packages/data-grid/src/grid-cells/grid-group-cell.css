@@ -1,0 +1,35 @@
+.GridGroupCell {
+  --menu-icon-size: 16px;
+  --menu-item-icon-color: black;
+  --toggle-icon-transform: var(--row-toggle-icon-transform, none);
+
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.GridGroupCell .group-value {
+  cursor: default;
+  display: inline-block;
+  max-width: calc(100% - 30px);
+  overflow: hidden;
+  padding-right: 3px;
+  text-overflow: ellipsis;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+/* does this make sense ? */
+.noToggle .GridGroupCell:first-child {
+  margin-left: 12px;
+}
+
+*[data-icon='arrow-right'] {
+  --menu-icon: var(--svg-caret-right);
+  background-color: var(--menu-item-icon-color);
+  -webkit-mask: var(--menu-icon) center center/var(--menu-icon-size) var(--menu-icon-size);
+  mask: var(--menu-icon) center center/var(--menu-icon-size) var(--menu-icon-size);
+  transition: transform 0.25s;
+  transform: var(--toggle-icon-transform);
+}

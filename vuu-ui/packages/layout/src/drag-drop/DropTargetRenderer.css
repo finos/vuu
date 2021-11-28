@@ -1,0 +1,36 @@
+#hw-drag-canvas {
+  visibility: hidden;
+  z-index: 1;
+  position: absolute;
+  top: 0px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+}
+
+.drawing #hw-drag-canvas {
+  visibility: visible;
+}
+
+path.drop-target {
+  stroke: blue;
+  stroke-width: 4px;
+  fill: transparent;
+}
+
+path.drop-target.centre {
+  stroke: red;
+}
+
+#hw-drop-outline {
+  fill: none;
+  stroke: red;
+  stroke-dasharray: 4 2;
+}
+
+#hw-drop-guides {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.3);
+  stroke-dasharray: 2 3;
+}

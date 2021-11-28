@@ -1,0 +1,22 @@
+name: "Front End CI Build"
+on: push
+
+jobs:
+  build_vuu_ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: "14.x"
+      # Enable node module caching only when yarn.lock is available
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: yarn-deps-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            yarn-deps-${{ hashFiles('yarn.lock') }}
+      - run: cd ./vuu-ui && yarn
+      - run: cd ./vuu-ui && yarn build

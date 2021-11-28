@@ -1,0 +1,167 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="UI Controls/List/Hooks" />
+
+<style>{`
+  .subheading {
+    --mediumdark: '#999999';
+    font-weight: 900;
+    font-size: 13px;
+    color: #999;
+    letter-spacing: 6px;
+    line-height: 24px;
+    margin-bottom: 12px;
+    margin-top: 40px;
+  }
+
+  .link-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    row-gap: 10px;
+  }
+
+  @media (min-width: 620px) {
+    .link-list {
+      row-gap: 20px;
+      column-gap: 20px;
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media all and (-ms-high-contrast:none) {
+  .link-list {
+      display: -ms-grid;
+      -ms-grid-columns: 1fr 1fr;
+      -ms-grid-rows: 1fr 1fr;
+    }
+  }
+
+  .link-item {
+    display: block;
+    padding: 20px 30px 20px 15px;
+    border: 1px solid #00000010;
+    border-radius: 5px;
+    transition: background 150ms ease-out, border 150ms ease-out, transform 150ms ease-out;
+    color: #333333;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .link-item:hover {
+    border-color: #1EA7FD50;
+    transform: translate3d(0, -3px, 0);
+    box-shadow: rgba(0, 0, 0, 0.08) 0 3px 10px 0;
+  }
+
+  .link-item:active {
+    border-color: #1EA7FD;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .link-item strong {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+  }
+  
+  .link-item img {
+    height: 40px;
+    width: 40px;
+    margin-right: 15px;
+    flex: none;
+  }
+
+  .link-item span {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .tip {
+    display: inline-block;
+    border-radius: 1em;
+    font-size: 11px;
+    line-height: 12px;
+    font-weight: 700;
+    background: #E7FDD8;
+    color: #66BF3C;
+    padding: 4px 12px;
+    margin-right: 10px;
+    vertical-align: top;
+  }
+
+  .tip-wrapper {
+    font-size: 13px;
+    line-height: 20px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+
+  .tip-wrapper code {
+    font-size: 12px;
+    display: inline-block;
+  }
+
+  
+`}</style>
+
+# List Hooks
+
+Three hooks are provided for `List` management, they can be used individually or in combination
+to achieve different patterns of behaviour. Whe used in combination, they are most effective when 
+combined in the sequence described below. The hooks can be used to override standard `List` behaviour
+and to create new, custom components based on `List` primitives. This includes pairing `List` displays
+with `Input` or other *focus* elements to create new composite controls such as `Select`, `Combobox`,
+`Dropdown` etc. 
+
+- useSelection
+- useKeyboardNavigation
+- useDropdown
+
+## useSelection
+Inputs
+<table>
+  <tr>
+    <th>property</th><th>required</th><th>type</th><th>default</th><th>notes</th>
+    </tr>
+  <tr>
+    <td>count</td>
+    <td>N</td>
+    <td>number</td>
+    <td>0</td>
+    <td>The selection status is reset when fresh list Items are loaded into List. Count is used as a proxy for the list item source
+    to identify when this changes. This is unreliable - source may change without affecting count</td>
+    </tr>
+  <tr>
+    <td>defaultSelected</td>
+    <td>N</td>
+    <td>[number*]</td>
+    <td>[]</td>
+    <td>Set initial selection state when List should operate in <em>uncontrolled</em> mode. 
+    In this mode, the List will manage selection state internally (and notify consumer of changes via onChange)
+    Always an array. When selectionModel is <em>single</em>, array will only ever hold a single value.
+    </td>
+    </tr>
+  <tr>
+    <td>onChange</td><td>N</td><td>(evt, selected) => void</td><td>undefined</td><td></td>
+    </tr>
+  <tr>
+    <td>selected</td>
+    <td>N</td>
+    <td>[number*]</td>
+    <td>undefined</td>
+    <td>Activates <em>controlled</em> mode. onChange <em>must</em> be provided, defaultSelected <em>must not</em> be provided</td>
+    </tr>
+  <tr>
+    <td>selection</td><td>N</td><td>single | multi | checkbox | checkbox-only | extended</td><td>single</td><td></td>
+    </tr>
+  <tr>
+    <td>selectionKeys</td><td>N</td><td>[keyName+]</td><td>[Enter, Space]</td><td></td>
+    </tr>
+</table>
+
+## useKeyboardNavigation
+
+## useDropdown
+
+

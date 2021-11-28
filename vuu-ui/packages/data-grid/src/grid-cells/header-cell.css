@@ -1,0 +1,68 @@
+.hwHeaderCell {
+  --header-cell-highlight-bg: yellow;
+  --justify-text: flex-start;
+  align-items: stretch;
+  background: var(--grid-header-cell-background);
+  border-bottom: solid 1px var(--heading-border-color);
+  border-right: 1px solid var(--heading-border-color);
+  box-sizing: border-box;
+  color: var(--grid-text-color);
+  cursor: default;
+  display: inline-flex;
+  font-weight: bold;
+  height: 100%;
+  outline: 0;
+  position: relative;
+  vertical-align: top;
+}
+
+.hwHeaderCell:focus-visible:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0px;
+  border: dotted var(--focus-visible-border-color) 2px;
+}
+
+.hwHeaderCell-number {
+  --justify-text: flex-end;
+  --cell-padding: 0 1px 0 9px;
+}
+
+.hwHeaderCell.noBottomBorder {
+  border-bottom: solid 1px transparent;
+}
+
+.hwHeaderCell-resizing {
+  background-color: var(--header-cell-highlight-bg);
+}
+
+.innerHeaderCell {
+  flex: 1 1 100%;
+  font-family: RobotoCondensedBold;
+  overflow: hidden;
+  padding: var(--cell-padding);
+  position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cellWrapper {
+  align-items: center;
+  justify-content: var(--justify-text);
+  display: flex;
+  height: 100%;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.resizeHandle {
+  background-color: rgba(180, 180, 180, 0.05);
+  cursor: col-resize;
+  flex: 0 0 8px;
+  position: relative;
+  right: -5px;
+  z-index: 1;
+}

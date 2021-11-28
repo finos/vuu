@@ -1,0 +1,21 @@
+{
+  "name": "@vuu-ui/data-store",
+  "version": "0.0.14",
+  "main": "src/index.js",
+  "author": "heswell",
+  "module": "index.js",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/build.js"
+  },
+  "files": [
+    "index.js",
+    "/src"
+  ],
+  "dependencies": {
+    "d3-array": "^2.11.0"
+  },
+  "peerDependencies": {
+    "@vuu-ui/utils": "0.0.14"
+  }
+}

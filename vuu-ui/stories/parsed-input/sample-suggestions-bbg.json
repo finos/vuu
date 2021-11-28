@@ -1,0 +1,502 @@
+[
+  {
+    "value": "AAA LN",
+    "displayValue": ["AAA LN", "AAA.L London PLC"],
+    "completion": "AA.L London PLC"
+  },
+  {
+    "value": "AAA US",
+    "displayValue": ["AAA US", "AAA.N Corporation"],
+    "completion": "AA.N Corporation"
+  },
+  {
+    "value": "AAA OQ",
+    "displayValue": ["AAA OQ", "AAA.OQ Co."],
+    "completion": "AA.OQ Co."
+  },
+  {
+    "value": "AAA NL",
+    "displayValue": ["AAA NL", "AAA.AS B.V"],
+    "completion": "AA.AS B.V"
+  },
+  {
+    "value": "AAA OE",
+    "displayValue": ["AAA OE", "AAA.OE Co."],
+    "completion": "AA.OE Co."
+  },
+  {
+    "value": "AAA MI",
+    "displayValue": ["AAA MI", "AAA.MI Co."],
+    "completion": "AA.MI Co."
+  },
+  {
+    "value": "AAA A",
+    "displayValue": ["AAA A", "AAA.A Co."],
+    "completion": "AA.A Co."
+  },
+  {
+    "value": "AAA PA",
+    "displayValue": ["AAA PA", "AAA.PA Co."],
+    "completion": "AA.PA Co."
+  },
+  {
+    "value": "AAA MC",
+    "displayValue": ["AAA MC", "AAA.MC Co."],
+    "completion": "AA.MC Co."
+  },
+  {
+    "value": "AAA DE",
+    "displayValue": ["AAA DE", "AAA.DE Co."],
+    "completion": "AA.DE Co."
+  },
+  {
+    "value": "AAB LN",
+    "displayValue": ["AAB LN", "AAB.L London PLC"],
+    "completion": "AB.L London PLC"
+  },
+  {
+    "value": "AAB US",
+    "displayValue": ["AAB US", "AAB.N Corporation"],
+    "completion": "AB.N Corporation"
+  },
+  {
+    "value": "AAB OQ",
+    "displayValue": ["AAB OQ", "AAB.OQ Co."],
+    "completion": "AB.OQ Co."
+  },
+  {
+    "value": "AAB NL",
+    "displayValue": ["AAB NL", "AAB.AS B.V"],
+    "completion": "AB.AS B.V"
+  },
+  {
+    "value": "AAB OE",
+    "displayValue": ["AAB OE", "AAB.OE Co."],
+    "completion": "AB.OE Co."
+  },
+  {
+    "value": "AAB MI",
+    "displayValue": ["AAB MI", "AAB.MI Co."],
+    "completion": "AB.MI Co."
+  },
+  {
+    "value": "AAB A",
+    "displayValue": ["AAB A", "AAB.A Co."],
+    "completion": "AB.A Co."
+  },
+  {
+    "value": "AAB PA",
+    "displayValue": ["AAB PA", "AAB.PA Co."],
+    "completion": "AB.PA Co."
+  },
+  {
+    "value": "AAB MC",
+    "displayValue": ["AAB MC", "AAB.MC Co."],
+    "completion": "AB.MC Co."
+  },
+  {
+    "value": "AAB DE",
+    "displayValue": ["AAB DE", "AAB.DE Co."],
+    "completion": "AB.DE Co."
+  },
+  {
+    "value": "AAC LN",
+    "displayValue": ["AAC LN", "AAC.L London PLC"],
+    "completion": "AC.L London PLC"
+  },
+  {
+    "value": "AAC US",
+    "displayValue": ["AAC US", "AAC.N Corporation"],
+    "completion": "AC.N Corporation"
+  },
+  {
+    "value": "AAC OQ",
+    "displayValue": ["AAC OQ", "AAC.OQ Co."],
+    "completion": "AC.OQ Co."
+  },
+  {
+    "value": "AAC NL",
+    "displayValue": ["AAC NL", "AAC.AS B.V"],
+    "completion": "AC.AS B.V"
+  },
+  {
+    "value": "AAC OE",
+    "displayValue": ["AAC OE", "AAC.OE Co."],
+    "completion": "AC.OE Co."
+  },
+  {
+    "value": "AAC MI",
+    "displayValue": ["AAC MI", "AAC.MI Co."],
+    "completion": "AC.MI Co."
+  },
+  {
+    "value": "AAC A",
+    "displayValue": ["AAC A", "AAC.A Co."],
+    "completion": "AC.A Co."
+  },
+  {
+    "value": "AAC PA",
+    "displayValue": ["AAC PA", "AAC.PA Co."],
+    "completion": "AC.PA Co."
+  },
+  {
+    "value": "AAC MC",
+    "displayValue": ["AAC MC", "AAC.MC Co."],
+    "completion": "AC.MC Co."
+  },
+  {
+    "value": "AAC DE",
+    "displayValue": ["AAC DE", "AAC.DE Co."],
+    "completion": "AC.DE Co."
+  },
+  {
+    "value": "AAD LN",
+    "displayValue": ["AAD LN", "AAD.L London PLC"],
+    "completion": "AD.L London PLC"
+  },
+  {
+    "value": "AAD US",
+    "displayValue": ["AAD US", "AAD.N Corporation"],
+    "completion": "AD.N Corporation"
+  },
+  {
+    "value": "AAD OQ",
+    "displayValue": ["AAD OQ", "AAD.OQ Co."],
+    "completion": "AD.OQ Co."
+  },
+  {
+    "value": "AAD NL",
+    "displayValue": ["AAD NL", "AAD.AS B.V"],
+    "completion": "AD.AS B.V"
+  },
+  {
+    "value": "AAD OE",
+    "displayValue": ["AAD OE", "AAD.OE Co."],
+    "completion": "AD.OE Co."
+  },
+  {
+    "value": "AAD MI",
+    "displayValue": ["AAD MI", "AAD.MI Co."],
+    "completion": "AD.MI Co."
+  },
+  {
+    "value": "AAD A",
+    "displayValue": ["AAD A", "AAD.A Co."],
+    "completion": "AD.A Co."
+  },
+  {
+    "value": "AAD PA",
+    "displayValue": ["AAD PA", "AAD.PA Co."],
+    "completion": "AD.PA Co."
+  },
+  {
+    "value": "AAD MC",
+    "displayValue": ["AAD MC", "AAD.MC Co."],
+    "completion": "AD.MC Co."
+  },
+  {
+    "value": "AAD DE",
+    "displayValue": ["AAD DE", "AAD.DE Co."],
+    "completion": "AD.DE Co."
+  },
+  {
+    "value": "AAE LN",
+    "displayValue": ["AAE LN", "AAE.L London PLC"],
+    "completion": "AE.L London PLC"
+  },
+  {
+    "value": "AAE US",
+    "displayValue": ["AAE US", "AAE.N Corporation"],
+    "completion": "AE.N Corporation"
+  },
+  {
+    "value": "AAE OQ",
+    "displayValue": ["AAE OQ", "AAE.OQ Co."],
+    "completion": "AE.OQ Co."
+  },
+  {
+    "value": "AAE NL",
+    "displayValue": ["AAE NL", "AAE.AS B.V"],
+    "completion": "AE.AS B.V"
+  },
+  {
+    "value": "AAE OE",
+    "displayValue": ["AAE OE", "AAE.OE Co."],
+    "completion": "AE.OE Co."
+  },
+  {
+    "value": "AAE MI",
+    "displayValue": ["AAE MI", "AAE.MI Co."],
+    "completion": "AE.MI Co."
+  },
+  {
+    "value": "AAE A",
+    "displayValue": ["AAE A", "AAE.A Co."],
+    "completion": "AE.A Co."
+  },
+  {
+    "value": "AAE PA",
+    "displayValue": ["AAE PA", "AAE.PA Co."],
+    "completion": "AE.PA Co."
+  },
+  {
+    "value": "AAE MC",
+    "displayValue": ["AAE MC", "AAE.MC Co."],
+    "completion": "AE.MC Co."
+  },
+  {
+    "value": "AAE DE",
+    "displayValue": ["AAE DE", "AAE.DE Co."],
+    "completion": "AE.DE Co."
+  },
+  {
+    "value": "AAF LN",
+    "displayValue": ["AAF LN", "AAF.L London PLC"],
+    "completion": "AF.L London PLC"
+  },
+  {
+    "value": "AAF US",
+    "displayValue": ["AAF US", "AAF.N Corporation"],
+    "completion": "AF.N Corporation"
+  },
+  {
+    "value": "AAF OQ",
+    "displayValue": ["AAF OQ", "AAF.OQ Co."],
+    "completion": "AF.OQ Co."
+  },
+  {
+    "value": "AAF NL",
+    "displayValue": ["AAF NL", "AAF.AS B.V"],
+    "completion": "AF.AS B.V"
+  },
+  {
+    "value": "AAF OE",
+    "displayValue": ["AAF OE", "AAF.OE Co."],
+    "completion": "AF.OE Co."
+  },
+  {
+    "value": "AAF MI",
+    "displayValue": ["AAF MI", "AAF.MI Co."],
+    "completion": "AF.MI Co."
+  },
+  {
+    "value": "AAF A",
+    "displayValue": ["AAF A", "AAF.A Co."],
+    "completion": "AF.A Co."
+  },
+  {
+    "value": "AAF PA",
+    "displayValue": ["AAF PA", "AAF.PA Co."],
+    "completion": "AF.PA Co."
+  },
+  {
+    "value": "AAF MC",
+    "displayValue": ["AAF MC", "AAF.MC Co."],
+    "completion": "AF.MC Co."
+  },
+  {
+    "value": "AAF DE",
+    "displayValue": ["AAF DE", "AAF.DE Co."],
+    "completion": "AF.DE Co."
+  },
+  {
+    "value": "AAG LN",
+    "displayValue": ["AAG LN", "AAG.L London PLC"],
+    "completion": "AG.L London PLC"
+  },
+  {
+    "value": "AAG US",
+    "displayValue": ["AAG US", "AAG.N Corporation"],
+    "completion": "AG.N Corporation"
+  },
+  {
+    "value": "AAG OQ",
+    "displayValue": ["AAG OQ", "AAG.OQ Co."],
+    "completion": "AG.OQ Co."
+  },
+  {
+    "value": "AAG NL",
+    "displayValue": ["AAG NL", "AAG.AS B.V"],
+    "completion": "AG.AS B.V"
+  },
+  {
+    "value": "AAG OE",
+    "displayValue": ["AAG OE", "AAG.OE Co."],
+    "completion": "AG.OE Co."
+  },
+  {
+    "value": "AAG MI",
+    "displayValue": ["AAG MI", "AAG.MI Co."],
+    "completion": "AG.MI Co."
+  },
+  {
+    "value": "AAG A",
+    "displayValue": ["AAG A", "AAG.A Co."],
+    "completion": "AG.A Co."
+  },
+  {
+    "value": "AAG PA",
+    "displayValue": ["AAG PA", "AAG.PA Co."],
+    "completion": "AG.PA Co."
+  },
+  {
+    "value": "AAG MC",
+    "displayValue": ["AAG MC", "AAG.MC Co."],
+    "completion": "AG.MC Co."
+  },
+  {
+    "value": "AAG DE",
+    "displayValue": ["AAG DE", "AAG.DE Co."],
+    "completion": "AG.DE Co."
+  },
+  {
+    "value": "AAH LN",
+    "displayValue": ["AAH LN", "AAH.L London PLC"],
+    "completion": "AH.L London PLC"
+  },
+  {
+    "value": "AAH US",
+    "displayValue": ["AAH US", "AAH.N Corporation"],
+    "completion": "AH.N Corporation"
+  },
+  {
+    "value": "AAH OQ",
+    "displayValue": ["AAH OQ", "AAH.OQ Co."],
+    "completion": "AH.OQ Co."
+  },
+  {
+    "value": "AAH NL",
+    "displayValue": ["AAH NL", "AAH.AS B.V"],
+    "completion": "AH.AS B.V"
+  },
+  {
+    "value": "AAH OE",
+    "displayValue": ["AAH OE", "AAH.OE Co."],
+    "completion": "AH.OE Co."
+  },
+  {
+    "value": "AAH MI",
+    "displayValue": ["AAH MI", "AAH.MI Co."],
+    "completion": "AH.MI Co."
+  },
+  {
+    "value": "AAH A",
+    "displayValue": ["AAH A", "AAH.A Co."],
+    "completion": "AH.A Co."
+  },
+  {
+    "value": "AAH PA",
+    "displayValue": ["AAH PA", "AAH.PA Co."],
+    "completion": "AH.PA Co."
+  },
+  {
+    "value": "AAH MC",
+    "displayValue": ["AAH MC", "AAH.MC Co."],
+    "completion": "AH.MC Co."
+  },
+  {
+    "value": "AAH DE",
+    "displayValue": ["AAH DE", "AAH.DE Co."],
+    "completion": "AH.DE Co."
+  },
+  {
+    "value": "AAI LN",
+    "displayValue": ["AAI LN", "AAI.L London PLC"],
+    "completion": "AI.L London PLC"
+  },
+  {
+    "value": "AAI US",
+    "displayValue": ["AAI US", "AAI.N Corporation"],
+    "completion": "AI.N Corporation"
+  },
+  {
+    "value": "AAI OQ",
+    "displayValue": ["AAI OQ", "AAI.OQ Co."],
+    "completion": "AI.OQ Co."
+  },
+  {
+    "value": "AAI NL",
+    "displayValue": ["AAI NL", "AAI.AS B.V"],
+    "completion": "AI.AS B.V"
+  },
+  {
+    "value": "AAI OE",
+    "displayValue": ["AAI OE", "AAI.OE Co."],
+    "completion": "AI.OE Co."
+  },
+  {
+    "value": "AAI MI",
+    "displayValue": ["AAI MI", "AAI.MI Co."],
+    "completion": "AI.MI Co."
+  },
+  {
+    "value": "AAI A",
+    "displayValue": ["AAI A", "AAI.A Co."],
+    "completion": "AI.A Co."
+  },
+  {
+    "value": "AAI PA",
+    "displayValue": ["AAI PA", "AAI.PA Co."],
+    "completion": "AI.PA Co."
+  },
+  {
+    "value": "AAI MC",
+    "displayValue": ["AAI MC", "AAI.MC Co."],
+    "completion": "AI.MC Co."
+  },
+  {
+    "value": "AAI DE",
+    "displayValue": ["AAI DE", "AAI.DE Co."],
+    "completion": "AI.DE Co."
+  },
+  {
+    "value": "AAJ LN",
+    "displayValue": ["AAJ LN", "AAJ.L London PLC"],
+    "completion": "AJ.L London PLC"
+  },
+  {
+    "value": "AAJ US",
+    "displayValue": ["AAJ US", "AAJ.N Corporation"],
+    "completion": "AJ.N Corporation"
+  },
+  {
+    "value": "AAJ OQ",
+    "displayValue": ["AAJ OQ", "AAJ.OQ Co."],
+    "completion": "AJ.OQ Co."
+  },
+  {
+    "value": "AAJ NL",
+    "displayValue": ["AAJ NL", "AAJ.AS B.V"],
+    "completion": "AJ.AS B.V"
+  },
+  {
+    "value": "AAJ OE",
+    "displayValue": ["AAJ OE", "AAJ.OE Co."],
+    "completion": "AJ.OE Co."
+  },
+  {
+    "value": "AAJ MI",
+    "displayValue": ["AAJ MI", "AAJ.MI Co."],
+    "completion": "AJ.MI Co."
+  },
+  {
+    "value": "AAJ A",
+    "displayValue": ["AAJ A", "AAJ.A Co."],
+    "completion": "AJ.A Co."
+  },
+  {
+    "value": "AAJ PA",
+    "displayValue": ["AAJ PA", "AAJ.PA Co."],
+    "completion": "AJ.PA Co."
+  },
+  {
+    "value": "AAJ MC",
+    "displayValue": ["AAJ MC", "AAJ.MC Co."],
+    "completion": "AJ.MC Co."
+  },
+  {
+    "value": "AAJ DE",
+    "displayValue": ["AAJ DE", "AAJ.DE Co."],
+    "completion": "AJ.DE Co."
+  }
+]

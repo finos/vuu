@@ -1,0 +1,12 @@
+.jpmuitk-dark {
+  background-color: var(--grey800);
+}
+
+.center-story {
+  background-color: inherit;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

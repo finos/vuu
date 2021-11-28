@@ -1,0 +1,14 @@
+.dropdown {
+  z-index: 10;
+  position: absolute;
+  background-color: white;
+  min-width: 100px;
+}
+
+.dropdown .list {
+  width: 100%;
+}
+
+.hwDropdown {
+  min-width: 100px;
+}

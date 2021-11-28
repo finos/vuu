@@ -1,0 +1,15 @@
+.hwFilterIndicator {
+  --menu-icon-size: 12px;
+  --menu-item-icon-color: black;
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 18px;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.hwFilterIndicator + .innerHeaderCell {
+  padding-left: 0;
+}

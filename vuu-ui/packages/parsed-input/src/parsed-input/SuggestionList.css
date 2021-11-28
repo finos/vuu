@@ -1,0 +1,22 @@
+.hwSelectionList-commit {
+  background-color: rgb(199, 247, 199);
+  flex: 1 1 auto;
+}
+
+.hwSelectionList-close-list {
+  background-color: rgb(199, 247, 199);
+  flex: 1 1 auto;
+}
+
+.hwSelectionList-ListItem {
+  display: flex;
+  gap: 12px;
+}
+
+.hwSelectionList-listCol {
+  flex: 1 1 0;
+}
+
+.hwSelectionList-listCol:nth-child(1) {
+  flex: 0 0 60px;
+}

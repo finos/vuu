@@ -17,7 +17,21 @@
 2) Go to the SwingClientMain.scala, right click and run
 
 
+**Build the HTML client**
 
+1) install node.js version 14+ and yarn
+2) In a terminal, change directory into the ./vuu-ui folder
+3) yarn install 
+4) type> ```yarn```
+5) build the ui library packages
+6) type> ```yarn build```
+7) build the sample application
+8) change directory into ./vuu-ui/packages/app-vuu-example
+9) type> ```yarn build```
+10) run the sample application
+11) type> ```yarn start```
+
+- 
  
 
 

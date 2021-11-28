@@ -1,0 +1,17 @@
+export const ColumnHide = 'column-hide';
+export const FilterEdit = 'filter-edit';
+export const FilterRemove = 'filter-remove';
+export const FilterRemoveColumn = 'filter-remove-column';
+export const Group = 'group';
+export const GroupAdd = 'group-add';
+export const LinkTable = 'link-table';
+export const Pivot = 'pivot';
+export const PivotAdd = 'pivot-add';
+export const Sort = 'sort';
+export const SortAscending = 'sort-asc';
+export const SortDescending = 'sort-dsc';
+export const SortAddAscending = 'sort-add-asc';
+export const SortAddDescending = 'sort-add-dsc';
+export const SortRemove = 'sort-remove';
+export const SortReverse = 'sort-reverse';
+export const MenuRpcCall = 'MENU_RPC_CALL';

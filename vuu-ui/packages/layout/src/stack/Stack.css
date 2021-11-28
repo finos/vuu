@@ -1,0 +1,37 @@
+.Tabs {
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: column;
+}
+
+.Tabs .Toolbar:before {
+  left: 0;
+  width: 100%;
+  bottom: 0;
+  height: 1px;
+  content: '';
+  position: absolute;
+  background: var(--grey60);
+}
+
+.hwTabHeader {
+  border-bottom: none;
+}
+
+.hwTabHeader + .hwFlexbox,
+.hwTabHeader + * {
+  flex: 1;
+}
+
+.hwTabHeader + .hwView > .hwHeader {
+  height: 0;
+  overflow: hidden;
+}
+
+/* .Splitter.column + .Flexbox > .Tabs:first-child {
+  border-top: solid 1px lightgrey;
+} */
+
+.Layout-svg-button {
+  --spacing-medium: 5px;
+}

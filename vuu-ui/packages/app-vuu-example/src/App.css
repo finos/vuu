@@ -1,0 +1,55 @@
+body {
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.App {
+  --spectrum-alias-single-line-height: 20px;
+  --spectrum-global-dimension-size-400: 20px;
+  --spectrum-alias-border-radius-regular: 0;
+  --spectrum-alias-border-size-thin: 0;
+  --spectrum-global-dimension-size-85: 3px;
+  --spectrum-global-dimension-size-225: 16px;
+
+  --hwDrawer-leading-edge-border: solid 1px var(--surface2);
+
+  --app-font-family: 'Roboto Condensed', Roboto;
+
+  font-family: var(--app-font-family);
+}
+
+.ToolbarField .Input {
+  border: solid 1px #ccc;
+  height: 28px;
+  padding: 0 8px;
+}
+
+.DraggableLayout {
+  width: 100%;
+  height: 100%;
+}
+
+.DragIcon.dragging {
+  background-color: orange !important;
+}
+
+.ToolbarField > svg {
+  fill: var(--spectrum-global-color-static-gray-600);
+  width: 18px;
+  height: 18px;
+}
+
+.vuHeaderCell {
+  text-transform: uppercase;
+}
+
+.vuDialog {
+  margin-top: 20%;
+}
+
+.vuDialog .Grid {
+  --hw-grid-flex-size: 1 1 auto;
+}

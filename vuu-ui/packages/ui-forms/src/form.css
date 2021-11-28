@@ -1,0 +1,89 @@
+.leggy-form {
+  --leg-width: 500px;
+  --border-color: #ccc;
+
+  box-sizing: border-box;
+  width: var(--leg-width);
+  border-color: #ccc;
+  border-width: 1px;
+  border-style: solid solid none solid;
+  padding-right: 24px;
+  position: relative;
+}
+
+.field-row {
+  height: 24px;
+  line-height: 24px;
+  border-bottom: solid 1px var(--border-color);
+  display: flex;
+  align-items: stretch;
+}
+
+.field-label {
+  flex: 0 0 110px;
+  text-align: right;
+  padding-right: 6px;
+  box-sizing: border-box;
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
+
+.field {
+  flex: 1 1 0;
+  border-left: solid 1px var(--border-color);
+}
+
+.field:focus-within > .control {
+  box-shadow: 0 0 0 2px rgb(125, 173, 217);
+  z-index: 2;
+}
+
+.field.popup-active > .control {
+  box-shadow: 0 0 0 2px rgba(125, 173, 217, 0.6);
+  z-index: 2;
+}
+
+.empty-row .field {
+  border-left: none;
+}
+
+.field .control {
+  height: 100%;
+  position: relative;
+}
+
+.field .control:focus {
+  outline: none;
+}
+
+.field .empty {
+  background-color: transparent;
+  height: 100%;
+  outline: none;
+}
+
+.add-leg-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 24px;
+  box-sizing: border-box;
+  border-color: #ccc;
+  border-width: 1px;
+  border-style: none none solid solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.debug-panel {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.debug-panel span {
+  flex: 1 1 0;
+  line-height: 24px;
+}

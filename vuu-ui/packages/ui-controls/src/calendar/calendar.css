@@ -1,0 +1,179 @@
+.hwCalendar {
+  --calendar-row-height: 28px;
+  --selected-day-color: #fff;
+  --selected-day-bg: #1a8fff;
+  --text-color: #777;
+  --text-color-light: #ccc;
+  --border-color: #eee;
+  --bg-color: #f9f9f9;
+  --neutral-color: #fff;
+
+  display: block;
+  position: relative;
+  width: 100%;
+  background: var(--neutral-color);
+  border: 1px solid var(--border-color);
+  font-size: 0.75rem;
+}
+
+.hwCalendar .hwCalendar-row {
+  align-items: stretch;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  height: var(--calendar-row-height);
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.hwCalendar .hwCalendar-header {
+  text-transform: uppercase;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-color);
+  line-height: 2rem;
+}
+
+.hwCalendar .hwCalendar-header .icon {
+  cursor: pointer;
+  transition: 0.15s ease-out;
+  flex: 0 0 12px;
+  padding: 4px 0;
+}
+
+.hwCalendar .hwCalendar-header .icon:hover {
+  transform: scale(1.75);
+  transition: 0.25s ease-out;
+  color: var(--main-color);
+}
+
+.hwCalendar .hwCalendar-header .icon:first-of-type {
+  margin-left: 1em;
+}
+
+.hwCalendar .hwCalendar-header .icon:last-of-type {
+  margin-right: 1em;
+}
+
+.hwCalendar .hwCalendar-header .current-month {
+  flex: 1 1 0;
+  text-align: center;
+}
+
+.hwCalendar .days {
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--text-color-light);
+  font-size: 70%;
+  padding: 0.75em 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.hwCalendar .hwCalendar-row {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.hwCalendar-body {
+  overflow: hidden;
+}
+
+.hwCalendar-body.weeks-in-month-5 {
+  height: 142px;
+}
+
+.hwCalendar-body.weeks-in-month-6 {
+  height: 170px;
+}
+
+.hwCalendar-body-inner-container {
+  margin-top: 0;
+}
+
+@keyframes slideup-4 {
+  to {
+    margin-top: -113px;
+  }
+}
+
+@keyframes slideup-5 {
+  to {
+    margin-top: -142px;
+  }
+}
+
+@keyframes slidedown {
+  to {
+    margin-top: 0%;
+  }
+}
+
+.other-weeks-leading-4 .hwCalendar-body-inner-container {
+  animation: slideup-4 0.2s forwards;
+}
+.other-weeks-leading-5 .hwCalendar-body-inner-container {
+  animation: slideup-5 0.2s forwards;
+}
+
+.other-weeks-trailing-4 .hwCalendar-body-inner-container {
+  margin-top: -113px;
+  animation: slidedown 0.2s forwards;
+}
+
+.other-weeks-trailing-5 .hwCalendar-body-inner-container {
+  margin-top: -142px;
+  animation: slidedown 0.2s forwards;
+}
+
+.hwCalendar .hwCalendar-body .row:last-child {
+  border-bottom: none;
+}
+
+.hwCalendar .hwCalendar-cell {
+  align-items: center;
+  border-right: 1px solid var(--border-color);
+  box-sizing: border-box;
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 0;
+  flex-basis: calc(100% / 7);
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hwCalendar .hwCalendar-days .hwCalendar-cell {
+  height: 1.5rem;
+  line-height: 1.5rem;
+  text-align: center;
+}
+
+.hwCalendar .hwCalendar-cell:hover {
+  background-color: inherit;
+}
+
+.hwCalendar .hwCalendar-body .selected {
+  background-color: var(--selected-day-bg);
+  color: var(--selected-day-color);
+}
+
+.hwCalendar .hwCalendar-cell:last-child {
+  border-right: none;
+}
+
+.hwCalendar .hwCalendar-cell .hwCalendar-day {
+  line-height: 1.75rem;
+}
+
+.hwCalendar .hwCalendar-body .otherMonth,
+.hwCalendar .hwCalendar-body .disabled {
+  color: var(--text-color-light);
+  pointer-events: none;
+}
+
+.hwButton[aria-label^='prev']:after {
+  --svg-icon: var(--svg-chevron-left);
+}
+
+.hwButton[aria-label^='next']:after {
+  --svg-icon: var(--svg-chevron-right);
+}

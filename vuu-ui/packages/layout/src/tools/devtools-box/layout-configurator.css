@@ -1,0 +1,112 @@
+[data-design-mode='true'] .Component {
+  filter: grayscale(100%);
+  opacity: 0.4;
+}
+
+[data-design-mode='true'] .Component:after {
+  color: black;
+  content: 'Component';
+  height: 12px;
+  background-color: yellow;
+}
+
+.LayoutConfigurator {
+  --margin-color: #f3cea5;
+  --border-color: #fddda0;
+  --padding-color: #c6d092;
+  --content-color: #8cb6c0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background-color: var(--margin-color);
+}
+
+.LayoutConfigurator .layout-outer {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.LayoutBox {
+  --hw-control-font-size: 13px;
+  --hw-text-input-bg: rgba(255, 255, 255, 0.3);
+  --hw-text-input-padding: 3px;
+  --hw-text-input-position: absolute;
+  --hw-text-input-width: 30px;
+
+  flex: 1 1 auto;
+}
+
+.LayoutBox > .layout-top {
+  flex: 0 0 40px;
+  padding-left: 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+}
+
+.LayoutBox > .layout-bottom {
+  flex: 0 0 40px;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.LayoutBox > .layout-inner > .layout-right,
+.LayoutBox > .layout-inner > .layout-left {
+  flex: 0 0 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.layout-top,
+.layout-bottom {
+  --hw-text-input-margin: 0 0 0 -15px;
+}
+
+.layout-top > .layout-input,
+.layout-bottom > .layout-input {
+  left: 50%;
+}
+
+.LayoutBox > .layout-inner {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.LayoutBox.layout-margin {
+  background-color: var(--margin-color);
+  border: dashed 2px black;
+}
+
+.LayoutBox.layout-border {
+  background-color: var(--border-color);
+  border: solid 2px black;
+}
+
+.LayoutBox.layout-padding {
+  background-color: var(--padding-color);
+  border: dashed 2px black;
+}
+
+.LayoutBox .layout-content {
+  flex: 1 1 auto;
+  background-color: var(--content-color);
+  border: solid 2px #808080;
+}
+
+.LayoutBox .layout-title {
+  color: #161616;
+  font-size: 11px;
+  left: 4px;
+  line-height: 15px;
+  position: absolute;
+  top: 1px;
+}

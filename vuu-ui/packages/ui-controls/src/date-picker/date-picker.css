@@ -1,0 +1,14 @@
+.composite-item .dropdown-showing {
+  box-shadow: 0 0 0 2px #8fb3e3;
+  z-index: 2;
+}
+
+.combo-box-dropdown-list .hwListItem {
+  line-height: 1.25rem;
+  padding: 0 6px;
+  cursor: default;
+}
+
+.hwCalendar-dropdown.hwDropdown {
+  min-width: 230px;
+}

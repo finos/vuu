@@ -1,0 +1,26 @@
+.vuuFilteredGrid {
+  --hwParsedInput-background: white;
+  --hwParsedInput-input-font-size: 12px;
+  --hwParsedInput-height: 28px;
+  --hwParsedInput-border-style: none none none solid;
+  --hwParsedInput-width: calc(100% - var(--hwParsedInput-height));
+  --hwView-flex-direction: row;
+  --hwView-flex-wrap: wrap;
+  --hwDataGrid-flex: 100% 0 0;
+  --hwDataGrid-font-size: 10px;
+  --hwDataGridCell-border-style: none;
+  --hwDataGridRow-background-odd: var(--surface1);
+}
+
+.vuuFilterButton {
+  flex: 0 0 var(--hwParsedInput-height);
+  height: var(--hwParsedInput-height);
+}
+
+.vuuFilteredGrid .hwView-main {
+  position: relative;
+}
+
+.vuuFilteredGrid .hwDataGrid {
+  height: calc(100% - 30px);
+}

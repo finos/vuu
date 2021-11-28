@@ -1,0 +1,10 @@
+.hwIcon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+}
+
+.hwIcon .hwIcon-path {
+  fill: grey;
+}

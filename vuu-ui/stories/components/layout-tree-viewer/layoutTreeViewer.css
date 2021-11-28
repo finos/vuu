@@ -1,0 +1,116 @@
+.LayoutTreeViewer {
+  background-color: #ccc;
+  font-family: arial;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.LayoutTreeViewer .parent-row {
+  flex: 0 0 32px;
+}
+
+.LayoutTreeViewer .slide-container {
+  flex: 1 1 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.slide-container .slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  bottom: 0;
+}
+
+.sliding.slide-container .slide {
+  transition: transform 0.3s ease-out;
+}
+
+.slide-container .slide-1 {
+  transform: translate(0, 0);
+}
+.slide-container .slide-2 {
+  transform: translate(100%, 0);
+}
+.sliding.slide-container .slide-1 {
+  transform: translate(-100%, 0);
+}
+.sliding.slide-container .slide-2 {
+  transform: translate(0, 0);
+}
+
+.slide-container .slide-3 {
+  transform: translate(0, 0);
+}
+.slide-container .slide-4 {
+  transform: translate(-100%, 0);
+}
+.sliding.slide-container .slide-3 {
+  transform: translate(100%, 0);
+}
+.sliding.slide-container .slide-4 {
+  transform: translate(0, 0);
+}
+
+.LayoutTreeViewer .node {
+  display: flex;
+  align-items: center;
+  line-height: 32px;
+}
+
+.node-children {
+  padding-left: 35px;
+  height: 0;
+  transition: height 0.4s;
+  overflow: hidden;
+  position: relative;
+}
+
+.expanded.node-children {
+  height: auto;
+}
+
+.expanding.node-children .node-children-inner-container,
+.collapsing.node-children .node-children-inner-container {
+  position: absolute;
+  left: 35px;
+  bottom: 0;
+  right: 0;
+}
+
+.expanded.node-children:not(.collapsing) .node-children-inner-container {
+  position: static;
+}
+
+.node > .toggle-node {
+  flex: 0 0 20px;
+  text-align: center;
+}
+
+.node > .active.toggle-node {
+  cursor: pointer;
+}
+
+.node.selected > .node-path,
+.node.selected > .node-label {
+  background-color: blue;
+  color: white;
+}
+
+.node:not(.selected) > .node-label {
+  cursor: pointer;
+}
+
+.node > .node-label {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+.node > .node-slide {
+  flex: 0 0 32px;
+  text-align: center;
+}
+.node > .active.node-slide {
+  cursor: pointer;
+}

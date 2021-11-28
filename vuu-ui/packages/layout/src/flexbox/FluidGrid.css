@@ -1,0 +1,134 @@
+:root {
+  --hw-space-unit: 4px;
+  --hw-fluid-grid-col-bg: rgba(252, 209, 232, 0.7);
+}
+
+.hwFluidGrid {
+  --gap: var(--gutter-width);
+
+  display: flex;
+  gap: calc(var(--grid-gap) * var(--hw-space-unit));
+  flex-wrap: wrap;
+  padding: 0;
+}
+
+.hwFluidGrid > * {
+  --gutter-width: calc(var(--hw-flex-gap) * var(--hw-space-unit));
+  --gutter-count: calc(var(--parent-col-count) - 1);
+  --total-gutter-width: calc(var(--gutter-count) * var(--gutter-width));
+  --available-width: calc(100% - var(--total-gutter-width));
+
+  flex-basis: 0;
+  flex-grow: 1;
+  flex-shrink: 1;
+  position: relative;
+}
+
+.hwFluidGrid > *:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: dashed 2px blue;
+}
+
+.hwFluidGrid > [data-xs] {
+  --internal-gutter-count: calc(var(--col-span) - 1);
+  --percent-width: calc(var(--col-span) / var(--parent-col-count));
+  --internal-gutter-width: calc(var(--internal-gutter-count) * var(--gutter-width));
+  flex-basis: calc(var(--available-width) * var(--percent-width) + var(--internal-gutter-width));
+  flex-grow: 0;
+}
+
+.hwFluidGrid > [data-xs='1'] {
+  --col-span: 1;
+}
+.hwFluidGrid > [data-xs='2'] {
+  --col-span: 2;
+}
+.hwFluidGrid > [data-xs='3'] {
+  --col-span: 3;
+}
+
+.hwFluidGrid > [data-xs='4'] {
+  --col-span: 4;
+}
+
+.hwFluidGrid > [data-xs='6'] {
+  --col-span: 6;
+}
+
+.hwFluidGrid > [data-xs='8'] {
+  --col-span: 8;
+}
+
+.hwFluidGrid > [data-xs='9'] {
+  --col-span: 9;
+}
+.hwFluidGrid > [data-xs='10'] {
+  --col-span: 10;
+}
+.hwFluidGrid > [data-xs='11'] {
+  --col-span: 11;
+}
+
+.hwFluidGrid > [data-xs='12'] {
+  --col-span: 12;
+}
+
+@media (min-width: 600px) {
+  .hwFluidGrid > [data-sm='1'] {
+    --col-span: 1;
+  }
+  .hwFluidGrid > [data-sm='2'] {
+    --col-span: 2;
+  }
+
+  .hwFluidGrid > [data-sm='3'] {
+    --col-span: 3;
+  }
+
+  .hwFluidGrid > [data-sm='4'] {
+    --col-span: 4;
+  }
+
+  .hwFluidGrid > [data-sm='6'] {
+    --col-span: 6;
+  }
+
+  .hwFluidGrid > [data-sm='8'] {
+    --col-span: 8;
+  }
+  .hwFluidGrid > [data-sm='9'] {
+    --col-span: 9;
+  }
+  .hwFluidGrid > [data-sm='10'] {
+    --col-span: 10;
+  }
+  .hwFluidGrid > [data-sm='11'] {
+    --col-span: 11;
+  }
+  .hwFluidGrid > [data-sm='12'] {
+    --col-span: 12;
+  }
+}
+
+/* Display the grid background */
+
+.hwFluidGrid-show-grid {
+  --gutter-width: calc(var(--hw-flex-gap) * var(--hw-space-unit));
+  --grid-gutter-count: calc(var(--grid-col-count, var(--parent-col-count)) - 1);
+  --grid-total-gutter-width: calc(var(--grid-gutter-count) * var(--gutter-width));
+  --grid-available-width: calc(100% - var(--grid-total-gutter-width));
+  --grid-percent-width: calc(1 / var(--grid-col-count, var(--parent-col-count)));
+  --column-width: calc(var(--grid-available-width) * var(--grid-percent-width));
+  background: repeating-linear-gradient(
+    to right,
+    var(--hw-fluid-grid-col-bg) 0,
+    var(--hw-fluid-grid-col-bg) var(--column-width),
+    white var(--column-width),
+    white calc(var(--column-width) + var(--gutter-width))
+  );
+}

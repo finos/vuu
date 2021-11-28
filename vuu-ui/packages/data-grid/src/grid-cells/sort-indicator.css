@@ -1,0 +1,14 @@
+.hwSortIndicator {
+  --menu-icon-size: 18px;
+  --menu-item-icon-color: black;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 18px;
+}
+
+.hwSortPosition {
+  font-size: 10px;
+  line-height: 10px;
+  text-align: center;
+}

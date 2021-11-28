@@ -1,0 +1,49 @@
+:root {
+  --hw-space-unit: 4px;
+  --hw-flex-gap: 3;
+  --hw-fluid-grid-col-bg: rgba(200, 200, 200, 0.3);
+}
+
+.hwFlexbox {
+  background-color: var(--container1-background);
+  box-sizing: border-box;
+  display: flex;
+  gap: calc(var(--spacing) * var(--space));
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.hwFlexbox-column {
+  flex-direction: column;
+}
+
+.hwFlexbox-row {
+  flex-direction: row;
+}
+
+.hwFlexbox > .Splitter {
+  flex-basis: auto;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+[data-placeholder] {
+  background-color: lightgray;
+}
+
+.hwFlexbox.full-page {
+  height: 100vh;
+  width: 100vw;
+}
+
+.flex-fill {
+  border-color: red;
+  flex: 0;
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+.hwView.flex-fill {
+  border-color: red;
+}

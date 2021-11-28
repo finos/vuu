@@ -1,0 +1,20 @@
+.hwControl-text {
+  font-size: 11px;
+  border: none;
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  right: 0px;
+  bottom: 0;
+  left: 0px;
+  width: calc(100% - 3px);
+  padding: 0 0 0 3px;
+}
+
+.hwControl-text:focus {
+  outline: none;
+}
+
+.hwControl-text:focus-visible {
+  border: solid red 1px;
+}

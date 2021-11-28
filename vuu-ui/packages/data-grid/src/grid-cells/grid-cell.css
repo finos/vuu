@@ -1,0 +1,51 @@
+.GridCell {
+  align-items: center;
+  background-color: var(--grid-cell-bg, inherit);
+  box-sizing: border-box;
+  border-color: var(--cell-border-color);
+  border-style: var(--cell-border-style, solid);
+  border-width: 0 1px 1px 0;
+  color: var(--text-color);
+  cursor: default;
+  display: inline-flex;
+  height: 100%;
+  outline: 0;
+  overflow: hidden;
+  padding: var(--cell-padding);
+  position: relative;
+  text-overflow: ellipsis;
+  user-select: none;
+  vertical-align: top;
+  white-space: nowrap;
+  z-index: 0;
+}
+
+.GridCell.noBottomBorder {
+  border-bottom: solid 1px transparent;
+}
+.GridCell.resizing {
+  background-color: var(--header-cell-highlight-bg);
+}
+
+.GridCell .num {
+  display: inline-block;
+  text-align: right;
+  width: 100%;
+}
+
+.vuLineNumber {
+  background-color: var(--line-number-bg);
+  border-bottom-color: var(--line-number-border-color);
+  color: #555;
+}
+
+.GridCell:focus:before,
+.GridCell:focus-visible:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0px;
+  border: dotted var(--focus-visible-border-color) 2px;
+}
