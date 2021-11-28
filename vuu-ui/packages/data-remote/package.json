@@ -1,0 +1,20 @@
+{
+  "name": "@vuu-ui/data-remote",
+  "version": "0.0.14",
+  "main": "src/index.js",
+  "module": "index.js",
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/build.js"
+  },
+  "files": [
+    "index.js",
+    "index.js.map",
+    "/src"
+  ],
+  "peerDependencies": {
+    "@vuu-ui/utils": "0.0.14",
+    "react": "^17.0.2"
+  }
+}

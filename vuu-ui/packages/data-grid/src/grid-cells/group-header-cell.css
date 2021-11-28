@@ -1,0 +1,78 @@
+.hwGroupHeaderCell {
+  --menu-icon-size: 18px;
+  --menu-item-icon-color: black;
+  --highlight-background: rgb(66, 139, 202);
+  --highlight-color: white;
+
+  overflow: hidden;
+}
+
+.hwGroupHeaderCell-inner-container {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.hwGroupHeaderCell-col {
+  align-items: center;
+  background-color: inherit;
+  display: inline-flex;
+  flex: 0 1 auto;
+  justify-content: space-between;
+  padding-right: 8px;
+  position: relative;
+}
+
+.hwGroupHeaderCell-col:first-child {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
+  z-index: 1;
+}
+
+.hwGroupHeaderCell-col:not(:first-child) {
+  margin-left: -6px;
+  padding-left: 6px;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50%);
+}
+
+.hwGroupHeaderCell-resizing {
+  background-color: var(--header-cell-highlight-bg);
+}
+
+.hwGroupHeaderCell-col:nth-child(odd) {
+  background-color: #d4d4d4;
+}
+.hwGroupHeaderCell-col:nth-child(even) {
+  background-color: rgba(160, 160, 160, 0.3);
+}
+.hwGroupHeaderCell-col:hover {
+  --menu-item-icon-color: var(--highlight-background);
+  --menu-item-icon-color: var(--highlight-color);
+  --remove-icon-color: var(--highlight-color);
+  --remove-icon-visibility: visible;
+  background-color: var(--highlight-background);
+  color: var(--highlight-color);
+}
+.hwGroupHeaderCell-label {
+  height: 100%;
+  line-height: 25px;
+}
+
+.hwGroupHeaderCell *[data-icon] {
+  cursor: pointer;
+}
+
+.remove-group-column {
+  --menu-icon-size: 12px;
+  --menu-icon: var(--svg-close-circle);
+  visibility: var(--remove-icon-visibility, hidden);
+  background-color: var(--menu-item-icon-color);
+  -webkit-mask: var(--menu-icon) center center/var(--menu-icon-size) var(--menu-icon-size);
+  mask: var(--menu-icon) center center/var(--menu-icon-size) var(--menu-icon-size);
+}
+
+.hwGroupHeaderCell-col *[data-icon='arrow-right'] {
+  left: 2px;
+  position: relative;
+}

@@ -1,0 +1,6 @@
+.Grid-rowHeightCanary {
+  position: absolute;
+  height: var(--grid-row-height, 24px);
+  width: 100%;
+  z-index: -1;
+}

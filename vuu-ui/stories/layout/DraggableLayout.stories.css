@@ -1,0 +1,45 @@
+.custom1 .Splitter {
+  --splitter-size: 1px;
+  --splitter-border-style: none;
+}
+
+.red-box {
+  background-color: rgba(255, 0, 0, 0.15);
+}
+
+.green-box {
+  background-color: rgba(0, 255, 0, 0.15);
+}
+
+.blue-box {
+  background-color: rgba(0, 0, 255, 0.15);
+}
+
+.DraggableBox {
+  --box-opacity: 0;
+  background-color: rgba(0, 0, 0, var(--box-opacity));
+  border: dashed 2px rgba(0, 0, 0, 0.3);
+}
+
+.DraggableBox.small {
+  border-color: purple;
+  border-style: solid;
+  width: 50px;
+  height: 50px;
+}
+.DraggableBox.medium {
+  border-color: yellow;
+  border-style: solid;
+  width: 150px;
+  height: 150px;
+}
+.DraggableBox.large {
+  border-color: cyan;
+  border-style: solid;
+  width: 250px;
+  height: 250px;
+}
+
+.DraggableBox:hover {
+  --box-opacity: 0.2;
+}

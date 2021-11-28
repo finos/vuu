@@ -1,0 +1,77 @@
+.hwButton {
+  --button-bg: var(--hw-button-bg, transparent);
+  --button-border: none;
+  --button-height: var(--hw-button-height, 28px);
+  --button-active-bg: var(--hw-button-active-bg, #50505);
+  --button-highlight-bg: var(--hw-button-highlight-bg, var(--hw-gray-700));
+  --button-highlight-color: var(--hw-button-highlight-color, var(--hw-gray-50));
+  --button-width: var(--hw-button-width, auto);
+  --button-min-width: var(--hw-button-min-width, 28px);
+  --button-color: var(--hw-button-color, var(--hw-gray-700));
+
+  align-items: center;
+  background-color: var(--button-bg);
+  border: var(--button-border);
+  color: var(--button-color);
+  display: inline-flex;
+  height: var(--button-height);
+  justify-content: center;
+  min-width: var(--button-min-width);
+  outline: none;
+  padding: 0;
+  position: relative;
+  width: var(--button-width);
+}
+
+.hwButton:hover {
+  color: var(--button-highlight-color);
+  background-color: var(--button-highlight-bg);
+}
+
+.hwButton:active,
+.hwButton-active {
+  background-color: var(--button-active-bg);
+  color: var(--button-highlight-color);
+}
+
+.hwButton .hwIconSvg {
+  fill: currentColor;
+  height: 12px;
+  width: 12px;
+}
+
+.hwButton-focusVisible {
+  border: solid red 2px;
+}
+
+.hwButton[data-icon]:after {
+  content: '';
+  mask-repeat: no-repeat;
+  background-color: black;
+  height: 12px;
+  left: 50%;
+  right: 3px;
+  margin-left: -6px;
+  margin-top: -6px;
+  mask: var(--svg-icon) center center/12px 12px;
+  -webkit-mask: var(--svg-icon) center center/12px 12px;
+  position: absolute;
+  top: 50%;
+  width: 12px;
+}
+
+.hwButton:hover[data-icon]:after {
+  background-color: white;
+}
+
+.hwButton[aria-label^='close']:after {
+  --svg-icon: var(--svg-close);
+}
+
+.hwButton[aria-label^='open']:after {
+  --svg-icon: var(--svg-chevron-double-right);
+}
+
+.hwButton[aria-label^='add']:after {
+  --svg-icon: var(--svg-add);
+}

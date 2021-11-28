@@ -1,0 +1,150 @@
+.hwDrawer {
+  --drawer-leading-edge-border: var(--hwDrawer-leading-edge-border, none);
+  transition: flex-basis;
+  transition-duration: var(--drawer-transition-duration);
+  position: relative;
+  z-index: 1;
+  flex-basis: 0;
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+}
+
+.hwDrawer-peekaboo {
+  flex-basis: var(--drawer-peek-size);
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.hwDrawer-inline.hwDrawer-open {
+  flex-basis: var(--drawer-size);
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.hwDrawer-liner {
+  background-color: var(--drawer-bg);
+  overflow: hidden;
+  position: relative;
+}
+
+.hwDrawer-content {
+  height: 100%;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  right: var(--drawer-peek-size);
+  transition: right;
+  transition-duration: var(--drawer-transition-duration);
+  width: 100%;
+  flex: 1 1 100%;
+}
+
+.hwDrawer-open .hwDrawer-content {
+  right: 0;
+}
+
+/* .hwDrawer:not(.hwDrawer-open) .hwDrawer-liner > * {
+  display: none;
+} */
+
+.hwDrawer-left {
+  border-right: var(--drawer-leading-edge-border);
+}
+.hwDrawer-right {
+  border-left: var(--drawer-leading-edge-border);
+}
+.hwDrawer-top {
+  border-bottom: var(--drawer-leading-edge-border);
+}
+.hwDrawer-bottom {
+  border-top: var(--drawer-leading-edge-border);
+}
+
+.hwDrawer-left .hwDrawer-liner,
+.hwDrawer-right .hwDrawer-liner {
+  height: 100%;
+  transition: width;
+}
+
+.hwDrawer-top .hwDrawer-liner,
+.hwDrawer-bottom .hwDrawer-liner {
+  width: 100%;
+  transition: height;
+}
+
+.hwDrawer-inline .hwDrawer-liner {
+  width: 100%;
+  height: 100%;
+}
+
+.hwDrawer-over .hwDrawer-liner {
+  position: absolute;
+  transition-duration: 0.4s;
+}
+
+.hwDrawer-over.hwDrawer-left .hwDrawer-liner {
+  top: 0;
+  left: 0;
+  width: 0;
+}
+
+.hwDrawer-over.hwDrawer-right .hwDrawer-liner {
+  top: 0;
+  right: 0;
+  width: 0;
+}
+
+.hwDrawer-over.hwDrawer-top .hwDrawer-liner {
+  height: 0;
+  top: 0;
+  left: 0;
+}
+
+.hwDrawer-over.hwDrawer-bottom .hwDrawer-liner {
+  bottom: 0;
+  height: 0;
+  left: 0;
+}
+
+.hwDrawer-left.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner,
+.hwDrawer-right.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner {
+  width: var(--drawer-peek-size);
+}
+
+.hwDrawer-top.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner,
+.hwDrawer-bottom.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner {
+  height: var(--drawer-peek-size);
+}
+
+.hwDrawer-left.hwDrawer-over.hwDrawer-open .hwDrawer-liner,
+.hwDrawer-right.hwDrawer-over.hwDrawer-open .hwDrawer-liner {
+  width: var(--drawer-size);
+}
+
+.hwDrawer-top.hwDrawer-over.hwDrawer-open .hwDrawer-liner,
+.hwDrawer-bottom.hwDrawer-over.hwDrawer-open .hwDrawer-liner {
+  height: var(--drawer-size);
+}
+
+.hwDrawer-top,
+.hwDrawer-left {
+  order: 0;
+}
+
+.hwDrawer-bottom,
+.hwDrawer-right {
+  order: 99;
+}
+
+.hwDrawer-left,
+.hwDrawer-right {
+  flex-direction: column;
+}
+
+.hwToggleButton-container {
+  --svg-close: var(--svg-chevron-double-left);
+  flex: 0 0 28px;
+}

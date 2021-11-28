@@ -1,0 +1,11 @@
+.viewRebecca .hwView-main {
+  background-color: rgba(102, 51, 153, 0.7);
+}
+
+.viewCornflower .hwView-main {
+  background-color: rgba(100, 149, 237, 0.7);
+}
+
+.hwView-resizing {
+  background-color: yellow;
+}

@@ -1,0 +1,8 @@
+.DraggableLayout {
+  display: inline-block;
+  outline: none;
+}
+
+[data-dragging='true'] {
+  position: absolute !important;
+}

@@ -1,0 +1,28 @@
+.control-toggle {
+  border: none;
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  right: 4px;
+  bottom: 0;
+  left: 4px;
+  width: calc(100% - 8px);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.control-toggle:focus {
+  outline: none;
+}
+
+.control-toggle span {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.control-toggle .icon {
+  flex: 0 0 20px;
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@vuu-ui/ui-forms",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "author": "heswell",
+  "main": "src/index.js",
+  "module": "index.js",
+  "scripts": {
+    "build": "node ../../scripts/build.js"
+  },
+  "files": [
+    "index.css",
+    "index.js",
+    "index.css.map",
+    "index.js.map",
+    "/src"
+  ],
+  "dependencies": {
+    "xstate": "4.20.0"
+  },
+  "peerDependencies": {
+    "@vuu-ui/react-utils": "0.0.1",
+    "@vuu-ui/theme": "0.0.1",
+    "@vuu-ui/utils": "0.0.1",
+    "classnames": "^2.2.6",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}

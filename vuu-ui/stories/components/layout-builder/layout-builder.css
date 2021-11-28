@@ -1,0 +1,27 @@
+html,
+body {
+  height: 100%;
+}
+
+.LayoutBuilder .PaletteList {
+  display: flex;
+}
+
+.LayoutBuilder .PaletteList-vertical {
+  flex-direction: column;
+}
+
+.LayoutBuilder .ComponentIcon {
+  padding: 0 3px;
+  margin: 0 3px;
+  color: white;
+  border: double cornflowerBlue 3px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.control {
+  height: 24px;
+  background-color: white;
+}

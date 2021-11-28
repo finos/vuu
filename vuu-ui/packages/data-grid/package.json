@@ -1,0 +1,26 @@
+{
+  "name": "@vuu-ui/data-grid",
+  "version": "0.0.14",
+  "author": "heswell",
+  "main": "src/index.js",
+  "module": "index.js",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/build.js"
+  },
+  "files": [
+    "index.js",
+    "index.css",
+    "index.js.map",
+    "index.css.map",
+    "/src"
+  ],
+  "peerDependencies": {
+    "@vuu-ui/react-utils": "0.0.14",
+    "@vuu-ui/ui-controls": "0.0.14",
+    "@vuu-ui/utils": "0.0.14",
+    "classnames": "^2.2.6",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}

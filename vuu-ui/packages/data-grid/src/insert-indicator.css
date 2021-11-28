@@ -1,0 +1,8 @@
+.InsertIndicator {
+  background-color: green;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  transition: left ease-in-out 0.2s;
+  width: 4px;
+}

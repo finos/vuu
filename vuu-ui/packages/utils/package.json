@@ -1,0 +1,19 @@
+{
+  "name": "@vuu-ui/utils",
+  "version": "0.0.14",
+  "author": "heswell",
+  "main": "src/index.js",
+  "module": "index.js",
+  "license": "Apache-2.0",
+  "files": [
+    "index.js",
+    "index.js.map",
+    "/src"
+  ],
+  "scripts": {
+    "build": "node ../../scripts/build.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.13.5"
+  }
+}

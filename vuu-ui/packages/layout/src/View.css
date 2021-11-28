@@ -1,0 +1,55 @@
+.hwView {
+  display: flex;
+  flex-direction: column;
+  min-height: 50px;
+  min-width: 50px;
+  outline: none;
+  overflow: hidden;
+  position: relative;
+}
+
+.hwView.focus-visible:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: dotted cornflowerblue 2px;
+}
+
+.hwView.dragging {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+}
+
+.hwView-main {
+  /* height: var(--view-content-height);
+  width: var(--view-content-width); */
+  display: flex;
+  flex-direction: var(--hwView-flex-direction, column);
+  flex-wrap: var(--hwView-flex-wrap, nowrap);
+  flex: 1;
+  overflow: hidden;
+}
+
+.hwView-main > * {
+  flex-basis: auto;
+  flex-grow: var(--hwView-flex-grow, 1);
+  flex-shrink: var(--hwView-flex-shrink, 1);
+}
+
+.hwView-collapsed .hwView-main {
+  display: none;
+}
+
+.hwView-collapsed + .Splitter {
+  display: none;
+}
+
+.hwView-collapsed .Toolbar-vertical {
+  border-right: solid 1px var(--grey40);
+}
+
+.hwView-collapsed .Toolbar-vertical .toolbar-title {
+  display: none;
+}

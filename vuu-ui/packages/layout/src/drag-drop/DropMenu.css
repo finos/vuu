@@ -1,0 +1,70 @@
+.hwDropMenu {
+  margin-left: -50%;
+  margin-bottom: -50%;
+  background-color: white;
+  border: solid 1px var(--grey40);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3px;
+  border-radius: 3px;
+}
+
+.hwDropMenu.left,
+.hwDropMenu.right {
+  flex-direction: column;
+}
+
+.hwDropMenu.bottom {
+  transform: translate(0, -30px);
+}
+
+.hwDropMenu.right {
+  transform: translate(-20px, 0);
+}
+
+.hwDropMenu-item {
+  width: 32px;
+  height: 32px;
+  background-color: var(--grey20);
+  border-bottom: solid 1px var(--grey40);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hwDropMenu-item .Icon {
+  transform: scale(1.25);
+  transform-origin: center center;
+}
+
+.hwDropMenu.left .hwDropMenu-item .hwIcon {
+  transform: scale(1.25) rotate(180deg);
+  transform-origin: center center;
+}
+
+.hwDropMenu.top .hwDropMenu-item .hwIcon {
+  transform: scale(1.25) rotate(270deg);
+  transform-origin: center center;
+}
+
+.hwDropMenu.bottom .hwDropMenu-item .hwIcon {
+  transform: scale(1.25) rotate(90deg);
+  transform-origin: center center;
+}
+
+.hwDropMenu-item .hwIcon-path {
+  fill: grey;
+}
+.hwDropMenu-item:hover {
+  background-color: rgba(200, 200, 200, 0.5);
+}
+
+.hwDropMenu-item:hover .hwIcon-path-2 {
+  fill: blue;
+}
+
+.hwDropMenu-item:last-child {
+  border-bottom: none;
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@vuu-ui/data-worker",
+  "version": "0.0.14",
+  "main": "index.js",
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/build.js",
+    "build:dev": "rollup -c rollup.config.dev.js --environment BUILD:development"
+  },
+  "files": [
+    "worker.js",
+    "worker.js.map"
+  ],
+  "dependencies": {
+    "@vuu-ui/data-remote": "0.0.14",
+    "@vuu-ui/utils": "0.0.14"
+  }
+}

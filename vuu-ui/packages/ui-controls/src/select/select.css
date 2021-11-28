@@ -1,0 +1,22 @@
+.hwSelect {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hwSelect-text {
+  flex: auto 1 1;
+}
+
+.hwSelect-icon {
+  flex: auto 0 0;
+}
+
+.hwControl-text {
+  height: 24px;
+  outline: 0;
+}
+
+.hwControl-text:focus-visible {
+  border: solid red 1px;
+}

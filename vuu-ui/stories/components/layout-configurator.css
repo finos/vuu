@@ -1,0 +1,90 @@
+.LayoutConfigurator {
+  --margin-color: #f3cea5;
+  --border-color: #fddda0;
+  --padding-color: #c6d092;
+  --content-color: #8cb6c0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background-color: var(--margin-color);
+}
+
+.LayoutConfigurator .layout-outer {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.LayoutBox {
+  flex: 1 1 auto;
+}
+
+.LayoutBox > .layout-top {
+  flex: 0 0 40px;
+  padding-left: 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+}
+
+.LayoutBox > .layout-bottom {
+  flex: 0 0 40px;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.LayoutBox > .layout-inner > .layout-right,
+.LayoutBox > .layout-inner > .layout-left {
+  flex: 0 0 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.LayoutBox .layout-input {
+  font-size: 13px;
+  width: 30px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 3px;
+}
+
+.layout-top > .layout-input,
+.layout-bottom > .layout-input {
+  position: absolute;
+  left: 50%;
+  margin-left: -15px;
+}
+
+.LayoutBox > .layout-inner {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.LayoutBox.layout-margin {
+  background-color: var(--margin-color);
+  border: dashed 2px black;
+}
+
+.LayoutBox.layout-border {
+  background-color: var(--border-color);
+  border: solid 2px black;
+}
+
+.LayoutBox.layout-padding {
+  background-color: var(--padding-color);
+  border: dashed 2px black;
+}
+
+.LayoutBox .layout-content {
+  flex: 1 1 auto;
+  background-color: var(--content-color);
+  border: solid 2px #808080;
+}

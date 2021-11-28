@@ -1,0 +1,15 @@
+.github
+.storybook
+.vscode
+
+node_modules
+
+yarn-error.log*
+
+generated
+public
+packages/*/*.js
+__tests__
+stories
+storybook-static
+packages/shell/src/feature/Feature.jsx

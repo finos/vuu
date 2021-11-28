@@ -1,0 +1,12 @@
+.TabPanel {
+  display: flex;
+  flex: 1;
+}
+
+.TabPanel > * {
+  height: 100%;
+}
+
+.TabPanel > .View > .Header {
+  display: none;
+}

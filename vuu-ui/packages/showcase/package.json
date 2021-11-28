@@ -1,0 +1,33 @@
+{
+  "name": "@vuu-ui/showcase",
+  "version": "0.0.14",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "stories": "node ./scripts/parse-stories.mjs",
+    "build": "node ./scripts/build-prod.mjs",
+    "build:dev": "node ./scripts/build.mjs",
+    "serve": "serve public"
+  },
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "esbuild": "^0.13.4",
+    "kleur": "^4.1.4"
+  },
+  "dependencies": {
+    "@vuu-ui/layout": "0.0.14",
+    "@vuu-ui/parsed-input": "0.0.14",
+    "@vuu-ui/react-utils": "0.0.14",
+    "@vuu-ui/theme": "0.0.14",
+    "@vuu-ui/ui-controls": "0.0.14",
+    "@vuu-ui/utils": "0.0.14",
+    "classnames": "^2.3.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "serve": "^12.0.1",
+    "xdm": "^3.0.0"
+  }
+}
