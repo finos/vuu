@@ -1,4 +1,5 @@
 .vuuFilteredGrid {
+  --hwDialog-margin: 30% auto auto auto;
   --hwParsedInput-background: white;
   --hwParsedInput-input-font-size: 12px;
   --hwParsedInput-height: 28px;
