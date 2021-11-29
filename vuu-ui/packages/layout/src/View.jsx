@@ -33,7 +33,6 @@ const View = forwardRef(function View(inputProps, fwdRef) {
     tearOut,
     style = {},
     title: titleProp,
-    version = '0',
     ...restProps
   } = props;
 
