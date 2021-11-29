@@ -4,6 +4,7 @@
   --dialog-shadow: var(--hw-dialog-shadow, none);
 
   border: var(--dialog-border);
+  margin: var(--hwDialog-margin, auto auto);
   padding: var(--dialog-padding);
   box-shadow: var(--dialog-shadow);
 }

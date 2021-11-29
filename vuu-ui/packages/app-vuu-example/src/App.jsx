@@ -47,7 +47,7 @@ const getTables = (tables) => {
   const tableList = Object.values(tables);
   console.log({ tableList });
   return tableList.sort(byModule).map((schema) => ({
-    className: 'vuuFilteredGrid',
+    className: 'vuFilteredGrid',
     closeable: true,
     header: true,
     label: `${schema.table.module} ${wordify(schema.table.table)}`,
@@ -161,7 +161,7 @@ export const App = () => {
         layout={layoutConfig}
         onLayoutChange={handleLayoutChange}
         paletteConfig={paletteConfig}>
-        <Dialog className="vuDialog" isOpen={dialogContent !== null} onClose={handleClose}>
+        <Dialog className="vuuFilteredGrid" isOpen={dialogContent !== null} onClose={handleClose}>
           {dialogContent}
         </Dialog>
       </Shell>

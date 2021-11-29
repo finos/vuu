@@ -19,8 +19,6 @@ export const useCollapsibleGroups = ({
   setVisibleData,
   source
 }) => {
-  console.log(`useCollapsibleGroups ${source.length} data items`);
-
   const highlightedIdx = useRef(null);
   // do we need to maintain this separately ?
   const visibleCount = useRef(indexPositions.length);
