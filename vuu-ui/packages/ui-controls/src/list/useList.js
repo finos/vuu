@@ -7,6 +7,8 @@ import {
 } from '../common-hooks';
 import { useTypeahead } from './hooks';
 
+console.log('[useList]');
+
 const EMPTY_ARRAY = [];
 
 export const useList = ({
@@ -24,18 +26,6 @@ export const useList = ({
   const lastSelection = useRef(EMPTY_ARRAY);
   const dataHook = useHierarchicalData(sourceWithIds);
 
-  const collapsibleHook = useCollapsibleGroups({
-    collapsibleHeaders,
-    indexPositions: dataHook.indexPositions,
-    setVisibleData: dataHook.setData,
-    source: dataHook.data
-  });
-
-  const handleHighlight = (idx) => {
-    collapsibleHook.listHandlers.onHighlight?.(idx);
-    onHighlightProp?.(idx);
-  };
-
   const handleKeyboardNavigation = (evt, nextIdx) => {
     selectionHook.listHandlers.onKeyboardNavigation?.(evt, nextIdx);
   };
@@ -44,11 +34,19 @@ export const useList = ({
     defaultHighlightedIdx,
     highlightedIdx: highlightedIdxProp,
     indexPositions: dataHook.indexPositions,
-    onHighlight: handleHighlight,
+    onHighlight: onHighlightProp,
     onKeyboardNavigation: handleKeyboardNavigation,
     id,
     label: 'List',
     selected: lastSelection.current
+  });
+
+  const collapsibleHook = useCollapsibleGroups({
+    collapsibleHeaders,
+    highlightedIdx,
+    indexPositions: dataHook.indexPositions,
+    setVisibleData: dataHook.setData,
+    source: dataHook.data
   });
 
   const selectionHook = useSelection({

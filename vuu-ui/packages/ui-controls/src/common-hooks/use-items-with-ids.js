@@ -36,7 +36,7 @@ export const useItemsWithIds = (
   };
 
   const normalizeSource = useCallback(
-    (nodes, indexer, path = '', results = []) => {
+    (nodes, indexer, level = 1, path = '', results = []) => {
       let count = 0;
       nodes.map(createProxy).forEach((proxy, i, proxies) => {
         const isCollapsibleHeader = proxy.header && collapsibleHeaders;
@@ -52,6 +52,7 @@ export const useItemsWithIds = (
               ? 0
               : countChildItems(proxy, proxies, i),
           index: indexer.index,
+          level,
           expanded
         });
         results.push(item);
@@ -61,7 +62,13 @@ export const useItemsWithIds = (
 
         // if ((isNonCollapsibleGroupNode || expanded !== undefined) && !isCollapsibleHeader) {
         if (proxy.childNodes) {
-          const [childCount, children] = normalizeSource(proxy.childNodes, indexer, childPath, []);
+          const [childCount, children] = normalizeSource(
+            proxy.childNodes,
+            indexer,
+            level + 1,
+            childPath,
+            []
+          );
           item.childNodes = children;
           if (expanded === true || isNonCollapsibleGroupNode) {
             count += childCount;

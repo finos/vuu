@@ -1,28 +1,30 @@
-import React, { forwardRef, useRef } from 'react';
+import React, { forwardRef, memo, useCallback, useRef } from 'react';
 import cx from 'classnames';
 import { useId } from '@vuu-ui/react-utils';
-import { useItemsWithIds } from '../common-hooks';
+import { useItemsWithIds, useViewportTracking } from '../common-hooks';
 import { useList } from './useList';
-import { useViewportTracking } from './use-viewport-tracking';
 import { closestListItemIndex } from './list-dom-utils';
 import { useForkRef } from '../utils/use-fork-ref';
 import { createListProxy } from './list-proxy';
-import { ListItemGroup } from './list-item-group';
-import { ListItemHeader } from './list-item-header';
 
 import './list.css';
 
 const defaultEmptyMessage = 'No data to display';
 const classBase = 'hwList';
 
-// eslint-disable-next-line no-unused-vars
-export const ListItem = ({ children, idx, ...props }) => {
-  // console.log(`[ListItem] render ${idx}`);
-  return <div {...props}>{children}</div>;
-};
-
-export const isGroup = (child) => child.type === ListItemGroup || !!child.props['data-group'];
-export const isHeader = (child) => child.type === ListItemHeader || !!child.props['data-header'];
+// Note: the memo is effective if List label is passed as simple string
+// If children are used, it is the responsibility of caller to memoise
+// these if performance on highlight is perceived to be an issue.
+export const ListItem = memo(({ children, label, ...props }) => {
+  return children ? (
+    <div {...props}>{children}</div>
+  ) : (
+    <div {...props}>
+      <span>{label}</span>
+    </div>
+  );
+});
+ListItem.displayName = 'ListItem';
 
 const removeStateProps = { count: undefined, index: undefined, expanded: undefined };
 
@@ -84,14 +86,19 @@ const List = forwardRef(function List(
 
   const isScrolling = useViewportTracking(root, highlightedIdx, stickyHeaders);
 
-  const defaultItemHandlers = {
-    onMouseEnter: (evt) => {
+  const handleMouseEnterListItem = useCallback(
+    (evt) => {
       if (!isScrolling.current) {
         const idx = closestListItemIndex(evt.target);
         hiliteItemAtIndex(idx);
         onMouseEnterListItem && onMouseEnterListItem(evt, idx);
       }
-    }
+    },
+    [hiliteItemAtIndex, isScrolling, onMouseEnterListItem]
+  );
+
+  const defaultItemHandlers = {
+    onMouseEnter: handleMouseEnterListItem
   };
 
   const propsCommonToAllListItems = {
@@ -102,6 +109,7 @@ const List = forwardRef(function List(
 
   function createHeader(idx, headerId, title, expanded) {
     // TODO we don;t want to replace a custom header with this
+    // TODO aria-selected
     const header = (
       <ListItem
         {...listItemHeaderHandlers}
@@ -115,9 +123,9 @@ const List = forwardRef(function List(
         data-selectable={false}
         id={headerId}
         key={`header-${idx.value}`}
-        role="presentation">
-        {title}
-      </ListItem>
+        label={title}
+        role="presentation"
+      />
     );
     idx.value += 1;
     return header;
@@ -127,9 +135,9 @@ const List = forwardRef(function List(
     list.push(
       <ListItem
         {...propsCommonToAllListItems}
-        {...getListItemProps(item.id, idx.value, highlightedIdx, selected, focusVisible)}>
-        <span>{item.label}</span>
-      </ListItem>
+        {...getListItemProps(item.id, idx.value, highlightedIdx, selected, focusVisible)}
+        label={item.label}
+      />
     );
     idx.value += 1;
   }
@@ -166,6 +174,7 @@ const List = forwardRef(function List(
     }
   }
 
+  // TODO do we need to make special provision for memo here ?
   function addChildItem(list, item, idx) {
     const { wrappedSource: element, id } = item;
     list.push(
@@ -244,7 +253,7 @@ const List = forwardRef(function List(
 const getListItemProps = (id, idx, highlightedIdx, selected, focusVisible, className) => ({
   id,
   key: id,
-  'aria-selected': selected.includes(idx) || undefined,
+  'aria-selected': selected.includes(id) || undefined,
   'data-idx': idx,
   'data-highlighted': idx === highlightedIdx || undefined,
   className: cx('hwListItem', className, { focusVisible: focusVisible === idx })
