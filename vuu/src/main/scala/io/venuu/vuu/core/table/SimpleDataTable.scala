@@ -69,8 +69,6 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
     AsciiUtil.asAsciiTable(columnNames, rows)
   }
-
-
 }
 
 case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = false)
