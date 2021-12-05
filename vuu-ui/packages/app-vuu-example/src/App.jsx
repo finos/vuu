@@ -4,8 +4,6 @@ import AppContext from './app-context';
 
 import { setServerConfig, useViewserver } from '@vuu-ui/data-remote';
 
-import useLayoutConfig from './use-layout-config';
-
 import { Dialog } from '@vuu-ui/layout';
 
 import './App.css';
@@ -115,10 +113,6 @@ setServerConfig(serverUrl);
 
 export const App = () => {
   const [dialogContent, setDialogContent] = useState(null);
-  const [layoutConfig, setLayoutConfig] = useLayoutConfig(
-    'https://localhost:8443/api/vui/steve',
-    defaultLayout
-  );
 
   // Needed because of circular ref between useViewserver and handleRpcResponse
   const tablesRef = useRef();
@@ -130,13 +124,6 @@ export const App = () => {
   }, [tables]);
 
   tablesRef.current = tables;
-
-  const handleLayoutChange = useCallback(
-    (layout) => {
-      setLayoutConfig(layout);
-    },
-    [setLayoutConfig]
-  );
 
   const makeServiceRequest = useCallback((response) => {
     if (response?.action?.type === 'OPEN_DIALOG_ACTION') {
@@ -157,11 +144,8 @@ export const App = () => {
 
   return (
     <AppContext.Provider value={{ makeServiceRequest }}>
-      <Shell
-        layout={layoutConfig}
-        onLayoutChange={handleLayoutChange}
-        paletteConfig={paletteConfig}>
-        <Dialog className="vuuFilteredGrid" isOpen={dialogContent !== null} onClose={handleClose}>
+      <Shell defaultLayout={defaultLayout} paletteConfig={paletteConfig}>
+        <Dialog className="vuDialog" isOpen={dialogContent !== null} onClose={handleClose}>
           {dialogContent}
         </Dialog>
       </Shell>
