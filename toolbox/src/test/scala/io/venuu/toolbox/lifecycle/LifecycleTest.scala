@@ -47,7 +47,6 @@ class LifecycleTest extends AnyFeatureSpec with Matchers {
 
   }
 
-
   Feature("check that the lifecycle behaves as we expect on startup"){
 
     Scenario("add non-dependent components at same level and check the start order"){
