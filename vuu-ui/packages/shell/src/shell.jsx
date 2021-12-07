@@ -1,6 +1,6 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ThemeProvider } from '@vuu-ui/theme';
-// import { setServerConfig, useViewserver } from '@vuu-ui/data-remote';
+import { setServerConfig /*, useViewserver */ } from '@vuu-ui/data-remote';
 import useLayoutConfig from './use-layout-config';
 
 import { Chest, DraggableLayout, Drawer, FlexboxLayout as Flexbox, View } from '@vuu-ui/layout';
@@ -8,12 +8,12 @@ import { AppPalette } from './app-palette';
 
 import './shell.css';
 
-export const Shell = ({ children, defaultLayout, paletteConfig }) => {
+export const Shell = ({ children, defaultLayout, paletteConfig, serverUrl }) => {
   const paletteView = useRef(null);
   const [open, setOpen] = useState(false);
 
   const [layout, setLayoutConfig] = useLayoutConfig(
-    'https://localhost:8443/api/vui/steve',
+    'https://localhost:8443/api/vui/bill',
     defaultLayout
   );
 
@@ -29,6 +29,10 @@ export const Shell = ({ children, defaultLayout, paletteConfig }) => {
       setOpen(!open);
     }
   };
+
+  useEffect(() => {
+    setServerConfig(serverUrl);
+  }, [serverUrl]);
 
   return (
     <ThemeProvider>

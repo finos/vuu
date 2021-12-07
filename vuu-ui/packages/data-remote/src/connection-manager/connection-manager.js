@@ -61,7 +61,7 @@ const connectServer = async (serverName, url, onConnectionStatusMessage) => {
 
       // How do we handle authentication, login
       if (typeof server.authenticate === 'function') {
-        await server.authenticate('steve', 'pword');
+        await server.authenticate('bill', 'pword');
       }
       if (typeof server.login === 'function') {
         await server.login();

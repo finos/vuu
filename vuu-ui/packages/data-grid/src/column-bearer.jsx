@@ -249,14 +249,16 @@ const ColumnBearer = forwardRef(
         })}
         ref={el}
         style={style}>
-        <div className="Header" style={{ height: headerHeight }}>
+        <div className="hwColumnGroupHeader" style={{ height: headerHeight }}>
           <HeaderCell column={column} />
         </div>
         <div style={{ position: 'relative', height: viewportHeight }}>
           {rows.map((row, idx) => (
             <div
               key={idx}
-              className={'GridRow'}
+              className={cx('hwDataGridGridRow', {
+                'hwDataGridGridRow-even': idx % 2 === 0
+              })}
               style={{
                 height: rowHeight,
                 transform: `translate3d(0px, ${idx * rowHeight}px, 0px)`

@@ -20,7 +20,7 @@ async function connectToServer(url, useWebsocket, onConnectionStatusChange) {
   server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
   // TODO handle authentication, login
   if (connection.requiresAuthentication) {
-    await server.authenticate('steve', 'pword');
+    await server.authenticate('bill', 'pword');
   }
   if (connection.requiresLogin) {
     await server.login();

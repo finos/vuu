@@ -39,7 +39,7 @@
   height: 100% !important;
 }
 
-.hwDataGrid.scrolling-x .Canvas .hwColumnGroupHeader {
+.hwDataGrid.scrolling-x .hwDataGridCanvas .hwColumnGroupHeader {
   position: relative;
 }
 

@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Shell, Feature } from '@vuu-ui/shell';
 import AppContext from './app-context';
 
-import { setServerConfig, useViewserver } from '@vuu-ui/data-remote';
+import { useViewserver } from '@vuu-ui/data-remote';
 
 import { Dialog } from '@vuu-ui/layout';
 
@@ -109,8 +109,6 @@ const defaultLayout = {
   ]
 };
 
-setServerConfig(serverUrl);
-
 export const App = () => {
   const [dialogContent, setDialogContent] = useState(null);
 
@@ -144,7 +142,7 @@ export const App = () => {
 
   return (
     <AppContext.Provider value={{ makeServiceRequest }}>
-      <Shell defaultLayout={defaultLayout} paletteConfig={paletteConfig}>
+      <Shell defaultLayout={defaultLayout} paletteConfig={paletteConfig} serverUrl={serverUrl}>
         <Dialog className="vuDialog" isOpen={dialogContent !== null} onClose={handleClose}>
           {dialogContent}
         </Dialog>
