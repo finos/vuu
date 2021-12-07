@@ -66,6 +66,7 @@
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.13</artifactId>
             <version>${scalatest.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -283,6 +284,24 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                    <finalName>${pom.name}-${pom.version}</finalName>
+                </configuration>
+                <!--executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions-->
+            </plugin>
 
              </plugins>
                 </build>
