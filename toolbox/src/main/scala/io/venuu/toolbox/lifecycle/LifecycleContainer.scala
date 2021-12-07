@@ -179,6 +179,10 @@ class  DirectedAcyclicGraph[NODE] private (var edgeSet : Set[DefaultEdge[NODE]],
     node2.incomingEdges = node2.incomingEdges ++ Set(edge)
   }
 
+  def roots: List[DefaultNode[NODE]] = {
+    nodeMap.values.filter( n => n.incomingEdges.size == 0).map( node => node ).toList
+  }
+
   def topologicalSort: List[List[NODE]] = {
     new SimpleTopoSort[NODE](this).sort()
     //new TarjanTopologicalSort(nodeSet).sort().map(_.n)
@@ -209,6 +213,7 @@ trait LifecycleEnabled{
   def doInitialize()
   def doDestroy()
   val lifecycleId: String
+  override def toString: String = getClass.getSimpleName
 }
 
 abstract class DefaultLifecycleEnabled extends LifecycleEnabled {

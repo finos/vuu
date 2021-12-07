@@ -14,6 +14,8 @@ class VuiStateStoreProvider(val table: DataTable, val store: VuiStateStore)(impl
   @volatile
   private var lastState = List[VuiHeader]()
 
+  lifecycleContainer(this).dependsOn(runner)
+
   def runOnce() = {
 
     val states = store.getAll()

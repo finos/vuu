@@ -20,6 +20,8 @@ class LifeCycleRunner(name: String, func: () => Unit, minCycleTime: Long = 100)(
   override def doDestroy(): Unit = {}
 
   override val lifecycleId: String = "lifeCycleRunner-" + name
+
+  override def toString: String = name
 }
 
 /**

@@ -65,6 +65,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   val tableContainer = new TableContainer(joinProvider)
 
   val providerContainer = new ProviderContainer(joinProvider)
+  lifecycle(this).dependsOn(providerContainer)
 
   val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
@@ -97,7 +98,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   lifecycle(viewPortRunner).dependsOn(server)
 
   val groupByRunner = new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce() )
-  lifecycle(viewPortRunner).dependsOn(server)
+  lifecycle(groupByRunner).dependsOn(server)
 
   def createTable(tableDef: TableDef): DataTable = {
     logger.info(s"Creating table ${tableDef.name}")
@@ -169,7 +170,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     this
   }
 
-  lifecycle(this).dependsOn(httpServer, server,joinProviderRunner, handlerRunner, viewPortRunner, joinProvider)
+  lifecycle(this).dependsOn(httpServer, server,joinProviderRunner, handlerRunner, viewPortRunner, joinProvider, groupByRunner)
 
   def join() = {
     lifecycle.join()

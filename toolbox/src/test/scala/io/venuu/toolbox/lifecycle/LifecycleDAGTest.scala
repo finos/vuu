@@ -113,6 +113,38 @@ class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
         List("k")))
 
     }
+
+    Scenario("Generate graphViz"){
+
+      val graph = new DirectedAcyclicGraph[String]
+
+      graph.addNode("a")
+      graph.addNode("b")
+      graph.addNode("c")
+      graph.addNode("d")
+      graph.addNode("e")
+      graph.addNode("f")
+      graph.addNode("g")
+      graph.addNode("h")
+      graph.addNode("i")
+      graph.addNode("j")
+      graph.addNode("k")
+
+      graph.addEdge("a", "c")
+      graph.addEdge("b", "c")
+      graph.addEdge("c", "e")
+      graph.addEdge("c", "d")
+      graph.addEdge("d", "g")
+      graph.addEdge("e", "g")
+      graph.addEdge("e", "f")
+      graph.addEdge("e", "h")
+      graph.addEdge("b", "i")
+      graph.addEdge("i", "j")
+      graph.addEdge("h", "k")
+
+      LifecycleGraphviz("test-graphviz", graph)
+    }
+
   }
 
 }

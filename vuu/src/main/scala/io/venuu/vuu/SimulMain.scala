@@ -8,7 +8,7 @@
 package io.venuu.vuu
 
 import io.venuu.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
-import io.venuu.toolbox.lifecycle.LifecycleContainer
+import io.venuu.toolbox.lifecycle.{LifecycleContainer}
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.metrics.MetricsModule
 import io.venuu.vuu.core.module.simul.SimulationModule
@@ -53,6 +53,8 @@ object SimulMain extends App{
    .withModule(VuiStateModule(store))
 
   val vuuServer = new VuuServer(config)
+
+  //LifecycleGraphviz("vuu", lifecycle.dependencyGraph)
 
   lifecycle.start()
 

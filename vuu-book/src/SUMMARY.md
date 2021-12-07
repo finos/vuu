@@ -1,13 +1,20 @@
 # Summary
 
 - [Getting Started](./getting_started/getting_started.md)
+  - [Building From Source](./getting_started/building_from_source.md)
+  - [Developing Vuu](./getting_started/developing.md)
+  - [Using binaries from Maven Repo](./getting_started/adding.md)
 - [Core Concepts](./providers_tables_viewports/providers_tables_viewports.md)
+  - [Lifecycle](./providers_tables_viewports/lifecycle.md)
   - [Providers](./providers_tables_viewports/providers.md)
   - [Tables](./providers_tables_viewports/tables.md)
   - [Viewports](./providers_tables_viewports/viewports.md)
+  - [Modules](./providers_tables_viewports/modules.md)
 - [Trees and Session Tables](./trees/trees_session_tables.md)
+  - [Trees](./trees/trees.md)
+  - [Tree Builder](./trees/tree_builder.md)
 - [Server Internals](./server_internals/server_internals.md)
-  - [The Tick Path](./server_internals/tickpath.md)
+  - [The Tick Path and the Slow Path](./server_internals/tickpath.md)
   - [ViewPort Thread(s)](./server_internals/viewport_thread.md)
   - [Join Manager](./server_internals/join_manager.md)
 - [Remote Procedure Calls](./rpc/rpc.md)
@@ -20,3 +27,6 @@
 - [Performance Optimization](./perf/performance_optimization.md)
   - [Indices](./perf/indices.md)
   - [Query Planner](./perf/query_planner.md)
+- [Security](./security/security.md)
+  - [Authentication](./security/Authentication.md)
+  

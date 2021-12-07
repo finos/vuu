@@ -14,7 +14,7 @@ const stripOutdir = (file) => file.replace(RegExp(`^${outdir}\/`), '');
 
 async function main() {
   console.log('[CLEAN]');
-  await exec("find -E public -regex '.*.(js|css)(.map)?$' -delete");
+//  await exec("find -E public -regex '.*.(js|css)(.map)?$' -delete");
 
   try {
     const { metafile } = await build({
