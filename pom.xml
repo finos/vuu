@@ -37,15 +37,15 @@
         <maven.compiler.source>15</maven.compiler.source>
         <maven.compiler.target>15</maven.compiler.target>
         <scala.version>2.13.5</scala.version>
-        <jetty.version>9.4.18.v20190429</jetty.version>
-        <metrics.version>3.1.2</metrics.version>
+        <!--jetty.version>9.4.18.v20190429</jetty.version-->
+        <metrics.version>4.2.5</metrics.version>
         <curator.version>3.1.0</curator.version>
-        <scalatest.version>3.2.5</scalatest.version>
+        <scalatest.version>3.2.9</scalatest.version>
         <scala.logging>3.9.2</scala.logging>
-        <jackson.version>2.12.1</jackson.version>
+        <jackson.version>2.13.0</jackson.version>
         <aeron.version>1.17.0</aeron.version>
-        <antlr.version>4.9.1</antlr.version>
-        <netty.version>4.1.60.Final</netty.version>
+        <antlr.version>4.9.3</antlr.version>
+        <netty.version>4.1.70.Final</netty.version>
         <maven.scala.plugin>2.15.2</maven.scala.plugin>
         <vertx.version>4.0.3</vertx.version>
     </properties>
@@ -131,7 +131,7 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest-featurespec_2.13</artifactId>
-            <version>3.2.5</version>
+            <version>3.2.9</version>
             <scope>test</scope>
         </dependency>
 
