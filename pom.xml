@@ -171,7 +171,7 @@
                 </executions>
             </plugin>
 
-            <plugin>
+            <!--plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
                 <version>1.6.7</version>
@@ -188,7 +188,7 @@
                         <version>1.4.18</version>
                     </dependency>
                 </dependencies>
-            </plugin>
+            </plugin-->
         </plugins>
 
 
