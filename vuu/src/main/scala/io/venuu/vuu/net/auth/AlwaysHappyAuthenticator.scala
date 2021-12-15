@@ -1,10 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
- *
- * Created by chris on 16/11/2015.
- *
- */
 package io.venuu.vuu.net.auth
 
 import io.venuu.vuu.net.{AuthenticateSuccess, Authenticator, JsonViewServerMessage, ViewServerMessage}

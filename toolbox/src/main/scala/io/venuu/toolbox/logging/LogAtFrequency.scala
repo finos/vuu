@@ -1,10 +1,3 @@
-/**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 11/12/2015.
-
-  */
 package io.venuu.toolbox.logging
 
 import io.venuu.toolbox.time.Clock

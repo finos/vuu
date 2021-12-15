@@ -1,10 +1,3 @@
-/**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-  *
-  * Created by chris on 19/10/2016.
-  *
-  */
 package io.venuu.toolbox.time
 
 import java.time.{DayOfWeek, LocalDateTime, ZoneId}

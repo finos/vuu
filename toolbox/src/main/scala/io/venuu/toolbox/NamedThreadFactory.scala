@@ -1,10 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
-
- * Created by chris on 17/09/15.
-
- */
 package io.venuu.toolbox
 
 import java.util.concurrent.ThreadFactory

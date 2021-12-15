@@ -1,10 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
-
- * Created by chris on 12/02/15.
-
- */
 package io.venuu.toolbox.collection.array
 
 import scala.reflect.ClassTag

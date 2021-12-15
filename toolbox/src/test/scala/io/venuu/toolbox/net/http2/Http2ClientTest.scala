@@ -1,10 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
- *
- * Created by chris on 19/06/2020.
- *
- */
 package io.venuu.toolbox.net.http2
 
 import org.scalatest.featurespec.AnyFeatureSpec

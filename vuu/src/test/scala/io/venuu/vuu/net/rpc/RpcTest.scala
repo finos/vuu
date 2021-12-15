@@ -1,10 +1,3 @@
-/**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 15/02/2016.
-
-  */
 package io.venuu.vuu.net.rpc
 
 import io.venuu.vuu.net._

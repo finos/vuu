@@ -1,10 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
- *
- * Created by chris on 27/03/15.
- *
- */
 package io.venuu.vuu.viewport
 
 import com.codahale.metrics.Histogram
