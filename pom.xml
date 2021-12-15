@@ -8,6 +8,7 @@
     <version>0.15-SNAPSHOT</version>
 
     <name>vuu-parent</name>
+    <description>Vuu - A View Server in Scala and React</description>
     <url>https://github.com/venuu-io/vuu</url>
     <packaging>pom</packaging>
 
