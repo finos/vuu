@@ -8,6 +8,7 @@
 package io.venuu.toolbox.jmx
 
 import com.codahale.metrics._
+import com.codahale.metrics.jmx._
 
 
 trait MetricsProvider{
