@@ -3,6 +3,7 @@ package io.venuu.vuu.net.ws
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
+import io.venuu.vuu.client.ClientHelperFns.awaitMsgBody
 import io.venuu.vuu.core.CoreServerApiHander
 import io.venuu.vuu.core.module.ModuleContainer
 import io.venuu.vuu.core.table.TableContainer
@@ -18,8 +19,6 @@ import org.scalatest.matchers.should.Matchers
  * Created by chris on 25/10/2015.
  */
 class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
-
-  import io.venuu.vuu.client.ClientHelperFns._
 
   Feature("Check that we can create a websocket server and client"){
 

@@ -4,9 +4,10 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
+import io.venuu.vuu.client.ClientHelperFns._
 import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
-import io.venuu.vuu.net._
+import io.venuu.vuu.net.{ChangeViewPortSuccess, CreateViewPortSuccess, SortSpec, ViewServerClient, WebSocketViewServerClient}
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.net.json.JsonVsSerializer
 import io.venuu.vuu.net.ws.WebSocketClient
@@ -18,8 +19,6 @@ import org.scalatest.matchers.should.Matchers
   * Created by chris on 18/09/2016.
   */
 class CoreModuleTest extends AnyFeatureSpec with Matchers with StrictLogging with GivenWhenThen {
-
-  import io.venuu.vuu.client.ClientHelperFns._
 
   def setupServer: (String, String, ViewServerClient, LifecycleContainer) = {
 

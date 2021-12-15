@@ -20,19 +20,19 @@ class VuiStateStoreProvider(val table: DataTable, val store: VuiStateStore)(impl
 
     val states = store.getAll()
 
-    for(state <- states){
+    for (state <- states) {
 
-      table.processUpdate(state.uniqueId, RowWithData( state.uniqueId, Map("uniqueId" ->  state.uniqueId,
+      table.processUpdate(state.uniqueId, RowWithData(state.uniqueId, Map("uniqueId" -> state.uniqueId,
         "user" -> state.user,
         "id" -> state.id,
-        "lastUpdate" -> state.lastUpdate )
+        "lastUpdate" -> state.lastUpdate)
       ),
         clock.now()
       )
     }
 
-    for(oldState <- lastState){
-      if(!states.contains(oldState)){
+    for (oldState <- lastState) {
+      if (!states.contains(oldState)) {
         table.processDelete(oldState.uniqueId)
       }
     }

@@ -1,10 +1,10 @@
 /**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-  *
-  * Created by chris on 07/09/2016.
-  *
-  */
+ * Copyright Whitebox Software Ltd. 2014
+ * All Rights Reserved.
+ *
+ * Created by chris on 07/09/2016.
+ *
+ */
 package io.venuu.vuu.core.module.simul
 
 import com.typesafe.scalalogging.StrictLogging
@@ -25,13 +25,13 @@ import java.util.UUID
 class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer) extends RpcHandler with StrictLogging {
 
   def addRowsFromInstruments(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
-    val rics = selection.rowKeyIndex.map({ case(key, _) => key}).toList
+    val rics = selection.rowKeyIndex.map({ case (key, _) => key }).toList
     providerContainer.getProviderForTable("orderEntry") match {
       case Some(provider) =>
-        rics.foreach( ric => {
+        rics.foreach(ric => {
           val uuid = UUID.randomUUID().toString
           provider.asInstanceOf[RpcProvider].tick(uuid, Map("clOrderId" -> uuid, "ric" -> ric, "quantity" -> 10_000, "orderType" -> "Limit"))
-        } )
+        })
         OpenDialogViewPortAction(ViewPortTable("orderEntry", "SIMUL"))
       case None =>
         logger.error("Could not find provider for table: orderEntry")
@@ -54,7 +54,7 @@ class InstrumentsService(val table: DataTable, val providerContainer: ProviderCo
     NoAction()
   }
 
-  def testRow(rowKey: String, row:Map[String, Any], sessionId: ClientSessionId): ViewPortAction = {
+  def testRow(rowKey: String, row: Map[String, Any], sessionId: ClientSessionId): ViewPortAction = {
     println("In testRow")
     NoAction()
   }
@@ -68,19 +68,19 @@ class InstrumentsService(val table: DataTable, val providerContainer: ProviderCo
   )
 }
 
-trait SimulRpcHandler{
-  def onSendToMarket(param1: Map[String , Any])(ctx: RequestContext): Boolean
+trait SimulRpcHandler {
+  def onSendToMarket(param1: Map[String, Any])(ctx: RequestContext): Boolean
 
 }
 
-class TheSimulRpcHander extends DefaultLifecycleEnabled with RpcHandler with SimulRpcHandler{
-  def onSendToMarket(param1: Map[String , Any])(ctx: RequestContext): Boolean = {
+class TheSimulRpcHander extends DefaultLifecycleEnabled with RpcHandler with SimulRpcHandler {
+  def onSendToMarket(param1: Map[String, Any])(ctx: RequestContext): Boolean = {
     println("onSendToMarket called:" + param1)
     false
   }
 }
 
-trait OrderEntryRpcHandler{
+trait OrderEntryRpcHandler {
   def addRowsFromInstruments(sourceVpId: String)(ctx: RequestContext): List[String]
 }
 
@@ -89,21 +89,21 @@ class OrderEntryRpcHandlerImpl(val vpContainer: ViewPortContainer, val tableCont
   override def addRowsFromInstruments(sourceVpId: String)(ctx: RequestContext): List[String] = {
     vpContainer.get(ctx.session, sourceVpId) match {
       case Some(vp) =>
-        val rics = vp.getSelection.map({ case(key, rowIndex) => key}).toList
+        val rics = vp.getSelection.map({ case (key, rowIndex) => key }).toList
         providerContainer.getProviderForTable("orderEntry") match {
           case Some(provider) =>
-            rics.foreach( ric => {
+            rics.foreach(ric => {
               val uuid = UUID.randomUUID().toString
               provider.asInstanceOf[RpcProvider].tick(uuid, Map("clOrderId" -> uuid, "ric" -> ric, "quantity" -> 10_000, "orderType" -> "Limit"))
-            } )
+            })
             rics
           case None =>
             logger.error("Could not find provider for table: orderEntry")
             throw new Exception("could not find provider for table")
         }
       case None =>
-          logger.error("could not find vp to get selection")
-          throw new Exception("could not find vp to get selection")
+        logger.error("could not find vp to get selection")
+        throw new Exception("could not find vp to get selection")
     }
   }
 }
@@ -119,18 +119,18 @@ object SimulationModule extends DefaultModule {
 
     ModuleFactory.withNamespace(NAME)
       .addTable(
-          TableDef(
-            name = "instruments",
-            keyField = "ric",
-            columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(), "currency".string(), "exchange".string(), "lotSize".int()),
-            VisualLinks(),
-            joinFields = "ric"
-          ),
-          (table, vs) => new SimulatedBigInstrumentsProvider(table),
-          (table, provider, providerContainer) => ViewPortDef(
-            columns = table.getTableDef.columns,
-            service = new InstrumentsService(table, providerContainer)
-          )
+        TableDef(
+          name = "instruments",
+          keyField = "ric",
+          columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(), "currency".string(), "exchange".string(), "lotSize".int()),
+          VisualLinks(),
+          joinFields = "ric"
+        ),
+        (table, vs) => new SimulatedBigInstrumentsProvider(table),
+        (table, provider, providerContainer) => ViewPortDef(
+          columns = table.getTableDef.columns,
+          service = new InstrumentsService(table, providerContainer)
+        )
       )
       .addTable(
         AutoSubscribeTableDef(
@@ -159,8 +159,8 @@ object SimulationModule extends DefaultModule {
           name = "parentOrders",
           keyField = "id",
           Columns.fromNames("id:String", "idAsInt: Int", "ric:String", "childCount: Int", "price:Double", "quantity:Int", "side:String", "account:String", "exchange: String",
-                                    "ccy: String", "algo: String", "volLimit:Double", "filledQty:Int", "openQty:Int", "averagePrice: Double", "status:String",
-                                    "lastUpdate:Long"),
+            "ccy: String", "algo: String", "volLimit:Double", "filledQty:Int", "openQty:Int", "averagePrice: Double", "status:String",
+            "lastUpdate:Long"),
           VisualLinks(
             Link("ric", "prices", "ric")
           ),
@@ -198,7 +198,7 @@ object SimulationModule extends DefaultModule {
           VisualLinks(
             Link("ric", "instruments", "ric")
           ),
-          joinFields =  "ric"
+          joinFields = "ric"
         ),
         (table, vs) => new RpcProvider(table)
       )
@@ -216,16 +216,16 @@ object SimulationModule extends DefaultModule {
         ))
       .addJoinTable(tableDefs =>
         JoinTableDef(
-            name = "instrumentPrices",
-            baseTable = tableDefs.get("instruments"),
-            joinColumns = Columns.allFrom(tableDefs.get("instruments")) ++ Columns.allFromExcept(tableDefs.get("prices"), "ric"),
-            joins =
-              JoinTo(
-                table = tableDefs.get("prices"),
-                joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-              ),
-            joinFields = Seq()
-      ))
+          name = "instrumentPrices",
+          baseTable = tableDefs.get("instruments"),
+          joinColumns = Columns.allFrom(tableDefs.get("instruments")) ++ Columns.allFromExcept(tableDefs.get("prices"), "ric"),
+          joins =
+            JoinTo(
+              table = tableDefs.get("prices"),
+              joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+            ),
+          joinFields = Seq()
+        ))
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "ordersPrices",

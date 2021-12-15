@@ -6,14 +6,20 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
 
 case class VuiHeader(user: String, id: String, uniqueId: String, lastUpdate: Long)
+
 case class VuiJsonState(json: String)
+
 case class VuiState(header: VuiHeader, json: VuiJsonState)
 
-trait VuiStateStore{
+trait VuiStateStore {
   def add(state: VuiState): Unit
+
   def get(user: String, id: String): Option[VuiState]
+
   def delete(user: String, id: String): Unit
+
   def getAllFor(user: String): List[VuiHeader]
+
   def getAll(): List[VuiHeader]
 
   private val dateTimeFormat = DateTimeFormat.forPattern("YYYY-MM-dd_HHmmss.SSS")
@@ -22,7 +28,8 @@ trait VuiStateStore{
     dateTimeFormat.print(time)
   }
 }
-class MemoryBackedVuiStateStore(val maxItemsPerUser: Int = 50) extends VuiStateStore{
+
+class MemoryBackedVuiStateStore(val maxItemsPerUser: Int = 50) extends VuiStateStore {
 
   private val storeByUser = new ConcurrentHashMap[String, Map[String, VuiState]]()
 
@@ -37,10 +44,10 @@ class MemoryBackedVuiStateStore(val maxItemsPerUser: Int = 50) extends VuiStateS
   override def add(state: VuiState): Unit = {
     val stateByUser = storeByUser.getOrDefault(state.header.user, Map())
 
-    val updatedStateByUser = if(state.header.id == "latest"){
+    val updatedStateByUser = if (state.header.id == "latest") {
       val version = timeToVersion(state.header.lastUpdate)
       stateByUser ++ Map(state.header.id -> state) ++ Map(version -> state.copy(header = state.header.copy(id = version, uniqueId = toUniqueId(state.header.user, version))))
-    }else{
+    } else {
       stateByUser ++ Map(state.header.id -> state) ++ Map("latest" -> state.copy(header = state.header.copy(id = "latest", uniqueId = toUniqueId(state.header.user, "latest"))))
     }
 
@@ -50,10 +57,10 @@ class MemoryBackedVuiStateStore(val maxItemsPerUser: Int = 50) extends VuiStateS
   }
 
   private def restrictToMaxSize(maxSize: Int, statesByUser: Map[String, VuiState]): Map[String, VuiState] = {
-    if(statesByUser.size > maxSize ){
+    if (statesByUser.size > maxSize) {
       val oldest = statesByUser.values.filter(_.header.id != "latest").toList.sortBy(_.header.lastUpdate).head
       statesByUser.-(oldest.header.id)
-    }else{
+    } else {
       statesByUser
     }
   }
@@ -61,6 +68,7 @@ class MemoryBackedVuiStateStore(val maxItemsPerUser: Int = 50) extends VuiStateS
   override def get(user: String, id: String): Option[VuiState] = {
     storeByUser.getOrDefault(user, Map()).get(id)
   }
+
   override def getAllFor(user: String): List[VuiHeader] = storeByUser.getOrDefault(user, Map()).map(_._2.header).toList
 
   override def getAll(): List[VuiHeader] = {

@@ -1,10 +1,10 @@
 /**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 18/11/2015.
-
-  */
+ * Copyright Whitebox Software Ltd. 2014
+ * All Rights Reserved.
+ *
+ * Created by chris on 18/11/2015.
+ *
+ */
 package io.venuu.vuu.provider.simulation
 
 import com.typesafe.scalalogging.StrictLogging
@@ -18,9 +18,9 @@ class SimulatedInstrumentProvider(instruments: Array[Array[String]], table: Data
 
   override def doStart(): Unit = {
 
-    instruments.foreach( row => {
+    instruments.foreach(row => {
 
-      if(row.size >= 4){
+      if (row.size >= 4) {
         val ric = row(0)
         val name = row(1)
         val gen1 = row(2)
@@ -35,7 +35,7 @@ class SimulatedInstrumentProvider(instruments: Array[Array[String]], table: Data
 
         table.processUpdate(ric, rowData, timeProvider.now())
 
-      } else{
+      } else {
         logger.info(s"dropped $row")
       }
 

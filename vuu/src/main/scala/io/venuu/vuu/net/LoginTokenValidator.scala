@@ -7,7 +7,7 @@ trait LoginTokenValidator {
   def login(msg: LoginRequest): Either[ViewServerMessage, String]
 }
 
-class AlwaysHappyLoginValidator extends LoginTokenValidator{
+class AlwaysHappyLoginValidator extends LoginTokenValidator {
 
   override def login(msg: LoginRequest): Either[ViewServerMessage, String] = {
     Left(JsonViewServerMessage("", "", msg.token, msg.user, LoginSuccess(msg.token)))

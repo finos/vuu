@@ -14,16 +14,17 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
 
-trait InboundMessageHandler{
+trait InboundMessageHandler {
   def handle(msg: ViewServerMessage): Option[ViewServerMessage]
 }
 
-trait OutboundMessageHandler{
+trait OutboundMessageHandler {
   def sendUpdates(): Unit
 }
 
-trait MessageHandler extends InboundMessageHandler with OutboundMessageHandler{
+trait MessageHandler extends InboundMessageHandler with OutboundMessageHandler {
   def channel: Channel
+
   def outboundQueue: PublishQueue[ViewPortUpdate]
 
 }
@@ -53,7 +54,7 @@ class DefaultMessageHandler(val channel: Channel,
   }
 
   private def sendUpdatesInternal(updates: Seq[ViewPortUpdate], highPriority: Boolean = false) = {
-    if(!updates.isEmpty){
+    if (!updates.isEmpty) {
 
       val formatted = formatDataOutbound(updates)
 
@@ -80,16 +81,16 @@ class DefaultMessageHandler(val channel: Channel,
         disconnect()
 
       case BatchSize(size) =>
-        if(hasHighPriorityUpdates){
+        if (hasHighPriorityUpdates) {
           val updates = highPriorityQueue.popUpTo(size)
           sendUpdatesInternal(updates, highPriority = true)
           val remaining = size - updates.size
-          if(remaining > 0){
+          if (remaining > 0) {
             val lpUpdates = outboundQueue.popUpTo(remaining)
             sendUpdatesInternal(lpUpdates, highPriority = true)
           }
 
-        }else{
+        } else {
           val updates = outboundQueue.popUpTo(size)
           sendUpdatesInternal(updates)
         }
@@ -105,7 +106,7 @@ class DefaultMessageHandler(val channel: Channel,
 
   protected def formatDataOutbound(outbound: Seq[ViewPortUpdate]): TableRowUpdates = {
 
-    val updates = outbound.flatMap( vp => formatOneRowUpdate(vp) ).toArray
+    val updates = outbound.flatMap(vp => formatOneRowUpdate(vp)).toArray
 
     val updateId = UUID.randomUUID().toString
 
@@ -115,7 +116,7 @@ class DefaultMessageHandler(val channel: Channel,
   protected def formatOneRowUpdate(update: ViewPortUpdate): Option[RowUpdate] = {
 
     update.vpUpdate match {
-      case SizeUpdateType =>{
+      case SizeUpdateType => {
         //logger.debug(s"SVR[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
         Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), 0, Array.empty))
       }
@@ -123,18 +124,18 @@ class DefaultMessageHandler(val channel: Channel,
       case RowUpdateType =>
 
         //if viewport has changed while we're processing the queue
-        if( ! update.vp.getRange.contains( update.index ) ){
+        if (!update.vp.getRange.contains(update.index)) {
           return None
         }
 
         val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns)
 
-        if(dataToSend.size > 0 &&  dataToSend(0) == null)
+        if (dataToSend.size > 0 && dataToSend(0) == null)
           println("ChrisChris>>" + update.table.name + " " + update.key.key + " " + update.index + " data: " + dataToSend.mkString(","))
 
-        val isSelected = if( update.vp.getSelection.contains(update.key.key) ) 1 else 0
+        val isSelected = if (update.vp.getSelection.contains(update.key.key)) 1 else 0
 
-        if(dataToSend.size == 0)
+        if (dataToSend.size == 0)
           None
         else
           Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), isSelected, dataToSend))
@@ -193,13 +194,12 @@ class DefaultMessageHandler(val channel: Channel,
 
 }
 
-case class ClientSessionId(sessionId: String, user: String) extends Ordered[ClientSessionId]
-{
+case class ClientSessionId(sessionId: String, user: String) extends Ordered[ClientSessionId] {
   override def equals(obj: scala.Any): Boolean = {
-    if(obj == null) false
-    else if(canEqual(obj)){
-        sessionId == obj.asInstanceOf[ClientSessionId].sessionId
-    }else{
+    if (obj == null) false
+    else if (canEqual(obj)) {
+      sessionId == obj.asInstanceOf[ClientSessionId].sessionId
+    } else {
       false
     }
   }
@@ -209,15 +209,17 @@ case class ClientSessionId(sessionId: String, user: String) extends Ordered[Clie
   override def compare(that: ClientSessionId): Int = sessionId.compareTo(that.sessionId)
 }
 
-trait ClientSessionContainer{
+trait ClientSessionContainer {
 
   def register(sessionId: ClientSessionId, messageHandler: MessageHandler)
+
   //def addConnection(session: ClientSessionId, channel: Channel, handler: InboundMessageHandler): Unit
   def getHandler(sessionId: ClientSessionId): Option[MessageHandler]
+
   def remove(sessionId: ClientSessionId): Unit
 }
 
-class ClientSessionContainerImpl() extends ClientSessionContainer with StrictLogging{
+class ClientSessionContainerImpl() extends ClientSessionContainer with StrictLogging {
 
   private val sessions = new ConcurrentHashMap[ClientSessionId, MessageHandler]()
 
@@ -229,6 +231,7 @@ class ClientSessionContainerImpl() extends ClientSessionContainer with StrictLog
   override def register(sessionId: ClientSessionId, messageHandler: MessageHandler): Unit = {
     sessions.put(sessionId, messageHandler)
   }
+
   //def addConnection(session: ClientSessionId, channel: Channel, handler: InboundMessageHandler): Unit
   override def getHandler(sessionId: ClientSessionId): Option[MessageHandler] = {
     val handler = sessions.get(sessionId)
@@ -236,7 +239,7 @@ class ClientSessionContainerImpl() extends ClientSessionContainer with StrictLog
   }
 
   def runOnce(): Unit = {
-    SetHasAsScala(sessions.entrySet()).asScala.foreach(entry => entry.getValue.sendUpdates() )
+    SetHasAsScala(sessions.entrySet()).asScala.foreach(entry => entry.getValue.sendUpdates())
   }
 }
 

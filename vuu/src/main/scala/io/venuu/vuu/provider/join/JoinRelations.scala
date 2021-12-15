@@ -11,13 +11,13 @@ import scala.jdk.CollectionConverters.MapHasAsScala
 
 case class RightKeyTable(key: String, table: String)
 
-class RowJoin(val tableName: String, val leftKey: String, val leftKeyField: String){
+class RowJoin(val tableName: String, val leftKey: String, val leftKeyField: String) {
 
   private val foreignKeyMap = new ConcurrentHashMap[String, String]()
 
   def toMap(): Map[String, Any] = {
     val asScala = MapHasAsScala(foreignKeyMap).asScala.toMap
-     asScala.foldLeft(Map[String, Any]())((map, tuple) => {
+    asScala.foldLeft(Map[String, Any]())((map, tuple) => {
       map ++ Map(tableName + "." + tuple._1 -> tuple._2)
     }) ++ Map(tableName + "." + leftKeyField -> leftKey)
   }
@@ -31,11 +31,11 @@ class JoinRelations {
 
   private val rowJoins = new ConcurrentHashMap[String, ConcurrentHashMap[String, RowJoin]]()
 
-  def addRowJoins(joinDef: JoinTableDef, ev: java.util.HashMap[String, Any]):Unit = {
+  def addRowJoins(joinDef: JoinTableDef, ev: java.util.HashMap[String, Any]): Unit = {
 
     val leftKeyField = joinDef.baseTable.keyField
 
-    val leftKey      = ev.get(leftKeyField).asInstanceOf[String]
+    val leftKey = ev.get(leftKeyField).asInstanceOf[String]
 
     rowJoins.computeIfAbsent(joinDef.baseTable.name, baseTable => {
       val rowKeysMap = new ConcurrentHashMap[String, RowJoin]()
@@ -45,17 +45,17 @@ class JoinRelations {
 
     val rowJoinForTable = rowJoins.get(joinDef.baseTable.name)
 
-    val rowJoin = rowJoinForTable.computeIfAbsent(leftKey, key => new RowJoin(joinDef.baseTable.name, key, leftKeyField) )
+    val rowJoin = rowJoinForTable.computeIfAbsent(leftKey, key => new RowJoin(joinDef.baseTable.name, key, leftKeyField))
 
-    joinDef.joins.foreach( joinTo => {
+    joinDef.joins.foreach(joinTo => {
 
-      val leftColumn  = joinTo.joinSpec.left
-      val leftValue   = ev.get(leftColumn)
+      val leftColumn = joinTo.joinSpec.left
+      val leftValue = ev.get(leftColumn)
 
-      if(leftColumn != null && leftValue != null){
+      if (leftColumn != null && leftValue != null) {
         rowJoin.putJoinKey(leftColumn, leftValue.toString)
       }
-    } )
+    })
   }
 
   //returns the joins relevant for this left key...

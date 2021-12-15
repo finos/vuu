@@ -8,22 +8,32 @@ import io.venuu.vuu.core.table.Column
 import java.util.concurrent.ConcurrentSkipListMap
 import scala.jdk.CollectionConverters._
 
-trait IndexedField[TYPE]{
+trait IndexedField[TYPE] {
   def insert(indexedValue: TYPE, rowKeys: String)
+
   def remove(indexedValue: TYPE, rowKeys: String)
-  def column:Column
+
+  def column: Column
+
   def lessThan(bound: TYPE): ImmutableArray[String]
+
   def greaterThan(bound: TYPE): ImmutableArray[String]
+
   def find(indexedValue: TYPE): ImmutableArray[String]
+
   def find(indexedValues: List[TYPE]): ImmutableArray[String] = {
     indexedValues.foldLeft(ImmutableUniqueArraySet.empty[String]())((array, indexedKey) => array.++(find(indexedKey)))
   }
 }
 
 trait DoubleIndexedField extends IndexedField[Double]
+
 trait BooleanIndexedField extends IndexedField[Boolean]
+
 trait LongIndexedField extends IndexedField[Long]
+
 trait IntIndexedField extends IndexedField[Int]
+
 trait StringIndexedField extends IndexedField[String]
 
 class SkipListIndexedStringField(val column: Column) extends StringIndexedField with StrictLogging {
@@ -56,6 +66,7 @@ class SkipListIndexedStringField(val column: Column) extends StringIndexedField 
   override def find(indexedValues: List[String]): ImmutableArray[String] = super.find(indexedValues)
 
   override def lessThan(bound: String): ImmutableArray[String] = ???
+
   override def greaterThan(bound: String): ImmutableArray[String] = ???
 }
 
@@ -118,7 +129,10 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
 }
 
 
-class SkipListIndexedDoubleField(column: Column) extends SkipListIndexedField[Double](column) with DoubleIndexedField{}
+class SkipListIndexedDoubleField(column: Column) extends SkipListIndexedField[Double](column) with DoubleIndexedField {}
+
 class SkipListIndexedIntField(column: Column) extends SkipListIndexedField[Int](column) with IntIndexedField {}
+
 class SkipListIndexedLongField(column: Column) extends SkipListIndexedField[Long](column) with LongIndexedField {}
+
 class SkipListIndexedBooleanField(column: Column) extends SkipListIndexedField[Boolean](column) with BooleanIndexedField {}

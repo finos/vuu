@@ -9,42 +9,42 @@ import io.venuu.vuu.viewport._
 
 class EditOrdersRpcService(val table: DataTable, val provider: RpcProvider) extends RpcHandler with StrictLogging {
 
-  def showDetails(selection: ViewPortSelection,sessionId: ClientSessionId): ViewPortAction = {
+  def showDetails(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     NoAction()
   }
 
-  def deleteRows(selection: ViewPortSelection,sessionId: ClientSessionId): ViewPortAction = {
+  def deleteRows(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     NoAction()
   }
 
-  def duplicate(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
+  def duplicate(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     NoAction()
   }
 
-  def editCell(rowKey: String, key: String, value: Object, sessionId: ClientSessionId) : ViewPortAction = {
+  def editCell(rowKey: String, key: String, value: Object, sessionId: ClientSessionId): ViewPortAction = {
     NoAction()
   }
 
-  def editRow(key: String, row: Map[String, Object],sessionId: ClientSessionId) : ViewPortAction = {
+  def editRow(key: String, row: Map[String, Object], sessionId: ClientSessionId): ViewPortAction = {
     NoAction()
   }
 
-  def deleteAll(sessionId: ClientSessionId) : ViewPortAction = {
+  def deleteAll(sessionId: ClientSessionId): ViewPortAction = {
     NoAction()
   }
 
   override def menuItems(): ViewPortMenu = {
     ViewPortMenu(
       ViewPortMenu("Insert",
-          new SelectionViewPortMenuItem("Duplicate Row(s)", "", this.duplicate, "DUPLICATE")
+        new SelectionViewPortMenuItem("Duplicate Row(s)", "", this.duplicate, "DUPLICATE")
       ),
       ViewPortMenu("Edit",
-          new CellViewPortMenuItem("Edit Cell", "", this.editCell, "EDIT_CELL"),
-          new RowViewPortMenuItem("Edit Row", "", this.editRow, "EDIT_ROW")
-        ),
+        new CellViewPortMenuItem("Edit Cell", "", this.editCell, "EDIT_CELL"),
+        new RowViewPortMenuItem("Edit Row", "", this.editRow, "EDIT_ROW")
+      ),
       ViewPortMenu("Delete",
-          new SelectionViewPortMenuItem("Delete Row(s)", "", this.deleteRows, "DELETE_ROWS"),
-          new TableViewPortMenuItem("Delete All Contents", "", this.deleteAll, "DELETE_ALL")
+        new SelectionViewPortMenuItem("Delete Row(s)", "", this.deleteRows, "DELETE_ROWS"),
+        new TableViewPortMenuItem("Delete All Contents", "", this.deleteAll, "DELETE_ALL")
       ),
       new SelectionViewPortMenuItem("Show Details", filter = "", this.showDetails, "SHOW_DETAILS")
     )

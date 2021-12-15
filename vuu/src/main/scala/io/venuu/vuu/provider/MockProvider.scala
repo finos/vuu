@@ -1,9 +1,9 @@
 /**
  * Copyright Whitebox Software Ltd. 2014
  * All Rights Reserved.
-
+ *
  * Created by chris on 26/02/2014.
-
+ *
  */
 package io.venuu.vuu.provider
 
@@ -14,7 +14,7 @@ import io.venuu.vuu.core.table.{DataTable, RowWithData}
 
 import java.util.concurrent.ConcurrentHashMap
 
-class MockProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging{
+class MockProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging {
 
   lifecycle(this)
 

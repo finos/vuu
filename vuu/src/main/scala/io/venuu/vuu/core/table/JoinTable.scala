@@ -1,9 +1,9 @@
 /**
  * Copyright Whitebox Software Ltd. 2014
  * All Rights Reserved.
-
+ *
  * Created by chris on 25/08/15.
-
+ *
  */
 package io.venuu.vuu.core.table
 
@@ -20,23 +20,23 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable
 
 /**
-  * When we are a ViewPort listening on a join table, we want to register our interest
-  * but we want updates via esper, not via the underlying tables (at mo)
-  *
-  * So we wrap the listener and discard the message.
-  */
-case class WrappedKeyObserver[T](wrapped: KeyObserver[T]) extends KeyObserver[T] with StrictLogging{
+ * When we are a ViewPort listening on a join table, we want to register our interest
+ * but we want updates via esper, not via the underlying tables (at mo)
+ *
+ * So we wrap the listener and discard the message.
+ */
+case class WrappedKeyObserver[T](wrapped: KeyObserver[T]) extends KeyObserver[T] with StrictLogging {
   override def onUpdate(update: T): Unit = {
-     logger.debug(s"suppressing tick for $update as am wrapped")
+    logger.debug(s"suppressing tick for $update as am wrapped")
   }
 
   override def hashCode(): Int = wrapped.hashCode()
 
   override def equals(obj: scala.Any): Boolean = {
 
-    if(obj.isInstanceOf[WrappedKeyObserver[T]]){
+    if (obj.isInstanceOf[WrappedKeyObserver[T]]) {
       wrapped.equals(obj.asInstanceOf[WrappedKeyObserver[T]].wrapped)
-    }else{
+    } else {
       wrapped.equals(obj)
     }
 
@@ -59,18 +59,18 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
   assert(joinFields.length == columns.length)
   assert(primaryKeyMask.length == columns.length)
 
-  def isPrimaryKeyColumn(col : JoinColumn): Boolean = {
-     val source = col.sourceTable
-     val sourceColumn = col.sourceColumn
+  def isPrimaryKeyColumn(col: JoinColumn): Boolean = {
+    val source = col.sourceTable
+    val sourceColumn = col.sourceColumn
 
-      source.keyField == sourceColumn.name
+    source.keyField == sourceColumn.name
   }
 
-  def primaryKeyIndicesByTable: List[Boolean] ={
-    columns.map( c => c match {
+  def primaryKeyIndicesByTable: List[Boolean] = {
+    columns.map(c => c match {
       case jc: JoinColumn => isPrimaryKeyColumn(jc)
 
-    } ).toList
+    }).toList
   }
 
   def getKeyValuesByTable(origPrimaryKey: String): Map[String, String] = {
@@ -87,17 +87,17 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
     while (keyIndex < joinFields.length) {
 
-      val key = if(keysByJoinIndex(keyIndex).length <= primaryKeyIndex){
-                    null
-                  }else{
-                    keysByJoinIndex(keyIndex)(primaryKeyIndex)
-                  }
+      val key = if (keysByJoinIndex(keyIndex).length <= primaryKeyIndex) {
+        null
+      } else {
+        keysByJoinIndex(keyIndex)(primaryKeyIndex)
+      }
 
       val tableName = joinTableNames(keyIndex)
 
       val isPrimaryKey = primaryKeyMask(keyIndex)
 
-      if(isPrimaryKey){
+      if (isPrimaryKey) {
         logger.debug(s"found foreign key $key in table $tableName for primary key $origPrimaryKey ")
         map.put(tableName, key)
       }
@@ -140,18 +140,18 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
   }
 
   /**
-    * Find the left hand side of our join column
-    */
+   * Find the left hand side of our join column
+   */
   private def findJoinColumn(right: JoinColumn, joinDef: JoinTableDef, joinColumns: Array[Column]): (JoinColumn, Int) = {
-    val joinTo = joinDef.joins.find( joinTo => joinTo.table.name == right.sourceTable.name && joinTo.joinSpec.right == right.sourceColumn.name ).get
+    val joinTo = joinDef.joins.find(joinTo => joinTo.table.name == right.sourceTable.name && joinTo.joinSpec.right == right.sourceColumn.name).get
 
     val leftColumn = joinTo.joinSpec.left
-    val tableName  = joinDef.baseTable.name
+    val tableName = joinDef.baseTable.name
 
-    val tuple = joinColumns.zipWithIndex.map({case(c,i) => (c.asInstanceOf[JoinColumn], i)}).find({case(c, _) =>
+    val tuple = joinColumns.zipWithIndex.map({ case (c, i) => (c.asInstanceOf[JoinColumn], i) }).find({ case (c, _) =>
       val maybeColumn = c
       maybeColumn.sourceColumn.name == leftColumn && maybeColumn.sourceTable.name == tableName
-    } ).get
+    }).get
 
     tuple
   }
@@ -188,7 +188,7 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
         val newIndices = newKeysByJoinIndex(0).toArray
 
-        for( i <- newIndices.indices) keyToIndexMap.put(newIndices(i), i)
+        for (i <- newIndices.indices) keyToIndexMap.put(newIndices(i), i)
 
         JoinDataTableData(tableDef, newKeysByJoinIndex, keyToIndexMap)
     }
@@ -230,10 +230,10 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
             //set the index value to be the immutale array of foriegn keys
             newKeysByJoinIndex(joinFieldIndex) = newKeysByJoinIndexData
 
-          //if the key value for the join index was null in the incoming message
-          //that means potentially the provider for one of the "right" tables
-          //may not be subscribed to that key, if this is the case we need to get the key that is the
-          //join to this one and ask the table if it wants to have a go.
+            //if the key value for the join index was null in the incoming message
+            //that means potentially the provider for one of the "right" tables
+            //may not be subscribed to that key, if this is the case we need to get the key that is the
+            //join to this one and ask the table if it wants to have a go.
           } else {
 
             val newKeysByJoinIndexData = keysByJoinIndex(joinFieldIndex).+(null)
@@ -242,17 +242,17 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
             val sourceTableName = this.columns(joinFieldIndex).asInstanceOf[JoinColumn].sourceTable.name
 
-            val sourceTable     = sourceTables(sourceTableName)
+            val sourceTable = sourceTables(sourceTableName)
 
             //if this table is an on-demand autosubscribe table (like market data)
             //then try once to subscribe
-            if(isAutoSubscribe(sourceTable)){
+            if (isAutoSubscribe(sourceTable)) {
 
-              val column         = columns(joinFieldIndex).asInstanceOf[JoinColumn]
+              val column = columns(joinFieldIndex).asInstanceOf[JoinColumn]
 
               val (_, joinIndex) = findJoinColumn(column, joinTable.getTableDef.asInstanceOf[JoinTableDef], columns)
 
-              val rightValue                  = newKeysByJoinIndex(joinIndex)(index)
+              val rightValue = newKeysByJoinIndex(joinIndex)(index)
 
               checkAndAutosubscribe(rightValue, sourceTable)
             }
@@ -272,10 +272,10 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
           val oldKeysByJoinIndex = keysByJoinIndex(joinFieldIndex)
 
-          if(index >= oldKeysByJoinIndex.length)
+          if (index >= oldKeysByJoinIndex.length)
             logger.trace(s"no foreign key found for primary key ix=$index")
 
-          val oldKey = if(index >= oldKeysByJoinIndex.length) null else oldKeysByJoinIndex(index)
+          val oldKey = if (index >= oldKeysByJoinIndex.length) null else oldKeysByJoinIndex(index)
 
           val newKey = updateByKeyIndex(joinFieldIndex)
 
@@ -308,7 +308,6 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
           joinFieldIndex += 1
         }
-
 
 
         JoinDataTableData(tableDef, keysByJoinIndex, keyToIndexMap)
@@ -357,7 +356,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
     val ev = new util.HashMap[String, Any]()
 
-    this.tableDef.joinFields.foreach( field => {
+    this.tableDef.joinFields.foreach(field => {
       val column = this.tableDef.columnForName(field)
       ev.put(column.name, rowData.getFullyQualified(column))
     }
@@ -373,7 +372,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   def sendToJoinSink(rowData: RowData): Unit = {
 
     //only send to Esper when esper cares
-    if(joinProvider.hasJoins(this.tableDef.name)){
+    if (joinProvider.hasJoins(this.tableDef.name)) {
 
       val event = toEvent(rowData)
 
@@ -383,21 +382,21 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
 
   /**
-    * Pull row ith only a key returns the immutable RowData object as its stored within the table.
-    * When doing bulk operations on data such as index hits or filters.
-    *
-    * @param key
-    * @return
-    */
+   * Pull row ith only a key returns the immutable RowData object as its stored within the table.
+   * When doing bulk operations on data such as index hits or filters.
+   *
+   * @param key
+   * @return
+   */
   override def pullRow(key: String): RowData = {
     pullRow(key, this.tableDef.columns.toList)
   }
 
   private def keyExistsInLeftMostSourceTable(key: String): Boolean = {
     val keysByTable = joinData.getKeyValuesByTable(key)
-    if(keysByTable == null){
+    if (keysByTable == null) {
       false
-    }else {
+    } else {
       val leftTable = this.tableDef.baseTable.name
       keysByTable.getOrElse(leftTable, null) match {
         case null =>
@@ -417,9 +416,9 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
-    if(keysByTable == null || ! keyExistsInLeftMostSourceTable(key))
+    if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
       EmptyRowData
-    else{
+    else {
       val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({ case (previous, (tableName, columnList)) =>
 
         val table = sourceTables(tableName)
@@ -455,15 +454,15 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
-    if(keysByTable == null || ! keyExistsInLeftMostSourceTable(key))
+    if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
       Array()
-    else{
+    else {
 
       val foldedMap = columnsByTable.foldLeft(Map[JoinColumn, Any]())({ case (previous, (tableName, columnList)) =>
 
         val table = sourceTables(tableName)
 
-        val fk = if(keysByTable == null) null
+        val fk = if (keysByTable == null) null
         else
           keysByTable.get(tableName) match {
             case Some(fk) => fk
@@ -486,13 +485,13 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         }
       })
 
-      if(foldedMap.isEmpty){
+      if (foldedMap.isEmpty) {
         Array()
-      }else{
+      } else {
         columns.map(c => foldedMap.get(c.asInstanceOf[JoinColumn]) match {
           case None => ""
           case Some(x) => x
-        } ).toArray[Any]
+        }).toArray[Any]
       }
     }
   }
@@ -621,7 +620,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
           case null =>
             logger.trace(s"no foreign key for primary key $key")
           case Some(foreignKey) =>
-            if(table.isKeyObservedBy(foreignKey, wrapped)) table.removeKeyObserver(foreignKey, wrapped)
+            if (table.isKeyObservedBy(foreignKey, wrapped)) table.removeKeyObserver(foreignKey, wrapped)
           case None => logger.error(s"Could not load foreign key for ${table.getTableDef.name} (in join with ${this.getTableDef.name} key = $key")
         }
       })

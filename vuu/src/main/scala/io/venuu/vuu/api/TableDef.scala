@@ -8,7 +8,6 @@ object Fields {
 }
 
 
-
 object VisualLinks {
   def apply(link: Link*): VisualLinks = {
     new VisualLinks(link.toList)
@@ -34,6 +33,7 @@ object TableDef {
   def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = indices)
   }
+
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = Indices())
   }
@@ -72,16 +72,20 @@ class GroupByTableDef(name: String, sourceTableDef: TableDef) extends TableDef(n
 case class Link(fromColumn: String, toTable: String, toColumn: String)
 
 case class VisualLinks(links: List[Link])
+
 case class Indices(indices: Index*)
+
 case class Index(column: String)
+
 case class IndexFilePath(path: String)
 
 trait CleanupPolicy
 
 object DeleteIndexOnShutdown extends CleanupPolicy
+
 object PreserveIndexOnShutdown extends CleanupPolicy
 
-case class AvailableViewPortVisualLink(parentVpId: String, link: Link){
+case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
@@ -114,13 +118,14 @@ class TableDef(val name: String,
   def setModule(module: ViewServerModule) = {
     this.module = module
   }
+
   def getModule(): ViewServerModule = this.module
 }
 
 class LuceneTableDef(name: String, keyField: String, columns: Array[Column], joinFields: Seq[String],
                      autosubscribe: Boolean = false, links: VisualLinks = VisualLinks(),
                      val indexPath: IndexFilePath, val cleanupPolicy: CleanupPolicy)
-                     extends TableDef(name, keyField, columns, joinFields, false, links, Indices()){
+  extends TableDef(name, keyField, columns, joinFields, false, links, Indices()) {
 }
 
 trait JoinType
@@ -147,15 +152,15 @@ case class JoinTableDef(override val name: String, baseTable: TableDef, joinColu
   def getJoinDefinitionColumns(): Array[Column] = joinTableColumns
 
   def containsTable(tableName: String): Boolean = {
-    if(baseTable.name == tableName) {
+    if (baseTable.name == tableName) {
       true
-    } else{
+    } else {
       rightTables.contains(tableName)
     }
   }
 
   def keyFieldForTable(tableName: String): String = {
-    joins.find( joinTo => joinTo.table.name == tableName ) match {
+    joins.find(joinTo => joinTo.table.name == tableName) match {
       case Some(joinTo: JoinTo) => joinTo.table.keyField
       case None => null
     }
@@ -164,6 +169,7 @@ case class JoinTableDef(override val name: String, baseTable: TableDef, joinColu
   def isLeftTable(tableName: String): Boolean = {
     this.baseTable.name == tableName
   }
+
   def isRightTable(tableName: String): Boolean = {
     this.rightTables.contains(tableName)
   }

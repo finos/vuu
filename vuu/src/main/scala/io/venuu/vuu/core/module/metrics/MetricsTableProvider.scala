@@ -8,8 +8,8 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import io.venuu.vuu.provider.Provider
 
-class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
-                                                                              metrics: MetricsProvider ) extends Provider with StrictLogging {
+class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
+                                                                             metrics: MetricsProvider) extends Provider with StrictLogging {
 
   private val runner = new LifeCycleRunner("metricsTableProvider", () => runOnce, minCycleTime = 1_000)
 
@@ -27,7 +27,7 @@ class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(im
 
   override val lifecycleId: String = "metricsTableProvider"
 
-  def runOnce(): Unit ={
+  def runOnce(): Unit = {
 
     try {
 

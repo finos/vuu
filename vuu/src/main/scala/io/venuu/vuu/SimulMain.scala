@@ -1,14 +1,14 @@
 /**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 11/12/2015.
-
-  */
+ * Copyright Whitebox Software Ltd. 2014
+ * All Rights Reserved.
+ *
+ * Created by chris on 11/12/2015.
+ *
+ */
 package io.venuu.vuu
 
 import io.venuu.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
-import io.venuu.toolbox.lifecycle.{LifecycleContainer}
+import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.metrics.MetricsModule
 import io.venuu.vuu.core.module.simul.SimulationModule
@@ -23,7 +23,7 @@ chrome://flags/#allow-insecure-localhost
 
  */
 
-object SimulMain extends App{
+object SimulMain extends App {
 
   JmxInfra.enableJmx()
 
@@ -42,15 +42,15 @@ object SimulMain extends App{
       //.withWebRoot("../vuu/src/main/resources/www")
       .withWebRoot("../vuu-ui/dist/app")
       .withSsl("vuu/src/main/resources/certs/cert.pem",
-               "vuu/src/main/resources/certs/key.pem")
+        "vuu/src/main/resources/certs/key.pem")
       .withDirectoryListings(true)
       .withPort(8443),
     VuuWebSocketOptions()
       .withUri("websocket")
       .withWsPort(8090)
   ).withModule(SimulationModule())
-   .withModule(MetricsModule())
-   .withModule(VuiStateModule(store))
+    .withModule(MetricsModule())
+    .withModule(VuiStateModule(store))
 
   val vuuServer = new VuuServer(config)
 

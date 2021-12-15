@@ -2,80 +2,80 @@
 
 <script type="text/javascript">
 
-function setPixel(imageData, x, y, r, g, b, a) {
-    index = (x + y * imageData.width) * 4;
-    imageData.data[index+0] = r;
-    imageData.data[index+1] = g;
-    imageData.data[index+2] = b;
-    imageData.data[index+3] = a;
-}
-
-function getColorFromRow(row){
-
-    if(row < 100)
-        return [252, 0, 0];
-    else if( i < 900)
-        return [153, 255, 51];
-    else
-        return [0, 0, 255];
-}
-
-function populateCanvas(element){
-
-    c = element.getContext("2d");
-
-    // read the width and height of the canvas
-    width = element.width;
-    height = element.height;
-
-    // create a new pixel array
-    imageData = c.createImageData(width, height);
-
-    for (i = 0; i < 1024; i++) {
-
-        var rgb = getColorFromRow(i);
-
-        for(depth = 0; depth < height; depth++){
-
-            x = i;
-            y = depth;
-
-            r = rgb[0];
-            g = rgb[1];
-            b = rgb[2];
-
-            setPixel(imageData, x, y, r, g, b, 255)
-        }
-
+    function setPixel(imageData, x, y, r, g, b, a) {
+        index = (x + y * imageData.width) * 4;
+        imageData.data[index + 0] = r;
+        imageData.data[index + 1] = g;
+        imageData.data[index + 2] = b;
+        imageData.data[index + 3] = a;
     }
 
-    c.putImageData(imageData, 0, 0); // at coords 0,0
-}
+    function getColorFromRow(row) {
 
-function populateTimescale( element ){
+        if (row < 100)
+            return [252, 0, 0];
+        else if (i < 900)
+            return [153, 255, 51];
+        else
+            return [0, 0, 255];
+    }
 
-  //var canvas = document.getElementById('myCanvas');
-  var context = element.getContext('2d');
+    function populateCanvas(element) {
 
-  for(i=0; i <10; i++ ){
-     context.font = '10px Arial';
-     context.fillText('1', i + 100, 20);
-  }
+        c = element.getContext("2d");
 
-  //context.fillStyle = 'blue';
-  //context.lineWidth = 4;
-  //context.strokeStyle = 'blue';
-  //context.strokeText('Hello World!', 70, 70);
-}
+        // read the width and height of the canvas
+        width = element.width;
+        height = element.height;
 
-function onLoad(){
+        // create a new pixel array
+        imageData = c.createImageData(width, height);
 
-    populateTimescale( document.getElementById("canvas0"));
-    populateCanvas( document.getElementById("canvas1"));
-    populateCanvas( document.getElementById("canvas2"));
-    populateCanvas( document.getElementById("canvas3"));
+        for (i = 0; i < 1024; i++) {
 
-}
+            var rgb = getColorFromRow(i);
+
+            for (depth = 0; depth < height; depth++) {
+
+                x = i;
+                y = depth;
+
+                r = rgb[0];
+                g = rgb[1];
+                b = rgb[2];
+
+                setPixel(imageData, x, y, r, g, b, 255)
+            }
+
+        }
+
+        c.putImageData(imageData, 0, 0); // at coords 0,0
+    }
+
+    function populateTimescale(element) {
+
+        //var canvas = document.getElementById('myCanvas');
+        var context = element.getContext('2d');
+
+        for (i = 0; i < 10; i++) {
+            context.font = '10px Arial';
+            context.fillText('1', i + 100, 20);
+        }
+
+        //context.fillStyle = 'blue';
+        //context.lineWidth = 4;
+        //context.strokeStyle = 'blue';
+        //context.strokeText('Hello World!', 70, 70);
+    }
+
+    function onLoad() {
+
+        populateTimescale(document.getElementById("canvas0"));
+        populateCanvas(document.getElementById("canvas1"));
+        populateCanvas(document.getElementById("canvas2"));
+        populateCanvas(document.getElementById("canvas3"));
+
+    }
 
 </script>
 <body onload="onLoad();">
@@ -84,33 +84,41 @@ function onLoad(){
         <td>
             Time
         </td>
-        <td><canvas id="canvas0" width="1024px", height="20px">
-            Random Canvas
-        </canvas></td>
+        <td>
+            <canvas id="canvas0" width="1024px" , height="20px">
+                Random Canvas
+            </canvas>
+        </td>
     </tr>
     <tr>
         <td>
             LSE-MAIN
         </td>
-        <td><canvas id="canvas1" width="1024px", height="20px">
-            Random Canvas
-        </canvas></td>
+        <td>
+            <canvas id="canvas1" width="1024px" , height="20px">
+                Random Canvas
+            </canvas>
+        </td>
     </tr>
     <tr>
         <td>
             LSE-MAIN
         </td>
-        <td><canvas id="canvas2" width="1024px", height="20px">
-            Random Canvas
-        </canvas></td>
+        <td>
+            <canvas id="canvas2" width="1024px" , height="20px">
+                Random Canvas
+            </canvas>
+        </td>
     </tr>
     <tr>
         <td>
             LSE-MAIN
         </td>
-        <td><canvas id="canvas3" width="1024px", height="20px">
-            Random Canvas
-        </canvas></td>
+        <td>
+            <canvas id="canvas3" width="1024px" , height="20px">
+                Random Canvas
+            </canvas>
+        </td>
     </tr>
 </table>
 </body>

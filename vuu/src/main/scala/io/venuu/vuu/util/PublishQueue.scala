@@ -1,9 +1,9 @@
 /**
  * Copyright Whitebox Software Ltd. 2014
  * All Rights Reserved.
-
+ *
  * Created by chris on 27/03/15.
-
+ *
  */
 package io.venuu.vuu.util
 
@@ -13,13 +13,17 @@ import io.venuu.vuu.viewport.{ViewPortUpdate, ViewPortUpdateType}
 trait PublishQueue[T] {
 
   def push(entry: T)
+
   def pop: T
+
   def popUpTo(i: Int): Seq[T]
+
   def isEmpty: Boolean
+
   def length: Int
 }
 
-class OutboundRowPublishQueue extends PublishQueue[ViewPortUpdate]{
+class OutboundRowPublishQueue extends PublishQueue[ViewPortUpdate] {
 
   private case class CollKey(id: String, updateType: ViewPortUpdateType, rowKey: String)
 

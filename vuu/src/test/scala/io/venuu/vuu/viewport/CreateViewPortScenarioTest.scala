@@ -13,6 +13,7 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.thread.{LifeCycleRunner, Runner}
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
+import io.venuu.vuu.client.ClientHelperFns._
 import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.table.{Columns, DataTable}
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
@@ -29,8 +30,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 
 class CreateViewPortScenarioTest extends AnyFeatureSpec with Matchers {
-
-  import io.venuu.vuu.client.ClientHelperFns._
 
   Feature("check creation of view port via client api") {
 

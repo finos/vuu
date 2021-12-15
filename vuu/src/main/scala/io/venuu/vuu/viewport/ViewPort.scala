@@ -1,9 +1,9 @@
 /**
  * Copyright Whitebox Software Ltd. 2014
  * All Rights Reserved.
-
+ *
  * Created by chris on 02/01/15.
-
+ *
  */
 package io.venuu.vuu.viewport
 
@@ -21,7 +21,9 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
 class ViewPortUpdateType
+
 case object RowUpdateType extends ViewPortUpdateType
+
 case object SizeUpdateType extends ViewPortUpdateType
 
 object DefaultRange extends ViewPortRange(0, 123)
@@ -30,30 +32,30 @@ case class ViewPortSelectedIndices(indices: Array[Int])
 
 case class ViewPortSelection(rowKeyIndex: Map[String, Int])
 
-case class ViewPortVisualLink(childVp: ViewPort, parentVp: ViewPort, childColumn: Column, parentColumn: Column){
+case class ViewPortVisualLink(childVp: ViewPort, parentVp: ViewPort, childColumn: Column, parentColumn: Column) {
   override def toString: String = "ViewPortVisualLink(" + childVp.id + "->" + parentVp.id + ", on " + childColumn.name + " = " + parentColumn.name + ")"
 }
 
-case class ViewPortRange(from: Int, to: Int){
+case class ViewPortRange(from: Int, to: Int) {
   def contains(i: Int): Boolean = {
     i >= from && i < to
   }
 
-  def subtract(newRange: ViewPortRange): ViewPortRange ={
-        var from = newRange.from
-        var to = newRange.to
+  def subtract(newRange: ViewPortRange): ViewPortRange = {
+    var from = newRange.from
+    var to = newRange.to
 
-        if(newRange.from > this.from && newRange.from < this.to){
-            from = this.to
-            to = newRange.to
-        }
+    if (newRange.from > this.from && newRange.from < this.to) {
+      from = this.to
+      to = newRange.to
+    }
 
-        if(newRange.from < this.from && newRange.to < this.to && newRange.to > this.from){
-            from = newRange.from
-            to   = this.from
-        }
+    if (newRange.from < this.from && newRange.to < this.to && newRange.to > this.from) {
+      from = newRange.from
+      to = this.from
+    }
 
-        ViewPortRange(from, to)
+    ViewPortRange(from, to)
   }
 
 }
@@ -62,37 +64,69 @@ case class ViewPortUpdate(vp: ViewPort, table: RowSource, key: RowKeyUpdate, ind
 
 trait ViewPort {
   def setEnabled(enabled: Boolean): Unit
+
   def isEnabled: Boolean
+
   def hasGroupBy: Boolean = getGroupBy != NoGroupBy
+
   def size: Int
+
   def id: String
+
   def filterAndSort: FilterAndSort
+
   def session: ClientSessionId
+
   def table: RowSource
+
   def setRange(range: ViewPortRange): Unit
+
   def setSelection(rowIndices: Array[Int]): Unit
+
   def setVisualLink(link: ViewPortVisualLink): Unit
+
   def removeVisualLink(): Unit
+
   def getRange: ViewPortRange
+
   def setKeys(keys: ImmutableArray[String]): Unit
+
   def setKeysAndNotify(key: String, keys: ImmutableArray[String]): Unit
+
   def getKeys: ImmutableArray[String]
+
   def getKeysInRange: ImmutableArray[String]
+
   def getVisualLink: Option[ViewPortVisualLink]
+
   def outboundQ: PublishQueue[ViewPortUpdate]
+
   def highPriorityQ: PublishQueue[ViewPortUpdate]
+
   def getColumns: List[Column]
+
   def getSelection: Map[String, Int]
+
   def getRowKeyMappingSize_ForTest: Int
+
   def getGroupBy: GroupBy
+
   def combinedQueueLength: Int = highPriorityQ.length + outboundQ.length
+
   def filterSpec: FilterSpec
+
   def changeStructure(newStructuralFields: ViewPortStructuralFields): Unit
+
   def getTreeNodeState: TreeNodeState
+
   def getStructure: ViewPortStructuralFields
+
   def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String]
+
   def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int]
+
   override def toString: String = "VP(user:" + session.user + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
+
   def delete(): Unit
 }
 
@@ -109,7 +143,7 @@ case class ViewPortImpl(id: String,
                         highPriorityQ: PublishQueue[ViewPortUpdate],
                         structuralFields: AtomicReference[ViewPortStructuralFields],
                         range: AtomicReference[ViewPortRange]
-                       )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging{
+                       )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
 
   private val viewPortLock = new Object
 
@@ -140,15 +174,15 @@ case class ViewPortImpl(id: String,
 
     structuralFields.set(newStructuralFields)
 
-    if(!onlySortOrFilterChange)
+    if (!onlySortOrFilterChange)
       sendUpdatesOnChange(range.get())
   }
 
   override def setSelection(rowIndices: Array[Int]): Unit = {
-    viewPortLock.synchronized{
-      val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)) )
-      selection = rowIndices.filter(this.keys(_) != null).map( idx => (this.keys(idx), idx) ).toMap
-      for( (key, idx ) <- selection ++ oldSelection ){
+    viewPortLock.synchronized {
+      val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)))
+      selection = rowIndices.filter(this.keys(_) != null).map(idx => (this.keys(idx), idx)).toMap
+      for ((key, idx) <- selection ++ oldSelection) {
         publishHighPriorityUpdate(key, idx)
       }
     }
@@ -157,7 +191,7 @@ case class ViewPortImpl(id: String,
   override def getSelection: Map[String, Int] = selection
 
   def setRange(newRange: ViewPortRange): Unit = {
-    viewPortLock.synchronized{
+    viewPortLock.synchronized {
       val oldRange = range.get()
 
       removeSubscriptionsForRange(oldRange)
@@ -172,18 +206,18 @@ case class ViewPortImpl(id: String,
   }
 
   def removeSubscriptionsForRange(range: ViewPortRange): Unit = {
-    (range.from until (range.to - 1 )).foreach( i=>{
-      val key = if(keys.length > i ) keys(i) else null
-      if(key != null ) {
+    (range.from until (range.to - 1)).foreach(i => {
+      val key = if (keys.length > i) keys(i) else null
+      if (key != null) {
         unsubscribeForKey(key)
       }
     })
   }
 
   def addSubscriptionsForRange(range: ViewPortRange): Unit = {
-    (range.from until (range.to - 1 )).foreach( i=>{
-      val key = if(keys.length > i ) keys(i) else null
-      if(key != null) {
+    (range.from until (range.to - 1)).foreach(i => {
+      val key = if (keys.length > i) keys(i) else null
+      if (key != null) {
         subscribeForKey(key, i)
       }
     })
@@ -201,7 +235,7 @@ case class ViewPortImpl(id: String,
 
     val inrangeKeys = currentKeys.slice(from, to)
 
-    inrangeKeys.zip(from to to).foreach({ case(key, index) => publishHighPriorityUpdate(key, index)})
+    inrangeKeys.zip(from to to).foreach({ case (key, index) => publishHighPriorityUpdate(key, index) })
   }
 
   override def getColumns: List[Column] = structuralFields.get().columns
@@ -217,20 +251,21 @@ case class ViewPortImpl(id: String,
   override def filterAndSort: FilterAndSort = structuralFields.get().filtAndSort
 
   @volatile
-  private var keys : ImmutableArray[String] = ImmutableArray.from[String](new Array[String](0))
+  private var keys: ImmutableArray[String] = ImmutableArray.from[String](new Array[String](0))
   @volatile
-  private var selection : Map[String, Int] = Map()
+  private var selection: Map[String, Int] = Map()
 
   private val subscribedKeys = new ConcurrentHashMap[String, String]()
   private val rowKeyToIndex = new ConcurrentHashMap[String, Int]()
 
   override def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String] = subscribedKeys
+
   override def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int] = rowKeyToIndex
 
   override def getKeys: ImmutableArray[String] = keys
 
   override def delete(): Unit = {
-      this.setKeys(ImmutableArray.empty[String])
+    this.setKeys(ImmutableArray.empty[String])
   }
 
   override def getKeysInRange: ImmutableArray[String] = {
@@ -246,17 +281,17 @@ case class ViewPortImpl(id: String,
     ImmutableArray.from(inrangeKeys)
   }
 
-  def setKeysPre(newKeys: ImmutableArray[String]): Unit ={
+  def setKeysPre(newKeys: ImmutableArray[String]): Unit = {
     //send ViewPort
     removeNoLongerSubscribedKeys(newKeys)
   }
 
-  def setKeysInternal(newKeys: ImmutableArray[String]): Unit ={
+  def setKeysInternal(newKeys: ImmutableArray[String]): Unit = {
     keys = newKeys
   }
 
   def setKeysPost(sendSizeUpdate: Boolean, newKeys: ImmutableArray[String]): Unit = {
-    if(sendSizeUpdate){
+    if (sendSizeUpdate) {
       highPriorityQ.push(ViewPortUpdate(this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
     }
     subscribeToNewKeys(newKeys)
@@ -283,8 +318,8 @@ case class ViewPortImpl(id: String,
 
     logger.debug(s"VP got update for ${update.key} update, index = $index isDeleted = ${update.isDelete}, $update, pushing to queue")
 
-    if(isInRange(index) && this.enabled){
-        outboundQ.push(ViewPortUpdate(this, update.source, RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
+    if (isInRange(index) && this.enabled) {
+      outboundQ.push(ViewPortUpdate(this, update.source, RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
 
   }
@@ -303,15 +338,15 @@ case class ViewPortImpl(id: String,
 
     var removedObs = 0
 
-    while(index < newKeys.length){
+    while (index < newKeys.length) {
 
       val key = newKeys(index)
 
       val oldIndex = rowKeyToIndex.put(key, index)
 
-      if(isInRange(index)){
+      if (isInRange(index)) {
 
-        if(!isObservedAlready(key)){
+        if (!isObservedAlready(key)) {
 
           subscribeForKey(key, index)
 
@@ -319,11 +354,11 @@ case class ViewPortImpl(id: String,
 
           publishHighPriorityUpdate(key, index)
 
-        }else if(hasChangedIndex(oldIndex, index)){
+        } else if (hasChangedIndex(oldIndex, index)) {
           publishHighPriorityUpdate(key, index)
         }
 
-      }else{
+      } else {
         unsubscribeForKey(key)
         removedObs += 1
       }
@@ -331,7 +366,7 @@ case class ViewPortImpl(id: String,
       index += 1
     }
 
-    if(newlyAddedObs > 0 )
+    if (newlyAddedObs > 0)
       logger.info(s"[VP] ${this.id} Added $newlyAddedObs Removed $removedObs Obs ${this.table}, Range ${this.range}")
   }
 
@@ -343,17 +378,17 @@ case class ViewPortImpl(id: String,
 
     //TODO: CJS this is not correct, we should only subscribe to keys within the VP range
     //this will check every key and remove it
-    while(i < newKeys.length){
+    while (i < newKeys.length) {
       newKeySet.add(newKeys(i))
       i += 1
     }
 
     val iterator = subscribedKeys.entrySet().iterator()
 
-    while(iterator.hasNext){
+    while (iterator.hasNext) {
       val oldEntry = iterator.next()
       val oldKey = oldEntry.getKey
-      if(!newKeySet.contains(oldKey)){
+      if (!newKeySet.contains(oldKey)) {
         unsubscribeForKey(oldKey)
       }
     }
@@ -373,7 +408,7 @@ case class ViewPortImpl(id: String,
 
   def publishHighPriorityUpdate(key: String, index: Int): Unit = {
     logger.debug(s"publishing update $key")
-    if(this.enabled) {
+    if (this.enabled) {
       highPriorityQ.push(ViewPortUpdate(this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
   }
@@ -384,30 +419,30 @@ case class ViewPortImpl(id: String,
   }
 
   private def removeObserver(oldKey: String) = {
-    if(table.isKeyObservedBy(oldKey, this)) {
+    if (table.isKeyObservedBy(oldKey, this)) {
       //logger.info("removing observer for key:" + oldKey)
       table.removeKeyObserver(oldKey, this)
     }
   }
 
   override def setVisualLink(link: ViewPortVisualLink): Unit = {
-    viewPortLock.synchronized{
+    viewPortLock.synchronized {
       val fields = this.structuralFields.get()
       val newFilterSort = fields.filtAndSort match {
         case udfs: UserDefinedFilterAndSort =>
-          UserDefinedFilterAndSort(TwoStepCompoundFilter( VisualLinkedFilter(link), udfs.filter), udfs.sort)
+          UserDefinedFilterAndSort(TwoStepCompoundFilter(VisualLinkedFilter(link), udfs.filter), udfs.sort)
         case x =>
           x
       }
 
       //set the filter and sort to include the selection filter
-      this.structuralFields.set(fields.copy( filtAndSort = newFilterSort))
+      this.structuralFields.set(fields.copy(filtAndSort = newFilterSort))
       this.viewPortVisualLink = Some(link)
     }
   }
 
   override def removeVisualLink(): Unit = {
-    viewPortLock.synchronized{
+    viewPortLock.synchronized {
       this.viewPortVisualLink = None
     }
   }

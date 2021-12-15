@@ -3,6 +3,7 @@ package io.venuu.vuu.net.rpc
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
+import io.venuu.vuu.client.ClientHelperFns._
 import io.venuu.vuu.core.module.{MyObjectParam, TestModule}
 import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.WebSocketViewServerClient
@@ -23,8 +24,6 @@ class RpcModuleTest extends AnyFeatureSpec with Matchers {
   Feature("check we can install a new module into the viewserver and call it"){
 
     ignore("add module and call an rpc call"){
-
-      import io.venuu.vuu.client.ClientHelperFns._
 
       implicit val ctx = ExecutionContext.global
 

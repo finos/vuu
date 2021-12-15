@@ -1,24 +1,24 @@
 package io.venuu.vuu.core.module
 
-class FieldDefString(str: String){
-    def double() : String = {
-      str + ":Double"
-    }
+class FieldDefString(str: String) {
+  def double(): String = {
+    str + ":Double"
+  }
 
-  def long() : String = {
+  def long(): String = {
     str + ":Long"
   }
 
-  def boolean() : String = {
+  def boolean(): String = {
     str + ":Boolean"
   }
 
-  def char() : String = {
+  def char(): String = {
     str + ":Char"
   }
 
 
-  def int() : String = {
+  def int(): String = {
     str + ":Int"
   }
 

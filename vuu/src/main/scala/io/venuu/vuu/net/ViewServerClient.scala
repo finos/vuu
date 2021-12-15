@@ -14,10 +14,11 @@ import scala.util.{Failure, Success, Try}
  */
 trait ViewServerClient extends LifecycleEnabled {
   def send(msg: ViewServerMessage): Unit
+
   def awaitMsg: ViewServerMessage
 }
 
-class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[String, MessageBody])(implicit lifecycle: LifecycleContainer) extends ViewServerClient  with StrictLogging{
+class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[String, MessageBody])(implicit lifecycle: LifecycleContainer) extends ViewServerClient with StrictLogging {
 
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
   JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
@@ -25,7 +26,7 @@ class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[Stri
   lifecycle(this).dependsOn(ws)
 
   override def doStart(): Unit = {
-    while(!ws.canWrite()){
+    while (!ws.canWrite()) {
 
     }
 
@@ -44,13 +45,14 @@ class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[Stri
     val json = serializer.serialize(msg)
     ws.write(json)
   }
+
   override def awaitMsg: ViewServerMessage = {
     val msg = ws.awaitMessage()
-    if(msg == null){
+    if (msg == null) {
       logger.info("no messages")
       null
     }
-    else{
+    else {
       Try(serializer.deserialize(msg)) match {
         case Success(vsMsg) => vsMsg
         case Failure(e) =>

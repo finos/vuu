@@ -53,7 +53,7 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
     val frame: WebSocketFrame = msg.asInstanceOf[WebSocketFrame]
     if (frame.isInstanceOf[TextWebSocketFrame]) {
       val textFrame: TextWebSocketFrame = frame.asInstanceOf[TextWebSocketFrame]
-      logger.debug("[WS CLIENT] on msg " + textFrame.text() )
+      logger.debug("[WS CLIENT] on msg " + textFrame.text())
       queue.add(textFrame.text())
     }
     else if (frame.isInstanceOf[PongWebSocketFrame]) {
