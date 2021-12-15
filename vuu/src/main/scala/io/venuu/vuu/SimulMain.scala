@@ -40,7 +40,7 @@ object SimulMain extends App {
   val config = VuuServerConfig(
     VuuHttp2ServerOptions()
       //.withWebRoot("../vuu/src/main/resources/www")
-      .withWebRoot("../vuu-ui/dist/app")
+      .withWebRoot("vuu-ui/packages/app-vuu-example/public")
       .withSsl("vuu/src/main/resources/certs/cert.pem",
         "vuu/src/main/resources/certs/key.pem")
       .withDirectoryListings(true)
