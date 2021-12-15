@@ -77,7 +77,6 @@
         <vertx.version>4.0.3</vertx.version>
     </properties>
 
-
     <modules>
         <module>toolbox</module>
         <module>vuu</module>
