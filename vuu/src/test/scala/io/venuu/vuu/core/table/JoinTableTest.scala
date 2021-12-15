@@ -1,10 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
-
- * Created by chris on 25/08/15.
-
- */
 package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}

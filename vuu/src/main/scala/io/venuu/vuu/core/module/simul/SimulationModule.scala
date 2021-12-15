@@ -1,10 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
- *
- * Created by chris on 07/09/2016.
- *
- */
 package io.venuu.vuu.core.module.simul
 
 import com.typesafe.scalalogging.StrictLogging

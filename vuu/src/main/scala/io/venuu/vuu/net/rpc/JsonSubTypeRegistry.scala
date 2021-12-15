@@ -1,10 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
- *
- * Created by chris on 16/02/2016.
- *
- */
 package io.venuu.vuu.net.rpc
 
 import com.fasterxml.jackson.annotation.JsonSubTypes

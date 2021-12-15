@@ -1,9 +1,3 @@
-/**
- * Copyright Whitebox Software Ltd. 2014
- * All Rights Reserved.
- * <p>
- * Created by chris on 26/03/2016.
- */
 package sandbox.scratch;
 
 import javax.swing.*;

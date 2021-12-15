@@ -1,10 +1,3 @@
-/**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 08/01/2016.
-
-  */
 package io.venuu.toolbox.jmx
 
 import com.codahale.metrics._
