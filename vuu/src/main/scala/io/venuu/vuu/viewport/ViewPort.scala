@@ -367,7 +367,7 @@ case class ViewPortImpl(id: String,
     }
 
     if (newlyAddedObs > 0)
-      logger.info(s"[VP] ${this.id} Added $newlyAddedObs Removed $removedObs Obs ${this.table}, Range ${this.range}")
+      logger.debug(s"[VP] ${this.id} Added $newlyAddedObs Removed $removedObs Obs ${this.table}, Range ${this.range}")
   }
 
 
