@@ -1,10 +1,10 @@
 /**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 18/11/2015.
-
-  */
+ * Copyright Whitebox Software Ltd. 2014
+ * All Rights Reserved.
+ *
+ * Created by chris on 18/11/2015.
+ *
+ */
 package io.venuu.vuu.provider.simulation
 
 import com.typesafe.scalalogging.StrictLogging
@@ -18,9 +18,9 @@ import io.venuu.vuu.provider.Provider
 import scala.concurrent.duration.DurationInt
 import scala.util.Random
 
-class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle:  LifecycleContainer) extends Provider with StrictLogging {
+class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging {
 
-  private var runner: RunOnceLifeCycleRunner = new RunOnceLifeCycleRunner( "simulInstrumentsProvider", () => build() )
+  private var runner: RunOnceLifeCycleRunner = new RunOnceLifeCycleRunner("simulInstrumentsProvider", () => build())
 
   lifecycle(this).dependsOn(runner)
 
@@ -29,18 +29,18 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
   override def subscribe(key: String): Unit = {}
 
   //def charMaker = ((48 to 57).toSeq ++ ( 65 to 90 )).map( i => i.toChar )
-  def charMaker = ( 65 to 90 ).map( i => i.toChar )
+  def charMaker = (65 to 90).map(i => i.toChar)
 
-  def suffixes  = List(".L", ".N", ".OQ", ".AS", ".OE", ".MI", ".A", ".PA", ".MC", ".DE")
+  def suffixes = List(".L", ".N", ".OQ", ".AS", ".OE", ".MI", ".A", ".PA", ".MC", ".DE")
   //def suffixes  = List(".L", ".N", ".OQ", ".AS")
 
-  def ricBuilder = for( c1 <- charMaker; c2 <- charMaker ; c3 <- charMaker; suff <- suffixes) yield new String(Array(c1.toChar, c2.toChar, c3.toChar ) ) + suff
+  def ricBuilder = for (c1 <- charMaker; c2 <- charMaker; c3 <- charMaker; suff <- suffixes) yield new String(Array(c1.toChar, c2.toChar, c3.toChar)) + suff
 
   private val random = new Random(1234)
 
   def mkRow(ric: String): Map[String, Any] = {
 
-    val desc = if(ric.endsWith(".L")) " London PLC" else if(ric.endsWith(".N")) " Corporation" else if(ric.endsWith(".AS")) " B.V" else " Co."
+    val desc = if (ric.endsWith(".L")) " London PLC" else if (ric.endsWith(".N")) " Corporation" else if (ric.endsWith(".AS")) " B.V" else " Co."
 
     val ccy = random.nextInt(4) match {
       case 0 => "CAD"
@@ -52,13 +52,13 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
 
     //val ccy = if(ric.endsWith(".L")) "GBX" else if(ric.endsWith(".N")) "USD" else if(ric.endsWith(".AS")) "EUR" else "USD"
 
-    val exchange = if(ric.endsWith(".L")) "XLON/LSE-SETS" else if(ric.endsWith(".N")) "XNGS/NAS-GSM" else if(ric.endsWith(".AS")) "XAMS/ENA-MAIN" else "XNYS/NYS-MAIN"
+    val exchange = if (ric.endsWith(".L")) "XLON/LSE-SETS" else if (ric.endsWith(".N")) "XNGS/NAS-GSM" else if (ric.endsWith(".AS")) "XAMS/ENA-MAIN" else "XNYS/NYS-MAIN"
 
-    val bbg      = if(ric.endsWith(".L")) ric.replace(".L", " LN") else if(ric.endsWith(".N")) ric.replace(".N", " US") else if(ric.endsWith(".AS")) ric.replace(".AS", " NL") else ric.replace(".", " ")
+    val bbg = if (ric.endsWith(".L")) ric.replace(".L", " LN") else if (ric.endsWith(".N")) ric.replace(".N", " US") else if (ric.endsWith(".AS")) ric.replace(".AS", " NL") else ric.replace(".", " ")
 
     val lotsize = random.nextInt(1000)
 
-    Map("ric"  -> ric, "description" -> (ric + desc), "currency" -> ccy, "exchange" -> exchange, "lotSize" -> lotsize, "bbg" -> bbg)
+    Map("ric" -> ric, "description" -> (ric + desc), "currency" -> ccy, "exchange" -> exchange, "lotSize" -> lotsize, "bbg" -> bbg)
   }
 
   def build() = {
@@ -71,9 +71,9 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
 
     var i = 0
 
-    rows.foreach( row => {
+    rows.foreach(row => {
 
-      if(i % 10000 == 0)    {
+      if (i % 10000 == 0) {
         Thread.sleep(10)
         logger.info(s"Loaded ${i} instruments")
       }
@@ -81,7 +81,7 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
       table.processUpdate(row.get("ric").get.toString, RowWithData(row.get("ric").get.toString, row), System.currentTimeMillis())
 
       i += 1
-    } )
+    })
   }
 
 
@@ -90,7 +90,9 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
     //runner.runInBackground()
   }
 
-  override def doStop(): Unit = {runner.stop()}
+  override def doStop(): Unit = {
+    runner.stop()
+  }
 
   override def doInitialize(): Unit = {}
 

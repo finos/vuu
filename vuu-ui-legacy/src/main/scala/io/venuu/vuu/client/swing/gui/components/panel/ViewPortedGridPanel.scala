@@ -2,9 +2,9 @@ package io.venuu.vuu.client.swing.gui.components.panel
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.messages.{ClientCreateViewPort, ClientMessage, RequestId}
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.ViewServerGridPanel
-import io.venuu.vuu.client.swing.messages.{ClientCreateViewPort, ClientMessage, RequestId}
 import io.venuu.vuu.client.swing.model.ViewPortedModel
 import io.venuu.vuu.net.SortSpec
 import io.venuu.vuu.viewport.ViewPortTable

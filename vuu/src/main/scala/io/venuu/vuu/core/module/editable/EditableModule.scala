@@ -24,7 +24,7 @@ class EditableModule extends DefaultModule {
         ),
         (table, vs) => new RpcProvider(table),
         // this below...
-        (table, provider, _ ) => {
+        (table, provider, _) => {
           ViewPortDef(
             columns = table.getTableDef.columns,
             service = new EditOrdersRpcService(table, provider.asInstanceOf[RpcProvider])

@@ -6,22 +6,29 @@ import io.venuu.toolbox.time.Clock
 import java.util.concurrent.{ConcurrentHashMap, DelayQueue, Delayed, TimeUnit}
 
 case class ParentOrder(id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String, remainingQty: Int, activeChildren: Int)
+
 case class ChildOrder(parentId: Int, id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, strategy: String, exchange: String, ccy: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String)
 
-trait OrderListener{
+trait OrderListener {
   def onNewParentOrder(parentOrder: ParentOrder)
+
   def onAmendParentOrder(parentOrder: ParentOrder)
+
   def onCancelParentOrder(parentOrder: ParentOrder)
+
   def onDeleteParentOrder(parentOrder: ParentOrder)
 
   def onNewChildOrder(child: ChildOrder)
+
   def onAmendChildOrder(child: ChildOrder)
+
   def onCancelChildOrder(child: ChildOrder)
 }
 
-trait DelayQueueAction extends Delayed{
+trait DelayQueueAction extends Delayed {
 
   def timeToRun: Long
+
   def clock: Clock
 
   def remainingMillis(): Long = timeToRun - clock.now()
@@ -29,28 +36,38 @@ trait DelayQueueAction extends Delayed{
   override def getDelay(unit: TimeUnit): Long = {
     unit.convert(remainingMillis, TimeUnit.MILLISECONDS)
   }
+
   override def compareTo(o: Delayed): Int = {
-      if( this.getDelay(TimeUnit.MILLISECONDS) > o.getDelay(TimeUnit.MILLISECONDS)){
-        1
-      }else{
-        0
-      }
+    if (this.getDelay(TimeUnit.MILLISECONDS) > o.getDelay(TimeUnit.MILLISECONDS)) {
+      1
+    } else {
+      0
+    }
   }
 }
 
 case class InsertParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+
 case class AmendParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+
 case class CancelParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+
 case class DeleteParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
 
 case class InsertChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+
 case class AmendChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+
 case class CancelChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+
 case class DeleteChild(child: ChildOrder, parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
 
 case class Instrument(ric: String, exchange: String, ccy: String, seedPrice: Double)
+
 case class Account(name: String)
+
 case class Algo(name: String)
+
 case class Strategy(name: String)
 
 class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: LifecycleContainer, randomNumbers: RandomNumbers) {
@@ -84,27 +101,27 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
 
   private final val accounts = List(
     Account("Big Corp."),
-    Account("Fast Hedgy Ltd" ),
-    Account("Slowly Pensions Co." ),
-    Account("RobynHood MM" )
+    Account("Fast Hedgy Ltd"),
+    Account("Slowly Pensions Co."),
+    Account("RobynHood MM")
   )
 
   private final val algos = List(
     Algo("VWAP"),
-    Algo("TWAP" ),
-    Algo("DARKLIQ" ),
-    Algo("LITLIQ" ),
-    Algo("SURESHOT" ),
-    Algo("IS" ),
-    Algo("DIRECT" ),
+    Algo("TWAP"),
+    Algo("DARKLIQ"),
+    Algo("LITLIQ"),
+    Algo("SURESHOT"),
+    Algo("IS"),
+    Algo("DIRECT"),
   )
 
   private final val strategies = List(
     Strategy("LitSweep"),
-    Strategy("DarkSweep" ),
-    Strategy("DarkCond" ),
-    Strategy("Iceberg" ),
-    Strategy("" )
+    Strategy("DarkSweep"),
+    Strategy("DarkCond"),
+    Strategy("Iceberg"),
+    Strategy("")
   )
 
   def registerOrderListener(listener: OrderListener) = {
@@ -112,36 +129,36 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
   }
 
   def notifyOnParentInsert(parentOrder: ParentOrder) = {
-    listeners.foreach( l => l.onNewParentOrder(parentOrder))
+    listeners.foreach(l => l.onNewParentOrder(parentOrder))
   }
 
   def notifyOnChildInsert(childOrder: ChildOrder) = {
-    listeners.foreach( l => l.onNewChildOrder(childOrder))
+    listeners.foreach(l => l.onNewChildOrder(childOrder))
   }
 
   def notifyOnChildAmend(childOrder: ChildOrder) = {
-    listeners.foreach( l => l.onAmendChildOrder(childOrder))
+    listeners.foreach(l => l.onAmendChildOrder(childOrder))
   }
 
   def notifyOnChildCancel(childOrder: ChildOrder) = {
-    listeners.foreach( l => l.onCancelChildOrder(childOrder))
+    listeners.foreach(l => l.onCancelChildOrder(childOrder))
   }
 
   def notifyOnParentAmend(parentOrder: ParentOrder) = {
-    listeners.foreach( l => l.onAmendParentOrder(parentOrder))
+    listeners.foreach(l => l.onAmendParentOrder(parentOrder))
   }
 
   def notifyOnParentCancel(parentOrder: ParentOrder) = {
-    listeners.foreach( l => l.onCancelParentOrder(parentOrder))
+    listeners.foreach(l => l.onCancelParentOrder(parentOrder))
   }
 
   def notifyOnParentDelete(parentOrder: ParentOrder) = {
-    listeners.foreach( l => l.onDeleteParentOrder(parentOrder))
+    listeners.foreach(l => l.onDeleteParentOrder(parentOrder))
   }
 
-  def runOnce(): Unit ={
+  def runOnce(): Unit = {
 
-    if(parentOrderCount < MAX_ORDERS){
+    if (parentOrderCount < MAX_ORDERS) {
       createParents()
     }
 
@@ -156,7 +173,7 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
 
     var entry = queue.poll()
 
-    while(entry != null && i < maxEvents){
+    while (entry != null && i < maxEvents) {
       processOneAction(entry)
       entry = queue.poll()
       i += 1
@@ -176,49 +193,49 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
         var timeToCreateChild = randomNumbers.seededRand(1000, 3000)
         val childrenToCreate = randomNumbers.seededRand(100, 250)
 
-        (0 to childrenToCreate - 1).foreach( i => {
+        (0 to childrenToCreate - 1).foreach(i => {
           queue.offer(InsertChild(createChild(parent), parent, clock.now() + timeToCreateChild, clock))
           timeToCreateChild = randomNumbers.seededRand(1000, 5000)
         })
 
       case DeleteParent(parent, _, _) =>
-//        if(activeOrders.size() < MAX_ORDERS){
-//          val timeToDelete = 5000
-//          queue.offer(DeleteParent(parent, clock.now() + timeToDelete, clock))
-//        }else{
-//          notifyOnParentDelete(parent)
-//          activeOrders.remove(parent.id)
-//        }
+      //        if(activeOrders.size() < MAX_ORDERS){
+      //          val timeToDelete = 5000
+      //          queue.offer(DeleteParent(parent, clock.now() + timeToDelete, clock))
+      //        }else{
+      //          notifyOnParentDelete(parent)
+      //          activeOrders.remove(parent.id)
+      //        }
       case AmendParent(parent, _, _) =>
-//        if(activeOrders.get(parent.id) != null){
-//          val amended = amendParent(parent)
-//
-//          activeChildrenByParentId.get(parent.id) match {
-//            case null =>
-//            case children: List[ChildOrder] =>
-//              children.foreach(child => {
-//                val timeToAmend = randomNumbers.seededRand(1000, 10000)
-//                queue.offer(AmendChild(amendChild(child), parent, clock.now + timeToAmend, clock))
-//              })
-//          }
-//
-//          activeOrders.put(parent.id, amended)
-//          notifyOnParentAmend(amended)
-//          randomNumbers.seededRand(0, 10) match {
-//            case i: Int =>
-//              val timeToAmend = randomNumbers.seededRand(3000, 10000)
-//              queue.offer(AmendParent(amended, clock.now() + timeToAmend, clock))
-//          }
-//        }else{
-//          //order dead, no more amends
-//        }
+      //        if(activeOrders.get(parent.id) != null){
+      //          val amended = amendParent(parent)
+      //
+      //          activeChildrenByParentId.get(parent.id) match {
+      //            case null =>
+      //            case children: List[ChildOrder] =>
+      //              children.foreach(child => {
+      //                val timeToAmend = randomNumbers.seededRand(1000, 10000)
+      //                queue.offer(AmendChild(amendChild(child), parent, clock.now + timeToAmend, clock))
+      //              })
+      //          }
+      //
+      //          activeOrders.put(parent.id, amended)
+      //          notifyOnParentAmend(amended)
+      //          randomNumbers.seededRand(0, 10) match {
+      //            case i: Int =>
+      //              val timeToAmend = randomNumbers.seededRand(3000, 10000)
+      //              queue.offer(AmendParent(amended, clock.now() + timeToAmend, clock))
+      //          }
+      //        }else{
+      //          //order dead, no more amends
+      //        }
 
       case CancelParent(parent, _, _) =>
-//        val cancelled = parent.copy(status = "CXLD")
-//        activeOrders.put(parent.id, cancelled)
-//        notifyOnParentCancel(cancelled)
-//        val timeToDelete = 5000
-//        queue.offer(DeleteParent(cancelled, clock.now() + timeToDelete, clock))
+      //        val cancelled = parent.copy(status = "CXLD")
+      //        activeOrders.put(parent.id, cancelled)
+      //        notifyOnParentCancel(cancelled)
+      //        val timeToDelete = 5000
+      //        queue.offer(DeleteParent(cancelled, clock.now() + timeToDelete, clock))
 
       case InsertChild(child, parent, _, _) =>
         notifyOnChildInsert(child)
@@ -232,33 +249,33 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
         }
 
       case AmendChild(child, parent, _, _) =>
-        //notifyOnChildAmend(child)
+      //notifyOnChildAmend(child)
     }
   }
 
-  def randomIncrementPrice(childOrder: ChildOrder): ChildOrder ={
+  def randomIncrementPrice(childOrder: ChildOrder): ChildOrder = {
     val upDown = randomNumbers.seededRand(0, 100)
     val basisChange = randomNumbers.seededRand(1, 20)
 
     val change = (basisChange.toDouble / 100d)
 
-    val newPrice = if(upDown < 90){
+    val newPrice = if (upDown < 90) {
       childOrder.price + (childOrder.price * change)
-    }else{
+    } else {
       childOrder.price - (childOrder.price * change)
     }
     childOrder.copy(price = newPrice)
   }
 
-  def randomIncrementPrice(parentOrder: ParentOrder): ParentOrder ={
+  def randomIncrementPrice(parentOrder: ParentOrder): ParentOrder = {
     val upDown = randomNumbers.seededRand(0, 100)
     val basisChange = randomNumbers.seededRand(1, 20)
 
     val change = (basisChange.toDouble / 100d)
 
-    val newPrice = if(upDown < 90){
+    val newPrice = if (upDown < 90) {
       parentOrder.price + (parentOrder.price * change)
-    }else{
+    } else {
       parentOrder.price - (parentOrder.price * change)
     }
     parentOrder.copy(price = newPrice)
@@ -268,7 +285,7 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
     val instIdx = randomNumbers.seededRand(0, instruments.length - 1)
     val instrument = instruments(instIdx)
     val quantity = randomNumbers.seededRand(0, 30) * 100 + randomNumbers.seededRand(0, 100)
-    val side = if(randomNumbers.seededRand(0, 10) > 8 ) "Buy" else "Sell"
+    val side = if (randomNumbers.seededRand(0, 10) > 8) "Buy" else "Sell"
     val account = accounts(randomNumbers.seededRand(0, accounts.length - 1))
     val algo = algos(randomNumbers.seededRand(0, algos.length - 1))
     val volLimit = randomNumbers.seededRand(0, 10) * 10
@@ -290,24 +307,24 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
   }
 
 
-
   def amendParent(parent: ParentOrder): ParentOrder = {
     randomIncrementPrice(parent).copy(status = "AMND")
   }
+
   def amendChild(child: ChildOrder): ChildOrder = {
     randomIncrementPrice(child).copy(status = "AMND")
   }
 
-  def createParents(): Unit ={
-    val ordersToCreate = if(cycleNumber % 10 == 0){
+  def createParents(): Unit = {
+    val ordersToCreate = if (cycleNumber % 10 == 0) {
       randomNumbers.seededRand(1, 5)
-    }else{
+    } else {
       randomNumbers.seededRand(20, 50)
     }
 
     parentOrderCount += ordersToCreate
 
-    (0 to ordersToCreate - 1).foreach( i => queue.offer(InsertParent(createParent(), clock.now() + randomNumbers.seededRand(100, 200), clock)))
+    (0 to ordersToCreate - 1).foreach(i => queue.offer(InsertParent(createParent(), clock.now() + randomNumbers.seededRand(100, 200), clock)))
   }
 
   def createChildOrders(parentOrder: ParentOrder): Unit = {

@@ -6,7 +6,7 @@ import io.venuu.vuu.viewport._
 
 import scala.jdk.CollectionConverters.IteratorHasAsScala
 
-class ViewPortMenuSerializer extends JsonSerializer[ViewPortMenu]{
+class ViewPortMenuSerializer extends JsonSerializer[ViewPortMenu] {
 
   override def serialize(t: ViewPortMenu, gen: JsonGenerator, serializerProvider: SerializerProvider): Unit = {
     t match {
@@ -53,33 +53,33 @@ class ViewPortMenuSerializer extends JsonSerializer[ViewPortMenu]{
   }
 }
 
-class ViewPortMenuDeserializer extends JsonDeserializer[ViewPortMenu]{
+class ViewPortMenuDeserializer extends JsonDeserializer[ViewPortMenu] {
 
   override def deserialize(jsonParser: JsonParser, deserializationContext: DeserializationContext): ViewPortMenu = {
     val node: JsonNode = jsonParser.getCodec.readTree(jsonParser)
     processJsonNode(node)
   }
 
-  def processJsonNode(node: JsonNode): ViewPortMenu ={
+  def processJsonNode(node: JsonNode): ViewPortMenu = {
     val name = node.get("name").asText()
 
-    if(name.isEmpty){
+    if (name.isEmpty) {
       EmptyViewPortMenu
     }
-    else if(node.has("menus")){
+    else if (node.has("menus")) {
       val menusAsJsonObj = IteratorHasAsScala(node.withArray("menus").asInstanceOf[JsonNode].elements()).asScala.toList
       val childMenus = menusAsJsonObj.map(processJsonNode)
       new ViewPortMenuFolder(name, childMenus)
     }
-    else{
+    else {
       val context = node.get("context").asText()
       val filter = node.get("filter").asText()
       val rpcName = node.get("rpcName").asText()
       context match {
-        case "selected-rows" => new SelectionViewPortMenuItem(name, filter, (s,r) =>NoAction(), rpcName)
-        case "row" => new RowViewPortMenuItem(name, filter, (s,m,r) =>NoAction(), rpcName)
-        case "grid" => new TableViewPortMenuItem(name, filter, (r) =>NoAction(), rpcName)
-        case "cell" => new CellViewPortMenuItem(name, filter, (s1, s2, o, r) =>NoAction(), rpcName)
+        case "selected-rows" => new SelectionViewPortMenuItem(name, filter, (s, r) => NoAction(), rpcName)
+        case "row" => new RowViewPortMenuItem(name, filter, (s, m, r) => NoAction(), rpcName)
+        case "grid" => new TableViewPortMenuItem(name, filter, (r) => NoAction(), rpcName)
+        case "cell" => new CellViewPortMenuItem(name, filter, (s1, s2, o, r) => NoAction(), rpcName)
       }
     }
   }

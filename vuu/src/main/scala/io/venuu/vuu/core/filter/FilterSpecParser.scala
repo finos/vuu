@@ -5,8 +5,8 @@ import io.venuu.vuu.grammer.{FilterLexer, FilterParser}
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 
 /**
-  * Created by chris on 31/01/2016.
-  */
+ * Created by chris on 31/01/2016.
+ */
 object FilterSpecParser extends StrictLogging {
 
   def parse(s: String): FilterClause = {
@@ -14,8 +14,8 @@ object FilterSpecParser extends StrictLogging {
     logger.debug(s"Parsing filterspec [$s]")
 
     val input = CharStreams.fromString(s)
-    val  lexer = new FilterLexer(input)
-    val  tokens = new CommonTokenStream(lexer)
+    val lexer = new FilterLexer(input)
+    val tokens = new CommonTokenStream(lexer)
     val parser = new FilterParser(tokens)
 
     val tree = parser.expression()

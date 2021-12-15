@@ -1,10 +1,10 @@
 package io.venuu.vuu.client.swing.gui.components
 
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.messages.ClientMessage
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.ViewPortContextProvider
 import io.venuu.vuu.client.swing.gui.components.popup.ViewServerPopupMenus
-import io.venuu.vuu.client.swing.messages.ClientMessage
 
 import scala.swing.GridBagPanel.Fill
 import scala.swing.event.ButtonClicked

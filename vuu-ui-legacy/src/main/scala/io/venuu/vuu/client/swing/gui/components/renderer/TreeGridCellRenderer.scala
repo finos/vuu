@@ -1,7 +1,5 @@
 package io.venuu.vuu.client.swing.gui.components.renderer
 
-import io.venuu.vuu.client.swing.gui.TreeColumns
-
 import java.awt.{Color, Component}
 import javax.swing.border.EmptyBorder
 import javax.swing.table.TableCellRenderer
@@ -10,7 +8,7 @@ import javax.swing.{ImageIcon, JLabel, JTable}
 @SerialVersionUID(1L)
 class TreeGridCellRenderer extends JLabel with TableCellRenderer {
 
-  import TreeColumns._
+  import io.venuu.vuu.client.swing.gui.TreeColumns._
 
   final private val DefaultEmptyBorder = new EmptyBorder(0, 0, 0, 0)
 

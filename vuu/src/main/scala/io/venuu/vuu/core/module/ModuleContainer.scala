@@ -5,9 +5,9 @@ import io.venuu.toolbox.lifecycle.DefaultLifecycleEnabled
 import java.util.concurrent.ConcurrentHashMap
 
 /**
-  * Created by chris on 17/08/2016.
-  */
-class ModuleContainer extends DefaultLifecycleEnabled{
+ * Created by chris on 17/08/2016.
+ */
+class ModuleContainer extends DefaultLifecycleEnabled {
 
   import scala.jdk.CollectionConverters._
 

@@ -1,4 +1,5 @@
 package io.venuu.vuu.core.table
+
 import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.lifecycle.LifecycleContainer
@@ -14,7 +15,7 @@ import org.apache.lucene.store.MMapDirectory
 
 import java.nio.file.Paths
 
-class LuceneTableData(val tableDef: LuceneTableDef){
+class LuceneTableData(val tableDef: LuceneTableDef) {
 
   private final val rowKeyFieldName = "rowKey"
   private final val lastUpdateFieldName = "lastUpdate"
@@ -42,7 +43,7 @@ class LuceneTableData(val tableDef: LuceneTableDef){
     document.add(new TextField(rowKeyFieldName, rowKey, Field.Store.YES))
     document.add(new TextField(lastUpdateFieldName, timeStamp.toString, Field.Store.YES))
 
-    tableDef.columns.foreach( c => {
+    tableDef.columns.foreach(c => {
       rowUpdate.get(c) match {
         case null =>
         case datum: Any =>
@@ -53,7 +54,7 @@ class LuceneTableData(val tableDef: LuceneTableDef){
     })
 
     indexWriter.addDocument(document)
-    if(commitEveryCount % commitEveryCount == 0){
+    if (commitEveryCount % commitEveryCount == 0) {
       indexWriter.flush()
       indexWriter.commit()
     }
@@ -63,13 +64,14 @@ class LuceneTableData(val tableDef: LuceneTableDef){
     updateCount += 1
     rowUpdateAsDocument(rowKey, rowUpdate, timeStamp)
   }
+
   def processDelete(rowKey: String): Unit = {
-//    indexWriter.deleteDocuments(new Term(rowKeyFieldName, rowKey))
-//    indexWriter.flush()
-//    indexWriter.commit()
+    //    indexWriter.deleteDocuments(new Term(rowKeyFieldName, rowKey))
+    //    indexWriter.flush()
+    //    indexWriter.commit()
   }
 
-  private def toTerm(field:String, value:String): Term = {
+  private def toTerm(field: String, value: String): Term = {
     new Term(field, value)
   }
 
@@ -80,9 +82,9 @@ class LuceneTableData(val tableDef: LuceneTableDef){
     //val query = new MatchAllDocsQuery
 
     val topDocs = searcher.search(query, 1)
-    if(topDocs.totalHits.value == 0l){
+    if (topDocs.totalHits.value == 0l) {
       null
-    }else{
+    } else {
       searcher.doc(topDocs.scoreDocs(0).doc)
     }
   }
@@ -127,7 +129,7 @@ class LuceneTable(val tableDef: LuceneTableDef, val joinProvider: JoinTableProvi
     luceneData.loadDocument(key) match {
       case null => Array()
       case doc: Document =>
-        columns.map( c => doc.getField(c.name).stringValue() ).toArray
+        columns.map(c => doc.getField(c.name).stringValue()).toArray
     }
   }
 

@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
 
 import scala.jdk.CollectionConverters._
 
-class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] with StrictLogging{
+class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] with StrictLogging {
 
   override def visitExpression(ctx: ExpressionContext): FilterClause = {
     visitOr_expression(ctx.or_expression())
@@ -16,13 +16,13 @@ class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] with StrictLoggi
   override def visitOr_expression(ctx: Or_expressionContext): FilterClause = {
     logger.debug("Or")
     val and = visit(ctx.and_expression())
-    val ors = ListHasAsScala(ctx.or_expression()).asScala.map(or => visit(or) ).toList
+    val ors = ListHasAsScala(ctx.or_expression()).asScala.map(or => visit(or)).toList
     OrClause(and, ors)
   }
 
   override def visitAnd_expression(ctx: And_expressionContext): FilterClause = {
     logger.debug("And")
-    val terms = ListHasAsScala(ctx.term()).asScala.map( term => visit(term)).toList
+    val terms = ListHasAsScala(ctx.term()).asScala.map(term => visit(term)).toList
     AndClause(terms)
   }
 
@@ -33,24 +33,24 @@ class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] with StrictLoggi
     val column = atom1.getText
 
     //var atomType = -1
-//    var value: Unit =
-//
-//      ListHasAsScala(ctx.atom()).asScala.drop(1).foreach( atom => {
-//
-//      atomType = atom.getChild(0).asInstanceOf[TerminalNode].getSymbol.getType
-//    })
+    //    var value: Unit =
+    //
+    //      ListHasAsScala(ctx.atom()).asScala.drop(1).foreach( atom => {
+    //
+    //      atomType = atom.getChild(0).asInstanceOf[TerminalNode].getSymbol.getType
+    //    })
 
     val termClause = op.getText match {
-      case ">"  =>
+      case ">" =>
         val (dt, value) = parseTypeAndValue(ListHasAsScala(ctx.atom()).asScala.drop(1).head)
         GreaterThanClause(column, dt, value)
-      case "="  =>
+      case "=" =>
         val (dt, value) = parseTypeAndValue(ListHasAsScala(ctx.atom()).asScala.drop(1).head)
         EqualsClause(column, dt, value)
       case "!=" =>
         val (dt, value) = parseTypeAndValue(ListHasAsScala(ctx.atom()).asScala.drop(1).head)
         NotEqualsClause(column, dt, value)
-      case "<"  =>
+      case "<" =>
         val (dt, value) = parseTypeAndValue(ListHasAsScala(ctx.atom()).asScala.drop(1).head)
         LessThanClause(column, dt, value)
       case "in" =>
@@ -68,14 +68,14 @@ class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] with StrictLoggi
     TermClause(atom1.getText, termClause)
   }
 
-  private def parseTypeAndValue(ctx: AtomContext):(Int, String) = {
+  private def parseTypeAndValue(ctx: AtomContext): (Int, String) = {
     val atomType = ctx.getChild(0).asInstanceOf[TerminalNode].getSymbol.getType
     val text = ctx.getText
     (atomType, text)
   }
 
-  private def parseTypeAndValueList(ctx: List[AtomContext]):(Int, List[String]) = {
+  private def parseTypeAndValueList(ctx: List[AtomContext]): (Int, List[String]) = {
     val atomType = ctx.head.getChild(0).asInstanceOf[TerminalNode].getSymbol.getType
-    (atomType, ctx.map( ctx => ctx.getText))
+    (atomType, ctx.map(ctx => ctx.getText))
   }
 }

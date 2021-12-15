@@ -9,9 +9,9 @@ package io.venuu.vuu.client.swing.gui
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.messages._
 import io.venuu.vuu.client.swing.EventBus
-import io.venuu.vuu.client.swing.gui.components.MutableComboBox
-import io.venuu.vuu.client.swing.messages._
+import io.venuu.vuu.client.swing.gui.components._
 import io.venuu.vuu.client.swing.model.{RpcModel, VSHackedTable}
 import io.venuu.vuu.viewport.ViewPortTable
 

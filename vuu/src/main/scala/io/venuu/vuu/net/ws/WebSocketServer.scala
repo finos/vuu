@@ -32,7 +32,7 @@ import io.venuu.vuu.net.ViewServerHandlerFactory
  * </ul>
  */
 
-class WebSocketServer(port: Int, factory: ViewServerHandlerFactory)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging{
+class WebSocketServer(port: Int, factory: ViewServerHandlerFactory)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging {
 
   lifecycle(this)
 
@@ -47,7 +47,7 @@ class WebSocketServer(port: Int, factory: ViewServerHandlerFactory)(implicit lif
   override def doStart(): Unit = {
     logger.info("Starting websocket server")
     ch = b.bind("localhost", port).sync().channel();
-    while(!isOpen()){}
+    while (!isOpen()) {}
     logger.info("Websocket server open and ready")
 
   }

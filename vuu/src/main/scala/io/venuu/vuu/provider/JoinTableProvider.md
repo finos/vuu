@@ -2,10 +2,10 @@
 
 ## Description
 
-The join table provider takes update or delete events from data tables (either SimpleDataTables aka normal sinks) or join tables
-and sends them on to join tables which listen on them. 
+The join table provider takes update or delete events from data tables (either SimpleDataTables aka normal sinks) or
+join tables and sends them on to join tables which listen on them.
 
-##The Input Interface
+## The Input Interface
 
 The main interface for the join provider is below
 
@@ -13,13 +13,14 @@ The main interface for the join provider is below
 def sendEvent(tableName: String, ev: java.util.HashMap[String, Any]): Unit
 ```
 
-This takes a specific event for a table, (example "orders") and emits it to join tables that are composed of that table 
-*directly*. The last point is important when we discuss joins of join tables below. 
+This takes a specific event for a table, (example "orders") and emits it to join tables that are composed of that table
+*directly*. The last point is important when we discuss joins of join tables below.
 
-Below is an example of data inbound from the SimpleDataTable "orders" and the output which is sent on to the table 
+Below is an example of data inbound from the SimpleDataTable "orders" and the output which is sent on to the table
 "orderPrices."
 
-###Input:
+### Input:
+
 ```
 tableName = "orders"
 
@@ -29,8 +30,11 @@ ev = {\
     "ric" -> "VOD.L"
     \} 
 ```
-###Output:
+
+### Output:
+
 Output is put onto the outputQueue in the joinManager
+
 ```
 RowWithData:
 data = {HashMap@2665} "HashMap" size = 5
@@ -41,8 +45,8 @@ data = {HashMap@2665} "HashMap" size = 5
      4 = {Tuple2@3187} "(orders._isDeleted,false)"
 ```
 
-This output is then consumed by the JoinTable Implementation in this format, what the join table is trying to build up 
-is the array of the keys that the join is composed of, and the way this is consumed is by loading the keys by qualifed 
+This output is then consumed by the JoinTable Implementation in this format, what the join table is trying to build up
+is the array of the keys that the join is composed of, and the way this is consumed is by loading the keys by qualifed
 name.
 
 see io/venuu/vuu/core/table/JoinTable.scala:116
@@ -67,7 +71,9 @@ see io/venuu/vuu/core/table/JoinTable.scala:116
     result
   }
 ```
+
 We end up with a data structure like this within the join table:
+
 ```
 [
     ["1", "VOD.L", "GBPUSD"],
@@ -75,9 +81,10 @@ We end up with a data structure like this within the join table:
     ["3", "VOD.L", "GBPUSD"]
 ]
 ```
-##Joins of Joins
 
-With joins of joins we need to propagate updates as if they have been created by the last table that consumed them, for 
+## Joins of Joins
+
+With joins of joins we need to propagate updates as if they have been created by the last table that consumed them, for
 example, if we have the join tables:
 
 ```
@@ -85,9 +92,11 @@ orderPrices     (this is the join of orders & prices)
 orderPricesFx   (this is the join of orderPrices, a join table itself and Fx rates)
 ```
 
-The join events going into orderPrices look exactly like the example above. The input for orderPrices is subtly different though.
+The join events going into orderPrices look exactly like the example above. The input for orderPrices is subtly
+different though.
 
-###Input:
+### Input:
+
 ```
 tableName = "orderPrices"
 
@@ -97,8 +106,11 @@ ev = {\
     "ric" -> "VOD.L"
     \} 
 ```
-###Output:
-Output is put onto the outputQueue in the joinManager. 
+
+### Output:
+
+Output is put onto the outputQueue in the joinManager.
+
 ```
 RowWithData:
 data = {HashMap@2665} "HashMap" size = 5
@@ -109,5 +121,5 @@ data = {HashMap@2665} "HashMap" size = 5
      4 = {Tuple2@3187} "(fx._isDeleted,false)"
 ```
 
-What this means is that the event emitted into the join manager from an existing join table has to rebadge the event as from itself, not from 
-the original source.
+What this means is that the event emitted into the join manager from an existing join table has to rebadge the event as
+from itself, not from the original source.

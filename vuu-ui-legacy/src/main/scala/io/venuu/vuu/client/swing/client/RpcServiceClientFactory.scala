@@ -3,8 +3,8 @@ package io.venuu.vuu.client.swing.client
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.thread.Async
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.messages.{ClientMessage, ClientRpcCall, ClientRpcResponse, RequestId}
 import io.venuu.vuu.client.swing.EventBus
-import io.venuu.vuu.client.swing.messages.{ClientMessage, ClientRpcCall, ClientRpcResponse, RequestId}
 
 import java.lang.reflect.{InvocationHandler, Method}
 import scala.reflect.ClassTag

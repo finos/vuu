@@ -13,6 +13,7 @@ import scala.jdk.CollectionConverters._
 
 trait RandomNumbers {
   def nextInt(): Int
+
   def seededRand(low: Int, high: Int): Int
 }
 
@@ -39,7 +40,7 @@ class SeededRandomNumbers(seed: Long) extends RandomNumbers {
   override def nextInt(): Int = random.nextInt();
 
   def seededRand(low: Int, high: Int): Int = {
-    random.nextInt(high-low) + low;
+    random.nextInt(high - low) + low;
   }
 
 }
@@ -49,7 +50,7 @@ case class Curve(points: Array[(Long, Int)])
 case class OrderDetail(orderId: String, side: Char, ccy: String, ric: String,
                        location: String, quantity: Double, trader: String, filledQuantity: Double, lastUpdate: Long, created: Long)
 
-class OrderSimulator(table: DataTable)(implicit time: Clock){
+class OrderSimulator(table: DataTable)(implicit time: Clock) {
 
   private val orders = new util.Hashtable[String, OrderDetail]()
   private val orderCount = new AtomicInteger(0)
@@ -57,7 +58,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
   private val ordersCount = new SeededRandomNumbers(time.now())
 
   def createOrderNyc(i: Int) = {
-    createOrder(i, "NYC", "USD","AAPL.N")
+    createOrder(i, "NYC", "USD", "AAPL.N")
   }
 
   def createOrderLdn(i: Int) = {
@@ -79,13 +80,13 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 
     val ccy = currency
 
-    val quantity  = seededRandom.seededRand(100, 100000)
+    val quantity = seededRandom.seededRand(100, 100000)
 
-    val od        = OrderDetail(orderId, side, ccy, symbol, location, quantity, "stevchrs", 0, time.now(), time.now())
+    val od = OrderDetail(orderId, side, ccy, symbol, location, quantity, "stevchrs", 0, time.now(), time.now())
 
     orders.put(od.orderId, od)
 
-    val asMap     = toMap(od)
+    val asMap = toMap(od)
 
     table.processUpdate(od.orderId, RowWithData(od.orderId, asMap), time.now())
   }
@@ -93,7 +94,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
   private def toMap(od: OrderDetail): Map[String, Any] = {
 
     def objToMap(cc: AnyRef) =
-      (Map[String, Any]() /: cc.getClass.getDeclaredFields) {(a, f) =>
+      (Map[String, Any]() /: cc.getClass.getDeclaredFields) { (a, f) =>
         f.setAccessible(true)
         a + (f.getName -> f.get(cc))
       }
@@ -109,11 +110,11 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 
     val fillPerQty = od.quantity / shapes
 
-    val asMap     = toMap(od)
+    val asMap = toMap(od)
 
     var filledQty: Double = 0
 
-    while(filledQty < od.quantity){
+    while (filledQty < od.quantity) {
 
       filledQty += fillPerQty
 
@@ -129,7 +130,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 
     val enum = orders.elements()
 
-    while(enum.hasMoreElements) {
+    while (enum.hasMoreElements) {
       val next = enum.nextElement()
       fillOrder(next)
     }
@@ -140,7 +141,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 
     val entries = EnumerationHasAsScala(orders.elements()).asScala.toList
 
-    val deletePerSec = seededRandom.seededRand(1 ,2)
+    val deletePerSec = seededRandom.seededRand(1, 2)
 
     entries.foreach(od => {
 
@@ -149,7 +150,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
       orders.remove(od.orderId)
 
       time.sleep(deletePerSec * 100)
-    } )
+    })
 
   }
 
@@ -158,17 +159,21 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 
     //1.
     //allocate a quantity of orders to create
-    val quantityNY =  ordersCount.seededRand(0, 50)
+    val quantityNY = ordersCount.seededRand(0, 50)
 
-    val quantityLN =  ordersCount.seededRand(0, 20)
+    val quantityLN = ordersCount.seededRand(0, 20)
 
     val ratePerSecond = 0.5
 
     val sleepInterval: Long = (1 / ratePerSecond).toLong
 
-    (0 to quantityNY).foreach( i => { createOrderNyc(i); time.sleep(sleepInterval * 50) })
+    (0 to quantityNY).foreach(i => {
+      createOrderNyc(i); time.sleep(sleepInterval * 50)
+    })
 
-    (0 to quantityLN).foreach( i => { createOrderLdn(i); time.sleep(sleepInterval * 50) })
+    (0 to quantityLN).foreach(i => {
+      createOrderLdn(i); time.sleep(sleepInterval * 50)
+    })
 
     time.sleep(1000)
 
@@ -185,14 +190,13 @@ class OrderSimulator(table: DataTable)(implicit time: Clock){
 }
 
 
-
 /**
-  * Created by chris on 11/09/2016.
-  */
+ * Created by chris on 11/09/2016.
+ */
 class OrdersSimulProvider(table: DataTable)(implicit timeProvider: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
 
   private val simulator = new OrderSimulator(table)
-  private val runner = new LifeCycleRunner("ordersSimulProvider", () => simulator.runOnce )
+  private val runner = new LifeCycleRunner("ordersSimulProvider", () => simulator.runOnce)
 
   lifecycleContainer(this).dependsOn(runner)
 

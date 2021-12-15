@@ -18,28 +18,31 @@ import io.venuu.vuu.net.ws.WebSocketServer
 import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer}
 import io.venuu.vuu.viewport.{ViewPortAction, ViewPortActionMixin, ViewPortContainer}
 
-object VuuWebSocketOptions{
+object VuuWebSocketOptions {
   def apply(): VuuWebSocketOptions = {
     VuuWebSocketOptionsImpl(8090, "/websocket")
   }
 }
 
-trait VuuWebSocketOptions{
+trait VuuWebSocketOptions {
 
   def wsPort: Int
+
   def uri: String
 
   def withWsPort(port: Int): VuuWebSocketOptions
+
   def withUri(uri: String): VuuWebSocketOptions
 
 }
 
-case class VuuWebSocketOptionsImpl(wsPort: Int, uri: String) extends VuuWebSocketOptions{
+case class VuuWebSocketOptionsImpl(wsPort: Int, uri: String) extends VuuWebSocketOptions {
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
+
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
 }
 
-case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions, wsOptions: VuuWebSocketOptions, modules: List[ViewServerModule] = List()){
+case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions, wsOptions: VuuWebSocketOptions, modules: List[ViewServerModule] = List()) {
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
@@ -48,7 +51,7 @@ case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions, wsOptions: VuuWeb
 /**
  * View Server
  */
-class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging{
+class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging {
 
   val serializer = JsonVsSerializer
 
@@ -60,7 +63,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   val sessionContainer = new ClientSessionContainerImpl()
 
-  val joinProvider = JoinTableProviderImpl()//new EsperJoinTableProviderImpl()
+  val joinProvider = JoinTableProviderImpl() //new EsperJoinTableProviderImpl()
 
   val tableContainer = new TableContainer(joinProvider)
 
@@ -71,7 +74,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   val moduleContainer = new ModuleContainer
 
-  config.modules.foreach( module => registerModule(module))
+  config.modules.foreach(module => registerModule(module))
 
   val serverApi = new CoreServerApiHander(viewPortContainer, tableContainer, providerContainer)
 
@@ -97,7 +100,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   val viewPortRunner = new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
   lifecycle(viewPortRunner).dependsOn(server)
 
-  val groupByRunner = new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce() )
+  val groupByRunner = new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce())
   lifecycle(groupByRunner).dependsOn(server)
 
   def createTable(tableDef: TableDef): DataTable = {
@@ -124,18 +127,27 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
     val vs = this;
 
-    val realized = new RealizedViewServerModule{
+    val realized = new RealizedViewServerModule {
       override def rpcHandlers: List[RpcHandler] = module.rpcHandlersUnrealized.map(_.apply(vs))
+
       override def restServices: List[RestService] = module.restServicesUnrealized.map(_.apply(vs))
+
       override def name: String = module.name
+
       override def tableDefs: List[TableDef] = module.tableDefs
+
       override def serializationMixin: AnyRef = module.serializationMixin
+
       override def rpcHandlersUnrealized: List[VuuServer => RpcHandler] = module.rpcHandlersUnrealized
+
       override def restServicesUnrealized: List[VuuServer => RestService] = module.restServicesUnrealized
+
       override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }
+
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
+
       override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer) => ViewPortDef] = module.viewPortDefs
     }
 
@@ -143,7 +155,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
     logger.info(s"[VIEW SERVER] registering module ${module.name} which contains ${module.tableDefs.size} tables")
 
-    module.tableDefs.foreach( tableDef => tableDef match {
+    module.tableDefs.foreach(tableDef => tableDef match {
 
       case tableDef: JoinTableDef =>
         tableDef.setModule(module)
@@ -163,23 +175,27 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
         registerProvider(table, provider)
     })
 
-    module.viewPortDefs.foreach({case(table, vpFunc) => {
+    module.viewPortDefs.foreach({ case (table, vpFunc) => {
       viewPortContainer.addViewPortDefinition(table, vpFunc)
-    }})
+    }
+    })
 
     this
   }
 
-  lifecycle(this).dependsOn(httpServer, server,joinProviderRunner, handlerRunner, viewPortRunner, joinProvider, groupByRunner)
+  lifecycle(this).dependsOn(httpServer, server, joinProviderRunner, handlerRunner, viewPortRunner, joinProvider, groupByRunner)
 
   def join() = {
     lifecycle.join()
   }
 
   override def doStart(): Unit = {}
+
   override def doStop(): Unit = {}
 
   override def doInitialize(): Unit = {}
+
   override def doDestroy(): Unit = {}
+
   override val lifecycleId: String = "viewServer"
 }

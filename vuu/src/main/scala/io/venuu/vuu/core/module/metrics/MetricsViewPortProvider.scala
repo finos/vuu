@@ -12,7 +12,7 @@ import io.venuu.vuu.viewport.ViewPortContainer
 import scala.jdk.CollectionConverters._
 
 class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
-                                                                                metrics: MetricsProvider ) extends Provider with StrictLogging {
+                                                                                      metrics: MetricsProvider) extends Provider with StrictLogging {
 
   private val runner = new LifeCycleRunner("metricsViewPortProviderThread", () => runOnce, minCycleTime = 1_000)
 
@@ -32,7 +32,7 @@ class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortConta
 
   private var viewportIds = Map[String, String]()
 
-  def runOnce(): Unit ={
+  def runOnce(): Unit = {
 
     try {
 
@@ -42,22 +42,23 @@ class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortConta
 
       val toDelete = viewportIds.filterNot(kv => mapOfHistograms.contains(kv._1)).toMap
 
-      mapOfHistograms.foreach({case(key, histogram) => {
-          val snapshot = histogram.getSnapshot
-          val vp = viewPortContainer.getViewPortById(key)
-          if(vp != null){
-            val upMap = Map("id" -> key, "table" -> vp.table.name, "mean" -> snapshot.getMean, "max" -> snapshot.getMax, "75Perc" -> snapshot.get75thPercentile(), "99Perc" -> snapshot.get99thPercentile(), "99_9Perc" -> snapshot.get999thPercentile());
-            table.processUpdate(key, RowWithData(key, upMap), clock.now())
-          }else{
-            //table.processDelete(key)
-          }
-        }})
+      mapOfHistograms.foreach({ case (key, histogram) => {
+        val snapshot = histogram.getSnapshot
+        val vp = viewPortContainer.getViewPortById(key)
+        if (vp != null) {
+          val upMap = Map("id" -> key, "table" -> vp.table.name, "mean" -> snapshot.getMean, "max" -> snapshot.getMax, "75Perc" -> snapshot.get75thPercentile(), "99Perc" -> snapshot.get99thPercentile(), "99_9Perc" -> snapshot.get999thPercentile());
+          table.processUpdate(key, RowWithData(key, upMap), clock.now())
+        } else {
+          //table.processDelete(key)
+        }
+      }
+      })
 
-      toDelete.foreach({case(key, _) =>
+      toDelete.foreach({ case (key, _) =>
         table.processDelete(key)
       })
 
-      viewportIds = mapOfHistograms.map({case(key, _) => (key -> key)}).toMap
+      viewportIds = mapOfHistograms.map({ case (key, _) => (key -> key) }).toMap
 
     } catch {
       case e: Exception =>

@@ -10,7 +10,7 @@ import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
 
 import java.util
 
-object VuuHttp2Server{
+object VuuHttp2Server {
   def apply(options: VuuHttp2ServerOptions, services: List[RestService])(implicit lifecycle: LifecycleContainer): Http2Server = {
     new VuuHttp2Server(options, services)
   }
@@ -22,7 +22,7 @@ trait Http2Server extends LifecycleEnabled {
 
 class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[RestService]) extends AbstractVerticle with StrictLogging {
 
-  def addRestService(router: Router, service: RestService): Unit ={
+  def addRestService(router: Router, service: RestService): Unit = {
 
     logger.info(s"Adding REST service /api/${service.getServiceName}")
     logger.info(s"    POST URI:" + service.getUriPost)
@@ -44,7 +44,7 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
 
   override def start(): Unit = {
-    try{
+    try {
 
       val router = Router.router(vertx);
 
@@ -83,7 +83,7 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
       router.route.handler(CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods))
 
-      services.foreach( service => addRestService(router, service))
+      services.foreach(service => addRestService(router, service))
 
       // Serve the static pages
       router.route("/*").handler(StaticHandler.create()
@@ -92,18 +92,16 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
       )
 
 
-
       vertx.createHttpServer(httpOpts).requestHandler(router).listen(options.port);
 
       logger.info(s"[HTTP2] Server Started @ ${options.port} on / with webroot ${options.webRoot} ")
 
-    }catch{
+    } catch {
       case e: Exception =>
         logger.error("[HTTP2] Error occurred starting server", e)
     }
   }
 }
-
 
 
 class VuuHttp2Server(val options: VuuHttp2ServerOptions, val services: List[RestService])(implicit lifecycle: LifecycleContainer) extends Http2Server {

@@ -7,7 +7,7 @@ import io.venuu.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.Columns
 import io.venuu.vuu.state.VuiStateStore
 
-object VuiStateModule extends DefaultModule{
+object VuiStateModule extends DefaultModule {
 
   final val NAME = "vui"
 
@@ -18,7 +18,7 @@ object VuiStateModule extends DefaultModule{
         TableDef(
           name = "uiState",
           keyField = "uniqueId",
-          columns = Columns.fromNames("uniqueId".string(),  "user".string(), "id".string(), "lastUpdate".long()),
+          columns = Columns.fromNames("uniqueId".string(), "user".string(), "id".string(), "lastUpdate".long()),
           VisualLinks(),
         ),
         (table, vs) => new VuiStateStoreProvider(table, store)

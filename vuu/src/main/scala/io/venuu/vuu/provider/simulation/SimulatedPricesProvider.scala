@@ -1,10 +1,10 @@
 /**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 18/11/2015.
-
-  */
+ * Copyright Whitebox Software Ltd. 2014
+ * All Rights Reserved.
+ *
+ * Created by chris on 18/11/2015.
+ *
+ */
 package io.venuu.vuu.provider.simulation
 
 import com.typesafe.scalalogging.StrictLogging
@@ -19,37 +19,37 @@ import java.util.Random
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
 
-trait SimulationMode{
+trait SimulationMode {
   def asCode: Int
 }
 
 case class Simulation(mode: SimulationMode, beganAt: Long, endAt: Long)
 
-case object TakeAWalk extends SimulationMode{
+case object TakeAWalk extends SimulationMode {
   override def asCode: Int = 1
 }
 
-case object WidenBidAsk extends SimulationMode{
+case object WidenBidAsk extends SimulationMode {
   override def asCode: Int = 2
 }
 
-case object FastTick extends SimulationMode{
+case object FastTick extends SimulationMode {
   override def asCode: Int = 3
 }
 
-case object NoOp extends SimulationMode{
+case object NoOp extends SimulationMode {
   override def asCode: Int = 4
 }
 
-case object Close extends SimulationMode{
+case object Close extends SimulationMode {
   override def asCode: Int = 5
 }
 
-case object Open extends SimulationMode{
+case object Open extends SimulationMode {
   override def asCode: Int = 6
 }
 
-object PricesFields{
+object PricesFields {
   final val Ric = "ric"
   final val Bid = "bid"
   final val Ask = "ask"
@@ -62,13 +62,13 @@ object PricesFields{
   final val Phase = "phase"
 }
 
-class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implicit val timeProvider: Clock, lifecycle:  LifecycleContainer) extends Provider with StrictLogging with RunInThread {
+class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implicit val timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging with RunInThread {
   private val currentModes = new ConcurrentHashMap[String, Simulation]()
   private val states = new ConcurrentHashMap[String, Map[String, Any]]()
 
   private var cycleCount = 0
 
-  val runner = new LifeCycleRunner("pricesProvider", () => runOnce() )
+  val runner = new LifeCycleRunner("pricesProvider", () => runOnce())
 
   lifecycle(this).dependsOn(runner)
 
@@ -85,29 +85,29 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implici
 
   private def seededRand(seed: Long, low: Int, high: Int): Int = {
     val r = new Random(seed)
-    r.nextInt(high-low) + low
+    r.nextInt(high - low) + low
   }
 
   override def runOnce(): Unit = {
 
     val entrySet = SetHasAsScala(currentModes.entrySet()).asScala
 
-//    if(logAt.shouldLog()){
-//      logger.info("Cycle Count = " + cycleCount)
-//    }
+    //    if(logAt.shouldLog()){
+    //      logger.info("Cycle Count = " + cycleCount)
+    //    }
 
-    if( doEvery5Mins.shouldLog() )
-    {
+    if (doEvery5Mins.shouldLog()) {
       val startOfOpen = timeProvider.now() + 5_000
       logger.info("[PRICES] Moving into Closed Market...")
       entrySet.foreach(me => {
         closeMarket(me.getKey, startOfOpen)
       })
     }
-    else{
+    else {
       entrySet.foreach(me => {
         processOne(me.getKey, me.getValue)
-    })}
+      })
+    }
 
     cycleCount += 1
 
@@ -117,7 +117,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implici
   protected def closeMarket(ric: String, timeToOpen: Long): Unit = {
     val newRow = getState(ric) match {
       case Some(row) => mergeLeft(row, close(ric, row))
-      case None => Map(f.Ric -> ric)//do nothing
+      case None => Map(f.Ric -> ric) //do nothing
     }
 
     currentModes.put(ric, Simulation(Close, this.timeProvider.now(), timeToOpen))
@@ -127,14 +127,14 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implici
   }
 
   protected def processOne(ric: String, simulation: Simulation): Unit = {
-    val newRow = if(simulation.endAt <= timeProvider.now()) {
-      if(simulation.mode.equals(Close)){
+    val newRow = if (simulation.endAt <= timeProvider.now()) {
+      if (simulation.mode.equals(Close)) {
         assignSpecificSimulation(ric, Open)
       }
-      else{
+      else {
         assignNewSimulation(ric)
       }
-    } else{
+    } else {
       simulation.mode match {
         case NoOp => doNoOp(ric)
         case TakeAWalk => doTakeAWalk(ric)
@@ -170,7 +170,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implici
 
   val f: PricesFields.type = PricesFields
 
-  private def close(ric: String, existing: Map[String, Any]): Map[String, Any] ={
+  private def close(ric: String, existing: Map[String, Any]): Map[String, Any] = {
 
     val price = existing.get(f.Bid) match {
       case Some(bid) => bid
@@ -187,9 +187,9 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implici
   }
 
   private def walkBidAndAsk(ric: String, existing: Map[String, Any]) = {
-    if(!existing.contains(f.Bid))
+    if (!existing.contains(f.Bid))
       buildSampleRow(existing(f.Ric).asInstanceOf[String])
-    else{
+    else {
       val bid = existing(f.Bid).asInstanceOf[Double]
       val ask = existing(f.Ask).asInstanceOf[Double]
       val diff = ask - bid
@@ -228,16 +228,16 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implici
   final val MaxSpread = 100
 
   protected def doWidenBidAndAsk(ric: String): Map[String, Any] = {
-    if(!states.get(ric).contains(ric)){
+    if (!states.get(ric).contains(ric)) {
       seedStartValues(ric)
-    }else{
+    } else {
       val spread = seededRand(timeProvider.now(), 1, 567)
       getState(ric) match {
         case Some(state) =>
-          val bid     = state(f.Bid).asInstanceOf[Double]
-          val ask     = state(f.Ask).asInstanceOf[Double]
-          val spread  = ask - bid
-          val activeSpread = if(spread > MaxSpread)
+          val bid = state(f.Bid).asInstanceOf[Double]
+          val ask = state(f.Ask).asInstanceOf[Double]
+          val spread = ask - bid
+          val activeSpread = if (spread > MaxSpread)
             0.0
           else
             spread
@@ -253,42 +253,42 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implici
 
   protected def doFastTick(ric: String): Map[String, Any] = {
 
-    if(!states.get(ric).contains(f.Bid))
+    if (!states.get(ric).contains(f.Bid))
       seedStartValues(ric)
-    else{
+    else {
       val bidAdjust = seededRand(timeProvider.now(), 0, 10)
       val askAdjust = seededRand(timeProvider.now(), 0, 20)
-      val bid     = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
-      val ask     = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
-      val last     = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
+      val bid = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
+      val ask = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
+      val last = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
       Map(f.Ric -> ric, f.Ask -> ask, f.Bid -> bid, f.Scenario -> "fastTick", f.Last -> last, f.Phase -> "C") ++ BidAskSize()
     }
   }
 
   protected def doOpenTick(ric: String): Map[String, Any] = {
 
-    if(!states.get(ric).contains(f.Bid))
+    if (!states.get(ric).contains(f.Bid))
       seedStartValues(ric)
-    else{
+    else {
       val bidAdjust = seededRand(timeProvider.now(), 0, 10)
       val askAdjust = seededRand(timeProvider.now(), 0, 20)
-      val bid     = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
-      val ask     = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
-      val open     = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
+      val bid = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
+      val ask = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
+      val open = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
       Map(f.Ric -> ric, f.Scenario -> "open", f.Open -> open, f.Phase -> "O") ++ BidAskSize()
     }
   }
 
   protected def doCloseTick(ric: String): Map[String, Any] = {
 
-    if(!states.get(ric).contains(f.Bid))
+    if (!states.get(ric).contains(f.Bid))
       seedStartValues(ric)
-    else{
+    else {
       val bidAdjust = seededRand(timeProvider.now(), 0, 10)
       val askAdjust = seededRand(timeProvider.now(), 0, 20)
-      val bid     = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
-      val ask     = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
-      val open     = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
+      val bid = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
+      val ask = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
+      val open = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
       Map(f.Ric -> ric, f.Scenario -> "close", f.Phase -> "X") ++ BidAskSizeNull()
     }
   }
@@ -323,7 +323,7 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implici
     currentModes.put(ric, Simulation(impl, begin, begin + end))
 
     val existing = states.get(ric)
-    if(existing == null)
+    if (existing == null)
       buildSampleRow(ric)
     else
       existing
@@ -337,11 +337,12 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implici
     currentModes.put(ric, Simulation(impl, begin, begin + end))
 
     val existing = states.get(ric)
-    if(existing == null)
+    if (existing == null)
       buildSampleRow(ric)
     else
       existing
   }
+
   override def doStop(): Unit = {}
 
   override def doStart(): Unit = {}

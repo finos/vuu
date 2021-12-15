@@ -1,10 +1,10 @@
 /**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 16/11/2015.
-
-  */
+ * Copyright Whitebox Software Ltd. 2014
+ * All Rights Reserved.
+ *
+ * Created by chris on 16/11/2015.
+ *
+ */
 package io.venuu.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
@@ -19,11 +19,11 @@ import scala.util.{Failure, Success, Try}
 
 class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
                           val tableContainer: TableContainer,
-                          val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging{
+                          val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging {
 
 
   override def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcCell(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.field, msg.value)) match{
+    Try(viewPortContainer.callRpcCell(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.field, msg.value)) match {
       case Success(action) =>
         logger.info("Processed VP Menu Cell RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
@@ -34,7 +34,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: ViewPortMenuRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcRow(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.row)) match{
+    Try(viewPortContainer.callRpcRow(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.row)) match {
       case Success(action) =>
         logger.info("Processed VP Menu Row RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
@@ -45,7 +45,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: ViewPortMenuTableRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcTable(msg.vpId, msg.rpcName, ctx.session)) match{
+    Try(viewPortContainer.callRpcTable(msg.vpId, msg.rpcName, ctx.session)) match {
       case Success(action) =>
         logger.info("Processed VP Menu Table RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
@@ -56,7 +56,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: ViewPortMenuSelectionRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcSession(msg.vpId, msg.rpcName, ctx.session)) match{
+    Try(viewPortContainer.callRpcSession(msg.vpId, msg.rpcName, ctx.session)) match {
       case Success(action) =>
         logger.info("Processed VP Menu Selection RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
@@ -67,7 +67,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: RemoveViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.removeViewPort(msg.viewPortId)) match{
+    Try(viewPortContainer.removeViewPort(msg.viewPortId)) match {
       case Success(_) =>
         logger.info("View port removed")
         vsMsg(RemoveViewPortSuccess(msg.viewPortId))(ctx)
@@ -78,7 +78,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: EnableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.enableViewPort(msg.viewPortId)) match{
+    Try(viewPortContainer.enableViewPort(msg.viewPortId)) match {
       case Success(_) =>
         logger.info("View port enabled")
         vsMsg(EnableViewPortSuccess(msg.viewPortId))(ctx)
@@ -89,7 +89,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: DisableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.disableViewPort(msg.viewPortId)) match{
+    Try(viewPortContainer.disableViewPort(msg.viewPortId)) match {
       case Success(_) =>
         logger.info("View port disabled")
         vsMsg(DisableViewPortSuccess(msg.viewPortId))(ctx)
@@ -110,10 +110,10 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   override def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage] = {
     val table = tableContainer.getTable(msg.table.table)
 
-    if(table == null)
+    if (table == null)
       vsMsg(RpcReject(msg.table, msg.key, s"could not find table ${msg.table} to update in table container"))(ctx)
-    else{
-      Try(providers.getProviderForTable(msg.table.table).get.asInstanceOf[RpcProvider].tick(msg.key, msg.data)) match{
+    else {
+      Try(providers.getProviderForTable(msg.table.table).get.asInstanceOf[RpcProvider].tick(msg.key, msg.data)) match {
         case Success(_) =>
           logger.info(s"Rpc update success ${msg.table} ${msg.key}")
           vsMsg(RpcSuccess(msg.table, msg.key))(ctx)
@@ -137,9 +137,9 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
 
   override def process(msg: GetViewPortMenusRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    if(msg.vpId == null || msg.vpId == ""){
+    if (msg.vpId == null || msg.vpId == "") {
       errorMsg(s"VpId is empty")(ctx)
-    }else{
+    } else {
       viewPortContainer.get(ctx.session, msg.vpId) match {
         case Some(vp: ViewPort) =>
           vsMsg(GetViewPortMenusResponse(msg.vpId, vp.getStructure.viewPortDef.service.menuItems()))(ctx)
@@ -150,9 +150,9 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: GetTableMetaRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    if(msg.table == null)
+    if (msg.table == null)
       errorMsg(s"Table ${msg.table} not found in container")(ctx)
-    else{
+    else {
       val table = tableContainer.getTable(msg.table.table)
       val columnNames = table.getTableDef.columns.map(_.name).sorted
       val dataTypes = columnNames.map(table.getTableDef.columnForName(_)).map(col => DataType.asString(col.dataType))
@@ -168,7 +168,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
         val table = viewport.table.asTable
 
-        val columns = if(msg.columns.size == 1 && msg.columns(0) == "*"){
+        val columns = if (msg.columns.size == 1 && msg.columns(0) == "*") {
           logger.info("[ChangeViewPortRequest] Wildcard specified for columns, going to return all")
           table.getTableDef.columns.toList
         }
@@ -179,14 +179,14 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
         val filter = msg.filterSpec
         val groupBy = msg.groupBy
 
-        val newViewPort = if(!groupBy.isEmpty){
+        val newViewPort = if (!groupBy.isEmpty) {
 
           val groupByColumns = msg.groupBy
             .filter(table.getTableDef.columnExists(_))
             .map(table.getTableDef.columnForName(_)).toList
 
-          val aggregations   = msg.aggregations
-            .filter( agg => table.getTableDef.columnExists(agg.column))
+          val aggregations = msg.aggregations
+            .filter(agg => table.getTableDef.columnExists(agg.column))
             .map(agg => Aggregation(table.getTableDef.columnForName(agg.column), agg.aggType.toShort)).toList
 
           val groupBy = new GroupBy(groupByColumns, aggregations)
@@ -211,11 +211,11 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
     val table = tableContainer.getTable(msg.table.table)
 
-    if(table == null)
+    if (table == null)
       errorMsg(s"no table found for ${msg.table}")(ctx)
-    else{
+    else {
 
-      val columns = if(msg.columns.size == 1 && msg.columns(0) == "*"){
+      val columns = if (msg.columns.size == 1 && msg.columns(0) == "*") {
         logger.info("[CreateViewPortRequest] Wildcard specified for columns, going to return all")
         table.getTableDef.columns.toList
       }
@@ -225,16 +225,16 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
       val sort = msg.sort
       val filter = msg.filterSpec
 
-      val viewPort = if(msg.groupBy.isEmpty)
+      val viewPort = if (msg.groupBy.isEmpty)
         viewPortContainer.create(ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, NoGroupBy)
       else {
 
         val groupByColumns = msg.groupBy.filter(table.getTableDef.columnForName(_) != null).map(table.getTableDef.columnForName(_)).toList
 
-        val aggregations   = List()//groupByColumns.map( col => {
-//          if( col.dataType == DataType.DoubleDataType || col.dataType == DataType.LongDataType || col.dataType == DataType.IntegerDataType) Aggregation(col, AggregationType.Sum)
-//          else viewport.Aggregation(col, AggregationType.Count)
-//        })
+        val aggregations = List() //groupByColumns.map( col => {
+        //          if( col.dataType == DataType.DoubleDataType || col.dataType == DataType.LongDataType || col.dataType == DataType.IntegerDataType) Aggregation(col, AggregationType.Sum)
+        //          else viewport.Aggregation(col, AggregationType.Count)
+        //        })
 
         val groupBy = new GroupBy(groupByColumns, aggregations)
 
@@ -247,7 +247,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   protected def errorMsg(s: String)(ctx: RequestContext): Option[ViewServerMessage] = {
-     Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, ErrorResponse(s)))
+    Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, ErrorResponse(s)))
   }
 
 
@@ -263,9 +263,9 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelectedIndices(msg.selection))) match{
+    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelectedIndices(msg.selection))) match {
       case Success(vp) =>
-        vsMsg(SetSelectionSuccess(vp.id, vp.getSelection.map( tup => tup._2).toArray))(ctx)
+        vsMsg(SetSelectionSuccess(vp.id, vp.getSelection.map(tup => tup._2).toArray))(ctx)
       case Failure(e) =>
         logger.error("Could not change VP selection:", e.getMessage)
         errorMsg("Could not change VP selection:" + e.getMessage)(ctx)
@@ -275,7 +275,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   override def process(msg: GetViewPortVisualLinksRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.getViewPortVisualLinks(ctx.session, msg.vpId)) match {
       case Success(linksAndViewPorts) =>
-        vsMsg(GetViewPortVisualLinksResponse(msg.vpId, linksAndViewPorts.map({ case(link, viewPort) => AvailableViewPortVisualLink(viewPort.id, link)})))(ctx)
+        vsMsg(GetViewPortVisualLinksResponse(msg.vpId, linksAndViewPorts.map({ case (link, viewPort) => AvailableViewPortVisualLink(viewPort.id, link) })))(ctx)
       case Failure(e) =>
         logger.error("Could not load links for viewport:", e.getMessage)
         errorMsg("Could not load links for viewport" + e.getMessage)(ctx)

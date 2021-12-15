@@ -11,9 +11,9 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.collection.window.ArrayBackedMovingWindow
 import io.venuu.toolbox.logging.LogAtFrequency
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.messages._
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.SwingThread
-import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.net.SortDef
 
 import javax.swing.table.{AbstractTableModel, TableCellEditor, TableCellRenderer}

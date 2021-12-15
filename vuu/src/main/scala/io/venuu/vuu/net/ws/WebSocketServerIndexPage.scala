@@ -10,7 +10,7 @@ object WebSocketServerIndexPage {
 
   private final val NEWLINE = "\r\n";
 
-  def getContent( webSocketLocation: String): ByteBuf =  {
+  def getContent(webSocketLocation: String): ByteBuf = {
     return Unpooled.copiedBuffer(
       "<html><head><title>Web Socket Test</title></head>" + NEWLINE +
         "<body>" + NEWLINE +

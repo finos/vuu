@@ -36,7 +36,7 @@ class RequestProcessor(authenticator: Authenticator,
       case body: AuthenticateRequest =>
         authenticator.authenticate(body.username, body.password)
       case body: LoginRequest =>
-        tokenValidator.login(body) match{
+        tokenValidator.login(body) match {
           case Left(accept) =>
             createSession(msg.requestId, body, clientSessionContainer, channel)
           case Right(errorMsg) =>
@@ -75,7 +75,7 @@ class RequestProcessor(authenticator: Authenticator,
 
     val sessionId = msgToSessionId(msg)
 
-    clientSessionContainer.getHandler(sessionId) match{
+    clientSessionContainer.getHandler(sessionId) match {
       case Some(handler) =>
         handler.handle(msg)
       case None =>
@@ -88,7 +88,7 @@ class RequestProcessor(authenticator: Authenticator,
     ClientSessionId(msg.sessionId, msg.user)
   }
 
-  protected def handleMessageWithNoSession(msg:ViewServerMessage, channel: Channel): Unit = {
+  protected def handleMessageWithNoSession(msg: ViewServerMessage, channel: Channel): Unit = {
     channel.writeAndFlush(new TextWebSocketFrame("error, you have no session"))
     channel.close()
   }

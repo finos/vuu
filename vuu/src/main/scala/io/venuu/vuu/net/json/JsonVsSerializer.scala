@@ -5,12 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import io.venuu.vuu.net.{JsonViewServerMessage, MessageBody, ViewServerMessage}
 
-trait Serializer[R,SERTYPE]{
+trait Serializer[R, SERTYPE] {
   def serialize(message: ViewServerMessage): R
+
   def deserialize(message: R): ViewServerMessage
 }
 
-object JsonVsSerializer extends Serializer[String, MessageBody]{
+object JsonVsSerializer extends Serializer[String, MessageBody] {
 
   def getMapper = {
     val mapper = new ObjectMapper()
@@ -23,7 +24,7 @@ object JsonVsSerializer extends Serializer[String, MessageBody]{
 
   def deserialize(s: String): JsonViewServerMessage = {
     val mapper = getMapper
-    mapper.readValue(s, classOf[JsonViewServerMessage] )
+    mapper.readValue(s, classOf[JsonViewServerMessage])
   }
 
 

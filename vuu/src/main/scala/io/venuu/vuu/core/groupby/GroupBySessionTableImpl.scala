@@ -16,27 +16,28 @@ import scala.jdk.CollectionConverters._
 
 trait SessionTable extends DataTable with SessionListener {
   def sessionId: ClientSessionId
+
   def delete(): Unit
 }
 
-class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped: KeyObserver[T]) extends WrappedKeyObserver[T](wrapped){
+class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped: KeyObserver[T]) extends WrappedKeyObserver[T](wrapped) {
   override def onUpdate(update: T): Unit = {
     logger.debug(s"WrappedUpdateHandlingKeyObserver mapping data to data $update")
     val mappedUpdate = mapFunc(update)
-    if(mappedUpdate != null) wrapped.onUpdate(mappedUpdate)
+    if (mappedUpdate != null) wrapped.onUpdate(mappedUpdate)
     //super.onUpdate(mappedUpdate)
   }
 }
 
-object GroupBySessionTable{
+object GroupBySessionTable {
   def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider, clock: Clock): GroupBySessionTableImpl = {
-     new GroupBySessionTableImpl(source, session, joinProvider)(metrics, clock)
+    new GroupBySessionTableImpl(source, session, joinProvider)(metrics, clock)
   }
 }
 
 /**
-  * Created by chris on 21/11/2015.
-  */
+ * Created by chris on 21/11/2015.
+ */
 class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionId, joinProvider: JoinTableProvider)
                              (implicit metrics: MetricsProvider, clock: Clock)
   extends SimpleDataTable(new GroupByTableDef("", source.asTable.getTableDef), joinProvider)
@@ -105,10 +106,10 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
   override def sessionId: ClientSessionId = session
 
   override def delete(): Unit = {
-      this.removeAllObservers()
-      MapHasAsScala(this.wrappedObservers).asScala.foreach({ case(key, v) =>
-        this.sourceTable.removeKeyObserver(key, v)
-      })
+    this.removeAllObservers()
+    MapHasAsScala(this.wrappedObservers).asScala.foreach({ case (key, v) =>
+      this.sourceTable.removeKeyObserver(key, v)
+    })
   }
 
   override def pullRow(key: String): RowData = {
@@ -118,7 +119,7 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
   override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
     val node = tree.getNode(key)
 
-    if(node == null){
+    if (node == null) {
       Array.fill[Any](columns.length)("")
     }
     else if (node.isLeaf)
@@ -130,14 +131,14 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
   override def readRow(key: String, columns: List[String], processor: RowProcessor): Unit = ???
 
   /**
-    * flow is something like:
-    * - Check if key is in tree ($)
-    * - if so read for any aggregates at node
-    * - return row with key in key position, plus depth etc, but with no values except aggregates in.
-    */
+   * flow is something like:
+   * - Check if key is in tree ($)
+   * - if so read for any aggregates at node
+   * - return row with key in key position, plus depth etc, but with no values except aggregates in.
+   */
   override def pullRow(key: String, columns: List[Column]): RowData = {
     val node = tree.getNode(key)
-    if(node == null)
+    if (node == null)
       EmptyRowData
     else if (node.isLeaf)
       RowWithData(key, node.toMap(tree) ++ getSourceRowData(node.originalKey, columns))
@@ -168,14 +169,14 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
     columns.map(c => {
       val aggregation = node.getAggregationFor(c)
 
-      val r = if( aggregation == null )
+      val r = if (aggregation == null)
         node.keysByColumn.getOrElse(c.name, "")
       else
         aggregation
 
       c.name -> r
 
-    } ).toMap
+    }).toMap
   }
 
 
@@ -185,12 +186,12 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
       val aggregation = node.getAggregationFor(c)
 
-      if( aggregation == null )
+      if (aggregation == null)
         node.keysByColumn.getOrElse(c.name, "")
       else
         aggregation
 
-    } ).toArray[Any]
+    }).toArray[Any]
   }
 
   override def name: String = s"session:$session/groupBy-" + source.name + "_" + createInstant.toString
@@ -226,10 +227,10 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
     val node = this.getTree.getNodeByOriginalKey(rowUpdate.key)
 
-    val mapped = if(node != null)
-                  rowUpdate.copy(key = node.key, source = this)
-                else
-                  null
+    val mapped = if (node != null)
+      rowUpdate.copy(key = node.key, source = this)
+    else
+      null
 
     logger.debug(s"Found node $node for originalKey ${rowUpdate.key} mapped to ${node.key}")
 
@@ -263,7 +264,7 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
   //in a join table, we must propogate the removal of registration to all child tables also
   override def removeKeyObserver(key: String, observer: KeyObserver[RowKeyUpdate]): Boolean = {
-        //if this is a wrapped observer, observing the underlying table, then...
+    //if this is a wrapped observer, observing the underlying table, then...
     wrappedObservers.get(key) match {
       //remove it
       case wo: WrappedKeyObserver[RowKeyUpdate] =>
@@ -273,10 +274,10 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
           if (node.isLeaf) {
             val originalKey = node.originalKey
             sourceTable.removeKeyObserver(originalKey, wo)
-          }else{
+          } else {
             false
           }
-        }else{
+        } else {
           false
         }
       //otherwise it must be a tree key, i.e. not a real row in underlying table

@@ -1,9 +1,9 @@
 /**
  * Copyright Whitebox Software Ltd. 2014
  * All Rights Reserved.
-
+ *
  * Created by chris on 25/08/15.
-
+ *
  */
 package io.venuu.vuu.provider
 
@@ -11,12 +11,16 @@ import io.venuu.toolbox.lifecycle.LifecycleEnabled
 import io.venuu.toolbox.thread.RunInThread
 import io.venuu.vuu.core.table.{DataTable, JoinTableUpdate}
 
-trait JoinTableProvider extends RunInThread with LifecycleEnabled{
+trait JoinTableProvider extends RunInThread with LifecycleEnabled {
   def hasJoins(tableName: String): Boolean
+
   def sendEvent(tableName: String, ev: java.util.HashMap[String, Any]): Unit
+
   def addJoinTable(join: DataTable): Unit
+
   def start(): Unit
-  def drainQueue_ForTesting():(Int, java.util.ArrayList[JoinTableUpdate])
+
+  def drainQueue_ForTesting(): (Int, java.util.ArrayList[JoinTableUpdate])
 }
 
 //class EsperJoinTableProviderImpl(implicit timeProvider: Clock, lifecyle: LifecycleContainer, metrics: MetricsProvider) extends UpdateListener with StrictLogging with JoinTableProvider{

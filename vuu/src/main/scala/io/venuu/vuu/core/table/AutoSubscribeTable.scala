@@ -7,12 +7,12 @@ import io.venuu.vuu.provider.JoinTableProvider
 import io.vertx.core.impl.ConcurrentHashSet
 
 /**
-  * Created by chris on 22/12/2015.
-  */
-class AutoSubscribeTable(tableDef: TableDef, joinProvider: JoinTableProvider)(implicit override val metrics: MetricsProvider) extends SimpleDataTable(tableDef, joinProvider) with StrictLogging{
+ * Created by chris on 22/12/2015.
+ */
+class AutoSubscribeTable(tableDef: TableDef, joinProvider: JoinTableProvider)(implicit override val metrics: MetricsProvider) extends SimpleDataTable(tableDef, joinProvider) with StrictLogging {
 
-  private val onTrySubscribe =  metrics.counter(plusName("trySubscribe.count"))
-  private val totalSubscribe =  metrics.counter(plusName("total.count"))
+  private val onTrySubscribe = metrics.counter(plusName("trySubscribe.count"))
+  private val totalSubscribe = metrics.counter(plusName("total.count"))
 
   private val subscriptionKeys = new ConcurrentHashSet[String]()
 
@@ -20,7 +20,7 @@ class AutoSubscribeTable(tableDef: TableDef, joinProvider: JoinTableProvider)(im
 
     totalSubscribe.inc()
 
-    if(!subscriptionKeys.contains(key)){
+    if (!subscriptionKeys.contains(key)) {
       onTrySubscribe.inc()
 
       subscriptionKeys.add(key)

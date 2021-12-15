@@ -18,7 +18,7 @@ import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import java.io.{BufferedReader, InputStreamReader}
 import java.net.URI
 
-class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled{
+class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled {
 
   lifecycle(this)
 
@@ -39,18 +39,18 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
   def awaitMessage() = handler.awaitMessage()
 
   override def doStart(): Unit = {
-      handler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders, WebSocketConstants.MAX_FRAME_SIZE))
-      val b: Bootstrap = new Bootstrap
-      b.group(group).channel(classOf[NioSocketChannel]).handler(new ChannelInitializer[SocketChannel] {
+    handler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders, WebSocketConstants.MAX_FRAME_SIZE))
+    val b: Bootstrap = new Bootstrap
+    b.group(group).channel(classOf[NioSocketChannel]).handler(new ChannelInitializer[SocketChannel] {
 
-        protected def initChannel(ch: SocketChannel) {
-          val p: ChannelPipeline = ch.pipeline
-          //        if (sslCtx != null) {
-          //          p.addLast(sslCtx.newHandler(ch.alloc, host, port))
-          //        }
-          p.addLast(new HttpClientCodec, new HttpObjectAggregator(8192), WebSocketClientCompressionHandler.INSTANCE, handler)
-        }
-      })
+      protected def initChannel(ch: SocketChannel) {
+        val p: ChannelPipeline = ch.pipeline
+        //        if (sslCtx != null) {
+        //          p.addLast(sslCtx.newHandler(ch.alloc, host, port))
+        //        }
+        p.addLast(new HttpClientCodec, new HttpObjectAggregator(8192), WebSocketClientCompressionHandler.INSTANCE, handler)
+      }
+    })
 
     //Thread.sleep(2000)
 
@@ -108,28 +108,27 @@ object WebSocketClient {
       return
     }
     val ssl: Boolean = "wss".equalsIgnoreCase(scheme)
-//    val sslCtx: SslContext = null
-//    if (ssl) {
-//      sslCtx = SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE).build
-//    }
-//    else {
-//      sslCtx = null
-//    }
+    //    val sslCtx: SslContext = null
+    //    if (ssl) {
+    //      sslCtx = SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE).build
+    //    }
+    //    else {
+    //      sslCtx = null
+    //    }
     val group: EventLoopGroup = new NioEventLoopGroup
     try {
       val handler: WebSocketClientHandler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders))
       val b: Bootstrap = new Bootstrap
-      b.group(group).channel(classOf[NioSocketChannel]).handler(new ChannelInitializer[SocketChannel]{
+      b.group(group).channel(classOf[NioSocketChannel]).handler(new ChannelInitializer[SocketChannel] {
 
-      protected def initChannel(ch: SocketChannel)
-      {
-        val p: ChannelPipeline = ch.pipeline
-//        if (sslCtx != null) {
-//          p.addLast(sslCtx.newHandler(ch.alloc, host, port))
-//        }
-        p.addLast(new HttpClientCodec, new HttpObjectAggregator(8192), WebSocketClientCompressionHandler.INSTANCE, handler)
-      }
-    })
+        protected def initChannel(ch: SocketChannel) {
+          val p: ChannelPipeline = ch.pipeline
+          //        if (sslCtx != null) {
+          //          p.addLast(sslCtx.newHandler(ch.alloc, host, port))
+          //        }
+          p.addLast(new HttpClientCodec, new HttpObjectAggregator(8192), WebSocketClientCompressionHandler.INSTANCE, handler)
+        }
+      })
       val ch: Channel = b.connect(uri.getHost, port).sync.channel
 
       val console: BufferedReader = new BufferedReader(new InputStreamReader(System.in))

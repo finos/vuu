@@ -5,7 +5,7 @@ import io.venuu.toolbox.jmx.MetricsProvider
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.core.index._
-import io.venuu.vuu.provider.{JoinTableProvider, NullProvider, Provider}
+import io.venuu.vuu.provider.{JoinTableProvider, Provider}
 import io.venuu.vuu.viewport.{RowProcessor, RowSource}
 
 import java.util
@@ -61,7 +61,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
     val columns = getTableDef.columns
     val keys = primaryKeys
 
-    val selectedKeys = keys.toArray.slice(start, end)//.slice(start, end)//drop(start).take(end - start)
+    val selectedKeys = keys.toArray.slice(start, end) //.slice(start, end)//drop(start).take(end - start)
 
     val rows = selectedKeys.map(key => pullRowAsArray(key, columns.toList))
 
@@ -83,7 +83,7 @@ trait RowData {
   def set(field: String, value: Any): RowData
 }
 
-case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: Long){
+case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: Long) {
   override def toString: String = "JoinTableUpdate(" + joinTable.toString + ",updates=" + rowUpdate.data.size + ")"
 }
 
@@ -230,7 +230,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
       case null =>
         EmptyRowData
       case row =>
-          //row
+        //row
         //CJS Check perf of this
         val rowData = columns.map(c => c.name -> row.get(c)).toMap
         RowWithData(key, rowData)

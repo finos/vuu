@@ -1,10 +1,10 @@
 /**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-  *
-  * Created by chris on 27/03/15.
-  *
-  */
+ * Copyright Whitebox Software Ltd. 2014
+ * All Rights Reserved.
+ *
+ * Created by chris on 27/03/15.
+ *
+ */
 package io.venuu.vuu.viewport
 
 import com.codahale.metrics.Histogram
@@ -33,11 +33,17 @@ import scala.util.{Failure, Success, Try}
 
 trait ViewPortContainerMBean {
   def listViewPorts: String
+
   def listViewPortsForSession(clientSession: ClientSessionId): List[ViewPort]
+
   def toAscii(vpId: String): String
+
   def subscribedKeys(vpId: String): String
+
   def setRange(vpId: String, start: Int, end: Int): String
+
   def openGroupByKey(vpId: String, treeKey: String): String
+
   def closeGroupByKey(vpId: String, treeKey: String): String
 }
 
@@ -123,7 +129,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPortDefinitions.get(table)
   }
 
-  def getViewPortById(vpId: String): ViewPort ={
+  def getViewPortById(vpId: String): ViewPort = {
     this.viewPorts.get(vpId)
   }
 
@@ -201,7 +207,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   override def listViewPortsForSession(clientSession: ClientSessionId): List[ViewPort] = {
     IteratorHasAsScala(viewPorts.values().iterator())
       .asScala
-      .filter( vp => vp.session.equals(clientSession)).toList
+      .filter(vp => vp.session.equals(clientSession)).toList
   }
 
   override def listViewPorts: String = {
@@ -209,8 +215,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val headers = Array("id", "table", "rangeFrom", "rangeTo")
 
     val data = SetHasAsScala(viewPorts.entrySet())
-                .asScala
-                .map(vp => Array[Any](vp.getKey, vp.getValue.table.name, vp.getValue.getRange.from, vp.getValue.getRange.to)).toArray[Array[Any]]
+      .asScala
+      .map(vp => Array[Any](vp.getKey, vp.getValue.table.name, vp.getValue.getRange.from, vp.getValue.getRange.to)).toArray[Array[Any]]
 
     AsciiUtil.asAsciiTable(headers, data)
   }
@@ -285,7 +291,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val filtAndSort = viewPort.getVisualLink match {
       case Some(visualLink) =>
-        UserDefinedFilterAndSort(TwoStepCompoundFilter( VisualLinkedFilter(visualLink), aFilter), aSort)
+        UserDefinedFilterAndSort(TwoStepCompoundFilter(VisualLinkedFilter(visualLink), aFilter), aSort)
       case None =>
         UserDefinedFilterAndSort(aFilter, aSort)
     }
@@ -306,7 +312,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getTreeNodeState
       )
 
-    //we are groupBy but we want to revert to no groupBy
+      //we are groupBy but we want to revert to no groupBy
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
 
       val groupByTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTableImpl]
@@ -325,7 +331,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getTreeNodeState
       )
 
-    } else{
+    } else {
 
       viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, viewPortDef = viewPort.getStructure.viewPortDef, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
     }
@@ -346,15 +352,15 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val filtAndSort = core.sort.UserDefinedFilterAndSort(aFilter, aSort)
 
-    val aTable = if(groupBy == NoGroupBy){
-        table
-    }else{
+    val aTable = if (groupBy == NoGroupBy) {
+      table
+    } else {
       tableContainer.createGroupBySessionTable(table, clientSession)
     }
 
     val viewPortDefFunc = getViewPortDefinition(table.name);
 
-    val viewPortDef = if( viewPortDefFunc == null ) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer)
+    val viewPortDef = if (viewPortDefFunc == null) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer)
 
     val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, groupBy, ClosedTreeNodeState)
 
@@ -370,7 +376,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val vp = viewPorts.get(vpId)
     val old = vp.getRange
 
-    val (millis, _ ) = timeIt{ vp.setRange(range) }
+    val (millis, _) = timeIt {
+      vp.setRange(range)
+    }
 
     logger.info("VP Change Range [{}] {}->{}, was {}->{}, took: {} millis", vpId, range.from, range.to, old.from, old.to, millis)
 
@@ -425,11 +433,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   /**
-    * Called by dedicated viewport runner thread to populate viewport keys.
-    */
+   * Called by dedicated viewport runner thread to populate viewport keys.
+   */
   def runOnce(): Unit = {
 
-    val (millis, _ ) = timeIt {
+    val (millis, _) = timeIt {
       CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => !vp.hasGroupBy).foreach(vp => {
         refreshOneViewPort(vp)
       })
@@ -439,13 +447,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   /**
-    * Called by dedicated groupby runner thread to build the trees for each groupby and
-    * put the relevant tree keys back into the viewport
-    */
+   * Called by dedicated groupby runner thread to build the trees for each groupby and
+   * put the relevant tree keys back into the viewport
+   */
   def runGroupByOnce(): Unit = {
 
-    val (millis, _ ) = timeIt{
-      CollectionHasAsScala(viewPorts.values()).asScala.filter( vp => vp.hasGroupBy && vp.isEnabled).foreach(vp => refreshOneGroupByViewPort(vp))
+    val (millis, _) = timeIt {
+      CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => vp.hasGroupBy && vp.isEnabled).foreach(vp => refreshOneGroupByViewPort(vp))
     }
 
     groupByhistogram.update(millis)
@@ -479,7 +487,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
         logger.debug(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
 
-        //groupByHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+      //groupByHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
 
       case tbl =>
         logger.error(s"GROUP-BY: table ${tbl.name} has a groupBy but doesn't have a groupBySessionTable associated. Going to ignore build request.")
@@ -490,18 +498,18 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   protected def refreshOneViewPort(viewPort: ViewPort): Unit = {
 
-    if(viewPort.isEnabled){
+    if (viewPort.isEnabled) {
       val keys = viewPort.table.primaryKeys
 
       val filterAndSort = viewPort.filterAndSort
 
-      val (millis, _ ) = TimeIt.timeIt{
+      val (millis, _) = TimeIt.timeIt {
         val sorted = filterAndSort.filterAndSort(viewPort.table, keys)
         viewPort.setKeys(sorted)
       }
 
       viewPortHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
-    }else{
+    } else {
       viewPort.setKeys(ImmutableArray.empty[String])
     }
   }
@@ -509,10 +517,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def removeForSession(clientSession: ClientSessionId): Unit = {
 
 
-
     val viewports = SetHasAsScala(viewPorts.entrySet())
-                      .asScala
-                      .filter(entry => entry.getValue.session == clientSession).toArray
+      .asScala
+      .filter(entry => entry.getValue.session == clientSession).toArray
 
     logger.info(s"Removing ${viewports.length} on disconnect of $clientSession")
 
@@ -525,7 +532,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     Option(viewPorts.get(vpId)) match {
       case Some(vp) =>
         val viewPorts = listViewPortsForSession(clientSession)
-        val vpLinks = for(link <- vp.table.asTable.getTableDef.links.links ; vp <- viewPorts ;  if link.toTable == vp.table.linkableName) yield (link, vp)
+        val vpLinks = for (link <- vp.table.asTable.getTableDef.links.links; vp <- viewPorts; if link.toTable == vp.table.linkableName) yield (link, vp)
         vpLinks
       case None =>
         List()

@@ -99,13 +99,13 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecyle: LifecycleCont
         case map: java.util.HashMap[String, Any] => rightKeyValue
       }
 
-      val isDeleted = if(sinkData != null){
+      val isDeleted = if (sinkData != null) {
         sinkData.get("_isDeleted") match {
           case null => null
           case false => false
           case true => true
         }
-      }else{
+      } else {
         null
       }
 
@@ -238,9 +238,9 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecyle: LifecycleCont
   override def start(): Unit = {}
 
   private def isPrimaryKeyDeleted(jtu: JoinTableUpdate): Boolean = {
-    val tableDef      = jtu.joinTable.asInstanceOf[JoinTable].tableDef
-    val columnName    = tableDef.baseTable.deleteColumnName()
-    val deleteColumn  = jtu.rowUpdate.data.get(columnName)
+    val tableDef = jtu.joinTable.asInstanceOf[JoinTable].tableDef
+    val columnName = tableDef.baseTable.deleteColumnName()
+    val deleteColumn = jtu.rowUpdate.data.get(columnName)
 
     deleteColumn match {
       case Some(bool: Boolean) => bool
@@ -258,7 +258,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecyle: LifecycleCont
         (0 until count).foreach(i => {
           val jtu = updates.get(i)
 
-          if(isPrimaryKeyDeleted(jtu)) jtu.joinTable.processDelete(jtu.rowUpdate.key)
+          if (isPrimaryKeyDeleted(jtu)) jtu.joinTable.processDelete(jtu.rowUpdate.key)
           else
             jtu.joinTable.processUpdate(jtu.rowUpdate.key, jtu.rowUpdate, jtu.time)
         })

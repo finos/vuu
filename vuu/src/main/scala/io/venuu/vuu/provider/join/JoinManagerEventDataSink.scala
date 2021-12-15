@@ -11,21 +11,21 @@ import java.util.concurrent.ConcurrentHashMap
 case class JoinDefToJoinTable(joinDef: JoinTableDef, table: DataTable)
 
 /**
-  * THe purpose of this object is to allow us to go from a right key, say prices, ric = VOD.L and look
-  * For the corresponding left keys, say orders, orderId = 1,2,3
-  */
-class RightToLeftKeys{
+ * THe purpose of this object is to allow us to go from a right key, say prices, ric = VOD.L and look
+ * For the corresponding left keys, say orders, orderId = 1,2,3
+ */
+class RightToLeftKeys {
 
   private val keysToRightKeys = new ConcurrentHashMap[String, ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArray[String]]]]()
 
-  def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit ={
+  def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {
 
     val rightTableMap = keysToRightKeys.computeIfAbsent(rightTable, rightTable => new ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArray[String]]]())
 
-    if(rightKey != null){
-      val rightKeyMap  = rightTableMap.computeIfAbsent( rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArray[String]]())
+    if (rightKey != null) {
+      val rightKeyMap = rightTableMap.computeIfAbsent(rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArray[String]]())
 
-      val keys = rightKeyMap.computeIfAbsent( leftTable, leftTable => ImmutableUniqueArraySet.from(Array(leftKey)))
+      val keys = rightKeyMap.computeIfAbsent(leftTable, leftTable => ImmutableUniqueArraySet.from(Array(leftKey)))
 
       rightKeyMap.put(leftTable, keys.+(leftKey))
     }
@@ -35,25 +35,26 @@ class RightToLeftKeys{
 
     val rightTableMap = keysToRightKeys.computeIfAbsent(rightTable, rightTable => new ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArray[String]]]())
 
-    val rightKeyMap  = rightTableMap.computeIfAbsent( rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArray[String]]())
+    val rightKeyMap = rightTableMap.computeIfAbsent(rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArray[String]]())
 
-    val keys = rightKeyMap.computeIfAbsent( leftTable, leftTable => ImmutableUniqueArraySet.empty[String]())
+    val keys = rightKeyMap.computeIfAbsent(leftTable, leftTable => ImmutableUniqueArraySet.empty[String]())
 
     keys
   }
 }
 
-class TableDataSink(val name: String){
+class TableDataSink(val name: String) {
 
   private val eventMap = new ConcurrentHashMap[String, util.HashMap[String, Any]]()
 
   def getEventState(key: String): util.HashMap[String, Any] = {
-    if(key != null){
+    if (key != null) {
       eventMap.get(key)
-    }else{
+    } else {
       null
     }
   }
+
   def putEventState(key: String, ev: util.HashMap[String, Any]) = {
     eventMap.put(key, ev)
   }
@@ -64,10 +65,10 @@ class JoinManagerEventDataSink {
   private val tableMap = new ConcurrentHashMap[String, TableDataSink]()
 
   def addSinkForTable(tableName: String) = {
-    tableMap.computeIfAbsent(tableName,  tableName => new TableDataSink(tableName))
+    tableMap.computeIfAbsent(tableName, tableName => new TableDataSink(tableName))
   }
 
   def getEventDataSink(tableName: String): TableDataSink = {
-    tableMap.computeIfAbsent(tableName,  tableName => new TableDataSink(tableName))
+    tableMap.computeIfAbsent(tableName, tableName => new TableDataSink(tableName))
   }
 }

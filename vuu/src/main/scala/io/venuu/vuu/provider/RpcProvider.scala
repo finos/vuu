@@ -1,10 +1,10 @@
 /**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 19/01/2016.
-
-  */
+ * Copyright Whitebox Software Ltd. 2014
+ * All Rights Reserved.
+ *
+ * Created by chris on 19/01/2016.
+ *
+ */
 package io.venuu.vuu.provider
 
 import io.venuu.toolbox.time.Clock
@@ -25,13 +25,18 @@ class RpcProvider(table: DataTable)(implicit timeProvider: Clock) extends Provid
   }
 
   protected def validateInput(key: String, row: Map[String, Any]) = {
-    row.keys.foreach( key => if(!table.getTableDef.columnExists(key)) throw new Exception(s"Column ${key} doesn't exist in table"))
+    row.keys.foreach(key => if (!table.getTableDef.columnExists(key)) throw new Exception(s"Column ${key} doesn't exist in table"))
   }
 
   override def subscribe(key: String): Unit = {}
+
   override def doStop(): Unit = {}
+
   override def doStart(): Unit = {}
+
   override def doInitialize(): Unit = {}
+
   override def doDestroy(): Unit = {}
+
   override val lifecycleId: String = "rpc.provider." + table.getTableDef.name
 }

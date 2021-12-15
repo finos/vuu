@@ -9,28 +9,30 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.{LinkedList => JList}
 import scala.jdk.CollectionConverters._
 
-object Aggregation{
+object Aggregation {
   def createAggregations(groupBy: GroupBy): List[NodeAggregation] = {
-    groupBy.aggregations.map( agg => agg.aggType match {
+    groupBy.aggregations.map(agg => agg.aggType match {
       case AggregationType.Sum => new SumAggregation(agg.column)
       case AggregationType.Count => new CountAggregation(agg.column)
-    } )
+    })
   }
 }
 
-class SumAggregation(val column: Column) extends NodeAggregation{
+class SumAggregation(val column: Column) extends NodeAggregation {
   private var value: Double = 0d
+
   override def toValue: String = "\u03A3 " + value.toString
+
   override def processLeaf(row: RowData): Unit = {
     val colData = column.getData(row)
 
-    if(colData != null){
+    if (colData != null) {
       value += colData.toString.toDouble
     }
   }
 }
 
-class CountAggregation(val column: Column) extends NodeAggregation{
+class CountAggregation(val column: Column) extends NodeAggregation {
   private val hashSet = new util.HashSet[String]()
 
   //override def column: Column = ???
@@ -39,46 +41,59 @@ class CountAggregation(val column: Column) extends NodeAggregation{
   override def processLeaf(row: RowData): Unit = {
     val colData = column.getData(row)
 
-    if(colData != null){
-      if(!hashSet.contains(colData.toString))hashSet.add(colData.toString)
+    if (colData != null) {
+      if (!hashSet.contains(colData.toString)) hashSet.add(colData.toString)
     }
   }
 }
 
-trait NodeAggregation{
+trait NodeAggregation {
   def column: Column
+
   def toValue: String
+
   def processLeaf(row: RowData): Unit
-//{
-//    column.getData(row)
-//  }
+  //{
+  //    column.getData(row)
+  //  }
 }
 
-object TreeNode{
+object TreeNode {
   final val ROOT_KEY = "$root"
 }
 
-trait TreeNode{
+trait TreeNode {
   def isLeaf: Boolean
+
   def key: String
+
   def originalKey: String
+
   def getChildren: List[TreeNode]
+
   def parent: TreeNode
+
   def depth: Int
+
   def keysByColumn: Map[String, String]
+
   def isRoot: Boolean
+
   def toMap(tree: Tree): Map[String, Any]
+
   def toArray(tree: Tree): Array[Any]
+
   def processRowForAggregation(row: RowData): Unit
+
   def getAggregationFor(column: Column): String
 }
 
 
-case class TreeNodeImpl(isLeaf: Boolean, key: String, originalKey: String, children: JList[TreeNode], parent: TreeNode, depth: Int, keysByColumn: Map[String, String], aggregations: List[NodeAggregation]) extends TreeNode{
+case class TreeNodeImpl(isLeaf: Boolean, key: String, originalKey: String, children: JList[TreeNode], parent: TreeNode, depth: Int, keysByColumn: Map[String, String], aggregations: List[NodeAggregation]) extends TreeNode {
 
   import TreeNode._
 
-  lazy val aggregationsByColumn = aggregations.map( a => a.column -> a).toMap
+  lazy val aggregationsByColumn = aggregations.map(a => a.column -> a).toMap
 
   override def getAggregationFor(column: Column): String = {
     aggregationsByColumn.getOrElse(column, null) match {
@@ -98,7 +113,7 @@ case class TreeNodeImpl(isLeaf: Boolean, key: String, originalKey: String, child
 
   override def hashCode(): Int = key.hashCode
 
-  override def equals(obj: scala.Any): Boolean = if(canEqual(obj) && obj.asInstanceOf[TreeNode].key == this.key) true else false
+  override def equals(obj: scala.Any): Boolean = if (canEqual(obj) && obj.asInstanceOf[TreeNode].key == this.key) true else false
 
   def toMap(tree: Tree): Map[String, Any] = {
     Map("_depth" -> depth, "_isOpen" -> tree.isOpen(this), "_treeKey" -> key, "_isLeaf" -> isLeaf, "_caption" -> originalKey, "_childCount" -> children.size())
@@ -110,29 +125,37 @@ case class TreeNodeImpl(isLeaf: Boolean, key: String, originalKey: String, child
 
 
   def processRowForAggregation(row: RowData): Unit = {
-      aggregations.foreach(_.processLeaf(row))
-      if(parent != null) parent.processRowForAggregation(row)
+    aggregations.foreach(_.processLeaf(row))
+    if (parent != null) parent.processRowForAggregation(row)
   }
 
-//  def open(): TreeNode = {
-//    this.copy(isOpen = true)
-//  }
-//
-//  def close(): TreeNode = {
-//    this.copy(isOpen = false)
-//  }
+  //  def open(): TreeNode = {
+  //    this.copy(isOpen = true)
+  //  }
+  //
+  //  def close(): TreeNode = {
+  //    this.copy(isOpen = false)
+  //  }
   override def toString: String = s"TreeNode($key)"
 }
 
-object EmptyTree extends Tree{
+object EmptyTree extends Tree {
   override def nodeState: ConcurrentHashMap[String, TreeNodeState] = ???
+
   override def openAll(): Unit = {}
+
   override def closeAll(): Unit = {}
+
   override def root: TreeNode = null
+
   override def getNode(key: String): TreeNode = null
+
   override def getNodeByOriginalKey(key: String): TreeNode = null
+
   override def hasChild(parent: TreeNode, child: TreeNode): Boolean = false
+
   override def toKeys(): ImmutableArray[String] = ImmutableArray.empty[String]
+
   override def isOpen(latestNode: TreeNode): Boolean = false
 }
 
@@ -142,7 +165,9 @@ trait Tree {
   def nodeState: ConcurrentHashMap[String, TreeNodeState]
 
   def openAll(): Unit
+
   def closeAll(): Unit
+
   def open(treeKey: String) = {
     nodeState.put(treeKey, OpenTreeNodeState)
   }
@@ -152,30 +177,35 @@ trait Tree {
   }
 
   def root: TreeNode
+
   def getNode(key: String): TreeNode
+
   def getNodeByOriginalKey(key: String): TreeNode
+
   def hasChild(parent: TreeNode, child: TreeNode): Boolean
+
   def toKeys(): ImmutableArray[String]
+
   def isOpen(latestNode: TreeNode): Boolean
 
   protected def processNode(node: TreeNode): Array[String] = {
 
     val latestNode = getNode(node.key)
 
-    if(latestNode.getChildren.isEmpty){
-      if(node.isRoot)
+    if (latestNode.getChildren.isEmpty) {
+      if (node.isRoot)
         Array() //don't include root node
-      else if(!isOpen(latestNode))
+      else if (!isOpen(latestNode))
         Array(node.key)
       else
         Array(node.key) //++ latestNode.childKeys.toArray
     }
-    else if(!node.isRoot && !isOpen(latestNode))
+    else if (!node.isRoot && !isOpen(latestNode))
       Array(node.key)
-    else if(node.isRoot){
+    else if (node.isRoot) {
       Array() ++ latestNode.getChildren.flatMap(child => processNode(child))
     }
-    else{
+    else {
       Array(node.key) ++ latestNode.getChildren.flatMap(child => processNode(child))
     }
 
@@ -186,11 +216,11 @@ trait Tree {
 case class ImmutableTreeImpl(root: TreeNode, lookup: Map[String, TreeNode], lookupOrigKeyToTreeKey: Map[String, TreeNode], nodeState: ConcurrentHashMap[String, TreeNodeState]) extends StrictLogging with Tree {
 
   def openAll() = {
-    this.lookup.values.foreach(node => if(!node.isRoot) open(node.key) )
+    this.lookup.values.foreach(node => if (!node.isRoot) open(node.key))
   }
 
   def closeAll() = {
-    this.lookup.values.foreach(node => if(!node.isRoot) close(node.key))
+    this.lookup.values.foreach(node => if (!node.isRoot) close(node.key))
   }
 
   def toKeys(): ImmutableArray[String] = {
@@ -208,12 +238,12 @@ case class ImmutableTreeImpl(root: TreeNode, lookup: Map[String, TreeNode], look
 
   def isOpen(latestNode: TreeNode) = {
 
-    if(latestNode.key == TreeNode.ROOT_KEY){
+    if (latestNode.key == TreeNode.ROOT_KEY) {
       true
-    }else{
+    } else {
       val state = this.nodeState.get(latestNode.key)
 
-      if(state == null)
+      if (state == null)
         false
       else
         state.isOpen()
@@ -221,7 +251,7 @@ case class ImmutableTreeImpl(root: TreeNode, lookup: Map[String, TreeNode], look
   }
 }
 
-case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap[String, TreeNodeState], groupBy: GroupBy) extends StrictLogging with Tree{
+case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap[String, TreeNodeState], groupBy: GroupBy) extends StrictLogging with Tree {
 
 
   def immutate = {
@@ -229,11 +259,11 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
   }
 
   def openAll() = {
-    CollectionHasAsScala(this.lookup.values()).asScala.foreach(node => if(!node.isRoot) open(node.key) )
+    CollectionHasAsScala(this.lookup.values()).asScala.foreach(node => if (!node.isRoot) open(node.key))
   }
 
   def closeAll() = {
-    CollectionHasAsScala(this.lookup.values()).asScala.foreach(node => if(!node.isRoot) close(node.key))
+    CollectionHasAsScala(this.lookup.values()).asScala.foreach(node => if (!node.isRoot) close(node.key))
   }
 
   def root = getNode("$root")
@@ -250,12 +280,12 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
 
   def isOpen(latestNode: TreeNode) = {
 
-    if(latestNode.key == TreeNode.ROOT_KEY){
+    if (latestNode.key == TreeNode.ROOT_KEY) {
       true
-    }else{
+    } else {
       val state = this.nodeState.get(latestNode.key)
 
-      if(state == null)
+      if (state == null)
         false
       else
         state.isOpen()
@@ -287,49 +317,49 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
 
 }
 
-trait TreeNodeState{
+trait TreeNodeState {
   def isOpen(): Boolean
 }
 
-object OpenTreeNodeState extends TreeNodeState{
+object OpenTreeNodeState extends TreeNodeState {
   override def isOpen(): Boolean = true
 }
 
-object ClosedTreeNodeState extends TreeNodeState{
+object ClosedTreeNodeState extends TreeNodeState {
   override def isOpen(): Boolean = false
 }
 
-object AllwaysOpenTreeNodeState extends TreeNodeState{
+object AllwaysOpenTreeNodeState extends TreeNodeState {
   override def isOpen(): Boolean = true
 }
 
 /**
-  *immutable type
-  */
-case class TrackedKeyNodeState(val tracked: Map[String, Boolean] = Map()) extends TreeNodeState{
+ * immutable type
+ */
+case class TrackedKeyNodeState(val tracked: Map[String, Boolean] = Map()) extends TreeNodeState {
 
 
   //  def open(treeKey: String): TrackedKeyNodeState = {
-//    TrackedKeyNodeState(tracked + (treeKey -> true))
-//  }
-//
-//  def close(treeKey: String): TrackedKeyNodeState = {
-//    TrackedKeyNodeState(tracked + (treeKey -> false))
-//  }
-//  def isOpen(treeKey: String): Boolean = {
-//    tracked.get(treeKey).getOrElse(false)
-//  }
+  //    TrackedKeyNodeState(tracked + (treeKey -> true))
+  //  }
+  //
+  //  def close(treeKey: String): TrackedKeyNodeState = {
+  //    TrackedKeyNodeState(tracked + (treeKey -> false))
+  //  }
+  //  def isOpen(treeKey: String): Boolean = {
+  //    tracked.get(treeKey).getOrElse(false)
+  //  }
   override def isOpen(): Boolean = ???
 }
 
 
-object GroupBy{
+object GroupBy {
   def apply(table: DataTable, columns: String*): GroupByClause = {
     GroupByClause(table, table.columnsForNames(columns.toList))
   }
 }
 
-object AggregationType{
+object AggregationType {
   val Sum: Short = 1
   val Average: Short = 2
   val Count: Short = 3
@@ -341,8 +371,10 @@ case class GroupBy(columns: List[Column], aggregations: List[Aggregation])
 
 object NoGroupBy extends GroupBy(List(), List())
 
-case class GroupByClause(val table: DataTable, columns: List[Column], aggregations: List[Aggregation] = List()){
-  def withSum(fields: String*): GroupByClause = this.copy(aggregations = aggregations ++ table.columnsForNames(fields.toList).map(Aggregation(_, AggregationType.Sum)) )
-  def withCount(fields: String*): GroupByClause = this.copy(aggregations = aggregations ++ table.columnsForNames(fields.toList).map(Aggregation(_, AggregationType.Count)) )
+case class GroupByClause(val table: DataTable, columns: List[Column], aggregations: List[Aggregation] = List()) {
+  def withSum(fields: String*): GroupByClause = this.copy(aggregations = aggregations ++ table.columnsForNames(fields.toList).map(Aggregation(_, AggregationType.Sum)))
+
+  def withCount(fields: String*): GroupByClause = this.copy(aggregations = aggregations ++ table.columnsForNames(fields.toList).map(Aggregation(_, AggregationType.Count)))
+
   def asClause(): GroupBy = GroupBy(columns, aggregations)
 }

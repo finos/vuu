@@ -12,15 +12,13 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.logging.LogAtFrequency
 import io.venuu.toolbox.thread.LifeCycleRunner
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.ClientHelperFns._
+import io.venuu.vuu.client.messages._
 import io.venuu.vuu.client.swing.EventBus
-import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport.ViewPortRange
 
 import java.util.concurrent.ConcurrentHashMap
-
-
-case class UserPrincipal(user: String, token: String, sessionId: String)
 
 class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: LifecycleContainer, timeProvider: Clock, vsClient: ViewServerClient) extends StrictLogging {
 
@@ -29,8 +27,6 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
   private val vpChangeThread = new LifeCycleRunner("vpChangeThread", () => sendVpUpdates(), minCycleTime = 200 )
 
   private val vpChangeRequests = new ConcurrentHashMap[String, ClientUpdateVPRange]()
-
-  import io.venuu.vuu.client.ClientHelperFns._
 
   eventBus.register( {
       case msg: ClientOpenTreeNodeRequest =>

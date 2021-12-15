@@ -13,17 +13,18 @@ import io.venuu.vuu.net.FilterSpec
 import java.util.concurrent.ConcurrentHashMap
 import java.util.{LinkedList => JList}
 import scala.util.{Failure, Success, Try}
+
 /**
-  * Created by chris on 23/11/2015.
-  */
+ * Created by chris on 23/11/2015.
+ */
 trait GroupByTreeBuilder {
   def build(): Tree
 }
 
-object GroupByTreeBuilder{
-//  def apply(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): GroupByTreeBuilder = {
-//    new GroupByTreeBuilderImpl(table, groupBy, filter, previousTree)
-//  }
+object GroupByTreeBuilder {
+  //  def apply(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): GroupByTreeBuilder = {
+  //    new GroupByTreeBuilderImpl(table, groupBy, filter, previousTree)
+  //  }
   def create(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): GroupByTreeBuilder = {
     new GroupByTreeBuilderImpl(table, groupBy, filter, previousTree)
   }
@@ -31,8 +32,7 @@ object GroupByTreeBuilder{
 }
 
 
-
-class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock) extends GroupByTreeBuilder with StrictLogging{
+class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock) extends GroupByTreeBuilder with StrictLogging {
 
   final val EMPTY_TREE_NODE_STATE = new ConcurrentHashMap[String, TreeNodeState]()
 
@@ -42,8 +42,7 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
   import io.venuu.vuu.core.DataConstants._
 
   private def applyFilter(): ImmutableArray[String] = {
-    if(filter != null && !isEmptyString(filter.filter))
-    {
+    if (filter != null && !isEmptyString(filter.filter)) {
 
       logger.debug("has filter, parsing")
 
@@ -59,7 +58,7 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
 
       theFilter.dofilter(table.sourceTable, table.sourceTable.primaryKeys)
 
-    }else
+    } else
       table.sourceTable.primaryKeys
   }
 
@@ -83,13 +82,13 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
     }
 
     //root is always open
-    val tree = new TreeImpl(new TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy) ), nodeState, groupBy)
+    val tree = new TreeImpl(new TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy)), nodeState, groupBy)
 
     var count = 0
 
     keys.foreach(key => {
 
-      if(logEvery.shouldLog()) logger.debug(s"Done nodes ${count}")
+      if (logEvery.shouldLog()) logger.debug(s"Done nodes ${count}")
 
       val columns = groupBy.columns
 
@@ -109,7 +108,7 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
 
     logger.debug("complete building tree")
 
-    tree//.immutate
+    tree //.immutate
   }
 
   def processBranchColumn(tree: TreeImpl, parent: TreeNodeImpl, data: Any, isLeaf: Boolean, column: Column, row: RowData): Option[TreeNode] = {
@@ -131,18 +130,18 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
 
           val aggregations = Aggregation.createAggregations(groupBy)
 
-          if(isLeaf) parent.processRowForAggregation(row)
+          if (isLeaf) parent.processRowForAggregation(row)
 
           Some(tree.addChild(parent, TreeNodeImpl(isLeaf, treeKey, if (data == null) "" else data.toString, new JList[TreeNode](), parent, parent.depth + 1, treeKeysByColumn, aggregations)))
         case node =>
           logger.debug(s"Node ${treeKey} already exists, just adding to parent:" + parent.key)
 
-          if (!tree.hasChild(parent, node)){
-            if(isLeaf) parent.processRowForAggregation(row)
+          if (!tree.hasChild(parent, node)) {
+            if (isLeaf) parent.processRowForAggregation(row)
             Some(tree.addChild(parent, node))
           }
           else {
-            if(isLeaf) parent.processRowForAggregation(row)
+            if (isLeaf) parent.processRowForAggregation(row)
 
             Some(node)
           }

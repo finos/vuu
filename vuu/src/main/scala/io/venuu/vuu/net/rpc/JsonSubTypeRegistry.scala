@@ -1,10 +1,10 @@
 /**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 16/02/2016.
-
-  */
+ * Copyright Whitebox Software Ltd. 2014
+ * All Rights Reserved.
+ *
+ * Created by chris on 16/02/2016.
+ *
+ */
 package io.venuu.vuu.net.rpc
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
@@ -66,35 +66,35 @@ object JsonSubTypeRegistry extends StrictLogging {
 
   def register(genericType: Class[_], mixinWithAnnotations: Class[_]): Unit = {
 
-    if(!genericsToConcreteTypes.containsKey(genericType))
+    if (!genericsToConcreteTypes.containsKey(genericType))
       genericsToConcreteTypes.put(genericType, new ConcurrentHashMap[String, Class[_]]())
 
-     val subtypes = mixinWithAnnotations.getAnnotation(classOf[JsonSubTypes])
+    val subtypes = mixinWithAnnotations.getAnnotation(classOf[JsonSubTypes])
 
-    subtypes.value().foreach( subType => {
+    subtypes.value().foreach(subType => {
 
-      if(genericsToConcreteTypes.get(genericType).containsKey(subType.name()))
+      if (genericsToConcreteTypes.get(genericType).containsKey(subType.name()))
         logger.warn(s"Tried to register ${subType.name()} mapping to ${subType.value()} but already registered to ${genericsToConcreteTypes.get(genericType).get(subType.name())}")
       else
         genericsToConcreteTypes.get(genericType).put(subType.name(), subType.value())
-    }  )
+    })
 
   }
 
   def getTypeForClass(genericType: Class[_], specificType: Class[_]): String = {
 
-    if(genericsToConcreteTypes.get(genericType).containsValue(specificType)){
+    if (genericsToConcreteTypes.get(genericType).containsValue(specificType)) {
 
       val entrySet = SetHasAsScala(genericsToConcreteTypes.get(genericType).entrySet()).asScala
 
-      entrySet.find( entry => entry.getValue.equals(specificType) ) match{
+      entrySet.find(entry => entry.getValue.equals(specificType)) match {
         case Some(theMatch) =>
           theMatch.getKey
         case None =>
           throw new Exception(s"no mapping found for ${specificType} to generic ${genericType}")
       }
 
-    }else{
+    } else {
       throw new Exception(s"no mapping registered for ${genericType}")
     }
 
@@ -102,15 +102,15 @@ object JsonSubTypeRegistry extends StrictLogging {
 
   def getClassForType(genericType: Class[_], typeStr: String): Class[_] = {
 
-    if(genericsToConcreteTypes.get(genericType).containsKey(typeStr)){
+    if (genericsToConcreteTypes.get(genericType).containsKey(typeStr)) {
 
-      SetHasAsScala(genericsToConcreteTypes.get(genericType).entrySet()).asScala.find( entry => entry.getKey.equals(typeStr) ) match{
+      SetHasAsScala(genericsToConcreteTypes.get(genericType).entrySet()).asScala.find(entry => entry.getKey.equals(typeStr)) match {
         case Some(theMatch) => theMatch.getValue
         case None =>
           throw new Exception(s"no mapping found for ${typeStr} to generic ${genericType}")
       }
 
-    }else{
+    } else {
       throw new Exception(s"no mapping registered for ${genericType}")
     }
 

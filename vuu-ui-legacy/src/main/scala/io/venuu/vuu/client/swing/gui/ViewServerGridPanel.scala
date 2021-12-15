@@ -9,13 +9,13 @@ package io.venuu.vuu.client.swing.gui
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.client.swing.gui.SwingThread._
+import io.venuu.vuu.client.messages._
+import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
+import io.venuu.vuu.client.swing.gui.SwingThread.swing
 import io.venuu.vuu.client.swing.gui.components.FilterBarPanel
 import io.venuu.vuu.client.swing.gui.components.popup.ViewServerPopupMenus
 import io.venuu.vuu.client.swing.gui.components.renderer.{SortedColumnRenderer, TreeGridCellRenderer}
-import io.venuu.vuu.client.swing.messages._
 import io.venuu.vuu.client.swing.model.{VSHackedTable, ViewPortedModel}
-import io.venuu.vuu.client.swing.{ClientConstants, EventBus}
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport._
 

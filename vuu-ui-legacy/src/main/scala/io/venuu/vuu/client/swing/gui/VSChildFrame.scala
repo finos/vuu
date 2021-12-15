@@ -3,9 +3,9 @@ package io.venuu.vuu.client.swing.gui
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.AvailableViewPortVisualLink
+import io.venuu.vuu.client.messages._
 import io.venuu.vuu.client.swing.EventBus
-import io.venuu.vuu.client.swing.gui.components.{MutableComboBox, MutableModel, MutableMultiSelectComboBox}
-import io.venuu.vuu.client.swing.messages._
+import io.venuu.vuu.client.swing.gui.components._
 import io.venuu.vuu.client.swing.model.ViewPortedModel
 import io.venuu.vuu.net.{SortDef, SortSpec}
 import io.venuu.vuu.viewport.ViewPortTable

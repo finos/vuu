@@ -6,7 +6,7 @@ import io.venuu.vuu.net.RowUpdate
 
 import scala.jdk.CollectionConverters.IteratorHasAsScala
 
-class RowUpdateDeserializer extends JsonDeserializer[RowUpdate]{
+class RowUpdateDeserializer extends JsonDeserializer[RowUpdate] {
 
   override def deserialize(jsonParser: JsonParser, deserializationContext: DeserializationContext): RowUpdate = {
 
@@ -41,7 +41,7 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
     gen.writeNumberField("sel", value.selected)
     gen.writeArrayFieldStart("data")
 
-    value.data.foreach( datum => datum match{
+    value.data.foreach(datum => datum match {
       case null => gen.writeString("")
       case None => gen.writeString("")
       case s: String => gen.writeString(s)

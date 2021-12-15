@@ -16,12 +16,12 @@ object MetricsModule extends DefaultModule {
     ModuleFactory.withNamespace(NAME)
       .addTable(
         TableDef(
-            name = "metricsTables",
-            keyField = "table",
-            columns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".long()),
-            indices = Indices(),
-            joinFields = "table"
-          ),
+          name = "metricsTables",
+          keyField = "table",
+          columns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".long()),
+          indices = Indices(),
+          joinFields = "table"
+        ),
         (table, vs) => new MetricsTableProvider(table, vs.tableContainer)
       )
       .addTable(

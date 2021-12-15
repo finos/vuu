@@ -1,9 +1,9 @@
 package io.venuu.vuu.client.swing.gui
 
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.messages.{ClientCloseTreeNodeRequest, ClientMessage, ClientOpenTreeNodeRequest, RequestId}
 import io.venuu.vuu.client.swing.EventBus
 import io.venuu.vuu.client.swing.gui.components.renderer.TreeGridCellRenderer
-import io.venuu.vuu.client.swing.messages.{ClientCloseTreeNodeRequest, ClientMessage, ClientOpenTreeNodeRequest, RequestId}
 import io.venuu.vuu.client.swing.model.ViewPortedModel
 import io.venuu.vuu.viewport.ViewPortTable
 
