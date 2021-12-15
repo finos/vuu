@@ -28,6 +28,18 @@
         </dependency-->
 
         <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-swing_2.13</artifactId>
+            <version>3.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>de.sciss</groupId>
             <artifactId>treetable-scala_2.13</artifactId>
             <version>1.6.3</version>
