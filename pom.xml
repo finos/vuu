@@ -32,8 +32,8 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/venuu-io/vuu.git</connection>
-        <developerConnection>scm:git:ssh://github.com:venuu-io/vuu.git</developerConnection>
+        <connection>scm:git:https://github.com/venuu-io/vuu.git</connection>
+        <developerConnection>scm:git:https://github.com/venuu-io/vuu.git</developerConnection>
         <url>https://github.com/venuu-io/vuu/tree/master</url>
     </scm>
 
