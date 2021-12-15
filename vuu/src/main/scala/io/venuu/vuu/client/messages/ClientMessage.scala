@@ -5,14 +5,14 @@
   * Created by chris on 06/01/2016.
 
   */
-package io.venuu.vuu.client.swing.messages
+package io.venuu.vuu.client.messages
 
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.AvailableViewPortVisualLink
-import io.venuu.vuu.client.swing.client.UserPrincipal
 import io.venuu.vuu.net.{Aggregations, Error, FilterSpec, SortSpec}
 import io.venuu.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortTable}
 
+import java.nio.file.attribute.UserPrincipal
 import java.util.UUID
 
 object RequestId{

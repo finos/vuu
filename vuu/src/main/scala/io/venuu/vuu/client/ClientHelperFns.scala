@@ -1,10 +1,3 @@
-/**
-  * Copyright Whitebox Software Ltd. 2014
-  * All Rights Reserved.
-
-  * Created by chris on 18/11/2015.
-
-  */
 package io.venuu.vuu.client
 
 import io.venuu.vuu.net._
@@ -17,11 +10,11 @@ import scala.util.{Failure, Success, Try}
 object ClientHelperFns {
 
   def authAsync(user: String, password: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage("", "", "", "",AuthenticateRequest(user, password)))
+    vsClient.send(JsonViewServerMessage("", "", "", "", AuthenticateRequest(user, password)))
   }
 
   def loginAsync(token: String, user: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage("", "", "", "",LoginRequest(token, user)))
+    vsClient.send(JsonViewServerMessage("", "", "", "", LoginRequest(token, user)))
   }
 
   def createVpAsync(sessionId: String, token: String, user: String, requestId: String, table: ViewPortTable, columns: Array[String], sortBy: SortSpec, groupBy: Array[String] = Array(),
@@ -106,7 +99,7 @@ object ClientHelperFns {
   }
 
   def auth(user: String, password: String)(implicit vsClient: ViewServerClient): String = {
-    vsClient.send(JsonViewServerMessage("", "", "", "",AuthenticateRequest(user, password)))
+    vsClient.send(JsonViewServerMessage("", "", "", "", AuthenticateRequest(user, password)))
     vsClient.awaitMsg.body.asInstanceOf[AuthenticateSuccess].token
   }
 
@@ -143,7 +136,7 @@ object ClientHelperFns {
   }
 
   def login(token: String, user: String)(implicit vsClient: ViewServerClient): String = {
-    vsClient.send(JsonViewServerMessage("", "", "", "",LoginRequest(token, user)))
+    vsClient.send(JsonViewServerMessage("", "", "", "", LoginRequest(token, user)))
     vsClient.awaitMsg.sessionId
   }
 
@@ -153,13 +146,13 @@ object ClientHelperFns {
 
     val msg = client.awaitMsg
 
-    val clazz = typeTag[TYPE].mirror.runtimeClass( typeTag[TYPE].tpe )
+    val clazz = typeTag[TYPE].mirror.runtimeClass(typeTag[TYPE].tpe)
 
     val body = msg.body
 
     val classOfBody = body.getClass
 
-    if(clazz == classOfBody)
+    if (clazz == classOfBody)
       msg
     else
       await[TYPE]
@@ -170,12 +163,12 @@ object ClientHelperFns {
     await[CreateViewPortSuccess]
   }
 
-  def changeVpAsync(sessionId: String, token: String, vpId: String , user: String, table: String, columns: Array[String], sortSpec: SortSpec, groupBy: Array[String])(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy )))
+  def changeVpAsync(sessionId: String, token: String, vpId: String, user: String, table: String, columns: Array[String], sortSpec: SortSpec, groupBy: Array[String])(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy)))
   }
 
-  def changeVp(sessionId: String, token: String, vpId: String , user: String, table: String, columns: Array[String], sortSpec: SortSpec, groupBy: Array[String])(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy )))
+  def changeVp(sessionId: String, token: String, vpId: String, user: String, table: String, columns: Array[String], sortSpec: SortSpec, groupBy: Array[String])(implicit vsClient: ViewServerClient): ViewServerMessage = {
+    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy)))
 
     def awaitMsg(vsClient: ViewServerClient): ViewServerMessage = {
       val msg = vsClient.awaitMsg
@@ -211,7 +204,7 @@ object ClientHelperFns {
 
   def awaitMsgBody[T <: AnyRef](implicit t: ClassTag[T], vsClient: ViewServerClient): Option[T] = {
     val msg = vsClient.awaitMsg
-    if(msg != null){
+    if (msg != null) {
       val theType = t.runtimeClass.asInstanceOf[Class[T]]
       Try(assert(theType.isAssignableFrom(msg.body.getClass))) match {
         case Success(_) =>
@@ -220,7 +213,7 @@ object ClientHelperFns {
           awaitMsgBody[T]
       }
 
-    }else
+    } else
       None
   }
 }
