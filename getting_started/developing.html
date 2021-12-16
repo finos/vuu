@@ -137,9 +137,9 @@
                         <h1 id="developing-vuu"><a class="header" href="#developing-vuu">Developing Vuu</a></h1>
 <h2 id="developing-the-server"><a class="header" href="#developing-the-server">Developing the server</a></h2>
 <ol>
-<li>Install IntelliJ Community Edition (latest version, tested with 2020.3)</li>
-<li>Install SDKMan (https://sdkman.io/)</li>
-<li>type&gt;<code>sdk install java 15.0.2-open</code> and then &gt;<code>sdk d java 15.0.2-open</code> to make sure you're using the correct one.</li>
+<li>Install IntelliJ Community Edition (latest version, tested with 2021.3)</li>
+<li>Install SDKMan from the <a href="https://sdkman.io/">website</a></li>
+<li>type&gt;<code>sdk install java 16.0.1-open</code> and then &gt;<code>sdk d java 16.0.1-open</code> to make sure you're using the correct one.</li>
 <li>Clone the repo into a directory on your machine</li>
 <li>Open the project as a Maven build by selecting the root pom.xml (make sure you select &quot;enable adding maven modules, auto import etc..)</li>
 <li>You should get one root module vuu-parent in a project list, select this</li>
@@ -162,9 +162,11 @@
 <li>change directory into ./vuu-ui/packages/app-vuu-example</li>
 <li>type&gt; <code>yarn build</code></li>
 </ol>
-<p>If you want to host the javascript in yarn also (not required)
-10) run the sample application (in Yarn, not required ) 
-11) type&gt; <code>yarn start</code></p>
+<p>If you want to host the javascript in yarn also (not required): </p>
+<ol start="10">
+<li>run the sample application (in Yarn, not required ) </li>
+<li>type&gt; <code>yarn start</code></li>
+</ol>
 <p>You should know be able to use a local browser to see the Vuu demo app. <a href="https://localhost:8443/index.html">localhost:8443</a> </p>
 <p>If you are getting certificate errors when you connect, set this browser setting in chrome: </p>
 <pre><code>chrome://flags/#allow-insecure-localhost (set to true)
