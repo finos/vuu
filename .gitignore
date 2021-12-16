@@ -8,6 +8,7 @@
 /toolbox/toolbox.iml
 /vuu/vuu.iml
 /vuu-parent.iml
+/vuu-book/src/.DS_Store
 
 .vscode/**
 node_modules
