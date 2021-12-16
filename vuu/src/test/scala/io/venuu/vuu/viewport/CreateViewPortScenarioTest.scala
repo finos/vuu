@@ -9,7 +9,7 @@ import io.venuu.vuu.api._
 import io.venuu.vuu.client.ClientHelperFns._
 import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.table.{Columns, DataTable}
-import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import io.venuu.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.net.json.JsonVsSerializer
 import io.venuu.vuu.net.ws.WebSocketClient
@@ -89,7 +89,8 @@ class CreateViewPortScenarioTest extends AnyFeatureSpec with Matchers {
           .withDirectoryListings(true),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withWsPort(8090)
+          .withWsPort(8090),
+        VuuSecurityOptions()
       ).withModule(SimulationModule())
 
       val viewServer = new VuuServer(config)

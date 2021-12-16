@@ -1,5 +1,14 @@
 package io.venuu.vuu.net.http
 
+import io.venuu.vuu.net.{Authenticator, LoginTokenValidator}
+
+trait VuuSecurityOptions {
+  def authenticator: Authenticator
+  def loginTokenValidator: LoginTokenValidator
+  def withAuthenticator(authenticator: Authenticator): VuuSecurityOptions
+  def withLoginValidator(tokenValidator: LoginTokenValidator): VuuSecurityOptions
+}
+
 trait VuuHttp2ServerOptions {
   def allowDirectoryListings: Boolean
 

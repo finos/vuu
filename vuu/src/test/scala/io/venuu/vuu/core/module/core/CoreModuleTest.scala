@@ -6,7 +6,7 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.client.ClientHelperFns._
 import io.venuu.vuu.core.module.simul.SimulationModule
-import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import io.venuu.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.{ChangeViewPortSuccess, CreateViewPortSuccess, SortSpec, ViewServerClient, WebSocketViewServerClient}
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.net.json.JsonVsSerializer
@@ -35,7 +35,8 @@ class CoreModuleTest extends AnyFeatureSpec with Matchers with StrictLogging wit
         .withDirectoryListings(true),
       VuuWebSocketOptions()
         .withUri("websocket")
-        .withWsPort(8090)
+        .withWsPort(8090),
+      VuuSecurityOptions()
     ).withModule(SimulationModule())
 
     val viewServer = new VuuServer(config)
