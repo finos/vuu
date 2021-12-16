@@ -1,9 +1,14 @@
 # Summary
 
+- [Introduction](./introduction/intro.md)
+  - [What is a View-Vuu-Server](./introduction/what_is.md)
+  - [How does it work](./introduction/how_does_it_work.md)
+  - [What are the tradeoffs](./introduction/trade-offs.md)
 - [Getting Started](./getting_started/getting_started.md)
   - [Building From Source](./getting_started/building_from_source.md)
   - [Developing Vuu](./getting_started/developing.md)
   - [Using binaries from Maven Repo](./getting_started/adding.md)
+  - [Configuration](./getting_started/configuration.md)
 - [Core Concepts](./providers_tables_viewports/providers_tables_viewports.md)
   - [Lifecycle](./providers_tables_viewports/lifecycle.md)
   - [Providers](./providers_tables_viewports/providers.md)
@@ -22,11 +27,12 @@
   - [Menu Items](./rpc/Menu_items.md)
 - [Wire Protocol](./wire/wire_protocol.md)
 - [The UI](./ui/ui.md)
+  - [Fluid UIs](./ui/fluid-ui.md)
   - [The Grid](./ui/grid.md)
+  - [Visual Linking](./ui/visual-linking.md)
   - [Writing Custom Controls](./ui/custom_controls.md)
 - [Performance Optimization](./perf/performance_optimization.md)
   - [Indices](./perf/indices.md)
   - [Query Planner](./perf/query_planner.md)
 - [Security](./security/security.md)
   - [Authentication](./security/Authentication.md)
-  

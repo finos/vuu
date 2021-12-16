@@ -46,6 +46,8 @@ When Vuuu starts up it evaluates components from the furthest node out back to t
 
 ##What does the Vui lifecycle look like on startup?
 
-TODO: CJS Dump lifecycle to console out...
+![Lifecycle Vuu](../documents/vuu.svg)
+
+As you can see from this graph. The server has as well defined startup and shutdown sequencer, controlled by its lifecycle. 
 
 

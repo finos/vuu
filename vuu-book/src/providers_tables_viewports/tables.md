@@ -66,7 +66,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
 ```
 
-The important methods from this train for these purposes are:
+The important methods from this trait for these purposes are:
 
 ```scala
 def processUpdate(...)
@@ -76,20 +76,22 @@ These are the methods that you call in a provider to populate data into the unde
 
 processUpdate functions like an upsert in a SQL data (i.e. it is used for both an insert and an update)
 
-#Types of Table
+# Types of Table
 
-#(Simple) Table
+# (Simple) Table
 
 Simple Tables (the default table type, defined by using the TableDef() class) are sinks for data. They are wrappers around
 a concurrent map and are mechanisms to propogate update or delete events to join tables and view ports. 
 
-#Join Tables
+Currently simple tables are limited to having strings as the key. This is likely to change in future. 
+
+# Join Tables
 
 Join tables represent the logical joining of two separate tables into a single merged table. In practice they are mappings of 
 keys from one table to keys from one or more other tables. When data is realised (i.e. sent down to a user's ui via the websocket) 
 the relevant rows are realized by dragging the data from the underlying simple tables. 
 
-#AutoSubscribe Table
+# AutoSubscribe Table
 
 Auto subscriber tables are simple data tables that when involved in a join will receive a special callback as part of the join process
 to load data from a n external source by primary key. 
@@ -99,6 +101,6 @@ like orders on particular symbols. When we join orders and prices, if the prices
 autosubscribe table with the product symbol on the order once each time a new order is entered. 
 
 
-#Lucene Table
+# Lucene Table
 
-TODO: Lucene tables are a work in progress, whach this space. 
+TODO: Lucene tables are a work in progress, watch this space. 

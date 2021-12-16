@@ -7,7 +7,16 @@ has requested on the data, on columns that the client has asked to display as we
 As well as this viewports contain references to immutable arrays of the keys of the underlying table. These arrays are sorted and filtered based on the clients 
 requested sort of the data. 
 
-When a user opens a viewport on a table from the client, a thread in the server will asynchronously populate the keys based on the viewports parameters into an immutable array
-and will pass that array to the viewport. This thread will then continuously recalculate the keys (if there have been any changes) during the lifetime of the viewport
+When a user opens a viewport on a table from the client, a thread in the server will asynchronously populate the keys based on the viewports parameters (sorts, filters, etc..) into an immutable array
+and will pass that array to the viewport. This thread will then continuously recalculate the keys (if there have been any changes) during the lifetime of the viewport. 
+
+![Viewport](../documents/diagrams-view-ports.png)
+
+And in the context of the wider Vuu server. 
+
+![Viewport](../documents/diagrams-server-internals.png)
+
+
+
 
 
