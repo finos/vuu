@@ -10,13 +10,19 @@ import io.venuu.vuu.core.module.{ModuleContainer, RealizedViewServerModule, Stat
 import io.venuu.vuu.core.table.{DataTable, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
-import io.venuu.vuu.net.http.{VuuHttp2Server, VuuHttp2ServerOptions}
+import io.venuu.vuu.net.http.{VuuHttp2Server, VuuHttp2ServerOptions, VuuSecurityOptions}
 import io.venuu.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
 import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import io.venuu.vuu.net.ws.WebSocketServer
 import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer}
 import io.venuu.vuu.viewport.{ViewPortAction, ViewPortActionMixin, ViewPortContainer}
+
+object VuuSecurityOptions{
+  def apply(): VuuSecurityOptions = {
+    VuuSecurityOptionsImpl(new AlwaysHappyAuthenticator, new AlwaysHappyLoginValidator)
+  }
+}
 
 object VuuWebSocketOptions {
   def apply(): VuuWebSocketOptions = {
@@ -36,13 +42,18 @@ trait VuuWebSocketOptions {
 
 }
 
+case class VuuSecurityOptionsImpl(authenticator: Authenticator, loginTokenValidator: LoginTokenValidator) extends VuuSecurityOptions{
+  override def withAuthenticator(authenticator: Authenticator): VuuSecurityOptions = this.copy(authenticator = authenticator)
+  override def withLoginValidator(tokenValidator: LoginTokenValidator): VuuSecurityOptions = this.copy(authenticator = authenticator)
+}
+
 case class VuuWebSocketOptionsImpl(wsPort: Int, uri: String) extends VuuWebSocketOptions {
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
 
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
 }
 
-case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions, wsOptions: VuuWebSocketOptions, modules: List[ViewServerModule] = List()) {
+case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions, wsOptions: VuuWebSocketOptions, security: VuuSecurityOptions, modules: List[ViewServerModule] = List()) {
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
@@ -58,8 +69,8 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
   JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
-  val authenticator = new AlwaysHappyAuthenticator
-  val tokenValidator = new AlwaysHappyLoginValidator
+  val authenticator = config.security.authenticator
+  val tokenValidator = config.security.loginTokenValidator
 
   val sessionContainer = new ClientSessionContainerImpl()
 
@@ -197,5 +208,5 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   override def doDestroy(): Unit = {}
 
-  override val lifecycleId: String = "viewServer"
+  override val lifecycleId: String = "vuuServer"
 }

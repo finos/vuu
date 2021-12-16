@@ -6,7 +6,9 @@ import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.metrics.MetricsModule
 import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.module.vui.VuiStateModule
-import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import io.venuu.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import io.venuu.vuu.net.AlwaysHappyLoginValidator
+import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.state.{MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, VuiState}
 
@@ -25,7 +27,6 @@ object SimulMain extends App {
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
   val store = new MemoryBackedVuiStateStore()
-
   store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
 
   lifecycle.autoShutdownHook()
@@ -40,7 +41,10 @@ object SimulMain extends App {
       .withPort(8443),
     VuuWebSocketOptions()
       .withUri("websocket")
-      .withWsPort(8090)
+      .withWsPort(8090),
+    VuuSecurityOptions()
+      .withAuthenticator(new AlwaysHappyAuthenticator)
+      .withLoginValidator(new AlwaysHappyLoginValidator)
   ).withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(VuiStateModule(store))

@@ -5,7 +5,7 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.client.ClientHelperFns._
 import io.venuu.vuu.core.module.{MyObjectParam, TestModule}
-import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import io.venuu.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.WebSocketViewServerClient
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.net.json.JsonVsSerializer
@@ -47,7 +47,8 @@ class RpcModuleTest extends AnyFeatureSpec with Matchers {
           .withPort(https),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withWsPort(ws)
+          .withWsPort(ws),
+        VuuSecurityOptions()
       ).withModule(TestModule())
 
       val viewServer = new VuuServer(config)

@@ -5,7 +5,7 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.vui.VuiStateModule
-import io.venuu.vuu.core.{VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import io.venuu.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.state.MemoryBackedVuiStateStore
 import io.vertx.core.json.JsonObject
@@ -46,7 +46,8 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with StrictLogging {
           .withPort(https),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withWsPort(ws)
+          .withWsPort(ws),
+        VuuSecurityOptions()
       ).withModule(VuiStateModule(store))
 
       val viewServer = new VuuServer(config)

@@ -19,12 +19,6 @@
             <version>0.18-SNAPSHOT</version>
         </dependency>
 
-        <!--dependency>
-            <groupId>de.sciss</groupId>
-            <artifactId>treetable-scala_2.12</artifactId>
-            <version>1.5.1</version>
-        </dependency-->
-
         <dependency>
             <groupId>org.scala-lang.modules</groupId>
             <artifactId>scala-swing_2.13</artifactId>
@@ -43,13 +37,37 @@
             <version>1.6.3</version>
         </dependency>
 
-        <!--dependency>
-            <groupId>org.swinglabs</groupId>
-            <artifactId>swingx</artifactId>
-            <version>1.6.1</version>
-        </dependency-->
-
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>sign-it</id>
+            <activation>
+                <property>
+                    <name>sign</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
