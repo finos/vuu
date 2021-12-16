@@ -2,9 +2,9 @@
 
 ## Developing the server
 
-1) Install IntelliJ Community Edition (latest version, tested with 2020.3)
-2) Install SDKMan (https://sdkman.io/)
-3) type>```sdk install java 15.0.2-open``` and then >```sdk d java 15.0.2-open``` to make sure you're using the correct one.
+1) Install IntelliJ Community Edition (latest version, tested with 2021.3)
+2) Install SDKMan from the [website](https://sdkman.io/)
+3) type>```sdk install java 16.0.1-open``` and then >```sdk d java 16.0.1-open``` to make sure you're using the correct one.
 4) Clone the repo into a directory on your machine
 5) Open the project as a Maven build by selecting the root pom.xml (make sure you select "enable adding maven modules, auto import etc..)
 6) You should get one root module vuu-parent in a project list, select this
@@ -27,7 +27,8 @@
 8) change directory into ./vuu-ui/packages/app-vuu-example
 9) type> ```yarn build```
 
-If you want to host the javascript in yarn also (not required)
+If you want to host the javascript in yarn also (not required): 
+
 10) run the sample application (in Yarn, not required ) 
 11) type> ```yarn start```
 
