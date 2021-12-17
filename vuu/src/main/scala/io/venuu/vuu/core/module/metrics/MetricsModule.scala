@@ -18,7 +18,7 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsTables",
           keyField = "table",
-          columns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".long()),
+          columns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".double()),
           indices = Indices(),
           joinFields = "table"
         ),
@@ -28,7 +28,7 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsViewports",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "table".string(), "mean".long(), "max".long(), "75Perc".long(), "99Perc".long(), "99_9Perc".long()),
+          columns = Columns.fromNames("id".string(), "table".string(), "mean".double(), "max".double(), "75Perc".double(), "99Perc".double(), "99_9Perc".double()),
           indices = Indices(),
           joinFields = "id"
         ),
@@ -38,7 +38,7 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsGroupBy",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "table".string(), "mean".long(), "max".long(), "75Perc".long(), "99Perc".long(), "99_9Perc".long()),
+          columns = Columns.fromNames("id".string(), "table".string(), "mean".double(), "max".double(), "75Perc".double(), "99Perc".double(), "99_9Perc".double()),
           indices = Indices(),
           joinFields = "id"
         ),
