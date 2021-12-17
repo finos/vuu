@@ -56,9 +56,10 @@
             <scope>test</scope>
         </dependency>
 
+
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
-            <artifactId>scala-logging_2.12</artifactId>
+            <artifactId>scala-logging_2.13</artifactId>
             <version>${scala.logging}</version>
         </dependency>
 
@@ -327,6 +328,18 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <mainClass>io.venuu.vuu.SimulMain</mainClass>
+                    <arguments>
+                        <argument>-Xmx10G </argument>
+                    </arguments>
+                </configuration>
             </plugin>
 
         </plugins>
