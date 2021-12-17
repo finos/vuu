@@ -130,17 +130,53 @@ class DefaultMessageHandler(val channel: Channel,
 
         val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns)
 
-        if (dataToSend.size > 0 && dataToSend(0) == null)
+        if (dataToSend.size > 0 && (dataToSend(0) == null || dataToSend(0) == "")) {
           println("ChrisChris>>" + update.table.name + " " + update.key.key + " " + update.index + " data: " + dataToSend.mkString(","))
+          None
+        }else{
 
         val isSelected = if (update.vp.getSelection.contains(update.key.key)) 1 else 0
 
-        if (dataToSend.size == 0)
+        if (dataToSend.size == 0) {
           None
-        else
+        } else {
           Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), isSelected, dataToSend))
+        }
+        }
+
+      //        val dataToSendAsRow = update.table.pullRow(update.key.key, update.vp.getColumns)
+//
+//        if(dataToSendAsRow.size() == 0){
+//          logger.warn("ChrisChris4>>" + update.table.name + " " + update.key.key + " " + update.index + " data: " + dataToSendAsRow)
+//          None
+//        }else{
+//
+//        val dataToSend = dataToSendAsRow.toArray(update.vp.getColumns)// update.table.pullRowAsArray(update.key.key, update.vp.getColumns)
+//
+////        if (dataToSend.length > 0 && dataToSend(0) == "") {
+////          logger.warn("ChrisChris>>" + update.table.name + " " + update.key.key + " " + update.index + " data: " + dataToSend.mkString(","))
+////          None
+////        }
+////        else{
+//        val isSelected = if (update.vp.getSelection.contains(update.key.key)) 1 else 0
+//
+//        if (dataToSend.size == 0) {
+//          logger.warn("ChrisChris2>>" + update.table.name + " " + update.key.key + " " + update.index + " data: " + dataToSend.mkString(","))
+//          None
+//        } else {
+//          Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), isSelected, dataToSend))
+//        }
+//        }
     }
 
+  }
+
+  private def isEmpty(data: Array[Any]): Boolean = {
+    var isEmpty = true
+    for(datum <- data if datum != ""){
+      isEmpty = false
+    }
+    isEmpty
   }
 
 

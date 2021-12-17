@@ -55,7 +55,7 @@ object PricesFields {
   final val Phase = "phase"
 }
 
-class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implicit val timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging with RunInThread {
+class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int = 400)(implicit val timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging with RunInThread {
   private val currentModes = new ConcurrentHashMap[String, Simulation]()
   private val states = new ConcurrentHashMap[String, Map[String, Any]]()
 
@@ -68,6 +68,10 @@ class SimulatedPricesProvider(val table: DataTable, maxSleep: Int = 400)(implici
   val logAt = new LogAtFrequency(10_000)
 
   val doEvery5Mins = new LogAtFrequency(1000 * 60 * 3)
+
+  def setSpeed(maxSpeed: Int): Unit = {
+    this.maxSleep = maxSpeed
+  }
 
   override def subscribe(key: String): Unit = {
     //logger.info(s"Prices Subscribe Called: ${key}")

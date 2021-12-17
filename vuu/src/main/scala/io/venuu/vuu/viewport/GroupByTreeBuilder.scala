@@ -7,7 +7,7 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.filter.{FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort.AntlrBasedFilter
-import io.venuu.vuu.core.table.{Column, RowData}
+import io.venuu.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData}
 import io.venuu.vuu.net.FilterSpec
 
 import java.util.concurrent.ConcurrentHashMap
@@ -94,16 +94,27 @@ class GroupByTreeBuilderImpl(table: GroupBySessionTableImpl, groupBy: GroupBy, f
 
       val row = table.sourceTable.pullRow(key, table.columns().toList)
 
-      val last = columns.foldLeft(tree.root)((parent, column) => {
-        processBranchColumn(tree, parent.asInstanceOf[TreeNodeImpl], row.get(column.name), false, column, row)
-      } match {
-        case Some(node) => node
-        case None => parent
-      })
+      row match {
+        case EmptyRowData =>
+          logger.debug(s"Empty row daya for key = $key")
 
-      processBranchColumn(tree, last.asInstanceOf[TreeNodeImpl], key, true, null, row)
+        case rowWithData: RowWithData =>
 
-      count += 1
+          val last = columns.foldLeft(tree.root)((parent, column) => {
+            processBranchColumn(tree, parent.asInstanceOf[TreeNodeImpl], rowWithData.get(column.name), false, column, rowWithData)
+          } match {
+            case Some(node) => node
+            case None => parent
+          })
+
+          processBranchColumn(tree, last.asInstanceOf[TreeNodeImpl], key, true, null, rowWithData)
+
+          count += 1
+      }
+
+
+
+
     })
 
     logger.debug("complete building tree")
