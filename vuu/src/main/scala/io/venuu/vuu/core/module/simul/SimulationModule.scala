@@ -10,10 +10,36 @@ import io.venuu.vuu.core.table.{Columns, DataTable, TableContainer}
 import io.venuu.vuu.net.rpc.RpcHandler
 import io.venuu.vuu.net.{ClientSessionId, RequestContext}
 import io.venuu.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
-import io.venuu.vuu.provider.{ProviderContainer, RpcProvider}
+import io.venuu.vuu.provider.{Provider, ProviderContainer, RpcProvider}
 import io.venuu.vuu.viewport._
 
 import java.util.UUID
+
+class PricesService(val table: DataTable, val provider: Provider) extends RpcHandler with StrictLogging {
+
+  private val pricesProvider = provider.asInstanceOf[SimulatedPricesProvider]
+
+  def setSpeedSlow(selection: ViewPortSelection, sessionId: ClientSessionId):ViewPortAction = {
+    pricesProvider.setSpeed(8000)
+    NoAction()
+  }
+
+  def setSpeedMedium(selection: ViewPortSelection, sessionId: ClientSessionId):ViewPortAction = {
+    pricesProvider.setSpeed(2000)
+    NoAction()
+  }
+
+  def setSpeedFast(selection: ViewPortSelection, sessionId: ClientSessionId):ViewPortAction = {
+    pricesProvider.setSpeed(400)
+    NoAction()
+  }
+
+  override def menuItems(): ViewPortMenu = ViewPortMenu("Root",
+      new SelectionViewPortMenuItem("Set Slow", "", this.setSpeedSlow, "SET_SPEED_SLOW"),
+      new SelectionViewPortMenuItem("Set Medium", "", this.setSpeedMedium, "SET_SPEED_MED"),
+      new SelectionViewPortMenuItem("Set Fast", "", this.setSpeedFast, "SET_SPEED_FAST")
+  )
+}
 
 class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer) extends RpcHandler with StrictLogging {
 
@@ -132,7 +158,11 @@ object SimulationModule extends DefaultModule {
           Columns.fromNames("ric".string(), "bid".double(), "bidSize".int(), "ask".double(), "askSize".int(), "last".double(), "open".double(), "close".double(), "scenario".string(), "phase".string()),
           joinFields = "ric"
         ),
-        (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800)
+        (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800),
+        (table, provider, providerContainer) => ViewPortDef(
+          columns = table.getTableDef.columns,
+          service = new PricesService(table, provider)
+        )
       )
       .addTable(
         TableDef(
