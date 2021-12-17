@@ -81,6 +81,10 @@ trait RowData {
   def getFullyQualified(column: Column): Any
 
   def set(field: String, value: Any): RowData
+
+  def toArray(columns: List[Column]): Array[Any]
+
+  def size(): Int
 }
 
 case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: Long) {
@@ -89,7 +93,13 @@ case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: L
 
 case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
+  override def size(): Int = data.size
+
   override def getFullyQualified(column: Column): Any = column.getDataFullyQualified(this)
+
+  override def toArray(columns: List[Column]): Array[Any] = {
+    columns.map(c => this.get(c)).toArray
+  }
 
   override def get(column: Column): Any = {
     if (column != null) {
@@ -118,6 +128,11 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 }
 
 object EmptyRowData extends RowData {
+
+  override def size(): Int = 0
+
+  override def toArray(columns: List[Column]): Array[Any] = Array()
+
   override def get(field: String): Any = null
 
   override def get(column: Column): Any = null
@@ -239,9 +254,11 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
     data.dataByKey(key) match {
+      case EmptyRowData =>
+        Array[Any]()
       case null =>
         Array[Any]()
-      case row =>
+      case row: RowWithData =>
         columns.map(c => row.get(c)).toArray
     }
   }
