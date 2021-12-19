@@ -2,11 +2,13 @@ import { build } from 'esbuild';
 import { exec, formatBytes } from './utils.mjs';
 
 const entryPoints = [
-  'index.jsx',
-  'features/filtered-grid.js',
-  'features/metrics.js',
-  'features/simple-component.js'
+  'src/index.jsx',
+  'src/features/filtered-grid/index.js',
+  'src/features/metrics/index.js',
+  'src/features/simple-component/index.js'
 ];
+
+const outbase = 'src';
 const outdir = 'public';
 
 const stripOutdir = (file) => file.replace(RegExp(`^${outdir}\/`), '');
@@ -26,6 +28,7 @@ async function main() {
       entryPoints,
       format: 'esm',
       metafile: true,
+      outbase,
       outdir,
       sourcemap: true,
       splitting: true,
@@ -37,7 +40,9 @@ async function main() {
     await exec('cp ../../node_modules/@vuu-ui/data-worker/worker.js.map ./public/worker.js.map');
 
     entryPoints.forEach((fileName) => {
-      const outJS = `${outdir}/${fileName.replace(/x$/, '')}`;
+      const outJS = `${outdir}/${fileName
+        .replace(new RegExp(`^${outbase}\\/`), '')
+        .replace(/x$/, '')}`;
       const outCSS = outJS.replace(/js$/, 'css');
       const {
         outputs: { [outJS]: jsOutput, [outCSS]: cssOutput }

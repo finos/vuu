@@ -34,6 +34,20 @@ const contextCompatibleWithLocation = (location, context, selectedRowCount) => {
 };
 
 const columnConfig = {
+  account: {
+    label: 'Account',
+    name: 'account',
+    type: {
+      name: 'string'
+    }
+  },
+  algo: {
+    label: 'Algo',
+    name: 'algo',
+    type: {
+      name: 'string'
+    }
+  },
   ask: {
     name: 'ask',
     label: 'Ask',
@@ -47,6 +61,14 @@ const columnConfig = {
   askSize: {
     name: 'askSize',
     label: 'Ask Size',
+    type: {
+      name: 'number'
+    },
+    aggregate: 'avg'
+  },
+  averagePrice: {
+    label: 'Average Price',
+    name: 'averagePrice',
     type: {
       name: 'number'
     },
@@ -77,6 +99,20 @@ const columnConfig = {
     },
     aggregate: 'avg'
   },
+  ccy: {
+    name: 'ccy',
+    label: 'CCY',
+    width: 60
+  },
+  childCount: {
+    label: 'Child Count',
+    name: 'childCount',
+    type: {
+      name: 'number'
+    },
+    aggregate: 'avg'
+  },
+
   close: {
     label: 'Close',
     name: 'close',
@@ -85,6 +121,18 @@ const columnConfig = {
       formatting: { decimals: 2, zeroPad: true }
     },
     aggregate: 'avg'
+  },
+  clOrderId: {
+    label: 'Child Order ID',
+    name: 'clOrderId',
+    width: 60
+  },
+  created: {
+    label: 'Created',
+    name: 'created',
+    type: {
+      name: 'timestamp'
+    }
   },
   currency: {
     name: 'currency',
@@ -105,14 +153,38 @@ const columnConfig = {
       name: 'string'
     }
   },
-  filledQuantity: {
-    name: 'filledQuantity',
-    label: 'filled qty',
+  filledQty: {
+    label: 'Filled Qty',
+    name: 'filledQty',
     width: 80,
     type: {
       name: 'number',
       renderer: { name: 'progress', associatedField: 'quantity' },
       format: { decimals: 0 }
+    }
+  },
+  filledQuantity: {
+    label: 'Filled Qty',
+    name: 'filledQuantity',
+    width: 80,
+    type: {
+      name: 'number',
+      renderer: { name: 'progress', associatedField: 'quantity' },
+      format: { decimals: 0 }
+    }
+  },
+  id: {
+    name: 'id',
+    label: 'ID',
+    type: {
+      name: 'string'
+    }
+  },
+  idAsInt: {
+    label: 'ID (int)',
+    name: 'idAsInt',
+    type: {
+      name: 'string'
     }
   },
   isin: {
@@ -131,9 +203,32 @@ const columnConfig = {
     },
     aggregate: 'avg'
   },
+  lastUpdate: {
+    label: 'Last Update',
+    name: 'lastUpdate',
+    type: {
+      name: 'timestamp'
+    }
+  },
   lotSize: {
     label: 'Lot Size',
     name: 'lotSize',
+    width: 80,
+    type: {
+      name: 'number'
+    }
+  },
+  max: {
+    label: 'Max',
+    name: 'max',
+    width: 80,
+    type: {
+      name: 'number'
+    }
+  },
+  mean: {
+    label: 'Mean',
+    name: 'mean',
     width: 80,
     type: {
       name: 'number'
@@ -148,11 +243,65 @@ const columnConfig = {
     },
     aggregate: 'avg'
   },
+  openQty: {
+    label: 'Open Qty',
+    name: 'openQuantity',
+    width: 80,
+    type: {
+      name: 'number',
+      format: { decimals: 0 }
+    }
+  },
+  orderId: {
+    label: 'Order ID',
+    name: 'orderId',
+    width: 60
+  },
+
   phase: {
     label: 'Phase',
     name: 'phase',
     type: {
       name: 'string'
+    }
+  },
+  parentOrderId: {
+    label: 'Parent Order Id',
+    name: 'parentOrderId',
+    width: 80,
+    type: {
+      name: 'number'
+    }
+  },
+  orderType: {
+    label: 'Order Type',
+    name: 'orderType',
+    type: {
+      name: 'string'
+    }
+  },
+  price: {
+    label: 'Price',
+    name: 'price',
+    type: {
+      name: 'number',
+      formatting: { decimals: 2, zeroPad: true }
+    },
+    aggregate: 'avg'
+  },
+  priceLevel: {
+    label: 'Price Level',
+    name: 'priceLevel',
+    type: {
+      name: 'string'
+    }
+  },
+  quantity: {
+    label: 'Quantity',
+    name: 'quantity',
+    width: 80,
+    type: {
+      name: 'number'
     }
   },
   ric: {
@@ -162,18 +311,92 @@ const columnConfig = {
       name: 'string'
     }
   },
-  quantity: {
-    name: 'quantity',
-    width: 80,
-    type: {
-      name: 'number'
-    }
-  },
   scenario: {
     label: 'Scenario',
     name: 'scenario',
     type: {
       name: 'string'
+    }
+  },
+  side: {
+    label: 'Side',
+    name: 'side',
+    type: {
+      name: 'string'
+    }
+  },
+  size: {
+    label: 'Size',
+    name: 'size',
+    width: 80,
+    type: {
+      name: 'number'
+    }
+  },
+  status: {
+    label: 'Status',
+    name: 'status',
+    type: {
+      name: 'string'
+    }
+  },
+  strategy: {
+    label: 'Strategy',
+    name: 'strategy',
+    type: {
+      name: 'string'
+    }
+  },
+  table: {
+    label: 'Table',
+    name: 'table',
+    type: {
+      name: 'string'
+    }
+  },
+  trader: {
+    label: 'Trader',
+    name: 'trader',
+    type: {
+      name: 'string'
+    }
+  },
+  uniqueId: {
+    label: 'Unique ID',
+    name: 'uniqueId',
+    type: {
+      name: 'string'
+    }
+  },
+  updateCount: {
+    label: 'Update Count',
+    name: 'updateCount',
+    width: 80,
+    type: {
+      name: 'number'
+    }
+  },
+  updatesPerSecond: {
+    label: 'Updates Per Second',
+    name: 'updatesPerSecond',
+    width: 80,
+    type: {
+      name: 'number'
+    }
+  },
+  user: {
+    label: 'User',
+    name: 'user',
+    type: {
+      name: 'string'
+    }
+  },
+  volLimit: {
+    label: 'Vol Limit',
+    name: 'volLimit',
+    width: 80,
+    type: {
+      name: 'number'
     }
   }
 };

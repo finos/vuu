@@ -3,18 +3,20 @@ import { exec, formatBytes } from './utils.mjs';
 // import kleur from 'kleur';
 
 const entryPoints = [
-  'index.jsx',
-  'features/filtered-grid.js',
-  'features/metrics.js',
-  'features/simple-component.js'
+  'src/index.jsx',
+  'src/features/filtered-grid/index.js',
+  'src/features/metrics/index.js',
+  'src/features/simple-component/index.js'
 ];
+
+const outbase = 'src';
 const outdir = 'public';
 
 const stripOutdir = (file) => file.replace(RegExp(`^${outdir}\/`), '');
 
 async function main() {
   console.log('[CLEAN]');
-//  await exec("find -E public -regex '.*.(js|css)(.map)?$' -delete");
+  //  await exec("find -E public -regex '.*.(js|css)(.map)?$' -delete");
 
   try {
     const { metafile } = await build({
@@ -27,6 +29,7 @@ async function main() {
       metafile: true,
       minify: true,
       outdir,
+      outbase,
       sourcemap: true,
       splitting: true
     }).catch(() => process.exit(1));
@@ -36,7 +39,9 @@ async function main() {
     await exec('cp ../../node_modules/@vuu-ui/data-worker/worker.js.map ./public/worker.js.map');
 
     entryPoints.forEach((fileName) => {
-      const outJS = `${outdir}/${fileName.replace(/x$/, '')}`;
+      const outJS = `${outdir}/${fileName
+        .replace(new RegExp(`^${outbase}\\/`), '')
+        .replace(/x$/, '')}`;
       const outCSS = outJS.replace(/js$/, 'css');
       const {
         outputs: { [outJS]: jsOutput, [outCSS]: cssOutput }

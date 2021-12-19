@@ -9,9 +9,9 @@ import { Dialog } from '@vuu-ui/layout';
 import './App.css';
 
 export const serverUrl = '127.0.0.1:8090/websocket';
-const filteredGridUrl = './features/filtered-grid.js';
-const filteredGridCss = './features/filtered-grid.css';
-const simpleComponentUrl = './features/simple-component.js';
+const filteredGridUrl = './features/filtered-grid/index.js';
+const filteredGridCss = './features/filtered-grid/index.css';
+const simpleComponentUrl = './features/simple-component/index.js';
 
 const metricsUrl = './features/metrics.js';
 const metricsCss = './features/metrics.css';

@@ -102,7 +102,7 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
           columnNames: dataSource.columns,
           namedFilters
         })}>
-        <Button className="vuuFilterButton" data-icon="filter" />
+        <Button className="vuFilterButton" data-icon="filter" />
 
         <ParsedInput onCommit={handleCommit} />
       </ParserProvider>
