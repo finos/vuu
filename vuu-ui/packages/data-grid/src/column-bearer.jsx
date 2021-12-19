@@ -256,8 +256,8 @@ const ColumnBearer = forwardRef(
           {rows.map((row, idx) => (
             <div
               key={idx}
-              className={cx('hwDataGridGridRow', {
-                'hwDataGridGridRow-even': idx % 2 === 0
+              className={cx('hwDataGridRow', {
+                'hwDataGridRow-even': idx % 2 === 0
               })}
               style={{
                 height: rowHeight,

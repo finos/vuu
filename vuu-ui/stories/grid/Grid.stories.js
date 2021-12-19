@@ -5,6 +5,7 @@ import { RemoteDataSource } from '@vuu-ui/data-remote';
 
 import { instrumentSchema, instrumentSchemaFixed, instrumentSchemaHeaders } from './columnMetaData';
 
+import { Flexbox, View } from '@vuu-ui/layout';
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
 
 import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
@@ -232,7 +233,7 @@ export const BasicGridWithFilter = () => {
           columnNames: dataConfig.columns,
           namedFilters
         })}>
-        <div style={{ width: 600 }}>
+        <div style={{ width: 600, flex: '0 0 32px' }}>
           <ParsedInput onCommit={handleCommit} />
         </div>
       </ParserProvider>
@@ -242,8 +243,19 @@ export const BasicGridWithFilter = () => {
         height={600}
         ref={gridRef}
         renderBufferSize={20}
-        style={{ margin: 10, border: 'solid 1px #ccc' }}
+        style={{ border: 'solid 1px #ccc' }}
       />
     </>
+  );
+};
+
+export const FilteredGridInLayout = () => {
+  return (
+    <Flexbox style={{ width: 800, height: 600, flexDirection: 'column' }}>
+      <View title="DataGrid" header style={{ flex: 1 }} resizeable>
+        <BasicGridWithFilter />
+      </View>
+      <div style={{ flex: 1, backgroundColor: 'blue' }} data-resizeable></div>
+    </Flexbox>
   );
 };

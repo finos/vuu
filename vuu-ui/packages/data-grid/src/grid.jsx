@@ -33,7 +33,6 @@ const baseClass = 'hwDataGrid';
 const Grid = forwardRef(function Grid(props, ref) {
   const viewportRef = useRef(null);
   const [columnDragData, setColumnDragData] = useState(null);
-  const draggingColumn = useRef(false);
   const { className, onConfigChange = noop, onRowClick } = props;
   const [rootRef, gridModel, dataSource, dispatchGridModelAction, custom] = useGridModel(props);
 
@@ -51,7 +50,6 @@ const Grid = forwardRef(function Grid(props, ref) {
 
   const invokeScrollAction = useScrollInducedLayoutShift({
     gridModel,
-    isColumnDragging: !!draggingColumn.current,
     rootRef,
     viewportRef
   });
@@ -103,7 +101,6 @@ const Grid = forwardRef(function Grid(props, ref) {
         columnPositions: measureColumns(gridModel, left),
         mousePosition
       });
-      draggingColumn.current = true;
     },
     [gridModel, invokeScrollAction, rootRef]
   );
@@ -111,7 +108,6 @@ const Grid = forwardRef(function Grid(props, ref) {
     (phase, ...args) => {
       const [column, insertIdx] = args;
       setColumnDragData(null);
-      draggingColumn.current = false;
       // TODO we need the final scrollLeft here
       invokeScrollAction({ type: 'scroll-end-horizontal' });
       dispatchGridModelAction({ type: 'add-col', column, insertIdx });

@@ -18,10 +18,11 @@
   height: var(--hwParsedInput-height);
 }
 
-.vuuFilteredGrid .hwView-main {
-  position: relative;
-}
-
 .vuuFilteredGrid .hwDataGrid {
+  bottom: 0;
   height: calc(100% - 30px);
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 50px;
 }

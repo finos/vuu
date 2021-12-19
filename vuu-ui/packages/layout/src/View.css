@@ -30,6 +30,7 @@
   flex-wrap: var(--hwView-flex-wrap, nowrap);
   flex: 1;
   overflow: hidden;
+  position: relative;
 }
 
 .hwView-main > * {
