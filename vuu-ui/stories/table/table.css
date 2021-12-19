@@ -1,101 +1,78 @@
-html {
-  box-sizing: border-box;
-  margin: 0;
-}
-body {
-  margin: 0;
-}
-*,
-*:before,
-*:after {
-  box-sizing: inherit;
+div#page {
+  max-width: 900px; /* just to demonstrate horizontal scrolling & stickiness */
 }
 
-table,
-tbody,
-tr,
-thead {
-  display: block;
-}
-
-.table-scroll {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-
-.hwTable {
-  --header-height: 32px;
-  --row-height: 25px;
-
-  border-collapse: separate;
-  border-spacing: 0;
-  display: flex;
-  flex-direction: column;
-  height: 564px;
-  overflow-x: auto;
-  width: 100%;
-}
-
-thead,
-tbody,
-tfoot {
-  width: max-content;
-}
-
-thead,
-tfoot {
-  background-color: green;
-  box-sizing: border-box;
-  flex: 0 0 var(--header-height);
-  overflow: hidden;
-}
-
-thead th {
-  background: #333;
-  border-bottom: solid 2px red;
-  color: #fff;
-  height: var(--header-height);
-  top: 0;
-}
-
-tfoot th,
-tfoot td {
-  border-top: solid 2px red;
-}
-
-tfoot tr {
-  height: 100%;
-}
-
-tbody {
-  flex: 1 1 0;
-  overflow-y: auto;
-  overflow-x: visible;
-}
-
-tr {
-  display: flex;
-  /* height: var(--row-height); */
-}
-
-th,
-td {
-  background: #fff;
-  border-bottom: 1px solid #000;
-  border-right: 1px solid #000;
-  flex: 0 1 300px;
-  min-width: 250px;
-  padding: 5px 10px;
-}
-
-th:first-child,
-td:first-child {
-  background: #ccc;
+div#chartWrapper {
   position: sticky;
+  left: 0px;
+  top: 0px;
+  width: 700px;
+  height: 900px;
+  overflow: hidden;
+}
+
+table#chart {
+  position: absolute;
+  top: 0;
   left: 0;
 }
-thead th:first-child,
-tfoot th:first-child {
-  z-index: 5;
+
+.table-root {
+  position: absolute;
+  left: 95px;
+  top: 45px;
+  width: 715px;
+  height: 915px;
+}
+
+#scroller {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 715px;
+  height: 915px;
+  overflow: auto;
+}
+
+table#chart {
+  width: 1600px;
+  margin: 0;
+  border: none;
+  background-color: #fff;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-left: 1px solid #ccc;
+}
+table#chart th {
+  background: #777;
+  border-right: 1px solid #999;
+  color: #fff;
+  padding: 3px;
+  position: sticky;
+  top: 0;
+  height: 25px;
+  /* ensure header row sits atop everything else when scrolling down */
+  z-index: 1;
+}
+table#chart td {
+  background: #fff;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  padding: 4px 5px;
+}
+/* ensure first header cell sits atop everything else when scrolling right */
+table#chart th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+/* make first column sticky when scrolling right */
+table#chart td:first-child {
+  position: sticky;
+  left: 0;
+  border-right-color: #aaa;
+}
+
+table#chart tr {
+  height: 25px;
 }

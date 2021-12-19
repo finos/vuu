@@ -36,16 +36,19 @@
   },
   "devDependencies": {
     "@heswell/component-anatomy": "0.0.4",
-    "@storybook/addon-actions": "^6.1.21",
-    "@storybook/addon-essentials": "^6.1.21",
-    "@storybook/addon-links": "^6.1.21",
-    "@storybook/node-logger": "^6.1.21",
-    "@storybook/react": "^6.1.21",
+    "@storybook/addon-actions": "^6.4.9",
+    "@storybook/addon-essentials": "^6.4.9",
+    "@storybook/addon-links": "^6.4.9",
+    "@storybook/node-logger": "^6.4.9",
+    "@storybook/react": "^6.4.9",
     "eslint": "^8.1.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.26.1",
     "eslint-plugin-react-hooks": "^4.2.1-alpha-6bce0355c-20211031",
     "kleur": "^4.1.4"
+  },
+  "resolutions": {
+    "immer": "8.0.3"
   }
 }
