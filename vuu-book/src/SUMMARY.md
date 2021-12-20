@@ -26,6 +26,7 @@
   - [Remote Procedure Calls](./rpc/scopes.md)
   - [Menu Items](./rpc/Menu_items.md)
 - [Wire Protocol](./wire/wire_protocol.md)
+  - [Viewport Ack-Nack](./wire/viewport-ack-nack.md)
 - [The UI](./ui/ui.md)
   - [Fluid UIs](./ui/fluid-ui.md)
   - [The Grid](./ui/grid.md)
