@@ -20,7 +20,7 @@
   --heading-border-color: var(--grid-heading-border-color, #d4d4d4);
   --line-number-bg: #d4d4d4;
   --line-number-border-color: #ccc;
-  --text-color: var(--grid-text-color, black);
+  --text-color: var(--grid-text-color, var(--text2));
   --focus-visible-border-color: var(--hw-focus-visible-border-color, rgb(141, 154, 179));
 
   background-color: var(--grid-background);
@@ -44,7 +44,7 @@
 }
 
 .Viewport {
-  background-color: white;
+  background-color: var(--surface2);
 
   outline: none;
   overflow-x: hidden;

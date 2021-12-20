@@ -19,10 +19,7 @@
 }
 
 .vuFilteredGrid .hwDataGrid {
-  bottom: 0;
   height: calc(100% - 30px);
-  left: 0;
+  inset: var(--hwParsedInput-height) 0 0 0;
   position: absolute;
-  right: 0;
-  top: 50px;
 }
