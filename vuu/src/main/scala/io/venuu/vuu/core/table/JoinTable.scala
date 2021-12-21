@@ -603,7 +603,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     val keysByTable = getFKForPK(key)
 
     if (keysByTable == null) {
-      logger.warn(s"tried to remove key $key in join table ${getTableDef.name} but couldn't as not in keys")
+      logger.debug(s"tried to remove key $key in join table ${getTableDef.name} but couldn't as not in keys")
       true
     }
     else {

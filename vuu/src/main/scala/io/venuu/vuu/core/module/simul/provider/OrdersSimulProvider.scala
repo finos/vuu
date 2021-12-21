@@ -57,12 +57,25 @@ class OrderSimulator(table: DataTable)(implicit time: Clock) {
   private val seededRandom = new SeededRandomNumbers(time.now())
   private val ordersCount = new SeededRandomNumbers(time.now())
 
+  val nycRICS = Array("AAPL", "GOOG", "TWTR")
+  val ldnRICS = Array("BT.L", "BP.L", "RDSh.L")
+
+  def randomSymbolNyc(): String = {
+    val index = seededRandom.seededRand(0, nycRICS.length)
+    nycRICS(index)
+  }
+
+  def randomSymbolLdn(): String = {
+    val index = seededRandom.seededRand(0, ldnRICS.length)
+    ldnRICS(index)
+  }
+
   def createOrderNyc(i: Int) = {
-    createOrder(i, "NYC", "USD", "AAPL.N")
+    createOrder(i, "NYC", "USD", randomSymbolNyc())
   }
 
   def createOrderLdn(i: Int) = {
-    createOrder(i, "LDN", "GBp", "VOD.L")
+    createOrder(i, "LDN", "GBp", randomSymbolLdn())
   }
 
   def createOrder(i: Int, location: String, currency: String, symbol: String) = {
