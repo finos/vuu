@@ -113,19 +113,6 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     emptyQueues(viewPort);
 
-//    viewPortContainer.closeNode(viewPort2.id, "$root|chris")
-//    viewPortContainer.runGroupByOnce()
-//    viewPortContainer.runOnce()
-//
-//    val combinedUpdates2 = combineQs(viewPort2)
-//
-//    assertVpEq(combinedUpdates2) {
-//      Table(
-//        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-//        (1, false, "$root|chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
-//      )
-//    }
-
     val groupByColumns3 = List(orderPrices.columnForName("ric"))
 
     val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort2.id, DefaultRange, vpcolumns2,
