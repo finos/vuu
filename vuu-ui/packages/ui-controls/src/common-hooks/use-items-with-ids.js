@@ -46,7 +46,7 @@ export const useItemsWithIds = (
         const expanded = nonCollapsible ? undefined : defaultExpanded;
         const childPath = path ? `${path}.${i}` : `${i}`;
         const item = proxy.set({
-          id: `${idRoot}-${childPath}`,
+          id: proxy.id ?? `${idRoot}-${childPath}`,
           count:
             !isNonCollapsibleGroupNode && expanded === undefined
               ? 0
@@ -80,10 +80,9 @@ export const useItemsWithIds = (
     [collapsibleHeaders, createProxy, defaultExpanded, idRoot]
   );
 
-  const [count, source] = useMemo(
-    () => normalizeSource(sourceProp, { index: 0 }),
-    [normalizeSource, sourceProp]
-  );
+  const [count, source] = useMemo(() => {
+    return normalizeSource(sourceProp, { index: 0 });
+  }, [normalizeSource, sourceProp]);
 
   return [count, source];
 };

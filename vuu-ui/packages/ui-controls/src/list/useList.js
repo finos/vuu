@@ -19,6 +19,7 @@ export const useList = ({
   onHighlight: onHighlightProp,
   selected,
   selection,
+  selectionKeys,
   sourceWithIds
 }) => {
   const lastSelection = useRef(EMPTY_ARRAY);
@@ -54,7 +55,8 @@ export const useList = ({
     onChange,
     label: 'useList',
     selected,
-    selection
+    selection,
+    selectionKeys
   });
 
   const typeaheadHook = useTypeahead({

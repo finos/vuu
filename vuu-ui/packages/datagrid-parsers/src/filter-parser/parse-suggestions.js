@@ -52,8 +52,7 @@ export const getSuggestions = (
   core.ignoredTokens = new Set([FilterParser.LPAREN]);
 
   let { text, index, alternative } = computeTokenIndexAndText(parser, parseTree, caretPosition);
-
-  // console.log(
+  // onsole.log(
   //   `[parseSuggestions] %ccollect candidates, token text='${text}', caret at ${caretPosition}, token at ${index} isList ${isList}
   //   %calternative ${JSON.stringify(alternative)}
   // `,
@@ -80,12 +79,15 @@ export const getSuggestions = (
   const ruleCount = rules.size + (alternativeRules?.size ?? 0);
   const tokenCount = tokens.size + (alternativeTokens?.size ?? 0);
 
-  // onsole.log(`
+  // onsole.log(
+  //   `
   //     rules ${rules.size} tokens ${tokens.size}
   //     alternativeRules ${alternativeRules?.size ?? 0} alternativeTokens ${
-  //   alternativeTokens?.size ?? 0
-  // }
-  //   `);
+  //     alternativeTokens?.size ?? 0
+  //   } alternativeText = '${alternativeText}'
+  //   `,
+  //   alternativeTokens
+  // );
 
   if (ruleCount === 0 && tokenCount === 0) {
     return [];
@@ -150,6 +152,15 @@ export const getSuggestions = (
     });
   }
 
+  if (suggestions.size === 0 && alternativeTokens?.size > 0 && alternativeText) {
+    alternativeTokens.forEach((_, key) => {
+      const candidate = textValue(parser.vocabulary.getDisplayName(key));
+      if (candidate) {
+        maybeSuggest(candidate, alternativeText, lastToken.text, suggestions);
+      }
+    });
+  }
+
   return suggestions.toArray();
 };
 
@@ -158,6 +169,9 @@ class AsyncList {
   push(item) {
     this.#list.push(item);
     return this;
+  }
+  get size() {
+    return this.#list.length;
   }
   async toArray() {
     const values = await Promise.all(this.#list);

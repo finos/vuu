@@ -10,14 +10,14 @@ export const GROUP_SELECTION_NONE = 'none';
 export const GROUP_SELECTION_SINGLE = 'single';
 export const GROUP_SELECTION_CASCADE = 'cascade';
 
+const defaultSelectionKeys = ['Enter', ' '];
+
 const NO_HANDLERS = {};
 
 const isCollapsibleItem = (item) => item.expanded !== undefined;
 
 export const groupSelectionEnabled = (groupSelection) =>
   groupSelection && groupSelection !== GROUP_SELECTION_NONE;
-
-const defaultSelectionKeys = ['Enter', ' '];
 
 export const useSelection = ({
   count,

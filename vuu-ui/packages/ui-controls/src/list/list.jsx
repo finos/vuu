@@ -44,6 +44,7 @@ const List = forwardRef(function List(
     id: idProp,
     selected: selectedProp,
     selection = 'single',
+    selectionKeys,
     showEmptyMessage = false,
     source,
     stickyHeaders,
@@ -57,7 +58,8 @@ const List = forwardRef(function List(
   const [totalItemCount, sourceWithIds] = useItemsWithIds(source || children, id, {
     collapsibleHeaders,
     defaultExpanded: true,
-    createProxy: source ? undefined : createListProxy
+    createProxy: source ? undefined : createListProxy,
+    label: 'List'
   });
 
   const {
@@ -80,6 +82,7 @@ const List = forwardRef(function List(
     onHighlight,
     selected: selectedProp,
     selection,
+    selectionKeys,
     sourceWithIds,
     totalItemCount
   });

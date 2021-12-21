@@ -13,7 +13,7 @@ class ExprErrorListener {
   }
 
   syntaxError(recognizer, offendingSymbol, line, column, msg, err) {
-    // console.log(`%cerror ${msg}`, 'color: red;font-weight: bold;');
+    // onsole.log(`%cerror ${msg}`, 'color: red;font-weight: bold;');
     this.errors.push(err);
   }
 }
@@ -31,8 +31,8 @@ export const parseFilter = (input, typedInput = input, expandSuggestions, isList
   parser.addErrorListener(errorListener);
 
   parser.buildParseTrees = true;
-
   const parseTree = parser.expression();
+  // onsole.log({ tokens: parser.inputStream.tokens.map((t) => t.text) });
   const visitor = new FilterVisitor();
   const parseResult = visitor.visit(parseTree);
 
@@ -54,11 +54,15 @@ export const parseFilter = (input, typedInput = input, expandSuggestions, isList
       parseResult,
       isList
     );
+
     return [input, parseResult, errors, tokens, suggestions];
   } catch (err) {
     if (err.type === 'open-list') {
       // TODO do we need to check whether input already ends with space or can we assume it ?
       return parseFilter(`${input}${err.text}`, undefined, expandSuggestions, true);
+    } else {
+      console.error(err);
+      return [];
     }
   }
 };

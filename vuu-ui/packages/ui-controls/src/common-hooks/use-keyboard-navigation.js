@@ -89,14 +89,14 @@ export const useKeyboardNavigation = ({
 
   const handleKeyDown = useCallback(
     (e) => {
-      if (isNavigationKey(e)) {
+      if (indexPositions.length > 0 && isNavigationKey(e)) {
         e.preventDefault();
         e.stopPropagation();
         keyBoardNavigation.current = true;
         navigateChildItems(e);
       }
     },
-    [navigateChildItems]
+    [indexPositions, navigateChildItems]
   );
 
   const listProps = useMemo(

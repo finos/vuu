@@ -78,6 +78,25 @@ export class ServerProxy {
         case Message.GET_TABLE_META:
           this.sendMessageToServer({ type, table: message.table }, message.requestId);
           break;
+        case Message.RPC_CALL:
+          {
+            // below duplicated - tidy up
+            const { method } = message;
+            const [service, module] = getRpcService(method);
+            this.sendMessageToServer(
+              {
+                type,
+                service,
+                method,
+                params: message.params || [viewport.serverViewportId],
+                namedParams: {}
+              },
+              message.requestId,
+              { module }
+            );
+          }
+          break;
+
         default:
       }
       return;
@@ -251,7 +270,7 @@ export class ServerProxy {
               type,
               service,
               method,
-              params: [viewport.serverViewportId],
+              params: message.params || [viewport.serverViewportId],
               namedParams: {}
             },
             message.requestId,

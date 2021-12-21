@@ -2,15 +2,41 @@ const QUOTE = '"';
 
 export const getCompletion = (
   suggestions,
+  itemId,
+  cursorAtEndOfText = false,
+  selectedCount,
+  lookAhead = false
+) => {
+  const suggestion = suggestions.find((suggestion) => suggestion.id === itemId) || suggestions[0];
+  let completion = '';
+  let typedName;
+
+  if (suggestion) {
+    ({ completion = '', typedName } = suggestion);
+    if (completion === 'EOF') {
+      return [''];
+    }
+  }
+
+  if (completion.indexOf(' ') != -1) {
+    completion = QUOTE + completion + QUOTE;
+  }
+
+  const leadingSpace = getLeadingSpace(completion, cursorAtEndOfText, selectedCount, lookAhead);
+
+  const parserTextWithTypedSubstitution = lookAhead ? undefined : typedName;
+
+  return [leadingSpace + completion, parserTextWithTypedSubstitution];
+};
+
+export const getCompletionAtIndex = (
+  suggestions,
   highlightedIdx,
   cursorAtEndOfText = false,
   selectedCount,
   lookAhead = false
 ) => {
-  const idx =
-    highlightedIdx === undefined || highlightedIdx >= suggestions.length ? 0 : highlightedIdx;
-
-  const suggestion = suggestions[idx];
+  const suggestion = suggestions.length > highlightedIdx ? suggestions[highlightedIdx] : undefined;
   let completion = '';
   let typedName;
 

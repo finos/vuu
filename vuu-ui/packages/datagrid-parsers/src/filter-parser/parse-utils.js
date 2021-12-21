@@ -25,11 +25,20 @@ const caretAtEndOfText = (tokens, caretPosition) => {
   }
 };
 
+export const filterAsQuery = (filter) => {
+  let query = '';
+  for (let [key, value] of Object.entries(filter)) {
+    if (key === 'column' || key === 'op' || key === 'value') {
+      query += `${value} `;
+    } else if (key === 'values') {
+      query += `[${value.join(',')}] `;
+    }
+  }
+  return query;
+};
+
 export function extractFilter([parseResult]) {
-  console.log(JSON.stringify(parseResult, null, 2));
-
   const { tokenPosition, label, ...filter } = parseResult;
-
   return { filter, name: label };
 }
 

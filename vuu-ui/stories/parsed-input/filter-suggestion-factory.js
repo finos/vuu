@@ -89,6 +89,12 @@ const suggestColumnValues = async (column, text, isListItem) => {
       }
       break;
 
+    case 'exchange':
+      {
+        const values = ['XAMS/ENA-MAIN', 'XLON/LSE-SETS', 'XNGS/NAS-GSM', 'XNYS/NYS-MAIN'];
+        result = suggestedValues(values, text, isListItem);
+      }
+      break;
     case 'status':
       {
         const values = ['cancelled', 'complete', 'partial', 'error', 'suspended'];

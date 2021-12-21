@@ -1,49 +1,6 @@
-const suggestColumnValues = async (column, text, isListItem) => {
-  let result;
-
-  if (column === 'currency') {
-    const values = ['CAD', 'EUR', 'GBX', 'USD'];
-    result = suggestedValues(values, text, isListItem);
-  } else {
-    result = _suggestedColumnValues(instruments, column, text, isListItem);
-  }
-  return Promise.resolve(result);
-};
-
-const _suggestedColumnValues = (rows, column, text = '', isListItem = false) => {
-  const key = columnKeys.get(column);
-  const lcText = text.toLowerCase();
-  let count = 0;
-  let values = new Set();
-  const result = [];
-
-  for (const row of rows) {
-    const value = row[key];
-    if (text === '' || value.toLowerCase().startsWith(lcText)) {
-      if (!values.has(value)) {
-        values.add(value);
-        count += 1;
-      }
-
-      if (count > 20) {
-        break;
-      }
-    }
-  }
-
-  for (const value of values) {
-    result.push({
-      value,
-      completion: value.toLowerCase().startsWith(text.toLowerCase())
-        ? value.slice(text.length)
-        : value,
-      isListItem
-    });
-  }
-
-  result.sort((a, b) => (a.value > b.value ? 1 : a.value < b.value ? -1 : 0));
-
-  return result;
+const suggestColumnValues = async (column, text, isListItem, getSuggestions, table) => {
+  const suggestions = await getSuggestions([table, column]);
+  return suggestedValues(suggestions, text, isListItem);
 };
 
 const suggestColumnNames = (columnNames, text, isListItem) => {
@@ -104,13 +61,19 @@ const suggestNamedFilters = async (filters, text) => {
 
 // note: Returns a promise
 const filterSuggestions =
-  ({ columnNames, namedFilters = [] }) =>
+  ({ columnNames, namedFilters = [], getSuggestions, table }) =>
   (result, { token: tokenId, text, isListItem }) => {
     switch (tokenId) {
       case 'COLUMN-NAME':
         return suggestColumnNames(columnNames, text, isListItem);
       case 'COLUMN-VALUE':
-        return suggestColumnValues(getCurrentColumn(result), text, isListItem);
+        return suggestColumnValues(
+          getCurrentColumn(result),
+          text,
+          isListItem,
+          getSuggestions,
+          table
+        );
       case 'FILTER-NAME':
         return filterNameSavePrompt(text);
       case 'NAMED-FILTER':

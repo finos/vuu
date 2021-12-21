@@ -153,7 +153,6 @@ function buildColumnsAndApplyMeasurements(state) {
     noColumnHeaders,
     rowHeight
   } = state;
-  console.log(`buildColumnsAndApplyMeasurements from ${columns.map((c) => [c.width, c.flex])}`);
   const { columnNames, columnGroups, headingDepth } = buildColumnGroups(state, columns);
   const totalHeaderHeight = noColumnHeaders
     ? customHeaderHeight

@@ -127,34 +127,18 @@
 }
 
 .with-checkbox .hwListItem:after {
-  border-style: solid;
-  border-width: var(--checkbox-border-width);
-  border-color: var(--checkbox-border-color);
+  background-color: var(--checkbox-tick);
   content: '';
   height: 12px;
   left: 3px;
   margin-top: -7px;
+  mask: var(--svg-checkbox) center center/ 15px 15px;
+  mask-repeat: no-repeat;
   position: absolute;
   top: 50%;
   width: 12px;
 }
 
 .with-checkbox .hwListItem[aria-selected='true']:after {
-  border-width: var(--checkbox-border-width);
-  border-color: var(--checkbox-border-color);
-  content: '';
-  mask: linear-gradient(#fff 0 0) top / 100% var(--checkbox-border-width),
-    linear-gradient(#fff 0 0) bottom/100% var(--checkbox-border-width),
-    linear-gradient(#fff 0 0) left / var(--checkbox-border-width) 100%,
-    linear-gradient(#fff 0 0) right / var(--checkbox-border-width) 100%,
-    var(--svg-checkbox-small) center center/ 11px 11px;
-  mask-repeat: no-repeat;
-
-  background-color: var(--checkbox-tick);
-  height: 12px;
-  left: 3px;
-  margin-top: -7px;
-  position: absolute;
-  top: 50%;
-  width: 12px;
+  mask: var(--svg-checkbox-checked) center center/ 15px 15px;
 }

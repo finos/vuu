@@ -61,7 +61,7 @@
 }
 
 .hwParsedInput-clear .hwIconContainer {
-  --menu-icon-size: 18px;
+  --menu-icon-size: 12px;
   --menu-icon: var(--svg-close-circle);
   --menu-item-icon-color: black;
   background-color: var(--menu-item-icon-color);

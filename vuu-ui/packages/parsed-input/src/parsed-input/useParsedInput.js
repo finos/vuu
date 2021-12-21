@@ -8,6 +8,8 @@ import {
 import { useInputEditing } from './use-input-editing';
 import { useSuggestions } from './use-suggestions';
 
+const ENTER_ONLY = ['Enter'];
+
 export const useParsedInput = ({
   // defaultHighlightedIdx,
   highlightedIdx,
@@ -26,7 +28,7 @@ export const useParsedInput = ({
   textRef,
   sourceWithIds
 }) => {
-  const dataHook = useHierarchicalData(sourceWithIds);
+  const dataHook = useHierarchicalData(sourceWithIds, 'ParsedInput');
 
   const dropdownHook = useDropdownBehaviour({
     open,
@@ -73,7 +75,8 @@ export const useParsedInput = ({
     label: 'useParsedInput',
     onChange: onSelectionChange,
     selected,
-    selection: isMultiSelect ? 'checkbox' : 'single'
+    selection: isMultiSelect ? 'checkbox' : 'single',
+    selectionKeys: ENTER_ONLY
   });
 
   const editHook = useInputEditing({

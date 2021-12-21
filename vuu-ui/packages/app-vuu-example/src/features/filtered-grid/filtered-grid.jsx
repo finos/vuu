@@ -18,8 +18,6 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
   const { makeServiceRequest } = useContext(AppContext);
   const [namedFilters, setNamedFilters] = useState([]);
 
-  console.log(`filteredGrid`, props);
-
   const dataSource = useMemo(() => {
     let ds = loadSession('data-source');
     if (ds) {
@@ -64,11 +62,12 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
     [dispatch, save]
   );
 
-  const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction } = useViewserver({
-    rpcServer: dataSource,
-    onConfigChange: handleConfigChange,
-    onRpcResponse: makeServiceRequest
-  });
+  const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction, makeRpcCall } =
+    useViewserver({
+      rpcServer: dataSource,
+      onConfigChange: handleConfigChange,
+      onRpcResponse: makeServiceRequest
+    });
 
   const handleCommit = useCallback(
     (result) => {
@@ -81,6 +80,18 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
     [dataSource, namedFilters]
   );
 
+  const getSuggestions = useCallback(
+    async (params) => {
+      console.log(`get suggestions for ${JSON.stringify(params)}`);
+      return await makeRpcCall({
+        type: 'RPC_CALL',
+        method: 'getUniqueFieldValues',
+        params
+      });
+    },
+    [makeRpcCall]
+  );
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
@@ -89,7 +100,8 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
         parser={parseFilter}
         suggestionFactory={vuuSuggestions({
           columnNames: dataSource.columns,
-          namedFilters
+          namedFilters,
+          getSuggestions
         })}>
         <Button className="vuFilterButton" data-icon="filter" />
 

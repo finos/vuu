@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { getCompletion } from './input-utils';
 
 const LIST_COMPLETE = {
+  id: 'end-of-list',
   value: ']',
   completion: ']',
   displayValue: 'My list is complete',
@@ -11,41 +12,31 @@ const LIST_COMPLETE = {
 // search predicate
 const findComplete = (s) => s.value === 'EOF' || s.value === ']';
 
-const sortSelectedSuggestions = (selected, suggestions) => {
-  const selectedValues = selected.map((i) => suggestions[i].value);
+const mapidsToValues = (items, ids) => ids.map((id) => items.find((s) => s.id === id)?.value);
 
-  const sortedSuggestions =
-    suggestions.length > 0
-      ? suggestions.map((suggestion, i) => ({
-          ...suggestion,
-          i
-        }))
-      : suggestions;
+const sortSelectedSuggestions = (selectedIds, suggestions) => {
+  const sortedSuggestions = suggestions
+    .slice()
+    .sort(({ value: v1, id: i1 }, { value: v2, id: i2 }) => {
+      const s1 = selectedIds.includes(i1) ? 1 : 0;
+      const s2 = selectedIds.includes(i2) ? 1 : 0;
 
-  sortedSuggestions.sort(({ value: v1, i: i1 }, { value: v2, i: i2 }) => {
-    const s1 = selected.includes(i1) ? 1 : 0;
-    const s2 = selected.includes(i2) ? 1 : 0;
-
-    if (s1 === s2) {
-      if (v1 === ']') {
-        return -1;
-      } else if (v2 === ']') {
-        return 0;
-      } else if (v1 > v2) {
-        return 0;
+      if (s1 === s2) {
+        if (v1 === ']') {
+          return -1;
+        } else if (v2 === ']') {
+          return 0;
+        } else if (v1 > v2) {
+          return 0;
+        } else {
+          return -1;
+        }
       } else {
-        return -1;
+        return s2 - s1;
       }
-    } else {
-      return s2 - s1;
-    }
-  });
+    });
 
-  const sortedSelected = selectedValues.map((v) =>
-    sortedSuggestions.findIndex((s) => s.value === v)
-  );
-
-  return [sortedSelected, sortedSuggestions];
+  return sortedSuggestions;
 };
 
 // TODO when we backspace into a set of selections, how do we build the selected state from the existing entries ?
@@ -64,15 +55,15 @@ export const useSuggestions = ({
     indexPositions.length > 0 && indexPositions.every((suggestion) => suggestion.isListItem);
 
   const isCompleteSelected = useCallback(
-    (selectedIdx) => selectedIdx === indexPositions.findIndex(findComplete),
+    (selectedId) => selectedId === indexPositions.find(findComplete)?.id,
     [indexPositions]
   );
 
   const handleSuggestionSelection = useCallback(
-    (evt, selected) => {
+    (evt, selectedIds) => {
       const textRoot = textRef.current;
-      const [lastSelectedIdx] = selected.slice(-1);
-      if (isCompleteSelected(lastSelectedIdx)) {
+      const [lastSelectedId] = selectedIds.slice(-1);
+      if (isCompleteSelected(lastSelectedId)) {
         if (isMultiSelect) {
           // we've completed our selection from this list
           setCurrentText(textRoot + '] ');
@@ -89,29 +80,26 @@ export const useSuggestions = ({
         const cursorAtEndOfText = false;
         const [suggestedText, parserText = suggestedText] = getCompletion(
           indexPositions,
-          lastSelectedIdx,
+          lastSelectedId,
           cursorAtEndOfText,
-          selected.length
+          selectedIds.length
         );
 
         if (isMultiSelect) {
-          selectedValues.current = selected.map((idx) => indexPositions[idx].value);
+          selectedValues.current = mapidsToValues(indexPositions, selectedIds);
           const containsCloseList = indexPositions.find((s) => s.value === ']');
 
-          let updatedSelected = selected;
           let updatedSuggestions = indexPositions;
 
-          if (selected.length > 0 && !containsCloseList) {
+          if (selectedIds.length > 0 && !containsCloseList) {
+            // TODO have to be careful with new values - existing selection must be preserved
             updatedSuggestions = indexPositions.concat(LIST_COMPLETE);
-          } else if (selected.length < 1 && containsCloseList) {
+          } else if (selectedIds.length < 1 && containsCloseList) {
             updatedSuggestions = indexPositions.filter((s) => s !== LIST_COMPLETE);
           }
 
           // If we sort, we're going to have to change the selection
-          [updatedSelected, updatedSuggestions] = sortSelectedSuggestions(
-            updatedSelected,
-            updatedSuggestions
-          );
+          updatedSuggestions = sortSelectedSuggestions(selectedIds, updatedSuggestions);
           // The order of these statements is important
           setVisibleData(updatedSuggestions);
           setCurrentText(textRoot + suggestedText);
@@ -120,7 +108,7 @@ export const useSuggestions = ({
           const indexOfCommit = updatedSuggestions.findIndex(findComplete);
           setHighlighted(indexOfCommit);
           // bit of a hack here, see if we can't find a better way
-          return updatedSelected;
+          return selectedIds;
         } else {
           setCurrentText(textRoot + suggestedText);
           setText(textRoot + suggestedText + ' ', textRoot + parserText + ' ');
