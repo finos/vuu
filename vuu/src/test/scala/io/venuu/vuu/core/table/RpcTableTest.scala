@@ -4,6 +4,7 @@ import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.api.TableDef
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, ProviderContainer, RpcProvider}
@@ -51,7 +52,7 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val vpcolumns = List("clOrderId:String", "ric:String", "quantity:Double", "orderType:String", "price:Double", "priceLevel:String").map(orderEntry.getTableDef.columnForName(_))
 
-      val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orderEntry, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderEntry, DefaultRange, vpcolumns)
 
       provider.tick("CLORDID-1", Map("clOrderId" ->  "CLORDID-1", "ric" -> "VOD.L", "quantity" -> 200))
 

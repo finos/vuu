@@ -4,6 +4,7 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.core.table.{Columns, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
@@ -88,7 +89,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
 
       val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask").map(orderPrices.getTableDef.columnForName(_)).toList
 
-      val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
       viewPortContainer.runOnce()
 
@@ -104,7 +105,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
 
       val vpcolumns2 = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open").map(orderPrices.getTableDef.columnForName(_)).toList
 
-      val viewPort2 = viewPortContainer.change(session, viewPort.id, DefaultRange, vpcolumns2)
+      val viewPort2 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns2)
 
       viewPortContainer.runOnce()
 
@@ -118,7 +119,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
         )
       }
 
-      val viewPort3 = viewPortContainer.change(session, viewPort.id, DefaultRange, vpcolumns2, filterSpec = FilterSpec("ric = VOD.L") )
+      val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns2, filterSpec = FilterSpec("ric = VOD.L") )
 
       viewPortContainer.runOnce()
 

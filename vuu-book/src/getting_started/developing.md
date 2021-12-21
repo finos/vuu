@@ -39,3 +39,16 @@ If you are getting certificate errors when you connect, set this browser setting
 ```
 chrome://flags/#allow-insecure-localhost (set to true)
 ```
+
+## Developing the Vuu Book
+
+We use the excellent [mdbook](https://github.com/rust-lang/mdBook) rust module for developing the Vuu book. To use this you first have to install rust, and 
+then use the rust package manager cargo to install mdbook module. 
+
+To build the book locally, run: 
+
+```
+mdbook build vuu-book
+```
+
+in the root vuu directory. 

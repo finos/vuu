@@ -1,5 +1,6 @@
 package io.venuu.vuu.viewport
 
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.TableTestHelper.combineQs
 import io.venuu.vuu.util.table.TableAsserts.assertVpEqWithMeta
 import org.scalatest.GivenWhenThen
@@ -26,8 +27,8 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       createNOrderRows(ordersProvider, 4, ric = "BT.L", idOffset = 3)(timeProvider)
       createNOrderRows(ordersProvider, 5, ric = "BP.L", idOffset = 7)(timeProvider)
 
-      val viewPortOrders = viewPortContainer.create(session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
-      val viewPortPricesGroupBy = viewPortContainer.create(session, outQueue, highPriorityQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices, groupBy = GroupBy(List(prices.columnForName("exchange")), List()))
+      val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
+      val viewPortPricesGroupBy = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices, groupBy = GroupBy(List(prices.columnForName("exchange")), List()))
 
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()

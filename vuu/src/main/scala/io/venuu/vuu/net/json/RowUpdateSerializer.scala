@@ -19,12 +19,13 @@ class RowUpdateDeserializer extends JsonDeserializer[RowUpdate] {
     val rowKey = node.get("rowKey").asText()
     val updateType = node.get("updateType").asText()
     val selected = node.get("sel").asInt()
+    val vpRequestId = node.get("vpVersion").asText()
 
     val data = IteratorHasAsScala(node.withArray("data").asInstanceOf[JsonNode].elements()).asScala.toList
 
     val dataAsArray = data.map(_.asText()).toArray[Any]
 
-    RowUpdate(vpId, vpSize, rowIndex, rowKey, updateType, ts, selected, dataAsArray)
+    RowUpdate(vpRequestId, vpId, vpSize, rowIndex, rowKey, updateType, ts, selected, dataAsArray)
   }
 }
 
@@ -39,6 +40,7 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
     gen.writeStringField("updateType", value.updateType)
     gen.writeNumberField("ts", value.ts)
     gen.writeNumberField("sel", value.selected)
+    gen.writeStringField("vpVersion", value.vpVersion)
     gen.writeArrayFieldStart("data")
 
     value.data.foreach(datum => datum match {

@@ -49,8 +49,15 @@ class ViewServerGridPanel(val parentFrame: Frame, requestId: String, tableName: 
         eventBus.publish(ClientGetViewPortMenusRequest(RequestId.oneNew(), this.context.vpId))
       case msg: ClientChangeViewPortSuccess =>
         if(msg.requestId == requestId) context = context.copy(columns = msg.columns, sortBy = msg.sortBy, filter = msg.filterSpec.filter, groupBy = msg.groupBy)
+
+        swing(() => {
+          toggleRenderer()
+          theModel.fireTableDataChanged()
+          theModel.fireTableStructureChanged()
+        })
+
         eventBus.publish(ClientGetViewPortMenusRequest(RequestId.oneNew(), this.context.vpId))
-        toggleRenderer()
+
       case msg: ClientGetViewPortMenusResponse =>
         println("Viewport response")
         context = context.copy(menus = Some(msg))
@@ -79,7 +86,7 @@ class ViewServerGridPanel(val parentFrame: Frame, requestId: String, tableName: 
     this.context = viewPortContext
   }
 
-  final val componentId: String = UUID.randomUUID().toString
+  final val componentId: String = RequestId.oneNew()
 
   def getTable(): Table = {
 

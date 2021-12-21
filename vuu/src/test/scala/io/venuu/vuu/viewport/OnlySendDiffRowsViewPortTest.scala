@@ -1,5 +1,6 @@
 package io.venuu.vuu.viewport
 
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
 import io.venuu.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.GivenWhenThen
@@ -22,7 +23,7 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
       createNOrderRows(ordersProvider, 10)(timeProvider)
 
-      val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 4), vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 4), vpcolumns)
 
       viewPortContainer.runOnce()
 

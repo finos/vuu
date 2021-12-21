@@ -75,10 +75,6 @@ object ViewServerPopupMenus {
 
     val reqId = RequestId.oneNew()
 
-    swing(() => {
-      ctxtProvider.toggleRenderer()
-    })
-
     eventBus.publish(ClientChangeViewPortRequest(reqId,
       ctxt.vpId,
       ctxt.columns,

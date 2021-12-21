@@ -4,6 +4,7 @@ import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.api.TableDef
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
@@ -44,7 +45,7 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
 
       val vpcolumns = List("ric", "bid", "ask").map(table.getTableDef.columnForName(_)).toList
 
-      val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, table, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, table, DefaultRange, vpcolumns)
 
       provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
 

@@ -6,12 +6,38 @@ import io.venuu.vuu.net.{Aggregations, Error, FilterSpec, SortSpec}
 import io.venuu.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortTable}
 
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicLong
 
 object RequestId {
-  def oneNew()(implicit clock: Clock) = {
-    "REQ-" + UUID.randomUUID().toString
+
+  private val requestId: AtomicLong = new AtomicLong(0);
+
+  def oneNew() = {
+    "REQ-" + requestId.getAndIncrement()
   }
 }
+
+object SessionId {
+  def oneNew() = {
+    "SESS-" + UUID.randomUUID().toString
+  }
+}
+
+object ViewPortId {
+  private val viewportId: AtomicLong = new AtomicLong(0);
+
+  def oneNew() = {
+    "VP-" + "%08d".format(viewportId.getAndIncrement())
+  }
+}
+
+object TokenId {
+
+  def oneNew() = {
+    UUID.randomUUID().toString
+  }
+}
+
 
 trait ClientMessage
 

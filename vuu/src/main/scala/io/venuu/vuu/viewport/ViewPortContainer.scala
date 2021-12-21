@@ -9,6 +9,7 @@ import io.venuu.toolbox.thread.RunInThread
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.toolbox.time.{Clock, TimeIt}
 import io.venuu.vuu.api.{Link, NoViewPortDef, ViewPortDef}
+import io.venuu.vuu.client.messages.{RequestId, ViewPortId}
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort._
@@ -235,7 +236,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   private val viewPorts: ConcurrentHashMap[String, ViewPort] = new ConcurrentHashMap[String, ViewPort]()
 
   private def createId(user: String): String = {
-    val id = user + "-" + UUID.randomUUID().toString
+    val id = user + "-" + ViewPortId.oneNew()
     id
   }
 
@@ -270,7 +271,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def change(clientSession: ClientSessionId, id: String, range: ViewPortRange, columns: List[Column], sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
+  def change(requestId: String, clientSession: ClientSessionId, id: String, range: ViewPortRange, columns: List[Column], sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
 
     val viewPort = viewPorts.get(id)
 
@@ -292,9 +293,18 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     //we are not grouped by, but we want to change to a group by
     val structure = if (viewPort.getGroupBy == NoGroupBy && groupBy != NoGroupBy) {
 
+      logger.info("[VP] was flat (or diff), now tree'd, building...")
+
       val sourceTable = viewPort.table
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
+
+      val tree = GroupByTreeBuilder.create(sessionTable, groupBy, filterSpec, None).build()
+      val keys = tree.toKeys()
+      sessionTable.setTree(tree, keys)
+      viewPort.setKeys(keys)
+
+      logger.info("[VP] complete setKeys() " + keys.length)
 
       viewport.ViewPortStructuralFields(table = sessionTable,
         columns = columns,
@@ -304,6 +314,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         groupBy = groupBy,
         viewPort.getTreeNodeState
       )
+
+
 
       //we are groupBy but we want to revert to no groupBy
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
@@ -324,17 +336,55 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getTreeNodeState
       )
 
+    }else if(viewPort.getGroupBy != NoGroupBy && groupBy != NoGroupBy && viewPort.getGroupBy.columns != groupBy.columns){
+
+      logger.info("[VP] was tree'd, now tree'd also but differently, building...")
+
+      val groupByTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTableImpl]
+      val sourceTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTableImpl].sourceTable
+
+      groupByTable.setTree(EmptyTree, ImmutableArray.empty)
+
+      //delete all observers and references
+      groupByTable.delete()
+      //then remove it from table container
+      tableContainer.removeGroupBySessionTable(groupByTable)
+
+      val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
+
+      val tree = GroupByTreeBuilder.create(sessionTable, groupBy, filterSpec, None).build()
+
+      val keys = tree.toKeys()
+
+      sessionTable.setTree(tree, keys)
+
+      logger.info("[VP] complete setKeys() " + keys.length + "new group by table:" + sessionTable.name)
+
+      val structure = viewport.ViewPortStructuralFields(table = sessionTable,
+        columns = columns,
+        viewPort.getStructure.viewPortDef,
+        filtAndSort = filtAndSort,
+        filterSpec = filterSpec,
+        groupBy = groupBy,
+        viewPort.getTreeNodeState
+      )
+
+      viewPort.setKeys(keys)
+
+      structure
+
     } else {
 
       viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, viewPortDef = viewPort.getStructure.viewPortDef, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
     }
 
+    viewPort.setRequestId(requestId)
     viewPort.changeStructure(structure)
 
     viewPort
   }
 
-  def create(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], highPriorityQ: PublishQueue[ViewPortUpdate], table: RowSource,
+  def create(requestId:String, clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], highPriorityQ: PublishQueue[ViewPortUpdate], table: RowSource,
              range: ViewPortRange, columns: List[Column], sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
 
     val id = createId(clientSession.user)
@@ -359,6 +409,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val viewPort = ViewPortImpl(id, clientSession, outboundQ, highPriorityQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
 
+    viewPort.setRequestId(requestId)
     viewPorts.put(id, viewPort)
 
     viewPort

@@ -184,10 +184,10 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
           val groupBy = new GroupBy(groupByColumns, aggregations)
 
-          viewPortContainer.change(ctx.session, msg.viewPortId, viewport.getRange, columns, sort, filter, groupBy = groupBy)
+          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, columns, sort, filter, groupBy = groupBy)
         }
         else
-          viewPortContainer.change(ctx.session, msg.viewPortId, viewport.getRange, columns, sort, filter)
+          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, columns, sort, filter)
 
         logger.info(s"Setting columns to ${columns.map(_.name).mkString(",")} ")
 
@@ -219,7 +219,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
       val filter = msg.filterSpec
 
       val viewPort = if (msg.groupBy.isEmpty)
-        viewPortContainer.create(ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, NoGroupBy)
+        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, NoGroupBy)
       else {
 
         val groupByColumns = msg.groupBy.filter(table.getTableDef.columnForName(_) != null).map(table.getTableDef.columnForName(_)).toList
@@ -231,7 +231,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
         val groupBy = new GroupBy(groupByColumns, aggregations)
 
-        viewPortContainer.create(ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, groupBy)
+        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, groupBy)
       }
 
       vsMsg(CreateViewPortSuccess(viewPort.id, viewPort.table.name, msg.range, msg.columns, msg.sort, msg.groupBy, msg.filterSpec))(ctx)

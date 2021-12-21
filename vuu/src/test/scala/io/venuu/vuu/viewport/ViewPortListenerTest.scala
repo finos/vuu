@@ -1,5 +1,6 @@
 package io.venuu.vuu.viewport
 
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.TableTestHelper.combineQs
 import io.venuu.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.GivenWhenThen
@@ -18,7 +19,7 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
 
       createNOrderRows(ordersProvider, 30)(timeProvider)
 
-      val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumns)
 
       viewPortContainer.runOnce()
 

@@ -53,9 +53,14 @@ case class ViewPortRange(from: Int, to: Int) {
 
 }
 
-case class ViewPortUpdate(vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, size: Int, ts: Long)
+case class ViewPortUpdate(vpRequestId: String, vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, size: Int, ts: Long)
 
 trait ViewPort {
+
+  def setRequestId(request: String): Unit
+
+  def getRequestId: String
+
   def setEnabled(enabled: Boolean): Unit
 
   def isEnabled: Boolean
@@ -141,6 +146,12 @@ case class ViewPortImpl(id: String,
   private val viewPortLock = new Object
 
   @volatile private var enabled = true
+
+  @volatile private var requestId: String = ""
+
+  override def setRequestId(requestId: String): Unit = this.requestId = requestId
+
+  override def getRequestId: String = this.requestId
 
   override def setEnabled(enabled: Boolean): Unit = {
     this.enabled = enabled
@@ -285,7 +296,7 @@ case class ViewPortImpl(id: String,
 
   def setKeysPost(sendSizeUpdate: Boolean, newKeys: ImmutableArray[String]): Unit = {
     if (sendSizeUpdate) {
-      highPriorityQ.push(ViewPortUpdate(this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
+      highPriorityQ.push(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
     }
     subscribeToNewKeys(newKeys)
   }
@@ -312,7 +323,7 @@ case class ViewPortImpl(id: String,
     logger.debug(s"VP got update for ${update.key} update, index = $index isDeleted = ${update.isDelete}, $update, pushing to queue")
 
     if (isInRange(index) && this.enabled) {
-      outboundQ.push(ViewPortUpdate(this, update.source, RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
+      outboundQ.push(ViewPortUpdate(this.requestId, this, update.source, RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
 
   }
@@ -402,7 +413,7 @@ case class ViewPortImpl(id: String,
   def publishHighPriorityUpdate(key: String, index: Int): Unit = {
     logger.debug(s"publishing update $key")
     if (this.enabled) {
-      highPriorityQ.push(ViewPortUpdate(this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
+      highPriorityQ.push(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
   }
 

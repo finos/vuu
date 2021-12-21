@@ -51,7 +51,7 @@ object SimulMain extends App {
 
   val vuuServer = new VuuServer(config)
 
-  LifecycleGraphviz("vuu", lifecycle.dependencyGraph)
+  //  LifecycleGraphviz("vuu", lifecycle.dependencyGraph)
 
   lifecycle.start()
 
