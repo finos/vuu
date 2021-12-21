@@ -57,6 +57,8 @@ case class ViewPortUpdate(vpRequestId: String, vp: ViewPort, table: RowSource, k
 
 trait ViewPort {
 
+  def updateSpecificKeys(keys: ImmutableArray[String])
+
   def setRequestId(request: String): Unit
 
   def getRequestId: String
@@ -148,6 +150,10 @@ case class ViewPortImpl(id: String,
   @volatile private var enabled = true
 
   @volatile private var requestId: String = ""
+
+  override def updateSpecificKeys(keys: ImmutableArray[String]): Unit = {
+    keys.foreach(key => highPriorityQ.push(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
+  }
 
   override def setRequestId(requestId: String): Unit = this.requestId = requestId
 

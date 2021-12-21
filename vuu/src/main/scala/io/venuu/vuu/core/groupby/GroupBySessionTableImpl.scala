@@ -244,8 +244,9 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
     } else {
       null
     }
-
-    logger.debug(s"Found node $node for originalKey ${rowUpdate.key} mapped to ${node.key}")
+    if(mapped != null) {
+      logger.debug(s"Found node $node for originalKey ${rowUpdate.key} mapped to ${node.key}")
+    }
 
     mapped
   }

@@ -79,7 +79,10 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
           (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
+          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        ),
+          (false     ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
+          (false     ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
+          (false     ,2         ,"$root|steve|VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 600.0" ,""        ,""        ,""        ,""        ,""        )
         )
       }
 
@@ -115,7 +118,10 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
           (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
+          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        ),
+          (false     ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
+          (false     ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
+          (false     ,2         ,"$root|steve|VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 600.0" ,""        ,""        ,""        ,""        ,""        )
         )
       }
 
