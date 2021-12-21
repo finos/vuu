@@ -158,7 +158,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
         //logger.info("Got table row updates: " + body.rows.size)
         body.rows.filter(filterOutOfDateTableUpdates(_)).foreach(ru => {
-          logger.info(s"ROW: ${ru.rowIndex}/${ru.rowKey}  [${ru.data.mkString(",")}]")
+          logger.debug(s"ROW: ${ru.rowIndex}/${ru.rowKey}  [${ru.data.mkString(",")}]")
           eventBus.publish(ClientServerRowUpdate(ru.viewPortId, ru.rowIndex, ru.data.asInstanceOf[Array[AnyRef]], ru.vpSize, ru.selected))
         })
 
