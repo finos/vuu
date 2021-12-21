@@ -276,10 +276,11 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       assertVpEq(combineQs(viewPort)) {
         Table(
           ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          (0         ,2         ,"NYC-0005",false     ,"$root|chris|NYC-0005",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0005","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          (0         ,2         ,"NYC-0006",false     ,"$root|chris|NYC-0006",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0006","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          (0         ,2         ,"NYC-0007",false     ,"$root|chris|NYC-0007",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0007","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          (0         ,2         ,"NYC-0008",false     ,"$root|chris|NYC-0008",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0008","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l)
+          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0" ,""        ,""        ,""        ,""        ),
+          (0         ,2         ,"NYC-0005",false     ,"$root|chris|NYC-0005",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0005","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0006",false     ,"$root|chris|NYC-0006",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0006","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0007",false     ,"$root|chris|NYC-0007",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0007","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0008",false     ,"$root|chris|NYC-0008",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0008","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
         )
       }
 

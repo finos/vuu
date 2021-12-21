@@ -67,7 +67,8 @@ class GroupByUpdateChildCountsTest extends AnyFeatureSpec with Matchers with Giv
     assertVpEq(updates) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"[1]"     ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"[1]"     ,""        ,""        ,""        ,""        ,""        ,""        ,""        ),
+        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"[1]"     ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -122,21 +123,21 @@ class GroupByUpdateChildCountsTest extends AnyFeatureSpec with Matchers with Giv
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"[1]"     ,""        ,"Σ 2734.0",""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"[1]"     ,""        ,"Σ 2734.0",""        ,""        ,""        ,""        ,""        ),
+        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"[1]"     ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
       )
     }
 
     ordersProvider.tick("NYC-0009", Map("orderId" -> "NYC-0009", "trader" -> "steve", "tradeTime" -> EPOCH_DEFAULT, "quantity" -> 1235, "ric" -> "BT.L"))
 
-    joinProvider.runOnce()
-
-    joinProvider.runOnce()
+    runContainersOnce(viewPortContainer, joinProvider)
 
     //check child count updated
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"[1]"     ,""        ,"Σ 2735.0",""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"[1]"     ,""        ,"Σ 2735.0",""        ,""        ,""        ,""        ,""        ),
+        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"[1]"     ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
       )
     }
 

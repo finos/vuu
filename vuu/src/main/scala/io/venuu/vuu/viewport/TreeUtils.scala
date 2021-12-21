@@ -5,15 +5,18 @@ import io.venuu.toolbox.collection.array.ImmutableArray
 object TreeUtils {
 
   def isDiff(oldNode: TreeNode, newNode: TreeNode): Boolean = {
-    oldNode.getChildren.size != newNode.getChildren.size
+    true
+  }
+
+  def notLeafOrRoot(node: TreeNode): Boolean = {
+    ! node.isRoot && ! node.isLeaf
   }
 
   def diffOldVsNewBranches(oldTree: Tree, newTree: Tree): ImmutableArray[String] = {
-
-    val arr = oldTree.nodes().filter(!_.isRoot).filter( oldNode => {
+    val arr = oldTree.nodes().filter(notLeafOrRoot).filter( oldNode => {
       newTree.getNode(oldNode.key) match {
         case newNode: TreeNode =>
-          isDiff(oldNode, newNode)
+          true
         case null =>
           //old node no longer there
           false
