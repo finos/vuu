@@ -140,7 +140,10 @@ case class TreeNodeImpl(isLeaf: Boolean, key: String, originalKey: String, child
 }
 
 object EmptyTree extends Tree {
-  override def nodeState: ConcurrentHashMap[String, TreeNodeState] = ???
+
+  override def nodes(): Iterable[TreeNode] = Iterable.empty
+
+  override def nodeState: ConcurrentHashMap[String, TreeNodeState] = new ConcurrentHashMap[String, TreeNodeState]()
 
   override def openAll(): Unit = {}
 
@@ -161,6 +164,7 @@ object EmptyTree extends Tree {
 
 trait Tree {
 
+  def nodes(): Iterable[TreeNode]
 
   def nodeState: ConcurrentHashMap[String, TreeNodeState]
 
@@ -215,6 +219,8 @@ trait Tree {
 
 case class ImmutableTreeImpl(root: TreeNode, lookup: Map[String, TreeNode], lookupOrigKeyToTreeKey: Map[String, TreeNode], nodeState: ConcurrentHashMap[String, TreeNodeState]) extends StrictLogging with Tree {
 
+  override def nodes(): Iterable[TreeNode] = lookup.values
+
   def openAll() = {
     this.lookup.values.foreach(node => if (!node.isRoot) open(node.key))
   }
@@ -253,6 +259,7 @@ case class ImmutableTreeImpl(root: TreeNode, lookup: Map[String, TreeNode], look
 
 case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap[String, TreeNodeState], groupBy: GroupBy) extends StrictLogging with Tree {
 
+  override def nodes(): Iterable[TreeNode] = IteratorHasAsScala(lookup.values().iterator()).asScala.toList
 
   def immutate = {
     ImmutableTreeImpl(rootNode, MapHasAsScala(lookup).asScala.toMap[String, TreeNode], MapHasAsScala(lookupOrigKeyToTreeKey).asScala.toMap[String, TreeNode], nodeState)

@@ -512,9 +512,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     table match {
       case tbl: GroupBySessionTableImpl =>
 
+        val oldTree = tbl.getTree
+
         val (millis, tree) = timeIt {
           new GroupByTreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
         }
+
         val (millis2, keys) = timeIt {
           //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
           tree.toKeys()
@@ -524,14 +527,22 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
           tbl.setTree(tree, keys)
         }
+
         val (millis4, _) = timeIt {
           //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
           viewPort.setKeys(keys)
         }
 
+        val (millis5, _) = timeIt {
+
+          val branchKeys = TreeUtils.diffOldVsNewBranches(oldTree, tree)
+
+          viewPort.updateSpecificKeys(branchKeys)
+        }
+
         logger.debug(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
 
-      //groupByHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+        groupByHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
 
       case tbl =>
         logger.error(s"GROUP-BY: table ${tbl.name} has a groupBy but doesn't have a groupBySessionTable associated. Going to ignore build request.")
