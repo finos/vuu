@@ -4,7 +4,9 @@ import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.module.ModuleContainer
+import io.venuu.vuu.core.table.EmptyRowData
 import io.venuu.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
 import io.venuu.vuu.net.json.Serializer
 import io.venuu.vuu.util.PublishQueue
@@ -58,7 +60,7 @@ class DefaultMessageHandler(val channel: Channel,
 
       val formatted = formatDataOutbound(updates)
 
-      val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, "", session.user, formatted))
+      val json = serializer.serialize(JsonViewServerMessage("", session.sessionId, "", session.user, formatted))
 
       logger.debug("ASYNC-SVR-OUT:" + json)
 
@@ -106,9 +108,9 @@ class DefaultMessageHandler(val channel: Channel,
 
   protected def formatDataOutbound(outbound: Seq[ViewPortUpdate]): TableRowUpdates = {
 
-    val updates = outbound.flatMap(vp => formatOneRowUpdate(vp)).toArray
+    val updates = outbound.filter(vpu => vpu.vpRequestId == vpu.vp.getRequestId).flatMap(vp => formatOneRowUpdate(vp)).toArray
 
-    val updateId = UUID.randomUUID().toString
+    val updateId = RequestId.oneNew()
 
     TableRowUpdates(updateId, true, timeProvider.now, updates)
   }
@@ -118,7 +120,7 @@ class DefaultMessageHandler(val channel: Channel,
     update.vpUpdate match {
       case SizeUpdateType => {
         //logger.debug(s"SVR[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
-        Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), 0, Array.empty))
+        Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), 0, Array.empty))
       }
 
       case RowUpdateType =>
@@ -130,19 +132,27 @@ class DefaultMessageHandler(val channel: Channel,
 
         val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns)
 
-        if (dataToSend.size > 0 && (dataToSend(0) == null || dataToSend(0) == "")) {
-          println("ChrisChris>>" + update.table.name + " " + update.key.key + " " + update.index + " data: " + dataToSend.mkString(","))
-          None
-        }else{
+//        if(dataToSendAsRows == EmptyRowData || dataToSendAsRows.size() == 0){
+//            logger.warn(s"SVR: Row [${update.key.key} empty, not sending")
+//            None
+//        }else{
+          //val dataToSend = dataToSendAsRows.toArray(update.vp.getColumns)
 
-        val isSelected = if (update.vp.getSelection.contains(update.key.key)) 1 else 0
+          //        if (dataToSend.size > 0 && (dataToSend(0) == null || dataToSend(0) == "")) {
+          //          println("ChrisChris>>" + update.table.name + " " + update.key.key + " " + update.index + " data: " + dataToSend.mkString(","))
+          //          None
+          //        }else{
 
-        if (dataToSend.size == 0) {
-          None
-        } else {
-          Some(RowUpdate(update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), isSelected, dataToSend))
-        }
-        }
+          val isSelected = if (update.vp.getSelection.contains(update.key.key)) 1 else 0
+
+          if (dataToSend.length == 0) {
+            None
+          } else {
+            Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), isSelected, dataToSend))
+          }
+        //}
+
+      //  }
 
       //        val dataToSendAsRow = update.table.pullRow(update.key.key, update.vp.getColumns)
 //

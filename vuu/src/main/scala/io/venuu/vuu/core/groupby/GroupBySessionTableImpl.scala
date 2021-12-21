@@ -20,11 +20,16 @@ trait SessionTable extends DataTable with SessionListener {
   def delete(): Unit
 }
 
-class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped: KeyObserver[T]) extends WrappedKeyObserver[T](wrapped) {
+class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped: KeyObserver[T], val originalKey: String) extends WrappedKeyObserver[T](wrapped) {
   override def onUpdate(update: T): Unit = {
-    logger.debug(s"WrappedUpdateHandlingKeyObserver mapping data to data $update")
+    //logger.debug(s"WrappedUpdateHandlingKeyObserver mapping data to data ${update}")
     val mappedUpdate = mapFunc(update)
-    if (mappedUpdate != null) wrapped.onUpdate(mappedUpdate)
+    if (mappedUpdate != null) {
+      logger.debug("Sending update to mapped: " + mappedUpdate)
+      wrapped.onUpdate(mappedUpdate)
+    }else{
+      logger.debug("Not sending update to mapped: " + mappedUpdate)
+    }
     //super.onUpdate(mappedUpdate)
   }
 }
@@ -47,7 +52,7 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
   override def linkableName: String = source.linkableName
 
-  private var wrappedObservers: ConcurrentMap[String, WrappedKeyObserver[RowKeyUpdate]] = new ConcurrentHashMap[String, WrappedKeyObserver[RowKeyUpdate]]()
+  private val wrappedObservers: ConcurrentMap[String, WrappedKeyObserver[RowKeyUpdate]] = new ConcurrentHashMap[String, WrappedKeyObserver[RowKeyUpdate]]()
 
   @volatile
   private var keys = ImmutableArray.empty[String]
@@ -107,8 +112,15 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
   override def delete(): Unit = {
     this.removeAllObservers()
-    MapHasAsScala(this.wrappedObservers).asScala.foreach({ case (key, v) =>
-      this.sourceTable.removeKeyObserver(key, v)
+    MapHasAsScala(this.wrappedObservers).asScala.foreach({ case (key, v) => {
+      v match {
+        case upko : WrappedUpdateHandlingKeyObserver[RowKeyUpdate] =>
+          this.sourceTable.removeKeyObserver(upko.originalKey, v)
+        case x =>
+          println("Error: ChrisChris")
+      }
+    }
+
     })
   }
 
@@ -120,7 +132,7 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
     val node = tree.getNode(key)
 
     if (node == null) {
-      Array.fill[Any](columns.length)("")
+      Array.empty
     }
     else if (node.isLeaf)
       node.toArray(tree) ++ getSourceRowDataAsArray(node.originalKey, columns)
@@ -227,10 +239,11 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
     val node = this.getTree.getNodeByOriginalKey(rowUpdate.key)
 
-    val mapped = if (node != null)
+    val mapped = if (node != null) {
       rowUpdate.copy(key = node.key, source = this)
-    else
+    } else {
       null
+    }
 
     logger.debug(s"Found node $node for originalKey ${rowUpdate.key} mapped to ${node.key}")
 
@@ -249,7 +262,7 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
 
         logger.debug(s"Adding key observer${originalKey} for tree key ${key}")
 
-        val wappedObserver = new WrappedUpdateHandlingKeyObserver[RowKeyUpdate](mapKeyToTreeKey, observer)
+        val wappedObserver = new WrappedUpdateHandlingKeyObserver[RowKeyUpdate](mapKeyToTreeKey, observer, originalKey)
 
         wrappedObservers.put(key, wappedObserver)
         sourceTable.addKeyObserver(originalKey, wappedObserver)
@@ -262,26 +275,23 @@ class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionI
     else false
   }
 
+  override def isKeyObservedBy(key: String, observer: KeyObserver[RowKeyUpdate]): Boolean = {
+    wrappedObservers.containsKey(key)
+  }
+
   //in a join table, we must propogate the removal of registration to all child tables also
   override def removeKeyObserver(key: String, observer: KeyObserver[RowKeyUpdate]): Boolean = {
+    logger.debug(s"removeKeyObserver:$key")
     //if this is a wrapped observer, observing the underlying table, then...
     wrappedObservers.get(key) match {
       //remove it
-      case wo: WrappedKeyObserver[RowKeyUpdate] =>
+      case wo: WrappedUpdateHandlingKeyObserver[RowKeyUpdate] =>
         this.wrappedObservers.remove(key)
-        val node = this.tree.getNode(key)
-        if (node != null) {
-          if (node.isLeaf) {
-            val originalKey = node.originalKey
-            sourceTable.removeKeyObserver(originalKey, wo)
-          } else {
-            false
-          }
-        } else {
-          false
-        }
+        logger.debug(s"Removing wrapped observer: ${key} -> ${wo.originalKey}")
+        sourceTable.removeKeyObserver(wo.originalKey, wo)
       //otherwise it must be a tree key, i.e. not a real row in underlying table
       case null =>
+        logger.debug(s"remove normal key observer:$key")
         //so remove that from our list of observers
         super.removeKeyObserver(key, observer)
     }

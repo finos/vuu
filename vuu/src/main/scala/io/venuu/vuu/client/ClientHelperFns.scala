@@ -1,5 +1,6 @@
 package io.venuu.vuu.client
 
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport.{DefaultRange, ViewPortRange, ViewPortTable}
 
@@ -75,15 +76,15 @@ object ClientHelperFns {
   }
 
   def tableListAsync(sessionId: String, token: String, user: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, GetTableList()))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, GetTableList()))
   }
 
   def rpcTableUpdate(sessionId: String, token: String, user: String, table: ViewPortTable, key: String, data: Map[String, Any])(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, RpcUpdate(table, key, data)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew().toString, sessionId, token, user, RpcUpdate(table, key, data)))
   }
 
   def getViewPortMenusAsync(sessionId: String, token: String, user: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, GetViewPortMenusRequest(vpId)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, GetViewPortMenusRequest(vpId)))
   }
 
   def tableMetaAsync(sessionId: String, token: String, user: String, table: ViewPortTable, requestId: String)(implicit vsClient: ViewServerClient): Unit = {
@@ -91,11 +92,11 @@ object ClientHelperFns {
   }
 
   def heartbeatRespAsync(sessionId: String, token: String, user: String, ts: Long)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(VsMsg(UUID.randomUUID().toString, sessionId, token, user, HeartBeatResponse(ts)))
+    vsClient.send(VsMsg(RequestId.oneNew(), sessionId, token, user, HeartBeatResponse(ts)))
   }
 
   def changeVpRangeAsync(sessionId: String, token: String, user: String, vpId: String, range: ViewPortRange)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, ChangeViewPortRange(vpId, range.from, range.to)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, ChangeViewPortRange(vpId, range.from, range.to)))
   }
 
   def auth(user: String, password: String)(implicit vsClient: ViewServerClient): String = {
@@ -104,12 +105,12 @@ object ClientHelperFns {
   }
 
   def rpcCallAsync(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, RpcCall(service, method, params, Map()), module = module))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, RpcCall(service, method, params, Map()), module = module))
   }
 
   def menuRpcCall(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): MenuRpcResponse = {
 
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, MenuRpcCall(service, method, params, Map()), module = module))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, MenuRpcCall(service, method, params, Map()), module = module))
 
     def awaitMsg(vsClient: ViewServerClient): MenuRpcResponse = {
       vsClient.awaitMsg.body match {
@@ -123,7 +124,7 @@ object ClientHelperFns {
 
   def rpcCall(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): RpcResponse = {
 
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, RpcCall(service, method, params, Map()), module = module))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, RpcCall(service, method, params, Map()), module = module))
 
     def awaitMsg(vsClient: ViewServerClient): RpcResponse = {
       vsClient.awaitMsg.body match {
@@ -159,16 +160,16 @@ object ClientHelperFns {
   }
 
   def createVp(sessionId: String, token: String, user: String, table: ViewPortTable, columns: Array[String], range: ViewPortRange = DefaultRange, sort: SortSpec = SortSpec(List()))(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, CreateViewPortRequest(table, range, columns, sort)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, CreateViewPortRequest(table, range, columns, sort)))
     await[CreateViewPortSuccess]
   }
 
   def changeVpAsync(sessionId: String, token: String, vpId: String, user: String, table: String, columns: Array[String], sortSpec: SortSpec, groupBy: Array[String])(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy)))
   }
 
   def changeVp(sessionId: String, token: String, vpId: String, user: String, table: String, columns: Array[String], sortSpec: SortSpec, groupBy: Array[String])(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy)))
 
     def awaitMsg(vsClient: ViewServerClient): ViewServerMessage = {
       val msg = vsClient.awaitMsg
@@ -183,22 +184,22 @@ object ClientHelperFns {
   }
 
   def openVpTreeNode(sessionId: String, token: String, user: String, vpId: String, treeKey: String)(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, OpenTreeNodeRequest(vpId, treeKey)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, OpenTreeNodeRequest(vpId, treeKey)))
     vsClient.awaitMsg
   }
 
   def closeVpTreeNode(sessionId: String, token: String, user: String, vpId: String, treeKey: String)(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, CloseTreeNodeRequest(vpId, treeKey)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, CloseTreeNodeRequest(vpId, treeKey)))
     vsClient.awaitMsg
   }
 
   def createVpGroupBy(sessionId: String, token: String, user: String, table: ViewPortTable, columns: Array[String], range: ViewPortRange = DefaultRange, groupBy: Array[String])(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, CreateViewPortRequest(table, range, columns, groupBy = groupBy)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, CreateViewPortRequest(table, range, columns, groupBy = groupBy)))
     vsClient.awaitMsg
   }
 
   def changeVpRange(sessionId: String, token: String, user: String, vpId: String, range: ViewPortRange)(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(UUID.randomUUID().toString, sessionId, token, user, ChangeViewPortRange(vpId, range.from, range.to)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, ChangeViewPortRange(vpId, range.from, range.to)))
     vsClient.awaitMsg
   }
 

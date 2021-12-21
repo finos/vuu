@@ -4,6 +4,7 @@ import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{DefaultClock, TestFriendlyClock}
 import io.venuu.vuu.api.TableDef
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.TableTestHelper._
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
@@ -47,7 +48,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val vpcolumns = List("ric", "bid", "ask").map(table.getTableDef.columnForName(_))
 
-      val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, table, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, table, DefaultRange, vpcolumns)
 
       provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
       provider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 220, "ask" -> 223))
@@ -111,7 +112,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val vpcolumns = orderPrices.getTableDef.columns.toList
 
-      val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
       ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
       ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
@@ -187,7 +188,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val vpcolumns = orderPrices.getTableDef.columns.toList
 
-      val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns,
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns,
         groupBy = GroupBy(orderPrices, "trader")
         .withSum("quantity")
         .withCount("trader")

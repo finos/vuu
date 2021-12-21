@@ -1,12 +1,14 @@
 package io.venuu.vuu.client.swing.gui.components.renderer
 
+import com.typesafe.scalalogging.StrictLogging
+
 import java.awt.{Color, Component}
 import javax.swing.border.EmptyBorder
 import javax.swing.table.TableCellRenderer
 import javax.swing.{ImageIcon, JLabel, JTable}
 
 @SerialVersionUID(1L)
-class TreeGridCellRenderer extends JLabel with TableCellRenderer {
+class TreeGridCellRenderer extends JLabel with TableCellRenderer with StrictLogging {
 
   import io.venuu.vuu.client.swing.gui.TreeColumns._
 
@@ -33,7 +35,7 @@ class TreeGridCellRenderer extends JLabel with TableCellRenderer {
     else
       setBackground(Color.white)
 
-    if (table.getModel.getValueAt(row, Depth.index) == "-") {
+    if (table.getModel.getValueAt(row, Depth.index) == "-" || table.getModel.getValueAt(row, Depth.index) == null) {
       setIcon(null)
       setText(s)
     }
@@ -49,7 +51,18 @@ class TreeGridCellRenderer extends JLabel with TableCellRenderer {
         setIcon(null)
       } else {
 
-        val depth = table.getModel.getValueAt(row, Depth.index).toString.toInt
+        val depth = try{
+          table.getModel.getValueAt(row, Depth.index).toString.toInt
+        }catch {
+          case ex: Exception =>
+          logger.info(s"Exception with model, row $row: ")
+           -1
+        }
+
+        if(depth == -1){
+          return this
+        }
+
         val isLeaf = table.getModel.getValueAt(row, IsLeaf.index).toString.toBoolean
         val isOpen = table.getModel.getValueAt(row, IsOpen.index).toString.toBoolean
         val caption = table.getModel.getValueAt(row, Caption.index).toString

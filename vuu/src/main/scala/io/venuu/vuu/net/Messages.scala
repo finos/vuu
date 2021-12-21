@@ -185,5 +185,5 @@ object UpdateType {
 
 @JsonSerialize(using = classOf[RowUpdateSerializer])
 @JsonDeserialize(using = classOf[RowUpdateDeserializer])
-case class RowUpdate(viewPortId: String, vpSize: Int, rowIndex: Int, rowKey: String, updateType: String, ts: Long, selected: Int, data: Array[Any])
+case class RowUpdate(vpVersion: String, viewPortId: String, vpSize: Int, rowIndex: Int, rowKey: String, updateType: String, ts: Long, selected: Int, data: Array[Any])
 

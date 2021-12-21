@@ -4,6 +4,7 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, TestFriendlyClock}
 import io.venuu.vuu.api.{TableDef, ViewPortDef, VisualLinks}
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.module.ModuleFactory.stringToString
 import io.venuu.vuu.core.table.{Columns, DataTable, TableContainer}
 import io.venuu.vuu.net.ClientSessionId
@@ -106,7 +107,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
       vpContainer.addViewPortDefinition(instruments.getTableDef.name, createViewPortDef())
 
-      val viewPort = vpContainer.create(session, outQueue, highPriorityQueue, instruments, DefaultRange, instruments.getTableDef.columns.toList)
+      val viewPort = vpContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, instruments, DefaultRange, instruments.getTableDef.columns.toList)
 
       instrumentsProvider.tick("VOD.L", Map("ric" -> "VOD.L", "description" -> "Vodafone", "bbg" -> "VOD LN", "currency" -> "GBp", "exchange" -> "XLON/SETS"))
       instrumentsProvider.tick("BT.L", Map("ric" -> "BT.L", "description" -> "British Telecom", "bbg" -> "BT LN", "currency" -> "GBp", "exchange" -> "XLON/SETS"))

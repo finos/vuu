@@ -3,6 +3,7 @@ package io.venuu.vuu.viewport
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.filter.{EqFilter, LessThanFilter, NoFilter}
 import io.venuu.vuu.core.sort.{AlphaSort, SortDirection, UserDefinedFilterAndSort}
 import io.venuu.vuu.net.ClientSessionId
@@ -50,7 +51,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       val columns = orders.getTableDef.columns
 
-      val viewport = viewPortContainer.create(ClientSessionId("A", "B"), queue, highPriorityQueue, orders, ViewPortRange(0, 5), columns.toList)
+      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orders, ViewPortRange(0, 5), columns.toList)
 
       viewPortContainer.runOnce()
 
@@ -177,7 +178,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       val columns = orderPrices.getTableDef.columns
 
-      val viewport = viewPortContainer.create(ClientSessionId("A", "B"), queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList)
+      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList)
 
       viewPortContainer.runOnce()
 

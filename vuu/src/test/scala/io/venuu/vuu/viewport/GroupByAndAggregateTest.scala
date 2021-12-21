@@ -3,6 +3,7 @@ package io.venuu.vuu.viewport
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.DefaultClock
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.RowWithData
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import io.venuu.vuu.util.OutboundRowPublishQueue
@@ -40,7 +41,8 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
 
       val columns = orderPrices.getTableDef.columns
 
-      val viewport = viewPortContainer.create(ClientSessionId("A", "B"),
+      val viewport = viewPortContainer.create(RequestId.oneNew(),
+        ClientSessionId("A", "B"),
         queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList,
         SortSpec(List()),
         FilterSpec(""),
@@ -178,7 +180,8 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
 
     val columns = orderPrices.getTableDef.columns
 
-    val viewport = viewPortContainer.create(ClientSessionId("A", "B"),
+    val viewport = viewPortContainer.create(RequestId.oneNew(),
+      ClientSessionId("A", "B"),
       queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList,
       SortSpec(List()),
       FilterSpec(""),

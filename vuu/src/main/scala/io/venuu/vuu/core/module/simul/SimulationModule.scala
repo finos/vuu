@@ -4,6 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api._
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.module.simul.provider._
 import io.venuu.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import io.venuu.vuu.core.table.{Columns, DataTable, TableContainer}
@@ -48,7 +49,7 @@ class InstrumentsService(val table: DataTable, val providerContainer: ProviderCo
     providerContainer.getProviderForTable("orderEntry") match {
       case Some(provider) =>
         rics.foreach(ric => {
-          val uuid = UUID.randomUUID().toString
+          val uuid = RequestId.oneNew()
           provider.asInstanceOf[RpcProvider].tick(uuid, Map("clOrderId" -> uuid, "ric" -> ric, "quantity" -> 10_000, "orderType" -> "Limit"))
         })
         OpenDialogViewPortAction(ViewPortTable("orderEntry", "SIMUL"))
@@ -112,7 +113,7 @@ class OrderEntryRpcHandlerImpl(val vpContainer: ViewPortContainer, val tableCont
         providerContainer.getProviderForTable("orderEntry") match {
           case Some(provider) =>
             rics.foreach(ric => {
-              val uuid = UUID.randomUUID().toString
+              val uuid = RequestId.oneNew()
               provider.asInstanceOf[RpcProvider].tick(uuid, Map("clOrderId" -> uuid, "ric" -> ric, "quantity" -> 10_000, "orderType" -> "Limit"))
             })
             rics

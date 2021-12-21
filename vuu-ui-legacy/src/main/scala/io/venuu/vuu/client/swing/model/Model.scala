@@ -186,10 +186,10 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
         Array("rowIndex") ++ Array("selected") ++ msg.columns
 
       //val groupByColumns = Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ columns
-      SwingThread.swing(() => {
-        fireTableStructureChanged()
-        fireTableDataChanged()
-      })
+//      SwingThread.swing(() => {
+//        fireTableStructureChanged()
+//        fireTableDataChanged()
+//      })
 
     case ru: ClientServerRowUpdate if ru.vpId == vpId =>
       handleRowUpdate(ru)
@@ -197,6 +197,11 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
 
     case msg: ClientChangeViewPortSuccess  if msg.viewPortId == vpId =>
       logger.info(s"Client Change VP Success ${msg} ")
+
+      if(msg.groupBy.length != this.groupBy.length){
+        logger.info("[Model] Emptying model")
+        this.movingWindow.empty()
+      }
 
       columns = if (!msg.groupBy.isEmpty)
         Array("rowIndex") ++ Array("selected") ++ Array("_tree", "_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ msg.columns
@@ -260,31 +265,29 @@ class ViewPortedModel(requestId: String, val theColumns: Array[String])(implicit
 
   override def getValueAt(rowIndex: Int, columnIndex: Int): AnyRef = {
 
-      movingWindow.getAtIndex(rowIndex) match {
+      val theValue = movingWindow.getAtIndex(rowIndex) match {
         case Some(entry: ClientServerRowUpdate) =>
-          if (entry != null) {
-              if(columnIndex == 0) {
-                entry.index.toString
-              }else if(columnIndex == 1) {
-                entry.selected.toString
-              }
-              else if (columnIndex > entry.data.size + 1)
-                LoadingString
-              else
-                Try(entry.data(columnIndex - 2)) match {
-                  case Success(value) => value
-                  case Failure(e) =>
-                    logger.error("error on get data", e)
-                    LoadingString
-                }
-          } else {
-            LoadingString
+          if (columnIndex == 0) {
+            entry.index.toString
+          } else if (columnIndex == 1) {
+            entry.selected.toString
           }
-
+          else if (columnIndex > entry.data.size + 1) {
+            LoadingString
+          } else {
+            Try(entry.data(columnIndex - 2)) match {
+              case Success(value) => value
+              case Failure(e) =>
+                logger.error("error on get data", e)
+                LoadingString
+            }
+          }
         case None =>
           LoadingString
       }
-    }
+
+    theValue
+  }
 
   case class RangeUpdate(from: Int, to: Int)
 

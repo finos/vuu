@@ -1,5 +1,6 @@
 package io.venuu.vuu.viewport
 
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.TableTestHelper.combineQs
 import io.venuu.vuu.net.{SortDef, SortSpec}
 import io.venuu.vuu.util.table.TableAsserts.assertVpEqWithMeta
@@ -20,7 +21,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       createNOrderRows(ordersProvider, 10)(timeProvider)
 
-      val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumns)
 
       viewPortContainer.runOnce()
 
@@ -65,7 +66,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
         }
 
       And("when we apply a sort")
-      val viewPortChanged = viewPortContainer.change(session, viewPort.id, viewPort.getRange, vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
+      val viewPortChanged = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, viewPort.getRange, vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
 
       viewPortContainer.runOnce()
 

@@ -1,5 +1,6 @@
 package io.venuu.vuu.viewport
 
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.TableTestHelper.combineQs
 import io.venuu.vuu.net.{SortDef, SortSpec}
 import io.venuu.vuu.util.table.TableAsserts.assertVpEqWithMeta
@@ -27,8 +28,8 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       createNOrderRows(ordersProvider, 4, ric = "BT.L", idOffset = 3)(timeProvider)
       createNOrderRows(ordersProvider, 5, ric = "BP.L", idOffset = 7)(timeProvider)
 
-      val viewPortOrders = viewPortContainer.create(session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
-      val viewPortPrices = viewPortContainer.create(session, outQueue, highPriorityQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices)
+      val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
+      val viewPortPrices = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices)
 
       viewPortContainer.runOnce()
 
@@ -127,7 +128,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortOrders.getKeys.length shouldEqual 0
 
       Then("Change the viewport to sort by quantity")
-      viewPortContainer.change(session, viewPortOrders.id, ViewPortRange(0, 10), vpcolumnsOrders, SortSpec(List(SortDef("quantity", 'A'))))
+      viewPortContainer.change(RequestId.oneNew(), session, viewPortOrders.id, ViewPortRange(0, 10), vpcolumnsOrders, SortSpec(List(SortDef("quantity", 'A'))))
       viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPrices.id, ViewPortSelectedIndices(Array(1)))
 
       viewPortContainer.runOnce()

@@ -13,13 +13,15 @@ import io.venuu.vuu.viewport.ViewPortRange
 
 import java.util.concurrent.ConcurrentHashMap
 
+case class ViewPortVersion(original:String, current: String, pending: String, isPending: Boolean)
+
 class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: LifecycleContainer, timeProvider: Clock, vsClient: ViewServerClient) extends StrictLogging {
 
-  private val dequeueThread = new LifeCycleRunner("clientDequeThread", () => dequeue(), minCycleTime = 50 )
-
+  private val dequeueThread = new LifeCycleRunner("clientDequeThread", () => dequeue(), minCycleTime = -1 )
   private val vpChangeThread = new LifeCycleRunner("vpChangeThread", () => sendVpUpdates(), minCycleTime = 200 )
 
-  private val vpChangeRequests = new ConcurrentHashMap[String, ClientUpdateVPRange]()
+  private val vpChangeRangeRequests = new ConcurrentHashMap[String, ClientUpdateVPRange]()
+  private val vpChangeVersionWindow = new ConcurrentHashMap[String, ViewPortVersion]()
 
   eventBus.register( {
       case msg: ClientOpenTreeNodeRequest =>
@@ -40,6 +42,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
       case msg: Logon =>
         authAsync(msg.user, msg.password)
       case msg: ClientCreateViewPort =>
+        //vpChangeVersionWindow.put(msg, ViewPortVersion(msg.requestId, null, msg.requestId, true))
         createVpAsync(principal.sessionId, principal.token, principal.user, msg.requestId, msg.table, msg.columns, sortBy = msg.sortBy, range = ViewPortRange(msg.from, msg.to), filterSpec = FilterSpec(msg.filter), groupBy = msg.groupBy)
       case msg: ClientRpcTableUpdate =>
         rpcTableUpdate(principal.sessionId, principal.token, principal.user, msg.table, msg.key, msg.data)
@@ -56,7 +59,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
       case msg: ClientRemoveViewPort =>
         removeViewPort(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId)
       case msg: ClientUpdateVPRange =>
-        vpChangeRequests.put(msg.vpId, msg)
+        vpChangeRangeRequests.put(msg.vpId, msg)
       case msg: ClientMenuSelectionRpcCall =>
         viewPortMenuSelectionRpcCall(principal.sessionId, principal.token, principal.user,msg.requestId, msg.vpId, msg.rpcName)
       case msg: ClientMenuTableRpcCall =>
@@ -74,8 +77,8 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
     import scala.jdk.CollectionConverters.MapHasAsScala
 
-    MapHasAsScala(vpChangeRequests).asScala.foreach({case(key, msg) =>
-      vpChangeRequests.remove(key)
+    MapHasAsScala(vpChangeRangeRequests).asScala.foreach({case(key, msg) =>
+      vpChangeRangeRequests.remove(key)
       logger.info(s"VP Range Change -> ${msg.from} to ${msg.to} ")
       changeVpRangeAsync(principal.sessionId, principal.token, principal.user, msg.vpId, ViewPortRange(msg.from, msg.to))
     })
@@ -94,6 +97,23 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
   val logReq = new LogAtFrequency(60000)
 
+  def filterOutOfDateTableUpdates(rowUpdate: RowUpdate): Boolean = {
+    val vpId = rowUpdate.viewPortId
+
+    this.vpChangeVersionWindow.get(vpId) match {
+      case null =>
+        logger.info("filtering row (no change ver): " + rowUpdate.rowIndex + ": [" + rowUpdate.data.mkString(",") + "]")
+        false
+      case vpVersion: ViewPortVersion =>
+
+        if(vpVersion.current != rowUpdate.vpVersion){
+          logger.info("filtering rows (version): " + rowUpdate.rowIndex + ": [" + rowUpdate.data.mkString(",") + "]")
+        }
+
+        vpVersion.current == rowUpdate.vpVersion
+    }
+  }
+
   def receiveFromServer(msg: JsonViewServerMessage): Unit = {
 
     msg.body match {
@@ -111,7 +131,8 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         eventBus.publish(LogonSuccess(principal))
 
       case body: CreateViewPortSuccess =>
-        logger.info("[VP] Create Success")
+        logger.info(s"[VP] Create Success (${body.viewPortId} -> ${msg.requestId})")
+        vpChangeVersionWindow.computeIfAbsent(body.viewPortId, (vpId) => ViewPortVersion(vpId, msg.requestId, null, false) )
         eventBus.publish(ClientCreateViewPortSuccess(msg.requestId, body.viewPortId, body.columns, body.sort, body.groupBy, if(body.filterSpec == null) "" else body.filterSpec.filter))
 
       case body: GetTableListResponse =>
@@ -136,7 +157,10 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
 
 
         //logger.info("Got table row updates: " + body.rows.size)
-        body.rows.foreach(ru => eventBus.publish(ClientServerRowUpdate(ru.viewPortId, ru.rowIndex, ru.data.asInstanceOf[Array[AnyRef]], ru.vpSize, ru.selected)))
+        body.rows.filter(filterOutOfDateTableUpdates(_)).foreach(ru => {
+          logger.info(s"ROW: ${ru.rowIndex}/${ru.rowKey}  [${ru.data.mkString(",")}]")
+          eventBus.publish(ClientServerRowUpdate(ru.viewPortId, ru.rowIndex, ru.data.asInstanceOf[Array[AnyRef]], ru.vpSize, ru.selected))
+        })
 
       case body: GetTableMetaResponse =>
         logger.info(s"[TABLEMETA] ${body.table} from server")
@@ -146,6 +170,7 @@ class Worker(implicit eventBus: EventBus[ClientMessage], lifecycleContainer: Lif
         logger.info("[RPC] success...")
 
       case body: ChangeViewPortSuccess =>
+        vpChangeVersionWindow.computeIfPresent(body.viewPortId, (_, value) => value.copy(isPending = false, current = msg.requestId, pending = null) )
         eventBus.publish(ClientChangeViewPortSuccess(msg.requestId, body.viewPortId, body.columns, body.sort, body.groupBy, body.filterSpec))
 
       case body: SetSelectionSuccess =>

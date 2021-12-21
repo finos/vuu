@@ -26,7 +26,7 @@ class ArrayBackedMovingWindow[DATA <: AnyRef](val bufferSize: Int)(implicit m: C
   val lock = new Object
 
   //internal data is always 0 based, we add range.from to determine an offset
-  var internalData = new Array[DATA](bufferSize)
+  @volatile var internalData = new Array[DATA](bufferSize)
 
   override def setAtIndex(index: Int, data: DATA): Unit = {
     lock.synchronized {
@@ -70,4 +70,10 @@ class ArrayBackedMovingWindow[DATA <: AnyRef](val bufferSize: Int)(implicit m: C
   }
 
   override def getRange(): WindowRange = range.copy()
+
+  override def empty(): Unit = {
+    lock.synchronized {
+        internalData = new Array[DATA](bufferSize)
+      }
+    }
 }

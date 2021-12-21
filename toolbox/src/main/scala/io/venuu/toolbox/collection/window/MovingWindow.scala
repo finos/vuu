@@ -7,5 +7,5 @@ trait MovingWindow[DATA] {
   def isWithinRange(index: Int): Boolean
   def setRange(from: Int, to: Int)
   def getRange(): WindowRange
-
+  def empty(): Unit
 }

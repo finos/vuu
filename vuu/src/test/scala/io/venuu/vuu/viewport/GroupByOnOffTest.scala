@@ -3,6 +3,7 @@ package io.venuu.vuu.viewport
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.TestFriendlyClock
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.util.OutboundRowPublishQueue
 import io.venuu.vuu.util.table.TableAsserts.assertVpEq
@@ -15,13 +16,13 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
   def addGroupBy(session: ClientSessionId, vpContainer: ViewPortContainer, vpRange: ViewPortRange,
                  viewPort: ViewPort, groupByClause: GroupBy): ViewPort = {
     val columns = viewPort.table.asTable.getTableDef.columns.toList
-    val viewport = vpContainer.change(session, viewPort.id, vpRange, columns, groupBy = groupByClause)
+    val viewport = vpContainer.change(RequestId.oneNew(), session, viewPort.id, vpRange, columns, groupBy = groupByClause)
     viewport
   }
 
   def removeGroupBy(session: ClientSessionId, vpContainer: ViewPortContainer, vpRange: ViewPortRange, viewPort: ViewPort)= {
     val columns = viewPort.table.asTable.getTableDef.columns.toList
-    val viewport = vpContainer.change(session, viewPort.id, vpRange, columns, groupBy = NoGroupBy)
+    val viewport = vpContainer.change(RequestId.oneNew(), session, viewPort.id, vpRange, columns, groupBy = NoGroupBy)
     viewport
   }
 
@@ -46,7 +47,7 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val session = ClientSessionId("A", "B")
       val columns = orderPrices.getTableDef.columns.toList
       val range = ViewPortRange(0, 20)
-      val viewPort = viewPortContainer.create(session, queue, highPriorityQueue, orderPrices, range, columns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, queue, highPriorityQueue, orderPrices, range, columns)
 
       runContainersOnce(viewPortContainer, joinProvider)
 

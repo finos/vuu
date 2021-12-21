@@ -53,17 +53,24 @@
         <appender-ref ref="roll-by-time" />
     </logger-->
 
-    <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
-        <appender-ref ref="STDOUT"/>
-    </logger>
+    <!--logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
 
-    <logger name="io.venuu.vuu.net.ViewServerHandler" level="DEBUG">
-        <appender-ref ref="STDOUT"/>
-    </logger>
+    </logger-->
+
+    <!--logger name="io.venuu.vuu.net.ViewServerHandler" level="DEBUG">
+
+    </logger-->
 
     <!--logger name="io.venuu.vuu.viewport.GroupByTreeBuilderImpl" level="DEBUG" >
         <appender-ref ref="STDOUT"/>
     </logger-->
+
+    <!--logger name="io.venuu.vuu.core.groupby.WrappedUpdateHandlingKeyObserver" level="DEBUG">
+    </logger-->
+
+    <!--logger name="io.venuu.vuu.core.groupby.GroupBySessionTableImpl" level="DEBUG">
+    </logger-->
+
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

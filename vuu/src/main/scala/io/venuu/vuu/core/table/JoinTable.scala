@@ -14,7 +14,7 @@ import scala.collection.mutable
 
 /**
  * When we are a ViewPort listening on a join table, we want to register our interest
- * but we want updates via esper, not via the underlying tables (at mo)
+ * but we want updates via Join Manager, not via the underlying tables (at mo)
  *
  * So we wrap the listener and discard the message.
  */

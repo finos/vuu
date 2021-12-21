@@ -72,6 +72,9 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 }
 
 case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = false)
+{
+  override def toString: String = s"RowKeyUpdate($key, ${source.name})"
+}
 
 trait RowData {
   def get(field: String): Any

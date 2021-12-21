@@ -4,6 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.Channel
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.venuu.toolbox.time.Clock
+import io.venuu.vuu.client.messages.{RequestId, SessionId}
 import io.venuu.vuu.core.module.ModuleContainer
 import io.venuu.vuu.net.flowcontrol.DefaultFlowController
 import io.venuu.vuu.net.json.Serializer
@@ -49,7 +50,7 @@ class RequestProcessor(authenticator: Authenticator,
 
   protected def createSession(requestId: String, request: LoginRequest, clientSessionContainer: ClientSessionContainer, channel: Channel): Option[ViewServerMessage] = {
 
-    val session = UUID.randomUUID().toString
+    val session = SessionId.oneNew()
     val user = request.user
 
     val id = ClientSessionId(session, user)

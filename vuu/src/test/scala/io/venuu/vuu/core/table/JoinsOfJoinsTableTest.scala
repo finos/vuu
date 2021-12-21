@@ -4,6 +4,7 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api._
+import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import io.venuu.vuu.util.OutboundRowPublishQueue
@@ -116,7 +117,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask").map(orderPricesFx.getTableDef.columnForName(_))
 
-    val viewPort = viewPortContainer.create(session, outQueue, highPriorityQueue, orderPricesFx, DefaultRange, vpcolumns)
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPricesFx, DefaultRange, vpcolumns)
 
     viewPortContainer.runOnce()
 
