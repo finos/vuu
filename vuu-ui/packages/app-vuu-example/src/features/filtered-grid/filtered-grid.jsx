@@ -18,6 +18,8 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
   const { makeServiceRequest } = useContext(AppContext);
   const [namedFilters, setNamedFilters] = useState([]);
 
+  console.log(`filteredGrid`, props);
+
   const dataSource = useMemo(() => {
     let ds = loadSession('data-source');
     if (ds) {
@@ -40,36 +42,23 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
   };
 
   const handleConfigChange = useCallback(
-    ({ type, ...op }) => {
-      // TODO consolidate these messages
-      switch (type) {
-        case 'group':
-          save(op.groupBy, type);
-          dispatch({ type: 'save' });
-          break;
-        case 'sort':
-          save(op.sort, type);
-          dispatch({ type: 'save' });
-          break;
-        case 'filter':
-          save(op.filter, type);
-          dispatch({ type: 'save' });
-          break;
-        case 'visual-link-created':
-          dispatch({
-            type: 'toolbar-contribution',
-            location: 'post-title',
-            content: (
-              <Button aria-label="remove-link" onClick={unlink}>
-                <LinkIcon />
-              </Button>
-            )
-          });
-          save(op, 'visual-link');
-          dispatch({ type: 'save' });
-          break;
-        default:
-          console.log(`unknown config change type ${type}`);
+    (update) => {
+      if (update.type === 'visual-link-created') {
+        dispatch({
+          type: 'toolbar-contribution',
+          location: 'post-title',
+          content: (
+            <Button aria-label="remove-link" onClick={unlink}>
+              <LinkIcon />
+            </Button>
+          )
+        });
+        save(update, 'visual-link');
+        dispatch({ type: 'save' });
+      } else {
+        for (let [key, state] of Object.entries(update)) {
+          save(state, key);
+        }
       }
     },
     [dispatch, save]
@@ -112,7 +101,7 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
           {...props}
           columnSizing="fill"
           dataSource={dataSource}
-          columns={schema.columns}
+          columns={config?.columns || schema.columns}
           groupBy={config?.group}
           onConfigChange={handleConfigChange}
           renderBufferSize={80}

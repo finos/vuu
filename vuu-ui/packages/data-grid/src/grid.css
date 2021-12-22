@@ -3,9 +3,9 @@
   --grid-row-background: inherit;
   --grid-row-height: var(--grid-row-height, 20px);
   --grid-row-line-height: 19px;
-  --grid-row-background-selected: #2b8bf8;
+  --grid-row-background-selected: var(--brand);
+  --grid-header-cell-highlight-bg: var(--surface3);
 
-  --header-cell-highlight-bg: green;
   --hw-activation-indicator-thumb-bg: #2c2c2c;
   --grid-flex-align: stretch;
   --grid-cell-bg: var(--grid-cell-bg, var(--background));

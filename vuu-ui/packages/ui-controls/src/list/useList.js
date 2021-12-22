@@ -7,8 +7,6 @@ import {
 } from '../common-hooks';
 import { useTypeahead } from './hooks';
 
-console.log('[useList]');
-
 const EMPTY_ARRAY = [];
 
 export const useList = ({

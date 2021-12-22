@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { GridProvider } from './grid-context';
 import { buildContextMenuDescriptors, useContextMenu } from './context-menu';
 import * as Action from './context-menu/context-menu-actions';
+import * as GridModelAction from './grid-model/grid-model-actions';
 import { RowHeightCanary } from './row-height-canary';
 import { ComponentProvider } from './component-context';
 import { useGridModel } from './grid-model/use-grid-model';
@@ -26,15 +27,64 @@ import './grid.css';
 // display a warning if loaded with no dataSource
 
 const noop = () => undefined;
+const DEFAULT_COLUMN_WIDTH = 100;
+const MIN_COLUMN_WIDTH = 80;
 
 const baseClass = 'hwDataGrid';
 
 /** @type {GridBase} */
-const Grid = forwardRef(function Grid(props, ref) {
+const Grid = forwardRef(function Grid(
+  {
+    cellSelectionModel = 'none',
+    className,
+    columns,
+    columnSizing = 'static',
+    dataSource: dataSourceProp,
+    defaultColumnWidth = DEFAULT_COLUMN_WIDTH,
+    filter,
+    groupBy,
+    headerHeight = 24,
+    height: heightProp,
+    minColumnWidth = MIN_COLUMN_WIDTH,
+    noColumnHeaders = false,
+    onConfigChange = noop,
+    onRowClick,
+    renderBufferSize = 0,
+    rowHeight = 20,
+    selectionModel, // default should be none
+    showLineNumbers = false,
+    sort,
+    style: styleProp,
+    width: widthProp,
+    ...htmlAttributes
+  },
+  ref
+) {
   const viewportRef = useRef(null);
+  const gridModelRef = useRef(null);
   const [columnDragData, setColumnDragData] = useState(null);
-  const { className, onConfigChange = noop, onRowClick } = props;
-  const [rootRef, gridModel, dataSource, dispatchGridModelAction, custom] = useGridModel(props);
+  const [rootRef, gridModel, dataSource, dispatchGridModelAction, custom] = useGridModel({
+    cellSelectionModel,
+    columns,
+    columnSizing,
+    dataSource: dataSourceProp,
+    defaultColumnWidth,
+    filter,
+    groupBy,
+    headerHeight,
+    height: heightProp,
+    minColumnWidth,
+    noColumnHeaders,
+    renderBufferSize,
+    rowHeight,
+    selectionModel, // default should be none
+    showLineNumbers,
+    sort,
+    style: styleProp,
+    width: widthProp
+  });
+
+  gridModelRef.current = gridModel;
 
   const onChangeCallDatasourceSelect = useCallback(
     (selected) => {
@@ -72,10 +122,31 @@ const Grid = forwardRef(function Grid(props, ref) {
     [dataSource]
   );
 
+  const handleConfigChange = useCallback(
+    ({ type }) => {
+      if (onConfigChange) {
+        switch (type) {
+          case 'columns': {
+            const {
+              current: { columns }
+            } = gridModelRef;
+            return onConfigChange({
+              columns
+            });
+          }
+          default:
+        }
+      }
+    },
+    [onConfigChange]
+  );
+
   const dispatchGridAction = useGridActions({
+    dispatchGridModelAction,
     invokeDataSourceAction,
     handleSelectionChange,
-    invokeScrollAction
+    invokeScrollAction,
+    onConfigChange: handleConfigChange
   });
 
   const handleContextMenuAction = useContextMenu({
@@ -110,14 +181,15 @@ const Grid = forwardRef(function Grid(props, ref) {
       setColumnDragData(null);
       // TODO we need the final scrollLeft here
       invokeScrollAction({ type: 'scroll-end-horizontal' });
-      dispatchGridModelAction({ type: 'add-col', column, insertIdx });
+      dispatchGridModelAction({ type: GridModelAction.ADD_COL, column, insertIdx });
+      setTimeout(() => handleConfigChange({ type: 'columns' }), 0);
     },
-    [dispatchGridModelAction, invokeScrollAction]
+    [dispatchGridModelAction, handleConfigChange, invokeScrollAction]
   );
 
   const { assignedWidth, assignedHeight, width, height, totalHeaderHeight } = gridModel;
   const style = {
-    ...props.style,
+    ...styleProp,
     width: assignedWidth,
     height: assignedHeight,
     paddingTop: totalHeaderHeight,
@@ -144,6 +216,7 @@ const Grid = forwardRef(function Grid(props, ref) {
         menuBuilder={buildContextMenuDescriptors(gridModel)}>
         <ComponentProvider components={components}>
           <div
+            {...htmlAttributes}
             className={cx(baseClass, className)}
             ref={useForkRef(ref, rootRef)}
             role="grid"

@@ -13,10 +13,12 @@ export const createDataSource = ({
 }) =>
   new RemoteDataSource({
     bufferSize,
-    columns: schema.columns.map((col) => (typeof col === 'string' ? col : col.name)),
     serverName: 'Vuu',
     tableName,
     serverUrl,
     viewport: id,
-    ...config
+    ...config,
+    columns: (config?.columns || schema.columns).map((col) =>
+      typeof col === 'string' ? col : col.name
+    )
   });

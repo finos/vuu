@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { forwardRef, useCallback, useMemo, useRef } from 'react';
 import cx from 'classnames';
 import { useForkRef, useId } from '@vuu-ui/react-utils';
 import Header from './Header';

@@ -4,8 +4,6 @@ import { TextInput, ComboBox, DatePicker, Select, Toggle } from '@vuu-ui/ui-cont
 import { COMBO, SELECT, DATE, TOGGLE } from '../form-field/control-types';
 import CompositeControl from '../controls/composite-control';
 
-console.log({ TextInput });
-
 import { usa_states } from './usa_states';
 
 export function renderFormControl(field, leg, data, onChange, resolveType = true) {

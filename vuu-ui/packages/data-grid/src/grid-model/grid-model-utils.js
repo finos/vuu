@@ -297,16 +297,42 @@ function removeGroupColumn({ groupBy }, column) {
 
 const omitSystemColumns = (column) => !column.isSystemColumn;
 
+const addColumnToColumns = (column, columns, index) => {
+  const currentIndex = columns.findIndex((col) => col.name === column.name);
+  if (currentIndex === index) {
+    return columns;
+  } else {
+    let newColumns =
+      currentIndex !== -1 ? columns.filter((_, i) => i !== currentIndex) : columns.slice();
+    newColumns.splice(index, 0, column);
+    return newColumns;
+  }
+};
+
+const countLeadingSystemColumns = (columns) => {
+  let count = 0;
+  for (let i = 0; i < columns.length; i++) {
+    if (!columns[i].isSystemColumn) {
+      break;
+    } else {
+      count += 1;
+    }
+  }
+  return count;
+};
+
 export const GridModel = {
+  addColumnToColumns,
   addGroupColumn,
   addSortColumn,
-  setSortColumn,
+  countLeadingSystemColumns,
   columns: (gridModel) =>
     flattenColumnGroup(
       gridModel.columnGroups.flatMap((columnGroup) => columnGroup.columns.filter(omitSystemColumns))
     ),
   columnNames: (gridModel) => GridModel.columns(gridModel).map((column) => column.name),
   removeGroupColumn,
+  setSortColumn,
   updateGroupColumn,
   updateGroupColumnWidth
 };

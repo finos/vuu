@@ -495,7 +495,7 @@ export const useViewserver = ({ rpcServer, onConfigChange, onRpcResponse } = {})
       } else if (action.type === 'visual-link-created') {
         onConfigChange?.(action);
       } else {
-        console.log(`useViewserver dispatchGridAction no handler for $s{action.type}`);
+        console.log(`useViewserver dispatchGridAction no handler for ${action.type}`);
       }
     },
     [onConfigChange]

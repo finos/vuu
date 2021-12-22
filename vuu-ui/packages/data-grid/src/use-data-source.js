@@ -74,16 +74,18 @@ export default function useDataSource(
           hasUpdated.current = true;
         }
       } else if (type === 'sort') {
+        const { sort } = msg;
         dispatchGridModelAction(message);
-        onConfigChange(message);
+        onConfigChange({ sort });
       } else if (type === 'groupBy') {
-        const action = { type: 'group', groupBy: msg.groupBy };
-        dispatchGridModelAction(action);
-        onConfigChange(action);
+        const { groupBy } = msg;
+        dispatchGridModelAction({ type: 'group', groupBy });
+        onConfigChange({ group: groupBy });
       } else if (type === 'filter') {
+        const { filter } = msg;
         dispatchGridModelAction(message);
-        onConfigChange(message);
-        dataSource.emit('filter', msg.filter);
+        onConfigChange({ filter });
+        dataSource.emit('filter', filter);
       } else {
         dispatchGridAction(message);
       }

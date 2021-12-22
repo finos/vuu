@@ -8,11 +8,11 @@ import { useResizeObserver, WidthHeight } from '@vuu-ui/react-utils';
 
 const sizeOrUndefined = (value) => (value == null || value === 'auto' ? undefined : value);
 
-const useSize = (props) => {
+const useSize = (style, height, width) => {
   const [size, _setSize] = useState({
-    height: sizeOrUndefined(props.style?.height ?? props.height),
+    height: sizeOrUndefined(style?.height ?? height),
     measuredHeight: null,
-    width: sizeOrUndefined(props.style?.width ?? props.width),
+    width: sizeOrUndefined(style?.width ?? width),
     measuredWidth: null
   });
 
@@ -30,14 +30,14 @@ const useSize = (props) => {
   return [size, setSize];
 };
 
-export const useGridModel = (props) => {
+export const useGridModel = ({ dataSource: dataSourceProp, style, height, width, ...props }) => {
   const rootRef = useRef(null);
   const firstRender = useRef(true);
-  const [dataSource, setDataSource] = useState(props.dataSource);
+  const [dataSource, setDataSource] = useState(dataSourceProp);
 
   const custom = useAdornments(props);
 
-  const [size, setSize] = useSize(props);
+  const [size, setSize] = useSize(style, height, width);
 
   const onResize = useCallback(
     ({ width, height }) => {
@@ -86,10 +86,10 @@ export const useGridModel = (props) => {
   useEffectSkipFirst(() => {
     // onsole.log(`dispatchGridModel initialize`)
     dispatchGridModel({ type: 'initialize', props });
-    if (props.dataSource !== dataSource) {
-      setDataSource(props.dataSource);
+    if (dataSourceProp !== dataSource) {
+      setDataSource(dataSourceProp);
     }
-  }, [props.columns, props.columnSizing, props.dataSource, props.groupBy]);
+  }, [props.columns, props.columnSizing, dataSourceProp, props.groupBy]);
 
   return [rootRef, gridModel, dataSource, dispatchGridModel, custom];
 };

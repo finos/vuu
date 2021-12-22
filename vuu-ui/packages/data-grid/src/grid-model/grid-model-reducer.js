@@ -14,8 +14,6 @@ import {
 import * as Action from './grid-model-actions';
 
 const DEFAULT_COLUMN_TYPE = { name: 'string' };
-const DEFAULT_COLUMN_WIDTH = 100;
-const MIN_COLUMN_WIDTH = 80;
 const CHECKBOX_COLUMN = {
   name: '',
   key: metadataKeys.SELECTED,
@@ -40,7 +38,7 @@ const LINE_NUMBER_COLUMN = {
   width: 30
 };
 
-const RESIZING = { resizing: true };
+const RESIZING = { resizing: true, flex: 0 };
 const NOT_RESIZING = { resizing: false };
 
 /** @type {GridModelReducer} */
@@ -54,9 +52,9 @@ export default GridModelReducer;
 /** @type {GridModelReducerTable} */
 const reducerActionHandlers = {
   resize: resizeGrid,
-  'resize-col': resizeColumn,
+  [Action.COL_RESIZE]: resizeColumn,
   'resize-heading': resizeHeading,
-  'add-col': addColumn,
+  [Action.ADD_COL]: addColumn,
   initialize: initialize,
   filter: addFilter,
   sort: sortRows,
@@ -69,19 +67,19 @@ const reducerActionHandlers = {
 
 export const initModel = ([gridProps, size, custom]) => {
   const {
-    cellSelectionModel = 'none',
+    cellSelectionModel,
     columns,
-    columnSizing = 'static',
-    defaultColumnWidth = DEFAULT_COLUMN_WIDTH,
+    columnSizing,
+    defaultColumnWidth,
     filter,
     groupBy,
-    headerHeight = 24,
-    minColumnWidth = MIN_COLUMN_WIDTH,
-    noColumnHeaders = false,
-    renderBufferSize = 0,
-    rowHeight = 20,
+    headerHeight,
+    minColumnWidth,
+    noColumnHeaders,
+    renderBufferSize,
+    rowHeight,
     selectionModel, // default should be none
-    showLineNumbers = false,
+    showLineNumbers,
     sort
   } = gridProps;
 
@@ -155,6 +153,7 @@ function buildColumnsAndApplyMeasurements(state) {
     noColumnHeaders,
     rowHeight
   } = state;
+  console.log(`buildColumnsAndApplyMeasurements from ${columns.map((c) => [c.width, c.flex])}`);
   const { columnNames, columnGroups, headingDepth } = buildColumnGroups(state, columns);
   const totalHeaderHeight = noColumnHeaders
     ? customHeaderHeight
@@ -319,7 +318,10 @@ function resizeHeading(state, { phase, column, width }) {
       NOT_RESIZING
     );
     resizeColumnHeaderHeading = null;
-    return { ...state, columnGroups };
+    return {
+      ...state,
+      columnGroups
+    };
   }
 }
 
@@ -407,9 +409,17 @@ function addColumn(state, { insertIdx: absInsertIdx, targetColumnGroup, column }
     null
   );
 
+  const { key: _, ...columnProps } = column;
+  const leadingSystemColumns = GridModel.countLeadingSystemColumns(columns);
+
   return {
     ...state,
-    columnGroups
+    columnGroups,
+    columns: GridModel.addColumnToColumns(
+      columnProps,
+      state.columns,
+      absInsertIdx - leadingSystemColumns
+    )
   };
 }
 
@@ -423,7 +433,19 @@ function resizeColumn(state, { phase, column, width }) {
     return { ...state, columnGroups };
   } else {
     const [columnGroups] = GridModel.updateGroupColumn(state, column, NOT_RESIZING);
-    return { ...state, columnGroups };
+    return {
+      ...state,
+      columnGroups,
+      columns: state.columns.map((c) =>
+        c.name === column.name
+          ? {
+              ...c,
+              width,
+              flex: 0
+            }
+          : c
+      )
+    };
   }
 }
 
