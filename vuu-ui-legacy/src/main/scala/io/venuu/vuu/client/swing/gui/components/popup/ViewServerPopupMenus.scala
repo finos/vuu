@@ -185,11 +185,16 @@ object ViewServerPopupMenus {
         eventBus.publish(ClientEnableViewPort(RequestId.oneNew(), ctxProvider.context().vpId))
       })
 
+      val uniqueValues = new MenuItem(Action("Unique Values"){
+        val ctx = ctxProvider.context()
+        eventBus.publish(ClientRpcCall(RequestId.oneNew(), "TypeAheadRpcHandler", "getUniqueFieldValues", Array(ctx.table, ctx.currentColumn.get.getIdentifier.asInstanceOf[String]), Map(), "TYPEAHEAD"))
+      })
 
       contents += addToGroupByMenu
       contents += aggregateMenu(ctxProvider)
       contents += removeFromGroupBy
       contents += enableViewPort
+      contents += uniqueValues
     }
 
   }

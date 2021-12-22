@@ -5,18 +5,18 @@ import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.{TableDef, ViewPortDef}
 import io.venuu.vuu.core.table.Columns
 import io.venuu.vuu.net.rpc.RpcHandler
-import io.venuu.vuu.net.{ClientSessionId, MessageBody}
+import io.venuu.vuu.net.{ClientSessionId, MessageBody, RequestContext}
 import io.venuu.vuu.provider.MockProvider
 import io.venuu.vuu.viewport._
 
 case class MyObjectParam(foo: String, bar: String) extends MessageBody
 
 trait AnRpcHandler{
-  def onSendToMarket(param1: Map[String , Any])(sessionId: ClientSessionId): Boolean
+  def onSendToMarket(param1: Map[String , Any], ctx: RequestContext): Boolean
 }
 
 class MyCustomRpcHandler extends DefaultLifecycleEnabled with AnRpcHandler with RpcHandler {
-  def onSendToMarket(param1: Map[String , Any])(sessionId: ClientSessionId): Boolean = {
+  def onSendToMarket(param1: Map[String , Any], ctx: RequestContext): Boolean = {
     println("doing something false ." + param1)
     false
   }

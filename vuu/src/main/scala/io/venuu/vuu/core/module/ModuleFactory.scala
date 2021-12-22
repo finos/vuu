@@ -52,7 +52,6 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs, rpc: List[VuuServer
     ModuleFactoryNode(tableDefs.addJoin(func), rpc, vsName, staticServedResources, rest, viewPortDefs)
   }
 
-  @deprecated
   def addRpcHandler(rpcFunc: VuuServer => RpcHandler): ModuleFactoryNode = {
     ModuleFactoryNode(tableDefs, rpc ++ List(rpcFunc), vsName, staticServedResources, rest, viewPortDefs)
   }

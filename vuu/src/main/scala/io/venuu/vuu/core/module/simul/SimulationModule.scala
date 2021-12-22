@@ -14,8 +14,6 @@ import io.venuu.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, Simula
 import io.venuu.vuu.provider.{Provider, ProviderContainer, RpcProvider}
 import io.venuu.vuu.viewport._
 
-import java.util.UUID
-
 class PricesService(val table: DataTable, val provider: Provider) extends RpcHandler with StrictLogging {
 
   private val pricesProvider = provider.asInstanceOf[SimulatedPricesProvider]

@@ -6,13 +6,11 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.module.ModuleContainer
-import io.venuu.vuu.core.table.EmptyRowData
 import io.venuu.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
 import io.venuu.vuu.net.json.Serializer
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
 
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
 
