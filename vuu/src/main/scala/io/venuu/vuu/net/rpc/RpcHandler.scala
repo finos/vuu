@@ -1,11 +1,12 @@
 package io.venuu.vuu.net.rpc
 
+import com.typesafe.scalalogging.StrictLogging
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport._
 
 import java.lang.reflect.Method
 
-trait RpcHandler {
+trait RpcHandler extends StrictLogging {
 
   def menuItems(): ViewPortMenu = EmptyViewPortMenu
 
@@ -49,26 +50,33 @@ trait RpcHandler {
 
       val method = findBestMatchingMethod(rpc, overloadedMethods)
 
-      val r = if (rpc.params.size == 0)
-        method.get.invoke(this, ctx)
-      else if (rpc.params.size == 1)
-        method.get.invoke(this, toO(rpc.params(0)), ctx)
-      else if (rpc.params.size == 2)
-        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), ctx)
-      else if (rpc.params.size == 3)
-        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), ctx)
-      else if (rpc.params.size == 4)
-        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), ctx)
-      else if (rpc.params.size == 5)
-        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), ctx)
-      else if (rpc.params.size == 6)
-        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), ctx)
-      else if (rpc.params.size == 7)
-        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), toO(rpc.params(6)), ctx)
-      else if (rpc.params.size == 8)
-        method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), toO(rpc.params(6)), toO(rpc.params(7)), ctx)
+      try{
+        val r = if (rpc.params.size == 0)
+          method.get.invoke(this, ctx)
+        else if (rpc.params.size == 1)
+          method.get.invoke(this, toO(rpc.params(0)), ctx)
+        else if (rpc.params.size == 2)
+          method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), ctx)
+        else if (rpc.params.size == 3)
+          method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), ctx)
+        else if (rpc.params.size == 4)
+          method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), ctx)
+        else if (rpc.params.size == 5)
+          method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), ctx)
+        else if (rpc.params.size == 6)
+          method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), ctx)
+        else if (rpc.params.size == 7)
+          method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), toO(rpc.params(6)), ctx)
+        else if (rpc.params.size == 8)
+          method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), toO(rpc.params(6)), toO(rpc.params(7)), ctx)
 
-      Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, r, null), module = msg.module))
+        Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, r, null), module = msg.module))
+      }catch{
+        case ex: Exception =>
+          logger.error(s"Exception occurred calling rpc ${rpc}", ex)
+          Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, null, Error(ex.getMessage, ex.hashCode())), module = msg.module))
+      }
+
 
     }
   }

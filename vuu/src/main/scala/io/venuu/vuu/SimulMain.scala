@@ -1,10 +1,11 @@
 package io.venuu.vuu
 
 import io.venuu.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
-import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleGraphviz}
+import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.core.module.metrics.MetricsModule
 import io.venuu.vuu.core.module.simul.SimulationModule
+import io.venuu.vuu.core.module.typeahead.TypeAheadModule
 import io.venuu.vuu.core.module.vui.VuiStateModule
 import io.venuu.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import io.venuu.vuu.net.AlwaysHappyLoginValidator
@@ -48,6 +49,7 @@ object SimulMain extends App {
   ).withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(VuiStateModule(store))
+    .withModule(TypeAheadModule())
 
   val vuuServer = new VuuServer(config)
 

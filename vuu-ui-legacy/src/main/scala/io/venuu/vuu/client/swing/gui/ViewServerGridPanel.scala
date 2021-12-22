@@ -17,7 +17,7 @@ import java.awt.{Color, Dimension, Point}
 import java.util.UUID
 import javax.swing.event.{ChangeEvent, ChangeListener, ListSelectionEvent, ListSelectionListener}
 import javax.swing.table.TableColumn
-import javax.swing.{DefaultListSelectionModel, JComponent}
+import javax.swing.{DefaultListSelectionModel, JComponent, JOptionPane}
 import scala.swing.BorderPanel.Position
 import scala.swing._
 import scala.swing.event.{MouseClicked, TableEvent}
@@ -65,6 +65,19 @@ class ViewServerGridPanel(val parentFrame: Frame, requestId: String, tableName: 
         swing{ () =>
           processRpcAction(msg.action)
         }
+      case msg: ClientRpcResponse =>
+
+        msg.method match {
+          case "getUniqueFieldValues" =>
+            val grid = this
+            val items = msg.result.asInstanceOf[List[String]]
+            swing{ () =>
+              JOptionPane.showMessageDialog(grid.peer, "[" + items.mkString(",") + "]")
+            }
+        }
+
+
+
       case _ =>
   })
 

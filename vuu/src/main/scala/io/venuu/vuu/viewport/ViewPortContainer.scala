@@ -9,7 +9,7 @@ import io.venuu.toolbox.thread.RunInThread
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.toolbox.time.{Clock, TimeIt}
 import io.venuu.vuu.api.{Link, NoViewPortDef, ViewPortDef}
-import io.venuu.vuu.client.messages.{RequestId, ViewPortId}
+import io.venuu.vuu.client.messages.ViewPortId
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
 import io.venuu.vuu.core.sort._
@@ -19,7 +19,6 @@ import io.venuu.vuu.provider.{Provider, ProviderContainer}
 import io.venuu.vuu.util.PublishQueue
 import io.venuu.vuu.{core, viewport}
 
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, IteratorHasAsScala, SetHasAsScala}

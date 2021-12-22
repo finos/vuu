@@ -81,7 +81,6 @@ class VSMainFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], ti
       swing( () => setTablesComboContents(msg) )
     case msg: ClientGetTableMetaResponse =>
       swing( () => setColumnsComboContents(msg) )
-
     case _ =>
   })
 
@@ -112,15 +111,15 @@ class VSMainFrame(sessId: String)(implicit eventBus: EventBus[ClientMessage], ti
       val filter = filterTextBox.text
 
       if(groupBy.size > 0){
-        val columnsForTree = Array("RowIndex") ++ Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ columns
+        val columnsForTree = Array("RowIndex", "Selected") ++ Array("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount") ++ columns
         val model = new ViewPortedModel(requestId, columnsForTree)
         model.setRange(0, 100)
         tabbedPanel.pages.+=(new Page(table.table, new ViewServerTreeGridPanel(this, requestId, table, allColumnsAvailable, columnsForTree, model, groupBy)))
       }
       else{
-        val model = new ViewPortedModel(requestId, Array("RowIndex") ++ columns)
+        val model = new ViewPortedModel(requestId, Array("RowIndex", "Selected") ++ columns)
         model.setRange(0, 100)
-        tabbedPanel.pages.+=(new Page(table.table, new ViewServerTreeGridPanel(this, requestId, table, allColumnsAvailable, Array("RowIndex") ++ columns, model, groupBy)))
+        tabbedPanel.pages.+=(new Page(table.table, new ViewServerTreeGridPanel(this, requestId, table, allColumnsAvailable, Array("RowIndex", "Selected") ++ columns, model, groupBy)))
 
       }
 

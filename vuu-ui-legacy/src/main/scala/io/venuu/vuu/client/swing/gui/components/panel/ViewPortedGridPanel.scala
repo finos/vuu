@@ -18,9 +18,9 @@ class ViewPortedGridPanel(owner: Frame, tableName: ViewPortTable, columns: Array
   this.preferredSize = new Dimension(1024, 768)
   val requestId = RequestId.oneNew()
 
-  val model = new ViewPortedModel(requestId, Array("RowIndex") ++ columns)
+  val model = new ViewPortedModel(requestId, Array("RowIndex", "Selected") ++ columns)
   model.setRange(0, 100)
-  val vsPanel = new ViewServerGridPanel(owner, requestId, tableName, columns, Array("RowIndex") ++ columns, model)
+  val vsPanel = new ViewServerGridPanel(owner, requestId, tableName, columns, Array("RowIndex", "Selected") ++ columns, model)
 
   eventBus.publish(ClientCreateViewPort(requestId, tableName, columns, SortSpec(List()), Array(), 0, 100, ""))
 

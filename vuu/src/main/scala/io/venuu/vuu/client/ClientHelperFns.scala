@@ -4,7 +4,6 @@ import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.net._
 import io.venuu.vuu.viewport.{DefaultRange, ViewPortRange, ViewPortTable}
 
-import java.util.UUID
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 

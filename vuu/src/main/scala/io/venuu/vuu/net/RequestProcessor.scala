@@ -4,14 +4,12 @@ import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.Channel
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.venuu.toolbox.time.Clock
-import io.venuu.vuu.client.messages.{RequestId, SessionId}
+import io.venuu.vuu.client.messages.SessionId
 import io.venuu.vuu.core.module.ModuleContainer
 import io.venuu.vuu.net.flowcontrol.DefaultFlowController
 import io.venuu.vuu.net.json.Serializer
 import io.venuu.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import io.venuu.vuu.viewport.ViewPortUpdate
-
-import java.util.UUID
 
 case class RequestContext(requestId: String, session: ClientSessionId,
                           queue: PublishQueue[ViewPortUpdate], highPriorityQueue: PublishQueue[ViewPortUpdate],
