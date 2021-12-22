@@ -32,6 +32,19 @@ class TypeAheadModuleTest extends AnyFeatureSpec with Matchers with GivenWhenThe
     response.get.body.asInstanceOf[RpcResponse].result.asInstanceOf[Array[String]]
   }
 
+  def callGetUniqueFieldValuesStarting(tables: TableContainer, column: String, starts: String): Array[String] = {
+
+    val typeAheadRpc = new TypeAheadRpcHandlerImpl(tables)
+
+    val ctx = new RequestContext("", ClientSessionId("",""), null, null, "")
+
+    val vsMsg = toVsMsg(RpcCall("TypeAheadRpcHandler", "getUniqueFieldValuesStaringWith", Array(Map("table" -> "orders", "module" -> "TEST"), column, starts), Map()))
+
+    val response = typeAheadRpc.processRpcCall(vsMsg, vsMsg.body.asInstanceOf[RpcCall])(ctx)
+
+    response.get.body.asInstanceOf[RpcResponse].result.asInstanceOf[Array[String]]
+  }
+
   def setup(): TableContainer = {
 
     implicit val clock: Clock = new TestFriendlyClock(1000001L)
@@ -66,5 +79,7 @@ class TypeAheadModuleTest extends AnyFeatureSpec with Matchers with GivenWhenThe
     callGetUniqueFieldValues(tables, "ric") should equal(Array("BT.L", "VOD.L"))
     callGetUniqueFieldValues(tables, "foobar") should equal(Array())
 
+    callGetUniqueFieldValuesStarting(tables, "orderId", "NYC" )should equal(Array("NYC-0008", "NYC-0009", "NYC-0010"))
+    callGetUniqueFieldValuesStarting(tables, "ric", "B") should equal(Array("BT.L"))
   }
 }
