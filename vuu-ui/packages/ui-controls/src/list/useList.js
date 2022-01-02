@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import {
   useCollapsibleGroups,
+  useDragDrop,
   useHierarchicalData,
   useKeyboardNavigation,
   useSelection
@@ -10,7 +11,9 @@ import { useTypeahead } from './hooks';
 const EMPTY_ARRAY = [];
 
 export const useList = ({
+  allowDragDrop,
   collapsibleHeaders,
+  containerRef,
   defaultHighlightedIdx,
   defaultSelected,
   highlightedIdx: highlightedIdxProp,
@@ -48,8 +51,36 @@ export const useList = ({
     source: dataHook.data
   });
 
+  const handleDrop = useCallback(
+    (fromIndex, toIndex) => {
+      console.log(`dropAtIndex ${fromIndex} ${toIndex}`);
+      const data = dataHook.data.slice();
+      const [target] = data.splice(fromIndex, 1);
+      if (toIndex > fromIndex) {
+        toIndex -= 1;
+      }
+      if (toIndex === -1) {
+        data.push(target);
+      } else {
+        data.splice(toIndex, 0, target);
+      }
+      dataHook.setData(data);
+      keyboardHook.hiliteItemAtIndex(toIndex);
+    },
+    [dataHook, keyboardHook]
+  );
+
+  const dragDropHook = useDragDrop({
+    allowDragDrop,
+    orientation: 'vertical',
+    containerRef,
+    itemQuery: '.hwListItem',
+    onDrop: handleDrop
+  });
+
   const selectionHook = useSelection({
     defaultSelected,
+    disableSelection: dragDropHook.isDragging,
     highlightedIdx,
     indexPositions: dataHook.indexPositions,
     onChange,
@@ -131,6 +162,7 @@ export const useList = ({
     onBlur: handleBlur,
     onFocus: handleFocus,
     onKeyDown: handleKeyDown,
+    onMouseDown: dragDropHook.onMouseDown,
     onMouseDownCapture: handleMouseDownCapture,
     onMouseLeave: handleMouseLeave,
     onMouseMove: handleMouseMove
@@ -142,6 +174,7 @@ export const useList = ({
     controlledHighlighting: keyboardHook.controlledHighlighting,
     highlightedIdx,
     hiliteItemAtIndex: keyboardHook.hiliteItemAtIndex,
+    isDragging: dragDropHook.isDragging,
     keyBoardNavigation: keyboardHook.keyBoardNavigation,
     listItemHeaderHandlers: collapsibleHook.listItemHandlers,
     listItemHandlers: selectionHook.listItemHandlers,

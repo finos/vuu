@@ -186,3 +186,5 @@ export const groupByInitialLetter = (list, groupMode = 'headers-only') => {
 
   return result;
 };
+
+export const random_1000 = new Array(1000).fill(0).map((_, i) => `Item ${i + 1}`);

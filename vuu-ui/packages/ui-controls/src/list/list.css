@@ -60,7 +60,14 @@
   margin: 0;
 }
 
-.hwListItem:not(.hwListItemHeader)[data-highlighted] {
+.hwListItem[data-dragging] {
+  background-color: white;
+  box-shadow: var(--hw-dialog-shadow);
+  width: 100%;
+  z-index: 100;
+}
+
+.hwListItem:not(.hwListItemHeader):not([data-dragging])[data-highlighted] {
   background-color: var(--list-hilited-bg);
 }
 

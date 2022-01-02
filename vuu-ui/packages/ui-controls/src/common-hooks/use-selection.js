@@ -22,6 +22,7 @@ export const groupSelectionEnabled = (groupSelection) =>
 export const useSelection = ({
   count,
   defaultSelected,
+  disableSelection = false,
   // groupSelection = GROUP_SELECTION_NONE,
   highlightedIdx,
   indexPositions,
@@ -129,17 +130,19 @@ export const useSelection = ({
 
   const handleClick = useCallback(
     (evt) => {
-      const item = indexPositions[highlightedIdx];
-      if (!isCollapsibleItem(item)) {
-        evt.preventDefault();
-        evt.stopPropagation();
-        selectItemAtIndex(evt, highlightedIdx, item.id, evt.shiftKey, evt.ctrlKey || evt.metaKey);
-        if (extendedSelect) {
-          lastActive.current = highlightedIdx;
+      if (!disableSelection) {
+        const item = indexPositions[highlightedIdx];
+        if (!isCollapsibleItem(item)) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          selectItemAtIndex(evt, highlightedIdx, item.id, evt.shiftKey, evt.ctrlKey || evt.metaKey);
+          if (extendedSelect) {
+            lastActive.current = highlightedIdx;
+          }
         }
       }
     },
-    [extendedSelect, highlightedIdx, indexPositions, selectItemAtIndex]
+    [disableSelection, extendedSelect, highlightedIdx, indexPositions, selectItemAtIndex]
   );
 
   const listItemHandlers =

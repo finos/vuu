@@ -30,6 +30,7 @@ const removeStateProps = { count: undefined, index: undefined, expanded: undefin
 
 const List = forwardRef(function List(
   {
+    allowDragDrop,
     children,
     className,
     collapsibleHeaders = false,
@@ -67,12 +68,14 @@ const List = forwardRef(function List(
     focusVisible,
     highlightedIdx,
     hiliteItemAtIndex,
+    isDragging,
     listItemHeaderHandlers,
     listItemHandlers,
     listProps,
     selected,
     visibleData
   } = useList({
+    allowDragDrop,
     collapsibleHeaders,
     defaultHighlightedIdx,
     defaultSelected,
@@ -80,6 +83,7 @@ const List = forwardRef(function List(
     id,
     onChange,
     onHighlight,
+    containerRef: root,
     selected: selectedProp,
     selection,
     selectionKeys,
@@ -87,17 +91,21 @@ const List = forwardRef(function List(
     totalItemCount
   });
 
-  const isScrolling = useViewportTracking(root, highlightedIdx, stickyHeaders);
+  const isScrolling = useRef(false);
+  // const isScrolling = useViewportTracking(root, highlightedIdx, stickyHeaders);
 
   const handleMouseEnterListItem = useCallback(
     (evt) => {
+      if (isDragging) {
+        return;
+      }
       if (!isScrolling.current) {
         const idx = closestListItemIndex(evt.target);
         hiliteItemAtIndex(idx);
         onMouseEnterListItem && onMouseEnterListItem(evt, idx);
       }
     },
-    [hiliteItemAtIndex, isScrolling, onMouseEnterListItem]
+    [hiliteItemAtIndex, isDragging, isScrolling, onMouseEnterListItem]
   );
 
   const defaultItemHandlers = {

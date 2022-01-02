@@ -8,9 +8,10 @@ import {
   ListItemHeader,
   VirtualizedList
 } from '@vuu-ui/ui-controls';
-import { usa_states, usa_states_cities, groupByInitialLetter } from './usa_states';
+import { usa_states, usa_states_cities, groupByInitialLetter, random_1000 } from './usa_states';
 
 import '@vuu-ui/theme/index.css';
+import '@vuu-ui/ui-controls/index.css';
 
 export default {
   title: 'UI Controls/List',
@@ -52,6 +53,62 @@ export const SimpleList = () => {
         }}>
         <VirtualizedList source={usa_states} />
       </div> */}
+      <input type="text" />
+    </div>
+  );
+};
+
+export const SimpleListDragDrop = () => {
+  return (
+    <div
+      style={{
+        ...fullWidthHeight
+      }}>
+      <input type="text" />
+      <div
+        style={{
+          fontFamily: 'Roboto',
+          width: 150,
+          height: 400,
+          maxHeight: 400,
+          position: 'relative',
+          border: 'solid 1px #ccc'
+        }}>
+        <List allowDragDrop source={usa_states} />
+      </div>
+      {/* <div
+        style={{
+          fontFamily: 'Roboto',
+          width: 150,
+          height: 400,
+          maxHeight: 400,
+          position: 'relative',
+          border: 'solid 1px #ccc'
+        }}>
+        <VirtualizedList source={usa_states} />
+      </div> */}
+      <input type="text" />
+    </div>
+  );
+};
+export const LargeListDragDrop = () => {
+  return (
+    <div
+      style={{
+        ...fullWidthHeight
+      }}>
+      <input type="text" />
+      <div
+        style={{
+          fontFamily: 'Roboto',
+          width: 150,
+          height: 400,
+          maxHeight: 400,
+          position: 'relative',
+          border: 'solid 1px #ccc'
+        }}>
+        <List allowDragDrop source={random_1000} />
+      </div>
       <input type="text" />
     </div>
   );
