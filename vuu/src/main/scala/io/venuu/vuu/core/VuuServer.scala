@@ -10,12 +10,12 @@ import io.venuu.vuu.core.module.{ModuleContainer, RealizedViewServerModule, Stat
 import io.venuu.vuu.core.table.{DataTable, TableContainer}
 import io.venuu.vuu.net._
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
-import io.venuu.vuu.net.http.{VuuHttp2Server, VuuHttp2ServerOptions, VuuSecurityOptions}
-import io.venuu.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
+import io.venuu.vuu.net.http.{Http2Server, VuuHttp2Server, VuuHttp2ServerOptions, VuuSecurityOptions}
+import io.venuu.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import io.venuu.vuu.net.rest.RestService
 import io.venuu.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import io.venuu.vuu.net.ws.WebSocketServer
-import io.venuu.vuu.provider.{JoinTableProviderImpl, Provider, ProviderContainer}
+import io.venuu.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
 import io.venuu.vuu.viewport.{ViewPortAction, ViewPortActionMixin, ViewPortContainer}
 
 object VuuSecurityOptions{
@@ -53,7 +53,7 @@ case class VuuWebSocketOptionsImpl(wsPort: Int, uri: String) extends VuuWebSocke
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
 }
 
-case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions, wsOptions: VuuWebSocketOptions, security: VuuSecurityOptions, modules: List[ViewServerModule] = List()) {
+case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions = VuuHttp2ServerOptions(), wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(), security: VuuSecurityOptions = VuuSecurityOptions(), modules: List[ViewServerModule] = List()) {
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
@@ -64,17 +64,17 @@ case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions, wsOptions: VuuWeb
  */
 class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging {
 
-  val serializer = JsonVsSerializer
+  val serializer: Serializer[String, MessageBody] = JsonVsSerializer
 
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
   JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
-  val authenticator = config.security.authenticator
-  val tokenValidator = config.security.loginTokenValidator
+  val authenticator: Authenticator = config.security.authenticator
+  val tokenValidator: LoginTokenValidator = config.security.loginTokenValidator
 
   val sessionContainer = new ClientSessionContainerImpl()
 
-  val joinProvider = JoinTableProviderImpl() //new EsperJoinTableProviderImpl()
+  val joinProvider: JoinTableProvider = JoinTableProviderImpl()
 
   val tableContainer = new TableContainer(joinProvider)
 
@@ -98,9 +98,9 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   //order of creation here is important
   val server = new WebSocketServer(config.wsOptions.wsPort, factory)
 
-  val restServices = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
+  val restServices: List[RestService] = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
 
-  val httpServer = VuuHttp2Server(config.httpOptions, restServices)
+  val httpServer: Http2Server = VuuHttp2Server(config.httpOptions, restServices)
 
   val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
@@ -136,7 +136,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   private def registerModule(module: ViewServerModule): VuuServer = {
 
-    val vs = this;
+    val vs = this
 
     val realized = new RealizedViewServerModule {
       override def rpcHandlers: List[RpcHandler] = module.rpcHandlersUnrealized.map(_.apply(vs))
@@ -166,7 +166,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
     logger.info(s"[VIEW SERVER] registering module ${module.name} which contains ${module.tableDefs.size} tables")
 
-    module.tableDefs.foreach(tableDef => tableDef match {
+    module.tableDefs.foreach {
 
       case tableDef: JoinTableDef =>
         tableDef.setModule(module)
@@ -184,11 +184,10 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
         logger.info(s"Loading provider for table ${table.name}...")
         val provider = module.getProviderForTable(table, this)
         registerProvider(table, provider)
-    })
-
-    module.viewPortDefs.foreach({ case (table, vpFunc) => {
-      viewPortContainer.addViewPortDefinition(table, vpFunc)
     }
+
+    module.viewPortDefs.foreach({ case (table, vpFunc) =>
+      viewPortContainer.addViewPortDefinition(table, vpFunc)
     })
 
     this
@@ -196,7 +195,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   lifecycle(this).dependsOn(httpServer, server, joinProviderRunner, handlerRunner, viewPortRunner, joinProvider, groupByRunner)
 
-  def join() = {
+  def join(): Unit = {
     lifecycle.join()
   }
 

@@ -24,10 +24,9 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     implicit val timeProvider: Clock = new DefaultClock
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-    implicit val lifecycle = new LifecycleContainer
-
-    val dateTime = 1437728400000l //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+    val dateTime = 1437728400000L //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
     val ordersDef = TableDef(
       name = "orders",
@@ -62,7 +61,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     val providerContainer = new ProviderContainer(joinProvider)
 
-    val (viewPortContainer) = setupViewPort(tableContainer, providerContainer)
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
 
     joinProvider.start()
 
@@ -74,12 +73,12 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     joinProvider.runOnce()
 
-    val session = new ClientSessionId("sess-01", "chris")
+    val session = ClientSessionId("sess-01", "chris")
 
     val outQueue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask").map(orderPrices.getTableDef.columnForName(_)).toList
+    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask").map(orderPrices.getTableDef.columnForName(_))
 
     val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -88,12 +87,12 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     assertVpEq(combineQs(viewPort)) {
       Table(
         ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask"),
-        ("NYC-0001", "chris", "VOD.L", 1437728400000l, 100, 220.0, 222.0),
-        ("NYC-0002", "chris", "BT.L", 1437728400000l, 100, 500.0, 501.0)
+        ("NYC-0001", "chris", "VOD.L", 1437728400000L, 100, 220.0, 222.0),
+        ("NYC-0002", "chris", "BT.L", 1437728400000L, 100, 500.0, 501.0)
       )
     }
 
-    val vpcolumns2 = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open").map(orderPrices.getTableDef.columnForName(_)).toList
+    val vpcolumns2 = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open").map(orderPrices.getTableDef.columnForName(_))
 
     val groupByColumns = List(orderPrices.columnForName("trader"))
 
@@ -111,7 +110,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       )
     }
 
-    emptyQueues(viewPort);
+    emptyQueues(viewPort)
 
     val groupByColumns3 = List(orderPrices.columnForName("ric"))
 
@@ -143,7 +142,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-    val dateTime = 1437728400000l //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+    val dateTime = 1437728400000L //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
     val ordersDef = TableDef(
       name = "orders",
@@ -178,7 +177,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     val providerContainer = new ProviderContainer(joinProvider)
 
-    val (viewPortContainer) = setupViewPort(tableContainer, providerContainer)
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
 
     joinProvider.start()
 
@@ -199,7 +198,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     val outQueue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask").map(orderPrices.getTableDef.columnForName(_)).toList
+    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask").map(orderPrices.getTableDef.columnForName(_))
 
     val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -216,7 +215,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       )
     }
 
-    val vpcolumns2 = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open").map(orderPrices.getTableDef.columnForName(_)).toList
+    val vpcolumns2 = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open").map(orderPrices.getTableDef.columnForName(_))
 
     val groupByColumns = List(orderPrices.columnForName("trader"))
 
@@ -235,7 +234,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       )
     }
 
-    emptyQueues(viewPort);
+    emptyQueues(viewPort)
 
     //add two layer deep groupby
     val groupByColumns3 = List(orderPrices.columnForName("ric"), orderPrices.columnForName("trader"))
@@ -254,10 +253,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       Table(
         ("_depth"  ,"_isOpen" ,"_treeKey","_isLeaf" ,"_isOpen" ,"_caption","_childCount","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ),
         (1         ,false     ,"$root|VOD.L",false     ,false     ,"VOD.L"   ,1         ,""        ,""        ,"VOD.L"   ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (1         ,false     ,"$root|BT.L",false     ,false     ,"BT.L"    ,2         ,""        ,""        ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (2         ,false     ,"$root|BT.L|chris",false     ,false     ,"chris"   ,2         ,""        ,"chris"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (2         ,false     ,"$root|VOD.L|chris",false     ,false     ,"chris"   ,1         ,""        ,"chris"   ,"VOD.L"   ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (2         ,false     ,"$root|BT.L|steve",false     ,false     ,"steve"   ,2         ,""        ,"steve"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        )
+        (1         ,false     ,"$root|BT.L",false     ,false     ,"BT.L"    ,2         ,""        ,""        ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -283,9 +279,6 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
         ("_depth"  ,"_isOpen" ,"_treeKey","_isLeaf" ,"_isOpen" ,"_caption","_childCount","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ),
         (2         ,true      ,"$root|BT.L|chris",false     ,true      ,"chris"   ,2         ,""        ,"chris"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
         (2         ,false     ,"$root|BT.L|steve",false     ,false     ,"steve"   ,2         ,""        ,"steve"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (1         ,true      ,"$root|BT.L",false     ,true      ,"BT.L"    ,2         ,""        ,""        ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (1         ,false     ,"$root|VOD.L",false     ,false     ,"VOD.L"   ,1         ,""        ,""        ,"VOD.L"   ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (2         ,false     ,"$root|VOD.L|chris",false     ,false     ,"chris"   ,1         ,""        ,"chris"   ,"VOD.L"   ,""        ,""        ,""        ,""        ,""        ,""        ),
         (3         ,false     ,"$root|BT.L|chris|NYC-0002",true      ,false     ,"NYC-0002",0         ,"NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      ),
         (3         ,false     ,"$root|BT.L|chris|NYC-0003",true      ,false     ,"NYC-0003",0         ,"NYC-0003","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      ),
         (2         ,true      ,"$root|BT.L|chris",false     ,true      ,"chris"   ,2         ,""        ,"chris"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        )
@@ -304,8 +297,6 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
         (3         ,false     ,"$root|BT.L|chris|NYC-0003",true      ,false     ,"NYC-0003",0         ,"NYC-0003","chris"   ,"BT.L"    ,1437728400000L,100       ,500.0     ,502.0     ,40        ,null      )
       )
     }
-
-    println();
   }
 
 

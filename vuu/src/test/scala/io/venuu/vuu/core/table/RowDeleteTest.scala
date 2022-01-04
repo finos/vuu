@@ -2,7 +2,7 @@ package io.venuu.vuu.core.table
 
 import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.{DefaultClock, TestFriendlyClock}
+import io.venuu.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import io.venuu.vuu.api.TableDef
 import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.TableTestHelper._
@@ -22,10 +22,10 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
     Scenario("check a delete from a simple data table"){
 
-      implicit val timeProvider = new DefaultClock
+      implicit val clock: Clock = new DefaultClock
 
-      implicit val lifecycle = new LifecycleContainer
-      implicit val metrics = new MetricsProviderImpl
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
       val joinProvider   = JoinTableProviderImpl()// EsperJoinTableProviderImpl()
 
@@ -44,7 +44,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val provider = new MockProvider(table)
 
-      val session = new ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris")
 
       val vpcolumns = List("ric", "bid", "ask").map(table.getTableDef.columnForName(_))
 
@@ -89,11 +89,11 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
     Scenario("check we correct delete from a primary key join table"){
 
-      implicit val timeProvider = new TestFriendlyClock(1000000)
-      implicit val lifecycle = new LifecycleContainer
-      implicit val metrics = new MetricsProviderImpl
+      implicit val clock: Clock = new TestFriendlyClock(1000000)
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
-      val dateTime = 1437732000000l
+      val dateTime = 1437732000000L
 
       val (orders, prices, orderPrices, ordersProvider, pricesProvider, joinProvider) = TableTestHelper.createOrderPricesScenario()
 
@@ -108,7 +108,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       joinProvider.start()
 
-      val session = new ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris")
 
       val vpcolumns = orderPrices.getTableDef.columns.toList
 
@@ -133,10 +133,10 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       assertVpEq(updates) {
         Table(
           ("ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l)
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
         )
       }
 
@@ -152,9 +152,9 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       assertVpEq(updates2) {
         Table(
           ("ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l)
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
         )
       }
 
@@ -165,13 +165,13 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
     Scenario("Create a groupby ontop of a join table, delete all rows from the source, add another set, and check we subscribe to updates"){
 
-      implicit val timeProvider = new TestFriendlyClock(1000000)
-      implicit val lifecycle = new LifecycleContainer
-      implicit val metrics = new MetricsProviderImpl
+      implicit val clock: Clock = new TestFriendlyClock(1000000)
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
-      val dateTime = 1437732000000l
+      val dateTime = 1437732000000L
 
-      val (orders, prices, orderPrices, ordersProvider, pricesProvider, joinProvider) = TableTestHelper.createOrderPricesScenario()
+      val (_, _, orderPrices, ordersProvider, pricesProvider, joinProvider) = TableTestHelper.createOrderPricesScenario()
 
       val tableContainer = new TableContainer(joinProvider)
 
@@ -184,7 +184,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       joinProvider.start()
 
-      val session = new ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris")
 
       val vpcolumns = orderPrices.getTableDef.columns.toList
 
@@ -218,10 +218,10 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
         Table(
           ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
           (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0" ,""        ,""        ,""        ,""        ),
-          (0         ,2         ,"NYC-0001",false     ,"$root|chris|NYC-0001",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          (0         ,2         ,"NYC-0002",false     ,"$root|chris|NYC-0002",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          (0         ,2         ,"NYC-0003",false     ,"$root|chris|NYC-0003",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          (0         ,2         ,"NYC-0004",false     ,"$root|chris|NYC-0004",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
+          (0         ,2         ,"NYC-0001",false     ,"$root|chris|NYC-0001",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0002",false     ,"$root|chris|NYC-0002",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0003",false     ,"$root|chris|NYC-0003",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0004",false     ,"$root|chris|NYC-0004",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0" ,""        ,""        ,""        ,""        )
         )
       }
@@ -229,7 +229,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       Given("we delete from the primary key join fields")
 
-      Array("NYC-0001", "NYC-0002", "NYC-0003", "NYC-0004").foreach( ordersProvider.delete(_))
+      Array("NYC-0001", "NYC-0002", "NYC-0003", "NYC-0004").foreach(ordersProvider.delete)
 
       joinProvider.runOnce()
       viewPortContainer.runOnce()
@@ -255,10 +255,10 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
         Table(
           ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
           (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0",""        ,""        ,""        ,""        ),
-          (0         ,2         ,"NYC-0005",false     ,"$root|chris|NYC-0005",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0005","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          (0         ,2         ,"NYC-0006",false     ,"$root|chris|NYC-0006",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0006","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          (0         ,2         ,"NYC-0007",false     ,"$root|chris|NYC-0007",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0007","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l),
-          (0         ,2         ,"NYC-0008",false     ,"$root|chris|NYC-0008",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0008","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000l)
+          (0         ,2         ,"NYC-0005",false     ,"$root|chris|NYC-0005",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0005","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0006",false     ,"$root|chris|NYC-0006",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0006","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0007",false     ,"$root|chris|NYC-0007",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0007","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0008",false     ,"$root|chris|NYC-0008",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0008","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
         )
       }
 
@@ -268,15 +268,9 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
 
-      val rowKeyToIndex = viewPort.ForTest_getRowKeyToRowIndex
-      val subscribedKeys = viewPort.ForTest_getSubcribedKeys
-
-      println("ChrisChris")
-
       assertVpEq(combineQs(viewPort)) {
         Table(
           ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,"[1]"     ,""        ,"Σ 400.0" ,""        ,""        ,""        ,""        ),
           (0         ,2         ,"NYC-0005",false     ,"$root|chris|NYC-0005",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0005","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (0         ,2         ,"NYC-0006",false     ,"$root|chris|NYC-0006",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0006","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (0         ,2         ,"NYC-0007",false     ,"$root|chris|NYC-0007",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0007","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
