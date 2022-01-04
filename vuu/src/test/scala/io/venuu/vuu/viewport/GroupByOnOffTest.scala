@@ -2,7 +2,7 @@ package io.venuu.vuu.viewport
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.TestFriendlyClock
+import io.venuu.toolbox.time.{Clock, TestFriendlyClock}
 import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.util.OutboundRowPublishQueue
@@ -20,7 +20,7 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
     viewport
   }
 
-  def removeGroupBy(session: ClientSessionId, vpContainer: ViewPortContainer, vpRange: ViewPortRange, viewPort: ViewPort)= {
+  def removeGroupBy(session: ClientSessionId, vpContainer: ViewPortContainer, vpRange: ViewPortRange, viewPort: ViewPort): ViewPort= {
     val columns = viewPort.table.asTable.getTableDef.columns.toList
     val viewport = vpContainer.change(RequestId.oneNew(), session, viewPort.id, vpRange, columns, groupBy = NoGroupBy)
     viewport
@@ -30,8 +30,8 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
     Scenario("create groupby, remove, create, remove") {
 
-      implicit val clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
-      implicit val lifeCycle = new LifecycleContainer
+      implicit val clock : Clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
+      implicit val lifeCycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -54,14 +54,14 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000l,100       ,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000l,200       ,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000l,300       ,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000l,400       ,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000l,500       ,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000l,600       ,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000l,1000      ,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000l,500       ,500       ,500.0     ,501.0     ,null      ,null      ,null      )
+          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000L,100       ,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000L,200       ,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
+          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500       ,500.0     ,501.0     ,null      ,null      ,null      )
         )
       }
 
@@ -79,10 +79,7 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
           (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,2         ,"$root|steve|VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 600.0" ,""        ,""        ,""        ,""        ,""        )
+          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
         )
       }
 
@@ -93,14 +90,14 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       assertVpEq(filterByVpId(combineQs(viewPortNoGb), viewPortNoGb)) {
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000l,100       ,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000l,200       ,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000l,300       ,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000l,400       ,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000l,500       ,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000l,600       ,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000l,1000      ,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000l,500       ,500       ,500.0     ,501.0     ,null      ,null      ,null      )
+          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000L,100       ,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000L,200       ,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
+          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500       ,500.0     ,501.0     ,null      ,null      ,null      )
         )
       }
 
@@ -118,10 +115,7 @@ class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
           (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,2         ,"$root|steve|VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 600.0" ,""        ,""        ,""        ,""        ,""        )
+          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
         )
       }
 

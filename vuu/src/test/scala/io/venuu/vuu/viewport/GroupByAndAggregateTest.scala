@@ -2,7 +2,7 @@ package io.venuu.vuu.viewport
 
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
-import io.venuu.toolbox.time.DefaultClock
+import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.client.messages.RequestId
 import io.venuu.vuu.core.table.RowWithData
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
@@ -20,12 +20,12 @@ import org.scalatest.prop.Tables.Table
   */
 class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenThen with ViewPortSetup {
 
-    val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
+    val dateTime: Long = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
 
     Scenario("check we can create a simple groupby tree viewport"){
 
-      implicit val clock = new DefaultClock
-      implicit val lifeCycle = new LifecycleContainer
+      implicit val clock: Clock = new DefaultClock
+      implicit val lifeCycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -87,7 +87,6 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
           (false     ,3         ,"$root|steve|BT.L|NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
           (false     ,3         ,"$root|steve|BT.L|NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
           (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
           (true      ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
           (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        ),
           (true      ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
@@ -137,11 +136,8 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
       assertVpEq(updates3) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (true      ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        ),
-          (true      ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
           (false     ,2         ,"$root|steve|VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 600.0" ,""        ,""        ,""        ,""        ,""        ),
+          (true      ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
           (false     ,3         ,"$root|steve|BT.L|NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
           (false     ,3         ,"$root|steve|BT.L|NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
           (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
@@ -157,11 +153,6 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
       assertVpEq(updates4) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (true      ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        ),
-          (true      ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,2         ,"$root|steve|VOD.L",false     ,1         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 600.0" ,""        ,""        ,""        ,""        ,""        ),
           (false     ,3         ,"$root|steve|BT.L|NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,510.0     ,511.0     ,null      ,null      ,null      ),
           (false     ,3         ,"$root|steve|BT.L|NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,510.0     ,511.0     ,null      ,null      ,null      )
         )
@@ -172,8 +163,8 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
 
   Scenario("test filter in groupBy") {
 
-    implicit val timeProvider = new DefaultClock
-    implicit val lifeCycle = new LifecycleContainer
+    implicit val clock : Clock = new DefaultClock
+    implicit val lifeCycle : LifecycleContainer = new LifecycleContainer
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
     val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -242,7 +233,6 @@ class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhe
         (true      ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"[1]"     ,"BT.L"    ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
         (false     ,3         ,"$root|steve|BT.L|NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
         (false     ,3         ,"$root|steve|BT.L|NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
-        (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
         (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
         (true      ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"[1]"     ,"VOD.L"   ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
         (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        ),

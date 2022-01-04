@@ -24,6 +24,8 @@ class LuceneTableData(val tableDef: LuceneTableDef) {
 
   private val analyzer = new StandardAnalyzer
   private val config = new IndexWriterConfig(analyzer)
+  config.setRAMBufferSizeMB(100.0)
+
   private val indexWriter = new IndexWriter(index, config)
 
   private val commitEveryCount = 20
@@ -31,7 +33,7 @@ class LuceneTableData(val tableDef: LuceneTableDef) {
   private var updateCount: Long = 0
 
   //lazy val reader = DirectoryReader.open(index)
-  //lazy val searcher = new IndexSearcher(reader)
+
 
   private def rowUpdateAsDocument(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
 
@@ -82,7 +84,7 @@ class LuceneTableData(val tableDef: LuceneTableDef) {
     //val query = new MatchAllDocsQuery
 
     val topDocs = searcher.search(query, 1)
-    if (topDocs.totalHits.value == 0l) {
+    if (topDocs.totalHits.value == 0L) {
       null
     } else {
       searcher.doc(topDocs.scoreDocs(0).doc)
@@ -111,7 +113,7 @@ class LuceneTable(val tableDef: LuceneTableDef, val joinProvider: JoinTableProvi
 
   override def notifyListeners(rowKey: String, isDelete: Boolean = false) = {
     getObserversByKey(rowKey).foreach(obs => {
-      obs.onUpdate(new RowKeyUpdate(rowKey, this, isDelete))
+      obs.onUpdate(RowKeyUpdate(rowKey, this, isDelete))
     })
   }
 
