@@ -6,7 +6,7 @@ import io.venuu.vuu.net.rest.RestService
 import io.vertx.core.http.{HttpMethod, HttpServerOptions}
 import io.vertx.core.{AbstractVerticle, Vertx, VertxOptions}
 import io.vertx.ext.web.Router
-import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
+import io.vertx.ext.web.handler.{AuthenticationHandler, BodyHandler, StaticHandler}
 
 import java.util
 
@@ -85,10 +85,17 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
       services.foreach(service => addRestService(router, service))
 
+      router.route("/public/*")
+        .handler(StaticHandler.create()
+          .setWebRoot(options.webRoot)
+          .setDirectoryListing(options.allowDirectoryListings)
+        )
+
       // Serve the static pages
-      router.route("/*").handler(StaticHandler.create()
-        .setWebRoot(options.webRoot)
-        .setDirectoryListing(options.allowDirectoryListings)
+      router.route("/*")
+        .handler(StaticHandler.create()
+          .setWebRoot(options.webRoot)
+          .setDirectoryListing(options.allowDirectoryListings)
       )
 
 
