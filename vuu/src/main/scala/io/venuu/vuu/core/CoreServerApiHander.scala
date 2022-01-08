@@ -192,7 +192,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
         logger.info(s"Setting columns to ${columns.map(_.name).mkString(",")} ")
 
         Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user,
-          ChangeViewPortSuccess(newViewPort.id, columns.map(_.name).toArray, sort, msg.groupBy, msg.filterSpec)))
+          ChangeViewPortSuccess(newViewPort.id, columns.map(_.name).toArray, sort, msg.groupBy, msg.filterSpec, msg.aggregations)))
 
       case None =>
         Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, ErrorResponse(s"Could not find vp ${msg.viewPortId} in session ${ctx.session}")))
@@ -234,7 +234,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
         viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, groupBy)
       }
 
-      vsMsg(CreateViewPortSuccess(viewPort.id, viewPort.table.name, msg.range, msg.columns, msg.sort, msg.groupBy, msg.filterSpec))(ctx)
+      vsMsg(CreateViewPortSuccess(viewPort.id, viewPort.table.name, msg.range, msg.columns, msg.sort, msg.groupBy, msg.filterSpec, msg.aggregations))(ctx)
     }
 
   }

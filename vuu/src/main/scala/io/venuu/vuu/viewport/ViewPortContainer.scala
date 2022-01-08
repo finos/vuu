@@ -278,6 +278,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       throw new Exception(s"view port not found $id")
     }
 
+
     val aSort = parseSort(sort, viewPort.table)
 
     val aFilter = parseFilter(filterSpec)
