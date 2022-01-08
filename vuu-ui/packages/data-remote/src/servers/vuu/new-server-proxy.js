@@ -128,6 +128,14 @@ export class ServerProxy {
         }
         break;
 
+      case 'aggregate':
+        {
+          const requestId = nextRequestId();
+          const request = viewport.aggregateRequest(requestId, message.aggregations);
+          this.sendIfReady(request, requestId, isReady);
+        }
+        break;
+
       case 'sort':
         {
           const requestId = nextRequestId();

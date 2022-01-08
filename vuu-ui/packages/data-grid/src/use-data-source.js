@@ -77,6 +77,11 @@ export default function useDataSource(
         const { sort } = msg;
         dispatchGridModelAction(message);
         onConfigChange({ sort });
+      } else if (type === 'aggregate') {
+        const { aggregations } = msg;
+        console.log(`[useDataSource] aggregations ACKED ${JSON.stringify(aggregations)}`);
+        dispatchGridModelAction({ type: 'set-aggregations', aggregations });
+        onConfigChange({ aggregations });
       } else if (type === 'groupBy') {
         const { groupBy } = msg;
         dispatchGridModelAction({ type: 'group', groupBy });

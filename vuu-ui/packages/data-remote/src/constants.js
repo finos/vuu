@@ -29,6 +29,7 @@ export const msgType = {
   columnList: 'ColumnList',
   data: 'data',
   openTreeNode: 'openTreeNode',
+  aggregate: 'aggregate',
   filter: 'filter',
   filterQuery: 'filterQuery',
   filterData: 'filterData',

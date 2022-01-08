@@ -1,3 +1,4 @@
+import { STARTS_WITH } from '@vuu-ui/utils';
 import { createElement, useRef } from 'react';
 import { roundDecimal } from './grid-cell-number-utils';
 
@@ -32,6 +33,9 @@ function numericFormatter({
   const props = { className: 'num' };
   // eslint-disable-next-line react/display-name
   return (value) => {
+    if (typeof value === 'string' && (value.startsWith('Σ') || value.startsWith('['))) {
+      return value;
+    }
     const number =
       typeof value === 'number' ? value : typeof value === 'string' ? parseFloat(value) : null;
     return createElement(

@@ -3,7 +3,7 @@ import { removeColumnFromFilter } from '@vuu-ui/utils';
 import * as Action from './context-menu-actions';
 // for now ...
 import { GridModel } from '../grid-model/grid-model-utils';
-import { SortType } from '../constants';
+import { AggregationType, SortType } from '../constants';
 
 export const useContextMenu = ({ dataSource, gridModel, dispatchGridModelAction }) => {
   const handleContextMenuAction = (type, options) => {
@@ -23,6 +23,27 @@ export const useContextMenu = ({ dataSource, gridModel, dispatchGridModelAction 
       case Action.SortAddDescending:
         return (
           dataSource.sort(GridModel.addSortColumn(gridModel, options.column, SortType.DSC)), true
+        );
+      case Action.AggregateAvg:
+        return (
+          dataSource.aggregate(
+            GridModel.setAggregation(gridModel, options.column, AggregationType.Average)
+          ),
+          true
+        );
+      case Action.AggregateCount:
+        return (
+          dataSource.aggregate(
+            GridModel.setAggregation(gridModel, options.column, AggregationType.Count)
+          ),
+          true
+        );
+      case Action.AggregateSum:
+        return (
+          dataSource.aggregate(
+            GridModel.setAggregation(gridModel, options.column, AggregationType.Sum)
+          ),
+          true
         );
       // case Action.SortRemove: {
       case Action.Group:

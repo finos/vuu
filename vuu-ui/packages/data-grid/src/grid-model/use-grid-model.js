@@ -48,7 +48,6 @@ export const useGridModel = ({ dataSource: dataSourceProp, style, height, width,
 
   useResizeObserver(rootRef, WidthHeight, onResize, /* reportInitialSize = */ true);
 
-  /** @type {[GridModel, GridModelDispatcher]} */
   const [gridModel, dispatchGridModel] = useReducer(modelReducer, [props, size, custom], initModel);
 
   useEffectSkipFirst(() => {

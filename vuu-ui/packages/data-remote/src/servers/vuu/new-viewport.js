@@ -35,6 +35,7 @@ export class Viewport {
   constructor({
     viewport,
     tablename,
+    aggregations,
     columns,
     range,
     bufferSize = 0,
@@ -48,6 +49,7 @@ export class Viewport {
     this.status = '';
     this.disabled = false;
     this.suspended = false;
+    this.aggregations = aggregations;
     this.columns = columns;
     this.clientRange = range;
     this.bufferSize = bufferSize;
@@ -85,6 +87,7 @@ export class Viewport {
       type: Message.CREATE_VP,
       table: this.table,
       range: getFullRange(this.clientRange, this.bufferSize),
+      aggregations: this.aggregations,
       columns: this.columns,
       sort: this.sort,
       groupBy: this.groupBy,
@@ -92,9 +95,10 @@ export class Viewport {
     };
   }
 
-  handleSubscribed({ viewPortId, columns, table, range, sort, groupBy, filterSpec }) {
+  handleSubscribed({ viewPortId, aggregations, columns, table, range, sort, groupBy, filterSpec }) {
     this.serverViewportId = viewPortId;
     this.status = 'subscribed';
+    this.aggregations = aggregations;
     this.columns = columns;
     this.table = table;
     this.range = range;
@@ -104,20 +108,21 @@ export class Viewport {
     this.isTree = groupBy && groupBy.length > 0;
     this.dataWindow = new ArrayBackedMovingWindow(this.clientRange, range, this.bufferSize);
 
-    // console.log(
-    //   `%cViewport subscribed
-    //     clientVpId: ${this.clientViewportId}
-    //     serverVpId: ${this.serverViewportId}
-    //     table: ${this.table}
-    //     columns: ${columns.join(',')}
-    //     range: ${JSON.stringify(range)}
-    //     sort: ${JSON.stringify(sort)}
-    //     groupBy: ${JSON.stringify(groupBy)}
-    //     filterSpec: ${JSON.stringify(filterSpec)}
-    //     bufferSize: ${this.bufferSize}
-    //   `,
-    //   'color: blue',
-    // );
+    console.log(
+      `%cViewport subscribed
+        clientVpId: ${this.clientViewportId}
+        serverVpId: ${this.serverViewportId}
+        table: ${this.table}
+        aggregations: ${JSON.stringify(aggregations)}
+        columns: ${columns.join(',')}
+        range: ${JSON.stringify(range)}
+        sort: ${JSON.stringify(sort)}
+        groupBy: ${JSON.stringify(groupBy)}
+        filterSpec: ${JSON.stringify(filterSpec)}
+        bufferSize: ${this.bufferSize}
+      `,
+      'color: blue'
+    );
 
     return {
       type: 'subscribed',
@@ -152,6 +157,9 @@ export class Viewport {
     } else if (type === 'filter') {
       this.filterSpec = { filter: data };
       return { clientViewportId, type, filter: data };
+    } else if (type === 'aggregate') {
+      this.aggregations = data;
+      return { clientViewportId, type, aggregations: data };
     } else if (type === 'sort') {
       this.sort = { sortDefs: data };
       return { clientViewportId, type, sort: data };
@@ -310,6 +318,11 @@ export class Viewport {
     return this.createRequest({ filterSpec: { filter: filterQuery } });
   }
 
+  aggregateRequest(requestId, aggregations) {
+    this.awaitOperation(requestId, { type: 'aggregate', data: aggregations });
+    return this.createRequest({ aggregations });
+  }
+
   sortRequest(requestId, sortDefs) {
     this.awaitOperation(requestId, { type: 'sort', data: sortDefs });
     return this.createRequest({ sort: { sortDefs } });
@@ -393,6 +406,7 @@ export class Viewport {
     return {
       type: Message.CHANGE_VP,
       viewPortId: this.serverViewportId,
+      aggregations: this.aggregations,
       columns: this.columns,
       sort: this.sort,
       groupBy: this.groupBy,

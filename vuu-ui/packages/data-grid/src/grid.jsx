@@ -32,9 +32,9 @@ const MIN_COLUMN_WIDTH = 80;
 
 const baseClass = 'hwDataGrid';
 
-/** @type {GridBase} */
 const Grid = forwardRef(function Grid(
   {
+    aggregations,
     cellSelectionModel = 'none',
     className,
     columns,
@@ -64,6 +64,7 @@ const Grid = forwardRef(function Grid(
   const gridModelRef = useRef(null);
   const [columnDragData, setColumnDragData] = useState(null);
   const [rootRef, gridModel, dataSource, dispatchGridModelAction, custom] = useGridModel({
+    aggregations,
     cellSelectionModel,
     columns,
     columnSizing,

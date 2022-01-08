@@ -41,7 +41,6 @@ const LINE_NUMBER_COLUMN = {
 const RESIZING = { resizing: true, flex: 0 };
 const NOT_RESIZING = { resizing: false };
 
-/** @type {GridModelReducer} */
 const GridModelReducer = (state, action) => {
   // console.log(`%cGridModelReducer ${action.type}`, 'color:red;font-weight:bold;')
   // @ts-ignore
@@ -49,7 +48,6 @@ const GridModelReducer = (state, action) => {
 };
 export default GridModelReducer;
 
-/** @type {GridModelReducerTable} */
 const reducerActionHandlers = {
   resize: resizeGrid,
   [Action.COL_RESIZE]: resizeColumn,
@@ -60,6 +58,7 @@ const reducerActionHandlers = {
   sort: sortRows,
   group: groupRows,
   'set-available-columns': setAvailableColumns,
+  'set-aggregations': setAggregations,
   'column-hide': hideColumn,
   'column-show': showColumn,
   [Action.ROW_HEIGHT]: setRowHeight
@@ -67,6 +66,7 @@ const reducerActionHandlers = {
 
 export const initModel = ([gridProps, size, custom]) => {
   const {
+    aggregations = [],
     cellSelectionModel,
     columns,
     columnSizing,
@@ -104,6 +104,7 @@ export const initModel = ([gridProps, size, custom]) => {
   } = custom;
 
   const state = {
+    aggregations,
     assignedHeight,
     assignedWidth,
     cellSelectionModel,
@@ -241,7 +242,6 @@ function resizeGrid(state, { height, width }) {
   }
 }
 
-/** @type {GridModelReducer<GridModelSetColumnsAction>} */
 function setAvailableColumns(state, action) {
   if (!state.columnGroups) {
     const { columnNames, columnGroups, headingDepth } = buildColumnGroups(state, action.columns);
@@ -261,7 +261,13 @@ function setAvailableColumns(state, action) {
   }
 }
 
-/** @type {GridModelReducer<GridModelSortAction>} */
+function setAggregations(state, { aggregations }) {
+  return {
+    ...state,
+    aggregations
+  };
+}
+
 function sortRows(state, { sort }) {
   // const sortColumns = columns && sortByToMap(columns);
   return {
@@ -278,7 +284,6 @@ function addFilter(state, { filter }) {
   };
 }
 
-/** @type {GridModelReducer<GridModelGroupAction>} */
 function groupRows(state, { groupBy = null }) {
   const { columnGroups } = buildColumnGroups({ ...state, groupBy }, GridModel.columns(state));
 

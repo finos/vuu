@@ -1,3 +1,6 @@
+export const AggregateAvg = 'agg-avg';
+export const AggregateCount = 'agg-count';
+export const AggregateSum = 'agg-sum';
 export const ColumnHide = 'column-hide';
 export const FilterEdit = 'filter-edit';
 export const FilterRemove = 'filter-remove';

@@ -52,7 +52,8 @@ const messagesToRelayToClient = {
   subscribed: true,
   sort: true,
   groupBy: true,
-  filter: true
+  filter: true,
+  aggregate: true
 };
 
 function handleMessageFromWorker({ data: message }) {

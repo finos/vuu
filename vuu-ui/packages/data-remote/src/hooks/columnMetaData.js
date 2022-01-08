@@ -210,7 +210,7 @@ export const columnMetaData = {
   },
   openQty: {
     label: 'Open Qty',
-    name: 'openQuantity',
+    name: 'openQty',
     width: 80,
     type: {
       name: 'number',

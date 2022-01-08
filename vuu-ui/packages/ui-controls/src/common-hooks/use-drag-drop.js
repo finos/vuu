@@ -321,6 +321,7 @@ export const useDragDrop = ({ allowDragDrop, onDrop, orientation, containerRef, 
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       containerRef,
       displaceElementAtIndex,
@@ -328,15 +329,15 @@ export const useDragDrop = ({ allowDragDrop, onDrop, orientation, containerRef, 
       dragMouseUpHandler,
       handleDragStart,
       itemQuery,
-      orientation,
-      preDragMouseUpHandler
+      orientation
     ]
   );
 
   const preDragMouseUpHandler = useCallback(() => {
     removeEventListener('mousemove', preDragMouseMoveHandler, false);
     removeEventListener('mouseup', preDragMouseUpHandler, false);
-  }, [preDragMouseMoveHandler]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const mouseDownHandler = useCallback(
     (evt) => {
