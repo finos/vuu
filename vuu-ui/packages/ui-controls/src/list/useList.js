@@ -4,8 +4,11 @@ import {
   useDragDrop,
   useHierarchicalData,
   useKeyboardNavigation,
-  useSelection
+  useSelection,
+  useViewportTracking
 } from '../common-hooks';
+import { closestListItemIndex } from './list-dom-utils';
+
 import { useTypeahead } from './hooks';
 
 const EMPTY_ARRAY = [];
@@ -20,10 +23,12 @@ export const useList = ({
   id,
   onChange,
   onHighlight: onHighlightProp,
+  onMouseEnterListItem,
   selected,
   selection,
   selectionKeys,
-  sourceWithIds
+  sourceWithIds,
+  stickyHeaders
 }) => {
   const lastSelection = useRef(EMPTY_ARRAY);
   const dataHook = useHierarchicalData(sourceWithIds);
@@ -149,6 +154,22 @@ export const useList = ({
     [keyboardHook]
   );
 
+  const isScrolling = useViewportTracking(containerRef, highlightedIdx, stickyHeaders);
+
+  const handleMouseEnterListItem = useCallback(
+    (evt) => {
+      if (dragDropHook.isDragging) {
+        return;
+      }
+      if (!isScrolling.current) {
+        const idx = closestListItemIndex(evt.target);
+        keyboardHook.hiliteItemAtIndex(idx);
+        onMouseEnterListItem && onMouseEnterListItem(evt, idx);
+      }
+    },
+    [keyboardHook, dragDropHook, isScrolling, onMouseEnterListItem]
+  );
+
   const getActiveDescendant = () =>
     highlightedIdx === undefined || highlightedIdx === -1
       ? undefined
@@ -173,11 +194,12 @@ export const useList = ({
     focusVisible: keyboardHook.focusVisible,
     controlledHighlighting: keyboardHook.controlledHighlighting,
     highlightedIdx,
-    hiliteItemAtIndex: keyboardHook.hiliteItemAtIndex,
-    isDragging: dragDropHook.isDragging,
     keyBoardNavigation: keyboardHook.keyBoardNavigation,
     listItemHeaderHandlers: collapsibleHook.listItemHandlers,
-    listItemHandlers: selectionHook.listItemHandlers,
+    listItemHandlers: {
+      ...selectionHook.listItemHandlers,
+      onMouseEnter: handleMouseEnterListItem
+    },
     listProps,
     selected: selectionHook.selected,
     setIgnoreFocus: keyboardHook.setIgnoreFocus,

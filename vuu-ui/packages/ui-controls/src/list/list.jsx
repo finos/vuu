@@ -1,9 +1,9 @@
-import React, { forwardRef, memo, useCallback, useRef } from 'react';
+import React, { forwardRef, memo, useRef } from 'react';
 import cx from 'classnames';
 import { useId } from '@vuu-ui/react-utils';
-import { useItemsWithIds, useViewportTracking } from '../common-hooks';
+import { useItemsWithIds } from '../common-hooks';
 import { useList } from './useList';
-import { closestListItemIndex } from './list-dom-utils';
+// import { closestListItemIndex } from './list-dom-utils';
 import { useForkRef } from '../utils/use-fork-ref';
 import { createListProxy } from './list-proxy';
 
@@ -67,8 +67,6 @@ const List = forwardRef(function List(
     count,
     focusVisible,
     highlightedIdx,
-    hiliteItemAtIndex,
-    isDragging,
     listItemHeaderHandlers,
     listItemHandlers,
     listProps,
@@ -83,37 +81,17 @@ const List = forwardRef(function List(
     id,
     onChange,
     onHighlight,
+    onMouseEnterListItem,
     containerRef: root,
     selected: selectedProp,
     selection,
     selectionKeys,
     sourceWithIds,
+    stickyHeaders,
     totalItemCount
   });
 
-  const isScrolling = useRef(false);
-  // const isScrolling = useViewportTracking(root, highlightedIdx, stickyHeaders);
-
-  const handleMouseEnterListItem = useCallback(
-    (evt) => {
-      if (isDragging) {
-        return;
-      }
-      if (!isScrolling.current) {
-        const idx = closestListItemIndex(evt.target);
-        hiliteItemAtIndex(idx);
-        onMouseEnterListItem && onMouseEnterListItem(evt, idx);
-      }
-    },
-    [hiliteItemAtIndex, isDragging, isScrolling, onMouseEnterListItem]
-  );
-
-  const defaultItemHandlers = {
-    onMouseEnter: handleMouseEnterListItem
-  };
-
   const propsCommonToAllListItems = {
-    ...defaultItemHandlers,
     ...listItemHandlers,
     role: 'option'
   };

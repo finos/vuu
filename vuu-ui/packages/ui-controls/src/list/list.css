@@ -106,14 +106,14 @@
   mask: var(--svg-chevron-down) center center/12px 12px;
   mask-repeat: no-repeat;
   background-color: var(--list-item-header-twisty-color);
-  height: 18px;
+  height: 12px;
   left: var(--list-item-header-twisty-left);
   right: var(--list-item-header-twisty-right);
   margin-top: -8px;
   position: absolute;
   top: var(--list-item-header-twisty-top);
   transition: transform 0.3s;
-  width: 18px;
+  width: 12px;
 }
 .hwListItemHeader[aria-expanded='false']:after {
   transform: rotate(-90deg);
