@@ -8,7 +8,7 @@ import { RemoteDataSource, Servers, useViewserver } from '@vuu-ui/data-remote';
 
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
 import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
-import vuuSuggestions from './vuu-filter-suggestion-factory';
+import createSuggestionProvider from './vuu-filter-suggestion-provider';
 
 import '@vuu-ui/theme/index.css';
 import '@vuu-ui/layout/index.css';
@@ -83,7 +83,7 @@ export const VuuInstruments = () => {
       }}>
       <ParserProvider
         parser={parseFilter}
-        suggestionFactory={vuuSuggestions({
+        suggestionProvider={createSuggestionProvider({
           columnNames: dataConfig.columns,
           namedFilters,
           getSuggestions,

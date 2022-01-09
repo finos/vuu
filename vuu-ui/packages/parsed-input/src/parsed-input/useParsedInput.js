@@ -11,7 +11,6 @@ import { useSuggestions } from './use-suggestions';
 const ENTER_ONLY = ['Enter'];
 
 export const useParsedInput = ({
-  // defaultHighlightedIdx,
   highlightedIdx,
   id,
   onCommit,
@@ -30,6 +29,10 @@ export const useParsedInput = ({
 }) => {
   const dataHook = useHierarchicalData(sourceWithIds, 'ParsedInput');
 
+  const suggestionsAreIllustrationsOnly = dataHook.indexPositions.every(
+    (item) => item.isIllustration
+  );
+
   const dropdownHook = useDropdownBehaviour({
     open,
     onClose: onDropdownClose,
@@ -37,13 +40,7 @@ export const useParsedInput = ({
     openOnFocus: true
   });
 
-  const {
-    acceptSuggestion,
-    isMultiSelect,
-    // navigationHandlers,
-    suggestionProposed,
-    suggestions
-  } = useSuggestions({
+  const { acceptSuggestion, isMultiSelect } = useSuggestions({
     onCommit,
     selected,
     setCurrentText,
@@ -54,19 +51,12 @@ export const useParsedInput = ({
     indexPositions: dataHook.indexPositions
   });
 
-  // // IS this needed, it seems to work without it
-  // const handleKeyboardNavigation = (evt, nextIdx) => {
-  //   navigationHandlers.onKeyboardNavigation?.(evt, nextIdx);
-  // };
-
   const keyboardHook = useKeyboardNavigation({
-    // defaultHighlightedIdx,
     highlightedIdx,
     indexPositions: dataHook.indexPositions,
     id,
     label: 'ParsedInput',
     onHighlight
-    // onKeyboardNavigation: handleKeyboardNavigation
   });
 
   const selectionHook = useSelection({
@@ -86,18 +76,26 @@ export const useParsedInput = ({
 
   const handleKeyDown = useCallback(
     (evt) => {
-      dropdownHook.onKeyDown(evt);
-      if (!evt.defaultPrevented) {
-        keyboardHook.listProps.onKeyDown(evt);
-      }
-      if (!evt.defaultPrevented) {
-        selectionHook.listHandlers.onKeyDown?.(evt);
+      if (!suggestionsAreIllustrationsOnly) {
+        dropdownHook.onKeyDown(evt);
+        if (!evt.defaultPrevented) {
+          keyboardHook.listProps.onKeyDown(evt);
+        }
+        if (!evt.defaultPrevented) {
+          selectionHook.listHandlers.onKeyDown?.(evt);
+        }
       }
       if (!evt.defaultPrevented) {
         editHook.handleKeyDown?.(evt);
       }
     },
-    [dropdownHook, editHook, keyboardHook.listProps, selectionHook.listHandlers]
+    [
+      dropdownHook,
+      editHook,
+      keyboardHook.listProps,
+      selectionHook.listHandlers,
+      suggestionsAreIllustrationsOnly
+    ]
   );
 
   //TODO move to keyboard hook
@@ -111,25 +109,16 @@ export const useParsedInput = ({
     onBlur: dropdownHook.onBlur,
     onFocus: dropdownHook.onFocus,
     onKeyDown: handleKeyDown
-    // onMouseDownCapture: keyboardHook.listProps.onMouseDownCapture,
-    // onMouseLeave: handleMouseLeave,
-    // onMouseMove: handleMouseMove
   };
 
   return {
     acceptSuggestion,
-    focusVisible: keyboardHook.focusVisible,
-    highlightedIdx,
     inputProps: editHook.inputProps,
     inputRef: editHook.inputRef,
     inputValue: editHook.value,
-    isMultiSelect,
-    keyBoardNavigation: keyboardHook.keyBoardNavigation,
     listProps,
-    setIgnoreFocus: keyboardHook.setIgnoreFocus,
     setInputText: editHook.setInputText,
-    suggestionProposed,
-    suggestions,
+    suggestionsAreIllustrationsOnly,
     visibleData: dataHook.indexPositions
   };
 };

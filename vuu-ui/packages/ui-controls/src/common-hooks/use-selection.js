@@ -130,7 +130,7 @@ export const useSelection = ({
 
   const handleClick = useCallback(
     (evt) => {
-      if (!disableSelection) {
+      if (!disableSelection && highlightedIdx !== -1) {
         const item = indexPositions[highlightedIdx];
         if (!isCollapsibleItem(item)) {
           evt.preventDefault();

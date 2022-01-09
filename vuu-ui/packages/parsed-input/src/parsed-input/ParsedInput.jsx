@@ -12,6 +12,8 @@ import { getCompletionAtIndex } from './input-utils';
 import './ParsedInput.css';
 const classBase = 'hwParsedInput';
 
+const NO_COMPLETION = [];
+
 export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommit }, ref) {
   const id = useId(idProp);
   const { result, errors, textRef, tokens, parseText, suggestions } = useParsedText();
@@ -67,22 +69,6 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     label: 'ParsedInput'
   });
 
-  const handleHighlightChange = useCallback((idx) => {
-    setHighlightedIdx(idx);
-  }, []);
-
-  const handleTextInputChange = useCallback(
-    (text) => {
-      // const lastToken = lastWord(text);
-      // if (suggestions.find((s) => s.value === lastToken)) {
-      //   console.log(`we have a suggestion for ${lastToken} in ${text}`);
-      // }
-      // suggestionProposed.current = '';
-      setText(text);
-    },
-    [setText]
-  );
-
   const handleSuggestionClick = useCallback(
     (evt, selected) => {
       const updatedSelected = acceptSuggestionRef.current(evt, selected);
@@ -129,15 +115,16 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     inputValue,
     listProps,
     setInputText,
+    suggestionsAreIllustrationsOnly,
     visibleData
   } = useParsedInput({
     highlightedIdx: sourceWithIds.length === 0 ? -1 : highlightedIdx,
     onCommit: handleCommit,
     onDropdownClose: handleDropdownChange,
     onDropdownOpen: handleDropdownChange,
-    onTextInputChange: handleTextInputChange,
+    onTextInputChange: setText,
     onSelectionChange: handleSelectionChange,
-    onHighlight: handleHighlightChange,
+    onHighlight: setHighlightedIdx,
     open,
     selected,
     setCurrentText,
@@ -154,14 +141,6 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     setHighlightedIdx(idx);
   }, []);
 
-  // const { triggerHandlers: dropdownInputHandlers, isOpen } = useDropdown({
-  //   open: suggestionsShowing,
-  //   closeOnSelect: false,
-  //   highlightedIdx,
-  //   id,
-  //   onDropdownChange: handleDropdownChange
-  // });
-
   useEffect(() => {
     if (text !== inputValue) {
       requestAnimationFrame(() => {
@@ -171,13 +150,9 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
   }, [inputValue, setInputText, text]);
 
   const cursorAtEndOfText = !text.endsWith(' ');
-  const [completion] = getCompletionAtIndex(
-    visibleData,
-    highlightedIdx,
-    cursorAtEndOfText,
-    selected.length,
-    true
-  );
+  const [completion] = suggestionsAreIllustrationsOnly
+    ? NO_COMPLETION
+    : getCompletionAtIndex(visibleData, highlightedIdx, cursorAtEndOfText, selected.length, true);
 
   return (
     <>
@@ -204,10 +179,12 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
         align="bottom-right"
         className={`${classBase}-dropdown`}>
         <SuggestionList
-          highlightedIdx={highlightedIdx}
+          highlightedIdx={suggestionsAreIllustrationsOnly ? -1 : highlightedIdx}
           id={id}
-          onMouseEnterListItem={handleMouseOverSuggestion}
-          onSuggestionClick={handleSuggestionClick}
+          onMouseEnterListItem={
+            suggestionsAreIllustrationsOnly ? undefined : handleMouseOverSuggestion
+          }
+          onSuggestionClick={suggestionsAreIllustrationsOnly ? undefined : handleSuggestionClick}
           ref={suggestionList}
           selectionStrategy={selectionStrategy}
           selected={selected}

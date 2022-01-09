@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from 're
 import { useLayoutContext } from '@vuu-ui/layout';
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
 import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
-import vuuSuggestions from './vuu-filter-suggestion-factory';
+import createSuggestionProvider from './vuu-filter-suggestion-provider';
 
 import { Button, ContextMenuProvider, Link as LinkIcon } from '@vuu-ui/ui-controls';
 import { Grid, GridProvider } from '@vuu-ui/data-grid';
@@ -98,7 +98,7 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
       menuBuilder={buildViewserverMenuOptions}>
       <ParserProvider
         parser={parseFilter}
-        suggestionFactory={vuuSuggestions({
+        suggestionProvider={createSuggestionProvider({
           columnNames: dataSource.columns,
           namedFilters,
           getSuggestions

@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { ParsedInput, ParserProvider, SuggestionList } from '@vuu-ui/parsed-input';
 import { parseFilter, extractFilter, filterAsQuery } from '@vuu-ui/datagrid-parsers';
 import { ComponentAnatomy } from '@heswell/component-anatomy';
-import suggestionFactory from './filter-suggestion-factory';
+import createSuggestionProvider from './filter-suggestion-provider';
 
 import '@heswell/component-anatomy/esm/index.css';
 
@@ -67,7 +67,11 @@ export const ParsedFilterInput = () => {
   return (
     <ParserProvider
       parser={parseFilter}
-      suggestionFactory={suggestionFactory({ columns: typedColumns, columnNames, namedFilters })}>
+      suggestionProvider={createSuggestionProvider({
+        columns: typedColumns,
+        columnNames,
+        namedFilters
+      })}>
       <div style={{ width: 600 }}>
         <ParsedInput onCommit={handleCommit} />
       </div>
@@ -81,7 +85,9 @@ export const WithVisualiser = () => {
   };
   return (
     <ComponentAnatomy style={{ width: '100%' }}>
-      <ParserProvider parser={parseFilter} suggestionFactory={suggestionFactory({ columnNames })}>
+      <ParserProvider
+        parser={parseFilter}
+        suggestionProvider={createSuggestionProvider({ columnNames })}>
         <div style={{ width: 600 }}>
           <ParsedInput onCommit={handleCommit} />
         </div>

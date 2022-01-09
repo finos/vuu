@@ -3,6 +3,11 @@
   flex: 1 1 auto;
 }
 
+.hwSelectionList-illustration {
+  color: brown;
+  flex: 1 1 auto;
+}
+
 .hwSelectionList-close-list {
   background-color: rgb(199, 247, 199);
   flex: 1 1 auto;

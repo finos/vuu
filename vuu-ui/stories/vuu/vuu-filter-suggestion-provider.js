@@ -1,10 +1,25 @@
-const suggestColumnValues = async (column, text, isListItem, getSuggestions, table) => {
-  const suggestions = await getSuggestions([table, column]);
-  return suggestedValues(suggestions, text, isListItem);
+const suggestedValues = (values, text = '', operator = '', isListItem = false) => {
+  const result = values
+    .filter((value) => isListItem || value.toLowerCase().startsWith(text.toLowerCase()))
+    .map((value) => ({
+      value,
+      completion: value.toLowerCase().startsWith(text.toLowerCase())
+        ? value.slice(text.length)
+        : value,
+      isIllustration: operator === 'starts',
+      isListItem
+    }));
+
+  return result;
 };
 
 const suggestColumnNames = (columnNames, text, isListItem) => {
-  return suggestedValues(columnNames, text, isListItem);
+  return suggestedValues(columnNames, text, undefined, isListItem);
+};
+
+const suggestColumnValues = async (column, text, operator, isListItem, getSuggestions, table) => {
+  const suggestions = await getSuggestions([table, column]);
+  return suggestedValues(suggestions, text, operator, isListItem);
 };
 
 const getCurrentColumn = (filters, idx = 0) => {
@@ -33,20 +48,6 @@ const filterNameSavePrompt = (text) => {
   return [];
 };
 
-const suggestedValues = (values, text = '', isListItem = false) => {
-  const result = values
-    .filter((value) => isListItem || value.toLowerCase().startsWith(text.toLowerCase()))
-    .map((value) => ({
-      value,
-      completion: value.toLowerCase().startsWith(text.toLowerCase())
-        ? value.slice(text.length)
-        : value,
-      isListItem
-    }));
-
-  return result;
-};
-
 const suggestNamedFilters = async (filters, text) => {
   if (text.startsWith(':')) {
     return filters.map(({ name }) => ({
@@ -60,9 +61,9 @@ const suggestNamedFilters = async (filters, text) => {
 };
 
 // note: Returns a promise
-const filterSuggestions =
+const createSuggestionProvider =
   ({ columnNames, namedFilters = [], getSuggestions, table }) =>
-  (result, { token: tokenId, text, isListItem }) => {
+  (result, { token: tokenId, operator, text, isListItem }) => {
     switch (tokenId) {
       case 'COLUMN-NAME':
         return suggestColumnNames(columnNames, text, isListItem);
@@ -70,6 +71,7 @@ const filterSuggestions =
         return suggestColumnValues(
           getCurrentColumn(result),
           text,
+          operator,
           isListItem,
           getSuggestions,
           table
@@ -84,4 +86,4 @@ const filterSuggestions =
     }
   };
 
-export default filterSuggestions;
+export default createSuggestionProvider;

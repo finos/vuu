@@ -1,21 +1,36 @@
-const suggestColumnValues = async (column, text, isListItem, getSuggestions) => {
+const suggestedValues = (values, text = '', operator = '', isListItem = false) => {
+  const result = values
+    .filter((value) => isListItem || value.toLowerCase().startsWith(text.toLowerCase()))
+    .map((value) => ({
+      value,
+      completion: value.toLowerCase().startsWith(text.toLowerCase())
+        ? value.slice(text.length)
+        : value,
+      isIllustration: operator === 'starts',
+      isListItem
+    }));
+
+  return result;
+};
+
+const suggestColumnNames = (columnNames, text, isListItem) => {
+  return suggestedValues(columnNames, text, undefined, isListItem);
+};
+
+const suggestColumnValues = async (column, text, operator, isListItem, getSuggestions) => {
   let result;
 
   if (column === 'currency') {
     const values = ['CAD', 'EUR', 'GBX', 'USD'];
-    result = suggestedValues(values, text, isListItem);
+    result = suggestedValues(values, text, operator, isListItem);
   } else {
     const suggestions = await getSuggestions([
       { table: 'instruments', module: 'SIMUL' },
       'exchange'
     ]);
-    result = suggestedValues(suggestions, text, isListItem);
+    result = suggestedValues(suggestions, text, operator, isListItem);
   }
   return Promise.resolve(result);
-};
-
-const suggestColumnNames = (columnNames, text, isListItem) => {
-  return suggestedValues(columnNames, text, isListItem);
 };
 
 const getCurrentColumn = (filters, idx = 0) => {
@@ -44,20 +59,6 @@ const filterNameSavePrompt = (text) => {
   return [];
 };
 
-const suggestedValues = (values, text = '', isListItem = false) => {
-  const result = values
-    .filter((value) => isListItem || value.toLowerCase().startsWith(text.toLowerCase()))
-    .map((value) => ({
-      value,
-      completion: value.toLowerCase().startsWith(text.toLowerCase())
-        ? value.slice(text.length)
-        : value,
-      isListItem
-    }));
-
-  return result;
-};
-
 const suggestNamedFilters = async (filters, text) => {
   if (text.startsWith(':')) {
     return filters.map(({ name }) => ({
@@ -71,14 +72,19 @@ const suggestNamedFilters = async (filters, text) => {
 };
 
 // note: Returns a promise
-const filterSuggestions =
-  ({ columnNames, namedFilters = [], getSuggestions }) =>
-  (result, { token: tokenId, text, isListItem }) => {
+const createSuggestionProvider = ({ columnNames, namedFilters = [], getSuggestions }) =>
+  function suggestionProvider(result, { token: tokenId, operator, text, isListItem }) {
     switch (tokenId) {
       case 'COLUMN-NAME':
         return suggestColumnNames(columnNames, text, isListItem);
       case 'COLUMN-VALUE':
-        return suggestColumnValues(getCurrentColumn(result), text, isListItem, getSuggestions);
+        return suggestColumnValues(
+          getCurrentColumn(result),
+          text,
+          operator,
+          isListItem,
+          getSuggestions
+        );
       case 'FILTER-NAME':
         return filterNameSavePrompt(text);
       case 'NAMED-FILTER':
@@ -89,4 +95,4 @@ const filterSuggestions =
     }
   };
 
-export default filterSuggestions;
+export default createSuggestionProvider;
