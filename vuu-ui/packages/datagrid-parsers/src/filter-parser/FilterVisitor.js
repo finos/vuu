@@ -88,9 +88,12 @@ export default class CustomFilterVisitor extends AbstractParseTreeVisitor {
   }
 
   visitNamed_filter(ctx) {
-    const results = this.visitChildren(ctx);
-    console.log({ ctx, results });
-    return EMPTY;
+    const [, name] = this.visitChildren(ctx);
+    if (name) {
+      return { name };
+    } else {
+      return EMPTY;
+    }
   }
 
   /**

@@ -25,7 +25,19 @@ const caretAtEndOfText = (tokens, caretPosition) => {
   }
 };
 
-export const filterAsQuery = (filter) => {
+const getNamedFilter = (namedFilters, name) => namedFilters.find((f) => f.name === name)?.filter;
+
+export const filterAsQuery = (filter, namedFilters) => {
+  if (filter.op === 'or' || filter.op === 'and') {
+    const [clause1, clause2] = filter.filters;
+    return `${filterAsQuery(clause1, namedFilters)} ${filter.op} ${filterAsQuery(
+      clause2,
+      namedFilters
+    )}`;
+  } else if (filter.name) {
+    return filterAsQuery(getNamedFilter(namedFilters, filter.name));
+  }
+
   let query = '';
   for (let [key, value] of Object.entries(filter)) {
     if (key === 'column' || key === 'op' || key === 'value') {

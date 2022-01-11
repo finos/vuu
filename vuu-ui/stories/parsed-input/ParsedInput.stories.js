@@ -48,7 +48,7 @@ export const ParsedFilterInput = () => {
 
   const handleCommit = (result) => {
     const { filter, name } = extractFilter(result);
-    const filterQuery = filterAsQuery(filter);
+    const filterQuery = filterAsQuery(filter, namedFilters);
     console.log(
       `extracted filter 
       ${JSON.stringify(filter)} 
