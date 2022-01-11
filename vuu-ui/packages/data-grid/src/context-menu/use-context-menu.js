@@ -53,9 +53,11 @@ export const useContextMenu = ({ dataSource, gridModel, dispatchGridModelAction 
       case Action.ColumnHide:
         return dispatchGridModelAction({ type: 'column-hide', column: options.column }), true;
       case Action.FilterRemove:
-        return dataSource.filterQuery('');
-      case Action.FilterRemoveColumn:
-        return dataSource.filterQuery(removeColumnFromFilter(options.column, options.filter));
+        return dataSource.filter(null);
+      case Action.FilterRemoveColumn: {
+        const filter = removeColumnFromFilter(options.column, options.filter);
+        return dataSource.filter(filter);
+      }
       default:
         return false;
     }

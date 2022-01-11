@@ -1,3 +1,5 @@
+import { isNonNullChain } from 'typescript';
+
 export const AND = 'and';
 export const EQUALS = '=';
 export const GREATER_THAN = '>';
@@ -344,8 +346,19 @@ function combine(existingFilters, replacementFilters) {
   return existingFilters.filter(stillApplicable).concat(replacementFilters);
 }
 
-export function removeColumnFromFilter() {
-  return null;
+export function removeColumnFromFilter(column, filter) {
+  // RODO need to recurse into nested and/or
+  const { op, filters } = filter;
+  if (op === 'and' || op === 'or') {
+    const [clause1, clause2] = filters;
+    if (clause1.column === column.name) {
+      return clause2;
+    } else if (clause2.column === column.name) {
+      return clause1;
+    } else {
+      return null;
+    }
+  }
 }
 
 export function removeFilter(sourceFilter, filterToRemove) {

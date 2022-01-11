@@ -57,10 +57,7 @@ const defaultLayout = {
 };
 
 export const App = () => {
-  const [layoutConfig, setLayoutConfig] = useLayoutConfig(
-    'https://localhost:8443/api/vui/steve',
-    defaultLayout
-  );
+  const [layoutConfig, setLayoutConfig] = useLayoutConfig('api/vui/steve', defaultLayout);
 
   console.log(`%cApp render`, 'color:green');
 

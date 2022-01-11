@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useLayoutContext } from '@vuu-ui/layout';
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
-import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
+import { parseFilter, extractFilter, filterAsQuery } from '@vuu-ui/datagrid-parsers';
 import createSuggestionProvider from './vuu-filter-suggestion-provider';
 
 import { Button, ContextMenuProvider, Link as LinkIcon } from '@vuu-ui/ui-controls';
@@ -72,7 +72,8 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
   const handleCommit = useCallback(
     (result) => {
       const { filter, name } = extractFilter(result);
-      dataSource.filterQuery(filter);
+      const filterQuery = filterAsQuery(filter, namedFilters);
+      dataSource.filter(filter, filterQuery);
       if (name) {
         setNamedFilters(namedFilters.concat({ name, filter }));
       }

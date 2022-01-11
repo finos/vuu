@@ -1,4 +1,6 @@
 import { createLogger, DataTypes, EventEmitter, logColor, uuid } from '@vuu-ui/utils';
+import { filterAsQuery } from '@vuu-ui/datagrid-parsers';
+
 import { msgType as Msg } from './constants';
 
 import { ConnectionManager } from './connection-manager';
@@ -257,15 +259,6 @@ export default class RemoteDataSource extends EventEmitter {
     });
   }
 
-  filter(filter, dataType = ROW_DATA) {
-    this.server?.send({
-      viewport: this.viewport,
-      type: Msg.filter,
-      filter,
-      dataType
-    });
-  }
-
   aggregate(aggregations, dataType = ROW_DATA) {
     this.server?.send({
       viewport: this.viewport,
@@ -275,11 +268,12 @@ export default class RemoteDataSource extends EventEmitter {
     });
   }
 
-  filterQuery(filter) {
+  filter(filter, filterQuery = filter ? filterAsQuery(filter) : '') {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.filterQuery,
-      filter
+      filter,
+      filterQuery
     });
   }
 

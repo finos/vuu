@@ -12,10 +12,7 @@ export const Shell = ({ children, defaultLayout, paletteConfig, serverUrl }) => 
   const paletteView = useRef(null);
   const [open, setOpen] = useState(false);
 
-  const [layout, setLayoutConfig] = useLayoutConfig(
-    'https://localhost:8443/api/vui/bill',
-    defaultLayout
-  );
+  const [layout, setLayoutConfig] = useLayoutConfig('api/vui/bill', defaultLayout);
 
   const handleLayoutChange = useCallback(
     (layout) => {

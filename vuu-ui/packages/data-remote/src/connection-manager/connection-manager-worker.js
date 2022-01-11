@@ -13,7 +13,7 @@ const pendingRequests = new Map();
 // connection status messages before that, so we forward them to caller
 // while they wait for worker.
 const getWorker = async (url, server, handleConnectionStatusChange) => {
-  const workerUrl = '/worker.js?debug=all-messages';
+  const workerUrl = 'worker.js?debug=all-messages';
 
   return (
     pendingWorker ||

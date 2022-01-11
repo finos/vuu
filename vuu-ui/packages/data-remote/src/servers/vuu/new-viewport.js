@@ -7,30 +7,6 @@ import { bufferBreakout } from './buffer-range';
 const EMPTY_ARRAY = [];
 
 const byRowIndex = ([index1], [index2]) => index1 - index2;
-
-const serializeValue = (value) => {
-  if (typeof value === 'string') {
-    return value;
-  } else if (Array.isArray(value)) {
-    return `[${value.join(',')}]`;
-  } else {
-    throw Error('unexpected value in filter clause');
-  }
-};
-
-export const serializeFilter = (filter) => {
-  if (!filter) {
-    return '';
-  } else {
-    const { column, op, value, values = value, filters } = filter;
-    if (filters) {
-      return filters.map(serializeFilter).join(` ${op} `);
-    } else {
-      return `${column} ${op} ${serializeValue(values)}`;
-    }
-  }
-};
-
 export class Viewport {
   constructor({
     viewport,
@@ -155,8 +131,8 @@ export class Viewport {
       this.groupBy = [];
       return { clientViewportId, type: 'groupBy', groupBy: null };
     } else if (type === 'filter') {
-      this.filterSpec = { filter: data };
-      return { clientViewportId, type, filter: data };
+      this.filterSpec = { filter: data.filterQuery };
+      return { clientViewportId, type, ...data };
     } else if (type === 'aggregate') {
       this.aggregations = data;
       return { clientViewportId, type, aggregations: data };
@@ -312,9 +288,8 @@ export class Viewport {
     };
   }
 
-  filterRequest(requestId, filter) {
-    const filterQuery = serializeFilter(filter);
-    this.awaitOperation(requestId, { type: 'filter', data: filter });
+  filterRequest(requestId, filter, filterQuery) {
+    this.awaitOperation(requestId, { type: 'filter', data: { filter, filterQuery } });
     return this.createRequest({ filterSpec: { filter: filterQuery } });
   }
 

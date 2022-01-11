@@ -87,9 +87,9 @@ export default function useDataSource(
         dispatchGridModelAction({ type: 'group', groupBy });
         onConfigChange({ group: groupBy });
       } else if (type === 'filter') {
-        const { filter } = msg;
+        const { filter, filterQuery } = msg;
         dispatchGridModelAction(message);
-        onConfigChange({ filter });
+        onConfigChange({ filter, filterQuery });
         dataSource.emit('filter', filter);
       } else {
         dispatchGridAction(message);
