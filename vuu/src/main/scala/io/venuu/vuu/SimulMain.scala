@@ -3,12 +3,13 @@ package io.venuu.vuu
 import io.venuu.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
+import io.venuu.vuu.core.module.authn.AuthNModule
 import io.venuu.vuu.core.module.metrics.MetricsModule
 import io.venuu.vuu.core.module.simul.SimulationModule
 import io.venuu.vuu.core.module.typeahead.TypeAheadModule
 import io.venuu.vuu.core.module.vui.VuiStateModule
 import io.venuu.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
-import io.venuu.vuu.net.AlwaysHappyLoginValidator
+import io.venuu.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
 import io.venuu.vuu.state.{MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, VuiState}
@@ -32,6 +33,9 @@ object SimulMain extends App {
 
   lifecycle.autoShutdownHook()
 
+  val authenticator: Authenticator = new AlwaysHappyAuthenticator
+  val loginTokenValidator: LoggedInTokenValidator = new LoggedInTokenValidator
+
   val config = VuuServerConfig(
     VuuHttp2ServerOptions()
       //.withWebRoot("../vuu/src/main/resources/www")
@@ -44,12 +48,14 @@ object SimulMain extends App {
       .withUri("websocket")
       .withWsPort(8090),
     VuuSecurityOptions()
-      .withAuthenticator(new AlwaysHappyAuthenticator)
+      .withAuthenticator(authenticator)
       .withLoginValidator(new AlwaysHappyLoginValidator)
   ).withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(VuiStateModule(store))
     .withModule(TypeAheadModule())
+    .withModule(AuthNModule(authenticator, loginTokenValidator))
+
 
   val vuuServer = new VuuServer(config)
 

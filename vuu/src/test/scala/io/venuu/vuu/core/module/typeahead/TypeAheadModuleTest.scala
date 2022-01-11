@@ -23,7 +23,7 @@ class TypeAheadModuleTest extends AnyFeatureSpec with Matchers with GivenWhenThe
 
     val typeAheadRpc = new TypeAheadRpcHandlerImpl(tables)
 
-    val ctx = new RequestContext("", ClientSessionId("",""), null, null, "")
+    val ctx = RequestContext("", ClientSessionId("",""), null, null, "")
 
     val vsMsg = toVsMsg(RpcCall("TypeAheadRpcHandler", "getUniqueFieldValues", Array(Map("table" -> "orders", "module" -> "TEST"), column), Map()))
 
