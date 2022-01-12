@@ -17,20 +17,9 @@ const suggestColumnNames = (columnNames, text, isListItem) => {
   return suggestedValues(columnNames, text, undefined, isListItem);
 };
 
-const suggestColumnValues = async (column, text, operator, isListItem, getSuggestions) => {
-  let result;
-
-  if (column === 'currency') {
-    const values = ['CAD', 'EUR', 'GBX', 'USD'];
-    result = suggestedValues(values, text, operator, isListItem);
-  } else {
-    const suggestions = await getSuggestions([
-      { table: 'instruments', module: 'SIMUL' },
-      'exchange'
-    ]);
-    result = suggestedValues(suggestions, text, operator, isListItem);
-  }
-  return Promise.resolve(result);
+const suggestColumnValues = async (column, text, operator, isListItem, getSuggestions, table) => {
+  const suggestions = await getSuggestions([table, column]);
+  return suggestedValues(suggestions, text, operator, isListItem);
 };
 
 const getCurrentColumn = (filters, idx = 0) => {
@@ -72,7 +61,7 @@ const suggestNamedFilters = async (filters, text) => {
 };
 
 // note: Returns a promise
-const createSuggestionProvider = ({ columnNames, namedFilters = [], getSuggestions }) =>
+const createSuggestionProvider = ({ columnNames, namedFilters = [], getSuggestions, table }) =>
   function suggestionProvider(result, { token: tokenId, operator, text, isListItem }) {
     switch (tokenId) {
       case 'COLUMN-NAME':
@@ -83,7 +72,8 @@ const createSuggestionProvider = ({ columnNames, namedFilters = [], getSuggestio
           text,
           operator,
           isListItem,
-          getSuggestions
+          getSuggestions,
+          table
         );
       case 'FILTER-NAME':
         return filterNameSavePrompt(text);

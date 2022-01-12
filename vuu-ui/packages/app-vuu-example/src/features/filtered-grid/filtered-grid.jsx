@@ -102,7 +102,8 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
         suggestionProvider={createSuggestionProvider({
           columnNames: dataSource.columns,
           namedFilters,
-          getSuggestions
+          getSuggestions,
+          table: dataSource.tableName
         })}>
         <Button className="vuFilterButton" data-icon="filter" />
 

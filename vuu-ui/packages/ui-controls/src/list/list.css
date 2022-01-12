@@ -58,6 +58,7 @@
   position: relative;
   cursor: default;
   margin: 0;
+  white-space: nowrap;
 }
 
 .hwListItem[data-dragging] {
