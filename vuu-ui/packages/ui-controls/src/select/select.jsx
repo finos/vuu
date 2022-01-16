@@ -6,7 +6,7 @@ import './select.css';
 
 const classBase = 'hwSelect';
 
-const Select = forwardRef(function Select({ value: valueProp, values = [], ...props }, ref) {
+const Select = forwardRef(function Select({ value: valueProp, ...props }, ref) {
   const selector = useRef(null);
   const [value, setValue] = useState(valueProp);
 
@@ -27,14 +27,7 @@ const Select = forwardRef(function Select({ value: valueProp, values = [], ...pr
   };
 
   return (
-    <SelectBase
-      ref={selector}
-      {...props}
-      values={values}
-      onCommit={handleCommit}
-      typeToNavigate
-      value={value}
-    >
+    <SelectBase ref={selector} {...props} onCommit={handleCommit} typeToNavigate value={value}>
       {(child) =>
         child === ComponentType.Input && (
           <div tabIndex={0} className={classBase}>

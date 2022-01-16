@@ -80,9 +80,17 @@ export const useItemsWithIds = (
     [collapsibleHeaders, createProxy, defaultExpanded, idRoot]
   );
 
-  const [count, source] = useMemo(() => {
+  const [count, sourceWithIds] = useMemo(() => {
     return normalizeSource(sourceProp, { index: 0 });
   }, [normalizeSource, sourceProp]);
 
-  return [count, source];
+  const sourceItemById = useCallback(
+    (id) => {
+      const sourceWithId = sourceWithIds.find((i) => i.id === id);
+      return sourceProp[sourceWithId.index];
+    },
+    [sourceProp, sourceWithIds]
+  );
+
+  return [count, sourceWithIds, sourceItemById];
 };

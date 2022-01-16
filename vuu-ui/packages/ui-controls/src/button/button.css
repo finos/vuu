@@ -75,3 +75,7 @@
 .hwButton[aria-label^='add']:after {
   --svg-icon: var(--svg-add);
 }
+
+.hwButton[aria-label^='logout']:after {
+  --svg-icon: var(--svg-logout);
+}

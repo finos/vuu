@@ -21,6 +21,7 @@ export const useList = ({
   defaultSelected,
   highlightedIdx: highlightedIdxProp,
   id,
+  listItemHandlers: listItemHandlersProp,
   onChange,
   onHighlight: onHighlightProp,
   onMouseEnterListItem,
@@ -40,11 +41,11 @@ export const useList = ({
   const { highlightedIdx, ...keyboardHook } = useKeyboardNavigation({
     defaultHighlightedIdx,
     highlightedIdx: highlightedIdxProp,
+    id,
     indexPositions: dataHook.indexPositions,
+    label: 'List',
     onHighlight: onHighlightProp,
     onKeyboardNavigation: handleKeyboardNavigation,
-    id,
-    label: 'List',
     selected: lastSelection.current
   });
 
@@ -196,7 +197,7 @@ export const useList = ({
     highlightedIdx,
     keyBoardNavigation: keyboardHook.keyBoardNavigation,
     listItemHeaderHandlers: collapsibleHook.listItemHandlers,
-    listItemHandlers: {
+    listItemHandlers: listItemHandlersProp || {
       ...selectionHook.listItemHandlers,
       onMouseEnter: handleMouseEnterListItem
     },

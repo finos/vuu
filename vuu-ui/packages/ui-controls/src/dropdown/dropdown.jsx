@@ -23,22 +23,24 @@ const useDropdownChildren = (children) => {
     header = null,
     footer = null;
   React.Children.forEach(children, (child) => {
-    if (child.props['data-header']) {
-      header = child;
-    } else if (child.props['data-footer']) {
-      footer = child;
-    } else if (mainChild !== undefined) {
-      throw new Error(
-        `Dropdown can only contain a single child dropdown element. Header and Footer must use 'data-header', 'data-footer data attributes'`
-      );
-    } else {
-      mainChild = child;
+    if (child !== null) {
+      if (child.props['data-header']) {
+        header = child;
+      } else if (child.props['data-footer']) {
+        footer = child;
+      } else if (mainChild !== undefined) {
+        throw new Error(
+          `Dropdown can only contain a single child dropdown element. Header and Footer must use 'data-header', 'data-footer data attributes'`
+        );
+      } else {
+        mainChild = child;
+      }
     }
   });
   return [mainChild, header, footer];
 };
 
-const Dropdown = forwardRef(function Dropdown(
+export const Dropdown = forwardRef(function Dropdown(
   {
     align = 'bottom-left',
     autofocus = false,
@@ -222,7 +224,5 @@ const Dropdown = forwardRef(function Dropdown(
     </Portal>
   );
 });
-
-export default Dropdown;
 
 const equalsOrContains = (el, targetEl) => el && (el === targetEl || el.contains(targetEl));

@@ -37,6 +37,7 @@ const List = forwardRef(function List(
     defaultHighlightedIdx,
     defaultSelected,
     emptyMessage,
+    listItemHandlers: listItemHandlersProp,
     onCommit,
     onChange = onCommit, // onSelectioNChange
     onHighlight,
@@ -79,6 +80,7 @@ const List = forwardRef(function List(
     defaultSelected,
     highlightedIdx: highlightedIdxProp,
     id,
+    listItemHandlers: listItemHandlersProp,
     onChange,
     onHighlight,
     onMouseEnterListItem,
