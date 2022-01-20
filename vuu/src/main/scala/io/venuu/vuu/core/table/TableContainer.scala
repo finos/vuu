@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{JmxAble, MetricsProvider}
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.{JoinTableDef, TableDef}
-import io.venuu.vuu.core.groupby.{GroupBySessionTableImpl, SessionTable}
+import io.venuu.vuu.core.tree.{TreeSessionTableImpl, SessionTable}
 import io.venuu.vuu.net.ClientSessionId
 import io.venuu.vuu.provider.JoinTableProvider
 import io.venuu.vuu.viewport.{RowSource, ViewPortTable}
@@ -97,8 +97,8 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     table
   }
 
-  def createGroupBySessionTable(source: RowSource, session: ClientSessionId): GroupBySessionTableImpl = {
-    val table = new GroupBySessionTableImpl(source, session, joinTableProvider)
+  def createGroupBySessionTable(source: RowSource, session: ClientSessionId): TreeSessionTableImpl = {
+    val table = new TreeSessionTableImpl(source, session, joinTableProvider)
     //source.addSessionListener(table)
     val existing = tables.put(table.name, table)
     assert(existing == null, "we should never replace an existing table with session id")

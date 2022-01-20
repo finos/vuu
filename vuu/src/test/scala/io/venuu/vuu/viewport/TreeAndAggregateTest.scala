@@ -18,7 +18,7 @@ import org.scalatest.prop.Tables.Table
 /**
   * Created by chris on 21/11/2015.
   */
-class GroupByAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenThen with ViewPortSetup {
+class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenThen with ViewPortSetup {
 
     val dateTime: Long = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
 

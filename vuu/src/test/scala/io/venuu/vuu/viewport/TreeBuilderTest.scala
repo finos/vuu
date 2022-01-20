@@ -3,7 +3,7 @@ package io.venuu.vuu.viewport
 import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.DefaultClock
-import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
+import io.venuu.vuu.core.tree.TreeSessionTableImpl
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -12,7 +12,7 @@ import org.scalatest.matchers.should.Matchers
 /**
   * Created by chris on 23/11/2015.
   */
-class GroupByTreeBuilderTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
+class TreeBuilderTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
   Feature("check tree building"){
 
@@ -42,9 +42,9 @@ class GroupByTreeBuilderTest extends AnyFeatureSpec with Matchers with ViewPortS
 
       joinProvider.runOnce()
 
-      val sessionTable = new GroupBySessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
+      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
 
-      val tree = GroupByTreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val tree = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
         .withSum("quantity")
         .withCount("trader")
         .asClause(),
@@ -70,7 +70,7 @@ class GroupByTreeBuilderTest extends AnyFeatureSpec with Matchers with ViewPortS
 
       keys.toArray should equal (expected)
 
-      val tree2 = GroupByTreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val tree2 = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
         .withSum("quantity")
         .withCount("trader")
         .asClause(),

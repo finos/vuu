@@ -5,11 +5,11 @@ import io.venuu.toolbox.jmx.MetricsProviderImpl
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
 import io.venuu.vuu.api.TableDef
-import io.venuu.vuu.core.groupby.GroupBySessionTable
+import io.venuu.vuu.core.tree.TreeSessionTable
 import io.venuu.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
 import io.venuu.vuu.provider.JoinTableProviderImpl
-import io.venuu.vuu.viewport.{GroupBy, GroupByTreeBuilder}
+import io.venuu.vuu.viewport.{GroupBy, TreeBuilder}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -56,11 +56,11 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val client = ClientSessionId("A", "B")
 
-      val groupByTable = GroupBySessionTable(table, client, joinProvider)(metrics, clock)
+      val groupByTable = TreeSessionTable(table, client, joinProvider)(metrics, clock)
 
       val exchange = table.getTableDef.columnForName("exchange")
 
-      val builder = GroupByTreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None)
+      val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None)
 
       logger.info("Starting tree build")
 
@@ -68,7 +68,7 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       logger.info(s"Complete tree build in $millis ms")
 
-      val builder2 = GroupByTreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), None)
+      val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), None)
 
       val (sizeMillis, _) = timeIt{ groupByTable.size() }
 

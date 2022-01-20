@@ -11,7 +11,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
-class GroupByOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
+class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
   def addGroupBy(session: ClientSessionId, vpContainer: ViewPortContainer, vpRange: ViewPortRange,
                  viewPort: ViewPort, groupByClause: GroupBy): ViewPort = {
