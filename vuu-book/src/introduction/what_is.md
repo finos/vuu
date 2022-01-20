@@ -41,6 +41,7 @@ Happily Vuu offers all of these features.
 * A client side UI Framework
 * An alternative to Tomcat/Websphere
 * A portal framework
+* A data distribution or store and forward technology like Kafka or MQ
 
 ## When should I use Vuu?
 

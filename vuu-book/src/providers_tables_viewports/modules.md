@@ -2,11 +2,11 @@
 
 Modules are how you describe the tables, providers and rpc calls that you want to add to Vuu. They are intended to be logical groupings of functionality that can be shared. 
 
-##How to define a module
+## How to define a module
 
 The best place to start with defining a module is to look at the existing ones provided in the core infra. 
 
-##An example module definition:
+## An example module definition:
 
 ```scala
 object VuiStateModule extends DefaultModule {
@@ -31,7 +31,7 @@ object VuiStateModule extends DefaultModule {
 }
 ```
 
-Above is the module which provides storage and retrieval of UI state across sessions. As you can see there are a few key things that you need to provide when adding a module. 
+Above i s the module which provides storage and retrieval of UI state across sessions. As you can see there are a few key things that you need to provide when adding a module. 
 
 1. Name - This is a unique name in the deployment
 2. An apply function that defines zero or more tables, providers, rest services, rpc services etc..
