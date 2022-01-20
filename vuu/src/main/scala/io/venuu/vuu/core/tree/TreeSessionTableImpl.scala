@@ -1,4 +1,4 @@
-package io.venuu.vuu.core.groupby
+package io.venuu.vuu.core.tree
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.collection.array.ImmutableArray
@@ -34,17 +34,17 @@ class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped:
   }
 }
 
-object GroupBySessionTable {
-  def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider, clock: Clock): GroupBySessionTableImpl = {
-    new GroupBySessionTableImpl(source, session, joinProvider)(metrics, clock)
+object TreeSessionTable {
+  def apply(source: RowSource, session: ClientSessionId, joinProvider: JoinTableProvider)(implicit metrics: MetricsProvider, clock: Clock): TreeSessionTableImpl = {
+    new TreeSessionTableImpl(source, session, joinProvider)(metrics, clock)
   }
 }
 
 /**
  * Created by chris on 21/11/2015.
  */
-class GroupBySessionTableImpl(val source: RowSource, val session: ClientSessionId, joinProvider: JoinTableProvider)
-                             (implicit metrics: MetricsProvider, clock: Clock)
+class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, joinProvider: JoinTableProvider)
+                          (implicit metrics: MetricsProvider, clock: Clock)
   extends SimpleDataTable(new GroupByTableDef("", source.asTable.getTableDef), joinProvider)
     with SessionTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 

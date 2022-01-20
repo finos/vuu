@@ -11,7 +11,7 @@ import io.venuu.toolbox.time.{Clock, TimeIt}
 import io.venuu.vuu.api.{Link, NoViewPortDef, ViewPortDef}
 import io.venuu.vuu.client.messages.ViewPortId
 import io.venuu.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
-import io.venuu.vuu.core.groupby.GroupBySessionTableImpl
+import io.venuu.vuu.core.tree.TreeSessionTableImpl
 import io.venuu.vuu.core.sort._
 import io.venuu.vuu.core.table.{Column, DataTable, TableContainer}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
@@ -299,7 +299,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
 
-      val tree = GroupByTreeBuilder.create(sessionTable, groupBy, filterSpec, None).build()
+      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None).build()
       val keys = tree.toKeys()
       sessionTable.setTree(tree, keys)
       viewPort.setKeys(keys)
@@ -320,8 +320,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       //we are groupBy but we want to revert to no groupBy
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
 
-      val groupByTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTableImpl]
-      val sourceTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTableImpl].sourceTable
+      val groupByTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl]
+      val sourceTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl].sourceTable
       //delete all observers and references
       groupByTable.delete()
       //then remove it from table container
@@ -340,8 +340,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       logger.info("[VP] was tree'd, now tree'd also but differently, building...")
 
-      val groupByTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTableImpl]
-      val sourceTable = viewPort.table.asTable.asInstanceOf[GroupBySessionTableImpl].sourceTable
+      val groupByTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl]
+      val sourceTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl].sourceTable
 
       groupByTable.setTree(EmptyTree, ImmutableArray.empty)
 
@@ -352,7 +352,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
 
-      val tree = GroupByTreeBuilder.create(sessionTable, groupBy, filterSpec, None).build()
+      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None).build()
 
       val keys = tree.toKeys()
 
@@ -436,7 +436,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val viewPort = viewPorts.get(viewPortId)
 
     viewPort.table match {
-      case gbsTable: GroupBySessionTableImpl =>
+      case gbsTable: TreeSessionTableImpl =>
         gbsTable.openTreeKey(treeKey)
         viewPort.setKeysAndNotify(treeKey, gbsTable.getTree.toKeys())
       case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
@@ -447,7 +447,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val viewPort = viewPorts.get(viewPortId)
 
     viewPort.table match {
-      case gbsTable: GroupBySessionTableImpl =>
+      case gbsTable: TreeSessionTableImpl =>
         gbsTable.closeTreeKey(treeKey)
         viewPort.setKeysAndNotify(treeKey, gbsTable.getTree.toKeys())
       case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
@@ -510,12 +510,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     logger.debug("Building tree for groupBy")
 
     table match {
-      case tbl: GroupBySessionTableImpl =>
+      case tbl: TreeSessionTableImpl =>
 
         val oldTree = tbl.getTree
 
         val (millis, tree) = timeIt {
-          new GroupByTreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
+          new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
         }
 
         val (millis2, keys) = timeIt {
