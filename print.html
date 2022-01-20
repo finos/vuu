@@ -166,6 +166,33 @@ and present it as a single table/single grid at runtime. </li>
 <li><strong>Storing of UI State</strong> - When a client changes how her UI is configured, the view server typically offers a mechanism to persist that state. </li>
 </ul>
 <p>Happily Vuu offers all of these features. </p>
+<h2 id="what-vuu-is"><a class="header" href="#what-vuu-is">What Vuu Is:</a></h2>
+<ul>
+<li>A mechanism for representing ticking external data in table form on the server</li>
+<li>A relational algebra function for joining tables on server at runtime, including linking parent child tables</li>
+<li>A viewporting layer for giving clients a virtualized view onto large tables</li>
+<li>A filter (ANTLR grammar) and sort within viewports</li>
+<li>A &quot;fast path&quot; for updating ticking data to the client</li>
+<li>A &quot;slow path&quot; for updating viewport contents via separate threads</li>
+<li>A treeing and aggregation mechanism (showing totals, averages etc..)</li>
+<li>A highly performant React based Grid implementation and layout framework</li>
+<li>A websocket based wire protocol for handling viewport changes</li>
+<li>An RPC framework for invoking CRUD style operations on the server from the client </li>
+</ul>
+<h2 id="what-vuu-is-not"><a class="header" href="#what-vuu-is-not">What Vuu is not:</a></h2>
+<ul>
+<li>A UI Widget framework</li>
+<li>A client side UI Framework</li>
+<li>An alternative to Tomcat/Websphere</li>
+<li>A portal framework</li>
+</ul>
+<h2 id="when-should-i-use-vuu"><a class="header" href="#when-should-i-use-vuu">When should I use Vuu?</a></h2>
+<ul>
+<li>If you want to develop a highly functional largely grid based app</li>
+<li>Where your data neatly fits into a table like paradigm</li>
+<li>Where you want to target html5 technologies</li>
+<li>Where you want updates to trigger directly through to client when they occur in the outside world </li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="how-does-it-work"><a class="header" href="#how-does-it-work">How does it work</a></h1>
 <p>Let's start with a diagram. </p>
 <p><img src="introduction/../documents/diagrams-server-internals.png" alt="" /></p>
@@ -384,61 +411,19 @@ class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(im
 <p>Data tables are represented by the interface io.venuu.vuu.core.table.DataTable in the source code. </p>
 <pre><code class="language-scala">trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
-  @volatile private var provider: Provider = null
-
-  def indexForColumn(column: Column): Option[IndexedField[_]]
-
-  def setProvider(aProvider: Provider): Unit = provider = aProvider
-
-  def getProvider: Provider = provider
-
-  def asTable: DataTable = this
-
-  def columnForName(name: String): Column = getTableDef.columnForName(name)
-
-  def columnsForNames(names: String*): List[Column] = names.map(getTableDef.columnForName(_)).toList
-
-  def columnsForNames(names: List[String]): List[Column] = names.map(getTableDef.columnForName(_))
-
   def getTableDef: TableDef
 
+  //&lt;snip/&gt;
+  
   def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit
 
   def processDelete(rowKey: String): Unit
-
-  def isSelectedVal(key: String, selected: Map[String, Any]): Int = {
-    if (selected.contains(key)) 1 else 0
-  }
-
+  
   def size(): Long = {
     primaryKeys.length
   }
-
-  def toAscii(count: Int): String = {
-    val columns = getTableDef.columns
-    val keys = primaryKeys
-
-    val selectedKeys = keys.toArray.take(count)
-
-    val rows = selectedKeys.map(key =&gt; pullRowAsArray(key, columns.toList))
-
-    val columnNames = columns.map(_.name)
-
-    AsciiUtil.asAsciiTable(columnNames, rows)
-  }
-
-  def toAscii(start: Int, end: Int): String = {
-    val columns = getTableDef.columns
-    val keys = primaryKeys
-
-    val selectedKeys = keys.toArray.slice(start, end)//.slice(start, end)//drop(start).take(end - start)
-
-    val rows = selectedKeys.map(key =&gt; pullRowAsArray(key, columns.toList))
-
-    val columnNames = columns.map(_.name)
-
-    AsciiUtil.asAsciiTable(columnNames, rows)
-  }
+  
+  //&lt;snip/&gt;
 }
 
 </code></pre>
@@ -466,21 +451,23 @@ autosubscribe table with the product symbol on the order once each time a new or
 <h1 id="lucene-table"><a class="header" href="#lucene-table">Lucene Table</a></h1>
 <p>TODO: Lucene tables are a work in progress, watch this space. </p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="viewports"><a class="header" href="#viewports">Viewports</a></h1>
-<p>A Viewport is a specific clients view onto an underlying table. It has knowledge of the underlying table that a viewport is looking at. It also has knowledge of
+<p>A Viewport is a specific client's view onto an underlying table. It has knowledge of the underlying table that a viewport is looking at. It also has knowledge of
 the window of data that a client currently has displayed on her screen. It contains information on any sorts, or filters that a specific client
 has requested on the data, on columns that the client has asked to display as well as information such as which rows are currently selected on the clients grid. </p>
 <p>As well as this viewports contain references to immutable arrays of the keys of the underlying table. These arrays are sorted and filtered based on the clients 
 requested sort of the data. </p>
 <p>When a user opens a viewport on a table from the client, a thread in the server will asynchronously populate the keys based on the viewports parameters (sorts, filters, etc..) into an immutable array
-and will pass that array to the viewport. This thread will then continuously recalculate the keys (if there have been any changes) during the lifetime of the viewport. </p>
+and will pass that array to the viewport. This thread will then continuously recalculate the keys (if there have been any changes) during the lifetime of the viewport.</p>
+<p>The row that is sent to a user is only realized in the viewport at the point the row becomes visible in the client (or part of the pre-post fetch.) This occurs by dragging the fields from the underlying tables 
+when an update needs to be sent to the client. </p>
 <p><img src="providers_tables_viewports/../documents/diagrams-view-ports.png" alt="Viewport" /></p>
 <p>And in the context of the wider Vuu server. </p>
 <p><img src="providers_tables_viewports/../documents/diagrams-server-internals.png" alt="Viewport" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="modules"><a class="header" href="#modules">Modules</a></h1>
-<p>Modules are how you describe the tables, providers and rpc calls that you want to add to Vuu. THey are intended to be logical groupings of functionality that can be shared. </p>
+<p>Modules are how you describe the tables, providers and rpc calls that you want to add to Vuu. They are intended to be logical groupings of functionality that can be shared. </p>
 <p>##How to define a module</p>
-<p>THe best place to start with defining a module is to look at the existing ones provided in the core infra. </p>
-<p>##An example module definitin:</p>
+<p>The best place to start with defining a module is to look at the existing ones provided in the core infra. </p>
+<p>##An example module definition:</p>
 <pre><code class="language-scala">object VuiStateModule extends DefaultModule {
 
   final val NAME = &quot;vui&quot;

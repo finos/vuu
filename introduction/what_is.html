@@ -157,6 +157,33 @@ and present it as a single table/single grid at runtime. </li>
 <li><strong>Storing of UI State</strong> - When a client changes how her UI is configured, the view server typically offers a mechanism to persist that state. </li>
 </ul>
 <p>Happily Vuu offers all of these features. </p>
+<h2 id="what-vuu-is"><a class="header" href="#what-vuu-is">What Vuu Is:</a></h2>
+<ul>
+<li>A mechanism for representing ticking external data in table form on the server</li>
+<li>A relational algebra function for joining tables on server at runtime, including linking parent child tables</li>
+<li>A viewporting layer for giving clients a virtualized view onto large tables</li>
+<li>A filter (ANTLR grammar) and sort within viewports</li>
+<li>A &quot;fast path&quot; for updating ticking data to the client</li>
+<li>A &quot;slow path&quot; for updating viewport contents via separate threads</li>
+<li>A treeing and aggregation mechanism (showing totals, averages etc..)</li>
+<li>A highly performant React based Grid implementation and layout framework</li>
+<li>A websocket based wire protocol for handling viewport changes</li>
+<li>An RPC framework for invoking CRUD style operations on the server from the client </li>
+</ul>
+<h2 id="what-vuu-is-not"><a class="header" href="#what-vuu-is-not">What Vuu is not:</a></h2>
+<ul>
+<li>A UI Widget framework</li>
+<li>A client side UI Framework</li>
+<li>An alternative to Tomcat/Websphere</li>
+<li>A portal framework</li>
+</ul>
+<h2 id="when-should-i-use-vuu"><a class="header" href="#when-should-i-use-vuu">When should I use Vuu?</a></h2>
+<ul>
+<li>If you want to develop a highly functional largely grid based app</li>
+<li>Where your data neatly fits into a table like paradigm</li>
+<li>Where you want to target html5 technologies</li>
+<li>Where you want updates to trigger directly through to client when they occur in the outside world </li>
+</ul>
 
                     </main>
 
