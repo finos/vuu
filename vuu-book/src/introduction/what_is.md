@@ -22,3 +22,29 @@ and present it as a single table/single grid at runtime.
 
 Happily Vuu offers all of these features. 
 
+## What Vuu Is:
+
+* A mechanism for representing ticking external data in table form on the server
+* A relational algebra function for joining tables on server at runtime, including linking parent child tables
+* A viewporting layer for giving clients a virtualized view onto large tables
+* A filter (ANTLR grammar) and sort within viewports
+* A "fast path" for updating ticking data to the client
+* A "slow path" for updating viewport contents via separate threads
+* A treeing and aggregation mechanism (showing totals, averages etc..)
+* A highly performant React based Grid implementation and layout framework
+* A websocket based wire protocol for handling viewport changes
+* An RPC framework for invoking CRUD style operations on the server from the client 
+
+## What Vuu is not:
+
+* A UI Widget framework
+* A client side UI Framework
+* An alternative to Tomcat/Websphere
+* A portal framework
+
+## When should I use Vuu?
+
+* If you want to develop a highly functional largely grid based app
+* Where your data neatly fits into a table like paradigm
+* Where you want to target html5 technologies
+* Where you want updates to trigger directly through to client when they occur in the outside world 

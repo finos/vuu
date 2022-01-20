@@ -1,12 +1,12 @@
 # Modules
 
-Modules are how you describe the tables, providers and rpc calls that you want to add to Vuu. THey are intended to be logical groupings of functionality that can be shared. 
+Modules are how you describe the tables, providers and rpc calls that you want to add to Vuu. They are intended to be logical groupings of functionality that can be shared. 
 
 ##How to define a module
 
-THe best place to start with defining a module is to look at the existing ones provided in the core infra. 
+The best place to start with defining a module is to look at the existing ones provided in the core infra. 
 
-##An example module definitin:
+##An example module definition:
 
 ```scala
 object VuiStateModule extends DefaultModule {

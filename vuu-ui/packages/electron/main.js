@@ -12,9 +12,12 @@ const createWindow = async () => {
     }
   });
 
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
 
   mainWindow.loadURL('https://localhost:8443/index.html');
+
+  mainWindow.maximize();
+
 };
 
 app.on('certificate-error', (event, webContents, url, error, cert, callback) => {

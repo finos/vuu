@@ -10,6 +10,45 @@ import io.vertx.ext.web.RoutingContext
 import java.util.concurrent.TimeUnit
 import scala.util.{Failure, Success, Try}
 
+object VuuAuthCookie{
+  final val Name = "vuu-auth-token"
+}
+
+object VuuLoginPage{
+  final val Path = "/public/index.html"
+}
+
+class LogoutRestService(val authenticator: Authenticator, val tokenValidator: LoggedInTokenValidator)(implicit clock: Clock) extends RestService with StrictLogging {
+  private final val service = "logout"
+
+  override def getServiceName: String = service
+  override def getUriGetAll: String = s"/api/$service"
+  override def getUriGet: String = s"/api/$service"
+  override def getUriPost: String = s"/api/$service"
+  override def getUriDelete: String = s"/api/$service"
+  override def getUriPut: String = s"/api/$service"
+
+  override def onGetAll(ctx: RoutingContext): Unit = reply404(ctx)
+
+  override def onPost(ctx: RoutingContext): Unit = {
+    val cookie = ctx.request().getCookie(VuuAuthCookie.Name)
+
+    if(cookie == null){
+      logger.warn("Asked to logout, but no cookie for auth token found")
+      ctx.redirect("")
+    }
+
+    ctx.response().removeCookie(VuuAuthCookie.Name)
+
+  }
+
+  override def onGet(ctx: RoutingContext): Unit = ???
+
+  override def onPut(ctx: RoutingContext): Unit = reply404(ctx)
+
+  override def onDelete(ctx: RoutingContext): Unit = reply404(ctx)
+}
+
 class AuthNRestService(val authenticator: Authenticator, val tokenValidator: LoggedInTokenValidator)(implicit clock: Clock) extends RestService with StrictLogging {
 
   private final val service = "authn"
@@ -53,8 +92,8 @@ class AuthNRestService(val authenticator: Authenticator, val tokenValidator: Log
         case Some(token) =>
           tokenValidator.register(token, new ServerUserPrincipal(token, username))
           ctx.response()
-            .addCookie(Cookie.cookie("vuu-auth-token", token).setMaxAge(TimeUnit.MINUTES.toSeconds(240)))
-            .putHeader("vuu-auth-token", token)
+            .addCookie(Cookie.cookie(VuuAuthCookie.Name, token).setMaxAge(TimeUnit.MINUTES.toSeconds(240)))
+            .putHeader(VuuAuthCookie.Name, token)
             .setStatusCode(201)
             .end()
         case None =>

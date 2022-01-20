@@ -13,7 +13,7 @@ import scala.util.Random
 
 class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging {
 
-  private var runner: RunOnceLifeCycleRunner = new RunOnceLifeCycleRunner("simulInstrumentsProvider", () => build())
+  private val runner: RunOnceLifeCycleRunner = new RunOnceLifeCycleRunner("simulInstrumentsProvider", () => build())
 
   lifecycle(this).dependsOn(runner)
 
@@ -60,7 +60,7 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
 
     val rics = ricBuilder
 
-    val rows = rics.map(mkRow(_))
+    val rows = rics.map(mkRow)
 
     var i = 0
 
@@ -71,7 +71,7 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
         logger.info(s"Loaded ${i} instruments")
       }
 
-      table.processUpdate(row.get("ric").get.toString, RowWithData(row.get("ric").get.toString, row), System.currentTimeMillis())
+      table.processUpdate(row("ric").toString, RowWithData(row("ric").toString, row), System.currentTimeMillis())
 
       i += 1
     })

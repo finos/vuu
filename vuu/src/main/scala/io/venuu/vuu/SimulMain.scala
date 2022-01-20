@@ -17,7 +17,6 @@ import io.venuu.vuu.state.{MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, V
 /*
 //to allow self signed certs
 chrome://flags/#allow-insecure-localhost
-
  */
 
 object SimulMain extends App {
@@ -29,7 +28,8 @@ object SimulMain extends App {
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
   val store = new MemoryBackedVuiStateStore()
-  store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
+
+  //store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
 
   lifecycle.autoShutdownHook()
 
@@ -38,7 +38,6 @@ object SimulMain extends App {
 
   val config = VuuServerConfig(
     VuuHttp2ServerOptions()
-      //.withWebRoot("../vuu/src/main/resources/www")
       .withWebRoot("vuu-ui/packages/app-vuu-example/public")
       .withSsl("vuu/src/main/resources/certs/cert.pem",
         "vuu/src/main/resources/certs/key.pem")
