@@ -135,6 +135,33 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="trees"><a class="header" href="#trees">Trees</a></h1>
+<p>Trees are a specialized views onto tables that live within specific users viewports. Trees are built on a separate thread
+in a very similar manner to sorts and filters, but instead of creating a flat array of keys the output of the tree builder
+is a tree where the leaf nodes are the keys. </p>
+<p>When a viewport is changed to be tree'd the keys in the viewport are changed to be Tree Keys. 
+Also additional information is added to the table to denote whether a branch node is open or closed,
+and how deep the specific tree key is indented in the structure. </p>
+<p>Tree's are represented in a specific type of table TreeSessionTable, which unlike other tree's lives within a users viewport
+and is a derivation on an underlying table. When the viewport is closed the TreeTable is deleted. </p>
+<pre><code>//Pre Tree'd Viewport:
+
+Keys = [
+    &quot;order-001&quot;
+    &quot;order-002&quot;
+    &quot;order-003&quot;
+    &quot;order-004&quot;
+]
+</code></pre>
+<pre><code>//Post Tree'd Viewport keys, after we have tree'd by RIC
+Keys = [
+    &quot;$root/AAPL&quot;             //branch, isOpen = true, indent = 1
+    &quot;$root/AAPL/order-001&quot;
+    &quot;$root/AAPL/order-002&quot;
+    &quot;$root/GOOG&quot;             //branch, isOpen = true , indent = 1
+    &quot;$root/GOOG/order-003&quot;
+    &quot;$root/GOOG/order-004&quot;
+]
+</code></pre>
 
                     </main>
 

@@ -632,7 +632,38 @@ infrastructure. </p>
 <p>From here we can move onto to a ore complicated example. </p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="trees-and-session-tables"><a class="header" href="#trees-and-session-tables">Trees and Session Tables</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="trees"><a class="header" href="#trees">Trees</a></h1>
+<p>Trees are a specialized views onto tables that live within specific users viewports. Trees are built on a separate thread
+in a very similar manner to sorts and filters, but instead of creating a flat array of keys the output of the tree builder
+is a tree where the leaf nodes are the keys. </p>
+<p>When a viewport is changed to be tree'd the keys in the viewport are changed to be Tree Keys. 
+Also additional information is added to the table to denote whether a branch node is open or closed,
+and how deep the specific tree key is indented in the structure. </p>
+<p>Tree's are represented in a specific type of table TreeSessionTable, which unlike other tree's lives within a users viewport
+and is a derivation on an underlying table. When the viewport is closed the TreeTable is deleted. </p>
+<pre><code>//Pre Tree'd Viewport:
+
+Keys = [
+    &quot;order-001&quot;
+    &quot;order-002&quot;
+    &quot;order-003&quot;
+    &quot;order-004&quot;
+]
+</code></pre>
+<pre><code>//Post Tree'd Viewport keys, after we have tree'd by RIC
+Keys = [
+    &quot;$root/AAPL&quot;             //branch, isOpen = true, indent = 1
+    &quot;$root/AAPL/order-001&quot;
+    &quot;$root/AAPL/order-002&quot;
+    &quot;$root/GOOG&quot;             //branch, isOpen = true , indent = 1
+    &quot;$root/GOOG/order-003&quot;
+    &quot;$root/GOOG/order-004&quot;
+]
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="tree-builder"><a class="header" href="#tree-builder">Tree Builder</a></h1>
+<p>The Tree Builder is a component that sits on a separate thread, in a similar manner to the Filter and Sort functionality in the viewport container. 
+It's purpose is to, each cycle, produce a tree'd representation of an underlying table and to generate the Tree Keys for the underlying
+table keys. </p>
+<p>THe tree Keys are injected into the Viewport in the same way normal keys are injected into flat viewports.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="server-internals"><a class="header" href="#server-internals">Server Internals</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="the-tick-path"><a class="header" href="#the-tick-path">The Tick Path</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="viewport-threads"><a class="header" href="#viewport-threads">ViewPort Thread(s)</a></h1>
