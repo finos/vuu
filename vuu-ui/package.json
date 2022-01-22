@@ -21,16 +21,11 @@
     "publish": "node ./scripts/version.js && node ./scripts/publish.js"
   },
   "dependencies": {
-    "@testing-library/dom": "^7.30.0",
-    "@testing-library/jest-dom": "^5.11.9",
-    "@testing-library/react": "^11.2.5",
-    "@testing-library/user-event": "^13.0.6",
     "@types/jest": "^26.0.21",
     "@types/node": "^14.14.35",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.2",
     "classnames": "^2.3.1",
-    "prettier": "^2.2.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "recoil": "^0.1.3",
@@ -43,14 +38,16 @@
     "@storybook/addon-links": "^6.4.9",
     "@storybook/node-logger": "^6.4.9",
     "@storybook/react": "^6.4.9",
+    "@testing-library/dom": "^7.30.0",
+    "@testing-library/jest-dom": "^5.11.9",
+    "@testing-library/react": "^11.2.5",
+    "@testing-library/user-event": "^13.0.6",
     "eslint": "^8.1.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.26.1",
     "eslint-plugin-react-hooks": "^4.2.1-alpha-6bce0355c-20211031",
-    "kleur": "^4.1.4"
-  },
-  "resolutions": {
-    "immer": "8.0.3"
+    "kleur": "^4.1.4",
+    "prettier": "^2.2.1"
   }
 }
