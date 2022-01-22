@@ -324,7 +324,11 @@ function collectChildMeasurements(
 function omitDragging(component) {
   const { id } = getProps(component);
   const el = document.getElementById(id);
-  return el.dataset.dragging !== 'true';
+  if (el) {
+    return el.dataset.dragging !== 'true';
+  } else {
+    console.warn(`BoxModel: element found with id, is ${el.className} missing an id`);
+  }
 }
 
 function measureComponentDomElement(component) {

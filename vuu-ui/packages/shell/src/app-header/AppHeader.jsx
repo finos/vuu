@@ -3,9 +3,9 @@ import { Button } from '@vuu-ui/ui-controls';
 import { logout } from '../login-utils';
 import './AppHeader.css';
 
-export const AppHeader = () => {
+export const AppHeader = ({ user, children, ...props }) => {
   return (
-    <header className="hwAppHeader">
+    <header className="hwAppHeader" {...props}>
       {/* <ToggleButton onChange={toggleColorScheme}>
               theme
             </ToggleButton> */}
