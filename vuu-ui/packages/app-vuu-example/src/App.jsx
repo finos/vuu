@@ -43,7 +43,6 @@ const wordify = (text) => {
 
 const getTables = (tables) => {
   const tableList = Object.values(tables);
-  console.log({ tableList });
   return tableList.sort(byModule).map((schema) => ({
     className: 'vuFilteredGrid',
     closeable: true,
@@ -109,7 +108,7 @@ const defaultLayout = {
   ]
 };
 
-export const App = () => {
+export const App = ({ user }) => {
   const [dialogContent, setDialogContent] = useState(null);
 
   // Needed because of circular ref between useViewserver and handleRpcResponse
@@ -140,9 +139,14 @@ export const App = () => {
 
   const handleClose = () => setDialogContent(null);
 
+  // TODO get Context from Shell
   return (
     <AppContext.Provider value={{ makeServiceRequest }}>
-      <Shell defaultLayout={defaultLayout} paletteConfig={paletteConfig} serverUrl={serverUrl}>
+      <Shell
+        defaultLayout={defaultLayout}
+        paletteConfig={paletteConfig}
+        serverUrl={serverUrl}
+        user={user}>
         <Dialog className="vuDialog" isOpen={dialogContent !== null} onClose={handleClose}>
           {dialogContent}
         </Dialog>

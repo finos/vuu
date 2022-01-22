@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="stylesheet" href="index.css"/>
+    <title>VUU App</title>
+    <script>
+        let username = '';
+        let password='';
+
+        function login(){
+            fetch(`/api/authn`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'access-control-allow-origin': "localhost:8443",
+                },
+                body: JSON.stringify({ username, password })
+      })
+        .then((response) => {
+
+          var date = new Date();
+          const days = 1;
+          date.setTime(date.getTime() + (days*24*60*60*1000));
+          expires = "; expires=" + date.toUTCString();
+          const authToken = response.headers.get('vuu-auth-token');
+          document.cookie = `vuu-username=${username};expires=${date.toUTCString()};path=/`;
+          document.cookie = `vuu-auth-token=${authToken};expires=${date.toUTCString()};path=/`;
+          window.location.href = "/index.html"
+        })
+        // .then((data) => console.log(data))
+        .catch((err) => {
+          console.log(`error`, err);
+        });
+
+            
+        }
+    </script>
+  </head>
+  <body>
+    <div>
+      <input id="txt-username" type="text"/>
+      <input id="txt-password" type="password"/>
+    </div>
+    <button onclick="login()">LOGIN</button>
+    <script>
+      const txtUserName = document.getElementById('txt-username');
+      const txtPassword = document.getElementById('txt-password');
+
+      function handleChangeUsername(evt){
+        username = evt.target.value;  
+      }
+
+      function handleChangePassword(evt){
+        password = evt.target.value;  
+      }
+
+
+      txtUserName.addEventListener('change', handleChangeUsername);
+      txtPassword.addEventListener('change', handleChangePassword);
+
+
+    </script>
+</body>
+</html>

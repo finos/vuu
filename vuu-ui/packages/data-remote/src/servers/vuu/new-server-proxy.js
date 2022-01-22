@@ -33,9 +33,9 @@ export class ServerProxy {
     });
   }
 
-  async login() {
+  async login(token = this.loginToken) {
     return new Promise((resolve, reject) => {
-      this.sendMessageToServer(loginRequest(this.loginToken, 'user'), '');
+      this.sendMessageToServer(loginRequest(token, 'user'), '');
       this.pendingLogin = { resolve, reject };
     });
   }

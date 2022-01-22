@@ -6,7 +6,7 @@ import { ServerProxy } from '@vuu-ui/data-remote/src/servers/vuu/new-server-prox
 
 let server;
 
-async function connectToServer(url, useWebsocket, onConnectionStatusChange) {
+async function connectToServer(url, token, useWebsocket, onConnectionStatusChange) {
   const makeConnection = useWebsocket ? connectWebsocket : connectDataStore;
   const connection = await makeConnection(
     url,
@@ -19,11 +19,11 @@ async function connectToServer(url, useWebsocket, onConnectionStatusChange) {
   );
   server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
   // TODO handle authentication, login
-  if (connection.requiresAuthentication) {
+  if (!token && connection.requiresAuthentication) {
     await server.authenticate('bill', 'pword');
   }
   if (connection.requiresLogin) {
-    await server.login();
+    await server.login(token);
   }
 }
 
@@ -47,7 +47,7 @@ function sendMessageToClient(message) {
 const handleMessageFromClient = async ({ data: message }) => {
   switch (message.type) {
     case 'connect':
-      await connectToServer(message.url, message.useWebsocket, postMessage);
+      await connectToServer(message.url, message.token, message.useWebsocket, postMessage);
       postMessage({ type: 'connected' });
       break;
     case 'subscribe':

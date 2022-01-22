@@ -1,0 +1,6 @@
+.hwAppHeader {
+  justify-content: flex-end;
+  display: flex;
+  height: 40px;
+  border-bottom: solid 1px #ccc;
+}
