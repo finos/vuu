@@ -1,14 +1,26 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ThemeProvider } from '@vuu-ui/theme';
+import { connectToServer /*, useViewserver */ } from '@vuu-ui/data-remote';
+import useLayoutConfig from './use-layout-config';
 
 import { Chest, DraggableLayout, Drawer, FlexboxLayout as Flexbox, View } from '@vuu-ui/layout';
+import { AppHeader } from './app-header';
 import { AppPalette } from './app-palette';
 
 import './shell.css';
 
-export const Shell = ({ children, layout, onLayoutChange, paletteConfig }) => {
+export const Shell = ({ children, defaultLayout, paletteConfig, serverUrl, user }) => {
   const paletteView = useRef(null);
   const [open, setOpen] = useState(false);
+
+  const [layout, setLayoutConfig] = useLayoutConfig(user, defaultLayout);
+
+  const handleLayoutChange = useCallback(
+    (layout) => {
+      setLayoutConfig(layout);
+    },
+    [setLayoutConfig]
+  );
 
   const handleDrawerClick = (e) => {
     if (!paletteView.current?.contains(e.target)) {
@@ -16,19 +28,19 @@ export const Shell = ({ children, layout, onLayoutChange, paletteConfig }) => {
     }
   };
 
+  useEffect(() => {
+    connectToServer(serverUrl, user.token);
+  }, [serverUrl, user.token]);
+
   return (
     <ThemeProvider>
       <DraggableLayout
         className="hw"
         style={{ width: '100vw', height: '100vh' }}
-        onLayoutChange={onLayoutChange}
+        onLayoutChange={handleLayoutChange}
         layout={layout}>
         <Flexbox id="fb-app" className="App" style={{ flexDirection: 'column', height: '100%' }}>
-          <div style={{ height: 40, borderBottom: 'solid 1px #ccc' }}>
-            {/* <ToggleButton onChange={toggleColorScheme}>
-                  theme
-                </ToggleButton> */}
-          </div>
+          <AppHeader user={user} />
           <Chest style={{ flex: 1 }}>
             <Drawer
               onClick={handleDrawerClick}

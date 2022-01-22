@@ -8,7 +8,6 @@ export const getHorizontalScrollbarHeight = (columnGroups) =>
       : 0
     : 0;
 
-/** @type {(gm: GridModel, target: Column | number) => ColumnGroup} */
 export function getColumnGroup({ columnGroups }, target) {
   if (typeof target === 'number') {
     // this can be simplified, dom\t need to iterate columns
@@ -34,7 +33,6 @@ export function getColumnGroup({ columnGroups }, target) {
   return null;
 }
 
-/** @type {(gm: GridModel, c: Column) => number} */
 export function getColumnGroupIdx({ columnGroups }, column) {
   for (let i = 0; i < columnGroups.length; i++) {
     if (columnGroups[i].columns.some(({ key }) => key === column.key)) {
@@ -44,7 +42,6 @@ export function getColumnGroupIdx({ columnGroups }, column) {
   return -1;
 }
 
-/** @type {(columnGroup: ColumnGroup, column: Column, targetColumn: Column) => ColumnGroup} */
 export function moveColumn(columnGroup, column, targetColumn) {
   const col = columnGroup.columns.find((c) => c.key === column.key);
   const idx = columnGroup.columns.findIndex((c) => c.key === targetColumn.key);
@@ -297,16 +294,49 @@ function removeGroupColumn({ groupBy }, column) {
 
 const omitSystemColumns = (column) => !column.isSystemColumn;
 
+const addColumnToColumns = (column, columns, index) => {
+  const currentIndex = columns.findIndex((col) => col.name === column.name);
+  if (currentIndex === index) {
+    return columns;
+  } else {
+    let newColumns =
+      currentIndex !== -1 ? columns.filter((_, i) => i !== currentIndex) : columns.slice();
+    newColumns.splice(index, 0, column);
+    return newColumns;
+  }
+};
+
+const countLeadingSystemColumns = (columns) => {
+  let count = 0;
+  for (let i = 0; i < columns.length; i++) {
+    if (!columns[i].isSystemColumn) {
+      break;
+    } else {
+      count += 1;
+    }
+  }
+  return count;
+};
+
+const setAggregation = ({ aggregations }, column, aggType) => {
+  return aggregations
+    .filter((agg) => agg.column !== column.name)
+    .concat({ column: column.name, aggType });
+};
+
 export const GridModel = {
+  addColumnToColumns,
   addGroupColumn,
   addSortColumn,
-  setSortColumn,
+  countLeadingSystemColumns,
   columns: (gridModel) =>
     flattenColumnGroup(
       gridModel.columnGroups.flatMap((columnGroup) => columnGroup.columns.filter(omitSystemColumns))
     ),
   columnNames: (gridModel) => GridModel.columns(gridModel).map((column) => column.name),
   removeGroupColumn,
+  setAggregation,
+  setSortColumn,
   updateGroupColumn,
   updateGroupColumnWidth
 };

@@ -18,6 +18,7 @@
   ],
   "peerDependencies": {
     "@vuu-ui/layout": "0.0.14",
+    "@vuu-ui/data-remote": "0.0.14",
     "@vuu-ui/ui-controls": "0.0.14",
     "@vuu-ui/react-utils": "0.0.14",
     "@vuu-ui/utils": "0.0.14",

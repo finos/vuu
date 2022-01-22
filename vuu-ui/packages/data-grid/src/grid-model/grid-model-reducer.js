@@ -14,8 +14,6 @@ import {
 import * as Action from './grid-model-actions';
 
 const DEFAULT_COLUMN_TYPE = { name: 'string' };
-const DEFAULT_COLUMN_WIDTH = 100;
-const MIN_COLUMN_WIDTH = 80;
 const CHECKBOX_COLUMN = {
   name: '',
   key: metadataKeys.SELECTED,
@@ -40,10 +38,9 @@ const LINE_NUMBER_COLUMN = {
   width: 30
 };
 
-const RESIZING = { resizing: true };
+const RESIZING = { resizing: true, flex: 0 };
 const NOT_RESIZING = { resizing: false };
 
-/** @type {GridModelReducer} */
 const GridModelReducer = (state, action) => {
   // console.log(`%cGridModelReducer ${action.type}`, 'color:red;font-weight:bold;')
   // @ts-ignore
@@ -51,17 +48,17 @@ const GridModelReducer = (state, action) => {
 };
 export default GridModelReducer;
 
-/** @type {GridModelReducerTable} */
 const reducerActionHandlers = {
   resize: resizeGrid,
-  'resize-col': resizeColumn,
+  [Action.COL_RESIZE]: resizeColumn,
   'resize-heading': resizeHeading,
-  'add-col': addColumn,
+  [Action.ADD_COL]: addColumn,
   initialize: initialize,
   filter: addFilter,
   sort: sortRows,
   group: groupRows,
   'set-available-columns': setAvailableColumns,
+  'set-aggregations': setAggregations,
   'column-hide': hideColumn,
   'column-show': showColumn,
   [Action.ROW_HEIGHT]: setRowHeight
@@ -69,19 +66,20 @@ const reducerActionHandlers = {
 
 export const initModel = ([gridProps, size, custom]) => {
   const {
-    cellSelectionModel = 'none',
+    aggregations = [],
+    cellSelectionModel,
     columns,
-    columnSizing = 'static',
-    defaultColumnWidth = DEFAULT_COLUMN_WIDTH,
+    columnSizing,
+    defaultColumnWidth,
     filter,
     groupBy,
-    headerHeight = 24,
-    minColumnWidth = MIN_COLUMN_WIDTH,
-    noColumnHeaders = false,
-    renderBufferSize = 0,
-    rowHeight = 20,
+    headerHeight,
+    minColumnWidth,
+    noColumnHeaders,
+    renderBufferSize,
+    rowHeight,
     selectionModel, // default should be none
-    showLineNumbers = false,
+    showLineNumbers,
     sort
   } = gridProps;
 
@@ -106,6 +104,7 @@ export const initModel = ([gridProps, size, custom]) => {
   } = custom;
 
   const state = {
+    aggregations,
     assignedHeight,
     assignedWidth,
     cellSelectionModel,
@@ -243,7 +242,6 @@ function resizeGrid(state, { height, width }) {
   }
 }
 
-/** @type {GridModelReducer<GridModelSetColumnsAction>} */
 function setAvailableColumns(state, action) {
   if (!state.columnGroups) {
     const { columnNames, columnGroups, headingDepth } = buildColumnGroups(state, action.columns);
@@ -263,7 +261,13 @@ function setAvailableColumns(state, action) {
   }
 }
 
-/** @type {GridModelReducer<GridModelSortAction>} */
+function setAggregations(state, { aggregations }) {
+  return {
+    ...state,
+    aggregations
+  };
+}
+
 function sortRows(state, { sort }) {
   // const sortColumns = columns && sortByToMap(columns);
   return {
@@ -280,7 +284,6 @@ function addFilter(state, { filter }) {
   };
 }
 
-/** @type {GridModelReducer<GridModelGroupAction>} */
 function groupRows(state, { groupBy = null }) {
   const { columnGroups } = buildColumnGroups({ ...state, groupBy }, GridModel.columns(state));
 
@@ -319,7 +322,10 @@ function resizeHeading(state, { phase, column, width }) {
       NOT_RESIZING
     );
     resizeColumnHeaderHeading = null;
-    return { ...state, columnGroups };
+    return {
+      ...state,
+      columnGroups
+    };
   }
 }
 
@@ -407,9 +413,17 @@ function addColumn(state, { insertIdx: absInsertIdx, targetColumnGroup, column }
     null
   );
 
+  const { key: _, ...columnProps } = column;
+  const leadingSystemColumns = GridModel.countLeadingSystemColumns(columns);
+
   return {
     ...state,
-    columnGroups
+    columnGroups,
+    columns: GridModel.addColumnToColumns(
+      columnProps,
+      state.columns,
+      absInsertIdx - leadingSystemColumns
+    )
   };
 }
 
@@ -423,7 +437,19 @@ function resizeColumn(state, { phase, column, width }) {
     return { ...state, columnGroups };
   } else {
     const [columnGroups] = GridModel.updateGroupColumn(state, column, NOT_RESIZING);
-    return { ...state, columnGroups };
+    return {
+      ...state,
+      columnGroups,
+      columns: state.columns.map((c) =>
+        c.name === column.name
+          ? {
+              ...c,
+              width,
+              flex: 0
+            }
+          : c
+      )
+    };
   }
 }
 

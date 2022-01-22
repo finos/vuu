@@ -3,9 +3,9 @@
   --grid-row-background: inherit;
   --grid-row-height: var(--grid-row-height, 20px);
   --grid-row-line-height: 19px;
-  --grid-row-background-selected: #2b8bf8;
+  --grid-row-background-selected: var(--brand);
+  --grid-header-cell-highlight-bg: var(--surface3);
 
-  --header-cell-highlight-bg: green;
   --hw-activation-indicator-thumb-bg: #2c2c2c;
   --grid-flex-align: stretch;
   --grid-cell-bg: var(--grid-cell-bg, var(--background));
@@ -20,7 +20,7 @@
   --heading-border-color: var(--grid-heading-border-color, #d4d4d4);
   --line-number-bg: #d4d4d4;
   --line-number-border-color: #ccc;
-  --text-color: var(--grid-text-color, black);
+  --text-color: var(--grid-text-color, var(--text2));
   --focus-visible-border-color: var(--hw-focus-visible-border-color, rgb(141, 154, 179));
 
   background-color: var(--grid-background);
@@ -39,12 +39,12 @@
   height: 100% !important;
 }
 
-.hwDataGrid.scrolling-x .Canvas .hwColumnGroupHeader {
+.hwDataGrid.scrolling-x .hwDataGridCanvas .hwColumnGroupHeader {
   position: relative;
 }
 
 .Viewport {
-  background-color: white;
+  background-color: var(--surface2);
 
   outline: none;
   overflow-x: hidden;

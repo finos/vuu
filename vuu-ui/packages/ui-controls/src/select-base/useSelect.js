@@ -1,8 +1,9 @@
-import { useCallback } from 'react';
-import { useHierarchicalData } from './use-hierarchical-data';
-import { useCollapsibleGroups, useKeyboardNavigation } from '../common-hooks';
-import { useKeyboardNavigation as useTreeNavigation } from './use-keyboard-navigation';
-import { useSelection } from './use-selection';
+import { useCallback, useRef } from 'react';
+import { useHierarchicalData, useSelection, useKeyboardNavigation } from '../common-hooks';
+import { closestListItemIndex } from '../list';
+
+const EMPTY_ARRAY = [];
+const label = 'useSelect';
 
 export const useSelect = ({
   sourceWithIds,
@@ -13,30 +14,33 @@ export const useSelect = ({
   onChange,
   onHighlight: onHighlightProp,
   selected: selectedProp,
-  selection,
-  totalItemCount
+  selection
 }) => {
+  const lastSelection = useRef(EMPTY_ARRAY);
   const dataHook = useHierarchicalData(sourceWithIds);
 
-  const collapsibleHook = useCollapsibleGroups({
-    collapsibleHeaders: true,
-    count: totalItemCount,
+  const { highlightedIdx, ...keyboardHook } = useKeyboardNavigation({
+    id,
     indexPositions: dataHook.indexPositions,
-    setVisibleData: dataHook.setData,
-    source: dataHook.data
+    label,
+    onHighlight: handleHighlight,
+    onKeyboardNavigation: handleKeyboardNavigation,
+    selected: lastSelection.current
   });
 
   const selectionHook = useSelection({
     defaultSelected,
     groupSelection,
     getDataItemById,
+    highlightedIdx,
+    indexPositions: dataHook.indexPositions,
+    label,
     onChange,
     selected: selectedProp,
     selection
   });
 
   const handleHighlight = (idx) => {
-    collapsibleHook.listHandlers.onHighlight?.(idx);
     onHighlightProp?.(idx);
   };
 
@@ -44,57 +48,34 @@ export const useSelect = ({
     selectionHook.listHandlers.onKeyboardNavigation?.(evt, nextIdx);
   };
 
-  const { highlightedIdx, ...keyboardHook } = useKeyboardNavigation({
-    count: collapsibleHook.visibleItemCount,
-    id,
-    indexPositions: dataHook.indexPositions,
-    onHighlight: handleHighlight,
-    onKeyboardNavigation: handleKeyboardNavigation,
-    selected: selectionHook.selected
-  });
-
-  const treeNavigationHook = useTreeNavigation({
-    source: dataHook.data,
-    highlightedIdx,
-    hiliteItemAtIndex: keyboardHook.hiliteItemAtIndex,
-    indexPositions: dataHook.indexPositions
-  });
-
-  const handleClick = useCallback(
-    (evt) => {
-      collapsibleHook.listItemHandlers?.onClick(evt);
-      if (!evt.defaultPrevented) {
-        selectionHook.listItemHandlers?.onClick(evt);
-      }
-    },
-    [collapsibleHook, selectionHook]
-  );
-
   const handleKeyDown = useCallback(
     (evt) => {
       keyboardHook.listProps.onKeyDown?.(evt);
       if (!evt.defaultPrevented) {
         selectionHook.listHandlers.onKeyDown?.(evt);
       }
-      if (!evt.defaultPrevented) {
-        collapsibleHook.listHandlers.onKeyDown?.(evt);
-      }
-      if (!evt.defaultPrevented) {
-        treeNavigationHook.listHandlers.onKeyDown?.(evt);
-      }
     },
-    [
-      collapsibleHook.listHandlers,
-      keyboardHook.listProps,
-      selectionHook.listHandlers,
-      treeNavigationHook.listHandlers
-    ]
+    [keyboardHook.listProps, selectionHook.listHandlers]
+  );
+
+  const handleMouseEnterListItem = useCallback(
+    (evt) => {
+      // if (!isScrolling.current) {
+      const idx = closestListItemIndex(evt.target);
+      keyboardHook.hiliteItemAtIndex(idx);
+      // onMouseEnterListItem && onMouseEnterListItem(evt, idx);
+      // }
+    },
+    [keyboardHook]
   );
 
   const getActiveDescendant = () =>
     highlightedIdx === undefined || highlightedIdx === -1
       ? undefined
       : dataHook.indexPositions[highlightedIdx]?.id;
+
+  // We need this on reEntry for navigation hook to handle focus
+  lastSelection.current = selectionHook.selected;
 
   const listProps = {
     'aria-activedescendant': getActiveDescendant(),
@@ -107,7 +88,8 @@ export const useSelect = ({
   };
 
   const listItemHandlers = {
-    onClick: handleClick
+    ...selectionHook.listItemHandlers,
+    onMouseEnter: handleMouseEnterListItem
   };
 
   return {

@@ -1,1 +1,2 @@
-export { default as Dropdown } from './dropdown.jsx';
+export * from './dropdown';
+export * from './use-dropdown';

@@ -1,5 +1,4 @@
 .hwHeaderCell {
-  --header-cell-highlight-bg: yellow;
   --justify-text: flex-start;
   align-items: stretch;
   background: var(--grid-header-cell-background);
@@ -36,7 +35,7 @@
 }
 
 .hwHeaderCell-resizing {
-  background-color: var(--header-cell-highlight-bg);
+  background-color: var(--grid-header-cell-highlight-bg);
 }
 
 .innerHeaderCell {

@@ -8,8 +8,6 @@ export const useKeyboardNavigation = ({
   indexPositions,
   source
 }) => {
-  console.log(`useKeyboardNavigation<Tree>`);
-
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === ArrowLeft) {
@@ -18,7 +16,6 @@ export const useKeyboardNavigation = ({
         if (parentId) {
           const parentNode = getNodeById(source, parentId);
           const idx = getIndexOfNode(indexPositions, parentNode);
-          console.log(`highlight index ${idx}`);
           hiliteItemAtIndex(idx);
         }
       }

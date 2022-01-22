@@ -8,7 +8,7 @@ import { RemoteDataSource, Servers, useViewserver } from '@vuu-ui/data-remote';
 
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
 import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
-import vuuSuggestions from './vuu-filter-suggestion-factory';
+import createSuggestionProvider from './vuu-filter-suggestion-provider';
 
 import '@vuu-ui/theme/index.css';
 import '@vuu-ui/layout/index.css';
@@ -47,10 +47,11 @@ export const VuuInstruments = () => {
   };
 
   const dataSource = useMemo(() => new RemoteDataSource(dataConfig), []);
-  const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction } = useViewserver({
-    dataSource,
-    onRpcResponse
-  });
+  const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction, makeRpcCall } =
+    useViewserver({
+      dataSource,
+      onRpcResponse
+    });
 
   const handleCommit = (result) => {
     const { filter, name } = extractFilter(result);
@@ -60,19 +61,33 @@ export const VuuInstruments = () => {
     }
   };
 
+  const getSuggestions = useCallback(
+    async (params) => {
+      return await makeRpcCall({
+        type: 'RPC_CALL',
+        method: 'getUniqueFieldValues',
+        params
+      });
+    },
+    [makeRpcCall]
+  );
+
   return (
     <div
       style={{
         '--hwParsedInput-border-style': 'solid solid solid none',
-        '--hwParsedInput-height': '30px',
+        '--hwParsedInput-height': '24px',
+        '--hwParsedInput-input-font-size': '14px',
         width: 600,
         height: 700
       }}>
       <ParserProvider
         parser={parseFilter}
-        suggestionFactory={vuuSuggestions({
+        suggestionProvider={createSuggestionProvider({
           columnNames: dataConfig.columns,
-          namedFilters
+          namedFilters,
+          getSuggestions,
+          table: dataConfig.tableName
         })}>
         <div>
           <ParsedInput onCommit={handleCommit} />

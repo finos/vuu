@@ -7,34 +7,11 @@ import { bufferBreakout } from './buffer-range';
 const EMPTY_ARRAY = [];
 
 const byRowIndex = ([index1], [index2]) => index1 - index2;
-
-const serializeValue = (value) => {
-  if (typeof value === 'string') {
-    return value;
-  } else if (Array.isArray(value)) {
-    return `[${value.join(',')}]`;
-  } else {
-    throw Error('unexpected value in filter clause');
-  }
-};
-
-export const serializeFilter = (filter) => {
-  if (!filter) {
-    return '';
-  } else {
-    const { column, op, value, values = value, filters } = filter;
-    if (filters) {
-      return filters.map(serializeFilter).join(` ${op} `);
-    } else {
-      return `${column} ${op} ${serializeValue(values)}`;
-    }
-  }
-};
-
 export class Viewport {
   constructor({
     viewport,
     tablename,
+    aggregations,
     columns,
     range,
     bufferSize = 0,
@@ -48,6 +25,7 @@ export class Viewport {
     this.status = '';
     this.disabled = false;
     this.suspended = false;
+    this.aggregations = aggregations;
     this.columns = columns;
     this.clientRange = range;
     this.bufferSize = bufferSize;
@@ -85,6 +63,7 @@ export class Viewport {
       type: Message.CREATE_VP,
       table: this.table,
       range: getFullRange(this.clientRange, this.bufferSize),
+      aggregations: this.aggregations,
       columns: this.columns,
       sort: this.sort,
       groupBy: this.groupBy,
@@ -92,9 +71,10 @@ export class Viewport {
     };
   }
 
-  handleSubscribed({ viewPortId, columns, table, range, sort, groupBy, filterSpec }) {
+  handleSubscribed({ viewPortId, aggregations, columns, table, range, sort, groupBy, filterSpec }) {
     this.serverViewportId = viewPortId;
     this.status = 'subscribed';
+    this.aggregations = aggregations;
     this.columns = columns;
     this.table = table;
     this.range = range;
@@ -104,20 +84,21 @@ export class Viewport {
     this.isTree = groupBy && groupBy.length > 0;
     this.dataWindow = new ArrayBackedMovingWindow(this.clientRange, range, this.bufferSize);
 
-    // console.log(
-    //   `%cViewport subscribed
-    //     clientVpId: ${this.clientViewportId}
-    //     serverVpId: ${this.serverViewportId}
-    //     table: ${this.table}
-    //     columns: ${columns.join(',')}
-    //     range: ${JSON.stringify(range)}
-    //     sort: ${JSON.stringify(sort)}
-    //     groupBy: ${JSON.stringify(groupBy)}
-    //     filterSpec: ${JSON.stringify(filterSpec)}
-    //     bufferSize: ${this.bufferSize}
-    //   `,
-    //   'color: blue',
-    // );
+    console.log(
+      `%cViewport subscribed
+        clientVpId: ${this.clientViewportId}
+        serverVpId: ${this.serverViewportId}
+        table: ${this.table}
+        aggregations: ${JSON.stringify(aggregations)}
+        columns: ${columns.join(',')}
+        range: ${JSON.stringify(range)}
+        sort: ${JSON.stringify(sort)}
+        groupBy: ${JSON.stringify(groupBy)}
+        filterSpec: ${JSON.stringify(filterSpec)}
+        bufferSize: ${this.bufferSize}
+      `,
+      'color: blue'
+    );
 
     return {
       type: 'subscribed',
@@ -150,8 +131,11 @@ export class Viewport {
       this.groupBy = [];
       return { clientViewportId, type: 'groupBy', groupBy: null };
     } else if (type === 'filter') {
-      this.filterSpec = { filter: data };
-      return { clientViewportId, type, filter: data };
+      this.filterSpec = { filter: data.filterQuery };
+      return { clientViewportId, type, ...data };
+    } else if (type === 'aggregate') {
+      this.aggregations = data;
+      return { clientViewportId, type, aggregations: data };
     } else if (type === 'sort') {
       this.sort = { sortDefs: data };
       return { clientViewportId, type, sort: data };
@@ -304,10 +288,14 @@ export class Viewport {
     };
   }
 
-  filterRequest(requestId, filter) {
-    const filterQuery = serializeFilter(filter);
-    this.awaitOperation(requestId, { type: 'filter', data: filter });
+  filterRequest(requestId, filter, filterQuery) {
+    this.awaitOperation(requestId, { type: 'filter', data: { filter, filterQuery } });
     return this.createRequest({ filterSpec: { filter: filterQuery } });
+  }
+
+  aggregateRequest(requestId, aggregations) {
+    this.awaitOperation(requestId, { type: 'aggregate', data: aggregations });
+    return this.createRequest({ aggregations });
   }
 
   sortRequest(requestId, sortDefs) {
@@ -393,6 +381,7 @@ export class Viewport {
     return {
       type: Message.CHANGE_VP,
       viewPortId: this.serverViewportId,
+      aggregations: this.aggregations,
       columns: this.columns,
       sort: this.sort,
       groupBy: this.groupBy,

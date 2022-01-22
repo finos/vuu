@@ -1,8 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { useHierarchicalData } from './use-hierarchical-data';
-import { useCollapsibleGroups, useKeyboardNavigation } from '../common-hooks';
-import { useKeyboardNavigation as useTreeNavigation } from './use-keyboard-navigation';
-import { useSelection } from './use-selection';
+import { useCollapsibleGroups, useKeyboardNavigation, useSelection } from '../common-hooks';
+import { useKeyboardNavigation as useTreeNavigation } from './use-tree-keyboard-navigation';
 
 const EMPTY_ARRAY = [];
 
@@ -20,30 +19,25 @@ export const useTree = ({
   const lastSelection = useRef(EMPTY_ARRAY);
   const dataHook = useHierarchicalData(sourceWithIds);
 
-  const collapsibleHook = useCollapsibleGroups({
-    collapsibleHeaders: true,
-    count: totalItemCount,
-    indexPositions: dataHook.indexPositions,
-    setVisibleData: dataHook.setData,
-    source: dataHook.data
-  });
-
-  const handleHighlight = (idx) => {
-    collapsibleHook.listHandlers.onHighlight?.(idx);
-    onHighlightProp?.(idx);
-  };
-
   const handleKeyboardNavigation = (evt, nextIdx) => {
     selectionHook.listHandlers.onKeyboardNavigation?.(evt, nextIdx);
   };
 
   const { highlightedIdx, ...keyboardHook } = useKeyboardNavigation({
-    count: collapsibleHook.visibleItemCount,
     id,
     indexPositions: dataHook.indexPositions,
-    onHighlight: handleHighlight,
+    onHighlight: onHighlightProp,
     onKeyboardNavigation: handleKeyboardNavigation,
     selected: lastSelection.current
+  });
+
+  const collapsibleHook = useCollapsibleGroups({
+    collapsibleHeaders: true,
+    count: totalItemCount,
+    highlightedIdx,
+    indexPositions: dataHook.indexPositions,
+    setVisibleData: dataHook.setData,
+    source: dataHook.data
   });
 
   const selectionHook = useSelection({

@@ -1,8 +1,5 @@
-const getStringValue = (value, propertyName) =>
-  propertyName ? value[propertyName].toLowerCase() : value.toLowerCase();
-
 // We accept string values or objects, in which case we will use object[propertyName]
-const suggestedValues = (values, text = '', isListItem = false, propertyName) => {
+const suggestedValues = (values, text = '', operator = '', isListItem = false, propertyName) => {
   const lcText = text.toLowerCase();
   const result = values
     .filter((value) => isListItem || getStringValue(value, propertyName).startsWith(lcText))
@@ -13,6 +10,7 @@ const suggestedValues = (values, text = '', isListItem = false, propertyName) =>
         type,
         typedName,
         completion: name.toLowerCase().startsWith(lcText) ? name.slice(text.length) : name,
+        isIllustration: operator === 'starts',
         isListItem
       };
     });
@@ -20,16 +18,64 @@ const suggestedValues = (values, text = '', isListItem = false, propertyName) =>
   return result;
 };
 
+const suggestColumnNames = (columns, text, isListItem) => {
+  return suggestedValues(columns, text, undefined, isListItem, 'name');
+};
+
+const suggestColumnValues = async (column, text, operator, isListItem) => {
+  let result;
+  switch (column) {
+    case 'ccy':
+      {
+        const values = ['EUR', 'GBP', 'JPY', 'SEK', 'USD'];
+        result = suggestedValues(values, text, operator, isListItem);
+      }
+      break;
+
+    case 'exchange':
+      {
+        const values = ['XAMS/ENA-MAIN', 'XLON/LSE-SETS', 'XNGS/NAS-GSM', 'XNYS/NYS-MAIN'];
+        result = suggestedValues(values, text, operator, isListItem);
+      }
+      break;
+    case 'status':
+      {
+        const values = ['cancelled', 'complete', 'partial', 'error', 'suspended'];
+        result = suggestedValues(values, text, operator, isListItem);
+      }
+      break;
+
+    case 'price':
+      result = [{ value: 'enter a monetary value' }];
+      break;
+
+    case 'timestamp':
+      result = [{ value: 'enter a timestamp' }];
+      break;
+
+    case 'quantity':
+      result = [{ value: 'enter an integer value' }];
+      break;
+
+    case 'bbg':
+      return fetchInstruments(text);
+
+    default:
+      result = [];
+  }
+
+  return Promise.resolve(result);
+};
+
+const getStringValue = (value, propertyName) =>
+  propertyName ? value[propertyName].toLowerCase() : value.toLowerCase();
+
 const suggestedInstrumentValues = (values, text = '') =>
   values.map(([bbg, description]) => ({
     value: bbg,
     displayValue: [bbg, description],
     completion: bbg.slice(text.length)
   }));
-
-const suggestColumnNames = (columns, text, isListItem) => {
-  return suggestedValues(columns, text, isListItem, 'name');
-};
 
 const fetchInstruments = async (text) => {
   return new Promise(async (resolve, reject) => {
@@ -79,45 +125,6 @@ const filterNameSavePrompt = (text) => {
   return [];
 };
 
-const suggestColumnValues = async (column, text, isListItem) => {
-  let result;
-  switch (column) {
-    case 'ccy':
-      {
-        const values = ['EUR', 'GBP', 'JPY', 'SEK', 'USD'];
-        result = suggestedValues(values, text, isListItem);
-      }
-      break;
-
-    case 'status':
-      {
-        const values = ['cancelled', 'complete', 'partial', 'error', 'suspended'];
-        result = suggestedValues(values, text, isListItem);
-      }
-      break;
-
-    case 'price':
-      result = [{ value: 'enter a monetary value' }];
-      break;
-
-    case 'timestamp':
-      result = [{ value: 'enter a timestamp' }];
-      break;
-
-    case 'quantity':
-      result = [{ value: 'enter an integer value' }];
-      break;
-
-    case 'bbg':
-      return fetchInstruments(text);
-
-    default:
-      result = [];
-  }
-
-  return Promise.resolve(result);
-};
-
 const suggestNamedFilters = async (filters, text) => {
   if (text.startsWith(':')) {
     return filters.map(({ name }) => ({
@@ -133,15 +140,18 @@ const suggestNamedFilters = async (filters, text) => {
 const buildColumns = (columnNames) => columnNames.map((name) => ({ name }));
 
 // note: Returns a promise
-const filterSuggestions =
-  ({ columnNames, columns = buildColumns(columnNames), namedFilters = [] }) =>
-  (result, { token: tokenId, text, isListItem }) => {
+const createSuggestionProvider = ({
+  columnNames,
+  columns = buildColumns(columnNames),
+  namedFilters = []
+}) =>
+  function provideSuggestions(result, { token: tokenId, operator, text, isListItem }) {
     switch (tokenId) {
       case 'COLUMN-NAME':
         // TODO return a list of objects, not just names
         return suggestColumnNames(columns, text, isListItem);
       case 'COLUMN-VALUE':
-        return suggestColumnValues(getCurrentColumn(result), text, isListItem);
+        return suggestColumnValues(getCurrentColumn(result), text, operator, isListItem);
       case 'FILTER-NAME':
         return filterNameSavePrompt(text);
       case 'NAMED-FILTER':
@@ -151,4 +161,4 @@ const filterSuggestions =
     }
   };
 
-export default filterSuggestions;
+export default createSuggestionProvider;

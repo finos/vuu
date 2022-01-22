@@ -33,42 +33,26 @@ export const getNodeById = (nodes, id) => {
 };
 
 export const getIndexOfNode = (indexPositions, node) => {
+  const id = typeof node === 'string' ? node : node.id;
   for (let i = 0; i < indexPositions.length; i++) {
-    if (indexPositions[i].id === node.id) {
+    if (indexPositions[i].id === id) {
       return i;
     }
   }
 };
 
 export const replaceNode = (nodes, id, props) => {
-  let childNodes, newNode;
+  let childNodes;
   const newNodes = nodes.map((node) => {
     if (node.id === id) {
-      return (newNode = node.set(props));
-      // return (newNode = {
-      //   ...node,
-      //   ...props
-      // });
+      return node.set(props);
     } else if (isDescendantOf(node.id, id)) {
-      [childNodes, newNode] = replaceNode(node.childNodes, id, props);
+      childNodes = replaceNode(node.childNodes, id, props);
       return node.set({ childNodes });
-      // return {
-      //   ...node,
-      //   childNodes
-      // };
     } else {
       return node;
     }
   });
 
-  return [newNodes, newNode];
-};
-
-const sum = (a, b) => a + b;
-
-export const countVisibleDescendants = (node, force) => {
-  // note: force can only be true on initial call, on recursive calls, it will be index
-  return node.expanded || force === true
-    ? node.childNodes.length + node.childNodes.map(countVisibleDescendants).reduce(sum)
-    : 0;
+  return newNodes;
 };

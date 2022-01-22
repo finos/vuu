@@ -1,10 +1,12 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { Grid } from '@vuu-ui/data-grid';
 import { RemoteDataSource } from '@vuu-ui/data-remote';
 
 import { instrumentSchema, instrumentSchemaFixed, instrumentSchemaHeaders } from './columnMetaData';
 
+import { Button } from '@vuu-ui/ui-controls';
+import { Flexbox, View } from '@vuu-ui/layout';
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
 
 import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
@@ -70,6 +72,10 @@ export const BasicGrid = () => {
     gridRef.current.style.setProperty('--grid-row-height', `20px`);
   };
 
+  const handleConfigChange = (config) => {
+    console.log(`handleConfigChange ${JSON.stringify(config, null, 2)}`);
+  };
+
   const gridStyles = `
     .StoryGrid {
       --hwDataGridCell-border-style: none;
@@ -91,6 +97,7 @@ export const BasicGrid = () => {
         columns={instrumentSchema.columns}
         columnSizing="fill"
         height={624}
+        onConfigChange={handleConfigChange}
         ref={gridRef}
         renderBufferSize={50}
         rowHeight={rowHeight}
@@ -105,6 +112,77 @@ export const BasicGrid = () => {
       <br />
       <button onClick={setHighDensity}>High Density</button>
       <button onClick={setLowDensity}>Low Density</button>
+    </>
+  );
+};
+
+export const PersistConfig = () => {
+  const configRef = useRef({
+    columns: instrumentSchema.columns
+  });
+  const [configDisplay, setConfigDisplay] = useState(() => configRef.current);
+  const [config, setConfig] = useState(() => configRef.current);
+  const [rowHeight, setRowHeight] = useState(18);
+
+  const applyConfig = () => {
+    setConfig(configRef.current);
+  };
+
+  const dataConfig = useMemo(
+    () => ({
+      bufferSize: 0,
+      columns: instrumentSchema.columns.map((col) => col.name),
+      tableName: 'instruments',
+      configUrl: '/tables/instruments/config.js'
+    }),
+    []
+  );
+
+  const dataSource1 = useMemo(() => new RemoteDataSource(dataConfig), [dataConfig]);
+
+  const handleConfigChange = useCallback(
+    (updates) => {
+      configRef.current = { ...config, ...updates };
+      setConfigDisplay(configRef.current);
+    },
+    [config]
+  );
+
+  const gridStyles = `
+    .StoryGrid {
+      --hwDataGridCell-border-style: none;
+      --hwDataGridRow-background-odd: var(--surface1);
+      --hwDataGrid-font-size: 10px;
+    }
+  `;
+
+  console.log(`render`, config);
+
+  return (
+    <>
+      <style>{gridStyles}</style>
+      <div>
+        <input defaultValue="Life is" />
+      </div>
+      <Grid
+        className="StoryGrid"
+        dataSource={dataSource1}
+        columns={config.columns}
+        // columns={instrumentSchema.columns}
+        columnSizing="fill"
+        height={300}
+        onConfigChange={handleConfigChange}
+        renderBufferSize={50}
+        rowHeight={rowHeight}
+        selectionModel="single"
+        style={{ margin: 10, border: 'solid 1px #ccc' }}
+      />
+      <textarea
+        readOnly
+        style={{ height: 500, margin: '0 10px', width: 'calc(100% - 20px)' }}
+        value={JSON.stringify(configDisplay, null, 2)}
+      />
+      <Button onClick={applyConfig}>Apply Config</Button>
     </>
   );
 };
@@ -232,7 +310,7 @@ export const BasicGridWithFilter = () => {
           columnNames: dataConfig.columns,
           namedFilters
         })}>
-        <div style={{ width: 600 }}>
+        <div style={{ width: 600, flex: '0 0 32px' }}>
           <ParsedInput onCommit={handleCommit} />
         </div>
       </ParserProvider>
@@ -242,8 +320,19 @@ export const BasicGridWithFilter = () => {
         height={600}
         ref={gridRef}
         renderBufferSize={20}
-        style={{ margin: 10, border: 'solid 1px #ccc' }}
+        style={{ border: 'solid 1px #ccc' }}
       />
     </>
+  );
+};
+
+export const FilteredGridInLayout = () => {
+  return (
+    <Flexbox style={{ width: 800, height: 600, flexDirection: 'column' }}>
+      <View title="DataGrid" header style={{ flex: 1 }} resizeable>
+        <BasicGridWithFilter />
+      </View>
+      <div style={{ flex: 1, backgroundColor: 'blue' }} data-resizeable></div>
+    </Flexbox>
   );
 };

@@ -1,9 +1,17 @@
 import { FilterParser } from '../../generated/parsers/filter/FilterParser';
 
+// We should be able to derive these from the parser, using Rules
 const TOKEN_TYPES = {
   [FilterParser.ID]: 'ID',
   [FilterParser.STRING]: 'string',
   [FilterParser.EQ]: 'operator',
+  [FilterParser.GT]: 'operator',
+  [FilterParser.LT]: 'operator',
+  [FilterParser.IN]: 'operator',
+  [FilterParser.CONTAINS]: 'operator',
+  [FilterParser.STARTS]: 'operator',
+  [FilterParser.ENDS]: 'operator',
+  [FilterParser.NEQ]: 'operator',
   [FilterParser.INT]: 'number',
   [FilterParser.FLOAT]: 'number',
   [FilterParser.NUMBER_SHORTHAND]: 'number'

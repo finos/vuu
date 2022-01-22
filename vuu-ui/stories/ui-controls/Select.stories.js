@@ -18,7 +18,7 @@ export const SimpleSelect = () => (
   <>
     <input type="text" defaultValue="start" />
     <div style={{ width: 150, height: 24, position: 'relative', border: 'solid 1px #ccc' }}>
-      <Select values={usa_states} />
+      <Select source={usa_states} />
     </div>
     <input type="text" defaultValue="end" />
   </>
@@ -26,6 +26,6 @@ export const SimpleSelect = () => (
 
 export const WithVisualiser = () => (
   <ComponentAnatomy showLegend>
-    <Select values={usa_states} />
+    <Select source={usa_states} />
   </ComponentAnatomy>
 );

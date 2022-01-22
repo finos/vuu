@@ -1,4 +1,4 @@
-// Generated from /Users/R674775/git/heswell/layout/packages/datagrid-parsers/src/grammars/Filter.g4 by ANTLR 4.8
+// Generated from /Users/R674775/git/venuu-io/vuu/vuu-ui/packages/datagrid-parsers/src/grammars/Filter.g4 by ANTLR 4.8
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -17,9 +17,9 @@ public class FilterParser extends Parser {
 		new PredictionContextCache();
 	public static final int
 		TRUE=1, FALSE=2, AND=3, OR=4, AS=5, LT=6, GT=7, EQ=8, NEQ=9, IN=10, CONTAINS=11, 
-		STARTS=12, ENDS=13, PATHSEP=14, LBRACK=15, RBRACK=16, LPAREN=17, RPAREN=18, 
-		COMMA=19, COLON=20, INT=21, FLOAT=22, INT_ABBR=23, FLOAT_ABBR=24, STRING=25, 
-		ID_STRING=26, ID_NUMERIC=27, ID=28, WS=29;
+		STARTS=12, ENDS=13, LBRACK=14, RBRACK=15, LPAREN=16, RPAREN=17, COMMA=18, 
+		COLON=19, INT=20, FLOAT=21, INT_ABBR=22, FLOAT_ABBR=23, STRING=24, ID_STRING=25, 
+		ID_NUMERIC=26, ID=27, WS=28;
 	public static final int
 		RULE_expression = 0, RULE_or_expression = 1, RULE_and_expression = 2, 
 		RULE_as_clause = 3, RULE_term = 4, RULE_col_set_expression = 5, RULE_col_val_expression = 6, 
@@ -44,17 +44,17 @@ public class FilterParser extends Parser {
 	private static String[] makeLiteralNames() {
 		return new String[] {
 			null, "'true'", "'false'", "'and'", "'or'", "'as'", "'<'", "'>'", "'='", 
-			"'!='", "'in'", "'contains'", "'starts'", "'ends'", "'/'", "'['", "']'", 
-			"'('", "')'", "','", "':'"
+			"'!='", "'in'", "'contains'", "'starts'", "'ends'", "'['", "']'", "'('", 
+			"')'", "','", "':'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
 			null, "TRUE", "FALSE", "AND", "OR", "AS", "LT", "GT", "EQ", "NEQ", "IN", 
-			"CONTAINS", "STARTS", "ENDS", "PATHSEP", "LBRACK", "RBRACK", "LPAREN", 
-			"RPAREN", "COMMA", "COLON", "INT", "FLOAT", "INT_ABBR", "FLOAT_ABBR", 
-			"STRING", "ID_STRING", "ID_NUMERIC", "ID", "WS"
+			"CONTAINS", "STARTS", "ENDS", "LBRACK", "RBRACK", "LPAREN", "RPAREN", 
+			"COMMA", "COLON", "INT", "FLOAT", "INT_ABBR", "FLOAT_ABBR", "STRING", 
+			"ID_STRING", "ID_NUMERIC", "ID", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -1137,7 +1137,7 @@ public class FilterParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\37\u0092\4\2\t\2"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\36\u0092\4\2\t\2"+
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\3\2\3\2\5"+
@@ -1148,7 +1148,7 @@ public class FilterParser extends Parser {
 		"s\13\f\3\r\3\r\3\16\3\16\3\17\3\17\3\20\3\20\3\21\3\21\3\22\3\22\3\22"+
 		"\3\23\3\23\5\23\u0084\n\23\3\24\3\24\5\24\u0088\n\24\3\25\3\25\3\26\3"+
 		"\26\3\27\3\27\3\30\3\30\3\30\2\2\31\2\4\6\b\n\f\16\20\22\24\26\30\32\34"+
-		"\36 \"$&(*,.\2\7\5\2\3\4\27\33\36\36\3\2\n\13\3\2\b\t\3\2\r\17\4\2\b\13"+
+		"\36 \"$&(*,.\2\7\5\2\3\4\26\32\35\35\3\2\n\13\3\2\b\t\3\2\r\17\4\2\b\13"+
 		"\16\17\2\u0086\2\60\3\2\2\2\4\66\3\2\2\2\6>\3\2\2\2\bF\3\2\2\2\nP\3\2"+
 		"\2\2\fT\3\2\2\2\16^\3\2\2\2\20`\3\2\2\2\22d\3\2\2\2\24h\3\2\2\2\26l\3"+
 		"\2\2\2\30t\3\2\2\2\32v\3\2\2\2\34x\3\2\2\2\36z\3\2\2\2 |\3\2\2\2\"~\3"+
@@ -1158,16 +1158,16 @@ public class FilterParser extends Parser {
 		"\2\28:\5\4\3\29\67\3\2\2\2:=\3\2\2\2;9\3\2\2\2;<\3\2\2\2<\5\3\2\2\2=;"+
 		"\3\2\2\2>C\5\n\6\2?@\7\5\2\2@B\5\n\6\2A?\3\2\2\2BE\3\2\2\2CA\3\2\2\2C"+
 		"D\3\2\2\2D\7\3\2\2\2EC\3\2\2\2FG\7\7\2\2GH\5 \21\2H\t\3\2\2\2IQ\5\16\b"+
-		"\2JQ\5\f\7\2KQ\5\"\22\2LM\7\23\2\2MN\5\4\3\2NO\7\24\2\2OQ\3\2\2\2PI\3"+
+		"\2JQ\5\f\7\2KQ\5\"\22\2LM\7\22\2\2MN\5\4\3\2NO\7\23\2\2OQ\3\2\2\2PI\3"+
 		"\2\2\2PJ\3\2\2\2PK\3\2\2\2PL\3\2\2\2Q\13\3\2\2\2RU\5\36\20\2SU\5\34\17"+
-		"\2TR\3\2\2\2TS\3\2\2\2UV\3\2\2\2VW\7\f\2\2WX\7\21\2\2XY\5\26\f\2YZ\7\22"+
+		"\2TR\3\2\2\2TS\3\2\2\2UV\3\2\2\2VW\7\f\2\2WX\7\20\2\2XY\5\26\f\2YZ\7\21"+
 		"\2\2Z\r\3\2\2\2[_\5\20\t\2\\_\5\22\n\2]_\5\24\13\2^[\3\2\2\2^\\\3\2\2"+
 		"\2^]\3\2\2\2_\17\3\2\2\2`a\5\32\16\2ab\5&\24\2bc\5\30\r\2c\21\3\2\2\2"+
 		"de\5\34\17\2ef\5$\23\2fg\5\30\r\2g\23\3\2\2\2hi\5\36\20\2ij\5.\30\2jk"+
-		"\5\30\r\2k\25\3\2\2\2lq\5\30\r\2mn\7\25\2\2np\5\30\r\2om\3\2\2\2ps\3\2"+
+		"\5\30\r\2k\25\3\2\2\2lq\5\30\r\2mn\7\24\2\2np\5\30\r\2om\3\2\2\2ps\3\2"+
 		"\2\2qo\3\2\2\2qr\3\2\2\2r\27\3\2\2\2sq\3\2\2\2tu\t\2\2\2u\31\3\2\2\2v"+
-		"w\7\35\2\2w\33\3\2\2\2xy\7\34\2\2y\35\3\2\2\2z{\7\36\2\2{\37\3\2\2\2|"+
-		"}\7\36\2\2}!\3\2\2\2~\177\7\26\2\2\177\u0080\7\36\2\2\u0080#\3\2\2\2\u0081"+
+		"w\7\34\2\2w\33\3\2\2\2xy\7\33\2\2y\35\3\2\2\2z{\7\35\2\2{\37\3\2\2\2|"+
+		"}\7\35\2\2}!\3\2\2\2~\177\7\25\2\2\177\u0080\7\35\2\2\u0080#\3\2\2\2\u0081"+
 		"\u0084\5,\27\2\u0082\u0084\5(\25\2\u0083\u0081\3\2\2\2\u0083\u0082\3\2"+
 		"\2\2\u0084%\3\2\2\2\u0085\u0088\5*\26\2\u0086\u0088\5(\25\2\u0087\u0085"+
 		"\3\2\2\2\u0087\u0086\3\2\2\2\u0088\'\3\2\2\2\u0089\u008a\t\3\2\2\u008a"+

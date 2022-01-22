@@ -39,20 +39,22 @@ const addWhiteSpace = (tokens, caretPosition) => {
 const initialState = {
   errors: [],
   result: null,
-  suggestions: [],
   tokens: [],
   options: undefined
 };
 
-// const GREEN = 'color: green;',
-//   BROWN_BOLD = 'color:brown;font-weight:bold;',
-//   BLACK_BOLD = 'color:black;font-weight: bold;';
+const sameSuggestions = (s1, s2) => {
+  if (s1.length === s2.length) {
+    return s1.every((s) => s2.find((suggs) => suggs.value === s.value));
+  }
+};
 
 export const useParsedText = () => {
   const parse = useParser();
   const textRef = useRef('');
-  const prevSuggestions = useRef([]);
-  const [{ errors, result, suggestions, tokens, options }, setState] = useState(initialState);
+  const [{ errors, result, tokens, options }, setState] = useState(initialState);
+  const [suggestions, setSuggestions] = useState([]);
+  const suggestionsRef = useRef(suggestions);
 
   const parseText = useCallback(
     async (newText, typedSubstitutionText) => {
@@ -62,43 +64,24 @@ export const useParsedText = () => {
       );
       // Note: text can change, symbols can be inserted
       textRef.current = text;
-      //   console.log(
-      //     `%c[useParsedText] newText '${newText}' '%c${text}%c ${JSON.stringify(tokens,null,2)}' setState %ctokens%c
-      // ${JSON.stringify(tokens)}
-      // `,
-      //     GREEN,
-      //     BROWN_BOLD,
-      //     GREEN,
-      //     BLACK_BOLD,
-      //     GREEN,
-      //   );
 
-      //   console.log({result})
-
-      // setState(state => ({ ...state, errors, result, tokens: addWhiteSpace(tokens, text.length), options }));
       setState(() => ({
-        suggestions: [],
         errors,
         result,
         tokens: addWhiteSpace(tokens, text.length),
         options
       }));
       const newSuggestions = await promisedSuggestions;
-      // if (!sameSuggestions(prevSuggestions.current, newSuggestions)) {
-      // console.log(
-      //   `%c[useParsedText] newText '${newText}' '%c${text}%c' setState %csuggestions%c
-      // ${JSON.stringify(newSuggestions)}
-      // `,
-      //   GREEN,
-      //   BROWN_BOLD,
-      //   GREEN,
-      //   BLACK_BOLD,
-      //   GREEN
-      // );
-      newSuggestions.sort(bySuggestionPriority);
-      setState((state) => ({ ...state, suggestions: newSuggestions }));
-      prevSuggestions.current = newSuggestions;
-      // }
+
+      const isMultiSelect =
+        newSuggestions.length > 0 && newSuggestions.every((suggestion) => suggestion.isListItem);
+
+      if (!isMultiSelect || !sameSuggestions(suggestionsRef.current, newSuggestions)) {
+        // don't refresh the suggestions whilst user is editing a multi-select list
+        suggestionsRef.current = newSuggestions;
+        newSuggestions.sort(bySuggestionPriority);
+        setSuggestions(newSuggestions);
+      }
     },
     [parse]
   );

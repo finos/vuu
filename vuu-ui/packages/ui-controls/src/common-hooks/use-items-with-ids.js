@@ -36,7 +36,7 @@ export const useItemsWithIds = (
   };
 
   const normalizeSource = useCallback(
-    (nodes, indexer, path = '', results = []) => {
+    (nodes, indexer, level = 1, path = '', results = []) => {
       let count = 0;
       nodes.map(createProxy).forEach((proxy, i, proxies) => {
         const isCollapsibleHeader = proxy.header && collapsibleHeaders;
@@ -46,12 +46,13 @@ export const useItemsWithIds = (
         const expanded = nonCollapsible ? undefined : defaultExpanded;
         const childPath = path ? `${path}.${i}` : `${i}`;
         const item = proxy.set({
-          id: `${idRoot}-${childPath}`,
+          id: proxy.id ?? `${idRoot}-${childPath}`,
           count:
             !isNonCollapsibleGroupNode && expanded === undefined
               ? 0
               : countChildItems(proxy, proxies, i),
           index: indexer.index,
+          level,
           expanded
         });
         results.push(item);
@@ -61,7 +62,13 @@ export const useItemsWithIds = (
 
         // if ((isNonCollapsibleGroupNode || expanded !== undefined) && !isCollapsibleHeader) {
         if (proxy.childNodes) {
-          const [childCount, children] = normalizeSource(proxy.childNodes, indexer, childPath, []);
+          const [childCount, children] = normalizeSource(
+            proxy.childNodes,
+            indexer,
+            level + 1,
+            childPath,
+            []
+          );
           item.childNodes = children;
           if (expanded === true || isNonCollapsibleGroupNode) {
             count += childCount;
@@ -73,10 +80,17 @@ export const useItemsWithIds = (
     [collapsibleHeaders, createProxy, defaultExpanded, idRoot]
   );
 
-  const [count, source] = useMemo(
-    () => normalizeSource(sourceProp, { index: 0 }),
-    [normalizeSource, sourceProp]
+  const [count, sourceWithIds] = useMemo(() => {
+    return normalizeSource(sourceProp, { index: 0 });
+  }, [normalizeSource, sourceProp]);
+
+  const sourceItemById = useCallback(
+    (id) => {
+      const sourceWithId = sourceWithIds.find((i) => i.id === id);
+      return sourceProp[sourceWithId.index];
+    },
+    [sourceProp, sourceWithIds]
   );
 
-  return [count, source];
+  return [count, sourceWithIds, sourceItemById];
 };

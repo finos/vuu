@@ -22,9 +22,9 @@ const parseText = (text) => {
 export const ParserContext = createContext();
 
 // TODO accept suggestionFactory here too
-export const ParserProvider = ({ children, parser = parseText, suggestionFactory }) => {
+export const ParserProvider = ({ children, parser = parseText, suggestionProvider }) => {
   return (
-    <ParserContext.Provider value={{ parseText: parser, suggestionProvider: suggestionFactory }}>
+    <ParserContext.Provider value={{ parseText: parser, suggestionProvider }}>
       {children}
     </ParserContext.Provider>
   );

@@ -1,13 +1,12 @@
 import * as Action from './context-menu-actions';
 import { SortType } from '../constants';
 
-export const contextMenuDescriptors = [];
-
 export const buildContextMenuDescriptors = (gridModel) => (location, options) => {
   const descriptors = [];
   if (location === 'header') {
     descriptors.push(...buildSortMenuItems(gridModel.sort, options));
     descriptors.push(...buildGroupMenuItems(gridModel.groupBy, options));
+    descriptors.push(...buildAggregationMenuItems(gridModel.aggregations, options));
     descriptors.push({
       label: 'Hide Column',
       action: Action.ColumnHide,
@@ -48,6 +47,25 @@ export const buildContextMenuDescriptors = (gridModel) => (location, options) =>
 
   return descriptors;
 };
+
+function buildAggregationMenuItems(aggregations, options) {
+  const menuItems = [];
+  const {
+    column: { name, label = name, type }
+  } = options;
+  if (type === 'number' || type?.name === 'number') {
+    menuItems.push({
+      label: `Aggregate ${label}`,
+      children: [
+        // { label: 'Average', action: Action.AggregateAvg, options },
+        { label: 'Count', action: Action.AggregateCount, options },
+        { label: 'Sum', action: Action.AggregateSum, options }
+      ]
+    });
+  }
+
+  return menuItems;
+}
 
 function buildSortMenuItems(sortDefs = [], options) {
   const menuItems = [];
@@ -129,17 +147,19 @@ function buildSortMenuItems(sortDefs = [], options) {
 
 function buildGroupMenuItems(groupBy, options) {
   const menuItems = [];
-  const { column } = options;
+  const {
+    column: { name, label = name }
+  } = options;
 
   if (!groupBy) {
     menuItems.push({
-      label: `Group by ${column.name}`,
+      label: `Group by ${label}`,
       action: Action.Group,
       options
     });
   } else {
     menuItems.push({
-      label: `Add ${column.name} to group by`,
+      label: `Add ${label} to group by`,
       action: Action.GroupAdd,
       options
     });

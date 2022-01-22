@@ -12,8 +12,8 @@ const pendingRequests = new Map();
 // We do not resolve the worker until we have a connection, but we will get
 // connection status messages before that, so we forward them to caller
 // while they wait for worker.
-const getWorker = async (url, server, handleConnectionStatusChange) => {
-  const workerUrl = '/worker.js?debug=all-messages';
+const getWorker = async (url, server, token, handleConnectionStatusChange) => {
+  const workerUrl = 'worker.js?debug=all-messages';
 
   return (
     pendingWorker ||
@@ -26,7 +26,7 @@ const getWorker = async (url, server, handleConnectionStatusChange) => {
       worker.onmessage = (msg) => {
         const { data: message } = msg;
         if (message.type === 'ready') {
-          worker.postMessage({ type: 'connect', url, useWebsocket: !!server });
+          worker.postMessage({ type: 'connect', url, useWebsocket: !!server, token });
         } else if (message.type === 'connected') {
           resolve(worker);
         } else if (message.type === 'connection-status') {
@@ -52,7 +52,8 @@ const messagesToRelayToClient = {
   subscribed: true,
   sort: true,
   groupBy: true,
-  filter: true
+  filter: true,
+  aggregate: true
 };
 
 function handleMessageFromWorker({ data: message }) {
@@ -101,10 +102,12 @@ const asyncRequest = (msg) => {
 };
 
 class ConnectionManager extends EventEmitter {
-  async connect(url, serverName) {
+  // The first request must have the token. We can change this to block others until
+  // the request with token is received.
+  async connect(url, server, token) {
     // By passing handleMessageFromWorker here, we can get connection status
     //messages while we wait for worker to resolve.
-    worker = await getWorker(url, serverName, handleMessageFromWorker);
+    worker = await getWorker(url, server, token, handleMessageFromWorker);
 
     worker.onmessage = handleMessageFromWorker;
 
@@ -153,7 +156,6 @@ class ConnectionManager extends EventEmitter {
   }
 }
 
-console.log(`CREATE THE CONNECTION MANAGER`);
 const connectionManager = new ConnectionManager();
 
 export default connectionManager;

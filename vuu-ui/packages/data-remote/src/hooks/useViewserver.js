@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SimpleStore } from '@vuu-ui/utils';
 import { useServerConnection } from './useServerConnection';
+import { columnMetaData as columnConfig } from './columnMetaData';
 
 export const addRowsFromInstruments = 'addRowsFromInstruments';
 export const RpcCall = 'RPC_CALL';
@@ -30,151 +31,6 @@ const contextCompatibleWithLocation = (location, context, selectedRowCount) => {
       return context === 'grid';
     default:
       return false;
-  }
-};
-
-const columnConfig = {
-  ask: {
-    name: 'ask',
-    label: 'Ask',
-    type: {
-      name: 'number',
-      renderer: { name: 'background', flashStyle: 'arrow-bg' },
-      formatting: { decimals: 2, zeroPad: true }
-    },
-    aggregate: 'avg'
-  },
-  askSize: {
-    name: 'askSize',
-    label: 'Ask Size',
-    type: {
-      name: 'number'
-    },
-    aggregate: 'avg'
-  },
-  bbg: {
-    name: 'bbg',
-    label: 'BBG',
-    type: {
-      name: 'string'
-    }
-  },
-  bid: {
-    label: 'Bid',
-    name: 'bid',
-    type: {
-      name: 'number',
-      renderer: { name: 'background', flashStyle: 'arrow-bg' },
-      formatting: { decimals: 2, zeroPad: true }
-    },
-    aggregate: 'avg'
-  },
-  bidSize: {
-    label: 'Bid Size',
-    name: 'bidSize',
-    type: {
-      name: 'number'
-    },
-    aggregate: 'avg'
-  },
-  close: {
-    label: 'Close',
-    name: 'close',
-    type: {
-      name: 'number',
-      formatting: { decimals: 2, zeroPad: true }
-    },
-    aggregate: 'avg'
-  },
-  currency: {
-    name: 'currency',
-    label: 'CCY',
-    width: 60
-  },
-  description: {
-    name: 'description',
-    label: 'Description',
-    type: {
-      name: 'string'
-    }
-  },
-  exchange: {
-    name: 'exchange',
-    label: 'Exchange',
-    type: {
-      name: 'string'
-    }
-  },
-  filledQuantity: {
-    name: 'filledQuantity',
-    label: 'filled qty',
-    width: 80,
-    type: {
-      name: 'number',
-      renderer: { name: 'progress', associatedField: 'quantity' },
-      format: { decimals: 0 }
-    }
-  },
-  isin: {
-    name: 'isin',
-    label: 'ISIN',
-    type: {
-      name: 'string'
-    }
-  },
-  last: {
-    label: 'Last',
-    name: 'last',
-    type: {
-      name: 'number',
-      formatting: { decimals: 2, zeroPad: true }
-    },
-    aggregate: 'avg'
-  },
-  lotSize: {
-    label: 'Lot Size',
-    name: 'lotSize',
-    width: 80,
-    type: {
-      name: 'number'
-    }
-  },
-  open: {
-    label: 'Open',
-    name: 'open',
-    type: {
-      name: 'number',
-      formatting: { decimals: 2, zeroPad: true }
-    },
-    aggregate: 'avg'
-  },
-  phase: {
-    label: 'Phase',
-    name: 'phase',
-    type: {
-      name: 'string'
-    }
-  },
-  ric: {
-    name: 'ric',
-    label: 'RIC',
-    type: {
-      name: 'string'
-    }
-  },
-  quantity: {
-    name: 'quantity',
-    width: 80,
-    type: {
-      name: 'number'
-    }
-  },
-  scenario: {
-    label: 'Scenario',
-    name: 'scenario',
-    type: {
-      name: 'string'
-    }
   }
 };
 
@@ -222,7 +78,7 @@ export const useViewserver = ({ rpcServer, onConfigChange, onRpcResponse } = {})
           }
           break;
         default:
-          console.log(`response from unexpected method ${response.method}`);
+          return response.result;
       }
     },
     [onRpcResponse, server]
@@ -272,7 +128,7 @@ export const useViewserver = ({ rpcServer, onConfigChange, onRpcResponse } = {})
       } else if (action.type === 'visual-link-created') {
         onConfigChange?.(action);
       } else {
-        console.log(`useViewserver dispatchGridAction no handler for $s{action.type}`);
+        console.log(`useViewserver dispatchGridAction no handler for ${action.type}`);
       }
     },
     [onConfigChange]

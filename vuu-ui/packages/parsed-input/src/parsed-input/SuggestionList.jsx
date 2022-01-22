@@ -47,13 +47,15 @@ export const SuggestionList = forwardRef(function SuggestionList(
       selection={selectionStrategy}
       selected={selected}>
       {suggestions.length > 0
-        ? suggestions.map(({ value, displayValue = value }) => (
+        ? suggestions.map(({ id, value, displayValue = value, isIllustration }) => (
             <div
               className={cx({
                 // [`${classBase}-selected`]: selected.includes(i),
+                [`${classBase}-illustration`]: isIllustration,
                 [`${classBase}-commit`]: value === 'EOF',
                 [`${classBase}-close-list`]: value === ']'
               })}
+              id={id}
               key={value}>
               {formatDisplayValue(displayValue)}
             </div>

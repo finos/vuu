@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
-import { ArrowDown, ArrowUp, isNavigationKey, useControlled } from '../utils';
+import { ArrowDown, ArrowUp, getIndexOfNode, isNavigationKey, useControlled } from '../utils';
 
 function nextItemIdx(count, key, idx) {
   if (key === ArrowUp) {
@@ -68,11 +68,12 @@ export const useKeyboardNavigation = ({
     if (ignoreFocus.current) {
       ignoreFocus.current = false;
     } else if (selected.length > 0) {
-      setHighlightedIndex(selected[0]);
+      const idx = getIndexOfNode(indexPositions, selected[0]);
+      setHighlightedIndex(idx);
     } else {
       setHighlightedIndex(nextFocusableItemIdx());
     }
-  }, [nextFocusableItemIdx, selected, setHighlightedIndex]);
+  }, [indexPositions, nextFocusableItemIdx, selected, setHighlightedIndex]);
 
   const navigateChildItems = useCallback(
     (e) => {
@@ -88,14 +89,14 @@ export const useKeyboardNavigation = ({
 
   const handleKeyDown = useCallback(
     (e) => {
-      if (isNavigationKey(e)) {
+      if (indexPositions.length > 0 && isNavigationKey(e)) {
         e.preventDefault();
         e.stopPropagation();
         keyBoardNavigation.current = true;
         navigateChildItems(e);
       }
     },
-    [navigateChildItems]
+    [indexPositions, navigateChildItems]
   );
 
   const listProps = useMemo(

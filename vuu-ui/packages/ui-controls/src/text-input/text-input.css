@@ -1,10 +1,11 @@
 .hwTextInput {
   background: var(--hw-text-input-bg, inherit);
-  border: var(--hw-text-input-border, none);
+  border: var(--hwTextInput-border, none);
   font-size: var(--hw-control-font-size);
+  height: var(--hwTextInput-height, auto);
   margin: var(--hw-text-input-margin, 0);
   outline: none;
-  padding: var(--hw-text-input-padding, 0);
+  padding: var(--hwTextInput-padding, 0);
   position: var(--hw-text-input-position, static);
-  width: var(--hw-text-input-width, auto);
+  width: var(--hwTextInput-width, auto);
 }

@@ -1,23 +1,18 @@
 import { useLayoutEffect, useRef } from 'react';
-import { applyHandlers } from '../utils';
 
 import { useControlled } from '../utils';
 
 const NO_OPTS = {};
 
-export const useDropdown = (
-  {
-    closeOnSelect = true,
-    defaultOpen = false,
-    highlightedIdx,
-    id,
-    open: openProp,
-    onCancel,
-    onChange,
-    onDropdownChange
-  } = NO_OPTS,
-  ...additionalHandlers
-) => {
+export const useDropdown = ({
+  closeOnSelect = true,
+  defaultOpen = false,
+  id,
+  open: openProp,
+  onCancel,
+  onChange,
+  onDropdownChange
+} = NO_OPTS) => {
   const [open, _setIsOpen, isControlled] = useControlled({
     controlled: openProp,
     default: defaultOpen
@@ -33,15 +28,10 @@ export const useDropdown = (
     if (!isControlled) {
       _setIsOpen((isOpenRef.current = open));
     }
-    applyHandlers(additionalHandlers, 'onDropdownChange', open);
   };
-
-  const getActiveDescendant = () =>
-    highlightedIdx === undefined || highlightedIdx === -1 ? undefined : `${id}-${highlightedIdx}`;
 
   const ariaAttributes = open
     ? {
-        'aria-activedescendant': getActiveDescendant(),
         'aria-expanded': true,
         'aria-owns': id
       }

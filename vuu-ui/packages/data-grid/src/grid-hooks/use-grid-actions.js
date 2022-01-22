@@ -2,9 +2,11 @@ import { useCallback } from 'react';
 import * as Action from '../context-menu/context-menu-actions';
 
 export const useGridActions = ({
+  dispatchGridModelAction,
   invokeDataSourceAction,
   handleSelectionChange,
-  invokeScrollAction
+  invokeScrollAction,
+  onConfigChange
 }) => {
   const dispatchAction = useCallback(
     (action) => {
@@ -20,12 +22,28 @@ export const useGridActions = ({
         case 'scroll-start-horizontal':
         case 'scroll-end-horizontal':
           return invokeScrollAction(action), true;
+        case 'resize-col':
+          {
+            dispatchGridModelAction(action);
+            if (action.phase === 'end') {
+              onConfigChange?.({ type: 'columns' });
+            }
+          }
+
+          break;
+
         default:
           console.log(`useGridAction, no built-in handler for ${action.type}`);
           return false;
       }
     },
-    [invokeDataSourceAction, handleSelectionChange, invokeScrollAction]
+    [
+      invokeDataSourceAction,
+      handleSelectionChange,
+      invokeScrollAction,
+      dispatchGridModelAction,
+      onConfigChange
+    ]
   );
 
   return dispatchAction;

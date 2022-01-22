@@ -1,8 +1,8 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useLayoutContext } from '@vuu-ui/layout';
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
-import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
-import vuuSuggestions from './vuu-filter-suggestion-factory';
+import { parseFilter, extractFilter, filterAsQuery } from '@vuu-ui/datagrid-parsers';
+import createSuggestionProvider from './vuu-filter-suggestion-provider';
 
 import { Button, ContextMenuProvider, Link as LinkIcon } from '@vuu-ui/ui-controls';
 import { Grid, GridProvider } from '@vuu-ui/data-grid';
@@ -40,56 +40,57 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
   };
 
   const handleConfigChange = useCallback(
-    ({ type, ...op }) => {
-      // TODO consolidate these messages
-      switch (type) {
-        case 'group':
-          save(op.groupBy, type);
-          dispatch({ type: 'save' });
-          break;
-        case 'sort':
-          save(op.sort, type);
-          dispatch({ type: 'save' });
-          break;
-        case 'filter':
-          save(op.filter, type);
-          dispatch({ type: 'save' });
-          break;
-        case 'visual-link-created':
-          dispatch({
-            type: 'toolbar-contribution',
-            location: 'post-title',
-            content: (
-              <Button aria-label="remove-link" onClick={unlink}>
-                <LinkIcon />
-              </Button>
-            )
-          });
-          save(op, 'visual-link');
-          dispatch({ type: 'save' });
-          break;
-        default:
-          console.log(`unknown config change type ${type}`);
+    (update) => {
+      if (update.type === 'visual-link-created') {
+        dispatch({
+          type: 'toolbar-contribution',
+          location: 'post-title',
+          content: (
+            <Button aria-label="remove-link" onClick={unlink}>
+              <LinkIcon />
+            </Button>
+          )
+        });
+        save(update, 'visual-link');
+        dispatch({ type: 'save' });
+      } else {
+        for (let [key, state] of Object.entries(update)) {
+          save(state, key);
+        }
       }
     },
     [dispatch, save]
   );
 
-  const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction } = useViewserver({
-    rpcServer: dataSource,
-    onConfigChange: handleConfigChange,
-    onRpcResponse: makeServiceRequest
-  });
+  const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction, makeRpcCall } =
+    useViewserver({
+      rpcServer: dataSource,
+      onConfigChange: handleConfigChange,
+      onRpcResponse: makeServiceRequest
+    });
 
   const handleCommit = useCallback(
     (result) => {
       const { filter, name } = extractFilter(result);
-      dataSource.filterQuery(filter);
+      const filterQuery = filterAsQuery(filter, namedFilters);
+      dataSource.filter(filter, filterQuery);
       if (name) {
         setNamedFilters(namedFilters.concat({ name, filter }));
       }
     },
     [dataSource, namedFilters]
+  );
+
+  const getSuggestions = useCallback(
+    async (params) => {
+      console.log(`get suggestions for ${JSON.stringify(params)}`);
+      return await makeRpcCall({
+        type: 'RPC_CALL',
+        method: 'getUniqueFieldValues',
+        params
+      });
+    },
+    [makeRpcCall]
   );
 
   return (
@@ -98,11 +99,13 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
       menuBuilder={buildViewserverMenuOptions}>
       <ParserProvider
         parser={parseFilter}
-        suggestionFactory={vuuSuggestions({
+        suggestionProvider={createSuggestionProvider({
           columnNames: dataSource.columns,
-          namedFilters
+          namedFilters,
+          getSuggestions,
+          table: dataSource.tableName
         })}>
-        <Button className="vuuFilterButton" data-icon="filter" />
+        <Button className="vuFilterButton" data-icon="filter" />
 
         <ParsedInput onCommit={handleCommit} />
       </ParserProvider>
@@ -112,7 +115,7 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
           {...props}
           columnSizing="fill"
           dataSource={dataSource}
-          columns={schema.columns}
+          columns={config?.columns || schema.columns}
           groupBy={config?.group}
           onConfigChange={handleConfigChange}
           renderBufferSize={80}

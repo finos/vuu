@@ -1,5 +1,7 @@
 import { createLogger, DataTypes, EventEmitter, logColor, uuid } from '@vuu-ui/utils';
-import { msgType as Msg, msgType } from './constants';
+import { filterAsQuery } from '@vuu-ui/datagrid-parsers';
+
+import { msgType as Msg } from './constants';
 
 import { ConnectionManager } from './connection-manager';
 
@@ -25,6 +27,7 @@ const defaultRange = { lo: 0, hi: 0 };
 export default class RemoteDataSource extends EventEmitter {
   constructor({
     bufferSize = 100,
+    aggregations,
     columns,
     filter,
     group,
@@ -58,8 +61,13 @@ export default class RemoteDataSource extends EventEmitter {
     this.initialGroup = group;
     this.initialSort = sort;
     this.initialFilter = filter;
+    this.initialAggregations = aggregations;
 
     this.rowCount = 0;
+
+    if (tableName.table === 'instruments') {
+      this.initialAggregations = [{ column: 'lotSize', aggType: 3 }];
+    }
 
     if (!serverUrl && !configUrl) {
       throw Error('RemoteDataSource expects serverUrl or configUrl');
@@ -74,6 +82,7 @@ export default class RemoteDataSource extends EventEmitter {
       viewport = this.viewport ?? uuid(),
       tableName = this.tableName,
       columns = this.columns || [],
+      aggregations = this.initialAggregations,
       range = defaultRange,
       sort = this.initialSort,
       groupBy = this.initialGroup,
@@ -108,6 +117,7 @@ export default class RemoteDataSource extends EventEmitter {
         viewport,
         tablename: tableName,
         columns,
+        aggregations,
         range,
         sort,
         groupBy,
@@ -249,20 +259,21 @@ export default class RemoteDataSource extends EventEmitter {
     });
   }
 
-  filter(filter, dataType = ROW_DATA) {
+  aggregate(aggregations, dataType = ROW_DATA) {
     this.server?.send({
       viewport: this.viewport,
-      type: Msg.filter,
-      filter,
+      type: Msg.aggregate,
+      aggregations,
       dataType
     });
   }
 
-  filterQuery(filter) {
+  filter(filter, filterQuery = filter ? filterAsQuery(filter) : '') {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.filterQuery,
-      filter
+      filter,
+      filterQuery
     });
   }
 

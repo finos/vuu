@@ -2,18 +2,16 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Shell, Feature } from '@vuu-ui/shell';
 import AppContext from './app-context';
 
-import { setServerConfig, useViewserver } from '@vuu-ui/data-remote';
-
-import useLayoutConfig from './use-layout-config';
+import { useViewserver } from '@vuu-ui/data-remote';
 
 import { Dialog } from '@vuu-ui/layout';
 
 import './App.css';
 
 export const serverUrl = '127.0.0.1:8090/websocket';
-const filteredGridUrl = './features/filtered-grid.js';
-const filteredGridCss = './features/filtered-grid.css';
-const simpleComponentUrl = './features/simple-component.js';
+const filteredGridUrl = './features/filtered-grid/index.js';
+const filteredGridCss = './features/filtered-grid/index.css';
+const simpleComponentUrl = './features/simple-component/index.js';
 
 const metricsUrl = './features/metrics.js';
 const metricsCss = './features/metrics.css';
@@ -45,7 +43,6 @@ const wordify = (text) => {
 
 const getTables = (tables) => {
   const tableList = Object.values(tables);
-  console.log({ tableList });
   return tableList.sort(byModule).map((schema) => ({
     className: 'vuFilteredGrid',
     closeable: true,
@@ -111,14 +108,8 @@ const defaultLayout = {
   ]
 };
 
-setServerConfig(serverUrl);
-
-export const App = () => {
+export const App = ({ user }) => {
   const [dialogContent, setDialogContent] = useState(null);
-  const [layoutConfig, setLayoutConfig] = useLayoutConfig(
-    'https://localhost:8443/api/vui/steve',
-    defaultLayout
-  );
 
   // Needed because of circular ref between useViewserver and handleRpcResponse
   const tablesRef = useRef();
@@ -130,13 +121,6 @@ export const App = () => {
   }, [tables]);
 
   tablesRef.current = tables;
-
-  const handleLayoutChange = useCallback(
-    (layout) => {
-      setLayoutConfig(layout);
-    },
-    [setLayoutConfig]
-  );
 
   const makeServiceRequest = useCallback((response) => {
     if (response?.action?.type === 'OPEN_DIALOG_ACTION') {
@@ -155,13 +139,15 @@ export const App = () => {
 
   const handleClose = () => setDialogContent(null);
 
+  // TODO get Context from Shell
   return (
     <AppContext.Provider value={{ makeServiceRequest }}>
       <Shell
-        layout={layoutConfig}
-        onLayoutChange={handleLayoutChange}
-        paletteConfig={paletteConfig}>
-        <Dialog className="vuuFilteredGrid" isOpen={dialogContent !== null} onClose={handleClose}>
+        defaultLayout={defaultLayout}
+        paletteConfig={paletteConfig}
+        serverUrl={serverUrl}
+        user={user}>
+        <Dialog className="vuDialog" isOpen={dialogContent !== null} onClose={handleClose}>
           {dialogContent}
         </Dialog>
       </Shell>

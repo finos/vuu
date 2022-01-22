@@ -2,6 +2,8 @@ import React, { forwardRef, useCallback, useContext, useImperativeHandle, useRef
 import cx from 'classnames';
 import GridContext from './grid-context';
 import { GridModel } from './grid-model/grid-model-utils';
+import * as Action from './grid-model/grid-model-actions';
+
 import ColumnGroupContext from './column-group-context';
 import { SortType } from './constants';
 
@@ -51,9 +53,9 @@ const ColumnGroupHeader = React.memo(
 
     const handleColumnResize = useCallback(
       (phase, column, width) => {
-        dispatchGridModelAction({ type: 'resize-col', phase, column, width });
+        dispatchGridAction({ type: Action.COL_RESIZE, phase, column, width });
       },
-      [dispatchGridModelAction]
+      [dispatchGridAction]
     );
 
     const handleHeadingResize = useCallback(
@@ -109,8 +111,7 @@ const ColumnGroupHeader = React.memo(
       <div
         className={classBase}
         ref={columnGroupHeader}
-        style={{ height: height + customInlineHeaderHeight, top, width }}
-      >
+        style={{ height: height + customInlineHeaderHeight, top, width }}>
         <div ref={scrollingHeaderWrapper} style={{ height, width: contentWidth }}>
           {headings
             .map((heading, idx) => (

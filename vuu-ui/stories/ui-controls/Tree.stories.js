@@ -3,6 +3,7 @@ import { ComponentAnatomy } from '@heswell/component-anatomy';
 
 import { Tree } from '@vuu-ui/ui-controls';
 import { usa_states_cities, groupByInitialLetter } from './usa_states';
+import { folderData } from './tree-data';
 
 export default {
   title: 'UI Controls/Tree',
@@ -27,6 +28,7 @@ export const SimpleTree = () => {
         }}>
         <Tree
           onSelectionChange={handleChange}
+          selection="checkbox"
           source={groupByInitialLetter(usa_states_cities, 'groups-only')}
         />
       </div>
@@ -45,6 +47,35 @@ export const SimpleTree = () => {
           source={groupByInitialLetter(usa_states_cities, 'groups-only')}
         />
       </div> */}
+      <input type="text" />
+    </div>
+  );
+};
+
+const iconTreeStyle = `
+  .arrow-toggle {
+    --hwTree-toggle-collapse: var(--svg-triangle-right);
+    --hwTree-toggle-expand: var(--svg-triangle-right);
+    --hwTree-node-expanded-transform: rotate(45deg) translate(1px, 1px);
+   }
+`;
+
+export const SimpleTreeIcons = () => {
+  const handleChange = (e, selected) => {
+    console.log(`selected ${selected.join(',')}`);
+  };
+  return (
+    <div style={{ width: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+      <input type="text" />
+      <div
+        style={{
+          fontFamily: 'Roboto',
+          width: 150,
+          position: 'relative'
+        }}>
+        <style>{iconTreeStyle}</style>
+        <Tree className="arrow-toggle" onSelectionChange={handleChange} source={folderData} />
+      </div>
       <input type="text" />
     </div>
   );
@@ -73,7 +104,7 @@ export const SimpleTreeWithAnatomy = () => {
     <>
       <input type="text" />
       <ComponentAnatomy style={{ width: 1100 }}>
-        <Tree source={source} />
+        <Tree groupSelection="single" source={source} />
       </ComponentAnatomy>
     </>
   );

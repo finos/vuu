@@ -1,40 +1,38 @@
 import { useCallback, useRef } from 'react';
 import {
   useCollapsibleGroups,
+  useDragDrop,
   useHierarchicalData,
   useKeyboardNavigation,
-  useSelection
+  useSelection,
+  useViewportTracking
 } from '../common-hooks';
+import { closestListItemIndex } from './list-dom-utils';
+
 import { useTypeahead } from './hooks';
 
 const EMPTY_ARRAY = [];
 
 export const useList = ({
+  allowDragDrop,
   collapsibleHeaders,
+  containerRef,
   defaultHighlightedIdx,
   defaultSelected,
   highlightedIdx: highlightedIdxProp,
   id,
+  listItemHandlers: listItemHandlersProp,
   onChange,
   onHighlight: onHighlightProp,
+  onMouseEnterListItem,
   selected,
   selection,
-  sourceWithIds
+  selectionKeys,
+  sourceWithIds,
+  stickyHeaders
 }) => {
   const lastSelection = useRef(EMPTY_ARRAY);
   const dataHook = useHierarchicalData(sourceWithIds);
-
-  const collapsibleHook = useCollapsibleGroups({
-    collapsibleHeaders,
-    indexPositions: dataHook.indexPositions,
-    setVisibleData: dataHook.setData,
-    source: dataHook.data
-  });
-
-  const handleHighlight = (idx) => {
-    collapsibleHook.listHandlers.onHighlight?.(idx);
-    onHighlightProp?.(idx);
-  };
 
   const handleKeyboardNavigation = (evt, nextIdx) => {
     selectionHook.listHandlers.onKeyboardNavigation?.(evt, nextIdx);
@@ -43,22 +41,59 @@ export const useList = ({
   const { highlightedIdx, ...keyboardHook } = useKeyboardNavigation({
     defaultHighlightedIdx,
     highlightedIdx: highlightedIdxProp,
-    indexPositions: dataHook.indexPositions,
-    onHighlight: handleHighlight,
-    onKeyboardNavigation: handleKeyboardNavigation,
     id,
+    indexPositions: dataHook.indexPositions,
     label: 'List',
+    onHighlight: onHighlightProp,
+    onKeyboardNavigation: handleKeyboardNavigation,
     selected: lastSelection.current
+  });
+
+  const collapsibleHook = useCollapsibleGroups({
+    collapsibleHeaders,
+    highlightedIdx,
+    indexPositions: dataHook.indexPositions,
+    setVisibleData: dataHook.setData,
+    source: dataHook.data
+  });
+
+  const handleDrop = useCallback(
+    (fromIndex, toIndex) => {
+      console.log(`dropAtIndex ${fromIndex} ${toIndex}`);
+      const data = dataHook.data.slice();
+      const [target] = data.splice(fromIndex, 1);
+      if (toIndex > fromIndex) {
+        toIndex -= 1;
+      }
+      if (toIndex === -1) {
+        data.push(target);
+      } else {
+        data.splice(toIndex, 0, target);
+      }
+      dataHook.setData(data);
+      keyboardHook.hiliteItemAtIndex(toIndex);
+    },
+    [dataHook, keyboardHook]
+  );
+
+  const dragDropHook = useDragDrop({
+    allowDragDrop,
+    orientation: 'vertical',
+    containerRef,
+    itemQuery: '.hwListItem',
+    onDrop: handleDrop
   });
 
   const selectionHook = useSelection({
     defaultSelected,
+    disableSelection: dragDropHook.isDragging,
     highlightedIdx,
     indexPositions: dataHook.indexPositions,
     onChange,
     label: 'useList',
     selected,
-    selection
+    selection,
+    selectionKeys
   });
 
   const typeaheadHook = useTypeahead({
@@ -120,6 +155,22 @@ export const useList = ({
     [keyboardHook]
   );
 
+  const isScrolling = useViewportTracking(containerRef, highlightedIdx, stickyHeaders);
+
+  const handleMouseEnterListItem = useCallback(
+    (evt) => {
+      if (dragDropHook.isDragging) {
+        return;
+      }
+      if (!isScrolling.current) {
+        const idx = closestListItemIndex(evt.target);
+        keyboardHook.hiliteItemAtIndex(idx);
+        onMouseEnterListItem && onMouseEnterListItem(evt, idx);
+      }
+    },
+    [keyboardHook, dragDropHook, isScrolling, onMouseEnterListItem]
+  );
+
   const getActiveDescendant = () =>
     highlightedIdx === undefined || highlightedIdx === -1
       ? undefined
@@ -133,6 +184,7 @@ export const useList = ({
     onBlur: handleBlur,
     onFocus: handleFocus,
     onKeyDown: handleKeyDown,
+    onMouseDown: dragDropHook.onMouseDown,
     onMouseDownCapture: handleMouseDownCapture,
     onMouseLeave: handleMouseLeave,
     onMouseMove: handleMouseMove
@@ -143,10 +195,12 @@ export const useList = ({
     focusVisible: keyboardHook.focusVisible,
     controlledHighlighting: keyboardHook.controlledHighlighting,
     highlightedIdx,
-    hiliteItemAtIndex: keyboardHook.hiliteItemAtIndex,
     keyBoardNavigation: keyboardHook.keyBoardNavigation,
     listItemHeaderHandlers: collapsibleHook.listItemHandlers,
-    listItemHandlers: selectionHook.listItemHandlers,
+    listItemHandlers: listItemHandlersProp || {
+      ...selectionHook.listItemHandlers,
+      onMouseEnter: handleMouseEnterListItem
+    },
     listProps,
     selected: selectionHook.selected,
     setIgnoreFocus: keyboardHook.setIgnoreFocus,

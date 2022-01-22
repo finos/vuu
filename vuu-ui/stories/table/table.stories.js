@@ -7,72 +7,76 @@ export default {
   component: 'table'
 };
 
+const columns = [
+  { name: 'row number' },
+  { name: 'column 1' },
+  { name: 'column 2' },
+  { name: 'column 3' },
+  { name: 'column 4' },
+  { name: 'column 5' },
+  { name: 'column 6' },
+  { name: 'column 7' },
+  { name: 'column 8' },
+  { name: 'column 9' },
+  { name: 'column 10' }
+];
+
 const count = 100;
 const data = [];
 for (let i = 0; i < count; i++) {
   data.push([
-    'column 1',
-    'column 2',
-    'column 3',
-    'column 4',
-    'column 5',
-    'column 6',
-    'column 7',
-    'column 8'
+    `row ${i + 1}`,
+    'value 1',
+    'value 2',
+    'value 3',
+    'value 4',
+    'value 5',
+    'value 6',
+    'value 7',
+    'value 8',
+    'value 9',
+    'value 10'
   ]);
 }
 
-export const DefaultTable = () => {
-  const tbody = useRef(null);
+export const BetterTable = () => {
+  const table = useRef();
+  const handleScroll = (e) => {
+    table.current.scrollLeft = e.target.scrollLeft;
+    table.current.scrollTop = e.target.scrollTop;
+  };
 
-  let top = 0;
+  const headerHeight = 25;
+  const contentHeight = count * 25;
+  const scrollContentHeight = headerHeight + contentHeight;
 
   return (
-    <div id="table-scroll" className="table-scroll">
-      <table id="main-table" className="hwTable main-table">
-        <thead>
-          <tr>
-            <th scope="col">Header 1</th>
-            <th scope="col">Header 2</th>
-            <th scope="col">Header 3 with longer content</th>
-            <th scope="col">Header 4 text</th>
-            <th scope="col">Header 5</th>
-            <th scope="col">Header 6</th>
-            <th scope="col">Header 7</th>
-            <th scope="col">Header 8</th>
-          </tr>
-        </thead>
-        <tbody ref={tbody}>
-          {data.map((row, i) => (
-            <tr
-              key={i}
-              // style={{ transform: `translate(0, ${top + 25 * i}px)` }}
-            >
-              {row.map((val, j) => (
-                <td
-                  key={j}
-                  style={{ top: j === 0 ? i * 25 : 'auto' }}
-                  // style={{ transform: `translate(${250 * j}px,0)` }}
-                >
-                  {val}
-                </td>
+    <div id="scroller" onScroll={handleScroll}>
+      <div
+        className="scroll-content"
+        style={{ position: 'absolute', width: 1600, height: scrollContentHeight }}
+      />
+
+      <div id="chartWrapper" ref={table}>
+        <table id="chart">
+          <thead>
+            <tr>
+              {columns.map((column, i) => (
+                <th key={i}>{column.name}</th>
               ))}
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <th>Footer 1</th>
-            <td>Footer 2</td>
-            <td>Footer 3</td>
-            <td>Footer 4</td>
-            <td>Footer 5</td>
-            <td>Footer 6</td>
-            <td>Footer 7</td>
-            <td>Footer 8</td>
-          </tr>
-        </tfoot>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((row, i) => (
+              <tr key={i}>
+                {row.map((value, j) => (
+                  <td key={j}>{value}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -33,9 +33,9 @@ export class ServerProxy {
     });
   }
 
-  async login() {
+  async login(token = this.loginToken) {
     return new Promise((resolve, reject) => {
-      this.sendMessageToServer(loginRequest(this.loginToken, 'user'), '');
+      this.sendMessageToServer(loginRequest(token, 'user'), '');
       this.pendingLogin = { resolve, reject };
     });
   }
@@ -78,6 +78,25 @@ export class ServerProxy {
         case Message.GET_TABLE_META:
           this.sendMessageToServer({ type, table: message.table }, message.requestId);
           break;
+        case Message.RPC_CALL:
+          {
+            // below duplicated - tidy up
+            const { method } = message;
+            const [service, module] = getRpcService(method);
+            this.sendMessageToServer(
+              {
+                type,
+                service,
+                method,
+                params: message.params || [viewport.serverViewportId],
+                namedParams: {}
+              },
+              message.requestId,
+              { module }
+            );
+          }
+          break;
+
         default:
       }
       return;
@@ -109,6 +128,14 @@ export class ServerProxy {
         }
         break;
 
+      case 'aggregate':
+        {
+          const requestId = nextRequestId();
+          const request = viewport.aggregateRequest(requestId, message.aggregations);
+          this.sendIfReady(request, requestId, isReady);
+        }
+        break;
+
       case 'sort':
         {
           const requestId = nextRequestId();
@@ -128,11 +155,9 @@ export class ServerProxy {
       case 'filterQuery':
         {
           const requestId = nextRequestId();
-          const { filter } = message;
-          const request = viewport.filterRequest(requestId, filter);
-          // Hack, passing filter object just for DataStoreConnection, which
-          // doesn't know how to parse a filterQuery
-          this.sendIfReady(request, requestId, isReady, { filter });
+          const { filter, filterQuery } = message;
+          const request = viewport.filterRequest(requestId, filter, filterQuery);
+          this.sendIfReady(request, requestId, isReady);
         }
         break;
 
@@ -251,7 +276,7 @@ export class ServerProxy {
               type,
               service,
               method,
-              params: [viewport.serverViewportId],
+              params: message.params || [viewport.serverViewportId],
               namedParams: {}
             },
             message.requestId,
@@ -269,6 +294,7 @@ export class ServerProxy {
   sendIfReady(message, requestId, isReady = true, options) {
     // TODO implement the message queuing in remote data view
     if (isReady) {
+      console.log(JSON.stringify(message, null, 2));
       this.sendMessageToServer(message, requestId, options);
     } else {
       // TODO need to make sure we keep the requestId

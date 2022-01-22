@@ -1,27 +1,17 @@
 import { useCallback, useRef } from 'react';
 import { closestListItem } from '../list/list-dom-utils';
-import {
-  ArrowLeft,
-  ArrowRight,
-  countVisibleDescendants,
-  Enter,
-  getNodeById,
-  isHeader,
-  replaceNode
-} from '../utils';
+import { ArrowLeft, ArrowRight, Enter, getNodeById, replaceNode } from '../utils';
 
 const NO_HANDLERS = {};
 const isToggleElement = (element) => element && element.hasAttribute('aria-expanded');
 
 export const useCollapsibleGroups = ({
   collapsibleHeaders,
+  highlightedIdx,
   indexPositions,
   setVisibleData,
   source
 }) => {
-  const highlightedIdx = useRef(null);
-  // do we need to maintain this separately ?
-  const visibleCount = useRef(indexPositions.length);
   const fullSource = useRef(source);
   const stateSource = useRef(fullSource.current);
 
@@ -32,25 +22,40 @@ export const useCollapsibleGroups = ({
     [setVisibleData]
   );
 
-  const expandNode = useCallback((nodeList, { id }) => {
-    const [newNodes, expandedNode] = replaceNode(nodeList, id, { expanded: true });
-    if (isHeader(expandedNode)) {
-      visibleCount.current += expandedNode.count;
-    } else {
-      visibleCount.current += countVisibleDescendants(expandedNode);
-    }
-    return newNodes;
-  }, []);
+  const expandNode = useCallback(
+    (nodeList, { id }) => replaceNode(nodeList, id, { expanded: true }),
+    []
+  );
 
-  const collapseNode = useCallback((nodeList, { id }) => {
-    const [newNodes, collapsedNode] = replaceNode(nodeList, id, { expanded: false });
-    if (isHeader(collapsedNode)) {
-      visibleCount.current -= collapsedNode.count;
-    } else {
-      visibleCount.current -= countVisibleDescendants(collapsedNode, true);
-    }
-    return newNodes;
-  }, []);
+  const collapseNode = useCallback(
+    (nodeList, { id }) => replaceNode(nodeList, id, { expanded: false }),
+    []
+  );
+
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === ArrowRight || e.key === Enter) {
+        const node = indexPositions[highlightedIdx];
+        if (node) {
+          if (node.expanded === false) {
+            e.preventDefault();
+            setSource(expandNode(stateSource.current, node));
+          }
+        }
+      }
+
+      if (e.key === ArrowLeft || e.key === Enter) {
+        const node = indexPositions[highlightedIdx];
+        if (node) {
+          if (node.expanded) {
+            e.preventDefault();
+            setSource(collapseNode(stateSource.current, node));
+          }
+        }
+      }
+    },
+    [collapseNode, expandNode, highlightedIdx, indexPositions, setSource]
+  );
 
   /**
    * These are List handlers, so we will not have reference to the actual node
@@ -58,30 +63,7 @@ export const useCollapsibleGroups = ({
    */
   const listHandlers = collapsibleHeaders
     ? {
-        onHighlight: (idx) => {
-          highlightedIdx.current = idx;
-        },
-        onKeyDown: (e) => {
-          if (e.key === ArrowRight || e.key === Enter) {
-            const node = indexPositions[highlightedIdx.current];
-            if (node) {
-              if (node.expanded === false) {
-                e.preventDefault();
-                setSource(expandNode(stateSource.current, node));
-              }
-            }
-          }
-
-          if (e.key === ArrowLeft || e.key === Enter) {
-            const node = indexPositions[highlightedIdx.current];
-            if (node) {
-              if (node.expanded) {
-                e.preventDefault();
-                setSource(collapseNode(stateSource.current, node));
-              }
-            }
-          }
-        }
+        onKeyDown: handleKeyDown
       }
     : NO_HANDLERS;
 
@@ -108,7 +90,6 @@ export const useCollapsibleGroups = ({
 
   return {
     listHandlers,
-    listItemHandlers,
-    visibleItemCount: visibleCount.current
+    listItemHandlers
   };
 };

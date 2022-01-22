@@ -1,9 +1,12 @@
 import React, { forwardRef, useRef } from 'react';
 import cx from 'classnames';
 import { useId } from '@vuu-ui/react-utils';
-import { useItemsWithIds } from '../common-hooks';
-import { groupSelectionEnabled } from './use-selection';
-import { useViewportTracking } from '../list/use-viewport-tracking';
+import {
+  groupSelectionEnabled,
+  useItemsWithIds,
+  useViewportTracking,
+  GROUP_SELECTION_NONE
+} from '../common-hooks';
 import { closestListItemIndex } from '../list/list-dom-utils';
 
 import { useTree } from './useTree';
@@ -22,7 +25,7 @@ const Tree = forwardRef(function Tree(
   {
     className,
     defaultSelected,
-    groupSelection,
+    groupSelection = GROUP_SELECTION_NONE,
     id: idProp,
     onHighlight,
     onSelectionChange,
@@ -38,6 +41,8 @@ const Tree = forwardRef(function Tree(
 
   // returns the full source data
   const [totalItemCount, sourceWithIds] = useItemsWithIds(source, id);
+
+  console.log({ sourceWithIds });
 
   const {
     focusVisible,
@@ -59,7 +64,7 @@ const Tree = forwardRef(function Tree(
     totalItemCount
   });
 
-  console.log({ selected });
+  console.log({ visibleData });
 
   // const isScrolling = useViewportTracking(root, highlightedIdx);
   useViewportTracking(root, highlightedIdx);
@@ -88,7 +93,8 @@ const Tree = forwardRef(function Tree(
     list.push(
       <TreeNode
         {...propsCommonToAllListItems}
-        {...getListItemProps(item.id, idx.value, highlightedIdx, selected, focusVisible)}>
+        {...getListItemProps(item, idx, highlightedIdx, selected, focusVisible)}>
+        {item.icon ? <span className="hwTreeNode-icon" /> : null}
         <span>{item.label}</span>
       </TreeNode>
     );
@@ -102,11 +108,13 @@ const Tree = forwardRef(function Tree(
       <TreeNode
         {...listItemHandlers}
         aria-expanded={child.expanded}
+        aria-level={child.level}
         aria-selected={selected.includes(id) || undefined}
         className={cx('hwTreeNode', {
           focusVisible: focusVisible === i,
           'hwTreeNode-toggle': !allowGroupSelect
         })}
+        data-icon={child.icon}
         data-idx={i}
         data-highlighted={i === highlightedIdx || undefined}
         data-selectable
@@ -119,6 +127,7 @@ const Tree = forwardRef(function Tree(
           </div>
         ) : (
           <div>
+            {child.icon ? <span className="hwTreeNode-icon" /> : null}
             <span>{title}</span>
           </div>
         )}
@@ -155,13 +164,15 @@ const Tree = forwardRef(function Tree(
   );
 });
 
-const getListItemProps = (id, idx, highlightedIdx, selected, focusVisible, className) => ({
-  id,
-  key: id,
-  'aria-selected': selected.includes(id) || undefined,
-  'data-idx': idx,
-  'data-highlighted': idx === highlightedIdx || undefined,
-  className: cx('hwTreeNode', className, { focusVisible: focusVisible === idx })
+const getListItemProps = (item, idx, highlightedIdx, selected, focusVisible, className) => ({
+  id: item.id,
+  key: item.id,
+  'aria-level': item.level,
+  'aria-selected': selected.includes(item.id) || undefined,
+  'data-icon': item.icon,
+  'data-idx': idx.value,
+  'data-highlighted': idx.value === highlightedIdx || undefined,
+  className: cx('hwTreeNode', className, { focusVisible: focusVisible === idx.value })
 });
 
 Tree.displayName = 'Tree';

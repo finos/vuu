@@ -13,7 +13,6 @@ const Row = memo(function Row({ columnMap, columns, height, idx, row, onClick, t
   const { [IS_LEAF]: isLeaf, [IS_EXPANDED]: expanded } = row;
   const isEmptyRow = row[KEY] === undefined;
   const isGroup = !isEmptyRow && !isLeaf;
-
   const className = cx(classBase, {
     group: isGroup,
     collapsed: !isLeaf && !expanded,

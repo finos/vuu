@@ -13,12 +13,12 @@ class ExprErrorListener {
   }
 
   syntaxError(recognizer, offendingSymbol, line, column, msg, err) {
-    // console.log(`%cerror ${msg}`, 'color: red;font-weight: bold;');
+    // onsole.log(`%cerror ${msg}`, 'color: red;font-weight: bold;');
     this.errors.push(err);
   }
 }
 
-export const parseFilter = (input, typedInput = input, expandSuggestions, isList = false) => {
+export const parseFilter = (input, typedInput = input, suggestionProvider, isList = false) => {
   // console.log(`%cparseFilter ${input} ('${typedInput}')`, 'color:red;font-weight: bold;');
 
   const errors = [];
@@ -31,8 +31,8 @@ export const parseFilter = (input, typedInput = input, expandSuggestions, isList
   parser.addErrorListener(errorListener);
 
   parser.buildParseTrees = true;
-
   const parseTree = parser.expression();
+  // onsole.log({ tokens: parser.inputStream.tokens.map((t) => t.text) });
   const visitor = new FilterVisitor();
   const parseResult = visitor.visit(parseTree);
 
@@ -41,7 +41,7 @@ export const parseFilter = (input, typedInput = input, expandSuggestions, isList
   const substitution =
     input === typedInput ? undefined : { [lastWord(typedInput)]: lastWord(input) };
 
-  const tokens = buildUITokens(parser, parseResult, substitution);
+  const parsedTokens = buildUITokens(parser, parseResult, substitution);
 
   try {
     // Important that we pass the original parseTree, do not allow suggestion mechanism to regenerate it,
@@ -50,15 +50,20 @@ export const parseFilter = (input, typedInput = input, expandSuggestions, isList
       parser,
       parseTree,
       caretPosition,
-      expandSuggestions,
+      suggestionProvider,
       parseResult,
+      parsedTokens,
       isList
     );
-    return [input, parseResult, errors, tokens, suggestions];
+
+    return [input, parseResult, errors, parsedTokens, suggestions];
   } catch (err) {
     if (err.type === 'open-list') {
       // TODO do we need to check whether input already ends with space or can we assume it ?
-      return parseFilter(`${input}${err.text}`, undefined, expandSuggestions, true);
+      return parseFilter(`${input}${err.text}`, undefined, suggestionProvider, true);
+    } else {
+      console.error(err);
+      return [];
     }
   }
 };

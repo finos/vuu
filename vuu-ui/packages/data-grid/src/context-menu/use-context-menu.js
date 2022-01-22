@@ -3,7 +3,7 @@ import { removeColumnFromFilter } from '@vuu-ui/utils';
 import * as Action from './context-menu-actions';
 // for now ...
 import { GridModel } from '../grid-model/grid-model-utils';
-import { SortType } from '../constants';
+import { AggregationType, SortType } from '../constants';
 
 export const useContextMenu = ({ dataSource, gridModel, dispatchGridModelAction }) => {
   const handleContextMenuAction = (type, options) => {
@@ -24,6 +24,27 @@ export const useContextMenu = ({ dataSource, gridModel, dispatchGridModelAction 
         return (
           dataSource.sort(GridModel.addSortColumn(gridModel, options.column, SortType.DSC)), true
         );
+      case Action.AggregateAvg:
+        return (
+          dataSource.aggregate(
+            GridModel.setAggregation(gridModel, options.column, AggregationType.Average)
+          ),
+          true
+        );
+      case Action.AggregateCount:
+        return (
+          dataSource.aggregate(
+            GridModel.setAggregation(gridModel, options.column, AggregationType.Count)
+          ),
+          true
+        );
+      case Action.AggregateSum:
+        return (
+          dataSource.aggregate(
+            GridModel.setAggregation(gridModel, options.column, AggregationType.Sum)
+          ),
+          true
+        );
       // case Action.SortRemove: {
       case Action.Group:
         return dataSource.group(GridModel.addGroupColumn({}, options.column)), true;
@@ -32,9 +53,11 @@ export const useContextMenu = ({ dataSource, gridModel, dispatchGridModelAction 
       case Action.ColumnHide:
         return dispatchGridModelAction({ type: 'column-hide', column: options.column }), true;
       case Action.FilterRemove:
-        return dataSource.filterQuery('');
-      case Action.FilterRemoveColumn:
-        return dataSource.filterQuery(removeColumnFromFilter(options.column, options.filter));
+        return dataSource.filter(null);
+      case Action.FilterRemoveColumn: {
+        const filter = removeColumnFromFilter(options.column, options.filter);
+        return dataSource.filter(filter);
+      }
       default:
         return false;
     }

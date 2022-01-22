@@ -5,8 +5,8 @@ import ComboBox from './combo-box/combo-box';
 
 export * from './button';
 export * from './common-hooks';
-export * from './control-hooks';
 export * from './dropdown';
+export * from './dropdown-list';
 export * from './icons';
 export * from './list';
 export * from './menu';

@@ -1,4 +1,4 @@
-.vuuFilteredGrid {
+.vuFilteredGrid {
   --hwDialog-margin: 30% auto auto auto;
   --hwParsedInput-background: white;
   --hwParsedInput-input-font-size: 12px;
@@ -13,15 +13,13 @@
   --hwDataGridRow-background-odd: var(--surface1);
 }
 
-.vuuFilterButton {
+.vuFilterButton {
   flex: 0 0 var(--hwParsedInput-height);
   height: var(--hwParsedInput-height);
 }
 
-.vuuFilteredGrid .hwView-main {
-  position: relative;
-}
-
-.vuuFilteredGrid .hwDataGrid {
+.vuFilteredGrid .hwDataGrid {
   height: calc(100% - 30px);
+  inset: var(--hwParsedInput-height) 0 0 0;
+  position: absolute;
 }

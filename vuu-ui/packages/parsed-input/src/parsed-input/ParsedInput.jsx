@@ -7,19 +7,26 @@ import { SuggestionList } from './SuggestionList';
 import { TokenMirror } from './TokenMirror';
 import { useParsedInput } from './useParsedInput';
 import { useParsedText } from './useParsedText';
-import { getCompletion } from './input-utils';
+import { getCompletionAtIndex } from './input-utils';
 
 import './ParsedInput.css';
 const classBase = 'hwParsedInput';
 
+const NO_COMPLETION = [];
+
 export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommit }, ref) {
   const id = useId(idProp);
-
   const { result, errors, textRef, tokens, parseText, suggestions } = useParsedText();
+  const { current: text } = textRef;
+
+  const isMultiSelect =
+    suggestions.length > 0 && suggestions.every((suggestion) => suggestion.isListItem);
+  const selectionStrategy = isMultiSelect ? 'checkbox-only' : SINGLE;
+
   const root = useRef(null);
   const suggestionList = useRef(null);
-  const suggestionsRef = useRef(suggestions);
-  const { current: text } = textRef;
+  // To avoid circular dependency
+  const acceptSuggestionRef = useRef();
   const [selected, _setSelected] = useState([]);
   const [highlightedIdx, setHighlightedIdx] = useState(0);
   const [open, setOpen] = useState(false);
@@ -47,10 +54,6 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     [textRef]
   );
 
-  // To avoid circular dependency
-  const acceptSuggestionRef = useRef();
-  const selectionStrategyRef = useRef(SINGLE);
-
   const clear = useCallback(() => {
     setHighlightedIdx(0);
     setOpen(false);
@@ -62,30 +65,9 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     clear();
   }, [clear, errors.length, onCommit, result]);
 
-  // need to find a way to clean this up - don't refresh suggestions whilst we're picking from a multi-select list
-  const currentSuggestions =
-    selectionStrategyRef.current !== SINGLE ? suggestionsRef.current : suggestions;
-  const [totalItemCount, sourceWithIds] = useItemsWithIds(currentSuggestions, id);
-
-  if (selectionStrategyRef.current === SINGLE) {
-    suggestionsRef.current = suggestions;
-  }
-
-  const handleHighlightChange = useCallback((idx) => {
-    setHighlightedIdx(idx);
-  }, []);
-
-  const handleTextInputChange = useCallback(
-    (text) => {
-      // const lastToken = lastWord(text);
-      // if (suggestions.find((s) => s.value === lastToken)) {
-      //   console.log(`we have a suggestion for ${lastToken} in ${text}`);
-      // }
-      // suggestionProposed.current = '';
-      setText(text);
-    },
-    [setText]
-  );
+  const [totalItemCount, sourceWithIds] = useItemsWithIds(suggestions, id, {
+    label: 'ParsedInput'
+  });
 
   const handleSuggestionClick = useCallback(
     (evt, selected) => {
@@ -99,19 +81,14 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
 
   const handleSelectionChange = useCallback(
     (e, selected) => {
-      if (selectionStrategyRef.current === SINGLE) {
+      if (selectionStrategy === SINGLE) {
         acceptSuggestionRef.current(e, selected);
       } else {
-        // Hack alert ...acceptSuggestion when we have a multi-select returns the new selection
-        const updatedSelected = acceptSuggestionRef.current(e, selected);
-        setSelected(updatedSelected, false);
-        if (updatedSelected.length === 0) {
-          // restore default;
-          selectionStrategyRef.current = SINGLE;
-        }
+        const selectedIds = acceptSuggestionRef.current(e, selected);
+        setSelected(selectedIds, false);
       }
     },
-    [setSelected]
+    [selectionStrategy, setSelected]
   );
 
   const handleDropdownChange = useCallback((e, isOpen) => {
@@ -136,19 +113,18 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     inputProps,
     inputRef,
     inputValue,
-    isMultiSelect,
     listProps,
     setInputText,
-    suggestionProposed,
+    suggestionsAreIllustrationsOnly,
     visibleData
   } = useParsedInput({
     highlightedIdx: sourceWithIds.length === 0 ? -1 : highlightedIdx,
     onCommit: handleCommit,
     onDropdownClose: handleDropdownChange,
     onDropdownOpen: handleDropdownChange,
-    onTextInputChange: handleTextInputChange,
+    onTextInputChange: setText,
     onSelectionChange: handleSelectionChange,
-    onHighlight: handleHighlightChange,
+    onHighlight: setHighlightedIdx,
     open,
     selected,
     setCurrentText,
@@ -160,19 +136,10 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
   });
 
   acceptSuggestionRef.current = acceptSuggestion;
-  selectionStrategyRef.current = isMultiSelect ? 'checkbox-only' : SINGLE;
 
   const handleMouseOverSuggestion = useCallback((evt, idx) => {
     setHighlightedIdx(idx);
   }, []);
-
-  // const { triggerHandlers: dropdownInputHandlers, isOpen } = useDropdown({
-  //   open: suggestionsShowing,
-  //   closeOnSelect: false,
-  //   highlightedIdx,
-  //   id,
-  //   onDropdownChange: handleDropdownChange
-  // });
 
   useEffect(() => {
     if (text !== inputValue) {
@@ -183,13 +150,9 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
   }, [inputValue, setInputText, text]);
 
   const cursorAtEndOfText = !text.endsWith(' ');
-  const [completion] = getCompletion(
-    visibleData,
-    highlightedIdx,
-    cursorAtEndOfText,
-    selected.length,
-    true
-  );
+  const [completion] = suggestionsAreIllustrationsOnly
+    ? NO_COMPLETION
+    : getCompletionAtIndex(visibleData, highlightedIdx, cursorAtEndOfText, selected.length, true);
 
   return (
     <>
@@ -216,12 +179,14 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
         align="bottom-right"
         className={`${classBase}-dropdown`}>
         <SuggestionList
-          highlightedIdx={highlightedIdx}
+          highlightedIdx={suggestionsAreIllustrationsOnly ? -1 : highlightedIdx}
           id={id}
-          onMouseEnterListItem={handleMouseOverSuggestion}
-          onSuggestionClick={handleSuggestionClick}
+          onMouseEnterListItem={
+            suggestionsAreIllustrationsOnly ? undefined : handleMouseOverSuggestion
+          }
+          onSuggestionClick={suggestionsAreIllustrationsOnly ? undefined : handleSuggestionClick}
           ref={suggestionList}
-          selectionStrategy={selectionStrategyRef.current}
+          selectionStrategy={selectionStrategy}
           selected={selected}
           suggestions={visibleData}
         />

@@ -58,9 +58,17 @@
   position: relative;
   cursor: default;
   margin: 0;
+  white-space: nowrap;
 }
 
-.hwListItem:not(.hwListItemHeader)[data-highlighted] {
+.hwListItem[data-dragging] {
+  background-color: white;
+  box-shadow: var(--hw-dialog-shadow);
+  width: 100%;
+  z-index: 100;
+}
+
+.hwListItem:not(.hwListItemHeader):not([data-dragging])[data-highlighted] {
   background-color: var(--list-hilited-bg);
 }
 
@@ -99,14 +107,14 @@
   mask: var(--svg-chevron-down) center center/12px 12px;
   mask-repeat: no-repeat;
   background-color: var(--list-item-header-twisty-color);
-  height: 18px;
+  height: 12px;
   left: var(--list-item-header-twisty-left);
   right: var(--list-item-header-twisty-right);
   margin-top: -8px;
   position: absolute;
   top: var(--list-item-header-twisty-top);
   transition: transform 0.3s;
-  width: 18px;
+  width: 12px;
 }
 .hwListItemHeader[aria-expanded='false']:after {
   transform: rotate(-90deg);
@@ -127,34 +135,18 @@
 }
 
 .with-checkbox .hwListItem:after {
-  border-style: solid;
-  border-width: var(--checkbox-border-width);
-  border-color: var(--checkbox-border-color);
+  background-color: var(--checkbox-tick);
   content: '';
   height: 12px;
   left: 3px;
   margin-top: -7px;
+  mask: var(--svg-checkbox) center center/ 15px 15px;
+  mask-repeat: no-repeat;
   position: absolute;
   top: 50%;
   width: 12px;
 }
 
 .with-checkbox .hwListItem[aria-selected='true']:after {
-  border-width: var(--checkbox-border-width);
-  border-color: var(--checkbox-border-color);
-  content: '';
-  mask: linear-gradient(#fff 0 0) top / 100% var(--checkbox-border-width),
-    linear-gradient(#fff 0 0) bottom/100% var(--checkbox-border-width),
-    linear-gradient(#fff 0 0) left / var(--checkbox-border-width) 100%,
-    linear-gradient(#fff 0 0) right / var(--checkbox-border-width) 100%,
-    var(--svg-checkbox-small) center center/ 11px 11px;
-  mask-repeat: no-repeat;
-
-  background-color: var(--checkbox-tick);
-  height: 12px;
-  left: 3px;
-  margin-top: -7px;
-  position: absolute;
-  top: 50%;
-  width: 12px;
+  mask: var(--svg-checkbox-checked) center center/ 15px 15px;
 }

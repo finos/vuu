@@ -69,10 +69,10 @@ export default class CustomFilterVisitor extends AbstractParseTreeVisitor {
   }
 
   visitAs_clause(ctx) {
-    // const result = this.visitChildren(ctx);
     const [result] = this.visitChildren(ctx);
     if (result) {
       const { name, pos } = result;
+      console.log({ name });
       return { name, tokenPosition: { name: pos } };
     } else {
       return EMPTY;
@@ -84,6 +84,15 @@ export default class CustomFilterVisitor extends AbstractParseTreeVisitor {
       return EMPTY;
     } else {
       return { name: ctx.text, pos: ctx.start.start };
+    }
+  }
+
+  visitNamed_filter(ctx) {
+    const [, name] = this.visitChildren(ctx);
+    if (name) {
+      return { name };
+    } else {
+      return EMPTY;
     }
   }
 

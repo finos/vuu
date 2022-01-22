@@ -74,16 +74,23 @@ export default function useDataSource(
           hasUpdated.current = true;
         }
       } else if (type === 'sort') {
+        const { sort } = msg;
         dispatchGridModelAction(message);
-        onConfigChange(message);
+        onConfigChange({ sort });
+      } else if (type === 'aggregate') {
+        const { aggregations } = msg;
+        console.log(`[useDataSource] aggregations ACKED ${JSON.stringify(aggregations)}`);
+        dispatchGridModelAction({ type: 'set-aggregations', aggregations });
+        onConfigChange({ aggregations });
       } else if (type === 'groupBy') {
-        const action = { type: 'group', groupBy: msg.groupBy };
-        dispatchGridModelAction(action);
-        onConfigChange(action);
+        const { groupBy } = msg;
+        dispatchGridModelAction({ type: 'group', groupBy });
+        onConfigChange({ group: groupBy });
       } else if (type === 'filter') {
+        const { filter, filterQuery } = msg;
         dispatchGridModelAction(message);
-        onConfigChange(message);
-        dataSource.emit('filter', msg.filter);
+        onConfigChange({ filter, filterQuery });
+        dataSource.emit('filter', filter);
       } else {
         dispatchGridAction(message);
       }

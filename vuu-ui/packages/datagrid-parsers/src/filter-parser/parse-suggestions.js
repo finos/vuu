@@ -3,6 +3,17 @@ import * as c3 from 'antlr4-c3';
 import { FilterParser } from '../../generated/parsers/filter/FilterParser';
 import { computeTokenIndexAndText } from './parse-utils';
 
+const getOperatorToken = (parsedTokens) => {
+  if (parsedTokens.length > 1) {
+    const [nextLastToken, lastToken] = parsedTokens.slice(-2);
+    if (lastToken.type === 'operator') {
+      return lastToken;
+    } else if (nextLastToken.type === 'operator') {
+      return nextLastToken;
+    }
+  }
+};
+
 const textValue = (text) => (text.startsWith("'") ? text.slice(1, -1).toLowerCase() : text);
 
 const maybeSuggest = (suggestion, text, lastToken, suggestions) => {
@@ -38,8 +49,9 @@ export const getSuggestions = (
   parser,
   parseTree,
   caretPosition,
-  expandSuggestions,
+  suggestionProvider,
   parseResult,
+  parsedTokens,
   isList = false
 ) => {
   const core = new c3.CodeCompletionCore(parser);
@@ -52,8 +64,7 @@ export const getSuggestions = (
   core.ignoredTokens = new Set([FilterParser.LPAREN]);
 
   let { text, index, alternative } = computeTokenIndexAndText(parser, parseTree, caretPosition);
-
-  // console.log(
+  // onsole.log(
   //   `[parseSuggestions] %ccollect candidates, token text='${text}', caret at ${caretPosition}, token at ${index} isList ${isList}
   //   %calternative ${JSON.stringify(alternative)}
   // `,
@@ -80,12 +91,15 @@ export const getSuggestions = (
   const ruleCount = rules.size + (alternativeRules?.size ?? 0);
   const tokenCount = tokens.size + (alternativeTokens?.size ?? 0);
 
-  // onsole.log(`
+  // onsole.log(
+  //   `
   //     rules ${rules.size} tokens ${tokens.size}
   //     alternativeRules ${alternativeRules?.size ?? 0} alternativeTokens ${
-  //   alternativeTokens?.size ?? 0
-  // }
-  //   `);
+  //     alternativeTokens?.size ?? 0
+  //   } alternativeText = '${alternativeText}'
+  //   `,
+  //   alternativeTokens
+  // );
 
   if (ruleCount === 0 && tokenCount === 0) {
     return [];
@@ -105,15 +119,15 @@ export const getSuggestions = (
   const [lastToken = { text: '' }] = parser.inputStream.tokens.slice(-2);
 
   if (rules.has(FilterParser.RULE_filtername)) {
-    suggestions.push(expandSuggestions(parseResult, { token: 'FILTER-NAME', text }));
+    suggestions.push(suggestionProvider(parseResult, { token: 'FILTER-NAME', text }));
   } else if (rules.has(FilterParser.RULE_named_filter)) {
-    suggestions.push(expandSuggestions(parseResult, { token: 'NAMED-FILTER', text }));
+    suggestions.push(suggestionProvider(parseResult, { token: 'NAMED-FILTER', text }));
   }
 
   if (rules.has(FilterParser.RULE_column)) {
-    suggestions.push(expandSuggestions(parseResult, { token: 'COLUMN-NAME', text }));
+    suggestions.push(suggestionProvider(parseResult, { token: 'COLUMN-NAME', text }));
   } else if (alternativeRules?.has(FilterParser.RULE_column)) {
-    const expandedSuggestions = expandSuggestions(parseResult, {
+    const expandedSuggestions = suggestionProvider(parseResult, {
       token: 'COLUMN-NAME',
       text: alternativeText
     });
@@ -126,9 +140,12 @@ export const getSuggestions = (
     }
   }
   if (rules.has(FilterParser.RULE_atom)) {
+    const operatorToken = getOperatorToken(parsedTokens);
+    console.log(`operator token `, operatorToken);
     suggestions.push(
-      expandSuggestions(parseResult, {
+      suggestionProvider(parseResult, {
         token: 'COLUMN-VALUE',
+        operator: operatorToken?.text ?? '',
         text,
         isListItem: currentMatchIsListItem
       })
@@ -150,6 +167,15 @@ export const getSuggestions = (
     });
   }
 
+  if (suggestions.size === 0 && alternativeTokens?.size > 0 && alternativeText) {
+    alternativeTokens.forEach((_, key) => {
+      const candidate = textValue(parser.vocabulary.getDisplayName(key));
+      if (candidate) {
+        maybeSuggest(candidate, alternativeText, lastToken.text, suggestions);
+      }
+    });
+  }
+
   return suggestions.toArray();
 };
 
@@ -159,9 +185,11 @@ class AsyncList {
     this.#list.push(item);
     return this;
   }
+  get size() {
+    return this.#list.length;
+  }
   async toArray() {
     const values = await Promise.all(this.#list);
-    // return values.flatMap(identity);
     return values.flatMap(identity);
   }
 }

@@ -6,17 +6,30 @@ export const CHECKBOX = 'checkbox';
 export const MULTI = 'multi';
 export const EXTENDED = 'extended';
 
+export const GROUP_SELECTION_NONE = 'none';
+export const GROUP_SELECTION_SINGLE = 'single';
+export const GROUP_SELECTION_CASCADE = 'cascade';
+
+const defaultSelectionKeys = ['Enter', ' '];
+
 const NO_HANDLERS = {};
+
+const isCollapsibleItem = (item) => item.expanded !== undefined;
+
+export const groupSelectionEnabled = (groupSelection) =>
+  groupSelection && groupSelection !== GROUP_SELECTION_NONE;
 
 export const useSelection = ({
   count,
   defaultSelected,
+  disableSelection = false,
+  // groupSelection = GROUP_SELECTION_NONE,
   highlightedIdx,
   indexPositions,
   onChange,
   selected: selectedProp,
   selection = SINGLE,
-  selectionKeys = ['Enter', ' ']
+  selectionKeys = defaultSelectionKeys
 }) => {
   // TODO is the count enough ?
   const prevCount = useRef(count);
@@ -26,10 +39,15 @@ export const useSelection = ({
   const extendedSelect = selection === EXTENDED;
   const lastActive = useRef(-1);
 
+  const isSelectionEvent = useCallback((evt) => selectionKeys.includes(evt.key), [selectionKeys]);
+
   const [selected, setSelected] = useControlled({
     controlled: selectedProp,
     default: defaultSelected ?? []
   });
+
+  // const highlightedIdxRef = useRef();
+  // highlightedIdxRef.current = highlightedIdx;
 
   // Get rid of this - if source might change, use controlled mode ?
   if (count !== prevCount.current) {
@@ -40,9 +58,9 @@ export const useSelection = ({
   }
 
   const selectItemAtIndex = useCallback(
-    (evt, idx, rangeSelect, preserveExistingSelection) => {
+    (evt, idx, id, rangeSelect, preserveExistingSelection) => {
       const { current: active } = lastActive;
-      const isSelected = selected.includes(idx);
+      const isSelected = selected.includes(id);
       const inactiveRange = active === -1;
       const actsLikeSingleSelect =
         singleSelect ||
@@ -54,17 +72,18 @@ export const useSelection = ({
       if (actsLikeSingleSelect && isSelected) {
         newSelected = [];
       } else if (actsLikeSingleSelect) {
-        newSelected = [idx];
+        newSelected = [id];
       } else if (actsLikeMultiSelect && isSelected) {
-        newSelected = selected.filter((i) => i !== idx);
+        newSelected = selected.filter((i) => i !== id);
       } else if (actsLikeMultiSelect) {
-        newSelected = selected.concat(idx);
+        newSelected = selected.concat(id);
       } else if (extendedSelect) {
         const [from, to] = idx > active ? [active, idx] : [idx, active];
         newSelected = selected.slice();
         for (let i = from; i <= to; i++) {
-          if (!selected.includes(i)) {
-            newSelected.push(i);
+          const { id } = indexPositions[i];
+          if (!selected.includes(id)) {
+            newSelected.push(id);
           }
         }
       }
@@ -74,12 +93,12 @@ export const useSelection = ({
         onChange(evt, newSelected);
       }
     },
-    [extendedSelect, multiSelect, onChange, selected, setSelected, singleSelect]
+    [extendedSelect, indexPositions, multiSelect, onChange, selected, setSelected, singleSelect]
   );
 
   const handleKeyDown = useCallback(
     (evt) => {
-      if (~highlightedIdx && selectionKeys.includes(evt.key)) {
+      if (~highlightedIdx && isSelectionEvent(evt)) {
         evt.preventDefault();
         const item = indexPositions[highlightedIdx];
         selectItemAtIndex(evt, highlightedIdx, item.id, false, evt.ctrlKey || evt.metaKey);
@@ -88,7 +107,17 @@ export const useSelection = ({
         }
       }
     },
-    [extendedSelect, highlightedIdx, indexPositions, selectItemAtIndex, selectionKeys]
+    [extendedSelect, highlightedIdx, indexPositions, isSelectionEvent, selectItemAtIndex]
+  );
+
+  const handleKeyboardNavigation = useCallback(
+    (evt, currentIndex) => {
+      if (extendedSelect && evt.shiftKey) {
+        const item = indexPositions[currentIndex];
+        selectItemAtIndex(evt, currentIndex, item.id, true);
+      }
+    },
+    [extendedSelect, indexPositions, selectItemAtIndex]
   );
 
   const listHandlers =
@@ -96,26 +125,24 @@ export const useSelection = ({
       ? NO_HANDLERS
       : {
           onKeyDown: handleKeyDown,
-          onKeyboardNavigation: (evt, currentIndex) => {
-            if (extendedSelect && evt.shiftKey) {
-              selectItemAtIndex(evt, currentIndex, true);
-            }
-          }
+          onKeyboardNavigation: handleKeyboardNavigation
         };
 
   const handleClick = useCallback(
     (evt) => {
-      const item = indexPositions[highlightedIdx];
-      if (item.expanded === undefined) {
-        evt.preventDefault();
-        evt.stopPropagation();
-        selectItemAtIndex(evt, highlightedIdx, item.id, evt.shiftKey, evt.ctrlKey || evt.metaKey);
-        if (extendedSelect) {
-          lastActive.current = highlightedIdx;
+      if (!disableSelection && highlightedIdx !== -1) {
+        const item = indexPositions[highlightedIdx];
+        if (!isCollapsibleItem(item)) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          selectItemAtIndex(evt, highlightedIdx, item.id, evt.shiftKey, evt.ctrlKey || evt.metaKey);
+          if (extendedSelect) {
+            lastActive.current = highlightedIdx;
+          }
         }
       }
     },
-    [extendedSelect, highlightedIdx, indexPositions, selectItemAtIndex]
+    [disableSelection, extendedSelect, highlightedIdx, indexPositions, selectItemAtIndex]
   );
 
   const listItemHandlers =

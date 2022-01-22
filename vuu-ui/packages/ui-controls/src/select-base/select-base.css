@@ -1,3 +1,7 @@
+.hwSelect {
+  outline: none;
+}
+
 .hwControl-text {
   font-size: 11px;
   border: none;

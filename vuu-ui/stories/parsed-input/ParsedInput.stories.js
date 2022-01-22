@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { ParsedInput, ParserProvider, SuggestionList } from '@vuu-ui/parsed-input';
-import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
+import { parseFilter, extractFilter, filterAsQuery } from '@vuu-ui/datagrid-parsers';
 import { ComponentAnatomy } from '@heswell/component-anatomy';
-import suggestionFactory from './filter-suggestion-factory';
+import createSuggestionProvider from './filter-suggestion-provider';
 
 import '@heswell/component-anatomy/esm/index.css';
 
@@ -13,10 +13,11 @@ const story = {
 
 export default story;
 
-const columnNames = ['bbg', 'ccy', 'price', 'quantity', 'status', 'timestamp'];
+const columnNames = ['bbg', 'ccy', 'exchange', 'price', 'quantity', 'status', 'timestamp'];
 const columns = [
   { name: 'bbg', type: 'string' },
   { name: 'ccy', type: 'string' },
+  { name: 'exchange', type: 'string' },
   { name: 'price', type: 'number' },
   { name: 'quantity', type: 'number' },
   { name: 'status', type: 'string' },
@@ -47,15 +48,30 @@ export const ParsedFilterInput = () => {
 
   const handleCommit = (result) => {
     const { filter, name } = extractFilter(result);
-    console.log(`extracted filter '${filter}'`);
+    const filterQuery = filterAsQuery(filter, namedFilters);
+    console.log(
+      `extracted filter 
+      ${JSON.stringify(filter)} 
+      %c${filterQuery}
+      %c${name ? name : ''}
+      `,
+      'color:blue;font-weight:bold;',
+      'color:black'
+    );
     if (name) {
       setNamedFilters(namedFilters.concat({ name, filter }));
     }
   };
+
+  console.log({ namedFilters });
   return (
     <ParserProvider
       parser={parseFilter}
-      suggestionFactory={suggestionFactory({ columns: typedColumns, columnNames, namedFilters })}>
+      suggestionProvider={createSuggestionProvider({
+        columns: typedColumns,
+        columnNames,
+        namedFilters
+      })}>
       <div style={{ width: 600 }}>
         <ParsedInput onCommit={handleCommit} />
       </div>
@@ -69,7 +85,9 @@ export const WithVisualiser = () => {
   };
   return (
     <ComponentAnatomy style={{ width: '100%' }}>
-      <ParserProvider parser={parseFilter} suggestionFactory={suggestionFactory({ columnNames })}>
+      <ParserProvider
+        parser={parseFilter}
+        suggestionProvider={createSuggestionProvider({ columnNames })}>
         <div style={{ width: 600 }}>
           <ParsedInput onCommit={handleCommit} />
         </div>

@@ -1,0 +1,24 @@
+.vuuLoginPanel {
+  --hwTextInput-border: solid 1px #ccc;
+  --hwTextInput-height: 28px;
+  --hwTextInput-padding: 0 12px;
+  --hwTextInput-width: 100%;
+  --login-row-height: 60px;
+  align-content: center;
+  align-items: center;
+  border: solid 1px lightgray;
+  display: grid;
+  grid-template-columns: 100px 180px;
+  grid-template-rows: var(--login-row-height) var(--login-row-height) var(--login-row-height);
+  justify-content: center;
+  justify-items: center;
+  margin: 0 auto;
+  padding: 24px;
+  width: fit-content;
+}
+
+.vuuLoginPanel-login {
+  grid-column: 2/3;
+  align-self: end;
+  justify-self: end;
+}
