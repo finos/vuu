@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-const useLayoutConfig = (url, defaultLayout) => {
+const useLayoutConfig = (user, defaultLayout) => {
   const [layout, _setLayout] = useState(undefined);
 
   const setLayout = (layout) => {
@@ -9,7 +9,7 @@ const useLayoutConfig = (url, defaultLayout) => {
 
   useEffect(() => {
     const load = async () => {
-      fetch(`${url}/latest`, {})
+      fetch(`api/vui/${user.username}/latest`, {})
         .then((response) => {
           return response.ok ? response.json() : defaultLayout;
         })
@@ -21,13 +21,13 @@ const useLayoutConfig = (url, defaultLayout) => {
     };
 
     load();
-  }, [defaultLayout, url]);
+  }, [defaultLayout, user]);
 
   const saveData = useCallback(
     (data) => {
       // console.log(JSON.stringify(data,null,2))
 
-      fetch(`${url}`, {
+      fetch(`api/vui/${user.username}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -38,7 +38,7 @@ const useLayoutConfig = (url, defaultLayout) => {
       });
       // .then((data) => console.log(data));
     },
-    [defaultLayout, url]
+    [defaultLayout, user]
   );
 
   return [layout, saveData];

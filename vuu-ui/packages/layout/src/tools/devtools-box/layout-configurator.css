@@ -31,9 +31,9 @@
 .LayoutBox {
   --hw-control-font-size: 13px;
   --hw-text-input-bg: rgba(255, 255, 255, 0.3);
-  --hw-text-input-padding: 3px;
+  --hwTextInput-padding: 3px;
   --hw-text-input-position: absolute;
-  --hw-text-input-width: 30px;
+  --hwTextInput-width: 30px;
 
   flex: 1 1 auto;
 }

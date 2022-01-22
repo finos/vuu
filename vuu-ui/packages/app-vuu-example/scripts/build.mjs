@@ -3,6 +3,7 @@ import { exec, formatBytes } from './utils.mjs';
 
 const entryPoints = [
   'src/index.jsx',
+  'src/login.jsx',
   'src/features/filtered-grid/index.js',
   'src/features/metrics/index.js',
   'src/features/simple-component/index.js'

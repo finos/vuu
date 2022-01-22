@@ -6,8 +6,8 @@ import './text-input.css';
 
 const classBase = 'hwTextInput';
 
-const TextInput = forwardRef(function TextInput(
-  { className, defaultValue, onCancel, onChange, onCommit, value: valueProp, ...props },
+export const TextInput = forwardRef(function TextInput(
+  { className, defaultValue, onCancel, onChange, onCommit, type, value: valueProp, ...props },
   ref
 ) {
   const inputEl = useRef(null);
@@ -58,8 +58,8 @@ const TextInput = forwardRef(function TextInput(
     <input
       {...props}
       ref={inputEl}
-      type="text"
       className={cx(classBase, className)}
+      type={type}
       value={value}
       onChange={handleChange}
       onKeyDown={handleKeyDown}
@@ -67,5 +67,3 @@ const TextInput = forwardRef(function TextInput(
     />
   );
 });
-
-export default TextInput;
