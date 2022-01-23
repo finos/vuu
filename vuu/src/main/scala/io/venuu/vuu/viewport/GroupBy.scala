@@ -14,7 +14,55 @@ object Aggregation {
     groupBy.aggregations.map(agg => agg.aggType match {
       case AggregationType.Sum => new SumAggregation(agg.column)
       case AggregationType.Count => new CountAggregation(agg.column)
+      case AggregationType.Average => new AverageAggregation(agg.column)
+      case AggregationType.High => new HighAggregation(agg.column)
+      case AggregationType.Low => new LowAggregation(agg.column)
     })
+  }
+}
+
+class AverageAggregation(val column: Column) extends NodeAggregation {
+  private var average: Double = 0D
+  private var samples: Int = 0
+
+  override def toValue: String = {
+    average.toString
+  }
+  override def processLeaf(row: RowData): Unit = {
+    val colData = column.getData(row)
+    if(colData != null){
+      val latestValue = colData.toString.toDouble
+      average = (average * samples.toDouble + latestValue) / (samples.toDouble + 1)
+      samples += 1
+    }
+  }
+}
+
+class HighAggregation(val column: Column) extends NodeAggregation {
+  private var value: Double = 0D
+
+  override def toValue: String = {
+    value.toString
+  }
+  override def processLeaf(row: RowData): Unit = {
+    val colData = column.getData(row)
+    if(colData != null){
+      value = Math.max(value, colData.toString.toDouble)
+    }
+  }
+}
+
+class LowAggregation(val column: Column) extends NodeAggregation {
+  private var value: Double = Integer.MAX_VALUE.toDouble
+
+  override def toValue: String = {
+    value.toString
+  }
+  override def processLeaf(row: RowData): Unit = {
+    val colData = column.getData(row)
+    if(colData != null){
+      value = Math.min(value, colData.toString.toDouble)
+    }
   }
 }
 
@@ -344,18 +392,6 @@ object AllwaysOpenTreeNodeState extends TreeNodeState {
  * immutable type
  */
 case class TrackedKeyNodeState(val tracked: Map[String, Boolean] = Map()) extends TreeNodeState {
-
-
-  //  def open(treeKey: String): TrackedKeyNodeState = {
-  //    TrackedKeyNodeState(tracked + (treeKey -> true))
-  //  }
-  //
-  //  def close(treeKey: String): TrackedKeyNodeState = {
-  //    TrackedKeyNodeState(tracked + (treeKey -> false))
-  //  }
-  //  def isOpen(treeKey: String): Boolean = {
-  //    tracked.get(treeKey).getOrElse(false)
-  //  }
   override def isOpen(): Boolean = ???
 }
 
@@ -370,6 +406,8 @@ object AggregationType {
   val Sum: Short = 1
   val Average: Short = 2
   val Count: Short = 3
+  val High: Short = 4
+  val Low: Short = 5
 }
 
 case class Aggregation(column: Column, aggType: Short)
@@ -380,7 +418,9 @@ object NoGroupBy extends GroupBy(List(), List())
 
 case class GroupByClause(val table: DataTable, columns: List[Column], aggregations: List[Aggregation] = List()) {
   def withSum(fields: String*): GroupByClause = this.copy(aggregations = aggregations ++ table.columnsForNames(fields.toList).map(Aggregation(_, AggregationType.Sum)))
-
+  def withAverage(fields: String*): GroupByClause = this.copy(aggregations = aggregations ++ table.columnsForNames(fields.toList).map(Aggregation(_, AggregationType.Average)))
+  def withHigh(fields: String*): GroupByClause = this.copy(aggregations = aggregations ++ table.columnsForNames(fields.toList).map(Aggregation(_, AggregationType.High)))
+  def withLow(fields: String*): GroupByClause = this.copy(aggregations = aggregations ++ table.columnsForNames(fields.toList).map(Aggregation(_, AggregationType.Low)))
   def withCount(fields: String*): GroupByClause = this.copy(aggregations = aggregations ++ table.columnsForNames(fields.toList).map(Aggregation(_, AggregationType.Count)))
 
   def asClause(): GroupBy = GroupBy(columns, aggregations)
