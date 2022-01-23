@@ -34,6 +34,11 @@ class VuiStateStoreProvider(val table: DataTable, val store: VuiStateStore)(impl
 
 ```
 
+By calling: 
+```scala
+lifecycleContainer(this).dependsOn(runner)
+```
+
 What this means is that in the graph behind we have now created a vertex (directional dependency) between the runner and the VuiStateStoreProvider. 
 
 ```

@@ -152,7 +152,7 @@ case class ViewPortImpl(id: String,
   @volatile private var requestId: String = ""
 
   override def updateSpecificKeys(keys: ImmutableArray[String]): Unit = {
-    keys.foreach(key => highPriorityQ.push(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
+    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => highPriorityQ.push(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
   }
 
   override def setRequestId(requestId: String): Unit = this.requestId = requestId
@@ -417,7 +417,7 @@ case class ViewPortImpl(id: String,
   }
 
   def publishHighPriorityUpdate(key: String, index: Int): Unit = {
-    logger.debug(s"publishing update $key")
+    logger.debug(s"publishing update @[$index] = $key ")
     if (this.enabled) {
       highPriorityQ.push(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }

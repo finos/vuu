@@ -21,7 +21,7 @@ object Aggregation {
 class SumAggregation(val column: Column) extends NodeAggregation {
   private var value: Double = 0d
 
-  override def toValue: String = "\u03A3 " + value.toString
+  override def toValue: String = value.toString
 
   override def processLeaf(row: RowData): Unit = {
     val colData = column.getData(row)
@@ -36,7 +36,7 @@ class CountAggregation(val column: Column) extends NodeAggregation {
   private val hashSet = new util.HashSet[String]()
 
   //override def column: Column = ???
-  override def toValue: String = "[" + hashSet.size().toString + "]"
+  override def toValue: String = hashSet.size().toString
 
   override def processLeaf(row: RowData): Unit = {
     val colData = column.getData(row)

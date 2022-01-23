@@ -52,14 +52,14 @@ class TreeBuilderTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         None
       ).build()
 
-      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("Σ 3600.0")
-      tree.root.getAggregationFor(orderPrices.columnForName("trader")) should equal("[2]")
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("3600.0")
+      tree.root.getAggregationFor(orderPrices.columnForName("trader")) should equal("2")
 
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("Σ 1500.0")
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("trader")) should equal("[1]")
+      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("1500.0")
+      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("trader")) should equal("1")
 
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("Σ 2100.0")
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("trader")) should equal("[1]")
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("2100.0")
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("trader")) should equal("1")
 
       tree.openAll()
 
