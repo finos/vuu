@@ -163,6 +163,9 @@ that depends on something else, it registers that dependency in the construction
 }
 
 </code></pre>
+<p>By calling: </p>
+<pre><code class="language-scala">lifecycleContainer(this).dependsOn(runner)
+</code></pre>
 <p>What this means is that in the graph behind we have now created a vertex (directional dependency) between the runner and the VuiStateStoreProvider. </p>
 <pre><code>(Core Components)
     --&gt; VuiStateStoreProvider

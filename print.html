@@ -280,7 +280,14 @@ then use the rust package manager cargo to install mdbook module. </p>
 <p>Adding the javascript components:</p>
 <p>TODO:</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="providers-tables-and-viewports"><a class="header" href="#providers-tables-and-viewports">Providers, Tables and ViewPorts</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="core-concepts"><a class="header" href="#core-concepts">Core Concepts</a></h1>
+<ul>
+<li><a href="providers_tables_viewports/lifecycle.html">Lifecycle</a> - This manages the startup sequence of the </li>
+<li><a href="providers_tables_viewports/providers.html">Providers</a> - Take data from a source, such as the network, and inject them into data tables. </li>
+<li><a href="providers_tables_viewports/tables.html">Tables</a> - Tables are ultimately what we can create viewports on</li>
+<li><a href="providers_tables_viewports/viewports.html">Viewports</a> - Viewports are user specific views onto a table, which can be filtered, sorted or tree'd. </li>
+<li><a href="providers_tables_viewports/modules.html">Modules</a> - How we modularize Vuu. </li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="lifecycle"><a class="header" href="#lifecycle">Lifecycle</a></h1>
 <p>Vuu has a simple server side lifecycle component built it. The lifecycle is implemented as a DAG (Directed Acyclic Graph)
 which allows components to be started and stopped in a sensible order. </p>
@@ -309,6 +316,9 @@ that depends on something else, it registers that dependency in the construction
   override def doDestroy(): Unit = {}
 }
 
+</code></pre>
+<p>By calling: </p>
+<pre><code class="language-scala">lifecycleContainer(this).dependsOn(runner)
 </code></pre>
 <p>What this means is that in the graph behind we have now created a vertex (directional dependency) between the runner and the VuiStateStoreProvider. </p>
 <pre><code>(Core Components)
