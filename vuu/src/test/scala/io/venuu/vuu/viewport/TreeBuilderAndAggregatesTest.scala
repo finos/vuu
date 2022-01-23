@@ -5,6 +5,7 @@ import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.DefaultClock
 import io.venuu.vuu.core.tree.TreeSessionTableImpl
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
+import io.venuu.vuu.provider.MockProvider
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -12,21 +13,13 @@ import org.scalatest.matchers.should.Matchers
 /**
   * Created by chris on 23/11/2015.
   */
-class TreeBuilderTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
+class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
+
+  final val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
 
   Feature("check tree building"){
 
-    Scenario("build simple groupby tree"){
-
-      implicit val clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
-      implicit val metrics: MetricsProvider = new MetricsProviderImpl
-
-      val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
-
-      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
-
-      joinProvider.start()
+    def tickData(ordersProvider: MockProvider, pricesProvider: MockProvider) = {
 
       ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
       ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 200, "ric" -> "VOD.L"))
@@ -39,6 +32,101 @@ class TreeBuilderTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
       pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
+
+    }
+
+    Scenario("Test average aggregate"){
+      implicit val clock = new DefaultClock
+      implicit val lifecycle = new LifecycleContainer
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
+
+      joinProvider.start()
+
+      tickData(ordersProvider, pricesProvider)
+
+      joinProvider.runOnce()
+
+      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
+
+      val tree = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+        .withAverage("quantity")
+        .asClause(),
+        FilterSpec(""),
+        None
+      ).build()
+
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("450.0")
+      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("300.0")
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("700.0")
+    }
+
+    Scenario("Test high"){
+      implicit val clock = new DefaultClock
+      implicit val lifecycle = new LifecycleContainer
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
+
+      joinProvider.start()
+
+      tickData(ordersProvider, pricesProvider)
+
+      joinProvider.runOnce()
+
+      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
+
+      val tree = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+        .withHigh("quantity")
+        .asClause(),
+        FilterSpec(""),
+        None
+      ).build()
+
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("1000.0")
+      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("500.0")
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("1000.0")
+    }
+
+    Scenario("Test low"){
+      implicit val clock = new DefaultClock
+      implicit val lifecycle = new LifecycleContainer
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
+
+      joinProvider.start()
+
+      tickData(ordersProvider, pricesProvider)
+
+      joinProvider.runOnce()
+
+      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
+
+      val tree = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+        .withLow("quantity")
+        .asClause(),
+        FilterSpec(""),
+        None
+      ).build()
+
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("100.0")
+      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("100.0")
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("500.0")
+    }
+
+    Scenario("build simple groupby tree"){
+
+      implicit val clock = new DefaultClock
+      implicit val lifecycle = new LifecycleContainer
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
+
+      joinProvider.start()
+
+      tickData(ordersProvider, pricesProvider)
 
       joinProvider.runOnce()
 
