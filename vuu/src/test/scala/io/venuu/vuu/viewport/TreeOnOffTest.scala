@@ -78,8 +78,8 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
+          (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
+          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"1"       ,""        ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        )
         )
       }
 
@@ -114,8 +114,8 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"[1]"     ,""        ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        ),
-          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"[1]"     ,""        ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        )
+          (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
+          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"1"       ,""        ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        )
         )
       }
 

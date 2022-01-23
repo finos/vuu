@@ -5,7 +5,7 @@ import io.venuu.toolbox.collection.array.ImmutableArray
 object TreeUtils {
 
   def isDiff(oldNode: TreeNode, newNode: TreeNode): Boolean = {
-    oldNode.getChildren.length != newNode.getChildren.length
+    true //oldNode.getChildren.length != newNode.getChildren.length
   }
 
   def notLeafOrRoot(node: TreeNode): Boolean = {

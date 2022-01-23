@@ -131,7 +131,8 @@ object SimulationModule extends DefaultModule {
   final val NAME = "SIMUL"
 
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
-    implicit val randomNumbers = new SeededRandomNumbers(clock.now())
+
+    implicit val randomNumbers: SeededRandomNumbers = new SeededRandomNumbers(clock.now())
 
     val ordersModel = new ParentChildOrdersModel()
 
@@ -140,7 +141,8 @@ object SimulationModule extends DefaultModule {
         TableDef(
           name = "instruments",
           keyField = "ric",
-          columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(), "currency".string(), "exchange".string(), "lotSize".int()),
+          columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(),
+                    "currency".string(), "exchange".string(), "lotSize".int()),
           VisualLinks(),
           joinFields = "ric"
         ),
@@ -154,7 +156,8 @@ object SimulationModule extends DefaultModule {
         AutoSubscribeTableDef(
           name = "prices",
           keyField = "ric",
-          Columns.fromNames("ric".string(), "bid".double(), "bidSize".int(), "ask".double(), "askSize".int(), "last".double(), "open".double(), "close".double(), "scenario".string(), "phase".string()),
+          Columns.fromNames("ric".string(), "bid".double(), "bidSize".int(), "ask".double(), "askSize".int(),
+                            "last".double(), "open".double(), "close".double(), "scenario".string(), "phase".string()),
           joinFields = "ric"
         ),
         (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800),
@@ -167,7 +170,8 @@ object SimulationModule extends DefaultModule {
         TableDef(
           name = "orders",
           keyField = "orderId",
-          Columns.fromNames("orderId:String", "side:Char", "ric:String", "ccy:String", "quantity:Double", "trader:String", "filledQuantity:Double", "lastUpdate: Long", "created: Long"),
+          Columns.fromNames("orderId".string(), "side".char(), "ric".string(), "ccy".string(), "quantity".double(),
+                            "trader".string(), "filledQuantity".double(), "lastUpdate".long(), "created".long()),
           VisualLinks(
             Link("ric", "instruments", "ric"),
             Link("ric", "prices", "ric")
@@ -180,9 +184,10 @@ object SimulationModule extends DefaultModule {
         TableDef(
           name = "parentOrders",
           keyField = "id",
-          Columns.fromNames("id:String", "idAsInt: Int", "ric:String", "childCount: Int", "price:Double", "quantity:Int", "side:String", "account:String", "exchange: String",
-            "ccy: String", "algo: String", "volLimit:Double", "filledQty:Int", "openQty:Int", "averagePrice: Double", "status:String",
-            "lastUpdate:Long"),
+          Columns.fromNames("id".string(), "idAsInt".int(), "ric".string(), "childCount".int(), "price".double(),
+                            "quantity".int(), "side".string(), "account".string(), "exchange".string(),
+                            "ccy".string(), "algo".string(), "volLimit".double(), "filledQty".int(), "openQty".int(),
+                            "averagePrice".double(), "status".string(), "lastUpdate".long()),
           VisualLinks(
             Link("ric", "prices", "ric")
           ),
@@ -197,8 +202,10 @@ object SimulationModule extends DefaultModule {
         TableDef(
           name = "childOrders",
           keyField = "id",
-          Columns.fromNames("parentOrderId:Int", "id:String", "idAsInt: Int", "ric:String", "price:Double", "quantity:Int", "side:String", "account:String", "exchange: String",
-            "ccy: String", "strategy: String", "volLimit:Double", "filledQty:Int", "openQty:Int", "averagePrice: Double", "status:String", "lastUpdate:Long"),
+          Columns.fromNames("parentOrderId".int(), "id".string(), "idAsInt".int(), "ric".string(), "price".double(),
+                            "quantity".int(), "side".string(), "account".string(), "exchange".string(), "ccy".string(),
+                            "strategy".string(), "volLimit".double(), "filledQty".int(), "openQty".int(), "averagePrice".double(),
+                            "status".string(), "lastUpdate".long()),
           VisualLinks(
             Link("parentOrderId", "parentOrders", "idAsInt")
           ),
@@ -216,7 +223,7 @@ object SimulationModule extends DefaultModule {
         TableDef(
           name = "orderEntry",
           keyField = "clOrderId",
-          Columns.fromNames("clOrderId:String", "ric:String", "quantity: Double", "orderType:String", "price: Double", "priceLevel: String"),
+          Columns.fromNames("clOrderId".string(), "ric".string(), "quantity".double(), "orderType".string(), "price".double(), "priceLevel".string()),
           VisualLinks(
             Link("ric", "instruments", "ric")
           ),

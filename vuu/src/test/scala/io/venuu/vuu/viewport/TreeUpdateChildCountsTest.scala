@@ -52,8 +52,8 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"[1]"     ,""        ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (false     ,1         ,"$root|BT.L",false     ,2         ,"BT.L"    ,""        ,""        ,"[1]"     ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"1"       ,""        ,""        ,""        ,""        ,""        ,""        ,""        ),
+        (false     ,1         ,"$root|BT.L",false     ,2         ,"BT.L"    ,""        ,""        ,"1"       ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -67,7 +67,8 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
     assertVpEq(updates) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"[1]"     ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"1"       ,""        ,""        ,""        ,""        ,""        ,""        ,""        ),
+        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"1"       ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -108,8 +109,8 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"[1]"     ,""        ,"Σ 2100.0",""        ,""        ,""        ,""        ,""        ),
-        (false     ,1         ,"$root|BT.L",false     ,2         ,"BT.L"    ,""        ,""        ,"[1]"     ,""        ,"Σ 1500.0",""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"1"       ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        ),
+        (false     ,1         ,"$root|BT.L",false     ,2         ,"BT.L"    ,""        ,""        ,"1"       ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -122,7 +123,8 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"[1]"     ,""        ,"Σ 2734.0",""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"1"       ,""        ,"2734.0"  ,""        ,""        ,""        ,""        ,""        ),
+        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"1"       ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -134,6 +136,8 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
+        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"1"       ,""        ,"2735.0"  ,""        ,""        ,""        ,""        ,""        ),
+        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"1"       ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
