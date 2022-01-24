@@ -115,6 +115,7 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
           {...props}
           columnSizing="fill"
           dataSource={dataSource}
+          aggregations={config?.aggregations}
           columns={config?.columns || schema.columns}
           groupBy={config?.group}
           onConfigChange={handleConfigChange}

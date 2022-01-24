@@ -8,12 +8,22 @@ import { useDragStart } from '../use-drag';
 import { FilterIndicator } from './filter-indicator';
 import { SortIndicator } from './sort-indicator';
 import Draggable from '../draggable';
+import { AggregationType } from '../constants';
 
 import './header-cell.css';
 
 const classBase = 'hwHeaderCell';
+const NO_AGGREGATION = { aggType: 'none' };
 
-/** @type {HeaderCellComponent} */
+const AggTypeLabel = {
+  [AggregationType.Average]: 'Avg',
+  [AggregationType.Count]: 'count',
+  [AggregationType.Sum]: '\u03A3',
+  [AggregationType.High]: 'High',
+  [AggregationType.Low]: 'Low',
+  none: ''
+};
+
 export const HeaderCell = function HeaderCell({
   className: classNameProp,
   column,
@@ -85,6 +95,12 @@ export const HeaderCell = function HeaderCell({
     return right - left;
   };
 
+  const { aggType } =
+    gridModel.groupBy?.length > 0
+      ? gridModel.aggregations.find((agg) => agg.column === column.name) || NO_AGGREGATION
+      : NO_AGGREGATION;
+  const aggLabel = AggTypeLabel[aggType];
+
   // TODO could we just wrap the whole header in a draggable ?
   const { name, label = name, resizing, width, marginLeft = null, type } = column;
 
@@ -103,7 +119,7 @@ export const HeaderCell = function HeaderCell({
       tabIndex={-1}>
       <FilterIndicator column={column} filter={filter} />
       <div className="innerHeaderCell">
-        <div className="cellWrapper">{label}</div>
+        <div className="cellWrapper">{`${aggLabel} ${label}`}</div>
       </div>
       <SortIndicator sorted={sorted} />
       {column.resizeable !== false && (

@@ -31,6 +31,20 @@ export const useContextMenu = ({ dataSource, gridModel, dispatchGridModelAction 
           ),
           true
         );
+      case Action.AggregateHigh:
+        return (
+          dataSource.aggregate(
+            GridModel.setAggregation(gridModel, options.column, AggregationType.High)
+          ),
+          true
+        );
+      case Action.AggregateLow:
+        return (
+          dataSource.aggregate(
+            GridModel.setAggregation(gridModel, options.column, AggregationType.Low)
+          ),
+          true
+        );
       case Action.AggregateCount:
         return (
           dataSource.aggregate(

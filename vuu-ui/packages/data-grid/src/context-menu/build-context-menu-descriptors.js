@@ -49,22 +49,24 @@ export const buildContextMenuDescriptors = (gridModel) => (location, options) =>
 };
 
 function buildAggregationMenuItems(aggregations, options) {
-  const menuItems = [];
   const {
     column: { name, label = name, type }
   } = options;
+  const menu = {
+    label: `Aggregate ${label}`,
+    children: [{ label: 'Count', action: Action.AggregateCount, options }]
+  };
+
   if (type === 'number' || type?.name === 'number') {
-    menuItems.push({
-      label: `Aggregate ${label}`,
-      children: [
-        // { label: 'Average', action: Action.AggregateAvg, options },
-        { label: 'Count', action: Action.AggregateCount, options },
-        { label: 'Sum', action: Action.AggregateSum, options }
-      ]
-    });
+    menu.children.push(
+      { label: 'Sum', action: Action.AggregateSum, options },
+      { label: 'Avg', action: Action.AggregateAvg, options },
+      { label: 'High', action: Action.AggregateHigh, options },
+      { label: 'Low', action: Action.AggregateLow, options }
+    );
   }
 
-  return menuItems;
+  return [menu];
 }
 
 function buildSortMenuItems(sortDefs = [], options) {
