@@ -21,6 +21,7 @@ import { build } from 'esbuild';
           /* Other options… */
         })
       ],
+      sourcemap: true,
       watch: {
         onRebuild(error, result) {
           if (error) console.error('watch build failed:', error);
