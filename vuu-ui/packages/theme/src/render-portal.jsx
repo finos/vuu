@@ -22,7 +22,7 @@ const renderDOMPortal = (component, container, x, y, onRender) => {
   // check this first to see if position has changed
   container.style.cssText = `left:${x}px; top:${y}px;position: absolute;`;
 
-  ReactDOM.render(<ThemeProvider>{component}</ThemeProvider>, container, onRender && onRender());
+  ReactDOM.render(<ThemeProvider>{component}</ThemeProvider>, container, onRender);
 };
 
 const renderElectronPortal = (component, x, y, el, onRender) => {

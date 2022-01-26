@@ -57,12 +57,21 @@ const List = forwardRef(function List(
   const id = useId(idProp, 'List');
   const root = useRef(null);
 
-  const [totalItemCount, sourceWithIds] = useItemsWithIds(source || children, id, {
+  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(source || children, id, {
     collapsibleHeaders,
     defaultExpanded: true,
     createProxy: source ? undefined : createListProxy,
     label: 'List'
   });
+
+  const handleSelectionChange = (evt, selected) => {
+    if (onChange) {
+      onChange(
+        evt,
+        selected.map((id) => sourceItemById(id))
+      );
+    }
+  };
 
   const {
     count,
@@ -81,7 +90,7 @@ const List = forwardRef(function List(
     highlightedIdx: highlightedIdxProp,
     id,
     listItemHandlers: listItemHandlersProp,
-    onChange,
+    onChange: handleSelectionChange,
     onHighlight,
     onMouseEnterListItem,
     containerRef: root,

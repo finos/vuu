@@ -14,6 +14,7 @@
     "storybook": "start-storybook -p 6006 -s stories/public",
     "build": "node ./scripts/build-all.js",
     "start:electron": "cd packages/electron && node ./node_modules/.bin/electron .",
+    "start:showcase": "cd packages/showcase && npx serve ./public",
     "build:app": "cd packages/app-vuu-example && node scripts/build-prod.mjs",
     "build:app:dev": "cd packages/app-vuu-example && node scripts/build.mjs",
     "bump": "node ./scripts/version.js",
