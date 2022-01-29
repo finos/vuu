@@ -80,7 +80,6 @@ export const useItemsWithIds = (
           }
         }
       });
-      console.log({ flattenedSource });
       return [count, results, flattenedSource];
     },
     [collapsibleHeaders, createProxy, defaultExpanded, idRoot]

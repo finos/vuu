@@ -3,7 +3,7 @@ import { ComponentAnatomy } from '@heswell/component-anatomy';
 
 import { Tree } from '@vuu-ui/ui-controls';
 import { usa_states_cities, groupByInitialLetter } from './usa_states';
-import { folderData } from './tree-data';
+import { folderData } from './Tree.data';
 
 export default {
   title: 'UI Controls/Tree',

@@ -1,12 +1,19 @@
 export const getNodeParentPath = ({ id }) => {
-  const pos = id.lastIndexOf('-');
-  const path = id.slice(pos + 1);
-  const steps = path.split('.');
-  if (steps.length === 1) {
-    return null;
-  } else {
-    steps.pop();
-    return `${id.slice(0, pos)}-${steps.join('.')}`;
+  let pos = id.lastIndexOf('-');
+  if (pos !== -1) {
+    // using the built-in hierarchical id scheme
+    // rootId-n-n.n
+    const path = id.slice(pos + 1);
+    const steps = path.split('.');
+    if (steps.length === 1) {
+      return null;
+    } else {
+      steps.pop();
+      return `${id.slice(0, pos)}-${steps.join('.')}`;
+    }
+  } else if ((pos = id.lastIndexOf('/')) !== -1) {
+    // using a path scheme step/step/step
+    return id.slice(0, pos);
   }
 };
 
@@ -14,11 +21,13 @@ export const isGroupNode = (node) => node.childNodes !== undefined;
 export const isCollapsibleGroupNode = (node) => isGroupNode(node) && node.expanded !== undefined;
 export const isHeader = (node) => node.header === true;
 
+const PATH_SEPARATORS = new Set(['.', '/']);
+
 const isDescendantOf = (basePath, targetPath) => {
   if (!targetPath.startsWith(basePath)) {
     return false;
   } else {
-    return targetPath.charAt(basePath.length) === '.';
+    return PATH_SEPARATORS.has(targetPath.charAt(basePath.length));
   }
 };
 

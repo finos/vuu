@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { useId } from '@vuu-ui/react-utils';
 import { Portal } from '@vuu-ui/theme';
 
@@ -43,6 +43,8 @@ const ContextMenu = ({
     position
   });
   closeMenuRef.current = closeMenu;
+
+  console.log({ openMenus });
 
   const handleClose = useCallback(() => {
     closeMenu();

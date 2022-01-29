@@ -1,71 +1,54 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useMemo } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { ThemeProvider } from '@vuu-ui/theme';
 import { Flexbox } from '@vuu-ui/layout';
-import { List } from '@vuu-ui/ui-controls';
-import * as stories from './examples';
-
-console.log({ stories });
-
-const components = Object.entries(stories).map(([label, storyItems]) => {
-  console.log({ label, storyItems });
-  return {
-    label,
-    childNodes: Object.entries(storyItems)
-      .filter(([label]) => label !== 'default')
-      .map(([label, component]) => ({
-        label,
-        component
-      }))
-  };
-});
-
-console.log({ components });
+import { Tree } from '@vuu-ui/ui-controls';
 
 import './App.css';
 
-export const App = () => {
-  // const iframe = useRef(null);
-  // const isLoaded = useRef(false);
-  const [Component, setComponent] = useState(() => () => null);
-  const handleSelection = (evt, [selected]) => {
-    setComponent(() => selected.component);
-  };
+const sourceFromImports = (stories, prefix = '', icon = 'folder') =>
+  Object.entries(stories)
+    .filter(([path]) => path !== 'default')
+    .map(([label, stories]) => {
+      const id = `${prefix}${label}`;
+      if (typeof stories === 'function') {
+        return {
+          id,
+          icon: 'rings',
+          label
+        };
+      }
+      return {
+        id,
+        icon,
+        label,
+        childNodes: sourceFromImports(stories, `${id}/`, 'box')
+      };
+    });
 
-  // const loadContent = useCallback(() => {
-  //   isLoaded.current = true;
-  //   console.log({ component });
-  //   const contentDoc = iframe.current.contentDocument;
-  //   const contentRoot = contentDoc.body.querySelector('#root');
-  //   ReactDOM.render(<ThemeProvider>{component}</ThemeProvider>, contentRoot);
-  // }, [component]);
-
-  // useEffect(() => {
-  //   if (isLoaded.current) {
-  //     loadContent();
-  //   }
-  // }, [loadContent]);
-
-  // const handleContentLoaded = () => {
-  //   loadContent();
-  // };
-
+export const App = ({ stories }) => {
+  let navigate = useNavigate();
+  const source = useMemo(() => sourceFromImports(stories), [stories]);
+  console.log({ source });
+  const { pathname } = useLocation();
+  const handleChange = (evt, [selected]) => navigate(selected.id);
   return (
     <ThemeProvider>
       <Flexbox style={{ flexDirection: 'row', width: '100vw', height: '100vh' }}>
-        <List
-          className="Palette"
-          onChange={handleSelection}
-          source={components}
+        <Tree
+          className="ShowcaseNav"
           style={{ flex: '0 0 200px' }}
           data-resizeable
+          defaultSelected={[pathname.slice(1)]}
+          onSelectionChange={handleChange}
+          source={source}
         />
         <div
           className="Content"
           style={{ flex: '1 1 auto', backgroundColor: 'ivory', position: 'relative' }}
           data-resizeable>
-          <Component />
+          <Outlet />
         </div>
       </Flexbox>
     </ThemeProvider>

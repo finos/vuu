@@ -177,9 +177,22 @@ const List = forwardRef(function List(
   // TODO do we need to make special provision for memo here ?
   function addChildItem(list, item, idx) {
     const { wrappedSource: element, id } = item;
+
+    //TODO do this for all props
+    const { onClick } = element.props;
+    const listItemProps = onClick
+      ? {
+          ...propsCommonToAllListItems,
+          onClick: (evt) => {
+            propsCommonToAllListItems.onClick?.(evt);
+            onClick(evt);
+          }
+        }
+      : propsCommonToAllListItems;
+
     list.push(
       React.cloneElement(element, {
-        ...propsCommonToAllListItems,
+        ...listItemProps,
         ...getListItemProps(
           id,
           idx.value,
