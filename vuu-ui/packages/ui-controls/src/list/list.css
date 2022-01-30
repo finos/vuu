@@ -102,10 +102,8 @@
   border-width: var(--checkbox-border-width);
   border-color: var(--checkbox-border-color);
   content: var(--list-item-header-twisty-content);
-  -webkit-mask: var(--svg-chevron-down) center center/12px 12px;
-  -webkit-mask-repeat: no-repeat;
-  mask: var(--svg-chevron-down) center center/12px 12px;
-  mask-repeat: no-repeat;
+  -webkit-mask: var(--svg-chevron-down) center center/12px 12px no-repeat;
+  mask: var(--svg-chevron-down) center center/12px 12px no-repeat;
   background-color: var(--list-item-header-twisty-color);
   height: 12px;
   left: var(--list-item-header-twisty-left);
@@ -136,17 +134,18 @@
 
 .with-checkbox .hwListItem:after {
   background-color: var(--checkbox-tick);
-  content: '';
+  content: var(--hwListItem-checkbox-content, '');
   height: 12px;
   left: 3px;
   margin-top: -7px;
-  mask: var(--svg-checkbox) center center/ 15px 15px;
-  mask-repeat: no-repeat;
+  -webkit-mask: var(--svg-checkbox) center center/ 15px 15px no-repeat;
+  mask: var(--svg-checkbox) center center/ 15px 15px no-repeat;
   position: absolute;
   top: 50%;
   width: 12px;
 }
 
 .with-checkbox .hwListItem[aria-selected='true']:after {
-  mask: var(--svg-checkbox-checked) center center/ 15px 15px;
+  -webkit-mask: var(--svg-checkbox-checked) center center/ 15px 15px no-repeat;
+  mask: var(--svg-checkbox-checked) center center/ 15px 15px no-repeat;
 }

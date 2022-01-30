@@ -2,7 +2,7 @@ import React from 'react';
 import { ComponentAnatomy } from '@heswell/component-anatomy';
 
 import { Tree } from '@vuu-ui/ui-controls';
-import { usa_states_cities, groupByInitialLetter } from './usa_states';
+import { usa_states_cities, groupByInitialLetter } from './List.data';
 import { folderData } from './Tree.data';
 
 export default {

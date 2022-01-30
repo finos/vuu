@@ -1,3 +1,3 @@
-export * as UIControls from './UIControls';
 export * as Menu from './Menu.stories';
-export * as Tree from './Tree.stories';
+export * as ParsedInput from './ParsedInput';
+export * as UIControls from './UIControls';

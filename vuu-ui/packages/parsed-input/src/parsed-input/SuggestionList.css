@@ -8,9 +8,12 @@
   flex: 1 1 auto;
 }
 
-.hwSelectionList-close-list {
-  background-color: rgb(199, 247, 199);
+.hwSelectionList-close-list[data-highlighted='true'],
+.hwListItem.hwSelectionList-close-list {
+  background: var(--selected-background) !important;
+  color: var(--selected-color) !important;
   flex: 1 1 auto;
+  --hwListItem-checkbox-content: none;
 }
 
 .hwSelectionList-ListItem {

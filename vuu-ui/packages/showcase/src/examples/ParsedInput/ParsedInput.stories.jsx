@@ -4,7 +4,7 @@ import { parseFilter, extractFilter, filterAsQuery } from '@vuu-ui/datagrid-pars
 import { ComponentAnatomy } from '@heswell/component-anatomy';
 import createSuggestionProvider from './filter-suggestion-provider';
 
-import '@heswell/component-anatomy/esm/index.css';
+import '@vuu-ui/parsed-input/index.css';
 
 const story = {
   title: 'Antlr/ParsedInput',

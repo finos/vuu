@@ -11,7 +11,8 @@ async function main() {
     entryPoints: ['./index.jsx'],
     bundle: true,
     define: {
-      'process.env.NODE_ENV': `"production"`
+      'process.env.NODE_ENV': `"production"`,
+      'process.env.NODE_DEBUG': `false`
     },
     external,
     format: 'esm',

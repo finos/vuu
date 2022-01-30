@@ -7,9 +7,10 @@ import { build } from 'esbuild';
     await build({
       entryPoints: ['src/index.jsx'],
       bundle: true,
-      // define: {
-      //   "process.env.NODE_ENV": `"production"`
-      // },
+      define: {
+        'process.env.NODE_ENV': `"development"`,
+        'process.env.NODE_DEBUG': `false`
+      },
       format: 'esm',
       loader: {
         '.woff2': 'dataurl'
