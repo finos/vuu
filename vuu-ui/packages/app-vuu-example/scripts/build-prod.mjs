@@ -24,7 +24,8 @@ async function main() {
       entryPoints,
       bundle: true,
       define: {
-        'process.env.NODE_ENV': `"production"`
+        'process.env.NODE_ENV': `"production"`,
+        'process.env.NODE_DEBUG': `false`
       },
       format: 'esm',
       metafile: true,

@@ -26,6 +26,10 @@ async function main() {
     console.log('[BUILD]');
     const { metafile } = await build({
       bundle: true,
+      define: {
+        'process.env.NODE_ENV': `"development"`,
+        'process.env.NODE_DEBUG': `false`
+      },
       entryPoints,
       format: 'esm',
       metafile: true,

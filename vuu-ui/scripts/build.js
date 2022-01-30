@@ -17,13 +17,17 @@ async function main() {
   const { metafile } = await build({
     entryPoints: ['src/index.js'],
     bundle: true,
+    define: {
+      'process.env.NODE_ENV': `"production"`,
+      'process.env.NODE_DEBUG': `false`
+    },
     external,
     format: 'esm',
     loader: {
       '.woff2': 'dataurl'
     },
     metafile: true,
-    // minify: true,
+    minify: true,
     outfile,
     target: 'esnext',
     sourcemap: true,
