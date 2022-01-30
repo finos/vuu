@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { ComponentAnatomy as RenderVisualiser } from '@heswell/component-anatomy';
 import {
   ContextMenu,
@@ -17,6 +17,19 @@ const story = {
 };
 
 export default story;
+
+const usePosition = () => {
+  const ref = useRef(null);
+  const [position, setPosition] = useState(undefined);
+  useLayoutEffect(() => {
+    if (ref.current) {
+      const { left: x, top: y } = ref.current.getBoundingClientRect();
+      setPosition({ x, y });
+    }
+  }, []);
+
+  return [ref, position];
+};
 
 const SampleContextMenu = (props) => (
   <ContextMenu {...props}>
@@ -50,8 +63,11 @@ export const DefaultContextMenu = () => {
     console.log(`clicked menu action ${action}`, options);
   };
 
+  const [ref, position] = usePosition();
+
   return (
     <div
+      ref={ref}
       style={{
         alignItems: 'flex-start',
         display: 'flex',
@@ -60,85 +76,93 @@ export const DefaultContextMenu = () => {
         top: 100,
         left: 100
       }}>
-      <SampleContextMenu onClose={handleClose} />
-      <SampleContextMenu onClose={handleClose} position={{ x: 300, y: 100 }} withPortal />
+      {position ? <SampleContextMenu position={position} onClose={handleClose} /> : null}
     </div>
   );
 };
 
-export const WithVisualiser = () => (
-  <RenderVisualiser>
-    <SampleContextMenu withPortal />
-  </RenderVisualiser>
-);
+export const WithVisualiser = () => {
+  const [ref, position] = usePosition();
+  return (
+    <RenderVisualiser>
+      <div ref={ref}>{position ? <SampleContextMenu position={position} /> : null}</div>
+    </RenderVisualiser>
+  );
+};
 
 const Id = ({ children }) => <span style={{ color: 'grey' }}>({children})</span>;
 
-export const AdditionalNesting = () => (
-  <div style={{ position: 'absolute', top: 100, left: 100, display: 'flex' }}>
-    <ContextMenu>
-      <MenuItemGroup label="Item 1 #0">
-        <MenuItem>
-          Item 1.1 <Id>#0.0</Id>
-        </MenuItem>
-        <MenuItem>
-          Item 1.2 <Id>#0.1</Id>
-        </MenuItem>
-        <MenuItem>
-          Item 1.3 <Id>#0.2</Id>
-        </MenuItem>
-        <Separator />
-        <MenuItem>
-          Item 1.4 <Id>#0.3</Id>
-        </MenuItem>
-        <MenuItem>
-          Item 1.5 <Id>#0.4</Id>
-        </MenuItem>
-      </MenuItemGroup>
-      <MenuItemGroup label="Item 2 #1">
-        <MenuItemGroup label="Item 2.1 #1.0">
-          <MenuItem>Item 2.1.0</MenuItem>
-          <MenuItem>Item 2.1.1</MenuItem>
-          <MenuItem>Item 2.1.2</MenuItem>
-          <Separator />
-          <MenuItem>Item 2.1.4</MenuItem>
-          <MenuItem>Item 2.1.5</MenuItem>
-        </MenuItemGroup>
-        <MenuItem>Item 2.2 #1.1</MenuItem>
-        <MenuItem>Item 2.3 #1.2</MenuItem>
-        <MenuItem>Item 2.4 #1.0</MenuItem>
-        <MenuItem>Item 2.5 #1.0</MenuItem>
-      </MenuItemGroup>
-      <MenuItemGroup label="Item 3 #2">
-        <MenuItem>Item 3.1</MenuItem>
-        <MenuItem>Item 3.2</MenuItem>
-        <MenuItem>Item 3.3</MenuItem>
-        <Separator />
-        <MenuItem>Item 3.4</MenuItem>
-        <MenuItem>Item 3.5</MenuItem>
-      </MenuItemGroup>
-      <MenuItemGroup label="Item 4 #3">
-        <MenuItem>Item 4.1</MenuItem>
-        <MenuItem>Item 4.2</MenuItem>
-        <MenuItem>Item 4.3</MenuItem>
-        <Separator />
-        <MenuItem>Item 4.4</MenuItem>
-        <MenuItem>Item 4.5</MenuItem>
-      </MenuItemGroup>
-      <MenuItemGroup label="Item 5 #4">
-        <MenuItemGroup label="Item 5.1 #4.0">
-          <MenuItem>Item 5.1.1</MenuItem>
-          <MenuItem>Item 5.1.2</MenuItem>
-          <MenuItem>Item 5.1.3</MenuItem>
-          <MenuItem>Item 5.1.4</MenuItem>
-        </MenuItemGroup>
-        <MenuItem>Item 5.2</MenuItem>
-        <MenuItem>Item 5.3</MenuItem>
-        <MenuItem>Item 5.4</MenuItem>
-      </MenuItemGroup>
-    </ContextMenu>
-  </div>
-);
+export const AdditionalNesting = () => {
+  const [ref, position] = usePosition();
+
+  return (
+    <div ref={ref} style={{ position: 'absolute', top: 100, left: 100, display: 'flex' }}>
+      {position ? (
+        <ContextMenu position={position}>
+          <MenuItemGroup label="Item 1 #0">
+            <MenuItem>
+              Item 1.1 <Id>#0.0</Id>
+            </MenuItem>
+            <MenuItem>
+              Item 1.2 <Id>#0.1</Id>
+            </MenuItem>
+            <MenuItem>
+              Item 1.3 <Id>#0.2</Id>
+            </MenuItem>
+            <Separator />
+            <MenuItem>
+              Item 1.4 <Id>#0.3</Id>
+            </MenuItem>
+            <MenuItem>
+              Item 1.5 <Id>#0.4</Id>
+            </MenuItem>
+          </MenuItemGroup>
+          <MenuItemGroup label="Item 2 #1">
+            <MenuItemGroup label="Item 2.1 #1.0">
+              <MenuItem>Item 2.1.0</MenuItem>
+              <MenuItem>Item 2.1.1</MenuItem>
+              <MenuItem>Item 2.1.2</MenuItem>
+              <Separator />
+              <MenuItem>Item 2.1.4</MenuItem>
+              <MenuItem>Item 2.1.5</MenuItem>
+            </MenuItemGroup>
+            <MenuItem>Item 2.2 #1.1</MenuItem>
+            <MenuItem>Item 2.3 #1.2</MenuItem>
+            <MenuItem>Item 2.4 #1.0</MenuItem>
+            <MenuItem>Item 2.5 #1.0</MenuItem>
+          </MenuItemGroup>
+          <MenuItemGroup label="Item 3 #2">
+            <MenuItem>Item 3.1</MenuItem>
+            <MenuItem>Item 3.2</MenuItem>
+            <MenuItem>Item 3.3</MenuItem>
+            <Separator />
+            <MenuItem>Item 3.4</MenuItem>
+            <MenuItem>Item 3.5</MenuItem>
+          </MenuItemGroup>
+          <MenuItemGroup label="Item 4 #3">
+            <MenuItem>Item 4.1</MenuItem>
+            <MenuItem>Item 4.2</MenuItem>
+            <MenuItem>Item 4.3</MenuItem>
+            <Separator />
+            <MenuItem>Item 4.4</MenuItem>
+            <MenuItem>Item 4.5</MenuItem>
+          </MenuItemGroup>
+          <MenuItemGroup label="Item 5 #4">
+            <MenuItemGroup label="Item 5.1 #4.0">
+              <MenuItem>Item 5.1.1</MenuItem>
+              <MenuItem>Item 5.1.2</MenuItem>
+              <MenuItem>Item 5.1.3</MenuItem>
+              <MenuItem>Item 5.1.4</MenuItem>
+            </MenuItemGroup>
+            <MenuItem>Item 5.2</MenuItem>
+            <MenuItem>Item 5.3</MenuItem>
+            <MenuItem>Item 5.4</MenuItem>
+          </MenuItemGroup>
+        </ContextMenu>
+      ) : null}
+    </div>
+  );
+};
 
 export const ContextMenuPopup = () => {
   const [position, setPosition] = useState(null);
@@ -165,9 +189,10 @@ export const ContextMenuPopup = () => {
       <ContextMenu
         position={position}
         activatedWithKeyboard={keyboardNav.current}
-        onClose={handleClose}>
+        onClose={handleClose}
+        withPortal>
         <MenuItemGroup label="Item 1">
-          <MenuItem>Item 1.1</MenuItem>
+          <MenuItem actiopn="1.1">Item 1.1</MenuItem>
           <MenuItem>Item 1.2</MenuItem>
           <MenuItem>Item 1.3</MenuItem>
           <Separator />
@@ -193,11 +218,10 @@ export const ContextMenuPopup = () => {
   return (
     <div
       style={{
-        width: '100vw',
         height: '100vh',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'flex-end'
       }}>
       <button onClick={handleClick} ref={ref}>
         Show Context Menu

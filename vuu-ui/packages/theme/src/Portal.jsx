@@ -4,7 +4,7 @@ import { createContainer, renderPortal } from './render-portal';
 
 export const Portal = function Portal(props) {
   // Do we need to accept container here as a prop ?
-  const { children, x, y } = props;
+  const { children, x, y, onRender } = props;
   let renderContainer = useMemo(() => {
     return createContainer();
   }, []);
@@ -19,8 +19,8 @@ export const Portal = function Portal(props) {
   // }, []);
 
   useLayoutEffect(() => {
-    renderPortal(children, renderContainer, x, y);
-  });
+    renderPortal(children, renderContainer, x, y, onRender);
+  }, [children, onRender, renderContainer, x, y]);
 
   useLayoutEffect(() => {
     return () => {

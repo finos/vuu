@@ -3,3 +3,11 @@
   height: 80px;
   width: 200px;
 }
+
+.ShowcaseNav {
+  --hwTree-toggle-expand: var(--svg-chevron-right);
+  --hwTree-toggle-collapse: var(--svg-chevron-right);
+  --hwTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
+  --hwTree-icon-color: var(--brand-light);
+  --hwTree-font-size: 12px;
+}

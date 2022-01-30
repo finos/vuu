@@ -85,8 +85,7 @@ const MenuList = ({
       id={`${id}-${menuId}`}
       ref={root}
       role="menu"
-      tabIndex={0}
-    >
+      tabIndex={0}>
       {renderContent()}
     </div>
   );
@@ -122,8 +121,7 @@ const MenuList = ({
           )}
           aria-controls={ariaControls}
           aria-haspopup={hasSubMenu || undefined}
-          aria-expanded={subMenuShowing || undefined}
-        >
+          aria-expanded={subMenuShowing || undefined}>
           {hasSubMenu ? maybeIcon(label, withIcon) : maybeIcon(children, withIcon)}
         </MenuItem>
       );

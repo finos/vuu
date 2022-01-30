@@ -17,8 +17,7 @@ const ContextMenu = ({
   onClose = () => undefined,
   position = { x: 0, y: 0 },
   source: sourceProp,
-  style,
-  withPortal
+  style
 }) => {
   const id = useId(idProp);
   const closeMenuRef = useRef(null);
@@ -37,7 +36,7 @@ const ContextMenu = ({
     [actions, onClose]
   );
 
-  const { closeMenu, listItemProps, openMenu, openMenus } = useCascade({
+  const { closeMenu, listItemProps, openMenu, openMenus, handleRender } = useCascade({
     id,
     onActivate: handleActivate,
     onMouseEnterItem: handleMouseEnterItem,
@@ -45,9 +44,16 @@ const ContextMenu = ({
   });
   closeMenuRef.current = closeMenu;
 
+  console.log({ openMenus });
+
+  const handleClose = useCallback(() => {
+    closeMenu();
+    onClose();
+  }, [closeMenu, onClose]);
+
   useClickAway({
     containerClassName: 'hwMenuList',
-    onClose: closeMenu,
+    onClose: handleClose,
     isOpen: openMenus.length > 0
   });
 
@@ -83,31 +89,25 @@ const ContextMenu = ({
     <>
       {openMenus.map(({ id: menuId, left, top }, i) => {
         const childMenuIndex = getChildMenuIndex(i);
-        const portal = withPortal && i > 0;
-        const menuList = (
-          <MenuList
-            activatedByKeyboard={navigatingWithKeyboard.current}
-            childMenuShowing={childMenuIndex}
-            id={id}
-            menuId={menuId}
-            isRoot={i === 0}
-            key={i}
-            listItemProps={listItemProps}
-            onActivate={handleActivate}
-            onHighlightMenuItem={handleHighlightMenuItem}
-            onCloseMenu={handleCloseMenu}
-            onOpenMenu={handleOpenMenu}
-            style={portal ? style : { ...style, left, top }}
-          >
-            {menus[menuId]}
-          </MenuList>
-        );
-        return portal ? (
-          <Portal key={i} x={left} y={top}>
-            {menuList}
+
+        return (
+          <Portal key={i} x={left} y={top} onRender={handleRender}>
+            <MenuList
+              activatedByKeyboard={navigatingWithKeyboard.current}
+              childMenuShowing={childMenuIndex}
+              id={id}
+              menuId={menuId}
+              isRoot={i === 0}
+              key={i}
+              listItemProps={listItemProps}
+              onActivate={handleActivate}
+              onHighlightMenuItem={handleHighlightMenuItem}
+              onCloseMenu={handleCloseMenu}
+              onOpenMenu={handleOpenMenu}
+              style={style}>
+              {menus[menuId]}
+            </MenuList>
           </Portal>
-        ) : (
-          menuList
         );
       })}
     </>

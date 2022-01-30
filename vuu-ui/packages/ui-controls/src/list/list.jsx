@@ -57,12 +57,21 @@ const List = forwardRef(function List(
   const id = useId(idProp, 'List');
   const root = useRef(null);
 
-  const [totalItemCount, sourceWithIds] = useItemsWithIds(source || children, id, {
+  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(source || children, id, {
     collapsibleHeaders,
     defaultExpanded: true,
     createProxy: source ? undefined : createListProxy,
     label: 'List'
   });
+
+  const handleSelectionChange = (evt, selected) => {
+    if (onChange) {
+      onChange(
+        evt,
+        selected.map((id) => sourceItemById(id))
+      );
+    }
+  };
 
   const {
     count,
@@ -81,7 +90,7 @@ const List = forwardRef(function List(
     highlightedIdx: highlightedIdxProp,
     id,
     listItemHandlers: listItemHandlersProp,
-    onChange,
+    onChange: handleSelectionChange,
     onHighlight,
     onMouseEnterListItem,
     containerRef: root,
@@ -168,9 +177,22 @@ const List = forwardRef(function List(
   // TODO do we need to make special provision for memo here ?
   function addChildItem(list, item, idx) {
     const { wrappedSource: element, id } = item;
+
+    //TODO do this for all props
+    const { onClick } = element.props;
+    const listItemProps = onClick
+      ? {
+          ...propsCommonToAllListItems,
+          onClick: (evt) => {
+            propsCommonToAllListItems.onClick?.(evt);
+            onClick(evt);
+          }
+        }
+      : propsCommonToAllListItems;
+
     list.push(
       React.cloneElement(element, {
-        ...propsCommonToAllListItems,
+        ...listItemProps,
         ...getListItemProps(
           id,
           idx.value,

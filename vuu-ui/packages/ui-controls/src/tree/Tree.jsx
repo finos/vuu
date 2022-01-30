@@ -40,9 +40,14 @@ const Tree = forwardRef(function Tree(
   const root = useRef(null);
 
   // returns the full source data
-  const [totalItemCount, sourceWithIds] = useItemsWithIds(source, id);
+  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(source, id);
 
-  console.log({ sourceWithIds });
+  const handleSelectionChange = (evt, selected) => {
+    onSelectionChange?.(
+      evt,
+      selected.map((id) => sourceItemById(id))
+    );
+  };
 
   const {
     focusVisible,
@@ -57,14 +62,12 @@ const Tree = forwardRef(function Tree(
     defaultSelected,
     groupSelection,
     id,
-    onChange: onSelectionChange,
+    onChange: handleSelectionChange,
     onHighlight,
     selected: selectedProp,
     selection,
     totalItemCount
   });
-
-  console.log({ visibleData });
 
   // const isScrolling = useViewportTracking(root, highlightedIdx);
   useViewportTracking(root, highlightedIdx);
@@ -94,7 +97,7 @@ const Tree = forwardRef(function Tree(
       <TreeNode
         {...propsCommonToAllListItems}
         {...getListItemProps(item, idx, highlightedIdx, selected, focusVisible)}>
-        {item.icon ? <span className="hwTreeNode-icon" /> : null}
+        {item.icon ? <span className={`${classBase}Node-icon`} /> : null}
         <span>{item.label}</span>
       </TreeNode>
     );
@@ -110,9 +113,9 @@ const Tree = forwardRef(function Tree(
         aria-expanded={child.expanded}
         aria-level={child.level}
         aria-selected={selected.includes(id) || undefined}
-        className={cx('hwTreeNode', {
+        className={cx(`${classBase}Node`, {
           focusVisible: focusVisible === i,
-          'hwTreeNode-toggle': !allowGroupSelect
+          [`${classBase}Node-toggle`]: !allowGroupSelect
         })}
         data-icon={child.icon}
         data-idx={i}
@@ -121,13 +124,13 @@ const Tree = forwardRef(function Tree(
         id={id}
         key={`header-${i}`}>
         {allowGroupSelect ? (
-          <div>
-            <span className="hwTreeNode-toggle" />
+          <div className={`${classBase}Node-label`}>
+            <span className={`${classBase}Node-toggle`} />
             {title}
           </div>
         ) : (
-          <div>
-            {child.icon ? <span className="hwTreeNode-icon" /> : null}
+          <div className={`${classBase}Node-label`}>
+            {child.icon ? <span className={`${classBase}Node-icon`} /> : null}
             <span>{title}</span>
           </div>
         )}

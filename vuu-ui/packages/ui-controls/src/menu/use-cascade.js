@@ -4,6 +4,33 @@ import { closestListItem, listItemIndex } from '../list/list-dom-utils';
 // import {mousePosition} from './aim/utils';
 // import {aiming} from './aim/aim';
 
+const nudge = (menus, distance, pos) => {
+  return menus.map((m, i) =>
+    i === menus.length - 1
+      ? {
+          ...m,
+          [pos]: m[pos] - distance
+        }
+      : m
+  );
+};
+const nudgeLeft = (menus, distance) => nudge(menus, distance, 'left');
+const nudgeUp = (menus, distance) => nudge(menus, distance, 'top');
+
+const flipSides = (id, menus) => {
+  const [parentMenu, menu] = menus.slice(-2);
+  const el = document.getElementById(`${id}-${menu.id}`);
+  const { width } = el.getBoundingClientRect();
+  return menus.map((m) =>
+    m === menu
+      ? {
+          ...m,
+          left: parentMenu.left - (width - 2)
+        }
+      : m
+  );
+};
+
 const closedNode = (el) => el.ariaHasPopup === 'true' && el.ariaExpanded !== 'true';
 const getPosition = (el, openMenus) => {
   const [{ left, top: menuTop }] = openMenus.slice(-1);
@@ -134,44 +161,26 @@ export const useCascade = ({
     [closeMenus]
   );
 
+  const handleRender = useCallback(() => {
+    const { current: menus } = openMenus;
+    const [menu] = menus.slice(-1);
+    const el = document.getElementById(`${id}-${menu.id}`);
+    if (el) {
+      const { right, bottom } = el.getBoundingClientRect();
+      const { clientHeight, clientWidth } = document.body;
+      if (right > clientWidth) {
+        const newMenus =
+          menus.length > 1 ? flipSides(id, menus) : nudgeLeft(menus, right - clientWidth);
+        setOpenMenus(newMenus);
+      } else if (bottom > clientHeight) {
+        const newMenus = nudgeUp(menus, bottom - clientHeight);
+        setOpenMenus(newMenus);
+      }
+    }
+  }, [id, setOpenMenus]);
+
   const listItemProps = useMemo(
     () => ({
-      // onMouseMove: evt => {
-      //   const listItemEl = closestListItem(evt.target);
-      //   const [menuId, itemId, isGroup, isOpen, level] = identifyItem(listItemEl);
-      //   const {
-      //     current: { [menuId]: state },
-      //   } = menuState;
-      //   prevLevel.current = level;
-      //   const popupShowing = state === 'popup-open';
-      //   const {current: {mousePos: prevMousePos, distance: prevDistance}} = prevAim;
-
-      //   const mousePos = mousePosition(evt);
-
-      //   if (popupShowing){
-      //     const [menuId] = openMenus.current.slice(-1);
-      //     const popupId = `${id}-${menuId}`;
-      //     const popupEl = document.getElementById(popupId)
-      //     const distance = aiming(evt, mousePos, prevMousePos, popupEl, prevDistance)
-      //     prevAim.current.distance = distance;
-
-      //     console.log(
-      //       `onMouseMove #${menuId}[${itemId}] @${level}
-      //         popupShowing ${popupId}
-      //         mousePosition ${JSON.stringify(mousePos)}
-      //         isGroup ${isGroup} isOpen ${isOpen}
-      //         openMenus [${openMenus.current.join(',')}]
-      //         state='${JSON.stringify(menuState.current)}
-      //         targetId ${popupId}
-      //         %cdistance ${distance}
-      //         `, 'color:blue;font-weight:bold;'
-      //     );
-
-      //   }
-      //   prevAim.current.mousePos = mousePos;
-
-      // },
-
       onMouseEnter: (evt) => {
         const listItemEl = closestListItem(evt.target);
         const [menuId, itemId, isGroup, isOpen, level] = identifyItem(listItemEl);
@@ -259,6 +268,7 @@ export const useCascade = ({
 
   return {
     closeMenu,
+    handleRender,
     listItemProps,
     openMenu,
     openMenus: openMenus.current

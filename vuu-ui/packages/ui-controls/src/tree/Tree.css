@@ -2,8 +2,9 @@
   --tree-node-collapse: var(--hwTree-toggle-collapse, var(--svg-tree-node-collapse));
   --tree-node-expand: var(--hwTree-toggle-expand, var(--svg-tree-node-expand));
   --tree-toggle-width: 12px;
-  --tree-icon-color: #4c505b;
+  --tree-icon-color: var(--hwTree-icon-color, #4c505b);
   --tree-node-expanded-transform: var(--hwTree-node-expanded-transform, none);
+  --tree-node-indent: 0px;
 
   --list-hilited-bg: var(--hw-list-hilited-bg, rgba(0, 0, 0, 0.1));
   --list-item-height: var(--hw-list-item-height, 30px);
@@ -24,7 +25,7 @@
   list-style: none;
   margin: 0;
   padding: 0 1px;
-  font-size: 14px;
+  font-size: var(--hwTree-font-size, 14px);
   max-height: inherit;
   outline: none;
   overflow-y: auto;
@@ -59,18 +60,18 @@
 
 /* Leaf node or the div child of a collapsible node */
 .hwTreeNode:not([aria-expanded]),
-.hwTreeNode[aria-expanded] > div {
+.hwTreeNode[aria-expanded] > .hwTreeNode-label {
   --checkbox-border-color: black;
   --checkbox-border-width: 1px;
   --checkbox-tick: black;
   --list-item-padding-left: 6px;
   /* --svg-toggle: var(--svg-chevron-down); */
   --svg-toggle: var(--tree-node-collapse);
-  --padding-left: calc(var(--list-item-padding-left) + var(--tree-toggle-width));
 
   align-items: center;
   color: var(--list-item-text-color);
   display: flex;
+  flex-wrap: nowrap;
   height: var(--list-item-height);
   line-height: var(--list-item-height);
   padding: var(--list-item-padding);
@@ -81,15 +82,26 @@
   white-space: nowrap;
 }
 
+.hwTreeNode:not([aria-expanded]) {
+  --padding-left: calc(
+    var(--list-item-padding-left) + var(--tree-toggle-width) + var(--tree-node-indent)
+  );
+}
+
+.hwTreeNode[aria-expanded] > .hwTreeNode-label {
+  --padding-left: calc(
+    var(--list-item-padding-left) + var(--tree-toggle-width) + var(--tree-node-indent)
+  );
+}
+
 .hwTreeNode-icon {
   background-color: var(--tree-icon-color);
   display: inline-block;
   height: 18px;
   margin-right: 6px;
-  -webkit-mask: var(--svg-icon) center center/12px 12px;
-  mask: var(--svg-icon) center center/12px 12px;
-  mask-repeat: no-repeat;
-  width: 18px;
+  -webkit-mask: var(--svg-icon) center center/12px 12px no-repeat;
+  mask: var(--svg-icon) center center/12px 12px no-repeat;
+  flex: 0 0 18px;
 }
 
 .hwTreeNode[aria-expanded] {
@@ -102,7 +114,21 @@
 }
 
 .hwTreeNode > *[role='group'] {
-  padding-left: 12px;
+  padding-left: 0px;
+}
+
+.hwTreeNode {
+  padding-left: calc(var(--padding-left) + var(--tree-node-indent));
+}
+
+.hwTreeNode[aria-level='2'] {
+  --tree-node-indent: 12px;
+}
+.hwTreeNode[aria-level='3'] {
+  --tree-node-indent: 24px;
+}
+.hwTreeNode[aria-level='4'] {
+  --tree-node-indent: 36px;
 }
 
 .hwTreeNode:not(.focusVisible):not(.hwListItemHeader):not([aria-expanded])[data-highlighted],
@@ -123,15 +149,14 @@
   width: calc(var(--list-item-padding-left) + var(--tree-toggle-width));
 }
 
-.hwTreeNode[aria-expanded] > div:after {
+.hwTreeNode[aria-expanded] > .hwTreeNode-label:after {
   content: var(--list-item-header-twisty-content);
-  -webkit-mask: var(--svg-toggle) center center/12px 12px;
-  mask: var(--svg-toggle) center center/12px 12px;
-  mask-repeat: no-repeat;
+  -webkit-mask: var(--svg-toggle) center center/12px 12px no-repeat;
+  mask: var(--svg-toggle) center center/12px 12px no-repeat;
   background-color: var(--list-item-header-twisty-color);
   height: 18px;
   margin-top: -9px;
-  left: 0;
+  left: var(--tree-node-indent);
   position: absolute;
   top: var(--list-item-header-twisty-top);
   transition: transform 0.3s;

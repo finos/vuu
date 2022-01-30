@@ -35,8 +35,11 @@ export const useItemsWithIds = (
     }
   };
 
+  // If the source data is treed, we need to save an expanded representation, so the
+  // index can be used to resolve sourceItemById
+
   const normalizeSource = useCallback(
-    (nodes, indexer, level = 1, path = '', results = []) => {
+    (nodes, indexer, level = 1, path = '', results = [], flattenedSource = []) => {
       let count = 0;
       nodes.map(createProxy).forEach((proxy, i, proxies) => {
         const isCollapsibleHeader = proxy.header && collapsibleHeaders;
@@ -56,6 +59,7 @@ export const useItemsWithIds = (
           expanded
         });
         results.push(item);
+        flattenedSource.push(nodes[i]);
 
         count += 1;
         indexer.index += 1;
@@ -67,7 +71,8 @@ export const useItemsWithIds = (
             indexer,
             level + 1,
             childPath,
-            []
+            [],
+            flattenedSource
           );
           item.childNodes = children;
           if (expanded === true || isNonCollapsibleGroupNode) {
@@ -75,21 +80,27 @@ export const useItemsWithIds = (
           }
         }
       });
-      return [count, results];
+      return [count, results, flattenedSource];
     },
     [collapsibleHeaders, createProxy, defaultExpanded, idRoot]
   );
 
-  const [count, sourceWithIds] = useMemo(() => {
+  const [count, sourceWithIds, flattenedSource] = useMemo(() => {
     return normalizeSource(sourceProp, { index: 0 });
   }, [normalizeSource, sourceProp]);
 
   const sourceItemById = useCallback(
-    (id) => {
-      const sourceWithId = sourceWithIds.find((i) => i.id === id);
-      return sourceProp[sourceWithId.index];
+    (id, target = sourceWithIds) => {
+      const sourceWithId = target.find(
+        (i) => i.id === id || (i?.childNodes?.length && id.startsWith(i.id))
+      );
+      if (sourceWithId?.id === id) {
+        return flattenedSource[sourceWithId.index];
+      } else if (sourceWithId) {
+        return sourceItemById(id, sourceWithId.childNodes);
+      }
     },
-    [sourceProp, sourceWithIds]
+    [flattenedSource, sourceWithIds]
   );
 
   return [count, sourceWithIds, sourceItemById];
