@@ -64,9 +64,11 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
 
   const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction, makeRpcCall } =
     useViewserver({
+      loadSession,
       rpcServer: dataSource,
       onConfigChange: handleConfigChange,
-      onRpcResponse: makeServiceRequest
+      onRpcResponse: makeServiceRequest,
+      saveSession
     });
 
   const handleCommit = useCallback(

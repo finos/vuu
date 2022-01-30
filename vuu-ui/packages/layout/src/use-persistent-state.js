@@ -3,7 +3,6 @@ import { useCallback } from 'react';
 const persistentState = new Map();
 const sessionState = new Map();
 
-console.log(`initialise mpersistent state`);
 // These is not exported by package, only available within
 // layout
 export const getPersistentState = (id) => persistentState.get(id);
@@ -16,6 +15,8 @@ const usePersistentState = () => {
     if (state) {
       if (key !== undefined && state[key] !== undefined) {
         return state[key];
+      } else if (key !== undefined) {
+        return undefined;
       } else {
         return state;
       }
@@ -37,7 +38,6 @@ const usePersistentState = () => {
   }, []);
 
   const loadState = useCallback((id, key) => {
-    // console.log(`loadState #${id} @${key}`)
     const state = persistentState.get(id);
     if (state) {
       if (key !== undefined) {
