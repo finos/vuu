@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SimpleStore } from '@vuu-ui/utils';
 import { useServerConnection } from './useServerConnection';
 import { columnMetaData as columnConfig } from './columnMetaData';
@@ -46,10 +46,20 @@ const extendSchema = ({ columns, dataTypes, table }) => {
 };
 
 // Either a DataSource or a Connection is acceptable as rpcServer, both support the rpc interface
-export const useViewserver = ({ rpcServer, onConfigChange, onRpcResponse } = {}) => {
+export const useViewserver = ({
+  loadSession,
+  onConfigChange,
+  onRpcResponse,
+  rpcServer,
+  saveSession
+} = {}) => {
   const [tables, setTables] = useState(tableStore.value);
   const server = useServerConnection();
-  const contextMenu = useRef();
+  const contextMenuOptions = useMemo(
+    () => loadSession?.('vs-context-menu') ?? undefined,
+    [loadSession]
+  );
+  const contextMenu = useRef(contextMenuOptions);
   const visualLinks = useRef();
 
   const buildTables = useCallback((schemas) => {
@@ -121,6 +131,7 @@ export const useViewserver = ({ rpcServer, onConfigChange, onRpcResponse } = {})
     (action) => {
       if (action.type === 'VIEW_PORT_MENUS_RESP') {
         contextMenu.current = action.menu;
+        saveSession?.(action.menu, 'vs-context-menu');
         return true;
       } else if (action.type === 'VP_VISUAL_LINKS_RESP') {
         visualLinks.current = action.links;
@@ -131,7 +142,7 @@ export const useViewserver = ({ rpcServer, onConfigChange, onRpcResponse } = {})
         console.log(`useViewserver dispatchGridAction no handler for ${action.type}`);
       }
     },
-    [onConfigChange]
+    [onConfigChange, saveSession]
   );
 
   const handleMenuAction = useCallback(

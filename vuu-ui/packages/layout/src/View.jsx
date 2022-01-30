@@ -89,7 +89,7 @@ const View = forwardRef(function View(inputProps, fwdRef) {
   );
   const loadSession = useCallback((key) => loadSessionState(id, key), [id, loadSessionState]);
   const saveSession = useCallback(
-    (state, key, stateType) => saveSessionState(id, key, state, stateType),
+    (state, key) => saveSessionState(id, key, state),
     [id, saveSessionState]
   );
 

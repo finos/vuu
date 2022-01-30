@@ -76,12 +76,3 @@ export const App = () => {
     />
   );
 };
-/*
-      <ContextMenuProvider
-        menuActionHandler={handleMenuAction}
-        menuBuilder={buildViewserverMenuOptions}
-      >
-      <GridProvider value={{ dispatchGridAction }}>
-      </GridProvider>
-      </ContextMenuProvider>
-*/
