@@ -15,7 +15,7 @@ import './filtered-grid.css';
 const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
   const { id, dispatch, load, save, loadSession, saveSession } = useLayoutContext();
   const config = useMemo(() => load(), [load]);
-  const { makeServiceRequest } = useContext(AppContext);
+  const { handleRpcResponse } = useContext(AppContext);
   const [namedFilters, setNamedFilters] = useState([]);
 
   const dataSource = useMemo(() => {
@@ -67,7 +67,7 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
       loadSession,
       rpcServer: dataSource,
       onConfigChange: handleConfigChange,
-      onRpcResponse: makeServiceRequest,
+      onRpcResponse: handleRpcResponse,
       saveSession
     });
 
@@ -85,7 +85,6 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
 
   const getSuggestions = useCallback(
     async (params) => {
-      console.log(`get suggestions for ${JSON.stringify(params)}`);
       return await makeRpcCall({
         type: 'RPC_CALL',
         method: 'getUniqueFieldValues',

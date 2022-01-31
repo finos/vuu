@@ -50,6 +50,11 @@ body {
   margin-top: 20%;
 }
 
+.vuDialog {
+  --hwView-flex-direction: row;
+  --hwView-flex-wrap: wrap;
+}
+
 .vuDialog .Grid {
   --hw-grid-flex-size: 1 1 auto;
 }

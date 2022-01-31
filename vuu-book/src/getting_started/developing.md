@@ -24,13 +24,8 @@
 5) build the ui library packages
 6) type> ```yarn build```
 7) build the sample application
-8) change directory into ./vuu-ui/packages/app-vuu-example
-9) type> ```yarn build```
+8) type> ```yarn build:app```
 
-If you want to host the javascript in yarn also (not required): 
-
-10) run the sample application (in Yarn, not required ) 
-11) type> ```yarn start```
 
 You should know be able to use a local browser to see the Vuu demo app. [localhost:8443](https://localhost:8443/index.html) 
 
