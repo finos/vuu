@@ -224,12 +224,9 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
         val groupByColumns = msg.groupBy.filter(table.getTableDef.columnForName(_) != null).map(table.getTableDef.columnForName(_)).toList
 
-        val aggregations = List() //groupByColumns.map( col => {
-        //          if( col.dataType == DataType.DoubleDataType || col.dataType == DataType.LongDataType || col.dataType == DataType.IntegerDataType) Aggregation(col, AggregationType.Sum)
-        //          else viewport.Aggregation(col, AggregationType.Count)
-        //        })
+        val aggs          = msg.aggregations.map(a => Aggregation(table.columnForName(a.column), a.aggType.toShort )).toList
 
-        val groupBy = new GroupBy(groupByColumns, aggregations)
+        val groupBy = new GroupBy(groupByColumns, aggs)
 
         viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, groupBy)
       }
