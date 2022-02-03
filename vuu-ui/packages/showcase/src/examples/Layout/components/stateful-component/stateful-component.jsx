@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useLayoutContext } from '@vuu-ui/layout';
 
-const StatefulComponent = ({ initialState = '', style, stateKey }) => {
+export const StatefulComponent = ({ initialState = '', style, stateKey }) => {
   const { load, save } = useLayoutContext();
   // TODO store state in ref in view and pas vie context.viewStates
   const storedState = useMemo(() => load(stateKey), [load, stateKey]);
@@ -19,5 +19,3 @@ const StatefulComponent = ({ initialState = '', style, stateKey }) => {
 
   return <textarea style={style} onChange={handleChange} value={value} />;
 };
-
-export default StatefulComponent;

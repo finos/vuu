@@ -1,3 +1,4 @@
+import React from 'react';
 import { FlexboxLayout as Flexbox, Placeholder } from '@vuu-ui/layout';
 
 const fullFlex = { flexBasis: 1, flexGrow: 1, flexShrink: 1 };
@@ -25,8 +26,7 @@ export const responsiveExample = (
       flexDirection: 'row',
       margin: 20,
       backgroundColor: '#ccc'
-    }}
-  >
+    }}>
     <div data-xs={12} style={{ backgroundColor: 'red', height: 150 }} />
     <Flexbox data-xs={12} cols={12} responsive style={{}}>
       <div data-xs={4} style={{ backgroundColor: 'green', minHeight: 300 }} />
@@ -83,8 +83,7 @@ export const twoColumns = (
 export const threeColumnsContent = (
   <Flexbox
     style={{ flexDirection: 'row', flexBasis: 'auto', flexGrow: 0, flexShrink: 1 }}
-    resizeable
-  >
+    resizeable>
     <Placeholder data-resizeable style={{ flex: 0, minWidth: 50, minHeight: 50 }} />
     <Placeholder data-resizeable style={{ flex: 0, minWidth: 50, minHeight: 50 }} />
     <Placeholder data-resizeable style={{ flex: 0, minWidth: 50, minHeight: 50 }} />

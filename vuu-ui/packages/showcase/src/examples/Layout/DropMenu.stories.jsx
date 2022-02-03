@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { PopupService } from '@vuu-ui/ui-controls';
-import DropMenu, { computeMenuPosition } from '../../packages/layout/src/drag-drop/DropMenu';
-import { DropTarget } from '../../packages/layout/src/drag-drop/DropTarget';
+import { DropMenu, computeMenuPosition } from '../../../../layout/src/drag-drop';
+import { DropTarget } from '../../../../layout/src/drag-drop/DropTarget';
 
 export default {
   title: 'Layout/DropMenu',

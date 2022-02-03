@@ -1,5 +1,6 @@
+import React from 'react';
 import { Component, Flexbox, StackLayout as Stack, View } from '@vuu-ui/layout';
-import { StatefulComponent } from '../components/stateful-component';
+import { StatefulComponent } from './components';
 
 export default {
   title: 'Layout/StackLayout',
@@ -50,8 +51,7 @@ export const EnableAddTab = () => {
       style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
       title={`Tab ${index}`}
       header
-      closeable
-    >
+      closeable>
       <Component style={{ backgroundColor: 'green', height: '100%' }} />
     </View>
   );
@@ -64,8 +64,7 @@ export const EnableAddTab = () => {
       style={{ width: 800, height: 500 }}
       active={0}
       resizeable
-      preserve
-    >
+      preserve>
       <View title="Rebecca" header>
         <Component style={{ backgroundColor: 'rebeccapurple', height: '100%', width: '100%' }} />
       </View>
@@ -79,8 +78,7 @@ export const EmptyStackAddTab = () => {
       style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
       title={`Tab ${index}`}
       header
-      closeable
-    >
+      closeable>
       <Component style={{ backgroundColor: 'green', height: '100%' }} />
     </View>
   );
@@ -92,8 +90,7 @@ export const EmptyStackAddTab = () => {
       createNewChild={createContent}
       style={{ width: 800, height: 500 }}
       resizeable
-      preserve
-    ></Stack>
+      preserve></Stack>
   );
 };
 

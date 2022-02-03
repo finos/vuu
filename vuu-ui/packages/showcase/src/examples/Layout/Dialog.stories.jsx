@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 import { Dialog, Component } from '@vuu-ui/layout';
-import './chest.stories.css';
 
 export default {
   title: 'Layout/Dialog',

@@ -69,7 +69,7 @@ const BuilderPalette = (props) => {
   );
 };
 
-export default function LayoutBuilder({ enableSave, width = 800, height = 1000 }) {
+export const LayoutBuilder = ({ enableSave, width = 800, height = 1000 }) => {
   const [state, setState] = useState({
     layoutModel: undefined,
     managedLayoutNode: null,
@@ -158,7 +158,7 @@ export default function LayoutBuilder({ enableSave, width = 800, height = 1000 }
       </Flexbox>
     </DraggableLayout>
   );
-}
+};
 
 // function layoutSerializer(key, value){
 //   if (key === 'computedStyle' || key === 'layoutStyle' || key === 'visualStyle' || key === '$path'){

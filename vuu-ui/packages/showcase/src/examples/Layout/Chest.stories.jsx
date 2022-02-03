@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 
-import { List, ListItem } from '@vuu-ui/ui-controls';
+import { List } from '@vuu-ui/ui-controls';
 import {
   ChevronDoubleLeftButton,
   ChevronDoubleRightButton,
@@ -13,7 +13,7 @@ import {
 } from '@vuu-ui/layout';
 
 import '@vuu-ui/ui-controls/index.css';
-import './chest.stories.css';
+import './Chest.stories.css';
 
 export default {
   title: 'Layout/Chest',

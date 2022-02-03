@@ -3,15 +3,14 @@ import React, { useCallback, useState } from 'react';
 
 import '@vuu-ui/theme';
 
-import { LayoutConfigurator } from '@vuu-ui/layout';
-import { Brown, Red } from './sample-components';
+import { LayoutConfigurator as VuuLayoutConfigurator } from '@vuu-ui/layout';
 
 export default {
   title: 'Layout/Tools',
-  component: LayoutConfigurator
+  component: VuuLayoutConfigurator
 };
 
-export const SingleChild = () => {
+export const LayoutConfigurator = () => {
   const [style, setStyle] = useState({
     width: 600,
     height: 300,
@@ -30,11 +29,14 @@ export const SingleChild = () => {
     }));
   }, []);
 
-  console.log(`%cstyle=${JSON.stringify(style, null, 2)}`, 'color:blue;font-weight: bold;');
-
   return (
     <div>
-      <LayoutConfigurator height={300} managedStyle={style} width={400} onChange={handleChange} />
+      <VuuLayoutConfigurator
+        height={300}
+        managedStyle={style}
+        width={400}
+        onChange={handleChange}
+      />
     </div>
   );
 };

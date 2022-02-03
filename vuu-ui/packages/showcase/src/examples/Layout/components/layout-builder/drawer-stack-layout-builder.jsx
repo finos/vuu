@@ -15,13 +15,12 @@ import * as layout from '../layouts';
 
 import './layout-builder.css';
 
-export default function DrawerStackBuilder({ width = 800, height = 1000 }) {
+export const DrawerStackLayoutBuilder = ({ width = 800, height = 1000 }) => {
   return (
     <DraggableLayout style={{ width: '100vw', height: '100vh' }}>
       <Flexbox
         className="LayoutBuilder"
-        style={{ flexDirection: 'column', width: '100%', height: '100%' }}
-      >
+        style={{ flexDirection: 'column', width: '100%', height: '100%' }}>
         <div style={{ height: 60, borderBottom: 'solid 1px #ccc' }} />
         <Chest style={{ flex: 1 }}>
           <Drawer clickToOpen peekaboo position="left" inline sizeOpen={150} toggleButton="end">
@@ -68,4 +67,4 @@ export default function DrawerStackBuilder({ width = 800, height = 1000 }) {
       </Flexbox>
     </DraggableLayout>
   );
-}
+};

@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import '@vuu-ui/theme';
 
 import { FluidGrid } from '@vuu-ui/layout';
-import { Brown, Red } from './sample-components';
 
 const RED = 'rgba(255,0,0,.4)';
 const ORANGE = 'rgba(255,165,0,.7)';
@@ -33,8 +32,7 @@ export const ResponsiveDefault = () => (
       border: '2px solid black',
       margin: 20,
       backgroundColor: '#ccc'
-    }}
-  >
+    }}>
     <div data-xs={12} style={{ backgroundColor: RED }} />
     <div data-xs={12} data-sm={6} style={{ backgroundColor: ORANGE }} />
     <div data-xs={12} data-sm={3} style={{ backgroundColor: VIOLET }} />
@@ -62,8 +60,7 @@ export const WithBreakPoints = () => (
       border: '2px solid black',
       margin: 20,
       backgroundColor: '#ccc'
-    }}
-  >
+    }}>
     <div data-xs={12} style={{ backgroundColor: 'rgba(255,0,0,.8)' }} />
     <div data-xs={12} data-sm={6} style={{ backgroundColor: '#FFA500DD' }} />
     <div data-xs={12} data-sm={3} style={{ backgroundColor: 'violet' }} />
@@ -87,16 +84,14 @@ export const ResponsiveStructure = () => (
       margin: 20,
       minHeight: 300,
       backgroundColor: '#ccc'
-    }}
-  >
+    }}>
     <div data-xs={12} style={{ height: 32 }} />
     <div data-xs={4} style={{ minHeight: 300 }} />
     <FluidGrid
       data-xs={8}
       cols={8}
       style={{ backgroundColor: 'rgba(0,0,255,.3)', minHeight: 300 }}
-      showGrid
-    >
+      showGrid>
       <div data-xs={8} data-sm={4} style={{ backgroundColor: 'green', minHeight: 50 }} />
     </FluidGrid>
     <div data-xs={12} style={{ height: 32 }} />

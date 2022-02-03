@@ -15,11 +15,13 @@ import {
   DraggableLayout
 } from '@vuu-ui/layout';
 
-import Builder from '../components/layout-builder/layout-builder';
-import LayoutStackBuilder from '../components/layout-builder/layout-stack-builder';
-import DrawerStackBuilder from '../components/layout-builder/drawer-stack-builder';
-import { Brown } from './sample-components';
-import { StatefulComponent } from '../components/stateful-component';
+import {
+  LayoutBuilder,
+  DrawerStackLayoutBuilder,
+  StackLayoutBuilder,
+  StatefulComponent
+} from './components';
+import { Brown } from './components';
 
 import './DraggableLayout.stories.css';
 
@@ -27,6 +29,8 @@ export default {
   title: 'Layout/DraggableLayout',
   component: Flexbox
 };
+
+let displaySequence = 1;
 
 const StandardToolbar = () => (
   <Toolbar style={{ justifyContent: 'flex-end' }} draggable showTitle></Toolbar>
@@ -72,8 +76,7 @@ const DraggableBox = ({ className, flexFill, small, medium, large, ...props }) =
         'flex-fill': flexFill
       })}
       {...props}
-      onClick={handleClick}
-    >
+      onClick={handleClick}>
       <DraggableBoxBase />
     </View>
   );
@@ -84,6 +87,8 @@ export const EmptyDraggable = () => {
   return <DraggableLayout style={{ width: 600, height: 400, border: 'solid 1px #ccc' }} />;
 };
 
+EmptyDraggable.displaySequence = displaySequence++;
+
 export const SimpleNesting = () => (
   <DraggableLayout style={{ width: 800, height: 500 }}>
     <Flexbox id="top-cat" style={{ width: '100%', height: '100%', flexDirection: 'row' }}>
@@ -92,8 +97,7 @@ export const SimpleNesting = () => (
         closeable
         resizeable
         title="Test 1"
-        style={{ flexBasis: 250, flexGrow: 0, flexShrink: 0 }}
-      >
+        style={{ flexBasis: 250, flexGrow: 0, flexShrink: 0 }}>
         <div style={{ backgroundColor: 'yellow', height: '100%' }}>
           <input defaultValue="just a test 1" />
           <input defaultValue="just a test 2" />
@@ -103,8 +107,7 @@ export const SimpleNesting = () => (
         <Flexbox
           id="flexbox-1"
           style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: 'row' }}
-          resizeable
-        >
+          resizeable>
           <View header resizeable title="Test 2" style={{ flex: 1 }}>
             <Component style={{ height: '100%', backgroundColor: 'orange' }} />
           </View>
@@ -126,6 +129,8 @@ export const SimpleNesting = () => (
   </DraggableLayout>
 );
 
+SimpleNesting.displaySequence = displaySequence++;
+
 export const ImplicitSizing = () => (
   <DraggableLayout style={{ width: '100vw', height: '100vh' }}>
     <Flexbox style={{ width: '100%', height: '100%', flexDirection: 'column' }} resizeable>
@@ -136,8 +141,7 @@ export const ImplicitSizing = () => (
       />
       <Flexbox
         style={{ flexBasis: 250, flexGrow: 0, flexShrink: 0, flexDirection: 'row' }}
-        resizeable
-      >
+        resizeable>
         <div
           data-placeholder
           data-resizeable
@@ -160,6 +164,8 @@ export const ImplicitSizing = () => (
     </Flexbox>
   </DraggableLayout>
 );
+
+ImplicitSizing.displaySequence = displaySequence++;
 
 export const SimpleNestingWithOffset = () => (
   <DraggableLayout style={{ marginLeft: 100, marginTop: 50, width: 800, height: 500 }}>
@@ -192,6 +198,8 @@ export const SimpleNestingWithOffset = () => (
     </Flexbox>
   </DraggableLayout>
 );
+
+SimpleNestingWithOffset.displaySequence = displaySequence++;
 
 export const MultipleDraggableContainers = () => (
   <DraggableLayout style={{ width: 800, height: 800 }}>
@@ -242,6 +250,8 @@ export const MultipleDraggableContainers = () => (
   </DraggableLayout>
 );
 
+MultipleDraggableContainers.displaySequence = displaySequence++;
+
 export const CustomDrag = () => (
   <DraggableLayout className="custom1" style={{ border: 'solid 1px grey' }}>
     <Flexbox fullPage splitterSize={1} column className="red-box">
@@ -268,6 +278,8 @@ export const CustomDrag = () => (
   </DraggableLayout>
 );
 
+CustomDrag.displaySequence = displaySequence++;
+
 export const ComplexNestedLayout = () => (
   <DraggableLayout>
     <Flexbox column style={{ height: '90vh', width: '100vw' }}>
@@ -278,8 +290,7 @@ export const ComplexNestedLayout = () => (
             header
             resizeable
             style={{ width: '100%', height: '100%' }}
-            title="View Palette"
-          >
+            title="View Palette">
             <PaletteItem title="Blue Monday" resizeable header>
               <Component style={{ backgroundColor: 'cornflowerblue', height: '100%' }} />
             </PaletteItem>
@@ -352,21 +363,29 @@ export const ComplexNestedLayout = () => (
   </DraggableLayout>
 );
 
+ComplexNestedLayout.displaySequence = displaySequence++;
+
 export const NestedDragContainerWithPalette = () => (
   <RecoilRoot>
-    <Builder />
+    <LayoutBuilder />
   </RecoilRoot>
 );
+
+NestedDragContainerWithPalette.displaySequence = displaySequence++;
 
 export const NestedDragContainerWithPaletteAndSave = () => (
   <RecoilRoot>
-    <Builder enableSave />
+    <LayoutBuilder enableSave />
   </RecoilRoot>
 );
 
-export const LayoutStackBuilderExample = () => <LayoutStackBuilder />;
+NestedDragContainerWithPaletteAndSave.displaySequence = displaySequence++;
 
-export const NestedMultiDragContainerWithPaletteDrawer = () => <DrawerStackBuilder />;
+export const LayoutStackBuilderExample = () => <StackLayoutBuilder />;
+LayoutStackBuilderExample.displaySequence = displaySequence++;
+
+export const NestedMultiDragContainerWithPaletteDrawer = () => <DrawerStackLayoutBuilder />;
+NestedMultiDragContainerWithPaletteDrawer.displaySequence = displaySequence++;
 
 export const ScrollingLayout = () => (
   <DraggableLayout>
@@ -374,8 +393,7 @@ export const ScrollingLayout = () => (
       <View
         header
         title="Test 1"
-        style={{ height: 100, flexBasis: 'auto', flexGrow: 0, flexShrink: 0 }}
-      >
+        style={{ height: 100, flexBasis: 'auto', flexGrow: 0, flexShrink: 0 }}>
         <div style={{ backgroundColor: 'yellow', height: '100%' }}>
           <input defaultValue="just a test 1" />
           <input defaultValue="just a test 2" />
@@ -384,8 +402,7 @@ export const ScrollingLayout = () => (
       <Flexbox style={{ flex: 1, flexDirection: 'column', overflow: 'auto' }} resizeable>
         <Flexbox
           style={{ height: 1000, flexGrow: 0, flexShrink: 0, flexDirection: 'row' }}
-          resizeable
-        >
+          resizeable>
           <Flexbox style={{ flex: 1, flexDirection: 'column' }}>
             <View header resizeable title="Test 2a" style={{ flex: 1 }}>
               <Component style={{ height: '100%', backgroundColor: 'orange' }} />
@@ -411,6 +428,8 @@ export const ScrollingLayout = () => (
     </Flexbox>
   </DraggableLayout>
 );
+
+ScrollingLayout.displaySequence = displaySequence++;
 
 export const JsonLayout = () => {
   return (
@@ -469,3 +488,5 @@ export const JsonLayout = () => {
     />
   );
 };
+
+JsonLayout.displaySequence = displaySequence++;

@@ -3,7 +3,7 @@ import React from 'react';
 import '@vuu-ui/theme';
 
 import { ConfigWrapper, Flexbox, FlexboxLayout, Stack, View, Component } from '@vuu-ui/layout';
-import { Brown } from './sample-components';
+import { Brown } from './components';
 
 const story = {
   title: 'Layout/FlexboxLayout',

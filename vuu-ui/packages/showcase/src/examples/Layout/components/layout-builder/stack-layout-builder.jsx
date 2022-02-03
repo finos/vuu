@@ -14,7 +14,7 @@ import * as layout from '../layouts';
 
 import './layout-builder.css';
 
-export default function LayoutStackBuilder({ width = 800, height = 1000 }) {
+export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
   const onLayoutModel = (layoutModel) => {
     console.log({ layoutModel });
     // setState(prevState => ({
@@ -188,4 +188,4 @@ export default function LayoutStackBuilder({ width = 800, height = 1000 }) {
       </FlexboxLayout>
     </DraggableLayout>
   );
-}
+};
