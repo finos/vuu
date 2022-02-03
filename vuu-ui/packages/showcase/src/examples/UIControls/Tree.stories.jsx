@@ -81,6 +81,27 @@ export const SimpleTreeIcons = () => {
   );
 };
 
+export const RevealSelected = () => {
+  const handleChange = (e, selected) => {
+    console.log(`selected ${selected.join(',')}`);
+  };
+  return (
+    <div style={{ width: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+      <input type="text" />
+      <div
+        style={{
+          fontFamily: 'Roboto',
+          width: 150,
+          position: 'relative'
+        }}>
+        <style>{iconTreeStyle}</style>
+        <Tree className="arrow-toggle" onSelectionChange={handleChange} source={folderData} />
+      </div>
+      <input type="text" />
+    </div>
+  );
+};
+
 export const SimpleTreeWithAnatomy = () => {
   const source = [
     {
