@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import './table.css';
+import './Table.css';
 
 export default {
   title: 'Table/Table',

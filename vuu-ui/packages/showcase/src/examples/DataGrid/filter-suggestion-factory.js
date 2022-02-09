@@ -1,5 +1,5 @@
-import { generateData } from '../public/tables/instruments/instruments';
-import { config as schema } from '../public/tables/instruments/config';
+import { generateData } from '../../../public/tables/instruments/instruments';
+import { config as schema } from '../../../public/tables/instruments/config';
 
 const instruments = generateData();
 

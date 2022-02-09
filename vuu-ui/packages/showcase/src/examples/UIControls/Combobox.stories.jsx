@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { ComboBox } from '@vuu-ui/ui-controls';
-import { usa_states } from './usa_states';
+import { usa_states } from './List.data';
 
 export default {
   title: 'UI Controls/ComboBox',

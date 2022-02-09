@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { TextInput } from '@vuu-ui/ui-controls';
 import { Form, MultiCellEdit } from '@vuu-ui/ui-forms';
-import formConfig, { Select as SelectField } from './form-config';
+import formConfig, { Select as SelectField } from './Form.config';
 
 import '@vuu-ui/ui-forms/index.css';
-import './form.css';
+import './Form.css';
 
 export default {
   title: 'UI Controls/Form',

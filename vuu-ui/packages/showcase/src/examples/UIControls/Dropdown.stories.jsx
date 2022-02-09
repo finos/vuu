@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 
 import { Button, Dropdown, List, useDropdown } from '@vuu-ui/ui-controls';
-import { usa_states } from './usa_states';
+import { usa_states } from './List.data';
 
 import { ComponentAnatomy } from '@heswell/component-anatomy';
 
@@ -46,8 +46,7 @@ export const SimpleListWithDropdown = () => {
             align="bottom-right"
             anchorEl={button.current}
             open={open}
-            width={200}
-          >
+            width={200}>
             <List source={usa_states} onChange={handleSelection} />
           </Dropdown>
         </div>
@@ -85,8 +84,7 @@ export const SimpleListWithDropdownHook = () => {
             anchorEl={button.current}
             open={isOpen}
             width={200}
-            style={{ maxHeight: 400 }}
-          >
+            style={{ maxHeight: 400 }}>
             <List
               {...dropdownHandlers}
               source={usa_states}
@@ -130,8 +128,7 @@ export const ListWithControlledDropdownHook = () => {
           anchorEl={button.current}
           open={isOpen}
           width={200}
-          style={{ maxHeight: 400 }}
-        >
+          style={{ maxHeight: 400 }}>
           <List
             {...dropdownHandlers}
             source={usa_states}
@@ -185,8 +182,7 @@ export const MultiselectListWithDropdownHook = () => {
           anchorEl={button.current}
           open={isOpen}
           width={200}
-          style={{ maxHeight: 400 }}
-        >
+          style={{ maxHeight: 400 }}>
           <List
             {...dropdownHandlers}
             source={usa_states}
