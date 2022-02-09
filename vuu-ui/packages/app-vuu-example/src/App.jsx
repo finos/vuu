@@ -122,16 +122,16 @@ export const App = ({ user }) => {
 
   tablesRef.current = tables;
 
-  const makeServiceRequest = useCallback((response) => {
+  const handleRpcResponse = useCallback((response) => {
     if (response?.action?.type === 'OPEN_DIALOG_ACTION') {
-      setDialogContent(
-        <Feature
-          height={400}
-          schema={tablesRef.current.orderEntry}
-          url={filteredGridUrl}
-          width={700}
-        />
-      );
+      const { table } = response.action;
+      const { [table.table]: schema } = tablesRef.current;
+      if (schema) {
+        // If we already have this table open in this viewport, ignore
+        setDialogContent(
+          <Feature height={400} schema={schema} url={filteredGridUrl} width={700} />
+        );
+      }
     } else {
       console.log(`App, handleServiceRequest ${JSON.stringify(response)}`);
     }
@@ -141,7 +141,7 @@ export const App = ({ user }) => {
 
   // TODO get Context from Shell
   return (
-    <AppContext.Provider value={{ makeServiceRequest }}>
+    <AppContext.Provider value={{ handleRpcResponse }}>
       <Shell
         defaultLayout={defaultLayout}
         paletteConfig={paletteConfig}

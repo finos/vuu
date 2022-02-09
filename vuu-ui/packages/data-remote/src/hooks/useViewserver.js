@@ -81,11 +81,7 @@ export const useViewserver = ({
       const response = await server.rpcCall(options);
       switch (response.method) {
         case addRowsFromInstruments:
-          if (!response.orderEntryOpen) {
-            onRpcResponse && onRpcResponse('showOrderEntry');
-          } else {
-            console.log('select entries in orderEntry');
-          }
+          onRpcResponse?.('showOrderEntry');
           break;
         default:
           return response.result;
