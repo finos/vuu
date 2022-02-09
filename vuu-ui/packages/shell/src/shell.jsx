@@ -13,7 +13,7 @@ export const Shell = ({ children, defaultLayout, paletteConfig, serverUrl, user 
   const paletteView = useRef(null);
   const [open, setOpen] = useState(false);
 
-  const [layout, setLayoutConfig] = useLayoutConfig(user, defaultLayout);
+  const [layout, setLayoutConfig, loadLayoutById] = useLayoutConfig(user, defaultLayout);
 
   const handleLayoutChange = useCallback(
     (layout) => {
@@ -28,6 +28,13 @@ export const Shell = ({ children, defaultLayout, paletteConfig, serverUrl, user 
     }
   };
 
+  const handleNavigate = useCallback(
+    (id) => {
+      loadLayoutById(id);
+    },
+    [loadLayoutById]
+  );
+
   useEffect(() => {
     connectToServer(serverUrl, user.token);
   }, [serverUrl, user.token]);
@@ -40,7 +47,7 @@ export const Shell = ({ children, defaultLayout, paletteConfig, serverUrl, user 
         onLayoutChange={handleLayoutChange}
         layout={layout}>
         <Flexbox id="fb-app" className="App" style={{ flexDirection: 'column', height: '100%' }}>
-          <AppHeader user={user} />
+          <AppHeader user={user} onNavigate={handleNavigate} />
           <Chest style={{ flex: 1 }}>
             <Drawer
               onClick={handleDrawerClick}

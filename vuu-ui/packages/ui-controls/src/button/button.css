@@ -18,7 +18,7 @@
   justify-content: center;
   min-width: var(--button-min-width);
   outline: none;
-  padding: 0;
+  padding: var(--hwButton-padding, 0);
   position: relative;
   width: var(--button-width);
 }
@@ -49,7 +49,7 @@
   mask-repeat: no-repeat;
   background-color: black;
   height: 12px;
-  left: 50%;
+  left: var(--hwButton-icon-left, 50%);
   right: 3px;
   margin-left: -6px;
   margin-top: -6px;

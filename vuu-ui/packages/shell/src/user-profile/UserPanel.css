@@ -1,0 +1,10 @@
+.vuuUserPanel {
+  background-color: white;
+  max-height: 400px;
+}
+
+.btn-logout {
+  --hwButton-icon-left: 12px;
+  --hwButton-padding: 0 6px 0 24px;
+  padding-left: 24px;
+}

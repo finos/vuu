@@ -10,8 +10,10 @@ const classBase = 'hwDropdown';
 const listenforClickAway = (listen, handler) => {
   if (listen) {
     document.body.addEventListener('click', handler, true);
+    document.body.addEventListener('keydown', handler, true);
   } else {
     document.body.removeEventListener('click', handler, true);
+    document.body.removeEventListener('keydown', handler, true);
   }
 };
 
@@ -70,37 +72,6 @@ export const Dropdown = forwardRef(function Dropdown(
   );
   const forkedContentRef = useForkRef(setContentRef, child.ref);
 
-  // if (env.isElectron){
-  //   const {position: {top,left,width,height}, focusOnOpen=false, componentName, children: {props: childProps}} = props;
-  //   const url = getUrlForComponent(componentName);
-  //   const modalProps = Object.keys(childProps).reduce((o, propertyName) => {
-  //     if (typeof propertyname === 'function'){
-  //       // if we really needed to, we could convert callbacks to message-based api
-  //       // so far, we don't need it
-  //     } else {
-  //       o[propertyName] = childProps[propertyName]
-  //     }
-  //     return o;
-  //   }, {})
-
-  //   window.openModal(url, {
-  //     position: {
-  //       top: top+height,
-  //       left,
-  //       width,
-  //       height: 230
-  //     },
-  //     focusOnOpen,
-  //     props: modalProps
-  //   })
-
-  //   this.handlePopupMessage = this.handlePopupMessage.bind(this);
-
-  //   window.ipcRenderer.send('modal.register','modal.calendar');
-  //   window.ipcRenderer.on('modal.calendar', this.handlePopupMessage)
-
-  // }
-
   const rootRef = useRef(null);
   const forkedRootRef = useForkRef(ref, rootRef);
 
@@ -108,18 +79,16 @@ export const Dropdown = forwardRef(function Dropdown(
 
   const handleClickAway = useCallback(
     (evt) => {
-      const { target } = evt;
-      const el = rootRef.current;
-      const maybeAway = !equalsOrContains(el, target);
-      if (maybeAway) {
-        const definatelyAway = !equalsOrContains(anchorEl, target);
-        if (definatelyAway) {
-          console.log(` ... ClickAway`);
-          // dropdown wiill be clodes. so useEffect unload will take care
-          // listenforClickAway(false);
-          // onClose ?
-          if (onCancel) {
-            onCancel();
+      const { key, target, type } = evt;
+      if (type === 'keydown' && key === 'Escape') {
+        onCancel?.();
+      } else if (type === 'click') {
+        const el = rootRef.current;
+        const maybeAway = !equalsOrContains(el, target);
+        if (maybeAway) {
+          const definatelyAway = !equalsOrContains(anchorEl, target);
+          if (definatelyAway) {
+            onCancel?.();
           }
         }
       }
@@ -149,50 +118,6 @@ export const Dropdown = forwardRef(function Dropdown(
     }
   }, [anchorEl]);
 
-  // componentWillUnmount(){
-  //   console.log(`Dropdown. componentWillUnmount`)
-  //   if (env.isElectron){
-  //     console.log(`about to remove commit listener`)
-  //     window.ipcRenderer.removeListener('modal.calendar', this.handlePopupMessage)
-  //     window.ipcRenderer.send('modal.unregister','modal.calendar');
-  //   }
-  // }
-
-  // componentDidUpdate(prevProps){
-  //   if (env.isElectron){
-  //     const {values} = this.props.children.props;
-  //     const prevValues = prevProps.children.props.values;
-  //     if (values !== prevValues){
-  //       window.ipcRenderer.send('modal.window', {
-  //         type: 'props',
-  //         props: {
-  //           values
-  //         }
-  //       });
-  //     }
-  //   }
-  // }
-
-  // handlePopupMessage(evt, arg){
-  //   if (arg.type === 'commit'){
-  //     this.props.onCommit(arg.value);
-  //   } else if (arg.type === 'cancel'){
-  //     this.props.onCancel();
-  //   }
-  // }
-
-  // focus(){
-  //   if (env.isElectron){
-  //     window.ipcRenderer.send('modal.window', {type: 'focus'});
-  //   } else {
-  //     console.log(`dropdown focus`)
-  //     this.childComponent.current.focus();
-  //   }
-  // }
-
-  // if (env.isElectron){
-  //   return null
-  // } else{
   if (position === null || !open) {
     return null;
   }

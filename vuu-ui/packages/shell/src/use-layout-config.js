@@ -7,9 +7,9 @@ const useLayoutConfig = (user, defaultLayout) => {
     _setLayout(layout);
   };
 
-  useEffect(() => {
-    const load = async () => {
-      fetch(`api/vui/${user.username}/latest`, {})
+  const load = useCallback(
+    async (id = 'latest') => {
+      fetch(`api/vui/${user.username}/${id}`, {})
         .then((response) => {
           return response.ok ? response.json() : defaultLayout;
         })
@@ -18,10 +18,13 @@ const useLayoutConfig = (user, defaultLayout) => {
           // TODO we should set a layout with a warning here
           setLayout(defaultLayout);
         });
-    };
+    },
+    [defaultLayout, user.username]
+  );
 
+  useEffect(() => {
     load();
-  }, [defaultLayout, user]);
+  }, [load]);
 
   const saveData = useCallback(
     (data) => {
@@ -41,7 +44,15 @@ const useLayoutConfig = (user, defaultLayout) => {
     [defaultLayout, user]
   );
 
-  return [layout, saveData];
+  const loadLayoutById = useCallback(
+    (id) => {
+      console.log(`load layout by if ${id}`);
+      load(id);
+    },
+    [load]
+  );
+
+  return [layout, saveData, loadLayoutById];
 };
 
 export default useLayoutConfig;

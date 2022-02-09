@@ -12,6 +12,8 @@ const story = {
 
 export default story;
 
+let displaySequence = 1;
+
 export const SimpleListWithDropdown = () => {
   const openRef = useRef(false);
   const button = useRef(null);
@@ -45,6 +47,7 @@ export const SimpleListWithDropdown = () => {
             autofocus
             align="bottom-right"
             anchorEl={button.current}
+            onCancel={toggle}
             open={open}
             width={200}>
             <List source={usa_states} onChange={handleSelection} />
@@ -54,6 +57,8 @@ export const SimpleListWithDropdown = () => {
     </>
   );
 };
+
+SimpleListWithDropdown.displaySequence = displaySequence++;
 
 export const SimpleListWithDropdownHook = () => {
   const button = useRef(null);
