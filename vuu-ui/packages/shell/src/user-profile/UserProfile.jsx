@@ -4,8 +4,7 @@ import { UserPanel } from './UserPanel';
 
 import './UserProfile.css';
 
-export const UserProfile = ({ onNavigate, user }) => {
-  console.log(`user = ${user}`);
+export const UserProfile = ({ layoutId, onNavigate, user }) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
   const buttonRef = useRef(null);
@@ -38,7 +37,7 @@ export const UserProfile = ({ onNavigate, user }) => {
         onCancel={toggle}
         open={open}
         width={300}>
-        {open && <UserPanel onNavigate={handleNavigate} user={user} />}
+        {open && <UserPanel layoutId={layoutId} onNavigate={handleNavigate} user={user} />}
       </Dropdown>
     </div>
   );

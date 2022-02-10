@@ -18,7 +18,7 @@
   justify-content: center;
   min-width: var(--button-min-width);
   outline: none;
-  padding: var(--hwButton-padding, 0);
+  padding: var(--hwButton-padding, 0 6px);
   position: relative;
   width: var(--button-width);
 }

@@ -1,6 +1,21 @@
 .vuuUserPanel {
   background-color: white;
+  display: flex;
+  flex-direction: column;
   max-height: 400px;
+  padding: 12px;
+}
+
+vuuUserPanel-history {
+  flex: 1 1 auto;
+}
+
+.vuuUserPanel-buttonBar {
+  align-items: flex-end;
+  border-top: 1px solid var(--surface3);
+  display: flex;
+  flex: 0 0 32px;
+  justify-content: flex-start;
 }
 
 .btn-logout {
