@@ -294,7 +294,6 @@ export class ServerProxy {
   sendIfReady(message, requestId, isReady = true, options) {
     // TODO implement the message queuing in remote data view
     if (isReady) {
-      console.log(JSON.stringify(message, null, 2));
       this.sendMessageToServer(message, requestId, options);
     } else {
       // TODO need to make sure we keep the requestId

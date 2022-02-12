@@ -4,6 +4,7 @@ import Toggle from './toggle';
 import ComboBox from './combo-box/combo-box';
 
 export * from './button';
+export * from './calendar';
 export * from './common-hooks';
 export * from './dropdown';
 export * from './dropdown-list';

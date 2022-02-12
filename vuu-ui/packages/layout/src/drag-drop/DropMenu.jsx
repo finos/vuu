@@ -24,7 +24,7 @@ const getIcon = (i) => {
   }
 };
 
-const DropMenu = ({ className, dropTarget, onHover, orientation }) => {
+export const DropMenu = ({ className, dropTarget, onHover, orientation }) => {
   const dropTargets = dropTarget.toArray();
   // TODO we have all the information here to draw a mini target map
   // but maybe thats overkill ...
@@ -39,5 +39,3 @@ const DropMenu = ({ className, dropTarget, onHover, orientation }) => {
     </div>
   );
 };
-
-export default DropMenu;

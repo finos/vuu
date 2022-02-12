@@ -32,7 +32,7 @@ const Tree = forwardRef(function Tree(
     selected: selectedProp,
     selection = 'single',
     source,
-    ...props
+    ...htmlAttributes
   },
   forwardedRef
 ) {
@@ -155,7 +155,7 @@ const Tree = forwardRef(function Tree(
 
   return (
     <ul
-      {...props}
+      {...htmlAttributes}
       {...listProps}
       className={cx(classBase, className)}
       id={`Tree-${id}`}

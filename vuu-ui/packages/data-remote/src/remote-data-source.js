@@ -65,10 +65,6 @@ export default class RemoteDataSource extends EventEmitter {
 
     this.rowCount = 0;
 
-    if (tableName.table === 'instruments') {
-      this.initialAggregations = [{ column: 'lotSize', aggType: 3 }];
-    }
-
     if (!serverUrl && !configUrl) {
       throw Error('RemoteDataSource expects serverUrl or configUrl');
     }

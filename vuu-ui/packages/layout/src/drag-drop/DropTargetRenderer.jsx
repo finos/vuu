@@ -1,6 +1,6 @@
 import React from 'react';
 import { PopupService } from '@vuu-ui/ui-controls';
-import DropMenu, { computeMenuPosition } from './DropMenu';
+import { DropMenu, computeMenuPosition } from './DropMenu';
 import { RelativeDropPosition } from './BoxModel';
 
 import './DropTargetRenderer.css';

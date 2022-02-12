@@ -1,15 +1,14 @@
 import React from 'react';
-import { Button } from '@vuu-ui/ui-controls';
-import { logout } from '../login';
+import { UserProfile } from '../user-profile';
 import './AppHeader.css';
 
-export const AppHeader = ({ user, children, ...props }) => {
+export const AppHeader = ({ layoutId, onNavigate, user, children, ...props }) => {
   return (
     <header className="hwAppHeader" {...props}>
       {/* <ToggleButton onChange={toggleColorScheme}>
               theme
             </ToggleButton> */}
-      <Button aria-label="logout" data-icon="logout" onClick={logout} />
+      <UserProfile layoutId={layoutId} onNavigate={onNavigate} user={user} />
     </header>
   );
 };

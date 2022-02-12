@@ -7,9 +7,25 @@ import { Tree } from '@vuu-ui/ui-controls';
 
 import './App.css';
 
+const byDisplaySequence = ([, f1], [, f2]) => {
+  const { displaySequence: ds1 } = f1;
+  const { displaySequence: ds2 } = f2;
+
+  if (ds1 === undefined && ds2 === undefined) {
+    return 0;
+  } else if (ds2 === undefined) {
+    return -1;
+  } else if (ds1 === undefined) {
+    return 1;
+  } else {
+    return ds1 - ds2;
+  }
+};
+
 const sourceFromImports = (stories, prefix = '', icon = 'folder') =>
   Object.entries(stories)
     .filter(([path]) => path !== 'default')
+    .sort(byDisplaySequence)
     .map(([label, stories]) => {
       const id = `${prefix}${label}`;
       if (typeof stories === 'function') {

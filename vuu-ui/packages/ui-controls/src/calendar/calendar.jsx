@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cx from 'classnames';
-import { addDays, differenceInCalendarMonths, format, toDate, startOfWeek } from 'date-fns';
+import { addDays, differenceInCalendarMonths, formatDate, toDate, startOfWeek } from './date-utils';
 import CalendarModel, { getDates, getCalendarClassNames } from './calendar-model';
 import { Button } from '../button';
 import { useKeyboardNavigation } from './use-keyboard-navigation';
@@ -27,7 +27,7 @@ export const Calendar = forwardRef(function Calendar(
   });
 
   const focusCurrentDate = useCallback((date) => {
-    const key = format(date, 'yyyy-MM-dd');
+    const key = formatDate(date, 'yyyy-MM-dd');
     const dateCell = calendarBody.current.querySelector(`.hwCalendar-cell[data-day = '${key}']`);
     if (dateCell) {
       dateCell.focus();
@@ -79,7 +79,7 @@ export const Calendar = forwardRef(function Calendar(
       <div className={cx(`${classBase}-header`, `${classBase}-row`)}>
         <Button aria-label="prev month" data-icon onClick={prevMonth} />
         <div className="current-month">
-          <span>{format(currentMonth, dateFormat)}</span>
+          <span>{formatDate(currentMonth, dateFormat)}</span>
         </div>
         <Button aria-label="next-month" data-icon onClick={nextMonth} />
       </div>
@@ -94,7 +94,7 @@ export const Calendar = forwardRef(function Calendar(
     for (let i = 0; i < 7; i++) {
       days.push(
         <div className={`${classBase}-cell`} key={i}>
-          {format(addDays(startDate, i), dateFormat)}
+          {formatDate(addDays(startDate, i), dateFormat)}
         </div>
       );
     }
@@ -122,15 +122,14 @@ export const Calendar = forwardRef(function Calendar(
                 <div
                   key={day}
                   tabIndex={0}
-                  data-day={format(day, 'yyyy-MM-dd')}
+                  data-day={formatDate(day, 'yyyy-MM-dd')}
                   className={cx(`${classBase}-cell`, {
                     disabled,
                     selected,
                     otherMonth
                   })}
                   onClick={() => handleDateClick(day)}
-                  onKeyDown={handleKeyDown}
-                >
+                  onKeyDown={handleKeyDown}>
                   {dateRenderer(formattedDate)}
                 </div>
               ))}

@@ -13,6 +13,8 @@ import { usa_states, usa_states_cities, groupByInitialLetter, random_1000 } from
 import '@vuu-ui/theme/index.css';
 import '@vuu-ui/ui-controls/index.css';
 
+let displaySequence = 1;
+
 export default {
   title: 'UI Controls/List',
   component: List
@@ -58,6 +60,8 @@ export const SimpleList = () => {
   );
 };
 
+SimpleList.displaySequence = displaySequence++;
+
 export const SimpleListDragDrop = () => {
   return (
     <div
@@ -91,6 +95,9 @@ export const SimpleListDragDrop = () => {
     </div>
   );
 };
+
+SimpleListDragDrop.displaySequence = displaySequence++;
+
 export const LargeListDragDrop = () => {
   return (
     <div
@@ -114,6 +121,8 @@ export const LargeListDragDrop = () => {
   );
 };
 
+LargeListDragDrop.displaySequence = displaySequence++;
+
 export const SimpleListDefaultHighlight = () => {
   return (
     <div
@@ -136,6 +145,31 @@ export const SimpleListDefaultHighlight = () => {
     </div>
   );
 };
+SimpleListDefaultHighlight.displaySequence = displaySequence++;
+
+export const SimpleListDefaultSelection = () => {
+  return (
+    <div
+      style={{
+        ...fullWidthHeight
+      }}>
+      <input type="text" />
+      <div
+        style={{
+          fontFamily: 'Roboto',
+          width: 150,
+          height: 400,
+          maxHeight: 400,
+          position: 'relative',
+          border: 'solid 1px #ccc'
+        }}>
+        <List defaultSelected={['California']} source={usa_states} />
+      </div>
+      <input type="text" />
+    </div>
+  );
+};
+SimpleListDefaultSelection.displaySequence = displaySequence++;
 
 export const SimpleListWithHeaders = () => {
   const wrapperStyle = {

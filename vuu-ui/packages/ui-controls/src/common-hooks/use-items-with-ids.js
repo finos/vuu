@@ -38,6 +38,17 @@ export const useItemsWithIds = (
   // If the source data is treed, we need to save an expanded representation, so the
   // index can be used to resolve sourceItemById
 
+  /*
+    {
+      header
+      childNodes
+      label
+      [data-]expanded
+
+
+    }
+  */
+
   const normalizeSource = useCallback(
     (nodes, indexer, level = 1, path = '', results = [], flattenedSource = []) => {
       let count = 0;

@@ -1,6 +1,5 @@
 import { build } from 'esbuild';
 import { formatBytes, readPackageJson } from './utils.mjs';
-import { cyan } from 'kleur';
 const NO_DEPENDENCIES = {};
 
 async function main() {
@@ -29,7 +28,6 @@ async function main() {
     outputs: { 'public/index.js': jsOutput, 'index.css': cssOutput }
   } = metafile;
 
-  console.log(`${cyan(name)}@${version}`);
   console.log(`\tindex.js:  ${formatBytes(jsOutput.bytes)}`);
   if (cssOutput) {
     console.log(`\tindex.css: ${formatBytes(cssOutput.bytes)}`);
