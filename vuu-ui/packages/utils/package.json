@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/utils",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "author": "heswell",
   "main": "src/index.js",
   "module": "index.js",
@@ -15,5 +15,9 @@
   },
   "devDependencies": {
     "esbuild": "^0.13.5"
+  },
+  "peerDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
   }
 }

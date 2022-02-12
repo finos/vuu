@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/data-remote",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "main": "src/index.js",
   "module": "index.js",
   "author": "heswell",
@@ -14,7 +14,7 @@
     "/src"
   ],
   "peerDependencies": {
-    "@vuu-ui/utils": "0.0.14",
+    "@vuu-ui/utils": "0.0.15",
     "react": "^17.0.2"
   }
 }

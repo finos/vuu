@@ -17,8 +17,7 @@
     "build:app": "cd packages/app-vuu-example && node scripts/build-prod.mjs",
     "build:app:dev": "cd packages/app-vuu-example && node scripts/build.mjs",
     "bump": "node ./scripts/version.js",
-    "pub": "node ./scripts/publish.js",
-    "publish": "node ./scripts/version.js && node ./scripts/publish.js"
+    "pub": "node ./scripts/publish.js"
   },
   "dependencies": {
     "@types/jest": "^26.0.21",

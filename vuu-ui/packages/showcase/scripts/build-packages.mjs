@@ -8,6 +8,11 @@ async function main() {
 
   const { metafile } = await build({
     entryPoints: ['src/index.jsx'],
+
+    // entryPoints: [
+    //   'src/examples/UIControls/Button.stories.jsx',
+    //   'src/examples/UIControls/List.stories.jsx'
+    // ],
     bundle: true,
     define: {
       'process.env.NODE_ENV': `"production"`,
@@ -20,10 +25,12 @@ async function main() {
     },
     metafile: true,
     // minify: true,
-    outfile: 'public/index.js',
+    outdir: 'public/packages',
+    splitting: true,
     target: 'esnext'
   }).catch(() => process.exit(1));
 
+  console.log(metafile);
   const {
     outputs: { 'public/index.js': jsOutput, 'index.css': cssOutput }
   } = metafile;

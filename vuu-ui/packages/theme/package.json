@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/theme",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "main": "src/index.js",
   "author": "heswell",
   "module": "index.js",
