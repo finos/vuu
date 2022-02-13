@@ -30,6 +30,7 @@ export default class RemoteDataSource extends EventEmitter {
     aggregations,
     columns,
     filter,
+    filterQuery,
     group,
     sort,
     tableName,
@@ -61,6 +62,7 @@ export default class RemoteDataSource extends EventEmitter {
     this.initialGroup = group;
     this.initialSort = sort;
     this.initialFilter = filter;
+    this.initialFilterQuery = filterQuery;
     this.initialAggregations = aggregations;
 
     this.rowCount = 0;
@@ -82,7 +84,8 @@ export default class RemoteDataSource extends EventEmitter {
       range = defaultRange,
       sort = this.initialSort,
       groupBy = this.initialGroup,
-      filter = this.initialFilter
+      filter = this.initialFilter,
+      filterQuery = this.initialFilterQuery
     },
     callback
   ) {
@@ -118,6 +121,7 @@ export default class RemoteDataSource extends EventEmitter {
         sort,
         groupBy,
         filter,
+        filterQuery,
         bufferSize,
         visualLink: this.visualLink
       },

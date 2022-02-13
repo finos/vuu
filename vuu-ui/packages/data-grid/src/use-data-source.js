@@ -60,6 +60,9 @@ export default function useDataSource(
           type: 'set-available-columns',
           columns: msg.columns
         });
+        if (msg.filter) {
+          dispatchGridModelAction({ type: 'filter', filter: msg.filter });
+        }
       } else if (type === 'viewport-update') {
         const sizeChanged = msg.size !== undefined;
         if (sizeChanged) {

@@ -1,5 +1,3 @@
-import { isNonNullChain } from 'typescript';
-
 export const AND = 'and';
 export const EQUALS = '=';
 export const GREATER_THAN = '>';
