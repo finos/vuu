@@ -48,7 +48,7 @@ export default forwardRef(function ComboBox({ value = '', values, ...props }, re
       {...props}
       ref={root}
       value={state.value}
-      values={state.values}
+      source={state.values}
       onCommit={handleCommit}>
       {(child) =>
         child === ComponentType.Input && (

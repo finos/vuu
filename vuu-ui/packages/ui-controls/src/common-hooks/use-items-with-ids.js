@@ -103,7 +103,7 @@ export const useItemsWithIds = (
   const sourceItemById = useCallback(
     (id, target = sourceWithIds) => {
       const sourceWithId = target.find(
-        (i) => i.id === id || (i?.childNodes?.length && id.startsWith(i.id))
+        (i) => i.id === id || (i?.childNodes?.length && isParentPath(i.id, id))
       );
       if (sourceWithId?.id === id) {
         return flattenedSource[sourceWithId.index];
@@ -116,3 +116,9 @@ export const useItemsWithIds = (
 
   return [count, sourceWithIds, sourceItemById];
 };
+
+// TODO where do we define or identify separators
+const isPathSeparator = (char) => char === '/' || char === '-';
+
+const isParentPath = (parentPath, childPath) =>
+  childPath.startsWith(parentPath) && isPathSeparator(childPath[parentPath.length]);

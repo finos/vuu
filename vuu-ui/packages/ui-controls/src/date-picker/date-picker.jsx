@@ -61,11 +61,10 @@ export default forwardRef(function DatePicker(
       dropdownClassName="hwCalendar-dropdown"
       ref={root}
       value={state.value}
-      values={state.values}
+      source={state.values}
       onChange={handleChange}
       onCommit={handleCommit}
-      valueFormatter={formatDate}
-    >
+      valueFormatter={formatDate}>
       {(child, childProps) =>
         child === ComponentType.Input ? (
           <input

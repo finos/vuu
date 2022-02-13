@@ -135,6 +135,7 @@ export const useSelection = ({
         if (!isCollapsibleItem(item)) {
           evt.preventDefault();
           evt.stopPropagation();
+          console.log(`handleClick highlightedIdx=${highlightedIdx} id=${item.id}`);
           selectItemAtIndex(evt, highlightedIdx, item.id, evt.shiftKey, evt.ctrlKey || evt.metaKey);
           if (extendedSelect) {
             lastActive.current = highlightedIdx;

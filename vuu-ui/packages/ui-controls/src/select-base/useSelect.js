@@ -19,6 +19,14 @@ export const useSelect = ({
   const lastSelection = useRef(EMPTY_ARRAY);
   const dataHook = useHierarchicalData(sourceWithIds);
 
+  const handleHighlight = (idx) => {
+    onHighlightProp?.(idx);
+  };
+
+  const handleKeyboardNavigation = (evt, nextIdx) => {
+    selectionHook.listHandlers.onKeyboardNavigation?.(evt, nextIdx);
+  };
+
   const { highlightedIdx, ...keyboardHook } = useKeyboardNavigation({
     id,
     indexPositions: dataHook.indexPositions,
@@ -39,14 +47,6 @@ export const useSelect = ({
     selected: selectedProp,
     selection
   });
-
-  const handleHighlight = (idx) => {
-    onHighlightProp?.(idx);
-  };
-
-  const handleKeyboardNavigation = (evt, nextIdx) => {
-    selectionHook.listHandlers.onKeyboardNavigation?.(evt, nextIdx);
-  };
 
   const handleKeyDown = useCallback(
     (evt) => {
