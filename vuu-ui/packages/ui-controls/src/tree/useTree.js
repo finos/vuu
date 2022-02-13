@@ -1,6 +1,10 @@
 import { useCallback, useRef } from 'react';
-import { useHierarchicalData } from './use-hierarchical-data';
-import { useCollapsibleGroups, useKeyboardNavigation, useSelection } from '../common-hooks';
+import {
+  useCollapsibleGroups,
+  useHierarchicalData,
+  useKeyboardNavigation,
+  useSelection
+} from '../common-hooks';
 import { useKeyboardNavigation as useTreeNavigation } from './use-tree-keyboard-navigation';
 
 const EMPTY_ARRAY = [];

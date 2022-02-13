@@ -24,7 +24,7 @@ const populateIndices = (nodes, results = [], idx = { value: 0 }) => {
 
 //TODO return a read-only data structure
 // Question: is source changes at runtime, do we lose any current state ?
-export const useHierarchicalData = (source, label = '') => {
+export const useHierarchicalData = (source) => {
   // console.log(`%c[useHierarchicalData<${label}>] entry`, 'color: green; font-weight: bold;');
 
   const externalSource = useRef(source);

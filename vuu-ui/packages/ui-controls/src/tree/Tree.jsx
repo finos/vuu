@@ -29,6 +29,7 @@ const Tree = forwardRef(function Tree(
     id: idProp,
     onHighlight,
     onSelectionChange,
+    revealSelected,
     selected: selectedProp,
     selection = 'single',
     source,
@@ -40,7 +41,9 @@ const Tree = forwardRef(function Tree(
   const root = useRef(null);
 
   // returns the full source data
-  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(source, id);
+  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(source, id, {
+    revealSelected: revealSelected ? selectedProp ?? defaultSelected ?? false : undefined
+  });
 
   const handleSelectionChange = (evt, selected) => {
     onSelectionChange?.(

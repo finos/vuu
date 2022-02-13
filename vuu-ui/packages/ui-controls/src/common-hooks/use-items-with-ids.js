@@ -13,11 +13,22 @@ const identity = (item) => {
   };
 };
 
-// TODO default the root
+const PathSeparators = new Set(['/', '-', '.']);
+// TODO where do we define or identify separators
+const isPathSeparator = (char) => PathSeparators.has(char);
+
+const isParentPath = (parentPath, childPath) =>
+  childPath.startsWith(parentPath) && isPathSeparator(childPath[parentPath.length]);
+
 export const useItemsWithIds = (
   sourceProp,
-  idRoot,
-  { collapsibleHeaders, defaultExpanded = false, createProxy = identity } = {}
+  idRoot = 'root',
+  {
+    collapsibleHeaders,
+    defaultExpanded = false,
+    createProxy = identity,
+    revealSelected = false
+  } = {}
 ) => {
   const countChildItems = (item, items, idx) => {
     if (item.childNodes) {
@@ -35,32 +46,33 @@ export const useItemsWithIds = (
     }
   };
 
-  // If the source data is treed, we need to save an expanded representation, so the
-  // index can be used to resolve sourceItemById
-
-  /*
-    {
-      header
-      childNodes
-      label
-      [data-]expanded
-
-
-    }
-  */
+  const isExpanded = useCallback(
+    (path) => {
+      if (Array.isArray(revealSelected)) {
+        return revealSelected.some((id) => isParentPath(path, id));
+      }
+      return defaultExpanded;
+    },
+    [defaultExpanded, revealSelected]
+  );
 
   const normalizeSource = useCallback(
     (nodes, indexer, level = 1, path = '', results = [], flattenedSource = []) => {
       let count = 0;
+      // TODO get rid of the Proxy
       nodes.map(createProxy).forEach((proxy, i, proxies) => {
         const isCollapsibleHeader = proxy.header && collapsibleHeaders;
         const isNonCollapsibleGroupNode = proxy.childNodes && collapsibleHeaders === false;
         const isLeaf = !proxy.childNodes || proxy.childNodes.length === 0;
         const nonCollapsible = isNonCollapsibleGroupNode || (isLeaf && !isCollapsibleHeader);
-        const expanded = nonCollapsible ? undefined : defaultExpanded;
         const childPath = path ? `${path}.${i}` : `${i}`;
+        const id = proxy.id ?? `${idRoot}-${childPath}`;
+
+        const expanded = nonCollapsible ? undefined : isExpanded(id);
+        //TODO dev time check - if id is provided by user, make sure
+        // hierarchical pattern is consistent
         const item = proxy.set({
-          id: proxy.id ?? `${idRoot}-${childPath}`,
+          id,
           count:
             !isNonCollapsibleGroupNode && expanded === undefined
               ? 0
@@ -116,9 +128,3 @@ export const useItemsWithIds = (
 
   return [count, sourceWithIds, sourceItemById];
 };
-
-// TODO where do we define or identify separators
-const isPathSeparator = (char) => char === '/' || char === '-';
-
-const isParentPath = (parentPath, childPath) =>
-  childPath.startsWith(parentPath) && isPathSeparator(childPath[parentPath.length]);
