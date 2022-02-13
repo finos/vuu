@@ -1,0 +1,37 @@
+{
+  "DataGrid": {
+    "Grid": "./src/examples/DataGrid/Grid.stories.jsx"
+  },
+  "Layout": {
+    "Chest": "./src/examples/Layout/Chest.stories.jsx",
+    "Dialog": "./src/examples/Layout/Dialog.stories.jsx",
+    "DraggableLayout": "./src/examples/Layout/DraggableLayout.stories.jsx",
+    "DropMenu": "./src/examples/Layout/DropMenu.stories.jsx",
+    "Flexbox": "./src/examples/Layout/Flexbox.stories.jsx",
+    "FluidGrid": "./src/examples/Layout/FluidGrid.stories.jsx",
+    "Palette": "./src/examples/Layout/Palette.stories.jsx",
+    "Stack": "./src/examples/Layout/Stack.stories.jsx",
+    "StackLayout": "./src/examples/Layout/StackLayout.stories.jsx",
+    "View": "./src/examples/Layout/View.stories.jsx"
+  },
+  "ParsedInput": {
+    "ParsedInput": "./src/examples/ParsedInput/ParsedInput.stories.jsx"
+  },
+  "Table": {
+    "Table": "./src/examples/Table/Table.stories.jsx"
+  },
+  "Tools": {
+    "LayoutConfigurator": "./src/examples/Tools/LayoutConfigurator.stories.jsx"
+  },
+  "UIControls": {
+    "Button": "./src/examples/UIControls/Button.stories.jsx",
+    "Combobox": "./src/examples/UIControls/Combobox.stories.jsx",
+    "DatePicker": "./src/examples/UIControls/DatePicker.stories.jsx",
+    "Dropdown": "./src/examples/UIControls/Dropdown.stories.jsx",
+    "DropdownList": "./src/examples/UIControls/DropdownList.stories.jsx",
+    "Form": "./src/examples/UIControls/Form.stories.jsx",
+    "List": "./src/examples/UIControls/List.stories.jsx",
+    "Menu": "./src/examples/UIControls/Menu.stories.jsx",
+    "Tree": "./src/examples/UIControls/Tree.stories.jsx"
+  }
+}

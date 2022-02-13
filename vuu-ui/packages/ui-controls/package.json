@@ -3,8 +3,8 @@
   "version": "0.0.15",
   "license": "Apache-2.0",
   "author": "heswell",
-  "main": "src/index.js",
-  "module": "index.js",
+  "main": "index.js",
+  "module": "src/index.js",
   "scripts": {
     "build": "node ../../scripts/build.js"
   },

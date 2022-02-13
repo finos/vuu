@@ -2,8 +2,8 @@
   "name": "@vuu-ui/layout",
   "version": "0.0.15",
   "description": "VUU Layout Components",
-  "main": "src/index.js",
-  "module": "index.js",
+  "module": "src/index.js",
+  "main": "index.js",
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {

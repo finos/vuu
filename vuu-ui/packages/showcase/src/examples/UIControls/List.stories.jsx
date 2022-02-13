@@ -11,7 +11,6 @@ import {
 import { usa_states, usa_states_cities, groupByInitialLetter, random_1000 } from './List.data';
 
 import '@vuu-ui/theme/index.css';
-import '@vuu-ui/ui-controls/index.css';
 
 let displaySequence = 1;
 

@@ -1,6 +1,3 @@
-// let Button = await import('./Button.stories');
-// let List = await import('./List.stories');
-// export { Button, List };
 export * as Button from './Button.stories';
 export * as Combobox from './Combobox.stories';
 export * as DatePicker from './DatePicker.stories';
