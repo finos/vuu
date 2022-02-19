@@ -1,12 +1,12 @@
 import { useCallback, useRef } from 'react';
 import {
   useCollapsibleGroups,
-  useDragDrop,
   useHierarchicalData,
   useKeyboardNavigation,
   useSelection,
   useViewportTracking
 } from '../common-hooks';
+import { useDragDrop } from '../common-hooks/use-drag-drop';
 import { closestListItemIndex } from './list-dom-utils';
 
 import { useTypeahead } from './hooks';
@@ -62,9 +62,6 @@ export const useList = ({
       console.log(`dropAtIndex ${fromIndex} ${toIndex}`);
       const data = dataHook.data.slice();
       const [target] = data.splice(fromIndex, 1);
-      if (toIndex > fromIndex) {
-        toIndex -= 1;
-      }
       if (toIndex === -1) {
         data.push(target);
       } else {
@@ -76,7 +73,7 @@ export const useList = ({
     [dataHook, keyboardHook]
   );
 
-  const dragDropHook = useDragDrop({
+  const { onMouseDown, ...dragDropHook } = useDragDrop({
     allowDragDrop,
     orientation: 'vertical',
     containerRef,
@@ -184,7 +181,7 @@ export const useList = ({
     onBlur: handleBlur,
     onFocus: handleFocus,
     onKeyDown: handleKeyDown,
-    onMouseDown: dragDropHook.onMouseDown,
+    onMouseDown: onMouseDown,
     onMouseDownCapture: handleMouseDownCapture,
     onMouseLeave: handleMouseLeave,
     onMouseMove: handleMouseMove
@@ -204,6 +201,7 @@ export const useList = ({
     listProps,
     selected: selectionHook.selected,
     setIgnoreFocus: keyboardHook.setIgnoreFocus,
-    visibleData: dataHook.indexPositions
+    visibleData: dataHook.indexPositions,
+    ...dragDropHook
   };
 };

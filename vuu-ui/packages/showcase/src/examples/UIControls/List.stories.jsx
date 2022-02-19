@@ -67,7 +67,7 @@ export const SimpleListDragDrop = () => {
       style={{
         ...fullWidthHeight
       }}>
-      <input type="text" />
+      {/* <input type="text" /> */}
       <div
         style={{
           fontFamily: 'Roboto',
@@ -75,7 +75,8 @@ export const SimpleListDragDrop = () => {
           height: 400,
           maxHeight: 400,
           position: 'relative',
-          border: 'solid 1px #ccc'
+          border: 'solid 1px #ccc',
+          borderTop: 'none'
         }}>
         <List allowDragDrop source={usa_states} />
       </div>

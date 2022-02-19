@@ -1,9 +1,9 @@
 {
   "name": "@vuu-ui/theme",
   "version": "0.0.15",
-  "main": "src/index.js",
+  "module": "src/index.js",
   "author": "heswell",
-  "module": "index.js",
+  "main": "index.js",
   "license": "Apache-2.0",
   "files": [
     "index.js",

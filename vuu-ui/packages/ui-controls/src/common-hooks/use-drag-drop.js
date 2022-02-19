@@ -1,117 +1,65 @@
 import { useCallback, useRef, useState } from 'react';
+
 import {
   dimensions,
-  measureDragThresholds,
-  measureElementSize,
-  nextThreshold,
-  prevThreshold
+  isDraggedElement,
+  measureDropTargets,
+  moveDragItem,
+  getDraggedItem,
+  getNextDropTarget
 } from './drag-utils';
+
+import { renderDraggable } from './Draggable';
 
 const dragThreshold = 3;
 
-export const useDragDrop = ({ allowDragDrop, onDrop, orientation, containerRef, itemQuery }) => {
-  const [isDragging, setIsDragging] = useState(false);
+export const useDragDrop = ({
+  allowDragDrop,
+  onDrop,
+  orientation,
+  containerRef,
+  itemQuery = '*'
+}) => {
+  const [dragPortal, setDragPortal] = useState(null);
+  const draggableRef = useRef(null);
   const startPos = useRef(0);
   const previousPos = useRef(0);
+  const mouseOffset = useRef(0);
+  const dragLimits = useRef({ start: 0, end: 0 });
+  const dragDirection = useRef();
+  const scrollTimer = useRef(null);
   const isScrollable = useRef(false);
   const isScrolling = useRef(false);
-  const containerSize = useRef(0);
-  const mouseOffset = useRef(0);
-  const startOffset = useRef(0);
-  const dragLimits = useRef({ start: 0, end: 0 });
-  const scrollTimer = useRef(null);
-  const draggable = useRef({ element: null, fromIndex: -1, pos: 0, size: 0 });
-  const target = useRef({ element: null, isLast: false });
-  const dragThresholds = useRef([]);
 
-  const clearTarget = useCallback(
-    (element) => {
-      const { START, END } = dimensions(orientation);
-      if (element === null) {
-        // we've reached the last item
-        element.style.cssText = `margin-${START}: 0px;  margin-${END}: ${draggable.current.size}px;`;
-      } else {
-        element.style.cssText = `margin-${START}: 0px; margin-${END}: 0px;`;
+  const displacedItem = useRef(null);
+  const dropTarget = useRef(null);
+  const measuredDropTargets = useRef([]);
+
+  const displaceItem = useCallback(
+    (item = null, size, displaceEnd) => {
+      if (item) {
+        const { START, END } = dimensions(orientation);
+        const pos = displaceEnd ? END : START;
+        item.element.style.cssText = `margin-${pos}: ${size}px;`;
+        // item.element.style.cssText = `background-color: red;`;
+        displacedItem.current = item;
       }
     },
     [orientation]
   );
 
-  const resetCurrentTarget = useCallback(
-    (direction) => {
-      const { START, END } = dimensions(orientation);
-      clearTarget(target.current.element);
-      if (direction === 'fwd') {
-        target.current.element = containerRef.current.lastChild;
-        target.current.isLast = true;
-        target.current.element.style.cssText = `margin-${START}: 0px;  margin-${END}: ${draggable.current.size}px; `;
-      } else {
-        target.current.element = containerRef.current.firstChild;
-        target.current.isLast = false;
-        target.current.element.style.cssText = `margin-${START}:  ${draggable.current.size}px;  margin-${END}: 0px; `;
-      }
-    },
-    [clearTarget, containerRef, orientation]
-  );
-
-  const setCurrentTarget = useCallback(
-    (element) => {
-      const { START, END } = dimensions(orientation);
-      element.style.cssText = `margin-${START}: ${draggable.current.size}px; margin-${END}: 0px; `;
-      target.current.element = element;
-      target.current.isLast = false;
-    },
-    [orientation]
-  );
-
-  const setCurrentTargetLast = useCallback(
-    (element) => {
-      const { END } = dimensions(orientation);
-      element.style.cssText = `margin-${END}: ${draggable.current.size}px; `;
-      target.current.isLast = true;
-      target.current.element = element;
-    },
-    [orientation]
-  );
-
-  const displaceElementAtIndex = useCallback(
-    (index) => {
-      const {
-        current: { element: currentElement, isLast }
-      } = target;
-      const threshold = dragThresholds.current[index];
-      // clearing the existing target first avoids a brief scrollbar flash.
-      if (currentElement && !isLast) {
-        if (threshold?.element === undefined) {
-          target.current.element = currentElement;
-          target.current.isLast = true;
-        }
-        clearTarget(currentElement);
-      }
-
-      if (threshold) {
-        setCurrentTarget(threshold.element);
-      } else {
-        const lastIndex = dragThresholds.current.length - 1;
-        const { element } = dragThresholds.current[lastIndex];
-        setCurrentTargetLast(element);
-      }
-    },
-    [clearTarget, setCurrentTarget, setCurrentTargetLast]
-  );
-
-  const handleDragStart = useCallback(() => {
-    dragThresholds.current = measureDragThresholds(
-      containerRef.current,
-      orientation,
-      draggable.current
-    );
-    setIsDragging(true);
-  }, [containerRef, orientation]);
+  const clearDisplacedItem = useCallback(() => {
+    if (displacedItem.current) {
+      displacedItem.current.element.style.cssText = ``;
+      displacedItem.current = null;
+    }
+  }, []);
 
   const getScrollDirection = useCallback(
     (mousePos) => {
       const { SCROLL_POS, SCROLL_SIZE, CLIENT_SIZE } = dimensions(orientation);
+      // const { current: dropTargets } = measuredDropTargets;
+      // const draggedItem = getDraggedItem(dropTargets);
       const {
         [SCROLL_POS]: scrollPos,
         [SCROLL_SIZE]: scrollSize,
@@ -119,53 +67,58 @@ export const useDragDrop = ({ allowDragDrop, onDrop, orientation, containerRef, 
       } = containerRef.current;
       const maxScroll = scrollSize - clientSize;
       const canScrollFwd = scrollPos < maxScroll;
-      const viewportEnd = startOffset.current + containerSize.current;
-      const bwd = scrollPos > 0 && mousePos - mouseOffset.current <= startOffset.current;
-      const fwd =
-        canScrollFwd && mousePos + draggable.current.size - mouseOffset.current >= viewportEnd;
+      const viewportEnd = dragLimits.current.end;
+      const bwd = scrollPos > 0 && mousePos - mouseOffset.current <= dragLimits.current.start;
+      const fwd = canScrollFwd && mousePos - mouseOffset.current >= viewportEnd;
       return bwd ? 'bwd' : fwd ? 'fwd' : '';
     },
     [containerRef, orientation]
-  );
-
-  const handleDragEnd = useCallback(
-    (fromIndex, toIndex) => {
-      onDrop(fromIndex, toIndex);
-      requestAnimationFrame(() => {
-        // The mouseup may also trigger a click event. For handlers like selection,
-        // isDragging can be checked before handling the click.
-        setIsDragging(false);
-      });
-    },
-    [onDrop]
   );
 
   const stopScrolling = useCallback(() => {
     clearTimeout(scrollTimer.current);
     scrollTimer.current = null;
     isScrolling.current = false;
-  }, []);
+
+    let { current: dropTargets } = measuredDropTargets;
+    const draggedItem = getDraggedItem(dropTargets);
+
+    // need to restore displaced item,
+    measuredDropTargets.current = dropTargets = measureDropTargets(
+      containerRef.current,
+      orientation,
+      draggedItem
+    );
+    const newDraggedItem = getDraggedItem(dropTargets);
+    // const displacedItemOffset = scrollDirection === 'bwd' ? 0 : 1;
+    if (newDraggedItem.isLast) {
+      const nextDisplacedItem = dropTargets[newDraggedItem.currentIndex - 1];
+      displaceItem(nextDisplacedItem, draggedItem.size, true);
+    } else {
+      const nextDisplacedItem = dropTargets[newDraggedItem.currentIndex + 1];
+      displaceItem(nextDisplacedItem, draggedItem.size);
+    }
+  }, [containerRef, displaceItem, orientation]);
 
   const startScrolling = useCallback(
     (direction, scrollRate, scrollUnit = 30) => {
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
       const maxScroll = direction === 'fwd' ? scrollHeight - clientHeight - scrollTop : scrollTop;
       const nextScroll = Math.min(maxScroll, scrollUnit);
-      if (nextScroll > 0) {
+
+      if (direction === 'fwd') {
+        containerRef.current.scrollTop = scrollTop + nextScroll;
+      } else {
+        containerRef.current.scrollTop = scrollTop - nextScroll;
+      }
+
+      if (nextScroll === maxScroll) {
+        stopScrolling();
+      } else {
         isScrolling.current = true;
-        const dragPos = parseInt(draggable.current.element.style.top);
-        if (direction === 'fwd') {
-          draggable.current.element.style.top = dragPos + nextScroll + 'px';
-          containerRef.current.scrollTop = scrollTop + nextScroll;
-        } else {
-          draggable.current.element.style.top = dragPos - nextScroll + 'px';
-          containerRef.current.scrollTop = scrollTop - nextScroll;
-        }
         scrollTimer.current = setTimeout(() => {
           startScrolling(direction, scrollRate, scrollUnit);
         }, 100);
-      } else {
-        stopScrolling();
       }
     },
     [containerRef, stopScrolling]
@@ -173,9 +126,12 @@ export const useDragDrop = ({ allowDragDrop, onDrop, orientation, containerRef, 
 
   const dragMouseMoveHandler = useCallback(
     (evt) => {
-      const { START, POS } = dimensions(orientation);
+      const { POS } = dimensions(orientation);
       const { [POS]: clientPos } = evt;
       const { current: lastClientPos } = previousPos;
+      const { current: currentDropTarget } = dropTarget;
+      let { current: dropTargets } = measuredDropTargets;
+      const draggedItem = getDraggedItem(dropTargets);
 
       if (Math.abs(lastClientPos - clientPos) > 0) {
         previousPos.current = clientPos;
@@ -183,62 +139,58 @@ export const useDragDrop = ({ allowDragDrop, onDrop, orientation, containerRef, 
         let moveDistance = clientPos - startPos.current;
         const scrollDirection = getScrollDirection(clientPos);
 
-        const pos = startPos.current - startOffset.current - mouseOffset.current + moveDistance;
+        const pos = startPos.current - mouseOffset.current + moveDistance;
         const renderPos = Math.max(dragLimits.current.start, Math.min(dragLimits.current.end, pos));
-        if (draggable.current.element) {
-          draggable.current.element.style[START] =
-            renderPos + containerRef.current.scrollTop + 'px';
 
-          if (scrollDirection && isScrollable.current && !isScrolling.current) {
-            resetCurrentTarget(scrollDirection);
-            startScrolling(scrollDirection, 1);
-          } else if (!scrollDirection && isScrolling.current) {
-            stopScrolling();
-          }
+        if (scrollDirection && isScrollable.current && !isScrolling.current) {
+          clearDisplacedItem();
+          startScrolling(scrollDirection, 1);
+        } else if (!scrollDirection && isScrolling.current) {
+          stopScrolling();
+        }
 
-          if (!isScrolling.current) {
-            const direction = lastClientPos < clientPos ? 'fwd' : 'bwd';
-            const offsetPos =
-              clientPos -
-              startOffset.current +
-              containerRef.current.scrollTop -
-              mouseOffset.current;
-            const leadingEdge =
-              direction === 'fwd' ? offsetPos + draggable.current.size : offsetPos;
+        if (!isScrolling.current) {
+          // Have to redefine the following here as we're using it as a style type not a DOMRect type
+          const START = orientation === 'horizontal' ? 'left' : 'top';
+          draggableRef.current.style[START] = renderPos + 'px';
 
-            const getThreshold = direction === 'fwd' ? nextThreshold : prevThreshold;
+          const direction = lastClientPos < clientPos ? 'fwd' : 'bwd';
 
-            const overlappedElementIndex = getThreshold(
-              dragThresholds.current,
-              leadingEdge,
-              draggable.current
-            );
-            if (
-              overlappedElementIndex !== -1 &&
-              direction === 'fwd' &&
-              dragThresholds.current[overlappedElementIndex]?.element === target.current.element
-            ) {
-              displaceElementAtIndex(overlappedElementIndex + 1);
-            } else if (
-              direction === 'bwd' &&
-              overlappedElementIndex !== -1 &&
-              (dragThresholds.current[overlappedElementIndex]?.element !== target.current.element ||
-                target.current.isLast)
-            ) {
-              if (overlappedElementIndex !== -1) {
-                displaceElementAtIndex(overlappedElementIndex);
+          const offsetPos = clientPos - mouseOffset.current;
+          const leadingEdge = direction === 'fwd' ? offsetPos + draggedItem.size : offsetPos;
+          const nextDropTarget = getNextDropTarget(dropTargets, leadingEdge, direction);
+          if (
+            nextDropTarget &&
+            !nextDropTarget.isDraggedElement &&
+            (nextDropTarget.index !== currentDropTarget.index ||
+              direction !== dragDirection.current)
+          ) {
+            const newDropTargets = moveDragItem(dropTargets, nextDropTarget);
+            const draggedItem = getDraggedItem(newDropTargets);
+            clearDisplacedItem();
+            const displacedItemOffset = direction === 'fwd' ? 1 : 1;
+            if (draggedItem.isLast) {
+              const nextDisplacedItem = newDropTargets[draggedItem.currentIndex - 1];
+              displaceItem(nextDisplacedItem, draggedItem.size, true);
+            } else {
+              const nextDisplacedItem =
+                newDropTargets[draggedItem.currentIndex + displacedItemOffset];
+              if (nextDisplacedItem) {
+                displaceItem(nextDisplacedItem, draggedItem.size);
               }
             }
+            dropTarget.current = nextDropTarget;
+            dragDirection.current = direction;
+            measuredDropTargets.current = newDropTargets;
           }
         }
       }
     },
     [
-      containerRef,
-      displaceElementAtIndex,
+      clearDisplacedItem,
+      displaceItem,
       getScrollDirection,
       orientation,
-      resetCurrentTarget,
       startScrolling,
       stopScrolling
     ]
@@ -248,109 +200,90 @@ export const useDragDrop = ({ allowDragDrop, onDrop, orientation, containerRef, 
     removeEventListener('mousemove', dragMouseMoveHandler, false);
     removeEventListener('mouseup', dragMouseUpHandler, false);
 
-    const {
-      current: { element: dragElement, fromIndex }
-    } = draggable;
-    const {
-      current: { element: displacedElement, isLast }
-    } = target;
+    const { current: dropTargets } = measuredDropTargets;
+    const draggedItem = getDraggedItem(dropTargets);
+    const { index: fromIndex, currentIndex: toIndex } = draggedItem;
+    clearDisplacedItem();
+    dropTarget.current = null;
 
-    if (dragElement) {
-      dragElement.style.cssText = '';
-      delete dragElement.dataset.dragging;
-      const children = dragElement.parentNode.children;
-      displacedElement.style.cssText = '';
+    delete draggedItem.element.dataset.dragging;
 
-      if (isLast) {
-        handleDragEnd(fromIndex, -1);
-      } else {
-        const toIndex = Array.prototype.indexOf.call(children, displacedElement);
-        handleDragEnd(fromIndex, toIndex);
-      }
+    setDragPortal(null);
+
+    if (fromIndex !== toIndex) {
+      onDrop(fromIndex, toIndex);
     }
-  }, [dragMouseMoveHandler, handleDragEnd]);
+  }, [clearDisplacedItem, dragMouseMoveHandler, onDrop]);
 
   const preDragMouseMoveHandler = useCallback(
     (evt) => {
-      const { CONTRA, DIMENSION, END, POS, START } = dimensions(orientation);
+      const { DIMENSION, POS, START } = dimensions(orientation);
       const { [POS]: clientPos } = evt;
       let mouseMoveDistance = Math.abs(clientPos - startPos.current);
-      if (mouseMoveDistance > dragThreshold) {
+      if (mouseMoveDistance > dragThreshold && containerRef.current) {
         removeEventListener('mousemove', preDragMouseMoveHandler, false);
         removeEventListener('mouseup', preDragMouseUpHandler, false);
 
-        const dragElement = evt.target.closest(itemQuery);
+        const evtTarget = evt.target;
+        const dragElement = evtTarget.closest(itemQuery);
         if (dragElement) {
-          const containerRect = containerRef.current.getBoundingClientRect();
-          const draggableRect = dragElement.getBoundingClientRect();
+          const dropTargets = measureDropTargets(containerRef.current, orientation, {
+            element: dragElement
+          });
+          const draggedItem = dropTargets.find(isDraggedElement);
+          if (draggedItem) {
+            measuredDropTargets.current = dropTargets;
+            dropTarget.current = draggedItem;
 
-          draggable.current = {
-            element: dragElement,
-            fromIndex: Array.prototype.indexOf.call(containerRef.current.children, dragElement),
-            // pos: draggableRect[START],
-            size: measureElementSize(dragElement, DIMENSION)
-          };
+            const containerRect = containerRef.current.getBoundingClientRect();
+            const draggableRect = draggedItem.element.getBoundingClientRect();
+            mouseOffset.current = clientPos - draggedItem.start;
+            const [lastItem] = dropTargets.slice(-1);
+            const lastChildEnd = lastItem.end;
 
-          mouseOffset.current = clientPos - draggableRect[START];
-          startOffset.current = containerRect[START];
+            dragLimits.current.start = containerRect[START];
+            dragLimits.current.end = isScrollable.current
+              ? containerRect[START] + containerRect[DIMENSION] - draggedItem.size
+              : lastChildEnd - draggedItem.size;
 
-          const lastChild = containerRef.current.querySelector(`${itemQuery}:last-child`);
-          let lastChildEnd = containerRect[START];
-          if (lastChild) {
-            ({ [END]: lastChildEnd } = lastChild.getBoundingClientRect());
+            setDragPortal(
+              renderDraggable(draggableRef, dragElement.cloneNode(true), 'list', draggableRect)
+            );
+
+            dragElement.dataset.dragging = 'true';
+
+            if (draggedItem.isLast) {
+              const nextItem = dropTargets[draggedItem.index - 1];
+              displaceItem(nextItem, draggedItem.size, true);
+            } else {
+              const nextItem = dropTargets[draggedItem.index + 1];
+              displaceItem(nextItem, draggedItem.size);
+            }
           }
-
-          dragLimits.current.end = isScrollable.current
-            ? containerRect[DIMENSION] - 30
-            : lastChildEnd - containerRect[START];
-
-          const containerOffset = (startOffset.current = containerRect[START]);
-          const moveDistance = clientPos - startPos.current;
-          const currentDragPos =
-            draggableRect[START] - containerOffset + moveDistance + containerRef.current.scrollTop;
-
-          dragElement.style.cssText = `position: absolute; width: 100%; ${START}: ${currentDragPos}px; ${CONTRA}: 0px;`;
-          dragElement.dataset.dragging = true;
-
-          handleDragStart();
-
-          displaceElementAtIndex(draggable.current.fromIndex);
 
           addEventListener('mousemove', dragMouseMoveHandler, false);
           addEventListener('mouseup', dragMouseUpHandler, false);
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      containerRef,
-      displaceElementAtIndex,
-      dragMouseMoveHandler,
-      dragMouseUpHandler,
-      handleDragStart,
-      itemQuery,
-      orientation
-    ]
+    [containerRef, displaceItem, dragMouseMoveHandler, dragMouseUpHandler, itemQuery, orientation]
   );
 
   const preDragMouseUpHandler = useCallback(() => {
     removeEventListener('mousemove', preDragMouseMoveHandler, false);
     removeEventListener('mouseup', preDragMouseUpHandler, false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [preDragMouseMoveHandler]);
 
   const mouseDownHandler = useCallback(
     (evt) => {
       if (containerRef.current) {
         const { POS, SCROLL_SIZE, CLIENT_SIZE } = dimensions(orientation);
-
         const { [POS]: clientPos } = evt;
         startPos.current = clientPos;
         previousPos.current = clientPos;
 
         const { [SCROLL_SIZE]: scrollSize, [CLIENT_SIZE]: clientSize } = containerRef.current;
         isScrollable.current = scrollSize > clientSize;
-        containerSize.current = clientSize;
 
         addEventListener('mousemove', preDragMouseMoveHandler, false);
         addEventListener('mouseup', preDragMouseUpHandler, false);
@@ -359,8 +292,14 @@ export const useDragDrop = ({ allowDragDrop, onDrop, orientation, containerRef, 
     [containerRef, orientation, preDragMouseMoveHandler, preDragMouseUpHandler]
   );
 
+  const isDragging = dragPortal !== null;
+  const draggedItemIndex = isDragging ? getDraggedItem(measuredDropTargets.current).index : -1;
+
   return {
-    isDragging,
+    draggable: dragPortal,
+    dropIndicator: null,
+    draggedItemIndex,
+    isDragging: draggedItemIndex !== -1,
     onMouseDown: allowDragDrop ? mouseDownHandler : undefined
   };
 };

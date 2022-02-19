@@ -75,6 +75,7 @@ const List = forwardRef(function List(
 
   const {
     count,
+    draggable,
     focusVisible,
     highlightedIdx,
     listItemHeaderHandlers,
@@ -259,6 +260,7 @@ const List = forwardRef(function List(
       role="listbox"
       tabIndex={0}>
       {renderContent()}
+      {draggable}
     </div>
   );
 });

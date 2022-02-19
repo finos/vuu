@@ -6,10 +6,6 @@ import * as stories from './examples';
 import { App } from './App';
 
 import '@vuu-ui/theme/index.css';
-import '@vuu-ui/shell/index.css';
-import '@vuu-ui/layout/index.css';
-import '@vuu-ui/ui-controls/index.css';
-import '@vuu-ui/data-grid/index.css';
 import '@heswell/component-anatomy/esm/index.css';
 
 import './index.css';
