@@ -45,6 +45,8 @@ const Tree = forwardRef(function Tree(
     revealSelected: revealSelected ? selectedProp ?? defaultSelected ?? false : undefined
   });
 
+  console.log({ sourceWithIds });
+
   const handleSelectionChange = (evt, selected) => {
     onSelectionChange?.(
       evt,

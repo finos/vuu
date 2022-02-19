@@ -54,10 +54,16 @@ export const replaceNode = (nodes, id, props) => {
   let childNodes;
   const newNodes = nodes.map((node) => {
     if (node.id === id) {
-      return node.set(props);
+      return {
+        ...node,
+        ...props
+      };
     } else if (isDescendantOf(node.id, id)) {
       childNodes = replaceNode(node.childNodes, id, props);
-      return node.set({ childNodes });
+      return {
+        ...node,
+        childNodes
+      };
     } else {
       return node;
     }
