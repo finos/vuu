@@ -16,6 +16,7 @@ export class Viewport {
     range,
     bufferSize = 0,
     filter = '',
+    filterQuery = '',
     sort = [],
     groupBy = [],
     visualLink
@@ -34,8 +35,9 @@ export class Viewport {
     };
     this.groupBy = groupBy;
     this.filterSpec = {
-      filter
+      filter: filterQuery
     };
+    this.filter = filter;
     this.isTree = false;
     this.dataWindow = undefined;
     this.rowCountChanged = false;
@@ -103,7 +105,9 @@ export class Viewport {
     return {
       type: 'subscribed',
       clientViewportId: this.clientViewportId,
-      columns
+      columns,
+      filter: this.filter,
+      filterSpec: this.filterSpec
     };
   }
 
