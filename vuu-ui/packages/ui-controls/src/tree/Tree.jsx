@@ -23,6 +23,7 @@ export const TreeNode = ({ children, idx, ...props }) => {
 
 const Tree = forwardRef(function Tree(
   {
+    allowDragDrop,
     className,
     defaultSelected,
     groupSelection = GROUP_SELECTION_NONE,
@@ -45,8 +46,6 @@ const Tree = forwardRef(function Tree(
     revealSelected: revealSelected ? selectedProp ?? defaultSelected ?? false : undefined
   });
 
-  console.log({ sourceWithIds });
-
   const handleSelectionChange = (evt, selected) => {
     onSelectionChange?.(
       evt,
@@ -55,6 +54,7 @@ const Tree = forwardRef(function Tree(
   };
 
   const {
+    draggable,
     focusVisible,
     highlightedIdx,
     hiliteItemAtIndex,
@@ -63,7 +63,8 @@ const Tree = forwardRef(function Tree(
     selected,
     visibleData
   } = useTree({
-    sourceWithIds,
+    allowDragDrop,
+    containerRef: root,
     defaultSelected,
     groupSelection,
     id,
@@ -71,6 +72,7 @@ const Tree = forwardRef(function Tree(
     onHighlight,
     selected: selectedProp,
     selection,
+    sourceWithIds,
     totalItemCount
   });
 
@@ -168,6 +170,7 @@ const Tree = forwardRef(function Tree(
       role="tree"
       tabIndex={0}>
       {renderSourceContent(visibleData)}
+      {draggable}
     </ul>
   );
 });

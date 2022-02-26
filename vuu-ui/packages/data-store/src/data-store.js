@@ -1,5 +1,5 @@
 import { RowSet, GroupRowSet } from './rowset/index';
-import { addFilter, DataTypes, IN, NOT_IN, getFilterType, resetRange } from '@vuu-ui/utils';
+import { addFilter, DataTypes, IN, getFilterType, resetRange } from '@vuu-ui/utils';
 import UpdateQueue from './update-queue';
 
 const DEFAULT_INDEX_OFFSET = 0;
@@ -195,25 +195,19 @@ export default class DataStore {
         return { updates };
       }
     } else {
-      const { totalRowCount, totalSelected } = stats;
+      const { totalSelected } = stats;
 
       // Maybe defer the filter operation ?
       if (totalSelected === 0) {
         this.applyFilterSetChangeToFilter({ colName: rowset.columnName, type: IN, values: [] });
-      } else if (totalSelected === totalRowCount) {
-        this.applyFilterSetChangeToFilter({ colName: rowset.columnName, type: NOT_IN, values: [] });
+        // } else if (totalSelected === totalRowCount) {
+        //   this.applyFilterSetChangeToFilter({ colName: rowset.columnName, type: NOT_IN, values: [] });
       } else {
         // we are not operating on the whole dataset, therefore it is a filtered subset
         if (allSelected) {
           this.applyFilterSetChangeToFilter({
             colName: rowset.columnName,
             type: IN,
-            values: rowset.values
-          });
-        } else {
-          this.applyFilterSetChangeToFilter({
-            colName: rowset.columnName,
-            type: NOT_IN,
             values: rowset.values
           });
         }

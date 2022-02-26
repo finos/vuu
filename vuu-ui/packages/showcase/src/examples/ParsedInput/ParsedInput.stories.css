@@ -1,0 +1,7 @@
+.hwButtonClear .hwIconContainer {
+  --menu-icon-size: 12px;
+  background-color: black;
+  height: 12px;
+  -webkit-mask: var(--svg-icon) center center/var(--menu-icon-size) var(--menu-icon-size) no-repeat;
+  mask: var(--svg-icon) center center/var(--menu-icon-size) var(--menu-icon-size) no-repeat;
+}

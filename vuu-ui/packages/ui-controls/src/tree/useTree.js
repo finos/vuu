@@ -6,12 +6,15 @@ import {
   useSelection
 } from '../common-hooks';
 import { useKeyboardNavigation as useTreeNavigation } from './use-tree-keyboard-navigation';
+import { useDragDrop } from '../common-hooks/use-hierarchical-drag-drop';
 
 const EMPTY_ARRAY = [];
 
 export const useTree = ({
-  sourceWithIds,
+  allowDragDrop,
+  containerRef,
   defaultSelected,
+  sourceWithIds,
   groupSelection,
   id,
   onChange,
@@ -42,6 +45,30 @@ export const useTree = ({
     indexPositions: dataHook.indexPositions,
     setVisibleData: dataHook.setData,
     source: dataHook.data
+  });
+
+  const handleDrop = useCallback(
+    (fromIndex, toIndex) => {
+      console.log(`dropAtIndex ${fromIndex} ${toIndex}`);
+      const data = dataHook.data.slice();
+      const [target] = data.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        data.push(target);
+      } else {
+        data.splice(toIndex, 0, target);
+      }
+      dataHook.setData(data);
+      keyboardHook.hiliteItemAtIndex(toIndex);
+    },
+    [dataHook, keyboardHook]
+  );
+
+  const { onMouseDown, ...dragDropHook } = useDragDrop({
+    allowDragDrop,
+    orientation: 'vertical',
+    containerRef,
+    itemQuery: '.hwTreeNode:not(.hwTreeNode-toggle)',
+    onDrop: handleDrop
   });
 
   const selectionHook = useSelection({
@@ -105,6 +132,7 @@ export const useTree = ({
     onBlur: keyboardHook.listProps.onBlur,
     onFocus: keyboardHook.listProps.onFocus,
     onKeyDown: handleKeyDown,
+    onMouseDown,
     onMouseDownCapture: keyboardHook.listProps.onMouseDownCapture,
     onMouseLeave: keyboardHook.listProps.onMouseLeave,
     onMouseMove: keyboardHook.listProps.onMouseMove
@@ -121,6 +149,7 @@ export const useTree = ({
     listProps,
     listItemHandlers,
     selected: selectionHook.selected,
-    visibleData: dataHook.data
+    visibleData: dataHook.data,
+    ...dragDropHook
   };
 };

@@ -136,14 +136,16 @@ export const moveDragItem = (measuredItems, dropTarget) => {
 
 export const isDraggedElement = (item) => item.isDraggedElement;
 
-export const measureDropTargets = (container, orientation, draggedItem) => {
+export const measureDropTargets = (container, orientation, draggedItem, itemQuery) => {
   const dropTargets = [];
   const startTime = performance.now();
 
   const adjustmentForDraggedItem = draggedItem.size || 0;
   let appliedAdjustment = 0;
   // TODO need to make sure we're including only the children we should
-  const children = Array.from(container.children);
+  const children = Array.from(
+    itemQuery ? container.querySelectorAll(`${itemQuery}`) : container.children
+  );
   for (let index = 0, len = children.length; index < len; index++) {
     const element = children[index];
     const dimension = orientation === 'horizontal' ? 'width' : 'height';
