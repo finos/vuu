@@ -75,8 +75,6 @@ export const useParsedText = () => {
       }));
       const newSuggestions = await promisedSuggestions;
 
-      console.log({ newSuggestions });
-
       if (
         !newSuggestions.isMultiSelect ||
         !sameSuggestions(suggestionsRef.current, newSuggestions)

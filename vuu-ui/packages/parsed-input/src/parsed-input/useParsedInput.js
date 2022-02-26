@@ -6,13 +6,14 @@ import {
   useSelection
 } from '@vuu-ui/ui-controls';
 import { useInputEditing } from './use-input-editing';
-import { useSuggestions } from './use-suggestions';
+import { useSuggestions } from './suggestions';
 
 const ENTER_ONLY = ['Enter'];
 
 export const useParsedInput = ({
   highlightedIdx,
   id,
+  isMultiSelect,
   onCommit,
   onDropdownClose,
   onDropdownOpen,
@@ -29,6 +30,8 @@ export const useParsedInput = ({
 }) => {
   const dataHook = useHierarchicalData(sourceWithIds, 'ParsedInput');
 
+  console.log({ sourceWithIds });
+
   const suggestionsAreIllustrationsOnly = dataHook.indexPositions.every(
     (item) => item.isIllustration
   );
@@ -40,7 +43,8 @@ export const useParsedInput = ({
     openOnFocus: true
   });
 
-  const { acceptSuggestion, isMultiSelect } = useSuggestions({
+  const { acceptSuggestion } = useSuggestions({
+    isMultiSelect,
     onCommit,
     selected,
     setCurrentText,

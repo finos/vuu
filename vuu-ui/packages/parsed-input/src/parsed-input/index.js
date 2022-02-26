@@ -1,2 +1,2 @@
 export * from './ParsedInput';
-export * from './SuggestionList';
+export * from './suggestions';

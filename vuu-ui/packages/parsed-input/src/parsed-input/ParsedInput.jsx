@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { Button, Dropdown, useItemsWithIds, useForkRef, SINGLE } from '@vuu-ui/ui-controls';
 import { useId } from '@vuu-ui/react-utils';
 
-import { SuggestionList } from './SuggestionList';
+import { SuggestionList } from './suggestions';
 import { TokenMirror } from './TokenMirror';
 import { useParsedInput } from './useParsedInput';
 import { useParsedText } from './useParsedText';
@@ -16,10 +16,18 @@ const NO_COMPLETION = [];
 
 export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommit }, ref) {
   const id = useId(idProp);
-  const { result, errors, textRef, tokens, parseText, suggestions, insertSymbol } = useParsedText();
+  const {
+    result,
+    errors,
+    textRef,
+    tokens,
+    parseText,
+    suggestions: { values: suggestions, isMultiSelect },
+    insertSymbol
+  } = useParsedText();
   const { current: text } = textRef;
 
-  const selectionStrategy = suggestions.isMultiSelect ? 'checkbox-only' : SINGLE;
+  const selectionStrategy = isMultiSelect ? 'checkbox-only' : SINGLE;
 
   const root = useRef(null);
   const suggestionList = useRef(null);
@@ -74,7 +82,7 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     clear();
   }, [clear, errors.length, onCommit, result]);
 
-  const [totalItemCount, sourceWithIds] = useItemsWithIds(suggestions.values, id, {
+  const [totalItemCount, sourceWithIds] = useItemsWithIds(suggestions, id, {
     label: 'ParsedInput'
   });
 
@@ -129,6 +137,7 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     visibleData
   } = useParsedInput({
     highlightedIdx: sourceWithIds.length === 0 ? -1 : highlightedIdx,
+    isMultiSelect,
     onCommit: handleCommit,
     onDropdownClose: handleDropdownChange,
     onDropdownOpen: handleDropdownChange,

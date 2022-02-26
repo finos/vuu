@@ -1,10 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { ParsedInput, ParserProvider, SuggestionList } from '@vuu-ui/parsed-input';
 import { parseFilter, extractFilter, filterAsQuery } from '@vuu-ui/datagrid-parsers';
+import { addFilter, filterClauses } from '@vuu-ui/utils';
+import { Button, Pill, Pillbox } from '@vuu-ui/ui-controls';
 import { ComponentAnatomy } from '@heswell/component-anatomy';
 import createSuggestionProvider from './filter-suggestion-provider';
 
 import '@vuu-ui/parsed-input/index.css';
+import './ParsedInput.stories.css';
 
 const story = {
   title: 'Antlr/ParsedInput',
@@ -75,6 +78,62 @@ export const ParsedFilterInput = () => {
       <div style={{ width: 600 }}>
         <ParsedInput onCommit={handleCommit} />
       </div>
+    </ParserProvider>
+  );
+};
+
+export const ParsedFilterInputWithPillbox = () => {
+  const [filter, setFilter] = useState();
+  const [namedFilters, setNamedFilters] = useState([]);
+
+  const handleCommit = (result) => {
+    const { filter: f, name } = extractFilter(result);
+    const filterQuery = filterAsQuery(f, namedFilters);
+    console.log(
+      `extracted filter 
+      ${JSON.stringify(f)} 
+      %c${filterQuery}
+      %c${name ? name : ''}
+      `,
+      'color:blue;font-weight:bold;',
+      'color:black'
+    );
+    setFilter(addFilter(filter, f, { combineWith: 'and' }));
+    if (name) {
+      setNamedFilters(namedFilters.concat({ name, f }));
+    }
+  };
+
+  const handleClearAll = () => {
+    console.log('clear all');
+  };
+
+  return (
+    <ParserProvider
+      parser={parseFilter}
+      suggestionProvider={createSuggestionProvider({
+        columns: typedColumns,
+        columnNames,
+        namedFilters
+      })}>
+      <div style={{ width: 600 }}>
+        <ParsedInput onCommit={handleCommit} />
+      </div>
+      {filter ? (
+        <div style={{ width: 600, display: 'flex', border: 'solid 1px #ccc' }}>
+          <Pillbox style={{ width: 600, flex: '1 1 auto' }}>
+            {filterClauses(filter).map((clause, i) => (
+              <Pill key={i} prefix={clause.column} label={clause.value} closeable selected />
+            ))}
+          </Pillbox>
+          <Button
+            className="hwButtonClear"
+            style={{ flex: '0 0 28px', height: 28 }}
+            onClick={handleClearAll}>
+            <span className={`hwIconContainer`} data-icon="close-circle" />
+          </Button>
+        </div>
+      ) : null}
     </ParserProvider>
   );
 };
