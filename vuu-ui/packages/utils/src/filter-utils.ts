@@ -1,19 +1,28 @@
-import {ColumnMap} from "./column-utils";
-import {Row} from "./row-utils";
+import { ColumnMap } from './column-utils';
+import { Row } from './row-utils';
 
 export const AND = 'and';
 export const EQUALS = '=';
+export const NOT_EQUALS = '!=';
 export const GREATER_THAN = '>';
-export const GREATER_EQ = '>=';
-export const IN = 'in';
-export const LESS_EQ = '<=';
 export const LESS_THAN = '<';
-export const NOT_IN = 'NOT_IN';
-export const NOT_STARTS_WITH = 'NOT_SW';
 export const OR = 'or';
-export const STARTS_WITH = 'SW';
+export const STARTS_WITH = 'starts';
+export const ENDS_WITH = 'ends';
+export const IN = 'in';
 
-export type FilterType = 'and' | '=' | '>' | '>=' | 'in' | '<=' | '<' | 'NOT_IN' | 'NOT_SW' | 'or' | 'SW';
+export type FilterType =
+  | 'and'
+  | '='
+  | '>'
+  | '>='
+  | 'in'
+  | '<='
+  | '<'
+  | 'NOT_IN'
+  | 'NOT_SW'
+  | 'or'
+  | 'SW';
 
 export const SET_FILTER_DATA_COLUMNS = [
   { name: 'name', flex: 1 },
@@ -32,13 +41,31 @@ export default function filterRows(rows: Row[], columnMap: ColumnMap, filter: Fi
   return applyFilter(rows, functor(columnMap, filter));
 }
 
-export function addFilter(existingFilter: Filter | null, filter: Filter | null): Filter | null {
-  if (filter && includesNoValues(filter)) {
-    const { colName } = filter;
-    existingFilter = removeFilterForColumn(existingFilter, { name: colName });
+export const filterClauses = (filter, clauses = []) => {
+  const { column, op, value, values, filters } = filter;
+  if (op === 'or' || op === 'and') {
+    filters.forEach((f) => clauses.push(...filterClauses(f)));
+  } else {
+    clauses.push({ column, op, value: value ?? values?.join(',') });
+  }
+  return clauses;
+};
+
+const DEFAULT_ADD_FILTER_OPTS = {
+  combineWith: AND
+};
+
+export function addFilter(
+  existingFilter: Filter | null,
+  filter: Filter | null,
+  { combineWith = AND } = DEFAULT_ADD_FILTER_OPTS
+) {
+  if (includesNoValues(filter)) {
+    const { column } = filter;
+    existingFilter = removeFilterForColumn(existingFilter, { name: column });
   } else if (includesAllValues(filter)) {
     // A filter that returns all values is a way to remove filtering for this column
-    return removeFilterForColumn(existingFilter, { name: filter!.colName });
+    return removeFilterForColumn(existingFilter, { name: filter.column });
   }
 
   if (!existingFilter) {
@@ -47,19 +74,19 @@ export function addFilter(existingFilter: Filter | null, filter: Filter | null):
     return existingFilter;
   }
 
-  if (isAndFilter(existingFilter) && isAndFilter(filter)) {
-    return createAndFilter(combine(existingFilter.filters, filter.filters));
-  } else if (isAndFilter(existingFilter)) {
+  if (existingFilter.op === AND && filter.op === AND) {
+    return { type: AND, filters: combine(existingFilter.filters, filter.filters) };
+  } else if (existingFilter.op === AND) {
     const filters = replaceOrInsert(existingFilter.filters, filter);
-    return filters.length > 1 ? { type: AND, filters } : filters[0];
-  } else if (isAndFilter(filter)) {
-    return { type: AND, filters: filter.filters.concat(existingFilter) };
+    return filters.length > 1 ? { op: AND, filters } : filters[0];
+  } else if (filter.op === AND) {
+    return { op: AND, filters: filter.filters.concat(existingFilter) };
   } else if (filterEquals(existingFilter, filter, true)) {
     return filter;
   } else if (sameColumn(existingFilter, filter)) {
     return merge(existingFilter, filter);
   } else {
-    return { type: AND, filters: [existingFilter, filter] };
+    return { op: AND, filters: [existingFilter, filter] };
   }
 }
 
@@ -142,22 +169,16 @@ export function functor(columnMap: ColumnMap, filter: Filter): RowFilterFn {
   switch (filter.type) {
     case IN:
       return testInclude(columnMap, filter);
-    case NOT_IN:
-      return testExclude(columnMap, filter);
     case EQUALS:
       return testEQ(columnMap, filter);
+    case NOT_EQUALS:
+      return !testEQ(columnMap, filter);
     case GREATER_THAN:
       return testGT(columnMap, filter);
-    case GREATER_EQ:
-      return testGE(columnMap, filter);
     case LESS_THAN:
       return testLT(columnMap, filter);
-    case LESS_EQ:
-      return testLE(columnMap, filter);
     case STARTS_WITH:
       return testSW(columnMap, filter);
-    case NOT_STARTS_WITH:
-      return testSW(columnMap, filter, true);
     case AND:
       return testAND(columnMap, filter as AndFilter);
     case OR:
@@ -200,16 +221,8 @@ function testGT(cols: ColumnMap, f: Filter) {
   return (row: Row) => row[cols[f.colName!]] > f.value;
 }
 
-function testGE(cols: ColumnMap, f: Filter) {
-  return (row: Row) => row[cols[f.colName!]] >= f.value;
-}
-
 function testLT(cols: ColumnMap, f: Filter) {
-  return (row: Row) => row[cols[f.colName!]] < f.value;
-}
-
-function testLE(cols: ColumnMap, f: Filter) {
-  return (row: Row) => row[cols[f.colName!]] <= f.value;
+  return (row) => row[cols[f.colName]] < f.value;
 }
 
 function testInclude(cols: ColumnMap, f: Filter) {
@@ -217,14 +230,8 @@ function testInclude(cols: ColumnMap, f: Filter) {
   return (row: Row) => f.values.findIndex((val: any) => val == row[cols[f.colName!]]) !== -1;
 }
 
-// faster to convert values to a keyed map
-function testExclude(cols: ColumnMap, f: Filter) {
-  // eslint-disable-next-line eqeqeq
-  return (row: Row) => f.values.findIndex((val: any) => val == row[cols[f.colName!]]) === -1;
-}
-
-function testEQ(cols: ColumnMap, f: Filter) {
-  return (row: Row) => row[cols[f.colName!]] === f.value; // TODO make colName required?
+function testEQ(cols, f) {
+  return (row) => row[cols[f.colName]] === f.value;
 }
 
 export function shouldShowFilter(filterColumnName: string, column: Column): boolean {
@@ -239,8 +246,7 @@ export function shouldShowFilter(filterColumnName: string, column: Column): bool
 function includesAllValues(filter?: Filter | null): boolean {
   if (!filter) {
     return false;
-  }
-  if (isNotInFilter(filter) && filter.values.length === 0) {
+  } else if (filter.type === STARTS_WITH && filter.value === '') {
     return true;
   }
   return filter.type === STARTS_WITH && filter.value === '';
@@ -259,9 +265,7 @@ export function extendsFilter(f1: Filter | null = null, f2: Filter | null = null
     if (f1.type === f2.type) {
       switch (f1.type) {
         case IN:
-          return f2.values.length < (f1 as InFilter).values.length && containsAll((f1 as InFilter).values, f2.values);
-        case NOT_IN:
-          return f2.values.length > (f1 as NotInFilter).values.length && containsAll(f2.values, (f1 as NotInFilter).values);
+          return f2.values.length < f1.values.length && containsAll(f1.values, f2.values);
         case STARTS_WITH:
           return f2.value.length > f1.value.length && f2.value.indexOf(f1.value) === 0;
         // more cases here such as GT,LT
@@ -280,9 +284,7 @@ export function extendsFilter(f1: Filter | null = null, f2: Filter | null = null
 }
 
 const byColName = (a: Filter, b: Filter) =>
-  (a.colName === b.colName
-    ? 0
-    : a.colName && b.colName && a.colName < b.colName ? -1 : 1);
+  a.colName === b.colName ? 0 : a.colName && b.colName && a.colName < b.colName ? -1 : 1;
 
 function extendsFilters(f1: CombinedFilter, f2: CombinedFilter) {
   if (f1.colName) {
@@ -310,35 +312,33 @@ function extendsFilters(f1: CombinedFilter, f2: CombinedFilter) {
 
 // If we add an IN filter and there is an existing NOT_IN, we would always expect the IN
 // values to exist in the NOT_IN set (as long as user interaction is driving the filtering)
-function replaceOrInsert(filters: Filter[], filter: Filter): Filter[] {
-  const { type, colName, values } = filter;
-  if (type === IN || type === NOT_IN) {
-    const otherType = type === IN ? NOT_IN : IN;
-    // see if we have an 'other' entry
-    let idx = filters.findIndex((f) => f.type === otherType && f.colName === colName);
-    if (idx !== -1) {
-      const { values: existingValues } = filters[idx];
-      if (values.every((value: any) => existingValues.indexOf(value) !== -1)) {
-        if (values.length === existingValues.length) {
-          // we simply remove the existing 'other' filter ...
-          return filters.filter((f, i) => i !== idx);
-        } else {
-          // ... or strip the matching values from the 'other' filter values
-          let newValues = existingValues.filter((value: any) => !values.includes(value));
-          return filters.map((filter, i) =>
-            i === idx ? { ...filter, values: newValues } : filter
-          );
-        }
-      } else if (values.some((value: any) => existingValues.indexOf(value) !== -1)) {
-        console.log(`partial overlap between IN and NOT_IN`);
-      }
-    } else {
-      idx = filters.findIndex((f) => f.type === type && f.colName === filter.colName);
-      if (idx !== -1) {
-        return filters.map((f, i) => (i === idx ? merge(f, filter) as Filter : f));
-      }
-    }
-  }
+function replaceOrInsert(filters, filter) {
+  // const { type, column, values } = filter;
+  // if (type === IN) {
+  //   let idx = filters.findIndex((f) => f.type === EQUALS && f.column === column);
+  //   if (idx !== -1) {
+  //     const { values: existingValues } = filters[idx];
+  //     if (values.every((value) => existingValues.indexOf(value) !== -1)) {
+  //       if (values.length === existingValues.length) {
+  //         // we simply remove the existing 'other' filter ...
+  //         return filters.filter((f, i) => i !== idx);
+  //       } else {
+  //         // ... or strip the matching values from the 'other' filter values
+  //         let newValues = existingValues.filter((value) => !values.includes(value));
+  //         return filters.map((filter, i) =>
+  //           i === idx ? { ...filter, values: newValues } : filter
+  //         );
+  //       }
+  //     } else if (values.some((value) => existingValues.indexOf(value) !== -1)) {
+  //       console.log(`partial overlap between IN and NOT_IN`);
+  //     }
+  //   } else {
+  //     idx = filters.findIndex((f) => f.type === type && f.colName === filter.colName);
+  //     if (idx !== -1) {
+  //       return filters.map((f, i) => (i === idx ? merge(f, filter) : f));
+  //     }
+  //   }
+  // }
 
   return filters.concat(filter);
 }
@@ -350,27 +350,7 @@ function merge(f1: Filter, f2: Filter): Filter | null {
 
   if (includesNoValues(f2)) {
     return f2;
-  } else if ((t1 === IN && t2 === NOT_IN) || (t1 === NOT_IN && t2 === IN)) {
-    // do the two sets cancel each other out ?
-    if (f1.values.length === f2.values.length && f1.values.every((v: any) => f2.values.includes(v))) {
-      if (t1 === IN && t2 === NOT_IN) {
-        return {
-          colName: f1.colName,
-          type: IN,
-          values: []
-        };
-      } else {
-        return null;
-      }
-    } else if (f1.values.length > f2.values.length) {
-      if (f2.values.every((v: any) => f1.values.includes(v))) {
-        return {
-          ...f1,
-          values: f1.values.filter((v: any) => !f2.values.includes(v))
-        };
-      }
-    }
-  } else if (sameType === IN || sameType === NOT_IN) {
+  } else if (sameType === IN) {
     return {
       ...f1,
       values: f1.values.concat(f2.values.filter((v: any) => !f1.values.includes(v)))
@@ -378,11 +358,6 @@ function merge(f1: Filter, f2: Filter): Filter | null {
   } else if (sameType === STARTS_WITH) {
     return {
       type: OR,
-      filters: [f1, f2]
-    };
-  } else if (sameType === NOT_STARTS_WITH) {
-    return {
-      type: AND,
       filters: [f1, f2]
     };
   }
@@ -435,7 +410,9 @@ export function removeFilter(sourceFilter: Filter, filterToRemove: Filter) {
       )}`
     );
   } else {
-    const filters = (sourceFilter as AndFilter).filters.filter((f) => !filterEquals(f, filterToRemove));
+    const filters = (sourceFilter as AndFilter).filters.filter(
+      (f) => !filterEquals(f, filterToRemove)
+    );
     return filters.length > 0 ? { type: AND, filters } : null;
   }
 }
@@ -558,7 +535,7 @@ export function removeFilterForColumn(sourceFilter: Filter | null, column: Colum
   }
 }
 
-const sameColumn = (f1: Filter, f2: Filter) => f1.colName === f2.colName;
+const sameColumn = (f1, f2) => f1.column === f2.column;
 
 export function filterEquals(f1?: Filter, f2?: Filter, strict = false) {
   if (f1 && f2) {
@@ -567,13 +544,7 @@ export function filterEquals(f1?: Filter, f2?: Filter, strict = false) {
       return isSameColumn;
     } else {
       return (
-        isSameColumn &&
-        f1.type === f2.type &&
-        f1.mode === f2.mode &&
-        f1.value === f2.value &&
-        f1.values &&
-        f2.values &&
-        sameValues(f1.values, f2.values)
+        isSameColumn && f1.op === f2.op && f1.value === f2.value && sameValues(f1.values, f2.values)
       );
     }
   } else {
@@ -585,8 +556,6 @@ export function filterEquals(f1?: Filter, f2?: Filter, strict = false) {
 function filterExtends(f1: Filter, f2: Filter): boolean {
   if (isInFilter(f1) && isInFilter(f2)) {
     return f2.values.length < f1.values.length && containsAll(f1.values, f2.values);
-  } else if (isNotInFilter(f1) && isNotInFilter(f2)) {
-    return f2.values.length > f1.values.length && containsAll(f2.values, f1.values);
   } else {
     return false;
   }
@@ -644,6 +613,6 @@ function partition<T>(
   }
 
   return test2 === null
-    ? [results1, misses] as [T[], T[]]
-    : [results1, results2, misses] as [T[], T[], T[]];
+    ? ([results1, misses] as [T[], T[]])
+    : ([results1, results2, misses] as [T[], T[], T[]]);
 }
