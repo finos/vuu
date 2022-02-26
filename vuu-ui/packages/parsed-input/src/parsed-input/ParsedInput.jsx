@@ -27,6 +27,8 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
   } = useParsedText();
   const { current: text } = textRef;
 
+  console.log({ suggestions, isMultiSelect });
+
   const selectionStrategy = isMultiSelect ? 'checkbox-only' : SINGLE;
 
   const root = useRef(null);
@@ -48,6 +50,9 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     (text, typedSubstitutionText) => {
       setSelected([]);
       // we need to pass an array of the substituted tokens, so we can map them beck to actual names
+      // onsole.log(
+      //   `ParsedInput setText text= '${text}' typedSubstitutionText= ${typedSubstitutionText}`
+      // );
       parseText(text, typedSubstitutionText);
     },
     [parseText, setSelected]

@@ -6,6 +6,7 @@ import { FilterLexer } from '../../generated/parsers/filter/FilterLexer';
 import FilterVisitor from './FilterVisitor.js';
 import { getSuggestions } from './parse-suggestions';
 import { buildUITokens } from './ui-tokens';
+import { isOpenList } from './parse-utils';
 
 class ExprErrorListener {
   constructor(errors) {
@@ -18,12 +19,23 @@ class ExprErrorListener {
   }
 }
 
-export const parseFilter = (input, typedInput = input, suggestionProvider, isList = false) => {
-  // console.log(`%cparseFilter ${input} ('${typedInput}')`, 'color:red;font-weight: bold;');
+const DEFAULT_OPTIONS = {};
+
+export const parseFilter = (
+  input,
+  typedInput = input,
+  suggestionProvider,
+  { insertSymbol = '' } = DEFAULT_OPTIONS
+) => {
+  console.log(
+    `%cparseFilter ${input} (+ insert Symbol '${insertSymbol}') ( typed input'${typedInput}')`,
+    'color:red;font-weight: bold;'
+  );
 
   const errors = [];
 
-  const parser = constructParser(typedInput);
+  const safeText = typedInput.replaceAll('/', '-');
+  const parser = constructParser(`${safeText}${insertSymbol}`);
 
   const errorListener = new ExprErrorListener(errors);
 
@@ -42,6 +54,7 @@ export const parseFilter = (input, typedInput = input, suggestionProvider, isLis
     input === typedInput ? undefined : { [lastWord(typedInput)]: lastWord(input) };
 
   const parsedTokens = buildUITokens(parser, parseResult, substitution);
+  const isList = isOpenList(parsedTokens);
 
   try {
     // Important that we pass the original parseTree, do not allow suggestion mechanism to regenerate it,
@@ -56,11 +69,20 @@ export const parseFilter = (input, typedInput = input, suggestionProvider, isLis
       isList
     );
 
-    return [input, parseResult, errors, parsedTokens, suggestions];
+    if (insertSymbol) {
+      const [lastToken] = parsedTokens.slice(-1);
+      if (lastToken.text === insertSymbol) {
+        parsedTokens.pop();
+      }
+    }
+
+    return [input, parseResult, errors, parsedTokens, suggestions, insertSymbol];
   } catch (err) {
     if (err.type === 'open-list') {
       // TODO do we need to check whether input already ends with space or can we assume it ?
-      return parseFilter(`${input}${err.text}`, undefined, suggestionProvider, true);
+      return parseFilter(`${input}`, undefined, suggestionProvider, {
+        insertSymbol: err.text
+      });
     } else {
       console.error(err);
       return [];

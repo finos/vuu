@@ -58,7 +58,7 @@ export const useMultipleSuggestions = ({
   );
 
   const handleSuggestionSelection = useCallback(
-    (evt, selectedIds) => {
+    (evt, selectedIds, insertedSymbol = '') => {
       const textRoot = textRef.current;
       const [lastSelectedId] = selectedIds.slice(-1);
       if (isCompleteSelected(lastSelectedId)) {
@@ -94,8 +94,10 @@ export const useMultipleSuggestions = ({
         updatedSuggestions = sortSelectedSuggestions(selectedIds, updatedSuggestions);
         // The order of these statements is important
         setVisibleData(updatedSuggestions);
-        setCurrentText(textRoot + suggestedText);
-        setText(textRoot + suggestedText);
+        const listOpen =
+          insertedSymbol && textRoot.slice(-1) !== insertedSymbol ? insertedSymbol : '';
+        setCurrentText(textRoot + listOpen + suggestedText);
+        setText(textRoot + listOpen + suggestedText);
         // setSelected(updatedSelected);
         const indexOfCommit = updatedSuggestions.findIndex(findComplete);
         setHighlighted(indexOfCommit);

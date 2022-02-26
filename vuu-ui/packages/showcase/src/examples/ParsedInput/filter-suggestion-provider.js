@@ -1,21 +1,31 @@
+const filterListValues = (values, text) => {
+  if (values.some((value) => value.toLowerCase() === text)) {
+    return values;
+  } else {
+    return values.filter((value) => value.toLowerCase().startsWith(text));
+  }
+};
+
+const filterNonListValues = (values, text, propertyName) =>
+  values.filter((value) => getStringValue(value, propertyName).startsWith(text));
+
 // We accept string values or objects, in which case we will use object[propertyName]
 const suggestedValues = (values, text = '', operator = '', isListItem = false, propertyName) => {
   const lcText = text.toLowerCase();
-  const result = values
-    .filter((value) => isListItem || getStringValue(value, propertyName).startsWith(lcText))
-    .map((v) => {
-      const { name = v, type, typedName } = v;
-      return {
-        value: name,
-        type,
-        typedName,
-        completion: name.toLowerCase().startsWith(lcText) ? name.slice(text.length) : name,
-        isIllustration: operator === 'starts',
-        isListItem
-      };
-    });
-
-  return result;
+  const result = isListItem
+    ? filterListValues(values, lcText)
+    : filterNonListValues(values, lcText, propertyName);
+  return result.map((v) => {
+    const { name = v, type, typedName } = v;
+    return {
+      value: name,
+      type,
+      typedName,
+      completion: name.toLowerCase().startsWith(lcText) ? name.slice(text.length) : name,
+      isIllustration: operator === 'starts',
+      isListItem
+    };
+  });
 };
 
 const suggestColumnNames = (columns, text, isListItem) => {

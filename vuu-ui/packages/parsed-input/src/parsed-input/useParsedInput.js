@@ -29,9 +29,6 @@ export const useParsedInput = ({
   sourceWithIds
 }) => {
   const dataHook = useHierarchicalData(sourceWithIds, 'ParsedInput');
-
-  console.log({ sourceWithIds });
-
   const suggestionsAreIllustrationsOnly = dataHook.indexPositions.every(
     (item) => item.isIllustration
   );

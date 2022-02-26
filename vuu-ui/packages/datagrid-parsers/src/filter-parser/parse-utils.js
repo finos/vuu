@@ -29,6 +29,21 @@ const getNamedFilter = (namedFilters, name) => namedFilters.find((f) => f.name =
 
 export const NO_SUGGESTIONS = { values: [], total: 0 };
 
+const LBRACK = '[';
+const RBRACK = ']';
+
+export const isOpenList = (tokens) => {
+  for (let i = tokens.length - 1; i >= 0; i--) {
+    const { text } = tokens[i];
+    if (text === RBRACK) {
+      return false;
+    } else if (text === LBRACK) {
+      return true;
+    }
+  }
+  return false;
+};
+
 export const filterAsQuery = (filter, namedFilters) => {
   if (filter.op === 'or' || filter.op === 'and') {
     const [clause1, clause2] = filter.filters;

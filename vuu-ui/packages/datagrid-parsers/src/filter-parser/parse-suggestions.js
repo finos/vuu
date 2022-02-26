@@ -3,15 +3,25 @@ import * as c3 from 'antlr4-c3';
 import { FilterParser } from '../../generated/parsers/filter/FilterParser';
 import { computeTokenIndexAndText, NO_SUGGESTIONS } from './parse-utils';
 
+const NO_OPERATOR = [];
+
+const getInValues = (tokens) => {
+  return tokens.filter((t) => t.text !== ',');
+};
+
 const getOperatorToken = (parsedTokens) => {
-  if (parsedTokens.length > 1) {
-    const [nextLastToken, lastToken] = parsedTokens.slice(-2);
-    if (lastToken.type === 'operator') {
-      return lastToken;
-    } else if (nextLastToken.type === 'operator') {
-      return nextLastToken;
+  for (let i = parsedTokens.length - 1; i >= 0; i--) {
+    const token = parsedTokens[i];
+    // TODO us this always correct ?
+    if (token.type === 'operator') {
+      if (token.text === 'in') {
+        return [token, getInValues(parsedTokens.slice(i + 2))];
+      } else {
+        return [token];
+      }
     }
   }
+  return NO_OPERATOR;
 };
 
 const textValue = (text) => (text.startsWith("'") ? text.slice(1, -1).toLowerCase() : text);
@@ -126,7 +136,8 @@ export const getSuggestions = (
     }
   }
   if (rules.has(FilterParser.RULE_atom)) {
-    const operatorToken = getOperatorToken(parsedTokens);
+    const [operatorToken, values] = getOperatorToken(parsedTokens);
+    console.log({ operatorToken, values });
     suggestions.push(
       suggestionProvider(parseResult, {
         token: 'COLUMN-VALUE',
