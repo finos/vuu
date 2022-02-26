@@ -1,8 +1,8 @@
 {
   "name": "@vuu-ui/datagrid-parsers",
   "version": "0.0.15",
-  "main": "src/index.js",
-  "module": "index.js",
+  "module": "src/index.js",
+  "main": "index.js",
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
