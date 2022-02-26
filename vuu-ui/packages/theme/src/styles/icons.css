@@ -41,6 +41,14 @@
   --svg-icon: var(--svg-rings);
 }
 
+[data-icon='close'] {
+  --svg-icon: var(--svg-close);
+}
+
+[data-icon='close-circle'] {
+  --svg-icon: var(--svg-close-circle);
+}
+
 :is([data-icon='folder'], [data-icon='folder-closed']) {
   --svg-icon: var(--svg-folder-closed);
 }

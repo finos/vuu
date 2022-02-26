@@ -1,0 +1,33 @@
+.hwPill {
+  --icon-size: 12px;
+  background-color: var(--surface1);
+  border-radius: 2px;
+  cursor: default;
+  display: inline-flex;
+  font-size: 10px;
+  gap: 3px;
+  height: 14px;
+  padding: 0 4px;
+  text-transform: capitalize;
+  user-select: none;
+}
+
+.hwPill:hover {
+  background-color: var(--surface2);
+}
+
+.hwPill[aria-selected='true'] {
+  background: var(--hw-select-bg);
+  color: var(--hw-select-color);
+}
+
+:is(.hwPill-prefix, .hwPill-label) {
+  text-transform: inherit;
+}
+
+.hwPill-close {
+  background: black;
+  display: inline-block;
+  width: 12px;
+  -webkit-mask: var(--svg-icon) center center/var(--icon-size) var(--icon-size);
+}

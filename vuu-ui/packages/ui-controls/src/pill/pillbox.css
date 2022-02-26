@@ -1,0 +1,11 @@
+.hwPillbox {
+  display: flex;
+  flex-wrap: wrap;
+}
+.hwPillbox {
+  background: white;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 3px;
+}

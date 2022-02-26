@@ -6,13 +6,6 @@ import '@vuu-ui/theme';
 
 import '@heswell/component-anatomy/esm/index.css';
 
-const story = {
-  title: 'UI Controls/Button',
-  component: Button
-};
-
-export default story;
-
 export const DefaultButton = () => {
   const handleClick = (e) => {
     console.log('Button click');

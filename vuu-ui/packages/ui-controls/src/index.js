@@ -11,6 +11,7 @@ export * from './dropdown-list';
 export * from './icons';
 export * from './list';
 export * from './menu';
+export * from './pill';
 export * from './popup';
 export * from './select';
 export * from './select-base';
