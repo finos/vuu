@@ -27,6 +27,8 @@ const caretAtEndOfText = (tokens, caretPosition) => {
 
 const getNamedFilter = (namedFilters, name) => namedFilters.find((f) => f.name === name)?.filter;
 
+export const NO_SUGGESTIONS = { values: [], total: 0 };
+
 export const filterAsQuery = (filter, namedFilters) => {
   if (filter.op === 'or' || filter.op === 'and') {
     const [clause1, clause2] = filter.filters;

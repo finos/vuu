@@ -8,6 +8,8 @@ const SUGGESTION_PRIORITIES = {
   '=': 1
 };
 
+const NO_SUGGESTIONS = { values: [], total: 0 };
+
 const bySuggestionPriority = ({ value: v1 }, { value: v2 }) =>
   (SUGGESTION_PRIORITIES[v1] ?? 2) - (SUGGESTION_PRIORITIES[v2] ?? 2);
 
@@ -40,25 +42,25 @@ const initialState = {
   errors: [],
   result: null,
   tokens: [],
-  options: undefined
+  insertSymbol: ''
 };
 
 const sameSuggestions = (s1, s2) => {
-  if (s1.length === s2.length) {
-    return s1.every((s) => s2.find((suggs) => suggs.value === s.value));
+  if (s1.total === s2.total) {
+    return s1.values.every((s) => s2.values.find((suggs) => suggs.value === s.value));
   }
 };
 
 export const useParsedText = () => {
   const parse = useParser();
   const textRef = useRef('');
-  const [{ errors, result, tokens, options }, setState] = useState(initialState);
-  const [suggestions, setSuggestions] = useState([]);
+  const [{ errors, result, tokens, insertSymbol }, setState] = useState(initialState);
+  const [suggestions, setSuggestions] = useState(NO_SUGGESTIONS);
   const suggestionsRef = useRef(suggestions);
 
   const parseText = useCallback(
     async (newText, typedSubstitutionText) => {
-      const [text, result, errors, tokens, promisedSuggestions, options] = parse(
+      const [text, result, errors, tokens, promisedSuggestions, insertSymbol] = parse(
         newText,
         typedSubstitutionText
       );
@@ -69,17 +71,20 @@ export const useParsedText = () => {
         errors,
         result,
         tokens: addWhiteSpace(tokens, text.length),
-        options
+        insertSymbol
       }));
       const newSuggestions = await promisedSuggestions;
 
-      const isMultiSelect =
-        newSuggestions.length > 0 && newSuggestions.every((suggestion) => suggestion.isListItem);
+      console.log({ newSuggestions });
 
-      if (!isMultiSelect || !sameSuggestions(suggestionsRef.current, newSuggestions)) {
+      if (
+        !newSuggestions.isMultiSelect ||
+        !sameSuggestions(suggestionsRef.current, newSuggestions)
+      ) {
         // don't refresh the suggestions whilst user is editing a multi-select list
+        // TODO we might need to reset sugegstions if user is typingt to filter
         suggestionsRef.current = newSuggestions;
-        newSuggestions.sort(bySuggestionPriority);
+        newSuggestions.values.sort(bySuggestionPriority);
         setSuggestions(newSuggestions);
       }
     },
@@ -93,6 +98,6 @@ export const useParsedText = () => {
     suggestions,
     textRef,
     tokens,
-    options
+    insertSymbol
   };
 };

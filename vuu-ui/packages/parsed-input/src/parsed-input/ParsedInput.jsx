@@ -16,12 +16,10 @@ const NO_COMPLETION = [];
 
 export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommit }, ref) {
   const id = useId(idProp);
-  const { result, errors, textRef, tokens, parseText, suggestions } = useParsedText();
+  const { result, errors, textRef, tokens, parseText, suggestions, insertSymbol } = useParsedText();
   const { current: text } = textRef;
 
-  const isMultiSelect =
-    suggestions.length > 0 && suggestions.every((suggestion) => suggestion.isListItem);
-  const selectionStrategy = isMultiSelect ? 'checkbox-only' : SINGLE;
+  const selectionStrategy = suggestions.isMultiSelect ? 'checkbox-only' : SINGLE;
 
   const root = useRef(null);
   const suggestionList = useRef(null);
@@ -54,6 +52,17 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     [textRef]
   );
 
+  const handleTextInputChange = useCallback(
+    (text, char) => {
+      if (char && char === insertSymbol) {
+        setCurrentText(text);
+      } else {
+        setText(text);
+      }
+    },
+    [insertSymbol, setCurrentText, setText]
+  );
+
   const clear = useCallback(() => {
     setHighlightedIdx(0);
     setOpen(false);
@@ -65,7 +74,7 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     clear();
   }, [clear, errors.length, onCommit, result]);
 
-  const [totalItemCount, sourceWithIds] = useItemsWithIds(suggestions, id, {
+  const [totalItemCount, sourceWithIds] = useItemsWithIds(suggestions.values, id, {
     label: 'ParsedInput'
   });
 
@@ -81,14 +90,15 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
 
   const handleSelectionChange = useCallback(
     (e, selected) => {
+      const { current: acceptSuggestion } = acceptSuggestionRef;
       if (selectionStrategy === SINGLE) {
-        acceptSuggestionRef.current(e, selected);
+        acceptSuggestion(e, selected);
       } else {
-        const selectedIds = acceptSuggestionRef.current(e, selected);
+        const selectedIds = acceptSuggestion(e, selected, insertSymbol);
         setSelected(selectedIds, false);
       }
     },
-    [selectionStrategy, setSelected]
+    [insertSymbol, selectionStrategy, setSelected]
   );
 
   const handleDropdownChange = useCallback((e, isOpen) => {
@@ -122,7 +132,7 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     onCommit: handleCommit,
     onDropdownClose: handleDropdownChange,
     onDropdownOpen: handleDropdownChange,
-    onTextInputChange: setText,
+    onTextInputChange: handleTextInputChange,
     onSelectionChange: handleSelectionChange,
     onHighlight: setHighlightedIdx,
     open,
@@ -158,7 +168,7 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     <>
       <div className={cx(classBase)} ref={useForkRef(root, ref)}>
         <div className={`${classBase}-input-container`}>
-          <TokenMirror tokens={tokens} completion={completion} />
+          <TokenMirror tokens={tokens} completion={`${insertSymbol ?? ''}${completion ?? ''}`} />
           <div
             {...listProps}
             {...inputProps}
