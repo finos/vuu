@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 
 import { DropdownList } from '@vuu-ui/ui-controls';
-import { usa_states } from './List.data';
+import { usa_states } from './List/List.data';
 
 import { ComponentAnatomy } from '@heswell/component-anatomy';
 
