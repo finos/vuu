@@ -8,6 +8,7 @@ export * from './calendar';
 export * from './common-hooks';
 export * from './dropdown';
 export * from './dropdown-list';
+export * from './flipper';
 export * from './icons';
 export * from './list';
 export * from './menu';

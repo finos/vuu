@@ -1,8 +1,7 @@
 import { useCallback, useRef } from 'react';
-import { applyHandlers } from '@vuu-ui/ui-controls';
 import { isCharacterKey, isQuoteKey } from '@vuu-ui/utils';
 
-export const useInputEditing = ({ onCommit, onChange }, ...additionalHandlers) => {
+export const useInputEditing = ({ onCommit, onChange }) => {
   const inputRef = useRef(null);
 
   const handleKeyDown = useCallback(
@@ -28,10 +27,8 @@ export const useInputEditing = ({ onCommit, onChange }, ...additionalHandlers) =
       } else if (isCharacterKey(evt) || isQuoteKey(key)) {
         onChange(`${value}${key}`);
       }
-
-      applyHandlers(additionalHandlers, 'onKeyDown', evt);
     },
-    [additionalHandlers, onChange, onCommit]
+    [onChange, onCommit]
   );
 
   const setCaretPosition = useCallback(

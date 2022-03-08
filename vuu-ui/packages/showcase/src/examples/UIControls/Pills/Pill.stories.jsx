@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pill, Pillbox } from '@vuu-ui/ui-controls';
+import { Pill } from '@vuu-ui/ui-controls';
 
 let displaySequence = 1;
 
@@ -23,13 +23,7 @@ export const CloseablePill = () => {
 };
 CloseablePill.displaySequence = displaySequence++;
 
-export const PillboxThreePills = () => {
-  return (
-    <Pillbox>
-      <Pill label="LDN/ASIX" prefix="Exchange:" closeable />
-      <Pill label="GBP" prefix="CCY:" closeable />
-      <Pill label="SEK" prefix="CCY:" closeable />
-    </Pillbox>
-  );
+export const VerticalPill = () => {
+  return <Pill label="GBP" orientation="vertical" prefix="CCY" closeable />;
 };
-Pillbox.displaySequence = displaySequence++;
+VerticalPill.displaySequence = displaySequence++;

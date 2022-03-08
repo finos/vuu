@@ -1,11 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { SuggestionList } from '@vuu-ui/parsed-input';
-import { useItemsWithIds } from '@vuu-ui/ui-controls';
+import { Button, useItemsWithIds, sourceItems } from '@vuu-ui/ui-controls';
 
 import { ComponentAnatomy } from '@heswell/component-anatomy';
 import { useId } from '@vuu-ui/react-utils';
-
-import '@vuu-ui/parsed-input/index.css';
 
 const currencies = [
   { value: 'EUR' },
@@ -15,77 +13,16 @@ const currencies = [
   { value: 'USD' }
 ];
 
-const sortSelectedSuggestions = (selected, suggestions) => {
-  const selectedValues = selected.map((i) => suggestions[i].value);
-
-  const sortedSuggestions = suggestions.map((suggestion, i) => ({ ...suggestion, i }));
-
-  sortedSuggestions.sort(({ value: v1, i: i1 }, { value: v2, i: i2 }) => {
-    const s1 = selected.includes(i1) ? 1 : 0;
-    const s2 = selected.includes(i2) ? 1 : 0;
-
-    if (s1 === s2) {
-      if (v1 === 'EOF') {
-        return -1;
-      } else if (v2 === 'EOF') {
-        return 0;
-      } else if (v1 > v2) {
-        return 0;
-      } else {
-        return -1;
-      }
-    } else {
-      return s2 - s1;
-    }
-  });
-
-  const sortedSelected = selectedValues.map((v) =>
-    sortedSuggestions.findIndex((s) => s.value === v)
-  );
-
-  return [sortedSelected, sortedSuggestions];
-};
-
 export const DefaultSuggestionList = () => {
-  const selectedValues = useRef([]);
   const [highlighted, setHighlighted] = useState(0);
   const [selected, setSelected] = useState([]);
-  const [suggestions, setSuggestions] = useState(currencies);
-
   const id = useId();
-  const [totalItemCount, sourceWithIds] = useItemsWithIds(currencies, id, {
-    label: 'DefaultSuggestionList'
-  });
-
-  console.log({ sourceWithIds });
+  const [, sourceWithIds] = useItemsWithIds(currencies, id);
 
   const handleChange = (evt, newSelected) => {
-    console.log(`handleChange`, newSelected);
-    // selectedValues.current = newSelected.map((idx) => suggestions[idx].value);
-    // const containsCommit = suggestions.find((s) => s.value === 'EOF');
-
-    // let updatedSelected = newSelected;
-    // let updatedSuggestions = suggestions;
-
-    // if (newSelected.length > 0 && !containsCommit) {
-    //   updatedSuggestions = [{ value: 'EOF' }].concat(currencies);
-    //   updatedSelected = newSelected.map((i) => i + 1);
-    // } else if (newSelected.length < 1 && containsCommit) {
-    //   updatedSuggestions = currencies;
-    //   updatedSelected = newSelected.filter((i) => i > 0).map((i) => i - 1);
-    // }
-
-    // [updatedSelected, updatedSuggestions] = sortSelectedSuggestions(
-    //   updatedSelected,
-    //   updatedSuggestions
-    // );
-
-    // setHighlighted(updatedSuggestions.findIndex((s) => s.value === 'EOF'));
-    // setSuggestions(updatedSuggestions);
-    // setSelected(updatedSelected);
+    setSelected(newSelected.map((item) => item.id));
   };
 
-  console.log({ highlighted });
   return (
     <ComponentAnatomy>
       <SuggestionList
@@ -93,9 +30,65 @@ export const DefaultSuggestionList = () => {
         onChange={handleChange}
         onHighlight={setHighlighted}
         selected={selected}
-        selectionStrategy="checkbox"
-        suggestions={sourceWithIds}
+        selectionStrategy="checkbox-only"
+        source={sourceWithIds}
       />
     </ComponentAnatomy>
+  );
+};
+
+const columns = ['bbg', 'ccy', 'exchange', 'price', 'quantity', 'status', 'timestamp'];
+const operators = ['=', 'in', 'starts'];
+
+export const DynamicSuggestionList = () => {
+  const [highlighted, setHighlighted] = useState(0);
+  const [selected, setSelected] = useState([]);
+  const [source, setSource] = useState([]);
+  const id = useId();
+  const [, sourceWithIds] = useItemsWithIds(source, id);
+  const selectionStrategy = useRef('single');
+  const suggestionType = useRef();
+
+  const handleChange = (evt, newSelected) => {
+    const [lastSelected] = newSelected.slice(-1);
+    if (lastSelected && lastSelected.id === 'end-of-list') {
+      selectionStrategy.current = 'single';
+      suggestionType.current = 'columns';
+      setSource(sourceItems(columns));
+      setSelected([]);
+    } else if (suggestionType.current === 'columns') {
+      setSource(sourceItems(operators));
+      suggestionType.current = 'operators';
+    } else if (suggestionType.current === 'operators') {
+      setSource(currencies);
+      suggestionType.current = 'currencies';
+      const [selectedItem] = newSelected;
+      if (selectedItem.label === 'in') {
+        selectionStrategy.current = 'checkbox-only';
+      }
+    } else if (selectionStrategy.current === 'checkbox-only') {
+      setSelected(newSelected.map((item) => item.id));
+    }
+  };
+
+  const clickColumns = () => {
+    setSource(sourceItems(columns));
+    suggestionType.current = 'columns';
+  };
+
+  return (
+    <>
+      <div style={{ height: 32, marginBottom: 12 }}>
+        <Button onClick={clickColumns}>Columns</Button>
+      </div>
+      <SuggestionList
+        highlightedIdx={highlighted}
+        onChange={handleChange}
+        onHighlight={setHighlighted}
+        selected={selected}
+        selectionStrategy={selectionStrategy.current}
+        source={sourceWithIds}
+      />
+    </>
   );
 };

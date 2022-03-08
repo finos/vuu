@@ -12,8 +12,6 @@ import createSuggestionProvider from './vuu-filter-suggestion-provider';
 
 import '@vuu-ui/theme/index.css';
 import '@vuu-ui/layout/index.css';
-import '@vuu-ui/ui-controls/index.css';
-import '@vuu-ui/parsed-input/index.css';
 import '@vuu-ui/data-grid/index.css';
 
 // eslint-disable-next-line import/no-anonymous-default-export

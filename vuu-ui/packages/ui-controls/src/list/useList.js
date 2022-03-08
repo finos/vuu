@@ -1,14 +1,14 @@
 import { useCallback, useRef } from 'react';
 import {
+  closestListItemIndex,
   useCollapsibleGroups,
   useHierarchicalData,
   useKeyboardNavigation,
   useSelection,
   useViewportTracking
 } from '../common-hooks';
-import { useDragDrop } from '../common-hooks/use-drag-drop';
-import { closestListItemIndex } from './list-dom-utils';
 
+import { useDragDrop } from '../common-hooks/use-drag-drop';
 import { useTypeahead } from './hooks';
 
 const EMPTY_ARRAY = [];

@@ -39,10 +39,11 @@ export const getCompletionAtIndex = (
   const suggestion = suggestions.length > highlightedIdx ? suggestions[highlightedIdx] : undefined;
   let completion = '';
   let typedName;
+  let isSelected = false;
 
   if (suggestion) {
-    ({ completion = '', typedName } = suggestion);
-    if (completion === 'EOF') {
+    ({ completion = '', typedName, isSelected } = suggestion);
+    if (completion === 'EOF' || isSelected) {
       return [''];
     }
   }

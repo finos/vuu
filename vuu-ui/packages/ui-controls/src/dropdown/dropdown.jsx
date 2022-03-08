@@ -121,8 +121,9 @@ export const Dropdown = forwardRef(function Dropdown(
   if (position === null || !open) {
     return null;
   }
+
   let { top, left, right, width: anchorWidth, height } = position;
-  const width = widthProp === undefined || widthProp === 'anchor' ? anchorWidth : widthProp;
+  let width = widthProp === undefined || widthProp === 'anchor' ? anchorWidth : widthProp;
 
   //TODO if align is to right and we don't have a width or width is auto
   // we will have to measure after render to reposition accurately
@@ -130,6 +131,9 @@ export const Dropdown = forwardRef(function Dropdown(
   // This assumes width is < min-width
   if (align.endsWith('right') && typeof widthProp === 'number') {
     left = right - widthProp;
+  } else if (align.endsWith('full-width')) {
+    console.log('its full width, suckers');
+    width = anchorEl.clientWidth;
   }
 
   return (

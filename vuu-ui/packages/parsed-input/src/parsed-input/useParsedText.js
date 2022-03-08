@@ -45,11 +45,11 @@ const initialState = {
   insertSymbol: ''
 };
 
-const sameSuggestions = (s1, s2) => {
-  if (s1.total === s2.total) {
-    return s1.values.every((s) => s2.values.find((suggs) => suggs.value === s.value));
-  }
-};
+// const sameSuggestions = (s1, s2) => {
+//   if (s1.total === s2.total) {
+//     return s1.values.every((s) => s2.values.find((suggs) => suggs.value === s.value));
+//   }
+// };
 
 export const useParsedText = () => {
   const parse = useParser();
@@ -75,16 +75,16 @@ export const useParsedText = () => {
       }));
       const newSuggestions = await promisedSuggestions;
 
-      if (
-        !newSuggestions.isMultiSelect ||
-        !sameSuggestions(suggestionsRef.current, newSuggestions)
-      ) {
-        // don't refresh the suggestions whilst user is editing a multi-select list
-        // TODO we might need to reset sugegstions if user is typingt to filter
-        suggestionsRef.current = newSuggestions;
-        newSuggestions.values.sort(bySuggestionPriority);
-        setSuggestions(newSuggestions);
-      }
+      // if (
+      //   !newSuggestions.isMultiSelect ||
+      //   !sameSuggestions(suggestionsRef.current, newSuggestions)
+      // ) {
+      // don't refresh the suggestions whilst user is editing a multi-select list
+      // TODO we might need to reset sugegstions if user is typingt to filter
+      suggestionsRef.current = newSuggestions;
+      newSuggestions.values.sort(bySuggestionPriority);
+      setSuggestions(newSuggestions);
+      // }
     },
     [parse]
   );

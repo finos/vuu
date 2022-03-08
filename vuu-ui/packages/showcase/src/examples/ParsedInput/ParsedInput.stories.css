@@ -5,3 +5,42 @@
   -webkit-mask: var(--svg-icon) center center/var(--menu-icon-size) var(--menu-icon-size) no-repeat;
   mask: var(--svg-icon) center center/var(--menu-icon-size) var(--menu-icon-size) no-repeat;
 }
+
+.expando-container {
+  --expando-height: 36px;
+  border: solid 1px #ccc;
+  box-sizing: content-box;
+  height: var(--expando-height);
+  overflow: hidden;
+}
+
+.expando-inner-container {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  height: var(--expando-height);
+}
+
+.expando {
+  --input-display: none;
+  background-color: white;
+  height: var(--expando-height);
+  transition: flex-basis 0.4s ease-out;
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: 0;
+}
+
+.expando.expanded {
+  --input-display: block;
+  transition: flex-basis 0.3s ease-in;
+  flex-basis: calc(100% - 28px);
+}
+
+.expando-input {
+  border: none;
+  display: var(--input-display);
+  height: var(--expando-height);
+  padding: 0 6px;
+  width: 100%;
+}

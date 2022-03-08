@@ -23,7 +23,7 @@
   border-style: var(--hwParsedInput-border-style, solid);
   border-width: var(--hwParsedInput-border-width, 1px);
   box-sizing: border-box;
-  display: flex;
+  display: var(--hwParsedInput-display, flex);
   flex-grow: 0;
   flex-shrink: 0;
   font-family: Roboto;

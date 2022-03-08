@@ -60,7 +60,7 @@ export const getSuggestions = (
   suggestionProvider,
   parseResult,
   parsedTokens,
-  isList = false
+  isListItem = false
 ) => {
   const core = new c3.CodeCompletionCore(parser);
   core.preferredRules = new Set([
@@ -81,7 +81,6 @@ export const getSuggestions = (
 
   let rules, tokens;
   let alternativeText, alternativeRules, alternativeTokens;
-  let currentMatchIsListItem = isList;
 
   ({ rules, tokens } = core.collectCandidates(index));
   // The rules, tokens maps returned by collectCandidates are stateful and mutable
@@ -106,9 +105,9 @@ export const getSuggestions = (
   } else if (tokens.size === 2 && tokensAreListSignifiers(tokens)) {
     // do nothing;
   } else if (alternativeTokens?.size === 1 && tokensIsListOpener(alternativeTokens)) {
-    currentMatchIsListItem = true;
+    isListItem = true;
   } else if (alternativeTokens?.size === 2 && tokensAreListSignifiers(alternativeTokens)) {
-    currentMatchIsListItem = true;
+    isListItem = true;
   }
 
   const suggestions = new AsyncSuggestionsList();
@@ -137,13 +136,13 @@ export const getSuggestions = (
   }
   if (rules.has(FilterParser.RULE_atom)) {
     const [operatorToken, values] = getOperatorToken(parsedTokens);
-    console.log({ operatorToken, values });
     suggestions.push(
       suggestionProvider(parseResult, {
-        token: 'COLUMN-VALUE',
+        isListItem,
         operator: operatorToken?.text ?? '',
         text,
-        isListItem: currentMatchIsListItem
+        token: 'COLUMN-VALUE',
+        values
       })
     );
   }

@@ -33,6 +33,10 @@
   --svg-icon: var(--svg-filter);
 }
 
+[data-icon='user'] {
+  --svg-icon: var(--svg-user);
+}
+
 [data-icon='box'] {
   --svg-icon: var(--svg-box);
 }

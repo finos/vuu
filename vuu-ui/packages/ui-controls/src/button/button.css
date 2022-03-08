@@ -1,13 +1,16 @@
 .hwButton {
-  --button-bg: var(--hw-button-bg, transparent);
+  --button-bg: var(--hwButton-bg, transparent);
   --button-border: none;
-  --button-height: var(--hw-button-height, 28px);
-  --button-active-bg: var(--hw-button-active-bg, #50505);
-  --button-highlight-bg: var(--hw-button-highlight-bg, var(--hw-gray-700));
-  --button-highlight-color: var(--hw-button-highlight-color, var(--hw-gray-50));
-  --button-width: var(--hw-button-width, auto);
-  --button-min-width: var(--hw-button-min-width, 28px);
-  --button-color: var(--hw-button-color, var(--hw-gray-700));
+  --button-height: var(--hwButton-height, 28px);
+  --button-active-bg: var(--hwButton-active-bg, #50505);
+  --button-highlight-bg: var(--hwButton-highlight-bg, var(--hw-gray-700));
+  --button-highlight-color: var(--hwButton-highlight-color, var(--hw-gray-50));
+  --button-padding: var(--hwButton-padding, 6px);
+  --button-width: var(--hwButton-width, auto);
+  --button-min-width: var(--hwButton-min-width, 28px);
+  --button-color: var(--hwButton-color, var(--hw-gray-700));
+  --icon-size: var(--hwButton-icon-size, 28px);
+  --icon-svg-size: 12px;
 
   align-items: center;
   background-color: var(--button-bg);
@@ -15,11 +18,12 @@
   color: var(--button-color);
   display: inline-flex;
   height: var(--button-height);
+  inset: var(--hwButton-inset, auto);
   justify-content: center;
   min-width: var(--button-min-width);
   outline: none;
-  padding: var(--hwButton-padding, 0 6px);
-  position: relative;
+  padding: 0 var(--button-padding);
+  position: var(--hwButton-position, relative);
   width: var(--button-width);
 }
 
@@ -44,20 +48,18 @@
   border: solid red 2px;
 }
 
+.hwButton[data-icon] {
+  padding-left: calc(var(--icon-size) - var(--button-padding));
+}
+
 .hwButton[data-icon]:after {
   content: '';
-  mask-repeat: no-repeat;
   background-color: black;
-  height: 12px;
-  left: var(--hwButton-icon-left, 50%);
-  right: 3px;
-  margin-left: -6px;
-  margin-top: -6px;
-  mask: var(--svg-icon) center center/12px 12px;
-  -webkit-mask: var(--svg-icon) center center/12px 12px;
+  inset: 0 auto 0 0;
+  mask: var(--svg-icon) center center/12px 12px no-repeat;
+  -webkit-mask: var(--svg-icon) center center/12px 12px no-repeat;
   position: absolute;
-  top: 50%;
-  width: 12px;
+  width: var(--icon-size);
 }
 
 .hwButton:hover[data-icon]:after {

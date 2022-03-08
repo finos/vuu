@@ -15,10 +15,11 @@ const getChildNodes = (element) => {
 };
 
 const getLabel = (element) => {
-  if (typeof element.props.children === 'string') {
-    return element.props.children;
-  } else if (element.props.title) {
-    return element.props.title;
+  const { children, title, label = title } = element.props;
+  if (typeof children === 'string') {
+    return children;
+  } else if (label) {
+    return label;
   }
 };
 

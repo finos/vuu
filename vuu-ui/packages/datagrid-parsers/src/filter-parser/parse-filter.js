@@ -34,6 +34,7 @@ export const parseFilter = (
 
   const errors = [];
 
+  // TODO we need to identify where this has happened so we can safely restore the characters
   const safeText = typedInput.replaceAll('/', '-');
   const parser = constructParser(`${safeText}${insertSymbol}`);
 

@@ -1,4 +1,12 @@
-import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react';
 import cx from 'classnames';
 import { Button, Dropdown, useItemsWithIds, useForkRef, SINGLE } from '@vuu-ui/ui-controls';
 import { useId } from '@vuu-ui/react-utils';
@@ -14,7 +22,10 @@ const classBase = 'hwParsedInput';
 
 const NO_COMPLETION = [];
 
-export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommit }, ref) {
+export const ParsedInput = forwardRef(function ParsedInput(
+  { className, id: idProp, onCommit },
+  forwardedRef
+) {
   const id = useId(idProp);
   const {
     result,
@@ -27,8 +38,6 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
   } = useParsedText();
   const { current: text } = textRef;
 
-  console.log({ suggestions, isMultiSelect });
-
   const selectionStrategy = isMultiSelect ? 'checkbox-only' : SINGLE;
 
   const root = useRef(null);
@@ -38,6 +47,10 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
   const [selected, _setSelected] = useState([]);
   const [highlightedIdx, setHighlightedIdx] = useState(0);
   const [open, setOpen] = useState(false);
+
+  useImperativeHandle(forwardedRef, () => ({
+    focus: () => inputRef.current?.focus()
+  }));
 
   const setSelected = useCallback((selected, updateHighlight = true) => {
     _setSelected(selected);
@@ -91,9 +104,11 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     label: 'ParsedInput'
   });
 
-  const handleSuggestionClick = useCallback(
+  const handleSuggestionSelection = useCallback(
     (evt, selected) => {
-      const updatedSelected = acceptSuggestionRef.current(evt, selected);
+      // we rely on List for click selection, List returns selected items not id values
+      const selectedIds = selected.map((item) => item.id);
+      const updatedSelected = acceptSuggestionRef.current(evt, selectedIds);
       if (updatedSelected) {
         setSelected(updatedSelected, false);
       }
@@ -103,6 +118,7 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
 
   const handleSelectionChange = useCallback(
     (e, selected) => {
+      // we handle keyboard selection directly, bypassing List, so we get selectedId values
       const { current: acceptSuggestion } = acceptSuggestionRef;
       if (selectionStrategy === SINGLE) {
         acceptSuggestion(e, selected);
@@ -152,12 +168,20 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     open,
     selected,
     setCurrentText,
-    setHighlightedIdx,
     setText,
     sourceWithIds,
     textRef,
     totalItemCount
   });
+
+  const selectedItems = visibleData.filter((item) => item.isSelected);
+  const selectedIdValues = selectedItems.map((item) => item.id);
+  const selectedCount = selectedIdValues.length;
+
+  useLayoutEffect(() => {
+    console.log(`selectedCount has changed to ${selectedCount}`);
+    setHighlightedIdx(selectedCount);
+  }, [selectedCount]);
 
   acceptSuggestionRef.current = acceptSuggestion;
 
@@ -176,45 +200,51 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
   const cursorAtEndOfText = !text.endsWith(' ');
   const [completion] = suggestionsAreIllustrationsOnly
     ? NO_COMPLETION
-    : getCompletionAtIndex(visibleData, highlightedIdx, cursorAtEndOfText, selected.length, true);
+    : getCompletionAtIndex(
+        visibleData,
+        highlightedIdx,
+        cursorAtEndOfText,
+        selectedIdValues.length,
+        true
+      );
 
   return (
-    <>
-      <div className={cx(classBase)} ref={useForkRef(root, ref)}>
-        <div className={`${classBase}-input-container`}>
-          <TokenMirror tokens={tokens} completion={`${insertSymbol ?? ''}${completion ?? ''}`} />
-          <div
-            {...listProps}
-            {...inputProps}
-            ref={inputRef}
-            contentEditable
-            className={`${classBase}-input`}
-            spellCheck={false}
-            tabIndex={0}
-          />
-        </div>
-        <Button className={`${classBase}-clear`} onClick={clear}>
-          <span className={`hwIconContainer`} data-icon="close-circle" />
-        </Button>
+    <div className={cx(classBase, className)} ref={useForkRef(root, forwardedRef)}>
+      <div className={`${classBase}-input-container`}>
+        <TokenMirror tokens={tokens} completion={`${insertSymbol ?? ''}${completion ?? ''}`} />
+        <div
+          {...listProps}
+          {...inputProps}
+          ref={inputRef}
+          contentEditable
+          className={`${classBase}-input`}
+          spellCheck={false}
+          tabIndex={0}
+        />
       </div>
+      <Button className={`${classBase}-clear`} onClick={clear}>
+        <span className={`hwIconContainer`} data-icon="close-circle" />
+      </Button>
       <Dropdown
         anchorEl={root.current}
         open={open}
-        align="bottom-right"
+        align="bottom-full-width"
         className={`${classBase}-dropdown`}>
         <SuggestionList
           highlightedIdx={suggestionsAreIllustrationsOnly ? -1 : highlightedIdx}
           id={id}
+          onHighlight={setHighlightedIdx}
           onMouseEnterListItem={
             suggestionsAreIllustrationsOnly ? undefined : handleMouseOverSuggestion
           }
-          onSuggestionClick={suggestionsAreIllustrationsOnly ? undefined : handleSuggestionClick}
+          onChange={suggestionsAreIllustrationsOnly ? undefined : handleSuggestionSelection}
           ref={suggestionList}
           selectionStrategy={selectionStrategy}
-          selected={selected}
-          suggestions={visibleData}
+          selected={selectedIdValues}
+          // selected={selected}
+          source={visibleData}
         />
       </Dropdown>
-    </>
+    </div>
   );
 });

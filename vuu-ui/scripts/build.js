@@ -32,7 +32,7 @@ async function main() {
       '.woff2': 'dataurl'
     },
     metafile: true,
-    // minify: true,
+    minify: true,
     outfile,
     target: 'esnext',
     sourcemap: true,

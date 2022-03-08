@@ -2,12 +2,12 @@ import React, { forwardRef, useRef } from 'react';
 import cx from 'classnames';
 import { useId } from '@vuu-ui/react-utils';
 import {
+  closestListItemIndex,
   groupSelectionEnabled,
   useItemsWithIds,
   useViewportTracking,
   GROUP_SELECTION_NONE
 } from '../common-hooks';
-import { closestListItemIndex } from '../list/list-dom-utils';
 
 import { useTree } from './useTree';
 import { useForkRef } from '../utils/use-fork-ref';

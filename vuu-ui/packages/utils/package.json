@@ -2,8 +2,8 @@
   "name": "@vuu-ui/utils",
   "version": "0.0.15",
   "author": "heswell",
-  "main": "src/index.js",
-  "module": "index.js",
+  "module": "src/index.js",
+  "main": "index.js",
   "license": "Apache-2.0",
   "files": [
     "index.js",

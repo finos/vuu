@@ -1,15 +1,33 @@
 .hwPill {
+  --hwButton-height: 14px;
+  --hwButton-icon-size: 14px;
+  --hwButton-inset: var(--hwPill-close-inset);
+  --hwButton-min-width: 14px;
+  --hwButton-position: var(--hwPill-close-position);
+
+  --flex-direction: row;
   --icon-size: 12px;
+  align-items: center;
   background-color: var(--surface1);
   border-radius: 2px;
   cursor: default;
-  display: inline-flex;
+  display: flex;
+  flex-direction: var(--hwPill-flex-direction, row);
   font-size: 10px;
-  gap: 3px;
-  height: 14px;
-  padding: 0 4px;
+  height: var(--hwPill-height, 14px);
+  padding: var(--hwPill-padding, 0 4px);
+  position: relative;
   text-transform: capitalize;
   user-select: none;
+}
+
+.hwPill-vertical {
+  --hwButton-inset: 1px 1px auto auto;
+  --hwButton-position: absolute;
+  align-items: flex-start;
+  flex-direction: column;
+  height: auto;
+  padding: 0 14px 0 4px;
 }
 
 .hwPill:hover {
@@ -25,9 +43,21 @@
   text-transform: inherit;
 }
 
-.hwPill-close {
-  background: black;
-  display: inline-block;
-  width: 12px;
-  -webkit-mask: var(--svg-icon) center center/var(--icon-size) var(--icon-size);
+.hwPill-prefix {
+  font-size: 10px;
+  line-height: 14px;
+}
+.hwPill-label {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.hwPill.focusVisible:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0px;
+  border: dotted var(--focus-visible-border-color) 2px;
 }

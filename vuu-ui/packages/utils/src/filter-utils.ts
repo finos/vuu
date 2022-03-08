@@ -42,13 +42,17 @@ export default function filterRows(rows: Row[], columnMap: ColumnMap, filter: Fi
 }
 
 export const filterClauses = (filter, clauses = []) => {
-  const { column, op, value, values, filters } = filter;
-  if (op === 'or' || op === 'and') {
-    filters.forEach((f) => clauses.push(...filterClauses(f)));
+  if (filter) {
+    const { column, op, value, values, filters } = filter;
+    if (op === 'or' || op === 'and') {
+      filters.forEach((f) => clauses.push(...filterClauses(f)));
+    } else {
+      clauses.push({ column, op, value: value ?? values?.join(',') });
+    }
+    return clauses;
   } else {
-    clauses.push({ column, op, value: value ?? values?.join(',') });
+    return clauses;
   }
-  return clauses;
 };
 
 const DEFAULT_ADD_FILTER_OPTS = {

@@ -1,11 +1,18 @@
 .hwPillbox {
+  --height: var(--hwPillbox-height, 36px);
+  --width: var(--hwPillbox-width, auto);
+  --focus-visible-border-color: var(--hw-focus-visible-border-color, rgb(141, 154, 179));
+
   display: flex;
   flex-wrap: wrap;
+  outline: none;
 }
 .hwPillbox {
   background: white;
   display: inline-flex;
   flex-wrap: wrap;
   gap: 3px;
-  padding: 3px;
+  height: var(--height);
+  padding: 1px;
+  width: var(--width);
 }

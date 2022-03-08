@@ -37,20 +37,20 @@ const List = forwardRef(function List(
     defaultHighlightedIdx,
     defaultSelected,
     emptyMessage,
-    listItemHandlers: listItemHandlersProp,
-    onCommit,
-    onChange = onCommit, // onSelectioNChange
-    onHighlight,
-    onMouseEnterListItem,
     highlightedIdx: highlightedIdxProp,
     id: idProp,
+    listItemHandlers: listItemHandlersProp,
+    onCommit,
+    onChange = onCommit, // onSelectionChange
+    onHighlight,
+    onMouseEnterListItem,
     selected: selectedProp,
     selection = 'single',
     selectionKeys,
     showEmptyMessage = false,
     source,
     stickyHeaders,
-    ...props
+    ...htmlAttributes
   },
   forwardedRef
 ) {
@@ -234,7 +234,7 @@ const List = forwardRef(function List(
     }
   }
 
-  const renderContent = () => {
+  const renderItems = () => {
     if (source) {
       return renderSourceContent(visibleData);
     } else if (children) {
@@ -246,7 +246,7 @@ const List = forwardRef(function List(
 
   return (
     <div
-      {...props}
+      {...htmlAttributes}
       {...listProps}
       className={cx(classBase, className, {
         'empty-list': count === 0,
@@ -258,7 +258,7 @@ const List = forwardRef(function List(
       ref={useForkRef(root, forwardedRef)}
       role="listbox"
       tabIndex={0}>
-      {renderContent()}
+      {renderItems()}
       {draggable}
     </div>
   );

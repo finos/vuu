@@ -44,6 +44,23 @@ export const isOpenList = (tokens) => {
   return false;
 };
 
+const NO_MATCHES = [];
+// for now just assume only '/' => '-'
+export const replaceAll = (text) => {
+  let char = '/';
+  let pos = text.indexOf(char);
+  if (pos === -1) {
+    return [text, NO_MATCHES];
+  } else {
+    const matches = [];
+    while (pos !== -1) {
+      matches.push(pos);
+      pos = text.indexOf(char, pos + 1);
+    }
+    return [text.replaceAll(char, '-'), matches];
+  }
+};
+
 export const filterAsQuery = (filter, namedFilters) => {
   if (filter.op === 'or' || filter.op === 'and') {
     const [clause1, clause2] = filter.filters;

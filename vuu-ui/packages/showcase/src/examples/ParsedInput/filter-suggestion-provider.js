@@ -1,19 +1,38 @@
-const filterListValues = (values, text) => {
-  if (values.some((value) => value.toLowerCase() === text)) {
+const filterListValues = (values, selectedValues, text) => {
+  console.log(
+    `filterListValues values ${values.join(',')} selected ${selectedValues.join(',')} text ${text}`
+  );
+  // If we have an exact match with one of the values, then we have a selection.
+  // But if the last item is  a partial match only, then we are filtering. We
+  // preserve already selected values.
+  if (text === '' || values.some((value) => value.toLowerCase() === text)) {
     return values;
   } else {
-    return values.filter((value) => value.toLowerCase().startsWith(text));
+    // Note the last selectedValue will always equal text, in this case it's our filter pattern
+    const existingSelection = selectedValues.slice(0, -1);
+    return existingSelection.concat(values.filter((value) => value.toLowerCase().startsWith(text)));
   }
 };
+
+const NO_SELECTION = [];
 
 const filterNonListValues = (values, text, propertyName) =>
   values.filter((value) => getStringValue(value, propertyName).startsWith(text));
 
 // We accept string values or objects, in which case we will use object[propertyName]
-const suggestedValues = (values, text = '', operator = '', isListItem = false, propertyName) => {
+const suggestedValues = (
+  values,
+  text = '',
+  operator = '',
+  isListItem = false,
+  propertyName,
+  currentValues
+) => {
+  const selectedValues = currentValues?.map((item) => item.text.toLowerCase()) ?? NO_SELECTION;
+  // if the last selectedValue is not a 100% match, then its  a startsWith
   const lcText = text.toLowerCase();
   const result = isListItem
-    ? filterListValues(values, lcText)
+    ? filterListValues(values, selectedValues, lcText)
     : filterNonListValues(values, lcText, propertyName);
   return result.map((v) => {
     const { name = v, type, typedName } = v;
@@ -23,7 +42,8 @@ const suggestedValues = (values, text = '', operator = '', isListItem = false, p
       typedName,
       completion: name.toLowerCase().startsWith(lcText) ? name.slice(text.length) : name,
       isIllustration: operator === 'starts',
-      isListItem
+      isListItem,
+      isSelected: selectedValues?.includes(name.toLowerCase())
     };
   });
 };
@@ -33,26 +53,26 @@ const suggestColumnNames = (columns, text, isListItem) => {
   return { values, total: values.length };
 };
 
-const suggestColumnValues = async (column, text, operator, isListItem) => {
+const suggestColumnValues = async (column, text, operator, isListItem, currentValues) => {
   let values;
   switch (column) {
     case 'ccy':
       {
         const ccy = ['EUR', 'GBP', 'JPY', 'SEK', 'USD'];
-        values = suggestedValues(ccy, text, operator, isListItem);
+        values = suggestedValues(ccy, text, operator, isListItem, undefined, currentValues);
       }
       break;
 
     case 'exchange':
       {
         const exchange = ['XAMS/ENA-MAIN', 'XLON/LSE-SETS', 'XNGS/NAS-GSM', 'XNYS/NYS-MAIN'];
-        values = suggestedValues(exchange, text, operator, isListItem);
+        values = suggestedValues(exchange, text, operator, isListItem, undefined, currentValues);
       }
       break;
     case 'status':
       {
         const status = ['cancelled', 'complete', 'partial', 'error', 'suspended'];
-        values = suggestedValues(status, text, operator, isListItem);
+        values = suggestedValues(status, text, operator, isListItem, undefined, currentValues);
       }
       break;
 
@@ -152,13 +172,13 @@ const createSuggestionProvider = ({
   columns = buildColumns(columnNames),
   namedFilters = []
 }) =>
-  function provideSuggestions(result, { token: tokenId, operator, text, isListItem }) {
+  function provideSuggestions(result, { isListItem, operator, token: tokenId, text, values }) {
     switch (tokenId) {
       case 'COLUMN-NAME':
         // TODO return a list of objects, not just names
         return suggestColumnNames(columns, text, isListItem);
       case 'COLUMN-VALUE':
-        return suggestColumnValues(getCurrentColumn(result), text, operator, isListItem);
+        return suggestColumnValues(getCurrentColumn(result), text, operator, isListItem, values);
       case 'FILTER-NAME':
         return filterNameSavePrompt(text);
       case 'NAMED-FILTER':

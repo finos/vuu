@@ -1,6 +1,7 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useLayoutEffect, useState } from 'react';
 import cx from 'classnames';
 import { List } from '@vuu-ui/ui-controls';
+import { useSuggestionList } from './useSuggestionList';
 
 import './SuggestionList.css';
 
@@ -24,30 +25,29 @@ function formatDisplayValue(displayValue) {
 }
 
 export const SuggestionList = forwardRef(function SuggestionList(
-  {
-    className,
-    highlightedIdx,
-    id,
-    onSuggestionClick,
-    selected,
-    selectionStrategy,
-    suggestions,
-    ...restProps
-  },
+  { className, highlightedIdx, id, onChange, selected, selectionStrategy, source, ...restProps },
   ref
 ) {
+  useSuggestionList({
+    selected,
+    selectionStrategy,
+    // setHighlightedIdx,
+    source
+  });
+
   return (
     <List
       {...restProps}
       className={className}
       highlightedIdx={highlightedIdx}
       id={id}
-      onChange={onSuggestionClick}
+      onChange={onChange}
       ref={ref}
+      // onHighlight={setHighlightedIdx}
       selection={selectionStrategy}
       selected={selected}>
-      {suggestions.length > 0
-        ? suggestions.map(({ id, value, displayValue = value, isIllustration }) => (
+      {source.length > 0
+        ? source.map(({ id, label, value = label, displayValue = value, isIllustration }) => (
             <div
               className={cx({
                 // [`${classBase}-selected`]: selected.includes(i),
@@ -56,7 +56,7 @@ export const SuggestionList = forwardRef(function SuggestionList(
                 [`${classBase}-close-list`]: value === ']'
               })}
               id={id}
-              key={value}>
+              key={id}>
               {formatDisplayValue(displayValue)}
             </div>
           ))

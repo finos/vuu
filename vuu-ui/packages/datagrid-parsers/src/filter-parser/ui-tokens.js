@@ -23,6 +23,7 @@ const NO_SUBSTITUTION = {};
 export function buildUITokens(parser, parseResult, substitution = NO_SUBSTITUTION) {
   const tokenPositions = mapTokenPositions(parseResult);
   const { tokens: parsedTokens } = parser.inputStream;
+
   const tokens = [];
   for (let i = 0; i < parsedTokens.length - 1; i++) {
     const t = parsedTokens[i];
