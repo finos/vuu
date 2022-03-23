@@ -1,15 +1,19 @@
-import * as Message from './messages.js';
+import * as Message from './messages';
 import { ServerApiMessageTypes as API } from '../../messages.js';
+import {partition} from "../../../../utils/src";
 
 const logger = console;
 
-function partition(array, test, pass = [], fail = []) {
-  for (let i = 0, len = array.length; i < len; i++) {
-    (test(array[i], i) ? pass : fail).push(array[i]);
-  }
-
-  return [pass, fail];
-}
+// TODO duplicate in array-utils.ts
+// export type PartitionTest<T> = (value: T, index: number) => boolean;
+//
+// function partition<T>(array: T[], test: PartitionTest<T>, pass: T[] = [], fail: T[] = []): [T[], T[]] {
+//   for (let i = 0, len = array.length; i < len; i++) {
+//     (test(array[i], i) ? pass : fail).push(array[i]);
+//   }
+//
+//   return [pass, fail];
+// }
 
 const NOT_DATA = {};
 /*
@@ -24,8 +28,81 @@ const NOT_DATA = {};
     })
 
     */
+
+export type ConnectionStatus = 'subscribed' | 'closed' | 'subscribing' | 'unsubscribed';
+
+export interface SendOptions {
+  module?: string;
+  [otherKeys: string]: any;
+}
+
+export interface ServerConnection {
+  close: () => void;
+  reconnect: () => void;
+  status: ConnectionStatus;
+  clientId: string;
+  send: (message: VuuMessage, options: SendOptions) => void; // TODO
+}
+
+export interface LoHiRange {
+  lo: number;
+  hi: number;
+}
+
+// TODO describe specific messages
+export interface VuuMessage {
+  rows?: any[];
+  size?: number;
+  range?: LoHiRange;
+  viewport?: string;
+  type?: string;
+  columns?: any[];
+  availableColumns?: any[];
+  data?: any;
+  requestId?: string;
+  table?: string;
+  method?: string;
+  params?: any;
+  aggregations?: any;
+  sortCriteria?: any;
+  groupBy?: any;
+  selected?: any;
+  parentVpId?: any;
+  parentColumnName?: any;
+  childColumnName?: any;
+  context?: any;
+  rpcName?: any;
+  body?: {
+    type: any;
+    timeStamp: any;
+    [other: string]: any;
+  };
+  sessionId?: string;
+  token?: string;
+  user?: string;
+  module?: any;
+}
+
+export type PostMessageFn = (message: Omit<VuuMessage, 'viewport'>) => void;
+
+export interface ViewportStatus {
+  postMessageToClient: PostMessageFn;
+  range: LoHiRange;
+  status: ConnectionStatus;
+  request: object; // TODO
+  viewport?: string;
+}
+
+export type StatusByViewport = {
+  [viewportId: string]: ViewportStatus;
+}
+
 export class ServerProxy {
-  constructor(connection) {
+  private connection: ServerConnection;
+  private queuedRequests: VuuMessage[];
+  private viewportStatus: StatusByViewport;
+
+  constructor(connection: ServerConnection) {
     this.connection = connection;
     this.queuedRequests = [];
     this.viewportStatus = {};
@@ -47,15 +124,15 @@ export class ServerProxy {
     this.connection.reconnect();
   }
 
-  handleMessageFromClient(message) {
-    const viewport = this.viewportStatus[message.viewport];
+  handleMessageFromClient(message: VuuMessage) {
+    const viewport: ViewportStatus = this.viewportStatus[message.viewport];
     if (message.range) {
       viewport.range = message.range;
     }
     this.sendIfReady(message, viewport.status === 'subscribed');
   }
 
-  sendIfReady(message, isReady) {
+  sendIfReady(message: VuuMessage, isReady: boolean) {
     // TODO implement the message queuing in remote data view
     if (isReady) {
       this.sendMessageToServer(message);
@@ -89,7 +166,7 @@ export class ServerProxy {
     }
   }
 
-  subscribe(message, callback) {
+  subscribe(message: VuuMessage, callback: PostMessageFn) {
     logger.log(`subscribed with range ${JSON.stringify(message.range)}`);
     const isReady = this.connection !== null;
     const { viewport } = message;
@@ -108,7 +185,7 @@ export class ServerProxy {
     );
   }
 
-  subscribed(/* server message */ message) {
+  subscribed(/* server message */ message: VuuMessage) {
     const viewportStatus = this.viewportStatus[message.viewport];
     const { viewport, postMessageToClient } = viewportStatus;
     const { columns, availableColumns } = message;
@@ -141,17 +218,17 @@ export class ServerProxy {
     }
   }
 
-  unsubscribe(viewport) {
+  unsubscribe(viewport: string) {
     this.sendMessageToServer({ viewport, type: API.unsubscribe });
     this.viewportStatus[viewport].status = 'unsubscribed';
   }
 
-  sendMessageToServer(message) {
+  sendMessageToServer(message: VuuMessage) {
     const { clientId } = this.connection;
     this.connection.send({ clientId, message });
   }
 
-  handleMessageFromServer(message) {
+  handleMessageFromServer(message: VuuMessage) {
     const { data: { range } = NOT_DATA, type, viewport: viewportId } = message;
     const viewport = this.viewportStatus[viewportId];
     if (viewport) {

@@ -2,7 +2,17 @@ import { functor, overrideColName } from './filter-utils';
 
 const SORT_ASC = 'asc';
 
-export function mapSortCriteria(sortCriteria, columnMap, metadataOffset = 0) {
+export type SortCriteriaItem = string | [string, 'asc']; // TODO where is 'desc'?
+
+export interface ColumnMap {
+  [columnName: string]: number;
+}
+
+export function mapSortCriteria(
+  sortCriteria: SortCriteriaItem[],
+  columnMap: ColumnMap,
+  metadataOffset = 0
+): [number, 'asc'][] {
   return sortCriteria.map((s) => {
     if (typeof s === 'string') {
       return [columnMap[s] + metadataOffset, 'asc'];
@@ -15,14 +25,31 @@ export function mapSortCriteria(sortCriteria, columnMap, metadataOffset = 0) {
   });
 }
 
-export const toKeyedColumn = (column, key) =>
-  typeof column === 'string'
-    ? { key, name: column }
-    : typeof column.key === 'number'
-    ? column
-    : { ...column, key };
+export interface Column {
+  key?: number;
+  name: string;
+}
 
-export function buildColumnMap(columns) {
+export interface KeyedColumn {
+  key: number;
+  name: string;
+}
+
+export function isKeyedColumn(column: Column): column is KeyedColumn {
+  return typeof column.key === 'number';
+}
+
+export const toKeyedColumn = (column: string | Column, key: number): KeyedColumn => {
+  if (typeof column === 'string') {
+    return {key, name: column};
+  }
+  if (isKeyedColumn(column)) {
+    return column;
+  }
+  return {...column, key};
+}
+
+export function buildColumnMap(columns?: Column[]): ColumnMap | null {
   const start = metadataKeys.count;
   if (columns) {
     return columns.reduce((map, column, i) => {
@@ -34,14 +61,14 @@ export function buildColumnMap(columns) {
         map[column.name] = start + i;
       }
       return map;
-    }, {});
+    }, {} as ColumnMap);
   } else {
     return null;
   }
 }
 
-export function projectUpdates(updates) {
-  const results = [];
+export function projectUpdates(updates: number[]): number[] {
+  const results: number[] = [];
   const metadataOffset = metadataKeys.count - 2;
   for (let i = 0; i < updates.length; i += 3) {
     results[i] = updates[i] + metadataOffset;
@@ -51,7 +78,7 @@ export function projectUpdates(updates) {
   return results;
 }
 
-export function projectColumns(tableRowColumnMap, columns) {
+export function projectColumns(tableRowColumnMap: ColumnMap, columns: Column[]) {
   const columnCount = columns.length;
   const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, count } = metadataKeys;
   return (startIdx, offset, selectedRows = []) =>

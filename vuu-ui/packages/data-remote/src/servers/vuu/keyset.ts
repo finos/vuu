@@ -1,5 +1,12 @@
+import {VuuRange} from "../../../../utils/src/range-utils";
+import {FromToRange} from "./buffer-range";
+
 export class KeySet {
-  constructor(range) {
+  private keys: Map<number, number>;
+  private free: number[];
+  private nextKeyValue: number;
+
+  constructor(range: VuuRange) {
     this.keys = new Map();
     this.free = [];
     this.nextKeyValue = 0;
@@ -9,7 +16,7 @@ export class KeySet {
     }
   }
 
-  next() {
+  public next(): number {
     if (this.free.length) {
       return this.free.pop();
     } else {
@@ -17,7 +24,7 @@ export class KeySet {
     }
   }
 
-  reset({ from, to }) {
+  public reset({ from, to }: FromToRange) {
     this.keys.forEach((keyValue, rowIndex) => {
       if (rowIndex < from || rowIndex >= to) {
         this.free.push(keyValue);
@@ -38,7 +45,7 @@ export class KeySet {
     }
   }
 
-  keyFor(rowIndex) {
+  public keyFor(rowIndex: number): number {
     return this.keys.get(rowIndex);
   }
 }

@@ -1,11 +1,19 @@
-export function addRowsToIndex(rows, index, indexField) {
+export type RowIndex = {
+  [field: string]: number;
+}
+
+export interface Row {
+  [field: string]: string;
+}
+
+export function addRowsToIndex(rows: Row[], index: RowIndex, indexField: string) {
   for (let idx = 0, len = rows.length; idx < len; idx++) {
     index[rows[idx][indexField]] = idx;
   }
   return index;
 }
 
-export function indexRows(rows, indexField) {
+export function indexRows(rows: Row[], indexField: string) {
   return addRowsToIndex(rows, {}, indexField);
 }
 

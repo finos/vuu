@@ -1,3 +1,5 @@
+import {ColumnMap} from "./column-utils";
+
 export const AND = 'and';
 export const EQUALS = '=';
 export const GREATER_THAN = '>';
@@ -9,6 +11,8 @@ export const NOT_IN = 'NOT_IN';
 export const NOT_STARTS_WITH = 'NOT_SW';
 export const OR = 'or';
 export const STARTS_WITH = 'SW';
+
+export type FilterType = 'and' | '=' | '>' | '>=' | 'in' | '<=' | '<' | 'NOT_IN' | 'NOT_SW' | 'or' | 'SW';
 
 export const SET_FILTER_DATA_COLUMNS = [
   { name: 'name', flex: 1 },
@@ -22,6 +26,7 @@ export const BIN_FILTER_DATA_COLUMNS = [
   { name: 'bin-lo' },
   { name: 'bin-hi' }
 ];
+
 export default function filterRows(rows, columnMap, filter) {
   return applyFilter(rows, functor(columnMap, filter));
 }
@@ -73,7 +78,12 @@ export function includesNoValues(filter) {
 export function getFilterColumn(column) {
   return column.isGroup ? column.columns[0] : column;
 }
-export function functor(columnMap, filter) {
+
+export interface Filter {
+  type: FilterType;
+}
+
+export function functor(columnMap: ColumnMap, filter: Filter) {
   //TODO convert filter to include colIdx ratherthan colName, so we don't have to pass cols
   switch (filter.type) {
     case IN:

@@ -21,10 +21,40 @@ const NullServer = {
 
 const defaultRange = { lo: 0, hi: 0 };
 
+export interface DataSourceColumn {
+
+}
+
 /*-----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
 export default class RemoteDataSource extends EventEmitter {
+  private bufferSize: number;
+  private tableName: string;
+  private columns: DataSourceColumn[];
+  // TODO subscription is always null. Not used anywhere. Can it be removed?
+  private subscription: null;
+  private viewport: string;
+  private server: any;
+  private url: string;
+  private serverName: string;
+  private visualLink: string;
+  private filterDataCallback: any;
+  private filterDataMessage: any;
+  private status: string;
+  private remoteId: string;
+  private disabled: boolean;
+  private suspended: boolean;
+  private initialGroup: any;
+  private initialSort: any;
+  private initialFilter: any;
+  private initialFilterQuery: any;
+  private initialAggregations: any;
+  private rowCount: number;
+  private pendingServer: any;
+  private clientCallback: any;
+  private serverViewportId: string;
+
   constructor({
     bufferSize = 100,
     aggregations,

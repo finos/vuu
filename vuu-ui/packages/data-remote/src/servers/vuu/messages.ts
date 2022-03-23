@@ -52,7 +52,7 @@ export const TABLE_ROW = 'TABLE_ROW';
 export const SIZE = 'SIZE';
 export const UPDATE = 'U';
 
-export const authRequest = (username, password) => ({ type: AUTH, username, password });
-export const loginRequest = (token, user) => ({ type: LOGIN, token, user });
-export const getVisualLinks = (vpId) => ({ type: GET_VP_VISUAL_LINKS, vpId });
-export const getViewportMenus = (vpId) => ({ type: GET_VIEW_PORT_MENUS, vpId });
+export const authRequest = (username: string, password: string) => ({ type: AUTH, username, password });
+export const loginRequest = (token: string, user: string) => ({ type: LOGIN, token, user });
+export const getVisualLinks = (vpId: string) => ({ type: GET_VP_VISUAL_LINKS, vpId });
+export const getViewportMenus = (vpId: string) => ({ type: GET_VIEW_PORT_MENUS, vpId });

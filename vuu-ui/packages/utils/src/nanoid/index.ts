@@ -2,8 +2,8 @@
 // couldn't get original code to work as npm import without crypro warnings -
 // seemed to be picking up node version, not browser version
 
-export const uuid = (size = 21) => {
-  let id = '';
+export const uuid = (size: number = 21): string => {
+  let id: string = '';
   let bytes = crypto.getRandomValues(new Uint8Array(size));
 
   // A compact alternative for `for (var i = 0; i < step; i++)`.

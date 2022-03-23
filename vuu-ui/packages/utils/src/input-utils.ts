@@ -1,6 +1,7 @@
 const actionKeys = ['Enter', 'Delete'];
 const navigationKeys = ['Home', 'End', 'ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Tab'];
 const functionKeys = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'];
+
 const specialKeys = actionKeys
   .concat(navigationKeys)
   .concat(functionKeys)
@@ -9,7 +10,7 @@ const specialKeys = actionKeys
     return map;
   }, {});
 
-export const isCharacterKey = (evt) => {
+export const isCharacterKey = (evt: KeyboardEvent) => {
   if (specialKeys[evt.key]) {
     return false;
   }
@@ -18,7 +19,7 @@ export const isCharacterKey = (evt) => {
   }
 };
 
-export const isQuoteKey = (evt) => {
+export const isQuoteKey = (evt: KeyboardEvent) => {
   console.log(`key = >${evt.key}<`);
   return evt.key === '"' || evt.key === "'";
 };
