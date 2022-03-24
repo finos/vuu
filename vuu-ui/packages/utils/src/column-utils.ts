@@ -1,4 +1,5 @@
 import { functor, overrideColName } from './filter-utils';
+import {Row} from "./row-utils";
 
 const SORT_ASC = 'asc';
 
@@ -28,11 +29,17 @@ export function mapSortCriteria(
 export interface Column {
   key?: number;
   name: string;
+  type?: {
+    name: string;
+  } | string | null;
 }
 
 export interface KeyedColumn {
   key: number;
   name: string;
+  type?: {
+    name: string;
+  } | string | null;
 }
 
 export function isKeyedColumn(column: Column): column is KeyedColumn {
@@ -81,12 +88,12 @@ export function projectUpdates(updates: number[]): number[] {
 export function projectColumns(tableRowColumnMap: ColumnMap, columns: Column[]) {
   const columnCount = columns.length;
   const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, count } = metadataKeys;
-  return (startIdx, offset, selectedRows = []) =>
-    (row, i) => {
+  return (startIdx: number, offset: number, selectedRows: Row[] = []) =>
+    (row: Row, i: number) => {
       // selectedRows are indices of rows within underlying dataset (not sorted or filtered)
       // row is the original row from this set, with original index in IDX pos, which might
       // be overwritten with a different value below if rows are sorted/filtered
-      const baseRowIdx = row[IDX];
+      const baseRowIdx: any = row[IDX]; // TODO
       const out = [];
       for (let i = 0; i < columnCount; i++) {
         const colIdx = tableRowColumnMap[columns[i].name];
@@ -103,7 +110,11 @@ export function projectColumns(tableRowColumnMap: ColumnMap, columns: Column[]) 
     };
 }
 
-export function projectColumnsFilter(map, columns, meta, filter) {
+export type Meta = {
+  [key: string]: any;
+} & any[];
+
+export function projectColumnsFilter(map, columns: Column[], meta: Meta, filter) {
   const length = columns.length;
   const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED } = meta;
 
@@ -135,7 +146,7 @@ export function getFilterType(column) {
 // {name: 'Price', 'type': {name: 'price'}, 'aggregate': 'avg'},
 // {name: 'MarketCap', 'type': {name: 'number','format': 'currency'}, 'aggregate': 'sum'},
 
-const filterTypeFromColumnType = (column) => {
+const filterTypeFromColumnType = (column: Column) => {
   // TODO add remaining filter types
   switch (getDataType(column)) {
     case 'number':
@@ -145,13 +156,13 @@ const filterTypeFromColumnType = (column) => {
   }
 };
 
-export function getDataType({ type = null }) {
+export function getDataType({ type = null }: Column ) {
   if (type === null) {
     return 'set';
   } else if (typeof type === 'string') {
     return type;
   } else {
-    switch (type.name) {
+    switch (type!.name) {
       case 'price':
         return 'number';
       default:

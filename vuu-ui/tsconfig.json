@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "target": "es2016",
+    "downlevelIteration": true,
+    "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "sourceMap": true
+  },
+  "include": ["packages/*/src"],
+  "exclude": ["**/*.cy.*", "**/*.spec.*", "**/*.test.*"]
+}
