@@ -2,12 +2,17 @@ import * as Message from './messages';
 import { authRequest, getViewportMenus, getVisualLinks, loginRequest } from './messages';
 import { Viewport } from './new-viewport';
 import { getRpcService } from './rpc-services';
+import {
+  PostMessageFn, SendOptions,
+  ServerConnection,
+  VuuMessage
+} from "../viewserver/server-proxy";
 
 // TEST_DATA_COLLECTION
 // import { saveTestData } from '../../test-data-collection';
 
-let _requestId = 1;
-export const TEST_setRequestId = (id) => (_requestId = id);
+let _requestId: number = 1;
+export const TEST_setRequestId = (id: number) => (_requestId = id);
 
 const nextRequestId = () => `${_requestId++}`;
 const EMPTY_ARRAY = [];
@@ -17,8 +22,30 @@ const MENU_RPC_CALLS = {
   'selected-rows': 'VIEW_PORT_MENUS_SELECT_RPC'
 };
 
+interface PendingAuthentication {
+  resolve: (value: any) => void; // TODO
+  reject: () => void;
+}
+
+interface PendingLogin {
+  resolve: (value: any) => void; // TODO
+  reject: () => void;
+}
+
 export class ServerProxy {
-  constructor(connection, callback) {
+  private connection: ServerConnection;
+  private postMessageToClient: PostMessageFn;
+  private viewports: Map<string, Viewport>;
+  private mapClientToServerViewport: Map<string, string>;
+  private currentTimestamp: any;
+  private pendingAuthentication: PendingAuthentication;
+  private loginToken: string;
+  private pendingLogin: PendingLogin;
+  private sessionId: string;
+  // TODO this wasn't initialised
+  private queuedRequests: VuuMessage[] = [];
+
+  constructor(connection: ServerConnection, callback: PostMessageFn) {
     this.connection = connection;
     this.postMessageToClient = callback;
     this.viewports = new Map();
@@ -26,21 +53,21 @@ export class ServerProxy {
     this.currentTimestamp = undefined;
   }
 
-  async authenticate(username, password) {
+  public async authenticate(username: string, password: string) {
     return new Promise((resolve, reject) => {
       this.sendMessageToServer(authRequest(username, password), '');
       this.pendingAuthentication = { resolve, reject };
     });
   }
 
-  async login(token = this.loginToken) {
+  public async login(token: string = this.loginToken) {
     return new Promise((resolve, reject) => {
       this.sendMessageToServer(loginRequest(token, 'user'), '');
       this.pendingLogin = { resolve, reject };
     });
   }
 
-  subscribe(message) {
+  public subscribe(message) {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
       const viewport = new Viewport(message);
@@ -54,7 +81,7 @@ export class ServerProxy {
     }
   }
 
-  unsubscribe(clientViewportId) {
+  public unsubscribe(clientViewportId: string) {
     const serverViewportId = this.mapClientToServerViewport.get(clientViewportId);
     this.sendMessageToServer({
       type: Message.REMOVE_VP,
@@ -62,7 +89,7 @@ export class ServerProxy {
     });
   }
 
-  handleMessageFromClient(message) {
+  public handleMessageFromClient(message: VuuMessage) {
     const { type, viewport: clientViewportId } = message;
     const serverViewportId = this.mapClientToServerViewport.get(clientViewportId);
 
@@ -291,7 +318,7 @@ export class ServerProxy {
     }
   }
 
-  sendIfReady(message, requestId, isReady = true, options) {
+  public sendIfReady(message: VuuMessage, requestId: string, isReady: boolean = true, options?: any) {
     // TODO implement the message queuing in remote data view
     if (isReady) {
       this.sendMessageToServer(message, requestId, options);
@@ -302,7 +329,11 @@ export class ServerProxy {
     return isReady;
   }
 
-  sendMessageToServer(body, requestId = `${_requestId++}`, options = DEFAULT_OPTIONS) {
+  public sendMessageToServer(
+    body: any,
+    requestId: string = `${_requestId++}`,
+    options: SendOptions = DEFAULT_OPTIONS
+  ) {
     const { module = 'CORE', ...restOptions } = options;
     // const { clientId } = this.connection;
     this.connection.send(
@@ -318,7 +349,7 @@ export class ServerProxy {
     );
   }
 
-  handleMessageFromServer(message) {
+  public handleMessageFromServer(message: VuuMessage) {
     const {
       requestId,
       body: { type, timeStamp, ...body }

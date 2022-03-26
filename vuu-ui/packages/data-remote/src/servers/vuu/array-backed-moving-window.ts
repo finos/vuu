@@ -1,8 +1,17 @@
 import { WindowRange } from '@vuu-ui/utils/src/range-utils';
-import { bufferBreakout } from './buffer-range';
+import {bufferBreakout, FromToRange} from './buffer-range';
+import {LoHiRange} from "../viewserver/server-proxy";
+
 export class ArrayBackedMovingWindow {
+  private bufferSize: number;
+  private clientRange: WindowRange;
+  private range: WindowRange;
+  private internalData: any[];
+  private rowsWithinRange: number;
+  private rowCount: number;
+
   // Note, the buffer is already accounted for in the range passed in here
-  constructor({ lo, hi }, { from, to }, bufferSize) {
+  constructor({ lo, hi }: LoHiRange, { from, to }: FromToRange, bufferSize: number) {
     this.bufferSize = bufferSize;
     this.clientRange = new WindowRange(lo, hi);
     this.range = new WindowRange(from, to);
@@ -13,7 +22,7 @@ export class ArrayBackedMovingWindow {
   }
 
   // TODO we shpuld probably have a hasAllClientRowsWithinRange
-  get hasAllRowsWithinRange() {
+  get hasAllRowsWithinRange(): boolean {
     return (
       this.rowsWithinRange === this.clientRange.to - this.clientRange.from ||
       // this.rowsWithinRange === this.range.to - this.range.from ||
@@ -21,7 +30,7 @@ export class ArrayBackedMovingWindow {
     );
   }
 
-  setRowCount = (rowCount) => {
+  setRowCount = (rowCount: number) => {
     if (rowCount < this.internalData.length) {
       this.internalData.length = rowCount;
     }
@@ -39,7 +48,7 @@ export class ArrayBackedMovingWindow {
     this.rowCount = rowCount;
   };
 
-  setAtIndex(index, data) {
+  setAtIndex(index: number, data: any) {
     const isWithinClientRange = this.isWithinClientRange(index);
     if (isWithinClientRange || this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
@@ -52,21 +61,22 @@ export class ArrayBackedMovingWindow {
     return isWithinClientRange;
   }
 
-  getAtIndex(index) {
+  getAtIndex(index: number): any {
     return this.range.isWithin(index) && this.internalData[index - this.range.from] != null
       ? this.internalData[index - this.range.from]
       : undefined;
   }
 
-  isWithinRange(index) {
+  isWithinRange(index: number): boolean {
     return this.range.isWithin(index);
   }
 
-  isWithinClientRange(index) {
+  isWithinClientRange(index: number): boolean {
     return this.clientRange.isWithin(index);
   }
 
-  setClientRange(from, to) {
+  // Returns [false] or [serverDataRequired, clientRows, holdingRows]
+  setClientRange(from: number, to: number): [boolean] | [boolean, any[], any[]] {
     const currentFrom = this.clientRange.from;
     const currentTo = Math.min(this.clientRange.to, this.rowCount);
 
@@ -113,7 +123,7 @@ export class ArrayBackedMovingWindow {
     return [serverDataRequired, clientRows, holdingRows];
   }
 
-  setRange(from, to) {
+  setRange(from: number, to: number) {
     const [overlapFrom, overlapTo] = this.range.overlap(from, to);
 
     const newData = new Array(to - from + this.bufferSize);
@@ -135,7 +145,7 @@ export class ArrayBackedMovingWindow {
     this.range.to = to;
   }
 
-  getData() {
+  getData(): any[] {
     const { from, to } = this.range;
     const { from: lo, to: hi } = this.clientRange;
     const startOffset = Math.max(0, lo - from);
