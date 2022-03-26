@@ -1,4 +1,5 @@
 const { build } = require('esbuild');
+const fs = require('fs');
 const { exec, formatBytes, readPackageJson } = require('./utils');
 const { cyan } = require('kleur');
 const NO_DEPENDENCIES = {};
@@ -11,11 +12,15 @@ async function main() {
   const currentPath = process.cwd();
   const isWorker = currentPath.endsWith('data-worker');
 
+  const indexTS = 'src/index.ts';
+  const indexJS = 'src/index.js';
+
   const outfile = isWorker ? 'worker.js' : 'index.js';
   const watch = args.includes('--watch');
+  const isTypeScript = fs.existsSync(indexTS);
 
   const { metafile } = await build({
-    entryPoints: ['src/index.js'],
+    entryPoints: [isTypeScript ? indexTS : indexJS],
     bundle: true,
     define: {
       'process.env.NODE_ENV': `"production"`,
