@@ -8,11 +8,11 @@ interface Column {
   // would like to avoid this, it is purely an internal implementation detail
   marginLeft?: number;
   minWidth?: number;
-  name: string;
+  name?: string | null;
   resizeable?: boolean;
   resizing?: boolean;
   type?: any;
-  width: number;
+  width?: number;
   // Group types, break these out
   isGroup?: true;
   columns?: Column[];
@@ -26,19 +26,20 @@ interface Heading {
 }
 
 interface ColumnGroup {
+  isGroup: true;
   columns: Column[];
   contentWidth: number;
   headings?: Heading[];
   locked: boolean;
   left?: number;
   width: number;
-};
+}
 
-type ColumnSizing = 'fill' | 'auto' | 'static'; 
+type ColumnSizing = 'fill' | 'auto' | 'static';
 
 type SortColumns = {
   [key: string] : any;
-  // we can't use this in JavaScript. There are places where TS inference is not smart enough to 
+  // we can't use this in JavaScript. There are places where TS inference is not smart enough to
   // work out which variant is valid. In TS we could use type assertions, we have no such option
   // in JS.
   // [key: string] : SortDirection | number;
@@ -111,11 +112,11 @@ type GridModelAction =
 
 type GridModelDispatcher = (a: GridModelAction) => void
 
-type GridModelReducer<A extends GridModelAction=GridModelAction> = (s: GridModel, a: A) => GridModel; 
+type GridModelReducer<A extends GridModelAction=GridModelAction> = (s: GridModel, a: A) => GridModel;
 
-type GridModelReducerFn<A=GridModelAction> = (state: GridModel, action: A) => GridModel;  
+type GridModelReducerFn<A=GridModelAction> = (state: GridModel, action: A) => GridModel;
 type GridModelReducerInitializer = (props: GridProps) => GridModel;
-type GridModelReducer<T extends GridModelAction['type']> = 
+type GridModelReducer<T extends GridModelAction['type']> =
   T extends 'resize' ? GridModelReducerFn<GridModelResizeAction> :
   T extends 'resize-col' ? GridModelReducerFn<GridModelResizeColAction> :
   T extends 'resize-heading' ? GridModelReducerFn<GridModelResizeHeadingAction> :
@@ -133,4 +134,4 @@ type GridModelReducer<T extends GridModelAction['type']> =
   GridModelReducerFn<GridModelAction>;
 
   // couldn't figure out how the generically type the GridModelReducer
-type GridModelReducerTable = {[key in GridModelAction['type']]: GridModelReducer<any>};  
+type GridModelReducerTable = {[key in GridModelAction['type']]: GridModelReducer<any>};

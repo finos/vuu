@@ -1,20 +1,29 @@
-export function addRowsToIndex(rows, index, indexField) {
+export type RowIndex = {
+  [field: string]: number;
+}
+
+// TODO
+export type Row = {
+  [strKey: string]: any;
+} & any[];
+
+export function addRowsToIndex(rows: Row[], index: RowIndex, indexField: string) {
   for (let idx = 0, len = rows.length; idx < len; idx++) {
     index[rows[idx][indexField]] = idx;
   }
   return index;
 }
 
-export function indexRows(rows, indexField) {
+export function indexRows(rows: Row[], indexField: string) {
   return addRowsToIndex(rows, {}, indexField);
 }
 
-export function isEmptyRow(row) {
+export function isEmptyRow(row: Row) {
   return row[0] === undefined;
 }
 
 // TODO rename
-export function update(rows, updates) {
+export function update(rows: Row[], updates: any) { // TODO
   const results = rows.slice();
   const [[offsetIdx]] = rows;
   for (let i = 0; i < updates.length; i++) {

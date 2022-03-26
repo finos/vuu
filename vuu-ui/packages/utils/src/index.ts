@@ -1,10 +1,10 @@
-export { EventEmitter } from './event-emitter.js';
-export * from './logging.js';
+export { EventEmitter } from './event-emitter';
+export * from './logging';
 // export * from "./logging-provider.js";
-export * from './input-utils.js';
-export * from './invariant.js';
+export * from './input-utils';
+export * from './invariant';
 export * from './nanoid';
-export * from './array-utils.js';
+export * from './array-utils';
 export * from './constants';
 export * from './column-utils';
 export * from './filter-utils';
