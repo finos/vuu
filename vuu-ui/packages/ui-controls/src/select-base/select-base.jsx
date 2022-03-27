@@ -46,6 +46,13 @@ export default forwardRef(function SelectBase(
   const listRef = useRef(null);
   const dropdown = useRef(null);
 
+  const value = propsValue === null ? '' : propsValue;
+
+  const [state, setState] = useState({
+    value: value || '',
+    initialValue: value || ''
+  });
+
   const [, sourceWithIds, sourceItemById] = useItemsWithIds(source, id, {
     label: 'SelectBase'
   });
@@ -54,6 +61,21 @@ export default forwardRef(function SelectBase(
     id,
     onCancel
   });
+
+  const commit = useCallback(
+    (value = state.value) => {
+      setState({
+        ...state,
+        value: value,
+        initialValue: value
+      });
+
+      if (onCommit) {
+        onCommit(value);
+      }
+    },
+    [onCommit, state]
+  );
 
   const getSelectedValue = useCallback(
     (selected) => {
@@ -92,13 +114,6 @@ export default forwardRef(function SelectBase(
     [valueFormatter, source]
   );
 
-  const value = propsValue === null ? '' : propsValue;
-
-  const [state, setState] = useState({
-    value: value || '',
-    initialValue: value || ''
-  });
-
   useImperativeHandle(ref, () => ({ focus }));
 
   const focus = (selectText = true) => {
@@ -125,21 +140,6 @@ export default forwardRef(function SelectBase(
     setIsOpen(false);
     commit(formatValue(value));
   };
-
-  const commit = useCallback(
-    (value = state.value) => {
-      setState({
-        ...state,
-        value: value,
-        initialValue: value
-      });
-
-      if (onCommit) {
-        onCommit(value);
-      }
-    },
-    [onCommit, state]
-  );
 
   const childComponent =
     typeof childRenderer === 'function' ? childRenderer(ComponentType.Input, props) : null;

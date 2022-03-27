@@ -3,7 +3,7 @@ import cx from 'classnames';
 import './button.css';
 
 const Button = forwardRef(function Button(
-  { active, children, className, element = 'button', onBlur, onClick, onFocus, ...props },
+  { active, children, className, element = 'button', onBlur, onClick, onFocus, ...htmlAttributes },
   ref
 ) {
   const classBase = 'hwButton';
@@ -29,7 +29,7 @@ const Button = forwardRef(function Button(
   return React.createElement(
     element,
     {
-      ...props,
+      ...htmlAttributes,
       className: cx(classBase, className, {
         [`${classBase}-active`]: active,
         hwFocusVisible: focused
@@ -38,7 +38,6 @@ const Button = forwardRef(function Button(
       onBlur: handleBlur,
       onClick,
       onFocus: handleFocus
-      // onKeyUp: handleKeyUp
     },
     children
   );

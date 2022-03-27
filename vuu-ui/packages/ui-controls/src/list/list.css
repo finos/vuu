@@ -51,9 +51,10 @@
   --checkbox-border-color: black;
   --checkbox-border-width: 1px;
   --checkbox-tick: black;
+  background: var(--hwListItem-background, inherit);
   color: var(--list-item-text-color);
-  height: var(--list-item-height);
-  line-height: var(--list-item-height);
+  height: var(--hwListItem-height, var(--list-item-height));
+  line-height: var(--hwListItem-line-height, var(--list-item-height));
   padding: var(--list-item-padding);
   position: relative;
   cursor: default;
@@ -61,15 +62,8 @@
   white-space: nowrap;
 }
 
-.hwListItem[data-dragging] {
-  background-color: white;
-  box-shadow: var(--hw-dialog-shadow);
-  width: 100%;
-  z-index: 100;
-}
-
-.hwListItem:not(.hwListItemHeader):not([data-dragging])[data-highlighted] {
-  background-color: var(--list-hilited-bg);
+.hwListItem:not(.hwListItemHeader)[data-highlighted] {
+  background-color: var(--hwListItem-background, var(--list-hilited-bg));
 }
 
 .hwListItemHeader {

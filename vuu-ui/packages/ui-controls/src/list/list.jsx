@@ -1,11 +1,11 @@
-import React, { forwardRef, memo, useRef } from 'react';
+import React, { forwardRef, memo, useMemo, useRef } from 'react';
 import cx from 'classnames';
 import { useId } from '@vuu-ui/react-utils';
 import { useItemsWithIds } from '../common-hooks';
+import { childItems, sourceItems } from './list-items';
 import { useList } from './useList';
 // import { closestListItemIndex } from './list-dom-utils';
 import { useForkRef } from '../utils/use-fork-ref';
-import { createListProxy } from './list-proxy';
 
 import './list.css';
 
@@ -37,30 +37,29 @@ const List = forwardRef(function List(
     defaultHighlightedIdx,
     defaultSelected,
     emptyMessage,
-    listItemHandlers: listItemHandlersProp,
-    onCommit,
-    onChange = onCommit, // onSelectioNChange
-    onHighlight,
-    onMouseEnterListItem,
     highlightedIdx: highlightedIdxProp,
     id: idProp,
+    listItemHandlers: listItemHandlersProp,
+    onCommit,
+    onChange = onCommit, // onSelectionChange
+    onHighlight,
+    onMouseEnterListItem,
     selected: selectedProp,
     selection = 'single',
     selectionKeys,
     showEmptyMessage = false,
     source,
     stickyHeaders,
-    ...props
+    ...htmlAttributes
   },
   forwardedRef
 ) {
   const id = useId(idProp, 'List');
   const root = useRef(null);
-
-  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(source || children, id, {
+  const items = useMemo(() => sourceItems(source) || childItems(children), [children, source]);
+  const [totalItemCount, itemsWithIds, itemById] = useItemsWithIds(items, id, {
     collapsibleHeaders,
     defaultExpanded: true,
-    createProxy: source ? undefined : createListProxy,
     label: 'List'
   });
 
@@ -68,13 +67,14 @@ const List = forwardRef(function List(
     if (onChange) {
       onChange(
         evt,
-        selected.map((id) => sourceItemById(id))
+        selected.map((id) => itemById(id))
       );
     }
   };
 
   const {
     count,
+    draggable,
     focusVisible,
     highlightedIdx,
     listItemHeaderHandlers,
@@ -97,7 +97,7 @@ const List = forwardRef(function List(
     selected: selectedProp,
     selection,
     selectionKeys,
-    sourceWithIds,
+    sourceWithIds: itemsWithIds,
     stickyHeaders,
     totalItemCount
   });
@@ -176,7 +176,7 @@ const List = forwardRef(function List(
 
   // TODO do we need to make special provision for memo here ?
   function addChildItem(list, item, idx) {
-    const { wrappedSource: element, id } = item;
+    const { element, id } = item;
 
     //TODO do this for all props
     const { onClick } = element.props;
@@ -234,7 +234,7 @@ const List = forwardRef(function List(
     }
   }
 
-  const renderContent = () => {
+  const renderItems = () => {
     if (source) {
       return renderSourceContent(visibleData);
     } else if (children) {
@@ -246,7 +246,7 @@ const List = forwardRef(function List(
 
   return (
     <div
-      {...props}
+      {...htmlAttributes}
       {...listProps}
       className={cx(classBase, className, {
         'empty-list': count === 0,
@@ -258,7 +258,8 @@ const List = forwardRef(function List(
       ref={useForkRef(root, forwardedRef)}
       role="listbox"
       tabIndex={0}>
-      {renderContent()}
+      {renderItems()}
+      {draggable}
     </div>
   );
 });

@@ -3,7 +3,6 @@ import { TextInput } from '@vuu-ui/ui-controls';
 import { Form, MultiCellEdit } from '@vuu-ui/ui-forms';
 import formConfig, { Select as SelectField } from './Form.config';
 
-import '@vuu-ui/ui-forms/index.css';
 import './Form.css';
 
 export default {

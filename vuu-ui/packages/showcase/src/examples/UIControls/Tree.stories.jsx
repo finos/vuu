@@ -1,14 +1,16 @@
 import React from 'react';
 import { ComponentAnatomy } from '@heswell/component-anatomy';
 
-import { Tree } from '@vuu-ui/ui-controls';
-import { usa_states_cities, groupByInitialLetter } from './List.data';
+import { Tree, useItemsWithIds } from '@vuu-ui/ui-controls';
+import { usa_states_cities, groupByInitialLetter } from './List/List.data';
 import { folderData } from './Tree.data';
 
 export default {
   title: 'UI Controls/Tree',
   component: Tree
 };
+
+let displaySequence = 1;
 
 export const SimpleTree = () => {
   const handleChange = (e, selected) => {
@@ -52,6 +54,8 @@ export const SimpleTree = () => {
   );
 };
 
+SimpleTree.displaySequence = displaySequence++;
+
 const iconTreeStyle = `
   .arrow-toggle {
     --hwTree-toggle-collapse: var(--svg-triangle-right);
@@ -81,7 +85,7 @@ export const SimpleTreeIcons = () => {
   );
 };
 
-export const RevealSelected = () => {
+export const DragDropTreeIcons = () => {
   const handleChange = (e, selected) => {
     console.log(`selected ${selected.join(',')}`);
   };
@@ -95,12 +99,54 @@ export const RevealSelected = () => {
           position: 'relative'
         }}>
         <style>{iconTreeStyle}</style>
-        <Tree className="arrow-toggle" onSelectionChange={handleChange} source={folderData} />
+        <Tree
+          allowDragDrop
+          className="arrow-toggle"
+          onSelectionChange={handleChange}
+          source={folderData}
+        />
       </div>
       <input type="text" />
     </div>
   );
 };
+
+SimpleTreeIcons.displaySequence = displaySequence++;
+
+export const RevealSelected = () => {
+  const handleChange = (e, selected) => {
+    console.log(`selected ${selected.join(',')}`);
+  };
+
+  const [, source] = useItemsWithIds(folderData);
+  console.log({ source });
+
+  console.log({ source });
+  return (
+    <div style={{ width: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+      <input type="text" />
+      <div
+        style={{
+          fontFamily: 'Roboto',
+          maxHeight: 800,
+          width: 150,
+          position: 'relative'
+        }}>
+        <style>{iconTreeStyle}</style>
+        <Tree
+          className="arrow-toggle"
+          defaultSelected={['root-0.1.0.0.0']}
+          onSelectionChange={handleChange}
+          source={source}
+          revealSelected
+        />
+      </div>
+      <input type="text" />
+    </div>
+  );
+};
+
+RevealSelected.displaySequence = displaySequence++;
 
 export const SimpleTreeWithAnatomy = () => {
   const source = [
@@ -130,3 +176,5 @@ export const SimpleTreeWithAnatomy = () => {
     </>
   );
 };
+
+SimpleTreeWithAnatomy.displaySequence = displaySequence++;

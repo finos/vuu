@@ -6,18 +6,10 @@ import '@vuu-ui/theme';
 
 import '@heswell/component-anatomy/esm/index.css';
 
-const story = {
-  title: 'UI Controls/Button',
-  component: Button
-};
-
-export default story;
-
 export const DefaultButton = () => {
   const handleClick = (e) => {
     console.log('Button click');
   };
-  console.log(`render example`);
   return <Button onClick={handleClick}>Button</Button>;
 };
 
@@ -25,7 +17,6 @@ export const DefaultStateButton = () => {
   const handleChange = (e, value) => {
     console.log(`Button click, new state = ${value}`);
   };
-  console.log(`render example`);
   return (
     <StateButton defaultChecked={false} onChange={handleChange}>
       Button
@@ -37,12 +28,20 @@ export const WithRenderVisualiser = () => {
   const handleChange = (e, value) => {
     console.log(`Button click, new state = ${value}`);
   };
-  console.log(`render example`);
   return (
     <ComponentAnatomy>
       <StateButton defaultChecked={false} onChange={handleChange}>
         Button
       </StateButton>
     </ComponentAnatomy>
+  );
+};
+
+export const IconButtons = () => {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+      <Button data-icon="filter" />
+      <Button data-icon="filter">Filter</Button>
+    </div>
   );
 };

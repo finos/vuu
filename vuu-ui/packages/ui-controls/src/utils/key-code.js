@@ -11,15 +11,18 @@ function union(set1, ...sets) {
 export const ArrowUp = 'ArrowUp';
 export const ArrowDown = 'ArrowDown';
 export const ArrowLeft = 'ArrowLeft';
+export const Backspace = 'Backspace';
 export const ArrowRight = 'ArrowRight';
 export const Enter = 'Enter';
 export const Escape = 'Escape';
+export const Delete = 'Delete';
 
-const actionKeys = new Set(['Enter', 'Delete']);
+const actionKeys = new Set([Enter, Delete]);
 const focusKeys = new Set(['Tab']);
 // const navigationKeys = new Set(["Home", "End", "ArrowRight", "ArrowLeft","ArrowDown", "ArrowUp"]);
 const arrowLeftRightKeys = new Set(['ArrowRight', 'ArrowLeft']);
-const navigationKeys = new Set(['Home', 'End', /*"ArrowRight", "ArrowLeft",*/ ArrowDown, ArrowUp]);
+const verticalNavigationKeys = new Set(['Home', 'End', 'ArrowDown', 'ArrowUp']);
+const horizontalNavigationKeys = new Set(['Home', 'End', 'ArrowRight', 'ArrowLeft']);
 const functionKeys = new Set([
   'F1',
   'F2',
@@ -34,7 +37,14 @@ const functionKeys = new Set([
   'F11',
   'F12'
 ]);
-const specialKeys = union(actionKeys, navigationKeys, arrowLeftRightKeys, functionKeys, focusKeys);
+const specialKeys = union(
+  actionKeys,
+  horizontalNavigationKeys,
+  verticalNavigationKeys,
+  arrowLeftRightKeys,
+  functionKeys,
+  focusKeys
+);
 export const isCharacterKey = (evt) => {
   if (specialKeys.has(evt.key)) {
     return false;
@@ -44,6 +54,8 @@ export const isCharacterKey = (evt) => {
   }
 };
 
-export const isNavigationKey = ({ key }) => {
+export const isNavigationKey = ({ key }, orientation = 'vertical') => {
+  const navigationKeys =
+    orientation === 'vertical' ? verticalNavigationKeys : horizontalNavigationKeys;
   return navigationKeys.has(key);
 };

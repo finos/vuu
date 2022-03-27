@@ -9,26 +9,21 @@ import { RemoteDataSource, Servers, useViewserver } from '@vuu-ui/data-remote';
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
 import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
 import createSuggestionProvider from './vuu-filter-suggestion-provider';
+import { vuuTableMeta } from './Vuu.data';
 
 import '@vuu-ui/theme/index.css';
 import '@vuu-ui/layout/index.css';
-import '@vuu-ui/ui-controls/index.css';
-import '@vuu-ui/parsed-input/index.css';
 import '@vuu-ui/data-grid/index.css';
 
-// eslint-disable-next-line import/no-anonymous-default-export
-export default {
-  title: 'Vuu/Grid',
-  component: Grid
-};
+let displaySequence = 1;
 
-const instrumentColumns = [
-  { name: 'ric' },
-  { name: 'description' },
-  { name: 'currency' },
-  { name: 'exchange' },
-  { name: 'lotSize' }
-];
+const { columns, dataTypes } = vuuTableMeta.instruments;
+const instrumentColumns = columns.map((name, index) => {
+  return {
+    name,
+    type: dataTypes[index]
+  };
+});
 
 export const VuuInstruments = () => {
   const gridRef = useRef(null);
@@ -38,15 +33,17 @@ export const VuuInstruments = () => {
     console.log(`handleRpcResponse ${JSON.stringify(response)}`);
   }, []);
 
-  const dataConfig = {
-    bufferSize: 100,
-    columns: instrumentColumns.map((col) => col.name),
-    serverName: Servers.Vuu,
-    tableName: { table: 'instruments', module: 'SIMUL' },
-    serverUrl: '127.0.0.1:8090/websocket'
-  };
+  const [dataConfig, dataSource] = useMemo(() => {
+    const dataConfig = {
+      bufferSize: 100,
+      columns,
+      serverName: Servers.Vuu,
+      tableName: { table: 'instruments', module: 'SIMUL' },
+      serverUrl: '127.0.0.1:8090/websocket'
+    };
+    return [dataConfig, new RemoteDataSource(dataConfig)];
+  }, []);
 
-  const dataSource = useMemo(() => new RemoteDataSource(dataConfig), []);
   const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction, makeRpcCall } =
     useViewserver({
       dataSource,
@@ -55,7 +52,7 @@ export const VuuInstruments = () => {
 
   const handleCommit = (result) => {
     const { filter, name } = extractFilter(result);
-    dataSource.filterQuery(filter);
+    dataSource.filter(filter);
     if (name) {
       setNamedFilters(namedFilters.concat({ name, filter }));
     }
@@ -84,7 +81,8 @@ export const VuuInstruments = () => {
       <ParserProvider
         parser={parseFilter}
         suggestionProvider={createSuggestionProvider({
-          columnNames: dataConfig.columns,
+          columns: instrumentColumns,
+          columnNames: columns,
           namedFilters,
           getSuggestions,
           table: dataConfig.tableName
@@ -112,6 +110,8 @@ export const VuuInstruments = () => {
     </div>
   );
 };
+
+VuuInstruments.displaySequence = displaySequence++;
 
 const instrumentConfig = {
   bufferSize: 100,

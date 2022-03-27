@@ -46,7 +46,6 @@ const sourceFromImports = (stories, prefix = '', icon = 'folder') =>
 export const App = ({ stories }) => {
   let navigate = useNavigate();
   const source = useMemo(() => sourceFromImports(stories), [stories]);
-  console.log({ source });
   const { pathname } = useLocation();
   const handleChange = (evt, [selected]) => navigate(selected.id);
   return (
@@ -58,6 +57,7 @@ export const App = ({ stories }) => {
           data-resizeable
           defaultSelected={[pathname.slice(1)]}
           onSelectionChange={handleChange}
+          revealSelected
           source={source}
         />
         <div

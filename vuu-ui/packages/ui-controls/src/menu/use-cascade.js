@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { closestListItem, listItemIndex } from '../list/list-dom-utils';
+import { closestListItem, listItemIndex } from '../common-hooks';
 // import {mousePosition} from './aim/utils';
 // import {aiming} from './aim/aim';
 

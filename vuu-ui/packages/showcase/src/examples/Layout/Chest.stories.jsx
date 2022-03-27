@@ -12,7 +12,6 @@ import {
   View
 } from '@vuu-ui/layout';
 
-import '@vuu-ui/ui-controls/index.css';
 import './Chest.stories.css';
 
 export default {

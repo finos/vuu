@@ -1,18 +1,15 @@
 import { useCallback } from 'react';
-import {
-  useDropdownBehaviour,
-  useHierarchicalData,
-  useKeyboardNavigation,
-  useSelection
-} from '@vuu-ui/ui-controls';
+import { useDropdownBehaviour, useKeyboardNavigation, useSelection } from '@vuu-ui/ui-controls';
 import { useInputEditing } from './use-input-editing';
-import { useSuggestions } from './use-suggestions';
+import { useSuggestions } from './suggestions';
+import { useHierarchicalData } from './use-hierarchical-data';
 
 const ENTER_ONLY = ['Enter'];
 
 export const useParsedInput = ({
   highlightedIdx,
   id,
+  isMultiSelect,
   onCommit,
   onDropdownClose,
   onDropdownOpen,
@@ -22,13 +19,11 @@ export const useParsedInput = ({
   open,
   selected,
   setCurrentText,
-  setHighlightedIdx,
   setText,
   textRef,
   sourceWithIds
 }) => {
-  const dataHook = useHierarchicalData(sourceWithIds, 'ParsedInput');
-
+  const dataHook = useHierarchicalData(sourceWithIds, { isMultiSelect, selected });
   const suggestionsAreIllustrationsOnly = dataHook.indexPositions.every(
     (item) => item.isIllustration
   );
@@ -40,11 +35,11 @@ export const useParsedInput = ({
     openOnFocus: true
   });
 
-  const { acceptSuggestion, isMultiSelect } = useSuggestions({
+  const { acceptSuggestion } = useSuggestions({
+    isMultiSelect,
     onCommit,
     selected,
     setCurrentText,
-    setHighlighted: setHighlightedIdx,
     setText,
     setVisibleData: dataHook.setData,
     textRef,

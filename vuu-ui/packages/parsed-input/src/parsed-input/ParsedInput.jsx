@@ -1,9 +1,17 @@
-import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react';
 import cx from 'classnames';
 import { Button, Dropdown, useItemsWithIds, useForkRef, SINGLE } from '@vuu-ui/ui-controls';
 import { useId } from '@vuu-ui/react-utils';
 
-import { SuggestionList } from './SuggestionList';
+import { SuggestionList } from './suggestions';
 import { TokenMirror } from './TokenMirror';
 import { useParsedInput } from './useParsedInput';
 import { useParsedText } from './useParsedText';
@@ -14,13 +22,22 @@ const classBase = 'hwParsedInput';
 
 const NO_COMPLETION = [];
 
-export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommit }, ref) {
+export const ParsedInput = forwardRef(function ParsedInput(
+  { className, id: idProp, onCommit },
+  forwardedRef
+) {
   const id = useId(idProp);
-  const { result, errors, textRef, tokens, parseText, suggestions } = useParsedText();
+  const {
+    result,
+    errors,
+    textRef,
+    tokens,
+    parseText,
+    suggestions: { values: suggestions, isMultiSelect },
+    insertSymbol
+  } = useParsedText();
   const { current: text } = textRef;
 
-  const isMultiSelect =
-    suggestions.length > 0 && suggestions.every((suggestion) => suggestion.isListItem);
   const selectionStrategy = isMultiSelect ? 'checkbox-only' : SINGLE;
 
   const root = useRef(null);
@@ -30,6 +47,10 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
   const [selected, _setSelected] = useState([]);
   const [highlightedIdx, setHighlightedIdx] = useState(0);
   const [open, setOpen] = useState(false);
+
+  useImperativeHandle(forwardedRef, () => ({
+    focus: () => inputRef.current?.focus()
+  }));
 
   const setSelected = useCallback((selected, updateHighlight = true) => {
     _setSelected(selected);
@@ -42,6 +63,9 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     (text, typedSubstitutionText) => {
       setSelected([]);
       // we need to pass an array of the substituted tokens, so we can map them beck to actual names
+      // onsole.log(
+      //   `ParsedInput setText text= '${text}' typedSubstitutionText= ${typedSubstitutionText}`
+      // );
       parseText(text, typedSubstitutionText);
     },
     [parseText, setSelected]
@@ -52,6 +76,17 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
       textRef.current = content;
     },
     [textRef]
+  );
+
+  const handleTextInputChange = useCallback(
+    (text, char) => {
+      if (char && char === insertSymbol) {
+        setCurrentText(text);
+      } else {
+        setText(text);
+      }
+    },
+    [insertSymbol, setCurrentText, setText]
   );
 
   const clear = useCallback(() => {
@@ -69,9 +104,11 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     label: 'ParsedInput'
   });
 
-  const handleSuggestionClick = useCallback(
+  const handleSuggestionSelection = useCallback(
     (evt, selected) => {
-      const updatedSelected = acceptSuggestionRef.current(evt, selected);
+      // we rely on List for click selection, List returns selected items not id values
+      const selectedIds = selected.map((item) => item.id);
+      const updatedSelected = acceptSuggestionRef.current(evt, selectedIds);
       if (updatedSelected) {
         setSelected(updatedSelected, false);
       }
@@ -81,14 +118,16 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
 
   const handleSelectionChange = useCallback(
     (e, selected) => {
+      // we handle keyboard selection directly, bypassing List, so we get selectedId values
+      const { current: acceptSuggestion } = acceptSuggestionRef;
       if (selectionStrategy === SINGLE) {
-        acceptSuggestionRef.current(e, selected);
+        acceptSuggestion(e, selected);
       } else {
-        const selectedIds = acceptSuggestionRef.current(e, selected);
+        const selectedIds = acceptSuggestion(e, selected, insertSymbol);
         setSelected(selectedIds, false);
       }
     },
-    [selectionStrategy, setSelected]
+    [insertSymbol, selectionStrategy, setSelected]
   );
 
   const handleDropdownChange = useCallback((e, isOpen) => {
@@ -119,21 +158,30 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
     visibleData
   } = useParsedInput({
     highlightedIdx: sourceWithIds.length === 0 ? -1 : highlightedIdx,
+    isMultiSelect,
     onCommit: handleCommit,
     onDropdownClose: handleDropdownChange,
     onDropdownOpen: handleDropdownChange,
-    onTextInputChange: setText,
+    onTextInputChange: handleTextInputChange,
     onSelectionChange: handleSelectionChange,
     onHighlight: setHighlightedIdx,
     open,
     selected,
     setCurrentText,
-    setHighlightedIdx,
     setText,
     sourceWithIds,
     textRef,
     totalItemCount
   });
+
+  const selectedItems = visibleData.filter((item) => item.isSelected);
+  const selectedIdValues = selectedItems.map((item) => item.id);
+  const selectedCount = selectedIdValues.length;
+
+  useLayoutEffect(() => {
+    console.log(`selectedCount has changed to ${selectedCount}`);
+    setHighlightedIdx(selectedCount);
+  }, [selectedCount]);
 
   acceptSuggestionRef.current = acceptSuggestion;
 
@@ -152,45 +200,51 @@ export const ParsedInput = forwardRef(function ParsedInput({ id: idProp, onCommi
   const cursorAtEndOfText = !text.endsWith(' ');
   const [completion] = suggestionsAreIllustrationsOnly
     ? NO_COMPLETION
-    : getCompletionAtIndex(visibleData, highlightedIdx, cursorAtEndOfText, selected.length, true);
+    : getCompletionAtIndex(
+        visibleData,
+        highlightedIdx,
+        cursorAtEndOfText,
+        selectedIdValues.length,
+        true
+      );
 
   return (
-    <>
-      <div className={cx(classBase)} ref={useForkRef(root, ref)}>
-        <div className={`${classBase}-input-container`}>
-          <TokenMirror tokens={tokens} completion={completion} />
-          <div
-            {...listProps}
-            {...inputProps}
-            ref={inputRef}
-            contentEditable
-            className={`${classBase}-input`}
-            spellCheck={false}
-            tabIndex={0}
-          />
-        </div>
-        <Button className={`${classBase}-clear`} onClick={clear}>
-          <span className={`hwIconContainer`} data-icon="close-circle" />
-        </Button>
+    <div className={cx(classBase, className)} ref={useForkRef(root, forwardedRef)}>
+      <div className={`${classBase}-input-container`}>
+        <TokenMirror tokens={tokens} completion={`${insertSymbol ?? ''}${completion ?? ''}`} />
+        <div
+          {...listProps}
+          {...inputProps}
+          ref={inputRef}
+          contentEditable
+          className={`${classBase}-input`}
+          spellCheck={false}
+          tabIndex={0}
+        />
       </div>
+      <Button className={`${classBase}-clear`} onClick={clear}>
+        <span className={`hwIconContainer`} data-icon="close-circle" />
+      </Button>
       <Dropdown
         anchorEl={root.current}
         open={open}
-        align="bottom-right"
+        align="bottom-full-width"
         className={`${classBase}-dropdown`}>
         <SuggestionList
           highlightedIdx={suggestionsAreIllustrationsOnly ? -1 : highlightedIdx}
           id={id}
+          onHighlight={setHighlightedIdx}
           onMouseEnterListItem={
             suggestionsAreIllustrationsOnly ? undefined : handleMouseOverSuggestion
           }
-          onSuggestionClick={suggestionsAreIllustrationsOnly ? undefined : handleSuggestionClick}
+          onChange={suggestionsAreIllustrationsOnly ? undefined : handleSuggestionSelection}
           ref={suggestionList}
           selectionStrategy={selectionStrategy}
-          selected={selected}
-          suggestions={visibleData}
+          selected={selectedIdValues}
+          // selected={selected}
+          source={visibleData}
         />
       </Dropdown>
-    </>
+    </div>
   );
 });

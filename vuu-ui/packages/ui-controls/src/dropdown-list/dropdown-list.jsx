@@ -26,14 +26,6 @@ export const DropdownList = ({
     label: 'DropdownList'
   });
 
-  const handleCommit = useCallback(() => {
-    setIsOpen(false);
-    requestAnimationFrame(() => {
-      buttonRef.current.focus();
-      onCommit?.(selectedItems.current.map(sourceItemById));
-    });
-  }, [onCommit, setIsOpen, sourceItemById]);
-
   const handleCancel = () => {
     requestAnimationFrame(() => {
       buttonRef.current.focus();
@@ -44,6 +36,14 @@ export const DropdownList = ({
     closeOnSelect: false,
     onCancel: handleCancel
   });
+
+  const handleCommit = useCallback(() => {
+    setIsOpen(false);
+    requestAnimationFrame(() => {
+      buttonRef.current.focus();
+      onCommit?.(selectedItems.current.map(sourceItemById));
+    });
+  }, [onCommit, setIsOpen, sourceItemById]);
 
   const handleSelection = (e, selected) => {
     displayText.current = selected.length > 0 ? sourceItemById(selected[0]) : '';

@@ -1,5 +1,5 @@
 .hwHeader {
-  --hw-button-width: 28px;
+  --hwButton-width: 28px;
   --hw-header-height: 24px;
 
   align-items: center;
@@ -17,8 +17,8 @@
 }
 
 .hwHeader .hwButton {
-  --button-height: var(--hw-header-height);
-  --button-width: var(--hw-header-height);
+  --hwButton-height: var(--hw-header-height);
+  --hwButton-width: var(--hw-header-height);
   min-width: 20px;
 }
 

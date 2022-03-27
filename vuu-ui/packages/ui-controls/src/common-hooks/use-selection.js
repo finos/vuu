@@ -87,7 +87,6 @@ export const useSelection = ({
           }
         }
       }
-
       setSelected(newSelected);
       if (onChange) {
         onChange(evt, newSelected);

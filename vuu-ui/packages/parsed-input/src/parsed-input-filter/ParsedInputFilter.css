@@ -1,0 +1,43 @@
+.hwParsedInputFilter {
+  --hwFlipper-height: var(--height);
+  --hwFlipper-width: calc(100% - 28px);
+  --hwPillbox-height: var(--height);
+  --hwPill-flex-direction: column;
+  --hwPill-height: calc(--height - 2px);
+  --hwPill-padding: 0 14px 0 4px;
+
+  --height: var(--hwParsedInputFilter-height, 32px);
+  --width: var(--hwParsedInputFilter-width, auto);
+
+  --hwButton-height: var(--height);
+
+  align-items: center;
+  background: var(--hwParsedInputFilter-background, white);
+  display: flex;
+  flex-wrap: wrap;
+  height: var(--height);
+  overflow: hidden;
+  width: var(--width);
+}
+
+.hwParsedInputFilter-expando {
+  --input-display: none;
+  background-color: white;
+  height: var(--height);
+  transition: flex-basis 0.4s ease-out;
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: 0;
+}
+
+.hwParsedInputFilter-expanded {
+  --input-display: block;
+  transition: flex-basis 0.3s ease-in;
+  flex-basis: calc(100% - 28px);
+}
+
+.hwParsedInputFilter-input {
+  --hwParsedInput-display: var(--input-display);
+  height: var(--height);
+  width: 100%;
+}

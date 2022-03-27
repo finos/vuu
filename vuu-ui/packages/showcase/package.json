@@ -1,33 +1,36 @@
 {
   "name": "@vuu-ui/showcase",
-  "version": "0.0.14",
+  "version": "0.0.17",
   "description": "",
   "main": "index.js",
   "private": true,
   "scripts": {
+    "vite:dev": "vite",
+    "vite:build": "vite build",
+    "vite:preview": "vite preview",
     "stories": "node ./scripts/parse-stories.mjs",
     "build": "node ./scripts/build-prod.mjs",
     "build:dev": "node ./scripts/build.mjs",
+    "build:packages": "node ./scripts/build-packages.mjs",
     "serve": "serve public"
   },
   "keywords": [],
   "author": "heswell",
   "license": "Apache-2.0",
   "devDependencies": {
-    "esbuild": "^0.13.4"
+    "@vitejs/plugin-react": "^1.0.7",
+    "vite": "^2.8.0"
   },
   "dependencies": {
-    "@vuu-ui/layout": "0.0.14",
-    "@vuu-ui/parsed-input": "0.0.14",
-    "@vuu-ui/react-utils": "0.0.14",
-    "@vuu-ui/theme": "0.0.14",
-    "@vuu-ui/ui-controls": "0.0.14",
-    "@vuu-ui/utils": "0.0.14",
+    "@vuu-ui/layout": "0.0.17",
+    "@vuu-ui/parsed-input": "0.0.17",
+    "@vuu-ui/react-utils": "0.0.17",
+    "@vuu-ui/theme": "0.0.17",
+    "@vuu-ui/ui-controls": "0.0.17",
+    "@vuu-ui/utils": "0.0.17",
     "classnames": "^2.3.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-router-dom": "^6.2.1",
-    "serve": "^12.0.1",
-    "xdm": "^3.0.0"
+    "react-router-dom": "^6.2.1"
   }
 }

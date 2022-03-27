@@ -3,11 +3,11 @@ import { formatBytes, readPackageJson } from './utils.mjs';
 const NO_DEPENDENCIES = {};
 
 async function main() {
-  const { name, peerDependencies = NO_DEPENDENCIES, version } = readPackageJson();
+  const { peerDependencies = NO_DEPENDENCIES } = readPackageJson();
   const external = Object.keys(peerDependencies);
 
   const { metafile } = await build({
-    entryPoints: ['./index.jsx'],
+    entryPoints: ['src/index.jsx'],
     bundle: true,
     define: {
       'process.env.NODE_ENV': `"production"`,
@@ -19,7 +19,7 @@ async function main() {
       '.woff2': 'dataurl'
     },
     metafile: true,
-    minify: true,
+    // minify: true,
     outfile: 'public/index.js',
     target: 'esnext'
   }).catch(() => process.exit(1));

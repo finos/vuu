@@ -1,17 +1,27 @@
 /* eslint-disable no-throw-literal */
 import * as c3 from 'antlr4-c3';
 import { FilterParser } from '../../generated/parsers/filter/FilterParser';
-import { computeTokenIndexAndText } from './parse-utils';
+import { computeTokenIndexAndText, NO_SUGGESTIONS } from './parse-utils';
+
+const NO_OPERATOR = [];
+
+const getInValues = (tokens) => {
+  return tokens.filter((t) => t.text !== ',');
+};
 
 const getOperatorToken = (parsedTokens) => {
-  if (parsedTokens.length > 1) {
-    const [nextLastToken, lastToken] = parsedTokens.slice(-2);
-    if (lastToken.type === 'operator') {
-      return lastToken;
-    } else if (nextLastToken.type === 'operator') {
-      return nextLastToken;
+  for (let i = parsedTokens.length - 1; i >= 0; i--) {
+    const token = parsedTokens[i];
+    // TODO us this always correct ?
+    if (token.type === 'operator') {
+      if (token.text === 'in') {
+        return [token, getInValues(parsedTokens.slice(i + 2))];
+      } else {
+        return [token];
+      }
     }
   }
+  return NO_OPERATOR;
 };
 
 const textValue = (text) => (text.startsWith("'") ? text.slice(1, -1).toLowerCase() : text);
@@ -43,8 +53,6 @@ const getCompletion = (suggestion, lastTokenText) => {
   }
 };
 
-const identity = (val) => val;
-
 export const getSuggestions = (
   parser,
   parseTree,
@@ -52,7 +60,7 @@ export const getSuggestions = (
   suggestionProvider,
   parseResult,
   parsedTokens,
-  isList = false
+  isListItem = false
 ) => {
   const core = new c3.CodeCompletionCore(parser);
   core.preferredRules = new Set([
@@ -62,7 +70,6 @@ export const getSuggestions = (
     FilterParser.RULE_atom
   ]);
   core.ignoredTokens = new Set([FilterParser.LPAREN]);
-
   let { text, index, alternative } = computeTokenIndexAndText(parser, parseTree, caretPosition);
   // onsole.log(
   //   `[parseSuggestions] %ccollect candidates, token text='${text}', caret at ${caretPosition}, token at ${index} isList ${isList}
@@ -74,7 +81,6 @@ export const getSuggestions = (
 
   let rules, tokens;
   let alternativeText, alternativeRules, alternativeTokens;
-  let currentMatchIsListItem = isList;
 
   ({ rules, tokens } = core.collectCandidates(index));
   // The rules, tokens maps returned by collectCandidates are stateful and mutable
@@ -91,33 +97,22 @@ export const getSuggestions = (
   const ruleCount = rules.size + (alternativeRules?.size ?? 0);
   const tokenCount = tokens.size + (alternativeTokens?.size ?? 0);
 
-  // onsole.log(
-  //   `
-  //     rules ${rules.size} tokens ${tokens.size}
-  //     alternativeRules ${alternativeRules?.size ?? 0} alternativeTokens ${
-  //     alternativeTokens?.size ?? 0
-  //   } alternativeText = '${alternativeText}'
-  //   `,
-  //   alternativeTokens
-  // );
-
   if (ruleCount === 0 && tokenCount === 0) {
-    return [];
+    return NO_SUGGESTIONS;
   } else if (tokens.size === 1 && tokensIsListOpener(tokens)) {
     // auto inject the '[' and re-parse
     throw { type: 'open-list', text: '[' };
   } else if (tokens.size === 2 && tokensAreListSignifiers(tokens)) {
     // do nothing;
   } else if (alternativeTokens?.size === 1 && tokensIsListOpener(alternativeTokens)) {
-    currentMatchIsListItem = true;
+    isListItem = true;
   } else if (alternativeTokens?.size === 2 && tokensAreListSignifiers(alternativeTokens)) {
-    currentMatchIsListItem = true;
+    isListItem = true;
   }
 
-  let suggestions = new AsyncList();
+  const suggestions = new AsyncSuggestionsList();
   let ignoreTokens = false;
   const [lastToken = { text: '' }] = parser.inputStream.tokens.slice(-2);
-
   if (rules.has(FilterParser.RULE_filtername)) {
     suggestions.push(suggestionProvider(parseResult, { token: 'FILTER-NAME', text }));
   } else if (rules.has(FilterParser.RULE_named_filter)) {
@@ -132,27 +127,28 @@ export const getSuggestions = (
       text: alternativeText
     });
     if (
-      expandedSuggestions.length &&
-      !fullMatchOnOnlyCandidate(expandedSuggestions, alternativeText)
+      expandedSuggestions.total &&
+      !fullMatchOnOnlyCandidate(expandedSuggestions.values, alternativeText)
     ) {
       suggestions.push(expandedSuggestions);
       ignoreTokens = true;
     }
   }
   if (rules.has(FilterParser.RULE_atom)) {
-    const operatorToken = getOperatorToken(parsedTokens);
-    console.log(`operator token `, operatorToken);
+    const [operatorToken, values] = getOperatorToken(parsedTokens);
     suggestions.push(
       suggestionProvider(parseResult, {
-        token: 'COLUMN-VALUE',
+        isListItem,
         operator: operatorToken?.text ?? '',
         text,
-        isListItem: currentMatchIsListItem
+        token: 'COLUMN-VALUE',
+        values
       })
     );
   }
 
   if (!ignoreTokens) {
+    const suggestedTokens = [];
     tokens.forEach((_, key) => {
       let candidate;
       if (key === FilterParser.RULE_column) {
@@ -162,35 +158,50 @@ export const getSuggestions = (
       }
 
       if (candidate) {
-        maybeSuggest(candidate, text, lastToken.text, suggestions);
+        maybeSuggest(candidate, text, lastToken.text, suggestedTokens);
       }
     });
+    if (suggestedTokens.length) {
+      suggestions.push({ values: suggestedTokens, total: suggestedTokens.length });
+    }
   }
 
   if (suggestions.size === 0 && alternativeTokens?.size > 0 && alternativeText) {
+    const suggestedTokens = [];
     alternativeTokens.forEach((_, key) => {
       const candidate = textValue(parser.vocabulary.getDisplayName(key));
       if (candidate) {
-        maybeSuggest(candidate, alternativeText, lastToken.text, suggestions);
+        maybeSuggest(candidate, alternativeText, lastToken.text, suggestedTokens);
       }
     });
+    if (suggestedTokens.length) {
+      suggestions.push({ values: suggestedTokens, total: suggestedTokens.length });
+    }
   }
 
-  return suggestions.toArray();
+  return suggestions.extractResult();
 };
 
-class AsyncList {
+class AsyncSuggestionsList {
   #list = [];
-  push(item) {
-    this.#list.push(item);
+  push(suggestions) {
+    this.#list.push(suggestions);
     return this;
   }
   get size() {
     return this.#list.length;
   }
-  async toArray() {
+  async extractResult() {
     const values = await Promise.all(this.#list);
-    return values.flatMap(identity);
+    return values.reduce(
+      (acc, { values, total = 0, isListItem }) => {
+        acc.values.push(...values);
+        acc.total += total;
+        acc.isMultiSelect = acc.isListItem || isListItem;
+        return acc;
+      },
+      { values: [], total: 0 }
+    );
   }
 }
 

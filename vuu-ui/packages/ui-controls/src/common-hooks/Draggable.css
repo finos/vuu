@@ -1,0 +1,19 @@
+.hwDraggable {
+  background-color: transparent;
+  box-shadow: var(--hw-dialog-shadow);
+  position: absolute;
+}
+
+.hwDraggable-list {
+  --hwListItem-background: cornflowerblue;
+  --hwListItem-height: 100%;
+  --hwListItem-line-height: 30px;
+}
+
+.hwListItem[data-dragging] {
+  /* display: none; */
+  height: 0;
+  overflow: hidden;
+  border: none;
+  margin: 0;
+}

@@ -1,8 +1,16 @@
 import { useCallback, useMemo, useRef } from 'react';
-import { ArrowDown, ArrowUp, getIndexOfNode, isNavigationKey, useControlled } from '../utils';
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  getIndexOfNode,
+  isNavigationKey,
+  useControlled
+} from '../utils';
 
 function nextItemIdx(count, key, idx) {
-  if (key === ArrowUp) {
+  if (key === ArrowUp || key === ArrowLeft) {
     if (idx > 0) {
       return idx - 1;
     } else {
@@ -22,6 +30,17 @@ function nextItemIdx(count, key, idx) {
 const isLeaf = (item) => !item.header && !item.childNodes;
 const isFocusable = (item) => isLeaf(item) || item.expanded !== undefined;
 
+const ArrowKeys = {
+  horizontal: {
+    bwd: ArrowLeft,
+    fwd: ArrowRight
+  },
+  vertical: {
+    bwd: ArrowUp,
+    fwd: ArrowDown
+  }
+};
+
 // we need a way to set highlightedIdx when selection changes
 export const useKeyboardNavigation = ({
   defaultHighlightedIdx = -1,
@@ -29,8 +48,11 @@ export const useKeyboardNavigation = ({
   indexPositions,
   onHighlight,
   onKeyboardNavigation,
+  orientation = 'vertical',
   selected = []
 }) => {
+  const { bwd: ArrowBwd, fwd: ArrowFwd } = useMemo(() => ArrowKeys[orientation], [orientation]);
+
   const [highlightedIdx, setHighlightedIdx, isControlledHighlighting] = useControlled({
     controlled: highlightedIdxProp,
     default: defaultHighlightedIdx
@@ -45,18 +67,19 @@ export const useKeyboardNavigation = ({
   );
 
   const nextFocusableItemIdx = useCallback(
-    (key = ArrowDown, idx = key === ArrowDown ? -1 : indexPositions.length) => {
+    (key = ArrowFwd, idx = key === ArrowFwd ? -1 : indexPositions.length) => {
       let nextIdx = nextItemIdx(indexPositions.length, key, idx);
       while (
-        ((key === ArrowDown && nextIdx < indexPositions.length) ||
-          (key === ArrowUp && nextIdx > 0)) &&
+        nextIdx !== -1 &&
+        ((key === ArrowFwd && nextIdx < indexPositions.length) ||
+          (key === ArrowBwd && nextIdx > 0)) &&
         !isFocusable(indexPositions[nextIdx])
       ) {
         nextIdx = nextItemIdx(indexPositions.length, key, nextIdx);
       }
       return nextIdx;
     },
-    [indexPositions]
+    [ArrowBwd, ArrowFwd, indexPositions]
   );
 
   // does this belong here or should it be a method passed in?
@@ -89,14 +112,14 @@ export const useKeyboardNavigation = ({
 
   const handleKeyDown = useCallback(
     (e) => {
-      if (indexPositions.length > 0 && isNavigationKey(e)) {
+      if (indexPositions.length > 0 && isNavigationKey(e, orientation)) {
         e.preventDefault();
         e.stopPropagation();
         keyBoardNavigation.current = true;
         navigateChildItems(e);
       }
     },
-    [indexPositions, navigateChildItems]
+    [indexPositions, navigateChildItems, orientation]
   );
 
   const listProps = useMemo(
@@ -112,6 +135,7 @@ export const useKeyboardNavigation = ({
       },
 
       // onMouseEnter would seem less expensive but it misses some cases
+      // SHould this be here - this is not strictly keyboard nav
       onMouseMove: () => {
         if (keyBoardNavigation.current) {
           keyBoardNavigation.current = false;

@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { closestListItem } from '../list/list-dom-utils';
+import { closestListItem } from './list-dom-utils';
 import { ArrowLeft, ArrowRight, Enter, getNodeById, replaceNode } from '../utils';
 
 const NO_HANDLERS = {};

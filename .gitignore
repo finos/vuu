@@ -28,6 +28,7 @@ yarn-error.log*
 /vuu-ui/packages/*/public/*.js.map
 /vuu-ui/packages/*/public/features
 /vuu-ui/packages/*/public/stories/*.*
+/vuu-ui/packages/showcase/public/packages
 
 /vuu-ui/storybook-static
 dist

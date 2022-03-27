@@ -2,12 +2,12 @@ import React, { forwardRef, useRef } from 'react';
 import cx from 'classnames';
 import { useId } from '@vuu-ui/react-utils';
 import {
+  closestListItemIndex,
   groupSelectionEnabled,
   useItemsWithIds,
   useViewportTracking,
   GROUP_SELECTION_NONE
 } from '../common-hooks';
-import { closestListItemIndex } from '../list/list-dom-utils';
 
 import { useTree } from './useTree';
 import { useForkRef } from '../utils/use-fork-ref';
@@ -23,12 +23,14 @@ export const TreeNode = ({ children, idx, ...props }) => {
 
 const Tree = forwardRef(function Tree(
   {
+    allowDragDrop,
     className,
     defaultSelected,
     groupSelection = GROUP_SELECTION_NONE,
     id: idProp,
     onHighlight,
     onSelectionChange,
+    revealSelected,
     selected: selectedProp,
     selection = 'single',
     source,
@@ -40,7 +42,9 @@ const Tree = forwardRef(function Tree(
   const root = useRef(null);
 
   // returns the full source data
-  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(source, id);
+  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(source, id, {
+    revealSelected: revealSelected ? selectedProp ?? defaultSelected ?? false : undefined
+  });
 
   const handleSelectionChange = (evt, selected) => {
     onSelectionChange?.(
@@ -50,6 +54,7 @@ const Tree = forwardRef(function Tree(
   };
 
   const {
+    draggable,
     focusVisible,
     highlightedIdx,
     hiliteItemAtIndex,
@@ -58,7 +63,8 @@ const Tree = forwardRef(function Tree(
     selected,
     visibleData
   } = useTree({
-    sourceWithIds,
+    allowDragDrop,
+    containerRef: root,
     defaultSelected,
     groupSelection,
     id,
@@ -66,6 +72,7 @@ const Tree = forwardRef(function Tree(
     onHighlight,
     selected: selectedProp,
     selection,
+    sourceWithIds,
     totalItemCount
   });
 
@@ -163,6 +170,7 @@ const Tree = forwardRef(function Tree(
       role="tree"
       tabIndex={0}>
       {renderSourceContent(visibleData)}
+      {draggable}
     </ul>
   );
 });

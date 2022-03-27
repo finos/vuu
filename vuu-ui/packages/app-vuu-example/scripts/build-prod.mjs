@@ -28,6 +28,9 @@ async function main() {
         'process.env.NODE_DEBUG': `false`
       },
       format: 'esm',
+      loader: {
+        '.woff2': 'dataurl'
+      },
       metafile: true,
       minify: true,
       outdir,

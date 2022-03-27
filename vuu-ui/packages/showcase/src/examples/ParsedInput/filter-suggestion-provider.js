@@ -1,74 +1,105 @@
-// We accept string values or objects, in which case we will use object[propertyName]
-const suggestedValues = (values, text = '', operator = '', isListItem = false, propertyName) => {
-  const lcText = text.toLowerCase();
-  const result = values
-    .filter((value) => isListItem || getStringValue(value, propertyName).startsWith(lcText))
-    .map((v) => {
-      const { name = v, type, typedName } = v;
-      return {
-        value: name,
-        type,
-        typedName,
-        completion: name.toLowerCase().startsWith(lcText) ? name.slice(text.length) : name,
-        isIllustration: operator === 'starts',
-        isListItem
-      };
-    });
+const filterListValues = (values, selectedValues, text) => {
+  console.log(
+    `filterListValues values ${values.join(',')} selected ${selectedValues.join(',')} text ${text}`
+  );
+  // If we have an exact match with one of the values, then we have a selection.
+  // But if the last item is  a partial match only, then we are filtering. We
+  // preserve already selected values.
+  if (text === '' || values.some((value) => value.toLowerCase() === text)) {
+    return values;
+  } else {
+    // Note the last selectedValue will always equal text, in this case it's our filter pattern
+    const existingSelection = selectedValues.slice(0, -1);
+    return existingSelection.concat(values.filter((value) => value.toLowerCase().startsWith(text)));
+  }
+};
 
-  return result;
+const NO_SELECTION = [];
+
+const getStringValue = (value, propertyName) =>
+  propertyName ? value[propertyName].toLowerCase() : value.toLowerCase();
+
+const filterNonListValues = (values, text, propertyName) =>
+  values.filter((value) => getStringValue(value, propertyName).startsWith(text));
+
+// We accept string values or objects, in which case we will use object[propertyName]
+const suggestedValues = (
+  values,
+  text = '',
+  operator = '',
+  isListItem = false,
+  propertyName,
+  currentValues
+) => {
+  const selectedValues = currentValues?.map((item) => item.text.toLowerCase()) ?? NO_SELECTION;
+  // if the last selectedValue is not a 100% match, then its  a startsWith
+  const lcText = text.toLowerCase();
+  const result = isListItem
+    ? filterListValues(values, selectedValues, lcText)
+    : filterNonListValues(values, lcText, propertyName);
+  return result.map((v) => {
+    const { name = v, type, typedName } = v;
+    return {
+      value: name,
+      type,
+      typedName,
+      completion: name.toLowerCase().startsWith(lcText) ? name.slice(text.length) : name,
+      isIllustration: operator === 'starts',
+      isListItem,
+      isSelected: selectedValues?.includes(name.toLowerCase())
+    };
+  });
 };
 
 const suggestColumnNames = (columns, text, isListItem) => {
-  return suggestedValues(columns, text, undefined, isListItem, 'name');
+  const values = suggestedValues(columns, text, undefined, isListItem, 'name');
+  return { values, total: values.length };
 };
 
-const suggestColumnValues = async (column, text, operator, isListItem) => {
-  let result;
+const suggestColumnValues = async (column, text, operator, isListItem, currentValues) => {
+  let values;
   switch (column) {
     case 'ccy':
       {
-        const values = ['EUR', 'GBP', 'JPY', 'SEK', 'USD'];
-        result = suggestedValues(values, text, operator, isListItem);
+        const ccy = ['EUR', 'GBP', 'JPY', 'SEK', 'USD'];
+        values = suggestedValues(ccy, text, operator, isListItem, undefined, currentValues);
       }
       break;
 
     case 'exchange':
       {
-        const values = ['XAMS/ENA-MAIN', 'XLON/LSE-SETS', 'XNGS/NAS-GSM', 'XNYS/NYS-MAIN'];
-        result = suggestedValues(values, text, operator, isListItem);
+        const exchange = ['XAMS/ENA-MAIN', 'XLON/LSE-SETS', 'XNGS/NAS-GSM', 'XNYS/NYS-MAIN'];
+        values = suggestedValues(exchange, text, operator, isListItem, undefined, currentValues);
       }
       break;
     case 'status':
       {
-        const values = ['cancelled', 'complete', 'partial', 'error', 'suspended'];
-        result = suggestedValues(values, text, operator, isListItem);
+        const status = ['cancelled', 'complete', 'partial', 'error', 'suspended'];
+        values = suggestedValues(status, text, operator, isListItem, undefined, currentValues);
       }
       break;
 
     case 'price':
-      result = [{ value: 'enter a monetary value' }];
+      values = [{ value: 'enter a monetary value' }];
       break;
 
     case 'timestamp':
-      result = [{ value: 'enter a timestamp' }];
+      values = [{ value: 'enter a timestamp' }];
       break;
 
     case 'quantity':
-      result = [{ value: 'enter an integer value' }];
+      values = [{ value: 'enter an integer value' }];
       break;
 
     case 'bbg':
       return fetchInstruments(text);
 
     default:
-      result = [];
+      values = [];
   }
 
-  return Promise.resolve(result);
+  return Promise.resolve({ values, total: values.length, isListItem });
 };
-
-const getStringValue = (value, propertyName) =>
-  propertyName ? value[propertyName].toLowerCase() : value.toLowerCase();
 
 const suggestedInstrumentValues = (values, text = '') =>
   values.map(([bbg, description]) => ({
@@ -78,24 +109,18 @@ const suggestedInstrumentValues = (values, text = '') =>
   }));
 
 const fetchInstruments = async (text) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve) => {
     const pattern = text || 'A';
-    try {
-      const response = await fetch(`http://127.0.0.1:9001/prefix/${pattern.toUpperCase()}`, {
-        credentials: 'omit'
-      });
-      if (response.ok) {
-        const text = await response.text();
-        const json = JSON.parse(text);
-        // console.log(JSON.stringify(json.null,2))
-        resolve(suggestedInstrumentValues(json, pattern));
-      } else {
+    fetch(`http://127.0.0.1:9001/prefix/${pattern.toUpperCase()}`, {
+      credentials: 'omit'
+    })
+      .then((response) => response.json())
+      .then((json) => {
+        resolve({ values: suggestedInstrumentValues(json, pattern), total: 100 });
+      })
+      .catch(() => {
         throw Error('fetch failed');
-      }
-    } catch (err) {
-      //TODO we should include an error message here
-      resolve([]);
-    }
+      });
   });
 };
 
@@ -120,20 +145,22 @@ const filterNameSavePrompt = (text) => {
       }
     ];
   } else if (text.length) {
-    return [{ value: 'EOF', displayValue: `EOF` }];
+    return { values: [{ value: 'EOF', displayValue: `EOF` }] };
   }
-  return [];
+  return { values: [] };
 };
 
 const suggestNamedFilters = async (filters, text) => {
   if (text.startsWith(':')) {
-    return filters.map(({ name }) => ({
-      value: `:${name}`,
-      displayValue: name,
-      completion: name
-    }));
+    return {
+      values: filters.map(({ name }) => ({
+        value: `:${name}`,
+        displayValue: name,
+        completion: name
+      }))
+    };
   } else {
-    return [];
+    return { values: [] };
   }
 };
 
@@ -145,19 +172,19 @@ const createSuggestionProvider = ({
   columns = buildColumns(columnNames),
   namedFilters = []
 }) =>
-  function provideSuggestions(result, { token: tokenId, operator, text, isListItem }) {
+  function provideSuggestions(result, { isListItem, operator, token: tokenId, text, values }) {
     switch (tokenId) {
       case 'COLUMN-NAME':
         // TODO return a list of objects, not just names
         return suggestColumnNames(columns, text, isListItem);
       case 'COLUMN-VALUE':
-        return suggestColumnValues(getCurrentColumn(result), text, operator, isListItem);
+        return suggestColumnValues(getCurrentColumn(result), text, operator, isListItem, values);
       case 'FILTER-NAME':
         return filterNameSavePrompt(text);
       case 'NAMED-FILTER':
         return suggestNamedFilters(namedFilters, text);
       default:
-        return [];
+        return { values: [] };
     }
   };
 

@@ -9,7 +9,7 @@ import { useVirtualization } from './use-virtualization';
 import { useViewportTracking } from './use-viewport-tracking';
 import { useItemsWithIds } from './virtualized-use-items-with-ids';
 import { useKeyboardNavigation, useSelection } from '../common-hooks';
-import { closestListItemIndex } from './list-dom-utils';
+import { closestListItemIndex } from '../common-hooks/list-dom-utils';
 
 import './list.css';
 

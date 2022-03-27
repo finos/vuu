@@ -1,0 +1,42 @@
+/* entire container, keeps perspective */
+.hwFlipper {
+  --flip-height: var(--hwFlipper-height, 40px);
+  --flip-width: var(--hwFlipper-width, auto);
+  --flip-transform-origin: 100% calc(var(--flip-height) / 2);
+
+  height: var(--fliup-height);
+  perspective: 1000px;
+  position: relative;
+  width: var(--flip-width);
+}
+
+.hwFlipper-flipped {
+  --flip-transform: rotateX(-180deg);
+}
+
+.hwFlipper-inner {
+  transform: var(--flip-transform);
+  transform-origin: var(--flip-transform-origin);
+  transition: 0.6s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.hwFlipper-inner > * {
+  width: var(--hwFlipper-width, 100%);
+  height: var(--flip-height);
+}
+
+.hwFlipper-inner > :first-child {
+  z-index: 2;
+}
+
+.hwFlipper-inner > :last-child {
+  transform: rotateX(180deg);
+}
+
+.hwFlipper-inner > * {
+  backface-visibility: hidden;
+  position: absolute;
+  inset: 0 auto auto 0;
+}

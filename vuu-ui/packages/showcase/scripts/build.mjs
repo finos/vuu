@@ -22,13 +22,13 @@ import { build } from 'esbuild';
           /* Other options… */
         })
       ],
-      sourcemap: true,
-      watch: {
-        onRebuild(error, result) {
-          if (error) console.error('watch build failed:', error);
-          else console.log('watch build succeeded:', result);
-        }
-      }
+      sourcemap: true
+      // watch: {
+      //   onRebuild(error, result) {
+      //     if (error) console.error('watch build failed:', error);
+      //     else console.log('watch build succeeded:', result);
+      //   }
+      // }
     }).catch(() => process.exit(1));
   } catch (error) {
     console.error(error);

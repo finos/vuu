@@ -32,7 +32,7 @@ async function main() {
       '.woff2': 'dataurl'
     },
     metafile: true,
-    // minify: true,
+    minify: true,
     outfile,
     target: 'esnext',
     sourcemap: true,
@@ -45,8 +45,8 @@ async function main() {
 
   if (isWorker) {
     console.log('[DEPLOY worker.js]');
-    await exec('cp ./worker.js ../../stories/public/worker.js');
-    await exec('cp ./worker.js.map ../../stories/public/worker.js.map');
+    await exec('cp ./worker.js ../showcase/public/VUU/worker.js');
+    await exec('cp ./worker.js.map ../showcase/public/VUU/worker.js.map');
   }
 
   console.log(`${cyan(name)}@${version}`);

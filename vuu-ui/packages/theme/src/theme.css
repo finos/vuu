@@ -12,8 +12,8 @@
   --hw-selection-bg: var(--hw-digital-blue);
   --hw-selection-color: white;
 
-  --hw-button-highlight-color: var(--hw-gray-50);
-  --hw-button-active-bg: var(--hw-gray-800);
+  --hwButton-highlight-color: var(--hw-gray-50);
+  --hwButton-active-bg: var(--hw-gray-800);
 
   --hw-dialog-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
 
