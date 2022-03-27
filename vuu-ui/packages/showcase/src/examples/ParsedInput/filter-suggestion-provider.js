@@ -16,6 +16,9 @@ const filterListValues = (values, selectedValues, text) => {
 
 const NO_SELECTION = [];
 
+const getStringValue = (value, propertyName) =>
+  propertyName ? value[propertyName].toLowerCase() : value.toLowerCase();
+
 const filterNonListValues = (values, text, propertyName) =>
   values.filter((value) => getStringValue(value, propertyName).startsWith(text));
 
@@ -97,9 +100,6 @@ const suggestColumnValues = async (column, text, operator, isListItem, currentVa
 
   return Promise.resolve({ values, total: values.length, isListItem });
 };
-
-const getStringValue = (value, propertyName) =>
-  propertyName ? value[propertyName].toLowerCase() : value.toLowerCase();
 
 const suggestedInstrumentValues = (values, text = '') =>
   values.map(([bbg, description]) => ({

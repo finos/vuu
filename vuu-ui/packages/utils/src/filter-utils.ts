@@ -1,4 +1,4 @@
-import { ColumnMap } from './column-utils';
+import { Column, ColumnMap } from './column-utils';
 import { Row } from './row-utils';
 
 export const AND = 'and';

@@ -109,7 +109,7 @@ const suggestNamedFilters = async (filters, text) => {
 const buildColumns = (columnNames) => columnNames.map((name) => ({ name }));
 
 // note: Returns a promise
-export const createSuggestionProvider =
+const createSuggestionProvider =
   ({
     columnNames,
     columns = buildColumns(columnNames),
@@ -140,3 +140,5 @@ export const createSuggestionProvider =
         return { values: [] };
     }
   };
+
+export default createSuggestionProvider;

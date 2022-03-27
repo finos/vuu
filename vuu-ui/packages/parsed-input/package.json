@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/parsed-input",
-  "version": "0.0.15",
+  "version": "0.0.17",
   "module": "src/index.js",
   "main": "index.js",
   "type": "module",
@@ -14,9 +14,9 @@
     "/src"
   ],
   "peerDependencies": {
-    "@vuu-ui/ui-controls": "0.0.15",
-    "@vuu-ui/react-utils": "0.0.15",
-    "@vuu-ui/utils": "0.0.15",
+    "@vuu-ui/ui-controls": "0.0.17",
+    "@vuu-ui/react-utils": "0.0.17",
+    "@vuu-ui/utils": "0.0.17",
     "classnames": "^2.2.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
