@@ -205,7 +205,7 @@
                 <executions>
                     <execution>
                         <id>yarn</id>
-                        <phase>generate-sources</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -233,7 +233,7 @@
                 <executions>
                     <execution>
                         <id>yarn-build</id>
-                        <phase>generate-sources</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -258,7 +258,7 @@
                 <executions>
                     <execution>
                         <id>yarn-build-app</id>
-                        <phase>generate-sources</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
