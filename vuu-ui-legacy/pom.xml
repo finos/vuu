@@ -4,7 +4,7 @@
     <parent>
         <artifactId>vuu-parent</artifactId>
         <groupId>io.venuu</groupId>
-        <version>0.100</version>
+        <version>0.101-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -16,7 +16,7 @@
         <dependency>
             <groupId>io.venuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.100</version>
+            <version>0.101-SNAPSHOT</version>
         </dependency>
 
         <dependency>
