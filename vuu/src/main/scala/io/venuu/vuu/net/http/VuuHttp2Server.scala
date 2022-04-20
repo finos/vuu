@@ -87,15 +87,15 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
       router.route("/public/*")
         .handler(StaticHandler.create()
-          .setWebRoot(options.webRoot)
-          .setDirectoryListing(options.allowDirectoryListings)
+          //.setWebRoot(options.webRoot)
+          //.setDirectoryListing(options.allowDirectoryListings)
         )
 
       // Serve the static pages
       router.route("/*")
         .handler(StaticHandler.create()
-          .setWebRoot(options.webRoot)
-          .setDirectoryListing(options.allowDirectoryListings)
+          //.setWebRoot(options.webRoot)
+          //.setDirectoryListing(options.allowDirectoryListings)
       )
 
 
