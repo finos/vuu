@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.venuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.106</version>
+        <version>0.107-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -21,7 +21,7 @@
         <dependency>
             <groupId>io.venuu</groupId>
             <artifactId>toolbox</artifactId>
-            <version>0.106</version>
+            <version>0.107-SNAPSHOT</version>
         </dependency>
 
         <dependency>
