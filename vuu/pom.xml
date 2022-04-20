@@ -13,6 +13,7 @@
 
     <artifactId>vuu</artifactId>
     <name>vuu</name>
+    <description>vuu</description>
     <inceptionYear>2014</inceptionYear>
     <packaging>jar</packaging>
 
@@ -185,10 +186,10 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/classes/webroot/</outputDirectory>
+                            <outputDirectory>${project.basedir}/vuu/target/classes/webroot/</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>../vuu-ui/packages/app-vuu-example/public</directory>
+                                    <directory>${project.basedir}/vuu-ui/packages/app-vuu-example/public</directory>
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>
@@ -213,7 +214,7 @@
                 <configuration>
                     <executable>yarn</executable>
                     <!-- optional -->
-                    <workingDirectory>../vuu-ui</workingDirectory>
+                    <workingDirectory>${project.basedir}/vuu-ui</workingDirectory>
                     <!--arguments>
                         <argument></argument>
                         <argument>myproject:dist</argument>
@@ -241,7 +242,7 @@
                 <configuration>
                     <executable>yarn-build</executable>
                     <!-- optional -->
-                    <workingDirectory>../vuu-ui</workingDirectory>
+                    <workingDirectory>${project.basedir}/vuu-ui</workingDirectory>
                     <arguments>
                         <argument>build</argument>
                     </arguments>
@@ -266,7 +267,7 @@
                 <configuration>
                     <executable>yarn</executable>
                     <!-- optional -->
-                    <workingDirectory>../vuu-ui</workingDirectory>
+                    <workingDirectory>${project.basedir}/vuu-ui</workingDirectory>
                     <arguments>
                         <argument>build:app</argument>
                     </arguments>
