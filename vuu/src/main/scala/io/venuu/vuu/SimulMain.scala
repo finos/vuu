@@ -29,7 +29,7 @@ object SimulMain extends App {
 
   val store = new MemoryBackedVuiStateStore()
 
-  //store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
+  store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
 
   lifecycle.autoShutdownHook()
 
