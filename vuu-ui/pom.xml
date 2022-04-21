@@ -151,7 +151,7 @@
             <configuration>
               <executable>yarn</executable>
               <!-- optional -->
-              <workingDirectory>${project.basedir}/../vuu-ui</workingDirectory>
+              <!--workingDirectory>.</workingDirectory-->
               <!--arguments>
                   <argument></argument>
                   <argument>myproject:dist</argument>
@@ -177,9 +177,9 @@
               </execution>
             </executions>
             <configuration>
-              <executable>yarn-build</executable>
+              <executable>yarn</executable>
               <!-- optional -->
-              <workingDirectory>${project.basedir}/../vuu-ui</workingDirectory>
+              <!--workingDirectory>.</workingDirectory-->
               <arguments>
                 <argument>build</argument>
               </arguments>
@@ -205,7 +205,7 @@
             <configuration>
               <executable>yarn</executable>
               <!-- optional -->
-              <workingDirectory>${project.basedir}/../vuu-ui</workingDirectory>
+              <!--workingDirectory>${project.basedir}/../vuu-ui</workingDirectory-->
               <arguments>
                 <argument>build:app</argument>
               </arguments>
