@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.venuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.54-SNAPSHOT</version>
+        <version>0.108-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -13,6 +13,7 @@
 
     <artifactId>vuu</artifactId>
     <name>vuu</name>
+    <description>vuu</description>
     <inceptionYear>2014</inceptionYear>
     <packaging>jar</packaging>
 
@@ -20,7 +21,7 @@
         <dependency>
             <groupId>io.venuu</groupId>
             <artifactId>toolbox</artifactId>
-            <version>0.54-SNAPSHOT</version>
+            <version>0.108-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -170,6 +171,7 @@
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
+
         <plugins>
 
             <plugin>
@@ -177,7 +179,8 @@
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>attach-sources</id>
+
+                        <phase>compile</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
@@ -343,7 +346,7 @@
                 <configuration>
                     <mainClass>io.venuu.vuu.SimulMain</mainClass>
                     <arguments>
-                        <argument>-Xmx10G </argument>
+                        <argument>-Xmx10G</argument>
                     </arguments>
                 </configuration>
             </plugin>

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.venuu</groupId>
     <artifactId>vuu-parent</artifactId>
-    <version>0.54-SNAPSHOT</version>
+    <version>0.108-SNAPSHOT</version>
     <name>vuu-parent</name>
     <description>Vuu - A View Server in Scala and React</description>
     <url>https://github.com/venuu-io/vuu</url>
@@ -78,10 +78,11 @@
     <modules>
         <module>toolbox</module>
         <module>vuu</module>
-        <module>vuu-ui-legacy</module>
+        <!--module>vuu-ui-legacy</module-->
+        <module>vuu-ui</module>
     </modules>
 
-    <repositories>
+    <!--repositories>
         <repository>
             <id>scala-tools.org</id>
             <name>Scala-Tools Maven2 Repository</name>
@@ -93,15 +94,15 @@
             <url>https://oss.sonatype.org/</url>
         </repository>
 
-    </repositories>
+    </repositories-->
 
-    <pluginRepositories>
+    <!-- pluginRepositories>
         <pluginRepository>
             <id>scala-tools.org</id>
             <name>Scala-Tools Maven2 Repository</name>
             <url>https://scala-tools.org/repo-releases</url>
         </pluginRepository>
-    </pluginRepositories>
+    </pluginRepositories-->
 
     <dependencies>
 
@@ -120,7 +121,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <version>2.13.2.1</version>
         </dependency>
 
         <dependency>
