@@ -29,6 +29,7 @@
     </dependencies>
 
     <profiles>
+       <!-- this profile is only used when building locally on a machine to deploy to maven -->
         <profile>
             <id>sign-it</id>
             <activation>
@@ -39,8 +40,6 @@
             </activation>
             <build>
                 <plugins>
-
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -55,6 +54,109 @@
                             </execution>
                         </executions>
                     </plugin>
+                  <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <executions>
+                      <execution>
+                        <id>copy-resources</id>
+                        <!-- here the phase you need -->
+                        <phase>process-resources</phase>
+                        <goals>
+                          <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                          <outputDirectory>${project.basedir}/target/classes/webroot/</outputDirectory>
+                          <resources>
+                            <resource>
+                              <directory>${project.basedir}/packages/app-vuu-example/public</directory>
+                              <filtering>false</filtering>
+                            </resource>
+                          </resources>
+                        </configuration>
+                      </execution>
+                    </executions>
+                  </plugin>
+
+                  <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.0.0</version>
+                    <executions>
+                      <execution>
+                        <id>yarn</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                          <goal>exec</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                    <configuration>
+                      <executable>yarn</executable>
+                      <!-- optional -->
+                      <!--workingDirectory>.</workingDirectory-->
+                      <!--arguments>
+                          <argument></argument>
+                          <argument>myproject:dist</argument>
+                          ...
+                      </arguments-->
+                      <!--environmentVariables>
+                          <LANG>en_US</LANG>
+                      </environmentVariables-->
+                    </configuration>
+                  </plugin>
+
+                  <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.0.0</version>
+                    <executions>
+                      <execution>
+                        <id>yarn-build</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                          <goal>exec</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                    <configuration>
+                      <executable>yarn</executable>
+                      <!-- optional -->
+                      <!--workingDirectory>.</workingDirectory-->
+                      <arguments>
+                        <argument>build</argument>
+                      </arguments>
+                      <!--environmentVariables>
+                          <LANG>en_US</LANG>
+                      </environmentVariables-->
+                    </configuration>
+                  </plugin>
+
+                  <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.0.0</version>
+                    <executions>
+                      <execution>
+                        <id>yarn-build-app</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                          <goal>exec</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                    <configuration>
+                      <executable>yarn</executable>
+                      <!-- optional -->
+                      <!--workingDirectory>${project.basedir}/../vuu-ui</workingDirectory-->
+                      <arguments>
+                        <argument>build:app</argument>
+                      </arguments>
+                      <!--environmentVariables>
+                          <LANG>en_US</LANG>
+                      </environmentVariables-->
+                    </configuration>
+                  </plugin>
                 </plugins>
             </build>
         </profile>
@@ -111,109 +213,7 @@
                 </executions>
             </plugin>
 
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>3.2.0</version>
-            <executions>
-              <execution>
-                <id>copy-resources</id>
-                <!-- here the phase you need -->
-                <phase>process-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.basedir}/target/classes/webroot/</outputDirectory>
-                  <resources>
-                    <resource>
-                      <directory>${project.basedir}/packages/app-vuu-example/public</directory>
-                      <filtering>false</filtering>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
 
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>3.0.0</version>
-            <executions>
-              <execution>
-                <id>yarn</id>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <executable>yarn</executable>
-              <!-- optional -->
-              <!--workingDirectory>.</workingDirectory-->
-              <!--arguments>
-                  <argument></argument>
-                  <argument>myproject:dist</argument>
-                  ...
-              </arguments-->
-              <!--environmentVariables>
-                  <LANG>en_US</LANG>
-              </environmentVariables-->
-            </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>3.0.0</version>
-            <executions>
-              <execution>
-                <id>yarn-build</id>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <executable>yarn</executable>
-              <!-- optional -->
-              <!--workingDirectory>.</workingDirectory-->
-              <arguments>
-                <argument>build</argument>
-              </arguments>
-              <!--environmentVariables>
-                  <LANG>en_US</LANG>
-              </environmentVariables-->
-            </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>3.0.0</version>
-            <executions>
-              <execution>
-                <id>yarn-build-app</id>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <executable>yarn</executable>
-              <!-- optional -->
-              <!--workingDirectory>${project.basedir}/../vuu-ui</workingDirectory-->
-              <arguments>
-                <argument>build:app</argument>
-              </arguments>
-              <!--environmentVariables>
-                  <LANG>en_US</LANG>
-              </environmentVariables-->
-            </configuration>
-          </plugin>
 
             <!-- disable surefire -->
             <plugin>
@@ -245,20 +245,6 @@
                 </executions>
             </plugin>
 
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.0.1</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

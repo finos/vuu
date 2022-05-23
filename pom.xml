@@ -78,7 +78,7 @@
     <modules>
         <module>toolbox</module>
         <module>vuu</module>
-        <module>vuu-ui-legacy</module>
+        <!--module>vuu-ui-legacy</module-->
         <module>vuu-ui</module>
     </modules>
 
