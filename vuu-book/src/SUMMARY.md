@@ -7,6 +7,7 @@
 - [Getting Started](./getting_started/getting_started.md)
   - [Developing Vuu](./getting_started/developing.md)
   - [Using binaries from Maven Repo](./getting_started/adding.md)
+  - [Using Vuu from Java](./getting_started/using_vuu_from_java.md)
   - [Configuration](./getting_started/configuration.md)
 - [Core Concepts](./providers_tables_viewports/providers_tables_viewports.md)
   - [Lifecycle](./providers_tables_viewports/lifecycle.md)
