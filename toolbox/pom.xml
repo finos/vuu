@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.venuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.901-SNAPSHOT</version>
+        <version>0.901</version>
     </parent>
 
     <artifactId>toolbox</artifactId>
