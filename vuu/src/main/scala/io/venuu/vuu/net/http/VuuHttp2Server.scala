@@ -85,19 +85,34 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
       services.foreach(service => addRestService(router, service))
 
-      router.route("/public/*")
-        .handler(StaticHandler.create()
-          //.setWebRoot(options.webRoot)
-          //.setDirectoryListing(options.allowDirectoryListings)
-        )
+      //if no webroot specified, assume we're loading from the jar..
+      if(options.webRoot.isEmpty){
+        router.route("/public/*")
+          .handler(StaticHandler.create()
+            //.setWebRoot(options.webRoot)
+            //.setDirectoryListing(options.allowDirectoryListings)
+          )
 
-      // Serve the static pages
-      router.route("/*")
-        .handler(StaticHandler.create()
-          //.setWebRoot(options.webRoot)
-          //.setDirectoryListing(options.allowDirectoryListings)
-      )
+        // Serve the static pages
+        router.route("/*")
+          .handler(StaticHandler.create()
+            //.setWebRoot(options.webRoot)
+            //.setDirectoryListing(options.allowDirectoryListings)
+          )
+      }else{
+        router.route("/public/*")
+          .handler(StaticHandler.create()
+            .setWebRoot(options.webRoot)
+            .setDirectoryListing(options.allowDirectoryListings)
+          )
 
+        // Serve the static pages
+        router.route("/*")
+          .handler(StaticHandler.create()
+            .setWebRoot(options.webRoot)
+            .setDirectoryListing(options.allowDirectoryListings)
+          )
+      }
 
       vertx.createHttpServer(httpOpts).requestHandler(router).listen(options.port);
 

@@ -29,7 +29,7 @@ object SimulMain extends App {
 
   val store = new MemoryBackedVuiStateStore()
 
-  store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
+  //store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
 
   lifecycle.autoShutdownHook()
 
@@ -38,7 +38,9 @@ object SimulMain extends App {
 
   val config = VuuServerConfig(
     VuuHttp2ServerOptions()
-      //.withWebRoot("vuu-ui/packages/app-vuu-example/public")
+      //only specify webroot if we want to load the source locally, we'll load it from the jar
+      //otherwise
+      .withWebRoot("vuu-ui/packages/app-vuu-example/public")
       .withSsl("vuu/src/main/resources/certs/cert.pem",
         "vuu/src/main/resources/certs/key.pem")
       .withDirectoryListings(true)
