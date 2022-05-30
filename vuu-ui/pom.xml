@@ -85,7 +85,7 @@
                     <executions>
                       <execution>
                         <id>rm-yarn-lock</id>
-                        <phase>generate-resources</phase>
+                        <phase>clean</phase>
                         <goals>
                           <goal>exec</goal>
                         </goals>
