@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.venuu</groupId>
     <artifactId>vuu-parent</artifactId>
-    <version>0.902-SNAPSHOT</version>
+    <version>0.902</version>
     <name>vuu-parent</name>
     <description>Vuu - A View Server in Scala and React</description>
     <url>https://github.com/venuu-io/vuu</url>
@@ -32,7 +32,7 @@
         <connection>scm:git:https://github.com/venuu-io/vuu.git</connection>
         <developerConnection>scm:git:https://github.com/venuu-io/vuu.git</developerConnection>
         <url>https://github.com/venuu-io/vuu/tree/master</url>
-        <tag>HEAD</tag>
+        <tag>vuu-release-0.902</tag>
   </scm>
 
     <dependencyManagement>
