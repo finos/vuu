@@ -84,6 +84,27 @@
                     <version>3.0.0</version>
                     <executions>
                       <execution>
+                        <id>rm-yarn-lock</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                          <goal>exec</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                    <configuration>
+                      <executable>rm</executable>
+                      <arguments>
+                        <argument>yarn.lock</argument>
+                      </arguments>
+                    </configuration>
+                  </plugin>
+
+                  <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.0.0</version>
+                    <executions>
+                      <execution>
                         <id>yarn</id>
                         <phase>generate-resources</phase>
                         <goals>
@@ -93,16 +114,6 @@
                     </executions>
                     <configuration>
                       <executable>yarn</executable>
-                      <!-- optional -->
-                      <!--workingDirectory>.</workingDirectory-->
-                      <!--arguments>
-                          <argument></argument>
-                          <argument>myproject:dist</argument>
-                          ...
-                      </arguments-->
-                      <!--environmentVariables>
-                          <LANG>en_US</LANG>
-                      </environmentVariables-->
                     </configuration>
                   </plugin>
 
