@@ -85,7 +85,7 @@
                     <executions>
                       <execution>
                         <id>step_2_yarn-build</id>
-                        <phase>generate-resources</phase>
+                        <phase>generate-sources</phase>
                         <goals>
                           <goal>exec</goal>
                         </goals>
@@ -113,7 +113,7 @@
                     <executions>
                       <execution>
                         <id>step_1_yarn-build</id>
-                        <phase>generate-resources</phase>
+                        <phase>process-sources</phase>
                         <goals>
                           <goal>exec</goal>
                         </goals>
