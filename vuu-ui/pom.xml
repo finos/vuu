@@ -84,60 +84,6 @@
                     <version>3.0.0</version>
                     <executions>
                       <execution>
-                        <id>step_2_yarn-build</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                          <goal>exec</goal>
-                        </goals>
-                      </execution>
-                    </executions>
-                    <configuration>
-                      <executable>yarn</executable>
-                      <!-- optional -->
-                      <!--workingDirectory>.</workingDirectory-->
-                      <!--arguments>
-                          <argument></argument>
-                          <argument>myproject:dist</argument>
-                          ...
-                      </arguments-->
-                      <!--environmentVariables>
-                          <LANG>en_US</LANG>
-                      </environmentVariables-->
-                    </configuration>
-                  </plugin>
-
-                  <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.0.0</version>
-                    <executions>
-                      <execution>
-                        <id>step_1_yarn-build</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                          <goal>exec</goal>
-                        </goals>
-                      </execution>
-                    </executions>
-                    <configuration>
-                      <executable>yarn</executable>
-                      <!-- optional -->
-                      <!--workingDirectory>.</workingDirectory-->
-                      <arguments>
-                        <argument>build</argument>
-                      </arguments>
-                      <!--environmentVariables>
-                          <LANG>en_US</LANG>
-                      </environmentVariables-->
-                    </configuration>
-                  </plugin>
-
-                  <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.0.0</version>
-                    <executions>
-                      <execution>
                         <id>step_0_yarn-build</id>
                         <phase>generate-resources</phase>
                         <goals>
@@ -146,12 +92,12 @@
                       </execution>
                     </executions>
                     <configuration>
-                      <executable>yarn</executable>
+                      <executable>ui-build-commands.sh</executable>
                       <!-- optional -->
                       <!--workingDirectory>${project.basedir}/../vuu-ui</workingDirectory-->
-                      <arguments>
+                      <!--arguments>
                         <argument>build:app</argument>
-                      </arguments>
+                      </arguments-->
                       <!--environmentVariables>
                           <LANG>en_US</LANG>
                       </environmentVariables-->
