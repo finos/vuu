@@ -92,12 +92,12 @@
                       </execution>
                     </executions>
                     <configuration>
-                      <executable>ui-build-commands.sh</executable>
+                      <executable>bash</executable>
                       <!-- optional -->
-                      <!--workingDirectory>${project.basedir}/../vuu-ui</workingDirectory-->
-                      <!--arguments>
-                        <argument>build:app</argument>
-                      </arguments-->
+                      <!--workingDirectory>${project.basedir}/vuu-ui</workingDirectory-->
+                      <arguments>
+                        <argument>ui-build-commands.sh</argument>
+                      </arguments>
                       <!--environmentVariables>
                           <LANG>en_US</LANG>
                       </environmentVariables-->
