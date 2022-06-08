@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.venuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.904-SNAPSHOT</version>
+        <version>0.202-SNAPSHOT</version>
     </parent>
 
     <artifactId>vuu-ui</artifactId>
@@ -105,7 +105,7 @@
                     <version>3.0.0</version>
                     <executions>
                       <execution>
-                        <id>yarn</id>
+                        <id>step_0_yarn-build</id>
                         <phase>generate-resources</phase>
                         <goals>
                           <goal>exec</goal>
@@ -113,27 +113,12 @@
                       </execution>
                     </executions>
                     <configuration>
-                      <executable>yarn</executable>
-                    </configuration>
-                  </plugin>
-
-                  <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.0.0</version>
-                    <executions>
-                      <execution>
-                        <id>yarn-build</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                          <goal>exec</goal>
-                        </goals>
-                      </execution>
-                    </executions>
-                    <configuration>
-                      <executable>yarn</executable>
+                      <!-- this took an insane amount of time, when running the release:prepare command it seems to spawn a new shell within the shell
+                           that in turn can't seem to spawn a bash script unless you specify bash as the executable.
+                           Grrrrr -->
+                      <executable>bash</executable>
                       <!-- optional -->
-                      <!--workingDirectory>.</workingDirectory-->
+                      <!--workingDirectory>${project.basedir}/vuu-ui</workingDirectory-->
                       <arguments>
                         <argument>build</argument>
                       </arguments>
