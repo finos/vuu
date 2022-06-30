@@ -29,6 +29,8 @@ trait ViewPortContainerMBean {
 
   def listViewPortsForSession(clientSession: ClientSessionId): List[ViewPort]
 
+  def listActiveViewPortsForSession(clientSession: ClientSessionId): List[ViewPort]
+
   def toAscii(vpId: String): String
 
   def subscribedKeys(vpId: String): String
@@ -201,6 +203,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     IteratorHasAsScala(viewPorts.values().iterator())
       .asScala
       .filter(vp => vp.session.equals(clientSession)).toList
+  }
+
+
+  override def listActiveViewPortsForSession(clientSession: ClientSessionId): List[ViewPort] = {
+    IteratorHasAsScala(viewPorts.values().iterator())
+      .asScala
+      .filter(vp => vp.session.equals(clientSession) && vp.isEnabled).toList
   }
 
   override def listViewPorts: String = {
@@ -586,7 +595,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def getViewPortVisualLinks(clientSession: ClientSessionId, vpId: String): List[(Link, ViewPort)] = {
     Option(viewPorts.get(vpId)) match {
       case Some(vp) =>
-        val viewPorts = listViewPortsForSession(clientSession)
+        val viewPorts = listActiveViewPortsForSession(clientSession)
         val vpLinks = for (link <- vp.table.asTable.getTableDef.links.links; vp <- viewPorts; if link.toTable == vp.table.linkableName) yield (link, vp)
         vpLinks
       case None =>
