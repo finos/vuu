@@ -135,12 +135,14 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
       simulation.mode match {
         case NoOp => doNoOp(ric)
         case TakeAWalk => doTakeAWalk(ric)
-        case WidenBidAsk => doWidenBidAndAsk(ric)
+        case WidenBidAsk =>
+          doWidenBidAndAsk(ric)
         case FastTick => doFastTick(ric)
         case Close => doCloseTick(ric)
         case Open => doOpenTick(ric)
       }
     }
+
     setState(ric, newRow)
 
     table.processUpdate(ric, RowWithData(ric, newRow), timeProvider.now())
@@ -228,7 +230,7 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
     if (!states.get(ric).contains(ric)) {
       seedStartValues(ric)
     } else {
-      val spread = seededRand(timeProvider.now(), 1, 567)
+      val spread = seededRand(timeProvider.now(), 1, 80)
       getState(ric) match {
         case Some(state) =>
           val bid = state(f.Bid).asInstanceOf[Double]
