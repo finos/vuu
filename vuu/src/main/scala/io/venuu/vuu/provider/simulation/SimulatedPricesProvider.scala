@@ -143,10 +143,6 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
       }
     }
 
-    if(ric == "GOOG"){
-      logger.info("GOOG" + newRow + " " + simulation.mode)
-    }
-
     setState(ric, newRow)
 
     table.processUpdate(ric, RowWithData(ric, newRow), timeProvider.now())
