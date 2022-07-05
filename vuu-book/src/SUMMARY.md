@@ -1,5 +1,7 @@
 # Summary
 
+Back to [GitHub](https://github.com/venuu-io/vuu)
+
 - [Introduction](./introduction/intro.md)
   - [What is a View-Vuu-Server?](./introduction/what_is.md)
   - [How does it work?](./introduction/how_does_it_work.md)
