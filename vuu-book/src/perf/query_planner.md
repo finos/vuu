@@ -2,5 +2,5 @@
 
 THe query planner is a work in progress, watch here for more details:
 
-- [ ] https://github.com/octo-org/octo-repo/issues/740
+- [issue-199](https://github.com/venuu-io/vuu/issues/199) - Tracked here. 
 

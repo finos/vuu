@@ -3,12 +3,12 @@
 ## Developing the server
 
 1) Install IntelliJ Community Edition (latest version, tested with 2021.3)
-2) Install SDKMan from the [website](https://sdkman.io/)
+2) Install SDKMan from the [website](https://sdkman.io/) or using your own mechanism
 3) type>```sdk install java 16.0.1-open``` and then >```sdk d java 16.0.1-open``` to make sure you're using the correct one.
 4) Clone the repo into a directory on your machine
 5) Open the project as a Maven build by selecting the root pom.xml (make sure you select "enable adding maven modules, auto import etc..)
 6) You should get one root module vuu-parent in a project list, select this
-7) When the project opens you should have 2 sub modules (vuu and toolbox) 
+7) When the project opens you should have 2 sub-modules (vuu and toolbox) 
 
 ## Running the Vuu Server Simulation Module
 
