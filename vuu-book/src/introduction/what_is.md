@@ -10,7 +10,7 @@ View Servers offer some or all of these features to a UI:
 * **View Porting** - The Server maintains a full set of data for the client. When a client has a large grid open on their 
 screen they are passed only the data that is visible (plus a bit extra at the top and bottom for performance), not the entire data set. When the 
 client then scrolls through this data it appears it's all on the client but is in reality being streamed from the server.
-Updates to the clients data (view port) are propogated as they happen. Server side viewports can offer:
+Updates to the client's data (view port) are propagated as they happen. Server side viewports can offer:
   * **Filtering & Sorting** of the data, as if it were on the client. 
   * **Treeing and Aggregations** on columns within viewports
 * **Remote Procedure Calls** - When a client wants to effect change in the outside world they need a place to host business
