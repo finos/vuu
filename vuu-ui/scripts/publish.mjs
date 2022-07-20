@@ -1,7 +1,8 @@
+import { exec } from './utils.mjs';
+
 (async function () {
   try {
     //   const yargs = require('yargs');
-    const { exec } = require('./utils');
 
     console.log('[PUBLISHING]');
 
