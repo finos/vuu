@@ -1,6 +1,7 @@
+import { bumpDependencies, exec } from './utils.mjs';
+
 (async function () {
   try {
-    const { bumpDependencies, exec } = require('./utils');
     const currentPath = process.cwd();
     const PACKAGE_PATH = `${currentPath}/packages`;
 

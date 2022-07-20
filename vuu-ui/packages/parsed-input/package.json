@@ -6,7 +6,7 @@
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/build.js"
+    "build": "node ../../scripts/build.mjs"
   },
   "files": [
     "index.js",

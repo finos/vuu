@@ -1,5 +1,5 @@
 import { build } from 'esbuild';
-import { exec, formatBytes } from './utils.mjs';
+import { exec, formatBytes } from '../../../scripts/utils.mjs';
 
 const entryPoints = [
   'src/index.jsx',
@@ -16,23 +16,27 @@ const stripOutdir = (file) => file.replace(RegExp(`^${outdir}\/`), '');
 
 async function main() {
   const args = process.argv.slice(2);
+  const watch = args.includes('--watch');
+  const development = watch || args.includes('--dev');
 
   console.log('[CLEAN]');
   await exec("find -E public -regex '.*.(js|css)(.map)?$' -delete");
-
-  const watch = args.includes('--watch');
 
   try {
     console.log('[BUILD]');
     const { metafile } = await build({
       bundle: true,
       define: {
-        'process.env.NODE_ENV': `"development"`,
+        'process.env.NODE_ENV': development ? `"development"` : `"production"`,
         'process.env.NODE_DEBUG': `false`
       },
       entryPoints,
       format: 'esm',
+      loader: {
+        '.woff2': 'dataurl'
+      },
       metafile: true,
+      minify: development !== true,
       outbase,
       outdir,
       sourcemap: true,

@@ -1,13 +1,12 @@
-const { build } = require('esbuild');
-const fs = require('fs');
-const { exec, formatBytes, readPackageJson } = require('./utils');
-const { cyan } = require('kleur');
+import { build } from 'esbuild';
+import fs from 'fs';
+import { exec, formatBytes, readPackageJson } from './utils.mjs';
 const NO_DEPENDENCIES = {};
 
 async function main() {
   const args = process.argv.slice(2);
 
-  const { name, peerDependencies = NO_DEPENDENCIES, version } = readPackageJson();
+  const { peerDependencies = NO_DEPENDENCIES, version } = readPackageJson();
   const external = Object.keys(peerDependencies);
   const currentPath = process.cwd();
   const isWorker = currentPath.endsWith('data-worker');
@@ -49,7 +48,7 @@ async function main() {
     await exec('cp ./worker.js.map ../showcase/public/VUU/worker.js.map');
   }
 
-  console.log(`${cyan(name)}@${version}`);
+  console.log(`@${version}`);
   console.log(`\t${outfile}:  ${formatBytes(jsOutput.bytes)}`);
   if (cssOutput) {
     console.log(`\tindex.css: ${formatBytes(cssOutput.bytes)}`);

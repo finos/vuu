@@ -5,7 +5,7 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/build.js",
+    "build": "node ../../scripts/build.mjs",
     "build:dev": "rollup -c rollup.config.dev.js --environment BUILD:development"
   },
   "files": [

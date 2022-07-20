@@ -10,7 +10,7 @@
     "/src"
   ],
   "scripts": {
-    "build": "node ../../scripts/build.js"
+    "build": "node ../../scripts/build.mjs"
   },
   "peerDependencies": {
     "react": "^17.0.2",
