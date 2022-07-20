@@ -19,9 +19,9 @@
     "xstate": "4.20.0"
   },
   "peerDependencies": {
-    "@vuu-ui/react-utils": "0.0.1",
-    "@vuu-ui/theme": "0.0.1",
-    "@vuu-ui/utils": "0.0.1",
+    "@vuu-ui/react-utils": "0.0.17",
+    "@vuu-ui/theme": "0.0.17",
+    "@vuu-ui/utils": "0.0.17",
     "classnames": "^2.2.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
