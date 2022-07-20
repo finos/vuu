@@ -1,12 +1,11 @@
 import { build } from 'esbuild';
 import { formatBytes, readPackageJson } from './utils.mjs';
-import kleur from 'kleur';
 
 const entryPoints = ['./index.jsx', 'features/simple-component.js'];
 const outdir = 'public';
 
 async function main() {
-  const { name, version } = readPackageJson();
+  const { version } = readPackageJson();
 
   const { metafile } = await build({
     entryPoints,
@@ -30,7 +29,7 @@ async function main() {
     outputs: { 'public/index.js': jsOutput, 'public/index.css': cssOutput }
   } = metafile;
 
-  console.log(`${kleur.cyan(name)}@${version}`);
+  console.log(`@${version}`);
   console.log(`\tindex.js:  ${formatBytes(jsOutput.bytes)}`);
   if (cssOutput) {
     console.log(`\tindex.css: ${formatBytes(cssOutput.bytes)}`);
