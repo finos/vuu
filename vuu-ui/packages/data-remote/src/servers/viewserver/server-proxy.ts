@@ -1,19 +1,8 @@
 import * as Message from './messages';
 import { ServerApiMessageTypes as API } from '../../messages.js';
-import {partition} from "../../../../utils/src";
+import { partition } from '../../../../utils/src';
 
 const logger = console;
-
-// TODO duplicate in array-utils.ts
-// export type PartitionTest<T> = (value: T, index: number) => boolean;
-//
-// function partition<T>(array: T[], test: PartitionTest<T>, pass: T[] = [], fail: T[] = []): [T[], T[]] {
-//   for (let i = 0, len = array.length; i < len; i++) {
-//     (test(array[i], i) ? pass : fail).push(array[i]);
-//   }
-//
-//   return [pass, fail];
-// }
 
 const NOT_DATA = {};
 /*
@@ -95,7 +84,7 @@ export interface ViewportStatus {
 
 export type StatusByViewport = {
   [viewportId: string]: ViewportStatus;
-}
+};
 
 export class ServerProxy {
   private connection: ServerConnection;

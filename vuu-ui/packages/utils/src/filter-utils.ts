@@ -1,9 +1,24 @@
-import { Column, ColumnMap } from './column-utils';
+import { Column, ColumnGroup, ColumnMap } from './columnTypes';
+import { partition } from './array-utils';
+import {
+  AndFilter,
+  Filter,
+  FilterClause,
+  FilterCombinatorOp,
+  FilterOp,
+  isMultiClauseFilter,
+  isAndFilter,
+  isFilterClause,
+  isInFilter,
+  MultiClauseFilter,
+  OrFilter,
+  SingleValueFilterClause,
+  MultiValueFilterClause
+} from './filterTypes';
 import { Row } from './row-utils';
 
 export const AND = 'and';
 export const EQUALS = '=';
-export const NOT_EQUALS = '!=';
 export const GREATER_THAN = '>';
 export const LESS_THAN = '<';
 export const OR = 'or';
@@ -41,35 +56,45 @@ export default function filterRows(rows: Row[], columnMap: ColumnMap, filter: Fi
   return applyFilter(rows, functor(columnMap, filter));
 }
 
-export const filterClauses = (filter, clauses = []) => {
+export const filterClauses = (filter: Filter | null, clauses: FilterClause[] = []) => {
   if (filter) {
-    const { column, op, value, values, filters } = filter;
-    if (op === 'or' || op === 'and') {
-      filters.forEach((f) => clauses.push(...filterClauses(f)));
+    if (isMultiClauseFilter(filter)) {
+      filter.filters.forEach((f) => clauses.push(...filterClauses(f)));
     } else {
-      clauses.push({ column, op, value: value ?? values?.join(',') });
+      // TODO why did we originally stringify 'values' ?
+      // clauses.push({ column, op, value: value ?? values?.join(',') });
+      clauses.push(filter);
     }
-    return clauses;
-  } else {
-    return clauses;
   }
+  return clauses;
 };
 
-const DEFAULT_ADD_FILTER_OPTS = {
-  combineWith: AND
+type AddFilterOptions = {
+  combineWith: FilterCombinatorOp;
+};
+
+const DEFAULT_ADD_FILTER_OPTS: AddFilterOptions = {
+  combineWith: 'and'
 };
 
 export function addFilter(
   existingFilter: Filter | null,
-  filter: Filter | null,
-  { combineWith = AND } = DEFAULT_ADD_FILTER_OPTS
-) {
+  filter: Filter,
+  { combineWith = AND }: AddFilterOptions = DEFAULT_ADD_FILTER_OPTS
+): Filter | null {
   if (includesNoValues(filter)) {
-    const { column } = filter;
-    existingFilter = removeFilterForColumn(existingFilter, { name: column });
+    if (isMultiClauseFilter(filter)) {
+      // TODO identify the column that is contributing the no-values filter
+    } else {
+      existingFilter = removeFilterForColumn(existingFilter, { name: filter.column });
+    }
   } else if (includesAllValues(filter)) {
     // A filter that returns all values is a way to remove filtering for this column
-    return removeFilterForColumn(existingFilter, { name: filter.column });
+    if (isMultiClauseFilter(filter)) {
+      // TODO identify the column that is contributing the all-values filter
+    } else {
+      return removeFilterForColumn(existingFilter, { name: filter.column });
+    }
   }
 
   if (!existingFilter) {
@@ -79,7 +104,7 @@ export function addFilter(
   }
 
   if (existingFilter.op === AND && filter.op === AND) {
-    return { type: AND, filters: combine(existingFilter.filters, filter.filters) };
+    return { op: AND, filters: combine(existingFilter.filters, filter.filters) };
   } else if (existingFilter.op === AND) {
     const filters = replaceOrInsert(existingFilter.filters, filter);
     return filters.length > 1 ? { op: AND, filters } : filters[0];
@@ -90,7 +115,7 @@ export function addFilter(
   } else if (sameColumn(existingFilter, filter)) {
     return merge(existingFilter, filter);
   } else {
-    return { op: AND, filters: [existingFilter, filter] };
+    return { op: combineWith, filters: [existingFilter, filter] };
   }
 }
 
@@ -175,8 +200,6 @@ export function functor(columnMap: ColumnMap, filter: Filter): RowFilterFn {
       return testInclude(columnMap, filter);
     case EQUALS:
       return testEQ(columnMap, filter);
-    case NOT_EQUALS:
-      return !testEQ(columnMap, filter);
     case GREATER_THAN:
       return testGT(columnMap, filter);
     case LESS_THAN:
@@ -591,32 +614,4 @@ function sameValues<T>(arr1: T[], arr2: T[]) {
     return a.join('|') === b.join('|');
   }
   return false;
-}
-
-// TODO unify all 'partition' implementations
-
-type Predicate<T> = (x: T) => boolean;
-
-function partition<T>(
-  list: T[],
-  test1: Predicate<T>,
-  test2: Predicate<T> | null = null
-): [T[], T[]] | [T[], T[], T[]] {
-  const results1: T[] = [];
-  const misses: T[] = [];
-  const results2: T[] | null = test2 === null ? null : [];
-
-  for (let i = 0; i < list.length; i++) {
-    if (test1(list[i])) {
-      results1.push(list[i]);
-    } else if (test2 !== null && test2(list[i])) {
-      results2!.push(list[i]);
-    } else {
-      misses.push(list[i]);
-    }
-  }
-
-  return test2 === null
-    ? ([results1, misses] as [T[], T[]])
-    : ([results1, results2, misses] as [T[], T[], T[]]);
 }
