@@ -1,35 +1,69 @@
 import { createLogger, logColor, EventEmitter, uuid } from '@vuu-ui/utils';
-import * as Message from '../servers/vuu/messages';
+import * as Message from '../server-proxy/messages';
+import {
+  ClientViewportMessage,
+  isConnectionStatusMessage,
+  RpcRequest,
+  RpcResponse,
+  ServerProxySubscribeMessage,
+  TableMeta,
+  TableList,
+  ViewportMessage,
+  VuuUIMessageIn,
+  VuuUIMessageInRPC,
+  VuuUIMessageOut
+} from '../vuuUIMessageTypes';
+import { VuuTable } from '../vuuProtocolMessageTypes';
 
 const logger = createLogger('ConnectionManager', logColor.green);
 
-let worker;
-let pendingWorker;
+let worker: Worker;
+let pendingWorker: Promise<Worker>;
 
-const viewports = new Map();
+export type PostMessageToClientCallback = (msg: ClientViewportMessage) => void;
+
+const viewports = new Map<
+  string,
+  {
+    postMessageToClient: PostMessageToClientCallback;
+    request: ServerProxySubscribeMessage;
+    status: 'subscribing';
+  }
+>();
 const pendingRequests = new Map();
 
 // We do not resolve the worker until we have a connection, but we will get
 // connection status messages before that, so we forward them to caller
 // while they wait for worker.
-const getWorker = async (url, server, token, handleConnectionStatusChange) => {
+const getWorker = async (
+  url: string,
+  server: string,
+  token: string = '',
+  handleConnectionStatusChange: (msg: any) => void
+) => {
   const workerUrl = 'worker.js?debug=all-messages';
+
+  if (token === '' && pendingWorker === undefined) {
+    //create a new promises, store the resolve/reject pair and return it
+  }
 
   return (
     pendingWorker ||
+    // we get this far when we receive the first request with auth token
     (pendingWorker = new Promise((resolve) => {
       const worker = new Worker(workerUrl, { type: 'module' });
 
       // This is the inial message handler only, it processes messages whilst we are
       // establishing a connection. When we resolve the worker, a runtime message
       // handler will replace this (see below)
-      worker.onmessage = (msg) => {
+      worker.onmessage = (msg: MessageEvent<VuuUIMessageIn>) => {
         const { data: message } = msg;
         if (message.type === 'ready') {
           worker.postMessage({ type: 'connect', url, useWebsocket: !!server, token });
         } else if (message.type === 'connected') {
           resolve(worker);
-        } else if (message.type === 'connection-status') {
+          // if we have stored promises above, resolve all wuth same worker
+        } else if (isConnectionStatusMessage(message)) {
           handleConnectionStatusChange(msg);
         } else {
           logger.log(`Unexpected message from the worker ${message.type}`);
@@ -56,41 +90,47 @@ const messagesToRelayToClient = {
   aggregate: true
 };
 
-function handleMessageFromWorker({ data: message }) {
+function handleMessageFromWorker({ data: message }: MessageEvent<VuuUIMessageIn>) {
   if (message.type === 'viewport-updates') {
     for (const [clientViewport, { size, rows }] of Object.entries(message.viewports)) {
-      if (viewports.has(clientViewport)) {
-        const { postMessageToClient } = viewports.get(clientViewport);
+      const viewport = viewports.get(clientViewport);
+      if (viewport) {
+        const { postMessageToClient } = viewport;
         postMessageToClient({ type: 'viewport-update', size, rows });
       }
     }
-  } else if (message.type === 'connection-status') {
+  } else if (isConnectionStatusMessage(message)) {
     connectionManager.emit('connection-status', message);
-  } else if (viewports.has(message.clientViewportId)) {
-    const viewport = viewports.get(message.clientViewportId);
-    const { postMessageToClient } = viewport;
-    if (messagesToRelayToClient[message.type]) {
-      postMessageToClient(message);
-    } else {
-      logger.log(`message from the worker to viewport ${message.clientViewportId} ${message.type}`);
-    }
-  } else if (pendingRequests.has(message.requestId)) {
-    const { resolve } = pendingRequests.get(message.requestId);
-    pendingRequests.delete(message.requestId);
-    const { type: _1, requestId: _2, ...rest } = message;
-    resolve(rest);
-    // TEST DATA COLLECTION
-  } else if (message.type === 'websocket-data') {
-    // storeData(message.data);
   } else {
-    logger.log(
-      `Unexpected message from the worker ${message.type} requestId ${message.requestId}`,
-      pendingRequests
-    );
+    const clientViewportId = (message as ViewportMessage).clientViewportId;
+    const requestId = (message as VuuUIMessageInRPC).requestId;
+    const viewport = viewports.get(clientViewportId);
+    if (viewport) {
+      const { postMessageToClient } = viewport;
+      if (message.type in messagesToRelayToClient) {
+        postMessageToClient(message);
+      } else {
+        logger.log(`message from the worker to viewport ${clientViewportId} ${message.type}`);
+      }
+    } else if (pendingRequests.has(requestId)) {
+      const { resolve } = pendingRequests.get(requestId);
+      pendingRequests.delete(requestId);
+      const { type: _1, requestId: _2, ...rest } = message as VuuUIMessageInRPC;
+      resolve(rest);
+      // TEST DATA COLLECTION
+      // } else if (message.type === 'websocket-data') {
+      //   // storeData(message.data);
+    } else {
+      logger.log(
+        `Unexpected message from the worker ${message.type} requestId ${requestId}`,
+        pendingRequests
+      );
+    }
   }
 }
 
-const asyncRequest = (msg) => {
+// Can be a straight protocol message body
+const asyncRequest = (msg: any): Promise<VuuUIMessageInRPC> => {
   const requestId = uuid();
   worker.postMessage({
     requestId,
@@ -101,10 +141,20 @@ const asyncRequest = (msg) => {
   });
 };
 
+export interface ServerAPI {
+  destroy: () => void;
+  getTableMeta: (table: VuuTable) => Promise<TableMeta>;
+  getTableList: () => Promise<TableList>;
+  rpcCall: (msg: RpcRequest) => Promise<RpcResponse>;
+  send: (message: VuuUIMessageOut) => void;
+  subscribe: (message: ServerProxySubscribeMessage, callback: PostMessageToClientCallback) => void;
+  unsubscribe: (viewport: string) => void;
+}
+
 class ConnectionManager extends EventEmitter {
   // The first request must have the token. We can change this to block others until
   // the request with token is received.
-  async connect(url, server, token) {
+  async connect(url: string, server: string, token?: string): Promise<ServerAPI> {
     // By passing handleMessageFromWorker here, we can get connection status
     //messages while we wait for worker to resolve.
     worker = await getWorker(url, server, token, handleMessageFromWorker);
@@ -117,7 +167,7 @@ class ConnectionManager extends EventEmitter {
     //   worker.postMessage({type: "send-websocket-data"})
     // })
 
-    // THis is a serverConnection, referred to in calling code as a 'server'
+    // This is a serverConnection, referred to in calling code as a 'server'
     return {
       subscribe: (message, callback) => {
         viewports.set(message.viewport, {
@@ -146,13 +196,12 @@ class ConnectionManager extends EventEmitter {
 
       getTableList: async () => asyncRequest({ type: Message.GET_TABLE_LIST }),
 
-      getTableMeta: async (tableDescriptor) =>
-        asyncRequest({ type: Message.GET_TABLE_META, table: tableDescriptor })
+      getTableMeta: async (table) => asyncRequest({ type: Message.GET_TABLE_META, table })
     };
   }
 
   destroy() {
-    worker.teminate();
+    worker.terminate();
   }
 }
 

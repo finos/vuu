@@ -1,6 +1,7 @@
-import RemoteDataSource from './remote-data-source';
+import { Column } from '@vuu-ui/utils';
+
 import { getServerUrl } from './hooks/useServerConnection';
-import {Column} from "../../utils/src";
+import RemoteDataSource from './remote-data-source';
 
 const DEFAULT_BUFFER_SIZE = 300;
 
@@ -32,7 +33,7 @@ export const createDataSource = ({
     serverUrl,
     viewport: id,
     ...config,
-    columns: (config?.columns || schema.columns).map((col) =>
+    columns: (config?.columns || schema.columns).map((col: string | Column) =>
       typeof col === 'string' ? col : col.name
     )
   });

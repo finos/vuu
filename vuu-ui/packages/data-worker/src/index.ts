@@ -1,27 +1,33 @@
-import connectWebsocket from '@vuu-ui/data-remote/src/remote-websocket-connection';
+import connectWebsocket from '@vuu-ui/data-remote/src/websocket-connection';
 import connectDataStore from '@vuu-ui/data-store/src/data-store-connection';
-// TEST DATA COLLECTION
-import { getTestMessages } from '@vuu-ui/data-remote/src/test-data-collection';
-import { ServerProxy } from '@vuu-ui/data-remote/src/servers/vuu/new-server-proxy';
+import { ServerProxy } from '@vuu-ui/data-remote/src/server-proxy/server-proxy';
+import {
+  ConnectionStatusMessage,
+  isConnectionStatusMessage,
+  VuuUIMessageOut
+} from '@vuu-ui/data-remote/src/vuuUIMessageTypes';
 
-let server;
+let server: ServerProxy;
 
-async function connectToServer(url, token, useWebsocket, onConnectionStatusChange) {
+async function connectToServer(
+  url: string,
+  token: string,
+  useWebsocket: boolean,
+  onConnectionStatusChange: (msg: ConnectionStatusMessage) => void
+) {
   const makeConnection = useWebsocket ? connectWebsocket : connectDataStore;
   const connection = await makeConnection(
     url,
     // if this was called during connect, we would get a ReferenceError, but it will
     // never be called until subscriptions have been made, so this is safe.
+    //TODO do we need to listen in to the connection messages here so we can lock back in, in the event of a reconnenct ?
     (msg) =>
-      msg.type === 'connection-status'
+      isConnectionStatusMessage(msg)
         ? onConnectionStatusChange(msg)
         : server.handleMessageFromServer(msg)
   );
+
   server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
-  // TODO handle authentication, login
-  if (!token && connection.requiresAuthentication) {
-    await server.authenticate('bill', 'pword');
-  }
   if (connection.requiresLogin) {
     await server.login(token);
   }
@@ -30,7 +36,7 @@ async function connectToServer(url, token, useWebsocket, onConnectionStatusChang
 let lastTime = 0;
 const timings = [];
 
-function sendMessageToClient(message) {
+function sendMessageToClient(message: any) {
   const now = Math.round(performance.now());
   if (lastTime) {
     timings.push(now - lastTime);
@@ -44,7 +50,7 @@ function sendMessageToClient(message) {
   lastTime = now;
 }
 
-const handleMessageFromClient = async ({ data: message }) => {
+const handleMessageFromClient = async ({ data: message }: MessageEvent<VuuUIMessageOut>) => {
   switch (message.type) {
     case 'connect':
       await connectToServer(message.url, message.token, message.useWebsocket, postMessage);
@@ -57,9 +63,9 @@ const handleMessageFromClient = async ({ data: message }) => {
       server.unsubscribe(message.viewport);
       break;
     // TEST DATA COLLECTION
-    case 'send-websocket-data':
-      postMessage({ type: 'websocket-data', data: getTestMessages() });
-      break;
+    // case 'send-websocket-data':
+    //   postMessage({ type: 'websocket-data', data: getTestMessages() });
+    //   break;
     default:
       server.handleMessageFromClient(message);
   }

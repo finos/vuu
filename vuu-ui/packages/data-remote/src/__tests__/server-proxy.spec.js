@@ -1,4 +1,4 @@
-import { ServerProxy, TEST_setRequestId } from '../servers/vuu/new-server-proxy';
+import { ServerProxy, TEST_setRequestId } from '../server-proxy/server-proxy';
 import {
   createTableRows,
   createTableGroupRows,

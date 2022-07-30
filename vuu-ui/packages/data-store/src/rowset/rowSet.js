@@ -11,9 +11,7 @@ import {
   arrayOfIndices,
   BIN_FILTER_DATA_COLUMNS,
   DataTypes,
-  extendsFilter,
   extractFilterForColumn,
-  functor as filterPredicate,
   getFullRange,
   projectColumns,
   projectUpdates,
@@ -23,6 +21,8 @@ import {
   SET_FILTER_DATA_COLUMNS,
   splitFilterOnColumn
 } from '@vuu-ui/utils';
+
+import { extendsFilter, functor as filterPredicate } from '../filter-utils';
 import { getDeltaRange, NULL_RANGE } from '../range-utils';
 
 const SINGLE_COLUMN = 1;

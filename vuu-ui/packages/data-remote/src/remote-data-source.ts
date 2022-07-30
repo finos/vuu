@@ -1,5 +1,7 @@
 import { createLogger, DataTypes, EventEmitter, logColor, uuid } from '@vuu-ui/utils';
-import { filterAsQuery } from '@vuu-ui/datagrid-parsers';
+import { DataSource, DataSourceProps, SubscribeCallback, SubscribeProps } from './data-source';
+import { VuuUIMessageIn } from './vuuUIMessageTypes';
+import { VuuAggregation } from './vuuProtocolMessageTypes';
 
 import { msgType as Msg } from './constants';
 
@@ -10,39 +12,31 @@ const { ROW_DATA } = DataTypes;
 const logger = createLogger('RemoteDataSource', logColor.blue);
 
 export const AvailableProxies = {
-  Viewserver: 'viewserver',
   Vuu: 'vuu'
 };
 
 const NullServer = {
-  handleMessageFromClient: (message) =>
+  handleMessageFromClient: (message: unknown) =>
     console.log(`%cNullServer.handleMessageFromClient ${JSON.stringify(message)}`, 'color:red')
 };
 
 const defaultRange = { lo: 0, hi: 0 };
 
-export interface DataSourceColumn {
-
-}
+export interface DataSourceColumn {}
 
 /*-----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
-export default class RemoteDataSource extends EventEmitter {
+export default class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
   private tableName: string;
   private columns: DataSourceColumn[];
-  // TODO subscription is always null. Not used anywhere. Can it be removed?
-  private subscription: null;
   private viewport: string;
   private server: any;
   private url: string;
   private serverName: string;
   private visualLink: string;
-  private filterDataCallback: any;
-  private filterDataMessage: any;
   private status: string;
-  private remoteId: string;
   private disabled: boolean;
   private suspended: boolean;
   private initialGroup: any;
@@ -53,7 +47,7 @@ export default class RemoteDataSource extends EventEmitter {
   private rowCount: number;
   private pendingServer: any;
   private clientCallback: any;
-  private serverViewportId: string;
+  // private serverViewportId?: string;
 
   constructor({
     bufferSize = 100,
@@ -69,12 +63,11 @@ export default class RemoteDataSource extends EventEmitter {
     serverUrl,
     viewport,
     'visual-link': visualLink
-  }) {
+  }: DataSourceProps) {
     super();
     this.bufferSize = bufferSize;
     this.tableName = tableName;
     this.columns = columns;
-    this.subscription = null;
     this.viewport = viewport;
 
     this.server = NullServer;
@@ -82,10 +75,7 @@ export default class RemoteDataSource extends EventEmitter {
     this.serverName = serverName;
     this.visualLink = visualLink;
 
-    this.filterDataCallback = null;
-    this.filterDataMessage = null;
     this.status = 'initialising';
-    this.remoteId = null;
     this.disabled = false;
     this.suspended = false;
 
@@ -116,8 +106,8 @@ export default class RemoteDataSource extends EventEmitter {
       groupBy = this.initialGroup,
       filter = this.initialFilter,
       filterQuery = this.initialFilterQuery
-    },
-    callback
+    }: SubscribeProps,
+    callback: SubscribeCallback
   ) {
     if (!tableName) throw Error('RemoteDataSource subscribe called without table name');
 
@@ -159,14 +149,12 @@ export default class RemoteDataSource extends EventEmitter {
     );
   }
 
-  handleMessageFromServer = (message) => {
-    if (message.dataType === DataTypes.FILTER_DATA) {
-      this.filterDataCallback(message);
-    } else if (message.type === 'subscribed') {
+  handleMessageFromServer = (message: VuuUIMessageIn) => {
+    if (message.type === 'subscribed') {
       this.status = 'subscribed';
-      this.serverViewportId = message.serverViewportId;
+      // this.serverViewportId = message.serverViewportId;
       this.emit('subscribed', message);
-      const { viewportId, ...rest } = message;
+      const { clientViewportId, ...rest } = message;
       this.clientCallback(rest);
     } else if (message.type === 'disabled') {
       this.status = 'disabled';
@@ -240,12 +228,12 @@ export default class RemoteDataSource extends EventEmitter {
     return this;
   }
 
-  setColumns(columns) {
+  setColumns(columns: string[]) {
     this.columns = columns;
     return this;
   }
 
-  setSubscribedColumns(columns) {
+  setSubscribedColumns(columns: string[]) {
     if (
       columns.length !== this.columns.length ||
       !columns.every((columnName) => this.columns.includes(columnName))
@@ -255,21 +243,19 @@ export default class RemoteDataSource extends EventEmitter {
     }
   }
 
-  setRange(lo, hi, dataType = ROW_DATA) {
+  setRange(lo: number, hi: number) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.setViewRange,
-      range: { lo, hi },
-      dataType
+      range: { lo, hi }
     });
   }
 
-  select(selected, dataType = ROW_DATA) {
+  select(selected: number[]) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.select,
-      selected,
-      dataType
+      selected
     });
   }
 
@@ -289,16 +275,17 @@ export default class RemoteDataSource extends EventEmitter {
     });
   }
 
-  aggregate(aggregations, dataType = ROW_DATA) {
+  aggregate(aggregations: VuuAggregation[]) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.aggregate,
-      aggregations,
-      dataType
+      aggregations
     });
   }
 
-  filter(filter, filterQuery = filter ? filterAsQuery(filter) : '') {
+  // TODO we shouldn't have to parse the filter here, makes this package dependent on parsing package
+  filter(filter: any, filterQuery: string) {
+    console.log({ filter, filterQuery });
     this.server?.send({
       viewport: this.viewport,
       type: Msg.filterQuery,
@@ -307,7 +294,7 @@ export default class RemoteDataSource extends EventEmitter {
     });
   }
 
-  openTreeNode(key) {
+  openTreeNode(key: string) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.openTreeNode,
@@ -315,7 +302,7 @@ export default class RemoteDataSource extends EventEmitter {
     });
   }
 
-  closeTreeNode(key) {
+  closeTreeNode(key: string) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.closeTreeNode,
@@ -323,7 +310,7 @@ export default class RemoteDataSource extends EventEmitter {
     });
   }
 
-  group(columns) {
+  group(columns: string[]) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.groupBy,
@@ -331,15 +318,8 @@ export default class RemoteDataSource extends EventEmitter {
     });
   }
 
-  setGroupState(groupState) {
-    this.server?.send({
-      viewport: this.viewport,
-      type: Msg.setGroupState,
-      groupState
-    });
-  }
-
-  sort(columns) {
+  // TODO columns cannot simply be strings
+  sort(columns: string[]) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.sort,
@@ -347,7 +327,7 @@ export default class RemoteDataSource extends EventEmitter {
     });
   }
 
-  getFilterData(column, searchText) {
+  getFilterData(column: string, searchText: string) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.getFilterData,
@@ -356,50 +336,21 @@ export default class RemoteDataSource extends EventEmitter {
     });
   }
 
-  createLink({ parentVpId, link: { fromColumn, toColumn } }) {
+  createLink({ parentVpId, link: { fromColumn, toColumn } }: any) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.createLink,
       parentVpId: parentVpId,
-      childVpId: this.serverViewportId,
+      // childVpId: this.serverViewportId,
       parentColumnName: toColumn,
       childColumnName: fromColumn
     });
   }
 
-  async rpcCall(options) {
+  async rpcCall(options: any) {
     return this.server?.rpcCall({
       viewport: this.viewport,
       ...options
     });
   }
-
-  subscribeToFilterData(column, range, callback) {
-    logger.log(`<subscribeToFilterData> ${column.name}`);
-    this.filterDataCallback = callback;
-    this.getFilterData(column, range);
-
-    // this.setFilterRange(range.lo, range.hi);
-    // if (this.filterDataMessage) {
-    //   callback(this.filterDataMessage);
-    //   // do we need to nullify now ?
-    // }
-  }
-
-  unsubscribeFromFilterData() {
-    logger.log(`<unsubscribeFromFilterData>`);
-    this.filterDataCallback = null;
-  }
-
-  // // To support multiple open filters, we need a column here
-  // setFilterRange(lo, hi) {
-  //   console.log(`setFilerRange ${lo}:${hi}`)
-  //   this.server.send({
-  //     viewport: this.viewport,
-  //     type: Msg.setViewRange,
-  //     dataType: DataTypes.FILTER_DATA,
-  //     range: { lo, hi }
-  //   })
-
-  // }
 }

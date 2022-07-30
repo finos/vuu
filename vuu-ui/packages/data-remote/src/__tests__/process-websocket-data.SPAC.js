@@ -1,5 +1,5 @@
 import { messages } from './messages-001';
-import { ServerProxy } from '../servers/vuu/new-server-proxy';
+import { ServerProxy } from '../server-proxy/server-proxy';
 console.table(messages.length);
 const { requestId: viewport } = messages.find((msg) => msg.body.type === 'CREATE_VP_SUCCESS');
 

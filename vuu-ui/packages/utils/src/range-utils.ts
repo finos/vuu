@@ -1,10 +1,20 @@
-import {FromToRange} from "../../data-remote/src/servers/vuu/buffer-range";
-
 export interface VuuRange {
   lo?: number;
   hi?: number;
   from: number;
   to: number;
+}
+
+interface FromToRange {
+  from: number;
+  to: number;
+}
+
+export interface LoHiRange {
+  lo: number;
+  hi: number;
+  bufferSize?: number;
+  reset?: boolean;
 }
 
 export function getFullRange(
@@ -34,7 +44,7 @@ export function getFullRange(
   }
 }
 
-export function resetRange({ lo, hi, bufferSize = 0 }) {
+export function resetRange({ lo, hi, bufferSize = 0 }: LoHiRange): LoHiRange {
   return {
     lo: 0,
     hi: hi - lo,

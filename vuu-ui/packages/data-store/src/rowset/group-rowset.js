@@ -1,10 +1,6 @@
-import {
-  ASC,
-  mapSortCriteria,
-  extendsFilter,
-  functor as filterPredicate,
-  metadataKeys
-} from '@vuu-ui/utils';
+import { ASC, mapSortCriteria, metadataKeys } from '@vuu-ui/utils';
+import { extendsFilter, functor as filterPredicate } from '../filter-utils';
+
 import BaseRowSet from './rowSet';
 import {
   expandRow,

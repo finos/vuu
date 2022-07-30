@@ -89,6 +89,7 @@ const Grid = forwardRef(function Grid(
 
   const onChangeCallDatasourceSelect = useCallback(
     (selected) => {
+      console.log({ selected });
       dataSource.select(selected);
     },
     [dataSource]

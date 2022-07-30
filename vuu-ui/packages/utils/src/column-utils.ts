@@ -1,5 +1,50 @@
-import { Column, ColumnMap, KeyedColumn } from './columnTypes';
 import { Row } from './row-utils';
+
+interface Heading {
+  key: string;
+  isHeading: true;
+  label: string;
+  width: number;
+}
+
+export interface Column {
+  isGroup?: never;
+  key?: number;
+  name: string;
+  type?:
+    | {
+        name: string;
+      }
+    | string
+    | null;
+}
+
+export interface ColumnGroup {
+  isGroup: true;
+  columns: Column[];
+  contentWidth: number;
+  headings?: Heading[];
+  locked: boolean;
+  left?: number;
+  width: number;
+}
+
+export type ColumnType = Column | ColumnGroup;
+
+export interface KeyedColumn {
+  key: number;
+  name: string;
+  type?:
+    | {
+        name: string;
+      }
+    | string
+    | null;
+}
+
+export interface ColumnMap {
+  [columnName: string]: number;
+}
 
 const SORT_ASC = 'asc';
 

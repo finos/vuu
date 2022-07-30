@@ -1,24 +1,39 @@
-import {VuuRange} from "../../../../utils/src/range-utils";
-import {FromToRange} from "./buffer-range";
+import { FromToRange } from './buffer-range';
+
+export interface VuuRange {
+  from: number;
+  to: number;
+}
+export interface HwRange {
+  lo: number;
+  hi: number;
+}
+
+const isVuuRange = (range: VuuRange | HwRange): range is VuuRange =>
+  typeof (range as VuuRange).from === 'number' && typeof (range as VuuRange).to === 'number';
+
+const isHwRange = (range: VuuRange | HwRange): range is HwRange =>
+  typeof (range as HwRange).lo === 'number' && typeof (range as HwRange).hi === 'number';
 
 export class KeySet {
   private keys: Map<number, number>;
   private free: number[];
   private nextKeyValue: number;
 
-  constructor(range: VuuRange) {
+  constructor(range: VuuRange | HwRange) {
     this.keys = new Map();
     this.free = [];
     this.nextKeyValue = 0;
-    if (range) {
-      const { lo, hi, from = lo, to = hi } = range;
-      this.reset({ from, to });
+    if (isVuuRange(range)) {
+      this.reset(range);
+    } else if (isHwRange(range)) {
+      this.reset({ from: range.lo, to: range.hi });
     }
   }
 
   public next(): number {
-    if (this.free.length) {
-      return this.free.pop();
+    if (this.free.length > 0) {
+      return this.free.pop() as number;
     } else {
       return this.nextKeyValue++;
     }
@@ -46,6 +61,10 @@ export class KeySet {
   }
 
   public keyFor(rowIndex: number): number {
-    return this.keys.get(rowIndex);
+    const key = this.keys.get(rowIndex);
+    if (key === undefined) {
+      throw Error(`KeySet, no key found for rowIndex ${rowIndex}`);
+    }
+    return key;
   }
 }

@@ -15,13 +15,10 @@ export interface MultiValueFilterClause {
   values: any[];
 }
 
-interface InFilter extends MultiValueFilterClause {
-  op: 'in';
-}
-
 export type FilterClause = SingleValueFilterClause | MultiValueFilterClause;
 
 export interface MultiClauseFilter {
+  column?: never;
   op: 'and' | 'or';
   filters: Filter[];
 }
@@ -44,7 +41,8 @@ export const isSingleValueFilter = (f: Filter): f is SingleValueFilterClause =>
 export const isFilterClause = (f: Filter): f is SingleValueFilterClause | MultiValueFilterClause =>
   isSingleValueFilter(f) || isMultiClauseFilter(f);
 
-export const isMultiValueFilter = (f: Filter): f is SingleValueFilterClause => f.op === 'in';
+export const isMultiValueFilter = (f: Filter): f is MultiValueFilterClause => f.op === 'in';
 
-export const isInFilter = (f: Filter): f is InFilter => f.op === 'in';
+export const isInFilter = (f: Filter): f is MultiValueFilterClause => f.op === 'in';
 export const isAndFilter = (f: Filter): f is AndFilter => f.op === 'and';
+export const isOrFilter = (f: Filter): f is OrFilter => f.op === 'or';

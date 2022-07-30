@@ -1,11 +1,13 @@
 // intended use is singleton storage atom within a hook, see useViewserver for examples
 import { EventEmitter } from './event-emitter';
 
-export class SimpleStore<T = any> extends EventEmitter {
-  private _value: T;
-  private _status: string;
+type StoreStatus = '' | 'ready' | 'loaded';
 
-  constructor(value: T = null, status = '') {
+export class SimpleStore<T = unknown> extends EventEmitter {
+  private _value: T;
+  private _status: StoreStatus = '';
+
+  constructor(value: T, status: StoreStatus = '') {
     super();
     this._value = value;
     this._status = status;
@@ -21,7 +23,7 @@ export class SimpleStore<T = any> extends EventEmitter {
     return this._value;
   }
 
-  set status(status: string) {
+  set status(status: StoreStatus) {
     this._status = status;
   }
 
