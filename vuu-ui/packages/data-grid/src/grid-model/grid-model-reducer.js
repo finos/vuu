@@ -269,7 +269,6 @@ function setAggregations(state, { aggregations }) {
 }
 
 function sortRows(state, { sort }) {
-  // const sortColumns = columns && sortByToMap(columns);
   return {
     ...state,
     sort
@@ -277,7 +276,6 @@ function sortRows(state, { sort }) {
 }
 
 function addFilter(state, { filter }) {
-  // const sortColumns = columns && sortByToMap(columns);
   return {
     ...state,
     filter

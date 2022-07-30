@@ -3,11 +3,122 @@ import * as Message from './messages';
 import { ArrayBackedMovingWindow } from './array-backed-moving-window';
 import { getFullRange } from '@vuu-ui/utils/src/range-utils';
 import { bufferBreakout } from './buffer-range';
+import {
+  MessageInCreateViewPortSuccess,
+  VuuProtocolMessageOutViewPortRange,
+  VuuProtocolMessageOutCreateViewPort,
+  VuuProtocolMessageOutDisable,
+  VuuProtocolMessageOutEnable,
+  VuuProtocolMessageOutSelection,
+  VuuProtocolMessageOutCreateLink,
+  VuuColumns,
+  VuuMenu,
+  VuuGroupBy,
+  VuuLink,
+  VuuRow,
+  VuuTable,
+  VuuAggregation,
+  VuuSort,
+  VuuSortCol
+} from '../vuuProtocolMessageTypes';
+import {
+  ServerProxySubscribeMessage,
+  VuuUIMessageInDisabled,
+  VuuUIMessageInEnabled,
+  VuuUIMessageInFilter,
+  VuuUIMessageInGroupBy,
+  VuuUIMessageInSubscribed,
+  VuuUIMessageInMenus,
+  VuuUIMessageInSort,
+  VuuUIMessageInViewPortVisualLinks,
+  VuuUIMessageInVisualLinkCreated,
+  VuuUIRow,
+  VuuUIRowPredicate
+} from '../vuuUIMessageTypes';
 
-const EMPTY_ARRAY = [];
+const EMPTY_ARRAY: unknown[] = [];
+const EMPTY_GROUPBY: VuuGroupBy = [];
 
-const byRowIndex = ([index1], [index2]) => index1 - index2;
+interface Disable {
+  type: 'disable';
+}
+interface Enable {
+  type: 'enable';
+}
+interface ChangeViewportRange {
+  type: 'CHANGE_VP_RANGE';
+}
+interface Filter {
+  data: { filter: any; filterQuery: string };
+  type: 'filter';
+}
+interface Aggregate {
+  data: VuuAggregation[];
+  type: 'aggregate';
+}
+interface Selection {
+  data: number[];
+  type: 'selection';
+}
+interface Sort {
+  data: VuuSortCol[];
+  type: 'sort';
+}
+interface GroupBy {
+  data: VuuGroupBy;
+  type: 'groupBy';
+}
+interface GroupByClear {
+  data: VuuGroupBy;
+  type: 'groupByClear';
+}
+type CreateVisualLink = VuuProtocolMessageOutCreateLink['body'];
+
+type AsyncOperation =
+  | Aggregate
+  | ChangeViewportRange
+  | CreateVisualLink
+  | Disable
+  | Enable
+  | Filter
+  | GroupBy
+  | GroupByClear
+  | Selection
+  | Sort;
+type RangeRequestTuple = [VuuProtocolMessageOutViewPortRange['body'] | null, VuuUIRow[]?];
+type RowSortPredicate = (row1: VuuUIRow, row2: VuuUIRow) => number;
+
+const byRowIndex: RowSortPredicate = ([index1], [index2]) => index1 - index2;
 export class Viewport {
+  private aggregations: any;
+  private bufferSize: number;
+  private clientRange: any;
+  private columns: any[];
+  // TODO create this in constructor so we don't have to mark is as optional
+  private dataWindow?: ArrayBackedMovingWindow = undefined;
+  private disabled: boolean = false;
+  private filter: any;
+  private filterSpec: any;
+  private groupBy: any;
+  private hasUpdates: boolean = false;
+  private holdingPen: VuuUIRow[] = [];
+  private keys: any;
+  private lastTouchIdx: number | null = null;
+  private links: VuuLink[] = [];
+  private linkedParent: any = null;
+  private pendingLinkedParent: any;
+  private pendingOperations: any = new Map<string, AsyncOperation>();
+  private pendingRangeRequest: any = null;
+  private rowCountChanged: boolean = false;
+  private sort: any;
+
+  public clientViewportId: string;
+  public isTree: boolean = false;
+  public serverViewportId?: string;
+  public status: '' | 'subscribed' = '';
+  public suspended: boolean = false;
+  public table: VuuTable;
+
   constructor({
     viewport,
     tablename,
@@ -20,12 +131,9 @@ export class Viewport {
     sort = [],
     groupBy = [],
     visualLink
-  }) {
+  }: ServerProxySubscribeMessage) {
     this.clientViewportId = viewport;
     this.table = tablename;
-    this.status = '';
-    this.disabled = false;
-    this.suspended = false;
     this.aggregations = aggregations;
     this.columns = columns;
     this.clientRange = range;
@@ -38,19 +146,8 @@ export class Viewport {
       filter: filterQuery
     };
     this.filter = filter;
-    this.isTree = false;
-    this.dataWindow = undefined;
-    this.rowCountChanged = false;
     this.keys = new KeySet(range);
-    this.links = null;
-    this.linkedParent = null;
     this.pendingLinkedParent = visualLink;
-    this.pendingOperations = new Map();
-    this.pendingRangeRequest = null;
-    this.hasUpdates = false;
-    this.holdingPen = [];
-    this.selection = [];
-    this.lastTouchIdx = null;
   }
 
   get hasUpdatesToProcess() {
@@ -70,16 +167,23 @@ export class Viewport {
       sort: this.sort,
       groupBy: this.groupBy,
       filterSpec: this.filterSpec
-    };
+    } as VuuProtocolMessageOutCreateViewPort['body'];
   }
 
-  handleSubscribed({ viewPortId, aggregations, columns, table, range, sort, groupBy, filterSpec }) {
+  handleSubscribed({
+    viewPortId,
+    aggregations,
+    columns,
+    range,
+    sort,
+    groupBy,
+    filterSpec
+  }: MessageInCreateViewPortSuccess) {
     this.serverViewportId = viewPortId;
     this.status = 'subscribed';
     this.aggregations = aggregations;
     this.columns = columns;
-    this.table = table;
-    this.range = range;
+    // this.range = range;
     this.sort = sort;
     this.groupBy = groupBy;
     this.filterSpec = filterSpec;
@@ -108,41 +212,41 @@ export class Viewport {
       columns,
       filter: this.filter,
       filterSpec: this.filterSpec
-    };
+    } as VuuUIMessageInSubscribed;
   }
 
-  awaitOperation(requestId, type) {
+  awaitOperation(requestId: string, msg: AsyncOperation) {
     //TODO set uip a timeout mechanism here
-    this.pendingOperations.set(requestId, type);
+    this.pendingOperations.set(requestId, msg);
   }
 
   // Return a message if we need to communicate this to client UI
-  completeOperation(requestId, ...params) {
+  completeOperation(requestId: string, ...params: unknown[]) {
     const { clientViewportId, pendingOperations } = this;
     const { type, data } = pendingOperations.get(requestId);
     pendingOperations.delete(requestId);
     if (type === Message.CHANGE_VP_RANGE) {
-      const [from, to] = params;
-      this.dataWindow.setRange(from, to);
+      const [from, to] = params as [number, number];
+      this.dataWindow?.setRange(from, to);
       //this.hasUpdates = true; // is this right ??????????
       this.pendingRangeRequest = null;
     } else if (type === 'groupBy') {
       this.isTree = true;
       this.groupBy = data;
-      return { clientViewportId, type, groupBy: data };
+      return { clientViewportId, type, groupBy: data } as VuuUIMessageInGroupBy;
     } else if (type === 'groupByClear') {
       this.isTree = false;
       this.groupBy = [];
-      return { clientViewportId, type: 'groupBy', groupBy: null };
+      return { clientViewportId, type: 'groupBy', groupBy: null } as VuuUIMessageInGroupBy;
     } else if (type === 'filter') {
       this.filterSpec = { filter: data.filterQuery };
-      return { clientViewportId, type, ...data };
+      return { clientViewportId, type, ...data } as VuuUIMessageInFilter;
     } else if (type === 'aggregate') {
       this.aggregations = data;
       return { clientViewportId, type, aggregations: data };
     } else if (type === 'sort') {
       this.sort = { sortDefs: data };
-      return { clientViewportId, type, sort: data };
+      return { clientViewportId, type, sort: data } as VuuUIMessageInSort;
     } else if (type === 'selection') {
       // should we do this here ?
       // this.selection = data;
@@ -151,13 +255,13 @@ export class Viewport {
       return {
         type: 'disabled',
         clientViewportId
-      };
+      } as VuuUIMessageInDisabled;
     } else if (type === 'enable') {
       this.disabled = false;
       return {
         type: 'enabled',
         clientViewportId
-      };
+      } as VuuUIMessageInEnabled;
     } else if (type === Message.CREATE_VISUAL_LINK) {
       const [colName, parentViewportId, parentColName] = params;
       this.linkedParent = {
@@ -172,11 +276,11 @@ export class Viewport {
         colName,
         parentViewportId,
         parentColName
-      };
+      } as VuuUIMessageInVisualLinkCreated;
     }
   }
 
-  rangeRequest(requestId, from, to) {
+  rangeRequest(requestId: string, from: number, to: number): RangeRequestTuple {
     // If we can satisfy the range request from the buffer, we will.
     // May or may not need to make a server request, depending on status of buffer
     const type = Message.CHANGE_VP_RANGE;
@@ -185,44 +289,52 @@ export class Viewport {
     // previous range.
     // Note: what if it doesn't have the entire range but DOES have all
     // rows that constitute the delta ? Is this even possible ?
-    const [serverDataRequired, clientRows, holdingRows] = this.dataWindow.setClientRange(from, to);
-    const serverRequest =
-      serverDataRequired && bufferBreakout(this.pendingRangeRequest, from, to, this.bufferSize)
-        ? {
-            type,
-            viewPortId: this.serverViewportId,
-            ...getFullRange({ lo: from, hi: to }, this.bufferSize, this.dataWindow.rowCount)
-          }
-        : undefined;
-    if (serverRequest) {
-      // TODO check that there os not already a pending server request for more data
-      this.awaitOperation(requestId, { type });
-      this.pendingRangeRequest = serverRequest;
-    }
+    if (this.dataWindow) {
+      const [serverDataRequired, clientRows, holdingRows] = this.dataWindow.setClientRange(
+        from,
+        to
+      );
+      const serverRequest =
+        serverDataRequired && bufferBreakout(this.pendingRangeRequest, from, to, this.bufferSize)
+          ? ({
+              type,
+              viewPortId: this.serverViewportId,
+              ...getFullRange({ from, to }, this.bufferSize, this.dataWindow.rowCount)
+            } as VuuProtocolMessageOutViewPortRange['body'])
+          : null;
+      if (serverRequest) {
+        // TODO check that there os not already a pending server request for more data
+        this.awaitOperation(requestId, { type });
+        this.pendingRangeRequest = serverRequest;
+      }
 
-    // always reset the keys here, even if we're not going to return rows immediately.
-    this.keys.reset(this.dataWindow.clientRange);
+      // always reset the keys here, even if we're not going to return rows immediately.
+      this.keys.reset(this.dataWindow.clientRange);
 
-    if (this.holdingPen.some(([index]) => index < from || index >= to)) {
-      this.holdingPen = this.holdingPen.filter(([index]) => index >= from && index < to);
-    }
+      const rowWithinRange: VuuUIRowPredicate = ([index]) => index < from || index >= to;
+      if (this.holdingPen.some(rowWithinRange)) {
+        this.holdingPen = this.holdingPen.filter(([index]) => index >= from && index < to);
+      }
 
-    const toClient = this.isTree ? toClientRowTree(this.groupBy, this.columns) : toClientRow;
+      const toClient = this.isTree ? toClientRowTree(this.groupBy, this.columns) : toClientRow;
 
-    if (holdingRows) {
-      holdingRows.forEach((row) => {
-        this.holdingPen.push(toClient(row, this.keys));
-      });
-    }
+      if (holdingRows.length) {
+        holdingRows.forEach((row) => {
+          this.holdingPen.push(toClient(row, this.keys));
+        });
+      }
 
-    if (clientRows) {
-      return [serverRequest, clientRows.map((row) => toClient(row, this.keys))];
+      if (clientRows.length) {
+        return [serverRequest, clientRows.map((row) => toClient(row, this.keys))];
+      } else {
+        return [serverRequest];
+      }
     } else {
-      return [serverRequest];
+      return [null];
     }
   }
 
-  setLinks(links) {
+  setLinks(links: VuuLink[]) {
     this.links = links;
     return [
       {
@@ -231,27 +343,27 @@ export class Viewport {
         clientViewportId: this.clientViewportId
       },
       this.pendingLinkedParent
-    ];
+    ] as [VuuUIMessageInViewPortVisualLinks, any];
   }
 
-  setMenu(menu) {
+  setMenu(menu: VuuMenu) {
     return {
       type: 'VIEW_PORT_MENUS_RESP',
       menu,
       clientViewportId: this.clientViewportId
-    };
+    } as VuuUIMessageInMenus;
   }
 
-  createLink(requestId, colName, parentVpId, parentColumnName) {
+  createLink(requestId: string, colName: string, parentVpId: string, parentColumnName: string) {
     const message = {
       type: Message.CREATE_VISUAL_LINK,
       parentVpId,
       childVpId: this.serverViewportId,
       parentColumnName,
       childColumnName: colName
-    };
+    } as CreateVisualLink;
     this.awaitOperation(requestId, message);
-    return message;
+    return message as VuuProtocolMessageOutCreateLink['body'];
   }
 
   suspend() {
@@ -264,56 +376,58 @@ export class Viewport {
   }
 
   currentData() {
-    const records = this.dataWindow.getData();
-    const { keys } = this;
-    const toClient = this.isTree ? toClientRowTree(this.groupBy, this.columns) : toClientRow;
     const out = [];
-    for (let row of records) {
-      if (row) {
-        out.push(toClient(row, keys));
+    if (this.dataWindow) {
+      const records = this.dataWindow.getData();
+      const { keys } = this;
+      const toClient = this.isTree ? toClientRowTree(this.groupBy, this.columns) : toClientRow;
+      for (let row of records) {
+        if (row) {
+          out.push(toClient(row, keys));
+        }
       }
     }
     return out;
   }
 
-  enable(requestId) {
+  enable(requestId: string) {
     this.awaitOperation(requestId, { type: 'enable' });
     return {
       type: Message.ENABLE_VP,
       viewPortId: this.serverViewportId
-    };
+    } as VuuProtocolMessageOutEnable['body'];
   }
 
-  disable(requestId) {
+  disable(requestId: string) {
     this.awaitOperation(requestId, { type: 'disable' });
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId
-    };
+    } as VuuProtocolMessageOutDisable['body'];
   }
 
-  filterRequest(requestId, filter, filterQuery) {
+  filterRequest(requestId: string, filter: any, filterQuery: string) {
     this.awaitOperation(requestId, { type: 'filter', data: { filter, filterQuery } });
     return this.createRequest({ filterSpec: { filter: filterQuery } });
   }
 
-  aggregateRequest(requestId, aggregations) {
+  aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
     this.awaitOperation(requestId, { type: 'aggregate', data: aggregations });
     return this.createRequest({ aggregations });
   }
 
-  sortRequest(requestId, sortDefs) {
-    this.awaitOperation(requestId, { type: 'sort', data: sortDefs });
-    return this.createRequest({ sort: { sortDefs } });
+  sortRequest(requestId: string, sortCols: VuuSortCol[]) {
+    this.awaitOperation(requestId, { type: 'sort', data: sortCols });
+    return this.createRequest({ sort: { sortDefs: sortCols } });
   }
 
-  groupByRequest(requestId, groupBy = EMPTY_ARRAY) {
+  groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
     const type = groupBy === EMPTY_ARRAY ? 'groupByClear' : 'groupBy';
     this.awaitOperation(requestId, { type, data: groupBy });
     return this.createRequest({ groupBy });
   }
 
-  selectRequest(requestId, selection) {
+  selectRequest(requestId: string, selection: number[]) {
     // TODO we need to do this in the client if we are to raise selection events
     // TODO is it right to set this here or should we wait for ACK from server ?
     this.awaitOperation(requestId, { type: 'selection', data: selection });
@@ -321,24 +435,26 @@ export class Viewport {
       type: Message.SET_SELECTION,
       vpId: this.serverViewportId,
       selection
-    };
+    } as VuuProtocolMessageOutSelection['body'];
   }
 
-  handleUpdate(updateType, rowIndex, row) {
-    if (this.dataWindow.rowCount !== row.vpSize) {
-      this.dataWindow.setRowCount(row.vpSize);
-      this.rowCountChanged = true;
-    }
-    if (updateType === 'U') {
-      // Update will return true if row was within client range
-      if (this.dataWindow.setAtIndex(rowIndex, row)) {
-        this.hasUpdates = true;
+  handleUpdate(updateType: string, rowIndex: number, row: VuuRow) {
+    if (this.dataWindow) {
+      if (this.dataWindow.rowCount !== row.vpSize) {
+        this.dataWindow.setRowCount(row.vpSize);
+        this.rowCountChanged = true;
+      }
+      if (updateType === 'U') {
+        // Update will return true if row was within client range
+        if (this.dataWindow.setAtIndex(rowIndex, row)) {
+          this.hasUpdates = true;
+        }
       }
     }
   }
 
   getNewRowCount = () => {
-    if (this.rowCountChanged) {
+    if (this.rowCountChanged && this.dataWindow) {
       this.rowCountChanged = false;
       return this.dataWindow.rowCount;
     }
@@ -355,8 +471,8 @@ export class Viewport {
   // client data, make sure we empty the pen and send those rows to client,
   // along qith the new data.
   // TODO what if we're going backwards
-  getClientRows(timeStamp) {
-    if (this.hasUpdates) {
+  getClientRows(timeStamp: number) {
+    if (this.hasUpdates && this.dataWindow) {
       const records = this.dataWindow.getData();
       const { keys } = this;
       const toClient = this.isTree ? toClientRowTree(this.groupBy, this.columns) : toClientRow;
@@ -381,7 +497,7 @@ export class Viewport {
     }
   }
 
-  createRequest(params) {
+  createRequest(params: any) {
     return {
       type: Message.CHANGE_VP,
       viewPortId: this.serverViewportId,
@@ -395,12 +511,14 @@ export class Viewport {
   }
 }
 
-const toClientRow = ({ rowIndex, rowKey, sel: isSelected, data }, keys) =>
-  [rowIndex, keys.keyFor(rowIndex), true, null, null, 1, rowKey, isSelected].concat(data);
+const toClientRow = ({ rowIndex, rowKey, sel: isSelected, data }: VuuRow, keys: KeySet) =>
+  [rowIndex, keys.keyFor(rowIndex), true, null, null, 1, rowKey, isSelected].concat(
+    data
+  ) as VuuUIRow;
 
 const toClientRowTree =
-  (groupBy, columns) =>
-  ({ rowIndex, rowKey, sel: isSelected, data }, keys) => {
+  (groupBy: VuuGroupBy, columns: VuuColumns) =>
+  ({ rowIndex, rowKey, sel: isSelected, data }: VuuRow, keys: KeySet) => {
     let [depth, isExpanded /* path */, , isLeaf /* label */, , count, ...rest] = data;
 
     // TODO do we need this - the data is already there
@@ -421,5 +539,5 @@ const toClientRowTree =
       isSelected
     ].concat(rest);
 
-    return record;
+    return record as VuuUIRow;
   };

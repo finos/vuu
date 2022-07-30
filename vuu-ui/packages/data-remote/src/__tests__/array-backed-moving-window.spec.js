@@ -1,4 +1,4 @@
-import { ArrayBackedMovingWindow } from '@vuu-ui/data-remote/src/servers/vuu/array-backed-moving-window';
+import { ArrayBackedMovingWindow } from '@vuu-ui/data-remote/src/server-proxy/array-backed-moving-window';
 
 function applyUpdates(movingWindow, rows) {
   rows.forEach((row) => {

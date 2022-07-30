@@ -1,4 +1,4 @@
-import { KeySet } from '../servers/vuu/keyset';
+import { KeySet } from '../server-proxy/keyset';
 
 describe('KeySet', () => {
   it('is initially empty', () => {

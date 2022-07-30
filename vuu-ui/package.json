@@ -14,10 +14,11 @@
     "build": "node ./scripts/build-all.mjs",
     "start:electron": "cd packages/electron && node ./node_modules/.bin/electron .",
     "start:showcase": "cd packages/showcase && serve ./public -s",
-    "build:app": "cd packages/app-vuu-example && node scripts/build-prod.mjs",
-    "build:app:dev": "cd packages/app-vuu-example && node scripts/build.mjs",
+    "build:app": "cd packages/app-vuu-example && node scripts/build.mjs",
+    "build:app:dev": "cd packages/app-vuu-example && node scripts/build.mjs --dev",
     "bump": "node ./scripts/version.mjs",
-    "pub": "node ./scripts/publish.mjs"
+    "pub": "node ./scripts/publish.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@types/jest": "^26.0.21",

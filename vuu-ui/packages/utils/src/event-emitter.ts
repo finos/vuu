@@ -1,14 +1,14 @@
-export interface Event {
-
-}
+export interface Event {}
 
 export type EventListener = (evtName: string, ...args: any[]) => void;
 
 export type EventListenerMap = {
   [eventName: string]: EventListener[] | EventListener;
-}
+};
 
-function isArrayOfListeners(listeners: EventListener | EventListener[]): listeners is EventListener[] {
+function isArrayOfListeners(
+  listeners: EventListener | EventListener[]
+): listeners is EventListener[] {
   return Array.isArray(listeners);
 }
 
@@ -17,7 +17,7 @@ function isOnlyListener(listeners: EventListener | EventListener[]): listeners i
 }
 
 export class EventEmitter {
-  private _events: EventListenerMap;
+  private _events?: EventListenerMap;
 
   constructor() {
     this._events = {};
@@ -80,7 +80,7 @@ export class EventEmitter {
     }
   }
 
-  emit(type: string, ...args) {
+  emit(type: string, ...args: unknown[]) {
     if (this._events) {
       const handler = this._events[type];
       if (handler) {
@@ -94,7 +94,7 @@ export class EventEmitter {
   }
 
   once(type: string, listener: EventListener) {
-    const handler = (evtName, message) => {
+    const handler = (evtName: string, message: unknown) => {
       this.removeListener(evtName, handler);
       listener(evtName, message);
     };
@@ -107,7 +107,7 @@ export class EventEmitter {
   }
 }
 
-function invokeHandler(handler: EventListener | EventListener[], type: string, args) {
+function invokeHandler(handler: EventListener | EventListener[], type: string, args: unknown[]) {
   if (isArrayOfListeners(handler)) {
     handler.slice().forEach((listener) => invokeHandler(listener, type, args));
   } else {

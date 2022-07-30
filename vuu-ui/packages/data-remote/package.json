@@ -1,20 +1,22 @@
 {
   "name": "@vuu-ui/data-remote",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "main": "index.ts",
   "module": "index.js",
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/build.mjs"
+    "build": "node ../../scripts/build.mjs",
+    "type-defs": "tsc --project tsconfig-emit-types.json"
   },
   "files": [
     "index.js",
     "index.js.map",
-    "/src"
+    "/src",
+    "/types"
   ],
   "peerDependencies": {
-    "@vuu-ui/utils": "0.0.17",
+    "@vuu-ui/utils": "0.0.18",
     "react": "^17.0.2"
   }
 }

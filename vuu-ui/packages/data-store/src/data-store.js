@@ -1,9 +1,42 @@
 import { RowSet, GroupRowSet } from './rowset/index';
-import { addFilter, DataTypes, IN, getFilterType, resetRange } from '@vuu-ui/utils';
+import { addFilter, DataTypes, IN, resetRange } from '@vuu-ui/utils';
 import UpdateQueue from './update-queue';
 
 const DEFAULT_INDEX_OFFSET = 0;
 const WITH_STATS = true;
+
+function getFilterType(column) {
+  return column.filter || filterTypeFromColumnType(column);
+}
+
+// {name: 'Price', 'type': {name: 'price'}, 'aggregate': 'avg'},
+// {name: 'MarketCap', 'type': {name: 'number','format': 'currency'}, 'aggregate': 'sum'},
+
+function getDataType({ type = null }) {
+  if (type === null) {
+    return 'set';
+  } else if (typeof type === 'string') {
+    return type;
+  } else {
+    switch (type.name) {
+      case 'price':
+        return 'number';
+      default:
+        return type.name;
+    }
+  }
+}
+
+const filterTypeFromColumnType = (column) => {
+  // TODO add remaining filter types
+  switch (getDataType(column)) {
+    case 'number':
+      return 'number';
+    default:
+      return 'set';
+  }
+};
+
 export default class DataStore {
   constructor(
     table,

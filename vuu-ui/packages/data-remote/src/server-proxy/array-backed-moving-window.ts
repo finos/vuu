@@ -1,14 +1,19 @@
-import { WindowRange } from '@vuu-ui/utils/src/range-utils';
-import {bufferBreakout, FromToRange} from './buffer-range';
-import {LoHiRange} from "../viewserver/server-proxy";
+import { LoHiRange, WindowRange } from '@vuu-ui/utils';
+import { bufferBreakout, FromToRange } from './buffer-range';
+import { VuuRow } from '../vuuProtocolMessageTypes';
+
+const EMPTY_ARRAY = [] as const;
+
+type RangeTuple = [boolean, readonly VuuRow[], readonly VuuRow[]];
 
 export class ArrayBackedMovingWindow {
   private bufferSize: number;
-  private clientRange: WindowRange;
   private range: WindowRange;
   private internalData: any[];
   private rowsWithinRange: number;
-  private rowCount: number;
+
+  public clientRange: WindowRange;
+  public rowCount: number;
 
   // Note, the buffer is already accounted for in the range passed in here
   constructor({ lo, hi }: LoHiRange, { from, to }: FromToRange, bufferSize: number) {
@@ -76,12 +81,12 @@ export class ArrayBackedMovingWindow {
   }
 
   // Returns [false] or [serverDataRequired, clientRows, holdingRows]
-  setClientRange(from: number, to: number): [boolean] | [boolean, any[], any[]] {
+  setClientRange(from: number, to: number): RangeTuple {
     const currentFrom = this.clientRange.from;
     const currentTo = Math.min(this.clientRange.to, this.rowCount);
 
     if (from === currentFrom && to === currentTo) {
-      return [false];
+      return [false, EMPTY_ARRAY, EMPTY_ARRAY] as RangeTuple;
     }
 
     const originalRange = this.clientRange.copy();
@@ -95,8 +100,8 @@ export class ArrayBackedMovingWindow {
       }
     }
 
-    let clientRows = undefined;
-    let holdingRows = undefined;
+    let clientRows: readonly VuuRow[] = EMPTY_ARRAY;
+    let holdingRows: readonly VuuRow[] = EMPTY_ARRAY;
     const offset = this.range.from;
 
     if (this.hasAllRowsWithinRange) {
@@ -120,7 +125,7 @@ export class ArrayBackedMovingWindow {
     }
 
     const serverDataRequired = bufferBreakout(this.range, from, to, this.bufferSize);
-    return [serverDataRequired, clientRows, holdingRows];
+    return [serverDataRequired, clientRows, holdingRows] as RangeTuple;
   }
 
   setRange(from: number, to: number) {
