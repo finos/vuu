@@ -14,7 +14,7 @@
     "build": "node ../../scripts/build.mjs",
     "type-defs": "tsc --project tsconfig-emit-types.json"
   },
-  "types": "./types/index.d.ts",
+  "types": "types/index.d.ts",
   "dependencies": {
     "@vuu-ui/utils": "0.0.20"
   },
