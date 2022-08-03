@@ -1,6 +1,14 @@
-import { useCallback, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useRef, useState } from 'react';
 
-export default function useControlled({ controlled, default: defaultProp }) {
+export interface UseControlledProps<T = unknown> {
+  controlled: T | undefined;
+  default: T | undefined;
+}
+
+export function useControlled<T = unknown>({
+  controlled,
+  default: defaultProp
+}: UseControlledProps<T>): [T | undefined, Dispatch<SetStateAction<T>>, boolean] {
   const { current: isControlled } = useRef(controlled !== undefined);
   const [valueState, setValue] = useState(defaultProp);
   const value = isControlled ? controlled : valueState;

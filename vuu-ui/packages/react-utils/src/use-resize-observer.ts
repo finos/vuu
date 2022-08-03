@@ -1,9 +1,42 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { RefObject, useCallback, useEffect, useRef } from 'react';
 
 export const WidthHeight = ['height', 'width'];
 export const WidthOnly = ['width'];
 
-const observedMap = new Map();
+export type measurements<T = string | number> = {
+  height?: T;
+  scrollHeight?: T;
+  scrollWidth?: T;
+  width?: T;
+};
+type measuredDimension = keyof measurements<number>;
+
+export type ResizeHandler = (measurements: measurements<number>) => void;
+
+type observedDetails = {
+  onResize?: ResizeHandler;
+  measurements: measurements<number>;
+};
+const observedMap = new Map<HTMLElement, observedDetails>();
+
+const getTargetSize = (
+  element: HTMLElement,
+  contentRect: { height: number; width: number },
+  dimension: measuredDimension
+): number => {
+  switch (dimension) {
+    case 'height':
+      return contentRect.height;
+    case 'scrollHeight':
+      return Math.ceil(element.scrollHeight);
+    case 'scrollWidth':
+      return Math.ceil(element.scrollWidth);
+    case 'width':
+      return contentRect.width;
+    default:
+      return 0;
+  }
+};
 
 const isScrollAttribute = {
   scrollHeight: true,
@@ -11,22 +44,25 @@ const isScrollAttribute = {
 };
 
 // TODO should we make this create-on-demand
-const resizeObserver = new ResizeObserver((entries) => {
-  for (let entry of entries) {
-    if (observedMap.has(entry.target)) {
-      const {
-        borderBoxSize: [{ blockSize: height, inlineSize: width }]
-      } = entry;
+const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+  for (const entry of entries) {
+    const { target, borderBoxSize } = entry;
+    const observedTarget = observedMap.get(target as HTMLElement);
+    if (observedTarget) {
+      const [{ blockSize: height, inlineSize: width }] = borderBoxSize;
       const rect = { height, width };
-      const { onResize, measurements } = observedMap.get(entry.target);
+      const { onResize, measurements } = observedTarget;
       let sizeChanged = false;
       for (let [dimension, size] of Object.entries(measurements)) {
-        const newSize = isScrollAttribute[dimension]
-          ? Math.ceil(entry.target[dimension])
-          : Math.ceil(rect[dimension]);
+        const newSize = getTargetSize(
+          target as HTMLElement,
+          { height, width },
+          dimension as measuredDimension
+        );
+
         if (newSize !== size) {
           sizeChanged = true;
-          measurements[dimension] = newSize;
+          measurements[dimension as measuredDimension] = newSize;
         }
       }
       if (sizeChanged) {
@@ -40,17 +76,18 @@ const resizeObserver = new ResizeObserver((entries) => {
 
 // TODO use an optional lag (default to false) to ask to fire onResize
 // with initial size
-export default function useResizeObserver(ref, dimensions, onResize, reportInitialSize) {
+export function useResizeObserver(
+  ref: RefObject<Element | HTMLElement | null>,
+  dimensions: string[],
+  onResize: ResizeHandler,
+  reportInitialSize = false
+) {
   const dimensionsRef = useRef(dimensions);
 
-  const measure = useCallback((target) => {
+  const measure = useCallback((target: HTMLElement): measurements<number> => {
     const rect = target.getBoundingClientRect();
-    return dimensionsRef.current.reduce((map, dim) => {
-      if (isScrollAttribute[dim]) {
-        map[dim] = Math.ceil(target[dim]);
-      } else {
-        map[dim] = Math.ceil(rect[dim]);
-      }
+    return dimensionsRef.current.reduce((map: { [key: string]: number }, dim) => {
+      map[dim] = getTargetSize(target, rect, dim as measuredDimension);
       return map;
     }, {});
   }, []);
@@ -64,16 +101,16 @@ export default function useResizeObserver(ref, dimensions, onResize, reportIniti
   // dimensions or callback instance each time - we only ever want to
   // initiate new observation when ref changes.
   useEffect(() => {
-    const target = ref.current;
+    const target = ref.current as HTMLElement;
     async function registerObserver() {
       // Create the map entry immediately. useEffect may fire below
       // before fonts are ready and attempt to update entry
-      observedMap.set(target, { measurements: [] });
+      observedMap.set(target, { measurements: {} as measurements<number> });
       await document.fonts.ready;
       const observedTarget = observedMap.get(target);
       if (observedTarget) {
         const measurements = measure(target);
-        observedMap.get(target).measurements = measurements;
+        observedTarget.measurements = measurements;
         resizeObserver.observe(target);
         if (reportInitialSize) {
           onResize(measurements);
@@ -104,7 +141,7 @@ export default function useResizeObserver(ref, dimensions, onResize, reportIniti
   }, [measure, ref]);
 
   useEffect(() => {
-    const target = ref.current;
+    const target = ref.current as HTMLElement;
     const record = observedMap.get(target);
     if (record) {
       if (dimensionsRef.current !== dimensions) {
