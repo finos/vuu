@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/layout",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "VUU Layout Components",
   "module": "src/index.js",
   "main": "index.js",
@@ -17,9 +17,9 @@
     "/src"
   ],
   "peerDependencies": {
-    "@vuu-ui/ui-controls": "0.0.19",
-    "@vuu-ui/react-utils": "0.0.19",
-    "@vuu-ui/utils": "0.0.19",
+    "@vuu-ui/ui-controls": "0.0.20",
+    "@vuu-ui/react-utils": "0.0.20",
+    "@vuu-ui/utils": "0.0.20",
     "classnames": "^2.2.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/react-utils",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "main": "src/index.js",
   "author": "heswell",
   "module": "index.js",
@@ -15,6 +15,9 @@
     "type-defs": "tsc --project tsconfig-emit-types.json"
   },
   "types": "./types/index.d.ts",
+  "dependencies": {
+    "@vuu-ui/utils": "0.0.20"
+  },
   "peerDependencies": {
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
