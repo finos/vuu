@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-// eslint-disable-next-line react-hooks/exhaustive-deps
-const useEffectSkipFirst = (func, deps) => {
+export const useEffectSkipFirst = (func: (...args: unknown[]) => void, deps: unknown[]) => {
   const goodToGo = useRef(false);
   useEffect(() => {
     if (goodToGo.current) {
@@ -9,8 +8,5 @@ const useEffectSkipFirst = (func, deps) => {
     } else {
       goodToGo.current = true;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 };
-
-export default useEffectSkipFirst;

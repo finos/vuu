@@ -1,6 +1,8 @@
-import { useMemo } from 'react';
+import { MutableRefObject, Ref, useMemo } from 'react';
 
-function setRef(ref, value) {
+type RefValue<T> = MutableRefObject<T | null> | ((instance: T | null) => void) | null | undefined;
+
+function setRef<T>(ref: RefValue<T>, value: T | null) {
   if (typeof ref === 'function') {
     ref(value);
   } else if (ref) {
@@ -8,7 +10,10 @@ function setRef(ref, value) {
   }
 }
 
-export default function useForkRef(refA, refB) {
+export function useForkRef<T>(
+  refA: Ref<T> | null | undefined,
+  refB: Ref<T> | null | undefined
+): Ref<T> | null {
   /**
    * This will create a new function if the ref props change and are defined.
    * This means react will call the old forkRef with `null` and the new forkRef
