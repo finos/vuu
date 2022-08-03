@@ -2,7 +2,7 @@ import { exec } from './utils.mjs';
 
 const args = process.argv.slice(2);
 
-const skipTypedefs = args.includes('--skip-typedefs') ? ' --skip-typedefs' : '';
+const skipTypedefs = args.includes('--typedefs') ? '' : ' --skip-typedefs';
 const watch = args.includes('--watch') ? ' --watch' : '';
 const dev = args.includes('--dev') ? ' --dev' : '';
 
