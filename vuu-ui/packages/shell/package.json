@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/shell",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "VUU UI Shell",
   "module": "src/index.js",
   "main": "index.js",
@@ -17,11 +17,11 @@
     "/src"
   ],
   "peerDependencies": {
-    "@vuu-ui/layout": "0.0.20",
-    "@vuu-ui/data-remote": "0.0.20",
-    "@vuu-ui/ui-controls": "0.0.20",
-    "@vuu-ui/react-utils": "0.0.20",
-    "@vuu-ui/utils": "0.0.20",
+    "@vuu-ui/layout": "0.0.21",
+    "@vuu-ui/data-remote": "0.0.21",
+    "@vuu-ui/ui-controls": "0.0.21",
+    "@vuu-ui/react-utils": "0.0.21",
+    "@vuu-ui/utils": "0.0.21",
     "classnames": "^2.2.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

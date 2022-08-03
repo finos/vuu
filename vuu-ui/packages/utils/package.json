@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/utils",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "author": "heswell",
   "module": "src/index.ts",
   "main": "index.js",

@@ -1,6 +1,6 @@
 {
   "name": "vuu-esbuild",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -15,17 +15,17 @@
     "esbuild": "^0.13.4"
   },
   "dependencies": {
-    "@vuu-ui/data-grid": "0.0.20",
-    "@vuu-ui/datagrid-parsers": "0.0.20",
-    "@vuu-ui/data-remote": "0.0.20",
-    "@vuu-ui/data-worker": "0.0.20",
-    "@vuu-ui/layout": "0.0.20",
-    "@vuu-ui/parsed-input": "0.0.20",
-    "@vuu-ui/react-utils": "0.0.20",
-    "@vuu-ui/shell": "0.0.20",
-    "@vuu-ui/theme": "0.0.20",
-    "@vuu-ui/ui-controls": "0.0.20",
-    "@vuu-ui/utils": "0.0.20",
+    "@vuu-ui/data-grid": "0.0.21",
+    "@vuu-ui/datagrid-parsers": "0.0.21",
+    "@vuu-ui/data-remote": "0.0.21",
+    "@vuu-ui/data-worker": "0.0.21",
+    "@vuu-ui/layout": "0.0.21",
+    "@vuu-ui/parsed-input": "0.0.21",
+    "@vuu-ui/react-utils": "0.0.21",
+    "@vuu-ui/shell": "0.0.21",
+    "@vuu-ui/theme": "0.0.21",
+    "@vuu-ui/ui-controls": "0.0.21",
+    "@vuu-ui/utils": "0.0.21",
     "classnames": "^2.3.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

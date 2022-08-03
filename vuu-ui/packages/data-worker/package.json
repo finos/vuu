@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/data-worker",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "main": "index.js",
   "author": "heswell",
   "license": "Apache-2.0",
@@ -13,7 +13,7 @@
     "worker.js.map"
   ],
   "dependencies": {
-    "@vuu-ui/data-remote": "0.0.20",
-    "@vuu-ui/utils": "0.0.20"
+    "@vuu-ui/data-remote": "0.0.21",
+    "@vuu-ui/utils": "0.0.21"
   }
 }
