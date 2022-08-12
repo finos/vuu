@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import cx from 'classnames';
-import useControlled from '@vuu-ui/react-utils/src/use-controlled';
+import {  useControlled } from '@vuu-ui/react-utils';
 
 import './text-input.css';
 
