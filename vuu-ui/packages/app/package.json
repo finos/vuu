@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ./scripts/build-prod.mjs",
-    "build:dev": "node ./scripts/build.mjs",
+    "build": "node ./scripts/build.mjs",
+    "build:dev": "node ./scripts/build.mjs --dev",
     "start": "serve public"
   },
   "keywords": [],
