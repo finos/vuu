@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { createPlaceHolder } from './flex-utils';
 import { swapChild } from './replace-layout-element';
 
@@ -11,10 +11,14 @@ import {
   resetPath,
   typeOf
 } from '../utils';
+import { LayoutModel, RemoveAction } from './layoutTypes';
 
-export function removeChild(rootProps, { path }) {
-  const target = followPath(rootProps, path);
-  let targetParent = followPathToParent(rootProps, path);
+export function removeChild(rootProps: LayoutModel, { path }: RemoveAction) {
+  const target = followPath(rootProps, path) as ReactElement;
+  let targetParent: LayoutModel | null | undefined = followPathToParent(
+    rootProps,
+    path
+  ) as LayoutModel;
   const { children } = getProps(targetParent);
   if (children.length > 1 && allOtherChildrenArePlaceholders(children, path)) {
     // eslint-disable-next-line no-unused-vars
@@ -45,7 +49,7 @@ export function removeChild(rootProps, { path }) {
           createPlaceHolder(containerPath, flexBasis, style)
         );
       } else if (hasAdjacentPlaceholders(children)) {
-        newLayout = collapsePlaceholders(rootProps, targetParent);
+        newLayout = collapsePlaceholders(rootProps, targetParent as ReactElement);
         // } else if (hasRedundantPlaceholders(children)){
         /*
         We may have redundany placeholders for example where we have a tower  containing a Terrace and a placeholder
@@ -64,11 +68,11 @@ export function removeChild(rootProps, { path }) {
   }
 }
 
-function _removeChild(container, child) {
+function _removeChild(container: LayoutModel, child: ReactElement): LayoutModel {
   let { active, children: componentChildren, path, preserve } = getProps(container);
   const { idx, finalStep } = nextStep(path, getProp(child, 'path'));
-  const type = typeOf(container);
-  let children = componentChildren.slice();
+  const type = typeOf(container) as string;
+  let children = componentChildren.slice() as ReactElement[];
   if (finalStep) {
     children.splice(idx, 1);
     if (active !== undefined && active >= idx) {
@@ -84,7 +88,7 @@ function _removeChild(container, child) {
       children = makeFlexible(children);
     }
   } else {
-    children[idx] = _removeChild(children[idx], child);
+    children[idx] = _removeChild(children[idx], child) as ReactElement;
   }
 
   children = children.map((child, i) => resetPath(child, `${path}.${i}`));
@@ -93,7 +97,7 @@ function _removeChild(container, child) {
     : { ...container, active, children };
 }
 
-function unwrap(container, child) {
+function unwrap(container: LayoutModel, child: ReactElement) {
   const type = typeOf(container);
   const {
     path,
@@ -134,16 +138,16 @@ function unwrap(container, child) {
   return unwrappedChild;
 }
 
-function isFlexible(model) {
+function isFlexible(model: LayoutModel) {
   return model.props.style.flexGrow > 0;
 }
 
-function canBeMadeFlexible(model) {
+function canBeMadeFlexible(model: LayoutModel) {
   const { width, height, flexGrow } = model.props.style;
   return flexGrow === 0 && typeof width !== 'number' && typeof height !== 'number';
 }
 
-function makeFlexible(children) {
+function makeFlexible(children: ReactElement[]) {
   return children.map((child) =>
     canBeMadeFlexible(child)
       ? React.cloneElement(child, {
@@ -156,7 +160,7 @@ function makeFlexible(children) {
   );
 }
 
-const hasAdjacentPlaceholders = (children) => {
+const hasAdjacentPlaceholders = (children: ReactElement[]) => {
   if (children && children.length > 0) {
     let wasPlaceholder = getProp(children[0], 'placeholder');
     let isPlaceholder = false;
@@ -170,26 +174,26 @@ const hasAdjacentPlaceholders = (children) => {
   }
 };
 
-const collapsePlaceholders = (container, target) => {
+const collapsePlaceholders = (container: LayoutModel, target: ReactElement) => {
   let { children: componentChildren, path } = getProps(container);
   const { idx, finalStep } = nextStep(path, getProp(target, 'path'));
-  let children = componentChildren.slice();
+  let children = componentChildren.slice() as ReactElement[];
   if (finalStep) {
     children[idx] = _collapsePlaceHolders(target);
   } else {
-    children[idx] = collapsePlaceholders(children[idx], target);
+    children[idx] = collapsePlaceholders(children[idx], target) as ReactElement;
   }
 
   children = children.map((child, i) => resetPath(child, `${path}.${i}`));
   return React.isValidElement(container)
-    ? React.cloneElement(container, null, children)
+    ? React.cloneElement(container, undefined, children)
     : { ...container, children };
 };
 
-const _collapsePlaceHolders = (container) => {
+const _collapsePlaceHolders = (container: ReactElement) => {
   const { children } = getProps(container);
   const newChildren = [];
-  const placeholders = [];
+  const placeholders: ReactElement[] = [];
 
   for (let i = 0; i < children.length; i++) {
     if (getProp(children[i], 'placeholder')) {
@@ -214,12 +218,12 @@ const _collapsePlaceHolders = (container) => {
   const containerPath = getProp(container, 'path');
   return React.cloneElement(
     container,
-    null,
+    undefined,
     newChildren.map((child, i) => resetPath(child, `${containerPath}.${i}`))
   );
 };
 
-const mergePlaceholders = ([placeholder, ...placeholders]) => {
+const mergePlaceholders = ([placeholder, ...placeholders]: ReactElement[]) => {
   const targetStyle = getProp(placeholder, 'style');
   let { flexBasis, flexGrow, flexShrink } = targetStyle;
   for (let {
@@ -234,7 +238,7 @@ const mergePlaceholders = ([placeholder, ...placeholders]) => {
   });
 };
 
-const allOtherChildrenArePlaceholders = (children, path) =>
+const allOtherChildrenArePlaceholders = (children: ReactElement[], path?: string) =>
   children.every(
     (child) => getProp(child, 'placeholder') || (path && getProp(child, 'path') === path)
   );

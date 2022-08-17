@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
+import { LayoutModel, LayoutRoot } from '../layout-reducer';
 import { isContainer } from '../registry/ComponentRegistry';
-import { typeOf } from './typeOf';
 import { getProp, getProps } from './propUtils';
+import { typeOf } from './typeOf';
 
 // TODO isn't this equivalent to containerOf ?
-export function followPathToParent(source, path) {
+export function followPathToParent(source: LayoutModel, path: string) {
   const { 'data-path': dataPath, path: sourcePath = dataPath } = getProps(source);
 
   if (path === '0') return null;
@@ -13,7 +14,10 @@ export function followPathToParent(source, path) {
   return followPath(source, path.replace(/.\d+$/, ''));
 }
 
-export function findTarget(source, test) {
+export function findTarget(
+  source: LayoutModel,
+  test: (props: any) => boolean
+): LayoutModel | undefined {
   const { children, ...props } = getProps(source);
   if (test(props)) {
     return source;
@@ -28,18 +32,7 @@ export function findTarget(source, test) {
   }
 }
 
-export function lastChild(source, target) {
-  const container = followPath(source, target);
-  let isElement = React.isValidElement(container);
-  const children = isElement
-    ? React.isValidElement(container.props.children)
-      ? [container.props.children]
-      : container.props.children
-    : container.children;
-  return children && children[children.length - 1];
-}
-
-export function containerOf(source, target) {
+export function containerOf(source: LayoutModel, target: LayoutModel): LayoutModel | null {
   if (target === source) {
     return null;
   } else {
@@ -58,7 +51,7 @@ export function containerOf(source, target) {
 
 // Do not use React.Children.toArray,
 // it does not preserve keys
-export const getChild = (children, idx) => {
+export const getChild = (children: ReactElement[], idx: number): ReactElement | undefined => {
   // idx may be a nu,mber or string
   if (React.isValidElement(children) && idx == 0) {
     return children;
@@ -68,11 +61,11 @@ export const getChild = (children, idx) => {
 };
 
 // Use a path only to identify a component
-export function followPathToComponent(component, path) {
+export function followPathToComponent(component: ReactElement, path: string) {
   var paths = path.split('.');
   let children = [component];
 
-  const getChildren = (c) =>
+  const getChildren = (c: ReactElement) =>
     React.isValidElement(c.props.children) ? [c.props.children] : c.props.children;
 
   for (let i = 0; i < paths.length; i++) {
@@ -86,23 +79,25 @@ export function followPathToComponent(component, path) {
   }
 }
 
-export function followPath(source, path) {
+export function followPath(source: LayoutModel, path: string): LayoutModel | undefined {
   const { 'data-path': dataPath, path: sourcePath = dataPath } = getProps(source);
   if (path.indexOf(sourcePath) !== 0) {
     throw Error(`pathUtils.followPath path ${path} is not within model.path ${sourcePath}`);
   }
 
+  let target: LayoutModel | undefined = source;
+
   var route = path.slice(sourcePath.length + 1);
   if (route === '') {
-    return source;
+    return target;
   }
   var paths = route.split('.');
 
-  let isElement = React.isValidElement(source);
+  let isElement = React.isValidElement(target);
   for (var i = 0; i < paths.length; i++) {
     if (
-      (isElement && React.Children.count(source.props.children) === 0) ||
-      (!isElement && source.children === undefined)
+      (isElement && React.Children.count((target as ReactElement).props.children) === 0) ||
+      (!isElement && (target as LayoutRoot).children === undefined)
     ) {
       console.log(
         `model at 0.${paths
@@ -112,10 +107,13 @@ export function followPath(source, path) {
       return;
     }
 
-    source = getChild(isElement ? source.props.children : source.children, paths[i]);
-    isElement = React.isValidElement(source);
+    target = getChild(
+      isElement ? (target as ReactElement).props.children : (target as LayoutRoot).children,
+      parseInt(paths[i])
+    );
+    isElement = React.isValidElement(target);
 
-    if (source === undefined) {
+    if (target === undefined) {
       console.log(
         `model at 0.${paths
           .slice(0, i)
@@ -124,26 +122,30 @@ export function followPath(source, path) {
       return;
     }
   }
-  return source;
+  return target;
 }
 
-export function nextLeaf(root, path) {
+export function nextLeaf(root: LayoutModel, path: string) {
   const parent = followPathToParent(root, path);
   let pathIndices = path.split('.').map((idx) => parseInt(idx, 10));
-  const lastIdx = pathIndices.pop();
-  const { children } = parent.props;
-  if (children.length - 1 > lastIdx) {
-    return firstLeaf(children[lastIdx + 1]);
-  } else {
-    const parentIdx = pathIndices.pop();
-    const nextParent = followPathToParent(root, getProp(parent, 'path'));
-    pathIndices = nextParent.props.path.split('.').map((idx) => parseInt(idx, 10));
-    if (nextParent.props.children.length - 1 > parentIdx) {
-      const nextStep = nextParent.props.children[parentIdx + 1];
-      if (isContainer(typeOf(nextStep))) {
-        return firstLeaf(nextStep);
-      } else {
-        return nextStep;
+  if (parent) {
+    const lastIdx = pathIndices.pop();
+    const { children } = parent.props;
+    if (children.length - 1 > lastIdx!) {
+      return firstLeaf(children[lastIdx! + 1]);
+    } else {
+      const parentIdx = pathIndices.pop();
+      const nextParent = followPathToParent(root, getProp(parent, 'path'));
+      if (nextParent && typeof parentIdx === 'number') {
+        pathIndices = nextParent.props.path.split('.').map((idx: string) => parseInt(idx, 10));
+        if (nextParent.props.children.length - 1 > parentIdx) {
+          const nextStep = nextParent.props.children[parentIdx + 1];
+          if (isContainer(typeOf(nextStep) as string)) {
+            return firstLeaf(nextStep);
+          } else {
+            return nextStep;
+          }
+        }
       }
     }
   }
@@ -151,36 +153,37 @@ export function nextLeaf(root, path) {
   return firstLeaf(root);
 }
 
-export function previousLeaf(root, path) {
+export function previousLeaf(root: LayoutModel, path: string) {
   let pathIndices = path.split('.').map((idx) => parseInt(idx, 10));
   let lastIdx = pathIndices.pop();
   let parent = followPathToParent(root, path);
-  const { children } = parent.props;
-  if (lastIdx > 0) {
-    return lastLeaf(children[lastIdx - 1]);
-  } else {
-    while (pathIndices.length > 1) {
-      lastIdx = pathIndices.pop();
-      parent = followPathToParent(root, getProp(parent, 'path'));
-      // pathIndices = nextParent.props.path
-      //   .split(".")
-      //   .map((idx) => parseInt(idx, 10));
-      if (lastIdx > 0) {
-        const nextStep = parent.props.children[lastIdx - 1];
-        if (isContainer(typeOf(nextStep))) {
-          return lastLeaf(nextStep);
-        } else {
-          return nextStep;
+  if (parent != null && typeof lastIdx === 'number') {
+    const { children } = parent.props;
+    if (lastIdx > 0) {
+      return lastLeaf(children[lastIdx - 1]);
+    } else {
+      while (pathIndices.length > 1) {
+        lastIdx = pathIndices.pop() as number;
+        parent = followPathToParent(root, getProp(parent, 'path')) as ReactElement;
+        // pathIndices = nextParent.props.path
+        //   .split(".")
+        //   .map((idx) => parseInt(idx, 10));
+        if (lastIdx > 0) {
+          const nextStep = parent.props.children[lastIdx - 1];
+          if (isContainer(typeOf(nextStep) as string)) {
+            return lastLeaf(nextStep);
+          } else {
+            return nextStep;
+          }
         }
       }
     }
   }
-
   return lastLeaf(root);
 }
 
-function firstLeaf(root) {
-  if (isContainer(typeOf(root))) {
+function firstLeaf(root: LayoutModel): LayoutModel {
+  if (isContainer(typeOf(root) as string)) {
     const { children } = root.props || root;
     return firstLeaf(children[0]);
   } else {
@@ -188,8 +191,8 @@ function firstLeaf(root) {
   }
 }
 
-function lastLeaf(root) {
-  if (isContainer(typeOf(root))) {
+function lastLeaf(root: LayoutModel): LayoutModel {
+  if (isContainer(typeOf(root) as string)) {
     const { children } = root.props || root;
     return lastLeaf(children[children.length - 1]);
   } else {
@@ -197,7 +200,16 @@ function lastLeaf(root) {
   }
 }
 
-export function nextStep(pathSoFar, targetPath, followPathToEnd = false) {
+type NextStepResult = {
+  idx: number;
+  finalStep: boolean;
+};
+
+export function nextStep(
+  pathSoFar: string,
+  targetPath: string,
+  followPathToEnd = false
+): NextStepResult {
   if (pathSoFar === targetPath) {
     return { idx: -1, finalStep: true };
   }
@@ -211,11 +223,11 @@ export function nextStep(pathSoFar, targetPath, followPathToEnd = false) {
   return { idx: paths[0], finalStep: paths.length === endOfTheLine };
 }
 
-export function resetPath(model, path, additionalProps) {
+export function resetPath(model: ReactElement, path: string, additionalProps?: any): ReactElement {
   if (getProp(model, 'path') === path) {
     return model;
   }
-  const children = [];
+  const children: ReactElement[] = [];
   // React.Children.map rewrites keys, forEach does not
   React.Children.forEach(model.props.children, (child, i) => {
     if (!getProp(child, 'path')) {

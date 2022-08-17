@@ -1,12 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { layoutReducer } from './layout-reducer';
-import { applyLayout, layoutFromJson, layoutToJSON } from './layoutUtils'; // TODO allow props to specify layoutRoot
+import { ReactElement, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  LayoutActionType,
+  layoutReducer,
+  LayoutReducerAction,
+  applyLayout,
+  layoutFromJson,
+  layoutToJSON,
+  LayoutModel,
+  layoutType,
+  SaveAction
+} from './layout-reducer';
 import useNavigation from './layout-hooks/useLayoutNavigation';
 import { useLayoutDispatch } from './layout-context';
 import { findTarget, getChildProp, getProps, typeOf } from './utils';
-import { Action } from './layout-action';
 
-const withDropTarget = (props) => props.dropTarget;
+const withDropTarget = (props: any) => props.dropTarget;
 /**
  * Root layout node will never receive dispatch. It may receive a layoutModel,
  * in which case UI will be built from model. Only root stores layoutModel in
@@ -14,17 +22,17 @@ const withDropTarget = (props) => props.dropTarget;
  * layoutModel from props. Root node, if seeded with layoutModel stores this in
  * state and subsequently manages layoutModel in state.
  */
-const useLayout = (layoutType, props) => {
+const useLayout = (layoutType: layoutType, props: any) => {
   const dispatch = useLayoutDispatch();
   const isRoot = dispatch === null && layoutType !== 'View';
   const ref = useRef(null);
   // Only the root layout actually stores state here
-  const state = useRef(undefined);
+  const state = useRef<LayoutModel | undefined>(undefined);
   const children = useRef(null);
   const { onLayoutChange } = props;
 
   const layout = useRef(props.layout);
-  const [, forceRefresh] = useState(null);
+  const [, forceRefresh] = useState<any>(null);
   const updateState = useCallback(
     (nextState) => {
       if (nextState !== state.current) {
@@ -46,7 +54,9 @@ const useLayout = (layoutType, props) => {
           (isRoot && layoutType === 'DraggableLayout') ||
           typeOf(targetContainer) === 'DraggableLayout';
 
-        const target = isDraggableLayout ? getProps(targetContainer).children[0] : targetContainer;
+        const target = isDraggableLayout
+          ? getProps(targetContainer as LayoutModel).children[0]
+          : targetContainer;
 
         const serializedModel = layoutToJSON(target);
         onLayoutChange(serializedModel, 'drag-root');
@@ -57,7 +67,7 @@ const useLayout = (layoutType, props) => {
 
   const dispatchLayoutAction = useRef(
     dispatch ||
-      ((action) => {
+      ((action: LayoutReducerAction | SaveAction) => {
         // A custom dispatcher should return true to indicate that it has handled this action.
         // A custom dispatcher alone will not refresh the layout state, it must ultimately
         // dispatch a  layout action that will be handled below.It can be used to defer an action
@@ -72,16 +82,17 @@ const useLayout = (layoutType, props) => {
           // component-level persistent state which will be included in the serialized layout tree.
           serializeState(state.current);
           return;
-        }
-
-        const nextState = layoutReducer(state.current, action);
-        if (updateState(nextState)) {
-          if (
-            ['drag-drop', 'remove', 'set-title', 'splitter-resize', 'switch-tab'].includes(
-              action.type
-            )
-          ) {
-            serializeState(nextState);
+        } else if (state.current) {
+          // NOte state.current will never be undefined here
+          const nextState = layoutReducer(state.current, action);
+          if (updateState(nextState)) {
+            if (
+              ['drag-drop', 'remove', 'set-title', 'splitter-resize', 'switch-tab'].includes(
+                action.type
+              )
+            ) {
+              serializeState(nextState);
+            }
           }
         }
       })
@@ -89,18 +100,19 @@ const useLayout = (layoutType, props) => {
 
   // Detect dynamic layout reset from serialized layout
   useEffect(() => {
-    if (props.layout !== layout.current) {
-      const targetContainer = findTarget(state.current, withDropTarget);
+    // Note: state.current will never be undefined here
+    if (props.layout !== layout.current && state.current !== undefined) {
+      const targetContainer = findTarget(state.current, withDropTarget) as ReactElement;
       const target = getChildProp(targetContainer);
       const newLayout = layoutFromJson(props.layout, `${targetContainer.props.path}.0`);
       const nextState = target
         ? layoutReducer(state.current, {
-            type: Action.REPLACE,
+            type: LayoutActionType.REPLACE,
             target,
             replacement: newLayout
           })
         : layoutReducer(state.current, {
-            type: Action.ADD,
+            type: LayoutActionType.ADD,
             path: targetContainer.props.path,
             component: newLayout
           });

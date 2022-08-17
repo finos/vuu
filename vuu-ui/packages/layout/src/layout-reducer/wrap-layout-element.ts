@@ -1,18 +1,29 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { uuid } from '@vuu-ui/utils';
 import { getProp, getProps, nextStep, resetPath, typeOf } from '../utils';
 import { ComponentRegistry } from '../registry/ComponentRegistry';
 import {
   createFlexbox,
   createPlaceHolder,
+  flexDirection,
   getFlexStyle,
   getIntrinsicSize,
   wrapIntrinsicSizeComponentWithFlexbox
 } from './flex-utils';
-import { applyLayoutProps } from '../layoutUtils';
+import { applyLayoutProps, LayoutProps } from './layoutUtils';
+import { LayoutModel } from './layoutTypes';
+import { DropPos } from '../drag-drop/dragDropTypes';
+import { rectTuple } from '../common-types';
+import { DropTarget } from '../drag-drop/DropTarget';
 
-const isHtmlElement = (component) => {
-  const [firstLetter] = typeOf(component);
+interface LayoutSpec {
+  type: 'Stack' | 'Flexbox';
+  flexDirection: 'column' | 'row';
+  showTabs?: boolean;
+}
+
+const isHtmlElement = (component: LayoutModel) => {
+  const [firstLetter] = typeOf(component) as string;
   return firstLetter === firstLetter.toLowerCase();
 };
 
@@ -21,7 +32,14 @@ const isHtmlElement = (component) => {
 // new wrapper, so existingComponent and newComponent will be siblings. Putting it another way,
 // wrapper will replace existingComponent in the layout tree and it will contain existingComponent
 // and newComponent.
-export function wrap(container, existingComponent, newComponent, pos, clientRect, dropRect) {
+export function wrap(
+  container: LayoutModel,
+  existingComponent: any,
+  newComponent: any,
+  pos: DropPos,
+  clientRect?: DropTarget['clientRect'],
+  dropRect?: DropTarget['dropRect']
+) {
   const { children: containerChildren, path: containerPath } = getProps(container);
 
   const existingComponentPath = getProp(existingComponent, 'path');
@@ -36,14 +54,14 @@ export function wrap(container, existingComponent, newComponent, pos, clientRect
         clientRect,
         dropRect
       )
-    : containerChildren.map((child, index) =>
+    : containerChildren.map((child: ReactElement, index: number) =>
         index === idx
           ? wrap(child, existingComponent, newComponent, pos, clientRect, dropRect)
           : child
       );
 
   return React.isValidElement(container)
-    ? React.cloneElement(container, null, children)
+    ? React.cloneElement(container, undefined, children)
     : {
         ...container,
         children
@@ -51,17 +69,22 @@ export function wrap(container, existingComponent, newComponent, pos, clientRect
 }
 
 function updateChildren(
-  container,
-  containerChildren,
-  existingComponent,
-  newComponent,
-  pos,
-  clientRect,
-  dropRect
+  container: LayoutModel,
+  containerChildren: ReactElement[],
+  existingComponent: ReactElement,
+  newComponent: ReactElement,
+  pos: DropPos,
+  clientRect?: DropTarget['clientRect'],
+  dropRect?: rectTuple
 ) {
   const intrinsicSize = getIntrinsicSize(newComponent);
 
   if (intrinsicSize?.width && intrinsicSize?.height) {
+    if (clientRect === undefined || dropRect === undefined) {
+      throw Error(
+        'wrap-layout-element, updateChildren clientRect and dropRect must both be available'
+      );
+    }
     return wrapIntrinsicSizedComponent(
       containerChildren,
       existingComponent,
@@ -75,7 +98,13 @@ function updateChildren(
   }
 }
 
-function wrapFlexComponent(container, containerChildren, existingComponent, newComponent, pos) {
+function wrapFlexComponent(
+  container: LayoutModel,
+  containerChildren: ReactElement[],
+  existingComponent: ReactElement,
+  newComponent: ReactElement,
+  pos: DropPos
+) {
   const { version = 0 } = getProps(newComponent);
   const existingComponentPath = getProp(existingComponent, 'path');
   const { type, flexDirection, showTabs: showTabsProp } = getLayoutSpecForWrapper(pos);
@@ -117,7 +146,7 @@ function wrapFlexComponent(container, containerChildren, existingComponent, newC
       ...showTabs,
       style,
       resizeable: getProp(existingComponent, 'resizeable')
-    },
+    } as LayoutProps,
     targetFirst
       ? [
           resetPath(existingComponent, `${existingComponentPath}.0`, existingComponentProps),
@@ -136,16 +165,18 @@ function wrapFlexComponent(container, containerChildren, existingComponent, newC
           resetPath(existingComponent, `${existingComponentPath}.1`, existingComponentProps)
         ]
   );
-  return containerChildren.map((child) => (child === existingComponent ? wrapper : child));
+  return containerChildren.map((child: ReactElement) =>
+    child === existingComponent ? wrapper : child
+  );
 }
 
 function wrapIntrinsicSizedComponent(
-  containerChildren,
-  existingComponent,
-  newComponent,
-  pos,
-  clientRect,
-  dropRect
+  containerChildren: ReactElement[],
+  existingComponent: ReactElement,
+  newComponent: ReactElement,
+  pos: DropPos,
+  clientRect: DropTarget['clientRect'],
+  dropRect: rectTuple
 ) {
   const { flexDirection } = getLayoutSpecForWrapper(pos);
   const contraDirection = flexDirection === 'column' ? 'row' : 'column';
@@ -200,7 +231,13 @@ function wrapIntrinsicSizedComponent(
 }
 
 //TODO we need to respect styles on the source, full-on flex might not be appropriate
-function getWrappedFlexStyles(type, existingComponent, newComponent, flexDirection, pos) {
+function getWrappedFlexStyles(
+  type: string,
+  existingComponent: ReactElement,
+  newComponent: ReactElement,
+  flexDirection: flexDirection,
+  pos: DropPos
+) {
   const style = {
     ...existingComponent.props.style,
     flexDirection
@@ -213,7 +250,7 @@ function getWrappedFlexStyles(type, existingComponent, newComponent, flexDirecti
   return [style, existingComponentStyle, newComponentStyle];
 }
 
-const isTargetFirst = (pos) =>
+const isTargetFirst = (pos: DropPos) =>
   pos.position.SouthOrEast
     ? true
     : pos?.tab?.positionRelativeToTab === 'before'
@@ -222,21 +259,17 @@ const isTargetFirst = (pos) =>
     ? true
     : false;
 
-function getLayoutSpecForWrapper(pos) {
-  let type, flexDirection, showTabs;
-
+function getLayoutSpecForWrapper(pos: DropPos): LayoutSpec {
   if (pos.position.Header) {
-    type = 'Stack';
-    flexDirection = 'column';
-    showTabs = true;
+    return {
+      type: 'Stack',
+      flexDirection: 'column',
+      showTabs: true
+    };
   } else {
-    type = 'Flexbox';
-    if (pos.position.EastOrWest) {
-      flexDirection = 'row';
-    } else {
-      flexDirection = 'column';
-    }
+    return {
+      type: 'Flexbox',
+      flexDirection: pos.position.EastOrWest ? 'row' : 'column'
+    };
   }
-
-  return { type, flexDirection, showTabs };
 }

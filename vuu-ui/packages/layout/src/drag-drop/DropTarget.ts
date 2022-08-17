@@ -1,15 +1,47 @@
-import { BoxModel, positionValues, getPosition, Position, RelativeDropPosition } from './BoxModel';
+import { ReactElement } from 'react';
+import {
+  BoxModel,
+  positionValues,
+  getPosition,
+  Position,
+  RelativeDropPosition,
+  Measurements
+} from './BoxModel';
 import { getProps, typeOf } from '../utils';
+import { DragDropRect, DropPos, DropPosTab, DropTargetType } from './dragDropTypes';
+import { LayoutModel } from '../layout-reducer';
+import { DragState, IntrinsicSizes } from './DragState';
+import { rect, rectTuple } from '../common-types';
 
-export const isTabstrip = (dropTarget) =>
+export const isTabstrip = (dropTarget: DropTarget) =>
   dropTarget.pos.tab && typeOf(dropTarget.component) === 'Stack' && dropTarget.pos.position.Header;
 
 const { north, south, east, west } = positionValues;
 const eastwest = east + west;
 const northsouth = north + south;
 
+export interface DropTargetProps {
+  component: LayoutModel;
+  pos: DropPos;
+  clientRect: DragDropRect;
+  nextDropTarget: DropTarget | null;
+}
 export class DropTarget {
-  constructor({ component, pos, clientRect /*, closeToTheEdge*/, nextDropTarget }) {
+  private nextDropTarget: DropTarget | null;
+  private active: boolean;
+
+  public box: any;
+  public clientRect: DragDropRect;
+  public component: LayoutModel;
+  public dropRect: rectTuple | undefined;
+  public pos: DropPos;
+
+  constructor({
+    component,
+    pos,
+    clientRect /*, closeToTheEdge*/,
+    nextDropTarget
+  }: DropTargetProps) {
     this.component = component;
     this.pos = pos;
     this.clientRect = clientRect;
@@ -18,13 +50,8 @@ export class DropTarget {
     this.dropRect = undefined;
   }
 
-  targetTabPos() {
-    const {
-      pos: {
-        tab: { left: tabLeft, width: tabWidth, positionRelativeToTab }
-      }
-    } = this;
-
+  targetTabPos(tab: DropPosTab) {
+    const { left: tabLeft, width: tabWidth, positionRelativeToTab } = tab;
     return positionRelativeToTab === RelativeDropPosition.BEFORE ? tabLeft : tabLeft + tabWidth;
   }
 
@@ -35,18 +62,18 @@ export class DropTarget {
    * @param {*} dragState
    * @returns {l, t, r, b, tabLeft, tabWidth, tabHeight}
    */
-  getTargetDropOutline(lineWidth, dragState) {
+  getTargetDropOutline(lineWidth: number, dragState: DragState) {
     if (this.pos.tab) {
-      return this.getDropTabOutline(lineWidth);
+      return this.getDropTabOutline(lineWidth, this.pos.tab);
     } else if (dragState && dragState.hasIntrinsicSize()) {
       return this.getIntrinsicDropRect(dragState);
     } else {
-      const [l, t, r, b] = this.getDropRectOutline(lineWidth, dragState);
+      const [l, t, r, b] = this.getDropRectOutline(lineWidth, dragState) as rectTuple;
       return { l, t, r, b };
     }
   }
 
-  getDropTabOutline(lineWidth) {
+  getDropTabOutline(lineWidth: number, tab: DropPosTab) {
     const {
       clientRect: { top, left, right, bottom, header }
     } = this;
@@ -58,20 +85,19 @@ export class DropTarget {
     const l = Math.round(left + gap);
     const r = Math.round(right - gap);
     const b = Math.round(bottom - gap);
-    const tabLeft = this.targetTabPos();
+    const tabLeft = this.targetTabPos(tab);
     const tabWidth = 60; // should really measure text
-    const tabHeight = header.bottom - header.top;
+    const tabHeight = header!.bottom - header!.top;
     return { l, t, r, b, tabLeft, tabWidth, tabHeight };
   }
 
-  getIntrinsicDropRect(dragState) {
+  getIntrinsicDropRect(dragState: DragState) {
     const { pos, clientRect: rect } = this;
 
-    let {
-      intrinsicSize: { width, height },
-      x,
-      y
-    } = dragState;
+    let { x, y } = dragState;
+
+    let height = dragState.intrinsicSize?.height ?? 0;
+    let width = dragState.intrinsicSize?.height ?? 0;
 
     if (height && height > rect.height) {
       console.log(`we;re going to blow the gaff rect height = ${rect.height}, height = ${height}`);
@@ -104,7 +130,7 @@ export class DropTarget {
   /**
    * @returns  [left, top, right, bottom]
    */
-  getDropRectOutline(lineWidth, dragState) {
+  getDropRectOutline(lineWidth: number, dragState: DragState) {
     const { pos, clientRect: rect } = this;
     const { width: suggestedWidth, height: suggestedHeight, position } = pos;
 
@@ -164,8 +190,8 @@ export class DropTarget {
     return this;
   }
 
-  toArray() {
-    let dropTarget = this;
+  toArray(this: DropTarget) {
+    let dropTarget: DropTarget | null = this;
     const dropTargets = [dropTarget];
     // eslint-disable-next-line no-cond-assign
     while ((dropTarget = dropTarget.nextDropTarget)) {
@@ -174,8 +200,10 @@ export class DropTarget {
     return dropTargets;
   }
 
-  static getActiveDropTarget(dropTarget) {
-    return dropTarget.active
+  static getActiveDropTarget(dropTarget: DropTarget | null): DropTarget | null {
+    return dropTarget === null
+      ? null
+      : dropTarget?.active
       ? dropTarget
       : DropTarget.getActiveDropTarget(dropTarget.nextDropTarget);
   }
@@ -183,12 +211,12 @@ export class DropTarget {
 
 // Initial entry to this method is always via the app (may be it should be *on* the app)
 export function identifyDropTarget(
-  x,
-  y,
-  rootLayout,
-  measurements,
-  intrinsicSize,
-  validDropTargets
+  x: number,
+  y: number,
+  rootLayout: LayoutModel,
+  measurements: Measurements,
+  intrinsicSize?: number,
+  validDropTargets?: string[]
 ) {
   let dropTarget = null;
 
@@ -212,9 +240,8 @@ export function identifyDropTarget(
     const pos = getPosition(x, y, clientRect, placeholderOrientation);
     const box = measurements[path];
 
-    // eslint-disable-next-line no-inner-declarations
-    function nextDropTarget([nextTarget, ...targets]) {
-      if (pos.position.Header || pos.closeToTheEdge) {
+    function nextDropTarget([nextTarget, ...targets]: LayoutModel[]): DropTarget | undefined {
+      if (pos.position?.Header || pos.closeToTheEdge) {
         const targetPosition = getTargetPosition(nextTarget, pos, box, measurements, x, y);
         if (targetPosition) {
           const [containerPos, clientRect] = targetPosition;
@@ -223,7 +250,7 @@ export function identifyDropTarget(
             component: nextTarget,
             pos: containerPos,
             clientRect,
-            nextDropTarget: nextDropTarget(targets)
+            nextDropTarget: nextDropTarget(targets) ?? null
           });
         } else if (targets.length) {
           return nextDropTarget(targets);
@@ -234,14 +261,21 @@ export function identifyDropTarget(
       component,
       pos,
       clientRect,
-      nextDropTarget: nextDropTarget(containers)
+      nextDropTarget: nextDropTarget(containers) ?? null
     }).activate();
   }
 
   return dropTarget;
 }
 
-function getTargetPosition(container, { closeToTheEdge, position }, box, measurements, x, y) {
+function getTargetPosition(
+  container: LayoutModel,
+  { closeToTheEdge, position }: DropPos,
+  box: rect,
+  measurements: Measurements,
+  x: number,
+  y: number
+): [DropPos, DragDropRect] | undefined {
   if (!container || container.type === 'DraggableLayout') {
     return;
   }
@@ -279,14 +313,14 @@ function getTargetPosition(container, { closeToTheEdge, position }, box, measure
   }
 }
 
-function isTabbedContainer(component) {
+function isTabbedContainer(component: LayoutModel) {
   return typeOf(component) === 'Stack';
 }
 
-function isVBox(component) {
+function isVBox(component: LayoutModel) {
   return typeOf(component) === 'Flexbox' && component.props.style.flexDirection === 'column';
 }
 
-function isHBox(component) {
+function isHBox(component: LayoutModel) {
   return typeOf(component) === 'Flexbox' && component.props.style.flexDirection === 'row';
 }

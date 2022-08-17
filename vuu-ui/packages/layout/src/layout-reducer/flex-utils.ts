@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { CSSProperties, ReactElement, ReactNode } from 'react';
 import { uuid } from '@vuu-ui/utils';
 import { ComponentRegistry } from '../registry/ComponentRegistry';
 import { getProps, resetPath } from '../utils';
-
+import { dimension, rect, rectTuple } from '../common-types';
+import { DropPos } from '../drag-drop/dragDropTypes';
 const placeHolderProps = { 'data-placeholder': true, 'data-resizeable': true };
 
 const NO_STYLE = {};
@@ -20,16 +21,27 @@ const CROSS_DIMENSION = {
   width: 'height'
 };
 
-// [flexDimension, crossDimension, contraDirection]
-const FLEX_DIMENSIONS = {
-  row: ['width', 'height', 'column'],
-  column: ['height', 'width', 'row']
+export type flexDirection = 'row' | 'column';
+
+type contraDimension = dimension;
+type flexDimensionTuple = [dimension, contraDimension, flexDirection];
+export type position = {
+  height?: number;
+  width?: number;
 };
-export const getFlexDimensions = (flexDirection = 'row') => FLEX_DIMENSIONS[flexDirection];
 
-const isPercentageSize = (value) => typeof value === 'string' && value.endsWith('%');
+export const getFlexDimensions = (flexDirection: flexDirection = 'row') => {
+  if (flexDirection === 'row') {
+    return ['width', 'height', 'column'] as flexDimensionTuple;
+  } else {
+    return ['height', 'width', 'row'] as flexDimensionTuple;
+  }
+};
 
-export function getIntrinsicSize(component) {
+const isPercentageSize = (value: string | number) =>
+  typeof value === 'string' && value.endsWith('%');
+
+export function getIntrinsicSize(component: ReactElement) {
   const { style: { width = auto, height = auto } = NO_STYLE } = component.props;
 
   // Eliminate 'auto' and percentage sizes
@@ -45,7 +57,7 @@ export function getIntrinsicSize(component) {
   }
 }
 
-export function getFlexStyle(component, dimension, pos) {
+export function getFlexStyle(component: ReactElement, dimension: dimension, pos?: DropPos) {
   const crossDimension = CROSS_DIMENSION[dimension];
   const { style: { [crossDimension]: intrinsicCrossSize = auto, ...intrinsicStyles } = NO_STYLE } =
     component.props;
@@ -68,7 +80,7 @@ export function getFlexStyle(component, dimension, pos) {
 }
 
 //TODO this is not comprehensive
-export function hasUnboundedFlexStyle(component) {
+export function hasUnboundedFlexStyle(component: ReactElement) {
   const { style: { flex, flexGrow, flexShrink, flexBasis } = NO_STYLE } = component.props;
   // console.log(`flex ${flex}, flexBasis ${flexBasis}, flexShrink ${flexShrink}, flexGrow ${flexGrow}`)
   if (typeof flex === 'number') {
@@ -82,7 +94,11 @@ export function hasUnboundedFlexStyle(component) {
   }
 }
 
-export function getFlexOrIntrinsicStyle(component, dimension, pos) {
+export function getFlexOrIntrinsicStyle(
+  component: ReactElement,
+  dimension: dimension,
+  pos: position
+) {
   const crossDimension = CROSS_DIMENSION[dimension];
   const {
     style: {
@@ -130,11 +146,11 @@ export function getFlexOrIntrinsicStyle(component, dimension, pos) {
 }
 
 export function wrapIntrinsicSizeComponentWithFlexbox(
-  component,
-  flexDirection,
-  path,
-  clientRect,
-  dropRect
+  component: ReactElement,
+  flexDirection: flexDirection,
+  path: string,
+  clientRect?: rect,
+  dropRect?: rectTuple
 ) {
   const wrappedChildren = [];
   let pathIndex = 0;
@@ -191,7 +207,7 @@ export function wrapIntrinsicSizeComponentWithFlexbox(
   );
 }
 
-const getFlexValue = (flexBasis, flexFill) => {
+const getFlexValue = (flexBasis: number, flexFill: boolean) => {
   if (flexFill) {
     return undefined;
   } else if (flexBasis === 0) {
@@ -201,12 +217,17 @@ const getFlexValue = (flexBasis, flexFill) => {
   }
 };
 
-export function createFlexbox(flexDirection, props, children, path) {
+export function createFlexbox(
+  flexDirection: flexDirection,
+  props: any,
+  children: ReactNode,
+  path: string
+) {
   const id = uuid();
   const { flexFill, style, resizeable = true } = props;
   const { flexBasis = flexFill ? undefined : 'auto' } = style;
   const flex = getFlexValue(flexBasis, flexFill);
-  return React.createElement(
+  return React.createElement<any>(
     ComponentRegistry.Flexbox,
     {
       id,
@@ -222,7 +243,7 @@ export function createFlexbox(flexDirection, props, children, path) {
 
 const baseStyle = { flexGrow: 1, flexShrink: 1 };
 
-export function createPlaceHolder(path, size, style, props) {
+export function createPlaceHolder(path: string, size: number, style?: CSSProperties, props?: any) {
   const id = uuid();
   return React.createElement('div', {
     ...placeHolderProps,

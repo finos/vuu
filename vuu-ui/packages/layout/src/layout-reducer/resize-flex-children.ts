@@ -1,22 +1,28 @@
-import React from 'react';
+import React, { CSSProperties, ReactElement } from 'react';
 import { followPath, getProps } from '../utils';
 import { swapChild } from './replace-layout-element';
+import { LayoutModel, SplitterResizeAction } from './layoutTypes';
+import { dimension } from '../common-types';
 
-export function resizeFlexChildren(rootProps, { path, sizes }) {
-  const target = followPath(rootProps, path);
+export function resizeFlexChildren(rootProps: LayoutModel, { path, sizes }: SplitterResizeAction) {
+  const target = followPath(rootProps, path) as LayoutModel;
   const { children, style } = getProps(target);
 
   const dimension = style.flexDirection === 'column' ? 'height' : 'width';
   const replacementChildren = applySizesToChildren(children, sizes, dimension);
 
   const replacement = React.isValidElement(target)
-    ? React.cloneElement(target, null, replacementChildren)
+    ? React.cloneElement(target, undefined, replacementChildren)
     : { ...target, children: replacementChildren };
 
   return swapChild(rootProps, target, replacement);
 }
 
-function applySizesToChildren(children, sizes, dimension) {
+function applySizesToChildren(
+  children: ReactElement[],
+  sizes: { currentSize: number; flexBasis: number }[],
+  dimension: dimension
+) {
   return children.map((child, i) => {
     const {
       style: { [dimension]: size, flexBasis: actualFlexBasis }
@@ -36,7 +42,7 @@ function applySizesToChildren(children, sizes, dimension) {
   });
 }
 
-function applySizeToChild(style, dimension, newSize) {
+function applySizeToChild(style: CSSProperties, dimension: dimension, newSize: number) {
   const hasSize = typeof style[dimension] === 'number';
   const { flexShrink = 1, flexGrow = 1 } = style;
   return {
