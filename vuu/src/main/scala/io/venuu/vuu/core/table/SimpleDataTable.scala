@@ -10,6 +10,8 @@ import io.venuu.vuu.viewport.{RowProcessor, RowSource}
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConverters
+import scala.jdk.CollectionConverters
 
 
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
@@ -95,6 +97,13 @@ case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: L
 }
 
 case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
+
+
+
+  def this(key: String, data: java.util.Map[String, Any]) {
+
+    this(key, JavaConverters.asScala(data).toMap);
+  }
 
   override def size(): Int = data.size
 
