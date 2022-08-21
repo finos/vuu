@@ -1,14 +1,11 @@
 # Summary
 
-Back to [GitHub](https://github.com/venuu-io/vuu)
-
 - [Introduction](./introduction/intro.md)
   - [Github Repository](./introduction/git_hub.md) 
   - [What is a View-Vuu-Server?](./introduction/what_is.md)
   - [How does it work?](./introduction/how_does_it_work.md)
   - [What are the tradeoffs?](./introduction/trade-offs.md)
 - [Getting Started](./getting_started/getting_started.md)
-  - [Github Site](https://github.com/venuu-io/vuu)
   - [Developing Vuu](./getting_started/developing.md)
   - [Using binaries from Maven Repo](./getting_started/adding.md)
   - [Using Vuu from Java](./getting_started/using_vuu_from_java.md)
