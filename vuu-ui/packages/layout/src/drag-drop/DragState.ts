@@ -1,13 +1,65 @@
-import { pointPositionWithinRect } from './BoxModel';
+import { rect } from '../common-types';
+import { Measurements, pointPositionWithinRect } from './BoxModel';
+import { DragDropRect } from './dragDropTypes';
 
 var SCALE_FACTOR = 0.4;
 
-export default class DragState {
-  constructor(zone, mouseX, mouseY, measurements, intrinsicSize) {
+export type IntrinsicSizes = {
+  height?: number;
+  width?: number;
+};
+
+interface ZoneRange {
+  hi: number;
+  lo: number;
+}
+type DragConstraint = {
+  zone: {
+    x: ZoneRange;
+    y: ZoneRange;
+  };
+  pos: {
+    x: ZoneRange;
+    y: ZoneRange;
+  };
+  mouse: {
+    x: ZoneRange;
+    y: ZoneRange;
+  };
+};
+
+interface ExtendedZoneRange {
+  lo: boolean;
+  hi: boolean;
+  mousePct: number;
+  mousePos: number;
+  pos: number;
+}
+
+export class DragState {
+  private constraint!: DragConstraint;
+
+  public x!: ExtendedZoneRange;
+  public y!: ExtendedZoneRange;
+  public intrinsicSize: IntrinsicSizes | undefined;
+
+  constructor(
+    zone: DragDropRect,
+    mouseX: number,
+    mouseY: number,
+    measurements: DragDropRect,
+    intrinsicSize?: IntrinsicSizes
+  ) {
     this.init(zone, mouseX, mouseY, measurements, intrinsicSize);
   }
 
-  init(zone, mouseX, mouseY, rect, intrinsicSize) {
+  init(
+    zone: DragDropRect,
+    mouseX: number,
+    mouseY: number,
+    rect: DragDropRect,
+    intrinsicSize?: IntrinsicSizes
+  ) {
     var { left: x, top: y } = rect;
 
     var { pctX, pctY } = pointPositionWithinRect(mouseX, mouseY, rect);
@@ -97,14 +149,14 @@ export default class DragState {
   }
 
   dropX() {
-    return dropXY.call(this, 'x');
+    return this.dropXY('x');
   }
 
   dropY() {
-    return dropXY.call(this, 'y');
+    return this.dropXY('y');
   }
 
-  hasIntrinsicSize() {
+  hasIntrinsicSize(): number | undefined {
     return this?.intrinsicSize?.height && this?.intrinsicSize?.width;
   }
 
@@ -113,7 +165,7 @@ export default class DragState {
    *  xy = 'x' or 'y'
    */
   //todo, diff can be calculated in here
-  update(xy, mousePos) {
+  update(xy: 'x' | 'y', mousePos: number) {
     var state = this[xy],
       mouseConstraint = this.constraint.mouse[xy],
       posConstraint = this.constraint.pos[xy],
@@ -157,15 +209,15 @@ export default class DragState {
 
     return previousPos !== state.pos;
   }
-}
 
-function dropXY(dir) {
-  var pos = this[dir],
-    rect = this.constraint.zone[dir];
-  // why not do the rounding +/- 1 on the rect initially - this is all it is usef for
-  return pos.lo
-    ? Math.max(rect.lo, pos.mousePos)
-    : pos.hi
-    ? Math.min(pos.mousePos, Math.round(rect.hi) - 1)
-    : pos.mousePos;
+  private dropXY(this: DragState, dir: 'x' | 'y') {
+    var pos = this[dir],
+      rect = this.constraint.zone[dir];
+    // why not do the rounding +/- 1 on the rect initially - this is all it is usef for
+    return pos.lo
+      ? Math.max(rect.lo, pos.mousePos)
+      : pos.hi
+      ? Math.min(pos.mousePos, Math.round(rect.hi) - 1)
+      : pos.mousePos;
+  }
 }

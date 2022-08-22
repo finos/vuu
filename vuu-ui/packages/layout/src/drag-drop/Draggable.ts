@@ -1,30 +1,40 @@
-import DropTargetRenderer from './DropTargetRenderer';
-import DragState from './DragState';
+import { rect } from '../common-types';
+import { LayoutModel, LayoutRoot } from '../layout-reducer';
 import { findTarget, followPath, getProps } from '../utils';
-import { BoxModel, Position } from './BoxModel';
-import { identifyDropTarget } from './DropTarget';
-import { DropTarget } from './DropTarget';
+import { BoxModel, Measurements, Position } from './BoxModel';
+import { DragDropRect, DropPos } from './dragDropTypes';
+import { DragState, IntrinsicSizes } from './DragState';
+import { DropTarget, identifyDropTarget } from './DropTarget';
+import DropTargetRenderer from './DropTargetRenderer';
 
-let _dragStartCallback;
-let _dragMoveCallback;
-let _dragEndCallback;
+type DragStartCallback = (e: MouseEvent, x: number, y: number) => void;
+type DragMoveCallback = (x: number | undefined, y: number | undefined) => void;
+type DragEndCallback = (dropTarget: { component: LayoutModel; pos: Partial<DropPos> }) => void;
+type DragInstructions = {
+  DoNotTransform?: boolean;
+  dragThreshold?: number;
+};
 
-let _dragStartX;
-let _dragStartY;
-let _dragContainer;
-let _dragState;
-let _dropTarget = null;
-let _validDropTargets;
-let _dragInstructions;
-let _measurements;
-let _simpleDrag;
-let _dragThreshold;
+let _dragStartCallback: DragStartCallback | null;
+let _dragMoveCallback: DragMoveCallback | null;
+let _dragEndCallback: DragEndCallback | null;
+
+let _dragStartX: number;
+let _dragStartY: number;
+let _dragContainer: LayoutModel | null;
+let _dragState: DragState;
+let _dropTarget: DropTarget | null = null;
+let _validDropTargets: string[] | null;
+let _dragInstructions: DragInstructions;
+let _measurements: Measurements;
+let _simpleDrag: boolean;
+let _dragThreshold: number;
 
 const DEFAULT_DRAG_THRESHOLD = 5;
 const _dropTargetRenderer = new DropTargetRenderer();
 const SCALE_FACTOR = 0.4;
 
-function getDragContainer(rootContainer, dragContainerPath) {
+function getDragContainer(rootContainer: LayoutModel, dragContainerPath: string) {
   if (dragContainerPath) {
     return followPath(rootContainer, dragContainerPath);
   } else {
@@ -33,7 +43,11 @@ function getDragContainer(rootContainer, dragContainerPath) {
 }
 
 export const Draggable = {
-  handleMousedown(e, dragStartCallback, dragInstructions = {}) {
+  handleMousedown(
+    e: MouseEvent,
+    dragStartCallback: DragStartCallback,
+    dragInstructions: DragInstructions = {}
+  ) {
     _dragStartCallback = dragStartCallback;
     _dragInstructions = dragInstructions;
 
@@ -58,19 +72,22 @@ export const Draggable = {
 
   // called from handleDragStart (_dragCallback)
   initDrag(
-    rootContainer,
-    dragContainerPath,
-    { top, left, right, bottom },
-    dragPos,
-    dragHandler,
-    intrinsicSize,
-    dropTargets
+    rootContainer: LayoutModel,
+    dragContainerPath: string,
+    { top, left, right, bottom }: rect,
+    dragPos: { x: number; y: number },
+    dragHandler: {
+      drag: DragMoveCallback;
+      drop: DragEndCallback;
+    },
+    intrinsicSize?: IntrinsicSizes,
+    dropTargets?: string[]
   ) {
     ({ drag: _dragMoveCallback, drop: _dragEndCallback } = dragHandler);
     return initDrag(
       rootContainer,
       dragContainerPath,
-      { top, left, right, bottom },
+      { top, left, right, bottom } as DragDropRect,
       dragPos,
       intrinsicSize,
       dropTargets
@@ -78,7 +95,7 @@ export const Draggable = {
   }
 };
 
-function preDragMousemoveHandler(e) {
+function preDragMousemoveHandler(e: MouseEvent) {
   var x = true;
   var y = true;
 
@@ -91,7 +108,7 @@ function preDragMousemoveHandler(e) {
   if (mouseMoveDistance > _dragThreshold) {
     window.removeEventListener('mousemove', preDragMousemoveHandler, false);
     window.removeEventListener('mouseup', preDragMouseupHandler, false);
-    _dragStartCallback(e, x_diff, y_diff);
+    _dragStartCallback?.(e, x_diff, y_diff);
     _dragStartCallback = null;
   }
 }
@@ -101,23 +118,29 @@ function preDragMouseupHandler() {
   window.removeEventListener('mouseup', preDragMouseupHandler, false);
 }
 
-function initDrag(rootContainer, dragContainerPath, dragRect, dragPos, intrinsicSize, dropTargets) {
-  _dragContainer = getDragContainer(rootContainer, dragContainerPath);
+function initDrag(
+  rootContainer: LayoutModel,
+  dragContainerPath: string,
+  dragRect: DragDropRect,
+  dragPos: { x: number; y: number },
+  intrinsicSize?: IntrinsicSizes,
+  dropTargets?: string[]
+) {
+  _dragContainer = getDragContainer(rootContainer, dragContainerPath) as LayoutModel;
 
   const { 'data-path': dataPath, path = dataPath } = getProps(_dragContainer);
 
   if (dropTargets) {
     const dropPaths = dropTargets
       .map((id) => findTarget(rootContainer, (props) => props.id === id))
-      .map((target) => target.props.path);
+      .map((target) => (target as LayoutModel).props.path);
     _validDropTargets = dropPaths;
     console.log(`dropPaths = ${dropPaths}`);
   }
 
   // var start = window.performance.now();
   // translate the layout $position to drag-oriented co-ordinates, ignoring splitters
-  console.log(`measure, taking into account dropTargets (${dropTargets})`);
-  _measurements = BoxModel.measure(_dragContainer, dropTargets);
+  _measurements = BoxModel.measure(_dragContainer as LayoutRoot, dropTargets);
   console.log({ _measurements });
   // console.log({ measurements: _measurements });
   // var end = window.performance.now();
@@ -143,7 +166,7 @@ function initDrag(rootContainer, dragContainerPath, dragRect, dragPos, intrinsic
       `transform:scale(${SCALE_FACTOR},${SCALE_FACTOR});transform-origin:${pctX}% ${pctY}%;`;
 }
 
-function dragMousemoveHandler(evt) {
+function dragMousemoveHandler(evt: MouseEvent) {
   const x = evt.clientX;
   const y = evt.clientY;
   const dragState = _dragState;
@@ -165,7 +188,7 @@ function dragMousemoveHandler(evt) {
   if (newX === undefined && newY === undefined) {
     //onsole.log('both x and y are unchanged');
   } else {
-    _dragMoveCallback(newX, newY);
+    _dragMoveCallback?.(newX, newY);
   }
 
   if (_simpleDrag) {
@@ -176,16 +199,16 @@ function dragMousemoveHandler(evt) {
     dropTarget = identifyDropTarget(
       x,
       y,
-      _dragContainer,
+      _dragContainer!,
       _measurements,
       dragState.hasIntrinsicSize(),
-      _validDropTargets
+      _validDropTargets!
     );
   } else {
     dropTarget = identifyDropTarget(
       dragState.dropX(),
       dragState.dropY(),
-      _dragContainer,
+      _dragContainer!,
       _measurements
     );
   }
@@ -212,12 +235,12 @@ function onDragEnd() {
     const dropTarget =
       _dropTargetRenderer.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget);
 
-    _dragEndCallback(dropTarget);
+    _dragEndCallback?.(dropTarget);
 
     _dropTarget = null;
   } else {
-    _dragEndCallback({
-      component: _dragContainer,
+    _dragEndCallback?.({
+      component: _dragContainer!,
       pos: { position: Position.Absolute }
     });
   }

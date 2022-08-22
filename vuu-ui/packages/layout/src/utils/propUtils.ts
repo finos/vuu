@@ -1,13 +1,16 @@
+import { ReactElement } from 'react';
+import { LayoutModel } from '../layout-reducer';
+
 const NO_PROPS = {};
-export const getProp = (component, propName) => {
+export const getProp = (component: LayoutModel, propName: string) => {
   const props = getProps(component);
   return props[propName] ?? props[`data-${propName}`];
 };
 
-export const getProps = (component) => component?.props || component || NO_PROPS;
+export const getProps = (component?: LayoutModel) => component?.props || component || NO_PROPS;
 
 // Used when a container is expected to have a single child
-export const getChildProp = (container) => {
+export const getChildProp = (container: LayoutModel) => {
   const props = getProps(container);
   if (props.children) {
     const {
@@ -16,8 +19,6 @@ export const getChildProp = (container) => {
     if (rest.length > 0) {
       console.warn(`getChild expected a single child, found ${rest.length + 1}`);
     }
-    return target;
-  } else {
-    return undefined;
+    return target as ReactElement;
   }
 };

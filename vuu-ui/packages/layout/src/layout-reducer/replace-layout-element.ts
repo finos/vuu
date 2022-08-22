@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { getProp, getProps, nextStep } from '../utils';
 import { Action } from '../layout-action';
-import { applyLayoutProps } from '../layoutUtils';
+import { applyLayoutProps, LayoutProps } from './layoutUtils';
+import { LayoutModel, LayoutRoot, ReplaceAction } from './layoutTypes';
 
-export function replaceChild(model, { target, replacement }) {
+export function replaceChild(model: LayoutModel, { target, replacement }: ReplaceAction) {
   return _replaceChild(model, target, replacement);
 }
 
-export function _replaceChild(model, child, replacement) {
+export function _replaceChild(
+  model: LayoutModel,
+  child: ReactElement,
+  replacement: ReactElement<LayoutProps> | LayoutProps
+) {
   const path = getProp(child, 'path');
   const resizeable = getProp(child, 'resizeable');
   const { style } = getProps(child);
@@ -38,9 +43,14 @@ export function _replaceChild(model, child, replacement) {
   return swapChild(model, child, newChild);
 }
 
-export function swapChild(model, child, replacement, op) {
+export function swapChild(
+  model: LayoutModel,
+  child: LayoutModel,
+  replacement: LayoutModel | LayoutProps,
+  op?: 'maximize' | 'minimize' | 'restore'
+): LayoutModel {
   if (model === child) {
-    return replacement;
+    return replacement as any;
   } else {
     if (React.isValidElement(model)) {
       const { idx, finalStep } = nextStep(getProp(model, 'path'), getProp(child, 'path'));
@@ -56,27 +66,27 @@ export function swapChild(model, child, replacement, op) {
       } else {
         children[idx] = swapChild(children[idx], child, replacement, op);
       }
-      return React.cloneElement(model, null, children);
+      return React.cloneElement(model, undefined, children);
     } else {
       const { idx, finalStep } = nextStep(getProp(model, 'path'), getProp(child, 'path'));
 
       let children;
-      if (finalStep && React.isValidElement(model.children)) {
+      if (finalStep && React.isValidElement((model as LayoutRoot).children)) {
         children = replacement;
       } else {
-        children = model.children.slice();
+        children = (model as LayoutRoot).children!.slice();
         if (finalStep) {
-          children[idx] = replacement;
+          children[idx] = replacement as ReactElement;
         } else {
-          children[idx] = swapChild(children[idx], child, replacement, op);
+          children[idx] = swapChild(children[idx], child, replacement, op) as ReactElement;
         }
       }
-      return { ...model, children };
+      return { ...model, children } as any;
     }
   }
 }
 
-function minimize(parent, child) {
+function minimize(parent: LayoutModel, child: ReactElement) {
   // Right now, parent is always going to be a FLexbox, but might not always be the case
   const { style: parentStyle } = getProps(parent);
   const { style: childStyle } = getProps(child);
@@ -115,7 +125,7 @@ function minimize(parent, child) {
   }
 }
 
-function restore(child) {
+function restore(child: ReactElement) {
   // Right now, parent is always going to be a FLexbox, but might not always be the case
   const { style: childStyle, restoreStyle } = getProps(child);
 

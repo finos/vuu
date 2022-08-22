@@ -1,10 +1,9 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Shell } from '@vuu-ui/shell';
-import useLayoutConfig from './use-layout-config';
 import * as layout from './Layouts';
 import './App.css';
 
-const simpleComponentUrl = './features/simple-component.js';
+const simpleComponentUrl = './features/simple-component/index.js';
 
 const paletteConfig = [
   {
@@ -57,7 +56,8 @@ const defaultLayout = {
 };
 
 export const App = () => {
-  const [layoutConfig, setLayoutConfig] = useLayoutConfig('api/vui/steve', defaultLayout);
+  const [layoutConfig, setLayoutConfig] = useState(defaultLayout);
+  const user = useMemo(() => ({ name: 'steve' }), []);
 
   console.log(`%cApp render`, 'color:green');
 
@@ -73,6 +73,7 @@ export const App = () => {
       layout={layoutConfig}
       onLayoutChange={handleLayoutChange}
       paletteConfig={paletteConfig}
+      user={user}
     />
   );
 };

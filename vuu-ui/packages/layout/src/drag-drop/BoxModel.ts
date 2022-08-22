@@ -1,5 +1,9 @@
+import { ReactElement } from 'react';
 import { getProps, typeOf } from '../utils';
 import { isContainer } from '../registry/ComponentRegistry';
+import { LayoutModel, LayoutRoot } from '../layout-reducer';
+import { DragDropRect, DropPos, RelativePosition } from './dragDropTypes';
+import { rect } from '../common-types';
 
 export var positionValues = {
   north: 1,
@@ -12,8 +16,8 @@ export var positionValues = {
 };
 
 export const RelativeDropPosition = {
-  AFTER: 'after',
-  BEFORE: 'before'
+  AFTER: 'after' as RelativePosition,
+  BEFORE: 'before' as RelativePosition
 };
 
 export var Position = Object.freeze({
@@ -26,7 +30,7 @@ export var Position = Object.freeze({
   Absolute: _position('absolute')
 });
 
-function _position(str) {
+function _position(str: keyof typeof positionValues) {
   return Object.freeze({
     offset: str === 'north' || str === 'west' ? 0 : str === 'south' || str === 'east' ? 1 : NaN,
     valueOf: function () {
@@ -56,22 +60,32 @@ var NORTH = Position.North,
   HEADER = Position.Header,
   CENTRE = Position.Centre;
 
+export interface Measurements {
+  [key: string]: DragDropRect;
+}
+
 export class BoxModel {
   //TODO we should accept initial let,top offsets here
   // if dropTargets are supplied, we will only allow drop operations directly on these targets
   // TODO we will need to make this more flexible e.g allowing drop anywhere within these target
-  static measure(model, dropTargets = []) {
-    var measurements = {};
+  static measure(model: LayoutRoot, dropTargets: string[] = []): Measurements {
+    var measurements: Measurements = {};
     measureRootComponent(model, measurements, dropTargets);
     return measurements;
   }
 
-  static allBoxesContainingPoint(layout, measurements, x, y, validDropTargets) {
+  static allBoxesContainingPoint(
+    layout: LayoutModel,
+    measurements: Measurements,
+    x: number,
+    y: number,
+    validDropTargets?: string[]
+  ) {
     return allBoxesContainingPoint(layout, measurements, x, y, validDropTargets).reverse();
   }
 }
 
-export function pointPositionWithinRect(x, y, rect, borderZone = 30) {
+export function pointPositionWithinRect(x: number, y: number, rect: DragDropRect, borderZone = 30) {
   const width = rect.right - rect.left;
   const height = rect.bottom - rect.top;
   const posX = x - rect.left;
@@ -86,7 +100,12 @@ export function pointPositionWithinRect(x, y, rect, borderZone = 30) {
   return { pctX: posX / width, pctY: posY / height, closeToTheEdge };
 }
 
-export function getPosition(x, y, rect, targetOrientation) {
+export function getPosition(
+  x: number,
+  y: number,
+  rect: DragDropRect,
+  targetOrientation?: 'row' | 'column'
+): DropPos {
   const { BEFORE, AFTER } = RelativeDropPosition;
   const { pctX, pctY, closeToTheEdge } = pointPositionWithinRect(x, y, rect);
   let position;
@@ -103,7 +122,8 @@ export function getPosition(x, y, rect, targetOrientation) {
         tab = {
           index: -1,
           left: rect.left,
-          positionRelativeToTab: AFTER
+          positionRelativeToTab: AFTER,
+          width: 0
         };
       } else {
         //TODO account for gaps between tabs
@@ -146,10 +166,16 @@ export function getPosition(x, y, rect, targetOrientation) {
     position = getPositionWithinBox(x, y, rect, pctX, pctY);
   }
 
-  return { position, x, y, closeToTheEdge, tab };
+  return { position: position!, x, y, closeToTheEdge, tab };
 }
 
-function getPositionWithinBox(x, y, rect, pctX, pctY) {
+function getPositionWithinBox(
+  x: number,
+  y: number,
+  rect: DragDropRect,
+  pctX: number,
+  pctY: number
+) {
   const centerBox = getCenteredBox(rect, 0.2);
   if (containsPoint(centerBox, x, y)) {
     return CENTRE;
@@ -170,16 +196,20 @@ function getPositionWithinBox(x, y, rect, pctX, pctY) {
   }
 }
 
-function getCenteredBox({ right, left, top, bottom }, pctSize) {
+function getCenteredBox({ right, left, top, bottom }: DragDropRect, pctSize: number) {
   const pctOffset = (1 - pctSize) / 2;
   const w = (right - left) * pctOffset;
   const h = (bottom - top) * pctOffset;
   return { left: left + w, top: top + h, right: right - w, bottom: bottom - h };
 }
 
-function measureRootComponent(rootComponent, measurements, dropTargets) {
+function measureRootComponent(
+  rootComponent: LayoutRoot,
+  measurements: Measurements,
+  dropTargets: any[]
+) {
   const { id, 'data-path': dataPath, path = dataPath } = getProps(rootComponent);
-  const type = typeOf(rootComponent);
+  const type = typeOf(rootComponent) as string;
 
   if (id && path) {
     const [rect, el] = measureComponentDomElement(rootComponent);
@@ -190,7 +220,12 @@ function measureRootComponent(rootComponent, measurements, dropTargets) {
   }
 }
 
-function measureComponent(component, rect, el, measurements) {
+function measureComponent(
+  component: LayoutModel,
+  rect: DragDropRect,
+  el: HTMLElement,
+  measurements: Measurements
+) {
   const { 'data-path': dataPath, path = dataPath, header } = getProps(component);
 
   measurements[path] = rect;
@@ -212,7 +247,10 @@ function measureComponent(component, rect, el, measurements) {
           .map(({ left, right }) => ({ left, right }));
       } else {
         const titleEl = headerEl.querySelector('[class^="hwHeader-title"]');
-        measurements[path].header.titleWidth = titleEl.clientWidth;
+        const { header } = measurements[path];
+        if (titleEl && header) {
+          header.titleWidth = titleEl.clientWidth;
+        }
       }
     }
   }
@@ -221,9 +259,9 @@ function measureComponent(component, rect, el, measurements) {
 }
 
 function collectChildMeasurements(
-  component,
-  measurements,
-  dropTargets,
+  component: LayoutModel,
+  measurements: Measurements,
+  dropTargets: string[],
   preX = 0,
   posX = 0,
   preY = 0,
@@ -244,11 +282,12 @@ function collectChildMeasurements(
   const isTerrace = isFlexbox && style.flexDirection === 'row';
 
   const childrenToMeasure = isStack
-    ? children.filter((child, idx) => idx === active)
+    ? children.filter((_child: ReactElement, idx: number) => idx === active)
     : children.filter(omitDragging);
 
+  type measuredTuple = [DragDropRect, HTMLElement, ReactElement];
   // Collect all the measurements in first pass ...
-  const childMeasurements = childrenToMeasure.map((child) => {
+  const childMeasurements: measuredTuple[] = childrenToMeasure.map((child: ReactElement) => {
     const [rect, el] = measureComponentDomElement(child);
 
     return [
@@ -302,7 +341,7 @@ function collectChildMeasurements(
 
     const componentMeasurements = measureComponent(child, rect, el, measurements);
 
-    const childType = typeOf(child);
+    const childType = typeOf(child) as string;
     if (isContainer(childType)) {
       collectChildMeasurements(
         child,
@@ -317,23 +356,27 @@ function collectChildMeasurements(
     return componentMeasurements;
   });
   if (childMeasurements.length) {
+    console.log({ expandedMeasurements });
     measurements[path].children = expandedMeasurements;
   }
 }
 
-function omitDragging(component) {
+function omitDragging(component: ReactElement) {
   const { id } = getProps(component);
   const el = document.getElementById(id);
   if (el) {
     return el.dataset.dragging !== 'true';
   } else {
-    console.warn(`BoxModel: element found with id, is ${el.className} missing an id`);
+    console.warn(`BoxModel: no element found with id #${id}`);
+    return false;
   }
 }
 
-function measureComponentDomElement(component) {
+function measureComponentDomElement(
+  component: LayoutModel
+): [DragDropRect, HTMLElement, LayoutModel] {
   const { id } = getProps(component);
-  const type = typeOf(component);
+  const type = typeOf(component) as string;
   const el = document.getElementById(id);
   if (!el) {
     throw Error(`No DOM for ${type} ${id}`);
@@ -363,10 +406,17 @@ function measureComponentDomElement(component) {
   ];
 }
 
-function allBoxesContainingPoint(component, measurements, x, y, dropTargets, boxes = []) {
+function allBoxesContainingPoint(
+  component: LayoutModel,
+  measurements: Measurements,
+  x: number,
+  y: number,
+  dropTargets?: string[],
+  boxes: LayoutModel[] = []
+): LayoutModel[] {
   const { children, 'data-path': dataPath, path = dataPath } = getProps(component);
 
-  const type = typeOf(component);
+  const type = typeOf(component) as string;
   var rect = measurements[path];
   if (!containsPoint(rect, x, y)) return boxes;
 
@@ -406,24 +456,28 @@ function allBoxesContainingPoint(component, measurements, x, y, dropTargets, box
   return boxes;
 }
 
-function containsPoint(rect, x, y) {
+function containsPoint(rect: rect, x: number, y: number) {
   if (rect) {
     return x >= rect.left && x < rect.right && y >= rect.top && y < rect.bottom;
   }
 }
 
-function scrollIntoViewIfNeccesary({ top, bottom, scrolling }, x, y) {
-  const { id, scrollTop, scrollHeight } = scrolling;
-  const height = bottom - top;
-  if (scrollTop === 0 && bottom - y < 50) {
-    const scrollMax = scrollHeight - height;
-    const el = document.getElementById(id);
-    el.scrollTo({ left: 0, top: scrollMax, behavior: 'smooth' });
-    scrolling.scrollTop = scrollMax;
-  } else if (scrollTop > 0 && y - top < 50) {
-    const el = document.getElementById(id);
-    el.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
-    scrolling.scrollTop = 0;
+function scrollIntoViewIfNeccesary({ top, bottom, scrolling }: DragDropRect, x: number, y: number) {
+  if (scrolling) {
+    const { id, scrollTop, scrollHeight } = scrolling;
+    const height = bottom - top;
+    if (scrollTop === 0 && bottom - y < 50) {
+      const scrollMax = scrollHeight - height;
+      const el = document.getElementById(id) as HTMLElement;
+      el.scrollTo({ left: 0, top: scrollMax, behavior: 'smooth' });
+      scrolling.scrollTop = scrollMax;
+    } else if (scrollTop > 0 && y - top < 50) {
+      const el = document.getElementById(id) as HTMLElement;
+      el.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
+      scrolling.scrollTop = 0;
+    } else {
+      return false;
+    }
   } else {
     return false;
   }
