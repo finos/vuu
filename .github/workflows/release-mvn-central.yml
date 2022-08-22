@@ -32,10 +32,10 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-    - id: install-secret-key
-      name: Install GPG secret key
-      run: | 
-          cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --import
+      - id: install-secret-key
+        name: Install GPG secret key
+        run: | 
+            cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --import
     - name: Build with Maven
       run: mvn release:prepare release:perform  -P sign-it -Dsign=true -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} -s .settings/settings.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
       env:
