@@ -39,7 +39,7 @@ jobs:
 #        env:
 #          GPG_TTY: $(tty)
       - name: Build with Maven
-        run: mvn --no-transfer-progress release:prepare release:perform  -P sign-it -Dsign=true -Darguments=-Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} -Dgpg.passphrase=${{ secrets.GPG_PRIVATE_KEY }} -s .settings/settings.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+        run: mvn --no-transfer-progress release:prepare release:perform  -P sign-it -Dsign=true "-Darguments=-Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}" -Dgpg.passphrase=${{ secrets.GPG_PRIVATE_KEY }} -s .settings/settings.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
         env:
 #          GPG_TTY: $(tty)
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
