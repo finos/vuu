@@ -30,10 +30,10 @@
 
     <scm>
         <connection>scm:git:https://github.com/venuu-io/vuu.git</connection>
-        <developerConnection>scm:git:https://github.com/venuu-io/vuu.git</developerConnection>
+        <developerConnection>scm:git:https://${env.COMMIT_TOKEN}@github.com/venuu-io/vuu.git</developerConnection>
         <url>https://github.com/venuu-io/vuu/tree/master</url>
         <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <dependencyManagement>
         <dependencies>

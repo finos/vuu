@@ -54,3 +54,4 @@ jobs:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHASE }}
+          COMMIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
