@@ -41,6 +41,11 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      - name: Setup SSH Access for Commit
+        uses: kielabokkie/ssh-key-and-known-hosts-action@v1.3.0
+        with:
+          ssh-private-key: ${{ secrets.COMMIT_SSH_PRIVATE_KEY }}
+          ssh-host: github.com
       - id: install-gpg-cert
         name: Install GPG secret key
         run: | 
