@@ -73,7 +73,7 @@
         <netty.version>4.1.70.Final</netty.version>
         <maven.scala.plugin>2.15.2</maven.scala.plugin>
         <vertx.version>4.0.3</vertx.version>
-        <project.scm.id>github</project.scm.id>
+        <!--project.scm.id>github</project.scm.id-->
     </properties>
 
     <modules>
