@@ -20,8 +20,8 @@ jobs:
     steps:
       - name: Checkout Master
         uses: actions/checkout@v1
-        with:
-          path: master
+#        with:
+#          path: master
       - uses: actions/setup-node@v1
         with:
           node-version: "14.x"
