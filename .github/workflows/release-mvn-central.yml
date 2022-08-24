@@ -19,8 +19,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - with:
-          ref: master
       - uses: actions/setup-node@v1
         with:
           node-version: "14.x"
