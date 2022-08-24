@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v1
       - with:
           ref: master
       - uses: actions/setup-node@v1
@@ -26,8 +26,8 @@ jobs:
           node-version: "14.x"
       - name: Configure Git User
         run: |
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            git config user.name "GitHub Actions"
       - name: Set up JDK 1.16
         uses: actions/setup-java@v1
         with:
