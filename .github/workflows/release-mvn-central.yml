@@ -23,7 +23,7 @@ jobs:
 #        with:
 #          path: master
       - name: Switch to master
-        run: git switch -c master
+        run: git switch -c release-${{ github.event.inputs.releaseVersion }}
       - uses: actions/setup-node@v1
         with:
           node-version: "14.x"
