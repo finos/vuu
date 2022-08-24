@@ -78,7 +78,7 @@
                     </executions>
                   </plugin>
 
-                  <plugin>
+                  <!--plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>3.0.0</version>
@@ -97,7 +97,7 @@
                         <argument>yarn.lock</argument>
                       </arguments>
                     </configuration>
-                  </plugin>
+                  </plugin-->
 
                   <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -120,7 +120,7 @@
                       <!-- optional -->
                       <!--workingDirectory>${project.basedir}/vuu-ui</workingDirectory-->
                       <arguments>
-                        <argument>build</argument>
+                        <argument>ui-build-commands.sh</argument>
                       </arguments>
                       <!--environmentVariables>
                           <LANG>en_US</LANG>
@@ -128,7 +128,7 @@
                     </configuration>
                   </plugin>
 
-                  <plugin>
+                  <!--plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>3.0.0</version>
@@ -143,16 +143,15 @@
                     </executions>
                     <configuration>
                       <executable>yarn</executable>
-                      <!-- optional -->
-                      <!--workingDirectory>${project.basedir}/../vuu-ui</workingDirectory-->
-                      <arguments>
+                      <workingDirectory>${project.basedir}/../vuu-ui</workingDirectory -->
+                      <!--arguments>
                         <argument>build:app</argument>
-                      </arguments>
+                      </arguments-->
                       <!--environmentVariables>
                           <LANG>en_US</LANG>
-                      </environmentVariables-->
+                      </environmentVariables>
                     </configuration>
-                  </plugin>
+                  </plugin-->
                 </plugins>
             </build>
         </profile>
