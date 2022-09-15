@@ -1,6 +1,6 @@
-import { LoHiRange, WindowRange } from '@vuu-ui/utils';
-import { bufferBreakout, FromToRange } from './buffer-range';
-import { VuuRow } from '../vuuProtocolMessageTypes';
+import { WindowRange } from '@vuu-ui/utils';
+import { bufferBreakout } from './buffer-range';
+import { VuuRange, VuuRow } from '@vuu-ui/data-types';
 
 const EMPTY_ARRAY = [] as const;
 
@@ -16,9 +16,13 @@ export class ArrayBackedMovingWindow {
   public rowCount: number;
 
   // Note, the buffer is already accounted for in the range passed in here
-  constructor({ lo, hi }: LoHiRange, { from, to }: FromToRange, bufferSize: number) {
+  constructor(
+    { from: clientFrom, to: clientTo }: VuuRange,
+    { from, to }: VuuRange,
+    bufferSize: number
+  ) {
     this.bufferSize = bufferSize;
-    this.clientRange = new WindowRange(lo, hi);
+    this.clientRange = new WindowRange(clientFrom, clientTo);
     this.range = new WindowRange(from, to);
     //internal data is always 0 based, we add range.from to determine an offset
     this.internalData = new Array(bufferSize);
@@ -117,7 +121,7 @@ export class ArrayBackedMovingWindow {
         const start = Math.max(from, originalRange.to);
         holdingRows = this.internalData.slice(start - offset, to - offset).filter((row) => !!row);
       } else {
-        const end = Math.min(originalRange.from, to);
+        const end = Math.max(originalRange.from, to);
         holdingRows = this.internalData
           .slice(Math.max(0, from - offset), end - offset)
           .filter((row) => !!row);
@@ -152,10 +156,10 @@ export class ArrayBackedMovingWindow {
 
   getData(): any[] {
     const { from, to } = this.range;
-    const { from: lo, to: hi } = this.clientRange;
-    const startOffset = Math.max(0, lo - from);
+    const { from: clientFrom, to: clientTo } = this.clientRange;
+    const startOffset = Math.max(0, clientFrom - from);
     // TEMP hack, whu wouldn't we have rowCount ?
-    const endOffset = Math.min(to - from, to, hi - from, this.rowCount ?? to);
+    const endOffset = Math.min(to - from, to, clientTo - from, this.rowCount ?? to);
     // const endOffset = Math.min(to-from, to, hi - from, this.rowCount);
     return this.internalData.slice(startOffset, endOffset);
   }

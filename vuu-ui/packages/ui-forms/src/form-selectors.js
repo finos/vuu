@@ -53,8 +53,6 @@ export function nextField(state, evt, field = state.currentField, field2 = field
   const { rows, legCount, columnIdx } = state;
   const [rowIdx] = findField(state, field, rows, legCount);
 
-  // console.log(`[leggy-model] nextField (currentField=${field.id}) ${evt.type} columnIdx = ${columnIdx}`)
-
   if (isFormNavigationEvent(evt)) {
     const [row, columnIdx] = nextRow(state, rowIdx, evt.type);
     if (row) {

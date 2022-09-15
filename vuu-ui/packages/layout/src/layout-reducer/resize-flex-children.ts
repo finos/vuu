@@ -1,21 +1,22 @@
 import React, { CSSProperties, ReactElement } from 'react';
 import { followPath, getProps } from '../utils';
 import { swapChild } from './replace-layout-element';
-import { LayoutModel, SplitterResizeAction } from './layoutTypes';
+import { SplitterResizeAction } from './layoutTypes';
 import { dimension } from '../common-types';
 
-export function resizeFlexChildren(rootProps: LayoutModel, { path, sizes }: SplitterResizeAction) {
-  const target = followPath(rootProps, path) as LayoutModel;
+export function resizeFlexChildren(
+  layoutRoot: ReactElement,
+  { path, sizes }: SplitterResizeAction
+) {
+  const target = followPath(layoutRoot, path, true);
   const { children, style } = getProps(target);
 
   const dimension = style.flexDirection === 'column' ? 'height' : 'width';
   const replacementChildren = applySizesToChildren(children, sizes, dimension);
 
-  const replacement = React.isValidElement(target)
-    ? React.cloneElement(target, undefined, replacementChildren)
-    : { ...target, children: replacementChildren };
+  const replacement = React.cloneElement(target, undefined, replacementChildren);
 
-  return swapChild(rootProps, target, replacement);
+  return swapChild(layoutRoot, target, replacement);
 }
 
 function applySizesToChildren(

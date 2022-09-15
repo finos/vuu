@@ -15,21 +15,25 @@ function login(username, password) {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      'access-control-allow-origin': 'localhost:8443'
+      'access-control-allow-origin': location.host
     },
     body: JSON.stringify({ username, password })
   })
     .then((response) => {
-      var date = new Date();
-      const days = 1;
-      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-      const authToken = response.headers.get('vuu-auth-token');
-      document.cookie = `vuu-username=${username};expires=${date.toUTCString()};path=/`;
-      document.cookie = `vuu-auth-token=${authToken};expires=${date.toUTCString()};path=/`;
-      window.location.href = '/index.html';
+      if (response.ok) {
+        var date = new Date();
+        const days = 1;
+        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+        const authToken = response.headers.get('vuu-auth-token');
+        document.cookie = `vuu-username=${username};expires=${date.toUTCString()};path=/`;
+        document.cookie = `vuu-auth-token=${authToken};expires=${date.toUTCString()};path=/`;
+        window.location.href = '/index.html';
+      } else {
+        throw Error(`Authentication failed %{response.code}`);
+      }
     })
     .catch((err) => {
-      console.log(`error`, err);
+      console.error(`error`, err);
     });
 }
 

@@ -136,7 +136,6 @@ export const createSuggestionProvider =
       case 'NAMED-FILTER':
         return suggestNamedFilters(namedFilters, text);
       default:
-        console.log(`[filter-suggestion-factory] no suggestions for ${tokenId} '${text}''`);
         return { values: [] };
     }
   };

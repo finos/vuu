@@ -49,7 +49,6 @@ export const useTree = ({
 
   const handleDrop = useCallback(
     (fromIndex, toIndex) => {
-      console.log(`dropAtIndex ${fromIndex} ${toIndex}`);
       const data = dataHook.data.slice();
       const [target] = data.splice(fromIndex, 1);
       if (toIndex === -1) {

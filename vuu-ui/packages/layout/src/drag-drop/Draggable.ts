@@ -1,18 +1,21 @@
+import { ReactElement } from 'react';
 import { rect } from '../common-types';
-import { LayoutModel, LayoutRoot } from '../layout-reducer';
+import { LayoutModel } from '../layout-reducer';
 import { findTarget, followPath, getProps } from '../utils';
 import { BoxModel, Measurements, Position } from './BoxModel';
-import { DragDropRect, DropPos } from './dragDropTypes';
+import { DragDropRect } from './dragDropTypes';
 import { DragState, IntrinsicSizes } from './DragState';
 import { DropTarget, identifyDropTarget } from './DropTarget';
 import DropTargetRenderer from './DropTargetRenderer';
 
-type DragStartCallback = (e: MouseEvent, x: number, y: number) => void;
-type DragMoveCallback = (x: number | undefined, y: number | undefined) => void;
-type DragEndCallback = (dropTarget: { component: LayoutModel; pos: Partial<DropPos> }) => void;
-type DragInstructions = {
+export type DragStartCallback = (e: MouseEvent, x: number, y: number) => void;
+export type DragMoveCallback = (x: number | undefined, y: number | undefined) => void;
+export type DragEndCallback = (droppedTarget: Partial<DropTarget>) => void;
+export type DragInstructions = {
+  DoNotRemove?: boolean;
   DoNotTransform?: boolean;
   dragThreshold?: number;
+  RemoveDraggableOnDragEnd?: boolean;
 };
 
 let _dragStartCallback: DragStartCallback | null;
@@ -21,24 +24,25 @@ let _dragEndCallback: DragEndCallback | null;
 
 let _dragStartX: number;
 let _dragStartY: number;
-let _dragContainer: LayoutModel | null;
+let _dragContainer: ReactElement | null;
 let _dragState: DragState;
 let _dropTarget: DropTarget | null = null;
-let _validDropTargets: string[] | null;
+let _validDropTargetPaths: string[] | null;
 let _dragInstructions: DragInstructions;
 let _measurements: Measurements;
 let _simpleDrag: boolean;
 let _dragThreshold: number;
+let _mouseDownTimer: number | null = null;
 
 const DEFAULT_DRAG_THRESHOLD = 5;
 const _dropTargetRenderer = new DropTargetRenderer();
 const SCALE_FACTOR = 0.4;
 
-function getDragContainer(rootContainer: LayoutModel, dragContainerPath: string) {
+function getDragContainer(rootContainer: ReactElement, dragContainerPath: string) {
   if (dragContainerPath) {
-    return followPath(rootContainer, dragContainerPath);
+    return followPath(rootContainer, dragContainerPath) as ReactElement;
   } else {
-    return findTarget(rootContainer, (props) => props.dropTarget);
+    return findTarget(rootContainer, (props) => props.dropTarget) as ReactElement;
   }
 }
 
@@ -65,6 +69,12 @@ export const Draggable = {
     } else {
       window.addEventListener('mousemove', preDragMousemoveHandler, false);
       window.addEventListener('mouseup', preDragMouseupHandler, false);
+
+      _mouseDownTimer = window.setTimeout(() => {
+        window.removeEventListener('mousemove', preDragMousemoveHandler, false);
+        window.removeEventListener('mouseup', preDragMouseupHandler, false);
+        _dragStartCallback?.(e, 0, 0);
+      }, 1000);
     }
 
     e.preventDefault();
@@ -72,7 +82,7 @@ export const Draggable = {
 
   // called from handleDragStart (_dragCallback)
   initDrag(
-    rootContainer: LayoutModel,
+    rootContainer: ReactElement,
     dragContainerPath: string,
     { top, left, right, bottom }: rect,
     dragPos: { x: number; y: number },
@@ -114,19 +124,23 @@ function preDragMousemoveHandler(e: MouseEvent) {
 }
 
 function preDragMouseupHandler() {
+  if (_mouseDownTimer) {
+    window.clearTimeout(_mouseDownTimer);
+    _mouseDownTimer = null;
+  }
   window.removeEventListener('mousemove', preDragMousemoveHandler, false);
   window.removeEventListener('mouseup', preDragMouseupHandler, false);
 }
 
 function initDrag(
-  rootContainer: LayoutModel,
+  rootContainer: ReactElement,
   dragContainerPath: string,
   dragRect: DragDropRect,
   dragPos: { x: number; y: number },
   intrinsicSize?: IntrinsicSizes,
   dropTargets?: string[]
 ) {
-  _dragContainer = getDragContainer(rootContainer, dragContainerPath) as LayoutModel;
+  _dragContainer = getDragContainer(rootContainer, dragContainerPath);
 
   const { 'data-path': dataPath, path = dataPath } = getProps(_dragContainer);
 
@@ -134,17 +148,16 @@ function initDrag(
     const dropPaths = dropTargets
       .map((id) => findTarget(rootContainer, (props) => props.id === id))
       .map((target) => (target as LayoutModel).props.path);
-    _validDropTargets = dropPaths;
-    console.log(`dropPaths = ${dropPaths}`);
+    _validDropTargetPaths = dropPaths;
   }
 
   // var start = window.performance.now();
   // translate the layout $position to drag-oriented co-ordinates, ignoring splitters
-  _measurements = BoxModel.measure(_dragContainer as LayoutRoot, dropTargets);
+  _measurements = BoxModel.measure(_dragContainer, dropTargets);
   console.log({ _measurements });
-  // console.log({ measurements: _measurements });
+  // onsole.log({ measurements: _measurements });
   // var end = window.performance.now();
-  // console.log(`[Draggable] measurements took ${end - start}ms`, _measurements);
+  // onsole.log(`[Draggable] measurements took ${end - start}ms`, _measurements);
 
   var dragZone = _measurements[path];
 
@@ -175,8 +188,6 @@ function dragMousemoveHandler(evt: MouseEvent) {
 
   var newX, newY;
 
-  // console.log(`mouseMove ${x},${y}`)
-
   if (dragState.update('x', x)) {
     newX = dragState.x.pos;
   }
@@ -202,7 +213,7 @@ function dragMousemoveHandler(evt: MouseEvent) {
       _dragContainer!,
       _measurements,
       dragState.hasIntrinsicSize(),
-      _validDropTargets!
+      _validDropTargetPaths!
     );
   } else {
     dropTarget = identifyDropTarget(
@@ -235,13 +246,13 @@ function onDragEnd() {
     const dropTarget =
       _dropTargetRenderer.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget);
 
-    _dragEndCallback?.(dropTarget);
+    _dragEndCallback?.(dropTarget as DropTarget);
 
     _dropTarget = null;
   } else {
     _dragEndCallback?.({
       component: _dragContainer!,
-      pos: { position: Position.Absolute }
+      pos: { position: Position.Absolute } as any
     });
   }
 
@@ -250,7 +261,7 @@ function onDragEnd() {
 
   _dragContainer = null;
   _dropTargetRenderer.clear();
-  _validDropTargets = null;
+  _validDropTargetPaths = null;
   window.removeEventListener('mousemove', dragMousemoveHandler, false);
   window.removeEventListener('mouseup', dragMouseupHandler, false);
 }

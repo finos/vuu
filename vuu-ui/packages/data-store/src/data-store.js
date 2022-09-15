@@ -104,7 +104,6 @@ export default class DataStore {
 
     if (range) {
       const result = this.setRange(range, false);
-      console.log(result);
       this._update_queue.replace(result);
     }
   }

@@ -7,14 +7,12 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node ./scripts/build.mjs",
     "build:dev": "node ./scripts/build.mjs --dev",
-    "start": "serve public"
+    "start": "serve -p 5001 public"
   },
   "keywords": [],
   "author": "heswell",
   "license": "Apache-2.0",
   "devDependencies": {
-    "esbuild": "^0.13.12",
-    "kleur": "^4.1.4",
     "serve": "^12.0.1"
   },
   "dependencies": {
@@ -27,5 +25,8 @@
     "classnames": "^2.3.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

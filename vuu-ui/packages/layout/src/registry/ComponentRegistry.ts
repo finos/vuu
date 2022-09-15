@@ -22,7 +22,7 @@ export const isRegistered = (className: string) => !!ComponentRegistry[className
 // We could check and set displayName in here
 export function registerComponent(
   componentName: string,
-  component: FunctionComponent,
+  component: FunctionComponent<any>,
   type: layoutComponentType = 'component'
 ) {
   ComponentRegistry[componentName] = component;

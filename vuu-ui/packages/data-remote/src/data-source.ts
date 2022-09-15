@@ -29,6 +29,6 @@ export interface SubscribeProps {
 export type SubscribeCallback = (...args: any[]) => void;
 
 export interface DataSource {
-  setRange: (lo: number, hi: number) => void;
+  setRange: (from: number, to: number) => void;
   subscribe: (props: SubscribeProps, callback: SubscribeCallback) => Promise<any>;
 }

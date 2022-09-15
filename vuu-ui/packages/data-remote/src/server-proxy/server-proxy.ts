@@ -3,12 +3,12 @@ import { Viewport } from './viewport';
 import { getRpcService } from './rpc-services';
 import { Connection } from '../connectionTypes';
 import {
-  VuuProtocolMessageIn,
-  VuuProtocolMessageOut,
+  ServerToClientMessage,
+  ClientToServerMessage,
   VuuLink,
   VuuMenuContext,
   VuuTable
-} from '../vuuProtocolMessageTypes';
+} from '@vuu-ui/data-types';
 import {
   isViewporttMessage as isViewportMessage,
   ServerProxySubscribeMessage,
@@ -70,17 +70,16 @@ export class ServerProxy {
   private authToken?: string;
   private pendingLogin?: PendingLogin;
   private sessionId?: string;
-  private queuedRequests: Array<VuuProtocolMessageOut['body']> = [];
+  private queuedRequests: Array<ClientToServerMessage['body']> = [];
 
   constructor(connection: Connection, callback: PostMessageToClientCallback) {
     this.connection = connection;
     this.postMessageToClient = callback;
-    this.viewports = new Map();
+    this.viewports = new Map<string, Viewport>();
     this.mapClientToServerViewport = new Map();
   }
 
   public async login(authToken?: string) {
-    console.log(`ServerProxy login ${authToken}`);
     if (authToken) {
       this.authToken = authToken;
     }
@@ -89,7 +88,6 @@ export class ServerProxy {
       throw Error(`ServerProxy login, cannot login until auth token has been obtained`);
     }
     return new Promise((resolve, reject) => {
-      console.log(`[ServerProxy login]`);
       this.sendMessageToServer({ type: Message.LOGIN, token, user: 'user' }, '');
       this.pendingLogin = { resolve, reject };
     });
@@ -102,8 +100,7 @@ export class ServerProxy {
       this.viewports.set(message.viewport, viewport);
       // use client side viewport as request id, so that when we process the response,
       // with the serverside viewport we can establish a mapping between the two
-      const isReady = this.sessionId !== '';
-      this.sendIfReady(viewport.subscribe(), message.viewport, isReady);
+      this.sendIfReady(viewport.subscribe(), message.viewport, this.sessionId !== '');
     } else {
       console.log(`ServerProxy spurious subscribe call ${message.viewport}`);
     }
@@ -139,16 +136,8 @@ export class ServerProxy {
   /* Handle messages from client                                        */
   /**********************************************************************/
   private setViewRange(viewport: Viewport, message: VuuUIMessageOutViewRange) {
-    // onsole.log(
-    //   `%c[serverProxy] setViewRange ${message.range.lo} ${message.range.hi}`,
-    //   'color:brown;'
-    // );
     const requestId = nextRequestId();
-    const [serverRequest, rows] = viewport.rangeRequest(
-      requestId,
-      message.range.lo,
-      message.range.hi
-    );
+    const [serverRequest, rows] = viewport.rangeRequest(requestId, message.range);
     if (serverRequest) {
       this.sendIfReady(serverRequest, requestId, viewport.status === 'subscribed');
     }
@@ -341,7 +330,7 @@ export class ServerProxy {
   }
 
   public sendIfReady(
-    message: VuuProtocolMessageOut['body'],
+    message: ClientToServerMessage['body'],
     requestId: string,
     isReady: boolean = true,
     options?: any
@@ -357,7 +346,7 @@ export class ServerProxy {
   }
 
   public sendMessageToServer(
-    body: VuuProtocolMessageOut['body'],
+    body: ClientToServerMessage['body'],
     requestId: string = `${_requestId++}`,
     options: any = DEFAULT_OPTIONS
   ) {
@@ -372,13 +361,13 @@ export class ServerProxy {
           user: 'user',
           module,
           body
-        } as VuuProtocolMessageOut
+        } as ClientToServerMessage
         // restOptions
       );
     }
   }
 
-  public handleMessageFromServer(message: VuuProtocolMessageIn) {
+  public handleMessageFromServer(message: ServerToClientMessage) {
     const { body, requestId, sessionId } = message;
 
     // onsole.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (ServerProxy) ${message.type || JSON.stringify(message)}`,'color:white;background-color:blue;font-weight:bold;');

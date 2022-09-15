@@ -10,10 +10,8 @@
   },
   "keywords": [],
   "author": "heswell",
-  "license": "MIT",
-  "devDependencies": {
-    "esbuild": "^0.13.4"
-  },
+  "license": "Apache-2.0",
+  "devDependencies": {},
   "dependencies": {
     "@vuu-ui/data-grid": "0.0.21",
     "@vuu-ui/datagrid-parsers": "0.0.21",
@@ -29,5 +27,8 @@
     "classnames": "^2.3.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

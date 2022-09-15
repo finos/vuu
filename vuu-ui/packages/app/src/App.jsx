@@ -56,21 +56,22 @@ const defaultLayout = {
 };
 
 export const App = () => {
-  const [layoutConfig, setLayoutConfig] = useState(defaultLayout);
+  // const [layoutConfig, setLayoutConfig] = useState(defaultLayout);
   const user = useMemo(() => ({ name: 'steve' }), []);
-
-  console.log(`%cApp render`, 'color:green');
 
   const handleLayoutChange = useCallback(
     (layout) => {
-      setLayoutConfig(layout);
+      console.log('layout change');
+      // setLayoutConfig(layout);
     },
-    [setLayoutConfig]
+    [
+      /*setLayoutConfig*/
+    ]
   );
 
   return (
     <Shell
-      layout={layoutConfig}
+      defaultLayout={defaultLayout}
       onLayoutChange={handleLayoutChange}
       paletteConfig={paletteConfig}
       user={user}

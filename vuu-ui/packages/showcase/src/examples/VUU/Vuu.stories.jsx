@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Grid, GridProvider } from '@vuu-ui/data-grid';
 import { ContextMenuProvider } from '@vuu-ui/ui-controls';
-import { StackLayout as Stack, View, useLayoutContext } from '@vuu-ui/layout';
+import { StackLayout as Stack, View, useViewContext } from '@vuu-ui/layout';
 
 import { RemoteDataSource, Servers, useViewserver } from '@vuu-ui/data-remote';
 
@@ -123,7 +123,7 @@ const instrumentConfig = {
 
 // Where would this go ?
 export const useViewState = (config) => {
-  const { loadSession, onConfigChange, saveSession } = useLayoutContext();
+  const { loadSession, onConfigChange, saveSession } = useViewContext();
 
   const dataSource = useMemo(() => {
     let ds = loadSession('data-source');

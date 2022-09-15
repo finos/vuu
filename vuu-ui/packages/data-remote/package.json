@@ -16,6 +16,9 @@
     "/types"
   ],
   "types": "./types/index.d.ts",
+  "devDependencies": {
+    "@vuu-ui/data-types": "1.0.0"
+  },
   "peerDependencies": {
     "@vuu-ui/utils": "0.0.21",
     "react": "^17.0.2"

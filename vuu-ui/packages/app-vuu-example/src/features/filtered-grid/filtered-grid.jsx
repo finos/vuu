@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useLayoutContext } from '@vuu-ui/layout';
+import { useViewContext } from '@vuu-ui/layout';
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
 import { parseFilter, extractFilter, filterAsQuery } from '@vuu-ui/datagrid-parsers';
 import { createSuggestionProvider } from './vuu-filter-suggestion-provider';
@@ -13,7 +13,7 @@ import '@vuu-ui/parsed-input/index.css';
 import './filtered-grid.css';
 
 const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
-  const { id, dispatch, load, save, loadSession, saveSession } = useLayoutContext();
+  const { id, dispatch, load, save, loadSession, saveSession } = useViewContext();
   const config = useMemo(() => load(), [load]);
   const { handleRpcResponse } = useContext(AppContext);
   const [namedFilters, setNamedFilters] = useState([]);
@@ -36,7 +36,7 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
   }, [dataSource]);
 
   const unlink = () => {
-    console.log('unlink');
+    // nothing yet
   };
 
   const handleConfigChange = useCallback(

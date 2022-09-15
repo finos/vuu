@@ -11,7 +11,7 @@ import {
   VuuSort,
   VuuSortCol,
   VuuTable
-} from './vuuProtocolMessageTypes';
+} from '@vuu-ui/data-types';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnected';
 
@@ -36,7 +36,7 @@ export interface ServerProxySubscribeMessage {
   filter: any;
   filterQuery: any;
   groupBy: any;
-  range: any;
+  range: VuuRange;
   sort: any;
   tablename: VuuTable;
   viewport: string;
@@ -199,8 +199,8 @@ export interface RequestMessage {
 export interface VuuUIMessageOutViewRange extends ViewportMessage {
   type: 'setViewRange';
   range: {
-    hi: number;
-    lo: number;
+    from: number;
+    to: number;
   };
 }
 export interface VuuUIMessageOutAggregate extends ViewportMessage {

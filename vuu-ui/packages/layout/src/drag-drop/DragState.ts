@@ -37,8 +37,7 @@ interface ExtendedZoneRange {
 }
 
 export class DragState {
-  private constraint!: DragConstraint;
-
+  public constraint!: DragConstraint;
   public x!: ExtendedZoneRange;
   public y!: ExtendedZoneRange;
   public intrinsicSize: IntrinsicSizes | undefined;
@@ -122,7 +121,7 @@ export class DragState {
       }
     };
 
-    //onsole.log(JSON.stringify(this.constraint,null,2));
+    // onsole.log(`DragState: constraint ${JSON.stringify(this.constraint, null, 2)}`);
 
     this.x = {
       pos: x,

@@ -43,11 +43,6 @@ async function makeConnection(url, callback, connection) {
   callback({ type: 'connection-status', status: 'connecting' });
   const dataStore = await createDataStore(url);
 
-  // console.log(
-  //   `%c⚡ ${url}`,
-  //   'padding-left: 6px;font-size: 16px;color: yellow; background-color:black',
-  // );
-
   connection = new DataStoreConnection(dataStore, url, callback);
   const status = 'connected';
   callback({ type: 'connection-status', status });
@@ -81,12 +76,6 @@ class DataStoreConnection {
     const { connectionCallback: callback } = this;
 
     const send = (msg, options) => {
-      // console.log(
-      //   `%c>>>  (DataStoreConnection) ${JSON.stringify(msg)} ${JSON.stringify(
-      //     options,
-      //   )}`,
-      //   'color:blue;font-weight:bold;',
-      // );
       const { requestId, body } = msg;
       switch (body.type) {
         case 'CREATE_VP':

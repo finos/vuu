@@ -2,12 +2,13 @@
   "name": "@vuu-ui/layout",
   "version": "0.0.21",
   "description": "VUU Layout Components",
-  "module": "index.js",
-  "main": "index.js",
+  "module": "src/index.ts",
+  "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/build.mjs"
+    "build": "node ../../scripts/build.mjs",
+    "type-defs": "tsc --project tsconfig-emit-types.json"
   },
   "files": [
     "index.js",
@@ -16,6 +17,7 @@
     "index.css.map",
     "/src"
   ],
+  "types": "src/index.ts",
   "peerDependencies": {
     "@vuu-ui/ui-controls": "0.0.21",
     "@vuu-ui/react-utils": "0.0.21",

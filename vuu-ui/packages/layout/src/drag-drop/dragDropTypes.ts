@@ -1,4 +1,5 @@
-import { rect } from '../common-types';
+import type { ReactElement } from 'react';
+import type { rect } from '../common-types';
 import { DropTarget } from './DropTarget';
 export interface DragDropRect extends rect {
   children?: DragDropRect[];
@@ -46,14 +47,3 @@ export interface DropPos {
   x: number;
   y: number;
 }
-
-// export type DropTargetType {
-//   active: boolean;
-//   clientRect: DragDropRect;
-//   component: ReactElement;
-//   dropRect?: rectTuple;
-//   nextDropTarget: DropTargetType | null;
-//   pos: any;
-// }
-
-export type DropTargetType = typeof DropTarget;

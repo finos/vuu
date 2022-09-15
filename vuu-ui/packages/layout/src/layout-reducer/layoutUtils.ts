@@ -1,5 +1,6 @@
 import { uuid } from '@vuu-ui/utils';
-import React, { CSSProperties, ReactElement } from 'react';
+import { CSSProperties, ReactElement } from 'react';
+import React, { cloneElement } from 'react';
 import { dimension } from '../common-types';
 import { ComponentRegistry, isContainer, isLayoutComponent } from '../registry/ComponentRegistry';
 import {
@@ -40,12 +41,26 @@ export interface LayoutProps {
   version?: number;
 }
 
+export const processLayoutElement = (
+  layoutElement: ReactElement,
+  previousLayout?: ReactElement
+): ReactElement => {
+  const type = typeOf(layoutElement) as string;
+  const [layoutProps, children] = getChildLayoutProps(
+    type,
+    layoutElement.props,
+    '0',
+    undefined,
+    previousLayout
+  );
+  return cloneElement(layoutElement, layoutProps, children);
+};
+
 export const applyLayout = (
   type: layoutType,
   props: LayoutProps,
   previousLayout?: LayoutModel
 ): LayoutModel => {
-  console.log(`applyLayout`, { type, props, previousLayout });
   // This works if the root layout is itself loaded from JSON
   const [layoutProps, children] = getChildLayoutProps(type, props, '0', undefined, previousLayout);
   return {

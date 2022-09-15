@@ -4,7 +4,7 @@ import { RecoilRoot } from 'recoil';
 
 import {
   registerComponent,
-  useLayoutContext,
+  useViewContext,
   Component,
   FlexboxLayout as Flexbox,
   Palette,
@@ -12,7 +12,8 @@ import {
   Stack,
   Toolbar,
   View,
-  DraggableLayout
+  DraggableLayout,
+  LayoutProvider
 } from '@vuu-ui/layout';
 
 import {
@@ -52,7 +53,7 @@ const Box = (props) => (
 
 const DraggableBox = ({ className, flexFill, small, medium, large, ...props }) => {
   const DraggableBoxBase = () => {
-    const { dispatch, title } = useLayoutContext();
+    const { dispatch, title } = useViewContext();
     const handleMouseDown = (e) => {
       // TODO should be able to just dispatch the event
       dispatch({ type: 'mousedown' }, e);
@@ -89,45 +90,52 @@ export const EmptyDraggable = () => {
 
 EmptyDraggable.displaySequence = displaySequence++;
 
-export const SimpleNesting = () => (
-  <DraggableLayout style={{ width: 800, height: 500 }}>
-    <Flexbox id="top-cat" style={{ width: '100%', height: '100%', flexDirection: 'row' }}>
-      <View
-        header
-        closeable
-        resizeable
-        title="Test 1"
-        style={{ flexBasis: 250, flexGrow: 0, flexShrink: 0 }}>
-        <div style={{ backgroundColor: 'yellow', height: '100%' }}>
-          <input defaultValue="just a test 1" />
-          <input defaultValue="just a test 2" />
-        </div>
-      </View>
-      <Flexbox id="the-one" style={{ flex: 1, flexDirection: 'column' }} resizeable>
-        <Flexbox
-          id="flexbox-1"
-          style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: 'row' }}
-          resizeable>
-          <View header resizeable title="Test 2" style={{ flex: 1 }}>
-            <Component style={{ height: '100%', backgroundColor: 'orange' }} />
+export const SimpleNesting = () => {
+  const handleLayoutChange = () => {
+    console.log(`handleLayoutChange`);
+  };
+  return (
+    <LayoutProvider onLayoutChange={handleLayoutChange}>
+      <DraggableLayout dropTarget style={{ width: 800, height: 500 }}>
+        <Flexbox id="top-cat" style={{ width: '100%', height: '100%', flexDirection: 'row' }}>
+          <View
+            header
+            closeable
+            resizeable
+            title="Test 1"
+            style={{ flexBasis: 250, flexGrow: 0, flexShrink: 0 }}>
+            <div style={{ backgroundColor: 'yellow', height: '100%' }}>
+              <input defaultValue="just a test 1" />
+              <input defaultValue="just a test 2" />
+            </div>
           </View>
-          <View header resizeable title="Test 4" style={{ flex: 1 }}>
-            <Component style={{ height: '100%', backgroundColor: 'rebeccapurple' }} />
-          </View>
+          <Flexbox id="the-one" style={{ flex: 1, flexDirection: 'column' }} resizeable>
+            <Flexbox
+              id="flexbox-1"
+              style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: 'row' }}
+              resizeable>
+              <View header resizeable title="Test 2" style={{ flex: 1 }}>
+                <Component style={{ height: '100%', backgroundColor: 'orange' }} />
+              </View>
+              <View header resizeable title="Test 4" style={{ flex: 1 }}>
+                <Component style={{ height: '100%', backgroundColor: 'rebeccapurple' }} />
+              </View>
+            </Flexbox>
+            <View header id="bar" resizeable title="Test 5" style={{ flex: 1 }}>
+              <StatefulComponent style={{ height: '100%', backgroundColor: '#94bff5' }} />
+            </View>
+            <View header id="foo" resizeable title="Test 6" style={{ flex: 1 }}>
+              <StatefulComponent
+                initialState="I'm a Tree"
+                style={{ height: '100%', backgroundColor: 'pink' }}
+              />
+            </View>
+          </Flexbox>
         </Flexbox>
-        <View header id="bar" resizeable title="Test 5" style={{ flex: 1 }}>
-          <StatefulComponent style={{ height: '100%', backgroundColor: '#94bff5' }} />
-        </View>
-        <View header id="foo" resizeable title="Test 6" style={{ flex: 1 }}>
-          <StatefulComponent
-            initialState="I'm a Tree"
-            style={{ height: '100%', backgroundColor: 'pink' }}
-          />
-        </View>
-      </Flexbox>
-    </Flexbox>
-  </DraggableLayout>
-);
+      </DraggableLayout>
+    </LayoutProvider>
+  );
+};
 
 SimpleNesting.displaySequence = displaySequence++;
 
@@ -167,37 +175,49 @@ export const ImplicitSizing = () => (
 
 ImplicitSizing.displaySequence = displaySequence++;
 
-export const SimpleNestingWithOffset = () => (
-  <DraggableLayout style={{ marginLeft: 100, marginTop: 50, width: 800, height: 500 }}>
-    <Flexbox style={{ width: '100%', height: '100%', flexDirection: 'row' }}>
-      <View header resizeable title="Test 1" style={{ width: 250 }}>
-        <div style={{ backgroundColor: 'yellow', height: '100%' }}>
-          <input defaultValue="just a test 1" />
-          <input defaultValue="just a test 2" />
-        </div>
-      </View>
-      <Flexbox style={{ flex: 1, flexDirection: 'column' }} resizeable>
-        <Flexbox style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: 'row' }} resizeable>
-          <View header resizeable title="Test 2" style={{ flex: 1 }}>
-            <Component style={{ height: '100%', backgroundColor: 'orange' }} />
+export const SimpleNestingWithOffset = () => {
+  const handleLayoutChange = () => {
+    console.log(`handleLayoutChange`);
+  };
+
+  return (
+    <LayoutProvider onLayoutChange={handleLayoutChange}>
+      <DraggableLayout
+        dropTarget
+        style={{ marginLeft: 100, marginTop: 50, width: 800, height: 500 }}>
+        <Flexbox style={{ width: '100%', height: '100%', flexDirection: 'row' }}>
+          <View header resizeable title="Test 1" style={{ width: 250 }}>
+            <div style={{ backgroundColor: 'yellow', height: '100%' }}>
+              <input defaultValue="just a test 1" />
+              <input defaultValue="just a test 2" />
+            </div>
           </View>
-          <View header resizeable title="Test 4" style={{ flex: 1 }}>
-            <Component style={{ height: '100%', backgroundColor: 'rebeccapurple' }} />
-          </View>
+          <Flexbox style={{ flex: 1, flexDirection: 'column' }} resizeable>
+            <Flexbox
+              style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: 'row' }}
+              resizeable>
+              <View header resizeable title="Test 2" style={{ flex: 1 }}>
+                <Component style={{ height: '100%', backgroundColor: 'orange' }} />
+              </View>
+              <View header resizeable title="Test 4" style={{ flex: 1 }}>
+                <Component style={{ height: '100%', backgroundColor: 'rebeccapurple' }} />
+              </View>
+            </Flexbox>
+            <View header id="bar" resizeable title="Test 5" style={{ flex: 1 }}>
+              <StatefulComponent style={{ height: '100%', backgroundColor: '#94bff5' }} />
+            </View>
+            <View header id="foo" resizeable title="Test 6" style={{ flex: 1 }}>
+              <StatefulComponent
+                initialState="I'm a Tree"
+                style={{ height: '100%', backgroundColor: 'pink' }}
+              />
+            </View>
+          </Flexbox>
         </Flexbox>
-        <View header id="bar" resizeable title="Test 5" style={{ flex: 1 }}>
-          <StatefulComponent style={{ height: '100%', backgroundColor: '#94bff5' }} />
-        </View>
-        <View header id="foo" resizeable title="Test 6" style={{ flex: 1 }}>
-          <StatefulComponent
-            initialState="I'm a Tree"
-            style={{ height: '100%', backgroundColor: 'pink' }}
-          />
-        </View>
-      </Flexbox>
-    </Flexbox>
-  </DraggableLayout>
-);
+      </DraggableLayout>
+    </LayoutProvider>
+  );
+};
 
 SimpleNestingWithOffset.displaySequence = displaySequence++;
 

@@ -179,7 +179,6 @@ export const ParsedInput = forwardRef(function ParsedInput(
   const selectedCount = selectedIdValues.length;
 
   useLayoutEffect(() => {
-    console.log(`selectedCount has changed to ${selectedCount}`);
     setHighlightedIdx(selectedCount);
   }, [selectedCount]);
 

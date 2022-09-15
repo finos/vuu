@@ -4,6 +4,7 @@ import { getServerUrl } from './hooks/useServerConnection';
 import RemoteDataSource from './remote-data-source';
 
 const DEFAULT_BUFFER_SIZE = 300;
+// const DEFAULT_BUFFER_SIZE = 0;
 
 export interface DataSourceSchema {
   columns: Column[];

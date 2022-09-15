@@ -133,7 +133,7 @@ export const App = ({ user }) => {
         );
       }
     } else {
-      console.log(`App, handleServiceRequest ${JSON.stringify(response)}`);
+      console.warn(`App, handleServiceRequest ${JSON.stringify(response)}`);
     }
   }, []);
 

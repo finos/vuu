@@ -13,7 +13,7 @@ import {
   VuuUIMessageInRPC,
   VuuUIMessageOut
 } from '../vuuUIMessageTypes';
-import { VuuTable } from '../vuuProtocolMessageTypes';
+import { VuuTable } from '@vuu-ui/data-types';
 
 const logger = createLogger('ConnectionManager', logColor.green);
 

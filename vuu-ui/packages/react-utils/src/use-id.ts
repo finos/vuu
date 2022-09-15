@@ -7,5 +7,3 @@ export const useId = (idProp?: string) => {
   }, [idProp]);
   return id;
 };
-
-export const getUniqueId = () => `hw-${Math.round(Math.random() * 1e5)}`;

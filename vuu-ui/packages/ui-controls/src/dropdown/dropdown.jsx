@@ -99,12 +99,6 @@ export const Dropdown = forwardRef(function Dropdown(
   useEffect(() => {
     if (open) {
       listenforClickAway(true, handleClickAway);
-      // if (autofocus){
-      //   console.log(`we want toautoficus on open`)
-      //   if (contentRef.current !== 'content'){
-      //     contentRef.current.focus();
-      //   }
-      // }
     } else {
       listenforClickAway(false, handleClickAway);
     }

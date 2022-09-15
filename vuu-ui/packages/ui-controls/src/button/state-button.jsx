@@ -1,12 +1,12 @@
 import React from 'react';
 import cx from 'classnames';
 import { useControlled } from '@vuu-ui/react-utils';
-import Button from './button';
+import { Button } from './button';
 import './state-button.css';
 
 const classBase = 'hwStateButton';
 
-const StateButton = ({
+export const StateButton = ({
   checked: checkedProp,
   children,
   className: classNameProp,
@@ -35,5 +35,3 @@ const StateButton = ({
     </Button>
   );
 };
-
-export default StateButton;

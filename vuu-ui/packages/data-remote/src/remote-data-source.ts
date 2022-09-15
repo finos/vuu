@@ -1,7 +1,7 @@
 import { createLogger, DataTypes, EventEmitter, logColor, uuid } from '@vuu-ui/utils';
 import { DataSource, DataSourceProps, SubscribeCallback, SubscribeProps } from './data-source';
 import { VuuUIMessageIn } from './vuuUIMessageTypes';
-import { VuuAggregation } from './vuuProtocolMessageTypes';
+import { VuuAggregation, VuuSortCol } from '@vuu-ui/data-types';
 
 import { msgType as Msg } from './constants';
 
@@ -20,7 +20,7 @@ const NullServer = {
     console.log(`%cNullServer.handleMessageFromClient ${JSON.stringify(message)}`, 'color:red')
 };
 
-const defaultRange = { lo: 0, hi: 0 };
+const defaultRange = { from: 0, to: 0 };
 
 export interface DataSourceColumn {}
 
@@ -243,11 +243,11 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
     }
   }
 
-  setRange(lo: number, hi: number) {
+  setRange(from: number, to: number) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.setViewRange,
-      range: { lo, hi }
+      range: { from, to }
     });
   }
 
@@ -319,7 +319,7 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
   }
 
   // TODO columns cannot simply be strings
-  sort(columns: string[]) {
+  sort(columns: VuuSortCol[]) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.sort,

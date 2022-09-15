@@ -1,19 +1,14 @@
 import React from 'react';
-import { Flexbox, useLayoutContext, View } from '@vuu-ui/layout';
+import { Flexbox, View } from '@vuu-ui/layout';
 import { Button } from '@vuu-ui/ui-controls';
 import { useForceRender } from './use-force-render';
 
 const SimpleContent = ({ children }) => {
-  console.log('%cSimpleContent render', 'color:green');
-
   return <div className="SimpleComponent">{children}</div>;
 };
 
 export const SimpleComponent = () => {
-  console.log(`%cSimpleComponent render`, 'color:green');
   const forceRender = useForceRender();
-  const layoutContext = useLayoutContext();
-  console.log({ layoutContext });
 
   return (
     <Flexbox id="fb-simple-component" style={{ flexDirection: 'row' }}>

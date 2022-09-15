@@ -1,34 +1,15 @@
-import { FromToRange } from './buffer-range';
-
-export interface VuuRange {
-  from: number;
-  to: number;
-}
-export interface HwRange {
-  lo: number;
-  hi: number;
-}
-
-const isVuuRange = (range: VuuRange | HwRange): range is VuuRange =>
-  typeof (range as VuuRange).from === 'number' && typeof (range as VuuRange).to === 'number';
-
-const isHwRange = (range: VuuRange | HwRange): range is HwRange =>
-  typeof (range as HwRange).lo === 'number' && typeof (range as HwRange).hi === 'number';
+import { VuuRange } from '@vuu-ui/data-types';
 
 export class KeySet {
   private keys: Map<number, number>;
   private free: number[];
   private nextKeyValue: number;
 
-  constructor(range: VuuRange | HwRange) {
+  constructor(range: VuuRange) {
     this.keys = new Map();
     this.free = [];
     this.nextKeyValue = 0;
-    if (isVuuRange(range)) {
-      this.reset(range);
-    } else if (isHwRange(range)) {
-      this.reset({ from: range.lo, to: range.hi });
-    }
+    this.reset(range);
   }
 
   public next(): number {
@@ -39,7 +20,7 @@ export class KeySet {
     }
   }
 
-  public reset({ from, to }: FromToRange) {
+  public reset({ from, to }: VuuRange) {
     this.keys.forEach((keyValue, rowIndex) => {
       if (rowIndex < from || rowIndex >= to) {
         this.free.push(keyValue);

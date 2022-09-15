@@ -1,5 +1,6 @@
 import { ReactElement } from 'react';
 import { DropTarget } from '../drag-drop/DropTarget';
+import { DragDropRect, DragInstructions, DropPos } from '../drag-drop';
 
 export interface WithProps {
   props?: { [key: string]: any };
@@ -19,9 +20,10 @@ export interface LayoutRoot extends WithProps {
 
 export interface LayoutJSON extends WithType {
   children?: LayoutJSON[];
-  id?: string;
-  props?: any;
+  id: string;
+  props?: { [key: string]: any };
   state?: any;
+  type: string;
 }
 
 export interface WithActive {
@@ -34,14 +36,18 @@ export type layoutType = 'Flexbox' | 'View' | 'DraggableLayout' | 'Stack';
 
 export const LayoutActionType = {
   ADD: 'add',
+  DRAG_START: 'drag-start',
   DRAG_DROP: 'drag-drop',
   MAXIMIZE: 'maximize',
+  MINIMIZE: 'minimize',
   REMOVE: 'remove',
   REPLACE: 'replace',
+  RESTORE: 'restore',
   SAVE: 'save',
   SET_TITLE: 'set-title',
   SPLITTER_RESIZE: 'splitter-resize',
-  SWITCH_TAB: 'switch-tab'
+  SWITCH_TAB: 'switch-tab',
+  TEAROUT: 'tearout'
 } as const;
 
 export type AddAction = {
@@ -53,22 +59,30 @@ export type AddAction = {
 export type DragDropAction = {
   draggedReactElement: ReactElement;
   dragInstructions: any;
-  dropTarget: DropTarget;
+  dropTarget: Partial<DropTarget>;
   type: typeof LayoutActionType.DRAG_DROP;
 };
 
 export type MaximizeAction = {
-  path: string;
+  path?: string;
   type: typeof LayoutActionType.MAXIMIZE;
 };
+export type MinimizeAction = {
+  path?: string;
+  type: typeof LayoutActionType.MINIMIZE;
+};
 export type RemoveAction = {
-  path: string;
+  path?: string;
   type: typeof LayoutActionType.REMOVE;
 };
 export type ReplaceAction = {
   replacement: any;
   target: any;
   type: typeof LayoutActionType.REPLACE;
+};
+export type RestoreAction = {
+  path?: string;
+  type: typeof LayoutActionType.RESTORE;
 };
 export type SetTitleAction = {
   path: string;
@@ -85,17 +99,47 @@ export type SwitchTabAction = {
   path: string;
   type: typeof LayoutActionType.SWITCH_TAB;
 };
+export type TearoutAction = {
+  path?: string;
+  type: typeof LayoutActionType.TEAROUT;
+};
 
 export type LayoutReducerAction =
   | AddAction
   | DragDropAction
   | MaximizeAction
+  | MinimizeAction
   | RemoveAction
   | ReplaceAction
+  | RestoreAction
   | SetTitleAction
   | SplitterResizeAction
   | SwitchTabAction;
 
 export type SaveAction = {
   type: typeof LayoutActionType.SAVE;
+};
+
+export type ToolbarContributionViewAction = {
+  content: ReactElement;
+  location: string;
+  type: 'toolbar-contribution';
+};
+
+export type MousedownViewAction = {
+  preDragActivity?: any;
+  index?: number;
+  type: 'mousedown';
+};
+
+// TODO split this out into separate actions for different drag scenarios
+export type DragStartAction = {
+  component?: ReactElement;
+  dragContainerPath?: string;
+  dragRect: DragDropRect;
+  dropTargets?: string[];
+  evt: MouseEvent;
+  instructions?: DragInstructions;
+  path: string;
+  type: typeof LayoutActionType.DRAG_START;
 };
