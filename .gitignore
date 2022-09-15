@@ -3,7 +3,7 @@
 /.idea/compiler.xml
 /.idea/workspace.xml
 /.idea/
-/target/
+target/
 /gc.log
 /toolbox/toolbox.iml
 /vuu/vuu.iml
