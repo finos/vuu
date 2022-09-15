@@ -7,8 +7,7 @@
   "license": "Apache-2.0",
   "files": [
     "index.js",
-    "/src",
-    "/types"
+    "/src"
   ],
   "scripts": {
     "build": "node ../../scripts/build.mjs",

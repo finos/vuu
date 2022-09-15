@@ -1,47 +1,55 @@
-import { bumpDependencies, exec } from './utils.mjs';
+import shell from 'shelljs';
+import fs from 'fs';
+import { readPackageJson } from './utils.mjs';
 
-(async function () {
-  try {
-    const currentPath = process.cwd();
-    const PACKAGE_PATH = `${currentPath}/packages`;
+const packages = [
+  'utils',
+  'react-utils',
+  'theme',
+  'data-remote',
+  'data-store',
+  'data-worker',
+  'datagrid-parsers',
+  'ui-controls',
+  'data-grid',
+  'layout',
+  'parsed-input',
+  'shell',
+  'app',
+  'app-vuu-example',
+  'showcase'
+];
 
-    console.log('[BUMP PACKAGE VERSION]');
-    await Promise.all([
-      exec(`cd ${PACKAGE_PATH}/utils && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/react-utils && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/theme && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/data-remote && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/data-store && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/data-worker && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/ui-controls && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/datagrid-parsers && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/data-grid && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/layout && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/parsed-input && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/shell && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/app && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/app-vuu-example && npm version patch`),
-      exec(`cd ${PACKAGE_PATH}/showcase && npm version patch`)
-    ]);
+const rewriteDependencyVersions = (dependencies, version) => {
+  let deps = Object.keys(dependencies).slice();
+  deps.forEach((pckName) => {
+    if (pckName.startsWith('@vuu-ui')) {
+      dependencies[pckName] = version;
+    }
+  });
+};
 
-    console.log('[BUMP DEPENDENCY VERSIONS]');
-    bumpDependencies(`${PACKAGE_PATH}/utils/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/react-utils/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/theme/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/data-remote/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/data-store/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/data-worker/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/ui-controls/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/datagrid-parsers/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/data-grid/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/layout/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/parsed-input/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/shell/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/app/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/app-vuu-example/package.json`);
-    bumpDependencies(`${PACKAGE_PATH}/showcase/package.json`);
-  } catch (error) {
-    console.error(error);
-    process.exit((error && error.code) || 1); // properly exit with error code (useful for CI or chaining)
+export const bumpDependencies = () => {
+  let json = readPackageJson();
+  let { version, dependencies, peerDependencies } = json;
+  if (dependencies || peerDependencies) {
+    dependencies && rewriteDependencyVersions(dependencies, version);
+    peerDependencies && rewriteDependencyVersions(peerDependencies, version);
+    fs.writeFileSync('package.json', JSON.stringify(json, null, 2));
   }
-})();
+};
+
+function bumpPackageVersion(packageName) {
+  shell.cd(`packages/${packageName}`);
+  shell.exec('yarn version --patch --no-git-tag-version');
+  shell.cd('../..');
+}
+
+function bumpPackageDependencyVersions(packageName) {
+  shell.cd(`packages/${packageName}`);
+  bumpDependencies();
+  shell.cd('../..');
+}
+
+packages.forEach((packageName) => bumpPackageVersion(packageName));
+packages.forEach((packageName) => bumpPackageDependencyVersions(packageName));
