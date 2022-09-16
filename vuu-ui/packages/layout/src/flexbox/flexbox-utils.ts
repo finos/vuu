@@ -104,7 +104,7 @@ function identifyResizeBystanders(contentMeta: ContentMeta[], participants?: num
 function getLeadingResizeablePos(contentMeta: ContentMeta[], idx: number) {
   let pos = idx,
     resizeable = false;
-  while (pos >= 0 && !resizeable) {
+  while (pos >= 1 && !resizeable) {
     pos = pos - 1;
     resizeable = isResizeable(contentMeta, pos);
   }
