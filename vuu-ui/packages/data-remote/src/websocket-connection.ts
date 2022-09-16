@@ -1,4 +1,3 @@
-import { createLogger, logColor } from '@vuu-ui/utils/src/logging';
 import { ServerToClientMessage, ClientToServerMessage } from '@vuu-ui/data-types';
 import { Connection } from './connectionTypes';
 
@@ -10,7 +9,7 @@ export type ConnectionCallback = (msg: ConnectionMessage) => void;
 // TEST_DATA_COLLECTION
 // import { saveTestData } from './test-data-collection';
 
-const logger = createLogger('WebsocketConnection', logColor.brown);
+const logger = console;
 
 const connectionAttempts: {
   [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
@@ -19,7 +18,7 @@ const connectionAttempts: {
 const setWebsocket = Symbol('setWebsocket');
 const connectionCallback = Symbol('connectionCallback');
 
-export default async function connect(connectionString: string, callback: ConnectionCallback) {
+export async function connect(connectionString: string, callback: ConnectionCallback) {
   return makeConnection(connectionString, callback);
 }
 

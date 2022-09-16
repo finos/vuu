@@ -9,7 +9,7 @@ import { Grid, GridProvider } from '@vuu-ui/data-grid';
 import { createDataSource, useViewserver } from '@vuu-ui/data-remote';
 import AppContext from '../../app-context';
 
-import '@vuu-ui/parsed-input/index.css';
+// import '@vuu-ui/parsed-input/index.css';
 import './filtered-grid.css';
 
 const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {

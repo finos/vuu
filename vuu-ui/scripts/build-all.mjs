@@ -1,8 +1,11 @@
 import shell from 'shelljs';
 
+const args = process.argv.slice(2);
+const dev = args.includes('--dev') ? ' --dev' : '';
+
 function buildPackage(packageName) {
   shell.cd(`packages/${packageName}`);
-  shell.exec('yarn build');
+  shell.exec(`yarn build${dev}`);
   shell.cd('../..');
 }
 
@@ -12,7 +15,6 @@ const packages = [
   'theme',
   'data-remote',
   'data-store',
-  'data-worker',
   'datagrid-parsers',
   'ui-controls',
   'data-grid',

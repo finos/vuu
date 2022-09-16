@@ -8,7 +8,6 @@ const packages = [
   'theme',
   'data-remote',
   'data-store',
-  'data-worker',
   'datagrid-parsers',
   'ui-controls',
   'data-grid',

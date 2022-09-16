@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom';
 import { LoginPanel } from '@vuu-ui/shell';
 import { ThemeProvider } from '@vuu-ui/theme';
 
-import '@vuu-ui/theme/index.css';
-import '@vuu-ui/shell/index.css';
-import '@vuu-ui/layout/index.css';
-import '@vuu-ui/ui-controls/index.css';
+// import '@vuu-ui/theme/index.css';
+// import '@vuu-ui/shell/index.css';
+// import '@vuu-ui/layout/index.css';
+// import '@vuu-ui/ui-controls/index.css';
 import './login.css';
 
 function login(username, password) {

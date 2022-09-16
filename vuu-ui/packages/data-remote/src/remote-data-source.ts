@@ -1,4 +1,4 @@
-import { createLogger, DataTypes, EventEmitter, logColor, uuid } from '@vuu-ui/utils';
+import { DataTypes, EventEmitter, uuid } from '@vuu-ui/utils';
 import { DataSource, DataSourceProps, SubscribeCallback, SubscribeProps } from './data-source';
 import { VuuUIMessageIn } from './vuuUIMessageTypes';
 import { VuuAggregation, VuuSortCol } from '@vuu-ui/data-types';
@@ -9,7 +9,7 @@ import { ConnectionManager } from './connection-manager';
 
 const { ROW_DATA } = DataTypes;
 
-const logger = createLogger('RemoteDataSource', logColor.blue);
+const logger = console;
 
 export const AvailableProxies = {
   Vuu: 'vuu'

@@ -1,11 +1,10 @@
-import { createLogger, logColor } from '@vuu-ui/utils/src/logging';
 import { AND, OR, EQUALS, GREATER_THAN, LESS_THAN, IN } from '@vuu-ui/utils/src/filter-utils';
 
 import DataStore from './data-store';
 import Table from './worker-table';
 import { viewportChanges } from './data-store-utils';
 
-const logger = createLogger('DataStoreConnection', logColor.brown);
+const logger = console;
 
 const OP_TO_FILTER_TYPE = {
   and: AND,

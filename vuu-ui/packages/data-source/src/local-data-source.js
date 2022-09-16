@@ -1,4 +1,4 @@
-import { createLogger, DataTypes, EventEmitter, logColor } from '@vuu-ui/utils';
+import { DataTypes, EventEmitter } from '@vuu-ui/utils';
 import { DataStore, Table } from '@vuu-ui/data-store';
 import LocalUpdateQueue from './local-update-queue';
 
@@ -16,7 +16,7 @@ const loadData = (data) => {
     : Promise.resolve({ default: data });
 };
 
-const logger = createLogger('LocalDataSource', logColor.blue);
+const logger = console;
 
 export default class LocalDataSource extends EventEmitter {
   constructor({ bufferSize = 100, schema, data, primaryKey, dataUrl, tableName }) {

@@ -11,6 +11,8 @@
   "files": [
     "index.js",
     "index.js.map",
+    "worker.js",
+    "worker.js.map",
     "/src"
   ],
   "devDependencies": {

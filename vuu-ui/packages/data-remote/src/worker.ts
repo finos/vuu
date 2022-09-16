@@ -1,5 +1,4 @@
-import connectWebsocket from '@vuu-ui/data-remote/src/websocket-connection';
-import connectDataStore from '@vuu-ui/data-store/src/data-store-connection';
+import { connect as connectWebsocket } from '@vuu-ui/data-remote/src/websocket-connection';
 import { ServerProxy } from '@vuu-ui/data-remote/src/server-proxy/server-proxy';
 import {
   ConnectionStatusMessage,
@@ -15,8 +14,7 @@ async function connectToServer(
   useWebsocket: boolean,
   onConnectionStatusChange: (msg: ConnectionStatusMessage) => void
 ) {
-  const makeConnection = useWebsocket ? connectWebsocket : connectDataStore;
-  const connection = await makeConnection(
+  const connection = await connectWebsocket(
     url,
     // if this was called during connect, we would get a ReferenceError, but it will
     // never be called until subscriptions have been made, so this is safe.

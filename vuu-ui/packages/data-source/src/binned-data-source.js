@@ -1,8 +1,8 @@
 //TODO neither this file nor filter-data-view belong here - thye are not specific to remote views
 
-import { createLogger, DataTypes, logColor, EventEmitter } from '@vuu-ui/utils';
+import { DataTypes, EventEmitter } from '@vuu-ui/utils';
 
-const logger = createLogger('BinnedDataSource', logColor.brown);
+const logger = console;
 
 export default class BinnedDataSource extends EventEmitter {
   constructor(dataView, column) {

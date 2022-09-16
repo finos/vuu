@@ -32,6 +32,7 @@ yarn-error.log*
 /vuu-ui/packages/showcase/public/packages
 
 /vuu-ui/storybook-static
+deployed_apps
 dist
 /vuu-ui-legacy/target/
 /vuu-ui-legacy/vuu-ui-legacy.iml

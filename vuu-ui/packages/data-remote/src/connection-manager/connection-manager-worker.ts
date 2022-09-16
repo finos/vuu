@@ -1,4 +1,4 @@
-import { createLogger, logColor, EventEmitter, uuid } from '@vuu-ui/utils';
+import { EventEmitter, uuid } from '@vuu-ui/utils';
 import * as Message from '../server-proxy/messages';
 import {
   ClientViewportMessage,
@@ -15,7 +15,7 @@ import {
 } from '../vuuUIMessageTypes';
 import { VuuTable } from '@vuu-ui/data-types';
 
-const logger = createLogger('ConnectionManager', logColor.green);
+const logger = console;
 
 let worker: Worker;
 let pendingWorker: Promise<Worker>;
@@ -41,7 +41,7 @@ const getWorker = async (
   token: string = '',
   handleConnectionStatusChange: (msg: any) => void
 ) => {
-  const workerUrl = 'worker.js?debug=all-messages';
+  const workerUrl = 'worker.js';
 
   if (token === '' && pendingWorker === undefined) {
     //create a new promises, store the resolve/reject pair and return it
@@ -51,7 +51,12 @@ const getWorker = async (
     pendingWorker ||
     // we get this far when we receive the first request with auth token
     (pendingWorker = new Promise((resolve) => {
+      console.log(`ConnectionManager load worker at ${workerUrl}`);
       const worker = new Worker(workerUrl, { type: 'module' });
+
+      const timer: number | null = window.setTimeout(() => {
+        console.error('timed out waiting for worker to load');
+      }, 1000);
 
       // This is the inial message handler only, it processes messages whilst we are
       // establishing a connection. When we resolve the worker, a runtime message
@@ -59,6 +64,7 @@ const getWorker = async (
       worker.onmessage = (msg: MessageEvent<VuuUIMessageIn>) => {
         const { data: message } = msg;
         if (message.type === 'ready') {
+          window.clearTimeout(timer);
           worker.postMessage({ type: 'connect', url, useWebsocket: !!server, token });
         } else if (message.type === 'connected') {
           resolve(worker);
