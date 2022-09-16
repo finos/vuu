@@ -40,3 +40,6 @@
   - [Query Planner](./perf/query_planner.md)
 - [Security](./security/security.md)
   - [Authentication](./security/Authentication.md)
+- [New Features - RFC](./security/security.md)
+  - [Calculated Columns](./rfc/CalcuatedColumns.md)
+  - [Conditional Formatting](./rfc/ConditionalFormatting.md)
