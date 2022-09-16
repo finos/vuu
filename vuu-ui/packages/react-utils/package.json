@@ -3,7 +3,6 @@
   "version": "0.0.21",
   "main": "src/index.ts",
   "author": "heswell",
-  "module": "index.js",
   "license": "Apache-2.0",
   "files": [
     "index.js",

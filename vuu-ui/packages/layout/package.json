@@ -2,7 +2,6 @@
   "name": "@vuu-ui/layout",
   "version": "0.0.21",
   "description": "VUU Layout Components",
-  "module": "src/index.ts",
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",

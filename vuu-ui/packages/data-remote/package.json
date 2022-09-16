@@ -1,8 +1,7 @@
 {
   "name": "@vuu-ui/data-remote",
   "version": "0.0.21",
-  "main": "index.ts",
-  "module": "index.js",
+  "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
@@ -14,7 +13,6 @@
     "index.js.map",
     "/src"
   ],
-  "types": "./types/index.d.ts",
   "devDependencies": {
     "@vuu-ui/data-types": "1.0.0"
   },

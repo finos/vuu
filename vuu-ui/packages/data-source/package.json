@@ -1,7 +1,7 @@
 {
   "name": "@vuu-ui/data-source",
   "version": "0.0.1",
-  "module": "index.js",
+  "main": "src/ndex.js",
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {

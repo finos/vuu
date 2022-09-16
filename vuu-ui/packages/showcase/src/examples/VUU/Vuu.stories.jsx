@@ -11,9 +11,9 @@ import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
 import createSuggestionProvider from './vuu-filter-suggestion-provider';
 import { vuuTableMeta } from './Vuu.data';
 
-import '@vuu-ui/theme/index.css';
-import '@vuu-ui/layout/index.css';
-import '@vuu-ui/data-grid/index.css';
+// import '@vuu-ui/theme/index.css';
+// import '@vuu-ui/layout/index.css';
+// import '@vuu-ui/data-grid/index.css';
 
 let displaySequence = 1;
 
