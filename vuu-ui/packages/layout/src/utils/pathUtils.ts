@@ -4,6 +4,15 @@ import { isContainer } from '../registry/ComponentRegistry';
 import { getProp, getProps } from './propUtils';
 import { typeOf } from './typeOf';
 
+const removeFinalPathSegment = (path: string) => {
+  const pos = path.lastIndexOf('.');
+  if (pos === -1) {
+    return path;
+  } else {
+    return path.slice(0, pos);
+  }
+};
+
 // TODO isn't this equivalent to containerOf ?
 export function followPathToParent(source: ReactElement, path: string): ReactElement | null {
   const { 'data-path': dataPath, path: sourcePath = dataPath } = getProps(source);
@@ -11,7 +20,7 @@ export function followPathToParent(source: ReactElement, path: string): ReactEle
   if (path === '0') return null;
   if (path === sourcePath) return null;
 
-  return followPath(source, path.replace(/.\d+$/, ''), true);
+  return followPath(source, removeFinalPathSegment(path), true);
 }
 
 export function findTarget(
