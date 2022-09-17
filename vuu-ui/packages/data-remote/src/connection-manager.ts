@@ -16,7 +16,10 @@ import {
 import { VuuTable } from '@vuu-ui/data-types';
 // Note: the InlinedWorker is a generated file, it must be built
 import { InlinedWorker } from './inlined-worker';
-const workerSource = InlinedWorker.toString().replace(/^function .+\{?|\}$/g, '');
+const workerSource = InlinedWorker.toString().replace(
+  /(?:^function\s+[a-zA-Z]+\(\)\s*\{)|(?:\}$)/g,
+  ''
+);
 var workerBlob = new Blob([workerSource], { type: 'text/javascript' });
 var workerBlobUrl = URL.createObjectURL(workerBlob);
 const logger = console;
