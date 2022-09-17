@@ -1,23 +1,24 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Grid, GridProvider } from '@vuu-ui/data-grid';
-import { ContextMenuProvider } from '@vuu-ui/ui-controls';
+import { Button, ContextMenuProvider } from '@vuu-ui/ui-controls';
 import { StackLayout as Stack, View, useViewContext } from '@vuu-ui/layout';
 
-import { RemoteDataSource, Servers, useViewserver } from '@vuu-ui/data-remote';
+import {
+  authenticate as vuuAuthenticate,
+  connectToServer,
+  RemoteDataSource,
+  useViewserver
+} from '@vuu-ui/data-remote';
 
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
 import { parseFilter, extractFilter } from '@vuu-ui/datagrid-parsers';
 import createSuggestionProvider from './vuu-filter-suggestion-provider';
-import { vuuTableMeta } from './Vuu.data';
-
-// import '@vuu-ui/theme/index.css';
-// import '@vuu-ui/layout/index.css';
-// import '@vuu-ui/data-grid/index.css';
+import { testTableMeta } from './Vuu.data';
 
 let displaySequence = 1;
 
-const { columns, dataTypes } = vuuTableMeta.instruments;
+const { columns, dataTypes } = testTableMeta.instruments;
 const instrumentColumns = columns.map((name, index) => {
   return {
     name,
@@ -28,6 +29,7 @@ const instrumentColumns = columns.map((name, index) => {
 export const VuuInstruments = () => {
   const gridRef = useRef(null);
   const [namedFilters, setNamedFilters] = useState([]);
+  const [token, setToken] = useState();
 
   const onRpcResponse = useCallback((response) => {
     console.log(`handleRpcResponse ${JSON.stringify(response)}`);
@@ -37,8 +39,8 @@ export const VuuInstruments = () => {
     const dataConfig = {
       bufferSize: 100,
       columns,
-      serverName: Servers.Vuu,
-      tableName: { table: 'instruments', module: 'SIMUL' },
+
+      tableName: { table: 'Instruments', module: 'SIMUL' },
       serverUrl: '127.0.0.1:8090/websocket'
     };
     return [dataConfig, new RemoteDataSource(dataConfig)];
@@ -47,7 +49,8 @@ export const VuuInstruments = () => {
   const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction, makeRpcCall } =
     useViewserver({
       dataSource,
-      onRpcResponse
+      onRpcResponse,
+      label: 'Vuu.stories'
     });
 
   const handleCommit = (result) => {
@@ -69,6 +72,16 @@ export const VuuInstruments = () => {
     [makeRpcCall]
   );
 
+  const authenticate = useCallback(async () => {
+    const authToken = await vuuAuthenticate('steve', 'xyz', 'http://127.0.0.1:8090');
+    setToken(authToken);
+  }, []);
+
+  const connect = useCallback(() => {
+    console.log(`connect with new token  ${token}`);
+    connectToServer('127.0.0.1:8090/websocket', token);
+  }, [token]);
+
   return (
     <div
       style={{
@@ -78,6 +91,10 @@ export const VuuInstruments = () => {
         width: 600,
         height: 700
       }}>
+      <div>
+        <Button onClick={authenticate}>authenticate</Button>
+        <Button onClick={connect}>Connect</Button>
+      </div>
       <ParserProvider
         parser={parseFilter}
         suggestionProvider={createSuggestionProvider({
@@ -116,7 +133,6 @@ VuuInstruments.displaySequence = displaySequence++;
 const instrumentConfig = {
   bufferSize: 100,
   columns: instrumentColumns.map((col) => col.name),
-  serverName: Servers.Vuu,
   tableName: { table: 'instruments', module: 'SIMUL' },
   serverUrl: '127.0.0.1:8090/websocket'
 };
@@ -181,7 +197,6 @@ export const TabbedTables = () => {
   const dataConfig = {
     bufferSize: 100,
     columns: instrumentColumns.map((col) => col.name),
-    serverName: Servers.Vuu,
     tableName: { table: 'instruments', module: 'SIMUL' },
     serverUrl: '127.0.0.1:8090/websocket'
   };

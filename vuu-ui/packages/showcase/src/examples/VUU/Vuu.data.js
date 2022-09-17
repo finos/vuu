@@ -60,3 +60,11 @@ export const vuuTableMeta = {
     key: 'ric'
   }
 };
+
+export const testTableMeta = {
+  instruments: {
+    columns: ['Symbol', 'Name', 'Price', 'MarketCap', 'IPO', 'Sector', 'Industry'],
+    dataTypes: ['string', 'string', 'double', 'int', 'string', 'string', 'string'],
+    key: 'ric'
+  }
+};

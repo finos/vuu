@@ -59,7 +59,7 @@ const getRPCType = (
 };
 
 interface PendingLogin {
-  resolve: (value: any) => void; // TODO
+  resolve: (value: string) => void; // TODO
   reject: () => void;
 }
 export class ServerProxy {
@@ -67,7 +67,7 @@ export class ServerProxy {
   private postMessageToClient: PostMessageToClientCallback;
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
-  private authToken?: string;
+  private authToken: string = '';
   private pendingLogin?: PendingLogin;
   private sessionId?: string;
   private queuedRequests: Array<ClientToServerMessage['body']> = [];
@@ -79,18 +79,16 @@ export class ServerProxy {
     this.mapClientToServerViewport = new Map();
   }
 
-  public async login(authToken?: string) {
+  public async login(authToken?: string): Promise<string | void> {
     if (authToken) {
       this.authToken = authToken;
+      return new Promise((resolve, reject) => {
+        this.sendMessageToServer({ type: Message.LOGIN, token: this.authToken, user: 'user' }, '');
+        this.pendingLogin = { resolve, reject };
+      });
+    } else if (this.authToken === '') {
+      console.warn(`ServerProxy login, cannot login until auth token has been obtained`);
     }
-    const token = this.authToken;
-    if (token === undefined) {
-      throw Error(`ServerProxy login, cannot login until auth token has been obtained`);
-    }
-    return new Promise((resolve, reject) => {
-      this.sendMessageToServer({ type: Message.LOGIN, token, user: 'user' }, '');
-      this.pendingLogin = { resolve, reject };
-    });
   }
 
   public subscribe(message: ServerProxySubscribeMessage) {
@@ -380,8 +378,10 @@ export class ServerProxy {
 
       case Message.LOGIN_SUCCESS:
         this.sessionId = sessionId;
+        // we should tear down the pending Login now
         this.pendingLogin?.resolve(sessionId);
         break;
+      // what about if login is rejected ?
 
       case Message.CREATE_VP_SUCCESS:
         {

@@ -176,7 +176,6 @@ export interface VuuUIMessageOutConnect {
   type: 'connect';
   token: string;
   url: string;
-  useWebsocket: boolean;
 }
 
 export interface VuuUIMessageOutSubscribe extends ServerProxySubscribeMessage {

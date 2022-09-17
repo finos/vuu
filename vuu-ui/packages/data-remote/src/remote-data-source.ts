@@ -11,10 +11,6 @@ const { ROW_DATA } = DataTypes;
 
 const logger = console;
 
-export const AvailableProxies = {
-  Vuu: 'vuu'
-};
-
 const NullServer = {
   handleMessageFromClient: (message: unknown) =>
     console.log(`%cNullServer.handleMessageFromClient ${JSON.stringify(message)}`, 'color:red')
@@ -27,14 +23,13 @@ export interface DataSourceColumn {}
 /*-----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
-export default class RemoteDataSource extends EventEmitter implements DataSource {
+export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
   private tableName: string;
   private columns: DataSourceColumn[];
   private viewport: string;
   private server: any;
   private url: string;
-  private serverName: string;
   private visualLink: string;
   private status: string;
   private disabled: boolean;
@@ -59,7 +54,6 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
     sort,
     tableName,
     configUrl,
-    serverName,
     serverUrl,
     viewport,
     'visual-link': visualLink
@@ -72,7 +66,6 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
 
     this.server = NullServer;
     this.url = serverUrl || configUrl;
-    this.serverName = serverName;
     this.visualLink = visualLink;
 
     this.status = 'initialising';
@@ -92,7 +85,8 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
     }
 
     this.server = null;
-    this.pendingServer = ConnectionManager.connect(this.url, this.serverName);
+    console.log(`[RemoteDataSource] call ConnectionManager.connect, but don't block`);
+    this.pendingServer = ConnectionManager.connect(this.url);
   }
 
   async subscribe(
@@ -128,7 +122,9 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
     this.tableName = tableName;
     this.columns = columns;
 
+    console.group(`[RemoteDataSource].subscribe  about to block until ServerAPI resolves`);
     this.server = await this.pendingServer;
+    console.groupEnd(`[RemoteDataSource].subscribe  unblocked - server resolved`);
 
     const { bufferSize } = this;
     this.server.subscribe(

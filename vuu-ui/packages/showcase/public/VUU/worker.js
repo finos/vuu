@@ -1,13 +1,1375 @@
-var K=console,D={},T=Symbol("setWebsocket"),I=Symbol("connectionCallback");async function H(o,e){return x(o,e)}async function _(o){x(o.url,o[I],o)}async function x(o,e,t){let s=D[o]||(D[o]={attemptsRemaining:5,status:"disconnected"});try{e({type:"connection-status",status:"connecting"});let r=typeof t<"u",n=await Te(o);console.log(`%c\u26A1 %c${o}`,"font-size: 24px;color: green;font-weight: bold;","color:green; font-size: 14px;"),t!==void 0&&t[T](n);let a=t??new v(n,o,e),i=r?"reconnected":"connected";return e({type:"connection-status",status:i}),a.status=i,a}catch{let n=--s.attemptsRemaining>0;if(e({type:"connection-status",status:"disconnected",reason:"failed to connect",retry:n}),n)return _e(o,e,t,1e4)}}var _e=(o,e,t,s)=>new Promise(r=>{setTimeout(()=>{r(x(o,e,t))},s)}),Te=o=>new Promise((e,t)=>{let s=new WebSocket("ws://"+o);s.onopen=()=>e(s),s.onerror=r=>t(r)}),G=()=>{K.log("Connection cannot be closed, socket not yet opened")},q=o=>{K.log(`Message cannot be sent, socket closed: ${o.body.type}`)},ve=o=>{try{return JSON.parse(o)}catch{throw Error(`Error parsing JSON response from server ${o}`)}},v=class{[I];close=G;requiresLogin=!0;send=q;status="ready";url;constructor(e,t,s){this.url=t,this[I]=s,this[T](e)}reconnect(){_(this)}[T](e){let t=this[I];e.onmessage=n=>{let a=ve(n.data);t(a)},e.onerror=()=>{console.log(`%c\u26A1 %c${this.url}`,"font-size: 24px;color: red;font-weight: bold;","color:red; font-size: 14px;"),t({type:"connection-status",status:"disconnected",reason:"error"}),this.status!=="closed"&&(_(this),this.send=r)},e.onclose=()=>{console.log(`%c\u26A1 %c${this.url}`,"font-size: 24px;color: orange;font-weight: bold;","color:orange; font-size: 14px;"),t({type:"connection-status",status:"disconnected",reason:"close"}),this.status!=="closed"&&(_(this),this.send=r)};let s=n=>{e.send(JSON.stringify(n))},r=n=>{console.log(`queuing message ${JSON.stringify(n)} until websocket reconnected`)};this.send=s,this.close=()=>{console.log("[Connection] close websocket"),this.status="closed",e.close(),this.close=G,this.send=q}}};var $="CHANGE_VP",J="CHANGE_VP_SUCCESS",U="CHANGE_VP_RANGE",z="CHANGE_VP_RANGE_SUCCESS",Q="CLOSE_TREE_NODE",Y="CLOSE_TREE_SUCCESS";var O="CREATE_VISUAL_LINK",j="CREATE_VISUAL_LINK_SUCCESS",X="CREATE_VP",Z="CREATE_VP_SUCCESS",ee="DISABLE_VP",te="DISABLE_VP_SUCCESS";var se="ENABLE_VP",ne="ENABLE_VP_SUCCESS";var re="GET_TABLE_LIST",ie="GET_TABLE_META",oe="GET_VP_VISUAL_LINKS",ae="GET_VIEW_PORT_MENUS",ue="VIEW_PORT_MENUS_RESP";var P="VIEW_PORT_MENU_RESP";var le="HB",ce="HB_RESP",pe="LOGIN",ge="LOGIN_SUCCESS",de="OPEN_TREE_NODE",he="OPEN_TREE_SUCCESS";var fe="REMOVE_VP",Ve="REMOVE_VP_SUCCESS";var Ce="RPC_CALL",L="RPC_RESP";var Ee="SET_SELECTION",Ie="SET_SELECTION_SUCCESS",A="TABLE_META_RESP",N="TABLE_LIST_RESP",be="VP_VISUAL_LINKS_RESP",Se="TABLE_ROW";var b=class{keys;free;nextKeyValue;constructor(e){this.keys=new Map,this.free=[],this.nextKeyValue=0,this.reset(e)}next(){return this.free.length>0?this.free.pop():this.nextKeyValue++}reset({from:e,to:t}){this.keys.forEach((r,n)=>{(n<e||n>=t)&&(this.free.push(r),this.keys.delete(n))});let s=t-e;this.keys.size+this.free.length>s&&(this.free.length=s-this.keys.size);for(let r=e;r<t;r++)if(!this.keys.has(r)){let n=this.next();this.keys.set(r,n)}}keyFor(e){let t=this.keys.get(e);if(t===void 0)throw Error(`KeySet, no key found for rowIndex ${e}`);return t}};var xe={Enter:"Enter",Delete:"Delete"},Ue={Home:"Home",End:"End",ArrowRight:"ArrowRight",ArrowLeft:"ArrowLeft",ArrowDown:"ArrowDown",ArrowUp:"ArrowUp",Tab:"Tab"},Oe={F1:"F1",F2:"F2",F3:"F3",F4:"F4",F5:"F5",F6:"F6",F7:"F7",F8:"F8",F9:"F9",F10:"F10",F11:"F11",F12:"F12"},Qe={...xe,...Ue,...Oe};function F({from:o,to:e},t=0,s=Number.MAX_SAFE_INTEGER){if(t===0)return{from:o,to:Math.min(e,s)};if(o===0)return{from:o,to:Math.min(e+t,s)};{let r=e-o,n=Math.round(t/2),a=o-n<0,i=s-(e+n)<0;return a&&i?{from:0,to:s}:a?{from:0,to:r+t}:i?{from:Math.max(0,s-(r+t)),to:s}:{from:o-n,to:e+n}}}var h=class{from;to;constructor(e,t){this.from=e,this.to=t}isWithin(e){return e>=this.from&&e<this.to}overlap(e,t){return e>=this.to||t<this.from?[0,0]:[Math.max(e,this.from),Math.min(t,this.to)]}copy(){return new h(this.from,this.to)}};var S=(o,e,t,s)=>{let r=s*.25;return!o||!s||o.to-t<r?!0:o.from>0&&e-o.from<r};var y=[],M=class{bufferSize;range;internalData;rowsWithinRange;clientRange;rowCount;constructor({from:e,to:t},{from:s,to:r},n){this.bufferSize=n,this.clientRange=new h(e,t),this.range=new h(s,r),this.internalData=new Array(n),this.rowsWithinRange=0,this.rowCount=0}get hasAllRowsWithinRange(){return this.rowsWithinRange===this.clientRange.to-this.clientRange.from||this.rowCount>0&&this.rowsWithinRange===this.rowCount}setRowCount=e=>{if(e<this.internalData.length&&(this.internalData.length=e),e<this.rowCount){this.rowsWithinRange=0;let t=Math.min(e,this.clientRange.to);for(let s=this.clientRange.from;s<t;s++){let r=s-this.range.from;this.internalData[r]!==void 0&&(this.rowsWithinRange+=1)}}this.rowCount=e};setAtIndex(e,t){let s=this.isWithinClientRange(e);if(s||this.isWithinRange(e)){let r=e-this.range.from;!this.internalData[r]&&s&&(this.rowsWithinRange+=1),this.internalData[r]=t}return s}getAtIndex(e){return this.range.isWithin(e)&&this.internalData[e-this.range.from]!=null?this.internalData[e-this.range.from]:void 0}isWithinRange(e){return this.range.isWithin(e)}isWithinClientRange(e){return this.clientRange.isWithin(e)}setClientRange(e,t){let s=this.clientRange.from,r=Math.min(this.clientRange.to,this.rowCount);if(e===s&&t===r)return[!1,y,y];let n=this.clientRange.copy();this.clientRange.from=e,this.clientRange.to=t,this.rowsWithinRange=0;for(let l=e;l<t;l++){let p=l-this.range.from;this.internalData[p]&&(this.rowsWithinRange+=1)}let a=y,i=y,u=this.range.from;if(this.hasAllRowsWithinRange)if(t>n.to){let l=Math.max(e,n.to);a=this.internalData.slice(l-u,t-u)}else{let l=Math.min(n.from,t);a=this.internalData.slice(e-u,l-u)}else if(this.rowsWithinRange>0)if(t>n.to){let l=Math.max(e,n.to);i=this.internalData.slice(l-u,t-u).filter(p=>!!p)}else{let l=Math.max(n.from,t);i=this.internalData.slice(Math.max(0,e-u),l-u).filter(p=>!!p)}return[S(this.range,e,t,this.bufferSize),a,i]}setRange(e,t){let[s,r]=this.range.overlap(e,t),n=new Array(t-e+this.bufferSize);this.rowsWithinRange=0;for(let a=s;a<r;a++){let i=this.getAtIndex(a);if(i){let u=a-e;n[u]=i,this.isWithinClientRange(a)&&(this.rowsWithinRange+=1)}}this.internalData=n,this.range.from=e,this.range.to=t}getData(){let{from:e,to:t}=this.range,{from:s,to:r}=this.clientRange,n=Math.max(0,s-e),a=Math.min(t-e,t,r-e,this.rowCount??t);return this.internalData.slice(n,a)}};var Le=[],Ae=[],Ne=([o],[e])=>o-e,m=class{aggregations;bufferSize;clientRange;columns;dataWindow=void 0;disabled=!1;filter;filterSpec;groupBy;hasUpdates=!1;holdingPen=[];keys;lastTouchIdx=null;links=[];linkedParent=null;pendingLinkedParent;pendingOperations=new Map;pendingRangeRequest=null;rowCountChanged=!1;sort;clientViewportId;isTree=!1;serverViewportId;status="";suspended=!1;table;constructor({viewport:e,tablename:t,aggregations:s,columns:r,range:n,bufferSize:a=50,filter:i="",filterQuery:u="",sort:c=[],groupBy:l=[],visualLink:p}){this.clientViewportId=e,this.table=t,this.aggregations=s,this.columns=r,this.clientRange=n,this.bufferSize=a,this.sort={sortDefs:c},this.groupBy=l,this.filterSpec={filter:u},this.filter=i,this.keys=new b(n),this.pendingLinkedParent=p}get hasUpdatesToProcess(){return this.suspended?!1:this.rowCountChanged||this.hasUpdates}subscribe(){return{type:X,table:this.table,range:F(this.clientRange,this.bufferSize),aggregations:this.aggregations,columns:this.columns,sort:this.sort,groupBy:this.groupBy,filterSpec:this.filterSpec}}handleSubscribed({viewPortId:e,aggregations:t,columns:s,range:r,sort:n,groupBy:a,filterSpec:i}){return this.serverViewportId=e,this.status="subscribed",this.aggregations=t,this.columns=s,this.groupBy=a,this.filterSpec=i,this.isTree=a&&a.length>0,this.dataWindow=new M(this.clientRange,r,this.bufferSize),console.log(`%cViewport subscribed
+// src/websocket-connection.ts
+var logger = console;
+var connectionAttempts = {};
+var setWebsocket = Symbol("setWebsocket");
+var connectionCallback = Symbol("connectionCallback");
+async function connect(connectionString, callback) {
+  return makeConnection(connectionString, callback);
+}
+async function reconnect(connection) {
+  makeConnection(connection.url, connection[connectionCallback], connection);
+}
+async function makeConnection(url, callback, connection) {
+  const connectionStatus = connectionAttempts[url] || (connectionAttempts[url] = {
+    attemptsRemaining: 5,
+    status: "disconnected"
+  });
+  try {
+    callback({ type: "connection-status", status: "connecting" });
+    const reconnecting = typeof connection !== "undefined";
+    const ws = await createWebsocket(url);
+    console.log(
+      `%c\u26A1 %c${url}`,
+      "font-size: 24px;color: green;font-weight: bold;",
+      "color:green; font-size: 14px;"
+    );
+    if (connection !== void 0) {
+      connection[setWebsocket](ws);
+    }
+    const websocketConnection = connection ?? new WebsocketConnection(ws, url, callback);
+    const status = reconnecting ? "reconnected" : "connected";
+    callback({ type: "connection-status", status });
+    websocketConnection.status = status;
+    return websocketConnection;
+  } catch (evt) {
+    const retry = --connectionStatus.attemptsRemaining > 0;
+    callback({
+      type: "connection-status",
+      status: "disconnected",
+      reason: "failed to connect",
+      retry
+    });
+    if (retry) {
+      return makeConnectionIn(url, callback, connection, 1e4);
+    } else {
+      throw Error("Failed to establish connection");
+    }
+  }
+}
+var makeConnectionIn = (url, callback, connection, delay) => new Promise((resolve) => {
+  setTimeout(() => {
+    resolve(makeConnection(url, callback, connection));
+  }, delay);
+});
+var createWebsocket = (connectionString) => new Promise((resolve, reject) => {
+  const ws = new WebSocket("ws://" + connectionString);
+  ws.onopen = () => resolve(ws);
+  ws.onerror = (evt) => reject(evt);
+});
+var closeWarn = () => {
+  logger.log(`Connection cannot be closed, socket not yet opened`);
+};
+var sendWarn = (msg) => {
+  logger.log(`Message cannot be sent, socket closed: ${msg.body.type}`);
+};
+var parseMessage = (message) => {
+  try {
+    return JSON.parse(message);
+  } catch (e) {
+    throw Error(`Error parsing JSON response from server ${message}`);
+  }
+};
+var WebsocketConnection = class {
+  [connectionCallback];
+  close = closeWarn;
+  requiresLogin = true;
+  send = sendWarn;
+  status = "ready";
+  url;
+  constructor(ws, url, callback) {
+    this.url = url;
+    this[connectionCallback] = callback;
+    this[setWebsocket](ws);
+  }
+  reconnect() {
+    reconnect(this);
+  }
+  [setWebsocket](ws) {
+    const callback = this[connectionCallback];
+    ws.onmessage = (evt) => {
+      const vuuMessageFromServer = parseMessage(evt.data);
+      callback(vuuMessageFromServer);
+    };
+    ws.onerror = () => {
+      console.log(
+        `%c\u26A1 %c${this.url}`,
+        "font-size: 24px;color: red;font-weight: bold;",
+        "color:red; font-size: 14px;"
+      );
+      callback({
+        type: "connection-status",
+        status: "disconnected",
+        reason: "error"
+      });
+      if (this.status !== "closed") {
+        reconnect(this);
+        this.send = queue;
+      }
+    };
+    ws.onclose = () => {
+      console.log(
+        `%c\u26A1 %c${this.url}`,
+        "font-size: 24px;color: orange;font-weight: bold;",
+        "color:orange; font-size: 14px;"
+      );
+      callback({
+        type: "connection-status",
+        status: "disconnected",
+        reason: "close"
+      });
+      if (this.status !== "closed") {
+        reconnect(this);
+        this.send = queue;
+      }
+    };
+    const send = (msg) => {
+      ws.send(JSON.stringify(msg));
+    };
+    const queue = (msg) => {
+      console.log(`queuing message ${JSON.stringify(msg)} until websocket reconnected`);
+    };
+    this.send = send;
+    this.close = () => {
+      console.log("[Connection] close websocket");
+      this.status = "closed";
+      ws.close();
+      this.close = closeWarn;
+      this.send = sendWarn;
+    };
+  }
+};
+
+// src/server-proxy/messages.ts
+var CHANGE_VP = "CHANGE_VP";
+var CHANGE_VP_SUCCESS = "CHANGE_VP_SUCCESS";
+var CHANGE_VP_RANGE = "CHANGE_VP_RANGE";
+var CHANGE_VP_RANGE_SUCCESS = "CHANGE_VP_RANGE_SUCCESS";
+var CLOSE_TREE_NODE = "CLOSE_TREE_NODE";
+var CLOSE_TREE_SUCCESS = "CLOSE_TREE_SUCCESS";
+var CREATE_VISUAL_LINK = "CREATE_VISUAL_LINK";
+var CREATE_VISUAL_LINK_SUCCESS = "CREATE_VISUAL_LINK_SUCCESS";
+var CREATE_VP = "CREATE_VP";
+var CREATE_VP_SUCCESS = "CREATE_VP_SUCCESS";
+var DISABLE_VP = "DISABLE_VP";
+var DISABLE_VP_SUCCESS = "DISABLE_VP_SUCCESS";
+var ENABLE_VP = "ENABLE_VP";
+var ENABLE_VP_SUCCESS = "ENABLE_VP_SUCCESS";
+var GET_TABLE_LIST = "GET_TABLE_LIST";
+var GET_TABLE_META = "GET_TABLE_META";
+var GET_VP_VISUAL_LINKS = "GET_VP_VISUAL_LINKS";
+var GET_VIEW_PORT_MENUS = "GET_VIEW_PORT_MENUS";
+var VIEW_PORT_MENUS_RESP = "VIEW_PORT_MENUS_RESP";
+var VIEW_PORT_MENU_RESP = "VIEW_PORT_MENU_RESP";
+var HB = "HB";
+var HB_RESP = "HB_RESP";
+var LOGIN = "LOGIN";
+var LOGIN_SUCCESS = "LOGIN_SUCCESS";
+var OPEN_TREE_NODE = "OPEN_TREE_NODE";
+var OPEN_TREE_SUCCESS = "OPEN_TREE_SUCCESS";
+var REMOVE_VP = "REMOVE_VP";
+var REMOVE_VP_SUCCESS = "REMOVE_VP_SUCCESS";
+var RPC_CALL = "RPC_CALL";
+var RPC_RESP = "RPC_RESP";
+var SET_SELECTION = "SET_SELECTION";
+var SET_SELECTION_SUCCESS = "SET_SELECTION_SUCCESS";
+var TABLE_META_RESP = "TABLE_META_RESP";
+var TABLE_LIST_RESP = "TABLE_LIST_RESP";
+var VP_VISUAL_LINKS_RESP = "VP_VISUAL_LINKS_RESP";
+var TABLE_ROW = "TABLE_ROW";
+
+// src/server-proxy/keyset.ts
+var KeySet = class {
+  keys;
+  free;
+  nextKeyValue;
+  constructor(range) {
+    this.keys = /* @__PURE__ */ new Map();
+    this.free = [];
+    this.nextKeyValue = 0;
+    this.reset(range);
+  }
+  next() {
+    if (this.free.length > 0) {
+      return this.free.pop();
+    } else {
+      return this.nextKeyValue++;
+    }
+  }
+  reset({ from, to }) {
+    this.keys.forEach((keyValue, rowIndex) => {
+      if (rowIndex < from || rowIndex >= to) {
+        this.free.push(keyValue);
+        this.keys.delete(rowIndex);
+      }
+    });
+    const size = to - from;
+    if (this.keys.size + this.free.length > size) {
+      this.free.length = size - this.keys.size;
+    }
+    for (let rowIndex = from; rowIndex < to; rowIndex++) {
+      if (!this.keys.has(rowIndex)) {
+        const nextKeyValue = this.next();
+        this.keys.set(rowIndex, nextKeyValue);
+      }
+    }
+  }
+  keyFor(rowIndex) {
+    const key = this.keys.get(rowIndex);
+    if (key === void 0) {
+      throw Error(`KeySet, no key found for rowIndex ${rowIndex}`);
+    }
+    return key;
+  }
+};
+
+// ../utils/src/input-utils.ts
+var actionKeys = {
+  Enter: "Enter",
+  Delete: "Delete"
+};
+var navigationKeys = {
+  Home: "Home",
+  End: "End",
+  ArrowRight: "ArrowRight",
+  ArrowLeft: "ArrowLeft",
+  ArrowDown: "ArrowDown",
+  ArrowUp: "ArrowUp",
+  Tab: "Tab"
+};
+var functionKeys = {
+  F1: "F1",
+  F2: "F2",
+  F3: "F3",
+  F4: "F4",
+  F5: "F5",
+  F6: "F6",
+  F7: "F7",
+  F8: "F8",
+  F9: "F9",
+  F10: "F10",
+  F11: "F11",
+  F12: "F12"
+};
+var specialKeys = {
+  ...actionKeys,
+  ...navigationKeys,
+  ...functionKeys
+};
+
+// ../utils/src/range-utils.ts
+function getFullRange({ from, to }, bufferSize = 0, rowCount = Number.MAX_SAFE_INTEGER) {
+  if (bufferSize === 0) {
+    return { from, to: Math.min(to, rowCount) };
+  } else if (from === 0) {
+    return { from, to: Math.min(to + bufferSize, rowCount) };
+  } else {
+    const rangeSize = to - from;
+    const buff = Math.round(bufferSize / 2);
+    const shortfallBefore = from - buff < 0;
+    const shortFallAfter = rowCount - (to + buff) < 0;
+    if (shortfallBefore && shortFallAfter) {
+      return { from: 0, to: rowCount };
+    } else if (shortfallBefore) {
+      return { from: 0, to: rangeSize + bufferSize };
+    } else if (shortFallAfter) {
+      return { from: Math.max(0, rowCount - (rangeSize + bufferSize)), to: rowCount };
+    } else {
+      return { from: from - buff, to: to + buff };
+    }
+  }
+}
+var WindowRange = class {
+  from;
+  to;
+  constructor(from, to) {
+    this.from = from;
+    this.to = to;
+  }
+  isWithin(index) {
+    return index >= this.from && index < this.to;
+  }
+  overlap(from, to) {
+    return from >= this.to || to < this.from ? [0, 0] : [Math.max(from, this.from), Math.min(to, this.to)];
+  }
+  copy() {
+    return new WindowRange(this.from, this.to);
+  }
+};
+
+// src/server-proxy/buffer-range.ts
+var bufferBreakout = (range, from, to, bufferSize) => {
+  const bufferPerimeter = bufferSize * 0.25;
+  if (!range || !bufferSize) {
+    return true;
+  } else if (range.to - to < bufferPerimeter) {
+    return true;
+  } else if (range.from > 0 && from - range.from < bufferPerimeter) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+// src/server-proxy/array-backed-moving-window.ts
+var EMPTY_ARRAY = [];
+var ArrayBackedMovingWindow = class {
+  bufferSize;
+  range;
+  internalData;
+  rowsWithinRange;
+  clientRange;
+  rowCount;
+  constructor({ from: clientFrom, to: clientTo }, { from, to }, bufferSize) {
+    this.bufferSize = bufferSize;
+    this.clientRange = new WindowRange(clientFrom, clientTo);
+    this.range = new WindowRange(from, to);
+    this.internalData = new Array(bufferSize);
+    this.rowsWithinRange = 0;
+    this.rowCount = 0;
+  }
+  get hasAllRowsWithinRange() {
+    return this.rowsWithinRange === this.clientRange.to - this.clientRange.from || this.rowCount > 0 && this.rowsWithinRange === this.rowCount;
+  }
+  setRowCount = (rowCount) => {
+    if (rowCount < this.internalData.length) {
+      this.internalData.length = rowCount;
+    }
+    if (rowCount < this.rowCount) {
+      this.rowsWithinRange = 0;
+      const end = Math.min(rowCount, this.clientRange.to);
+      for (let i = this.clientRange.from; i < end; i++) {
+        const rowIndex = i - this.range.from;
+        if (this.internalData[rowIndex] !== void 0) {
+          this.rowsWithinRange += 1;
+        }
+      }
+    }
+    this.rowCount = rowCount;
+  };
+  setAtIndex(index, data) {
+    const isWithinClientRange = this.isWithinClientRange(index);
+    if (isWithinClientRange || this.isWithinRange(index)) {
+      const internalIndex = index - this.range.from;
+      if (!this.internalData[internalIndex] && isWithinClientRange) {
+        this.rowsWithinRange += 1;
+      }
+      this.internalData[internalIndex] = data;
+    }
+    return isWithinClientRange;
+  }
+  getAtIndex(index) {
+    return this.range.isWithin(index) && this.internalData[index - this.range.from] != null ? this.internalData[index - this.range.from] : void 0;
+  }
+  isWithinRange(index) {
+    return this.range.isWithin(index);
+  }
+  isWithinClientRange(index) {
+    return this.clientRange.isWithin(index);
+  }
+  setClientRange(from, to) {
+    const currentFrom = this.clientRange.from;
+    const currentTo = Math.min(this.clientRange.to, this.rowCount);
+    if (from === currentFrom && to === currentTo) {
+      return [false, EMPTY_ARRAY, EMPTY_ARRAY];
+    }
+    const originalRange = this.clientRange.copy();
+    this.clientRange.from = from;
+    this.clientRange.to = to;
+    this.rowsWithinRange = 0;
+    for (let i = from; i < to; i++) {
+      const internalIndex = i - this.range.from;
+      if (this.internalData[internalIndex]) {
+        this.rowsWithinRange += 1;
+      }
+    }
+    let clientRows = EMPTY_ARRAY;
+    let holdingRows = EMPTY_ARRAY;
+    const offset = this.range.from;
+    if (this.hasAllRowsWithinRange) {
+      if (to > originalRange.to) {
+        const start = Math.max(from, originalRange.to);
+        clientRows = this.internalData.slice(start - offset, to - offset);
+      } else {
+        const end = Math.min(originalRange.from, to);
+        clientRows = this.internalData.slice(from - offset, end - offset);
+      }
+    } else if (this.rowsWithinRange > 0) {
+      if (to > originalRange.to) {
+        const start = Math.max(from, originalRange.to);
+        holdingRows = this.internalData.slice(start - offset, to - offset).filter((row) => !!row);
+      } else {
+        const end = Math.max(originalRange.from, to);
+        holdingRows = this.internalData.slice(Math.max(0, from - offset), end - offset).filter((row) => !!row);
+      }
+    }
+    const serverDataRequired = bufferBreakout(this.range, from, to, this.bufferSize);
+    return [serverDataRequired, clientRows, holdingRows];
+  }
+  setRange(from, to) {
+    const [overlapFrom, overlapTo] = this.range.overlap(from, to);
+    const newData = new Array(to - from + this.bufferSize);
+    this.rowsWithinRange = 0;
+    for (let i = overlapFrom; i < overlapTo; i++) {
+      const data = this.getAtIndex(i);
+      if (data) {
+        const index = i - from;
+        newData[index] = data;
+        if (this.isWithinClientRange(i)) {
+          this.rowsWithinRange += 1;
+        }
+      }
+    }
+    this.internalData = newData;
+    this.range.from = from;
+    this.range.to = to;
+  }
+  getData() {
+    const { from, to } = this.range;
+    const { from: clientFrom, to: clientTo } = this.clientRange;
+    const startOffset = Math.max(0, clientFrom - from);
+    const endOffset = Math.min(to - from, to, clientTo - from, this.rowCount ?? to);
+    return this.internalData.slice(startOffset, endOffset);
+  }
+};
+
+// src/server-proxy/viewport.ts
+var EMPTY_ARRAY2 = [];
+var EMPTY_GROUPBY = [];
+var byRowIndex = ([index1], [index2]) => index1 - index2;
+var Viewport = class {
+  aggregations;
+  bufferSize;
+  clientRange;
+  columns;
+  dataWindow = void 0;
+  disabled = false;
+  filter;
+  filterSpec;
+  groupBy;
+  hasUpdates = false;
+  holdingPen = [];
+  keys;
+  lastTouchIdx = null;
+  links = [];
+  linkedParent = null;
+  pendingLinkedParent;
+  pendingOperations = /* @__PURE__ */ new Map();
+  pendingRangeRequest = null;
+  rowCountChanged = false;
+  sort;
+  clientViewportId;
+  isTree = false;
+  serverViewportId;
+  status = "";
+  suspended = false;
+  table;
+  constructor({
+    viewport,
+    tablename,
+    aggregations,
+    columns,
+    range,
+    bufferSize = 50,
+    filter = "",
+    filterQuery = "",
+    sort = [],
+    groupBy = [],
+    visualLink
+  }) {
+    this.clientViewportId = viewport;
+    this.table = tablename;
+    this.aggregations = aggregations;
+    this.columns = columns;
+    this.clientRange = range;
+    this.bufferSize = bufferSize;
+    this.sort = {
+      sortDefs: sort
+    };
+    this.groupBy = groupBy;
+    this.filterSpec = {
+      filter: filterQuery
+    };
+    this.filter = filter;
+    this.keys = new KeySet(range);
+    this.pendingLinkedParent = visualLink;
+  }
+  get hasUpdatesToProcess() {
+    if (this.suspended) {
+      return false;
+    }
+    return this.rowCountChanged || this.hasUpdates;
+  }
+  subscribe() {
+    return {
+      type: CREATE_VP,
+      table: this.table,
+      range: getFullRange(this.clientRange, this.bufferSize),
+      aggregations: this.aggregations,
+      columns: this.columns,
+      sort: this.sort,
+      groupBy: this.groupBy,
+      filterSpec: this.filterSpec
+    };
+  }
+  handleSubscribed({
+    viewPortId,
+    aggregations,
+    columns,
+    range,
+    sort,
+    groupBy,
+    filterSpec
+  }) {
+    this.serverViewportId = viewPortId;
+    this.status = "subscribed";
+    this.aggregations = aggregations;
+    this.columns = columns;
+    this.groupBy = groupBy;
+    this.filterSpec = filterSpec;
+    this.isTree = groupBy && groupBy.length > 0;
+    this.dataWindow = new ArrayBackedMovingWindow(this.clientRange, range, this.bufferSize);
+    console.log(
+      `%cViewport subscribed
         clientVpId: ${this.clientViewportId}
         serverVpId: ${this.serverViewportId}
         table: ${this.table}
-        aggregations: ${JSON.stringify(t)}
-        columns: ${s.join(",")}
-        range: ${JSON.stringify(r)}
-        sort: ${JSON.stringify(n)}
-        groupBy: ${JSON.stringify(a)}
-        filterSpec: ${JSON.stringify(i)}
+        aggregations: ${JSON.stringify(aggregations)}
+        columns: ${columns.join(",")}
+        range: ${JSON.stringify(range)}
+        sort: ${JSON.stringify(sort)}
+        groupBy: ${JSON.stringify(groupBy)}
+        filterSpec: ${JSON.stringify(filterSpec)}
         bufferSize: ${this.bufferSize}
-      `,"color: blue"),{type:"subscribed",clientViewportId:this.clientViewportId,columns:s,filter:this.filter,filterSpec:this.filterSpec}}awaitOperation(e,t){this.pendingOperations.set(e,t)}completeOperation(e,...t){let{clientViewportId:s,pendingOperations:r}=this,{type:n,data:a}=r.get(e);if(r.delete(e),n===U){let[i,u]=t;this.dataWindow?.setRange(i,u),this.pendingRangeRequest=null}else{if(n==="groupBy")return this.isTree=!0,this.groupBy=a,{clientViewportId:s,type:n,groupBy:a};if(n==="groupByClear")return this.isTree=!1,this.groupBy=[],{clientViewportId:s,type:"groupBy",groupBy:null};if(n==="filter")return this.filterSpec={filter:a.filterQuery},{clientViewportId:s,type:n,...a};if(n==="aggregate")return this.aggregations=a,{clientViewportId:s,type:n,aggregations:a};if(n==="sort")return this.sort={sortDefs:a},{clientViewportId:s,type:n,sort:a};if(n!=="selection"){if(n==="disable")return this.disabled=!0,{type:"disabled",clientViewportId:s};if(n==="enable")return this.disabled=!1,{type:"enabled",clientViewportId:s};if(n===O){let[i,u,c]=t;return this.linkedParent={colName:i,parentViewportId:u,parentColName:c},this.pendingLinkedParent=null,{type:"visual-link-created",clientViewportId:s,colName:i,parentViewportId:u,parentColName:c}}}}}rangeRequest(e,t){let s=U;if(this.dataWindow){let[r,n,a]=this.dataWindow.setClientRange(t.from,t.to),i=r&&S(this.pendingRangeRequest,t.from,t.to,this.bufferSize)?{type:s,viewPortId:this.serverViewportId,...F(t,this.bufferSize,this.dataWindow.rowCount)}:null;i&&(this.awaitOperation(e,{type:s}),this.pendingRangeRequest=i),this.keys.reset(this.dataWindow.clientRange);let u=([l])=>l<t.from||l>=t.to;this.holdingPen.some(u)&&(this.holdingPen=this.holdingPen.filter(([l])=>l>=t.from&&l<t.to));let c=this.isTree?B(this.groupBy,this.columns):k;return a.length&&a.forEach(l=>{this.holdingPen.push(c(l,this.keys))}),n.length?[i,n.map(l=>c(l,this.keys))]:[i]}else return[null]}setLinks(e){return this.links=e,[{type:"VP_VISUAL_LINKS_RESP",links:e,clientViewportId:this.clientViewportId},this.pendingLinkedParent]}setMenu(e){return{type:"VIEW_PORT_MENUS_RESP",menu:e,clientViewportId:this.clientViewportId}}createLink(e,t,s,r){let n={type:O,parentVpId:s,childVpId:this.serverViewportId,parentColumnName:r,childColumnName:t};return this.awaitOperation(e,n),n}suspend(){this.suspended=!0}resume(){return this.suspended=!1,this.currentData()}currentData(){let e=[];if(this.dataWindow){let t=this.dataWindow.getData(),{keys:s}=this,r=this.isTree?B(this.groupBy,this.columns):k;for(let n of t)n&&e.push(r(n,s))}return e}enable(e){return this.awaitOperation(e,{type:"enable"}),{type:se,viewPortId:this.serverViewportId}}disable(e){return this.awaitOperation(e,{type:"disable"}),{type:ee,viewPortId:this.serverViewportId}}filterRequest(e,t,s){return this.awaitOperation(e,{type:"filter",data:{filter:t,filterQuery:s}}),this.createRequest({filterSpec:{filter:s}})}aggregateRequest(e,t){return this.awaitOperation(e,{type:"aggregate",data:t}),this.createRequest({aggregations:t})}sortRequest(e,t){return this.awaitOperation(e,{type:"sort",data:t}),this.createRequest({sort:{sortDefs:t}})}groupByRequest(e,t=Ae){let s=t===Le?"groupByClear":"groupBy";return this.awaitOperation(e,{type:s,data:t}),this.createRequest({groupBy:t})}selectRequest(e,t){return this.awaitOperation(e,{type:"selection",data:t}),{type:Ee,vpId:this.serverViewportId,selection:t}}handleUpdate(e,t,s){this.dataWindow&&(this.dataWindow.rowCount!==s.vpSize&&(this.dataWindow.setRowCount(s.vpSize),this.rowCountChanged=!0),e==="U"&&this.dataWindow.setAtIndex(t,s)&&(this.hasUpdates=!0))}getNewRowCount=()=>{if(this.rowCountChanged&&this.dataWindow)return this.rowCountChanged=!1,this.dataWindow.rowCount};getClientRows(e){if(this.hasUpdates&&this.dataWindow){let t=this.dataWindow.getData(),{keys:s}=this,r=this.isTree?B(this.groupBy,this.columns):k,n=this.dataWindow.hasAllRowsWithinRange?this.holdingPen.splice(0):void 0,a=n||this.holdingPen;for(let i of t)i&&i.ts>=e&&a.push(r(i,s));return this.hasUpdates=!1,n&&n.sort(Ne)}}createRequest(e){return{type:$,viewPortId:this.serverViewportId,aggregations:this.aggregations,columns:this.columns,sort:this.sort,groupBy:this.groupBy,filterSpec:this.filterSpec,...e}}},k=({rowIndex:o,rowKey:e,sel:t,data:s},r)=>[o,r.keyFor(o),!0,null,null,1,e,t].concat(s),B=(o,e)=>({rowIndex:t,rowKey:s,sel:r,data:n},a)=>{let[i,u,,c,,l,...p]=n,V=s.split("|").slice(1);return o.forEach((d,E)=>{let w=e.indexOf(d);p[w]=V[E]}),[t,a.keyFor(t),c,u,i,l,s,r].concat(p)};var Me=o=>{switch(o){case"getUniqueFieldValues":return["TypeAheadRpcHandler","TYPEAHEAD"];default:return["OrderEntryRpcHandler","SIMUL"]}};var me=o=>o.type==="connection-status",Re=o=>"viewport"in o;var we=1;var g=()=>`${we++}`,Fe=[],ke={},Be=(o,e)=>{if(o==="MENU_RPC_CALL"&&e==="selected-rows")return"VIEW_PORT_MENUS_SELECT_RPC";throw Error("No RPC command for ${msgType} / ${context}")},R=class{connection;postMessageToClient;viewports;mapClientToServerViewport;authToken;pendingLogin;sessionId;queuedRequests=[];constructor(e,t){this.connection=e,this.postMessageToClient=t,this.viewports=new Map,this.mapClientToServerViewport=new Map}async login(e){e&&(this.authToken=e);let t=this.authToken;if(t===void 0)throw Error("ServerProxy login, cannot login until auth token has been obtained");return new Promise((s,r)=>{this.sendMessageToServer({type:pe,token:t,user:"user"},""),this.pendingLogin={resolve:s,reject:r}})}subscribe(e){if(this.mapClientToServerViewport.has(e.viewport))console.log(`ServerProxy spurious subscribe call ${e.viewport}`);else{let t=new m(e);this.viewports.set(e.viewport,t),this.sendIfReady(t.subscribe(),e.viewport,this.sessionId!=="")}}unsubscribe(e){let t=this.mapClientToServerViewport.get(e);t?this.sendMessageToServer({type:fe,viewPortId:t}):console.error(`ServerProxy: failed to unsubscribe client viewport ${e}`)}getViewportForClient(e){let t=this.mapClientToServerViewport.get(e);if(t){let s=this.viewports.get(t);if(s)return s;throw Error(`Viewport not found for client viewport ${e}`)}else throw Error(`Viewport server id not found for client viewport ${e}`)}setViewRange(e,t){let s=g(),[r,n]=e.rangeRequest(s,t.range);r&&this.sendIfReady(r,s,e.status==="subscribed"),n&&this.postMessageToClient({type:"viewport-updates",viewports:{[e.clientViewportId]:{rows:n}}})}aggregate(e,t){let s=g(),r=e.aggregateRequest(s,t.aggregations);this.sendIfReady(r,s,e.status==="subscribed")}sort(e,t){let s=g(),r=e.sortRequest(s,t.sortCriteria);this.sendIfReady(r,s,e.status==="subscribed")}groupBy(e,t){let s=g(),r=e.groupByRequest(s,t.groupBy);this.sendIfReady(r,s,e.status==="subscribed")}filter(e,t){let s=g(),{filter:r,filterQuery:n}=t,a=e.filterRequest(s,r,n);this.sendIfReady(a,s,e.status==="subscribed")}select(e,t){let s=g(),{selected:r}=t,n=e.selectRequest(s,r);this.sendIfReady(n,s,e.status==="subscribed")}disableViewport(e,t){let s=g(),r=e.disable(s);this.sendIfReady(r,s,e.status==="subscribed")}enableViewport(e,t){let s=g(),r=e.enable(s);this.sendIfReady(r,s,e.status==="subscribed")}resumeViewport(e){let t=e.resume();this.postMessageToClient({type:"viewport-updates",viewports:{[e.clientViewportId]:{rows:t}}})}openTreeNode(e,t){e.serverViewportId&&this.sendIfReady({type:de,vpId:e.serverViewportId,treeKey:t.key},g(),e.status==="subscribed")}closeTreeNode(e,t){e.serverViewportId&&this.sendIfReady({type:Q,vpId:e.serverViewportId,treeKey:t.key},g(),e.status==="subscribed")}createLink(e,t){let{parentVpId:s,parentColumnName:r,childColumnName:n}=t,a=g(),i=e.createLink(a,n,s,r);this.sendMessageToServer(i,a)}menuRpcCall(e,t){if(e.serverViewportId){let{context:s,rpcName:r}=t;this.sendMessageToServer({type:Be(t.type,s),rpcName:r,vpId:e.serverViewportId},t.requestId)}}rpcCall(e){let{method:t,requestId:s,type:r}=e,[n,a]=Me(t);this.sendMessageToServer({type:r,service:n,method:t,params:e.params,namedParams:{}},s,{module:a})}handleMessageFromClient(e){if(Re(e)){let t=this.getViewportForClient(e.viewport);switch(e.type){case"setViewRange":return this.setViewRange(t,e);case"aggregate":return this.aggregate(t,e);case"sort":return this.sort(t,e);case"groupBy":return this.groupBy(t,e);case"filterQuery":return this.filter(t,e);case"select":return this.select(t,e);case"suspend":return t.suspend();case"resume":return this.resumeViewport(t);case"disable":return this.disableViewport(t,e);case"enable":return this.enableViewport(t,e);case"openTreeNode":return this.openTreeNode(t,e);case"closeTreeNode":return this.closeTreeNode(t,e);case"createLink":return this.createLink(t,e);case"MENU_RPC_CALL":return this.menuRpcCall(t,e);default:}}else{let{type:t,requestId:s}=e;switch(t){case re:return this.sendMessageToServer({type:t},s);case ie:return this.sendMessageToServer({type:t,table:e.table},s);case Ce:return this.rpcCall(e);default:}}console.log(`Vuu ServerProxy Unexpected message from client ${JSON.stringify(e)}`)}sendIfReady(e,t,s=!0,r){return s?this.sendMessageToServer(e,t,r):this.queuedRequests.push(e),s}sendMessageToServer(e,t=`${we++}`,s=ke){let{module:r="CORE",...n}=s;this.authToken&&this.connection.send({requestId:t,sessionId:this.sessionId,token:this.authToken,user:"user",module:r,body:e})}handleMessageFromServer(e){let{body:t,requestId:s,sessionId:r}=e,{viewports:n}=this;switch(t.type){case le:this.sendMessageToServer({type:ce,ts:+new Date},"NA");break;case ge:this.sessionId=r,this.pendingLogin?.resolve(r);break;case Z:{let i=n.get(s);if(i){let{viewPortId:u}=t;s!==u&&(n.delete(s),n.set(u,i)),this.mapClientToServerViewport.set(s,u);let c=i.handleSubscribed(t);c&&this.postMessageToClient(c),this.sendMessageToServer({type:oe,vpId:u}),this.sendMessageToServer({type:ae,vpId:u})}}break;case Ve:{let i=this.viewports.get(t.viewPortId);i&&(this.mapClientToServerViewport.delete(i.clientViewportId),n.delete(t.viewPortId))}break;case Ie:let a=this.viewports.get(t.vpId);a&&a.completeOperation(s);break;case J:case te:if(n.has(t.viewPortId)){let i=this.viewports.get(t.viewPortId);if(i){let u=i.completeOperation(s);u&&this.postMessageToClient(u)}}break;case ne:{let i=this.viewports.get(t.viewPortId);if(i){let u=i.completeOperation(s);if(u){this.postMessageToClient(u);let c=i.currentData(),l={type:"viewport-updates",viewports:{[i.clientViewportId]:{rows:c}}};this.postMessageToClient(l)}}}break;case Se:{let{timeStamp:i}=t,[{ts:u}={ts:i}]=t.rows||Fe;for(let c of t.rows){let{viewPortId:l,rowIndex:p,rowKey:V,updateType:C}=c,d=n.get(l);d?d.isTree&&C==="U"&&!V.startsWith("$root")?console.log("Ignore blank rows sent after GroupBy"):d.handleUpdate(C,p,c):console.warn(`TABLE_ROW message received for non registered viewport ${l}`)}this.processUpdates(u)}break;case z:{let i=this.viewports.get(t.viewPortId);if(i){let{from:u,to:c}=t;i.completeOperation(s,u,c)}}break;case he:case Y:break;case j:{let i=this.viewports.get(t.childVpId),u=this.viewports.get(t.parentVpId);if(i&&u){let{childColumnName:c,parentColumnName:l}=t,p=i.completeOperation(s,c,u.clientViewportId,l);p&&this.postMessageToClient(p)}}break;case N:this.postMessageToClient({type:N,tables:t.tables,requestId:s});break;case A:this.postMessageToClient({type:A,table:t.table,columns:t.columns,dataTypes:t.dataTypes,requestId:s});break;case be:{let i=this.getActiveLinks(t.links),u=this.viewports.get(t.vpId);if(i.length&&u){let[c,l]=u.setLinks(i);if(this.postMessageToClient(c),l){let{colName:p,parentViewportId:V,parentColName:C}=l,d=g(),E=this.mapClientToServerViewport.get(V);if(E){let w=u.createLink(d,p,E,C);this.sendMessageToServer(w,d)}}}}break;case ue:if(t.menu.name){let i=this.viewports.get(t.vpId);if(i){let u=i.setMenu(t.menu);this.postMessageToClient(u)}}break;case P:{let{action:i}=t;this.postMessageToClient({type:P,action:i,tableAlreadyOpen:this.isTableOpen(i.table),requestId:s})}break;case L:{let{method:i,result:u}=t;this.postMessageToClient({type:L,method:i,result:u,requestId:s})}break;case"ERROR":console.error(t.msg);break;default:console.log(`handleMessageFromServer ${t.type}.`)}}isTableOpen(e){if(e){let t=e.table;for(let s of this.viewports.values())if(!s.suspended&&s.table.table===t)return!0}}getActiveLinks(e){return e.filter(t=>{let s=this.viewports.get(t.parentVpId);return s&&!s.suspended})}processUpdates(e){let t;this.viewports.forEach(s=>{if(s.hasUpdatesToProcess){let r=s.getClientRows(e),n=s.getNewRowCount();(n!==void 0||r&&r.length>0)&&(t=t||{type:"viewport-updates",viewports:{}},t.viewports[s.clientViewportId]={rows:r,size:n})}t&&this.postMessageToClient(t)})}};var f;async function We(o,e,t,s){let r=await H(o,n=>me(n)?s(n):f.handleMessageFromServer(n));f=new R(r,n=>Ge(n)),r.requiresLogin&&await f.login(e)}var W=0,De=[];function Ge(o){let e=Math.round(performance.now());W&&De.push(e-W),postMessage(o),W=e}var qe=async({data:o})=>{switch(o.type){case"connect":await We(o.url,o.token,o.useWebsocket,postMessage),postMessage({type:"connected"});break;case"subscribe":f.subscribe(o);break;case"unsubscribe":f.unsubscribe(o.viewport);break;default:f.handleMessageFromClient(o)}};self.addEventListener("message",qe);postMessage({type:"ready"});
+      `,
+      "color: blue"
+    );
+    return {
+      type: "subscribed",
+      clientViewportId: this.clientViewportId,
+      columns,
+      filter: this.filter,
+      filterSpec: this.filterSpec
+    };
+  }
+  awaitOperation(requestId, msg) {
+    this.pendingOperations.set(requestId, msg);
+  }
+  completeOperation(requestId, ...params) {
+    const { clientViewportId, pendingOperations } = this;
+    const { type, data } = pendingOperations.get(requestId);
+    pendingOperations.delete(requestId);
+    if (type === CHANGE_VP_RANGE) {
+      const [from, to] = params;
+      this.dataWindow?.setRange(from, to);
+      this.pendingRangeRequest = null;
+    } else if (type === "groupBy") {
+      this.isTree = true;
+      this.groupBy = data;
+      return { clientViewportId, type, groupBy: data };
+    } else if (type === "groupByClear") {
+      this.isTree = false;
+      this.groupBy = [];
+      return { clientViewportId, type: "groupBy", groupBy: null };
+    } else if (type === "filter") {
+      this.filterSpec = { filter: data.filterQuery };
+      return { clientViewportId, type, ...data };
+    } else if (type === "aggregate") {
+      this.aggregations = data;
+      return { clientViewportId, type, aggregations: data };
+    } else if (type === "sort") {
+      this.sort = { sortDefs: data };
+      return { clientViewportId, type, sort: data };
+    } else if (type === "selection") {
+    } else if (type === "disable") {
+      this.disabled = true;
+      return {
+        type: "disabled",
+        clientViewportId
+      };
+    } else if (type === "enable") {
+      this.disabled = false;
+      return {
+        type: "enabled",
+        clientViewportId
+      };
+    } else if (type === CREATE_VISUAL_LINK) {
+      const [colName, parentViewportId, parentColName] = params;
+      this.linkedParent = {
+        colName,
+        parentViewportId,
+        parentColName
+      };
+      this.pendingLinkedParent = null;
+      return {
+        type: "visual-link-created",
+        clientViewportId,
+        colName,
+        parentViewportId,
+        parentColName
+      };
+    }
+  }
+  rangeRequest(requestId, range) {
+    const type = CHANGE_VP_RANGE;
+    if (this.dataWindow) {
+      const [serverDataRequired, clientRows, holdingRows] = this.dataWindow.setClientRange(
+        range.from,
+        range.to
+      );
+      const serverRequest = serverDataRequired && bufferBreakout(this.pendingRangeRequest, range.from, range.to, this.bufferSize) ? {
+        type,
+        viewPortId: this.serverViewportId,
+        ...getFullRange(range, this.bufferSize, this.dataWindow.rowCount)
+      } : null;
+      if (serverRequest) {
+        this.awaitOperation(requestId, { type });
+        this.pendingRangeRequest = serverRequest;
+      }
+      this.keys.reset(this.dataWindow.clientRange);
+      const rowWithinRange = ([index]) => index < range.from || index >= range.to;
+      if (this.holdingPen.some(rowWithinRange)) {
+        this.holdingPen = this.holdingPen.filter(
+          ([index]) => index >= range.from && index < range.to
+        );
+      }
+      const toClient = this.isTree ? toClientRowTree(this.groupBy, this.columns) : toClientRow;
+      if (holdingRows.length) {
+        holdingRows.forEach((row) => {
+          this.holdingPen.push(toClient(row, this.keys));
+        });
+      }
+      if (clientRows.length) {
+        return [
+          serverRequest,
+          clientRows.map((row) => {
+            return toClient(row, this.keys);
+          })
+        ];
+      } else {
+        return [serverRequest];
+      }
+    } else {
+      return [null];
+    }
+  }
+  setLinks(links) {
+    this.links = links;
+    return [
+      {
+        type: "VP_VISUAL_LINKS_RESP",
+        links,
+        clientViewportId: this.clientViewportId
+      },
+      this.pendingLinkedParent
+    ];
+  }
+  setMenu(menu) {
+    return {
+      type: "VIEW_PORT_MENUS_RESP",
+      menu,
+      clientViewportId: this.clientViewportId
+    };
+  }
+  createLink(requestId, colName, parentVpId, parentColumnName) {
+    const message = {
+      type: CREATE_VISUAL_LINK,
+      parentVpId,
+      childVpId: this.serverViewportId,
+      parentColumnName,
+      childColumnName: colName
+    };
+    this.awaitOperation(requestId, message);
+    return message;
+  }
+  suspend() {
+    this.suspended = true;
+  }
+  resume() {
+    this.suspended = false;
+    return this.currentData();
+  }
+  currentData() {
+    const out = [];
+    if (this.dataWindow) {
+      const records = this.dataWindow.getData();
+      const { keys } = this;
+      const toClient = this.isTree ? toClientRowTree(this.groupBy, this.columns) : toClientRow;
+      for (let row of records) {
+        if (row) {
+          out.push(toClient(row, keys));
+        }
+      }
+    }
+    return out;
+  }
+  enable(requestId) {
+    this.awaitOperation(requestId, { type: "enable" });
+    return {
+      type: ENABLE_VP,
+      viewPortId: this.serverViewportId
+    };
+  }
+  disable(requestId) {
+    this.awaitOperation(requestId, { type: "disable" });
+    return {
+      type: DISABLE_VP,
+      viewPortId: this.serverViewportId
+    };
+  }
+  filterRequest(requestId, filter, filterQuery) {
+    this.awaitOperation(requestId, { type: "filter", data: { filter, filterQuery } });
+    return this.createRequest({ filterSpec: { filter: filterQuery } });
+  }
+  aggregateRequest(requestId, aggregations) {
+    this.awaitOperation(requestId, { type: "aggregate", data: aggregations });
+    return this.createRequest({ aggregations });
+  }
+  sortRequest(requestId, sortCols) {
+    this.awaitOperation(requestId, { type: "sort", data: sortCols });
+    return this.createRequest({ sort: { sortDefs: sortCols } });
+  }
+  groupByRequest(requestId, groupBy = EMPTY_GROUPBY) {
+    const type = groupBy === EMPTY_ARRAY2 ? "groupByClear" : "groupBy";
+    this.awaitOperation(requestId, { type, data: groupBy });
+    return this.createRequest({ groupBy });
+  }
+  selectRequest(requestId, selection) {
+    this.awaitOperation(requestId, { type: "selection", data: selection });
+    return {
+      type: SET_SELECTION,
+      vpId: this.serverViewportId,
+      selection
+    };
+  }
+  handleUpdate(updateType, rowIndex, row) {
+    if (this.dataWindow) {
+      if (this.dataWindow.rowCount !== row.vpSize) {
+        this.dataWindow.setRowCount(row.vpSize);
+        this.rowCountChanged = true;
+      }
+      if (updateType === "U") {
+        if (this.dataWindow.setAtIndex(rowIndex, row)) {
+          this.hasUpdates = true;
+        }
+      }
+    }
+  }
+  getNewRowCount = () => {
+    if (this.rowCountChanged && this.dataWindow) {
+      this.rowCountChanged = false;
+      return this.dataWindow.rowCount;
+    }
+  };
+  getClientRows(timeStamp) {
+    if (this.hasUpdates && this.dataWindow) {
+      const records = this.dataWindow.getData();
+      const { keys } = this;
+      const toClient = this.isTree ? toClientRowTree(this.groupBy, this.columns) : toClientRow;
+      const clientRows = this.dataWindow.hasAllRowsWithinRange ? this.holdingPen.splice(0) : void 0;
+      const out = clientRows || this.holdingPen;
+      for (let row of records) {
+        if (row && row.ts >= timeStamp) {
+          out.push(toClient(row, keys));
+        }
+      }
+      this.hasUpdates = false;
+      return clientRows && clientRows.sort(byRowIndex);
+    }
+  }
+  createRequest(params) {
+    return {
+      type: CHANGE_VP,
+      viewPortId: this.serverViewportId,
+      aggregations: this.aggregations,
+      columns: this.columns,
+      sort: this.sort,
+      groupBy: this.groupBy,
+      filterSpec: this.filterSpec,
+      ...params
+    };
+  }
+};
+var toClientRow = ({ rowIndex, rowKey, sel: isSelected, data }, keys) => [rowIndex, keys.keyFor(rowIndex), true, null, null, 1, rowKey, isSelected].concat(
+  data
+);
+var toClientRowTree = (groupBy, columns) => ({ rowIndex, rowKey, sel: isSelected, data }, keys) => {
+  let [depth, isExpanded, , isLeaf, , count, ...rest] = data;
+  const steps = rowKey.split("|").slice(1);
+  groupBy.forEach((col, i) => {
+    const idx = columns.indexOf(col);
+    rest[idx] = steps[i];
+  });
+  const record = [
+    rowIndex,
+    keys.keyFor(rowIndex),
+    isLeaf,
+    isExpanded,
+    depth,
+    count,
+    rowKey,
+    isSelected
+  ].concat(rest);
+  return record;
+};
+
+// src/server-proxy/rpc-services.js
+var getRpcService = (method) => {
+  switch (method) {
+    case "getUniqueFieldValues":
+      return ["TypeAheadRpcHandler", "TYPEAHEAD"];
+    default:
+      return ["OrderEntryRpcHandler", "SIMUL"];
+  }
+};
+
+// src/vuuUIMessageTypes.ts
+var isConnectionStatusMessage = (msg) => msg.type === "connection-status";
+var isViewporttMessage = (msg) => "viewport" in msg;
+
+// src/server-proxy/server-proxy.ts
+var _requestId = 1;
+var nextRequestId = () => `${_requestId++}`;
+var EMPTY_ARRAY3 = [];
+var DEFAULT_OPTIONS = {};
+var getRPCType = (msgType2, context) => {
+  if (msgType2 === "MENU_RPC_CALL" && context === "selected-rows") {
+    return "VIEW_PORT_MENUS_SELECT_RPC";
+  } else {
+    throw Error("No RPC command for ${msgType} / ${context}");
+  }
+};
+var ServerProxy = class {
+  connection;
+  postMessageToClient;
+  viewports;
+  mapClientToServerViewport;
+  authToken;
+  pendingLogin;
+  sessionId;
+  queuedRequests = [];
+  constructor(connection, callback) {
+    this.connection = connection;
+    this.postMessageToClient = callback;
+    this.viewports = /* @__PURE__ */ new Map();
+    this.mapClientToServerViewport = /* @__PURE__ */ new Map();
+  }
+  async login(authToken) {
+    if (authToken) {
+      this.authToken = authToken;
+    }
+    const token = this.authToken;
+    if (token === void 0) {
+      throw Error(`ServerProxy login, cannot login until auth token has been obtained`);
+    }
+    return new Promise((resolve, reject) => {
+      this.sendMessageToServer({ type: LOGIN, token, user: "user" }, "");
+      this.pendingLogin = { resolve, reject };
+    });
+  }
+  subscribe(message) {
+    if (!this.mapClientToServerViewport.has(message.viewport)) {
+      const viewport = new Viewport(message);
+      this.viewports.set(message.viewport, viewport);
+      this.sendIfReady(viewport.subscribe(), message.viewport, this.sessionId !== "");
+    } else {
+      console.log(`ServerProxy spurious subscribe call ${message.viewport}`);
+    }
+  }
+  unsubscribe(clientViewportId) {
+    const serverViewportId = this.mapClientToServerViewport.get(clientViewportId);
+    if (serverViewportId) {
+      this.sendMessageToServer({
+        type: REMOVE_VP,
+        viewPortId: serverViewportId
+      });
+    } else {
+      console.error(`ServerProxy: failed to unsubscribe client viewport ${clientViewportId}`);
+    }
+  }
+  getViewportForClient(clientViewportId) {
+    const serverViewportId = this.mapClientToServerViewport.get(clientViewportId);
+    if (serverViewportId) {
+      const viewport = this.viewports.get(serverViewportId);
+      if (viewport) {
+        return viewport;
+      } else {
+        throw Error(`Viewport not found for client viewport ${clientViewportId}`);
+      }
+    } else {
+      throw Error(`Viewport server id not found for client viewport ${clientViewportId}`);
+    }
+  }
+  setViewRange(viewport, message) {
+    const requestId = nextRequestId();
+    const [serverRequest, rows] = viewport.rangeRequest(requestId, message.range);
+    if (serverRequest) {
+      this.sendIfReady(serverRequest, requestId, viewport.status === "subscribed");
+    }
+    if (rows) {
+      this.postMessageToClient({
+        type: "viewport-updates",
+        viewports: {
+          [viewport.clientViewportId]: { rows }
+        }
+      });
+    }
+  }
+  aggregate(viewport, message) {
+    const requestId = nextRequestId();
+    const request = viewport.aggregateRequest(requestId, message.aggregations);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+  sort(viewport, message) {
+    const requestId = nextRequestId();
+    const request = viewport.sortRequest(requestId, message.sortCriteria);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+  groupBy(viewport, message) {
+    const requestId = nextRequestId();
+    const request = viewport.groupByRequest(requestId, message.groupBy);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+  filter(viewport, message) {
+    const requestId = nextRequestId();
+    const { filter, filterQuery } = message;
+    const request = viewport.filterRequest(requestId, filter, filterQuery);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+  select(viewport, message) {
+    const requestId = nextRequestId();
+    const { selected } = message;
+    const request = viewport.selectRequest(requestId, selected);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+  disableViewport(viewport, message) {
+    const requestId = nextRequestId();
+    const request = viewport.disable(requestId);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+  enableViewport(viewport, message) {
+    const requestId = nextRequestId();
+    const request = viewport.enable(requestId);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+  resumeViewport(viewport) {
+    const rows = viewport.resume();
+    this.postMessageToClient({
+      type: "viewport-updates",
+      viewports: {
+        [viewport.clientViewportId]: { rows }
+      }
+    });
+  }
+  openTreeNode(viewport, message) {
+    if (viewport.serverViewportId) {
+      this.sendIfReady(
+        {
+          type: OPEN_TREE_NODE,
+          vpId: viewport.serverViewportId,
+          treeKey: message.key
+        },
+        nextRequestId(),
+        viewport.status === "subscribed"
+      );
+    }
+  }
+  closeTreeNode(viewport, message) {
+    if (viewport.serverViewportId) {
+      this.sendIfReady(
+        {
+          type: CLOSE_TREE_NODE,
+          vpId: viewport.serverViewportId,
+          treeKey: message.key
+        },
+        nextRequestId(),
+        viewport.status === "subscribed"
+      );
+    }
+  }
+  createLink(viewport, message) {
+    const { parentVpId, parentColumnName, childColumnName } = message;
+    const requestId = nextRequestId();
+    const request = viewport.createLink(requestId, childColumnName, parentVpId, parentColumnName);
+    this.sendMessageToServer(request, requestId);
+  }
+  menuRpcCall(viewport, message) {
+    if (viewport.serverViewportId) {
+      const { context, rpcName } = message;
+      this.sendMessageToServer(
+        {
+          type: getRPCType(message.type, context),
+          rpcName,
+          vpId: viewport.serverViewportId
+        },
+        message.requestId
+      );
+    }
+  }
+  rpcCall(message) {
+    const { method, requestId, type } = message;
+    const [service, module] = getRpcService(method);
+    this.sendMessageToServer(
+      {
+        type,
+        service,
+        method,
+        params: message.params,
+        namedParams: {}
+      },
+      requestId,
+      { module }
+    );
+  }
+  handleMessageFromClient(message) {
+    if (isViewporttMessage(message)) {
+      const viewport = this.getViewportForClient(message.viewport);
+      switch (message.type) {
+        case "setViewRange":
+          return this.setViewRange(viewport, message);
+        case "aggregate":
+          return this.aggregate(viewport, message);
+        case "sort":
+          return this.sort(viewport, message);
+        case "groupBy":
+          return this.groupBy(viewport, message);
+        case "filterQuery":
+          return this.filter(viewport, message);
+        case "select":
+          return this.select(viewport, message);
+        case "suspend":
+          return viewport.suspend();
+        case "resume":
+          return this.resumeViewport(viewport);
+        case "disable":
+          return this.disableViewport(viewport, message);
+        case "enable":
+          return this.enableViewport(viewport, message);
+        case "openTreeNode":
+          return this.openTreeNode(viewport, message);
+        case "closeTreeNode":
+          return this.closeTreeNode(viewport, message);
+        case "createLink":
+          return this.createLink(viewport, message);
+        case "MENU_RPC_CALL":
+          return this.menuRpcCall(viewport, message);
+        default:
+      }
+    } else {
+      const { type, requestId } = message;
+      switch (type) {
+        case GET_TABLE_LIST:
+          return this.sendMessageToServer({ type }, requestId);
+        case GET_TABLE_META:
+          return this.sendMessageToServer({ type, table: message.table }, requestId);
+        case RPC_CALL:
+          return this.rpcCall(message);
+        default:
+      }
+    }
+    console.log(`Vuu ServerProxy Unexpected message from client ${JSON.stringify(message)}`);
+  }
+  sendIfReady(message, requestId, isReady = true, options) {
+    if (isReady) {
+      this.sendMessageToServer(message, requestId, options);
+    } else {
+      this.queuedRequests.push(message);
+    }
+    return isReady;
+  }
+  sendMessageToServer(body, requestId = `${_requestId++}`, options = DEFAULT_OPTIONS) {
+    const { module = "CORE", ...restOptions } = options;
+    if (this.authToken) {
+      this.connection.send(
+        {
+          requestId,
+          sessionId: this.sessionId,
+          token: this.authToken,
+          user: "user",
+          module,
+          body
+        }
+      );
+    }
+  }
+  handleMessageFromServer(message) {
+    const { body, requestId, sessionId } = message;
+    const { viewports } = this;
+    switch (body.type) {
+      case HB:
+        this.sendMessageToServer({ type: HB_RESP, ts: +new Date() }, "NA");
+        break;
+      case LOGIN_SUCCESS:
+        this.sessionId = sessionId;
+        this.pendingLogin?.resolve(sessionId);
+        break;
+      case CREATE_VP_SUCCESS:
+        {
+          const viewport2 = viewports.get(requestId);
+          if (viewport2) {
+            const { viewPortId: serverViewportId } = body;
+            if (requestId !== serverViewportId) {
+              viewports.delete(requestId);
+              viewports.set(serverViewportId, viewport2);
+            }
+            this.mapClientToServerViewport.set(requestId, serverViewportId);
+            const response = viewport2.handleSubscribed(body);
+            if (response) {
+              this.postMessageToClient(response);
+            }
+            this.sendMessageToServer({ type: GET_VP_VISUAL_LINKS, vpId: serverViewportId });
+            this.sendMessageToServer({ type: GET_VIEW_PORT_MENUS, vpId: serverViewportId });
+          }
+        }
+        break;
+      case REMOVE_VP_SUCCESS:
+        {
+          const viewport2 = this.viewports.get(body.viewPortId);
+          if (viewport2) {
+            this.mapClientToServerViewport.delete(viewport2.clientViewportId);
+            viewports.delete(body.viewPortId);
+          }
+        }
+        break;
+      case SET_SELECTION_SUCCESS:
+        const viewport = this.viewports.get(body.vpId);
+        if (viewport) {
+          viewport.completeOperation(requestId);
+        }
+        break;
+      case CHANGE_VP_SUCCESS:
+      case DISABLE_VP_SUCCESS:
+        if (viewports.has(body.viewPortId)) {
+          const viewport2 = this.viewports.get(body.viewPortId);
+          if (viewport2) {
+            const response = viewport2.completeOperation(requestId);
+            if (response) {
+              this.postMessageToClient(response);
+            }
+          }
+        }
+        break;
+      case ENABLE_VP_SUCCESS:
+        {
+          const viewport2 = this.viewports.get(body.viewPortId);
+          if (viewport2) {
+            const response = viewport2.completeOperation(requestId);
+            if (response) {
+              this.postMessageToClient(response);
+              const rows = viewport2.currentData();
+              const clientMessage = {
+                type: "viewport-updates",
+                viewports: {
+                  [viewport2.clientViewportId]: { rows }
+                }
+              };
+              this.postMessageToClient(clientMessage);
+            }
+          }
+        }
+        break;
+      case TABLE_ROW:
+        {
+          const { timeStamp } = body;
+          const [{ ts: firstBatchTimestamp } = { ts: timeStamp }] = body.rows || EMPTY_ARRAY3;
+          for (const row of body.rows) {
+            const { viewPortId, rowIndex, rowKey, updateType } = row;
+            const viewport2 = viewports.get(viewPortId);
+            if (viewport2) {
+              if (viewport2.isTree && updateType === "U" && !rowKey.startsWith("$root")) {
+                console.log("Ignore blank rows sent after GroupBy");
+              } else {
+                viewport2.handleUpdate(updateType, rowIndex, row);
+              }
+            } else {
+              console.warn(`TABLE_ROW message received for non registered viewport ${viewPortId}`);
+            }
+          }
+          this.processUpdates(firstBatchTimestamp);
+        }
+        break;
+      case CHANGE_VP_RANGE_SUCCESS:
+        {
+          const viewport2 = this.viewports.get(body.viewPortId);
+          if (viewport2) {
+            const { from, to } = body;
+            viewport2.completeOperation(requestId, from, to);
+          }
+        }
+        break;
+      case OPEN_TREE_SUCCESS:
+      case CLOSE_TREE_SUCCESS:
+        break;
+      case CREATE_VISUAL_LINK_SUCCESS:
+        {
+          const viewport2 = this.viewports.get(body.childVpId);
+          const parentViewport = this.viewports.get(body.parentVpId);
+          if (viewport2 && parentViewport) {
+            const { childColumnName, parentColumnName } = body;
+            const response = viewport2.completeOperation(
+              requestId,
+              childColumnName,
+              parentViewport.clientViewportId,
+              parentColumnName
+            );
+            if (response) {
+              this.postMessageToClient(response);
+            }
+          }
+        }
+        break;
+      case TABLE_LIST_RESP:
+        this.postMessageToClient({
+          type: TABLE_LIST_RESP,
+          tables: body.tables,
+          requestId
+        });
+        break;
+      case TABLE_META_RESP:
+        this.postMessageToClient({
+          type: TABLE_META_RESP,
+          table: body.table,
+          columns: body.columns,
+          dataTypes: body.dataTypes,
+          requestId
+        });
+        break;
+      case VP_VISUAL_LINKS_RESP:
+        {
+          const links = this.getActiveLinks(body.links);
+          const viewport2 = this.viewports.get(body.vpId);
+          if (links.length && viewport2) {
+            const [clientMessage, pendingLink] = viewport2.setLinks(links);
+            this.postMessageToClient(clientMessage);
+            if (pendingLink) {
+              const { colName, parentViewportId, parentColName } = pendingLink;
+              const requestId2 = nextRequestId();
+              const serverViewportId = this.mapClientToServerViewport.get(parentViewportId);
+              if (serverViewportId) {
+                const message2 = viewport2.createLink(
+                  requestId2,
+                  colName,
+                  serverViewportId,
+                  parentColName
+                );
+                this.sendMessageToServer(message2, requestId2);
+              }
+            }
+          }
+        }
+        break;
+      case VIEW_PORT_MENUS_RESP:
+        if (body.menu.name) {
+          const viewport2 = this.viewports.get(body.vpId);
+          if (viewport2) {
+            const clientMessage = viewport2.setMenu(body.menu);
+            this.postMessageToClient(clientMessage);
+          }
+        }
+        break;
+      case VIEW_PORT_MENU_RESP:
+        {
+          const { action } = body;
+          this.postMessageToClient({
+            type: VIEW_PORT_MENU_RESP,
+            action,
+            tableAlreadyOpen: this.isTableOpen(action.table),
+            requestId
+          });
+        }
+        break;
+      case RPC_RESP:
+        {
+          const { method, result } = body;
+          this.postMessageToClient({
+            type: RPC_RESP,
+            method,
+            result,
+            requestId
+          });
+        }
+        break;
+      case "ERROR":
+        console.error(body.msg);
+        break;
+      default:
+        console.log(`handleMessageFromServer ${body.type}.`);
+    }
+  }
+  isTableOpen(table) {
+    if (table) {
+      const tableName = table.table;
+      for (let viewport of this.viewports.values()) {
+        if (!viewport.suspended && viewport.table.table === tableName) {
+          return true;
+        }
+      }
+    }
+  }
+  getActiveLinks(links) {
+    return links.filter((link) => {
+      const viewport = this.viewports.get(link.parentVpId);
+      return viewport && !viewport.suspended;
+    });
+  }
+  processUpdates(timeStamp) {
+    let clientMessage;
+    this.viewports.forEach((viewport) => {
+      if (viewport.hasUpdatesToProcess) {
+        const rows = viewport.getClientRows(timeStamp);
+        const size = viewport.getNewRowCount();
+        if (size !== void 0 || rows && rows.length > 0) {
+          clientMessage = clientMessage || {
+            type: "viewport-updates",
+            viewports: {}
+          };
+          clientMessage.viewports[viewport.clientViewportId] = { rows, size };
+        }
+      }
+      if (clientMessage) {
+        this.postMessageToClient(clientMessage);
+      }
+    });
+  }
+};
+
+// src/worker.ts
+var server;
+async function connectToServer(url, token, onConnectionStatusChange) {
+  const connection = await connect(
+    url,
+    (msg) => isConnectionStatusMessage(msg) ? onConnectionStatusChange(msg) : server.handleMessageFromServer(msg)
+  );
+  server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
+  if (connection.requiresLogin) {
+    await server.login(token);
+  }
+}
+var lastTime = 0;
+var timings = [];
+function sendMessageToClient(message) {
+  const now = Math.round(performance.now());
+  if (lastTime) {
+    timings.push(now - lastTime);
+  }
+  postMessage(message);
+  lastTime = now;
+}
+var handleMessageFromClient = async ({ data: message }) => {
+  switch (message.type) {
+    case "connect":
+      await connectToServer(message.url, message.token, postMessage);
+      postMessage({ type: "connected" });
+      break;
+    case "subscribe":
+      server.subscribe(message);
+      break;
+    case "unsubscribe":
+      server.unsubscribe(message.viewport);
+      break;
+    default:
+      server.handleMessageFromClient(message);
+  }
+};
+self.addEventListener("message", handleMessageFromClient);
+postMessage({ type: "ready" });
 //# sourceMappingURL=worker.js.map

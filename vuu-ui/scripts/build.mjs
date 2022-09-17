@@ -37,12 +37,15 @@ async function main() {
     name: scopedPackageName
   };
 
-  const workerConfig = hasWorker
+  const inlineWorkerConfig = hasWorker
     ? {
+        banner: { js: 'export function InlinedWorker() {' },
         entryPoints: [workerTS],
         env: development ? 'development' : 'production',
-        outdir: `${DIST_PATH}/${packageName}`,
-        name: scopedPackageName
+        footer: { js: '}' },
+        name: scopedPackageName,
+        outfile: `src/inlined-worker.js`,
+        sourcemap: false
       }
     : undefined;
 
@@ -84,31 +87,27 @@ async function main() {
 
   createDistFolder();
 
-  const [, { metafile }, workerResult] = await Promise.all(
-    [writePackageJSON(), build(buildConfig)].concat(hasWorker ? build(workerConfig) : [])
-  ).catch((e) => {
-    console.error(e);
-    process.exit(1);
-  });
+  if (hasWorker) {
+    // this has to complete first, the inline worker will be consumed ny subsequent build
+    await build(inlineWorkerConfig);
+  }
+
+  const [, { metafile }] = await Promise.all([writePackageJSON(), build(buildConfig)]).catch(
+    (e) => {
+      console.error(e);
+      process.exit(1);
+    }
+  );
 
   const {
-    outputs: { [`${outdir}/index.js`]: jsOut, [`${outdir}/index.css}`]: cssOut }
+    outputs: { [`${outdir}/index.js`]: jsOut, [`${outdir}/index.css`]: cssOut }
   } = metafile;
 
-  if (hasWorker) {
-    const {
-      outputs: { [`${outdir}/worker.js`]: workerOut }
-    } = workerResult.metafile;
-    console.log(`[${scopedPackageName}] DEPLOY worker.js to Showcase`);
-    shell.cp(`${outdir}/worker.js`, '../showcase/public/VUU');
-    shell.cp(`${outdir}/worker.js.map`, '../showcase/public/VUU');
-    console.log(`[${scopedPackageName}@${version}] \tworker.js:  ${formatBytes(workerOut.bytes)}`);
-  }
   if (jsOut) {
-    console.log(`[${scopedPackageName}@${version}] \tindex.js:  ${formatBytes(jsOut.bytes)}`);
+    console.log(`\tindex.js:  ${formatBytes(jsOut.bytes)}`);
   }
   if (cssOut) {
-    console.log(`[${scopedPackageName}@${version}] \tindex.css: ${formatBytes(cssOut.bytes)}`);
+    console.log(`\tindex.css: ${formatBytes(cssOut.bytes)}`);
   }
 }
 

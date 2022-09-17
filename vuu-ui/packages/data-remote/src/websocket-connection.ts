@@ -18,7 +18,10 @@ const connectionAttempts: {
 const setWebsocket = Symbol('setWebsocket');
 const connectionCallback = Symbol('connectionCallback');
 
-export async function connect(connectionString: string, callback: ConnectionCallback) {
+export async function connect(
+  connectionString: string,
+  callback: ConnectionCallback
+): Promise<Connection> {
   return makeConnection(connectionString, callback);
 }
 
@@ -31,7 +34,7 @@ async function makeConnection(
   url: string,
   callback: ConnectionCallback,
   connection?: WebsocketConnection
-): Promise<Connection | undefined> {
+): Promise<Connection> {
   const connectionStatus =
     connectionAttempts[url] ||
     (connectionAttempts[url] = {
@@ -71,6 +74,8 @@ async function makeConnection(
     });
     if (retry) {
       return makeConnectionIn(url, callback, connection, 10000);
+    } else {
+      throw Error('Failed to establish connection');
     }
   }
 }
@@ -80,7 +85,7 @@ const makeConnectionIn = (
   callback: ConnectionCallback,
   connection?: WebsocketConnection,
   delay?: number
-): Promise<Connection | undefined> =>
+): Promise<Connection> =>
   new Promise((resolve) => {
     setTimeout(() => {
       resolve(makeConnection(url, callback, connection));
@@ -117,7 +122,8 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   requiresLogin = true;
   send: (msg: ClientToServerMessage) => void = sendWarn;
   status: 'closed' | 'ready' | 'connected' | 'reconnected' = 'ready';
-  url: string;
+
+  private url: string;
 
   constructor(ws: any, url: string, callback: ConnectionCallback) {
     this.url = url;

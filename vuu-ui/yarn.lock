@@ -262,6 +262,14 @@
   dependencies:
     d3-array "^2.11.0"
 
+"@vuu-ui/data-worker@0.0.21":
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/@vuu-ui/data-worker/-/data-worker-0.0.21.tgz#92eabde2ec26a52f6466fdf076da6fe3c715c8ab"
+  integrity sha512-D8fAnfQ9gIY1m4VB+tWWfO61mVBrQwVg6+ysYlLexjfbbV819JDYBgutdGjxM1sxLM4MOzYVcVOsPUZNYWmyag==
+  dependencies:
+    "@vuu-ui/data-remote" "0.0.21"
+    "@vuu-ui/utils" "0.0.21"
+
 "@vuu-ui/utils@0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@vuu-ui/utils/-/utils-0.0.1.tgz#b9ce61cc0166ccd614497893bbafac87ba83610f"

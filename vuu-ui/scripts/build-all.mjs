@@ -5,7 +5,7 @@ const dev = args.includes('--dev') ? ' --dev' : '';
 
 function buildPackage(packageName) {
   shell.cd(`packages/${packageName}`);
-  shell.exec(`yarn build${dev}`);
+  shell.exec(`yarn --silent build${dev}`);
   shell.cd('../..');
 }
 

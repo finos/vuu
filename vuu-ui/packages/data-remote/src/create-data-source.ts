@@ -1,7 +1,7 @@
 import { Column } from '@vuu-ui/utils';
 
 import { getServerUrl } from './hooks/useServerConnection';
-import RemoteDataSource from './remote-data-source';
+import { RemoteDataSource } from './remote-data-source';
 
 const DEFAULT_BUFFER_SIZE = 300;
 // const DEFAULT_BUFFER_SIZE = 0;
@@ -29,7 +29,6 @@ export const createDataSource = ({
 }: DataSourceOptions) =>
   new RemoteDataSource({
     bufferSize,
-    serverName: 'Vuu',
     tableName,
     serverUrl,
     viewport: id,

@@ -11,7 +11,6 @@ export interface LayoutProviderContextProps {
   version: number;
 }
 
-console.log(`%c CREATE LAYOUTPROVIDERXCONTEXT`, 'color: red; font-weight: bold;');
 export const LayoutProviderContext = createContext<LayoutProviderContextProps>({
   dispatchLayoutProvider: unconfiguredLayoutProviderDispatch,
   version: -1

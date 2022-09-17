@@ -1,5 +1,5 @@
 import { EventEmitter, uuid } from '@vuu-ui/utils';
-import * as Message from '../server-proxy/messages';
+import * as Message from './server-proxy/messages';
 import {
   ClientViewportMessage,
   isConnectionStatusMessage,
@@ -12,13 +12,22 @@ import {
   VuuUIMessageIn,
   VuuUIMessageInRPC,
   VuuUIMessageOut
-} from '../vuuUIMessageTypes';
+} from './vuuUIMessageTypes';
 import { VuuTable } from '@vuu-ui/data-types';
-
+// Note: the InlinedWorker is a generated file, it must be built
+import { InlinedWorker } from './inlined-worker';
+const workerSource = InlinedWorker.toString().replace(/^function .+\{?|\}$/g, '');
+var workerBlob = new Blob([workerSource], { type: 'text/javascript' });
+var workerBlobUrl = URL.createObjectURL(workerBlob);
 const logger = console;
+
+type WorkerResolver = {
+  resolve: (value: Worker | PromiseLike<Worker>) => void;
+};
 
 let worker: Worker;
 let pendingWorker: Promise<Worker>;
+let pendingWorkerNoToken: WorkerResolver[] = [];
 
 export type PostMessageToClientCallback = (msg: ClientViewportMessage) => void;
 
@@ -37,22 +46,22 @@ const pendingRequests = new Map();
 // while they wait for worker.
 const getWorker = async (
   url: string,
-  server: string,
   token: string = '',
   handleConnectionStatusChange: (msg: any) => void
 ) => {
-  const workerUrl = 'worker.js';
-
   if (token === '' && pendingWorker === undefined) {
-    //create a new promises, store the resolve/reject pair and return it
+    return new Promise<Worker>((resolve) => {
+      pendingWorkerNoToken.push({ resolve });
+    });
   }
-
+  //FIXME If we have a pending request already and a new request arrives with a DIFFERENT
+  // token, this would cause us to ignore the new request and ultimately resolve it with
+  // the original request.
   return (
     pendingWorker ||
     // we get this far when we receive the first request with auth token
     (pendingWorker = new Promise((resolve) => {
-      console.log(`ConnectionManager load worker at ${workerUrl}`);
-      const worker = new Worker(workerUrl, { type: 'module' });
+      const worker = new Worker(workerBlobUrl);
 
       const timer: number | null = window.setTimeout(() => {
         console.error('timed out waiting for worker to load');
@@ -65,10 +74,13 @@ const getWorker = async (
         const { data: message } = msg;
         if (message.type === 'ready') {
           window.clearTimeout(timer);
-          worker.postMessage({ type: 'connect', url, useWebsocket: !!server, token });
+          worker.postMessage({ type: 'connect', url, token });
         } else if (message.type === 'connected') {
           resolve(worker);
-          // if we have stored promises above, resolve all wuth same worker
+          for (const pendingWorkerRequest of pendingWorkerNoToken) {
+            pendingWorkerRequest.resolve(worker);
+          }
+          pendingWorkerNoToken.length = 0;
         } else if (isConnectionStatusMessage(message)) {
           handleConnectionStatusChange(msg);
         } else {
@@ -106,7 +118,7 @@ function handleMessageFromWorker({ data: message }: MessageEvent<VuuUIMessageIn>
       }
     }
   } else if (isConnectionStatusMessage(message)) {
-    connectionManager.emit('connection-status', message);
+    ConnectionManager.emit('connection-status', message);
   } else {
     const clientViewportId = (message as ViewportMessage).clientViewportId;
     const requestId = (message as VuuUIMessageInRPC).requestId;
@@ -157,13 +169,18 @@ export interface ServerAPI {
   unsubscribe: (viewport: string) => void;
 }
 
-class ConnectionManager extends EventEmitter {
+class _ConnectionManager extends EventEmitter {
   // The first request must have the token. We can change this to block others until
   // the request with token is received.
-  async connect(url: string, server: string, token?: string): Promise<ServerAPI> {
+  async connect(url: string, authToken?: string): Promise<ServerAPI> {
     // By passing handleMessageFromWorker here, we can get connection status
     //messages while we wait for worker to resolve.
-    worker = await getWorker(url, server, token, handleMessageFromWorker);
+
+    console.group(
+      `[ConnectionManager].connect ${url}, token=${authToken}, about to block on getWorker`
+    );
+    worker = await getWorker(url, authToken, handleMessageFromWorker);
+    console.groupEnd();
 
     worker.onmessage = handleMessageFromWorker;
 
@@ -185,7 +202,6 @@ class ConnectionManager extends EventEmitter {
       },
 
       unsubscribe: (viewport) => {
-        console.log(`ConnectionManagerWorker, unsubscribe from vp ${viewport}`);
         worker.postMessage({ type: 'unsubscribe', viewport });
       },
 
@@ -211,6 +227,4 @@ class ConnectionManager extends EventEmitter {
   }
 }
 
-const connectionManager = new ConnectionManager();
-
-export default connectionManager;
+export const ConnectionManager = new _ConnectionManager();
