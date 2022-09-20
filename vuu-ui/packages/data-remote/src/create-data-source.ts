@@ -1,3 +1,4 @@
+import { VuuTable } from '@vuu-ui/data-types';
 import { Column } from '@vuu-ui/utils';
 
 import { getServerUrl } from './hooks/useServerConnection';
@@ -12,7 +13,7 @@ export interface DataSourceSchema {
 
 export interface DataSourceOptions {
   id: string;
-  tableName: string;
+  table: VuuTable;
   schema: DataSourceSchema;
   serverUrl?: string;
   config: any; // TODO
@@ -21,7 +22,7 @@ export interface DataSourceOptions {
 
 export const createDataSource = ({
   id,
-  tableName,
+  table,
   schema,
   serverUrl = getServerUrl(),
   config,
@@ -29,7 +30,7 @@ export const createDataSource = ({
 }: DataSourceOptions) =>
   new RemoteDataSource({
     bufferSize,
-    tableName,
+    table,
     serverUrl,
     viewport: id,
     ...config,

@@ -121,7 +121,7 @@ export class Viewport {
 
   constructor({
     viewport,
-    tablename,
+    table,
     aggregations,
     columns,
     range,
@@ -133,7 +133,7 @@ export class Viewport {
     visualLink
   }: ServerProxySubscribeMessage) {
     this.clientViewportId = viewport;
-    this.table = tablename;
+    this.table = table;
     this.aggregations = aggregations;
     this.columns = columns;
     this.clientRange = range;

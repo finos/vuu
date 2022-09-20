@@ -45,10 +45,6 @@ async function main() {
   console.log('[DEPLOY public assets]');
   shell.cp(`./public/**`, `${outdir}`);
 
-  console.log('[DEPLOY worker.js]');
-  shell.cp(`../../dist/data-remote/worker.js`, `${outdir}/worker.js`);
-  shell.cp(`../../dist/data-remote/worker.js.map`, `${outdir}/worker.js.map`);
-
   entryPoints.concat(featureEntryPoints).forEach((fileName) => {
     const outJS = `${outdir}/${fileName
       .replace(new RegExp(`^${outbase}\\/`), '')

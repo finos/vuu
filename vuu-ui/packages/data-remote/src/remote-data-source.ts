@@ -1,11 +1,15 @@
-import { DataTypes, EventEmitter, uuid } from '@vuu-ui/utils';
+import { DataTypes, EventEmitter, FilterClause, uuid } from '@vuu-ui/utils';
 import { DataSource, DataSourceProps, SubscribeCallback, SubscribeProps } from './data-source';
-import { VuuUIMessageIn } from './vuuUIMessageTypes';
-import { VuuAggregation, VuuSortCol } from '@vuu-ui/data-types';
+import {
+  VuuUIMessageIn,
+  VuuUIMessageOutFilterQuery,
+  VuuUIMessageOutSort
+} from './vuuUIMessageTypes';
+import { VuuAggregation, VuuSortCol, VuuTable } from '@vuu-ui/data-types';
 
 import { msgType as Msg } from './constants';
 
-import { ConnectionManager } from './connection-manager';
+import { ConnectionManager, ServerAPI } from './connection-manager';
 
 const { ROW_DATA } = DataTypes;
 
@@ -25,10 +29,10 @@ export interface DataSourceColumn {}
   ----------------------------------------------------------------*/
 export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
-  private tableName: string;
+  private table: VuuTable;
   private columns: DataSourceColumn[];
   private viewport: string;
-  private server: any;
+  private server: ServerAPI | null = null;
   private url: string;
   private visualLink: string;
   private status: string;
@@ -52,7 +56,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     filterQuery,
     group,
     sort,
-    tableName,
+    table,
     configUrl,
     serverUrl,
     viewport,
@@ -60,11 +64,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }: DataSourceProps) {
     super();
     this.bufferSize = bufferSize;
-    this.tableName = tableName;
+    this.table = table;
     this.columns = columns;
     this.viewport = viewport;
 
-    this.server = NullServer;
     this.url = serverUrl || configUrl;
     this.visualLink = visualLink;
 
@@ -84,7 +87,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       throw Error('RemoteDataSource expects serverUrl or configUrl');
     }
 
-    this.server = null;
     console.log(`[RemoteDataSource] call ConnectionManager.connect, but don't block`);
     this.pendingServer = ConnectionManager.connect(this.url);
   }
@@ -92,7 +94,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   async subscribe(
     {
       viewport = this.viewport ?? uuid(),
-      tableName = this.tableName,
+      table = this.table,
       columns = this.columns || [],
       aggregations = this.initialAggregations,
       range = defaultRange,
@@ -103,7 +105,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    if (!tableName) throw Error('RemoteDataSource subscribe called without table name');
+    if (!table) throw Error('RemoteDataSource subscribe called without table');
 
     this.clientCallback = callback;
 
@@ -119,7 +121,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
     this.status = 'subscribing';
     this.viewport = viewport;
-    this.tableName = tableName;
+    this.table = table;
     this.columns = columns;
 
     console.group(`[RemoteDataSource].subscribe  about to block until ServerAPI resolves`);
@@ -130,7 +132,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.server.subscribe(
       {
         viewport,
-        tablename: tableName,
+        table,
         columns,
         aggregations,
         range,
@@ -171,9 +173,9 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   unsubscribe() {
     if (!this.disabled && !this.suspended) {
       logger.log(
-        `unsubscribe from ${
-          this.tableName ? JSON.stringify(this.tableName) : 'no table'
-        } (viewport ${this?.viewport})`
+        `unsubscribe from ${this.table ? JSON.stringify(this.table) : 'no table'} (viewport ${
+          this?.viewport
+        })`
       );
       this.server?.unsubscribe(this.viewport);
       this.server?.destroy();
@@ -182,7 +184,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   suspend() {
     this.suspended = true;
-    this.server.send({
+    this.server?.send({
       viewport: this.viewport,
       type: Msg.suspend
     });
@@ -192,7 +194,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   resume() {
     if (this.suspended) {
       // should we await this ?s
-      this.server.send({
+      this.server?.send({
         viewport: this.viewport,
         type: Msg.resume
       });
@@ -204,7 +206,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   disable() {
     this.status = 'disabling';
     this.disabled = true;
-    this.server.send({
+    this.server?.send({
       viewport: this.viewport,
       type: Msg.disable
     });
@@ -215,7 +217,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     if (this.disabled) {
       this.status = 'enabling';
       // should we await this ?s
-      this.server.send({
+      this.server?.send({
         viewport: this.viewport,
         type: Msg.enable
       });
@@ -279,17 +281,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     });
   }
 
-  // TODO we shouldn't have to parse the filter here, makes this package dependent on parsing package
-  filter(filter: any, filterQuery: string) {
-    console.log({ filter, filterQuery });
-    this.server?.send({
-      viewport: this.viewport,
-      type: Msg.filterQuery,
-      filter,
-      filterQuery
-    });
-  }
-
   openTreeNode(key: string) {
     this.server?.send({
       viewport: this.viewport,
@@ -318,9 +309,19 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   sort(columns: VuuSortCol[]) {
     this.server?.send({
       viewport: this.viewport,
-      type: Msg.sort,
-      sortCriteria: columns
-    });
+      type: 'sort',
+      sortDefs: columns
+    } as VuuUIMessageOutSort);
+  }
+
+  filter(filter: FilterClause, filterQuery: string) {
+    console.log({ filter, filterQuery });
+    this.server?.send({
+      viewport: this.viewport,
+      type: 'filterQuery',
+      filter,
+      filterQuery
+    } as VuuUIMessageOutFilterQuery);
   }
 
   getFilterData(column: string, searchText: string) {

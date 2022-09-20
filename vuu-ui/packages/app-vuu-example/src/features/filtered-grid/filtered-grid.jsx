@@ -23,7 +23,7 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
     if (ds) {
       return ds;
     }
-    ds = createDataSource({ id, tableName: schema.table, schema, config });
+    ds = createDataSource({ id, table: schema.table, schema, config });
     saveSession(ds, 'data-source');
     return ds;
   }, [config, id, loadSession, saveSession, schema]);
