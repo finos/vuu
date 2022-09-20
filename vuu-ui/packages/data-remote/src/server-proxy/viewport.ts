@@ -430,7 +430,7 @@ export class Viewport {
   }
 
   groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
-    const type = groupBy === EMPTY_ARRAY ? 'groupByClear' : 'groupBy';
+    const type = groupBy === EMPTY_GROUPBY ? 'groupByClear' : 'groupBy';
     this.awaitOperation(requestId, { type, data: groupBy });
     return this.createRequest({ groupBy });
   }
