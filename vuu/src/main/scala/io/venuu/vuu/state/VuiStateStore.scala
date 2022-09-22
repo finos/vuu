@@ -1,6 +1,7 @@
 package io.venuu.vuu.state
 
 import com.typesafe.scalalogging.StrictLogging
+import io.venuu.vuu.state.VuiStateStore.toUniqueId
 import org.joda.time.format.DateTimeFormat
 
 import java.io.{File, FilenameFilter, PrintWriter}
@@ -34,8 +35,7 @@ trait VuiStateStore {
   }
 }
 
-class FileBackedVuiStateStore(val storageDir: String, val maxItemsPerUser: Int = 50) extends VuiStateStore with StrictLogging {
-
+object FileBackedVuiStateStore{
   def createPath(directory: String): Unit = {
     Files.createDirectories(Paths.get(directory))
   }
@@ -46,8 +46,11 @@ class FileBackedVuiStateStore(val storageDir: String, val maxItemsPerUser: Int =
     writer.print(contents);
     writer.close()
   }
+  def listUserDirs(storageDir: String): List[File] = {
+    Paths.get(storageDir).toFile.listFiles().toList
+  }
 
-  def listFiles(directory: String): Array[File] ={
+  def listFilesInUserDir(directory: String): Array[File] ={
     Paths.get(directory).toFile.listFiles()
   }
 
@@ -57,40 +60,66 @@ class FileBackedVuiStateStore(val storageDir: String, val maxItemsPerUser: Int =
     source.close()
     lines
   }
+}
+
+class FileBackedVuiStateStore(val storageDir: String, val maxItemsPerUser: Int = 50) extends VuiStateStore with StrictLogging {
+
+  import FileBackedVuiStateStore._
 
   def userPath(user: String): String = {
       storageDir + File.separator + user + "/"
   }
 
-  def fileToHeader(file: File): VuiHeader = {
-
+  def fileToHeader(user: String, file: File): Option[VuiHeader] = {
+    val name = file.getName
+    val pieces = name.split("-")
+    pieces.length match {
+      case 3 =>
+        val lastUpdate = pieces(0).toLong
+        val theId = pieces(1)
+        val uniqueId = pieces(2).replace(".json", "")
+        Some(VuiHeader(user = user, id = theId, uniqueId = uniqueId, lastUpdate))
+      case _ =>
+        None
+    }
   }
 
   override def add(state: VuiState): Unit = {
     val path = userPath(state.header.user)
     createPath(path)
-    val version = state.header.lastUpdate.toString
-    val fileName = path + version + "-" + state.header.id + "-" + state.header.uniqueId + ".json"
+
+    val version = if(state.header.id == "latest"){
+      state.header.lastUpdate.toString
+    }else {
+      "latest"
+    }
+
+    val uniqueId = toUniqueId(state.header.user, version)
+
+    val fileName = path + version + "-" + state.header.id + "-" + uniqueId + ".json"
+
     writeFile(fileName, state.json.json)
   }
 
   override def get(user: String, id: String): Option[VuiState] = {
     val thePath = userPath(user)
+
     val files = Paths.get(thePath).toFile.listFiles( new FilenameFilter {
       override def accept(dir: File, name: String): Boolean = name.endsWith(user + "." + id + ".json")
     })
-    val pieces = files.head.getName.split("-")
 
-    val path = files.head.getPath
-
-    //val theUser = pieces(0).toString()
-    val lastUpdate = pieces(0).toString().toLong
-    val theId = pieces(1).toString()
-    val uniqueId = pieces(2).toString().replace(".json", "")
-
-    val contents = readFile(path)
-
-    Some(VuiState(VuiHeader(user, theId, uniqueId, lastUpdate), VuiJsonState(contents)))
+    files.headOption match {
+      case Some(file) =>
+        fileToHeader(user, file) match {
+          case Some(header) =>
+            val contents = readFile(file.getPath)
+            Some(VuiState(header, VuiJsonState(contents)))
+          case _  =>
+              None
+        }
+      case _ =>
+        None
+    }
   }
 
   override def delete(user: String, id: String): Unit = {
@@ -107,12 +136,19 @@ class FileBackedVuiStateStore(val storageDir: String, val maxItemsPerUser: Int =
 
   override def getAllFor(user: String): List[VuiHeader] = {
     val thePath = userPath(user)
-    val files = listFiles(thePath)
-
-
+    val files = listFilesInUserDir(thePath)
+    files.flatMap(f => fileToHeader(user, f)).toList
   }
 
-  override def getAll(): List[VuiHeader] = ???
+  override def getAll(): List[VuiHeader] = {
+    listUserDirs(storageDir).flatMap(f => getAllFor(f.getName))
+  }
+}
+
+object VuiStateStore {
+  def toUniqueId(user: String, version: String): String = {
+    s"${user}.${version}"
+  }
 }
 
 class MemoryBackedVuiStateStore(val maxItemsPerUser: Int = 50) extends VuiStateStore {
@@ -121,10 +157,6 @@ class MemoryBackedVuiStateStore(val maxItemsPerUser: Int = 50) extends VuiStateS
 
   override def delete(user: String, id: String): Unit = {
     storeByUser.put(user, storeByUser.getOrDefault(user, Map()).-(id))
-  }
-
-  def toUniqueId(user: String, version: String): String = {
-    s"${user}.${version}"
   }
 
   override def add(state: VuiState): Unit = {
