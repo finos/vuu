@@ -99,6 +99,12 @@ class FileBackedVuiStateStore(val storageDir: String, val maxItemsPerUser: Int =
     val fileName = path + version + "-" + state.header.id + "-" + uniqueId + ".json"
 
     writeFile(fileName, state.json.json)
+
+    val uniqueIdLatest = toUniqueId(state.header.user, "latest")
+
+    val fileNameLatest = path + version + "-" + state.header.id + "-" + uniqueIdLatest + ".json"
+
+    writeFile(fileNameLatest, state.json.json)
   }
 
   override def get(user: String, id: String): Option[VuiState] = {
@@ -106,7 +112,7 @@ class FileBackedVuiStateStore(val storageDir: String, val maxItemsPerUser: Int =
 
     val files = Paths.get(thePath).toFile.listFiles( new FilenameFilter {
       override def accept(dir: File, name: String): Boolean = name.endsWith(user + "." + id + ".json")
-    })
+    }).sortBy(_.lastModified()).reverse
 
     files.headOption match {
       case Some(file) =>

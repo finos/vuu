@@ -5,6 +5,8 @@ import io.venuu.vuu.viewport.TestTimeStamp
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
+import java.io.File
+
 class VuiStateStoreTest extends AnyFeatureSpec {
 
   Feature("check we can add, get and remove ui states"){
@@ -97,6 +99,9 @@ class VuiStateStoreTest extends AnyFeatureSpec {
 
       addChris(stateStore, "bar2:{}")
 
+      val latest2 = stateStore.get("chris", "latest")
+
+      latest2.get.json.json shouldEqual("bar2:{}")
     }
   }
 }

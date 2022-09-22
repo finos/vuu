@@ -12,7 +12,7 @@ import io.venuu.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWeb
 import io.venuu.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
 import io.venuu.vuu.net.auth.AlwaysHappyAuthenticator
 import io.venuu.vuu.net.http.VuuHttp2ServerOptions
-import io.venuu.vuu.state.{MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, VuiState}
+import io.venuu.vuu.state.{FileBackedVuiStateStore, MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, VuiState}
 
 /*
 //to allow self signed certs
@@ -27,9 +27,7 @@ object SimulMain extends App {
   implicit val clock: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-  val store = new MemoryBackedVuiStateStore()
-
-  //store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
+  val store = new FileBackedVuiStateStore("./target/vui-state")
 
   lifecycle.autoShutdownHook()
 
