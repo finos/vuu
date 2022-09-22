@@ -254,11 +254,6 @@
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
                     </configuration>
                     <dependencies>
-                        <!--dependency>
-                            <groupId>com.thoughtworks.xstream</groupId>
-                            <artifactId>xstream</artifactId>
-                            <version></version>
-                        </dependency-->
                     </dependencies>
                 </plugin>
 

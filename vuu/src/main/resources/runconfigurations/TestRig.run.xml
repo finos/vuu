@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="TestRig" type="Application" factoryName="Application" folderName="runConfigs" nameIsGenerated="true">
+    <option name="ALTERNATIVE_JRE_PATH" value="16" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <option name="MAIN_CLASS_NAME" value="org.antlr.v4.gui.TestRig" />
+    <module name="vuu" />
+    <option name="PROGRAM_PARAMETERS" value="io.venuu.vuu.grammer.Filter expression -gui" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

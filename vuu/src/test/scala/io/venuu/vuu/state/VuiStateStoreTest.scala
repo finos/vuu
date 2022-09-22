@@ -74,5 +74,29 @@ class VuiStateStoreTest extends AnyFeatureSpec {
 
       stateStore.getAllFor("steve").size shouldEqual(50)
     }
+
+    Scenario("Check file based store"){
+
+      implicit val clock: Clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
+
+      val directory = "./target/" + System.currentTimeMillis() + "/"
+
+      val stateStore: VuiStateStore = new FileBackedVuiStateStore(directory)
+
+      addChris(stateStore, "foo:{}")
+
+      val key1 = stateStore.timeToVersion(clock.now())
+
+      val latest = stateStore.get("chris", "latest")
+
+      clock.sleep(100)
+
+      addChris(stateStore, "bar:{}")
+
+      clock.sleep(100)
+
+      addChris(stateStore, "bar2:{}")
+
+    }
   }
 }

@@ -1,9 +1,14 @@
 package io.venuu.vuu.state
 
+import com.typesafe.scalalogging.StrictLogging
 import org.joda.time.format.DateTimeFormat
 
+import java.io.{File, FilenameFilter, PrintWriter}
+import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.ConcurrentHashMap
+import scala.io.Source
 import scala.jdk.CollectionConverters._
+
 
 case class VuiHeader(user: String, id: String, uniqueId: String, lastUpdate: Long)
 
@@ -27,6 +32,87 @@ trait VuiStateStore {
   def timeToVersion(time: Long): String = {
     dateTimeFormat.print(time)
   }
+}
+
+class FileBackedVuiStateStore(val storageDir: String, val maxItemsPerUser: Int = 50) extends VuiStateStore with StrictLogging {
+
+  def createPath(directory: String): Unit = {
+    Files.createDirectories(Paths.get(directory))
+  }
+
+  def writeFile(filePath: String, contents: String): Unit ={
+    //Files.createDirectories(Paths.get(filePath))
+    val writer = new PrintWriter(new File(filePath))
+    writer.print(contents);
+    writer.close()
+  }
+
+  def listFiles(directory: String): Array[File] ={
+    Paths.get(directory).toFile.listFiles()
+  }
+
+  def readFile(filePath: String): String = {
+    val source = Source.fromFile(filePath)
+    val lines = source.getLines().mkString
+    source.close()
+    lines
+  }
+
+  def userPath(user: String): String = {
+      storageDir + File.separator + user + "/"
+  }
+
+  def fileToHeader(file: File): VuiHeader = {
+
+  }
+
+  override def add(state: VuiState): Unit = {
+    val path = userPath(state.header.user)
+    createPath(path)
+    val version = state.header.lastUpdate.toString
+    val fileName = path + version + "-" + state.header.id + "-" + state.header.uniqueId + ".json"
+    writeFile(fileName, state.json.json)
+  }
+
+  override def get(user: String, id: String): Option[VuiState] = {
+    val thePath = userPath(user)
+    val files = Paths.get(thePath).toFile.listFiles( new FilenameFilter {
+      override def accept(dir: File, name: String): Boolean = name.endsWith(user + "." + id + ".json")
+    })
+    val pieces = files.head.getName.split("-")
+
+    val path = files.head.getPath
+
+    //val theUser = pieces(0).toString()
+    val lastUpdate = pieces(0).toString().toLong
+    val theId = pieces(1).toString()
+    val uniqueId = pieces(2).toString().replace(".json", "")
+
+    val contents = readFile(path)
+
+    Some(VuiState(VuiHeader(user, theId, uniqueId, lastUpdate), VuiJsonState(contents)))
+  }
+
+  override def delete(user: String, id: String): Unit = {
+    val thePath = userPath(user)
+    val files = Paths.get(thePath).toFile.listFiles( new FilenameFilter {
+      override def accept(dir: File, name: String): Boolean = name.endsWith(user + "." + id + ".json")
+    })
+    files.headOption match {
+      case Some(file) => file.delete()
+      case None =>
+        logger.error(s"Tried to delete version that doesn't exist: $user $id")
+    }
+  }
+
+  override def getAllFor(user: String): List[VuiHeader] = {
+    val thePath = userPath(user)
+    val files = listFiles(thePath)
+
+
+  }
+
+  override def getAll(): List[VuiHeader] = ???
 }
 
 class MemoryBackedVuiStateStore(val maxItemsPerUser: Int = 50) extends VuiStateStore {
