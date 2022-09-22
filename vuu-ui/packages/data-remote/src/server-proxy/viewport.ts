@@ -4,13 +4,13 @@ import { ArrayBackedMovingWindow } from './array-backed-moving-window';
 import { getFullRange } from '@vuu-ui/utils/src/range-utils';
 import { bufferBreakout } from './buffer-range';
 import {
-  MessageInCreateViewPortSuccess,
-  VuuProtocolMessageOutViewPortRange,
-  VuuProtocolMessageOutCreateViewPort,
-  VuuProtocolMessageOutDisable,
-  VuuProtocolMessageOutEnable,
-  VuuProtocolMessageOutSelection,
-  VuuProtocolMessageOutCreateLink,
+  ServerToClientCreateViewPortSuccess,
+  ClientToServerCreateLink,
+  ClientToServerCreateViewPort,
+  ClientToServerDisable,
+  ClientToServerEnable,
+  ClientToServerSelection,
+  ClientToServerViewPortRange,
   VuuColumns,
   VuuMenu,
   VuuGroupBy,
@@ -18,9 +18,9 @@ import {
   VuuRow,
   VuuTable,
   VuuAggregation,
-  VuuSort,
-  VuuSortCol
-} from '../vuuProtocolMessageTypes';
+  VuuSortCol,
+  VuuRange
+} from '@vuu-ui/data-types';
 import {
   ServerProxySubscribeMessage,
   VuuUIMessageInDisabled,
@@ -72,7 +72,7 @@ interface GroupByClear {
   data: VuuGroupBy;
   type: 'groupByClear';
 }
-type CreateVisualLink = VuuProtocolMessageOutCreateLink['body'];
+type CreateVisualLink = ClientToServerCreateLink;
 
 type AsyncOperation =
   | Aggregate
@@ -85,14 +85,14 @@ type AsyncOperation =
   | GroupByClear
   | Selection
   | Sort;
-type RangeRequestTuple = [VuuProtocolMessageOutViewPortRange['body'] | null, VuuUIRow[]?];
+type RangeRequestTuple = [ClientToServerViewPortRange | null, VuuUIRow[]?];
 type RowSortPredicate = (row1: VuuUIRow, row2: VuuUIRow) => number;
 
 const byRowIndex: RowSortPredicate = ([index1], [index2]) => index1 - index2;
 export class Viewport {
   private aggregations: any;
   private bufferSize: number;
-  private clientRange: any;
+  private clientRange: VuuRange;
   private columns: any[];
   // TODO create this in constructor so we don't have to mark is as optional
   private dataWindow?: ArrayBackedMovingWindow = undefined;
@@ -121,11 +121,11 @@ export class Viewport {
 
   constructor({
     viewport,
-    tablename,
+    table,
     aggregations,
     columns,
     range,
-    bufferSize = 0,
+    bufferSize = 50,
     filter = '',
     filterQuery = '',
     sort = [],
@@ -133,7 +133,7 @@ export class Viewport {
     visualLink
   }: ServerProxySubscribeMessage) {
     this.clientViewportId = viewport;
-    this.table = tablename;
+    this.table = table;
     this.aggregations = aggregations;
     this.columns = columns;
     this.clientRange = range;
@@ -167,7 +167,7 @@ export class Viewport {
       sort: this.sort,
       groupBy: this.groupBy,
       filterSpec: this.filterSpec
-    } as VuuProtocolMessageOutCreateViewPort['body'];
+    } as ClientToServerCreateViewPort;
   }
 
   handleSubscribed({
@@ -178,13 +178,11 @@ export class Viewport {
     sort,
     groupBy,
     filterSpec
-  }: MessageInCreateViewPortSuccess) {
+  }: ServerToClientCreateViewPortSuccess) {
     this.serverViewportId = viewPortId;
     this.status = 'subscribed';
     this.aggregations = aggregations;
     this.columns = columns;
-    // this.range = range;
-    this.sort = sort;
     this.groupBy = groupBy;
     this.filterSpec = filterSpec;
     this.isTree = groupBy && groupBy.length > 0;
@@ -280,7 +278,7 @@ export class Viewport {
     }
   }
 
-  rangeRequest(requestId: string, from: number, to: number): RangeRequestTuple {
+  rangeRequest(requestId: string, range: VuuRange): RangeRequestTuple {
     // If we can satisfy the range request from the buffer, we will.
     // May or may not need to make a server request, depending on status of buffer
     const type = Message.CHANGE_VP_RANGE;
@@ -289,18 +287,20 @@ export class Viewport {
     // previous range.
     // Note: what if it doesn't have the entire range but DOES have all
     // rows that constitute the delta ? Is this even possible ?
+
     if (this.dataWindow) {
       const [serverDataRequired, clientRows, holdingRows] = this.dataWindow.setClientRange(
-        from,
-        to
+        range.from,
+        range.to
       );
       const serverRequest =
-        serverDataRequired && bufferBreakout(this.pendingRangeRequest, from, to, this.bufferSize)
+        serverDataRequired &&
+        bufferBreakout(this.pendingRangeRequest, range.from, range.to, this.bufferSize)
           ? ({
               type,
               viewPortId: this.serverViewportId,
-              ...getFullRange({ from, to }, this.bufferSize, this.dataWindow.rowCount)
-            } as VuuProtocolMessageOutViewPortRange['body'])
+              ...getFullRange(range, this.bufferSize, this.dataWindow.rowCount)
+            } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
         // TODO check that there os not already a pending server request for more data
@@ -311,9 +311,12 @@ export class Viewport {
       // always reset the keys here, even if we're not going to return rows immediately.
       this.keys.reset(this.dataWindow.clientRange);
 
-      const rowWithinRange: VuuUIRowPredicate = ([index]) => index < from || index >= to;
+      const rowWithinRange: VuuUIRowPredicate = ([index]) =>
+        index < range.from || index >= range.to;
       if (this.holdingPen.some(rowWithinRange)) {
-        this.holdingPen = this.holdingPen.filter(([index]) => index >= from && index < to);
+        this.holdingPen = this.holdingPen.filter(
+          ([index]) => index >= range.from && index < range.to
+        );
       }
 
       const toClient = this.isTree ? toClientRowTree(this.groupBy, this.columns) : toClientRow;
@@ -325,7 +328,12 @@ export class Viewport {
       }
 
       if (clientRows.length) {
-        return [serverRequest, clientRows.map((row) => toClient(row, this.keys))];
+        return [
+          serverRequest,
+          clientRows.map((row) => {
+            return toClient(row, this.keys);
+          })
+        ];
       } else {
         return [serverRequest];
       }
@@ -363,7 +371,7 @@ export class Viewport {
       childColumnName: colName
     } as CreateVisualLink;
     this.awaitOperation(requestId, message);
-    return message as VuuProtocolMessageOutCreateLink['body'];
+    return message as ClientToServerCreateLink;
   }
 
   suspend() {
@@ -395,7 +403,7 @@ export class Viewport {
     return {
       type: Message.ENABLE_VP,
       viewPortId: this.serverViewportId
-    } as VuuProtocolMessageOutEnable['body'];
+    } as ClientToServerEnable;
   }
 
   disable(requestId: string) {
@@ -403,7 +411,7 @@ export class Viewport {
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId
-    } as VuuProtocolMessageOutDisable['body'];
+    } as ClientToServerDisable;
   }
 
   filterRequest(requestId: string, filter: any, filterQuery: string) {
@@ -422,7 +430,7 @@ export class Viewport {
   }
 
   groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
-    const type = groupBy === EMPTY_ARRAY ? 'groupByClear' : 'groupBy';
+    const type = groupBy === EMPTY_GROUPBY ? 'groupByClear' : 'groupBy';
     this.awaitOperation(requestId, { type, data: groupBy });
     return this.createRequest({ groupBy });
   }
@@ -435,7 +443,7 @@ export class Viewport {
       type: Message.SET_SELECTION,
       vpId: this.serverViewportId,
       selection
-    } as VuuProtocolMessageOutSelection['body'];
+    } as ClientToServerSelection;
   }
 
   handleUpdate(updateType: string, rowIndex: number, row: VuuRow) {

@@ -9,14 +9,14 @@ import {
   getFlexStyle,
   getIntrinsicSize,
   wrapIntrinsicSizeComponentWithFlexbox
-} from './flex-utils';
+} from './flexUtils';
 import { applyLayoutProps, LayoutProps } from './layoutUtils';
 import { LayoutModel } from './layoutTypes';
 import { DropPos } from '../drag-drop/dragDropTypes';
 import { rectTuple } from '../common-types';
 import { DropTarget } from '../drag-drop/DropTarget';
 
-interface LayoutSpec {
+export interface LayoutSpec {
   type: 'Stack' | 'Flexbox';
   flexDirection: 'column' | 'row';
   showTabs?: boolean;
@@ -33,13 +33,13 @@ const isHtmlElement = (component: LayoutModel) => {
 // wrapper will replace existingComponent in the layout tree and it will contain existingComponent
 // and newComponent.
 export function wrap(
-  container: LayoutModel,
+  container: ReactElement,
   existingComponent: any,
   newComponent: any,
   pos: DropPos,
   clientRect?: DropTarget['clientRect'],
   dropRect?: DropTarget['dropRect']
-) {
+): ReactElement {
   const { children: containerChildren, path: containerPath } = getProps(container);
 
   const existingComponentPath = getProp(existingComponent, 'path');
@@ -60,12 +60,7 @@ export function wrap(
           : child
       );
 
-  return React.isValidElement(container)
-    ? React.cloneElement(container, undefined, children)
-    : {
-        ...container,
-        children
-      };
+  return React.cloneElement(container, undefined, children);
 }
 
 function updateChildren(

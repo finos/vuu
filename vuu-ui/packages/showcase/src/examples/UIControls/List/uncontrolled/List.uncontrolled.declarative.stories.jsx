@@ -28,7 +28,6 @@ const fullWidthHeight = {
 
 export const DeclarativeList = () => {
   const [selectedValue, setSelectedValue] = useState('');
-  console.log(`render example`);
   return (
     <>
       <input type="text" />
@@ -55,7 +54,6 @@ export const DeclarativeList = () => {
 
 export const DeclarativeListUsingDivs = () => {
   const [selectedValue, setSelectedValue] = useState('');
-  console.log(`render example`);
   return (
     <>
       <input type="text" />

@@ -3,22 +3,19 @@
   "version": "0.0.21",
   "author": "heswell",
   "module": "src/index.ts",
-  "main": "index.js",
+  "main": "src/index.ts",
   "license": "Apache-2.0",
   "files": [
     "index.js",
     "index.js.map",
-    "/src",
-    "/types"
+    "/src"
   ],
-  "types": "types/index.d.ts",
+  "types": "src/index.ts",
   "scripts": {
     "build": "node ../../scripts/build.mjs",
     "type-defs": "tsc --project tsconfig-emit-types.json"
   },
-  "devDependencies": {
-    "esbuild": "^0.13.5"
-  },
+  "devDependencies": {},
   "peerDependencies": {
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

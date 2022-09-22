@@ -11,7 +11,8 @@ import {
   VuuSort,
   VuuSortCol,
   VuuTable
-} from './vuuProtocolMessageTypes';
+} from '@vuu-ui/data-types';
+import { FilterClause } from '@vuu-ui/utils';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnected';
 
@@ -36,9 +37,9 @@ export interface ServerProxySubscribeMessage {
   filter: any;
   filterQuery: any;
   groupBy: any;
-  range: any;
+  range: VuuRange;
   sort: any;
-  tablename: VuuTable;
+  table: VuuTable;
   viewport: string;
   visualLink: any;
 }
@@ -176,7 +177,6 @@ export interface VuuUIMessageOutConnect {
   type: 'connect';
   token: string;
   url: string;
-  useWebsocket: boolean;
 }
 
 export interface VuuUIMessageOutSubscribe extends ServerProxySubscribeMessage {
@@ -199,8 +199,8 @@ export interface RequestMessage {
 export interface VuuUIMessageOutViewRange extends ViewportMessage {
   type: 'setViewRange';
   range: {
-    hi: number;
-    lo: number;
+    from: number;
+    to: number;
   };
 }
 export interface VuuUIMessageOutAggregate extends ViewportMessage {
@@ -238,7 +238,7 @@ export interface VuuUIMessageOutSelect extends ViewportMessage {
 }
 
 export interface VuuUIMessageOutSort extends ViewportMessage {
-  sortCriteria: VuuSortCol[];
+  sortDefs: VuuSortCol[];
   type: 'sort';
 }
 export interface VuuUIMessageOutSuspend extends ViewportMessage {
@@ -246,7 +246,7 @@ export interface VuuUIMessageOutSuspend extends ViewportMessage {
 }
 
 export interface VuuUIMessageOutFilterQuery extends ViewportMessage {
-  filter: any;
+  filter: FilterClause;
   filterQuery: string;
   type: 'filterQuery';
 }

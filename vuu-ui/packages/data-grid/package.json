@@ -3,7 +3,6 @@
   "version": "0.0.21",
   "author": "heswell",
   "main": "src/index.js",
-  "module": "index.js",
   "license": "Apache-2.0",
   "scripts": {
     "build": "node ../../scripts/build.mjs"

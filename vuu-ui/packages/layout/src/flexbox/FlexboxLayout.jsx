@@ -1,36 +1,26 @@
 import React, { useCallback } from 'react';
 import Flexbox from './Flexbox';
-import useLayout from '../useLayout';
-import { LayoutContext } from '../layout-context';
 import { Action } from '../layout-action';
 import { registerComponent } from '../registry/ComponentRegistry';
+import { useLayoutProviderDispatch } from '../layout-provider';
 
-const FlexboxLayout = function FlexboxLayout(inputProps) {
-  const [props, ref, layoutDispatch, isRoot] = useLayout('Flexbox', inputProps);
-
+export const FlexboxLayout = function FlexboxLayout(props) {
   const { path } = props;
+  const dispatch = useLayoutProviderDispatch();
 
   const handleSplitterMoved = useCallback(
     (sizes) => {
-      layoutDispatch({
+      dispatch({
         type: Action.SPLITTER_RESIZE,
         path,
         sizes
       });
     },
-    [layoutDispatch, path]
+    [dispatch, path]
   );
 
-  return isRoot ? (
-    <LayoutContext.Provider value={{ dispatch: layoutDispatch }}>
-      <Flexbox {...props} ref={ref} onSplitterMoved={handleSplitterMoved} />
-    </LayoutContext.Provider>
-  ) : (
-    <Flexbox {...props} ref={ref} onSplitterMoved={handleSplitterMoved} />
-  );
+  return <Flexbox {...props} onSplitterMoved={handleSplitterMoved} />;
 };
 FlexboxLayout.displayName = 'Flexbox';
-
-export default FlexboxLayout;
 
 registerComponent('Flexbox', FlexboxLayout, 'container');

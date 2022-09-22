@@ -1,8 +1,8 @@
 export interface VuuRange {
-  lo?: number;
-  hi?: number;
   from: number;
   to: number;
+  bufferSize?: number;
+  reset?: boolean;
 }
 
 interface FromToRange {
@@ -10,27 +10,20 @@ interface FromToRange {
   to: number;
 }
 
-export interface LoHiRange {
-  lo: number;
-  hi: number;
-  bufferSize?: number;
-  reset?: boolean;
-}
-
 export function getFullRange(
-  { from, to, lo = from, hi = to }: VuuRange,
+  { from, to }: VuuRange,
   bufferSize: number = 0,
   rowCount: number = Number.MAX_SAFE_INTEGER
 ): FromToRange {
   if (bufferSize === 0) {
-    return { from: lo, to: Math.min(hi, rowCount) };
-  } else if (lo === 0) {
-    return { from: lo, to: Math.min(hi + bufferSize, rowCount) };
+    return { from, to: Math.min(to, rowCount) };
+  } else if (from === 0) {
+    return { from, to: Math.min(to + bufferSize, rowCount) };
   } else {
-    const rangeSize = hi - lo;
+    const rangeSize = to - from;
     const buff = Math.round(bufferSize / 2);
-    const shortfallBefore = lo - buff < 0;
-    const shortFallAfter = rowCount - (hi + buff) < 0;
+    const shortfallBefore = from - buff < 0;
+    const shortFallAfter = rowCount - (to + buff) < 0;
 
     if (shortfallBefore && shortFallAfter) {
       return { from: 0, to: rowCount };
@@ -39,15 +32,15 @@ export function getFullRange(
     } else if (shortFallAfter) {
       return { from: Math.max(0, rowCount - (rangeSize + bufferSize)), to: rowCount };
     } else {
-      return { from: lo - buff, to: hi + buff };
+      return { from: from - buff, to: to + buff };
     }
   }
 }
 
-export function resetRange({ lo, hi, bufferSize = 0 }: LoHiRange): LoHiRange {
+export function resetRange({ from, to, bufferSize = 0 }: VuuRange): VuuRange {
   return {
-    lo: 0,
-    hi: hi - lo,
+    from: 0,
+    to: to - from,
     bufferSize,
     reset: true
   };

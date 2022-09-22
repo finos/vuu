@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useLayoutContext } from '@vuu-ui/layout';
+import { useViewContext } from '@vuu-ui/layout';
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
 import { parseFilter, extractFilter, filterAsQuery } from '@vuu-ui/datagrid-parsers';
 import { createSuggestionProvider } from './vuu-filter-suggestion-provider';
@@ -9,11 +9,11 @@ import { Grid, GridProvider } from '@vuu-ui/data-grid';
 import { createDataSource, useViewserver } from '@vuu-ui/data-remote';
 import AppContext from '../../app-context';
 
-import '@vuu-ui/parsed-input/index.css';
+// import '@vuu-ui/parsed-input/index.css';
 import './filtered-grid.css';
 
 const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
-  const { id, dispatch, load, save, loadSession, saveSession } = useLayoutContext();
+  const { id, dispatch, load, save, loadSession, saveSession } = useViewContext();
   const config = useMemo(() => load(), [load]);
   const { handleRpcResponse } = useContext(AppContext);
   const [namedFilters, setNamedFilters] = useState([]);
@@ -23,7 +23,7 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
     if (ds) {
       return ds;
     }
-    ds = createDataSource({ id, tableName: schema.table, schema, config });
+    ds = createDataSource({ id, table: schema.table, schema, config });
     saveSession(ds, 'data-source');
     return ds;
   }, [config, id, loadSession, saveSession, schema]);
@@ -36,7 +36,7 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
   }, [dataSource]);
 
   const unlink = () => {
-    console.log('unlink');
+    // nothing yet
   };
 
   const handleConfigChange = useCallback(

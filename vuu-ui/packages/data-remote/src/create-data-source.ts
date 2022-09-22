@@ -1,9 +1,11 @@
+import { VuuTable } from '@vuu-ui/data-types';
 import { Column } from '@vuu-ui/utils';
 
 import { getServerUrl } from './hooks/useServerConnection';
-import RemoteDataSource from './remote-data-source';
+import { RemoteDataSource } from './remote-data-source';
 
 const DEFAULT_BUFFER_SIZE = 300;
+// const DEFAULT_BUFFER_SIZE = 0;
 
 export interface DataSourceSchema {
   columns: Column[];
@@ -11,7 +13,7 @@ export interface DataSourceSchema {
 
 export interface DataSourceOptions {
   id: string;
-  tableName: string;
+  table: VuuTable;
   schema: DataSourceSchema;
   serverUrl?: string;
   config: any; // TODO
@@ -20,7 +22,7 @@ export interface DataSourceOptions {
 
 export const createDataSource = ({
   id,
-  tableName,
+  table,
   schema,
   serverUrl = getServerUrl(),
   config,
@@ -28,8 +30,7 @@ export const createDataSource = ({
 }: DataSourceOptions) =>
   new RemoteDataSource({
     bufferSize,
-    serverName: 'Vuu',
-    tableName,
+    table,
     serverUrl,
     viewport: id,
     ...config,

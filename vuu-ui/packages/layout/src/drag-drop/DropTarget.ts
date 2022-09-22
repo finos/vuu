@@ -8,9 +8,9 @@ import {
   Measurements
 } from './BoxModel';
 import { getProps, typeOf } from '../utils';
-import { DragDropRect, DropPos, DropPosTab, DropTargetType } from './dragDropTypes';
+import { DragDropRect, DropPos, DropPosTab } from './dragDropTypes';
 import { LayoutModel } from '../layout-reducer';
-import { DragState, IntrinsicSizes } from './DragState';
+import { DragState } from './DragState';
 import { rect, rectTuple } from '../common-types';
 
 export const isTabstrip = (dropTarget: DropTarget) =>
@@ -26,14 +26,27 @@ export interface DropTargetProps {
   clientRect: DragDropRect;
   nextDropTarget: DropTarget | null;
 }
+
+export type GuideLine = [number, number, number, number, number, number, number, number];
+export interface TargetDropOutline {
+  l: number;
+  r: number;
+  t: number;
+  b: number;
+  tabLeft?: number;
+  tabWidth?: number;
+  tabHeight?: number;
+  guideLines?: GuideLine;
+}
+
 export class DropTarget {
-  private nextDropTarget: DropTarget | null;
   private active: boolean;
 
   public box: any;
   public clientRect: DragDropRect;
   public component: LayoutModel;
   public dropRect: rectTuple | undefined;
+  public nextDropTarget: DropTarget | null;
   public pos: DropPos;
 
   constructor({
@@ -62,7 +75,7 @@ export class DropTarget {
    * @param {*} dragState
    * @returns {l, t, r, b, tabLeft, tabWidth, tabHeight}
    */
-  getTargetDropOutline(lineWidth: number, dragState: DragState) {
+  getTargetDropOutline(lineWidth: number, dragState?: DragState): TargetDropOutline {
     if (this.pos.tab) {
       return this.getDropTabOutline(lineWidth, this.pos.tab);
     } else if (dragState && dragState.hasIntrinsicSize()) {
@@ -73,7 +86,7 @@ export class DropTarget {
     }
   }
 
-  getDropTabOutline(lineWidth: number, tab: DropPosTab) {
+  getDropTabOutline(lineWidth: number, tab: DropPosTab): TargetDropOutline {
     const {
       clientRect: { top, left, right, bottom, header }
     } = this;
@@ -91,7 +104,7 @@ export class DropTarget {
     return { l, t, r, b, tabLeft, tabWidth, tabHeight };
   }
 
-  getIntrinsicDropRect(dragState: DragState) {
+  getIntrinsicDropRect(dragState: DragState): TargetDropOutline {
     const { pos, clientRect: rect } = this;
 
     let { x, y } = dragState;
@@ -120,7 +133,7 @@ export class DropTarget {
     );
     const [l, t, r, b] = (this.dropRect = [left, top, left + width, top + height]);
 
-    const guideLines = pos.position.EastOrWest
+    const guideLines: GuideLine = pos.position.EastOrWest
       ? [l, rect.top, l, rect.bottom, r, rect.top, r, rect.bottom]
       : [rect.left, t, rect.right, t, rect.left, b, rect.right, b];
 
@@ -130,7 +143,7 @@ export class DropTarget {
   /**
    * @returns  [left, top, right, bottom]
    */
-  getDropRectOutline(lineWidth: number, dragState: DragState) {
+  getDropRectOutline(lineWidth: number, dragState?: DragState) {
     const { pos, clientRect: rect } = this;
     const { width: suggestedWidth, height: suggestedHeight, position } = pos;
 
@@ -264,7 +277,6 @@ export function identifyDropTarget(
       nextDropTarget: nextDropTarget(containers) ?? null
     }).activate();
   }
-
   return dropTarget;
 }
 

@@ -1,20 +1,15 @@
-import { createLogger, logColor } from '@vuu-ui/utils/src/logging';
-import {
-  isHeartbeat,
-  VuuProtocolMessageIn,
-  VuuProtocolMessageOut
-} from './vuuProtocolMessageTypes';
+import { ServerToClientMessage, ClientToServerMessage } from '@vuu-ui/data-types';
 import { Connection } from './connectionTypes';
 
 import { ConnectionStatus, ConnectionStatusMessage } from './vuuUIMessageTypes';
 
-export type ConnectionMessage = VuuProtocolMessageIn | ConnectionStatusMessage;
+export type ConnectionMessage = ServerToClientMessage | ConnectionStatusMessage;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
 // TEST_DATA_COLLECTION
 // import { saveTestData } from './test-data-collection';
 
-const logger = createLogger('WebsocketConnection', logColor.brown);
+const logger = console;
 
 const connectionAttempts: {
   [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
@@ -23,7 +18,10 @@ const connectionAttempts: {
 const setWebsocket = Symbol('setWebsocket');
 const connectionCallback = Symbol('connectionCallback');
 
-export default async function connect(connectionString: string, callback: ConnectionCallback) {
+export async function connect(
+  connectionString: string,
+  callback: ConnectionCallback
+): Promise<Connection> {
   return makeConnection(connectionString, callback);
 }
 
@@ -36,7 +34,7 @@ async function makeConnection(
   url: string,
   callback: ConnectionCallback,
   connection?: WebsocketConnection
-): Promise<Connection | undefined> {
+): Promise<Connection> {
   const connectionStatus =
     connectionAttempts[url] ||
     (connectionAttempts[url] = {
@@ -76,6 +74,8 @@ async function makeConnection(
     });
     if (retry) {
       return makeConnectionIn(url, callback, connection, 10000);
+    } else {
+      throw Error('Failed to establish connection');
     }
   }
 }
@@ -85,7 +85,7 @@ const makeConnectionIn = (
   callback: ConnectionCallback,
   connection?: WebsocketConnection,
   delay?: number
-): Promise<Connection | undefined> =>
+): Promise<Connection> =>
   new Promise((resolve) => {
     setTimeout(() => {
       resolve(makeConnection(url, callback, connection));
@@ -104,17 +104,26 @@ const closeWarn = () => {
   logger.log(`Connection cannot be closed, socket not yet opened`);
 };
 
-const sendWarn = (msg: VuuProtocolMessageOut) => {
+const sendWarn = (msg: ClientToServerMessage) => {
   logger.log(`Message cannot be sent, socket closed: ${msg.body.type}`);
 };
 
-export class WebsocketConnection implements Connection<VuuProtocolMessageOut> {
+const parseMessage = (message: string): ServerToClientMessage => {
+  try {
+    return JSON.parse(message) as ServerToClientMessage;
+  } catch (e) {
+    throw Error(`Error parsing JSON response from server ${message}`);
+  }
+};
+
+export class WebsocketConnection implements Connection<ClientToServerMessage> {
   [connectionCallback]: ConnectionCallback;
   close: () => void = closeWarn;
   requiresLogin = true;
-  send: (msg: VuuProtocolMessageOut) => void = sendWarn;
+  send: (msg: ClientToServerMessage) => void = sendWarn;
   status: 'closed' | 'ready' | 'connected' | 'reconnected' = 'ready';
-  url: string;
+
+  private url: string;
 
   constructor(ws: any, url: string, callback: ConnectionCallback) {
     this.url = url;
@@ -132,18 +141,14 @@ export class WebsocketConnection implements Connection<VuuProtocolMessageOut> {
     ws.onmessage = (evt) => {
       // TEST DATA COLLECTION
       // saveTestData(evt.data, 'server');
-      try {
-        const message = JSON.parse(evt.data) as VuuProtocolMessageIn;
-        // console.log(
-        //   `%c<<< [${new Date().toISOString().slice(11, 23)}]  (WebSocket) ${message.body.type}
-        //   ${JSON.stringify(message)}
-        //   `,
-        //   'color:white;background-color:blue;font-weight:bold;'
-        // );
-        callback(message);
-      } catch (e) {
-        console.error(`Error parsing JSON response from server`, { data: evt.data });
-      }
+      const vuuMessageFromServer = parseMessage(evt.data);
+      // console.log(
+      //   `%c<<< [${new Date().toISOString().slice(11, 23)}]  (WebSocket) ${message.body.type}
+      //   ${JSON.stringify(message)}
+      //   `,
+      //   'color:white;background-color:blue;font-weight:bold;'
+      // );
+      callback(vuuMessageFromServer);
     };
 
     ws.onerror = () => {
@@ -180,12 +185,12 @@ export class WebsocketConnection implements Connection<VuuProtocolMessageOut> {
       }
     };
 
-    const send = (msg: VuuProtocolMessageOut) => {
+    const send = (msg: ClientToServerMessage) => {
       // console.log(`%c>>>  (WebSocket) ${JSON.stringify(msg)}`, 'color:blue;font-weight:bold;');
       ws.send(JSON.stringify(msg));
     };
 
-    const queue = (msg: VuuProtocolMessageOut) => {
+    const queue = (msg: ClientToServerMessage) => {
       console.log(`queuing message ${JSON.stringify(msg)} until websocket reconnected`);
     };
 

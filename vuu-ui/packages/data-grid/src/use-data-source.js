@@ -137,26 +137,22 @@ export default function useDataSource(
   const data = useRef([]);
 
   const setRange = useCallback(
-    (lo, hi) => {
-      const { from, to } = getFullRange(
-        { lo, hi },
-        gridModel.renderBufferSize,
-        dataSource.rowCount
-      );
+    (from, to) => {
+      const range = getFullRange({ from, to }, gridModel.renderBufferSize, dataSource.rowCount);
       // onsole.log(`[useDataSource] setRange ${lo} ${hi} > full range ${from} ${to}`)
-      dataSource.setRange(from, to);
-      dataWindow.setRange(from, to);
+      dataSource.setRange(range.from, range.to);
+      dataWindow.setRange(range.from, range.to);
     },
     [dataSource, dataWindow, gridModel.renderBufferSize]
   );
 
   useEffect(() => {
     const { range, ...rest } = subscriptionDetails;
-    const { from: lo, to: hi } = getFullRange(range, gridModel.renderBufferSize);
+    const { from, to } = getFullRange(range, gridModel.renderBufferSize);
     dataSource.subscribe(
       {
         ...rest,
-        range: { lo, hi }
+        range: { from, to }
       },
       datasourceMessageHandler
     );

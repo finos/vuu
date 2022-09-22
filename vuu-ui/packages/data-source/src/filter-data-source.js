@@ -1,6 +1,6 @@
-import { createLogger, DataTypes, logColor, EventEmitter } from '@vuu-ui/utils';
+import { DataTypes, EventEmitter } from '@vuu-ui/utils';
 
-const logger = createLogger('FilterDataView', logColor.brown);
+const logger = console;
 
 /**
  * This is a specialized wrapper around  a regular data-view (local or remote).

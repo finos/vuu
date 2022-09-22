@@ -2,7 +2,7 @@ import React from 'react';
 import { UserProfile } from '../user-profile';
 import './AppHeader.css';
 
-export const AppHeader = ({ layoutId, onNavigate, user, children, ...props }) => {
+export const AppHeader = ({ layoutId, onNavigate, user, ...props }) => {
   return (
     <header className="hwAppHeader" {...props}>
       {/* <ToggleButton onChange={toggleColorScheme}>

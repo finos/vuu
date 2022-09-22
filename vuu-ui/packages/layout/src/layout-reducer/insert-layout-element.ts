@@ -9,7 +9,7 @@ import {
   getFlexOrIntrinsicStyle,
   getIntrinsicSize,
   wrapIntrinsicSizeComponentWithFlexbox
-} from './flex-utils';
+} from './flexUtils';
 import { LayoutModel, LayoutRoot } from './layoutTypes';
 import { DropPos } from '../drag-drop';
 import { DropTarget } from '../drag-drop/DropTarget';
@@ -27,17 +27,15 @@ export function getInsertTabBeforeAfter(stack: LayoutModel, pos: DropPos) {
 }
 
 export function insertIntoContainer(
-  container: LayoutModel,
-  targetContainer: LayoutModel,
+  container: ReactElement,
+  targetContainer: ReactElement,
   newComponent: ReactElement
-): LayoutModel {
+): ReactElement {
   const {
     active: containerActive,
     children: containerChildren = [],
     path: containerPath
   } = getProps(container) as LayoutProps;
-
-  console.log(`insert into container`, { container, targetContainer, newComponent });
 
   const existingComponentPath = getProp(targetContainer, 'path');
   const { idx, finalStep } = nextStep(containerPath!, existingComponentPath, true);
@@ -58,13 +56,7 @@ export function insertIntoContainer(
         : insertedIdx
       : containerActive;
 
-  return React.isValidElement(container)
-    ? React.cloneElement(container, { active }, children)
-    : {
-        ...container,
-        active,
-        children
-      };
+  return React.cloneElement(container, { active }, children);
 }
 function insertIntoChildren(
   container: LayoutModel,
@@ -81,20 +73,19 @@ function insertIntoChildren(
       containerChildren.concat(resetPath(newComponent, `${containerPath}.${count}`, { id }))
     ];
   } else {
-    console.log(`new component`, newComponent);
     return [0, [resetPath(newComponent, `${containerPath}.0`, { id })]];
   }
 }
 
 export function insertBesideChild(
-  container: LayoutModel,
+  container: ReactElement,
   existingComponent: any,
   newComponent: any,
   insertionPosition: insertionPosition,
   pos?: DropPos,
   clientRect?: any,
   dropRect?: any
-): LayoutModel {
+): ReactElement {
   const {
     active: containerActive,
     children: containerChildren,
@@ -132,13 +123,7 @@ export function insertBesideChild(
       ];
 
   const active = typeOf(container) === 'Stack' ? insertedIdx : containerActive;
-  return React.isValidElement(container)
-    ? React.cloneElement(container, { active }, children)
-    : {
-        ...container,
-        active,
-        children
-      };
+  return React.cloneElement(container, { active }, children);
 }
 
 function updateChildren(

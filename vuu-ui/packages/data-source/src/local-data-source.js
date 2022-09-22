@@ -1,4 +1,4 @@
-import { createLogger, DataTypes, EventEmitter, logColor } from '@vuu-ui/utils';
+import { DataTypes, EventEmitter } from '@vuu-ui/utils';
 import { DataStore, Table } from '@vuu-ui/data-store';
 import LocalUpdateQueue from './local-update-queue';
 
@@ -6,7 +6,7 @@ const { ROW_DATA } = DataTypes;
 
 const buildDataView = async (url) => {
   return import(/* webpackIgnore: true */ url).catch((err) =>
-    console.log(`failed to load data at ${url} ${err}`)
+    console.warn(`failed to load data at ${url} ${err}`)
   );
 };
 
@@ -16,7 +16,7 @@ const loadData = (data) => {
     : Promise.resolve({ default: data });
 };
 
-const logger = createLogger('LocalDataSource', logColor.blue);
+const logger = console;
 
 export default class LocalDataSource extends EventEmitter {
   constructor({ bufferSize = 100, schema, data, primaryKey, dataUrl, tableName }) {
@@ -125,7 +125,6 @@ export default class LocalDataSource extends EventEmitter {
     if (this.dataStore === null) {
       this.pendingRangeRequest = [lo, hi, dataType];
     } else {
-      // console.log(`%cLocalDataSource setRange ${lo} ${hi}`,'color:blue;font-weight:bold');
       const low = Math.max(0, lo - this.bufferSize);
       const high = hi + this.bufferSize;
       const result = this.dataStore.setRange({ lo: low, hi: high }, true, dataType);

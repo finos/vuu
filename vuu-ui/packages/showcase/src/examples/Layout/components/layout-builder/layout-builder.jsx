@@ -8,7 +8,7 @@ import {
   PaletteItem,
   registerComponent,
   View,
-  useLayoutContext
+  useViewContext
 } from '@vuu-ui/layout';
 import { Select } from '@vuu-ui/ui-controls';
 import { Control } from '@vuu-ui/ui-forms';
@@ -35,7 +35,7 @@ const LayoutPicker = ({ onCommit }) => {
 };
 
 const StatefulComponent = ({ initialState = '', style, stateKey }) => {
-  const { load, save } = useLayoutContext();
+  const { load, save } = useViewContext();
   const state = useRef(load(stateKey) ?? initialState);
   const [value, setValue] = useState(state.current);
   const handleChange = (e) => {

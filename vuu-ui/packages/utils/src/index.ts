@@ -1,6 +1,6 @@
 export { EventEmitter } from './event-emitter';
 export * from './column-utils';
-export * from './logging';
+export * from './getUniqueId';
 export * from './input-utils';
 export * from './invariant';
 export * from './nanoid';

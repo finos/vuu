@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 import { getProps, typeOf } from '../utils';
 import { isContainer } from '../registry/ComponentRegistry';
-import { LayoutModel, LayoutRoot } from '../layout-reducer';
+import { LayoutModel } from '../layout-reducer';
 import { DragDropRect, DropPos, RelativePosition } from './dragDropTypes';
 import { rect } from '../common-types';
 
@@ -68,9 +68,9 @@ export class BoxModel {
   //TODO we should accept initial let,top offsets here
   // if dropTargets are supplied, we will only allow drop operations directly on these targets
   // TODO we will need to make this more flexible e.g allowing drop anywhere within these target
-  static measure(model: LayoutRoot, dropTargets: string[] = []): Measurements {
+  static measure(model: ReactElement, dropTargetPaths: string[] = []): Measurements {
     var measurements: Measurements = {};
-    measureRootComponent(model, measurements, dropTargets);
+    measureRootComponent(model, measurements, dropTargetPaths);
     return measurements;
   }
 
@@ -204,7 +204,7 @@ function getCenteredBox({ right, left, top, bottom }: DragDropRect, pctSize: num
 }
 
 function measureRootComponent(
-  rootComponent: LayoutRoot,
+  rootComponent: ReactElement,
   measurements: Measurements,
   dropTargets: any[]
 ) {
@@ -356,7 +356,6 @@ function collectChildMeasurements(
     return componentMeasurements;
   });
   if (childMeasurements.length) {
-    console.log({ expandedMeasurements });
     measurements[path].children = expandedMeasurements;
   }
 }

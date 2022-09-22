@@ -40,7 +40,7 @@ object SimulMain extends App {
     VuuHttp2ServerOptions()
       //only specify webroot if we want to load the source locally, we'll load it from the jar
       //otherwise
-      .withWebRoot("vuu-ui/packages/app-vuu-example/public")
+      .withWebRoot("vuu-ui/deployed_apps/app-vuu-example")
       .withSsl("vuu/src/main/resources/certs/cert.pem",
         "vuu/src/main/resources/certs/key.pem")
       .withDirectoryListings(true)

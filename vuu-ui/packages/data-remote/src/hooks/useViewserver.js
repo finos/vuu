@@ -54,7 +54,10 @@ export const useViewserver = ({
   saveSession
 } = {}) => {
   const [tables, setTables] = useState(tableStore.value);
-  const server = useServerConnection();
+
+  // IF we're passed in an rpcServer, whether its a dataSOurce or connection,
+  // whu do we need to get server here ?
+  const server = useServerConnection(undefined, 'useViewServer');
   const contextMenuOptions = useMemo(
     () => loadSession?.('vs-context-menu') ?? undefined,
     [loadSession]

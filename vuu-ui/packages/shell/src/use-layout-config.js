@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 
 const useLayoutConfig = (user, defaultLayout) => {
-  const [layout, _setLayout] = useState(undefined);
+  const [layout, _setLayout] = useState(defaultLayout);
 
   const setLayout = (layout) => {
+    console.log(`%cuseLayoutConfig setLayout #${layout.id}`, 'color:red;font-weight:bold;');
     _setLayout(layout);
   };
 

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import cx from 'classnames';
 import { Button, CloseIcon, FilterIcon, StateButton } from '@vuu-ui/ui-controls';
-import { Toolbar, Tooltray, useLayoutContext } from '@vuu-ui/layout';
+import { Toolbar, Tooltray, useViewContext } from '@vuu-ui/layout';
 
 import './query-filter.css';
 
@@ -20,7 +20,7 @@ const buildFilterQuery = (filters, joinOp = 'or') =>
     .join(` ${joinOp} `);
 
 const QueryFilter = ({ onChange }) => {
-  const { load, save } = useLayoutContext();
+  const { save } = useViewContext();
 
   // const filterRef = useRef(load("query-filter") ?? {})
   const filterRef = useRef({});

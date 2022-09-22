@@ -9,6 +9,10 @@
   background-color: transparent;
 }
 
+#hw-drag-canvas > svg {
+  position: absolute;
+}
+
 .drawing #hw-drag-canvas {
   visibility: visible;
 }

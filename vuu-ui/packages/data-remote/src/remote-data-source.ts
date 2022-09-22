@@ -1,40 +1,39 @@
-import { createLogger, DataTypes, EventEmitter, logColor, uuid } from '@vuu-ui/utils';
+import { DataTypes, EventEmitter, FilterClause, uuid } from '@vuu-ui/utils';
 import { DataSource, DataSourceProps, SubscribeCallback, SubscribeProps } from './data-source';
-import { VuuUIMessageIn } from './vuuUIMessageTypes';
-import { VuuAggregation } from './vuuProtocolMessageTypes';
+import {
+  VuuUIMessageIn,
+  VuuUIMessageOutFilterQuery,
+  VuuUIMessageOutSort
+} from './vuuUIMessageTypes';
+import { VuuAggregation, VuuSortCol, VuuTable } from '@vuu-ui/data-types';
 
 import { msgType as Msg } from './constants';
 
-import { ConnectionManager } from './connection-manager';
+import { ConnectionManager, ServerAPI } from './connection-manager';
 
 const { ROW_DATA } = DataTypes;
 
-const logger = createLogger('RemoteDataSource', logColor.blue);
-
-export const AvailableProxies = {
-  Vuu: 'vuu'
-};
+const logger = console;
 
 const NullServer = {
   handleMessageFromClient: (message: unknown) =>
     console.log(`%cNullServer.handleMessageFromClient ${JSON.stringify(message)}`, 'color:red')
 };
 
-const defaultRange = { lo: 0, hi: 0 };
+const defaultRange = { from: 0, to: 0 };
 
 export interface DataSourceColumn {}
 
 /*-----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
-export default class RemoteDataSource extends EventEmitter implements DataSource {
+export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
-  private tableName: string;
+  private table: VuuTable;
   private columns: DataSourceColumn[];
   private viewport: string;
-  private server: any;
+  private server: ServerAPI | null = null;
   private url: string;
-  private serverName: string;
   private visualLink: string;
   private status: string;
   private disabled: boolean;
@@ -57,22 +56,19 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
     filterQuery,
     group,
     sort,
-    tableName,
+    table,
     configUrl,
-    serverName,
     serverUrl,
     viewport,
     'visual-link': visualLink
   }: DataSourceProps) {
     super();
     this.bufferSize = bufferSize;
-    this.tableName = tableName;
+    this.table = table;
     this.columns = columns;
     this.viewport = viewport;
 
-    this.server = NullServer;
     this.url = serverUrl || configUrl;
-    this.serverName = serverName;
     this.visualLink = visualLink;
 
     this.status = 'initialising';
@@ -91,14 +87,14 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
       throw Error('RemoteDataSource expects serverUrl or configUrl');
     }
 
-    this.server = null;
-    this.pendingServer = ConnectionManager.connect(this.url, this.serverName);
+    console.log(`[RemoteDataSource] call ConnectionManager.connect, but don't block`);
+    this.pendingServer = ConnectionManager.connect(this.url);
   }
 
   async subscribe(
     {
       viewport = this.viewport ?? uuid(),
-      tableName = this.tableName,
+      table = this.table,
       columns = this.columns || [],
       aggregations = this.initialAggregations,
       range = defaultRange,
@@ -109,7 +105,7 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    if (!tableName) throw Error('RemoteDataSource subscribe called without table name');
+    if (!table) throw Error('RemoteDataSource subscribe called without table');
 
     this.clientCallback = callback;
 
@@ -125,16 +121,18 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
 
     this.status = 'subscribing';
     this.viewport = viewport;
-    this.tableName = tableName;
+    this.table = table;
     this.columns = columns;
 
+    console.group(`[RemoteDataSource].subscribe  about to block until ServerAPI resolves`);
     this.server = await this.pendingServer;
+    console.groupEnd(`[RemoteDataSource].subscribe  unblocked - server resolved`);
 
     const { bufferSize } = this;
     this.server.subscribe(
       {
         viewport,
-        tablename: tableName,
+        table,
         columns,
         aggregations,
         range,
@@ -175,9 +173,9 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
   unsubscribe() {
     if (!this.disabled && !this.suspended) {
       logger.log(
-        `unsubscribe from ${
-          this.tableName ? JSON.stringify(this.tableName) : 'no table'
-        } (viewport ${this?.viewport})`
+        `unsubscribe from ${this.table ? JSON.stringify(this.table) : 'no table'} (viewport ${
+          this?.viewport
+        })`
       );
       this.server?.unsubscribe(this.viewport);
       this.server?.destroy();
@@ -186,7 +184,7 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
 
   suspend() {
     this.suspended = true;
-    this.server.send({
+    this.server?.send({
       viewport: this.viewport,
       type: Msg.suspend
     });
@@ -196,7 +194,7 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
   resume() {
     if (this.suspended) {
       // should we await this ?s
-      this.server.send({
+      this.server?.send({
         viewport: this.viewport,
         type: Msg.resume
       });
@@ -208,7 +206,7 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
   disable() {
     this.status = 'disabling';
     this.disabled = true;
-    this.server.send({
+    this.server?.send({
       viewport: this.viewport,
       type: Msg.disable
     });
@@ -219,7 +217,7 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
     if (this.disabled) {
       this.status = 'enabling';
       // should we await this ?s
-      this.server.send({
+      this.server?.send({
         viewport: this.viewport,
         type: Msg.enable
       });
@@ -243,11 +241,11 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
     }
   }
 
-  setRange(lo: number, hi: number) {
+  setRange(from: number, to: number) {
     this.server?.send({
       viewport: this.viewport,
       type: Msg.setViewRange,
-      range: { lo, hi }
+      range: { from, to }
     });
   }
 
@@ -283,17 +281,6 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
     });
   }
 
-  // TODO we shouldn't have to parse the filter here, makes this package dependent on parsing package
-  filter(filter: any, filterQuery: string) {
-    console.log({ filter, filterQuery });
-    this.server?.send({
-      viewport: this.viewport,
-      type: Msg.filterQuery,
-      filter,
-      filterQuery
-    });
-  }
-
   openTreeNode(key: string) {
     this.server?.send({
       viewport: this.viewport,
@@ -319,12 +306,22 @@ export default class RemoteDataSource extends EventEmitter implements DataSource
   }
 
   // TODO columns cannot simply be strings
-  sort(columns: string[]) {
+  sort(columns: VuuSortCol[]) {
     this.server?.send({
       viewport: this.viewport,
-      type: Msg.sort,
-      sortCriteria: columns
-    });
+      type: 'sort',
+      sortDefs: columns
+    } as VuuUIMessageOutSort);
+  }
+
+  filter(filter: FilterClause, filterQuery: string) {
+    console.log({ filter, filterQuery });
+    this.server?.send({
+      viewport: this.viewport,
+      type: 'filterQuery',
+      filter,
+      filterQuery
+    } as VuuUIMessageOutFilterQuery);
   }
 
   getFilterData(column: string, searchText: string) {

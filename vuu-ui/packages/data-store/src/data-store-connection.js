@@ -1,11 +1,10 @@
-import { createLogger, logColor } from '@vuu-ui/utils/src/logging';
 import { AND, OR, EQUALS, GREATER_THAN, LESS_THAN, IN } from '@vuu-ui/utils/src/filter-utils';
 
 import DataStore from './data-store';
 import Table from './worker-table';
 import { viewportChanges } from './data-store-utils';
 
-const logger = createLogger('DataStoreConnection', logColor.brown);
+const logger = console;
 
 const OP_TO_FILTER_TYPE = {
   and: AND,
@@ -43,11 +42,6 @@ async function makeConnection(url, callback, connection) {
   callback({ type: 'connection-status', status: 'connecting' });
   const dataStore = await createDataStore(url);
 
-  // console.log(
-  //   `%c⚡ ${url}`,
-  //   'padding-left: 6px;font-size: 16px;color: yellow; background-color:black',
-  // );
-
   connection = new DataStoreConnection(dataStore, url, callback);
   const status = 'connected';
   callback({ type: 'connection-status', status });
@@ -81,12 +75,6 @@ class DataStoreConnection {
     const { connectionCallback: callback } = this;
 
     const send = (msg, options) => {
-      // console.log(
-      //   `%c>>>  (DataStoreConnection) ${JSON.stringify(msg)} ${JSON.stringify(
-      //     options,
-      //   )}`,
-      //   'color:blue;font-weight:bold;',
-      // );
       const { requestId, body } = msg;
       switch (body.type) {
         case 'CREATE_VP':

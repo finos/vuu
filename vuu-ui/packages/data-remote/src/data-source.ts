@@ -1,6 +1,7 @@
+import { VuuTable } from '@vuu-ui/data-types';
+
 export interface DataSourceProps {
   bufferSize?: number;
-  tableName: string;
   aggregations: any;
   columns: any;
   filter: any;
@@ -10,13 +11,14 @@ export interface DataSourceProps {
   configUrl: any;
   serverName: any;
   serverUrl: any;
+  table: VuuTable;
   viewport: any;
   'visual-link': any;
 }
 
 export interface SubscribeProps {
   viewport?: string;
-  tableName?: string;
+  table?: VuuTable;
   columns?: any;
   aggregations?: any;
   range?: any;
@@ -29,6 +31,6 @@ export interface SubscribeProps {
 export type SubscribeCallback = (...args: any[]) => void;
 
 export interface DataSource {
-  setRange: (lo: number, hi: number) => void;
+  setRange: (from: number, to: number) => void;
   subscribe: (props: SubscribeProps, callback: SubscribeCallback) => Promise<any>;
 }

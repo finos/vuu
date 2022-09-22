@@ -6,7 +6,7 @@ import React, {
 import cx from 'classnames';
 import { useId } from '@vuu-ui/react-utils';
 import { useVirtualization } from './use-virtualization';
-import { useViewportTracking } from './use-viewport-tracking';
+import { useViewportTracking } from '../common-hooks';
 import { useItemsWithIds } from './virtualized-use-items-with-ids';
 import { useKeyboardNavigation, useSelection } from '../common-hooks';
 import { closestListItemIndex } from '../common-hooks/list-dom-utils';

@@ -1,90 +1,113 @@
-import { build } from 'esbuild';
+import shell from 'shelljs';
+import { build } from './esbuild.mjs';
+
 import fs from 'fs';
-import { exec, formatBytes, readPackageJson } from './utils.mjs';
+import { formatBytes, readPackageJson } from './utils.mjs';
 const NO_DEPENDENCIES = {};
+const DEFAULT_DIST_PATH = `../../dist`;
 
 async function main() {
   const args = process.argv.slice(2);
 
-  const {
-    name: packageName,
-    peerDependencies = NO_DEPENDENCIES,
-    scripts,
-    version
-  } = readPackageJson();
-  const external = Object.keys(peerDependencies);
-  const currentPath = process.cwd();
-  const isWorker = currentPath.endsWith('data-worker');
+  const packageJson = readPackageJson();
+  const DIST_PATH = DEFAULT_DIST_PATH;
 
+  const { name: scopedPackageName, peerDependencies = NO_DEPENDENCIES, version } = packageJson;
+
+  const [, packageName] = scopedPackageName.split('/');
+
+  const external = Object.keys(peerDependencies);
+
+  const workerTS = 'src/worker.ts';
   const indexTS = 'src/index.ts';
   const indexJS = 'src/index.js';
 
-  const outfile = isWorker ? 'worker.js' : 'index.js';
+  const outdir = `${DIST_PATH}/${packageName}`;
   const watch = args.includes('--watch');
-  const skipTypedefs = args.includes('--skip-typedefs');
   const development = watch || args.includes('--dev');
 
+  const hasWorker = fs.existsSync(workerTS);
   const isTypeScript = fs.existsSync(indexTS);
 
-  async function esbuild() {
-    const start = process.hrtime();
-    return build({
-      entryPoints: [isTypeScript ? indexTS : indexJS],
-      bundle: true,
-      define: {
-        'process.env.NODE_ENV': development ? `"development"` : `"production"`,
-        'process.env.NODE_DEBUG': `false`
-      },
-      external,
-      format: 'esm',
-      loader: {
-        '.woff2': 'dataurl'
-      },
-      metafile: true,
-      minify: development !== true,
-      outfile,
-      target: 'esnext',
-      sourcemap: true,
-      watch
-    }).then((result) => {
-      const [seconds, nanoSeconds] = process.hrtime(start);
-      console.log(
-        `[${packageName}] esbuild took ${seconds}s ${Math.round(nanoSeconds / 1_000_000)}ms`
-      );
-      return result;
+  const buildConfig = {
+    entryPoints: [isTypeScript ? indexTS : indexJS],
+    env: development ? 'development' : 'production',
+    external,
+    outdir: `${DIST_PATH}/${packageName}`,
+    name: scopedPackageName
+  };
+
+  const inlineWorkerConfig = hasWorker
+    ? {
+        banner: { js: 'export function InlinedWorker() {' },
+        entryPoints: [workerTS],
+        env: development ? 'development' : 'production',
+        footer: { js: '}' },
+        name: scopedPackageName,
+        outfile: `src/inlined-worker.js`,
+        sourcemap: false
+      }
+    : undefined;
+
+  function createDistFolder() {
+    const path = `${DIST_PATH}/${packageName}`;
+    shell.rm('-rf', path);
+    shell.mkdir('-p', path);
+  }
+
+  const GeneratedFiles = /^(worker|index)\.(js|css)(\.map)?$/;
+
+  async function writePackageJSON() {
+    return new Promise((resolve, reject) => {
+      const { files } = packageJson;
+      if (files) {
+        const filesToPublish = files.filter((fileName) => !GeneratedFiles.test(fileName));
+        if (filesToPublish.length) {
+          filesToPublish.forEach((fileName) => {
+            const filePath = fileName.replace(/^\//, './');
+            shell.cp('-r', filePath, `${outdir}`);
+          });
+        }
+      }
+      const newPackage = {
+        ...packageJson,
+        main: 'index.js',
+        module: 'index.js',
+        types: 'types/index.d.ts'
+      };
+      fs.writeFile(`${outdir}/package.json`, JSON.stringify(newPackage, null, 2), (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
     });
   }
 
-  async function typeDefs() {
-    if ('type-defs' in scripts && !skipTypedefs) {
-      const start = process.hrtime();
-      return exec('yarn --silent type-defs').then(() => {
-        const [seconds, nanoSeconds] = process.hrtime(start);
-        console.log(
-          `[${packageName}] tsc typedefs took ${seconds}s ${Math.round(nanoSeconds / 1_000_000)}ms`
-        );
-      });
-    }
+  createDistFolder();
+
+  if (hasWorker) {
+    // this has to complete first, the inline worker will be consumed ny subsequent build
+    await build(inlineWorkerConfig);
   }
 
-  const [{ metafile }] = await Promise.all([esbuild(), typeDefs()]).catch((e) => {
-    console.error(e);
-    process.exit(1);
-  });
+  const [, { metafile }] = await Promise.all([writePackageJSON(), build(buildConfig)]).catch(
+    (e) => {
+      console.error(e);
+      process.exit(1);
+    }
+  );
 
   const {
-    outputs: { [outfile]: jsOutput, 'index.css': cssOutput }
+    outputs: { [`${outdir}/index.js`]: jsOut, [`${outdir}/index.css`]: cssOut }
   } = metafile;
 
-  if (isWorker) {
-    console.log(`[${packageName}] DEPLOY worker.js`);
-    await exec('cp ./worker.js ../showcase/public/VUU/worker.js');
-    await exec('cp ./worker.js.map ../showcase/public/VUU/worker.js.map');
+  if (jsOut) {
+    console.log(`\tindex.js:  ${formatBytes(jsOut.bytes)}`);
   }
-
-  console.log(`\n[${packageName}@${version}] \t${outfile}:  ${formatBytes(jsOutput.bytes)}`);
-  if (cssOutput) {
-    console.log(`[${packageName}@${version}] \tindex.css: ${formatBytes(cssOutput.bytes)}`);
+  if (cssOut) {
+    console.log(`\tindex.css: ${formatBytes(cssOut.bytes)}`);
   }
 }
 

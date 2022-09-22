@@ -69,7 +69,7 @@
                           <outputDirectory>${project.basedir}/target/classes/webroot/</outputDirectory>
                           <resources>
                             <resource>
-                              <directory>${project.basedir}/packages/app-vuu-example/public</directory>
+                              <directory>${project.basedir}/deployed_apps/app-vuu-example</directory>
                               <filtering>false</filtering>
                             </resource>
                           </resources>
