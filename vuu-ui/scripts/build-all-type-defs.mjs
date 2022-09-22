@@ -10,10 +10,10 @@ const packages = [
   'utils',
   //   'react-utils',
   //   'theme',
-  'data-remote'
+  'data-remote',
   //   'data-store',
   //   'data-worker',
-  //   'datagrid-parsers',
+  'datagrid-parsers'
   //   'ui-controls',
   //   'data-grid',
   //   'layout',

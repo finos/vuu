@@ -1,5 +1,5 @@
 import shell from 'shelljs';
-import { formatBytes } from '../../../scripts/utils.mjs';
+import { formatBytes, formatDuration } from '../../../scripts/utils.mjs';
 import { build } from '../../../scripts/esbuild.mjs';
 
 const entryPoints = ['src/index.jsx', 'src/login.jsx'];
@@ -37,7 +37,12 @@ async function main() {
   createDeployFolder();
 
   console.log('[BUILD]');
-  const [{ metafile }] = await Promise.all([build(mainConfig)]).catch((e) => {
+  const [
+    {
+      result: { metafile },
+      duration
+    }
+  ] = await Promise.all([build(mainConfig)]).catch((e) => {
     console.error(e);
     process.exit(1);
   });
@@ -53,7 +58,9 @@ async function main() {
     const {
       outputs: { [outJS]: jsOutput, [outCSS]: cssOutput }
     } = metafile;
-    console.log(`\t${stripOutdir(outJS)}:  ${formatBytes(jsOutput.bytes)}`);
+    console.log(
+      `\t${stripOutdir(outJS)}:  ${formatBytes(jsOutput.bytes)} (${formatDuration(duration)})`
+    );
     if (cssOutput) {
       console.log(`\t${stripOutdir(outCSS)}: ${formatBytes(cssOutput.bytes)}`);
     }

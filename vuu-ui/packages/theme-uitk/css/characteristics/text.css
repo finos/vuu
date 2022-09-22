@@ -1,0 +1,221 @@
+.uitk-light,
+.uitk-dark {
+  /* Body text (default) */
+  --uitk-text-base-lineHeight: 1.3;
+  --uitk-text-fontFamily: var(--uitk-typography-fontFamily);
+  --uitk-text-fontWeight: var(--uitk-typography-weight-regular);
+  --uitk-text-fontWeight-small: var(--uitk-typography-weight-light);
+  --uitk-text-fontWeight-strong: var(--uitk-typography-weight-semiBold);
+  --uitk-text-letterSpacing: 0;
+  --uitk-text-lineHeight: 1.3;
+  --uitk-text-textAlign: left;
+  --uitk-text-textAlign-embedded: center;
+  --uitk-text-textDecoration: none;
+  --uitk-text-textTransform: none;
+
+  /* H1 */
+  --uitk-text-h1-fontWeight: var(--uitk-typography-weight-bold);
+  --uitk-text-h1-fontWeight-small: var(--uitk-typography-weight-light);
+  --uitk-text-h1-fontWeight-strong: var(--uitk-typography-weight-extraBold);
+
+  /* H2 */
+  --uitk-text-h2-fontWeight: var(--uitk-typography-weight-semiBold);
+  --uitk-text-h2-fontWeight-small: var(--uitk-typography-weight-regular);
+  --uitk-text-h2-fontWeight-strong: var(--uitk-typography-weight-extraBold);
+
+  /* H3 */
+  --uitk-text-h3-fontWeight: var(--uitk-typography-weight-semiBold);
+  --uitk-text-h3-fontWeight-small: var(--uitk-typography-weight-regular);
+  --uitk-text-h3-fontWeight-strong: var(--uitk-typography-weight-extraBold);
+
+  /* H4 */
+  --uitk-text-h4-fontWeight: var(--uitk-typography-weight-semiBold);
+  --uitk-text-h4-fontWeight-small: var(--uitk-typography-weight-regular);
+  --uitk-text-h4-fontWeight-strong: var(--uitk-typography-weight-extraBold);
+
+  /* Caption */
+  --uitk-text-caption-fontStyle: normal;
+  --uitk-text-caption-fontWeight: var(--uitk-typography-weight-regular);
+  --uitk-text-caption-fontWeight-strong: var(--uitk-typography-weight-semiBold);
+
+  /* Help text */
+  --uitk-text-help-fontStyle: italic;
+  --uitk-text-help-fontWeight: var(--uitk-typography-weight-regular);
+
+  /* Figure text */
+  --uitk-text-figure1-fontSize: 56px;
+  --uitk-text-figure1-lineHeight: 74px;
+  --uitk-text-figure1-fontWeight: var(--uitk-typography-weight-semiBold);
+
+  --uitk-text-figure2-fontSize: 36px;
+  --uitk-text-figure2-lineHeight: 48px;
+  --uitk-text-figure2-fontWeight: var(--uitk-typography-weight-semiBold);
+
+  --uitk-text-figure3-lineHeight: 32px;
+  --uitk-text-figure3-fontSize: 24px;
+  --uitk-text-figure3-fontWeight: var(--uitk-typography-weight-semiBold);
+
+  /* Colors */
+  --uitk-text-background: transparent;
+  --uitk-text-background-hover: transparent;
+  --uitk-text-background-selected: var(--uitk-palette-neutral-highlight);
+
+  --uitk-text-primary-foreground: var(--uitk-palette-neutral-primary-foreground);
+  --uitk-text-primary-foreground-hover: var(--uitk-palette-neutral-primary-foreground);
+  --uitk-text-primary-foreground-selected: var(--uitk-palette-neutral-primary-foreground);
+  --uitk-text-primary-foreground-disabled: var(--uitk-palette-neutral-primary-foreground-disabled);
+
+  --uitk-text-secondary-foreground: var(--uitk-palette-neutral-secondary-foreground);
+  --uitk-text-secondary-foreground-hover: var(--uitk-palette-neutral-secondary-foreground);
+  --uitk-text-secondary-foreground-selected: var(--uitk-palette-neutral-secondary-foreground);
+  --uitk-text-secondary-foreground-disabled: var(--uitk-palette-neutral-secondary-foreground-disabled);
+
+  /* Link */
+  --uitk-text-link-foreground-hover: var(--uitk-palette-navigate-foreground-hover);
+  --uitk-text-link-textDecoration: underline;
+  --uitk-text-link-textDecoration-hover: none;
+  --uitk-text-link-textDecoration-selected: underline;
+
+  /* Code */
+  --uitk-text-code-fontFamily: var(--uitk-typography-fontFamily-code);
+}
+
+/* Sizes by density */
+.uitk-density-touch {
+  --uitk-text-h1-fontSize: 42px;
+  --uitk-text-h1-lineHeight: auto;
+
+  --uitk-text-h2-fontSize: 32px;
+  --uitk-text-h2-lineHeight: 36px;
+
+  --uitk-text-h3-fontSize: 24px;
+  --uitk-text-h3-lineHeight: 26px;
+
+  --uitk-text-h4-fontSize: 16px;
+  --uitk-text-h4-lineHeight: 22px;
+
+  --uitk-text-caption-fontSize: 14px;
+  --uitk-text-caption-lineHeight: 16px;
+  --uitk-text-caption-minHeight: 16px;
+
+  --uitk-text-help-fontSize: 14px;
+  --uitk-text-help-lineHeight: 16px;
+  --uitk-text-help-minHeight: 16px;
+
+  --uitk-text-fontSize: 16px;
+  --uitk-text-lineHeight: 22px;
+  --uitk-text-minHeight: 20px;
+}
+
+.uitk-density-low {
+  --uitk-text-h1-fontSize: 32px;
+  --uitk-text-h1-lineHeight: 42px;
+
+  --uitk-text-h2-fontSize: 24px;
+  --uitk-text-h2-lineHeight: 32px;
+
+  --uitk-text-h3-fontSize: 18px;
+  --uitk-text-h3-lineHeight: 26px;
+
+  --uitk-text-h4-fontSize: 14px;
+  --uitk-text-h4-lineHeight: 18px;
+
+  --uitk-text-caption-fontSize: 12px;
+  --uitk-text-caption-lineHeight: 14px;
+  --uitk-text-caption-minHeight: 14px;
+
+  --uitk-text-help-fontSize: 12px;
+  --uitk-text-help-lineHeight: 14px;
+  --uitk-text-help-minHeight: 14px;
+
+  --uitk-text-fontSize: 14px;
+  --uitk-text-lineHeight: 18px;
+  --uitk-text-minHeight: 18px;
+}
+
+.uitk-density-medium {
+  --uitk-text-h1-fontSize: 24px;
+  --uitk-text-h1-lineHeight: 31px;
+
+  --uitk-text-h2-fontSize: 18px;
+  --uitk-text-h2-lineHeight: 24px;
+
+  --uitk-text-h3-fontSize: 14px;
+  --uitk-text-h3-lineHeight: 22px;
+
+  --uitk-text-h4-fontSize: 12px;
+  --uitk-text-h4-lineHeight: 16px;
+
+  --uitk-text-caption-fontSize: 11px;
+  --uitk-text-caption-lineHeight: 14px;
+  --uitk-text-caption-minHeight: 14px;
+
+  --uitk-text-help-fontSize: 11px;
+  --uitk-text-help-lineHeight: 14px;
+  --uitk-text-help-minHeight: 14px;
+
+  --uitk-text-fontSize: 12px;
+  --uitk-text-lineHeight: 16px;
+  --uitk-text-minHeight: 16px;
+}
+
+.uitk-density-high {
+  --uitk-text-h1-fontSize: 18px;
+  --uitk-text-h1-lineHeight: 24px;
+
+  --uitk-text-h2-fontSize: 14px;
+  --uitk-text-h2-lineHeight: 18px;
+
+  --uitk-text-h3-fontSize: 12px;
+  --uitk-text-h3-lineHeight: 16px;
+
+  --uitk-text-h4-fontSize: 11px;
+  --uitk-text-h4-lineHeight: 14px;
+
+  --uitk-text-caption-fontSize: 10px;
+  --uitk-text-caption-lineHeight: 14px;
+  --uitk-text-caption-minHeight: 14px;
+
+  --uitk-text-help-fontSize: 10px;
+  --uitk-text-help-lineHeight: 13px;
+  --uitk-text-help-minHeight: 14px;
+
+  --uitk-text-fontSize: 11px;
+  --uitk-text-lineHeight: 14px;
+  --uitk-text-minHeight: 14px;
+}
+
+/* TK1 backwards compat */
+
+/* Not changed for HD and MD, defined to avoid nesting issues */
+.uitk-density-high,
+.uitk-density-medium {
+  --backwardsCompat-text-h1-fontSize: var(--uitk-text-h1-fontSize);
+  --backwardsCompat-text-h2-fontSize: var(--uitk-text-h2-fontSize);
+  --backwardsCompat-text-h3-fontSize: var(--uitk-text-h3-fontSize);
+  --backwardsCompat-text-caption-fontSize: var(--uitk-text-caption-fontSize);
+  --backwardsCompat-text-help-fontSize: var(--uitk-text-help-fontSize);
+}
+
+.uitk-density-touch {
+  --backwardsCompat-text-h1-fontSize: 40px;
+  --backwardsCompat-text-h2-fontSize: 28px;
+  --backwardsCompat-text-h3-fontSize: 22px;
+  --backwardsCompat-text-caption-fontSize: 12px;
+  --backwardsCompat-text-help-fontSize: 12px;
+}
+
+.uitk-density-low {
+  --backwardsCompat-text-h1-fontSize: 31px;
+  --backwardsCompat-text-h2-fontSize: var(--uitk-text-h2-fontSize);
+  --backwardsCompat-text-h3-fontSize: var(--uitk-text-h3-fontSize);
+  --backwardsCompat-text-caption-fontSize: 11px;
+  --backwardsCompat-text-help-fontSize: 11px;
+}
+
+.uitk-density-high,
+.uitk-density-medium,
+.uitk-density-low,
+.uitk-density-touch {
+  --backwardsCompat-text-lineHeight: var(--uitk-text-base-lineHeight); /* 1.3 */
+}

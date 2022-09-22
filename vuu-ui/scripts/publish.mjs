@@ -16,7 +16,7 @@ const packages = [
 
 function publishPackage(packageName) {
   shell.cd(`dist/${packageName}`);
-  shell.exec('npm publish --registry https://registry.npmjs.org --access-public --dry-run');
+  shell.exec('npm publish --registry https://registry.npmjs.org --access-public');
   shell.cd('../..');
 }
 

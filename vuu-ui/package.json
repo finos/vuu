@@ -38,7 +38,7 @@
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^13.0.6",
-    "esbuild": "^0.15.5",
+    "esbuild": "0.15.9",
     "eslint": "^8.20.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",

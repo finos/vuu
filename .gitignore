@@ -16,18 +16,7 @@ yarn-debug.log*
 yarn-error.log*
 /vuu-ui/stories/public/worker.js
 /vuu-ui/stories/public/worker.js.map
-/vuu-ui/packages/*/index.js
 /vuu-ui/packages/*/types
-/vuu-ui/packages/*/worker.js
-/vuu-ui/packages/*/index.css
-/vuu-ui/packages/*/index.js.map
-/vuu-ui/packages/*/worker.js.map
-/vuu-ui/packages/*/index.css.map
-/vuu-ui/packages/*/public/*.css
-/vuu-ui/packages/*/public/*.css.map
-/vuu-ui/packages/*/public/*.js
-/vuu-ui/packages/*/public/*.js.map
-/vuu-ui/packages/*/public/features
 /vuu-ui/packages/*/public/stories/*.*
 /vuu-ui/packages/showcase/public/packages
 

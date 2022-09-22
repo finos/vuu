@@ -6,7 +6,7 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/build.mjs",
+    "build": "node ../../scripts/run-build.mjs",
     "generate:filter": "antlr4ts ./src/grammars/Filter.g4 -o generated/parsers/filter -visitor -Xexact-output-dir",
     "tsc": "tsc ./generated/parsers/filter/*.ts --target esnext --moduleResolution node"
   },
