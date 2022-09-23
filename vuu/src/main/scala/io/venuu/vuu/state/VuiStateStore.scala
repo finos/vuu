@@ -35,13 +35,13 @@ trait VuiStateStore {
   }
 }
 
-object FileBackedVuiStateStore{
+object FileBackedVuiStateStore extends StrictLogging{
   def createPath(directory: String): Unit = {
     Files.createDirectories(Paths.get(directory))
   }
 
   def writeFile(filePath: String, contents: String): Unit ={
-    //Files.createDirectories(Paths.get(filePath))
+    logger.warn("[UI State] writing to:" + filePath)
     val writer = new PrintWriter(new File(filePath))
     writer.print(contents);
     writer.close()
@@ -114,11 +114,14 @@ class FileBackedVuiStateStore(val storageDir: String, val maxItemsPerUser: Int =
       override def accept(dir: File, name: String): Boolean = name.endsWith(user + "." + id + ".json")
     }).sortBy(_.lastModified()).reverse
 
+    logger.warn(s"[UI State] Found ${} files", files.length)
+
     files.headOption match {
       case Some(file) =>
         fileToHeader(user, file) match {
           case Some(header) =>
             val contents = readFile(file.getPath)
+            logger.warn(s"[UI State] Head file is:" + file.getPath + " contents:" + contents)
             Some(VuiState(header, VuiJsonState(contents)))
           case _  =>
               None
