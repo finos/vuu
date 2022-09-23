@@ -50,13 +50,12 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.13</artifactId>
             <version>${scalatest.version}</version>
             <scope>test</scope>
-        </dependency>
-
+        </dependency-->
 
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
@@ -74,6 +73,32 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>${netty.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-memcache</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-smtp</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-stomp</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-xml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-redis</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-mqtt</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
