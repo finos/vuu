@@ -50,13 +50,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!--dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.13</artifactId>
-            <version>${scalatest.version}</version>
-            <scope>test</scope>
-        </dependency-->
-
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging_2.13</artifactId>
