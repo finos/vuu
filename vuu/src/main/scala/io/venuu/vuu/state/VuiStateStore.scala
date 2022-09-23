@@ -112,7 +112,7 @@ class FileBackedVuiStateStore(val storageDir: String, val maxItemsPerUser: Int =
 
     val files = Paths.get(thePath).toFile.listFiles( new FilenameFilter {
       override def accept(dir: File, name: String): Boolean = name.endsWith(user + "." + id + ".json")
-    }).sortBy(_.lastModified()).reverse
+    }).sortBy(_.getName).reverse
 
     logger.warn(s"[UI State] Found ${} files", files.length)
 
