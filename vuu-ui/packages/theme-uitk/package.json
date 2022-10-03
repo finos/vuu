@@ -1,0 +1,13 @@
+{
+  "name": "@vuu-ui/theme-uitk",
+  "version": "0.0.21",
+  "license": "Apache-2.0",
+  "style": "index.css",
+  "files": [
+    "index.css",
+    "/css"
+  ],
+  "scripts": {
+    "build": "node ../../scripts/run-build.mjs"
+  }
+}

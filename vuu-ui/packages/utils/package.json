@@ -12,8 +12,8 @@
   ],
   "types": "src/index.ts",
   "scripts": {
-    "build": "node ../../scripts/build.mjs",
-    "type-defs": "tsc --project tsconfig-emit-types.json"
+    "build": "node ../../scripts/run-build.mjs",
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {},
   "peerDependencies": {

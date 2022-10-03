@@ -11,7 +11,7 @@
     "/src"
   ],
   "scripts": {
-    "build": "node ../../scripts/build.mjs"
+    "build": "node ../../scripts/run-build.mjs"
   },
   "peerDependencies": {
     "classnames": "^2.2.6",

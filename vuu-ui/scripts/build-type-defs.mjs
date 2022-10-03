@@ -23,6 +23,7 @@ async function createTypeDefs() {
 function writePackageJSON() {
   return new Promise((resolve, reject) => {
     const packageJson = readPackageJson(`${outdir}/package.json`);
+    console.log(JSON.stringify(packageJson));
     const newPackage = {
       ...packageJson,
       files: (packageJson.files || []).concat('/types'),

@@ -9,7 +9,7 @@
     "/src"
   ],
   "scripts": {
-    "build": "node ../../scripts/build.mjs",
+    "build": "node ../../scripts/run-build.mjs",
     "type-defs": "tsc --project tsconfig-emit-types.json"
   },
   "types": "src/index.ts",

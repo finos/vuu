@@ -2,10 +2,11 @@ import shell from 'shelljs';
 
 const args = process.argv.slice(2);
 const dev = args.includes('--dev') ? ' --dev' : '';
+const cjs = args.includes('--cjs') ? ' --cjs' : '';
 
 function buildPackage(packageName) {
   shell.cd(`packages/${packageName}`);
-  shell.exec(`yarn --silent build${dev}`);
+  shell.exec(`yarn --silent build${dev}${cjs}`);
   shell.cd('../..');
 }
 
@@ -13,6 +14,7 @@ const packages = [
   'utils',
   'react-utils',
   'theme',
+  'theme-uitk',
   'data-remote',
   'data-store',
   'datagrid-parsers',

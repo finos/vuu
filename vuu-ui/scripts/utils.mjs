@@ -21,3 +21,6 @@ export const formatBytes = (bytes, decimals = 2, displayLength = 10) => {
   const i = floor(log(bytes) / log(k));
   return frontPad(parseFloat((bytes / pow(k, i)).toFixed(dm)) + ' ' + sizes[i], displayLength);
 };
+
+export const formatDuration = ({ seconds, nanoSeconds }) =>
+  `${seconds}s ${Math.round(nanoSeconds / 1_000_000)}ms`;
