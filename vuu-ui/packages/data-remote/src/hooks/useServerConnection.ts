@@ -16,7 +16,6 @@ export const getServerUrl = () => _serverUrl;
 
 export const useServerConnection = (serverUrl?: string) => {
   // Lets assume for now this doesn't change at runtime
-
   if (_serverUrl === null && serverUrl) {
     connectToServer(serverUrl);
   }
@@ -24,7 +23,6 @@ export const useServerConnection = (serverUrl?: string) => {
 
   useEffect(() => {
     let active = true;
-
     async function connect() {
       const res = await ConnectionManager.connect(_serverUrl);
       if (active) {
@@ -32,7 +30,6 @@ export const useServerConnection = (serverUrl?: string) => {
       }
     }
     connect();
-
     return () => {
       active = false;
     };

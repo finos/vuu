@@ -1,20 +1,18 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Shell, Feature } from '@vuu-ui/shell';
-import AppContext from './app-context';
+import { useViewserver } from "@vuu-ui/data-remote";
+import { Dialog } from "@vuu-ui/layout";
+import { Feature, Shell } from "@vuu-ui/shell";
+import { useCallback, useMemo, useRef, useState } from "react";
+import AppContext from "./app-context";
 
-import { useViewserver } from '@vuu-ui/data-remote';
+import "./App.css";
 
-import { Dialog } from '@vuu-ui/layout';
+export const serverUrl = "127.0.0.1:8090/websocket";
+const filteredGridUrl = "./features/filtered-grid/index.js";
+const filteredGridCss = "./features/filtered-grid/index.css";
+const simpleComponentUrl = "./features/simple-component/index.js";
 
-import './App.css';
-
-export const serverUrl = '127.0.0.1:8090/websocket';
-const filteredGridUrl = './features/filtered-grid/index.js';
-const filteredGridCss = './features/filtered-grid/index.css';
-const simpleComponentUrl = './features/simple-component/index.js';
-
-const metricsUrl = './features/metrics.js';
-const metricsCss = './features/metrics.css';
+const metricsUrl = "./features/metrics.js";
+const metricsCss = "./features/metrics.css";
 
 const byModule = (t1, t2) => {
   const m1 = t1.table.module.toLowerCase();
@@ -33,79 +31,80 @@ const byModule = (t1, t2) => {
   }
 };
 
-const capitalize = (text) => (text.length === 0 ? '' : text[0].toUpperCase() + text.slice(1));
+const capitalize = (text) =>
+  text.length === 0 ? "" : text[0].toUpperCase() + text.slice(1);
 
 const regexp_worfify = /(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])/;
 const wordify = (text) => {
   const [firstWord, ...rest] = text.split(regexp_worfify);
-  return `${capitalize(firstWord)} ${rest.join(' ')}`;
+  return `${capitalize(firstWord)} ${rest.join(" ")}`;
 };
 
 const getTables = (tables) => {
   const tableList = Object.values(tables);
   return tableList.sort(byModule).map((schema) => ({
-    className: 'vuFilteredGrid',
+    className: "vuFilteredGrid",
     closeable: true,
     header: true,
     label: `${schema.table.module} ${wordify(schema.table.table)}`,
     resizeable: true,
-    resize: 'defer',
-    type: 'Feature',
+    resize: "defer",
+    type: "Feature",
     props: {
       schema,
       css: filteredGridCss,
-      url: filteredGridUrl
-    }
+      url: filteredGridUrl,
+    },
   }));
 };
 
 const getPaletteConfig = (tables) => [
   {
-    label: 'Features',
+    label: "Features",
     items: [
       {
         header: true,
-        label: 'Simple Component',
-        type: 'Feature',
+        label: "Simple Component",
+        type: "Feature",
         props: {
-          url: simpleComponentUrl
-        }
+          url: simpleComponentUrl,
+        },
       },
       {
         header: true,
-        label: 'Metrics',
-        type: 'Feature',
+        label: "Metrics",
+        type: "Feature",
         props: {
           css: metricsCss,
-          url: metricsUrl
-        }
-      }
-    ]
+          url: metricsUrl,
+        },
+      },
+    ],
   },
   {
-    label: 'Tables',
-    items: getTables(tables)
-  }
+    label: "Tables",
+    items: getTables(tables),
+  },
 ];
 
 const defaultLayout = {
-  type: 'Stack',
+  type: "Stack",
   props: {
     style: {
-      width: '100%',
-      height: '100%'
+      width: "100%",
+      height: "100%",
     },
     showTabs: true,
     enableAddTab: true,
     preserve: true,
-    active: 0
+    active: 0,
   },
   children: [
     {
-      type: 'Placeholder',
-      title: 'Page 1'
-    }
-  ]
+      type: "Placeholder",
+      title: "Page 1",
+    },
+  ],
 };
 
 export const App = ({ user }) => {
@@ -114,7 +113,7 @@ export const App = ({ user }) => {
   // Needed because of circular ref between useViewserver and handleRpcResponse
   const tablesRef = useRef();
 
-  const { tables } = useViewserver({ label: 'App' });
+  const { tables } = useViewserver({ label: "App" });
 
   const paletteConfig = useMemo(() => {
     return getPaletteConfig(tables);
@@ -123,13 +122,18 @@ export const App = ({ user }) => {
   tablesRef.current = tables;
 
   const handleRpcResponse = useCallback((response) => {
-    if (response?.action?.type === 'OPEN_DIALOG_ACTION') {
+    if (response?.action?.type === "OPEN_DIALOG_ACTION") {
       const { table } = response.action;
       const { [table.table]: schema } = tablesRef.current;
       if (schema) {
         // If we already have this table open in this viewport, ignore
         setDialogContent(
-          <Feature height={400} schema={schema} url={filteredGridUrl} width={700} />
+          <Feature
+            height={400}
+            schema={schema}
+            url={filteredGridUrl}
+            width={700}
+          />
         );
       }
     } else {
@@ -146,8 +150,13 @@ export const App = ({ user }) => {
         defaultLayout={defaultLayout}
         paletteConfig={paletteConfig}
         serverUrl={serverUrl}
-        user={user}>
-        <Dialog className="vuDialog" isOpen={dialogContent !== null} onClose={handleClose}>
+        user={user}
+      >
+        <Dialog
+          className="vuDialog"
+          isOpen={dialogContent !== null}
+          onClose={handleClose}
+        >
           {dialogContent}
         </Dialog>
       </Shell>

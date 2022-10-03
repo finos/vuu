@@ -111,6 +111,7 @@ export class Viewport {
   private pendingRangeRequest: any = null;
   private rowCountChanged: boolean = false;
   private sort: any;
+  private tableSize: number = -1;
 
   public clientViewportId: string;
   public isTree: boolean = false;
@@ -485,7 +486,7 @@ export class Viewport {
       const { keys } = this;
       const toClient = this.isTree ? toClientRowTree(this.groupBy, this.columns) : toClientRow;
 
-      // NOte this should probably just check that we havs all client rows within range ?
+      // NOte this should probably just check that we have all client rows within range ?
       const clientRows = this.dataWindow.hasAllRowsWithinRange
         ? this.holdingPen.splice(0)
         : undefined;

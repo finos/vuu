@@ -28,8 +28,11 @@ export interface VuuMenu {
   name: string;
   menus: VuuMenuItem[];
 }
+
+export type VuuRowDataItemType = string | number | boolean;
+
 export declare type VuuRow = {
-  data: Array<string | number>;
+  data: VuuRowDataItemType[];
   rowIndex: number;
   rowKey: string;
   sel: 0 | 1;
@@ -274,13 +277,31 @@ export interface ClientToServerCreateLink {
   parentVpId: string;
   type: 'CREATE_VISUAL_LINK';
 }
-export interface ClientToServerRpcCall {
+
+export declare type RpcService = 'TypeAheadRpcHandler';
+export declare type TypeAheadMethods =
+  | 'getUniqueFieldValues'
+  | 'getUniqueFieldValuesStaringWith'
+  | 'addRowsFromInstruments';
+export declare type RpcMethod = TypeAheadMethods;
+export interface ClientToServerGetUniqueValues {
   type: 'RPC_CALL';
-  method: string;
-  service: string;
-  params: any;
-  namedParams?: any;
+  method: 'getUniqueFieldValues';
+  service: 'TypeAheadRpcHandler';
+  params: [VuuTable, string];
 }
+export interface ClientToServerGetUniqueValuesStartingWith {
+  type: 'RPC_CALL';
+  method: 'getUniqueFieldValuesStaringWith';
+  service: 'TypeAheadRpcHandler';
+  params: [VuuTable, string, string];
+}
+// add remaining Rpc calls here
+
+export declare type ClientToServerRpcCall =
+  | ClientToServerGetUniqueValues
+  | ClientToServerGetUniqueValuesStartingWith;
+
 export interface ClientToServerMenuSelectRPC {
   type: 'VIEW_PORT_MENUS_SELECT_RPC';
   rpcName: string;

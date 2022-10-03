@@ -8,7 +8,7 @@ import './login.css';
 
 async function login(username, password) {
   try {
-    const authToken = await authenticate(username, password);
+    const authToken = await authenticate(username, password /*, 'https://127.0.0.1:8443'*/);
     var date = new Date();
     const days = 1;
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);

@@ -5,7 +5,7 @@ import { build } from '../../../scripts/esbuild.mjs';
 const entryPoints = ['src/index.jsx', 'src/login.jsx'];
 
 const featureEntryPoints = [
-  'src/features/filtered-grid/index.js',
+  'src/features/filtered-grid/index.ts',
   'src/features/metrics/index.js',
   'src/features/simple-component/index.js'
 ];
@@ -53,7 +53,8 @@ async function main() {
   entryPoints.concat(featureEntryPoints).forEach((fileName) => {
     const outJS = `${outdir}/${fileName
       .replace(new RegExp(`^${outbase}\\/`), '')
-      .replace(/x$/, '')}`;
+      .replace(/x$/, '')
+      .replace(/ts$/, 'js')}`;
     const outCSS = outJS.replace(/js$/, 'css');
     const {
       outputs: { [outJS]: jsOutput, [outCSS]: cssOutput }
