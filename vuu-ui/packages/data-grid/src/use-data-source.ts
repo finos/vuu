@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { metadataKeys } from '@vuu-ui/utils/src/column-utils';
 import { WindowRange, getFullRange } from '@vuu-ui/utils/src/range-utils';
