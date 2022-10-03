@@ -1,4 +1,3 @@
-import { ToolkitProvider } from "@heswell/uitk-core";
 import { useViewserver } from "@vuu-ui/data-remote";
 import { Dialog } from "@vuu-ui/layout";
 import { Feature, Shell } from "@vuu-ui/shell";
@@ -146,23 +145,21 @@ export const App = ({ user }) => {
 
   // TODO get Context from Shell
   return (
-    <ToolkitProvider>
-      <AppContext.Provider value={{ handleRpcResponse }}>
-        <Shell
-          defaultLayout={defaultLayout}
-          paletteConfig={paletteConfig}
-          serverUrl={serverUrl}
-          user={user}
+    <AppContext.Provider value={{ handleRpcResponse }}>
+      <Shell
+        defaultLayout={defaultLayout}
+        paletteConfig={paletteConfig}
+        serverUrl={serverUrl}
+        user={user}
+      >
+        <Dialog
+          className="vuDialog"
+          isOpen={dialogContent !== null}
+          onClose={handleClose}
         >
-          <Dialog
-            className="vuDialog"
-            isOpen={dialogContent !== null}
-            onClose={handleClose}
-          >
-            {dialogContent}
-          </Dialog>
-        </Shell>
-      </AppContext.Provider>
-    </ToolkitProvider>
+          {dialogContent}
+        </Dialog>
+      </Shell>
+    </AppContext.Provider>
   );
 };

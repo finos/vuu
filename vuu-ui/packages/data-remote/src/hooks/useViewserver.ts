@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SimpleStore } from '@vuu-ui/utils';
 import { useServerConnection } from './useServerConnection';
 import { columnMetaData as columnConfig } from './columnMetaData';
+import { DataSource } from '../data-source';
+import { ClientToServerRpcCall, VuuMenuItem } from '@vuu-ui/data-types';
 
 export const addRowsFromInstruments = 'addRowsFromInstruments';
 export const RpcCall = 'RPC_CALL';
@@ -15,7 +17,7 @@ const contextSortPriorities = {
   grid: 3
 };
 
-const byContext = (menu1, menu2) => {
+const byContext = (menu1: VuuMenuItem, menu2: VuuMenuItem) => {
   return contextSortPriorities[menu1.context] - contextSortPriorities[menu2.context];
 };
 
@@ -45,6 +47,14 @@ const extendSchema = ({ columns, dataTypes, table }) => {
   };
 };
 
+export interface ViewServerHookProps {
+  loadSession?: () => any;
+  onConfigChange?: () => void;
+  onRpcResponse?: () => void;
+  rpcServer?: DataSource;
+  saveSession?: () => void;
+}
+
 // Either a DataSource or a Connection is acceptable as rpcServer, both support the rpc interface
 export const useViewserver = ({
   loadSession,
@@ -52,12 +62,12 @@ export const useViewserver = ({
   onRpcResponse,
   rpcServer,
   saveSession
-} = {}) => {
+}: ViewServerHookProps = {}) => {
   const [tables, setTables] = useState(tableStore.value);
 
-  // IF we're passed in an rpcServer, whether its a dataSOurce or connection,
-  // whu do we need to get server here ?
-  const server = useServerConnection(undefined, 'useViewServer');
+  // IF we're passed in an rpcServer, whether its a dataSource or connection,
+  // why do we need to get server here ?
+  const server = useServerConnection(undefined);
   const contextMenuOptions = useMemo(
     () => loadSession?.('vs-context-menu') ?? undefined,
     [loadSession]
@@ -80,8 +90,8 @@ export const useViewserver = ({
   }, []);
 
   const makeRpcCall = useCallback(
-    async (options) => {
-      const response = await server.rpcCall(options);
+    async (rpcRequest: Omit<ClientToServerRpcCall, 'service'>) => {
+      const response = await server.rpcCall(rpcRequest);
       switch (response.method) {
         case addRowsFromInstruments:
           onRpcResponse?.('showOrderEntry');

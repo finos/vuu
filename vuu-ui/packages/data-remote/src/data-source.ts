@@ -1,19 +1,19 @@
-import { VuuTable } from '@vuu-ui/data-types';
+import { VuuAggregation, VuuFilter, VuuGroupBy, VuuSort, VuuTable } from '@vuu-ui/data-types';
+import { VuuUIMessageIn } from './vuuUIMessageTypes';
 
 export interface DataSourceProps {
   bufferSize?: number;
-  aggregations: any;
-  columns: any;
-  filter: any;
-  filterQuery: any;
-  group: any;
-  sort: any;
-  configUrl: any;
-  serverName: any;
-  serverUrl: any;
   table: VuuTable;
-  viewport: any;
-  'visual-link': any;
+  aggregations?: VuuAggregation[];
+  columns: string[];
+  filter?: VuuFilter;
+  filterQuery?: any;
+  group?: VuuGroupBy;
+  sort?: VuuSort;
+  configUrl?: any;
+  serverUrl: string;
+  viewport?: string;
+  'visual-link'?: any;
 }
 
 export interface SubscribeProps {
@@ -28,7 +28,7 @@ export interface SubscribeProps {
   filterQuery?: any;
 }
 
-export type SubscribeCallback = (...args: any[]) => void;
+export type SubscribeCallback = (message: VuuUIMessageIn) => void;
 
 export interface DataSource {
   setRange: (from: number, to: number) => void;

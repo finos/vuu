@@ -44,6 +44,12 @@ export class KeySet {
   public keyFor(rowIndex: number): number {
     const key = this.keys.get(rowIndex);
     if (key === undefined) {
+      console.log(`key not found
+        keys: ${Object.entries(this.keys)
+          .map((rowIndex, keyValue) => `${rowIndex}=>${keyValue}`)
+          .join(', ')}
+        free : ${this.free.join(',')}  
+      `);
       throw Error(`KeySet, no key found for rowIndex ${rowIndex}`);
     }
     return key;

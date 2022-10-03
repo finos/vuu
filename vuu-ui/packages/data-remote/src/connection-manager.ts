@@ -1,17 +1,17 @@
 import { EventEmitter, uuid } from '@vuu-ui/utils';
 import * as Message from './server-proxy/messages';
 import {
-  ClientViewportMessage,
   isConnectionStatusMessage,
   RpcRequest,
   RpcResponse,
   ServerProxySubscribeMessage,
   TableMeta,
   TableList,
-  ViewportMessage,
+  ViewportMessageOut,
   VuuUIMessageIn,
   VuuUIMessageInRPC,
-  VuuUIMessageOut
+  VuuUIMessageOut,
+  ViewportMessageIn
 } from './vuuUIMessageTypes';
 import { VuuTable } from '@vuu-ui/data-types';
 // Note: the InlinedWorker is a generated file, it must be built
@@ -32,7 +32,7 @@ let worker: Worker;
 let pendingWorker: Promise<Worker>;
 let pendingWorkerNoToken: WorkerResolver[] = [];
 
-export type PostMessageToClientCallback = (msg: ClientViewportMessage) => void;
+export type PostMessageToClientCallback = (msg: VuuUIMessageIn) => void;
 
 const viewports = new Map<
   string,
@@ -123,7 +123,7 @@ function handleMessageFromWorker({ data: message }: MessageEvent<VuuUIMessageIn>
   } else if (isConnectionStatusMessage(message)) {
     ConnectionManager.emit('connection-status', message);
   } else {
-    const clientViewportId = (message as ViewportMessage).clientViewportId;
+    const clientViewportId = (message as ViewportMessageIn).clientViewportId;
     const requestId = (message as VuuUIMessageInRPC).requestId;
     const viewport = viewports.get(clientViewportId);
     if (viewport) {

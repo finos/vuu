@@ -35,7 +35,7 @@ export class ArrayBackedMovingWindow {
     return (
       this.rowsWithinRange === this.clientRange.to - this.clientRange.from ||
       // this.rowsWithinRange === this.range.to - this.range.from ||
-      (this.rowCount > 0 && this.rowsWithinRange === this.rowCount)
+      (this.rowCount > 0 && this.clientRange.from + this.rowsWithinRange === this.rowCount)
     );
   }
 
