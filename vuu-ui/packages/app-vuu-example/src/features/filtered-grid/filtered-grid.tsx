@@ -1,12 +1,12 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { extractFilter, filterAsQuery, parseFilter } from '@vuu-ui/datagrid-parsers';
 import { useViewContext } from '@vuu-ui/layout';
 import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
-import { parseFilter, extractFilter, filterAsQuery } from '@vuu-ui/datagrid-parsers';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { createSuggestionProvider } from './vuu-filter-suggestion-provider';
 
-import { Button, ContextMenuProvider, Link as LinkIcon } from '@vuu-ui/ui-controls';
 import { Grid, GridProvider } from '@vuu-ui/data-grid';
 import { createDataSource, useViewserver } from '@vuu-ui/data-remote';
+import { Button, ContextMenuProvider, Link as LinkIcon } from '@vuu-ui/ui-controls';
 import AppContext from '../../app-context';
 
 // import '@vuu-ui/parsed-input/index.css';

@@ -1,3 +1,6 @@
+import { VuuTable } from '@vuu-ui/data-types';
+import { SuggestionProviderProps } from '@vuu-ui/datagrid-parsers/src/filter-parser/parse-suggestions';
+
 const filterListValues = (values, selectedValues, text) => {
   // If we have an exact match with one of the values, then we have a selection.
   // But if the last item is  a partial match only, then we are filtering. We
@@ -53,17 +56,17 @@ const suggestColumnNames = (columns, text, isListItem) => {
 };
 
 const suggestColumnValues = async (
-  column,
-  text,
-  operator,
-  isListItem,
+  column: string,
+  text: string,
+  operator: string,
+  isListItem: boolean,
   currentValues,
   getSuggestions,
-  table
+  table: VuuTable
 ) => {
   const suggestions = await getSuggestions([table, column]);
   const values = suggestedValues(suggestions, text, operator, isListItem, currentValues);
-  return { values, total: values.length };
+  return { isListItem, values, total: values.length };
 };
 
 const getCurrentColumn = (filters, idx = 0) => {
@@ -115,15 +118,22 @@ export const createSuggestionProvider =
     columns = buildColumns(columnNames),
     namedFilters = [],
     getSuggestions,
-    table
+    table: VuuTable
   }) =>
-  (result, { isListItem, operator, token: tokenId, text, values }) => {
+  ({
+    parsedFilter,
+    isListItem,
+    operator,
+    token: tokenId,
+    text,
+    values
+  }: SuggestionProviderProps) => {
     switch (tokenId) {
       case 'COLUMN-NAME':
         return suggestColumnNames(columns, text, isListItem);
       case 'COLUMN-VALUE':
         return suggestColumnValues(
-          getCurrentColumn(result),
+          getCurrentColumn(parsedFilter),
           text,
           operator,
           isListItem,
