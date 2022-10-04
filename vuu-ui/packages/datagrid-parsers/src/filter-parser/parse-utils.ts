@@ -1,7 +1,9 @@
 import { ErrorNode, TerminalNode } from 'antlr4ts/tree';
+import { Filter } from '@vuu-ui/utils';
 
 //TODO need to ingestthese in a non-specific way
 import { FilterParser } from '../../generated/parsers/filter/FilterParser';
+import { ParsedFilter } from './FilterVisitor';
 const singleCharacterSymbols = new Set([
   FilterParser.EQ,
   FilterParser.GT,
@@ -26,8 +28,6 @@ const caretAtEndOfText = (tokens, caretPosition) => {
 };
 
 const getNamedFilter = (namedFilters, name) => namedFilters.find((f) => f.name === name)?.filter;
-
-export const NO_SUGGESTIONS = { values: [], total: 0 };
 
 const LBRACK = '[';
 const RBRACK = ']';
@@ -83,9 +83,9 @@ export const filterAsQuery = (filter, namedFilters) => {
   return query;
 };
 
-export function extractFilter([parseResult]) {
-  const { tokenPosition, label, ...filter } = parseResult;
-  return { filter, name: label };
+export function extractFilter([parseResult]: ParsedFilter): { filter: Filter; name?: string } {
+  const { pos, tokenPosition, label, ...filter } = parseResult;
+  return { filter: filter as Filter, name: label };
 }
 
 export function computeTokenIndexAndText(parser, parseTree, caretPosition) {
