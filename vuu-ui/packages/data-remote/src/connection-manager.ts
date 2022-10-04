@@ -1,5 +1,5 @@
-import { EventEmitter, uuid } from '@vuu-ui/utils';
-import * as Message from './server-proxy/messages';
+import { EventEmitter, uuid } from "@vuu-ui/utils";
+import * as Message from "./server-proxy/messages";
 import {
   isConnectionStatusMessage,
   RpcRequest,
@@ -11,18 +11,17 @@ import {
   VuuUIMessageIn,
   VuuUIMessageInRPC,
   VuuUIMessageOut,
-  ViewportMessageIn
-} from './vuuUIMessageTypes';
-import { VuuTable } from '@vuu-ui/data-types';
+  ViewportMessageIn,
+} from "./vuuUIMessageTypes";
+import { VuuTable } from "@vuu-ui/data-types";
 // Note: the InlinedWorker is a generated file, it must be built
-import { InlinedWorker } from './inlined-worker';
+import { InlinedWorker } from "./inlined-worker";
 const workerSource = InlinedWorker.toString().replace(
   /(?:^function\s+[a-zA-Z]+\(\)\s*\{)|(?:\}$)/g,
-  ''
+  ""
 );
-var workerBlob = new Blob([workerSource], { type: 'text/javascript' });
+var workerBlob = new Blob([workerSource], { type: "text/javascript" });
 var workerBlobUrl = URL.createObjectURL(workerBlob);
-const logger = console;
 
 type WorkerResolver = {
   resolve: (value: Worker | PromiseLike<Worker>) => void;
@@ -39,7 +38,7 @@ const viewports = new Map<
   {
     postMessageToClient: PostMessageToClientCallback;
     request: ServerProxySubscribeMessage;
-    status: 'subscribing';
+    status: "subscribing";
   }
 >();
 const pendingRequests = new Map();
@@ -49,10 +48,10 @@ const pendingRequests = new Map();
 // while they wait for worker.
 const getWorker = async (
   url: string,
-  token: string = '',
+  token: string = "",
   handleConnectionStatusChange: (msg: any) => void
 ) => {
-  if (token === '' && pendingWorker === undefined) {
+  if (token === "" && pendingWorker === undefined) {
     return new Promise<Worker>((resolve) => {
       pendingWorkerNoToken.push({ resolve });
     });
@@ -67,7 +66,7 @@ const getWorker = async (
       const worker = new Worker(workerBlobUrl);
 
       const timer: number | null = window.setTimeout(() => {
-        console.error('timed out waiting for worker to load');
+        console.error("timed out waiting for worker to load");
       }, 1000);
 
       // This is the inial message handler only, it processes messages whilst we are
@@ -75,10 +74,10 @@ const getWorker = async (
       // handler will replace this (see below)
       worker.onmessage = (msg: MessageEvent<VuuUIMessageIn>) => {
         const { data: message } = msg;
-        if (message.type === 'ready') {
+        if (message.type === "ready") {
           window.clearTimeout(timer);
-          worker.postMessage({ type: 'connect', url, token });
-        } else if (message.type === 'connected') {
+          worker.postMessage({ type: "connect", url, token });
+        } else if (message.type === "connected") {
           resolve(worker);
           for (const pendingWorkerRequest of pendingWorkerNoToken) {
             pendingWorkerRequest.resolve(worker);
@@ -87,7 +86,7 @@ const getWorker = async (
         } else if (isConnectionStatusMessage(message)) {
           handleConnectionStatusChange(msg);
         } else {
-          logger.log(`Unexpected message from the worker ${message.type}`);
+          console.log(`Unexpected message from the worker ${message.type}`);
         }
       };
       // TODO handle error
@@ -96,8 +95,9 @@ const getWorker = async (
 };
 
 const messagesToRelayToClient = {
-  'table-row': true,
-  'visual-link-created': true,
+  "table-row": true,
+  "visual-link-created": true,
+  "visual-link-removed": true,
   [Message.VIEW_PORT_MENUS_RESP]: true,
   [Message.VIEW_PORT_MENU_RESP]: true,
   [Message.VP_VISUAL_LINKS_RESP]: true,
@@ -108,20 +108,24 @@ const messagesToRelayToClient = {
   sort: true,
   groupBy: true,
   filter: true,
-  aggregate: true
+  aggregate: true,
 };
 
-function handleMessageFromWorker({ data: message }: MessageEvent<VuuUIMessageIn>) {
-  if (message.type === 'viewport-updates') {
-    for (const [clientViewport, { size, rows }] of Object.entries(message.viewports)) {
+function handleMessageFromWorker({
+  data: message,
+}: MessageEvent<VuuUIMessageIn>) {
+  if (message.type === "viewport-updates") {
+    for (const [clientViewport, { size, rows }] of Object.entries(
+      message.viewports
+    )) {
       const viewport = viewports.get(clientViewport);
       if (viewport) {
         const { postMessageToClient } = viewport;
-        postMessageToClient({ type: 'viewport-update', size, rows });
+        postMessageToClient({ type: "viewport-update", size, rows });
       }
     }
   } else if (isConnectionStatusMessage(message)) {
-    ConnectionManager.emit('connection-status', message);
+    ConnectionManager.emit("connection-status", message);
   } else {
     const clientViewportId = (message as ViewportMessageIn).clientViewportId;
     const requestId = (message as VuuUIMessageInRPC).requestId;
@@ -131,7 +135,9 @@ function handleMessageFromWorker({ data: message }: MessageEvent<VuuUIMessageIn>
       if (message.type in messagesToRelayToClient) {
         postMessageToClient(message);
       } else {
-        logger.log(`message from the worker to viewport ${clientViewportId} ${message.type}`);
+        console.log(
+          `message from the worker to viewport ${clientViewportId} ${message.type}`
+        );
       }
     } else if (pendingRequests.has(requestId)) {
       const { resolve } = pendingRequests.get(requestId);
@@ -142,7 +148,7 @@ function handleMessageFromWorker({ data: message }: MessageEvent<VuuUIMessageIn>
       // } else if (message.type === 'websocket-data') {
       //   // storeData(message.data);
     } else {
-      logger.log(
+      console.log(
         `Unexpected message from the worker ${message.type} requestId ${requestId}`,
         pendingRequests
       );
@@ -155,7 +161,7 @@ const asyncRequest = (msg: any): Promise<VuuUIMessageInRPC> => {
   const requestId = uuid();
   worker.postMessage({
     requestId,
-    ...msg
+    ...msg,
   });
   return new Promise((resolve, reject) => {
     pendingRequests.set(requestId, { resolve, reject });
@@ -168,7 +174,10 @@ export interface ServerAPI {
   getTableList: () => Promise<TableList>;
   rpcCall: (msg: RpcRequest) => Promise<RpcResponse>;
   send: (message: VuuUIMessageOut) => void;
-  subscribe: (message: ServerProxySubscribeMessage, callback: PostMessageToClientCallback) => void;
+  subscribe: (
+    message: ServerProxySubscribeMessage,
+    callback: PostMessageToClientCallback
+  ) => void;
   unsubscribe: (viewport: string) => void;
 }
 
@@ -179,11 +188,7 @@ class _ConnectionManager extends EventEmitter {
     // By passing handleMessageFromWorker here, we can get connection status
     //messages while we wait for worker to resolve.
 
-    console.group(
-      `[ConnectionManager].connect ${url}, token=${authToken}, about to block on getWorker`
-    );
     worker = await getWorker(url, authToken, handleMessageFromWorker);
-    console.groupEnd();
 
     worker.onmessage = handleMessageFromWorker;
 
@@ -197,15 +202,15 @@ class _ConnectionManager extends EventEmitter {
     return {
       subscribe: (message, callback) => {
         viewports.set(message.viewport, {
-          status: 'subscribing',
+          status: "subscribing",
           request: message,
-          postMessageToClient: callback
+          postMessageToClient: callback,
         });
-        worker.postMessage({ type: 'subscribe', ...message });
+        worker.postMessage({ type: "subscribe", ...message });
       },
 
       unsubscribe: (viewport) => {
-        worker.postMessage({ type: 'unsubscribe', viewport });
+        worker.postMessage({ type: "unsubscribe", viewport });
       },
 
       send: (message) => {
@@ -213,7 +218,7 @@ class _ConnectionManager extends EventEmitter {
       },
 
       destroy: () => {
-        console.log('destroy');
+        console.log("destroy");
         // TODO kill all subscriptions
       },
 
@@ -221,7 +226,8 @@ class _ConnectionManager extends EventEmitter {
 
       getTableList: async () => asyncRequest({ type: Message.GET_TABLE_LIST }),
 
-      getTableMeta: async (table) => asyncRequest({ type: Message.GET_TABLE_META, table })
+      getTableMeta: async (table) =>
+        asyncRequest({ type: Message.GET_TABLE_META, table }),
     };
   }
 

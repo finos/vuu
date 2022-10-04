@@ -1,6 +1,6 @@
-import { ReactElement } from 'react';
-import { DropTarget } from '../drag-drop/DropTarget';
-import { DragDropRect, DragInstructions, DropPos } from '../drag-drop';
+import { ReactElement } from "react";
+import { DropTarget } from "../drag-drop/DropTarget";
+import { DragDropRect, DragInstructions, DropPos } from "../drag-drop";
 
 export interface WithProps {
   props?: { [key: string]: any };
@@ -32,22 +32,22 @@ export interface WithActive {
 
 export type LayoutModel = LayoutRoot | ReactElement | WithType;
 
-export type layoutType = 'Flexbox' | 'View' | 'DraggableLayout' | 'Stack';
+export type layoutType = "Flexbox" | "View" | "DraggableLayout" | "Stack";
 
 export const LayoutActionType = {
-  ADD: 'add',
-  DRAG_START: 'drag-start',
-  DRAG_DROP: 'drag-drop',
-  MAXIMIZE: 'maximize',
-  MINIMIZE: 'minimize',
-  REMOVE: 'remove',
-  REPLACE: 'replace',
-  RESTORE: 'restore',
-  SAVE: 'save',
-  SET_TITLE: 'set-title',
-  SPLITTER_RESIZE: 'splitter-resize',
-  SWITCH_TAB: 'switch-tab',
-  TEAROUT: 'tearout'
+  ADD: "add",
+  DRAG_START: "drag-start",
+  DRAG_DROP: "drag-drop",
+  MAXIMIZE: "maximize",
+  MINIMIZE: "minimize",
+  REMOVE: "remove",
+  REPLACE: "replace",
+  RESTORE: "restore",
+  SAVE: "save",
+  SET_TITLE: "set-title",
+  SPLITTER_RESIZE: "splitter-resize",
+  SWITCH_TAB: "switch-tab",
+  TEAROUT: "tearout",
 } as const;
 
 export type AddAction = {
@@ -120,16 +120,21 @@ export type SaveAction = {
   type: typeof LayoutActionType.SAVE;
 };
 
-export type ToolbarContributionViewAction = {
+export type AddToolbarContributionViewAction = {
   content: ReactElement;
   location: string;
-  type: 'toolbar-contribution';
+  type: "add-toolbar-contribution";
+};
+
+export type RemoveToolbarContributionViewAction = {
+  location: string;
+  type: "remove-toolbar-contribution";
 };
 
 export type MousedownViewAction = {
   preDragActivity?: any;
   index?: number;
-  type: 'mousedown';
+  type: "mousedown";
 };
 
 // TODO split this out into separate actions for different drag scenarios

@@ -1,4 +1,4 @@
-import { msgType } from './constants';
+import { msgType } from "./constants";
 import {
   VuuAggregation,
   VuuColumns,
@@ -11,21 +11,27 @@ import {
   VuuRowDataItemType,
   VuuSort,
   VuuSortCol,
-  VuuTable
-} from '@vuu-ui/data-types';
-import { Filter } from '@vuu-ui/utils';
+  VuuTable,
+} from "@vuu-ui/data-types";
+import { Filter } from "@vuu-ui/utils";
 
-export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnected';
+export type ConnectionStatus =
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "reconnected";
 
 export interface ConnectionStatusMessage {
-  type: 'connection-status';
+  type: "connection-status";
   reason?: string;
   retry?: boolean;
   status: ConnectionStatus;
 }
 
-export const isConnectionStatusMessage = (msg: object): msg is ConnectionStatusMessage =>
-  (msg as ConnectionStatusMessage).type === 'connection-status';
+export const isConnectionStatusMessage = (
+  msg: object
+): msg is ConnectionStatusMessage =>
+  (msg as ConnectionStatusMessage).type === "connection-status";
 
 type RowIndex = number;
 type RenderKey = string;
@@ -69,11 +75,11 @@ export interface ServerProxySubscribeMessage {
 // };
 
 export type VuuUIMessageInConnected = {
-  type: 'connected';
+  type: "connected";
 };
 
 export type VuuUIMessageInWorkerReady = {
-  type: 'ready';
+  type: "ready";
 };
 
 export interface ViewportMessageIn {
@@ -81,10 +87,10 @@ export interface ViewportMessageIn {
 }
 
 export interface VuuUIMessageInDisabled extends ViewportMessageIn {
-  type: 'disabled';
+  type: "disabled";
 }
 export interface VuuUIMessageInEnabled extends ViewportMessageIn {
-  type: 'enabled';
+  type: "enabled";
 }
 
 export interface VuuUIMessageInSubscribed extends ViewportMessageIn {
@@ -94,26 +100,26 @@ export interface VuuUIMessageInSubscribed extends ViewportMessageIn {
   filterSpec: VuuFilter;
   groupBy: VuuGroupBy;
   range: VuuRange;
-  type: 'subscribed';
+  type: "subscribed";
 }
 
 export interface VuuUIMessageInFilter extends ViewportMessageIn {
-  type: 'filter';
+  type: "filter";
   filter: any;
   filterQuery: any;
 }
 
 export interface VuuUIMessageInGroupBy extends ViewportMessageIn {
-  type: 'groupBy';
+  type: "groupBy";
   groupBy: VuuGroupBy | null;
 }
 export interface VuuUIMessageInSort extends ViewportMessageIn {
-  type: 'sort';
+  type: "sort";
   sort: VuuSort;
 }
 
 export type VuuUIMessageInViewportUpdates = {
-  type: 'viewport-updates';
+  type: "viewport-updates";
   viewports: {
     [viewport: string]: {
       rows?: VuuUIRow[];
@@ -123,7 +129,7 @@ export type VuuUIMessageInViewportUpdates = {
 };
 
 export type VuuUIMessageInViewportUpdate = {
-  type: 'viewport-update';
+  type: "viewport-update";
   rows?: VuuUIRow[];
   size?: number;
 };
@@ -132,12 +138,12 @@ export interface VuuUIMessageInRPC {
   method: string;
   result: any;
   requestId: string;
-  type: 'RPC_RESP';
+  type: "RPC_RESP";
 }
 
 export interface VuuUIMessageInTableList {
   requestId: string;
-  type: 'TABLE_LIST_RESP';
+  type: "TABLE_LIST_RESP";
   tables: VuuTable[];
 }
 export interface VuuUIMessageInTableMeta {
@@ -145,10 +151,10 @@ export interface VuuUIMessageInTableMeta {
   dataTypes: string[];
   requestId: string;
   table: VuuTable;
-  type: 'TABLE_META_RESP';
+  type: "TABLE_META_RESP";
 }
 export interface VuuUIMessageInViewPortVisualLinks {
-  type: 'VP_VISUAL_LINKS_RESP';
+  type: "VP_VISUAL_LINKS_RESP";
   links: VuuLink[];
   clientViewportId: string;
 }
@@ -157,10 +163,14 @@ export interface VuuUIMessageInVisualLinkCreated {
   colName: string;
   parentViewportId: string;
   parentColName: string;
-  type: 'visual-link-created';
+  type: "visual-link-created";
+}
+export interface VuuUIMessageInVisualLinkRemoved {
+  clientViewportId: string;
+  type: "visual-link-removed";
 }
 export interface VuuUIMessageInMenus {
-  type: 'VIEW_PORT_MENUS_RESP';
+  type: "VIEW_PORT_MENUS_RESP";
   menu: VuuMenu;
   clientViewportId: string;
 }
@@ -170,7 +180,7 @@ export interface VuuUIMessageInMenu {
   };
   requestId: string;
   tableAlreadyOpen?: boolean;
-  type: 'VIEW_PORT_MENU_RESP';
+  type: "VIEW_PORT_MENU_RESP";
 }
 
 export type VuuUIMessageIn =
@@ -190,29 +200,30 @@ export type VuuUIMessageIn =
   | VuuUIMessageInSort
   | VuuUIMessageInViewPortVisualLinks
   | VuuUIMessageInVisualLinkCreated
+  | VuuUIMessageInVisualLinkRemoved
   | VuuUIMessageInTableList
   | VuuUIMessageInTableMeta;
 
 export interface VuuUIMessageOutConnect {
-  type: 'connect';
+  type: "connect";
   token: string;
   url: string;
 }
 
 export interface VuuUIMessageOutSubscribe extends ServerProxySubscribeMessage {
-  type: 'subscribe';
+  type: "subscribe";
 }
 
 export interface VuuUIMessageOutUnsubscribe {
-  type: 'unsubscribe';
+  type: "unsubscribe";
   viewport: string;
 }
 export interface VuuUIMessageOutSuspend {
-  type: 'suspend';
+  type: "suspend";
   viewport: string;
 }
 export interface VuuUIMessageOutResume {
-  type: 'resume';
+  type: "resume";
   viewport: string;
 }
 
@@ -225,7 +236,7 @@ export interface RequestMessage {
 }
 
 export interface VuuUIMessageOutViewRange extends ViewportMessageOut {
-  type: 'setViewRange';
+  type: "setViewRange";
   range: {
     from: number;
     to: number;
@@ -233,66 +244,71 @@ export interface VuuUIMessageOutViewRange extends ViewportMessageOut {
 }
 export interface VuuUIMessageOutAggregate extends ViewportMessageOut {
   aggregations: VuuAggregation[];
-  type: 'aggregate';
+  type: "aggregate";
 }
 export interface VuuUIMessageOutCloseTreeNode extends ViewportMessageOut {
   key: string;
-  type: 'closeTreeNode';
+  type: "closeTreeNode";
 }
 export interface VuuUIMessageOutCreateLink extends ViewportMessageOut {
   childColumnName: string;
   parentColumnName: string;
   parentVpId: string;
-  type: 'createLink';
+  type: "createLink";
+}
+export interface VuuUIMessageOutRemoveLink extends ViewportMessageOut {
+  type: "removeLink";
 }
 
 export interface VuuUIMessageOutDisable extends ViewportMessageOut {
-  type: 'disable';
+  type: "disable";
 }
 export interface VuuUIMessageOutEnable extends ViewportMessageOut {
-  type: 'enable';
+  type: "enable";
 }
 export interface VuuUIMessageOutOpenTreeNode extends ViewportMessageOut {
   key: string;
-  type: 'openTreeNode';
+  type: "openTreeNode";
 }
 export interface VuuUIMessageOutResume extends ViewportMessageOut {
-  type: 'resume';
+  type: "resume";
 }
 
 export interface VuuUIMessageOutSelect extends ViewportMessageOut {
   selected: number[];
-  type: 'select';
+  type: "select";
 }
 export interface VuuUIMessageOutSelectAll extends ViewportMessageOut {
-  type: 'selectAll';
+  type: "selectAll";
 }
 export interface VuuUIMessageOutSelectNone extends ViewportMessageOut {
-  type: 'selectNone';
+  type: "selectNone";
 }
 
 export interface VuuUIMessageOutSort extends ViewportMessageOut {
   sortDefs: VuuSortCol[];
-  type: 'sort';
+  type: "sort";
 }
 export interface VuuUIMessageOutSuspend extends ViewportMessageOut {
-  type: 'suspend';
+  type: "suspend";
 }
 
 export interface VuuUIMessageOutFilterQuery extends ViewportMessageOut {
   filter: Filter;
   filterQuery: string;
-  type: 'filterQuery';
+  type: "filterQuery";
 }
 export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
   groupBy: any[];
-  type: 'groupBy';
+  type: "groupBy";
 }
 
-export interface VuuUIMessageOutMenuRPC extends RequestMessage, ViewportMessageOut {
+export interface VuuUIMessageOutMenuRPC
+  extends RequestMessage,
+    ViewportMessageOut {
   context: VuuMenuContext;
   rpcName: string;
-  type: 'MENU_RPC_CALL';
+  type: "MENU_RPC_CALL";
 }
 
 export type VuuUIMessageOutViewport =
@@ -304,6 +320,7 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutEnable
   | VuuUIMessageOutGroupby
   | VuuUIMessageOutOpenTreeNode
+  | VuuUIMessageOutRemoveLink
   | VuuUIMessageOutResume
   | VuuUIMessageOutSelect
   | VuuUIMessageOutSelectAll
@@ -313,30 +330,36 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutViewRange
   | VuuUIMessageOutMenuRPC;
 
-export const isViewporttMessage = (msg: object): msg is VuuUIMessageOutViewport =>
-  'viewport' in msg;
+export const isViewporttMessage = (
+  msg: object
+): msg is VuuUIMessageOutViewport => "viewport" in msg;
 
 export interface VuuUIMessageOutRPC extends RequestMessage {
   method: string;
   params: any[];
-  type: 'RPC_CALL';
+  type: "RPC_CALL";
 }
 
-export type VuuUIMessageOutRpcCall = VuuUIMessageOutRPC | VuuUIMessageOutMenuRPC;
+export type VuuUIMessageOutRpcCall =
+  | VuuUIMessageOutRPC
+  | VuuUIMessageOutMenuRPC;
 
 export interface VuuUIMessageOutTableList extends RequestMessage {
-  type: 'GET_TABLE_LIST';
+  type: "GET_TABLE_LIST";
 }
 
 export interface VuuUIMessageOutTableMeta extends RequestMessage {
-  type: 'GET_TABLE_META';
+  type: "GET_TABLE_META";
   table: VuuTable;
 }
 
-export type VuuUIMessageOutAsyncRequest = VuuUIMessageOutTableList | VuuUIMessageOutTableMeta;
+export type VuuUIMessageOutAsyncRequest =
+  | VuuUIMessageOutTableList
+  | VuuUIMessageOutTableMeta;
 
-export const isAsyncRequestMessage = (msg: object): msg is VuuUIMessageOutAsyncRequest =>
-  'requestId' in msgType;
+export const isAsyncRequestMessage = (
+  msg: object
+): msg is VuuUIMessageOutAsyncRequest => "requestId" in msgType;
 
 export type VuuUIMessageOut =
   | VuuUIMessageOutConnect

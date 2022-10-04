@@ -18,7 +18,7 @@
   list-style: none;
   margin: 0;
   padding: 0 var(--hwList-padding-lr, 0);
-  font-size: 14px;
+  font-size: 12px;
   max-height: var(--hwList-max-height, 100%);
   outline: none;
   overflow-y: auto;

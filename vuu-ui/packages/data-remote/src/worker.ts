@@ -1,10 +1,10 @@
-import { connect as connectWebsocket } from '@vuu-ui/data-remote/src/websocket-connection';
-import { ServerProxy } from '@vuu-ui/data-remote/src/server-proxy/server-proxy';
+import { connect as connectWebsocket } from "@vuu-ui/data-remote/src/websocket-connection";
+import { ServerProxy } from "@vuu-ui/data-remote/src/server-proxy/server-proxy";
 import {
   ConnectionStatusMessage,
   isConnectionStatusMessage,
-  VuuUIMessageOut
-} from '@vuu-ui/data-remote/src/vuuUIMessageTypes';
+  VuuUIMessageOut,
+} from "@vuu-ui/data-remote/src/vuuUIMessageTypes";
 
 let server: ServerProxy;
 
@@ -24,13 +24,10 @@ async function connectToServer(
         : server.handleMessageFromServer(msg)
   );
 
-  console.log('[Worker] create the ServerProxy and wait for login to complete');
   server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
   if (connection.requiresLogin) {
     // no handling for failed login
-    console.group('[Worker].connectToServer login required, about to block await server login');
     await server.login(token);
-    console.groupEnd();
   }
 }
 
@@ -51,23 +48,21 @@ function sendMessageToClient(message: any) {
   lastTime = now;
 }
 
-const handleMessageFromClient = async ({ data: message }: MessageEvent<VuuUIMessageOut>) => {
+const handleMessageFromClient = async ({
+  data: message,
+}: MessageEvent<VuuUIMessageOut>) => {
   switch (message.type) {
-    case 'connect':
-      console.group(
-        `[Worker] 'connect' request received token=${message.token}, about to block until connected`
-      );
+    case "connect":
       await connectToServer(message.url, message.token, postMessage);
-      console.groupEnd();
-      postMessage({ type: 'connected' });
+      postMessage({ type: "connected" });
       break;
     // If any of the messages below are received BEFORE we have connected and created
     // the server - handle accordingly
 
-    case 'subscribe':
+    case "subscribe":
       server.subscribe(message);
       break;
-    case 'unsubscribe':
+    case "unsubscribe":
       server.unsubscribe(message.viewport);
       break;
     // TEST DATA COLLECTION
@@ -80,6 +75,6 @@ const handleMessageFromClient = async ({ data: message }: MessageEvent<VuuUIMess
 };
 
 /* eslint-disable-next-line no-restricted-globals */
-self.addEventListener('message', handleMessageFromClient);
+self.addEventListener("message", handleMessageFromClient);
 
-postMessage({ type: 'ready' });
+postMessage({ type: "ready" });

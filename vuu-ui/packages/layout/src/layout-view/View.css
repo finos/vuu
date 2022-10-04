@@ -1,6 +1,8 @@
-.hwView {
+.vuuView {
+  border: var(--vuuView-border, solid 1px var(--uitk-container-borderColor-medium));
   display: flex;
   flex-direction: column;
+  margin: var(--vuuView-margin, 3px);
   min-height: 50px;
   min-width: 50px;
   outline: none;
@@ -8,7 +10,7 @@
   position: relative;
 }
 
-.hwView.focus-visible:after {
+.vuuView.focus-visible:after {
   content: '';
   position: absolute;
   top: 0;
@@ -18,39 +20,39 @@
   border: dotted cornflowerblue 2px;
 }
 
-.hwView.dragging {
+.vuuView.dragging {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
 }
 
-.hwView-main {
+.vuuView-main {
   /* height: var(--view-content-height);
   width: var(--view-content-width); */
   display: flex;
-  flex-direction: var(--hwView-flex-direction, column);
-  flex-wrap: var(--hwView-flex-wrap, nowrap);
+  flex-direction: var(--vuuView-flexDirection, column);
+  flex-wrap: var(--vuuView-flex-wrap, nowrap);
   flex: 1;
   overflow: hidden;
   position: relative;
 }
 
-.hwView-main > * {
+.vuuView-main > * {
   flex-basis: auto;
-  flex-grow: var(--hwView-flex-grow, 1);
-  flex-shrink: var(--hwView-flex-shrink, 1);
+  flex-grow: var(--vuuView-flex-grow, 1);
+  flex-shrink: var(--vuuView-flex-shrink, 1);
 }
 
-.hwView-collapsed .hwView-main {
+.vuuView-collapsed .vuuView-main {
   display: none;
 }
 
-.hwView-collapsed + .Splitter {
+.vuuView-collapsed + .Splitter {
   display: none;
 }
 
-.hwView-collapsed .Toolbar-vertical {
+.vuuView-collapsed .Toolbar-vertical {
   border-right: solid 1px var(--grey40);
 }
 
-.hwView-collapsed .Toolbar-vertical .toolbar-title {
+.vuuView-collapsed .Toolbar-vertical .toolbar-title {
   display: none;
 }

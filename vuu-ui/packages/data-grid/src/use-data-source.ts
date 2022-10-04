@@ -1,8 +1,16 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { metadataKeys } from '@vuu-ui/utils/src/column-utils';
-import { WindowRange, getFullRange } from '@vuu-ui/utils/src/range-utils';
+import { SubscribeCallback } from "@vuu-ui/data-remote";
+import { metadataKeys } from "@vuu-ui/utils/src/column-utils";
+import { getFullRange, WindowRange } from "@vuu-ui/utils/src/range-utils";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-import GridContext from './grid-context';
+import GridContext from "./grid-context";
 
 const { RENDER_IDX } = metadataKeys;
 
@@ -21,14 +29,18 @@ export default function useDataSource(
   onConfigChange,
   onSizeChange
 ) {
-  const { dataSource, dispatchGridAction, dispatchGridModelAction } = useContext(GridContext);
+  const { dataSource, dispatchGridAction, dispatchGridModelAction } =
+    useContext(GridContext);
   const [, forceUpdate] = useState(null);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
   const rafHandle = useRef(null);
 
   const dataWindow = useMemo(
-    () => new MovingWindow(getFullRange(subscriptionDetails.range, gridModel.renderBufferSize)),
+    () =>
+      new MovingWindow(
+        getFullRange(subscriptionDetails.range, gridModel.renderBufferSize)
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [gridModel.renderBufferSize]
   );
@@ -51,18 +63,18 @@ export default function useDataSource(
     [dataWindow]
   );
 
-  const datasourceMessageHandler = useCallback(
+  const datasourceMessageHandler: SubscribeCallback = useCallback(
     (message) => {
       const { type, ...msg } = message;
-      if (type === 'subscribed') {
+      if (type === "subscribed") {
         dispatchGridModelAction({
-          type: 'set-available-columns',
-          columns: msg.columns
+          type: "set-available-columns",
+          columns: msg.columns,
         });
         if (msg.filter) {
-          dispatchGridModelAction({ type: 'filter', filter: msg.filter });
+          dispatchGridModelAction({ type: "filter", filter: msg.filter });
         }
-      } else if (type === 'viewport-update') {
+      } else if (type === "viewport-update") {
         const sizeChanged = msg.size !== undefined;
         if (sizeChanged) {
           onSizeChange(msg.size);
@@ -75,24 +87,26 @@ export default function useDataSource(
           data.current = dataWindow.data.slice().sort(byKey);
           hasUpdated.current = true;
         }
-      } else if (type === 'sort') {
+      } else if (type === "sort") {
         const { sort } = msg;
         dispatchGridModelAction(message);
         onConfigChange({ sort });
-      } else if (type === 'aggregate') {
+      } else if (type === "aggregate") {
         const { aggregations } = msg;
-        console.log(`[useDataSource] aggregations ACKED ${JSON.stringify(aggregations)}`);
-        dispatchGridModelAction({ type: 'set-aggregations', aggregations });
+        console.log(
+          `[useDataSource] aggregations ACKED ${JSON.stringify(aggregations)}`
+        );
+        dispatchGridModelAction({ type: "set-aggregations", aggregations });
         onConfigChange({ aggregations });
-      } else if (type === 'groupBy') {
+      } else if (type === "groupBy") {
         const { groupBy } = msg;
-        dispatchGridModelAction({ type: 'group', groupBy });
+        dispatchGridModelAction({ type: "group", groupBy });
         onConfigChange({ group: groupBy });
-      } else if (type === 'filter') {
+      } else if (type === "filter") {
         const { filter, filterQuery } = msg;
         dispatchGridModelAction(message);
         onConfigChange({ filter, filterQuery });
-        dataSource.emit('filter', filter);
+        dataSource.emit("filter", filter);
       } else {
         dispatchGridAction(message);
       }
@@ -104,7 +118,7 @@ export default function useDataSource(
       dispatchGridModelAction,
       onConfigChange,
       onSizeChange,
-      setData
+      setData,
     ]
   );
 
@@ -137,7 +151,11 @@ export default function useDataSource(
 
   const setRange = useCallback(
     (from, to) => {
-      const range = getFullRange({ from, to }, gridModel.renderBufferSize, dataSource.rowCount);
+      const range = getFullRange(
+        { from, to },
+        gridModel.renderBufferSize,
+        dataSource.rowCount
+      );
       // onsole.log(`[useDataSource] setRange ${lo} ${hi} > full range ${from} ${to}`)
       dataSource.setRange(range.from, range.to);
       dataWindow.setRange(range.from, range.to);
@@ -151,11 +169,16 @@ export default function useDataSource(
     dataSource.subscribe(
       {
         ...rest,
-        range: { from, to }
+        range: { from, to },
       },
       datasourceMessageHandler
     );
-  }, [dataSource, datasourceMessageHandler, gridModel.renderBufferSize, subscriptionDetails]);
+  }, [
+    dataSource,
+    datasourceMessageHandler,
+    gridModel.renderBufferSize,
+    subscriptionDetails,
+  ]);
 
   useEffect(
     () => () => {
@@ -207,7 +230,8 @@ export class MovingWindow {
   }
 
   getAtIndex(index) {
-    return this.range.isWithin(index) && this.data[index - this.range.from] != null
+    return this.range.isWithin(index) &&
+      this.data[index - this.range.from] != null
       ? this.data[index - this.range.from]
       : undefined;
   }

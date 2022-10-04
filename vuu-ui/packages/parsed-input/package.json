@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/parsed-input",
-  "version": "0.0.21",
+  "version": "0.0.26",
   "main": "src/index.ts",
   "type": "module",
   "license": "Apache-2.0",
@@ -13,9 +13,9 @@
     "/src"
   ],
   "peerDependencies": {
-    "@vuu-ui/ui-controls": "0.0.21",
-    "@vuu-ui/react-utils": "0.0.21",
-    "@vuu-ui/utils": "0.0.21",
+    "@vuu-ui/react-utils": "0.0.26",
+    "@vuu-ui/ui-controls": "0.0.26",
+    "@vuu-ui/utils": "0.0.26",
     "classnames": "^2.2.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

@@ -1,41 +1,59 @@
-import { Button } from '@vuu-ui/ui-controls';
-import classnames from 'classnames';
-import React, { HTMLAttributes, MouseEvent } from 'react';
-import { Contribution, useViewDispatch } from '../layout-view';
-import ActionButton from './ActionButton';
+import classnames from "classnames";
+import React, {
+  HTMLAttributes,
+  KeyboardEvent,
+  MouseEvent,
+  ReactElement,
+  useRef,
+  useState,
+} from "react";
+import { Contribution, useViewDispatch } from "../layout-view";
+import {
+  EditableLabel,
+  Toolbar,
+  ToolbarButton,
+  ToolbarField,
+  Tooltray,
+} from "@heswell/uitk-lab";
+import { CloseIcon } from "@heswell/uitk-icons";
 
-import './Header.css';
+import "./Header.css";
 
 export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
   collapsed?: boolean;
   contributions?: Contribution[];
   expanded?: boolean;
   closeable?: boolean;
-  orientation?: 'horizontal' | 'vertical';
+  orientation?: "horizontal" | "vertical";
   tearOut?: boolean;
 }
 
-const Header = ({
+export const Header = ({
   className: classNameProp,
-  contributions = [],
+  contributions,
   collapsed,
   expanded,
   closeable,
-  orientation: orientationProp = 'horizontal',
+  orientation: orientationProp = "horizontal",
   style,
   tearOut,
-  title
+  title = "Untitled",
 }: HeaderProps) => {
+  const labelFieldRef = useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState<string>(title);
+  const [editing, setEditing] = useState<boolean>(false);
+
   const layoutDispatch = useViewDispatch();
   const handleAction = (
     evt: MouseEvent,
-    actionId: 'maximize' | 'restore' | 'minimize' | 'tearout'
+    actionId: "maximize" | "restore" | "minimize" | "tearout"
   ) => layoutDispatch?.({ type: actionId }, evt);
-  const handleClose = (evt: MouseEvent) => layoutDispatch?.({ type: 'remove' }, evt);
-  const classBase = 'hwHeader';
+  const handleClose = (evt: MouseEvent) =>
+    layoutDispatch?.({ type: "remove" }, evt);
+  const classBase = "vuuHeader";
 
-  const handleMouseDown = (e: MouseEvent) => {
-    layoutDispatch?.({ type: 'mousedown' }, e);
+  const handleTitleMouseDown = (e: MouseEvent) => {
+    labelFieldRef.current?.focus();
   };
 
   const handleButtonMouseDown = (evt: MouseEvent) => {
@@ -45,18 +63,103 @@ const Header = ({
 
   const orientation = collapsed || orientationProp;
 
-  const className = classnames(classBase, classNameProp, `${classBase}-${orientation}`);
+  const className = classnames(
+    classBase,
+    classNameProp,
+    `${classBase}-${orientation}`
+  );
+
+  const handleEnterEditMode = () => {
+    setEditing(true);
+  };
+
+  const handleTitleKeyDown = (evt: KeyboardEvent<HTMLDivElement>) => {
+    if (evt.key === "Enter") {
+      setEditing(true);
+    }
+  };
+
+  const handleExitEditMode = (
+    originalValue = "",
+    finalValue = "",
+    allowDeactivation = true,
+    editCancelled = false
+  ) => {
+    setEditing(false);
+    if (editCancelled) {
+      setValue(originalValue);
+    } else if (finalValue !== originalValue) {
+      setValue(finalValue);
+    }
+    if (allowDeactivation === false) {
+      labelFieldRef.current?.focus();
+    }
+  };
+
+  const handleMouseDown = (e: MouseEvent) => {
+    layoutDispatch?.({ type: "mousedown" }, e);
+  };
+
+  const toolbarItems: ReactElement[] = [];
+  const contributedItems: ReactElement[] = [];
+  const actionButtons: ReactElement[] = [];
+
+  title &&
+    toolbarItems.push(
+      <ToolbarField key="title">
+        <EditableLabel
+          editing={editing}
+          key="title"
+          value={value}
+          onChange={setValue}
+          onMouseDownCapture={handleTitleMouseDown}
+          onEnterEditMode={handleEnterEditMode}
+          onExitEditMode={handleExitEditMode}
+          onKeyDown={handleTitleKeyDown}
+          ref={labelFieldRef}
+          tabIndex={0}
+        />
+      </ToolbarField>
+    );
+
+  contributions?.forEach((contribution, i) => {
+    contributedItems.push(React.cloneElement(contribution.content, { key: i }));
+  });
+
+  closeable &&
+    actionButtons.push(
+      <ToolbarButton
+        key="close"
+        onClick={handleClose}
+        onMouseDown={handleButtonMouseDown}
+      >
+        <CloseIcon /> Close
+      </ToolbarButton>
+    );
+
+  contributedItems.length > 0 &&
+    toolbarItems.push(
+      <Tooltray data-align-end key="contributions">
+        {contributedItems}
+      </Tooltray>
+    );
+
+  actionButtons.length > 0 &&
+    toolbarItems.push(
+      <Tooltray data-align-end key="actions">
+        {actionButtons}
+      </Tooltray>
+    );
 
   return (
-    <div className={className} style={style} onMouseDown={handleMouseDown}>
-      {title ? (
-        <>
-          <span className={`${classBase}-title-container`}>
-            <span className={`${classBase}-title`}>{title}</span>
-            {contributions.map(({ content }, index) => React.cloneElement(content, { key: index }))}
-          </span>
-        </>
-      ) : null}
+    <Toolbar
+      className={className}
+      orientation={orientationProp}
+      style={style}
+      onMouseDown={handleMouseDown}
+    >
+      {toolbarItems}
+      {/* 
       {collapsed === false ? (
         <ActionButton
           aria-label="Minimize View"
@@ -109,9 +212,7 @@ const Header = ({
           onClick={handleClose}
           onMouseDown={handleButtonMouseDown}
         />
-      ) : null}
-    </div>
+      ) : null} */}
+    </Toolbar>
   );
 };
-
-export default Header;

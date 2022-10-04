@@ -5,7 +5,9 @@ import { FilterParser } from "../../generated/parsers/filter/FilterParser";
 import { FilterLexer } from "../../generated/parsers/filter/FilterLexer";
 import FilterVisitor, { ParsedFilter } from "./FilterVisitor.js";
 import {
-  getSuggestions,
+  ExactMatchFromListError,
+  OpenListError,
+  parseSuggestions,
   SuggestionProvider,
   SuggestionResult,
 } from "./parse-suggestions";
@@ -41,11 +43,19 @@ export type ParserResults<ParsedType = unknown> = [
   ParsedType,
   RecognitionException[],
   UIToken[],
-  Promise<SuggestionResult>,
+  SuggestionResult | Promise<SuggestionResult>,
   string | undefined
 ];
 
 export type FilterParseResults = ParserResults<ParsedFilter>;
+
+function constructParser(input: string) {
+  let inputStream = CharStreams.fromString(input);
+  let lexer = new FilterLexer(inputStream);
+  let tokenStream = new CommonTokenStream(lexer);
+  var parser = new FilterParser(tokenStream);
+  return parser;
+}
 
 export const parseFilter = (
   input: string,
@@ -53,8 +63,11 @@ export const parseFilter = (
   suggestionProvider: SuggestionProvider,
   { insertSymbol = "" } = DEFAULT_OPTIONS
 ): FilterParseResults => {
+  console.log(
+    `%c[parse-filter] input: '${input}', typedInput: '${typedInput}'`,
+    "background: green; color: white; font-weight: bold"
+  );
   const errors: RecognitionException[] = [];
-
   // TODO we need to identify where this has happened so we can safely restore the characters
   const safeText = typedInput.replaceAll("/", "-");
   const parser = constructParser(`${safeText}${insertSymbol}`);
@@ -84,7 +97,7 @@ export const parseFilter = (
   try {
     // Important that we pass the original parseTree, do not allow suggestion mechanism to regenerate it,
     // results will be different, probably due to caching.
-    const suggestions = getSuggestions(
+    const suggestions = parseSuggestions(
       parser,
       parseTree,
       caretPosition,
@@ -100,7 +113,6 @@ export const parseFilter = (
         parsedTokens.pop();
       }
     }
-
     return [
       input,
       parseResult,
@@ -109,23 +121,16 @@ export const parseFilter = (
       suggestions,
       insertSymbol,
     ];
-  } catch (err) {
-    if (err.type === "open-list") {
+  } catch (err: unknown) {
+    if (err instanceof OpenListError) {
       // TODO do we need to check whether input already ends with space or can we assume it ?
       return parseFilter(`${input}`, undefined, suggestionProvider, {
         insertSymbol: err.text,
       });
+    } else if (err instanceof ExactMatchFromListError) {
+      return parseFilter(err.value, err.typedName, suggestionProvider);
     } else {
-      console.error(err);
-      return [];
+      throw err;
     }
   }
 };
-
-function constructParser(input) {
-  let inputStream = CharStreams.fromString(input);
-  let lexer = new FilterLexer(inputStream);
-  let tokenStream = new CommonTokenStream(lexer);
-  var parser = new FilterParser(tokenStream);
-  return parser;
-}

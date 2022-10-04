@@ -1,14 +1,19 @@
-import { MutableRefObject, ReactElement, useCallback, useRef } from 'react';
-import { DragDropRect, DragEndCallback, Draggable, DragInstructions } from '../drag-drop';
-import { DragStartAction } from '../layout-reducer';
-import { getIntrinsicSize } from '../layout-reducer/flexUtils';
-import { followPath } from '../utils';
-import { LayoutProviderDispatch } from './LayoutProviderContext';
+import { MutableRefObject, ReactElement, useCallback, useRef } from "react";
+import {
+  DragDropRect,
+  DragEndCallback,
+  Draggable,
+  DragInstructions,
+} from "../drag-drop";
+import { DragStartAction } from "../layout-reducer";
+import { getIntrinsicSize } from "../layout-reducer/flexUtils";
+import { followPath } from "../utils";
+import { LayoutProviderDispatch } from "./LayoutProviderContext";
 
 const EMPTY_OBJECT = {} as const;
 const NO_OFFSETS: [number, number] = [0, 0];
 
-interface CurrentDragAction extends Omit<DragStartAction, 'evt' | 'type'> {
+interface CurrentDragAction extends Omit<DragStartAction, "evt" | "type"> {
   dragContainerPath: string;
 }
 
@@ -16,7 +21,6 @@ interface DragOperation {
   draggedReactElement: ReactElement;
   originalCSS: string;
   dragRect: any;
-  dragTransform: string;
   dragInstructions: DragInstructions;
   dragOffsets: [number, number];
   targetPosition: { left: number; top: number };
@@ -28,23 +32,26 @@ const createElement = (
   rect: DragDropRect,
   id: string,
   instructions: DragInstructions
-): [HTMLElement, number, number] => {
+): [HTMLElement, string, number, number] => {
   instructions.RemoveDraggableOnDragEnd = true;
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.id = id;
-  div.className = 'vuuSimpleDraggable';
-  div.style.cssText = `top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;`;
-  div.dataset.dragging = 'true';
+  div.className = "vuuSimpleDraggable";
+  const cssText = `top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;`;
+  div.dataset.dragging = "true";
   document.body.appendChild(div);
-  return [div, rect.left, rect.top];
+  return [div, cssText, rect.left, rect.top];
 };
 
-const determineDragOffsets = (draggedElement: HTMLElement): [number, number] => {
+const determineDragOffsets = (
+  draggedElement: HTMLElement
+): [number, number] => {
   const { offsetParent } = draggedElement;
   if (offsetParent === null) {
     return NO_OFFSETS;
   } else {
-    const { left: offsetLeft, top: offsetTop } = offsetParent.getBoundingClientRect();
+    const { left: offsetLeft, top: offsetTop } =
+      offsetParent.getBoundingClientRect();
     return [offsetLeft, offsetTop];
   }
 };
@@ -58,31 +65,31 @@ export const useLayoutDragDrop = (
   const draggableHTMLElementRef = useRef<HTMLElement>();
 
   const handleDrag = useCallback((x, y) => {
-    console.log(`handleDrag ${x} ${y}`);
     if (dragOperationRef.current && draggableHTMLElementRef.current) {
       const {
         dragOffsets: [offsetX, offsetY],
-        targetPosition
+        targetPosition,
       } = dragOperationRef.current;
-      const left = typeof x === 'number' ? x - offsetX : targetPosition.left;
-      const top = typeof y === 'number' ? y - offsetY : targetPosition.top;
+      const left = typeof x === "number" ? x - offsetX : targetPosition.left;
+      const top = typeof y === "number" ? y - offsetY : targetPosition.top;
       if (left !== targetPosition.left || top !== targetPosition.top) {
         dragOperationRef.current.targetPosition.left = left;
         dragOperationRef.current.targetPosition.top = top;
-        draggableHTMLElementRef.current.style.top = top + 'px';
-        draggableHTMLElementRef.current.style.left = left + 'px';
+        draggableHTMLElementRef.current.style.top = top + "px";
+        draggableHTMLElementRef.current.style.left = left + "px";
       }
     }
   }, []);
 
   const handleDrop: DragEndCallback = useCallback((dropTarget) => {
     if (dragOperationRef.current) {
-      const { dragInstructions, draggedReactElement, originalCSS } = dragOperationRef.current;
+      const { dragInstructions, draggedReactElement, originalCSS } =
+        dragOperationRef.current;
       dispatch({
-        type: 'drag-drop',
+        type: "drag-drop",
         draggedReactElement,
         dragInstructions,
-        dropTarget
+        dropTarget,
       });
 
       if (draggableHTMLElementRef.current) {
@@ -114,19 +121,20 @@ export const useLayoutDragDrop = (
         dragRect,
         // dropTargets,
         instructions = EMPTY_OBJECT,
-        path
+        path,
         // preDragActivity,
         // resolveDragStart // see View drag
       } = dragActionRef.current;
       const { current: rootLayout } = rootLayoutRef;
       const dragPos = { x: evt.clientX, y: evt.clientY };
-      const draggedReactElement = component ?? followPath(rootLayout, path, true);
+      const draggedReactElement =
+        component ?? followPath(rootLayout, path, true);
       const { id } = draggedReactElement.props;
       const intrinsicSize = getIntrinsicSize(draggedReactElement);
 
-      let originalCSS = '',
-        dragCSS = '',
-        dragTransform = '';
+      let originalCSS = "",
+        dragCSS = "",
+        dragTransform = "";
 
       let dragStartLeft = -1;
       let dragStartTop = -1;
@@ -137,8 +145,14 @@ export const useLayoutDragDrop = (
       let element = document.getElementById(id);
 
       if (element === null) {
-        [element, dragStartLeft, dragStartTop] = createElement(dragRect, id, instructions);
-        console.log(`dragStartLeft=${dragStartLeft}, dragStartTop=${dragStartTop}`);
+        [element, dragCSS, dragStartLeft, dragStartTop] = createElement(
+          dragRect,
+          id,
+          instructions
+        );
+        console.log(
+          `dragStartLeft=${dragStartLeft}, dragStartTop=${dragStartTop}`
+        );
       } else {
         dragOffsets = determineDragOffsets(element);
         const [offsetLeft, offsetTop] = dragOffsets;
@@ -148,7 +162,7 @@ export const useLayoutDragDrop = (
         dragCSS = `width:${width}px;height:${height}px;left:${dragStartLeft}px;top:${dragStartTop}px;z-index: 100;background-color:#ccc;opacity: 0.6;`;
         // Important that this is set before we call initDrag
         // this just enables position: absolute
-        element.dataset.dragging = 'true';
+        element.dataset.dragging = "true";
 
         // resolveDragStart && resolveDragStart(true);
 
@@ -157,7 +171,6 @@ export const useLayoutDragDrop = (
         // }
 
         originalCSS = element.style.cssText;
-        element.style.cssText = dragCSS + dragTransform;
       }
 
       dragTransform = Draggable.initDrag(
@@ -167,12 +180,13 @@ export const useLayoutDragDrop = (
         dragPos,
         {
           drag: handleDrag,
-          drop: handleDrop
+          drop: handleDrop,
         },
         intrinsicSize
         // dropTargets
       );
 
+      element.style.cssText = dragCSS + dragTransform;
       draggableHTMLElementRef.current = element;
 
       dragOperationRef.current = {
@@ -180,9 +194,8 @@ export const useLayoutDragDrop = (
         originalCSS,
         dragRect,
         dragOffsets,
-        dragTransform,
         dragInstructions: instructions,
-        targetPosition: { left: dragStartLeft, top: dragStartTop }
+        targetPosition: { left: dragStartLeft, top: dragStartTop },
       };
     }
   }, []);
@@ -192,7 +205,7 @@ export const useLayoutDragDrop = (
       const { evt, ...options } = action;
       dragActionRef.current = {
         ...options,
-        dragContainerPath: ''
+        dragContainerPath: "",
         // dragContainerPath: '0.0.1.1'
       };
       Draggable.handleMousedown(evt, handleDragStart, options.instructions);

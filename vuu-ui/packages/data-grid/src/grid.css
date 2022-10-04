@@ -28,7 +28,6 @@
   align-self: var(--grid-flex-align);
   flex: var(--hwDataGrid-flex, 1 1 0px);
   position: relative;
-  font-family: var(--app-font-family, Roboto);
   font-size: var(--hwDataGrid-font-size, 11px);
   outline: none;
   overflow: hidden;

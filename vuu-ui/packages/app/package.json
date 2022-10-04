@@ -1,6 +1,6 @@
 {
   "name": "sample-app",
-  "version": "0.0.21",
+  "version": "0.0.26",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -16,12 +16,12 @@
     "serve": "^12.0.1"
   },
   "dependencies": {
-    "@vuu-ui/layout": "0.0.21",
-    "@vuu-ui/shell": "0.0.21",
-    "@vuu-ui/react-utils": "0.0.21",
-    "@vuu-ui/ui-controls": "0.0.21",
-    "@vuu-ui/utils": "0.0.21",
-    "@vuu-ui/theme": "0.0.21",
+    "@vuu-ui/layout": "0.0.26",
+    "@vuu-ui/react-utils": "0.0.26",
+    "@vuu-ui/shell": "0.0.26",
+    "@vuu-ui/theme": "0.0.26",
+    "@vuu-ui/ui-controls": "0.0.26",
+    "@vuu-ui/utils": "0.0.26",
     "classnames": "^2.3.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

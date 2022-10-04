@@ -1,5 +1,5 @@
 .hwDrawer {
-  --drawer-leading-edge-border: var(--hwDrawer-leading-edge-border, none);
+  --drawer-leading-edge-border: solid 1px var(--uitk-container-borderColor-medium, none);
   transition: flex-basis;
   transition-duration: var(--drawer-transition-duration);
   position: relative;

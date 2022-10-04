@@ -4,23 +4,14 @@
 @import url(styles/selection.css);
 
 .hw {
-  --hw-font-size: 12px;
-  --hw-font-family: Roboto;
-
   --hw-focus-visible-border-color: cornflowerblue;
-
   --hw-selection-bg: var(--hw-digital-blue);
   --hw-selection-color: white;
-
   --hwButton-highlight-color: var(--hw-gray-50);
   --hwButton-active-bg: var(--hw-gray-800);
-
   --hw-dialog-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-
   /* Layout */
   --hw-header-height: 32px;
-
-  --hw-control-font-size: 12px;
 }
 
 ::backdrop {

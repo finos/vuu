@@ -73,7 +73,7 @@ export default async function main(customConfig) {
 
   async function writePackageJSON() {
     return new Promise((resolve, reject) => {
-      const { files } = packageJson;
+      const { files, main, types, ...packageRest } = packageJson;
       if (files) {
         const filesToPublish = files.filter(
           (fileName) => !GeneratedFiles.test(fileName)
@@ -86,11 +86,15 @@ export default async function main(customConfig) {
         }
       }
       const newPackage = {
-        ...packageJson,
-        main: cjs ? "cjs/index.js" : "index.js",
+        ...packageRest,
+        files,
         module: "esm/index.js",
-        types: "types/index.d.ts",
       };
+
+      if (cjs) {
+        packageJson.main = "cjs/index.js";
+      }
+
       fs.writeFile(
         `${outdir}/package.json`,
         JSON.stringify(newPackage, null, 2),

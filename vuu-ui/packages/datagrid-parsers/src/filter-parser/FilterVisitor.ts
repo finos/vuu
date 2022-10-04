@@ -1,5 +1,5 @@
-import { Token } from 'antlr4ts/Token';
-import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor';
+import { Token } from "antlr4ts/Token";
+import { AbstractParseTreeVisitor } from "antlr4ts/tree/AbstractParseTreeVisitor";
 import {
   And_expressionContext,
   As_clauseContext,
@@ -13,26 +13,43 @@ import {
   FilterParser,
   OperatorContext,
   Or_expressionContext,
-  TermContext
-} from '../../generated/parsers/filter/FilterParser';
-import { TerminalNode } from 'antlr4ts/tree';
+  TermContext,
+} from "../../generated/parsers/filter/FilterParser";
+import { TerminalNode } from "antlr4ts/tree";
 
 // This class defines a complete generic visitor for a parse tree produced by FilterParser.
 
-export type ParsedFilter = [
-  {
-    column?: string;
-    op: 'and' | 'or' | 'in' | '>' | '=' | 'starts' | '!=';
-    value?: 'string';
-    filters?: ParsedFilter[];
-    label?: string;
-    pos?: number;
-    tokenPosition?: {
-      column?: number;
-      name?: number;
-    };
-  }
-];
+export interface ParsedFilterClause {
+  pos?: number;
+  tokenPosition?: {
+    column?: number;
+    name?: number;
+  };
+}
+export interface FilterClause extends ParsedFilterClause {
+  column?: string;
+  label?: string;
+  op: "in" | ">" | "=" | "starts" | "!=";
+  value?: "string";
+}
+
+export type Filter = FilterClause | CompositeFilter;
+export interface CompositeFilter extends ParsedFilterClause {
+  op: "and" | "or";
+  filters: Filter[];
+  label?: string;
+}
+
+export type ParsedFilter = [CompositeFilter | FilterClause];
+
+export function isCompositeFilter(f: Filter): f is CompositeFilter {
+  return f.op === "and" || f.op === "or";
+}
+
+export type NamedFilter = {
+  name: string;
+  filter: Filter;
+};
 
 const EMPTY = [] as const;
 type Empty = typeof EMPTY;
@@ -55,7 +72,7 @@ export default class FilterVisitor extends AbstractParseTreeVisitor<ParsedFilter
     if (label) {
       const {
         name,
-        tokenPosition: { name: namePos }
+        tokenPosition: { name: namePos },
       } = label;
       const { tokenPosition, ...rest } = expression;
       return [
@@ -64,9 +81,9 @@ export default class FilterVisitor extends AbstractParseTreeVisitor<ParsedFilter
           label: name,
           tokenPosition: {
             ...tokenPosition,
-            name: namePos
-          }
-        }
+            name: namePos,
+          },
+        },
       ];
     } else if (expression) {
       return [expression];
@@ -112,7 +129,7 @@ export default class FilterVisitor extends AbstractParseTreeVisitor<ParsedFilter
   }
 
   visitFiltername(ctx: FilternameContext) {
-    if (ctx.text === '<missing ID>') {
+    if (ctx.text === "<missing ID>") {
       return EMPTY;
     } else {
       return { name: ctx.text, pos: ctx.start.start };
@@ -162,7 +179,7 @@ export default class FilterVisitor extends AbstractParseTreeVisitor<ParsedFilter
 
   visitAtoms(ctx: AtomsContext) {
     const results = this.visitChildren(ctx);
-    return results.filter((r) => r !== ',');
+    return results.filter((r) => r !== ",");
   }
 
   visitAtom(ctx: AtomContext) {

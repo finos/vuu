@@ -4,5 +4,17 @@ export default defineConfig({
   define: {
     'process.env.NODE_DEBUG': false
   },
-  plugins: []
+  esbuild: {
+    jsx: `automatic`,
+    target: 'esnext'
+  },
+  plugins: [],
+  server: {
+    proxy: {
+      '/api/authn': {
+        target: 'https://localhost:8443',
+        secure: false
+      }
+    }
+  }
 });

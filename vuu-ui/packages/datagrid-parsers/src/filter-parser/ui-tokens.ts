@@ -22,7 +22,7 @@ const tokenType = (type) => TOKEN_TYPES[type] ?? "text";
 const NO_SUBSTITUTION = {};
 
 export type UIToken = {
-  type: "column" | "operator";
+  type: "column" | "operator" | "ws";
   text: string;
   start: number;
 };

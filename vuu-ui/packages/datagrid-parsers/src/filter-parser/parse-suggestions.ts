@@ -9,15 +9,25 @@ import { ParsedFilter } from "./FilterVisitor";
 import { computeTokenIndexAndText } from "./parse-utils";
 import { UIToken } from "./ui-tokens";
 
-export type SuggestionItem = {
+interface SuggestionToken {
   completion: string;
+  value: string;
+}
+
+export class OpenListError {
+  constructor(public text: "[") {}
+}
+export class ExactMatchFromListError {
+  constructor(public value: string, public typedName: string) {}
+}
+
+export interface SuggestionItem extends SuggestionToken {
   isIllustration: boolean;
   isListItem: boolean;
   isSelected: boolean;
   type?: string;
   typedName?: string;
-  value: string;
-};
+}
 
 export type SuggestionResult = {
   isMultiSelect?: boolean;
@@ -31,7 +41,7 @@ export type SuggestionProviderProps = {
   operator?: string;
   text: string;
   token: "COLUMN-NAME" | "NAMED-FILTER" | "FILTER-NAME" | "COLUMN-VALUE";
-  values?: UIToken[];
+  selectedTokens?: UIToken[];
 };
 
 export type SuggestionProviderResult = {
@@ -44,8 +54,9 @@ export type SuggestionProvider = (
   props: SuggestionProviderProps
 ) => SuggestionProviderResult | Promise<SuggestionProviderResult>;
 
+type SuggestedValue = { value: string; completion: string };
 type SuggestedValues = {
-  values: Array<{ value: string; completion: string }>;
+  values: SuggestedValue[];
 };
 
 export const NO_SUGGESTIONS: SuggestionResult = {
@@ -54,7 +65,7 @@ export const NO_SUGGESTIONS: SuggestionResult = {
   total: 0,
 };
 
-const NO_OPERATOR = [];
+const NO_OPERATOR = [] as const;
 
 const getInValues = (tokens) => {
   return tokens.filter((t) => t.text !== ",");
@@ -75,24 +86,32 @@ const getOperatorToken = (uiTokens: UIToken[]) => {
   return NO_OPERATOR;
 };
 
-const textValue = (text) =>
+const textValue = (text: string) =>
   text.startsWith("'") ? text.slice(1, -1).toLowerCase() : text;
 
-const maybeSuggest = (suggestion, text, lastToken, suggestions) => {
+const maybeSuggest = (
+  suggestion: string,
+  text: string,
+  lastTokenText: string,
+  suggestions: SuggestedValue[]
+) => {
   // ID_ tokens are typed substitutions
   if (!suggestion.startsWith("ID_") && tokenMatches(suggestion, text)) {
     suggestions.push({
       value: suggestion,
-      completion: getCompletion(suggestion, lastToken),
+      completion: getCompletion(suggestion, lastTokenText),
     });
   }
 };
 
-const fullMatchOnOnlyCandidate = (suggestions, text) =>
+const fullMatchOnOnlyCandidate = (
+  suggestions: SuggestionItem[],
+  text: string
+) =>
   suggestions.length === 1 &&
   suggestions[0].value.toLowerCase() === text.toLowerCase();
 
-function tokenMatches(completion, text) {
+function tokenMatches(completion: string, text: string) {
   const lcCompletion = completion.toLowerCase();
   const lcText = text === "" ? text : text.toLowerCase();
   return (
@@ -101,15 +120,14 @@ function tokenMatches(completion, text) {
   );
 }
 
-const getCompletion = (suggestion, lastTokenText) => {
+const getCompletion = (suggestion: string, lastTokenText: string) => {
   if (suggestion.startsWith(lastTokenText)) {
     return suggestion.slice(lastTokenText.length);
   } else {
     return suggestion;
   }
 };
-
-export const getSuggestions = (
+export const parseSuggestions = (
   parser: FilterParser,
   parseTree: ExpressionContext,
   caretPosition: number,
@@ -117,7 +135,7 @@ export const getSuggestions = (
   parseResult: ParsedFilter,
   uiTokens: UIToken[],
   isListItem = false
-): Promise<SuggestionResult> => {
+): SuggestionResult | Promise<SuggestionResult> => {
   const core = new c3.CodeCompletionCore(parser);
   core.preferredRules = new Set([
     FilterParser.RULE_column,
@@ -132,11 +150,11 @@ export const getSuggestions = (
     caretPosition
   );
   // onsole.log(
-  //   `[parseSuggestions] %ccollect candidates, token text='${text}', caret at ${caretPosition}, token at ${index} isList ${isList}
+  //   `%c[parseSuggestions] token text='${text}', caret at ${caretPosition}, token at ${index} isList ${isListItem}
   //   %calternative ${JSON.stringify(alternative)}
   // `,
-  //   'color:red;font-weight: bold;',
-  //   'color:black;font-weight: bold;s'
+  //   "color:green;font-weight: bold;",
+  //   "color:black;font-weight: bold;"
   // );
 
   let rules, tokens;
@@ -162,7 +180,7 @@ export const getSuggestions = (
     return NO_SUGGESTIONS;
   } else if (tokens.size === 1 && tokensIsListOpener(tokens)) {
     // auto inject the '[' and re-parse
-    throw { type: "open-list", text: "[" };
+    throw new OpenListError("[");
   } else if (tokens.size === 2 && tokensAreListSignifiers(tokens)) {
     // do nothing;
   } else if (
@@ -217,16 +235,18 @@ export const getSuggestions = (
       token: "COLUMN-NAME",
       text: alternativeText,
     });
-    if (
-      expandedSuggestions.total &&
-      !fullMatchOnOnlyCandidate(expandedSuggestions.values, alternativeText)
-    ) {
+    if (fullMatchOnOnlyCandidate(expandedSuggestions.values, alternativeText)) {
+      const [{ value, typedName }] = expandedSuggestions.values;
+      // DO WE NEED TO ADD A SPACE ?
+      throw new ExactMatchFromListError(value, typedName!);
+    } else if (expandedSuggestions.total) {
       suggestions.push(expandedSuggestions);
       ignoreTokens = true;
     }
   }
   if (rules.has(FilterParser.RULE_atom)) {
-    const [operatorToken, values] = getOperatorToken(uiTokens);
+    // The selectedTokens are the existing values within an 'in' clause
+    const [operatorToken, selectedTokens] = getOperatorToken(uiTokens);
     suggestions.push(
       suggestionProvider({
         parsedFilter: parseResult,
@@ -234,13 +254,13 @@ export const getSuggestions = (
         operator: operatorToken?.text ?? "",
         text,
         token: "COLUMN-VALUE",
-        values,
+        selectedTokens,
       })
     );
   }
 
   if (!ignoreTokens) {
-    const suggestedTokens = [];
+    const suggestedTokens: SuggestedValue[] = [];
     tokens.forEach((_, key) => {
       let candidate;
       if (key === FilterParser.RULE_column) {
@@ -254,6 +274,8 @@ export const getSuggestions = (
       }
     });
     if (suggestedTokens.length) {
+      // This is where suggested operators will be returned
+      console.log({ suggestedTokens });
       suggestions.push({
         values: suggestedTokens,
         total: suggestedTokens.length,
@@ -266,7 +288,7 @@ export const getSuggestions = (
     alternativeTokens?.size > 0 &&
     alternativeText
   ) {
-    const suggestedTokens = [];
+    const suggestedTokens: SuggestedValue[] = [];
     alternativeTokens.forEach((_, key) => {
       const candidate = textValue(parser.vocabulary.getDisplayName(key));
       if (candidate) {
@@ -290,8 +312,8 @@ export const getSuggestions = (
 };
 
 class AsyncSuggestionsList {
-  #list: SuggestedValues[] = [];
-  push(suggestions: SuggestedValues) {
+  #list: Array<Promise<SuggestedValues> | SuggestedValues> = [];
+  push(suggestions: SuggestedValues | Promise<SuggestedValues>) {
     this.#list.push(suggestions);
     return this;
   }
@@ -299,8 +321,11 @@ class AsyncSuggestionsList {
     return this.#list.length;
   }
   async extractResult(): Promise<SuggestionResult> {
-    const values = await Promise.all(this.#list);
-    return values.reduce<SuggestionResult>(
+    // TODO do not await unless necessary
+    const pushedValues = await Promise.all(this.#list);
+    console.log({ extractedValues: pushedValues });
+
+    const result = pushedValues.reduce<SuggestionResult>(
       (acc, { values, total = 0, isListItem }) => {
         acc.values.push(...values);
         acc.total += total;
@@ -309,6 +334,8 @@ class AsyncSuggestionsList {
       },
       { isMultiSelect: false, values: [], total: 0 }
     );
+    console.log({ result });
+    return result;
   }
 }
 

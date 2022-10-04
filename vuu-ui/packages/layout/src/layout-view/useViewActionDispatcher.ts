@@ -1,8 +1,15 @@
-import { ReactElement, RefObject, useCallback, useState } from 'react';
-import { useLayoutProviderDispatch } from '../layout-provider';
-import { DragStartAction } from '../layout-reducer';
-import { ViewDispatch } from './ViewContext';
-import { ViewAction } from './viewTypes';
+import {
+  ReactElement,
+  RefObject,
+  SyntheticEvent,
+  useCallback,
+  useState,
+} from "react";
+import { useLayoutProviderDispatch } from "../layout-provider";
+import { DragStartAction } from "../layout-reducer";
+import { ViewDispatch } from "./ViewContext";
+import { ViewAction } from "./viewTypes";
+import { usePersistentState } from "../use-persistent-state";
 
 export type Contribution = {
   index?: number;
@@ -11,29 +18,47 @@ export type Contribution = {
 };
 
 export const useViewActionDispatcher = (
+  id: string,
   root: RefObject<HTMLDivElement>,
   viewPath?: string,
   dropTargets?: string[]
 ): [ViewDispatch, Contribution[] | undefined] => {
-  const [contributions, setContributions] = useState<Contribution[]>([]);
+  const { purgeSessionState, loadSessionState, saveSessionState } =
+    usePersistentState();
+  const [contributions, setContributions] = useState<Contribution[]>(
+    loadSessionState(id, "contributions") ?? []
+  );
   const dispatch = useLayoutProviderDispatch();
+
+  const updateContributions = useCallback(
+    (location: string, content?: ReactElement) => {
+      const updatedContributions = contributions.concat({ location, content });
+      saveSessionState(id, "contributions", updatedContributions);
+      setContributions(updatedContributions);
+    },
+    [contributions]
+  );
+
+  const clearContributions = useCallback(() => {
+    purgeSessionState(id, "contributions");
+    setContributions([]);
+  }, [purgeSessionState]);
 
   const handleMouseDown = useCallback(
     async (evt, index, preDragActivity): Promise<boolean> => {
       evt.stopPropagation();
       const dragRect = root.current?.getBoundingClientRect();
-      console.log('useViewActionDispatcher return prom,ise and forward action to layputProvider');
       return new Promise((resolve, reject) => {
         // TODO should we check if we are allowed to drag ?
         dispatch({
-          type: 'drag-start',
+          type: "drag-start",
           evt,
           path: index === undefined ? viewPath : `${viewPath}.${index}`,
           dragRect,
           preDragActivity,
           dropTargets,
           resolveDragStart: resolve,
-          rejectDragStart: reject
+          rejectDragStart: reject,
         } as DragStartAction);
       });
     },
@@ -43,22 +68,25 @@ export const useViewActionDispatcher = (
   // TODO should be event, action, then this method can bea assigned directly to a html element
   // as an event hander
   const dispatchAction = useCallback(
-    async <A extends ViewAction = ViewAction>(action: A, evt: any): Promise<boolean | void> => {
+    async <A extends ViewAction = ViewAction>(
+      action: A,
+      evt?: SyntheticEvent
+    ): Promise<boolean | void> => {
       const { type } = action;
       switch (type) {
-        case 'remove':
-        case 'maximize':
-        case 'minimize':
-        case 'restore':
+        case "remove":
+        case "maximize":
+        case "minimize":
+        case "restore":
           // case Action.TEAR_OUT:
           return dispatch({ type, path: action.path ?? viewPath });
-        case 'mousedown':
-          console.log('2) ViewActionDispatch Hook dispatch Action mousedown');
+        case "mousedown":
+          console.log("2) ViewActionDispatch Hook dispatch Action mousedown");
           return handleMouseDown(evt, action.index, action.preDragActivity);
-        case 'toolbar-contribution': {
-          const { location, content } = action;
-          return setContributions((state) => state.concat({ location, content }));
-        }
+        case "add-toolbar-contribution":
+          return updateContributions(action.location, action.content);
+        case "remove-toolbar-contribution":
+          return clearContributions();
         default: {
           // if (Object.values(Action).includes(type)) {
           //   dispatch(action);
@@ -67,7 +95,7 @@ export const useViewActionDispatcher = (
         }
       }
     },
-    [handleMouseDown, dispatch, viewPath]
+    [handleMouseDown, dispatch, updateContributions, viewPath]
   );
 
   return [dispatchAction, contributions];

@@ -14,16 +14,18 @@
   background: var(--grey60);
 }
 
-.hwTabHeader {
-  border-bottom: none;
+.vuuTabHeader {
+  --uitkTabs-activationIndicator-background: transparent;
+  --uitkToolbarField-marginTop: calc(var(--uitk-size-unit) - 1px);
+  border-bottom: solid 1px var(--uitk-container-borderColor-medium);
 }
 
-.hwTabHeader + .hwFlexbox,
-.hwTabHeader + * {
+.vuuTabHeader + .hwFlexbox,
+.vuuTabHeader + * {
   flex: 1;
 }
 
-.hwTabHeader + .hwView > .hwHeader {
+.vuuTabHeader + .vuuView > .vuuHeader {
   height: 0;
   overflow: hidden;
 }

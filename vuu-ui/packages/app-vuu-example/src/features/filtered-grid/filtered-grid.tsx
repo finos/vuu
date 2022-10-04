@@ -1,30 +1,51 @@
-import { extractFilter, filterAsQuery, parseFilter } from '@vuu-ui/datagrid-parsers';
-import { useViewContext } from '@vuu-ui/layout';
-import { ParsedInput, ParserProvider } from '@vuu-ui/parsed-input';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { createSuggestionProvider } from './vuu-filter-suggestion-provider';
+import {
+  extractFilter,
+  filterAsQuery,
+  parseFilter,
+} from "@vuu-ui/datagrid-parsers";
+import { useViewContext } from "@vuu-ui/layout";
+import { ParsedInput, ParserProvider } from "@vuu-ui/parsed-input";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createSuggestionProvider } from "./vuu-filter-suggestion-provider";
 
-import { Grid, GridProvider } from '@vuu-ui/data-grid';
-import { createDataSource, useViewserver } from '@vuu-ui/data-remote';
-import { Button, ContextMenuProvider, Link as LinkIcon } from '@vuu-ui/ui-controls';
-import AppContext from '../../app-context';
+import { LinkedIcon } from "@heswell/uitk-icons";
+import { ToolbarButton } from "@heswell/uitk-lab";
+import { Grid, GridProvider } from "@vuu-ui/data-grid";
+import {
+  ConfigChangeMessage,
+  createDataSource,
+  RemoteDataSource,
+  TableSchema,
+  useViewserver,
+} from "@vuu-ui/data-remote";
+import { ContextMenuProvider } from "@vuu-ui/ui-controls";
+import AppContext from "../../app-context";
 
-// import '@vuu-ui/parsed-input/index.css';
-import './filtered-grid.css';
+import { NamedFilter, ParsedFilter } from "@vuu-ui/datagrid-parsers";
+import { FeatureProps } from "@vuu-ui/shell";
 
-const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
-  const { id, dispatch, load, save, loadSession, saveSession } = useViewContext();
+import "./filtered-grid.css";
+
+export interface FilteredGridProps extends FeatureProps {
+  schema: TableSchema;
+}
+
+const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
+  const { id, dispatch, load, purge, save, loadSession, saveSession } =
+    useViewContext();
   const config = useMemo(() => load(), [load]);
   const { handleRpcResponse } = useContext(AppContext);
   const [namedFilters, setNamedFilters] = useState([]);
 
-  const dataSource = useMemo(() => {
-    let ds = loadSession('data-source');
+  console.log({ schema });
+
+  const dataSource: RemoteDataSource = useMemo(() => {
+    let ds = loadSession("data-source");
     if (ds) {
       return ds;
     }
     ds = createDataSource({ id, table: schema.table, schema, config });
-    saveSession(ds, 'data-source');
+    saveSession(ds, "data-source");
     return ds;
   }, [config, id, loadSession, saveSession, schema]);
 
@@ -35,24 +56,32 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
     };
   }, [dataSource]);
 
-  const unlink = () => {
-    // nothing yet
-  };
+  const removeVisualLink = useCallback(() => {
+    dataSource.removeLink();
+  }, [dataSource]);
 
   const handleConfigChange = useCallback(
-    (update) => {
-      if (update.type === 'visual-link-created') {
-        dispatch({
-          type: 'toolbar-contribution',
-          location: 'post-title',
+    (update: ConfigChangeMessage) => {
+      console.log(`handleConfigChange`, {
+        update,
+      });
+      if (update.type === "visual-link-created") {
+        dispatch?.({
+          type: "add-toolbar-contribution",
+          location: "post-title",
           content: (
-            <Button aria-label="remove-link" onClick={unlink}>
-              <LinkIcon />
-            </Button>
-          )
+            <ToolbarButton aria-label="remove-link" onClick={removeVisualLink}>
+              <LinkedIcon />
+            </ToolbarButton>
+          ),
         });
-        save(update, 'visual-link');
-        dispatch({ type: 'save' });
+        save(update, "visual-link");
+      } else if (update.type === "visual-link-removed") {
+        dispatch?.({
+          type: "remove-toolbar-contribution",
+          location: "post-title",
+        });
+        purge("visual-link");
       } else {
         for (let [key, state] of Object.entries(update)) {
           save(state, key);
@@ -62,52 +91,48 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
     [dispatch, save]
   );
 
-  const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction, makeRpcCall } =
-    useViewserver({
-      loadSession,
-      rpcServer: dataSource,
-      onConfigChange: handleConfigChange,
-      onRpcResponse: handleRpcResponse,
-      saveSession
-    });
+  const {
+    buildViewserverMenuOptions,
+    dispatchGridAction,
+    getTypeaheadSuggestions,
+    handleMenuAction,
+  } = useViewserver({
+    loadSession,
+    rpcServer: dataSource,
+    onConfigChange: handleConfigChange,
+    onRpcResponse: handleRpcResponse,
+    saveSession,
+  });
 
   const handleCommit = useCallback(
-    (result) => {
+    (result: ParsedFilter) => {
       const { filter, name } = extractFilter(result);
       const filterQuery = filterAsQuery(filter, namedFilters);
       dataSource.filter(filter, filterQuery);
       if (name) {
-        setNamedFilters(namedFilters.concat({ name, filter }));
+        const namedFilter = { name, filter } as NamedFilter;
+        setNamedFilters(namedFilters.concat(namedFilter));
       }
     },
     [dataSource, namedFilters]
   );
 
-  const getSuggestions = useCallback(
-    async (params) => {
-      return await makeRpcCall({
-        type: 'RPC_CALL',
-        method: 'getUniqueFieldValues',
-        params
-      });
-    },
-    [makeRpcCall]
-  );
+  console.log({ dataSourceColumns: dataSource.columns });
 
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
-      menuBuilder={buildViewserverMenuOptions}>
+      menuBuilder={buildViewserverMenuOptions}
+    >
       <ParserProvider
         parser={parseFilter}
         suggestionProvider={createSuggestionProvider({
-          columnNames: dataSource.columns,
+          columns: schema.columns,
           namedFilters,
-          getSuggestions,
-          table: dataSource.tableName
-        })}>
-        <Button className="vuFilterButton" data-icon="filter" />
-
+          getSuggestions: getTypeaheadSuggestions,
+          table: dataSource.table,
+        })}
+      >
         <ParsedInput onCommit={handleCommit} />
       </ParserProvider>
 
@@ -131,6 +156,6 @@ const FilteredGrid = ({ onServiceRequest, schema, ...props }) => {
   );
 };
 
-FilteredGrid.displayName = 'FilteredGrid';
+FilteredGrid.displayName = "FilteredGrid";
 
 export default FilteredGrid;

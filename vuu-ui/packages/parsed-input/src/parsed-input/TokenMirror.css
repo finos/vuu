@@ -1,26 +1,28 @@
-.hwTokenMirror {
+.vuuTokenMirror {
   color: transparent;
   display: flex;
-  font-size: var(--hwTokenMirror-font-size, 24px);
-  height: var(--hwTokenMirror-height, auto);
-  left: var(--hwTokenMirror-left, auto);
+  font-size: var(--vuuTokenMirror-fontSize, 24px);
+  height: var(--vuuTokenMirror-height, auto);
+  left: var(--vuuTokenMirror-left, auto);
   letter-spacing: normal;
-  line-height: var(--hwTokenMirror-line-height, 1.3);
-  position: var(--hwTokenMirror-position, relative);
-  top: var(--hwTokenMirror-top, auto);
-  width: var(--hwTokenMirror-width, auto);
+  line-height: var(--vuuTokenMirror-lineHeight, 1.3);
+  position: var(--vuuTokenMirror-position, relative);
+  top: var(--vuuTokenMirror-top, auto);
+  width: var(--vuuTokenMirror-width, auto);
 }
 
-.hwTokenMirror-token {
+.vuuTokenMirror-token {
+  line-height: inherit;
   position: relative;
   white-space: pre;
 }
 
-.hwTokenMirror-completion {
+.vuuTokenMirror-completion {
   color: #ccc;
+  line-height: inherit;
 }
 
-.hwTokenMirror-column:before {
+.vuuTokenMirror-column:before {
   border-radius: 3px;
   bottom: 3px;
   content: '';
@@ -30,16 +32,16 @@
   right: -3px;
 }
 
-.hwTokenMirror-column:before {
+.vuuTokenMirror-column:before {
   background-color: blue;
   opacity: 0.3;
 }
 
-.hwTokenMirror-name {
+.vuuTokenMirror-name {
   color: black;
 }
 
-.hwTokenMirror-name:before {
+.vuuTokenMirror-name:before {
   background-color: red;
   bottom: 3px;
   content: '';

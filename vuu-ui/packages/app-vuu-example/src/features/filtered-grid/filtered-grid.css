@@ -6,17 +6,10 @@
   --hwParsedInput-height: 28px;
   --hwParsedInput-border-style: none none none solid;
   --hwParsedInput-width: calc(100% - var(--hwParsedInput-height));
-  --hwView-flex-direction: row;
-  --hwView-flex-wrap: wrap;
   --hwDataGrid-flex: 100% 0 0;
   --hwDataGrid-font-size: 10px;
   --hwDataGridCell-border-style: none;
   --hwDataGridRow-background-odd: var(--surface1);
-}
-
-.vuFilterButton {
-  flex: 0 0 var(--hwParsedInput-height);
-  height: var(--hwParsedInput-height);
 }
 
 .vuFilteredGrid .hwDataGrid {

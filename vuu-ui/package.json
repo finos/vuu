@@ -5,13 +5,17 @@
   "license": "Apache-2.0",
   "private": true,
   "workspaces": [
-    "packages/**"
+    "packages/**",
+    "uitk/packages/core",
+    "uitk/packages/icons",
+    "uitk/packages/lab"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.jsx",
     "prettier": "prettier './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "format": "prettier --write './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "build": "node ./scripts/build-all.mjs",
+    "build:uitk": "node ./scripts/build-uitk.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "start:electron": "cd packages/electron && node ./node_modules/.bin/electron .",
     "start:showcase": "cd packages/showcase && serve ./public -s",

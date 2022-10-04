@@ -1,8 +1,7 @@
 {
   "name": "@vuu-ui/utils",
-  "version": "0.0.21",
+  "version": "0.0.26",
   "author": "heswell",
-  "module": "src/index.ts",
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "files": [

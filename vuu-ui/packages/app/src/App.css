@@ -13,10 +13,6 @@ body {
   --spectrum-alias-border-size-thin: 0;
   --spectrum-global-dimension-size-85: 3px;
   --spectrum-global-dimension-size-225: 16px;
-
-  --app-font-family: 'Roboto Condensed', Roboto;
-
-  font-family: var(--app-font-family);
 }
 
 .ToolbarField .Input {

@@ -1,15 +1,23 @@
-import { useId } from '@vuu-ui/react-utils';
-import React, { ForwardedRef, forwardRef, isValidElement, ReactElement, ReactNode } from 'react';
-import { Tab, Tabstrip } from '../tabstrip';
-import { Toolbar } from '../toolbar';
-import { StackProps } from './stackTypes';
+import { useId } from "@vuu-ui/react-utils";
+import React, {
+  ForwardedRef,
+  forwardRef,
+  MouseEvent,
+  ReactElement,
+  ReactNode,
+  useCallback,
+} from "react";
+import { Tab, Tabstrip, Toolbar, ToolbarField } from "@heswell/uitk-lab";
+import { StackProps } from "./stackTypes";
 
-import './Stack.css';
+import "./Stack.css";
 
 const getDefaultTabLabel = (component: ReactElement, tabIndex: number) =>
   component.props?.title ?? `Tab ${tabIndex + 1}`;
 
-const getChildElements = <T extends ReactElement = ReactElement>(children: ReactNode): T[] => {
+const getChildElements = <T extends ReactElement = ReactElement>(
+  children: ReactNode
+): T[] => {
   const elements: T[] = [];
   React.Children.forEach(children, (child) => {
     if (React.isValidElement(child)) {
@@ -29,7 +37,7 @@ export const Stack = forwardRef(function Stack(
     enableCloseTabs,
     getTabLabel = getDefaultTabLabel,
     id: idProp,
-    keyBoardActivation = 'automatic',
+    keyBoardActivation = "manual",
     onMouseDown,
     onTabAdd,
     onTabClose,
@@ -37,37 +45,41 @@ export const Stack = forwardRef(function Stack(
     onTabSelectionChanged,
     showTabs,
     style,
-    toolbarContent
+    toolbarContent,
   }: StackProps,
   ref: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
 
-  const handleTabSelection = (e: any, nextIdx: number) => {
+  const handleTabSelection = (nextIdx: number) => {
     // if uncontrolled, handle it internally
-    if (onTabSelectionChanged) {
-      onTabSelectionChanged(e, nextIdx);
-    }
+    onTabSelectionChanged?.(nextIdx);
   };
 
-  const handleTabClose = (e: any, tabIndex: number) => {
+  const handleTabClose = (tabIndex: number) => {
     // if uncontrolled, handle it internally
-    if (onTabClose) {
-      onTabClose(e, tabIndex);
-    }
+    onTabClose?.(tabIndex);
   };
 
-  const handleAddTab = (e: any, tabIndex = React.Children.count(children)) => {
+  const handleAddTab = () => {
     // if uncontrolled, handle it internally
-    if (onTabAdd) {
-      onTabAdd(e, tabIndex);
-    }
+    onTabAdd?.(React.Children.count(children));
   };
 
-  const handleMouseDown = (e: any, tabIndex: number) => {
+  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     // if uncontrolled, handle it internally
-    if (onMouseDown) {
-      onMouseDown(e, tabIndex);
+    const target = e.target as HTMLElement;
+    const tabElement = target.closest('[role^="tab"]') as HTMLDivElement;
+    const role = tabElement?.getAttribute("role");
+    if (role === "tab") {
+      const tabIndex = parseInt(tabElement.dataset.index ?? "-1");
+      if (tabIndex !== -1) {
+        onMouseDown?.(e, tabIndex);
+      } else {
+        throw Error("Stack: mousedown on tab with unknown index");
+      }
+    } else if (role === "tablist") {
+      console.log(`Stack mousedown on tabstrip`);
     }
   };
 
@@ -77,6 +89,18 @@ export const Stack = forwardRef(function Stack(
       onTabEdit(e, tabIndex, label);
     }
   };
+
+  const handleExitEditMode = useCallback(
+    (
+      oldText: string,
+      newText: string,
+      allowDeactivation: boolean,
+      tabIndex: number
+    ) => {
+      console.log(`handleExitEditMode ${oldText} => ${newText} @ ${tabIndex}`);
+    },
+    []
+  );
 
   const activeChild = () => {
     if (React.isValidElement(children)) {
@@ -99,9 +123,9 @@ export const Stack = forwardRef(function Stack(
           key={childId} // Important that we key by child identifier, not using index
           id={rootId}
           label={getTabLabel(child, idx)}
-          deletable={closeable}
+          closeable={closeable}
           editable={true}
-          onEdit={handleTabEdit}
+          // onEdit={handleTabEdit}
         />
       );
     });
@@ -111,23 +135,34 @@ export const Stack = forwardRef(function Stack(
   return (
     <div className="Tabs" style={style} id={id} ref={ref}>
       {showTabs ? (
-        <Toolbar className="hwTabHeader hwHeader" maxRows={1} onMouseDown={handleMouseDown}>
-          <Tabstrip
-            enableAddTab={enableAddTab}
-            enableCloseTabs={enableCloseTabs}
-            keyBoardActivation={keyBoardActivation}
-            onChange={handleTabSelection}
-            onAddTab={handleAddTab}
-            onDeleteTab={handleTabClose}
-            onMouseDown={handleMouseDown}
-            value={active || (child === null ? -1 : 0)}>
-            {renderTabs()}
-          </Tabstrip>
-          {toolbarContent}
+        <Toolbar
+          className="vuuTabHeader vuuHeader"
+          // onMouseDown={handleMouseDown}
+        >
+          <ToolbarField
+            disableFocusRing
+            data-collapsible="dynamic"
+            data-priority="3"
+          >
+            <Tabstrip
+              enableRenameTab
+              enableAddTab={enableAddTab}
+              enableCloseTab={enableCloseTabs}
+              keyBoardActivation={keyBoardActivation}
+              onActiveChange={handleTabSelection}
+              onAddTab={handleAddTab}
+              onCloseTab={handleTabClose}
+              onExitEditMode={handleExitEditMode}
+              onMouseDown={handleMouseDown}
+              activeTabIndex={active || (child === null ? -1 : 0)}
+            >
+              {renderTabs()}
+            </Tabstrip>
+          </ToolbarField>
         </Toolbar>
       ) : null}
       {child}
     </div>
   );
 });
-Stack.displayName = 'Stack';
+Stack.displayName = "Stack";

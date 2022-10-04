@@ -1,15 +1,15 @@
-import React, { ReactElement, useRef } from 'react';
-import { Stack } from './Stack';
+import React, { ReactElement, useRef } from "react";
+import { Stack } from "./Stack";
 // import { Tooltray } from "../toolbar";
 // import { CloseButton, MinimizeButton, MaximizeButton } from "../action-buttons";
-import Component from '../Component';
-import { useLayoutProviderDispatch } from '../layout-provider';
-import { useViewActionDispatcher, View } from '../layout-view';
-import { registerComponent } from '../registry/ComponentRegistry';
-import usePersistentState from '../use-persistent-state';
-import { StackProps } from './stackTypes';
+import Component from "../Component";
+import { useLayoutProviderDispatch } from "../layout-provider";
+import { useViewActionDispatcher, View } from "../layout-view";
+import { registerComponent } from "../registry/ComponentRegistry";
+import { usePersistentState } from "../use-persistent-state";
+import { StackProps } from "./stackTypes";
 
-import './Stack.css';
+import "./Stack.css";
 
 const defaultCreateNewChild = (index: number) => (
   // Note make this width 100% and height 100% and we get a weird error where view continually resizes - growing
@@ -18,7 +18,8 @@ const defaultCreateNewChild = (index: number) => (
     title={`Tab ${index}`}
     style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
     header
-    closeable>
+    closeable
+  >
     <Component style={{ flex: 1 }} />
   </View>
 );
@@ -39,31 +40,32 @@ export const StackLayout = (props: StackProps) => {
 
   const [dispatchViewAction] = useViewActionDispatcher(ref, path);
 
-  const handleTabSelection = (e: any, nextIdx: number) => {
+  const handleTabSelection = (nextIdx: number) => {
+    console.log(`StackLayout handleTabSelection nextTab = ${nextIdx}`);
     if (path) {
-      dispatch({ type: 'switch-tab', path, nextIdx });
-      if (onTabSelectionChanged) {
-        onTabSelectionChanged(e, nextIdx);
-      }
+      dispatch({ type: "switch-tab", path, nextIdx });
+      onTabSelectionChanged?.(nextIdx);
     }
   };
 
-  const handleTabClose = (e: any, tabIndex: number) => {
+  const handleTabClose = (tabIndex: number) => {
     if (Array.isArray(children)) {
       const {
-        props: { 'data-path': dataPath, path = dataPath }
+        props: { "data-path": dataPath, path = dataPath },
       } = children[tabIndex];
-      dispatch({ type: 'remove', path });
+      dispatch({ type: "remove", path });
     }
   };
 
   const handleTabAdd = (e: any, tabIndex = React.Children.count(children)) => {
     if (path) {
+      console.log(`[StackLayout] handleTabAdd`);
       const component = createNewChild(tabIndex);
+      console.log({ component });
       dispatch({
-        type: 'add',
+        type: "add",
         path,
-        component
+        component,
       });
     }
   };
@@ -78,11 +80,14 @@ export const StackLayout = (props: StackProps) => {
     // Experimental
     const preDragActivity = async () =>
       new Promise((resolve) => {
-        console.log('preDragActivity: Ok, gonna release the drag');
+        console.log("preDragActivity: Ok, gonna release the drag");
         readyToDrag = resolve;
       });
 
-    const dragging = await dispatchViewAction({ type: 'mousedown', index, preDragActivity }, e);
+    const dragging = await dispatchViewAction(
+      { type: "mousedown", index, preDragActivity },
+      e
+    );
 
     if (dragging) {
       readyToDrag?.(undefined);
@@ -94,12 +99,12 @@ export const StackLayout = (props: StackProps) => {
     // Do we need a mechanism to get this into the JSPOMN when we serialize ?
     // const { id } = children[tabIndex].props;
     // saveState(id, 'view-title', text);
-    dispatch({ type: 'set-title', path: `${path}.${tabIndex}`, title: text });
+    dispatch({ type: "set-title", path: `${path}.${tabIndex}`, title: text });
   };
 
   const getTabLabel = (component: ReactElement, idx: number) => {
     const { id, title } = component.props;
-    return loadState(id, 'view-title') || title || `Tab ${idx + 1}`;
+    return loadState(id, "view-title") || title || `Tab ${idx + 1}`;
   };
 
   return (
@@ -122,6 +127,6 @@ export const StackLayout = (props: StackProps) => {
     />
   );
 };
-StackLayout.displayName = 'Stack';
+StackLayout.displayName = "Stack";
 
-registerComponent('Stack', StackLayout, 'container');
+registerComponent("Stack", StackLayout, "container");

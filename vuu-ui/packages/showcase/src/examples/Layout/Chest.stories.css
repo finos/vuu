@@ -1,11 +1,11 @@
-.viewRebecca .hwView-main {
+.viewRebecca .vuuView-main {
   background-color: rgba(102, 51, 153, 0.7);
 }
 
-.viewCornflower .hwView-main {
+.viewCornflower .vuuView-main {
   background-color: rgba(100, 149, 237, 0.7);
 }
 
-.hwView-resizing {
+.vuuView-resizing {
   background-color: yellow;
 }
