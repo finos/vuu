@@ -453,6 +453,17 @@ case class ViewPortImpl(id: String,
 
   override def removeVisualLink(): Unit = {
     viewPortLock.synchronized {
+      val fields = this.structuralFields.get()
+      val filterAndSort = fields.filtAndSort match {
+        case udfs: UserDefinedFilterAndSort =>
+          udfs.filter match {
+            //remove the visual linked filter from the filterandsort
+            case TwoStepCompoundFilter(first, second) =>
+              UserDefinedFilterAndSort(second, udfs.sort)
+          }
+      }
+      //set the filter and sort to include the selection filter
+      this.structuralFields.set(fields.copy(filtAndSort = filterAndSort))
       this.viewPortVisualLink = None
     }
   }

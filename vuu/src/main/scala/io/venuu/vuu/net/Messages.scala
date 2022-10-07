@@ -177,6 +177,10 @@ case class CreateVisualLinkRequest(childVpId: String, parentVpId: String, childC
 
 case class CreateVisualLinkSuccess(childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String) extends MessageBody
 
+case class RemoveVisualLinkRequest(childVpId: String) extends MessageBody
+
+case class RemoveVisualLinkSuccess(childVpId: String) extends MessageBody
+
 object UpdateType {
   final val SizeOnly = "SIZE"
   final val Update = "U"
