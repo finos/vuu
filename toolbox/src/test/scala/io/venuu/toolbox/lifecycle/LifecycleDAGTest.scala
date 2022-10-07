@@ -5,9 +5,6 @@ import io.venuu.toolbox.time.TestFriendlyClock
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
- * Created by chris on 15/10/2015.
- */
 class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
 
   class CompA()(implicit val lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging{

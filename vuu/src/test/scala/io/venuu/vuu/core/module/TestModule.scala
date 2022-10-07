@@ -34,9 +34,6 @@ class MyCustomRpcHandler extends DefaultLifecycleEnabled with AnRpcHandler with 
   }
 }
 
-/**
-  * Created by chris on 29/08/2016.
-  */
 object TestModule{
 
   def apply()(implicit time: Clock, lifecycle: LifecycleContainer): ViewServerModule = {

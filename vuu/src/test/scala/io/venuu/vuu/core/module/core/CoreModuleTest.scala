@@ -15,9 +15,7 @@ import io.venuu.vuu.viewport.ViewPortTable
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-/**
-  * Created by chris on 18/09/2016.
-  */
+
 class CoreModuleTest extends AnyFeatureSpec with Matchers with StrictLogging with GivenWhenThen {
 
   def setupServer: (String, String, ViewServerClient, LifecycleContainer) = {

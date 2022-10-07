@@ -13,9 +13,6 @@ import io.venuu.vuu.util.table.TableAsserts._
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.prop.Tables.Table
 
-/**
-  * Created by chris on 02/09/2016.
-  */
 class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
   import ViewPortTestFns._

@@ -4,9 +4,6 @@ import com.typesafe.scalalogging.StrictLogging
 import io.venuu.vuu.grammer.{FilterLexer, FilterParser}
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 
-/**
- * Created by chris on 31/01/2016.
- */
 object FilterSpecParser extends StrictLogging {
 
   def parse(s: String): FilterClause = {

@@ -15,9 +15,6 @@ import io.venuu.vuu.viewport.ViewPortContainer
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
- * Created by chris on 25/10/2015.
- */
 class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
   Feature("Check that we can create a websocket server and client"){

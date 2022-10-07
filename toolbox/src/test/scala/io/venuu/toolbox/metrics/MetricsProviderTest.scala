@@ -4,9 +4,6 @@ import io.venuu.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * Created by chris on 25/07/2016.
-  */
 class MetricsProviderTest extends AnyFeatureSpec with Matchers {
 
   Feature("Test metrics provider"){

@@ -4,9 +4,6 @@ import io.venuu.vuu.core.table.{DataTable, JoinTableUpdate}
 
 import java.util
 
-/**
-  * Created by chris on 22/12/2015.
-  */
 class TestFriendlyJoinTableProvider extends JoinTableProvider {
   override def hasJoins(tableName: String): Boolean = {false}
   override def sendEvent(tableName: String, ev: util.HashMap[String, Any]): Unit = {}

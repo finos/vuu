@@ -12,9 +12,6 @@ object LeafNode{
 
 class LeafNode(override val name: String, val data: Array[String]) extends TreeNode(name, List())
 
-/**
-  * Created by chris on 22/03/2016.
-  */
 class ViewServerTreeModel() extends AbstractTreeTableModel(){
 
   private val columns = Array("country", "exchange", "ric", "quantity")

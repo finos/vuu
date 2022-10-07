@@ -11,9 +11,6 @@ case class BatchSize(size: Int) extends FlowControlOp
 
 case class Disconnect() extends FlowControlOp
 
-/**
- * Created by chris on 10/01/2016.
- */
 trait FlowController {
   def process(msg: ViewServerMessage)
 

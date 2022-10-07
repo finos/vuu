@@ -4,9 +4,6 @@ import io.netty.channel.Channel
 import io.venuu.vuu.net.json.Serializer
 import io.venuu.vuu.net.{Authenticator, ClientSessionContainer, ViewServerMessage}
 
-/**
- * Created by chris on 12/11/2015.
- */
 class IncomingWebSocketHandler(sessions: ClientSessionContainer,
                                serializer: Serializer[String, ViewServerMessage],
                                authenticator: Authenticator) {

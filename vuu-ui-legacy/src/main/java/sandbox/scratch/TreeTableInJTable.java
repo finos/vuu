@@ -6,9 +6,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
-/**
- * Created by chris on 27/03/2016.
- */
 public class TreeTableInJTable {
 
     public static void main(String[] args) {

@@ -6,9 +6,6 @@ import java.awt.Component
 import javax.swing.table.{DefaultTableCellRenderer, TableCellRenderer}
 import javax.swing.{ImageIcon, JLabel, JTable}
 
-/**
-  * Created by chris on 21/03/2016.
-  */
 class SortedColumnRenderer(model: ViewPortedModel) extends JLabel with TableCellRenderer{
 
   val defaultTableCellRenderer = new DefaultTableCellRenderer()

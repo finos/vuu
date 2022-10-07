@@ -1,8 +1,5 @@
 package io.venuu.vuu.net.ws
 
-/**
- * Created by chris on 15/10/2015.
- */
 
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.Unpooled

@@ -8,9 +8,6 @@ import io.venuu.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import io.venuu.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import io.venuu.vuu.viewport.{ViewPort, ViewPortUpdate}
 
-/**
-  * Created by chris on 22/12/2015.
-  */
 object TableTestHelper {
 
   def emptyQueues(viewPort: ViewPort) = {

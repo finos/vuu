@@ -1,8 +1,5 @@
 package io.venuu.toolbox.thread
 
-/**
- * Created by chris on 26/10/2015.
- */
 object Async {
 
   def waitTill(func: () => Boolean, maxTries: Int = 20, sleep: Long = 100): Unit = {

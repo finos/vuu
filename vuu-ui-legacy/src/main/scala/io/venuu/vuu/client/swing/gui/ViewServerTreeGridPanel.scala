@@ -24,9 +24,6 @@ object TreeColumns{
     final val ChildCount = Column(7, "_childCount")
 }
 
-/**
-  * Created by chris on 10/04/2016.
-  */
 class ViewServerTreeGridPanel(parentFrame: Frame, requestId: String, tableName: ViewPortTable, availableColumns: Array[String],
                               columns: Array[String], theModel: ViewPortedModel, treeColumns: Array[String])
                              (implicit override val eventBus: EventBus[ClientMessage], timeProvider: Clock) extends ViewServerGridPanel(parentFrame, requestId, tableName, availableColumns, columns, theModel) {

@@ -24,10 +24,6 @@ trait TableContainerMBean {
   def getSubscribedKeys(name: String): String
 }
 
-
-/**
- * Created by chris on 26/02/2014.
- */
 class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, clock: Clock) extends JmxAble with TableContainerMBean with StrictLogging {
 
   private val tables = new ConcurrentHashMap[String, DataTable]()

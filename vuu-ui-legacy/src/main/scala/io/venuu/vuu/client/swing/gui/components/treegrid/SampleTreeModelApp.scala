@@ -2,9 +2,6 @@ package io.venuu.vuu.client.swing.gui.components.treegrid
 
 import scala.swing._
 
-/**
-  * Created by chris on 22/03/2016.
-  */
 object SampleTreeModelApp extends SimpleSwingApplication{
 
   val treeTable = new TreeGrid()

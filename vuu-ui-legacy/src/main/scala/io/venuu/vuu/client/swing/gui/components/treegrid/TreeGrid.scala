@@ -5,9 +5,6 @@ import org.jdesktop.swingx.JXTreeTable
 import javax.swing.{JComponent, JTable}
 import scala.swing.Component
 
-/**
-  * Created by chris on 22/03/2016.
-  */
 class TreeGrid() extends Component{
 
 
