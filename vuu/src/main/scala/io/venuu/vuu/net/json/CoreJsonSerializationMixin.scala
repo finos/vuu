@@ -67,5 +67,7 @@ import io.venuu.vuu.net._
   new Type(value = classOf[ViewPortMenuCellRpcCall], name = "VIEW_PORT_MENU_CELL_RPC"),
   new Type(value = classOf[ViewPortMenuRpcResponse], name = "VIEW_PORT_MENU_RESP"),
   new Type(value = classOf[ViewPortMenuRpcReject], name = "VIEW_PORT_MENU_REJ"),
+  new Type(value = classOf[RemoveVisualLinkRequest], name = "REMOVE_VISUAL_LINK"),
+  new Type(value = classOf[RemoveVisualLinkSuccess], name = "REMOVE_VISUAL_LINK_SUCCESS"),
 ))
 trait CoreJsonSerializationMixin {}
