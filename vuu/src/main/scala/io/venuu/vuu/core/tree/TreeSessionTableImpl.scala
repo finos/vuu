@@ -290,14 +290,14 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
         this.wrappedObservers.remove(key)
         logger.debug(s"Removing wrapped observer: ${key} -> ${wo.originalKey}")
         sourceTable.removeKeyObserver(wo.originalKey, wo)
-      //otherwise it must be a tree key, i.e. not a real row in underlying table
-      case x =>
-        logger.warn("Expecting Wrapped Observer but did not get")
-        false
       case null =>
         logger.debug(s"remove normal key observer:$key")
         //so remove that from our list of observers
         super.removeKeyObserver(key, observer)
+      //otherwise it must be a tree key, i.e. not a real row in underlying table
+      case _ =>
+        logger.warn("Expecting Wrapped Observer but did not get")
+        false
     }
   }
 }
