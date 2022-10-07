@@ -40,9 +40,6 @@ object TreeSessionTable {
   }
 }
 
-/**
- * Created by chris on 21/11/2015.
- */
 class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, joinProvider: JoinTableProvider)
                           (implicit metrics: MetricsProvider, clock: Clock)
   extends SimpleDataTable(new GroupByTableDef("", source.asTable.getTableDef), joinProvider)

@@ -8,9 +8,6 @@ import org.antlr.v4.runtime.{ANTLRInputStream, CommonTokenStream}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * Created by chris on 05/02/2016.
-  */
 class FilterGrammerTest extends AnyFeatureSpec with Matchers {
 
   Feature("Check the grammer"){

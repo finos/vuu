@@ -3,9 +3,6 @@ package io.venuu.toolbox.jmx
 import java.lang.management.ManagementFactory
 import javax.management.ObjectName
 
-/**
-  * Created by chris on 03/01/2016.
-  */
 trait JmxAble { self =>
   def name: String = this.getClass.getSimpleName
 

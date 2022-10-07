@@ -5,9 +5,6 @@ import org.joda.time.LocalDateTime
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * Created by chris on 11/12/2015.
-  */
 class AutoSubscribeTableTest extends AnyFeatureSpec with Matchers {
 
   Feature("tables should support ability to subscribe when join requires it"){

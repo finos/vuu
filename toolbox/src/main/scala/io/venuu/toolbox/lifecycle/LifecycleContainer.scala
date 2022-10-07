@@ -204,9 +204,6 @@ class  DirectedAcyclicGraph[NODE] private (var edgeSet : Set[DefaultEdge[NODE]],
 
 }
 
-/**
- * Created by chris on 15/10/2015.
- */
 trait LifecycleEnabled{
   def doStart()
   def doStop()

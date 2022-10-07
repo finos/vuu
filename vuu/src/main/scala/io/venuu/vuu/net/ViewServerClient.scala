@@ -8,10 +8,6 @@ import io.venuu.vuu.net.ws.WebSocketClient
 import io.venuu.vuu.viewport.{ViewPortAction, ViewPortActionMixin}
 
 import scala.util.{Failure, Success, Try}
-
-/**
- * Created by chris on 26/10/2015.
- */
 trait ViewServerClient extends LifecycleEnabled {
   def send(msg: ViewServerMessage): Unit
 

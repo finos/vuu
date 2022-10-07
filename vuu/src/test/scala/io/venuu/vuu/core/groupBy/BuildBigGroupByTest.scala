@@ -13,9 +13,6 @@ import io.venuu.vuu.viewport.{GroupBy, TreeBuilder}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * Created by chris on 10/04/2016.
-  */
 class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
   import io.venuu.toolbox.time.TimeIt._

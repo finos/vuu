@@ -14,9 +14,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.{LinkedList => JList}
 import scala.util.{Failure, Success, Try}
 
-/**
- * Created by chris on 23/11/2015.
- */
 trait TreeBuilder {
   def build(): Tree
 }

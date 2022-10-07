@@ -38,9 +38,6 @@ trait LandAnimalMixin{}
 
 case class Container(animal: Animal)
 
-/**
- * Created by chris on 09/11/2015.
- */
 class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
 
   def roundTrip(body: MessageBody) = {

@@ -10,9 +10,6 @@ import io.venuu.vuu.provider.TestFriendlyJoinTableProvider
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * Created by chris on 21/12/2015.
-  */
 class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
 
   final val TEST_TIME = 1450770869442l

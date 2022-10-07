@@ -1,8 +1,5 @@
 package io.venuu.toolbox.text
 
-/**
-  * Created by chris on 28/01/2016.
-  */
 object CodeGenUtil {
 
   private def valToString(a: Any): String = {

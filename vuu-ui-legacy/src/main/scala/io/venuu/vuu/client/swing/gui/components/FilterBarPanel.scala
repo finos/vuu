@@ -10,9 +10,6 @@ import scala.swing.GridBagPanel.Fill
 import scala.swing.event.ButtonClicked
 import scala.swing.{Button, GridBagPanel, Label, TextArea}
 
-/**
-  * Created by chris on 20/03/2016.
-  */
 class FilterBarPanel(ctxtProvider: ViewPortContextProvider)(implicit eventBus: EventBus[ClientMessage], clock: Clock) extends GridBagPanel {
 
   private val c = new Constraints

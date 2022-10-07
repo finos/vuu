@@ -3,9 +3,6 @@ package io.venuu.vuu.net
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
- * Created by chris on 26/10/2015.
- */
 class WebSocketApiTest extends AnyFeatureSpec with Matchers {
 
   def awaitMsg[TYPE](implicit client: ViewServerClient): Option[TYPE] = {

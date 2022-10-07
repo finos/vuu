@@ -5,9 +5,6 @@ import io.venuu.vuu.net.{HeartBeatResponse, VsMsg}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * Created by chris on 10/01/2016.
-  */
 class FlowControllerTest extends AnyFeatureSpec with Matchers {
 
   Feature("check flow control logic"){

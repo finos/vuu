@@ -5,9 +5,6 @@
 //import org.scalatest.featurespec.AnyFeatureSpec
 //import org.scalatest.matchers.should.Matchers
 //
-///**
-//  * Created by chris on 16/09/2016.
-//  */
 //class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
 //
 //  def parse(s: String): Unit = {

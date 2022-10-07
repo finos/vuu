@@ -10,9 +10,6 @@ import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * Created by chris on 23/11/2015.
-  */
 class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
   final val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis

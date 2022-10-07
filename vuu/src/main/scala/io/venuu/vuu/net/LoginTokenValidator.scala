@@ -2,9 +2,6 @@ package io.venuu.vuu.net
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 
-/**
- * Created by chris on 12/11/2015.
- */
 trait LoginTokenValidator {
   def login(msg: LoginRequest): Either[ViewServerMessage, String]
 }

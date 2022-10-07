@@ -3,9 +3,6 @@ package io.venuu.vuu.json
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
- * Created by chris on 03/11/2015.
- */
 class ObjectMappingTest extends AnyFeatureSpec with Matchers{
 
   import com.fasterxml.jackson.annotation.JsonSubTypes.Type

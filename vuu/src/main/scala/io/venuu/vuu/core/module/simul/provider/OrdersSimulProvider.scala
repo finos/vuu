@@ -203,9 +203,6 @@ class OrderSimulator(table: DataTable)(implicit time: Clock) {
 }
 
 
-/**
- * Created by chris on 11/09/2016.
- */
 class OrdersSimulProvider(table: DataTable)(implicit timeProvider: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
 
   private val simulator = new OrderSimulator(table)

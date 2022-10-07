@@ -9,9 +9,6 @@ object PopupMenu{
 }
 
 
-/**
-  * Created by chris on 17/03/2016.
-  */
 class PopupMenu extends Component with Wrapper{
   override lazy val peer: JPopupMenu = new JPopupMenu with PopupMenu.JPopupMenuMixin with SuperMixin{
     override def popupMenuWrapper: PopupMenu = PopupMenu.this

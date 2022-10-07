@@ -3,9 +3,6 @@ package io.venuu.toolbox.time
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * Created by chris on 25/07/2016.
-  */
 class TimeItTest extends AnyFeatureSpec with Matchers {
 
   Feature("Test TimeIt"){

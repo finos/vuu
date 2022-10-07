@@ -1,8 +1,5 @@
 package io.venuu.vuu.net
 
-/**
- * Created by chris on 03/11/2015.
- */
 trait Authenticator {
 
   def authenticator(user: String, password: String): Option[String]

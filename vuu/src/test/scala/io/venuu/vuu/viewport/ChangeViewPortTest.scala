@@ -14,9 +14,6 @@ import io.venuu.vuu.util.table.TableAsserts._
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.prop.Tables.Table
 
-/**
-  * Created by chris on 12/03/2016.
-  */
 class ChangeViewPortTest extends AnyFeatureSpec{
 
   implicit val timeProvider: Clock = new DefaultClock

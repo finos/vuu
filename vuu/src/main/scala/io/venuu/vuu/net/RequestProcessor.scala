@@ -15,9 +15,7 @@ case class RequestContext(requestId: String, session: ClientSessionId,
                           queue: PublishQueue[ViewPortUpdate], highPriorityQueue: PublishQueue[ViewPortUpdate],
                           token: String)
 
-/**
- * Created by chris on 12/11/2015.
- */
+
 class RequestProcessor(authenticator: Authenticator,
                        tokenValidator: LoginTokenValidator,
                        clientSessionContainer: ClientSessionContainer,

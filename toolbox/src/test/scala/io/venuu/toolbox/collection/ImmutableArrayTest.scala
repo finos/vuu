@@ -6,9 +6,6 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 
-/**
-  * Created by chris on 22/12/2015.
-  */
 class ImmutableArrayTest extends AnyFeatureSpec with Matchers {
 
   implicit val time: Clock = new DefaultClock
