@@ -143,6 +143,34 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
           (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544830L,100       )
         )
       }
+
+      Then("Check we can remove the visual linking")
+
+      viewPortContainer.unlinkViewPorts(session, highPriorityQueue, viewPortOrders.id)
+
+      viewPortContainer.runOnce()
+
+      val combinedUpdates2 = combineQs(viewPortOrders)
+
+      val priceUpdates2 = combinedUpdates2.filter(_.vp.id == viewPortPrices.id)
+      val orderUpdates2 = combinedUpdates2.filter(_.vp.id == viewPortOrders.id)
+
+      assertVpEqWithMeta(orderUpdates2) {
+        Table(
+          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          (0         ,"NYC-0011","chris"   ,"BP.L"    ,1311544910L,104       ),
+          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544860L,103       ),
+          (0         ,"NYC-0010","chris"   ,"BP.L"    ,1311544900L,103       ),
+          (0         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ),
+          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544850L,102       ),
+          (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544890L,102       ),
+          (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ),
+          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544840L,101       ),
+          (0         ,"NYC-0008","chris"   ,"BP.L"    ,1311544880L,101       ),
+          (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       )
+        )
+      }
+
     }
   }
 }

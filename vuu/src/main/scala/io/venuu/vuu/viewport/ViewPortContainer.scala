@@ -485,6 +485,15 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
+  def unlinkViewPorts(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], childVpId: String): Unit = {
+    get(clientSession, childVpId) match {
+      case Some(child) =>
+        child.removeVisualLink()
+      case None =>
+        throw new Exception("Could not find child viewport" + childVpId)
+    }
+  }
+
   /**
    * Called by dedicated viewport runner thread to populate viewport keys.
    */

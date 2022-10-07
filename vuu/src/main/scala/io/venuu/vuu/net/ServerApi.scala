@@ -33,6 +33,8 @@ trait ServerApi {
 
   def process(msg: CreateVisualLinkRequest)(ctx: RequestContext): Option[ViewServerMessage]
 
+  def process(msg: RemoveVisualLinkRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
   def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
 
   def process(msg: ViewPortMenuRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage]

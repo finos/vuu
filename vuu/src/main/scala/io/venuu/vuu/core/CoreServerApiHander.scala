@@ -282,6 +282,17 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
     }
   }
 
+
+  override def process(msg: RemoveVisualLinkRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.unlinkViewPorts(ctx.session, ctx.queue, msg.childVpId)) match {
+      case Success(_) =>
+        vsMsg(RemoveVisualLinkRequest(childVpId = msg.childVpId))(ctx)
+      case Failure(e) =>
+        logger.error("Could not establish Visual Link:", e.getMessage)
+        errorMsg("Could not establish Visual Link" + e.getMessage)(ctx)
+    }
+  }
+
   override def process(msg: OpenTreeNodeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     viewPortContainer.openNode(msg.vpId, msg.treeKey)
     vsMsg(OpenTreeNodeSuccess(msg.vpId, msg.treeKey))(ctx)
