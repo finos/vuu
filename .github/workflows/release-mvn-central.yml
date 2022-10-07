@@ -26,7 +26,7 @@ jobs:
         run: git switch -c release-${{ github.event.inputs.releaseVersion }}
       - uses: actions/setup-node@v1
         with:
-          node-version: "14.x"
+          node-version: "16.x"
       - name: Configure Git User
         run: |
             git config user.email "actions@github.com"
