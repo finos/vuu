@@ -23,6 +23,7 @@
     "build:app:dev": "cd packages/app-vuu-example && node scripts/build.mjs --dev",
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.mjs",
+    "pub:uitk": "node ./scripts/publish-uitk.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
