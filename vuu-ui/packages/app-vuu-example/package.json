@@ -15,9 +15,9 @@
   ],
   "devDependencies": {},
   "dependencies": {
-    "@heswell/uitk-core": "0.5.0-vuu-alpha.0",
-    "@heswell/uitk-icons": "0.4.0-vuu-alpha.0",
-    "@heswell/uitk-lab": "0.5.0-vuu-alpha.0",
+    "@heswell/uitk-core": "0.5.0-vuu-alpha.2",
+    "@heswell/uitk-icons": "0.4.0-vuu-alpha.2",
+    "@heswell/uitk-lab": "0.5.0-vuu-alpha.2",
     "@vuu-ui/data-grid": "0.0.26",
     "@vuu-ui/data-remote": "0.0.26",
     "@vuu-ui/datagrid-parsers": "0.0.26",
