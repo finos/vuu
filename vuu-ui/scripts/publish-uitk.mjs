@@ -5,7 +5,7 @@ const packages = ["uitk-core", "uitk-icons", "uitk-lab"];
 function publishPackage(packageName) {
   shell.cd(`dist/${packageName}`);
   shell.exec(
-    "npm publish --registry https://registry.npmjs.org --access-public"
+    "npm publish --registry https://registry.npmjs.org --access-public --tag vuu-alpha"
   );
   shell.cd("../..");
 }
