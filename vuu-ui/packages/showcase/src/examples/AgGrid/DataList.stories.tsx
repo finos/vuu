@@ -1,10 +1,7 @@
 import { Button, FormField, Input } from "@heswell/uitk-core";
 import { VirtualizedList } from "@heswell/uitk-lab";
 
-import {
-  CollectionProvider,
-  ScrollingAPI,
-} from "@heswell/uitk-lab/src/common-hooks";
+import { CollectionProvider, ScrollingAPI } from "@heswell/uitk-lab";
 import { ArrayLike } from "./ArrayLike";
 import {
   authenticate as vuuAuthenticate,
@@ -12,7 +9,7 @@ import {
   RemoteDataSource,
   useDataSource,
 } from "@vuu-ui/data-remote";
-import { VuuUIRow } from "@vuu-ui/data-remote/src/vuuUIMessageTypes";
+import { VuuUIRow } from "@vuu-ui/data-remote";
 import {
   CSSProperties,
   useCallback,

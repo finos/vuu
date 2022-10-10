@@ -6,3 +6,4 @@ export * from "./remote-data-source";
 export { connect } from "./websocket-connection";
 export * from "./connection-manager";
 export * from "./hooks";
+export * from "./vuuUIMessageTypes";
