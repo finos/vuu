@@ -92,7 +92,7 @@ export default async function main(customConfig) {
       };
 
       if (cjs) {
-        packageJson.main = "cjs/index.js";
+        newPackage.main = "cjs/index.js";
       }
 
       fs.writeFile(
@@ -139,11 +139,8 @@ export default async function main(customConfig) {
     await build(inlineWorkerConfig);
   }
 
-  const buildTasks = [
-    writePackageJSON(),
-    build(buildConfig),
-    copyStaticFiles(),
-  ];
+  // Compose the list of async tasks we are going to run
+  const buildTasks = [writePackageJSON(), build(buildConfig)];
   if (cjs) {
     buildTasks.push(
       build({
@@ -153,6 +150,7 @@ export default async function main(customConfig) {
       })
     );
   }
+  buildTasks.push(copyStaticFiles());
 
   const [, esmOutput, cjsOutput] = await Promise.all(buildTasks).catch((e) => {
     console.error(e);
