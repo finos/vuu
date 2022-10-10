@@ -13,7 +13,7 @@
     "/src"
   ],
   "peerDependencies": {
-    "@heswell/uitk-lab": "0.5.0-vuu-alpha.3",
+    "@heswell/uitk-lab": "0.5.0-vuu-alpha.4",
     "@vuu-ui/react-utils": "0.0.26",
     "@vuu-ui/ui-controls": "0.0.26",
     "@vuu-ui/utils": "0.0.26",
