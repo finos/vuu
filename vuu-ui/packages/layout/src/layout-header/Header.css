@@ -2,3 +2,7 @@
   --uitkToolbar-background: var(--uitk-container-background-low);
 }
 
+.uitk-density-high .vuuHeader {
+--uitkToolbarField-marginTop: 0;
+}
+

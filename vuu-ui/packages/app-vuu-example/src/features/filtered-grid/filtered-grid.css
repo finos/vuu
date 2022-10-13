@@ -1,6 +1,6 @@
 .vuDialog, /* until we correctly set the className on FilteredGrid view in a dialog */
 .vuFilteredGrid {
-  --hwDialog-margin: 30% auto auto auto;
+  --hwDialog-margin: 200px auto 0 auto;
   --hwParsedInput-background: white;
   --hwParsedInput-input-font-size: 12px;
   --hwParsedInput-height: 28px;

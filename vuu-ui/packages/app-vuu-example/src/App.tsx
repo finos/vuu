@@ -150,7 +150,7 @@ export const App = ({ user }) => {
 
   // TODO get Context from Shell
   return (
-    <ToolkitProvider>
+    <ToolkitProvider density="high">
       <AppContext.Provider value={{ handleRpcResponse }}>
         <Shell
           defaultLayout={defaultLayout}
@@ -162,6 +162,7 @@ export const App = ({ user }) => {
             className="vuDialog"
             isOpen={dialogContent !== null}
             onClose={handleClose}
+            style={{ height: 500 }}
           >
             {dialogContent}
           </Dialog>

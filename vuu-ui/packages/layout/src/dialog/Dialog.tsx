@@ -22,6 +22,7 @@ const Dialog = ({
   className,
   isOpen = false,
   onClose,
+  ...props
 }: DialogProps) => {
   const classRoot = "hwDialog";
   const root = useRef<HTMLDialogElement>(null);
@@ -38,8 +39,11 @@ const Dialog = ({
   }, [onClose]);
 
   return (
-    <dialog className={cx(classRoot, className)} ref={root}>
-      <Flexbox style={{ flexDirection: "column", width: "fit-content" }}>
+    <dialog {...props} className={cx(classRoot, className)} ref={root}>
+      {/* <Flexbox style={{ flexDirection: "column", width: "fit-content" }}> */}
+      <Flexbox
+        style={{ flexDirection: "column", width: "100%", height: "100%" }}
+      >
         <Toolbar style={{ height: 32 }}>
           <CloseButton data-pad-left={true} onClick={close} />
         </Toolbar>

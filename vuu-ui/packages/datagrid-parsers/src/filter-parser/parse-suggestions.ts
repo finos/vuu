@@ -275,7 +275,6 @@ export const parseSuggestions = (
     });
     if (suggestedTokens.length) {
       // This is where suggested operators will be returned
-      console.log({ suggestedTokens });
       suggestions.push({
         values: suggestedTokens,
         total: suggestedTokens.length,
@@ -323,7 +322,6 @@ class AsyncSuggestionsList {
   async extractResult(): Promise<SuggestionResult> {
     // TODO do not await unless necessary
     const pushedValues = await Promise.all(this.#list);
-    console.log({ extractedValues: pushedValues });
 
     const result = pushedValues.reduce<SuggestionResult>(
       (acc, { values, total = 0, isListItem }) => {
@@ -334,7 +332,6 @@ class AsyncSuggestionsList {
       },
       { isMultiSelect: false, values: [], total: 0 }
     );
-    console.log({ result });
     return result;
   }
 }

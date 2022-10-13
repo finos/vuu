@@ -37,8 +37,6 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
   const { handleRpcResponse } = useContext(AppContext);
   const [namedFilters, setNamedFilters] = useState([]);
 
-  console.log({ schema });
-
   const dataSource: RemoteDataSource = useMemo(() => {
     let ds = loadSession("data-source");
     if (ds) {

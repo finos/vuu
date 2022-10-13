@@ -119,7 +119,7 @@ const suggestColumnValues = (
   getSuggestions: (params: TypeaheadParams) => Promise<string[]>,
   table: VuuTable
 ): SuggestionResult | Promise<SuggestionResult> => {
-  if (column.serverDataType === "number") {
+  if (column.serverDataType === "int") {
     const message =
       text.length > 0
         ? "press SPACE or ENTER when done "

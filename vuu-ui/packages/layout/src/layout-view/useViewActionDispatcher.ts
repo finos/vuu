@@ -29,7 +29,6 @@ export const useViewActionDispatcher = (
     loadSessionState(id, "contributions") ?? []
   );
   const dispatch = useLayoutProviderDispatch();
-
   const updateContributions = useCallback(
     (location: string, content?: ReactElement) => {
       const updatedContributions = contributions.concat({ location, content });

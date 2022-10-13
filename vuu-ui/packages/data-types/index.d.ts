@@ -167,8 +167,7 @@ export interface ServerToClientCreateLinkSuccess {
 }
 export interface ServerToClientRemoveLinkSuccess {
   childVpId: string;
-  // type: "REMOVE_VISUAL_LINK_SUCCESS";
-  type: "REMOVE_VISUAL_LINK";
+  type: "REMOVE_VISUAL_LINK_SUCCESS";
 }
 export interface ServerToClientTableRows {
   batch: string;

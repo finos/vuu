@@ -605,8 +605,7 @@ export class ServerProxy {
         }
         break;
 
-      // case "REMOVE_VISUAL_LINK_SUCCESS":
-      case "REMOVE_VISUAL_LINK":
+      case "REMOVE_VISUAL_LINK_SUCCESS":
         {
           const viewport = this.viewports.get(body.childVpId);
           if (viewport) {

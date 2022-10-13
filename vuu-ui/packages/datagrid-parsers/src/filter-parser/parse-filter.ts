@@ -69,7 +69,7 @@ export const parseFilter = (
   );
   const errors: RecognitionException[] = [];
   // TODO we need to identify where this has happened so we can safely restore the characters
-  const safeText = typedInput.replaceAll("/", "-");
+  const safeText = typedInput.replaceAll("/", "--");
   const parser = constructParser(`${safeText}${insertSymbol}`);
 
   const errorListener = new ExprErrorListener(errors);

@@ -106,7 +106,7 @@ export const Header = ({
 
   title &&
     toolbarItems.push(
-      <ToolbarField key="title">
+      <ToolbarField className="vuuHeader-title" key="title">
         <EditableLabel
           editing={editing}
           key="title"

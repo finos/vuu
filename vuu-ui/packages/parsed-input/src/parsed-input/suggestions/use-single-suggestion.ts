@@ -21,8 +21,6 @@ export const useSingleSuggestion = <Selection extends "default">({
 }: SuggestionHookProps<Selection>):
   | SuggestionHookResult<Selection>
   | undefined => {
-  console.log(`[use-single-select] ${selectionStrategy}`);
-
   const suggestionProposed = useRef("");
 
   const handleSuggestionSelection: AcceptSuggestion<"default"> = useCallback(

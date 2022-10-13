@@ -19,6 +19,7 @@ import {
   LayoutBuilder,
   DrawerStackLayoutBuilder,
   StackLayoutBuilder,
+  StackLayoutBuilderUitk,
   StatefulComponent,
 } from "./components";
 import { Brown } from "./components";
@@ -546,6 +547,9 @@ NestedDragContainerWithPaletteAndSave.displaySequence = displaySequence++;
 
 export const LayoutStackBuilderExample = () => <StackLayoutBuilder />;
 LayoutStackBuilderExample.displaySequence = displaySequence++;
+
+export const LayoutStackBuilderExampleUitk = () => <StackLayoutBuilderUitk />;
+LayoutStackBuilderExampleUitk.displaySequence = displaySequence++;
 
 export const NestedMultiDragContainerWithPaletteDrawer = () => (
   <DrawerStackLayoutBuilder />

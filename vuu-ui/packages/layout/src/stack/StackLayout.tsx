@@ -1,3 +1,4 @@
+import { useId } from "@vuu-ui/react-utils";
 import React, { ReactElement, useRef } from "react";
 import { Stack } from "./Stack";
 // import { Tooltray } from "../toolbar";
@@ -31,6 +32,7 @@ export const StackLayout = (props: StackProps) => {
 
   const {
     createNewChild = defaultCreateNewChild,
+    id: idProp,
     onTabSelectionChanged,
     path,
     ...restProps
@@ -38,7 +40,9 @@ export const StackLayout = (props: StackProps) => {
 
   const { children } = props;
 
-  const [dispatchViewAction] = useViewActionDispatcher(ref, path);
+  const id = useId(idProp);
+
+  const [dispatchViewAction] = useViewActionDispatcher(id, ref, path);
 
   const handleTabSelection = (nextIdx: number) => {
     console.log(`StackLayout handleTabSelection nextTab = ${nextIdx}`);
@@ -110,6 +114,7 @@ export const StackLayout = (props: StackProps) => {
   return (
     <Stack
       {...restProps}
+      id={id}
       getTabLabel={getTabLabel}
       onMouseDown={handleMouseDown}
       onTabAdd={handleTabAdd}

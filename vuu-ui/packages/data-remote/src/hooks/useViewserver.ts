@@ -28,6 +28,11 @@ export type SchemaColumn = {
   width?: number;
 };
 
+export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
+
+// const SPECIAL_SPACE = "\u00A0";
+const SPECIAL_SPACE = "_";
+
 export type TableSchema = {
   columns: SchemaColumn[];
   table: VuuTable;
@@ -49,7 +54,7 @@ const byContext = (menu1: VuuMenuItem, menu2: VuuMenuItem) => {
 };
 
 const containSpace = (text: string) => text.indexOf(" ") !== -1;
-const replaceSpace = (text: string) => text.replace(/\s/g, "_");
+const replaceSpace = (text: string) => text.replace(/\s/g, SPECIAL_SPACE);
 
 const contextCompatibleWithLocation = (location, context, selectedRowCount) => {
   switch (location) {
@@ -99,11 +104,15 @@ export const useViewserver = ({
   rpcServer,
   saveSession,
 }: ViewServerHookProps = {}) => {
+  console.log(`[useViewServer]`);
   const [tables, setTables] = useState(tableStore.value);
 
   // IF we're passed in an rpcServer, whether its a dataSource or connection,
   // why do we need to get server here ?
   const server = useServerConnection(undefined);
+  console.log(`useViewServer server`, {
+    server,
+  });
   const contextMenuOptions = useMemo(
     () => loadSession?.("vs-context-menu") ?? undefined,
     [loadSession]
@@ -140,7 +149,7 @@ export const useViewserver = ({
     [onRpcResponse, server]
   );
 
-  const getTypeaheadSuggestions = useCallback(
+  const getTypeaheadSuggestions: SuggestionFetcher = useCallback(
     async (params: TypeaheadParams) => {
       console.log(
         `%c⚡ [ParsedInput.story] getSuggestions params [${params.join(",")}]`,
