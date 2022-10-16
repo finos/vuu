@@ -2,6 +2,7 @@ import shell from "shelljs";
 
 const packages = [
   "utils",
+  "ag-grid",
   "react-utils",
   "theme",
   "data-remote",
