@@ -72,7 +72,7 @@ export const Stack = forwardRef(function Stack(
     const tabElement = target.closest('[role^="tab"]') as HTMLDivElement;
     const role = tabElement?.getAttribute("role");
     if (role === "tab") {
-      const tabIndex = parseInt(tabElement.dataset.index ?? "-1");
+      const tabIndex = parseInt(tabElement.dataset.idx ?? "-1");
       if (tabIndex !== -1) {
         onMouseDown?.(e, tabIndex);
       } else {

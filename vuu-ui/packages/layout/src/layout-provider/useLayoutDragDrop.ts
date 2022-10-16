@@ -10,7 +10,7 @@ import { getIntrinsicSize } from "../layout-reducer/flexUtils";
 import { followPath } from "../utils";
 import { LayoutProviderDispatch } from "./LayoutProviderContext";
 
-const EMPTY_OBJECT = {} as const;
+const NO_INSTRUCTIONS = {} as DragInstructions;
 const NO_OFFSETS: [number, number] = [0, 0];
 
 interface CurrentDragAction extends Omit<DragStartAction, "evt" | "type"> {
@@ -30,10 +30,8 @@ interface DragOperation {
 // e.g dragging a non-selected tab from a Stack or an item from Palette
 const createElement = (
   rect: DragDropRect,
-  id: string,
-  instructions: DragInstructions
+  id: string
 ): [HTMLElement, string, number, number] => {
-  instructions.RemoveDraggableOnDragEnd = true;
   const div = document.createElement("div");
   div.id = id;
   div.className = "vuuSimpleDraggable";
@@ -92,6 +90,9 @@ export const useLayoutDragDrop = (
         dropTarget,
       });
 
+      console.log(`[useLayoutDragDrop]`, {
+        dragInstructions,
+      });
       if (draggableHTMLElementRef.current) {
         if (dragInstructions.RemoveDraggableOnDragEnd) {
           document.body.removeChild(draggableHTMLElementRef.current);
@@ -120,7 +121,7 @@ export const useLayoutDragDrop = (
         dragContainerPath,
         dragRect,
         // dropTargets,
-        instructions = EMPTY_OBJECT,
+        instructions = NO_INSTRUCTIONS,
         path,
         // preDragActivity,
         // resolveDragStart // see View drag
@@ -131,10 +132,10 @@ export const useLayoutDragDrop = (
         component ?? followPath(rootLayout, path, true);
       const { id } = draggedReactElement.props;
       const intrinsicSize = getIntrinsicSize(draggedReactElement);
-
       let originalCSS = "",
         dragCSS = "",
         dragTransform = "";
+      let dragInstructions = instructions;
 
       let dragStartLeft = -1;
       let dragStartTop = -1;
@@ -145,14 +146,15 @@ export const useLayoutDragDrop = (
       let element = document.getElementById(id);
 
       if (element === null) {
+        // This may bew the case where, for example, we drag a Tab (non selected) from a Tabstrip.
         [element, dragCSS, dragStartLeft, dragStartTop] = createElement(
           dragRect,
-          id,
-          instructions
+          id
         );
-        console.log(
-          `dragStartLeft=${dragStartLeft}, dragStartTop=${dragStartTop}`
-        );
+        dragInstructions = {
+          ...dragInstructions,
+          RemoveDraggableOnDragEnd: true,
+        };
       } else {
         dragOffsets = determineDragOffsets(element);
         const [offsetLeft, offsetTop] = dragOffsets;
@@ -203,6 +205,9 @@ export const useLayoutDragDrop = (
   const prepareToDrag = useCallback(
     (action: DragStartAction) => {
       const { evt, ...options } = action;
+      console.log(`prepare to drag`, {
+        options,
+      });
       dragActionRef.current = {
         ...options,
         dragContainerPath: "",
