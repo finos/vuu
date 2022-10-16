@@ -40,7 +40,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   // private serverViewportId?: string;
 
   public columns: DataSourceColumn[];
-  public rowCount: number;
+  public rowCount: number | undefined;
   public table: VuuTable;
 
   constructor({
@@ -75,8 +75,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.initialFilter = filter;
     this.initialFilterQuery = filterQuery;
     this.initialAggregations = aggregations;
-
-    this.rowCount = 0;
 
     if (!serverUrl && !configUrl) {
       throw Error("RemoteDataSource expects serverUrl or configUrl");

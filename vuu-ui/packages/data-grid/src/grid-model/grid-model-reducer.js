@@ -1,4 +1,4 @@
-import { metadataKeys } from '@vuu-ui/utils';
+import { metadataKeys } from "@vuu-ui/utils";
 import {
   assignKeysToColumns,
   columnKeysToIndices,
@@ -8,41 +8,44 @@ import {
   getHorizontalScrollbarHeight,
   extractGroupColumn,
   GridModel,
-  splitKeys
-} from './grid-model-utils';
+  splitKeys,
+} from "./grid-model-utils";
 
-import * as Action from './grid-model-actions';
+import * as Action from "./grid-model-actions";
 
-const DEFAULT_COLUMN_TYPE = { name: 'string' };
+const DEFAULT_COLUMN_TYPE = { name: "string" };
 const CHECKBOX_COLUMN = {
-  name: '',
+  name: "",
   key: metadataKeys.SELECTED,
   width: 25,
   sortable: false,
   isSystemColumn: true,
   type: {
-    name: 'checkbox',
+    name: "checkbox",
     renderer: {
-      name: 'checkbox-cell'
-    }
-  }
+      name: "checkbox-cell",
+    },
+  },
 };
 
 const LINE_NUMBER_COLUMN = {
-  className: 'vuLineNumber',
+  className: "vuLineNumber",
   flex: 0,
   isSystemColumn: true,
-  label: ' ',
-  name: 'line',
+  label: " ",
+  name: "line",
   key: metadataKeys.IDX,
-  width: 30
+  width: 30,
 };
 
 const RESIZING = { resizing: true, flex: 0 };
 const NOT_RESIZING = { resizing: false };
 
 const GridModelReducer = (state, action) => {
-  // console.log(`%cGridModelReducer ${action.type}`, 'color:red;font-weight:bold;')
+  // console.log(
+  //   `%cGridModelReducer ${action.type}`,
+  //   "color:red;font-weight:bold;"
+  // );
   // @ts-ignore
   return reducerActionHandlers[action.type](state, action);
 };
@@ -51,17 +54,17 @@ export default GridModelReducer;
 const reducerActionHandlers = {
   resize: resizeGrid,
   [Action.COL_RESIZE]: resizeColumn,
-  'resize-heading': resizeHeading,
+  "resize-heading": resizeHeading,
   [Action.ADD_COL]: addColumn,
   initialize: initialize,
   filter: addFilter,
   sort: sortRows,
   group: groupRows,
-  'set-available-columns': setAvailableColumns,
-  'set-aggregations': setAggregations,
-  'column-hide': hideColumn,
-  'column-show': showColumn,
-  [Action.ROW_HEIGHT]: setRowHeight
+  "set-available-columns": setAvailableColumns,
+  "set-aggregations": setAggregations,
+  "column-hide": hideColumn,
+  "column-show": showColumn,
+  [Action.ROW_HEIGHT]: setRowHeight,
 };
 
 export const initModel = ([gridProps, size, custom]) => {
@@ -80,19 +83,19 @@ export const initModel = ([gridProps, size, custom]) => {
     rowHeight,
     selectionModel, // default should be none
     showLineNumbers,
-    sort
+    sort,
   } = gridProps;
 
   const {
     height: assignedHeight,
     measuredHeight: height = assignedHeight,
     width: assignedWidth,
-    measuredWidth: width = assignedWidth
+    measuredWidth: width = assignedWidth,
   } = size;
 
   const isDefaultInitialSize =
-    size.width === '100%' &&
-    size.height === '100%' &&
+    size.width === "100%" &&
+    size.height === "100%" &&
     size.measuredHeight === null &&
     size.measuredWidth === null;
 
@@ -100,7 +103,7 @@ export const initModel = ([gridProps, size, custom]) => {
   const {
     footer: { height: customFooterHeight },
     header: { height: customHeaderHeight },
-    inlineHeader: { height: customInlineHeaderHeight }
+    inlineHeader: { height: customInlineHeaderHeight },
   } = custom;
 
   const state = {
@@ -133,7 +136,7 @@ export const initModel = ([gridProps, size, custom]) => {
     viewportHeight: 0,
     viewportRowCount: 0,
     visualLinks: null,
-    width
+    width,
   };
 
   if (isDefaultInitialSize) {
@@ -152,9 +155,12 @@ function buildColumnsAndApplyMeasurements(state) {
     headerHeight,
     height,
     noColumnHeaders,
-    rowHeight
+    rowHeight,
   } = state;
-  const { columnNames, columnGroups, headingDepth } = buildColumnGroups(state, columns);
+  const { columnNames, columnGroups, headingDepth } = buildColumnGroups(
+    state,
+    columns
+  );
   const totalHeaderHeight = noColumnHeaders
     ? customHeaderHeight
     : headerHeight * headingDepth + customHeaderHeight;
@@ -165,7 +171,8 @@ function buildColumnsAndApplyMeasurements(state) {
 
   state.horizontalScrollbarHeight = getHorizontalScrollbarHeight(columnGroups);
   state.totalHeaderHeight = totalHeaderHeight;
-  state.viewportHeight = height - totalHeaderHeight - customFooterHeight - customInlineHeaderHeight;
+  state.viewportHeight =
+    height - totalHeaderHeight - customFooterHeight - customInlineHeaderHeight;
   state.viewportRowCount = (height - totalHeaderHeight) / rowHeight;
 
   return state;
@@ -176,21 +183,21 @@ function initialize(state, { props }) {
   const custom = {
     inlineHeader: { height: state.customInlineHeaderHeight },
     header: { height: state.customHeaderHeight },
-    footer: { height: state.customFooterHeight }
+    footer: { height: state.customFooterHeight },
   };
 
   const {
     height: measuredHeight,
     width: measuredWidth,
     assignedHeight: height,
-    assignedWidth: width
+    assignedWidth: width,
   } = state;
 
   const size = {
     height,
     width,
     measuredHeight,
-    measuredWidth
+    measuredWidth,
   };
   return initModel([props, size, custom]);
 }
@@ -198,7 +205,6 @@ function initialize(state, { props }) {
 /** @type {GridModelReducer<GridModelResizeAction>} */
 function resizeGrid(state, { height, width }) {
   let { columnGroups } = state;
-
   if (state.width === null || state.height === null) {
     return buildColumnsAndApplyMeasurements({ ...state, height, width });
   } else {
@@ -207,16 +213,25 @@ function resizeGrid(state, { height, width }) {
       customFooterHeight,
       customInlineHeaderHeight,
       rowHeight,
-      totalHeaderHeight
+      totalHeaderHeight,
     } = state;
     const viewportHeight =
-      height - totalHeaderHeight - customFooterHeight - customInlineHeaderHeight;
+      height -
+      totalHeaderHeight -
+      customFooterHeight -
+      customInlineHeaderHeight;
+    console.log(
+      `GridModelReducer resizeGrid - ${width}x${height} ${viewportHeight}`
+    );
     const widthDiff = width - state.width;
 
     if (widthDiff === 0) {
       columnGroups = state.columnGroups;
-    } else if (columnSizing === 'fill') {
-      ({ columnGroups } = buildColumnGroups({ ...state, width }, GridModel.columns(state)));
+    } else if (columnSizing === "fill") {
+      ({ columnGroups } = buildColumnGroups(
+        { ...state, width },
+        GridModel.columns(state)
+      ));
     } else {
       columnGroups = state.columnGroups.map((columnGroup) => {
         if (columnGroup.locked) {
@@ -224,7 +239,7 @@ function resizeGrid(state, { height, width }) {
         } else {
           return {
             ...columnGroup,
-            width: columnGroup.width + widthDiff
+            width: columnGroup.width + widthDiff,
           };
         }
       });
@@ -237,14 +252,17 @@ function resizeGrid(state, { height, width }) {
       height,
       width,
       viewportHeight,
-      viewportRowCount: actualRowCount
+      viewportRowCount: actualRowCount,
     };
   }
 }
 
 function setAvailableColumns(state, action) {
   if (!state.columnGroups) {
-    const { columnNames, columnGroups, headingDepth } = buildColumnGroups(state, action.columns);
+    const { columnNames, columnGroups, headingDepth } = buildColumnGroups(
+      state,
+      action.columns
+    );
     const totalHeaderHeight = state.headerHeight * headingDepth;
 
     return {
@@ -254,7 +272,7 @@ function setAvailableColumns(state, action) {
       headingDepth,
       horizontalScrollbarHeight: getHorizontalScrollbarHeight(columnGroups),
       viewportHeight: state.height - totalHeaderHeight,
-      viewportRowCount: (state.height - totalHeaderHeight) / state.rowHeight
+      viewportRowCount: (state.height - totalHeaderHeight) / state.rowHeight,
     };
   } else {
     return state;
@@ -264,37 +282,40 @@ function setAvailableColumns(state, action) {
 function setAggregations(state, { aggregations }) {
   return {
     ...state,
-    aggregations
+    aggregations,
   };
 }
 
 function sortRows(state, { sort }) {
   return {
     ...state,
-    sort
+    sort,
   };
 }
 
 function addFilter(state, { filter }) {
   return {
     ...state,
-    filter
+    filter,
   };
 }
 
 function groupRows(state, { groupBy = null }) {
-  const { columnGroups } = buildColumnGroups({ ...state, groupBy }, GridModel.columns(state));
+  const { columnGroups } = buildColumnGroups(
+    { ...state, groupBy },
+    GridModel.columns(state)
+  );
 
   return {
     ...state,
     groupBy,
-    columnGroups
+    columnGroups,
   };
 }
 
 /** @type {GridModelReducer<GridModelResizeHeadingAction>} */
 function resizeHeading(state, { phase, column, width }) {
-  if (phase === 'begin') {
+  if (phase === "begin") {
     const { columnGroups } = updateGroupHeadings(
       state.columnGroups,
       column,
@@ -304,12 +325,12 @@ function resizeHeading(state, { phase, column, width }) {
     );
     let headingResizeState = {
       lastSizedCol: 0,
-      ...getColumnPositions(columnGroups, splitKeys(column.key))
+      ...getColumnPositions(columnGroups, splitKeys(column.key)),
     };
     resizeColumnHeaderHeading = (state, column, width) =>
       resizeColumnHeading(state, column, width, headingResizeState);
     return { ...state, columnGroups };
-  } else if (phase === 'resize') {
+  } else if (phase === "resize") {
     return resizeColumnHeaderHeading(state, column, width);
   } else {
     const { columnGroups } = updateGroupHeadings(
@@ -322,7 +343,7 @@ function resizeHeading(state, { phase, column, width }) {
     resizeColumnHeaderHeading = null;
     return {
       ...state,
-      columnGroups
+      columnGroups,
     };
   }
 }
@@ -332,21 +353,25 @@ let resizeColumnHeaderHeading = null;
 function resizeColumnHeading(state, column, width, headingResizeState) {
   const diff = width - column.width;
   const { lastSizedCol: pos, groupIdx, groupColIdx } = headingResizeState;
-  const [lastSizedCol, diffs] = getColumnAdjustments(pos, groupColIdx.length, diff);
+  const [lastSizedCol, diffs] = getColumnAdjustments(
+    pos,
+    groupColIdx.length,
+    diff
+  );
 
   headingResizeState.lastSizedCol = lastSizedCol;
 
   let newState = state;
   for (let i = 0; i < diffs.length; i++) {
-    if (typeof diffs[i] === 'number' && diffs[i] !== 0) {
+    if (typeof diffs[i] === "number" && diffs[i] !== 0) {
       const targetCol = state.columnGroups[groupIdx].columns[groupColIdx[i]];
       newState = resizeColumn(
         { ...newState, headingResizeState },
         {
-          type: 'resize-col',
-          phase: 'resize',
+          type: "resize-col",
+          phase: "resize",
           column: targetCol,
-          width: targetCol.width + diffs[i]
+          width: targetCol.width + diffs[i],
         }
       );
     }
@@ -356,13 +381,19 @@ function resizeColumnHeading(state, column, width, headingResizeState) {
 
 /** @type {GridModelReducer<GridModelHideColumnAction>} */
 function hideColumn(state, { column }) {
-  const columns = GridModel.columns(state).filter((col) => col.name !== column.name);
+  const columns = GridModel.columns(state).filter(
+    (col) => col.name !== column.name
+  );
   const groupBy = GridModel.groupBy(state);
-  const { columnNames, columnGroups } = buildColumnGroups(state, columns, groupBy);
+  const { columnNames, columnGroups } = buildColumnGroups(
+    state,
+    columns,
+    groupBy
+  );
   return {
     ...state,
     columnGroups,
-    columnNames
+    columnNames,
   };
 }
 
@@ -372,7 +403,10 @@ function showColumn(state) {
 }
 
 /** @type {GridModelReducer<GridModelAddColumnAction>} */
-function addColumn(state, { insertIdx: absInsertIdx, targetColumnGroup, column }) {
+function addColumn(
+  state,
+  { insertIdx: absInsertIdx, targetColumnGroup, column }
+) {
   if (absInsertIdx !== -1) {
     targetColumnGroup = getColumnGroup(state, absInsertIdx);
   }
@@ -381,7 +415,9 @@ function addColumn(state, { insertIdx: absInsertIdx, targetColumnGroup, column }
   const targetIdx = state.columnGroups.indexOf(targetColumnGroup);
   const sourceColumnGroup = getColumnGroup(state, column);
   const sourceIdx = state.columnGroups.indexOf(sourceColumnGroup);
-  const sourceColumn = state.columnGroups[sourceIdx].columns.find((col) => col.key === column.key);
+  const sourceColumn = state.columnGroups[sourceIdx].columns.find(
+    (col) => col.key === column.key
+  );
   const columns = state.columnGroups.flatMap((columnGroup, idx) => {
     if (idx === sourceIdx && sourceIdx !== targetIdx) {
       return columnGroup.columns.filter((col) => col.key !== column.key);
@@ -421,20 +457,24 @@ function addColumn(state, { insertIdx: absInsertIdx, targetColumnGroup, column }
       columnProps,
       state.columns,
       absInsertIdx - leadingSystemColumns
-    )
+    ),
   };
 }
 
 /** @type {GridModelReducer<'resize-col'>} */
 function resizeColumn(state, { phase, column, width }) {
-  if (phase === 'resize') {
+  if (phase === "resize") {
     const columnGroups = GridModel.updateGroupColumnWidth(state, column, width);
     return { ...state, columnGroups };
-  } else if (phase === 'begin') {
+  } else if (phase === "begin") {
     const [columnGroups] = GridModel.updateGroupColumn(state, column, RESIZING);
     return { ...state, columnGroups };
   } else {
-    const [columnGroups] = GridModel.updateGroupColumn(state, column, NOT_RESIZING);
+    const [columnGroups] = GridModel.updateGroupColumn(
+      state,
+      column,
+      NOT_RESIZING
+    );
     return {
       ...state,
       columnGroups,
@@ -443,10 +483,10 @@ function resizeColumn(state, { phase, column, width }) {
           ? {
               ...c,
               width,
-              flex: 0
+              flex: 0,
             }
           : c
-      )
+      ),
     };
   }
 }
@@ -457,7 +497,7 @@ function setRowHeight(state, { rowHeight }) {
   return {
     ...state,
     rowHeight,
-    viewportRowCount: (height - totalHeaderHeight) / rowHeight
+    viewportRowCount: (height - totalHeaderHeight) / rowHeight,
   };
 
   //TODO what abl=our scroll bar calculations
@@ -476,7 +516,7 @@ function buildColumnGroups(state, columns) {
     minColumnWidth,
     selectionModel,
     showLineNumbers,
-    width: gridWidth
+    width: gridWidth,
   } = state;
   let column = null;
   let columnGroup = null;
@@ -485,14 +525,25 @@ function buildColumnGroups(state, columns) {
   let availableWidth = gridContentWidth;
 
   const preCols =
-    selectionModel === 'checkbox' ? [CHECKBOX_COLUMN] : showLineNumbers ? [LINE_NUMBER_COLUMN] : [];
+    selectionModel === "checkbox"
+      ? [CHECKBOX_COLUMN]
+      : showLineNumbers
+      ? [LINE_NUMBER_COLUMN]
+      : [];
 
   const headingDepth = getMaxHeadingDepth(columns);
   // TODO separate keys from columns
-  const keyedColumns = assignKeysToColumns(columns, defaultColumnWidth, showLineNumbers);
+  const keyedColumns = assignKeysToColumns(
+    columns,
+    defaultColumnWidth,
+    showLineNumbers
+  );
   const columnNames = keyedColumns.map((col) => col.name);
 
-  const [groupColumn, nonGroupedColumns] = extractGroupColumn(keyedColumns, groupBy);
+  const [groupColumn, nonGroupedColumns] = extractGroupColumn(
+    keyedColumns,
+    groupBy
+  );
   if (groupColumn) {
     const headings = headingDepth > 1 ? [] : undefined;
     columnGroups.push(
@@ -501,7 +552,7 @@ function buildColumnGroups(state, columns) {
         columns: preCols.concat(groupColumn),
         headings,
         width: 0,
-        contentWidth: 0
+        contentWidth: 0,
       })
     );
     addColumnToHeadings(headingDepth, groupColumn, headings);
@@ -526,7 +577,7 @@ function buildColumnGroups(state, columns) {
     locked = false,
     minWidth = minColumnWidth,
     type, // normalize this here
-    width = defaultColumnWidth
+    width = defaultColumnWidth,
   } of preCols.concat(nonGroupedColumns)) {
     if (columnGroup === null || columnGroup.locked !== locked) {
       const headings = headingDepth > 1 ? [] : undefined;
@@ -538,7 +589,7 @@ function buildColumnGroups(state, columns) {
           columns: [],
           left: totalColumnWidth, // TODO this won't be right if we introduce more than one locked group
           width: 0,
-          contentWidth: 0
+          contentWidth: 0,
         })
       );
     }
@@ -554,8 +605,13 @@ function buildColumnGroups(state, columns) {
         locked,
         name,
         key,
-        type: typeof type === 'string' ? { name: type } : type ? type : DEFAULT_COLUMN_TYPE,
-        width
+        type:
+          typeof type === "string"
+            ? { name: type }
+            : type
+            ? type
+            : DEFAULT_COLUMN_TYPE,
+        width,
       })
     );
 
@@ -593,7 +649,7 @@ function buildColumnGroups(state, columns) {
 
   const noInitialFlex = initialFlex.$count === 0;
 
-  if (columnSizing === 'fill') {
+  if (columnSizing === "fill") {
     // spread the diff ...
     const diff = gridContentWidth - totalColumnWidth;
     if ((diff < 0 && minTotalColumnWidth <= gridContentWidth) || diff > 0) {
@@ -638,7 +694,12 @@ const getMaxHeadingDepth = (columns) => {
   return max;
 };
 
-function addColumnToHeadings(maxHeadingDepth, column, headings, collapsedColumns = null) {
+function addColumnToHeadings(
+  maxHeadingDepth,
+  column,
+  headings,
+  collapsedColumns = null
+) {
   const sortable = false;
   const collapsible = true;
   const isHeading = true;
@@ -654,7 +715,8 @@ function addColumnToHeadings(maxHeadingDepth, column, headings, collapsedColumns
         lastHeading.width += width;
         lastHeading.key += `:${key}`;
       } else {
-        const collapsed = collapsedColumns && collapsedColumns.indexOf(colHeaderLabel) !== -1;
+        const collapsed =
+          collapsedColumns && collapsedColumns.indexOf(colHeaderLabel) !== -1;
         let hide = false;
         if (collapsed) {
           // lower depth headings are subheadings, nested subheadings below a collapsed heading
@@ -672,7 +734,11 @@ function addColumnToHeadings(maxHeadingDepth, column, headings, collapsedColumns
             const head = headings[d];
             const colHeadingLabel = colHeader[d + 1];
             if (head && head.length && colHeaderLabel) {
-              const { collapsed: isCollapsed, hidden, label } = head[head.length - 1];
+              const {
+                collapsed: isCollapsed,
+                hidden,
+                label,
+              } = head[head.length - 1];
               if ((isCollapsed || hidden) && label === colHeadingLabel) {
                 hide = true;
               }
@@ -687,36 +753,47 @@ function addColumnToHeadings(maxHeadingDepth, column, headings, collapsedColumns
           collapsible,
           collapsed,
           hidden: hide,
-          isHeading
+          isHeading,
         });
       }
     } else {
       const lowerDepth = headings[depth - 2];
-      const lastLowerDepth = lowerDepth ? lowerDepth[lowerDepth.length - 1] : null;
+      const lastLowerDepth = lowerDepth
+        ? lowerDepth[lowerDepth.length - 1]
+        : null;
 
       if (lastLowerDepth && lastLowerDepth.key === key) {
         // Need to check whether a heading at level below is collapsed
         heading.push({
           key,
-          label: '',
+          label: "",
           width,
           collapsed: lastLowerDepth.collapsed,
           sortable,
-          isHeading
+          isHeading,
         });
       } else if (lastLowerDepth && endsWith(lastLowerDepth.key, `:${key}`)) {
         lastHeading.width += width;
         lastHeading.key += `:${key}`;
       } else {
-        heading.push({ key, label: '', width, isHeading });
+        heading.push({ key, label: "", width, isHeading });
       }
     }
   }
 }
 
-function updateGroupHeadings(groups, column, headingUpdates, subHeadingUpdates, columnUpdates) {
+function updateGroupHeadings(
+  groups,
+  column,
+  headingUpdates,
+  subHeadingUpdates,
+  columnUpdates
+) {
   const keys = splitKeys(column.key);
-  const { groupIdx, groupHeadingIdx, headingColIdx } = getHeadingPosition(groups, column);
+  const { groupIdx, groupHeadingIdx, headingColIdx } = getHeadingPosition(
+    groups,
+    column
+  );
 
   const group = groups[groupIdx];
   const updatedGroup = { ...group, headings: [...group.headings] };
@@ -763,7 +840,9 @@ function getHeadingPosition(groups, column) {
   for (let i = 0; i < groups.length; i++) {
     const { headings = null } = groups[i];
     for (let j = 0; headings && j < headings.length; j++) {
-      const idx = headings[j].findIndex((h) => h.key === column.key && h.label === column.label);
+      const idx = headings[j].findIndex(
+        (h) => h.key === column.key && h.label === column.label
+      );
       if (idx !== -1) {
         return { groupIdx: i, groupHeadingIdx: j, headingColIdx: idx };
       }
@@ -803,7 +882,9 @@ function getColumnAdjustments(pos, numCols, diff) {
 }
 
 function endsWith(string, subString) {
-  const str = typeof string === 'string' ? string : string.toString();
+  const str = typeof string === "string" ? string : string.toString();
 
-  return subString.length >= str.length ? false : str.slice(-subString.length) === subString;
+  return subString.length >= str.length
+    ? false
+    : str.slice(-subString.length) === subString;
 }

@@ -28,9 +28,7 @@ const setServerUrl = (server: string) => {
  * @param token
  */
 export const connectToServer = (serverUrl: string, token?: string) => {
-  console.log("[useServerConnection.connectToServer]");
   if (serverUrl && serverUrl !== _serverString) {
-    console.log("...set the _serverUrl");
     setServerUrl(serverUrl);
     ConnectionManager.connect(serverUrl, token);
   }
@@ -40,9 +38,6 @@ export const getServerUrl = () => _serverString;
 
 export const useServerConnection = (serverUrl?: string) => {
   // Lets assume for now this doesn't change at runtime
-  console.log(
-    `[useServerConnection] serverUrl ${serverUrl} _serverUrl ${_serverUrl}`
-  );
   if (_serverUrl === null && serverUrl) {
     // is this possible without the authToken
     connectToServer(serverUrl);
@@ -52,19 +47,12 @@ export const useServerConnection = (serverUrl?: string) => {
   useEffect(() => {
     let active = true;
     async function connect() {
-      console.log(
-        `[useServerConnection] connect _serverUrl ${_serverUrl} await server ...`
-      );
       const url = await _serverUrl;
-      console.log(`got the server Url ${url}`);
       const res = await ConnectionManager.connect(url);
-      console.log(`...got the server`);
-      console.log({ useEffectServer: res });
       if (active) {
         setServer(res);
       }
     }
-    console.log(`1 ? [useServerConnection] useEffect, call connect`);
     connect();
     return () => {
       active = false;

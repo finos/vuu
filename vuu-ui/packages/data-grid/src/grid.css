@@ -1,5 +1,5 @@
 .hwDataGrid {
-  --grid-background: var(--grid-background, inherit);
+  --grid-background: var(--uitk-container-background-medium, inherit);
   --grid-row-background: inherit;
   --grid-row-height: var(--grid-row-height, 20px);
   --grid-row-line-height: 19px;

@@ -1,28 +1,34 @@
-import React, { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
-import { ContextMenuProvider } from '@vuu-ui/ui-controls';
-import { useForkRef } from '@vuu-ui/react-utils';
-import cx from 'classnames';
-import { GridProvider } from './grid-context';
-import { buildContextMenuDescriptors, useContextMenu } from './context-menu';
-import * as Action from './context-menu/context-menu-actions';
-import * as GridModelAction from './grid-model/grid-model-actions';
-import { RowHeightCanary } from './row-height-canary';
-import { ComponentProvider } from './component-context';
-import { useGridModel } from './grid-model/use-grid-model';
-import useDataSourceModelBindings from './use-datasource-model-bindings';
+import React, {
+  forwardRef,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { ContextMenuProvider } from "@vuu-ui/ui-controls";
+import { useForkRef } from "@vuu-ui/react-utils";
+import cx from "classnames";
+import { GridProvider } from "./grid-context";
+import { buildContextMenuDescriptors, useContextMenu } from "./context-menu";
+import * as Action from "./context-menu/context-menu-actions";
+import * as GridModelAction from "./grid-model/grid-model-actions";
+import { RowHeightCanary } from "./row-height-canary";
+import { ComponentProvider } from "./component-context";
+import { useGridModel } from "./grid-model/use-grid-model";
+import useDataSourceModelBindings from "./use-datasource-model-bindings";
 import {
   useGridActions,
   useKeyboardNavigation,
   useScrollInducedLayoutShift,
-  useSelection
-} from './grid-hooks';
-import Viewport from './viewport';
-import { measureColumns } from './grid-model/grid-model-utils';
-import components from './standard-renderers';
+  useSelection,
+} from "./grid-hooks";
+import Viewport from "./viewport";
+import { measureColumns } from "./grid-model/grid-model-utils";
+import components from "./standard-renderers";
 
-import { Footer, Header, InlineHeader } from './grid-adornments';
+import { Footer, Header, InlineHeader } from "./grid-adornments";
 
-import './grid.css';
+import "./grid.css";
 // TODO use a null datasource and empty columns defs
 // display a warning if loaded with no dataSource
 
@@ -30,15 +36,15 @@ const noop = () => undefined;
 const DEFAULT_COLUMN_WIDTH = 100;
 const MIN_COLUMN_WIDTH = 80;
 
-const baseClass = 'hwDataGrid';
+const baseClass = "hwDataGrid";
 
 const Grid = forwardRef(function Grid(
   {
     aggregations,
-    cellSelectionModel = 'none',
+    cellSelectionModel = "none",
     className,
     columns,
-    columnSizing = 'static',
+    columnSizing = "static",
     dataSource: dataSourceProp,
     defaultColumnWidth = DEFAULT_COLUMN_WIDTH,
     filter,
@@ -63,27 +69,28 @@ const Grid = forwardRef(function Grid(
   const viewportRef = useRef(null);
   const gridModelRef = useRef(null);
   const [columnDragData, setColumnDragData] = useState(null);
-  const [rootRef, gridModel, dataSource, dispatchGridModelAction, custom] = useGridModel({
-    aggregations,
-    cellSelectionModel,
-    columns,
-    columnSizing,
-    dataSource: dataSourceProp,
-    defaultColumnWidth,
-    filter,
-    groupBy,
-    headerHeight,
-    height: heightProp,
-    minColumnWidth,
-    noColumnHeaders,
-    renderBufferSize,
-    rowHeight,
-    selectionModel, // default should be none
-    showLineNumbers,
-    sort,
-    style: styleProp,
-    width: widthProp
-  });
+  const [rootRef, gridModel, dataSource, dispatchGridModelAction, custom] =
+    useGridModel({
+      aggregations,
+      cellSelectionModel,
+      columns,
+      columnSizing,
+      dataSource: dataSourceProp,
+      defaultColumnWidth,
+      filter,
+      groupBy,
+      headerHeight,
+      height: heightProp,
+      minColumnWidth,
+      noColumnHeaders,
+      renderBufferSize,
+      rowHeight,
+      selectionModel, // default should be none
+      showLineNumbers,
+      sort,
+      style: styleProp,
+      width: widthProp,
+    });
 
   gridModelRef.current = gridModel;
 
@@ -96,28 +103,30 @@ const Grid = forwardRef(function Grid(
 
   const handleSelectionChange = useSelection({
     onChange: onChangeCallDatasourceSelect,
-    selection: gridModel.selectionModel
+    selection: gridModel.selectionModel,
   });
 
   const invokeScrollAction = useScrollInducedLayoutShift({
     gridModel,
     rootRef,
-    viewportRef
+    viewportRef,
   });
 
   const invokeDataSourceAction = useCallback(
     (operation) => {
       switch (operation.type) {
-        case 'openTreeNode':
+        case "openTreeNode":
           return dataSource.openTreeNode(operation.key);
-        case 'closeTreeNode':
+        case "closeTreeNode":
           return dataSource.closeTreeNode(operation.key);
-        case 'group':
+        case "group":
           return dataSource.group(operation.key);
         case Action.Sort:
           return dataSource.sort(operation.columns);
         default:
-          console.log(`[GridBase] dataSourceOperation: unknown operation ${operation.type}`);
+          console.log(
+            `[GridBase] dataSourceOperation: unknown operation ${operation.type}`
+          );
       }
     },
     [dataSource]
@@ -127,12 +136,12 @@ const Grid = forwardRef(function Grid(
     ({ type }) => {
       if (onConfigChange) {
         switch (type) {
-          case 'columns': {
+          case "columns": {
             const {
-              current: { columns }
+              current: { columns },
             } = gridModelRef;
             return onConfigChange({
-              columns
+              columns,
             });
           }
           default:
@@ -147,13 +156,13 @@ const Grid = forwardRef(function Grid(
     invokeDataSourceAction,
     handleSelectionChange,
     invokeScrollAction,
-    onConfigChange: handleConfigChange
+    onConfigChange: handleConfigChange,
   });
 
   const handleContextMenuAction = useContextMenu({
     dataSource,
     gridModel,
-    dispatchGridModelAction
+    dispatchGridModelAction,
   });
 
   useDataSourceModelBindings(dataSource, gridModel);
@@ -164,14 +173,16 @@ const Grid = forwardRef(function Grid(
       const [columnGroupIdx, column, columnPosition, mousePosition] = args;
       const { left } = rootRef.current.getBoundingClientRect();
       const columnGroup = gridModel.columnGroups[columnGroupIdx];
-      invokeScrollAction({ type: 'scroll-start-horizontal' });
+      invokeScrollAction({ type: "scroll-start-horizontal" });
       setColumnDragData({
         column,
         columnGroupIdx,
-        columnIdx: columnGroup.columns.findIndex((col) => col.key === column.key),
+        columnIdx: columnGroup.columns.findIndex(
+          (col) => col.key === column.key
+        ),
         initialColumnPosition: columnPosition - left,
         columnPositions: measureColumns(gridModel, left),
-        mousePosition
+        mousePosition,
       });
     },
     [gridModel, invokeScrollAction, rootRef]
@@ -181,20 +192,25 @@ const Grid = forwardRef(function Grid(
       const [column, insertIdx] = args;
       setColumnDragData(null);
       // TODO we need the final scrollLeft here
-      invokeScrollAction({ type: 'scroll-end-horizontal' });
-      dispatchGridModelAction({ type: GridModelAction.ADD_COL, column, insertIdx });
-      setTimeout(() => handleConfigChange({ type: 'columns' }), 0);
+      invokeScrollAction({ type: "scroll-end-horizontal" });
+      dispatchGridModelAction({
+        type: GridModelAction.ADD_COL,
+        column,
+        insertIdx,
+      });
+      setTimeout(() => handleConfigChange({ type: "columns" }), 0);
     },
     [dispatchGridModelAction, handleConfigChange, invokeScrollAction]
   );
 
-  const { assignedWidth, assignedHeight, width, height, totalHeaderHeight } = gridModel;
+  const { assignedWidth, assignedHeight, width, height, totalHeaderHeight } =
+    gridModel;
   const style = {
     ...styleProp,
     width: assignedWidth,
     height: assignedHeight,
     paddingTop: totalHeaderHeight,
-    '--grid-row-height': `${gridModel.rowHeight}px`
+    "--grid-row-height": `${gridModel.rowHeight}px`,
   };
 
   const gridContextData = useMemo(
@@ -203,7 +219,7 @@ const Grid = forwardRef(function Grid(
       dataSource,
       dispatchGridAction,
       dispatchGridModelAction,
-      gridModel
+      gridModel,
     }),
     [custom, dataSource, dispatchGridAction, dispatchGridModelAction, gridModel]
   );
@@ -214,7 +230,8 @@ const Grid = forwardRef(function Grid(
       <ContextMenuProvider
         label="Grid"
         menuActionHandler={handleContextMenuAction}
-        menuBuilder={buildContextMenuDescriptors(gridModel)}>
+        menuBuilder={buildContextMenuDescriptors(gridModel)}
+      >
         <ComponentProvider components={components}>
           <div
             {...htmlAttributes}
@@ -222,7 +239,8 @@ const Grid = forwardRef(function Grid(
             ref={useForkRef(ref, rootRef)}
             role="grid"
             style={style}
-            tabIndex={0}>
+            tabIndex={0}
+          >
             <RowHeightCanary />
             {height == null || width === null ? null : (
               <>
@@ -253,6 +271,6 @@ Grid.Header = Header;
 Grid.InlineHeader = InlineHeader;
 Grid.Footer = Footer;
 
-Grid.displayName = 'Grid';
+Grid.displayName = "Grid";
 
 export default Grid;

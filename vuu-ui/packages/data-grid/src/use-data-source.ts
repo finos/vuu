@@ -16,6 +16,11 @@ const { RENDER_IDX } = metadataKeys;
 
 const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
 
+type SubscriptionDetails = {
+  columnNames: string[];
+  range: { from: number; to: number };
+};
+
 // const uniqueKeys = rows => {
 //   const keys = rows.map(row => row[1]).filter(i => i !== undefined);
 //   const uniqueKeys = new Set(keys);
@@ -24,7 +29,7 @@ const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
 
 //TODO allow subscription details to be set before subscribe call
 export default function useDataSource(
-  subscriptionDetails,
+  subscriptionDetails: SubscriptionDetails,
   gridModel,
   onConfigChange,
   onSizeChange
@@ -35,6 +40,7 @@ export default function useDataSource(
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
   const rafHandle = useRef(null);
+  const data = useRef([]);
 
   const dataWindow = useMemo(
     () =>
@@ -147,8 +153,6 @@ export default function useDataSource(
     rafHandle.current = requestAnimationFrame(refreshIfUpdated);
   }, [refreshIfUpdated]);
 
-  const data = useRef([]);
-
   const setRange = useCallback(
     (from, to) => {
       const range = getFullRange(
@@ -156,7 +160,6 @@ export default function useDataSource(
         gridModel.renderBufferSize,
         dataSource.rowCount
       );
-      // onsole.log(`[useDataSource] setRange ${lo} ${hi} > full range ${from} ${to}`)
       dataSource.setRange(range.from, range.to);
       dataWindow.setRange(range.from, range.to);
     },

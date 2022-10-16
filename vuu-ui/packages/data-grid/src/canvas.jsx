@@ -5,22 +5,22 @@ import React, {
   useImperativeHandle,
   useMemo,
   useReducer,
-  useRef
-} from 'react';
-import cx from 'classnames';
-import { metadataKeys } from '@vuu-ui/utils';
-import GridContext from './grid-context';
-import ColumnGroupHeader from './column-group-header';
-import useScroll from './use-scroll';
-import useUpdate from './use-update';
-import canvasReducer, { initCanvasReducer } from './canvas-reducer';
-import Row from './grid-row';
-import { getColumnOffset } from './grid-model/grid-model-utils';
+  useRef,
+} from "react";
+import cx from "classnames";
+import { metadataKeys } from "@vuu-ui/utils";
+import GridContext from "./grid-context";
+import ColumnGroupHeader from "./column-group-header";
+import useScroll from "./use-scroll";
+import useUpdate from "./use-update";
+import canvasReducer, { initCanvasReducer } from "./canvas-reducer";
+import Row from "./grid-row";
+import { getColumnOffset } from "./grid-model/grid-model-utils";
 
 const { IDX, RENDER_IDX, count: metadataCount } = metadataKeys;
 // const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
 
-const classBase = 'hwDataGridCanvas';
+const classBase = "hwDataGridCanvas";
 
 /** @type {Canvas} */
 const Canvas = forwardRef(function Canvas(
@@ -33,7 +33,7 @@ const Canvas = forwardRef(function Canvas(
     onColumnDragStart,
     onRowClick,
     data: rows,
-    toggleStrategy
+    toggleStrategy,
   },
   ref
 ) {
@@ -42,7 +42,9 @@ const Canvas = forwardRef(function Canvas(
   const columnGroupHeader = useRef(null);
   const { dispatchGridAction } = useContext(GridContext);
   const columnGroup = gridModel.columnGroups[columnGroupIdx];
-  const scrollbarHeightAdjustment = columnGroup.locked ? horizontalScrollbarHeight : 0;
+  const scrollbarHeightAdjustment = columnGroup.locked
+    ? horizontalScrollbarHeight
+    : 0;
 
   const [[columns, cellKeys], dispatchCanvasAction] = useReducer(
     canvasReducer,
@@ -58,10 +60,11 @@ const Canvas = forwardRef(function Canvas(
   }, [gridModel.columnNames]);
 
   useUpdate(() => {
-    dispatchCanvasAction({ type: 'refresh', columnGroup });
+    dispatchCanvasAction({ type: "refresh", columnGroup });
   }, [columnGroup.width, columnGroup.columns]);
 
-  const getColumnIdx = (column) => columns.findIndex((col) => col.key === column.key);
+  const getColumnIdx = (column) =>
+    columns.findIndex((col) => col.key === column.key);
 
   useImperativeHandle(ref, () => ({
     beginHorizontalScroll: () => {
@@ -69,21 +72,27 @@ const Canvas = forwardRef(function Canvas(
         ? gridModel.height - horizontalScrollbarHeight
         : gridModel.height;
       canvasEl.current.style.height = `${
-        canvasHeight - gridModel.customHeaderHeight - gridModel.customFooterHeight
+        canvasHeight -
+        gridModel.customHeaderHeight -
+        gridModel.customFooterHeight
       }px`;
     },
     endHorizontalScroll: () => {
-      const canvasHeight = columnGroup.locked ? height - horizontalScrollbarHeight : height;
+      const canvasHeight = columnGroup.locked
+        ? height - horizontalScrollbarHeight
+        : height;
       canvasEl.current.style.height = `${canvasHeight}px`;
     },
     beginVerticalScroll: () => {
-      canvasEl.current.style.marginTop = '0px';
-      canvasEl.current.style.height = `${contentHeight + horizontalScrollbarHeight}px`;
-      contentEl.current.style.transform = 'translate3d(0px, 0px, 0px)';
+      canvasEl.current.style.marginTop = "0px";
+      canvasEl.current.style.height = `${
+        contentHeight + horizontalScrollbarHeight
+      }px`;
+      contentEl.current.style.transform = "translate3d(0px, 0px, 0px)";
     },
 
     endVerticalScroll: (scrollTop) => {
-      canvasEl.current.style.marginTop = scrollTop + 'px';
+      canvasEl.current.style.marginTop = scrollTop + "px";
       canvasEl.current.style.height = `${height - scrollbarHeightAdjustment}px`;
       contentEl.current.style.transform = `translate3d(0px, -${scrollTop}px, 0px)`;
     },
@@ -124,18 +133,18 @@ const Canvas = forwardRef(function Canvas(
         const effect = {
           replaceClass: {
             idx,
-            className: 'DraggedColumn',
-            newClassName: 'Vanishing'
+            className: "DraggedColumn",
+            newClassName: "Vanishing",
           },
-          openSpaceLeft: { idx: insertIdx }
+          openSpaceLeft: { idx: insertIdx },
         };
         applyOperation(effect, [headerCells], column.width);
         applyOperation(effect, rows, column.width);
         return new Promise((resolve) => {
-          headerCells[idx].addEventListener('transitionend', () => {
+          headerCells[idx].addEventListener("transitionend", () => {
             const effect = {
-              removeClass: { idx, className: 'Vanishing' },
-              closeSpaceLeft: { idx: -insertIdx }
+              removeClass: { idx, className: "Vanishing" },
+              closeSpaceLeft: { idx: -insertIdx },
             };
             applyOperation(effect, [headerCells]);
             applyOperation(effect, rows);
@@ -151,7 +160,7 @@ const Canvas = forwardRef(function Canvas(
 
     get scrollLeft() {
       return canvasEl.current.scrollLeft;
-    }
+    },
   }));
 
   // TODO memoize
@@ -163,28 +172,28 @@ const Canvas = forwardRef(function Canvas(
         const cells = Array.isArray(rows[i]) ? rows[i] : rows[i].childNodes;
         if (idx !== -1 && idx < cells.length) {
           switch (opName) {
-            case 'openSpaceLeft':
+            case "openSpaceLeft":
               openSpaceLeft(cells[idx], width, suppressTransition);
               break;
-            case 'closeSpaceLeft':
+            case "closeSpaceLeft":
               closeSpaceLeft(cells[idx], suppressTransition);
               break;
-            case 'openSpaceRight':
+            case "openSpaceRight":
               openSpaceRight(cells[idx], width);
               break;
-            case 'closeSpaceRight':
+            case "closeSpaceRight":
               closeSpaceRight(cells[idx], suppressTransition);
               break;
-            case 'hide':
-              cells[idx].style.display = 'none';
+            case "hide":
+              cells[idx].style.display = "none";
               break;
-            case 'addClass':
-              cells[idx].classList.add('DraggedColumn');
+            case "addClass":
+              cells[idx].classList.add("DraggedColumn");
               break;
-            case 'removeClass':
+            case "removeClass":
               cells[idx].classList.remove(args.className);
               break;
-            case 'replaceClass':
+            case "replaceClass":
               cells[idx].classList.replace(args.className, args.newClassName);
               break;
             default:
@@ -207,7 +216,8 @@ const Canvas = forwardRef(function Canvas(
         }
       } else {
         // need to read this once, at start
-        const maxScroll = canvasEl.current.scrollWidth - canvasEl.current.clientWidth;
+        const maxScroll =
+          canvasEl.current.scrollWidth - canvasEl.current.clientWidth;
         if (scrollLeft === maxScroll) {
           return 0;
         } else {
@@ -225,15 +235,22 @@ const Canvas = forwardRef(function Canvas(
 
   const horizontalScrollHandler = useCallback(
     (scrollEvent, scrollLeft) => {
-      if (scrollEvent === 'scroll') {
-        dispatchCanvasAction({ type: 'scroll-left', scrollLeft });
-      } else if (scrollEvent === 'scroll-start') {
-        dispatchGridAction({ type: 'scroll-start-horizontal', scrollLeft });
-        columnGroupHeader.current.beginHorizontalScroll(columnGroup.contentWidth);
+      if (scrollEvent === "scroll") {
+        dispatchCanvasAction({ type: "scroll-left", scrollLeft });
+      } else if (scrollEvent === "scroll-start") {
+        dispatchGridAction({ type: "scroll-start-horizontal", scrollLeft });
+        columnGroupHeader.current.beginHorizontalScroll(
+          columnGroup.contentWidth
+        );
       } else {
-        canvasEl.current.style.height = `${height - scrollbarHeightAdjustment}px`;
-        columnGroupHeader.current.endHorizontalScroll(scrollLeft, columnGroup.width);
-        dispatchGridAction({ type: 'scroll-end-horizontal', scrollLeft });
+        canvasEl.current.style.height = `${
+          height - scrollbarHeightAdjustment
+        }px`;
+        columnGroupHeader.current.endHorizontalScroll(
+          scrollLeft,
+          columnGroup.width
+        );
+        dispatchGridAction({ type: "scroll-end-horizontal", scrollLeft });
       }
     },
     [
@@ -242,7 +259,7 @@ const Canvas = forwardRef(function Canvas(
       dispatchCanvasAction,
       dispatchGridAction,
       height,
-      scrollbarHeightAdjustment
+      scrollbarHeightAdjustment,
     ]
   );
 
@@ -256,31 +273,38 @@ const Canvas = forwardRef(function Canvas(
       }
 
       dispatchGridAction({
-        type: 'selection',
+        type: "selection",
         idx,
         row,
         rangeSelect,
-        keepExistingSelection
+        keepExistingSelection,
       });
     },
     [dispatchGridAction, onRowClick]
   );
 
-  const [onHorizontalScroll] = useScroll('scrollLeft', horizontalScrollHandler, 5);
+  const [onHorizontalScroll] = useScroll(
+    "scrollLeft",
+    horizontalScrollHandler,
+    5
+  );
 
   const rootClassName = cx(classBase, {
-    'Canvas-fixed': columnGroup.locked,
-    'Canvas-scrollable': !columnGroup.locked
+    "Canvas-fixed": columnGroup.locked,
+    "Canvas-scrollable": !columnGroup.locked,
   });
 
-  const canvasHeight = columnGroup.locked ? height - horizontalScrollbarHeight : height;
+  const canvasHeight = columnGroup.locked
+    ? height - horizontalScrollbarHeight
+    : height;
 
   return (
     <div
       className={rootClassName}
       ref={canvasEl}
       style={{ height: canvasHeight, width }}
-      onScroll={onHorizontalScroll}>
+      onScroll={onHorizontalScroll}
+    >
       {/* Dont need to render header if noColumnHeaders specified */}
       <ColumnGroupHeader
         columnGroup={columnGroup}
@@ -294,8 +318,9 @@ const Canvas = forwardRef(function Canvas(
         ref={contentEl}
         style={{
           width: contentWidth,
-          height: Math.max(contentHeight + horizontalScrollbarHeight, height)
-        }}>
+          height: Math.max(contentHeight + horizontalScrollbarHeight, height),
+        }}
+      >
         {/* {rows.sort(byKey).map((row) => ( */}
         {rows.map((row) => (
           <Row
@@ -321,37 +346,37 @@ const getHeaderCells = (canvasEl) =>
   Array.from(canvasEl.current.querySelectorAll("[role='columnheader']"));
 
 const closeSpaceLeft = (el, suppressTransition) => {
-  el.style.marginLeft = '0px';
+  el.style.marginLeft = "0px";
   if (suppressTransition === true) {
     el.style.transition = null;
   } else {
-    el.style.transition = 'margin .15s ease-in-out';
+    el.style.transition = "margin .15s ease-in-out";
   }
 };
 
 const closeSpaceRight = (el, suppressTransition) => {
-  el.style.marginRight = '0px';
-  el.style.width = parseInt(el.style.width) - 1 + 'px';
-  el.style.borderRight = 'none';
+  el.style.marginRight = "0px";
+  el.style.width = parseInt(el.style.width) - 1 + "px";
+  el.style.borderRight = "none";
   if (suppressTransition === true) {
     el.style.transition = null;
   } else {
-    el.style.transition = 'margin .15s ease-in-out';
+    el.style.transition = "margin .15s ease-in-out";
   }
 };
 
 const openSpaceLeft = (el, size, suppressTransition) => {
-  el.style.marginLeft = size - 1 + 'px';
+  el.style.marginLeft = size - 1 + "px";
   if (suppressTransition !== true) {
-    el.style.transition = 'margin .3s ease';
+    el.style.transition = "margin .3s ease";
   }
 };
 
 const openSpaceRight = (el, size, suppressTransition) => {
-  el.style.marginRight = size - 1 + 'px';
-  el.style.width = parseInt(el.style.width) + 1 + 'px';
-  el.style.borderRight = 'solid 1px #ccc';
+  el.style.marginRight = size - 1 + "px";
+  el.style.width = parseInt(el.style.width) + 1 + "px";
+  el.style.borderRight = "solid 1px #ccc";
   if (suppressTransition !== true) {
-    el.style.transition = 'margin .15s ease-in-out';
+    el.style.transition = "margin .15s ease-in-out";
   }
 };
