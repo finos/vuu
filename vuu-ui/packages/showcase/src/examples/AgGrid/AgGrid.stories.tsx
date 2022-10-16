@@ -1,6 +1,6 @@
 import { AgGridReact } from "ag-grid-react";
 import { createColumnDefs } from "./createColumnDefs";
-import { AgGridViewportDataSource } from "./AgGridDataSource";
+import { AgGridViewportDataSource } from "@vuu-ui/ag-grid";
 import { SuggestionFetcher, useViewserver } from "@vuu-ui/data-remote";
 
 import "ag-grid-enterprise";
