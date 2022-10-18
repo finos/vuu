@@ -2,9 +2,9 @@ name: Legal report with Maven
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    paths:
+      - 'pom.xml'
+      - '.github/workflows/legal-report.yml'
 
 jobs:
   build:
