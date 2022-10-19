@@ -67,7 +67,7 @@
         <curator.version>3.1.0</curator.version>
         <scalatest.version>3.2.9</scalatest.version>
         <scala.logging>3.9.4</scala.logging>
-        <jackson.version>2.13.4</jackson.version>
+        <jackson.version>2.14.0-rc2</jackson.version>
         <aeron.version>1.17.0</aeron.version>
         <antlr.version>4.9.1</antlr.version>
         <netty.version>4.1.70.Final</netty.version>
