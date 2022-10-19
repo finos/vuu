@@ -3,7 +3,7 @@ name: Legal report with Maven
 on:
   push:
     paths:
-      - 'pom.xml'
+      - '**/pom.xml'
       - '.github/workflows/legal-report.yml'
 
 jobs:
