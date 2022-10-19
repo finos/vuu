@@ -19,7 +19,7 @@ jobs:
     - name: Build with Maven
       run: mvn clean install -Dmaven.test.skip=true
     - name: Legal report
-      run: mvn org.apache.maven.plugins:maven-site-plugin:3.12.1:site org.apache.maven.plugins:maven-project-info-reports-plugin:3.4.1:licenses
+      run: mvn org.apache.maven.plugins:maven-site-plugin:3.12.1:site org.apache.maven.plugins:maven-project-info-reports-plugin:3.4.1:licenses -P legal-report
     - name: Upload legal reports
       uses: actions/upload-artifact@v3
       with:
