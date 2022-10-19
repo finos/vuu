@@ -83,13 +83,6 @@ export const Stack = forwardRef(function Stack(
     }
   };
 
-  const handleTabEdit = (e: any, tabIndex: number, label: string) => {
-    // if uncontrolled, handle it internally
-    if (onTabEdit) {
-      onTabEdit(e, tabIndex, label);
-    }
-  };
-
   const handleExitEditMode = useCallback(
     (
       oldText: string,
@@ -97,7 +90,7 @@ export const Stack = forwardRef(function Stack(
       allowDeactivation: boolean,
       tabIndex: number
     ) => {
-      console.log(`handleExitEditMode ${oldText} => ${newText} @ ${tabIndex}`);
+      onTabEdit?.(tabIndex, newText);
     },
     []
   );

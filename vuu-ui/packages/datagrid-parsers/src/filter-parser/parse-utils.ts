@@ -3,7 +3,6 @@ import { Filter } from "@vuu-ui/utils";
 
 //TODO need to ingestthese in a non-specific way
 import { FilterParser } from "../../generated/parsers/filter/FilterParser";
-import { NamedFilter, ParsedFilter } from "./FilterVisitor";
 const singleCharacterSymbols = new Set([
   FilterParser.EQ,
   FilterParser.GT,
@@ -65,7 +64,7 @@ export const replaceAll = (text) => {
   }
 };
 
-export const filterAsQuery = (filter: Filter, namedFilters) => {
+export const filterAsQuery = (filter: Filter, namedFilters = {}): string => {
   console.log(`filterAsQuery`, {
     filter,
   });
@@ -90,7 +89,7 @@ export const filterAsQuery = (filter: Filter, namedFilters) => {
   return query;
 };
 
-export function extractFilter([parseResult]: ParsedFilter): {
+export function extractFilter(parseResult: Filter): {
   filter: Filter;
   name?: string;
 } {

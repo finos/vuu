@@ -1,9 +1,9 @@
 import { CharStreams } from "antlr4ts/CharStreams";
 import { CommonTokenStream } from "antlr4ts/CommonTokenStream";
-import { lastWord } from "@vuu-ui/utils";
+import { Filter, lastWord } from "@vuu-ui/utils";
 import { FilterParser } from "../../generated/parsers/filter/FilterParser";
 import { FilterLexer } from "../../generated/parsers/filter/FilterLexer";
-import FilterVisitor, { ParsedFilter } from "./FilterVisitor.js";
+import FilterVisitor from "./FilterVisitor.js";
 import {
   ExactMatchFromListError,
   OpenListError,
@@ -47,7 +47,7 @@ export type ParserResults<ParsedType = unknown> = [
   string | undefined
 ];
 
-export type FilterParseResults = ParserResults<ParsedFilter>;
+export type FilterParseResults = ParserResults<Filter>;
 
 function constructParser(input: string) {
   let inputStream = CharStreams.fromString(input);
@@ -81,9 +81,7 @@ export const parseFilter = (
   const parseTree = parser.expression();
   // onsole.log({ tokens: parser.inputStream.tokens.map((t) => t.text) });
   const visitor = new FilterVisitor();
-  const parseResult = visitor.visit(parseTree);
-  console.log(JSON.stringify(parseResult, null, 2));
-
+  const [parseResult] = visitor.visit(parseTree) as [Filter];
   const caretPosition = typedInput.length;
 
   const substitution =

@@ -6,6 +6,7 @@ import {
   SuggestionResult,
 } from "@vuu-ui/datagrid-parsers";
 import { UIToken } from "@vuu-ui/datagrid-parsers/src/filter-parser/ui-tokens";
+import { Filter, isMultiClauseFilter } from "@vuu-ui/utils";
 
 const filterListValues = (values, selectedValues, text) => {
   console.log(
@@ -187,15 +188,14 @@ const fetchInstruments = async (text) => {
   });
 };
 
-const getCurrentColumn = (filters, idx = 0) => {
-  const f = filters[idx];
-  if (!f) {
+const getCurrentColumn = (filter: Filter): string | undefined => {
+  if (!filter) {
     return undefined;
   } else {
-    if (f.op === "or" || f.op === "and") {
-      return getCurrentColumn(f.filters, f.filters.length - 1);
+    if (isMultiClauseFilter(filter)) {
+      return getCurrentColumn(filter.filters[filter.filters.length - 1]);
     } else {
-      return f.column;
+      return filter.column;
     }
   }
 };
@@ -241,7 +241,7 @@ const createSuggestionProvider =
     columns: Array<{ name: string }>;
     namedFilters?: string[];
   }): SuggestionProvider =>
-  ({ parsedFilter, isListItem, operator, token: tokenId, text, values }) => {
+  ({ filter, isListItem, operator, token: tokenId, text, values }) => {
     console.log(
       `SuggestionProvider selectedSuggestions ${JSON.stringify(values)}`
     );
@@ -251,7 +251,7 @@ const createSuggestionProvider =
         return suggestColumnNames(columns, text, isListItem);
       case "COLUMN-VALUE":
         return suggestColumnValues(
-          getCurrentColumn(parsedFilter),
+          getCurrentColumn(filter),
           text,
           operator,
           isListItem,

@@ -1,12 +1,10 @@
 import { ColumnDataType, TypeaheadParams, VuuTable } from "@vuu-ui/data-types";
 import {
-  Filter,
-  isCompositeFilter,
   NamedFilter,
-  ParsedFilter,
   SuggestionItem,
   SuggestionProviderProps,
 } from "@vuu-ui/datagrid-parsers";
+import { Filter, isMultiClauseFilter } from "@vuu-ui/utils";
 import { SchemaColumn } from "@vuu-ui/data-remote";
 
 type ObjectValue = { [key: string]: string };
@@ -153,25 +151,26 @@ const suggestColumnValues = (
 };
 
 const getCurrentColumn = (
-  filters: ParsedFilter | Filter[],
-  columns: SchemaColumn[],
-  idx = 0
+  filter: Filter,
+  columns: SchemaColumn[]
 ): SchemaColumn => {
-  const f = filters[idx];
-  if (!f) {
+  if (!filter) {
     throw Error(
       `VuuFilterSuggestionProvider cannot suggest column values before a column has been specified`
     );
   } else {
-    if (isCompositeFilter(f)) {
-      return getCurrentColumn(f.filters, columns, f.filters.length - 1);
+    if (isMultiClauseFilter(filter)) {
+      return getCurrentColumn(
+        filter.filters[filter.filters.length - 1],
+        columns
+      );
     } else {
-      const column = columns.find((col) => col.name === f.column);
+      const column = columns.find((col) => col.name === filter.column);
       if (column) {
         return column;
       } else {
         throw Error(
-          `VuuFilterSuggestionProvider filter references colum ${f.column}, which is not recognised`
+          `VuuFilterSuggestionProvider filter references colum ${filter.column}, which is not recognised`
         );
       }
     }
@@ -263,7 +262,7 @@ export const createSuggestionProvider =
     table: VuuTable;
   }) =>
   ({
-    parsedFilter,
+    filter,
     isListItem = false,
     operator,
     token: tokenId,
@@ -275,7 +274,7 @@ export const createSuggestionProvider =
         return suggestColumnNames(annotateWithTypes(columns), text, isListItem);
       case "COLUMN-VALUE":
         return suggestColumnValues(
-          getCurrentColumn(parsedFilter, columns),
+          getCurrentColumn(filter, columns),
           text,
           operator,
           isListItem,

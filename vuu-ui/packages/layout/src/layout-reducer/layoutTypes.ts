@@ -20,7 +20,7 @@ export interface LayoutRoot extends WithProps {
 
 export interface LayoutJSON extends WithType {
   children?: LayoutJSON[];
-  id: string;
+  id?: string;
   props?: { [key: string]: any };
   state?: any;
   type: string;

@@ -21,7 +21,8 @@ import {
 import { ContextMenuProvider } from "@vuu-ui/ui-controls";
 import AppContext from "../../app-context";
 
-import { NamedFilter, ParsedFilter } from "@vuu-ui/datagrid-parsers";
+import { NamedFilter } from "@vuu-ui/datagrid-parsers";
+import { Filter } from "@vuu-ui/utils";
 import { FeatureProps } from "@vuu-ui/shell";
 
 import "./filtered-grid.css";
@@ -35,7 +36,7 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
     useViewContext();
   const config = useMemo(() => load(), [load]);
   const { handleRpcResponse } = useContext(AppContext);
-  const [namedFilters, setNamedFilters] = useState([]);
+  const [namedFilters, setNamedFilters] = useState<NamedFilter[]>([]);
 
   const dataSource: RemoteDataSource = useMemo(() => {
     let ds = loadSession("data-source");
@@ -103,7 +104,7 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
   });
 
   const handleCommit = useCallback(
-    (result: ParsedFilter) => {
+    (result: Filter) => {
       const { filter, name } = extractFilter(result);
       const filterQuery = filterAsQuery(filter, namedFilters);
       dataSource.filter(filter, filterQuery);

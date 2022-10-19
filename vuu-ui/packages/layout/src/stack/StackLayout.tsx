@@ -98,7 +98,7 @@ export const StackLayout = (props: StackProps) => {
     }
   };
 
-  const handleTabEdit = (e: any, tabIndex: number, text: string) => {
+  const handleTabEdit = (tabIndex: number, text: string) => {
     // Save into state on behalf of the associated View
     // Do we need a mechanism to get this into the JSPOMN when we serialize ?
     // const { id } = children[tabIndex].props;

@@ -1,16 +1,37 @@
-export type FilterClauseOp = '=' | '>' | '>=' | 'in' | '<=' | '<' | 'starts' | 'ends';
-export type FilterCombinatorOp = 'and' | 'or';
+export type SingleValueFilterClauseOp =
+  | "="
+  | "!="
+  | ">"
+  | ">="
+  | "<="
+  | "<"
+  | "starts"
+  | "ends";
+export type MultipleValueFilterClauseOp = "in";
+export type FilterClauseOp =
+  | SingleValueFilterClauseOp
+  | MultipleValueFilterClauseOp;
+export type FilterCombinatorOp = "and" | "or";
 export type FilterOp = FilterClauseOp | FilterCombinatorOp;
 
-const singleValueFilterOps = new Set(['=', '>', '>=', '<', '<=', 'starts', 'ends']);
+const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
+  "=",
+  "!=",
+  ">",
+  ">=",
+  "<",
+  "<=",
+  "starts",
+  "ends",
+]);
 
 export interface SingleValueFilterClause {
-  op: '=' | '>' | '>=' | '<' | '<=' | 'starts' | 'ends';
+  op: SingleValueFilterClauseOp;
   column: string;
   value: any;
 }
 export interface MultiValueFilterClause {
-  op: 'in';
+  op: MultipleValueFilterClauseOp;
   column: string;
   values: any[];
 }
@@ -19,30 +40,35 @@ export type FilterClause = SingleValueFilterClause | MultiValueFilterClause;
 
 export interface MultiClauseFilter {
   column?: never;
-  op: 'and' | 'or';
+  op: FilterCombinatorOp;
   filters: Filter[];
 }
 
 export interface AndFilter extends MultiClauseFilter {
-  op: 'and';
+  op: "and";
 }
 export interface OrFilter extends MultiClauseFilter {
-  op: 'or';
+  op: "or";
 }
 
 export type Filter = FilterClause | MultiClauseFilter;
 
-export const isMultiClauseFilter = (f: Filter): f is MultiClauseFilter =>
-  Array.isArray((f as MultiClauseFilter).filters);
-
 export const isSingleValueFilter = (f: Filter): f is SingleValueFilterClause =>
-  singleValueFilterOps.has(f.op);
+  singleValueFilterOps.has(f.op as SingleValueFilterClauseOp);
 
-export const isFilterClause = (f: Filter): f is SingleValueFilterClause | MultiValueFilterClause =>
+export const isFilterClause = (
+  f: Filter
+): f is SingleValueFilterClause | MultiValueFilterClause =>
   isSingleValueFilter(f) || isMultiClauseFilter(f);
 
-export const isMultiValueFilter = (f: Filter): f is MultiValueFilterClause => f.op === 'in';
+export const isMultiValueFilter = (f: Filter): f is MultiValueFilterClause =>
+  f.op === "in";
 
-export const isInFilter = (f: Filter): f is MultiValueFilterClause => f.op === 'in';
-export const isAndFilter = (f: Filter): f is AndFilter => f.op === 'and';
-export const isOrFilter = (f: Filter): f is OrFilter => f.op === 'or';
+export const isInFilter = (f: Filter): f is MultiValueFilterClause =>
+  f.op === "in";
+export const isAndFilter = (f: Filter): f is AndFilter => f.op === "and";
+export const isOrFilter = (f: Filter): f is OrFilter => f.op === "or";
+
+export function isMultiClauseFilter(f: Filter): f is MultiClauseFilter {
+  return f.op === "and" || f.op === "or";
+}

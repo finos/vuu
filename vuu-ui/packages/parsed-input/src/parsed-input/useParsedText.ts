@@ -1,18 +1,13 @@
 import { SuggestionResult, UIToken } from "@vuu-ui/datagrid-parsers";
-import { ParsedFilter } from "@vuu-ui/datagrid-parsers/src/filter-parser/FilterVisitor";
+import { Filter } from "@vuu-ui/utils";
 import { MutableRefObject, useCallback, useRef, useState } from "react";
 import { useParser } from "../parser-provider";
 
 interface ParseState {
   errors?: Error[];
   insertSymbol?: string;
-  result?: ParsedFilter;
+  result?: Filter;
   tokens: UIToken[];
-}
-
-interface ParseHistoryEntry extends ParseState {
-  suggestions: SuggestionResult;
-  text: string;
 }
 
 const SPACES = "                 ";
@@ -85,7 +80,7 @@ export interface ParsedTextHookResult {
   hasErrors: boolean;
   insertSymbol?: string;
   parseText: (text: string, typedTest: string) => void;
-  result: ParsedFilter | undefined;
+  result: Filter | undefined;
   suggestions: SuggestionResult;
   textRef: MutableRefObject<string>;
   tokens: UIToken[];
@@ -101,11 +96,9 @@ export const useParsedText = (): ParsedTextHookResult => {
 
   const parseText = useCallback(
     async (newText: string, typedSubstitutionText?: string) => {
-      console.log(
-        `[useParsedText] parseText text='${newText}' typedSubstitutionText='${typedSubstitutionText}'`
-      );
       const [text, result, errors, tokens, promisedSuggestions, insertSymbol] =
         parse(newText, typedSubstitutionText);
+
       // Note: text can change, symbols can be inserted
       textRef.current = text;
 

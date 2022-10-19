@@ -1,4 +1,5 @@
 import { SubscribeCallback } from "@vuu-ui/data-remote";
+import { VuuDataRow, VuuRow } from "@vuu-ui/data-types";
 import { metadataKeys } from "@vuu-ui/utils/src/column-utils";
 import { getFullRange, WindowRange } from "@vuu-ui/utils/src/range-utils";
 import {
@@ -14,7 +15,8 @@ import GridContext from "./grid-context";
 
 const { RENDER_IDX } = metadataKeys;
 
-const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
+const byKey = (row1: VuuDataRow, row2: VuuDataRow) =>
+  row1[RENDER_IDX] - row2[RENDER_IDX];
 
 type SubscriptionDetails = {
   columnNames: string[];

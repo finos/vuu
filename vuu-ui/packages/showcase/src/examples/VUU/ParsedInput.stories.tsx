@@ -7,10 +7,10 @@ import {
   extractFilter,
   filterAsQuery,
   NamedFilter,
-  ParsedFilter,
   parseFilter,
 } from "@vuu-ui/datagrid-parsers";
 import { ParsedInput, ParserProvider } from "@vuu-ui/parsed-input";
+import { Filter } from "@vuu-ui/utils";
 import { useEffect, useState } from "react";
 import { createSuggestionProvider } from "./vuu-filter-suggestion-provider";
 
@@ -42,7 +42,7 @@ export const ParsedFilterInput = () => {
     connect();
   }, []);
 
-  const handleCommit = (result: ParsedFilter) => {
+  const handleCommit = (result: Filter) => {
     const { filter, name } = extractFilter(result);
     const filterQuery = filterAsQuery(filter, namedFilters);
     console.log(

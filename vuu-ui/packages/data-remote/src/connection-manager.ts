@@ -7,7 +7,6 @@ import {
   ServerProxySubscribeMessage,
   TableMeta,
   TableList,
-  ViewportMessageOut,
   VuuUIMessageIn,
   VuuUIMessageInRPC,
   VuuUIMessageOut,
@@ -16,6 +15,7 @@ import {
 import { VuuTable } from "@vuu-ui/data-types";
 // Note: the InlinedWorker is a generated file, it must be built
 import { InlinedWorker } from "./inlined-worker";
+import { DataSourceCallbackMessage } from "./data-source";
 const workerSource = InlinedWorker.toString().replace(
   /(?:^function\s+[a-zA-Z]+\(\)\s*\{)|(?:\}$)/g,
   ""
@@ -31,12 +31,14 @@ let worker: Worker;
 let pendingWorker: Promise<Worker>;
 let pendingWorkerNoToken: WorkerResolver[] = [];
 
-export type PostMessageToClientCallback = (msg: VuuUIMessageIn) => void;
+export type PostMessageToClientCallback = (
+  msg: DataSourceCallbackMessage
+) => void;
 
 const viewports = new Map<
   string,
   {
-    postMessageToClient: PostMessageToClientCallback;
+    postMessageToClientDataSource: PostMessageToClientCallback;
     request: ServerProxySubscribeMessage;
     status: "subscribing";
   }
@@ -120,8 +122,11 @@ function handleMessageFromWorker({
     )) {
       const viewport = viewports.get(clientViewport);
       if (viewport) {
-        const { postMessageToClient } = viewport;
-        postMessageToClient({ type: "viewport-update", size, rows });
+        viewport.postMessageToClientDataSource({
+          type: "viewport-update",
+          size,
+          rows,
+        });
       }
     }
   } else if (isConnectionStatusMessage(message)) {
@@ -131,12 +136,12 @@ function handleMessageFromWorker({
     const requestId = (message as VuuUIMessageInRPC).requestId;
     const viewport = viewports.get(clientViewportId);
     if (viewport) {
-      const { postMessageToClient } = viewport;
       if (message.type in messagesToRelayToClient) {
-        postMessageToClient(message);
+        viewport.postMessageToClientDataSource(message);
       } else {
+        // TODO why would we ever have posted messages if they are not for the client ?
         console.log(
-          `message from the worker to viewport ${clientViewportId} ${message.type}`
+          `message from the worker to viewport ${clientViewportId} ${message.type}, not relayed to client`
         );
       }
     } else if (pendingRequests.has(requestId)) {
@@ -144,9 +149,6 @@ function handleMessageFromWorker({
       pendingRequests.delete(requestId);
       const { type: _1, requestId: _2, ...rest } = message as VuuUIMessageInRPC;
       resolve(rest);
-      // TEST DATA COLLECTION
-      // } else if (message.type === 'websocket-data') {
-      //   // storeData(message.data);
     } else {
       console.log(
         `Unexpected message from the worker ${message.type} requestId ${requestId}`,
@@ -204,7 +206,7 @@ class _ConnectionManager extends EventEmitter {
         viewports.set(message.viewport, {
           status: "subscribing",
           request: message,
-          postMessageToClient: callback,
+          postMessageToClientDataSource: callback,
         });
         worker.postMessage({ type: "subscribe", ...message });
       },

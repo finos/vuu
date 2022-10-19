@@ -16,6 +16,7 @@ import {
   VuuUIMessageInVisualLinkCreated,
   VuuUIMessageInVisualLinkRemoved,
 } from "../vuuUIMessageTypes";
+import { AnyTxtRecord } from "dns";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
 export const RpcCall = "RPC_CALL";
@@ -37,6 +38,8 @@ export type TableSchema = {
   columns: SchemaColumn[];
   table: VuuTable;
 };
+
+export type VuuTableSchemas = { [key: string]: TableSchema };
 
 const tableStore = new SimpleStore<{ [key: string]: TableSchema }>({});
 
@@ -88,12 +91,21 @@ export type ConfigChangeMessage =
 
 export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
 
+export interface ViewServerHookResult {
+  buildViewserverMenuOptions: any;
+  dispatchGridAction: any;
+  getTypeaheadSuggestions: any;
+  handleMenuAction: AnyTxtRecord;
+  tables: VuuTableSchemas;
+  makeRpcCall: any;
+}
+
 export interface ViewServerHookProps {
   loadSession?: () => any;
   onConfigChange?: ConfigChangeHandler;
   onRpcResponse?: (response: RpcResponse) => void;
   rpcServer?: DataSource;
-  saveSession?: () => void;
+  saveSession?: (state: any, key: string) => void;
 }
 
 // Either a DataSource or a Connection is acceptable as rpcServer, both support the rpc interface
@@ -103,8 +115,7 @@ export const useViewserver = ({
   onRpcResponse,
   rpcServer,
   saveSession,
-}: ViewServerHookProps = {}) => {
-  console.log(`[useViewServer]`);
+}: ViewServerHookProps = {}): ViewServerHookResult => {
   const [tables, setTables] = useState(tableStore.value);
 
   // IF we're passed in an rpcServer, whether its a dataSource or connection,
@@ -217,6 +228,7 @@ export const useViewserver = ({
   const dispatchGridAction = useCallback(
     (action: VuuUIMessageInVisualLinkCreated | VuuUIMessageInMenus) => {
       if (action.type === "VIEW_PORT_MENUS_RESP") {
+        console.log(`[useViewserver] VIEW_PORT_MENUS_RESP`);
         contextMenu.current = action.menu;
         saveSession?.(action.menu, "vs-context-menu");
         return true;

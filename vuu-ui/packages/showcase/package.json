@@ -5,7 +5,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "vite:dev": "vite",
+    "vite": "vite",
     "vite:build": "vite build",
     "vite:preview": "vite preview",
     "stories": "node ./scripts/parse-stories.mjs",

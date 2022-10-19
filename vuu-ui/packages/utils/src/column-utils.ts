@@ -1,4 +1,4 @@
-import { Row } from './row-utils';
+import { Row } from "./row-utils";
 
 interface Heading {
   key: string;
@@ -46,33 +46,36 @@ export interface ColumnMap {
   [columnName: string]: number;
 }
 
-const SORT_ASC = 'asc';
+const SORT_ASC = "asc";
 
-export type SortCriteriaItem = string | [string, 'asc']; // TODO where is 'desc'?
+export type SortCriteriaItem = string | [string, "asc"]; // TODO where is 'desc'?
 
 export function mapSortCriteria(
   sortCriteria: SortCriteriaItem[],
   columnMap: ColumnMap,
   metadataOffset = 0
-): [number, 'asc'][] {
+): [number, "asc"][] {
   return sortCriteria.map((s) => {
-    if (typeof s === 'string') {
-      return [columnMap[s] + metadataOffset, 'asc'];
+    if (typeof s === "string") {
+      return [columnMap[s] + metadataOffset, "asc"];
     } else if (Array.isArray(s)) {
       const [columnName, sortDir] = s;
       return [columnMap[columnName] + metadataOffset, sortDir || SORT_ASC];
     } else {
-      throw Error('columnUtils.mapSortCriteria invalid input');
+      throw Error("columnUtils.mapSortCriteria invalid input");
     }
   });
 }
 
 export function isKeyedColumn(column: Column): column is KeyedColumn {
-  return typeof column.key === 'number';
+  return typeof column.key === "number";
 }
 
-export const toKeyedColumn = (column: string | Column, key: number): KeyedColumn => {
-  if (typeof column === 'string') {
+export const toKeyedColumn = (
+  column: string | Column,
+  key: number
+): KeyedColumn => {
+  if (typeof column === "string") {
     return { key, name: column };
   }
   if (isKeyedColumn(column)) {
@@ -85,9 +88,9 @@ export function buildColumnMap(columns?: Column[]): ColumnMap | null {
   const start = metadataKeys.count;
   if (columns) {
     return columns.reduce((map, column, i) => {
-      if (typeof column === 'string') {
+      if (typeof column === "string") {
         map[column] = start + i;
-      } else if (typeof column.key === 'number') {
+      } else if (typeof column.key === "number") {
         map[column.name] = column.key;
       } else {
         map[column.name] = start + i;
@@ -110,7 +113,10 @@ export function projectUpdates(updates: number[]): number[] {
   return results;
 }
 
-export function projectColumns(tableRowColumnMap: ColumnMap, columns: Column[]) {
+export function projectColumns(
+  tableRowColumnMap: ColumnMap,
+  columns: Column[]
+) {
   const columnCount = columns.length;
   const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, count } = metadataKeys;
   return (startIdx: number, offset: number, selectedRows: Row[] = []) =>
@@ -149,8 +155,8 @@ export const metadataKeys = {
   KEY: 6,
   SELECTED: 7,
   count: 8,
-  PARENT_IDX: 'parent_idx',
-  IDX_POINTER: 'idx_pointer',
-  FILTER_COUNT: 'filter_count',
-  NEXT_FILTER_IDX: 'next_filter_idx'
-};
+  PARENT_IDX: "parent_idx",
+  IDX_POINTER: "idx_pointer",
+  FILTER_COUNT: "filter_count",
+  NEXT_FILTER_IDX: "next_filter_idx",
+} as const;

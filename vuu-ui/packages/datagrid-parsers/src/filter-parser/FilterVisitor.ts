@@ -14,37 +14,24 @@ import {
   OperatorContext,
   Or_expressionContext,
   TermContext,
+  Named_filterContext,
+  String_columnContext,
+  Numeric_columnContext,
 } from "../../generated/parsers/filter/FilterParser";
 import { TerminalNode } from "antlr4ts/tree";
+import { Filter } from "@vuu-ui/utils";
 
 // This class defines a complete generic visitor for a parse tree produced by FilterParser.
 
-export interface ParsedFilterClause {
-  pos?: number;
-  tokenPosition?: {
-    column?: number;
-    name?: number;
-  };
-}
-export interface FilterClause extends ParsedFilterClause {
-  column?: string;
-  label?: string;
-  op: "in" | ">" | "=" | "starts" | "!=";
-  value?: "string";
-}
+// {
+//   pos?: number;
+//   tokenPosition?: {
+//     column?: number;
+//     name?: number;
+//   };
+//   label?: string;
 
-export type Filter = FilterClause | CompositeFilter;
-export interface CompositeFilter extends ParsedFilterClause {
-  op: "and" | "or";
-  filters: Filter[];
-  label?: string;
-}
-
-export type ParsedFilter = [CompositeFilter | FilterClause];
-
-export function isCompositeFilter(f: Filter): f is CompositeFilter {
-  return f.op === "and" || f.op === "or";
-}
+// }
 
 export type NamedFilter = {
   name: string;
@@ -54,12 +41,12 @@ export type NamedFilter = {
 const EMPTY = [] as const;
 type Empty = typeof EMPTY;
 
-export default class FilterVisitor extends AbstractParseTreeVisitor<ParsedFilter> {
+export default class FilterVisitor extends AbstractParseTreeVisitor<any> {
   defaultResult() {
-    return [];
+    return EMPTY;
   }
 
-  aggregateResult(aggregate, nextResult) {
+  aggregateResult(aggregate: any, nextResult: any) {
     return aggregate.concat(nextResult);
   }
 
@@ -132,11 +119,12 @@ export default class FilterVisitor extends AbstractParseTreeVisitor<ParsedFilter
     if (ctx.text === "<missing ID>") {
       return EMPTY;
     } else {
-      return { name: ctx.text, pos: ctx.start.start };
+      debugger;
+      return { name: ctx.text, pos: ctx.start.startIndex };
     }
   }
 
-  visitNamed_filter(ctx) {
+  visitNamed_filter(ctx: Named_filterContext) {
     const [, name] = this.visitChildren(ctx);
     if (name) {
       return { name };
@@ -167,19 +155,19 @@ export default class FilterVisitor extends AbstractParseTreeVisitor<ParsedFilter
   }
 
   // Visit a parse tree produced by FilterParser#column.
-  visitString_column(ctx) {
-    return { column: ctx.text, pos: ctx.start.start };
+  visitString_column(ctx: String_columnContext) {
+    return { column: ctx.text, pos: ctx.start.startIndex };
   }
-  visitNumeric_column(ctx) {
-    return { column: ctx.text, pos: ctx.start.start };
+  visitNumeric_column(ctx: Numeric_columnContext) {
+    return { column: ctx.text, pos: ctx.start.startIndex };
   }
   visitColumn(ctx: ColumnContext) {
-    return { column: ctx.text, pos: ctx.start.start };
+    return { column: ctx.text, pos: ctx.start.startIndex };
   }
 
   visitAtoms(ctx: AtomsContext) {
     const results = this.visitChildren(ctx);
-    return results.filter((r) => r !== ",");
+    return results.filter((r: string) => r !== ",");
   }
 
   visitAtom(ctx: AtomContext) {

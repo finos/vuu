@@ -1,9 +1,5 @@
-import {
-  RemoteDataSource,
-  SubscribeCallback,
-  VuuUIRow,
-} from "@vuu-ui/data-remote";
-import { TypeaheadParams, VuuRow, VuuSortCol } from "@vuu-ui/data-types";
+import { RemoteDataSource, SubscribeCallback } from "@vuu-ui/data-remote";
+import { TypeaheadParams, VuuSortCol } from "@vuu-ui/data-types";
 import {
   ColumnState,
   FilterChangedEvent,
@@ -17,6 +13,7 @@ import {
 import { SuggestionFetcher } from "@vuu-ui/data-remote";
 import { MutableRefObject } from "react";
 import { agGridFilterModelToVuuFilter } from "./AgGridFilterUtils";
+import { AgGridDataSet, convertToAgGridDataSet } from "./AgGridDataUtils";
 
 const isSortedColumn = ({ sortIndex }: ColumnState) =>
   typeof sortIndex === "number";
@@ -29,29 +26,7 @@ const bySortIndex = (
   { sortIndex: s2 }: ColumnState
 ) => s1 - s2;
 
-const convertToAgGrid = (rows: VuuRow[]) => {
-  console.log({ rows });
-  const result = {};
-  rows.forEach((row) => {
-    const [rowIdx] = row;
-    result[rowIdx] = toAgGridRow(row);
-  });
-  return result;
-};
-
-const toAgGridRow = (data: VuuUIRow) => {
-  return {
-    bbg: data[8],
-    currency: data[9],
-    description: data[10],
-    exchange: data[11],
-    isin: data[12],
-    lotSize: data[13],
-    ric: data[14],
-  };
-};
-
-export class AgGridViewportDataSource implements IViewportDatasource {
+export class AgGridViewportRowModelDataSource implements IViewportDatasource {
   private rowCount: number = -1;
 
   constructor(
@@ -69,10 +44,10 @@ export class AgGridViewportDataSource implements IViewportDatasource {
   setRowCount(count: number) {
     console.error("setRowCount called before init");
   }
-  getRow() {
-    console.error("getRow called before init");
+  getRow(rowIndex: number) {
+    console.error(`getRow [${rowIndex}] called before init`);
   }
-  setRowData() {
+  setRowData(rows: AgGridDataSet) {
     console.error("setRowData called before init");
   }
 
@@ -101,16 +76,20 @@ export class AgGridViewportDataSource implements IViewportDatasource {
         }
       }
       if (message.rows) {
-        const rows = convertToAgGrid(message.rows);
+        const rows = convertToAgGridDataSet(message.rows);
+        console.table(rows);
+
         this.setRowData(rows);
       } else if (message.size !== undefined) {
         console.log("got a size message");
       }
-    } else {
-      console.log(`message from server ${message.type}`);
     }
   };
 
+  /**
+   * Invoked when the AgGrid menu panel is opened, whether
+   * or not the Filter Tab is selected.
+   */
   handleFilterOpened = (evt: FilterOpenedEvent) => {
     const { source, column } = evt;
     console.log(`filter Opened`, {
@@ -119,6 +98,10 @@ export class AgGridViewportDataSource implements IViewportDatasource {
     });
   };
 
+  /**
+   *
+   * Invoked when the value of a filter changes
+   */
   handleFilterChanged = (evt: FilterChangedEvent) => {
     console.log(`handleFilterChanged`, {
       evt,
@@ -139,6 +122,12 @@ export class AgGridViewportDataSource implements IViewportDatasource {
     // this.dataSource.sort(sortDefs);
   };
 
+  /**
+   * Invoked when we change the operator in the Filter Panel,
+   * or type into the value input. Gets called even when
+   * operator dropdown is clicked, before any selection is
+   * made.
+   */
   handleFilterModified = (evt: FilterModifiedEvent) => {
     console.log(`filterModified`, {
       evt,

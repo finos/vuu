@@ -5,9 +5,9 @@ import {
   ExpressionContext,
   FilterParser,
 } from "../../generated/parsers/filter/FilterParser";
-import { ParsedFilter } from "./FilterVisitor";
 import { computeTokenIndexAndText } from "./parse-utils";
 import { UIToken } from "./ui-tokens";
+import { Filter } from "@vuu-ui/utils";
 
 interface SuggestionToken {
   completion: string;
@@ -36,7 +36,7 @@ export type SuggestionResult = {
 };
 
 export type SuggestionProviderProps = {
-  parsedFilter: ParsedFilter;
+  filter: Filter;
   isListItem?: boolean;
   operator?: string;
   text: string;
@@ -132,10 +132,14 @@ export const parseSuggestions = (
   parseTree: ExpressionContext,
   caretPosition: number,
   suggestionProvider: SuggestionProvider,
-  parseResult: ParsedFilter,
+  parseResult: Filter,
   uiTokens: UIToken[],
   isListItem = false
 ): SuggestionResult | Promise<SuggestionResult> => {
+  console.log(`parseSUggestions`, {
+    parseResult,
+  });
+
   const core = new c3.CodeCompletionCore(parser);
   core.preferredRules = new Set([
     FilterParser.RULE_column,
@@ -203,7 +207,7 @@ export const parseSuggestions = (
   if (rules.has(FilterParser.RULE_filtername)) {
     suggestions.push(
       suggestionProvider({
-        parsedFilter: parseResult,
+        filter: parseResult,
         token: "FILTER-NAME",
         text,
       })
@@ -211,7 +215,7 @@ export const parseSuggestions = (
   } else if (rules.has(FilterParser.RULE_named_filter)) {
     suggestions.push(
       suggestionProvider({
-        parsedFilter: parseResult,
+        filter: parseResult,
         token: "NAMED-FILTER",
         text,
       })
@@ -221,7 +225,7 @@ export const parseSuggestions = (
   if (rules.has(FilterParser.RULE_column)) {
     suggestions.push(
       suggestionProvider({
-        parsedFilter: parseResult,
+        filter: parseResult,
         token: "COLUMN-NAME",
         text,
       })
@@ -231,7 +235,7 @@ export const parseSuggestions = (
     alternativeRules?.has(FilterParser.RULE_column)
   ) {
     const expandedSuggestions = suggestionProvider({
-      parsedFilter: parseResult,
+      filter: parseResult,
       token: "COLUMN-NAME",
       text: alternativeText,
     });
@@ -249,7 +253,7 @@ export const parseSuggestions = (
     const [operatorToken, selectedTokens] = getOperatorToken(uiTokens);
     suggestions.push(
       suggestionProvider({
-        parsedFilter: parseResult,
+        filter: parseResult,
         isListItem,
         operator: operatorToken?.text ?? "",
         text,

@@ -1,5 +1,6 @@
 import { Dropdown } from "@heswell/uitk-lab";
 import { useId } from "@vuu-ui/react-utils";
+import { Filter } from "@vuu-ui/utils";
 import { useItemsWithIds } from "@vuu-ui/ui-controls";
 import {
   ForwardedRef,
@@ -24,19 +25,23 @@ import { useParsedInput } from "./useParsedInput";
 import { useParsedText } from "./useParsedText";
 
 import { SelectionChangeHandler, SelectionStrategy } from "@heswell/uitk-lab";
-import { ParsedFilter, SuggestionItem } from "@vuu-ui/datagrid-parsers";
+import { SuggestionItem } from "@vuu-ui/datagrid-parsers";
 
 import "./ParsedInput.css";
 
 const NO_COMPLETION = [] as const;
 
 export interface ParsedInputProps extends HTMLAttributes<HTMLDivElement> {
-  onCommit?: (parsedFilter: ParsedFilter) => void;
+  onCommit?: (parsedFilter: Filter) => void;
 }
+
+export type FocusAPI = {
+  focus: () => void;
+};
 
 export const ParsedInput = forwardRef(function ParsedInput(
   { id: idProp, onCommit }: ParsedInputProps,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  forwardedRef: ForwardedRef<FocusAPI>
 ) {
   const id = useId(idProp);
   const {
@@ -73,9 +78,6 @@ export const ParsedInput = forwardRef(function ParsedInput(
 
   const setText = useCallback(
     (text: string, typedSubstitutionText?: string) => {
-      console.log(
-        `[ParsedInput] setText text= '${text}' typedSubstitutionText= ${typedSubstitutionText}`
-      );
       setSelected(null);
       parseText(text, typedSubstitutionText);
     },
@@ -135,6 +137,7 @@ export const ParsedInput = forwardRef(function ParsedInput(
   > = useCallback(
     (evt: SyntheticEvent, selectedSuggestion: SuggestionItem | null) => {
       if (selectedSuggestion?.value === "EOF") {
+        console.log("COMMIT");
         handleCommit();
       } else if (selectedSuggestion !== null) {
         acceptSuggestion?.(evt, selectedSuggestion);
@@ -248,42 +251,5 @@ export const ParsedInput = forwardRef(function ParsedInput(
       source={visibleData}
       triggerComponent={filterInput}
     />
-    // <div className={cx(classBase, className)} ref={useForkRef(root, forwardedRef)}>
-    //   <div className={`${classBase}-input-container`}>
-    //     <TokenMirror tokens={tokens} completion={`${insertSymbol ?? ''}${completion ?? ''}`} />
-    //     <div
-    //       {...listProps}
-    //       {...inputProps}
-    //       ref={inputRef}
-    //       contentEditable
-    //       className={`${classBase}-input`}
-    //       spellCheck={false}
-    //       tabIndex={0}
-    //     />
-    //   </div>
-    //   <Button className={`${classBase}-clear`} onClick={clear}>
-    //     <span className={`hwIconContainer`} data-icon="close-circle" />
-    //   </Button>
-    //   <Dropdown
-    //     anchorEl={root.current}
-    //     open={open}
-    //     align="bottom-full-width"
-    //     className={`${classBase}-dropdown`}>
-    //     <SuggestionList
-    //       highlightedIdx={suggestionsAreIllustrationsOnly ? -1 : highlightedIdx}
-    //       id={id}
-    //       onHighlight={setHighlightedIdx}
-    //       onMouseEnterListItem={
-    //         suggestionsAreIllustrationsOnly ? undefined : handleMouseOverSuggestion
-    //       }
-    //       onChange={suggestionsAreIllustrationsOnly ? undefined : handleSuggestionSelection}
-    //       ref={suggestionList}
-    //       selectionStrategy={selectionStrategy}
-    //       selected={selectedIdValues}
-    //       // selected={selected}
-    //       source={visibleData}
-    //     />
-    //   </Dropdown>
-    // </div>
   );
 });

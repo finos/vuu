@@ -11,7 +11,7 @@ export interface StackProps
   onMouseDown?: (e: MouseEvent, tabIndex: number) => void;
   onTabAdd?: (tabIndex: number) => void;
   onTabClose?: (tabIndex: number) => void;
-  onTabEdit?: (evt: any, tabIndex: number, label: string) => void;
+  onTabEdit?: (tabIndex: number, label: string) => void;
   onTabSelectionChanged?: (nextIndex: number) => void;
   path?: string;
   showTabs?: boolean;

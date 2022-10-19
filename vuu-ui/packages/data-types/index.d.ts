@@ -36,8 +36,10 @@ export interface VuuMenu {
 
 export type VuuRowDataItemType = string | number | boolean;
 
+export type VuuDataRow = [number, number, ...data: VuuRowDataItemType[]];
+
 export declare type VuuRow = {
-  data: VuuRowDataItemType[];
+  data: VuuDataRow;
   rowIndex: number;
   rowKey: string;
   sel: 0 | 1;

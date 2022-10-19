@@ -25,12 +25,17 @@ import { AppPalette } from "./app-palette";
 import { LayoutJSON } from "@vuu-ui/layout/src/layout-reducer";
 import "./shell.css";
 
+export type VuuUser = {
+  username: string;
+  token: string;
+};
+
 export interface ShellProps {
   children?: ReactNode;
   defaultLayout?: LayoutJSON;
   paletteConfig: any;
   serverUrl: string;
-  user: any;
+  user: VuuUser;
 }
 
 export const Shell = ({

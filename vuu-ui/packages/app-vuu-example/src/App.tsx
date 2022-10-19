@@ -1,7 +1,11 @@
-import { TableSchema, useViewserver } from "@vuu-ui/data-remote";
+import {
+  TableSchema,
+  useViewserver,
+  VuuTableSchemas,
+} from "@vuu-ui/data-remote";
 import { Dialog } from "@vuu-ui/layout";
-import { Feature, Shell } from "@vuu-ui/shell";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Feature, Shell, VuuUser } from "@vuu-ui/shell";
+import { ReactElement, useCallback, useMemo, useRef, useState } from "react";
 import AppContext, { RpcResponse } from "./app-context";
 import { ToolkitProvider } from "@heswell/uitk-core";
 import { Stack } from "./AppStack";
@@ -45,7 +49,7 @@ const wordify = (text: string) => {
   return `${capitalize(firstWord)} ${rest.join(" ")}`;
 };
 
-const getTables = (tables) => {
+const getTables = (tables: VuuTableSchemas) => {
   const tableList = Object.values(tables);
   return tableList.sort(byModule).map((schema) => ({
     className: "vuFilteredGrid",
@@ -56,14 +60,14 @@ const getTables = (tables) => {
     resize: "defer",
     type: "Feature",
     props: {
-      schema,
+      params: { schema },
       css: filteredGridCss,
       url: filteredGridUrl,
     },
   }));
 };
 
-const getPaletteConfig = (tables) => [
+const getPaletteConfig = (tables: VuuTableSchemas) => [
   {
     label: "Features",
     items: [
@@ -112,13 +116,13 @@ const defaultLayout = {
   ],
 };
 
-export const App = ({ user }) => {
-  const [dialogContent, setDialogContent] = useState(null);
+export const App = ({ user }: { user: VuuUser }) => {
+  const [dialogContent, setDialogContent] = useState<ReactElement>();
 
   // Needed because of circular ref between useViewserver and handleRpcResponse
-  const tablesRef = useRef();
+  const tablesRef = useRef<VuuTableSchemas>();
 
-  const { tables } = useViewserver({ label: "App" });
+  const { tables } = useViewserver();
 
   const paletteConfig = useMemo(() => {
     return getPaletteConfig(tables);
@@ -129,24 +133,26 @@ export const App = ({ user }) => {
   const handleRpcResponse = useCallback((response: RpcResponse) => {
     if (response?.action?.type === "OPEN_DIALOG_ACTION") {
       const { table } = response.action;
-      const { [table.table]: schema } = tablesRef.current;
-      if (schema) {
-        // If we already have this table open in this viewport, ignore
-        setDialogContent(
-          <Feature
-            height={400}
-            schema={schema}
-            url={filteredGridUrl}
-            width={700}
-          />
-        );
+      if (tablesRef.current) {
+        const { [table.table]: schema } = tablesRef.current;
+        if (schema) {
+          // If we already have this table open in this viewport, ignore
+          setDialogContent(
+            <Feature
+              height={400}
+              params={{ schema }}
+              url={filteredGridUrl}
+              width={700}
+            />
+          );
+        }
       }
     } else {
       console.warn(`App, handleServiceRequest ${JSON.stringify(response)}`);
     }
   }, []);
 
-  const handleClose = () => setDialogContent(null);
+  const handleClose = () => setDialogContent(undefined);
 
   // TODO get Context from Shell
   return (
@@ -160,7 +166,7 @@ export const App = ({ user }) => {
         >
           <Dialog
             className="vuDialog"
-            isOpen={dialogContent !== null}
+            isOpen={dialogContent !== undefined}
             onClose={handleClose}
             style={{ height: 500 }}
           >

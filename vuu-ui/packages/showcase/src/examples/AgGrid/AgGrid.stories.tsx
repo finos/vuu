@@ -1,11 +1,18 @@
 import { AgGridReact } from "ag-grid-react";
 import { createColumnDefs } from "./createColumnDefs";
-import { AgGridViewportDataSource } from "@vuu-ui/ag-grid";
+import { instrumentDataSourceConfig } from "./dataSourceConfig";
+import {
+  AgGridViewportRowModelDataSource,
+  useAgGridDataSource,
+} from "@vuu-ui/ag-grid";
 import { SuggestionFetcher, useViewserver } from "@vuu-ui/data-remote";
+import { ToolkitProvider } from "@heswell/uitk-core";
 
 import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.css";
-import "ag-grid-community/dist/styles/ag-theme-alpine.css";
+import "./VuuGrid.css";
+import "./VuuAgGrid.css";
+// import "ag-grid-community/dist/styles/ag-theme-balham.css";
 
 import {
   authenticate as vuuAuthenticate,
@@ -14,7 +21,7 @@ import {
 } from "@vuu-ui/data-remote";
 import { CSSProperties, useEffect, useMemo, useRef } from "react";
 
-export const AgGrid = () => {
+export const AgGridViewportRowModel = () => {
   const { getTypeaheadSuggestions } = useViewserver();
   const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
     getTypeaheadSuggestions
@@ -22,22 +29,8 @@ export const AgGrid = () => {
   getTypeaheadSuggestionsRef.current = getTypeaheadSuggestions;
 
   const { agGridDataSource, columnDefs } = useMemo(() => {
-    const dataConfig = {
-      bufferSize: 100,
-      columns: [
-        "bbg",
-        "currency",
-        "description",
-        "exchange",
-        "isin",
-        "lotSize",
-        "ric",
-      ],
-      table: { table: "instruments", module: "SIMUL" },
-      serverUrl: "127.0.0.1:8090/websocket",
-    };
-    const dataSource = new RemoteDataSource(dataConfig);
-    const agGridDataSource = new AgGridViewportDataSource(
+    const dataSource = new RemoteDataSource(instrumentDataSourceConfig);
+    const agGridDataSource = new AgGridViewportRowModelDataSource(
       dataSource,
       getTypeaheadSuggestionsRef
     );
@@ -67,12 +60,12 @@ export const AgGrid = () => {
     gap: "10px 20px",
     height: 500,
     margin: "10px auto",
-    width: 1000,
+    width: 800,
   } as CSSProperties;
 
   return (
     <div style={layout}>
-      <div className="ag-theme-alpine">
+      <div className="ag-theme-blue">
         <AgGridReact
           columnDefs={columnDefs}
           onFilterChanged={agGridDataSource.handleFilterChanged}
@@ -84,5 +77,37 @@ export const AgGrid = () => {
         />
       </div>
     </div>
+  );
+};
+
+export const AgGridServersideRowModel = () => {
+  const gridConfig = useAgGridDataSource();
+
+  useEffect(() => {
+    const connect = async () => {
+      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
+      connectToServer("127.0.0.1:8090/websocket", authToken);
+    };
+    connect();
+  }, []);
+
+  const layout = {
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gridTemplateRows: "1fr",
+    gap: "10px 20px",
+    height: 500,
+    margin: "10px auto",
+    width: 800,
+  } as CSSProperties;
+
+  return (
+    <ToolkitProvider density="high">
+      <div style={layout}>
+        <div className="ag-theme-balham">
+          <AgGridReact {...gridConfig} rowHeight={18} />
+        </div>
+      </div>
+    </ToolkitProvider>
   );
 };

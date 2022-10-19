@@ -1,6 +1,9 @@
+import { P } from "@heswell/uitk-lab";
 import {
   ClientToServerRpcCall,
+  VuuGroupBy,
   VuuAggregation,
+  VuuRange,
   VuuSortCol,
   VuuTable,
 } from "@vuu-ui/data-types";
@@ -8,13 +11,12 @@ import { EventEmitter, Filter, uuid } from "@vuu-ui/utils";
 import { ConnectionManager, ServerAPI } from "./connection-manager";
 import {
   DataSource,
+  DataSourceCallbackMessage,
   DataSourceProps,
   SubscribeCallback,
   SubscribeProps,
 } from "./data-source";
-import { VuuUIMessageIn } from "./vuuUIMessageTypes";
-
-const defaultRange = { from: 0, to: 0 };
+import { VuuUIMessageOutGroupby } from "./vuuUIMessageTypes";
 
 export interface DataSourceColumn {}
 
@@ -30,7 +32,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   private status: string;
   private disabled: boolean;
   private suspended: boolean;
-  private initialGroup: any;
+  private initialGroup: VuuGroupBy | undefined;
+  private initialRange: VuuRange = { from: 0, to: 0 };
   private initialSort: any;
   private initialFilter: any;
   private initialFilterQuery: any;
@@ -89,7 +92,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       table = this.table,
       columns = this.columns || [],
       aggregations = this.initialAggregations,
-      range = defaultRange,
+      range = this.initialRange,
       sort = this.initialSort,
       groupBy = this.initialGroup,
       filter = this.initialFilter,
@@ -101,15 +104,23 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
     this.clientCallback = callback;
 
+    // store the range before we await the server. It's is possible the
+    // range will be updated from the client before we have been able to
+    // subscribe. This ensures we will subscribe with latest value.
+    this.initialGroup = groupBy;
+    this.initialRange = range;
+
     if (this.status !== "initialising") {
       //TODO check if subscription details are still the same
       return;
     }
 
-    // console.log(
-    //   `%c[remoteDataSource] ${this.viewport} subscribe status ${this.status}`,
-    //   'color:green;font-weight: bold;'
-    // );
+    console.log(
+      `%c[remoteDataSource] ${this.viewport} subscribe 
+        range ${JSON.stringify(range)}
+        status ${this.status}`,
+      "color:green;font-weight: bold;"
+    );
 
     this.status = "subscribing";
     this.viewport = viewport;
@@ -117,6 +128,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.columns = columns;
 
     this.server = await this.pendingServer;
+    console.log(`RemoteDataSource server is now available`);
 
     const { bufferSize } = this;
     this.server?.subscribe(
@@ -125,9 +137,9 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         table,
         columns,
         aggregations,
-        range,
+        range: this.initialRange,
         sort,
-        groupBy,
+        groupBy: this.initialGroup,
         filter,
         filterQuery,
         bufferSize,
@@ -137,7 +149,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     );
   }
 
-  handleMessageFromServer = (message: VuuUIMessageIn) => {
+  handleMessageFromServer = (message: DataSourceCallbackMessage) => {
     if (message.type === "subscribed") {
       this.status = "subscribed";
       // this.serverViewportId = message.serverViewportId;
@@ -239,11 +251,33 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   setRange(from: number, to: number) {
     if (this.viewport) {
-      this.server?.send({
+      const message = {
         viewport: this.viewport,
         type: "setViewRange",
         range: { from, to },
-      });
+      } as const;
+
+      if (this.server) {
+        this.server?.send(message);
+      } else {
+        this.initialRange = { from, to };
+      }
+    }
+  }
+
+  group(groupBy: VuuGroupBy) {
+    if (this.viewport) {
+      const message = {
+        viewport: this.viewport,
+        type: "groupBy",
+        groupBy,
+      } as VuuUIMessageOutGroupby;
+
+      if (this.server) {
+        this.server?.send(message);
+      } else {
+        this.initialGroup = groupBy;
+      }
     }
   }
 
@@ -305,16 +339,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  group(columns: string[]) {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "groupBy",
-        groupBy: columns,
-      });
-    }
-  }
-
   // TODO columns cannot simply be strings
   sort(columns: VuuSortCol[]) {
     if (this.viewport) {
@@ -326,7 +350,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  filter(filter: Filter, filterQuery: string) {
+  //TODO I think we should have a clear filter for API clarity
+  filter(filter: Filter | undefined, filterQuery: string) {
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,

@@ -1,5 +1,50 @@
-import { VuuAggregation, VuuFilter, VuuGroupBy, VuuSort, VuuTable } from '@vuu-ui/data-types';
-import { VuuUIMessageIn } from './vuuUIMessageTypes';
+import {
+  VuuAggregation,
+  VuuFilter,
+  VuuGroupBy,
+  VuuRowDataItemType,
+  VuuSort,
+  VuuTable,
+} from "@vuu-ui/data-types";
+
+type RowIndex = number;
+type RenderKey = string;
+type IsLeaf = boolean;
+type IsExpanded = boolean;
+type Depth = number;
+type ChildCount = number;
+type RowKey = string;
+type IsSelected = boolean;
+
+export type DataSourceRow = [
+  RowIndex,
+  RenderKey,
+  IsLeaf,
+  IsExpanded,
+  Depth,
+  ChildCount,
+  RowKey,
+  IsSelected,
+  ...VuuRowDataItemType[]
+];
+
+export type DataSourceDataMessage = {
+  rows?: DataSourceRow[];
+  size?: number;
+  type: "viewport-update";
+};
+
+export type DataSourceSubscribedMessage = {
+  type: "subscribed";
+};
+
+export type DataSourceMenusMessage = {
+  type: "menus";
+};
+
+export type DataSourceCallbackMessage =
+  | DataSourceDataMessage
+  | DataSourceSubscribedMessage;
 
 export interface DataSourceProps {
   bufferSize?: number;
@@ -13,7 +58,7 @@ export interface DataSourceProps {
   configUrl?: any;
   serverUrl: string;
   viewport?: string;
-  'visual-link'?: any;
+  "visual-link"?: any;
 }
 
 export interface SubscribeProps {
@@ -28,9 +73,12 @@ export interface SubscribeProps {
   filterQuery?: any;
 }
 
-export type SubscribeCallback = (message: VuuUIMessageIn) => void;
+export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 
 export interface DataSource {
   setRange: (from: number, to: number) => void;
-  subscribe: (props: SubscribeProps, callback: SubscribeCallback) => Promise<any>;
+  subscribe: (
+    props: SubscribeProps,
+    callback: SubscribeCallback
+  ) => Promise<any>;
 }

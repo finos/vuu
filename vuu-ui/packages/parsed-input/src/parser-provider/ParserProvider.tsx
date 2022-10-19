@@ -11,7 +11,7 @@ export const ParserContext = createContext<{
 
 export interface ParserProviderProps {
   children: ReactNode;
-  parser: (text: string, typedText: string) => ParserResults;
+  parser: (text: string, typedText: string, ...rest: any[]) => ParserResults;
   suggestionProvider: any;
 }
 

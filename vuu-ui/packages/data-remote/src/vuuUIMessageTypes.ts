@@ -294,7 +294,7 @@ export interface VuuUIMessageOutSuspend extends ViewportMessageOut {
 }
 
 export interface VuuUIMessageOutFilterQuery extends ViewportMessageOut {
-  filter: Filter;
+  filter?: Filter;
   filterQuery: string;
   type: "filterQuery";
 }
@@ -369,7 +369,12 @@ export type VuuUIMessageOut =
   | VuuUIMessageOutViewport
   | VuuUIMessageOutRpcCall;
 
-export type RpcResponse = {};
+export type RpcResponse = {
+  action: {
+    type: "OPEN_DIALOG_ACTION";
+    table: VuuTable;
+  };
+};
 
 export type TableMeta = {};
 export type TableList = {};

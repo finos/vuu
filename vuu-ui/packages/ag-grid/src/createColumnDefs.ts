@@ -1,15 +1,4 @@
-import { AgGridServersideRowModelDataSource } from "@vuu-ui/ag-grid";
-import { SetFilterValuesFuncParams } from "ag-grid-community";
-import { AgGridViewportDataSource } from "./AgGridDataSource";
-
-export const createColumnDefs = (
-  dataSource: AgGridViewportDataSource,
-  {
-    groupBy,
-  }: {
-    groupBy?: string[];
-  } = {}
-) => [
+export const createColumnDefs = (setFilterDataProvider) => [
   {
     field: "bbg",
     sortable: true,
@@ -18,14 +7,14 @@ export const createColumnDefs = (
   },
   {
     field: "currency",
+    // hide: true,
+    // rowGroup: true,
     sortable: true,
     width: 120,
     filter: "agSetColumnFilter",
     filterParams: {
       values: (params: SetFilterValuesFuncParams) => {
-        dataSource
-          .getSetFilterData(params)
-          .then((suggestions) => params.success(suggestions));
+        setFilterDataProvider.getSetFilterData(params).then(params.success);
       },
     },
   },
@@ -40,12 +29,9 @@ export const createColumnDefs = (
     filter: "agSetColumnFilter",
     filterParams: {
       values: (params: SetFilterValuesFuncParams) => {
-        dataSource
-          .getSetFilterData(params)
-          .then((suggestions) => params.success(suggestions));
+        setFilterDataProvider.getSetFilterData(params).then(params.success);
       },
     },
-    rowGroup: groupBy?.includes("exchange"),
   },
   { field: "isin", sortable: true, filter: true, width: 120 },
   {

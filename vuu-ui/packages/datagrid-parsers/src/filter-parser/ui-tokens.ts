@@ -1,5 +1,5 @@
 import { FilterParser } from "../../generated/parsers/filter/FilterParser";
-import { ParsedFilter } from "./FilterVisitor";
+import { Filter } from "@vuu-ui/utils";
 
 // We should be able to derive these from the parser, using Rules
 const TOKEN_TYPES = {
@@ -29,27 +29,31 @@ export type UIToken = {
 
 export function buildUITokens(
   parser: FilterParser,
-  parseResult: ParsedFilter,
+  parseResult: Filter | undefined,
   substitution = NO_SUBSTITUTION
-) {
-  const tokenPositions = mapTokenPositions(parseResult);
-  const { tokens: parsedTokens } = parser.inputStream;
+): UIToken[] {
+  if (parseResult) {
+    const tokenPositions = mapTokenPositions([parseResult]);
+    const { tokens: parsedTokens } = parser.inputStream;
 
-  const tokens: UIToken[] = [];
-  for (let i = 0; i < parsedTokens.length - 1; i++) {
-    const t = parsedTokens[i];
-    const tokenText = t.text;
-    tokens.push({
-      type: tokenPositions[t.start] ?? t.tokenType ?? tokenType(t.type),
-      text: substitution[tokenText] ?? tokenText,
-      start: t.start,
-    });
+    const tokens: UIToken[] = [];
+    for (let i = 0; i < parsedTokens.length - 1; i++) {
+      const t = parsedTokens[i];
+      const tokenText = t.text;
+      tokens.push({
+        type: tokenPositions[t.start] ?? t.tokenType ?? tokenType(t.type),
+        text: substitution[tokenText] ?? tokenText,
+        start: t.start,
+      });
+    }
+    return tokens;
+  } else {
+    return [];
   }
-  return tokens;
 }
 
-function mapTokenPositions(parseResults: ParsedFilter, idx = 0, map = {}) {
-  const f = parseResults[idx];
+function mapTokenPositions(filters: Filter[], idx = 0, map = {}) {
+  const f = filters[idx];
   if (!f) {
     return map;
   } else {

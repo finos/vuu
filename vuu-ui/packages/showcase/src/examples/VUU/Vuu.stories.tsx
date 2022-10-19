@@ -2,9 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Grid, GridProvider } from "@vuu-ui/data-grid";
 import { Button, ContextMenuProvider } from "@vuu-ui/ui-controls";
 import { StackLayout as Stack, View, useViewContext } from "@vuu-ui/layout";
+import { List, ListItem } from "@heswell/uitk-lab";
 
 import {
-  authenticate as vuuAuthenticate,
+  authenticate,
   connectToServer,
   RemoteDataSource,
   useViewserver,
@@ -24,6 +25,26 @@ const instrumentColumns = columns.map((name, index) => {
     type: dataTypes[index],
   };
 });
+
+export const VuuTables = () => {
+  const { tables } = useViewserver();
+
+  useEffect(() => {
+    const connect = async () => {
+      const authToken = (await authenticate("steve", "xyz")) as string;
+      connectToServer("127.0.0.1:8090/websocket", authToken);
+    };
+    connect();
+  }, []);
+
+  return (
+    <List>
+      {Object.entries(tables).map(([table, schema]) => (
+        <ListItem>{`[${schema.table.module}] ${schema.table.table}`}</ListItem>
+      ))}
+    </List>
+  );
+};
 
 export const VuuInstruments = () => {
   const gridRef = useRef(null);
@@ -77,7 +98,7 @@ export const VuuInstruments = () => {
   );
 
   const authenticate = useCallback(async () => {
-    const authToken = await vuuAuthenticate(
+    const authToken = await authenticate(
       "steve",
       "xyz"
       // "http://127.0.0.1:8090"
