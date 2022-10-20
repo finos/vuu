@@ -49,12 +49,12 @@ class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce:
             doMinCycleTime(start, end)
             if(Thread.interrupted() || runOnce == true ){
               shouldContinue.set(false)
-              logger.info(s"[$name] interrupted or run once, going to exit")
+              logger.debug(s"[$name] interrupted or run once, going to exit")
             }
           }
 
         }catch{
-          case int: java.lang.InterruptedException => logger.info(s"[$name] interrupted, going to exit")
+          case int: java.lang.InterruptedException => logger.debug(s"[$name] interrupted, going to exit")
           case NonFatal(e) => logger.error(s"[$name] threw an exception in run", e)
         }
 

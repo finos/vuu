@@ -95,20 +95,26 @@ class FilterGrammerTest extends AnyFeatureSpec with Matchers {
 
       withFilter("tradeTime > 4"){
         List(
-          RowWithData("NYC-0002",Map("tradeTime" -> 6l,"quantity" -> 100.0d,"ric" -> "VOD.L","orderId" -> "NYC-0002","onMkt" -> false,"trader" -> "steve","ccyCross" -> "GBPUSD")),
-          RowWithData("NYC-0010",Map("tradeTime" -> 6l,"quantity" -> null,"ric" -> "VOD.L","orderId" -> "NYC-0010","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD")),
-          RowWithData("NYC-0004",Map("tradeTime" -> 5l,"quantity" -> null,"ric" -> "AAPL.L","orderId" -> "NYC-0004","onMkt" -> false,"trader" -> "chris","ccyCross" -> "GBPUSD")),
-          RowWithData("LDN-0008",Map("tradeTime" -> 5l,"quantity" -> 100.0d,"ric" -> "BT.L","orderId" -> "LDN-0008","onMkt" -> true,"trader" -> "chris","ccyCross" -> "GBPUSD"))
+          RowWithData("NYC-0002",Map("ric" -> "VOD.L","orderId" -> "NYC-0002","onMkt" -> false,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> 100.0d)),
+          RowWithData("NYC-0010",Map("ric" -> "VOD.L","orderId" -> "NYC-0010","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
+          RowWithData("NYC-0011",Map("ric" -> "VOD/L","orderId" -> "NYC-0011","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
+          RowWithData("NYC-0012",Map("ric" -> "VOD\\L","orderId" -> "NYC-0012","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
+          RowWithData("NYC-0013",Map("ric" -> "VOD\\L","orderId" -> "NYC-0013","onMkt" -> true,"trader" -> "rahúl","ccyCross" -> "$GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
+          RowWithData("NYC-0004",Map("ric" -> "AAPL.L","orderId" -> "NYC-0004","onMkt" -> false,"trader" -> "chris","ccyCross" -> "GBPUSD","tradeTime" -> 5l,"quantity" -> null)),
+          RowWithData("LDN-0008",Map("ric" -> "BT.L","orderId" -> "LDN-0008","onMkt" -> true,"trader" -> "chris","ccyCross" -> "GBPUSD","tradeTime" -> 5l,"quantity" -> 100.0d))
         )
       }
 
       withFilter("tradeTime > 4 or orderId = LDN-0002"){
         List(
-          RowWithData("NYC-0002",Map("tradeTime" -> 6l,"quantity" -> 100.0d,"ric" -> "VOD.L","orderId" -> "NYC-0002","onMkt" -> false,"trader" -> "steve","ccyCross" -> "GBPUSD")),
-          RowWithData("NYC-0010",Map("tradeTime" -> 6l,"quantity" -> null,"ric" -> "VOD.L","orderId" -> "NYC-0010","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD")),
-          RowWithData("NYC-0004",Map("tradeTime" -> 5l,"quantity" -> null,"ric" -> "AAPL.L","orderId" -> "NYC-0004","onMkt" -> false,"trader" -> "chris","ccyCross" -> "GBPUSD")),
-          RowWithData("LDN-0008",Map("tradeTime" -> 5l,"quantity" -> 100.0d,"ric" -> "BT.L","orderId" -> "LDN-0008","onMkt" -> true,"trader" -> "chris","ccyCross" -> "GBPUSD")),
-          RowWithData("LDN-0002",Map("tradeTime" -> 1l,"quantity" -> 100.0d,"ric" -> "BT.L","orderId" -> "LDN-0002","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD"))
+          RowWithData("NYC-0002",Map("ric" -> "VOD.L","orderId" -> "NYC-0002","onMkt" -> false,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> 100.0d)),
+          RowWithData("NYC-0010",Map("ric" -> "VOD.L","orderId" -> "NYC-0010","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
+          RowWithData("NYC-0011",Map("ric" -> "VOD/L","orderId" -> "NYC-0011","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
+          RowWithData("NYC-0012",Map("ric" -> "VOD\\L","orderId" -> "NYC-0012","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
+          RowWithData("NYC-0013",Map("ric" -> "VOD\\L","orderId" -> "NYC-0013","onMkt" -> true,"trader" -> "rahúl","ccyCross" -> "$GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
+          RowWithData("NYC-0004",Map("ric" -> "AAPL.L","orderId" -> "NYC-0004","onMkt" -> false,"trader" -> "chris","ccyCross" -> "GBPUSD","tradeTime" -> 5l,"quantity" -> null)),
+          RowWithData("LDN-0008",Map("ric" -> "BT.L","orderId" -> "LDN-0008","onMkt" -> true,"trader" -> "chris","ccyCross" -> "GBPUSD","tradeTime" -> 5l,"quantity" -> 100.0d)),
+          RowWithData("LDN-0002",Map("ric" -> "BT.L","orderId" -> "LDN-0002","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 1l,"quantity" -> 100.0d))
         )
       }
 
@@ -124,6 +130,32 @@ class FilterGrammerTest extends AnyFeatureSpec with Matchers {
       withFilter("orderId ends 08"){
         List(
           RowWithData("LDN-0008",Map("tradeTime" -> 5l,"quantity" -> 100.0d,"ric" -> "BT.L","orderId" -> "LDN-0008","onMkt" -> true,"trader" -> "chris","ccyCross" -> "GBPUSD"))
+        )
+      }
+
+      //bug: with less than
+      withFilter("quantity < 100"){
+        List()
+      }
+
+      //reserved chars in teh grammar
+      withFilter("ric = \"VOD/L\""){
+        List(
+          RowWithData("NYC-0011",Map("ric" -> "VOD/L","orderId" -> "NYC-0011","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> null))
+        )
+      }
+
+      //unicode
+      withFilter("trader = \"rahúl\""){
+        List(
+          RowWithData("NYC-0013",Map("ric" -> "VOD\\L","orderId" -> "NYC-0013","onMkt" -> true,"trader" -> "rahúl","ccyCross" -> "$GBPUSD","tradeTime" -> 6l,"quantity" -> null))
+        )
+      }
+
+      //special chars
+      withFilter("ccyCross = \"$GBPUSD\""){
+        List(
+          RowWithData("NYC-0013",Map("ric" -> "VOD\\L","orderId" -> "NYC-0013","onMkt" -> true,"trader" -> "rahúl","ccyCross" -> "$GBPUSD","tradeTime" -> 6l,"quantity" -> null))
         )
       }
 

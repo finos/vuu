@@ -165,8 +165,11 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
           logger.info("[ChangeViewPortRequest] Wildcard specified for columns, going to return all")
           table.getTableDef.columns.toList
         }
-        else
+        else {
+          validateColumns(table, msg.columns)
+
           msg.columns.map(table.getTableDef.columnForName(_)).toList
+        }
 
         val sort = msg.sort
         val filter = msg.filterSpec
@@ -200,6 +203,14 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
   }
 
+  def validateColumns(table: RowSource, columns: Array[String]): Unit ={
+    val invalidColumns = columns.filter(name => ! table.asTable.getTableDef.columns.map(_.name).contains(name))
+    if(invalidColumns.nonEmpty){
+      logger.error("Invalid columns specified in viewport request:" + invalidColumns.mkString(","))
+      throw new Exception("Invalid columns specified in viewport request")
+    }
+  }
+
   override def process(msg: CreateViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
 
     val table = tableContainer.getTable(msg.table.table)
@@ -208,12 +219,16 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
       errorMsg(s"no table found for ${msg.table}")(ctx)
     else {
 
-      val columns = if (msg.columns.size == 1 && msg.columns(0) == "*") {
+      val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
         logger.info("[CreateViewPortRequest] Wildcard specified for columns, going to return all")
         table.getTableDef.columns.toList
       }
-      else
+      else {
+
+        validateColumns(table, msg.columns)
+
         msg.columns.map(table.getTableDef.columnForName(_)).toList
+      }
 
       val sort = msg.sort
       val filter = msg.filterSpec
