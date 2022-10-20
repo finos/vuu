@@ -73,38 +73,13 @@
         <netty.version>4.1.70.Final</netty.version>
         <maven.scala.plugin>2.15.2</maven.scala.plugin>
         <vertx.version>4.0.3</vertx.version>
-        <typesafe.conf.version>1.4.2</typesafe.conf.version>
-        <!--project.scm.id>github</project.scm.id-->
     </properties>
 
     <modules>
         <module>toolbox</module>
         <module>vuu</module>
-        <!--module>vuu-ui-legacy</module-->
         <module>vuu-ui</module>
     </modules>
-
-    <!--repositories>
-        <repository>
-            <id>scala-tools.org</id>
-            <name>Scala-Tools Maven2 Repository</name>
-            <url>https://scala-tools.org/repo-releases</url>
-        </repository>
-        <repository>
-            <id>sonatype</id>
-            <name>Sonatype OSS</name>
-            <url>https://oss.sonatype.org/</url>
-        </repository>
-
-    </repositories-->
-
-    <!-- pluginRepositories>
-        <pluginRepository>
-            <id>scala-tools.org</id>
-            <name>Scala-Tools Maven2 Repository</name>
-            <url>https://scala-tools.org/repo-releases</url>
-        </pluginRepository>
-    </pluginRepositories-->
 
     <dependencies>
 
@@ -214,21 +189,6 @@
                     <version>3.3.0</version>
                 </plugin>
 
-                <!--plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.0.1</version>
-                    <executions>
-                        <execution>
-                            <id>sign-artifacts</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>sign</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin-->
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
@@ -254,13 +214,6 @@
                         <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
                     </configuration>
-                    <dependencies>
-                        <!--dependency>
-                            <groupId>com.thoughtworks.xstream</groupId>
-                            <artifactId>xstream</artifactId>
-                            <version></version>
-                        </dependency-->
-                    </dependencies>
                 </plugin>
 
             </plugins>

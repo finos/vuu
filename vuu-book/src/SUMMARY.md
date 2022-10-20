@@ -43,3 +43,5 @@
 - [New Features - RFC](./security/security.md)
   - [Calculated Columns](./rfc/CalcuatedColumns.md)
   - [Conditional Formatting](./rfc/ConditionalFormatting.md)
+- [FAQs](./faqs/Faqs.md)
+  - [Debugging JSON messages on the wire](./faqs/debugging_JSON_messages.md)
