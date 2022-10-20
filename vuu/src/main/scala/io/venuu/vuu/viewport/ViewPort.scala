@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.api.ViewPortDef
-import io.venuu.vuu.core.sort.{FilterAndSort, TwoStepCompoundFilter, UserDefinedFilterAndSort, VisualLinkedFilter}
+import io.venuu.vuu.core.sort.{FilterAndSort, Sort, TwoStepCompoundFilter, UserDefinedFilterAndSort, VisualLinkedFilter}
 import io.venuu.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import io.venuu.vuu.net.{ClientSessionId, FilterSpec}
 import io.venuu.vuu.util.PublishQueue
@@ -110,6 +110,8 @@ trait ViewPort {
   def getRowKeyMappingSize_ForTest: Int
 
   def getGroupBy: GroupBy
+
+  def getSort: Sort
 
   def combinedQueueLength: Int = highPriorityQ.length + outboundQ.length
 
@@ -253,6 +255,8 @@ case class ViewPortImpl(id: String,
   override def getRange: ViewPortRange = range.get()
 
   override def getGroupBy: GroupBy = structuralFields.get().groupBy
+
+  override def getSort: Sort = structuralFields.get().filtAndSort.sort
 
   override def size: Int = keys.length
 

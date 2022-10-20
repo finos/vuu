@@ -308,7 +308,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
 
-      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None).build()
+      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None, Some(aSort)).build()
       val keys = tree.toKeys()
       sessionTable.setTree(tree, keys)
       viewPort.setKeys(keys)
@@ -361,7 +361,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
 
-      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None).build()
+      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None, Some(aSort)).build()
 
       val keys = tree.toKeys()
 
@@ -533,7 +533,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val oldTree = tbl.getTree
 
         val (millis, tree) = timeIt {
-          new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
+          new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree), Option(viewPort.getStructure.filtAndSort.sort)).build()
         }
 
         val (millis2, keys) = timeIt {
