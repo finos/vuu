@@ -7,6 +7,15 @@ import io.venuu.vuu.grammer.FilterParser
 import io.venuu.vuu.viewport.RowSource
 
 trait FilterClause {
+
+  def stripQuotes(value: String) = {
+    if(value.startsWith("\"") && value.endsWith("\"")){
+      value.drop(1).dropRight(1)
+    }else{
+      value
+    }
+  }
+
   def filter(data: RowData): Boolean
 
   def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
@@ -31,7 +40,7 @@ trait DataAndTypeClause extends FilterClause {
       case FilterParser.FLOAT => s.toDouble
       case FilterParser.FALSE => false
       case FilterParser.TRUE => true
-      case FilterParser.STRING => s
+      case FilterParser.STRING => stripQuotes(s)
       case FilterParser.ID => s
     }
   }
@@ -85,11 +94,13 @@ case class EqualsClause(column: String, dataType: Int, value: String) extends Da
 
   val toType: Any = toType(value, dataType)
 
+
+
   override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
       case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
-        ix.find(value)
+          ix.find(stripQuotes(value))
       case Some(ix: IntIndexedField) if asColumn.dataType == DataType.IntegerDataType =>
         ix.find(value.toInt)
       case Some(ix: LongIndexedField) if asColumn.dataType == DataType.LongDataType =>
@@ -207,7 +218,7 @@ case class LessThanClause(column: String, dataType: Int, value: String) extends 
     if (datum == null)
       false
     else
-      asDouble > data.toString.toDouble
+      asDouble > datum.toString.toDouble
   }
 }
 

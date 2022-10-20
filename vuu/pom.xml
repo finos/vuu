@@ -166,6 +166,12 @@
             <version>${antlr.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>${typesafe.conf.version}</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -374,19 +380,31 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>exec</goal>
+                    </goals>
+                </execution>
+            </executions>
                 <configuration>
-                    <mainClass>io.venuu.vuu.SimulMain</mainClass>
+                    <executable>java</executable>
                     <arguments>
                         <argument>-Xmx10G</argument>
+                        <argument>-classpath</argument>
+                        <classpath/>
+                        <argument>-Dvuu.webroot=../vuu-ui/deployed_apps/app-vuu-example</argument>
+                        <argument>-Dvuu.keyPath=src/main/resources/certs/key.pem</argument>
+                        <argument>-Dvuu.certPath=src/main/resources/certs/cert.pem</argument>
+                        <argument>-Dlogback.configurationFile=logback-netty.xml</argument>
+                        <argument>io.venuu.vuu.SimulMain</argument>
                     </arguments>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
     <reporting>

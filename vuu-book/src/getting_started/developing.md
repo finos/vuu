@@ -17,6 +17,25 @@
 
 ## Developing the client
 
+If you are comfortable running the server in an IDE, you can follow the instructions above. If not
+you can use the specific maven targets from the command line to run up the sample app. 
+
+You can install command line maven via any means you please, but sdkman makes it easy...
+```bash
+sdk install maven
+```
+
+```bash
+#after checking out the code, in project root dir
+mvn clean compile
+#then into the vuu subfolder
+cd vuu
+#run SimulMain using maven exec:exec plugin
+mvn exec:exec
+```
+
+
+
 1) install node.js version 14+ and yarn
 2) In a terminal, change directory into the ./vuu-ui folder
 3) yarn install

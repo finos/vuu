@@ -3,11 +3,13 @@ package io.venuu.vuu.net.http
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import io.venuu.vuu.net.rest.RestService
+import io.venuu.vuu.util.PathChecker
 import io.vertx.core.http.{HttpMethod, HttpServerOptions}
 import io.vertx.core.{AbstractVerticle, Vertx, VertxOptions}
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.{AuthenticationHandler, BodyHandler, StaticHandler}
 
+import java.io.File
 import java.util
 
 object VuuHttp2Server {
@@ -24,14 +26,14 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
   def addRestService(router: Router, service: RestService): Unit = {
 
-    logger.info(s"Adding REST service /api/${service.getServiceName}")
-    logger.info(s"    POST URI:" + service.getUriPost)
-    logger.info(s"    PUT URI:" + service.getUriPut)
-    logger.info(s"    GET URI:" + service.getUriGet)
-    logger.info(s"    GET ALL URI:" + service.getUriGetAll)
-    logger.info(s"    DELETE URI:" + service.getUriDelete)
+    logger.debug(s"Adding REST service /api/${service.getServiceName}")
+    logger.debug(s"    POST URI:" + service.getUriPost)
+    logger.debug(s"    PUT URI:" + service.getUriPut)
+    logger.debug(s"    GET URI:" + service.getUriGet)
+    logger.debug(s"    GET ALL URI:" + service.getUriGetAll)
+    logger.debug(s"    DELETE URI:" + service.getUriDelete)
 
-    logger.info(s"Routing requests from:" + s"/api/${service.getServiceName}*")
+    logger.debug(s"Routing requests from:" + s"/api/${service.getServiceName}*")
 
     router.route(s"/api/${service.getServiceName}*").handler(BodyHandler.create())
 
@@ -42,7 +44,6 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
     router.put(service.getUriPut).handler(req => service.onPut(req))
   }
 
-
   override def start(): Unit = {
     try {
 
@@ -51,6 +52,14 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
       import io.vertx.core.net.PemKeyCertOptions
 
       val httpOpts = new HttpServerOptions()
+
+      PathChecker.throwOnFileNotExists(options.certPath, "vuu.certPath, doesn't appear to exist")
+      PathChecker.throwOnFileNotExists(options.certPath, "vuu.keyPath, doesn't appear to exist")
+
+      logger.info("Loading SSL Cert from: " + new File(options.certPath).getAbsolutePath)
+      logger.info("Loading SSL Key from: " + new File(options.keyPath).getAbsolutePath)
+
+      PathChecker.throwOnDirectoryNotExists(options.webRoot, "webroot path does not exist:")
 
       httpOpts
         .setPemKeyCertOptions(new PemKeyCertOptions()
@@ -116,7 +125,9 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
       vertx.createHttpServer(httpOpts).requestHandler(router).listen(options.port);
 
-      logger.info(s"[HTTP2] Server Started @ ${options.port} on / with webroot ${options.webRoot} ")
+
+
+      logger.info(s"[HTTP2] Server Started @ ${options.port} on / with webroot ${new File(options.webRoot).getAbsoluteFile} ")
 
     } catch {
       case e: Exception =>

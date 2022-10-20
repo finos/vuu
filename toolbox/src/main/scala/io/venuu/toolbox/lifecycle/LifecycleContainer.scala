@@ -270,40 +270,40 @@ class LifecycleContainer(implicit clock: Clock) extends StrictLogging {
   def add(component: LifecycleEnabled): Unit = {}
 
   def start() = {
-    logger.info("Starting lifecycle")
+    logger.debug("Starting lifecycle")
     val sort = dependencyGraph.topologicalSort
     val startSequence = sort.reverse
 
     startSequence.foreach( list => initOneBucket(list) )
     startSequence.foreach( list => startOneBucket(list) )
 
-    logger.info("Started lifecycle")
+    logger.debug("Started lifecycle")
   }
 
   private def initOneBucket(startSequence: List[LifecycleEnabled]): Unit = {
     startSequence.foreach( comp => {
-      logger.info(s"Initializing ${comp.getClass} ${comp.lifecycleId}")
+      logger.debug(s"Initializing ${comp.getClass} ${comp.lifecycleId}")
       comp.doInitialize()
     })
   }
 
   private def startOneBucket(startSequence: List[LifecycleEnabled]): Unit = {
     startSequence.foreach( comp => {
-      logger.info(s"Starting ${comp.getClass} ${comp.lifecycleId}")
+      logger.debug(s"Starting ${comp.getClass} ${comp.lifecycleId}")
       comp.doStart()
     })
   }
 
   private def stopOneBucket(startSequence: List[LifecycleEnabled]): Unit = {
     startSequence.reverse.foreach( comp => {
-      logger.info(s"Stopping ${comp.getClass} ${comp.lifecycleId}")
+      logger.debug(s"Stopping ${comp.getClass} ${comp.lifecycleId}")
       comp.doStop()
     })
   }
 
   private def destroyOneBucket(startSequence: List[LifecycleEnabled]): Unit = {
     startSequence.reverse.foreach( comp => {
-      logger.info(s"Destroying ${comp.getClass}")
+      logger.debug(s"Destroying ${comp.getClass}")
       comp.doDestroy()
     })
   }
@@ -317,6 +317,6 @@ class LifecycleContainer(implicit clock: Clock) extends StrictLogging {
     val startSequence = sort
     startSequence.foreach( list => stopOneBucket(list) )
     startSequence.foreach( list => destroyOneBucket(list) )
-    logger.info("Shutdown lifecycle")
+    logger.debug("Shutdown lifecycle")
   }
 }
