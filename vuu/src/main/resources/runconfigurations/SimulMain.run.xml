@@ -1,10 +1,11 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="SimulMain" type="Application" factoryName="Application" folderName="runConfigs">
-    <option name="ALTERNATIVE_JRE_PATH" value="$USER_HOME$/.sdkman/candidates/java/16.0.2-open" />
+    <option name="ALTERNATIVE_JRE_PATH" value="16" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="io.venuu.vuu.SimulMain" />
     <module name="vuu" />
-    <option name="PROGRAM_PARAMETERS" value="-Xmx20G -Xlog:gc*=debug:stdout" />
+    <option name="PROGRAM_PARAMETERS" value="-Xmx20G -Xlog:gc*=debug:stdout " />
+    <option name="VM_PARAMETERS" value="-Dlogback.configurationFile=logback-netty.xml" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="io.venuu.vuu.*" />

@@ -123,7 +123,11 @@ object FilterAndSortFixture {
       RowWithData("LDN-0003",Map("tradeTime" -> 3l,"quantity" -> null,"ric" -> "VOD.L","orderId" -> "LDN-0003","onMkt" -> true,"trader" -> "chris","ccyCross" -> "GBPUSD")),
       RowWithData("LDN-0008",Map("tradeTime" -> 5l,"quantity" -> 100.0d,"ric" -> "BT.L","orderId" -> "LDN-0008","onMkt" -> true,"trader" -> "chris","ccyCross" -> "GBPUSD")),
       RowWithData("NYC-0002",Map("tradeTime" -> 6l,"quantity" -> 100.0d,"ric" -> "VOD.L","orderId" -> "NYC-0002","onMkt" -> false,"trader" -> "steve","ccyCross" -> "GBPUSD")),
-      RowWithData("NYC-0010",Map("tradeTime" -> 6l,"quantity" -> null,"ric" -> "VOD.L","orderId" -> "NYC-0010","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD"))
+      RowWithData("NYC-0010",Map("tradeTime" -> 6l,"quantity" -> null,"ric" -> "VOD.L","orderId" -> "NYC-0010","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD")),
+      RowWithData("NYC-0011",Map("tradeTime" -> 6l,"quantity" -> null,"ric" -> "VOD/L","orderId" -> "NYC-0011","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD")),
+      RowWithData("NYC-0012",Map("tradeTime" -> 6l,"quantity" -> null,"ric" -> "VOD\\L","orderId" -> "NYC-0012","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD")),
+      //unicode in trade name and special char in ccycross
+      RowWithData("NYC-0013",Map("tradeTime" -> 6l,"quantity" -> null,"ric" -> "VOD\\L","orderId" -> "NYC-0013","onMkt" -> true,"trader" -> "rahúl","ccyCross" -> "$GBPUSD"))
     )
 
     rows.foreach(r => addRow(r))
