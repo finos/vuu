@@ -18,13 +18,11 @@
     "build:uitk": "node ./scripts/build-uitk.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "start:electron": "cd packages/electron && node ./node_modules/.bin/electron .",
-    "start:showcase": "cd packages/showcase && serve ./public -s",
+    "showcase": "cd packages/showcase && vite",
     "build:app": "cd packages/app-vuu-example && node scripts/build.mjs",
     "build:app:dev": "cd packages/app-vuu-example && node scripts/build.mjs --dev",
     "bump": "node ./scripts/version.mjs",
-    "bump:uitk": "node ./scripts/version-uitk.mjs",
     "pub": "node ./scripts/publish.mjs",
-    "pub:uitk": "node ./scripts/publish-uitk.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
