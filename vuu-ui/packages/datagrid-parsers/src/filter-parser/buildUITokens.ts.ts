@@ -1,5 +1,7 @@
 import { FilterParser } from "../../generated/parsers/filter/FilterParser";
 import { Filter } from "@vuu-ui/utils";
+import { CharacterSubstitution } from "./FilterVisitor";
+import { CommonTokenStream, TokenStream } from "antlr4ts";
 
 // We should be able to derive these from the parser, using Rules
 const TOKEN_TYPES = {
@@ -15,10 +17,11 @@ const TOKEN_TYPES = {
   [FilterParser.NEQ]: "operator",
   [FilterParser.INT]: "number",
   [FilterParser.FLOAT]: "number",
-  [FilterParser.NUMBER_SHORTHAND]: "number",
 };
 
-const tokenType = (type) => TOKEN_TYPES[type] ?? "text";
+type TokenType = keyof typeof TOKEN_TYPES;
+
+const tokenType = (type: TokenType) => TOKEN_TYPES[type] ?? "text";
 const NO_SUBSTITUTION = {};
 
 export type UIToken = {
@@ -30,20 +33,36 @@ export type UIToken = {
 export function buildUITokens(
   parser: FilterParser,
   parseResult: Filter | undefined,
-  substitution = NO_SUBSTITUTION
+  typeSubstitution = NO_SUBSTITUTION,
+  pattern: RegExp,
+  characterSubstitutions?: CharacterSubstitution[]
 ): UIToken[] {
   if (parseResult) {
+    console.log(`[buildUITokens] typedSubstitution ${typeSubstitution},
+      characterSubstitutions: ${JSON.stringify(characterSubstitutions)}
+    `);
     const tokenPositions = mapTokenPositions([parseResult]);
-    const { tokens: parsedTokens } = parser.inputStream;
-
+    const parsedTokens = (parser.inputStream as CommonTokenStream).getTokens();
     const tokens: UIToken[] = [];
     for (let i = 0; i < parsedTokens.length - 1; i++) {
       const t = parsedTokens[i];
-      const tokenText = t.text;
+      let tokenText = t.text;
+
+      if (
+        characterSubstitutions &&
+        characterSubstitutions.length > 0 &&
+        typeof tokenText === "string" &&
+        pattern.test(tokenText)
+      ) {
+        const substitution =
+          characterSubstitutions.shift() as CharacterSubstitution;
+        const regexp = new RegExp(`${substitution.substitutedChar}`);
+        tokenText = tokenText.replace(regexp, substitution.sourceChar);
+      }
       tokens.push({
-        type: tokenPositions[t.start] ?? t.tokenType ?? tokenType(t.type),
-        text: substitution[tokenText] ?? tokenText,
-        start: t.start,
+        type: tokenPositions[t.startIndex] ?? t.tokenType ?? tokenType(t.type),
+        text: typeSubstitution[tokenText] ?? tokenText,
+        start: t.startIndex,
       });
     }
     return tokens;
@@ -52,7 +71,11 @@ export function buildUITokens(
   }
 }
 
-function mapTokenPositions(filters: Filter[], idx = 0, map = {}) {
+function mapTokenPositions(
+  filters: Array<Filter & { tokenPosition?: any }>,
+  idx = 0,
+  map: { [key: number]: string } = {}
+) {
   const f = filters[idx];
   if (!f) {
     return map;

@@ -17,13 +17,13 @@ import { createSuggestionProvider } from "./vuu-filter-suggestion-provider";
 // import './ParsedInput.stories.css';
 
 const schemaColumns = [
-  { name: "bbg", serverDataType: "string" },
-  { name: "description", serverDataType: "string" },
-  { name: "currency", serverDataType: "string" },
-  { name: "exchange", serverDataType: "string" },
-  { name: "lotSize", serverDataType: "int" },
-  { name: "isin", serverDataType: "string" },
-  { name: "ric", serverDataType: "string" },
+  { name: "bbg", serverDataType: "string" } as const,
+  { name: "description", serverDataType: "string" } as const,
+  { name: "currency", serverDataType: "string" } as const,
+  { name: "exchange", serverDataType: "string" } as const,
+  { name: "lotSize", serverDataType: "int" } as const,
+  { name: "isin", serverDataType: "string" } as const,
+  { name: "ric", serverDataType: "string" } as const,
 ];
 
 let displaySequence = 1;
@@ -31,6 +31,7 @@ let displaySequence = 1;
 //TODO combine parser and getTokenTypes into a parser
 export const ParsedFilterInput = () => {
   const [namedFilters, setNamedFilters] = useState<NamedFilter[]>([]);
+  const [queryString, setQueryString] = useState("");
 
   const { getTypeaheadSuggestions } = useViewserver();
 
@@ -59,6 +60,7 @@ export const ParsedFilterInput = () => {
       const namedFilter = { name, filter } as NamedFilter;
       setNamedFilters(namedFilters.concat(namedFilter));
     }
+    setQueryString(filterQuery);
   };
 
   return (
@@ -74,6 +76,8 @@ export const ParsedFilterInput = () => {
       <div style={{ width: 600 }}>
         <ParsedInput onCommit={handleCommit} />
       </div>
+      <br />
+      <div>{queryString}</div>
     </ParserProvider>
   );
 };

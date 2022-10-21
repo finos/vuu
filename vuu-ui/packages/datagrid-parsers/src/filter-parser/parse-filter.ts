@@ -3,7 +3,7 @@ import { CommonTokenStream } from "antlr4ts/CommonTokenStream";
 import { Filter, lastWord } from "@vuu-ui/utils";
 import { FilterParser } from "../../generated/parsers/filter/FilterParser";
 import { FilterLexer } from "../../generated/parsers/filter/FilterLexer";
-import FilterVisitor from "./FilterVisitor.js";
+import { CharacterSubstitution, FilterVisitor } from "./FilterVisitor.js";
 import {
   ExactMatchFromListError,
   OpenListError,
@@ -11,7 +11,7 @@ import {
   SuggestionProvider,
   SuggestionResult,
 } from "./parse-suggestions";
-import { buildUITokens, UIToken } from "./ui-tokens";
+import { buildUITokens, UIToken } from "./buildUITokens.ts";
 import { isOpenList } from "./parse-utils";
 import { RecognitionException, Recognizer } from "antlr4ts";
 
@@ -57,19 +57,52 @@ function constructParser(input: string) {
   return parser;
 }
 
+// typedInput is a string of repeated type indication characters like 'sss', 'nn'
+// it is used only for column names, to allow association with the appropriate
+// operators.
+const pattern = /[\/_]/g;
+const substitutedCharPattern = /@/;
+
+const replaceProblematicCharacters = (
+  text: string
+): [string, CharacterSubstitution[]] | [string] => {
+  if (!pattern.test(text)) {
+    return [text];
+  }
+
+  let match: RegExpExecArray | null;
+  pattern.lastIndex = 0;
+  const substitutions: CharacterSubstitution[] = [];
+
+  while ((match = pattern.exec(text))) {
+    const [sourceChar] = match;
+    const { index } = match;
+    substitutions.push({
+      index,
+      sourceChar,
+      sourceCharUnderlying: sourceChar === "_" ? " " : undefined,
+      substitutedChar: "@",
+    });
+  }
+  const safeText = text.replaceAll(pattern, "@");
+  return [safeText, substitutions];
+};
+
 export const parseFilter = (
   input: string,
   typedInput: string = input,
   suggestionProvider: SuggestionProvider,
   { insertSymbol = "" } = DEFAULT_OPTIONS
 ): FilterParseResults => {
+  const [safeText, characterSubstitutions] =
+    replaceProblematicCharacters(typedInput);
+  const errors: RecognitionException[] = [];
   console.log(
-    `%c[parse-filter] input: '${input}', typedInput: '${typedInput}'`,
+    `%c[parse-filter] input: '${input}', typedInput: '${typedInput}' safeText='${safeText}'
+      substitutions: ${JSON.stringify(characterSubstitutions)}
+    `,
     "background: green; color: white; font-weight: bold"
   );
-  const errors: RecognitionException[] = [];
-  // TODO we need to identify where this has happened so we can safely restore the characters
-  const safeText = typedInput.replaceAll("/", "--");
   const parser = constructParser(`${safeText}${insertSymbol}`);
 
   const errorListener = new ExprErrorListener(errors);
@@ -80,16 +113,26 @@ export const parseFilter = (
   parser.buildParseTree = true;
   const parseTree = parser.expression();
   // onsole.log({ tokens: parser.inputStream.tokens.map((t) => t.text) });
-  const visitor = new FilterVisitor();
+  const visitor = new FilterVisitor(
+    substitutedCharPattern,
+    characterSubstitutions?.slice()
+  );
   const [parseResult] = visitor.visit(parseTree) as [Filter];
   const caretPosition = typedInput.length;
 
-  const substitution =
+  const typeSubstitution =
     input === typedInput
       ? undefined
       : { [lastWord(typedInput)]: lastWord(input) };
 
-  const parsedTokens = buildUITokens(parser, parseResult, substitution);
+  const parsedTokens = buildUITokens(
+    parser,
+    parseResult,
+    typeSubstitution,
+    substitutedCharPattern,
+    characterSubstitutions?.slice()
+  );
+
   const isList = isOpenList(parsedTokens);
 
   try {
@@ -102,7 +145,9 @@ export const parseFilter = (
       suggestionProvider,
       parseResult,
       parsedTokens,
-      isList
+      isList,
+      substitutedCharPattern,
+      characterSubstitutions?.slice()
     );
 
     if (insertSymbol) {

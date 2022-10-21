@@ -137,7 +137,6 @@ export const ParsedInput = forwardRef(function ParsedInput(
   > = useCallback(
     (evt: SyntheticEvent, selectedSuggestion: SuggestionItem | null) => {
       if (selectedSuggestion?.value === "EOF") {
-        console.log("COMMIT");
         handleCommit();
       } else if (selectedSuggestion !== null) {
         acceptSuggestion?.(evt, selectedSuggestion);
@@ -146,17 +145,20 @@ export const ParsedInput = forwardRef(function ParsedInput(
     [acceptSuggestion, handleCommit]
   );
 
-  const handleDropdownChange = useCallback(
-    (evt: SyntheticEvent, isOpen: boolean) => {
-      {
+  const handleDropdownChange = useCallback((isOpen: boolean, reason) => {
+    {
+      console.log(`handle dropdown change ${reason}`, {
+        isOpen,
+      });
+
+      if (reason !== "selection") {
         setOpen(isOpen);
       }
-      // if (!isOpen) {
-      //   setSelected([]);
-      // }
-    },
-    []
-  );
+    }
+    // if (!isOpen) {
+    //   setSelected([]);
+    // }
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -238,6 +240,7 @@ export const ParsedInput = forwardRef(function ParsedInput(
       fullWidth
       isOpen={open}
       itemToString={itemToString}
+      onOpenChange={handleDropdownChange}
       onSelectionChange={
         suggestionsAreIllustrationsOnly
           ? undefined

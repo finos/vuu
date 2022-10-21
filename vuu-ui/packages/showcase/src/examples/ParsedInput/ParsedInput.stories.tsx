@@ -1,4 +1,5 @@
 import { ComponentAnatomy } from "@heswell/component-anatomy";
+import { TypeaheadParams } from "@vuu-ui/data-types";
 import {
   extractFilter,
   filterAsQuery,
@@ -13,52 +14,26 @@ import { Button, Pill, Pillbox } from "@vuu-ui/ui-controls";
 import { addFilter, filterClauses } from "@vuu-ui/utils";
 import cx from "classnames";
 import { useCallback, useRef, useState } from "react";
-import createSuggestionProvider from "./filter-suggestion-provider";
+import { createSuggestionProvider } from "./filter-suggestion-provider";
 
 import "./ParsedInput.stories.css";
 
-const columnNames = [
-  "bbg",
-  "ccy",
-  "exchange",
-  "price",
-  "quantity",
-  "status",
-  "timestamp",
+const schemaColumns = [
+  { name: "bbg", serverDataType: "string" } as const,
+  { name: "description", serverDataType: "string" } as const,
+  { name: "currency", serverDataType: "string" } as const,
+  { name: "exchange", serverDataType: "string" } as const,
+  { name: "lotSize", serverDataType: "int" } as const,
+  { name: "isin", serverDataType: "string" } as const,
+  { name: "ric", serverDataType: "string" } as const,
 ];
-const columns = [
-  { name: "bbg", type: "string" },
-  { name: "ccy", type: "string" },
-  { name: "exchange", type: "string" },
-  { name: "price", type: "number" },
-  { name: "quantity", type: "number" },
-  { name: "status", type: "string" },
-  { name: "timestamp", type: "string" },
-];
-
-const typeChar = (type) => {
-  switch (type) {
-    case "number":
-      return "n";
-    default:
-      return "s";
-  }
-};
 
 let displaySequence = 1;
-
-const annotateWithTypes = (columns) =>
-  columns.map(({ name: columnName, type }) => ({
-    name: columnName,
-    type,
-    typedName: Array(columnName.length).fill(typeChar(type)).join(""),
-  }));
-
-const typedColumns = annotateWithTypes(columns);
 
 //TODO combine parser and getTokenTypes into a parser
 export const ParsedFilterInput = () => {
   const [namedFilters, setNamedFilters] = useState([]);
+  const [queryString, setQueryString] = useState("");
 
   const handleCommit = (result) => {
     const { filter, name } = extractFilter(result);
@@ -75,20 +50,53 @@ export const ParsedFilterInput = () => {
     if (name) {
       setNamedFilters(namedFilters.concat({ name, filter }));
     }
+
+    setQueryString(filterQuery);
   };
+
+  const getSuggestions = useCallback(
+    (params: TypeaheadParams): Promise<string[]> => {
+      const [{ table: tableName }, column] = params;
+      return new Promise((resolve) => {
+        switch (column) {
+          case "currency":
+            resolve(["EUR", "GBP", "JPY", "SEK", "USD"]);
+            break;
+          case "exchange":
+            resolve([
+              "XAMS/ENA-MAIN",
+              "XLON/LSE-SETS",
+              "XNGS/NAS-GSM",
+              "XNYS/NYS-MAIN",
+            ]);
+            break;
+          case "bbg":
+            // prettier-ignore
+            resolve(["AAA.LN", "AAA.US","AAA.OQ","AAA.NL","AAA.OE","AAA.MI"]);
+            break;
+          default:
+            resolve([] as string[]);
+        }
+      });
+    },
+    []
+  );
 
   return (
     <ParserProvider
       parser={parseFilter}
       suggestionProvider={createSuggestionProvider({
-        columns: typedColumns,
-        columnNames,
+        columns: schemaColumns,
         namedFilters,
+        getSuggestions,
+        table: { table: "instruments", module: "SIMUL" },
       })}
     >
       <div style={{ width: 600 }}>
         <ParsedInput onCommit={handleCommit} />
       </div>
+      <br />
+      <div>{queryString}</div>
     </ParserProvider>
   );
 };
@@ -242,9 +250,10 @@ export const ParsedFilterExpando = () => {
     <ParserProvider
       parser={parseFilter}
       suggestionProvider={createSuggestionProvider({
-        columns: typedColumns,
+        columns: schemaColumns,
         columnNames,
         namedFilters,
+        table: { table: "instruments", module: "SIMUL" },
       })}
     >
       <div className="expando-container" style={{ width: 600 }}>

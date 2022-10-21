@@ -1,19 +1,28 @@
+import { SchemaColumn } from "@vuu-ui/data-remote";
+import { ColumnDataType, TypeaheadParams, VuuTable } from "@vuu-ui/data-types";
 import {
+  NamedFilter,
   SuggestionItem,
-  SuggestionProvider,
   SuggestionProviderProps,
-  SuggestionProviderResult,
   SuggestionResult,
 } from "@vuu-ui/datagrid-parsers";
-import { UIToken } from "@vuu-ui/datagrid-parsers/src/filter-parser/ui-tokens";
 import { Filter, isMultiClauseFilter } from "@vuu-ui/utils";
 
+type ObjectValue = { [key: string]: string };
+type Value = string | ObjectValue;
+type TypedColumn = {
+  name: string;
+  type: "string" | "number";
+  typedName: string;
+};
+
 const filterListValues = (values, selectedValues, text) => {
-  console.log(
-    `filterListValues values ${values.join(",")} selected ${selectedValues.join(
-      ","
-    )} text ${text}`
-  );
+  // onsole.log(
+  //   `filterListValues values ${values.join(",")} selected ${selectedValues.join(
+  //     ","
+  //   )} text ${text}`
+  // );
+
   // If we have an exact match with one of the values, then we have a selection.
   // But if the last item is  a partial match only, then we are filtering. We
   // preserve already selected values.
@@ -38,23 +47,20 @@ const filterNonListValues = (values, text, propertyName) =>
     getStringValue(value, propertyName).startsWith(text)
   );
 
-// We accept string values or objects, in which case we will use object[propertyName]
 const suggestedValues = (
-  values: any[],
+  values: Value[],
   text = "",
   operator = "",
   isListItem = false,
-  propertyName: string,
-  currentValues?: UIToken[]
+  propertyName?: string,
+  selectedValues: string[] = []
 ): SuggestionItem[] => {
-  const selectedValues =
-    currentValues?.map((item) => item.text.toLowerCase()) ?? NO_SELECTION;
   // if the last selectedValue is not a 100% match, then its  a startsWith
   const lcText = text.toLowerCase();
   const result = isListItem
-    ? filterListValues(values, selectedValues, lcText)
+    ? filterListValues(values as string[], selectedValues, lcText)
     : filterNonListValues(values, lcText, propertyName);
-  return result.map((v) => {
+  return result.map((v: any) => {
     const { name = v, type, typedName } = v;
     return {
       value: name,
@@ -71,131 +77,92 @@ const suggestedValues = (
 };
 
 const suggestColumnNames = (
-  columns: Array<{ name: string }>,
+  columns: TypedColumn[],
   text: string,
-  isListItem = false
+  isListItem: boolean
 ): SuggestionResult => {
   const values = suggestedValues(columns, text, undefined, isListItem, "name");
   return { values, total: values.length };
 };
 
-const suggestColumnValues = async (
+const getTypeaheadParams = (
+  table: VuuTable,
   column: string,
   text: string,
-  operator: string | undefined,
-  isListItem = false,
-  currentValues?: UIToken[]
-): Promise<SuggestionProviderResult> => {
-  let values;
-  switch (column) {
-    case "ccy":
-      {
-        const ccy = ["EUR", "GBP", "JPY", "SEK", "USD"];
-        values = suggestedValues(
-          ccy,
-          text,
-          operator,
-          isListItem,
-          undefined,
-          currentValues
-        );
-      }
-      break;
-
-    case "exchange":
-      {
-        const exchange = [
-          "XAMS/ENA-MAIN",
-          "XLON/LSE-SETS",
-          "XNGS/NAS-GSM",
-          "XNYS/NYS-MAIN",
-        ];
-        values = suggestedValues(
-          exchange,
-          text,
-          operator,
-          isListItem,
-          undefined,
-          currentValues
-        );
-      }
-      break;
-    case "status":
-      {
-        const status = [
-          "cancelled",
-          "complete",
-          "partial",
-          "error",
-          "suspended",
-        ];
-        values = suggestedValues(
-          status,
-          text,
-          operator,
-          isListItem,
-          undefined,
-          currentValues
-        );
-      }
-      break;
-
-    case "price":
-      values = [{ value: "enter a monetary value" }];
-      break;
-
-    case "timestamp":
-      values = [{ value: "enter a timestamp" }];
-      break;
-
-    case "quantity":
-      values = [{ value: "enter an integer value" }];
-      break;
-
-    case "bbg":
-      return fetchInstruments(text);
-
-    default:
-      values = [];
+  selectedValues: string[]
+): TypeaheadParams => {
+  if (text !== "" && !selectedValues.includes(text.toLowerCase())) {
+    return [table, column, text];
+  } else {
+    return [table, column];
   }
-
-  return Promise.resolve({ values, total: values.length, isListItem });
 };
 
-const suggestedInstrumentValues = (values, text = "") =>
-  values.map(([bbg, description]) => ({
-    value: bbg,
-    displayValue: [bbg, description],
-    completion: bbg.slice(text.length),
-  }));
-
-const fetchInstruments = async (text) => {
-  return new Promise((resolve) => {
-    const pattern = text || "A";
-    fetch(`http://127.0.0.1:9001/prefix/${pattern.toUpperCase()}`, {
-      credentials: "omit",
-    })
-      .then((response) => response.json())
-      .then((json) => {
-        resolve({
-          values: suggestedInstrumentValues(json, pattern),
-          total: 100,
-        });
-      })
-      .catch(() => {
-        throw Error("fetch failed");
-      });
-  });
+const suggestColumnValues = (
+  column: SchemaColumn,
+  text: string,
+  operator: string | undefined,
+  isListItem: boolean,
+  selectedValues: string[],
+  getSuggestions: (params: TypeaheadParams) => Promise<string[]>,
+  table: VuuTable
+): SuggestionResult | Promise<SuggestionResult> => {
+  if (column.serverDataType === "int") {
+    const message =
+      text.length > 0
+        ? "press SPACE or ENTER when done "
+        : "Enter a number, press SPACE or ENTER when done ";
+    return {
+      values: [
+        {
+          completion: "",
+          isIllustration: false,
+          isListItem: false,
+          isSelected: false,
+          value: message,
+        },
+      ],
+      total: 1,
+    };
+  } else {
+    const params = getTypeaheadParams(table, column.name, text, selectedValues);
+    return getSuggestions(params).then((suggestions) => {
+      const values = suggestedValues(
+        suggestions,
+        text,
+        operator,
+        isListItem,
+        undefined,
+        selectedValues
+      );
+      return { isListItem, values, total: values.length };
+    });
+  }
 };
 
-const getCurrentColumn = (filter: Filter): string | undefined => {
+const getCurrentColumn = (
+  filter: Filter,
+  columns: SchemaColumn[]
+): SchemaColumn => {
   if (!filter) {
-    return undefined;
+    throw Error(
+      `VuuFilterSuggestionProvider cannot suggest column values before a column has been specified`
+    );
   } else {
     if (isMultiClauseFilter(filter)) {
-      return getCurrentColumn(filter.filters[filter.filters.length - 1]);
+      return getCurrentColumn(
+        filter.filters[filter.filters.length - 1],
+        columns
+      );
     } else {
-      return filter.column;
+      const column = columns.find((col) => col.name === filter.column);
+      if (column) {
+        return column;
+      } else {
+        throw Error(
+          `VuuFilterSuggestionProvider filter references colum ${filter.column}, which is not recognised`
+        );
+      }
     }
   }
 };
@@ -214,48 +181,102 @@ const filterNameSavePrompt = (text) => {
   return { values: [] };
 };
 
-const suggestNamedFilters = async (filters, text) => {
+const suggestNamedFilters = (
+  filters: NamedFilter[],
+  text: string
+): SuggestionResult => {
   if (text.startsWith(":")) {
+    console.log(`suggestNamedFilters text = '${text}'`, {
+      filters,
+    });
+
+    const values: SuggestionItem[] = filters.map(({ name }) => ({
+      isIllustration: false,
+      isListItem: false,
+      isSelected: false,
+      value: `:${name}`,
+      displayValue: name,
+      completion: name,
+    }));
+
     return {
-      values: filters.map(({ name }) => ({
-        value: `:${name}`,
-        displayValue: name,
-        completion: name,
-      })),
+      values,
+      total: values.length,
     };
   } else {
-    return { values: [] };
+    return { total: 0, values: [] };
   }
 };
 
-const buildColumns = (columnNames) => columnNames.map((name) => ({ name }));
+const toJSType = (type: ColumnDataType): "string" | "number" => {
+  switch (type) {
+    case "int":
+    case "long":
+    case "double":
+      return "number";
+    default:
+      return "string";
+  }
+};
 
-// note: Returns a promise
-const createSuggestionProvider =
+const typeChar = (type: ColumnDataType) => {
+  switch (type) {
+    case "int":
+    case "long":
+    case "double":
+      return "n";
+    default:
+      return "s";
+  }
+};
+
+const annotateWithTypes = (columns: SchemaColumn[]): TypedColumn[] =>
+  columns.map(({ name: columnName, serverDataType }) => ({
+    name: columnName,
+    type: toJSType(serverDataType),
+    typedName: Array(columnName.length).fill(typeChar(serverDataType)).join(""),
+  }));
+
+export const createSuggestionProvider =
   ({
-    columnNames,
-    columns = buildColumns(columnNames),
+    columns,
     namedFilters = [],
+    getSuggestions,
+    table,
   }: {
-    columnNames: string[];
-    columns: Array<{ name: string }>;
+    columns: SchemaColumn[];
     namedFilters?: string[];
-  }): SuggestionProvider =>
-  ({ filter, isListItem, operator, token: tokenId, text, values }) => {
-    console.log(
-      `SuggestionProvider selectedSuggestions ${JSON.stringify(values)}`
-    );
+    getSuggestions: (
+      params: [VuuTable, string] | [VuuTable, string, string]
+    ) => Promise<string[]>;
+    table: VuuTable;
+  }) =>
+  ({
+    filter,
+    isListItem = false,
+    operator,
+    token: tokenId,
+    text,
+    selectedTokens = [],
+  }: SuggestionProviderProps) => {
+    // console.log(
+    //   `[SuggestionProvider] getSuggestions, isListItem ${isListItem},  selectedValues`,
+    //   {
+    //     selectedTokens,
+    //   }
+    // );
     switch (tokenId) {
       case "COLUMN-NAME":
-        // TODO return a list of objects, not just names
-        return suggestColumnNames(columns, text, isListItem);
+        return suggestColumnNames(annotateWithTypes(columns), text, isListItem);
       case "COLUMN-VALUE":
         return suggestColumnValues(
-          getCurrentColumn(filter),
+          getCurrentColumn(filter, columns),
           text,
           operator,
           isListItem,
-          values
+          selectedTokens.map((t) => t.text.toLowerCase()),
+          getSuggestions,
+          table
         );
       case "FILTER-NAME":
         return filterNameSavePrompt(text);
@@ -265,5 +286,3 @@ const createSuggestionProvider =
         return { values: [] };
     }
   };
-
-export default createSuggestionProvider;

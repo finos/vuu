@@ -33,6 +33,13 @@ import { Filter } from "@vuu-ui/utils";
 
 // }
 
+export type CharacterSubstitution = {
+  index: number;
+  sourceChar: string;
+  sourceCharUnderlying?: string;
+  substitutedChar: string;
+};
+
 export type NamedFilter = {
   name: string;
   filter: Filter;
@@ -41,7 +48,14 @@ export type NamedFilter = {
 const EMPTY = [] as const;
 type Empty = typeof EMPTY;
 
-export default class FilterVisitor extends AbstractParseTreeVisitor<any> {
+export class FilterVisitor extends AbstractParseTreeVisitor<any> {
+  constructor(
+    private pattern: RegExp,
+    private substitutions: CharacterSubstitution[] | undefined
+  ) {
+    super();
+  }
+
   defaultResult() {
     return EMPTY;
   }
@@ -183,6 +197,7 @@ export default class FilterVisitor extends AbstractParseTreeVisitor<any> {
   visitTerminal(ctx: TerminalNode): string | Empty {
     switch (ctx.symbol.type) {
       case FilterParser.STRING:
+        console.log({ string: ctx.text });
         return ctx.text.slice(1, -1);
       case Token.EOF:
       case FilterParser.LBRACK:
@@ -190,7 +205,22 @@ export default class FilterVisitor extends AbstractParseTreeVisitor<any> {
       case FilterParser.AS:
         return EMPTY;
       default:
-        return ctx.text;
+        if (
+          this.substitutions &&
+          this.substitutions.length > 0 &&
+          this.pattern.test(ctx.text)
+        ) {
+          const { startIndex, stopIndex } = ctx.symbol;
+          const {
+            substitutedChar,
+            sourceChar,
+            sourceCharUnderlying = sourceChar,
+          } = this.substitutions.shift() as CharacterSubstitution;
+          const regexp = new RegExp(`${substitutedChar}`);
+          return `"${ctx.text.replace(regexp, sourceCharUnderlying)}"`;
+        } else {
+          return ctx.text;
+        }
     }
   }
 }

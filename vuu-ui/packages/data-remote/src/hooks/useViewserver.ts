@@ -24,8 +24,8 @@ export const RpcCall = "RPC_CALL";
 export type SchemaColumn = {
   name: string;
   serverDataType: ColumnDataType;
-  label: string;
-  type: { name: string };
+  label?: string;
+  type?: { name: string };
   width?: number;
 };
 

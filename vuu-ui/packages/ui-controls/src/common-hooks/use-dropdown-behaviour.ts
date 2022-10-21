@@ -25,6 +25,7 @@ export const useDropdownBehaviour = ({
 
   const setIsOpen = useCallback(
     (e, open = e) => {
+      console.log(`set is open`);
       _setIsOpen(open);
       const callback = open ? onOpen : onClose;
       callback && callback(e, open);

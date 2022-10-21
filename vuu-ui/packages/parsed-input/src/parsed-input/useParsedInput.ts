@@ -39,12 +39,12 @@ export const useParsedInput = ({
     (item) => item.isIllustration
   );
 
-  const dropdownHook = useDropdownBehaviour({
-    open,
-    onClose: onDropdownClose,
-    onOpen: onDropdownOpen,
-    openOnFocus: true,
-  });
+  // const dropdownHook = useDropdownBehaviour({
+  //   open,
+  //   onClose: onDropdownClose,
+  //   onOpen: onDropdownOpen,
+  //   openOnFocus: true,
+  // });
 
   const keyboardHook = useKeyboardNavigation({
     highlightedIdx,
@@ -60,7 +60,7 @@ export const useParsedInput = ({
   const handleKeyDown = useCallback(
     (evt) => {
       if (!suggestionsAreIllustrationsOnly) {
-        dropdownHook.onKeyDown(evt);
+        // dropdownHook.onKeyDown(evt);
         if (!evt.defaultPrevented) {
           keyboardHook.listProps.onKeyDown(evt);
         }
@@ -70,7 +70,7 @@ export const useParsedInput = ({
       }
     },
     [
-      dropdownHook,
+      // dropdownHook,
       editHook,
       keyboardHook.listProps,
       suggestionsAreIllustrationsOnly,
@@ -85,8 +85,8 @@ export const useParsedInput = ({
 
   const listProps = {
     "aria-activedescendant": getActiveDescendant(),
-    onBlur: dropdownHook.onBlur,
-    onFocus: dropdownHook.onFocus,
+    // onBlur: dropdownHook.onBlur,
+    // onFocus: dropdownHook.onFocus,
     onKeyDown: handleKeyDown,
   };
 

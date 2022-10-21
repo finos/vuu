@@ -6,8 +6,9 @@ import {
   FilterParser,
 } from "../../generated/parsers/filter/FilterParser";
 import { computeTokenIndexAndText } from "./parse-utils";
-import { UIToken } from "./ui-tokens";
+import { UIToken } from "./buildUITokens.ts";
 import { Filter } from "@vuu-ui/utils";
+import { CharacterSubstitution } from "./FilterVisitor";
 
 interface SuggestionToken {
   completion: string;
@@ -134,12 +135,10 @@ export const parseSuggestions = (
   suggestionProvider: SuggestionProvider,
   parseResult: Filter,
   uiTokens: UIToken[],
-  isListItem = false
+  isListItem = false,
+  pattern: RegExp,
+  characterSubstitutions?: CharacterSubstitution[]
 ): SuggestionResult | Promise<SuggestionResult> => {
-  console.log(`parseSUggestions`, {
-    parseResult,
-  });
-
   const core = new c3.CodeCompletionCore(parser);
   core.preferredRules = new Set([
     FilterParser.RULE_column,
@@ -160,6 +159,19 @@ export const parseSuggestions = (
   //   "color:green;font-weight: bold;",
   //   "color:black;font-weight: bold;"
   // );
+
+  if (
+    characterSubstitutions &&
+    characterSubstitutions.length > 0 &&
+    typeof text === "string" &&
+    pattern.test(text)
+  ) {
+    // TODO if we have multiple substitutions, we want the last
+    const substitution =
+      characterSubstitutions.shift() as CharacterSubstitution;
+    const regexp = new RegExp(`${substitution.substitutedChar}`);
+    text = text.replace(regexp, substitution.sourceChar);
+  }
 
   let rules, tokens;
   let alternativeText: string | undefined = undefined,
