@@ -2,21 +2,24 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SimpleStore } from "@vuu-ui/utils";
 import { useServerConnection } from "./useServerConnection";
 import { columnMetaData as columnConfig } from "./columnMetaData";
-import { DataSource } from "../data-source";
+import {
+  DataSource,
+  DataSourceMenusMessage,
+  DataSourceVisualLinkCreatedMessage,
+  DataSourceVisualLinkRemovedMessage,
+} from "../data-source";
 import {
   ClientToServerRpcCall,
   ColumnDataType,
   TypeAheadMethod,
   TypeaheadParams,
+  VuuMenuContext,
   VuuMenuItem,
   VuuTable,
 } from "@vuu-ui/data-types";
-import {
-  RpcResponse,
-  VuuUIMessageInVisualLinkCreated,
-  VuuUIMessageInVisualLinkRemoved,
-} from "../vuuUIMessageTypes";
+import { RpcResponse, TableMeta } from "../vuuUIMessageTypes";
 import { AnyTxtRecord } from "dns";
+import { ContextMenuLocation } from "@vuu-ui/data-grid/src/context-menu";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
 export const RpcCall = "RPC_CALL";
@@ -59,7 +62,11 @@ const byContext = (menu1: VuuMenuItem, menu2: VuuMenuItem) => {
 const containSpace = (text: string) => text.indexOf(" ") !== -1;
 const replaceSpace = (text: string) => text.replace(/\s/g, SPECIAL_SPACE);
 
-const contextCompatibleWithLocation = (location, context, selectedRowCount) => {
+const contextCompatibleWithLocation = (
+  location: ContextMenuLocation,
+  context: VuuMenuContext,
+  selectedRowCount: number
+) => {
   switch (location) {
     case "grid":
       if (context === "selected-rows") {
@@ -74,7 +81,11 @@ const contextCompatibleWithLocation = (location, context, selectedRowCount) => {
   }
 };
 
-const extendSchema = ({ columns, dataTypes, table }): TableSchema => {
+const createSchemaFromTableMetadata = ({
+  columns,
+  dataTypes,
+  table,
+}: TableMeta): TableSchema => {
   return {
     table,
     columns: columns.map((col, idx) =>
@@ -86,8 +97,8 @@ const extendSchema = ({ columns, dataTypes, table }): TableSchema => {
 };
 
 export type ConfigChangeMessage =
-  | VuuUIMessageInVisualLinkCreated
-  | VuuUIMessageInVisualLinkRemoved;
+  | DataSourceVisualLinkCreatedMessage
+  | DataSourceVisualLinkRemovedMessage;
 
 export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
 
@@ -131,10 +142,10 @@ export const useViewserver = ({
   const contextMenu = useRef(contextMenuOptions);
   const visualLinks = useRef();
 
-  const buildTables = useCallback((schemas) => {
-    const newTables = {};
+  const buildTables = useCallback((schemas: TableMeta[]) => {
+    const newTables: { [key: string]: TableSchema } = {};
     schemas.forEach((schema) => {
-      newTables[schema.table.table] = extendSchema(schema);
+      newTables[schema.table.table] = createSchemaFromTableMetadata(schema);
     });
     tableStore.value = newTables;
   }, []);
@@ -226,7 +237,7 @@ export const useViewserver = ({
   }, []);
 
   const dispatchGridAction = useCallback(
-    (action: VuuUIMessageInVisualLinkCreated | VuuUIMessageInMenus) => {
+    (action: DataSourceVisualLinkCreatedMessage | DataSourceMenusMessage) => {
       if (action.type === "VIEW_PORT_MENUS_RESP") {
         console.log(`[useViewserver] VIEW_PORT_MENUS_RESP`);
         contextMenu.current = action.menu;
@@ -236,8 +247,8 @@ export const useViewserver = ({
         visualLinks.current = action.links;
         return true;
       } else if (
-        action.type === "visual-link-created" ||
-        action.type === "visual-link-removed"
+        action.type === "CREATE_VISUAL_LINK_SUCCESS" ||
+        action.type === "REMOVE_VISUAL_LINK_SUCCESS"
       ) {
         onConfigChange?.(action);
       } else {

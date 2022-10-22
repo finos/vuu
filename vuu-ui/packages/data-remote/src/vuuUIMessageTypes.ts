@@ -57,7 +57,7 @@ export type VuuUIRow = [
 export type VuuUIRowPredicate = (row: VuuUIRow) => boolean;
 
 export interface ServerProxySubscribeMessage {
-  aggregations: any;
+  aggregations: VuuAggregation[];
   bufferSize?: number;
   columns: VuuColumns;
   filter: any;
@@ -86,49 +86,8 @@ export interface ViewportMessageIn {
   clientViewportId: string;
 }
 
-export interface VuuUIMessageInDisabled extends ViewportMessageIn {
-  type: "disabled";
-}
-export interface VuuUIMessageInEnabled extends ViewportMessageIn {
-  type: "enabled";
-}
-
-export interface VuuUIMessageInSubscribed extends ViewportMessageIn {
-  aggregations: VuuAggregation[];
-  columns: VuuColumns;
-  filter?: Filter;
-  filterSpec: VuuFilter;
-  groupBy: VuuGroupBy;
-  range: VuuRange;
-  type: "subscribed";
-}
-
-export interface VuuUIMessageInFilter extends ViewportMessageIn {
-  type: "filter";
-  filter: any;
-  filterQuery: any;
-}
-
-export interface VuuUIMessageInGroupBy extends ViewportMessageIn {
-  type: "groupBy";
-  groupBy: VuuGroupBy | null;
-}
-export interface VuuUIMessageInSort extends ViewportMessageIn {
-  type: "sort";
-  sort: VuuSort;
-}
-
-export type VuuUIMessageInViewportUpdates = {
-  type: "viewport-updates";
-  viewports: {
-    [viewport: string]: {
-      rows?: VuuUIRow[];
-      size?: number;
-    };
-  };
-};
-
 export type VuuUIMessageInViewportUpdate = {
+  clientViewportId: string;
   type: "viewport-update";
   rows?: VuuUIRow[];
   size?: number;
@@ -140,6 +99,13 @@ export interface VuuUIMessageInRPC {
   requestId: string;
   type: "RPC_RESP";
 }
+
+export type RpcResponse = {
+  action: {
+    type: "OPEN_DIALOG_ACTION";
+    table: VuuTable;
+  };
+};
 
 export interface VuuUIMessageInTableList {
   requestId: string;
@@ -153,27 +119,6 @@ export interface VuuUIMessageInTableMeta {
   table: VuuTable;
   type: "TABLE_META_RESP";
 }
-export interface VuuUIMessageInViewPortVisualLinks {
-  type: "VP_VISUAL_LINKS_RESP";
-  links: VuuLink[];
-  clientViewportId: string;
-}
-export interface VuuUIMessageInVisualLinkCreated {
-  clientViewportId: string;
-  colName: string;
-  parentViewportId: string;
-  parentColName: string;
-  type: "visual-link-created";
-}
-export interface VuuUIMessageInVisualLinkRemoved {
-  clientViewportId: string;
-  type: "visual-link-removed";
-}
-export interface VuuUIMessageInMenus {
-  type: "VIEW_PORT_MENUS_RESP";
-  menu: VuuMenu;
-  clientViewportId: string;
-}
 export interface VuuUIMessageInMenu {
   action: {
     table: VuuTable;
@@ -184,23 +129,11 @@ export interface VuuUIMessageInMenu {
 }
 
 export type VuuUIMessageIn =
-  | VuuUIMessageInDisabled
-  | VuuUIMessageInEnabled
   | VuuUIMessageInConnected
-  // | VuuUIMessageInConnectionStatus
   | VuuUIMessageInWorkerReady
-  | VuuUIMessageInFilter
-  | VuuUIMessageInGroupBy
-  | VuuUIMessageInSubscribed
   | VuuUIMessageInViewportUpdate
-  | VuuUIMessageInViewportUpdates
   | VuuUIMessageInRPC
   | VuuUIMessageInMenu
-  | VuuUIMessageInMenus
-  | VuuUIMessageInSort
-  | VuuUIMessageInViewPortVisualLinks
-  | VuuUIMessageInVisualLinkCreated
-  | VuuUIMessageInVisualLinkRemoved
   | VuuUIMessageInTableList
   | VuuUIMessageInTableMeta;
 
@@ -369,12 +302,12 @@ export type VuuUIMessageOut =
   | VuuUIMessageOutViewport
   | VuuUIMessageOutRpcCall;
 
-export type RpcResponse = {
-  action: {
-    type: "OPEN_DIALOG_ACTION";
-    table: VuuTable;
-  };
+export type TableMeta = {
+  columns: string[];
+  dataTypes: VuuRowDataItemType[];
+  table: VuuTable;
 };
 
-export type TableMeta = {};
-export type TableList = {};
+export type TableList = {
+  tables: VuuTable[];
+};

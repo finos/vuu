@@ -1,11 +1,16 @@
 import {
   VuuAggregation,
+  VuuColumns,
   VuuFilter,
   VuuGroupBy,
+  VuuLink,
+  VuuMenu,
+  VuuRange,
   VuuRowDataItemType,
   VuuSort,
   VuuTable,
 } from "@vuu-ui/data-types";
+import { Filter } from "@vuu-ui/utils";
 
 type RowIndex = number;
 type RenderKey = string;
@@ -28,23 +33,114 @@ export type DataSourceRow = [
   ...VuuRowDataItemType[]
 ];
 
-export type DataSourceDataMessage = {
+export interface MessageWithClientViewportId {
+  clientViewportId: string;
+}
+export interface DataSourceDataMessage extends MessageWithClientViewportId {
   rows?: DataSourceRow[];
   size?: number;
   type: "viewport-update";
-};
+}
 
-export type DataSourceSubscribedMessage = {
+export interface DataSourceAggregateMessage
+  extends MessageWithClientViewportId {
+  aggregations: VuuAggregation[];
+  type: "aggregate";
+}
+export interface VuuUIMessageInDisabled extends MessageWithClientViewportId {
+  type: "disabled";
+}
+export interface VuuUIMessageInEnabled extends MessageWithClientViewportId {
+  type: "enabled";
+}
+
+export interface DataSourceFilterMessage extends MessageWithClientViewportId {
+  type: "filter";
+  filter: any;
+  filterQuery: any;
+}
+
+export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
+  type: "groupBy";
+  groupBy: VuuGroupBy | null;
+}
+
+export interface DataSourceSortMessage extends MessageWithClientViewportId {
+  type: "sort";
+  sort: VuuSort;
+}
+
+export interface DataSourceSubscribedMessage
+  extends MessageWithClientViewportId,
+    MessageWithClientViewportId {
+  aggregations: VuuAggregation[];
+  columns: VuuColumns;
+  filter?: Filter;
+  filterSpec: VuuFilter;
+  groupBy: VuuGroupBy;
+  range: VuuRange;
   type: "subscribed";
-};
+}
 
-export type DataSourceMenusMessage = {
-  type: "menus";
-};
+export interface DataSourceMenusMessage extends MessageWithClientViewportId {
+  type: "VIEW_PORT_MENUS_RESP";
+  menu: VuuMenu;
+}
+
+export interface DataSourceVisualLinksMessage
+  extends MessageWithClientViewportId {
+  type: "VP_VISUAL_LINKS_RESP";
+  links: VuuLink[];
+}
+
+export interface DataSourceVisualLinkCreatedMessage
+  extends MessageWithClientViewportId {
+  colName: string;
+  parentViewportId: string;
+  parentColName: string;
+  type: "CREATE_VISUAL_LINK_SUCCESS";
+}
+
+export interface DataSourceVisualLinkRemovedMessage {
+  clientViewportId: string;
+  type: "REMOVE_VISUAL_LINK_SUCCESS";
+}
 
 export type DataSourceCallbackMessage =
+  | DataSourceAggregateMessage
   | DataSourceDataMessage
-  | DataSourceSubscribedMessage;
+  | VuuUIMessageInDisabled
+  | VuuUIMessageInEnabled
+  | DataSourceFilterMessage
+  | DataSourceGroupByMessage
+  | DataSourceMenusMessage
+  | DataSourceSortMessage
+  | DataSourceSubscribedMessage
+  | DataSourceVisualLinkCreatedMessage
+  | DataSourceVisualLinkRemovedMessage
+  | DataSourceVisualLinksMessage;
+
+const datasourceMessages = [
+  "aggregate",
+  "CREATE_VISUAL_LINK_SUCCESS",
+  "disabled",
+  "enabled",
+  "filter",
+  "groupBy",
+  "REMOVE_VISUAL_LINK_SUCCESS",
+  "sort",
+  "subscribed",
+  "viewport-update",
+  "VIEW_PORT_MENUS_RESP",
+  "VP_VISUAL_LINKS_RESP",
+];
+
+export const shouldMessageBeRoutedToDataSource = (
+  message: unknown
+): message is DataSourceCallbackMessage => {
+  const type = (message as DataSourceCallbackMessage).type;
+  return datasourceMessages.includes(type);
+};
 
 export interface DataSourceProps {
   bufferSize?: number;

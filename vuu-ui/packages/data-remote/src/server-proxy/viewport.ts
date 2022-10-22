@@ -24,19 +24,15 @@ import {
 } from "@vuu-ui/data-types";
 import {
   ServerProxySubscribeMessage,
-  VuuUIMessageInDisabled,
-  VuuUIMessageInEnabled,
-  VuuUIMessageInFilter,
-  VuuUIMessageInGroupBy,
-  VuuUIMessageInSubscribed,
-  VuuUIMessageInMenus,
-  VuuUIMessageInSort,
-  VuuUIMessageInViewPortVisualLinks,
-  VuuUIMessageInVisualLinkCreated,
   VuuUIRow,
   VuuUIRowPredicate,
-  VuuUIMessageInVisualLinkRemoved,
 } from "../vuuUIMessageTypes";
+
+import {
+  DataSourceVisualLinksMessage,
+  DataSourceVisualLinkCreatedMessage,
+  DataSourceVisualLinkRemovedMessage,
+} from "../data-source";
 
 const EMPTY_ARRAY: unknown[] = [];
 const EMPTY_GROUPBY: VuuGroupBy = [];
@@ -94,7 +90,7 @@ type RowSortPredicate = (row1: VuuUIRow, row2: VuuUIRow) => number;
 
 const byRowIndex: RowSortPredicate = ([index1], [index2]) => index1 - index2;
 export class Viewport {
-  private aggregations: any;
+  private aggregations: VuuAggregation[];
   private bufferSize: number;
   private clientRange: VuuRange;
   private columns: any[];
@@ -219,7 +215,7 @@ export class Viewport {
       columns,
       filter: this.filter,
       filterSpec: this.filterSpec,
-    } as VuuUIMessageInSubscribed;
+    };
   }
 
   awaitOperation(requestId: string, msg: AsyncOperation) {
@@ -240,7 +236,7 @@ export class Viewport {
     } else if (type === "groupBy") {
       this.isTree = true;
       this.groupBy = data;
-      return { clientViewportId, type, groupBy: data } as VuuUIMessageInGroupBy;
+      return { clientViewportId, type, groupBy: data };
     } else if (type === "groupByClear") {
       this.isTree = false;
       this.groupBy = [];
@@ -248,16 +244,20 @@ export class Viewport {
         clientViewportId,
         type: "groupBy",
         groupBy: null,
-      } as VuuUIMessageInGroupBy;
+      };
     } else if (type === "filter") {
       this.filterSpec = { filter: data.filterQuery };
-      return { clientViewportId, type, ...data } as VuuUIMessageInFilter;
+      return { clientViewportId, type, ...data };
     } else if (type === "aggregate") {
-      this.aggregations = data;
-      return { clientViewportId, type, aggregations: data };
+      this.aggregations = data as VuuAggregation[];
+      return {
+        clientViewportId,
+        type: "aggregate",
+        aggregations: this.aggregations,
+      };
     } else if (type === "sort") {
       this.sort = { sortDefs: data };
-      return { clientViewportId, type, sort: data } as VuuUIMessageInSort;
+      return { clientViewportId, type, sort: data };
     } else if (type === "selection") {
       // should we do this here ?
       // this.selection = data;
@@ -266,14 +266,14 @@ export class Viewport {
       return {
         type: "disabled",
         clientViewportId,
-      } as VuuUIMessageInDisabled;
+      };
     } else if (type === "enable") {
       this.disabled = false;
       return {
         type: "enabled",
         clientViewportId,
-      } as VuuUIMessageInEnabled;
-    } else if (type === Message.CREATE_VISUAL_LINK) {
+      };
+    } else if (type === "CREATE_VISUAL_LINK") {
       const [colName, parentViewportId, parentColName] = params;
       this.linkedParent = {
         colName,
@@ -282,18 +282,18 @@ export class Viewport {
       };
       this.pendingLinkedParent = null;
       return {
-        type: "visual-link-created",
+        type: "CREATE_VISUAL_LINK_SUCCESS",
         clientViewportId,
         colName,
         parentViewportId,
         parentColName,
-      } as VuuUIMessageInVisualLinkCreated;
+      } as DataSourceVisualLinkCreatedMessage;
     } else if (type === "REMOVE_VISUAL_LINK") {
       this.linkedParent = undefined;
       return {
-        type: "visual-link-removed",
+        type: "REMOVE_VISUAL_LINK_SUCCESS",
         clientViewportId,
-      } as VuuUIMessageInVisualLinkRemoved;
+      } as DataSourceVisualLinkRemovedMessage;
     }
   }
 
@@ -375,15 +375,15 @@ export class Viewport {
         clientViewportId: this.clientViewportId,
       },
       this.pendingLinkedParent,
-    ] as [VuuUIMessageInViewPortVisualLinks, any];
+    ] as [DataSourceVisualLinksMessage, any];
   }
 
   setMenu(menu: VuuMenu) {
     return {
-      type: "VIEW_PORT_MENUS_RESP",
+      type: "VIEW_PORT_MENUS_RESP" as const,
       menu,
       clientViewportId: this.clientViewportId,
-    } as VuuUIMessageInMenus;
+    };
   }
 
   createLink(

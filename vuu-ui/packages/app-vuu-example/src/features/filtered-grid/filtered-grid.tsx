@@ -64,7 +64,7 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
       console.log(`handleConfigChange`, {
         update,
       });
-      if (update.type === "visual-link-created") {
+      if (update.type === "CREATE_VISUAL_LINK_SUCCESS") {
         dispatch?.({
           type: "add-toolbar-contribution",
           location: "post-title",
@@ -75,7 +75,7 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
           ),
         });
         save(update, "visual-link");
-      } else if (update.type === "visual-link-removed") {
+      } else if (update.type === "REMOVE_VISUAL_LINK_SUCCESS") {
         dispatch?.({
           type: "remove-toolbar-contribution",
           location: "post-title",

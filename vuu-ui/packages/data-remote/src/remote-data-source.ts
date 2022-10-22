@@ -16,7 +16,10 @@ import {
   SubscribeCallback,
   SubscribeProps,
 } from "./data-source";
-import { VuuUIMessageOutGroupby } from "./vuuUIMessageTypes";
+import {
+  VuuUIMessageOutGroupby,
+  VuuUIMessageOutMenuRPC,
+} from "./vuuUIMessageTypes";
 
 export interface DataSourceColumn {}
 
@@ -395,7 +398,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  async rpcCall(rpcRequest: ClientToServerRpcCall) {
+  async rpcCall(rpcRequest: ClientToServerRpcCall | VuuUIMessageOutMenuRPC) {
     return this.server?.rpcCall({
       viewport: this.viewport,
       ...rpcRequest,

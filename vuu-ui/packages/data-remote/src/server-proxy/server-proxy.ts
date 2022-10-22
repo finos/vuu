@@ -15,7 +15,6 @@ import {
   VuuUIMessageIn,
   VuuUIMessageInTableList,
   VuuUIMessageInTableMeta,
-  VuuUIMessageInViewportUpdates,
   VuuUIMessageOut,
   VuuUIMessageOutAggregate,
   VuuUIMessageOutConnect,
@@ -34,8 +33,11 @@ import {
   VuuUIMessageOutUnsubscribe,
   VuuUIMessageOutViewRange,
 } from "../vuuUIMessageTypes";
+import { DataSourceCallbackMessage } from "../data-source";
 
-export type PostMessageToClientCallback = (message: VuuUIMessageIn) => void;
+export type PostMessageToClientCallback = (
+  message: VuuUIMessageIn | DataSourceCallbackMessage
+) => void;
 
 // TEST_DATA_COLLECTION
 // import { saveTestData } from '../../test-data-collection';
@@ -165,10 +167,9 @@ export class ServerProxy {
     }
     if (rows) {
       this.postMessageToClient({
-        type: "viewport-updates",
-        viewports: {
-          [viewport.clientViewportId]: { rows },
-        },
+        type: "viewport-update",
+        clientViewportId: viewport.clientViewportId,
+        rows,
       });
     }
   }
@@ -221,10 +222,9 @@ export class ServerProxy {
   private resumeViewport(viewport: Viewport) {
     const rows = viewport.resume();
     this.postMessageToClient({
-      type: "viewport-updates",
-      viewports: {
-        [viewport.clientViewportId]: { rows },
-      },
+      clientViewportId: viewport.clientViewportId,
+      rows,
+      type: "viewport-update",
     });
   }
 
@@ -275,9 +275,6 @@ export class ServerProxy {
   }
 
   private removeLink(viewport: Viewport) {
-    console.log(
-      `ServerProxy removeLink ${viewport.serverViewportId} ${viewport.table.table}`
-    );
     const requestId = nextRequestId();
     const request = viewport.removeLink(requestId);
     this.sendMessageToServer(request, requestId);
@@ -527,13 +524,11 @@ export class ServerProxy {
             if (response) {
               this.postMessageToClient(response);
               const rows = viewport.currentData();
-              const clientMessage = {
-                type: "viewport-updates",
-                viewports: {
-                  [viewport.clientViewportId]: { rows },
-                },
-              } as VuuUIMessageInViewportUpdates;
-              this.postMessageToClient(clientMessage);
+              this.postMessageToClient({
+                clientViewportId: viewport.clientViewportId,
+                rows,
+                type: "viewport-update",
+              });
             }
           }
         }
@@ -586,7 +581,7 @@ export class ServerProxy {
       case Message.CLOSE_TREE_SUCCESS:
         break;
 
-      case Message.CREATE_VISUAL_LINK_SUCCESS:
+      case "CREATE_VISUAL_LINK_SUCCESS":
         {
           const viewport = this.viewports.get(body.childVpId);
           const parentViewport = this.viewports.get(body.parentVpId);
@@ -671,7 +666,7 @@ export class ServerProxy {
         }
         break;
 
-      case Message.VIEW_PORT_MENUS_RESP:
+      case "VIEW_PORT_MENUS_RESP":
         if (body.menu.name) {
           const viewport = this.viewports.get(body.vpId);
           if (viewport) {
@@ -735,29 +730,18 @@ export class ServerProxy {
   }
 
   processUpdates(timeStamp: number) {
-    let clientMessage: VuuUIMessageInViewportUpdates;
     this.viewports.forEach((viewport) => {
       if (viewport.hasUpdatesToProcess) {
         const rows = viewport.getClientRows(timeStamp);
         const size = viewport.getNewRowCount();
         if (size !== undefined || (rows && rows.length > 0)) {
-          clientMessage = clientMessage || {
-            type: "viewport-updates",
-            viewports: {},
-          };
-          clientMessage.viewports[viewport.clientViewportId] = { rows, size };
+          this.postMessageToClient({
+            clientViewportId: viewport.clientViewportId,
+            rows,
+            size,
+            type: "viewport-update",
+          });
         }
-      }
-      if (clientMessage) {
-        // const now = performance.now();
-        // if (updateTime){
-        //   onsole.log(`time between updates ${now - updateTime}`)
-        // }
-        // updateTime = now;
-        // Object.values(clientMessage.viewports).forEach(({rows, size}) =>
-        //   onsole.log(`%c[ServerProxy] processUpdates, posting ${rows.length} rows (size ${size})`,'color:brown')
-        // )
-        this.postMessageToClient(clientMessage);
       }
     });
   }

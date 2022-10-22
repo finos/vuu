@@ -12,7 +12,7 @@ import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "./VuuGrid.css";
 import "./VuuAgGrid.css";
-// import "ag-grid-community/dist/styles/ag-theme-balham.css";
+import "ag-grid-community/dist/styles/ag-theme-balham.css";
 
 import {
   authenticate as vuuAuthenticate,
@@ -65,7 +65,7 @@ export const AgGridViewportRowModel = () => {
 
   return (
     <div style={layout}>
-      <div className="ag-theme-blue">
+      <div className="ag-theme-balham">
         <AgGridReact
           columnDefs={columnDefs}
           onFilterChanged={agGridDataSource.handleFilterChanged}

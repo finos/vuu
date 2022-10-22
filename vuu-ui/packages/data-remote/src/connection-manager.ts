@@ -2,17 +2,20 @@ import { EventEmitter, uuid } from "@vuu-ui/utils";
 import * as Message from "./server-proxy/messages";
 import {
   isConnectionStatusMessage,
-  RpcRequest,
-  RpcResponse,
   ServerProxySubscribeMessage,
   TableMeta,
   TableList,
   VuuUIMessageIn,
   VuuUIMessageInRPC,
   VuuUIMessageOut,
-  ViewportMessageIn,
 } from "./vuuUIMessageTypes";
-import { VuuTable } from "@vuu-ui/data-types";
+import {
+  ClientToServerRpcCall,
+  ClientToServerTableList,
+  ClientToServerTableMeta,
+  VuuTable,
+} from "@vuu-ui/data-types";
+import { shouldMessageBeRoutedToDataSource as messageShouldBeRoutedToDataSource } from "./data-source";
 // Note: the InlinedWorker is a generated file, it must be built
 import { InlinedWorker } from "./inlined-worker";
 import { DataSourceCallbackMessage } from "./data-source";
@@ -96,62 +99,31 @@ const getWorker = async (
   );
 };
 
-const messagesToRelayToClient = {
-  "table-row": true,
-  "visual-link-created": true,
-  "visual-link-removed": true,
-  [Message.VIEW_PORT_MENUS_RESP]: true,
-  [Message.VIEW_PORT_MENU_RESP]: true,
-  [Message.VP_VISUAL_LINKS_RESP]: true,
-  [Message.RPC_RESP]: true,
-  enabled: true,
-  disabled: true,
-  subscribed: true,
-  sort: true,
-  groupBy: true,
-  filter: true,
-  aggregate: true,
-};
-
 function handleMessageFromWorker({
   data: message,
 }: MessageEvent<VuuUIMessageIn>) {
-  if (message.type === "viewport-updates") {
-    for (const [clientViewport, { size, rows }] of Object.entries(
-      message.viewports
-    )) {
-      const viewport = viewports.get(clientViewport);
-      if (viewport) {
-        viewport.postMessageToClientDataSource({
-          type: "viewport-update",
-          size,
-          rows,
-        });
-      }
-    }
-  } else if (isConnectionStatusMessage(message)) {
+  if (isConnectionStatusMessage(message)) {
     ConnectionManager.emit("connection-status", message);
-  } else {
-    const clientViewportId = (message as ViewportMessageIn).clientViewportId;
-    const requestId = (message as VuuUIMessageInRPC).requestId;
-    const viewport = viewports.get(clientViewportId);
+  } else if (messageShouldBeRoutedToDataSource(message)) {
+    const viewport = viewports.get(message.clientViewportId);
     if (viewport) {
-      if (message.type in messagesToRelayToClient) {
-        viewport.postMessageToClientDataSource(message);
-      } else {
-        // TODO why would we ever have posted messages if they are not for the client ?
-        console.log(
-          `message from the worker to viewport ${clientViewportId} ${message.type}, not relayed to client`
-        );
-      }
-    } else if (pendingRequests.has(requestId)) {
+      viewport.postMessageToClientDataSource(message);
+    } else {
+      console.error(
+        `[ConnectionManager] ${message.type} message received, viewport not found`
+      );
+    }
+  } else {
+    const requestId = (message as VuuUIMessageInRPC).requestId;
+    if (pendingRequests.has(requestId)) {
       const { resolve } = pendingRequests.get(requestId);
       pendingRequests.delete(requestId);
       const { type: _1, requestId: _2, ...rest } = message as VuuUIMessageInRPC;
       resolve(rest);
     } else {
       console.log(
-        `Unexpected message from the worker ${message.type} requestId ${requestId}`,
+        `%cUnexpected message from the worker ${message.type} requestId ${requestId}`,
+        "color:red;font-weight:bold;",
         pendingRequests
       );
     }
@@ -159,7 +131,9 @@ function handleMessageFromWorker({
 }
 
 // Can be a straight protocol message body
-const asyncRequest = (msg: any): Promise<VuuUIMessageInRPC> => {
+const asyncRequest = <T = VuuUIMessageInRPC>(
+  msg: ClientToServerRpcCall | ClientToServerTableList | ClientToServerTableMeta
+): Promise<T> => {
   const requestId = uuid();
   worker.postMessage({
     requestId,
@@ -174,7 +148,7 @@ export interface ServerAPI {
   destroy: () => void;
   getTableMeta: (table: VuuTable) => Promise<TableMeta>;
   getTableList: () => Promise<TableList>;
-  rpcCall: (msg: RpcRequest) => Promise<RpcResponse>;
+  rpcCall: (msg: ClientToServerRpcCall) => Promise<VuuUIMessageInRPC>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
     message: ServerProxySubscribeMessage,
@@ -226,10 +200,11 @@ class _ConnectionManager extends EventEmitter {
 
       rpcCall: async (message) => asyncRequest(message),
 
-      getTableList: async () => asyncRequest({ type: Message.GET_TABLE_LIST }),
+      getTableList: async () =>
+        asyncRequest<TableList>({ type: Message.GET_TABLE_LIST }),
 
       getTableMeta: async (table) =>
-        asyncRequest({ type: Message.GET_TABLE_META, table }),
+        asyncRequest<TableMeta>({ type: Message.GET_TABLE_META, table }),
     };
   }
 

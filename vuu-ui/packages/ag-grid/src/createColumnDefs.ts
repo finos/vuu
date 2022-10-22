@@ -1,4 +1,7 @@
-export const createColumnDefs = (setFilterDataProvider) => [
+import { SetFilterValuesFuncParams } from "ag-grid-community";
+import { FilterDataProvider } from "./FilterDataProvider";
+
+export const createColumnDefs = (setFilterDataProvider: FilterDataProvider) => [
   {
     field: "bbg",
     sortable: true,

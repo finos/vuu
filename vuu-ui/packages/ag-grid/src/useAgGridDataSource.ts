@@ -8,7 +8,7 @@ import { useCallback, useMemo, useRef } from "react";
 import { AgGridServersideRowModelDataSource } from "./AgGridServersideRowModelDataSource";
 import { createColumnDefs } from "./createColumnDefs";
 import { FilterDataProvider } from "./FilterDataProvider";
-import { useAgGridServersideRowModel } from "./useAgGridServersideRowModel";
+// import { useAgGridServersideRowModel } from "./useAgGridServersideRowModel";
 
 export const instrumentDataSourceConfig = {
   bufferSize: 100,
@@ -37,13 +37,13 @@ export const useAgGridDataSource = (): AgGridDataSourceHookResult => {
   );
   getTypeaheadSuggestionsRef.current = getTypeaheadSuggestions;
 
+  const dataSource = useMemo(() => {
+    return new AgGridServersideRowModelDataSource(instrumentDataSourceConfig);
+  }, []);
+
   const filterDataProvider = useMemo(() => {
     return new FilterDataProvider(getTypeaheadSuggestionsRef);
   }, []);
-
-  const agGridDataSource = useAgGridServersideRowModel(
-    instrumentDataSourceConfig
-  );
 
   const { columnDefs } = useMemo(() => {
     const columnDefs = createColumnDefs(filterDataProvider);
@@ -54,9 +54,7 @@ export const useAgGridDataSource = (): AgGridDataSourceHookResult => {
   }, []);
 
   const initDataSource = useCallback((gridApi: GridApi) => {
-    // const dataSource = new RemoteDataSource(instrumentDataSourceConfig);
-    // const agGridDataSource = new AgGridServersideRowModelDataSource(dataSource);
-    gridApi.setServerSideDatasource(agGridDataSource);
+    gridApi.setServerSideDatasource(dataSource);
   }, []);
 
   const handleGridReady = useCallback(

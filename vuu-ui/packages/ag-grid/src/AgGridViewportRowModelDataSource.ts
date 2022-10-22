@@ -24,7 +24,8 @@ const toSortDef = ({ colId: column, sort }: ColumnState): VuuSortCol => ({
 const bySortIndex = (
   { sortIndex: s1 }: ColumnState,
   { sortIndex: s2 }: ColumnState
-) => s1 - s2;
+) =>
+  s1 == null && s2 == null ? 0 : s1 == null ? 1 : s2 == null ? -1 : s1 - s2;
 
 export class AgGridViewportRowModelDataSource implements IViewportDatasource {
   private rowCount: number = -1;
@@ -78,7 +79,6 @@ export class AgGridViewportRowModelDataSource implements IViewportDatasource {
       if (message.rows) {
         const rows = convertToAgGridDataSet(message.rows);
         console.table(rows);
-
         this.setRowData(rows);
       } else if (message.size !== undefined) {
         console.log("got a size message");

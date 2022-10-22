@@ -1,7 +1,6 @@
 import { SubscribeCallback } from "@vuu-ui/data-remote";
-import { VuuDataRow, VuuRow } from "@vuu-ui/data-types";
-import { metadataKeys } from "@vuu-ui/utils/src/column-utils";
-import { getFullRange, WindowRange } from "@vuu-ui/utils/src/range-utils";
+import { VuuDataRow } from "@vuu-ui/data-types";
+import { getFullRange, metadataKeys, WindowRange } from "@vuu-ui/utils";
 import {
   useCallback,
   useContext,
@@ -61,7 +60,7 @@ export default function useDataSource(
         dataWindow.add(row);
       }
 
-      // WHy bother with the slixe ?
+      // Why bother with the slice ?
       data.current = dataWindow.data.slice().sort(byKey);
       //     onsole.log(`%c[useDataSource] data.current has ${data.current.length} records
       // [${data.current.map(d => d[0]).join(',')}]
@@ -91,7 +90,7 @@ export default function useDataSource(
         if (msg.rows) {
           setData(msg.rows);
         } else if (sizeChanged) {
-          // TODO is this roght ?s
+          // TODO is this right ?
           data.current = dataWindow.data.slice().sort(byKey);
           hasUpdated.current = true;
         }

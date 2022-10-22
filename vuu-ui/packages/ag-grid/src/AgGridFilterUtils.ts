@@ -1,3 +1,4 @@
+import { VuuSort, VuuSortCol } from "@vuu-ui/data-types";
 import { filterAsQuery } from "@vuu-ui/datagrid-parsers";
 import { Filter, MultiClauseFilter } from "@vuu-ui/utils";
 import {
@@ -77,6 +78,11 @@ const agToSingleValueVuuFilterType = (
   }
 };
 
+type AgGridSortCol = {
+  sort: "asc" | "desc";
+  colId: string;
+};
+
 export const agGridFilterModelToVuuFilter = (filterModel: {
   [key: string]: any;
 }): [string, Filter | undefined] => {
@@ -137,4 +143,13 @@ export const agGridFilterModelToVuuFilter = (filterModel: {
 
   const filterQuery = vuuFilter ? filterAsQuery(vuuFilter) : "";
   return [filterQuery, vuuFilter];
+};
+
+export const agSortModelToVuuSort = (
+  sortModel: AgGridSortCol[]
+): VuuSortCol[] => {
+  return sortModel.map(({ colId, sort }) => ({
+    column: colId,
+    sortType: sort === "asc" ? "A" : "D",
+  }));
 };

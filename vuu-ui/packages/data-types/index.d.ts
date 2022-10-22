@@ -98,10 +98,13 @@ export interface ServerToClientMenus {
   vpId: string;
 }
 export interface ServerToClientMenu {
+  rpcName: "ADD_ROWS_TO_ORDERS";
   type: "VIEW_PORT_MENU_RESP";
   action: {
     table: VuuTable;
+    type: "OPEN_DIALOG_ACTION";
   };
+  vpId: string;
 }
 export interface ServerToClientViewPortVisualLinks {
   type: "VP_VISUAL_LINKS_RESP";
