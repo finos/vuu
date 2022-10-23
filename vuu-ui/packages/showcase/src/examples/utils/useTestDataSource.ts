@@ -17,7 +17,7 @@ const instrumentColumns = [
 
 const instrumentColumnNames = instrumentColumns.map((col) => col.name);
 
-export const useTestDataSource = () => {
+export const useTestDataSource = ({ autoLogin = true } = {}) => {
   const dataSource = useMemo(() => {
     const dataConfig = {
       bufferSize: 100,
@@ -33,7 +33,9 @@ export const useTestDataSource = () => {
       const authToken = (await authenticate("steve", "xyz")) as string;
       connectToServer("127.0.0.1:8090/websocket", authToken);
     };
-    connect();
+    if (autoLogin) {
+      connect();
+    }
   }, []);
 
   return {

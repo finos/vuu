@@ -122,7 +122,6 @@ export class FilterVisitor extends AbstractParseTreeVisitor<any> {
     const [result] = this.visitChildren(ctx);
     if (result) {
       const { name, pos } = result;
-      console.log({ name });
       return { name, tokenPosition: { name: pos } };
     } else {
       return EMPTY;
@@ -176,6 +175,7 @@ export class FilterVisitor extends AbstractParseTreeVisitor<any> {
     return { column: ctx.text, pos: ctx.start.startIndex };
   }
   visitColumn(ctx: ColumnContext) {
+    console.log("visit column");
     return { column: ctx.text, pos: ctx.start.startIndex };
   }
 
@@ -185,11 +185,15 @@ export class FilterVisitor extends AbstractParseTreeVisitor<any> {
   }
 
   visitAtom(ctx: AtomContext) {
+    console.log(`visit atom`);
+
     const [result] = this.visitChildren(ctx);
     return result;
   }
 
   visitOperator(ctx: OperatorContext) {
+    console.log(`visit operator`);
+
     return ctx.text;
   }
 
@@ -205,6 +209,7 @@ export class FilterVisitor extends AbstractParseTreeVisitor<any> {
       case FilterParser.AS:
         return EMPTY;
       default:
+        console.log(`visit ID`);
         if (
           this.substitutions &&
           this.substitutions.length > 0 &&

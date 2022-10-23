@@ -1,5 +1,4 @@
 import { connectToServer /*, useViewserver */ } from "@vuu-ui/data-remote";
-// import { ThemeProvider } from "@vuu-ui/theme";
 import React, {
   MouseEvent,
   ReactNode,
@@ -81,7 +80,6 @@ export const Shell = ({
   }, [serverUrl, user.token]);
 
   return (
-    // <ThemeProvider>
     <>
       <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
         <DraggableLayout
@@ -134,6 +132,5 @@ export const Shell = ({
       </LayoutProvider>
       {children}
     </>
-    // </ThemeProvider>
   );
 };

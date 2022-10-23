@@ -1,3 +1,4 @@
+import { ThumbsUpSolidIcon } from "@heswell/uitk-icons";
 import { RemoteDataSource, SubscribeCallback } from "@vuu-ui/data-remote";
 import { DataWindow, getFullRange } from "@vuu-ui/utils";
 import {
@@ -10,6 +11,15 @@ import {
   agGridFilterModelToVuuFilter,
   agSortModelToVuuSort,
 } from "./AgGridFilterUtils";
+
+interface QueuedRequest {
+  from: number;
+  to: number;
+}
+
+interface QueuedAgGridRequest extends QueuedRequest {
+  success: (params: LoadSuccessParams) => void;
+}
 
 export type AgGridServersideRowModelDataSourceOptions = {
   filterQuery?: string;
@@ -26,6 +36,8 @@ export class AgGridServersideRowModelDataSource
   private dataWindow = new DataWindow({ from: 0, to: 100 });
   private filterQuery: string;
   private dataSource: RemoteDataSource;
+  private queuedVuuRequests: QueuedRequest[] = [];
+  private pendingAgGridRequest: QueuedAgGridRequest | null = null;
 
   constructor(
     dataSourceConfig: any,
@@ -45,6 +57,18 @@ export class AgGridServersideRowModelDataSource
       },
       this.handleMessageFromDataSource
     );
+    this.queuedVuuRequests.push({ from: 0, to: 100 });
+  }
+
+  dataRequested(startRow: number, endRow: number) {
+    // TODO fill this code out
+    for (const { from, to } of this.queuedVuuRequests) {
+      if (from <= startRow && to >= endRow) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   pushDataToAgGrid(params: LoadSuccessParams) {
@@ -53,57 +77,69 @@ export class AgGridServersideRowModelDataSource
 
   getRows(params: IServerSideGetRowsParams<any>): void {
     const { fail, parentNode, request, success } = params;
-    console.log(
-      `%cAgGrid is asking for rows ${request.startRow} - ${request.endRow}`,
-      "color: brown; font-weight: bold;"
-    );
     const {
       startRow = 0,
-      endRow = 1000,
+      endRow = 100,
       filterModel,
       sortModel,
       groupKeys,
       rowGroupCols,
     } = request;
-    const hasFilter = Object.keys(filterModel).length > 0;
 
-    console.log({ request });
+    console.log(
+      `%cAgGrid is asking for rows ${startRow} - ${endRow}`,
+      "color: brown; font-weight: bold;"
+    );
 
-    if (sortModel.length) {
-      const vuuSortCols = agSortModelToVuuSort(sortModel);
-      this.dataSource.sort(vuuSortCols);
-    }
+    // const hasFilter = Object.keys(filterModel).length > 0;
+    // console.log({ request });
 
-    if (groupKeys.length) {
-      const [key] = groupKeys;
-      this.dataSource.openTreeNode(`$root|${key}`);
-    } else if (rowGroupCols.length > 0) {
-      const vuuGroupColumns = rowGroupCols.map((col) => col.id);
-      this.dataSource.group(vuuGroupColumns);
-    }
+    // if (sortModel.length) {
+    //   const vuuSortCols = agSortModelToVuuSort(sortModel);
+    //   this.dataSource.sort(vuuSortCols);
+    // }
 
-    if (hasFilter) {
-      const [filterQuery, vuuFilter] =
-        agGridFilterModelToVuuFilter(filterModel);
-      if (filterQuery !== this.filterQuery) {
-        this.filterQuery = filterQuery;
-        this.dataSource.filter(vuuFilter, filterQuery);
+    // if (groupKeys.length) {
+    //   const [key] = groupKeys;
+    //   this.dataSource.openTreeNode(`$root|${key}`);
+    // } else if (rowGroupCols.length > 0) {
+    //   const vuuGroupColumns = rowGroupCols.map((col) => col.id);
+    //   this.dataSource.group(vuuGroupColumns);
+    // }
+
+    // if (hasFilter) {
+    //   const [filterQuery, vuuFilter] =
+    //     agGridFilterModelToVuuFilter(filterModel);
+    //   if (filterQuery !== this.filterQuery) {
+    //     this.filterQuery = filterQuery;
+    //     this.dataSource.filter(vuuFilter, filterQuery);
+    //   }
+
+    //   // console.log(`
+    //   // AG Grid filterModel
+    //   // ${JSON.stringify(filterModel, null, 2)}
+    //   // Vuu Query '${filterQuery}'
+    //   // Vuu Filter ${JSON.stringify(vuuFilter)}
+    //   // `);
+    // } else if (this.filterQuery) {
+    //   this.dataSource.filter(undefined, "");
+    //   this.filterQuery = "";
+    // }
+
+    if (this.dataWindow.hasData(startRow, endRow)) {
+      console.log(`the dataWindow already has this data`);
+    } else {
+      if (this.dataRequested(startRow, endRow)) {
+        console.log("data already requested, we wait ...");
+        if (this.pendingAgGridRequest === null) {
+          this.pendingAgGridRequest = { from: startRow, to: endRow, success };
+        }
+      } else {
+        this.pendingAgGridRequest = { from: startRow, to: endRow, success };
+        this.dataWindow.setRange(startRow, endRow);
+        this.dataSource.setRange(startRow, endRow);
       }
-
-      // console.log(`
-      // AG Grid filterModel
-      // ${JSON.stringify(filterModel, null, 2)}
-      // Vuu Query '${filterQuery}'
-      // Vuu Filter ${JSON.stringify(vuuFilter)}
-      // `);
-    } else if (this.filterQuery) {
-      this.dataSource.filter(undefined, "");
-      this.filterQuery = "";
     }
-
-    this.dataSource.setRange(startRow, endRow);
-
-    this.pushDataToAgGrid = success;
   }
 
   handleMessageFromDataSource: SubscribeCallback = (message) => {
@@ -119,20 +155,22 @@ export class AgGridServersideRowModelDataSource
         }
       }
       if (message.rows) {
-        console.log(
-          `%c[AgGridServersideRowModelDataSource] ${message.rows.length} rows from server`,
-          "color: blue; font-weight: bold"
-        );
         // console.log(`setData with ${rows.length} of ${this.rowCount} rows`);
         for (const row of message.rows) {
           this.dataWindow.add(row);
         }
-        // console.table(this.dataWindow.data);
-        // const rows = convertToAgGridDataRows(message.rows);
-        // this.pushDataToAgGrid({
-        //   rowData: rows,
-        //   rowCount: this.rowCount,
-        // });
+
+        if (this.pendingAgGridRequest) {
+          const { success, from, to } = this.pendingAgGridRequest;
+          if (this.dataWindow.hasData(from, to)) {
+            const data = this.dataWindow.getData(from, to);
+            success({
+              rowData: convertToAgGridDataRows(data),
+              rowCount: this.dataWindow.rowCount,
+            });
+            this.pendingAgGridRequest = null;
+          }
+        }
       } else if (message.size !== undefined) {
         // console.log("got a size message");
       }

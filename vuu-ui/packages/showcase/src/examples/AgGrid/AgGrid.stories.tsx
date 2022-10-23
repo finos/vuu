@@ -105,7 +105,7 @@ export const AgGridServersideRowModel = () => {
     <ToolkitProvider density="high">
       <div style={layout}>
         <div className="ag-theme-balham">
-          <AgGridReact {...gridConfig} rowHeight={18} />
+          <AgGridReact {...gridConfig} headerHeight={18} rowHeight={18} />
         </div>
       </div>
     </ToolkitProvider>

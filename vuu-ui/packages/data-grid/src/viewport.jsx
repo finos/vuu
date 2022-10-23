@@ -357,7 +357,7 @@ const Viewport = forwardRef(function Viewport(
   return (
     <>
       <div
-        className="Viewport"
+        className="vuuDataGrid-Viewport"
         ref={viewportEl}
         style={{ height: gridModel.viewportHeight }}
         onContextMenu={handleContextMenu}
@@ -366,7 +366,7 @@ const Viewport = forwardRef(function Viewport(
         tabIndex={-1}
       >
         <div
-          className="scrollingCanvasContainer"
+          className="vuuDataGrid-scrollingCanvasContainer"
           ref={scrollingEl}
           style={{
             height: Math.max(

@@ -1,16 +1,18 @@
 // @ts-nocheck
-import React from 'react';
-import cx from 'classnames';
-import { metadataKeys } from '@vuu-ui/utils';
+import React from "react";
+import cx from "classnames";
+import { metadataKeys } from "@vuu-ui/utils";
 
-import './checkbox-cell.css';
+import "./checkbox-cell.css";
 
 const CheckboxCell = function CheckboxCell({ column, row }) {
-  const className = cx('GridCell', 'Checkbox', {
+  const className = cx("vuuDataGridCell", "Checkbox", {
     checked: row[metadataKeys.SELECTED] === 1,
-    emptyRow: row[metadataKeys.KEY] === undefined
+    emptyRow: row[metadataKeys.KEY] === undefined,
   });
-  return <div className={className} style={{ width: column.width }} tabIndex={0} />;
+  return (
+    <div className={className} style={{ width: column.width }} tabIndex={0} />
+  );
 };
 
 export default CheckboxCell;

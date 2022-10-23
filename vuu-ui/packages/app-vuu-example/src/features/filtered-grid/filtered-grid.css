@@ -6,13 +6,13 @@
   --hwParsedInput-height: 28px;
   --hwParsedInput-border-style: none none none solid;
   --hwParsedInput-width: calc(100% - var(--hwParsedInput-height));
-  --hwDataGrid-flex: 100% 0 0;
-  --hwDataGrid-font-size: 10px;
-  --hwDataGridCell-border-style: none;
-  --hwDataGridRow-background-odd: var(--surface1);
+  --vuuDataGrid-flex: 100% 0 0;
+  --vuuDataGrid-font-size: 10px;
+  --vuuDataGridCell-border-style: none;
+  --vuuDataGridRow-background-odd: var(--uitk-palette-neutral-background-high);
 }
 
-.vuFilteredGrid .hwDataGrid {
+.vuFilteredGrid .vuuDataGrid {
   height: calc(100% - 30px);
   inset: var(--hwParsedInput-height) 0 0 0;
   position: absolute;

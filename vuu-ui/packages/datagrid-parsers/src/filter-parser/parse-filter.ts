@@ -124,7 +124,7 @@ export const parseFilter = (
     input === typedInput
       ? undefined
       : { [lastWord(typedInput)]: lastWord(input) };
-
+  console.log({ typeSubstitution });
   const parsedTokens = buildUITokens(
     parser,
     parseResult,

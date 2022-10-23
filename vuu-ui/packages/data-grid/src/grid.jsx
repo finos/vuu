@@ -36,7 +36,7 @@ const noop = () => undefined;
 const DEFAULT_COLUMN_WIDTH = 100;
 const MIN_COLUMN_WIDTH = 80;
 
-const baseClass = "hwDataGrid";
+const baseClass = "vuuDataGrid";
 
 const Grid = forwardRef(function Grid(
   {

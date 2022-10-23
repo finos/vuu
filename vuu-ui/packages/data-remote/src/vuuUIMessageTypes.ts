@@ -2,14 +2,9 @@ import { msgType } from "./constants";
 import {
   VuuAggregation,
   VuuColumns,
-  VuuFilter,
-  VuuGroupBy,
-  VuuLink,
-  VuuMenu,
   VuuMenuContext,
   VuuRange,
   VuuRowDataItemType,
-  VuuSort,
   VuuSortCol,
   VuuTable,
 } from "@vuu-ui/data-types";
@@ -42,20 +37,6 @@ type ChildCount = number;
 type RowKey = string;
 type IsSelected = boolean;
 
-export type VuuUIRow = [
-  RowIndex,
-  RenderKey,
-  IsLeaf,
-  IsExpanded,
-  Depth,
-  ChildCount,
-  RowKey,
-  IsSelected,
-  ...VuuRowDataItemType[]
-];
-
-export type VuuUIRowPredicate = (row: VuuUIRow) => boolean;
-
 export interface ServerProxySubscribeMessage {
   aggregations: VuuAggregation[];
   bufferSize?: number;
@@ -85,13 +66,6 @@ export type VuuUIMessageInWorkerReady = {
 export interface ViewportMessageIn {
   clientViewportId: string;
 }
-
-export type VuuUIMessageInViewportUpdate = {
-  clientViewportId: string;
-  type: "viewport-update";
-  rows?: VuuUIRow[];
-  size?: number;
-};
 
 export interface VuuUIMessageInRPC {
   method: string;
@@ -131,7 +105,6 @@ export interface VuuUIMessageInMenu {
 export type VuuUIMessageIn =
   | VuuUIMessageInConnected
   | VuuUIMessageInWorkerReady
-  | VuuUIMessageInViewportUpdate
   | VuuUIMessageInRPC
   | VuuUIMessageInMenu
   | VuuUIMessageInTableList

@@ -17,10 +17,10 @@ import canvasReducer, { initCanvasReducer } from "./canvas-reducer";
 import Row from "./grid-row";
 import { getColumnOffset } from "./grid-model/grid-model-utils";
 
-const { IDX, RENDER_IDX, count: metadataCount } = metadataKeys;
+const { IDX, RENDER_IDX, SELECTED, count: metadataCount } = metadataKeys;
 // const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
 
-const classBase = "hwDataGridCanvas";
+const classBase = "vuuDataGridCanvas";
 
 /** @type {Canvas} */
 const Canvas = forwardRef(function Canvas(
@@ -321,20 +321,25 @@ const Canvas = forwardRef(function Canvas(
           height: Math.max(contentHeight + horizontalScrollbarHeight, height),
         }}
       >
-        {/* {rows.sort(byKey).map((row) => ( */}
-        {rows.map((row) => (
-          <Row
-            key={row[RENDER_IDX]}
-            columnMap={columnMap}
-            columns={columns}
-            height={gridModel.rowHeight}
-            idx={row[IDX]}
-            keys={cellKeys}
-            onClick={handleRowClick}
-            row={row}
-            toggleStrategy={toggleStrategy}
-          />
-        ))}
+        {rows.map((row, i) => {
+          if (row[SELECTED] === 1 && rows[i + 1]?.[SELECTED] === 0) {
+            row = row.slice();
+            row[SELECTED] = 2;
+          }
+          return (
+            <Row
+              key={row[RENDER_IDX]}
+              columnMap={columnMap}
+              columns={columns}
+              height={gridModel.rowHeight}
+              idx={row[IDX]}
+              keys={cellKeys}
+              onClick={handleRowClick}
+              row={row}
+              toggleStrategy={toggleStrategy}
+            />
+          );
+        })}
       </div>
     </div>
   );

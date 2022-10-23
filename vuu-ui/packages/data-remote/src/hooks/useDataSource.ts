@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { WindowRange, getFullRange } from "@vuu-ui/utils";
-import { DataSource, SubscribeCallback } from "../data-source";
+import { WindowRange, getFullRange, metadataKeys } from "@vuu-ui/utils";
+import { DataSource, DataSourceRow, SubscribeCallback } from "../data-source";
 import { VuuRange } from "@vuu-ui/data-types";
-import { VuuUIRow } from "../vuuUIMessageTypes";
+
+const { SELECTED } = metadataKeys;
 
 export interface DataSourceHookProps {
   dataSource: DataSource;
@@ -13,16 +14,17 @@ export function useDataSource({
   dataSource,
   renderBufferSize = 10,
 }: DataSourceHookProps): [
-  VuuUIRow[],
+  DataSourceRow[],
   number,
   VuuRange,
   (range: VuuRange) => void
 ] {
+  console.log("IS THIS ACTYUALLY USED");
   const [, forceUpdate] = useState(null);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
   const rafHandle = useRef(null);
-  const data = useRef<VuuUIRow[]>([]);
+  const data = useRef<DataSourceRow[]>([]);
   const rangeRef = useRef({ from: 0, to: 10 });
 
   const dataWindow = useMemo(
@@ -31,7 +33,7 @@ export function useDataSource({
   );
 
   const setData = useCallback(
-    (updates) => {
+    (updates: DataSourceRow[]) => {
       if (updates.length > 0 && updates[updates.length - 1] == undefined) {
         console.log(`useDataSource updates have empty data`, { updates });
       }
@@ -39,6 +41,7 @@ export function useDataSource({
       for (const row of updates) {
         dataWindow.add(row);
       }
+      console.table(dataWindow.data);
       // Why bother with the slice ?
       data.current = dataWindow.data.slice();
       if (
@@ -67,7 +70,6 @@ export function useDataSource({
         }
         if (message.rows) {
           setData(message.rows);
-          console.table(message.rows);
           forceUpdate({});
         } else if (message.size !== undefined) {
           // TODO is this right ?
@@ -150,9 +152,8 @@ export function useDataSource({
 }
 
 export class MovingWindow {
-  public data: any[];
+  public data: DataSourceRow[];
   public rowCount: number = 0;
-
   private range: WindowRange;
 
   constructor({ from, to }: VuuRange) {
@@ -172,6 +173,15 @@ export class MovingWindow {
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
       this.data[internalIndex] = data;
+      if (this.data[internalIndex - 1]) {
+        // assign 'post-selected' selection state
+        if (
+          this.data[internalIndex - 1][SELECTED] === 1 &&
+          data[SELECTED] === 0
+        ) {
+          data[SELECTED] = 2;
+        }
+      }
       if (index === this.rowCount - 1) {
         this.data.length = internalIndex + 1;
       }

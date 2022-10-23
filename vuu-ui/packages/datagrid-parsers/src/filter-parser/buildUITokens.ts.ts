@@ -1,10 +1,12 @@
 import { FilterParser } from "../../generated/parsers/filter/FilterParser";
 import { Filter } from "@vuu-ui/utils";
 import { CharacterSubstitution } from "./FilterVisitor";
-import { CommonTokenStream, TokenStream } from "antlr4ts";
+import { CommonTokenStream } from "antlr4ts";
 
+export type PositionalTokenName = "column" | "name" | "ws";
+type TokenTypeName = "ID" | "string" | "operator" | "number";
 // We should be able to derive these from the parser, using Rules
-const TOKEN_TYPES = {
+const TOKEN_TYPES: { [key: number]: TokenTypeName } = {
   [FilterParser.ID]: "ID",
   [FilterParser.STRING]: "string",
   [FilterParser.EQ]: "operator",
@@ -19,13 +21,17 @@ const TOKEN_TYPES = {
   [FilterParser.FLOAT]: "number",
 };
 
+type TypeSubstitution = {
+  [key: string]: string;
+};
+
 type TokenType = keyof typeof TOKEN_TYPES;
 
 const tokenType = (type: TokenType) => TOKEN_TYPES[type] ?? "text";
-const NO_SUBSTITUTION = {};
+const NO_SUBSTITUTION = {} as const;
 
 export type UIToken = {
-  type: "column" | "operator" | "ws";
+  type: PositionalTokenName | TokenTypeName;
   text: string;
   start: number;
 };
@@ -33,58 +39,58 @@ export type UIToken = {
 export function buildUITokens(
   parser: FilterParser,
   parseResult: Filter | undefined,
-  typeSubstitution = NO_SUBSTITUTION,
+  typeSubstitution: TypeSubstitution = NO_SUBSTITUTION,
   pattern: RegExp,
   characterSubstitutions?: CharacterSubstitution[]
 ): UIToken[] {
-  if (parseResult) {
-    console.log(`[buildUITokens] typedSubstitution ${typeSubstitution},
+  console.log(`[buildUITokens] typedSubstitution ${typeSubstitution},
       characterSubstitutions: ${JSON.stringify(characterSubstitutions)}
     `);
-    const tokenPositions = mapTokenPositions([parseResult]);
-    const parsedTokens = (parser.inputStream as CommonTokenStream).getTokens();
-    const tokens: UIToken[] = [];
-    for (let i = 0; i < parsedTokens.length - 1; i++) {
-      const t = parsedTokens[i];
-      let tokenText = t.text;
+  const tokenPositions = mapTokenPositions(parseResult);
+  const parsedTokens = (parser.inputStream as CommonTokenStream).getTokens();
+  const tokens: UIToken[] = [];
+  for (let i = 0; i < parsedTokens.length - 1; i++) {
+    const t = parsedTokens[i];
+    let tokenText = t.text;
 
-      if (
-        characterSubstitutions &&
-        characterSubstitutions.length > 0 &&
-        typeof tokenText === "string" &&
-        pattern.test(tokenText)
-      ) {
-        const substitution =
-          characterSubstitutions.shift() as CharacterSubstitution;
-        const regexp = new RegExp(`${substitution.substitutedChar}`);
-        tokenText = tokenText.replace(regexp, substitution.sourceChar);
-      }
-      tokens.push({
-        type: tokenPositions[t.startIndex] ?? t.tokenType ?? tokenType(t.type),
-        text: typeSubstitution[tokenText] ?? tokenText,
-        start: t.startIndex,
-      });
+    if (
+      characterSubstitutions &&
+      characterSubstitutions.length > 0 &&
+      typeof tokenText === "string" &&
+      pattern.test(tokenText)
+    ) {
+      const substitution =
+        characterSubstitutions.shift() as CharacterSubstitution;
+      const regexp = new RegExp(`${substitution.substitutedChar}`);
+      tokenText = tokenText.replace(regexp, substitution.sourceChar);
     }
-    return tokens;
-  } else {
-    return [];
+    console.log({
+      type: tokenPositions[t.startIndex] ?? tokenType(t.type as TokenType),
+    });
+    tokens.push({
+      type: tokenPositions[t.startIndex] ?? tokenType(t.type as TokenType),
+      text: (tokenText && typeSubstitution[tokenText]) ?? tokenText ?? "",
+      start: t.startIndex,
+    });
   }
+  return tokens;
 }
 
 function mapTokenPositions(
-  filters: Array<Filter & { tokenPosition?: any }>,
-  idx = 0,
-  map: { [key: number]: string } = {}
+  filter:
+    | (Filter & { tokenPosition?: { [key in PositionalTokenName]?: number } })
+    | undefined,
+  map: { [key: number]: PositionalTokenName } = {}
 ) {
-  const f = filters[idx];
-  if (!f) {
+  if (!filter) {
     return map;
   } else {
-    if (f.op === "or" || f.op === "and") {
-      f.filters?.forEach((_, i, all) => mapTokenPositions(all, i, map));
-    } else if (f.tokenPosition) {
-      for (let [key, value] of Object.entries(f.tokenPosition)) {
-        map[value] = key;
+    if (filter.op === "or" || filter.op === "and") {
+      filter.filters?.forEach((f) => mapTokenPositions(f, map));
+    } else if (filter.tokenPosition) {
+      console.log({ tokenPosition: filter.tokenPosition });
+      for (let [key, value] of Object.entries(filter.tokenPosition)) {
+        map[value] = key as PositionalTokenName;
       }
     }
   }

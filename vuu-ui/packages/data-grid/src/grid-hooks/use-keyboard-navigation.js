@@ -1,20 +1,20 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { getFullRange } from '@vuu-ui/utils/src/range-utils';
+import { useCallback, useEffect, useRef } from "react";
+import { getFullRange } from "@vuu-ui/utils/src/range-utils";
 
 const RowNavKey = {
   ArrowUp: true,
-  ArrowDown: true
+  ArrowDown: true,
 };
 
 const ColNavKey = {
   ArrowLeft: true,
-  ArrowRight: true
+  ArrowRight: true,
 };
 
 const NavKey = {
   Tab: true,
   ...RowNavKey,
-  ...ColNavKey
+  ...ColNavKey,
 };
 
 const isInteger = (num) => Math.floor(num) === num;
@@ -26,9 +26,9 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
     hasFocus: false,
     isHeaderCell: false,
     row: -1,
-    cell: -1
+    cell: -1,
   });
-  const allowCellSelection = gridModel.cellSelectionModel !== 'none';
+  const allowCellSelection = gridModel.cellSelectionModel !== "none";
 
   useEffect(() => {
     if (gridModel.viewportRowCount) {
@@ -40,7 +40,10 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
     (value) => {
       // remove focus from cell out of window
       range.current = value;
-      if (focusState.current.row < value.from || focusState.current.row >= value.to) {
+      if (
+        focusState.current.row < value.from ||
+        focusState.current.row >= value.to
+      ) {
         // shift focus to placehgolder
         rootRef.current.focus();
       }
@@ -59,19 +62,25 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
       if (currentCol !== -1 && currentRow !== -1) {
         const currentTarget =
           currentRow === 0
-            ? rootRef.current.querySelector(`.hwHeaderCell:nth-child(${currentCol + 1})`)
+            ? rootRef.current.querySelector(
+                `.hwHeaderCell:nth-child(${currentCol + 1})`
+              )
             : rootRef.current
                 .querySelector(`.GridRow[data-idx="${currentRow}"]`)
-                ?.querySelector(`.GridCell:nth-child(${currentCol + 1})`);
+                ?.querySelector(
+                  `.vuuDataGridCell:nth-child(${currentCol + 1})`
+                );
         if (currentTarget) {
-          currentTarget.setAttribute('tabindex', -1);
+          currentTarget.setAttribute("tabindex", -1);
         }
       }
 
-      const target = rootRef.current.querySelector(`.hwHeaderCell:nth-child(${col + 1})`);
+      const target = rootRef.current.querySelector(
+        `.hwHeaderCell:nth-child(${col + 1})`
+      );
       if (target) {
         target.focus();
-        target.setAttribute('tabindex', 0);
+        target.setAttribute("tabindex", 0);
       }
     },
     [rootRef]
@@ -85,7 +94,7 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
       focus.col = col;
       const target = rootRef.current
         .querySelector(`.GridRow[data-idx="${row}"]`)
-        ?.querySelector(`.GridCell:nth-child(${col + 1})`);
+        ?.querySelector(`.vuuDataGridCell:nth-child(${col + 1})`);
       if (target) {
         target.focus();
       }
@@ -100,14 +109,14 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
 
         if (RowNavKey[e.key]) {
           const {
-            current: { from, to }
+            current: { from, to },
           } = range;
           const fullRange = getFullRange(
             { lo: from, hi: Math.ceil(to) },
             gridModel.renderBufferSize
           );
 
-          if (e.key === 'ArrowDown') {
+          if (e.key === "ArrowDown") {
             if (row === -1) {
               focusHeaderCell(0, 0);
             } else if (isHeaderCell && row + 1 < headerRows) {
@@ -122,7 +131,9 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
                   e.preventDefault();
                 } else {
                   if (!isInteger(nextRow)) {
-                    console.log('how do we tell viewport to scroll up to align row, not down ?');
+                    console.log(
+                      "how do we tell viewport to scroll up to align row, not down ?"
+                    );
                   }
                   requestAnimationFrame(() => {
                     focusCell(Math.floor(nextRow));
@@ -130,7 +141,7 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
                 }
               }
             }
-          } else if (e.key === 'ArrowUp') {
+          } else if (e.key === "ArrowUp") {
             if (isHeaderCell && row === 0) {
               // do nothing
             } else if (isHeaderCell) {
@@ -157,13 +168,13 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
           e.stopPropagation();
           e.preventDefault();
 
-          if (e.key === 'ArrowRight' && col + 1 < gridModel.columns.length) {
+          if (e.key === "ArrowRight" && col + 1 < gridModel.columns.length) {
             focusNextCell(row, col + 1);
-          } else if (e.key === 'ArrowLeft' && col > 0) {
+          } else if (e.key === "ArrowLeft" && col > 0) {
             focusNextCell(row, col - 1);
           }
-        } else if (e.key === 'Enter') {
-          console.log('enter pressed, is there a valid action ?');
+        } else if (e.key === "Enter") {
+          console.log("enter pressed, is there a valid action ?");
         }
       }
     },
@@ -172,7 +183,7 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
 
   const handleClick = useCallback(
     (e) => {
-      const cellEl = e.target.closest('.GridCell, .hwHeaderCell');
+      const cellEl = e.target.closest(".vuuDataGridCell, .hwHeaderCell");
       if (cellEl) {
         // what about row selection
         // somehow need to determine whether we're in 'row select'mode or edit mode
@@ -188,7 +199,7 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
 
   const handleFocus = useCallback(() => {
     const {
-      current: { hasFocus }
+      current: { hasFocus },
     } = focusState;
     if (!hasFocus) {
       focusState.current.hasFocus = true;
@@ -211,21 +222,28 @@ export const useKeyboardNavigation = (rootRef, gridModel) => {
   useEffect(() => {
     const rootEl = rootRef.current;
     if (allowCellSelection) {
-      rootEl.addEventListener('blur', handleBlur, true);
-      rootEl.addEventListener('click', handleClick, true);
-      rootEl.addEventListener('keydown', handleKeyDown, true);
-      rootEl.addEventListener('focus', handleFocus, true);
+      rootEl.addEventListener("blur", handleBlur, true);
+      rootEl.addEventListener("click", handleClick, true);
+      rootEl.addEventListener("keydown", handleKeyDown, true);
+      rootEl.addEventListener("focus", handleFocus, true);
     }
 
     return () => {
       if (allowCellSelection) {
-        rootEl.removeEventListener('blur', handleBlur, true);
-        rootEl.removeEventListener('click', handleClick, true);
-        rootEl.removeEventListener('focus', handleFocus, true);
-        rootEl.removeEventListener('keydown', handleKeyDown, true);
+        rootEl.removeEventListener("blur", handleBlur, true);
+        rootEl.removeEventListener("click", handleClick, true);
+        rootEl.removeEventListener("focus", handleFocus, true);
+        rootEl.removeEventListener("keydown", handleKeyDown, true);
       }
     };
-  }, [allowCellSelection, handleBlur, handleClick, handleFocus, handleKeyDown, rootRef]);
+  }, [
+    allowCellSelection,
+    handleBlur,
+    handleClick,
+    handleFocus,
+    handleKeyDown,
+    rootRef,
+  ]);
 
   return setRange;
 };

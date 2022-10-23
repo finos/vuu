@@ -22,16 +22,14 @@ import {
   VuuRange,
   ClientToServerRemoveLink,
 } from "@vuu-ui/data-types";
-import {
-  ServerProxySubscribeMessage,
-  VuuUIRow,
-  VuuUIRowPredicate,
-} from "../vuuUIMessageTypes";
+import { ServerProxySubscribeMessage } from "../vuuUIMessageTypes";
 
 import {
   DataSourceVisualLinksMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
+  DataSourceRow,
+  DataSourceRowPredicate,
 } from "../data-source";
 
 const EMPTY_ARRAY: unknown[] = [];
@@ -85,8 +83,8 @@ type AsyncOperation =
   | GroupByClear
   | Selection
   | Sort;
-type RangeRequestTuple = [ClientToServerViewPortRange | null, VuuUIRow[]?];
-type RowSortPredicate = (row1: VuuUIRow, row2: VuuUIRow) => number;
+type RangeRequestTuple = [ClientToServerViewPortRange | null, DataSourceRow[]?];
+type RowSortPredicate = (row1: DataSourceRow, row2: DataSourceRow) => number;
 
 const byRowIndex: RowSortPredicate = ([index1], [index2]) => index1 - index2;
 export class Viewport {
@@ -100,7 +98,7 @@ export class Viewport {
   private filterSpec: any;
   private groupBy: any;
   private hasUpdates: boolean = false;
-  private holdingPen: VuuUIRow[] = [];
+  private holdingPen: DataSourceRow[] = [];
   private keys: any;
   private lastTouchIdx: number | null = null;
   private links: VuuLink[] = [];
@@ -333,7 +331,7 @@ export class Viewport {
       // always reset the keys here, even if we're not going to return rows immediately.
       this.keys.reset(this.dataWindow.clientRange);
 
-      const rowWithinRange: VuuUIRowPredicate = ([index]) =>
+      const rowWithinRange: DataSourceRowPredicate = ([index]) =>
         index < range.from || index >= range.to;
       if (this.holdingPen.some(rowWithinRange)) {
         this.holdingPen = this.holdingPen.filter(
@@ -577,7 +575,7 @@ const toClientRow = (
     1,
     rowKey,
     isSelected,
-  ].concat(data) as VuuUIRow;
+  ].concat(data) as DataSourceRow;
 
 const toClientRowTree =
   (groupBy: VuuGroupBy, columns: VuuColumns) =>
@@ -603,5 +601,5 @@ const toClientRowTree =
       isSelected,
     ].concat(rest);
 
-    return record as VuuUIRow;
+    return record as DataSourceRow;
   };

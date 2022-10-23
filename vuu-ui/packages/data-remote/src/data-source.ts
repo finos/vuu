@@ -19,7 +19,7 @@ type IsExpanded = boolean;
 type Depth = number;
 type ChildCount = number;
 type RowKey = string;
-type IsSelected = boolean;
+type IsSelected = 0 | 1 | 2;
 
 export type DataSourceRow = [
   RowIndex,
@@ -32,6 +32,8 @@ export type DataSourceRow = [
   IsSelected,
   ...VuuRowDataItemType[]
 ];
+
+export type DataSourceRowPredicate = (row: DataSourceRow) => boolean;
 
 export interface MessageWithClientViewportId {
   clientViewportId: string;

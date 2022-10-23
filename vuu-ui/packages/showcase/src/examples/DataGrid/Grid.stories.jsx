@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { useTestDataSource } from "./useTestDataSource";
+import { useTestDataSource } from "../utils/useTestDataSource";
 
 import { Grid } from "@vuu-ui/data-grid";
 import { RemoteDataSource } from "@vuu-ui/data-remote";
@@ -19,7 +19,6 @@ import suggestionFactory from "./filter-suggestion-factory";
 
 import "./Grid.stories.css";
 
-// eslint-disable-next-line import/no-anonymous-default-export
 export default {
   title: "Grid/Default",
   component: Grid,
@@ -84,17 +83,8 @@ export const BasicGrid = () => {
     console.log(`handleConfigChange ${JSON.stringify(config, null, 2)}`);
   };
 
-  const gridStyles = `
-    .StoryGrid {
-      --hwDataGridCell-border-style: none;
-      --hwDataGridRow-background-odd: var(--surface1);
-      --hwDataGrid-font-size: 10px;
-    }
-  `;
-
   return (
     <>
-      <style>{gridStyles}</style>
       <div>
         <input defaultValue="Life is" />
       </div>

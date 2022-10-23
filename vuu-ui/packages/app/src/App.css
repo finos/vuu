@@ -44,6 +44,6 @@ body {
   margin-top: 20%;
 }
 
-.vuDialog .hwDataGrid {
+.vuDialog .vuuDataGrid {
   --hw-grid-flex-size: 1 1 auto;
 }

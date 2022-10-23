@@ -46,6 +46,10 @@ export class DataWindow {
   }
 
   setRange(from: number, to: number) {
+    console.log(
+      `%c[DataWindow] setRange ${from} ${to}`,
+      "color:green;font-weight: bold;"
+    );
     if (from !== this.range.from || to !== this.range.to) {
       const [overlapFrom, overlapTo] = this.range.overlap(from, to);
       const newData = new Array(to - from);
@@ -60,5 +64,25 @@ export class DataWindow {
       this.range.from = from;
       this.range.to = to;
     }
+  }
+
+  hasData(from: number, to: number) {
+    const offset = this.range.from;
+    return (
+      this.data[from - offset] !== undefined &&
+      this.data[to - offset - 1] !== undefined
+    );
+  }
+
+  getData(from: number, to: number): any[] {
+    const { from: clientFrom, to: clientTo } = this.range;
+    const startOffset = Math.max(0, clientFrom - from);
+    const endOffset = Math.min(
+      to - from,
+      to,
+      clientTo - from,
+      this.rowCount ?? to
+    );
+    return this.data.slice(startOffset, endOffset);
   }
 }

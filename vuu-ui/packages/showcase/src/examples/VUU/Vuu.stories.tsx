@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Grid, GridProvider } from "@vuu-ui/data-grid";
-import { Button, ContextMenuProvider } from "@vuu-ui/ui-controls";
+import { ContextMenuProvider } from "@vuu-ui/ui-controls";
 import { StackLayout as Stack, View, useViewContext } from "@vuu-ui/layout";
+import { Button } from "@heswell/uitk-core";
 import { List, ListItem } from "@heswell/uitk-lab";
+import { useTestDataSource } from "../utils/useTestDataSource";
 
 import {
-  authenticate,
+  authenticate as vuuAuthenticate,
   connectToServer,
   RemoteDataSource,
   useViewserver,
@@ -31,7 +33,7 @@ export const VuuTables = () => {
 
   useEffect(() => {
     const connect = async () => {
-      const authToken = (await authenticate("steve", "xyz")) as string;
+      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
       connectToServer("127.0.0.1:8090/websocket", authToken);
     };
     connect();
@@ -46,25 +48,26 @@ export const VuuTables = () => {
   );
 };
 
+const schemaColumns = [
+  { name: "bbg", serverDataType: "string" } as const,
+  { name: "description", serverDataType: "string" } as const,
+  { name: "currency", serverDataType: "string" } as const,
+  { name: "exchange", serverDataType: "string" } as const,
+  { name: "lotSize", serverDataType: "int" } as const,
+  { name: "isin", serverDataType: "string" } as const,
+  { name: "ric", serverDataType: "string" } as const,
+];
+
 export const VuuInstruments = () => {
   const gridRef = useRef(null);
   const [namedFilters, setNamedFilters] = useState([]);
   const [token, setToken] = useState();
+  const { dataSource, instrumentColumns } = useTestDataSource({
+    autoLogin: false,
+  });
 
   const onRpcResponse = useCallback((response) => {
     console.log(`handleRpcResponse ${JSON.stringify(response)}`);
-  }, []);
-
-  console.log({ columns });
-
-  const [dataConfig, dataSource] = useMemo(() => {
-    const dataConfig = {
-      bufferSize: 100,
-      columns,
-      table: { table: "instruments", module: "SIMUL" },
-      serverUrl: "127.0.0.1:8090/websocket",
-    };
-    return [dataConfig, new RemoteDataSource(dataConfig)];
   }, []);
 
   const {
@@ -73,9 +76,8 @@ export const VuuInstruments = () => {
     handleMenuAction,
     makeRpcCall,
   } = useViewserver({
-    dataSource,
+    rpcServer: dataSource,
     onRpcResponse,
-    label: "Vuu.stories",
   });
 
   const handleCommit = (result) => {
@@ -98,11 +100,7 @@ export const VuuInstruments = () => {
   );
 
   const authenticate = useCallback(async () => {
-    const authToken = await authenticate(
-      "steve",
-      "xyz"
-      // "http://127.0.0.1:8090"
-    );
+    const authToken = await vuuAuthenticate("steve", "xyz");
     setToken(authToken);
   }, []);
 
@@ -128,11 +126,10 @@ export const VuuInstruments = () => {
       <ParserProvider
         parser={parseFilter}
         suggestionProvider={createSuggestionProvider({
-          columns: instrumentColumns,
-          columnNames: columns,
+          columns: schemaColumns,
           namedFilters,
           getSuggestions,
-          table: dataConfig.tableName,
+          table: { table: "instruments", module: "SIMUL" },
         })}
       >
         <div>

@@ -1,5 +1,5 @@
-import { SubscribeCallback } from "@vuu-ui/data-remote";
-import { VuuDataRow } from "@vuu-ui/data-types";
+import { DataSourceRow, SubscribeCallback } from "@vuu-ui/data-remote";
+import { VuuDataRow, VuuRange } from "@vuu-ui/data-types";
 import { getFullRange, metadataKeys, WindowRange } from "@vuu-ui/utils";
 import {
   useCallback,
@@ -53,7 +53,7 @@ export default function useDataSource(
   );
 
   const setData = useCallback(
-    (updates) => {
+    (updates: DataSourceRow[]) => {
       //     onsole.log(`%c[useDataSource] setData
       // [${updates.map(d => d[0]).join(',')}]`,'color:blue')
       for (const row of updates) {
@@ -72,45 +72,44 @@ export default function useDataSource(
 
   const datasourceMessageHandler: SubscribeCallback = useCallback(
     (message) => {
-      const { type, ...msg } = message;
-      if (type === "subscribed") {
+      if (message.type === "subscribed") {
         dispatchGridModelAction({
           type: "set-available-columns",
-          columns: msg.columns,
+          columns: message.columns,
         });
-        if (msg.filter) {
-          dispatchGridModelAction({ type: "filter", filter: msg.filter });
+        if (message.filter) {
+          dispatchGridModelAction({ type: "filter", filter: message.filter });
         }
-      } else if (type === "viewport-update") {
-        const sizeChanged = msg.size !== undefined;
+      } else if (message.type === "viewport-update") {
+        const sizeChanged = message.size !== undefined;
         if (sizeChanged) {
-          onSizeChange(msg.size);
-          dataWindow.setRowCount(msg.size);
+          onSizeChange(message.size);
+          dataWindow.setRowCount(message.size);
         }
-        if (msg.rows) {
-          setData(msg.rows);
+        if (message.rows) {
+          setData(message.rows);
         } else if (sizeChanged) {
           // TODO is this right ?
           data.current = dataWindow.data.slice().sort(byKey);
           hasUpdated.current = true;
         }
-      } else if (type === "sort") {
-        const { sort } = msg;
+      } else if (message.type === "sort") {
+        const { sort } = message;
         dispatchGridModelAction(message);
         onConfigChange({ sort });
-      } else if (type === "aggregate") {
-        const { aggregations } = msg;
+      } else if (message.type === "aggregate") {
+        const { aggregations } = message;
         console.log(
           `[useDataSource] aggregations ACKED ${JSON.stringify(aggregations)}`
         );
         dispatchGridModelAction({ type: "set-aggregations", aggregations });
         onConfigChange({ aggregations });
-      } else if (type === "groupBy") {
-        const { groupBy } = msg;
+      } else if (message.type === "groupBy") {
+        const { groupBy } = message;
         dispatchGridModelAction({ type: "group", groupBy });
         onConfigChange({ group: groupBy });
-      } else if (type === "filter") {
-        const { filter, filterQuery } = msg;
+      } else if (message.type === "filter") {
+        const { filter, filterQuery } = message;
         dispatchGridModelAction(message);
         onConfigChange({ filter, filterQuery });
         dataSource.emit("filter", filter);
@@ -195,14 +194,18 @@ export default function useDataSource(
 }
 
 export class MovingWindow {
-  constructor({ from, to }) {
+  public data: DataSourceRow[];
+  public rowCount: number = 0;
+  private range: WindowRange;
+
+  constructor({ from, to }: VuuRange) {
     this.range = new WindowRange(from, to);
     //internal data is always 0 based, we add range.from to determine an offset
     this.data = new Array(to - from);
     this.rowCount = 0;
   }
 
-  setRowCount = (rowCount) => {
+  setRowCount = (rowCount: number) => {
     if (rowCount < this.data.length) {
       this.data.length = rowCount;
     }
@@ -220,20 +223,19 @@ export class MovingWindow {
     this.rowCount = rowCount;
   };
 
-  add(data) {
+  add(data: DataSourceRow) {
     const [index] = data;
     //onsole.log(`ingest row at rowIndex ${index} [${index - this.range.from}]`)
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
       this.data[internalIndex] = data;
-
       // if (!sequential(this.data)){
       //   debugger;
       // }
     }
   }
 
-  getAtIndex(index) {
+  getAtIndex(index: number) {
     return this.range.isWithin(index) &&
       this.data[index - this.range.from] != null
       ? this.data[index - this.range.from]

@@ -29,7 +29,7 @@ const CHECKBOX_COLUMN = {
 };
 
 const LINE_NUMBER_COLUMN = {
-  className: "vuLineNumber",
+  className: "vuuLineNumber",
   flex: 0,
   isSystemColumn: true,
   label: " ",

@@ -1,10 +1,10 @@
-.GridCell {
+.vuuDataGridCell {
   align-items: center;
   background-color: var(--grid-cell-bg, inherit);
   box-sizing: border-box;
-  border-color: var(--cell-border-color);
+  border-color: var(--vuuDataGridCell-borderColor, var(--cell-border-top-color) var(--cell-border-right-color) var(--cell-border-bottom-color) transparent);
   border-style: var(--cell-border-style, solid);
-  border-width: 0 1px 1px 0;
+  border-width: 1px;
   color: var(--text-color);
   cursor: default;
   display: inline-flex;
@@ -20,27 +20,27 @@
   z-index: 0;
 }
 
-.GridCell.noBottomBorder {
+.vuuDataGridCell.noBottomBorder {
   border-bottom: solid 1px transparent;
 }
-.GridCell.resizing {
+.vuuDataGridCell.resizing {
   background-color: var(--header-cell-highlight-bg);
 }
 
-.GridCell .num {
+.vuuDataGridCell .num {
   display: inline-block;
   text-align: right;
   width: 100%;
 }
 
-.vuLineNumber {
+.vuuLineNumber {
   background-color: var(--line-number-bg);
   border-bottom-color: var(--line-number-border-color);
-  color: #555;
+  border-top-color: transparent;
 }
 
-.GridCell:focus:before,
-.GridCell:focus-visible:before {
+.vuuDataGridCell:focus:before,
+.vuuDataGridCell:focus-visible:before {
   content: '';
   position: absolute;
   top: 0;

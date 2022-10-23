@@ -6,10 +6,10 @@ import { ArrayLike } from "./ArrayLike";
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
+  DataSourceRow,
   RemoteDataSource,
   useDataSource,
 } from "@vuu-ui/data-remote";
-import { VuuUIRow } from "@vuu-ui/data-remote";
 import {
   CSSProperties,
   useCallback,
@@ -22,7 +22,7 @@ import { metadataKeys, WindowRange } from "@vuu-ui/utils";
 
 const { IDX, KEY } = metadataKeys;
 
-const toCollectionItem = (data: VuuUIRow) => {
+const toCollectionItem = (data: DataSourceRow) => {
   console.log({ data });
   return {
     id: data[KEY],
@@ -81,7 +81,7 @@ export const DefaultList = () => {
     return new RemoteDataSource(dataConfig);
   }, []);
 
-  const virtualRef = useRef<ScrollingAPI<VuuUIRow> | null>(null);
+  const virtualRef = useRef<ScrollingAPI<DataSourceRow> | null>(null);
   const [data2, size, range, setRange] = useDataSource({ dataSource });
   console.log({ data2 });
   const collectionHook = useVuuCollectionHook(data2, size, range);
