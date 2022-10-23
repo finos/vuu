@@ -1,7 +1,7 @@
-import React, { FocusEvent, forwardRef, HTMLAttributes, useState } from 'react';
-import cx from 'classnames';
+import React, { FocusEvent, forwardRef, HTMLAttributes, useState } from "react";
+import cx from "classnames";
 
-import './button.css';
+import "./button.css";
 
 export interface ButtonProps extends HTMLAttributes<HTMLButtonElement> {
   active?: boolean;
@@ -10,10 +10,19 @@ export interface ButtonProps extends HTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = forwardRef(function Button(
-  { active, children, className, element = 'button', onBlur, onClick, onFocus, ...htmlAttributes }: ButtonProps,
+  {
+    active,
+    children,
+    className,
+    element = "button",
+    onBlur,
+    onClick,
+    onFocus,
+    ...htmlAttributes
+  }: ButtonProps,
   ref
 ) {
-  const classBase = 'hwButton';
+  const classBase = "hwButton";
   const [focused, setFocused] = useState(false);
 
   const handleFocus = (e: FocusEvent<HTMLButtonElement>) => {
@@ -39,13 +48,15 @@ export const Button = forwardRef(function Button(
       ...htmlAttributes,
       className: cx(classBase, className, {
         [`${classBase}-active`]: active,
-        hwFocusVisible: focused
+        hwFocusVisible: focused,
       }),
       ref,
       onBlur: handleBlur,
       onClick,
-      onFocus: handleFocus
+      onFocus: handleFocus,
     },
     children
   );
 });
+
+Button.displayName = "Button";

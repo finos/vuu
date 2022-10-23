@@ -1,17 +1,18 @@
-import { List } from '@vuu-ui/ui-controls';
-import { uuid } from '@vuu-ui/utils';
-import cx from 'classnames';
-import React, { HTMLAttributes, MouseEvent, ReactElement, ReactNode } from 'react';
-import { useLayoutProviderDispatch } from '../layout-provider';
-import { View } from '../layout-view';
-import { registerComponent } from '../registry/ComponentRegistry';
+import { List } from "@vuu-ui/ui-controls";
+import { uuid } from "@vuu-ui/utils";
+import cx from "classnames";
+import { HTMLAttributes, MouseEvent, ReactElement, ReactNode } from "react";
+import { useLayoutProviderDispatch } from "../layout-provider";
+import { View } from "../layout-view";
+import { registerComponent } from "../registry/ComponentRegistry";
 
-import './Palette.css';
+import "./Palette.css";
 
 // All props are spread to the View
-export const PaletteItem = (props: {children: ReactNode}) => props.children;
+export const PaletteItem = (props: { children: ReactNode }) => props.children;
 
-export interface ComponentIconProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onMouseDown'>{
+export interface ComponentIconProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onMouseDown"> {
   component: ReactElement;
   idx: number;
   onMouseDown: (evt: MouseEvent, idx: number) => void;
@@ -28,32 +29,36 @@ const ComponentIcon = ({
 }: ComponentIconProps) => {
   const handleMouseDown = (evt: MouseEvent) => onMouseDown(evt, idx);
   return (
-    <div className="hwComponentIcon hwListItem" onMouseDown={handleMouseDown} {...props}>
+    <div
+      className="hwComponentIcon hwListItem"
+      onMouseDown={handleMouseDown}
+      {...props}
+    >
       <span>{text}</span>
     </div>
   );
 };
 
-export interface PaletteProps extends HTMLAttributes<HTMLDivElement>{
+export interface PaletteProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactElement[];
-  orientation: 'horizontal' | 'vertical';
+  orientation: "horizontal" | "vertical";
   selection?: string;
- }
+}
 
 export const Palette = ({
   children,
   className,
-  orientation = 'horizontal',
-  selection = 'none',
+  orientation = "horizontal",
+  selection = "none",
   ...props
-}:  PaletteProps) => {
+}: PaletteProps) => {
   const dispatch = useLayoutProviderDispatch();
 
-  const classBase = 'hwPalette';
+  const classBase = "hwPalette";
 
   function handleMouseDown(evt: MouseEvent, idx: number) {
     const {
-      props: { caption, children: payload, template, ...props }
+      props: { caption, children: payload, template, ...props },
     } = children[idx];
     const { left, top, width } = evt.currentTarget.getBoundingClientRect();
     const id = uuid();
@@ -67,15 +72,15 @@ export const Palette = ({
     );
 
     dispatch({
-      type: 'drag-start',
+      type: "drag-start",
       evt: evt.nativeEvent,
-      path: '*',
+      path: "*",
       component,
       instructions: {
         DoNotRemove: true,
         DoNotTransform: true,
         RemoveDraggableOnDragEnd: true,
-        dragThreshold: 10
+        dragThreshold: 10,
       },
       dragRect: {
         left,
@@ -83,8 +88,8 @@ export const Palette = ({
         right: left + width,
         bottom: top + 150,
         width,
-        height: 100
-      }
+        height: 100,
+      },
     });
   }
 
@@ -92,7 +97,8 @@ export const Palette = ({
     <List
       {...props}
       className={cx(classBase, className, `${classBase}-${orientation}`)}
-      selection={selection}>
+      selection={selection}
+    >
       {children.map((child, idx) =>
         child.type === PaletteItem ? (
           <ComponentIcon
@@ -100,7 +106,8 @@ export const Palette = ({
             idx={idx}
             text={child.props.caption || child.props.label}
             component={child}
-            onMouseDown={handleMouseDown}></ComponentIcon>
+            onMouseDown={handleMouseDown}
+          ></ComponentIcon>
         ) : (
           child
         )
@@ -109,4 +116,4 @@ export const Palette = ({
   );
 };
 
-registerComponent('Palette', Palette, 'view');
+registerComponent("Palette", Palette, "view");

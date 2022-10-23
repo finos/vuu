@@ -1,5 +1,5 @@
-import { HTMLAttributes } from 'react';
-import { HeaderProps } from '../layout-header';
+import { HTMLAttributes } from "react";
+import { HeaderProps } from "../layout-header";
 import {
   MaximizeAction,
   MinimizeAction,
@@ -7,8 +7,9 @@ import {
   RemoveAction,
   RestoreAction,
   TearoutAction,
-  ToolbarContributionViewAction
-} from '../layout-reducer';
+  AddToolbarContributionViewAction,
+  RemoveToolbarContributionViewAction,
+} from "../layout-reducer";
 
 export type ViewAction =
   | MaximizeAction
@@ -17,19 +18,20 @@ export type ViewAction =
   | RemoveAction
   | RestoreAction
   | TearoutAction
-  | ToolbarContributionViewAction;
+  | AddToolbarContributionViewAction
+  | RemoveToolbarContributionViewAction;
 
 export interface ViewProps extends HTMLAttributes<HTMLDivElement> {
   closeable?: boolean;
   collapsed?: boolean;
-  'data-resizeable'?: boolean;
+  "data-resizeable"?: boolean;
   dropTargets?: string[];
   expanded?: boolean;
   flexFill?: any;
   header?: boolean | Partial<HeaderProps>;
-  orientation?: 'vertical' | 'horizontal';
+  orientation?: "vertical" | "horizontal";
   path?: string;
-  resize?: 'defer' | 'responsive';
+  resize?: "defer" | "responsive";
   resizeable?: boolean;
   tearOut?: boolean;
 }

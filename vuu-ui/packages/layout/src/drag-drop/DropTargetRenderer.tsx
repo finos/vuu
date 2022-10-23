@@ -1,40 +1,42 @@
-import React from 'react';
-import { PopupService } from '@vuu-ui/ui-controls';
-import { DropMenu, computeMenuPosition } from './DropMenu';
-import { RelativeDropPosition } from './BoxModel';
+import React from "react";
+import { PopupService } from "@vuu-ui/ui-controls";
+import { DropMenu, computeMenuPosition } from "./DropMenu";
+import { RelativeDropPosition } from "./BoxModel";
 
-import './DropTargetRenderer.css';
-import { DropTarget, GuideLine } from './DropTarget';
-import { DragDropRect } from './dragDropTypes';
-import { DragState } from './DragState';
+import "./DropTargetRenderer.css";
+import { DropTarget, GuideLine } from "./DropTarget";
+import { DragDropRect } from "./dragDropTypes";
+import { DragState } from "./DragState";
 
 type Point = [number, number];
-type TabMode = 'full-view' | 'tab-only';
+type TabMode = "full-view" | "tab-only";
 
 let _multiDropOptions = false;
 let _hoverDropTarget: DropTarget | null = null;
 let _shiftedTab: HTMLElement | null = null;
 
-const onHoverDropTarget = (dropTarget: DropTarget | null) => (_hoverDropTarget = dropTarget);
+const onHoverDropTarget = (dropTarget: DropTarget | null) =>
+  (_hoverDropTarget = dropTarget);
 
 const start = ([x, y]: Point) => `M${x},${y}`;
 const point = ([x, y]: Point) => `L${x},${y}`;
-const pathFromPoints = ([p1, ...points]: Point[]) => `${start(p1)} ${points.map(point)}Z`;
+const pathFromPoints = ([p1, ...points]: Point[]) =>
+  `${start(p1)} ${points.map(point)}Z`;
 
 const pathFromGuideLines = (guideLines?: GuideLine) => {
   if (guideLines) {
     const [x1, y1, x2, y2, x3, y3, x4, y4] = guideLines;
     return `M${x1},${y1} L${x2},${y2} M${x3},${y3} L${x4},${y4}`;
   } else {
-    return '';
+    return "";
   }
 };
 
 function insertSVGRoot() {
-  if (document.getElementById('hw-drag-canvas') === null) {
-    const root = document.getElementById('root');
-    const container = document.createElement('div');
-    container.id = 'hw-drag-canvas';
+  if (document.getElementById("hw-drag-canvas") === null) {
+    const root = document.getElementById("root");
+    const container = document.createElement("div");
+    container.id = "hw-drag-canvas";
     container.innerHTML = `
       <svg width="100%" height="100%">
         <path id="hw-drop-guides" />
@@ -56,7 +58,6 @@ function insertSVGRoot() {
   }
 }
 export default class DropTargetCanvas {
-
   private currentPath: string | null = null;
   private tabMode: TabMode | null = null;
 
@@ -64,9 +65,9 @@ export default class DropTargetCanvas {
     insertSVGRoot();
   }
 
-  prepare(dragRect: DragDropRect, tabMode: TabMode = 'full-view') {
+  prepare(dragRect: DragDropRect, tabMode: TabMode = "full-view") {
     // don't do this on body
-    document.body.classList.add('drawing');
+    document.body.classList.add("drawing");
     this.currentPath = null;
     this.tabMode = tabMode;
 
@@ -74,11 +75,12 @@ export default class DropTargetCanvas {
     const width = right - left;
     const height = bottom - top;
 
-    const points = this.getPoints(left, top, width, height);
+    const points = this.getPoints(0, 0, 0, 0);
+    // const points = this.getPoints(left, top, width, height);
     const d = pathFromPoints(points);
 
-    const dropOutlinePath = document.getElementById('hw-drop-outline');
-    dropOutlinePath?.setAttribute('d', d);
+    const dropOutlinePath = document.getElementById("hw-drop-outline");
+    dropOutlinePath?.setAttribute("d", d);
     this.currentPath = d;
   }
 
@@ -86,7 +88,7 @@ export default class DropTargetCanvas {
     // don't do this on body
     _hoverDropTarget = null;
     clearShiftedTab();
-    document.body.classList.remove('drawing');
+    document.body.classList.remove("drawing");
     PopupService.hidePopup();
   }
 
@@ -94,8 +96,16 @@ export default class DropTargetCanvas {
     return _hoverDropTarget;
   }
 
-  getPoints(x: number, y: number, width: number, height: number, tabLeft = 0, tabWidth = 0, tabHeight = 0): Point[] {
-    const tabOnly = this.tabMode === 'tab-only';
+  getPoints(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    tabLeft = 0,
+    tabWidth = 0,
+    tabHeight = 0
+  ): Point[] {
+    const tabOnly = this.tabMode === "tab-only";
     if (tabWidth === 0) {
       return [
         [x, y + tabHeight],
@@ -105,7 +115,7 @@ export default class DropTargetCanvas {
         [x + tabWidth, y],
         [x + width, y],
         [x + width, y + height],
-        [x, y + height]
+        [x, y + height],
       ];
     } else if (tabOnly) {
       const left = tabLeft;
@@ -117,7 +127,7 @@ export default class DropTargetCanvas {
         [left + tabWidth, y + tabHeight],
         [left + tabWidth, y + tabHeight],
         [left, y + tabHeight],
-        [left, y + tabHeight]
+        [left, y + tabHeight],
       ];
     } else if (tabLeft === 0) {
       return [
@@ -128,7 +138,7 @@ export default class DropTargetCanvas {
         [x + tabWidth, y + tabHeight],
         [x + width, y + tabHeight],
         [x + width, y + height],
-        [x, y + height]
+        [x, y + height],
       ];
     } else {
       return [
@@ -139,19 +149,13 @@ export default class DropTargetCanvas {
         [x + tabLeft, y + tabHeight],
         [x + width, y + tabHeight],
         [x + width, y + height],
-        [x, y + height]
+        [x, y + height],
       ];
     }
   }
 
   draw(dropTarget: DropTarget, dragState: DragState) {
     const sameDropTarget = false;
-    // _dropTarget !== null &&
-    // !dropTarget.pos.tab &&
-    // _dropTarget.component === dropTarget.component &&
-    // _dropTarget.pos.position === dropTarget.pos.position &&
-    // _dropTarget.pos.closeToTheEdge === dropTarget.pos.closeToTheEdge;
-
     const wasMultiDrop = _multiDropOptions;
 
     if (_hoverDropTarget !== null) {
@@ -180,7 +184,7 @@ export default class DropTargetCanvas {
           PopupService.showPopup({
             left,
             top,
-            component
+            component,
           });
         } else {
           PopupService.movePopupTo(left, top);
@@ -194,33 +198,39 @@ export default class DropTargetCanvas {
   drawTarget(dropTarget: DropTarget, dragState?: DragState) {
     const lineWidth = 6;
 
-    const targetDropOutline = dropTarget.getTargetDropOutline(lineWidth, dragState);
+    const targetDropOutline = dropTarget.getTargetDropOutline(
+      lineWidth,
+      dragState
+    );
 
     if (targetDropOutline) {
-      const { l, t, r, b, tabLeft, tabWidth, tabHeight, guideLines } = targetDropOutline;
+      const { l, t, r, b, tabLeft, tabWidth, tabHeight, guideLines } =
+        targetDropOutline;
       const w = r - l;
       const h = b - t;
 
       if (this.currentPath) {
-        const path = document.getElementById('hw-drop-outline');
-        path?.setAttribute('d', this.currentPath);
+        const path = document.getElementById("hw-drop-outline");
+        path?.setAttribute("d", this.currentPath);
       }
 
       const points = this.getPoints(l, t, w, h, tabLeft, tabWidth, tabHeight);
       const path = pathFromPoints(points);
-      const animation = document.getElementById('hw-drop-outline-animate') as unknown as SVGAnimateElement;
-      animation?.setAttribute('to', path);
+      const animation = document.getElementById(
+        "hw-drop-outline-animate"
+      ) as unknown as SVGAnimateElement;
+      animation?.setAttribute("to", path);
       animation?.beginElement();
       this.currentPath = path;
 
-      const dropGuidePath = document.getElementById('hw-drop-guides');
-      dropGuidePath?.setAttribute('d', pathFromGuideLines(guideLines));
+      const dropGuidePath = document.getElementById("hw-drop-guides");
+      dropGuidePath?.setAttribute("d", pathFromGuideLines(guideLines));
     }
   }
 }
 
-const cssShiftRight = 'transition:margin-left .4s ease-out;margin-left: 63px';
-const cssShiftBack = 'transition:margin-left .4s ease-out;margin-left: 0px';
+const cssShiftRight = "transition:margin-left .4s ease-out;margin-left: 63px";
+const cssShiftBack = "transition:margin-left .4s ease-out;margin-left: 0px";
 
 function moveExistingTabs(dropTarget: DropTarget) {
   const { AFTER, BEFORE } = RelativeDropPosition;
@@ -228,8 +238,8 @@ function moveExistingTabs(dropTarget: DropTarget) {
     clientRect: { Stack },
     pos: {
       // tab: { index: tabIndex, positionRelativeToTab }
-      tab
-    }
+      tab,
+    },
   } = dropTarget;
 
   const { id } = dropTarget.component.props;
@@ -254,8 +264,10 @@ function moveExistingTabs(dropTarget: DropTarget) {
     }
   } else if (tab?.positionRelativeToTab === BEFORE) {
     if (_shiftedTab === null) {
-      const selector = `:scope [class^="hwHeader-title"]`;
-      tabEl = document.getElementById(id)?.querySelector(selector) as HTMLElement;
+      const selector = ".vuuHeader-title";
+      tabEl = document
+        .getElementById(id)
+        ?.querySelector(selector) as HTMLElement;
       tabEl.style.cssText = cssShiftRight;
       _shiftedTab = tabEl;
     }

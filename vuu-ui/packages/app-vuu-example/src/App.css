@@ -15,10 +15,6 @@ body {
   --spectrum-global-dimension-size-225: 16px;
 
   --hwDrawer-leading-edge-border: solid 1px var(--surface2);
-
-  --app-font-family: 'Roboto Condensed', Roboto;
-
-  font-family: var(--app-font-family);
 }
 
 .ToolbarField .Input {
@@ -51,8 +47,8 @@ body {
 }
 
 .vuDialog {
-  --hwView-flex-direction: row;
-  --hwView-flex-wrap: wrap;
+  --vuuView-flex-direction: row;
+  --vuuView-flex-wrap: wrap;
 }
 
 .vuDialog .Grid {

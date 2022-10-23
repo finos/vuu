@@ -1,23 +1,14 @@
-import { useForkRef, useId } from '@vuu-ui/react-utils';
-import cx from 'classnames';
-import React, { ForwardedRef, forwardRef, useCallback, useMemo, useRef } from 'react';
-import Header from '../layout-header/Header';
-import { useLayoutProviderDispatch } from '../layout-provider';
-import { registerComponent } from '../registry/ComponentRegistry';
-import {useResizeObserver,  WidthHeight } from '../responsive/useResizeObserver';
-import usePersistentState from '../use-persistent-state';
-import { useViewActionDispatcher } from './useViewActionDispatcher';
-import { ViewContext } from './ViewContext';
-import { ViewProps } from './viewTypes';
+import { useForkRef, useId } from "@vuu-ui/react-utils";
+import cx from "classnames";
+import React, { ForwardedRef, forwardRef, useRef } from "react";
+import { Header } from "../layout-header/Header";
+import { registerComponent } from "../registry/ComponentRegistry";
+import { ViewContext } from "./ViewContext";
+import { ViewProps } from "./viewTypes";
+import { useView } from "./useView";
+import { useViewResize } from "./useViewResize";
 
-import './View.css';
-
-const NO_MEASUREMENT: string[] = [];
-
-type size = {
-  height?: number;
-  width?: number;
-};
+import "./View.css";
 
 const View = forwardRef(function View(
   props: ViewProps,
@@ -28,15 +19,15 @@ const View = forwardRef(function View(
     className,
     collapsed, // "vertical" | "horizontal" | false | undefined
     closeable,
-    'data-resizeable': dataResizeable,
+    "data-resizeable": dataResizeable,
     dropTargets,
     expanded,
     flexFill, // use data-flexfill instead
     id: idProp,
     header,
-    orientation = 'horizontal',
+    orientation = "horizontal",
     path,
-    resize = 'responsive', // maybe throttle or debounce ?
+    resize = "responsive", // maybe throttle or debounce ?
     resizeable = dataResizeable,
     tearOut,
     style = {},
@@ -47,63 +38,30 @@ const View = forwardRef(function View(
   // A View within a managed layout will always be passed an id
   const id = useId(idProp);
   const rootRef = useRef<HTMLDivElement>(null);
-
-  const layoutDispatch = useLayoutProviderDispatch();
-  const [dispatchViewAction, contributions] = useViewActionDispatcher(rootRef, path, dropTargets);
-  const deferResize = resize === 'defer';
-  const classBase = 'hwView';
-  const { loadState, loadSessionState, saveState, saveSessionState } = usePersistentState();
-  const title = useMemo(() => loadState('view-title') ?? titleProp, [loadState, titleProp]);
-
-  const restoredState = useMemo(() => loadState(id), [id, loadState]);
-
   const mainRef = useRef<HTMLDivElement>(null);
-  const mainSize = useRef<size>({});
-  const resizeHandle = useRef<number>();
 
-  const setMainSize = useCallback(() => {
-    if (mainRef.current) {
-      mainRef.current.style.height = mainSize.current.height + 'px';
-      mainRef.current.style.width = mainSize.current.width + 'px';
-    }
-    resizeHandle.current = undefined;
-  }, []);
+  const {
+    contributions,
+    dispatchViewAction,
+    load,
+    loadSession,
+    onConfigChange,
+    purge,
+    restoredState,
+    save,
+    saveSession,
+    title,
+  } = useView({
+    id,
+    rootRef,
+    path,
+    dropTargets,
+    title: titleProp,
+  });
 
-  const onResize = useCallback(
-    ({ height, width }) => {
-      mainSize.current.height = height;
-      mainSize.current.width = width;
-      if (resizeHandle.current !== null) {
-        clearTimeout(resizeHandle.current);
-      }
-      resizeHandle.current = window.setTimeout(setMainSize, 40);
-    },
-    [setMainSize]
-  );
+  useViewResize({ mainRef, resize, rootRef });
 
-  useResizeObserver(rootRef, deferResize ? WidthHeight : NO_MEASUREMENT, onResize, deferResize);
-
-  const load = useCallback((key) => loadState(id, key), [id, loadState]);
-  const save = useCallback(
-    (state, key) => {
-      saveState(id, key, state);
-      layoutDispatch({ type: 'save' });
-    },
-    [id, layoutDispatch, saveState]
-  );
-  const loadSession = useCallback((key) => loadSessionState(id, key), [id, loadSessionState]);
-  const saveSession = useCallback(
-    (state, key) => saveSessionState(id, key, state),
-    [id, saveSessionState]
-  );
-
-  const onConfigChange = useCallback(
-    ({ type: key, ...config }) => {
-      const { [key]: data } = config;
-      save(data, key);
-    },
-    [save]
-  );
+  const classBase = "vuuView";
 
   const getContent = () => {
     // We only inject restored state as props if child is a single element. Maybe we
@@ -116,7 +74,7 @@ const View = forwardRef(function View(
     }
   };
 
-  const headerProps = typeof header === 'object' ? header : {};
+  const headerProps = typeof header === "object" ? header : {};
 
   return (
     <div
@@ -124,13 +82,14 @@ const View = forwardRef(function View(
       className={cx(classBase, className, {
         [`${classBase}-collapsed`]: collapsed,
         [`${classBase}-expanded`]: expanded,
-        [`${classBase}-resize-defer`]: resize === 'defer'
+        [`${classBase}-resize-defer`]: resize === "defer",
       })}
       data-resizeable={resizeable}
       id={id}
       ref={useForkRef(forwardedRef, rootRef)}
       style={style}
-      tabIndex={-1}>
+      tabIndex={-1}
+    >
       <ViewContext.Provider
         value={{
           dispatch: dispatchViewAction,
@@ -140,9 +99,11 @@ const View = forwardRef(function View(
           load,
           loadSession,
           onConfigChange,
+          purge,
           save,
-          saveSession
-        }}>
+          saveSession,
+        }}
+      >
         {header ? (
           <Header
             {...headerProps}
@@ -163,10 +124,10 @@ const View = forwardRef(function View(
     </div>
   );
 });
-View.displayName = 'View';
+View.displayName = "View";
 
 const MemoView = React.memo(View) as React.FunctionComponent<ViewProps>;
-MemoView.displayName = 'View';
-registerComponent('View', MemoView, 'view');
+MemoView.displayName = "View";
+registerComponent("View", MemoView, "view");
 
 export { MemoView as View };

@@ -126,7 +126,6 @@ export const Dropdown = forwardRef(function Dropdown(
   if (align.endsWith('right') && typeof widthProp === 'number') {
     left = right - widthProp;
   } else if (align.endsWith('full-width')) {
-    console.log('its full width, suckers');
     width = anchorEl.clientWidth;
   }
 

@@ -28,10 +28,6 @@
   flex-shrink: 0;
 }
 
-[data-placeholder] {
-  background-color: lightgray;
-}
-
 .hwFlexbox.full-page {
   height: 100vh;
   width: 100vw;
@@ -44,6 +40,6 @@
   flex-shrink: 1;
 }
 
-.hwView.flex-fill {
+.vuuView.flex-fill {
   border-color: red;
 }

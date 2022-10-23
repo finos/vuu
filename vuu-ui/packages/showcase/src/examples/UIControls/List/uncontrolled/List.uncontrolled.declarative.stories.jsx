@@ -1,44 +1,48 @@
-import React, { useMemo, useState } from 'react';
-import { ComponentAnatomy } from '@heswell/component-anatomy';
+import React, { useMemo, useState } from "react";
+import { ComponentAnatomy } from "@heswell/component-anatomy";
 import {
   Button,
   List,
   ListItem,
   ListItemGroup,
   ListItemHeader,
-  VirtualizedList
-} from '@vuu-ui/ui-controls';
+  VirtualizedList,
+} from "@vuu-ui/ui-controls";
 
-import { usa_states, usa_states_cities, groupByInitialLetter, random_1000 } from '../List.data';
-
-import '@vuu-ui/theme/index.css';
+import {
+  usa_states,
+  usa_states_cities,
+  groupByInitialLetter,
+  random_1000,
+} from "../List.data";
 
 let displaySequence = 1;
 
 export default {
-  title: 'UI Controls/List',
-  component: List
+  title: "UI Controls/List",
+  component: List,
 };
 
 const fullWidthHeight = {
-  backgroundColor: 'inherit',
-  height: '100%',
-  width: '100%'
+  backgroundColor: "inherit",
+  height: "100%",
+  width: "100%",
 };
 
 export const DeclarativeList = () => {
-  const [selectedValue, setSelectedValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState("");
   return (
     <>
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List onChange={(value) => setSelectedValue(value)}>
           <ListItem>Value 1</ListItem>
           <ListItem>Value 2</ListItem>
@@ -53,18 +57,19 @@ export const DeclarativeList = () => {
 };
 
 export const DeclarativeListUsingDivs = () => {
-  const [selectedValue, setSelectedValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState("");
   return (
     <>
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List onChange={(value) => setSelectedValue(value)}>
           <div>
             <span>Value 1</span>
@@ -83,19 +88,20 @@ export const DeclarativeListUsingDivs = () => {
 };
 
 export const DeclarativeListWithHeadersUsingDivs = () => {
-  const [selectedValue, setSelectedValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState("");
   console.log(`render example`);
   return (
     <>
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List onChange={(value) => setSelectedValue(value)} collapsibleHeaders>
           <div data-header label="Group 1" />
           <div>
@@ -116,21 +122,26 @@ export const DeclarativeListWithHeadersUsingDivs = () => {
 };
 
 export const DeclarativeListWithGroups = () => {
-  const [selectedValue, setSelectedValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState("");
   console.log(`render example`);
   return (
     <>
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
-        <List onChange={(value) => setSelectedValue(value)} collapsibleHeaders stickyHeaders>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
+        <List
+          onChange={(value) => setSelectedValue(value)}
+          collapsibleHeaders
+          stickyHeaders
+        >
           <ListItemGroup title="Group 1">
             <ListItem>Value 1.1</ListItem>
             <ListItem>Value 1.2</ListItem>
@@ -173,21 +184,26 @@ export const DeclarativeListWithGroups = () => {
 };
 
 export const DeclarativeListWithNestedGroups = () => {
-  const [selectedValue, setSelectedValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState("");
   console.log(`render example`);
   return (
     <>
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
-        <List onChange={(value) => setSelectedValue(value)} collapsibleHeaders stickyHeaders>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
+        <List
+          onChange={(value) => setSelectedValue(value)}
+          collapsibleHeaders
+          stickyHeaders
+        >
           <ListItemGroup title="Group 1">
             <ListItem>Value 1.1</ListItem>
             <ListItem>Value 1.2</ListItem>
@@ -235,21 +251,26 @@ export const DeclarativeListWithNestedGroups = () => {
 };
 
 export const DeclarativeListWithHeaders = () => {
-  const [selectedValue, setSelectedValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState("");
   console.log(`render example`);
   return (
     <>
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
-        <List stickyHeaders collapsibleHeaders onChange={(value) => setSelectedValue(value)}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
+        <List
+          stickyHeaders
+          collapsibleHeaders
+          onChange={(value) => setSelectedValue(value)}
+        >
           <ListItemHeader id="1">Group 1</ListItemHeader>
           <ListItem>Value 1.1</ListItem>
           <ListItem>Value 1.2</ListItem>

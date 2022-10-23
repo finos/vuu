@@ -1,47 +1,52 @@
-import React, { useMemo, useState } from 'react';
-import { ComponentAnatomy } from '@heswell/component-anatomy';
+import React, { useMemo, useState } from "react";
+import { ComponentAnatomy } from "@heswell/component-anatomy";
 import {
   Button,
   List,
   ListItem,
   ListItemGroup,
   ListItemHeader,
-  VirtualizedList
-} from '@vuu-ui/ui-controls';
+  VirtualizedList,
+} from "@vuu-ui/ui-controls";
 
-import { usa_states, usa_states_cities, groupByInitialLetter, random_1000 } from '../List.data';
-
-import '@vuu-ui/theme/index.css';
+import {
+  usa_states,
+  usa_states_cities,
+  groupByInitialLetter,
+  random_1000,
+} from "../List.data";
 
 let displaySequence = 1;
 
 export default {
-  title: 'UI Controls/List',
-  component: List
+  title: "UI Controls/List",
+  component: List,
 };
 
 const fullWidthHeight = {
-  backgroundColor: 'inherit',
-  height: '100%',
-  width: '100%'
+  backgroundColor: "inherit",
+  height: "100%",
+  width: "100%",
 };
 
 export const SimpleList = () => {
   return (
     <div
       style={{
-        ...fullWidthHeight
-      }}>
+        ...fullWidthHeight,
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List source={usa_states} />
       </div>
       {/* <div
@@ -66,18 +71,20 @@ export const SimpleListDragDrop = () => {
   return (
     <div
       style={{
-        ...fullWidthHeight
-      }}>
+        ...fullWidthHeight,
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List allowDragDrop source={usa_states} />
       </div>
       {/* <div
@@ -102,18 +109,20 @@ export const LargeListDragDrop = () => {
   return (
     <div
       style={{
-        ...fullWidthHeight
-      }}>
+        ...fullWidthHeight,
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List allowDragDrop source={random_1000} />
       </div>
       <input type="text" />
@@ -127,18 +136,20 @@ export const SimpleListDefaultHighlight = () => {
   return (
     <div
       style={{
-        ...fullWidthHeight
-      }}>
+        ...fullWidthHeight,
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List defaultHighlightedIdx={3} source={usa_states} />
       </div>
       <input type="text" />
@@ -151,19 +162,21 @@ export const SimpleListDefaultSelection = () => {
   return (
     <div
       style={{
-        ...fullWidthHeight
-      }}>
+        ...fullWidthHeight,
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
-        <List defaultSelected={['California']} source={usa_states} />
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
+        <List defaultSelected={["California"]} source={usa_states} />
       </div>
       <input type="text" />
     </div>
@@ -173,33 +186,37 @@ SimpleListDefaultSelection.displaySequence = displaySequence++;
 
 export const SimpleListWithHeaders = () => {
   const wrapperStyle = {
-    fontFamily: 'Roboto',
+    fontFamily: "Roboto",
     width: 150,
     height: 400,
     maxHeight: 400,
-    position: 'relative',
-    border: 'solid 1px #ccc'
+    position: "relative",
+    border: "solid 1px #ccc",
   };
   return (
     <div
       style={{
         ...fullWidthHeight,
-        display: 'flex',
+        display: "flex",
         gap: 50,
-        alignItems: 'flex-start'
-      }}>
+        alignItems: "flex-start",
+      }}
+    >
       <input type="text" />
       <div style={wrapperStyle}>
-        <List source={groupByInitialLetter(usa_states, 'headers-only')} />
+        <List source={groupByInitialLetter(usa_states, "headers-only")} />
       </div>
       <div style={wrapperStyle}>
-        <List collapsibleHeaders source={groupByInitialLetter(usa_states, 'headers-only')} />
+        <List
+          collapsibleHeaders
+          source={groupByInitialLetter(usa_states, "headers-only")}
+        />
       </div>
       <div style={wrapperStyle}>
         <List
           collapsibleHeaders
           selection="none"
-          source={groupByInitialLetter(usa_states, 'headers-only')}
+          source={groupByInitialLetter(usa_states, "headers-only")}
         />
       </div>
       <input type="text" />
@@ -212,21 +229,26 @@ export const SimpleListWithStickyHeaders = () => {
     <div
       style={{
         ...fullWidthHeight,
-        display: 'flex',
+        display: "flex",
         gap: 50,
-        alignItems: 'flex-start'
-      }}>
+        alignItems: "flex-start",
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
-        <List source={groupByInitialLetter(usa_states, 'headers-only')} stickyHeaders />
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
+        <List
+          source={groupByInitialLetter(usa_states, "headers-only")}
+          stickyHeaders
+        />
       </div>
       <input type="text" />
     </div>
@@ -235,21 +257,30 @@ export const SimpleListWithStickyHeaders = () => {
 
 export const SimpleListWithGroups = () => {
   return (
-    <div style={{ width: 900, height: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+    <div
+      style={{
+        width: 900,
+        height: 900,
+        display: "flex",
+        gap: 50,
+        alignItems: "flex-start",
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <ComponentAnatomy>
           <List
             collapsibleHeaders
-            source={groupByInitialLetter(usa_states, 'groups-only')}
+            source={groupByInitialLetter(usa_states, "groups-only")}
             style={{ maxHeight: 500 }}
           />
         </ComponentAnatomy>
@@ -261,21 +292,30 @@ export const SimpleListWithGroups = () => {
 
 export const SimpleListWithNestedGroups = () => {
   return (
-    <div style={{ width: 900, height: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+    <div
+      style={{
+        width: 900,
+        height: 900,
+        display: "flex",
+        gap: 50,
+        alignItems: "flex-start",
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <ComponentAnatomy>
           <List
             collapsibleHeaders
-            source={groupByInitialLetter(usa_states_cities, 'groups-only')}
+            source={groupByInitialLetter(usa_states_cities, "groups-only")}
             style={{ maxHeight: 500 }}
           />
         </ComponentAnatomy>
@@ -287,28 +327,38 @@ export const SimpleListWithNestedGroups = () => {
 
 export const MultiSelectList = () => {
   return (
-    <div style={{ width: 900, height: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+    <div
+      style={{
+        width: 900,
+        height: 900,
+        display: "flex",
+        gap: 50,
+        alignItems: "flex-start",
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 200,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List selection="multi" source={usa_states} />
       </div>
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 200,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <VirtualizedList selection="multi" source={usa_states} />
       </div>
       <input type="text" />
@@ -318,28 +368,38 @@ export const MultiSelectList = () => {
 
 export const CheckboxSelectList = () => {
   return (
-    <div style={{ width: 900, height: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+    <div
+      style={{
+        width: 900,
+        height: 900,
+        display: "flex",
+        gap: 50,
+        alignItems: "flex-start",
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 250,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List selection="checkbox" source={usa_states} />
       </div>
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 250,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <VirtualizedList selection="checkbox" source={usa_states} />
       </div>
       <input type="text" />
@@ -348,19 +408,20 @@ export const CheckboxSelectList = () => {
 };
 
 export const CheckboxOnlySelectList = () => {
-  const [selectedValue, setSelectedValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState("");
   return (
     <>
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 300,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List
           onChange={(value) => setSelectedValue(value)}
           selection="checkbox-only"
@@ -374,25 +435,27 @@ export const CheckboxOnlySelectList = () => {
 };
 
 export const ExtendedSelectList = () => {
-  const [selectedValue, setSelectedValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState("");
   return (
     <div
       style={{
         ...fullWidthHeight,
-        display: 'flex',
+        display: "flex",
         gap: 50,
-        alignItems: 'flex-start'
-      }}>
+        alignItems: "flex-start",
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 300,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List
           onChange={(value) => setSelectedValue(value)}
           selection="extended"
@@ -415,9 +478,9 @@ export const VirtualizedExample = () => {
   }, []);
 
   const style = {
-    '--hwList-max-height': '300px',
-    boxSizing: 'content-box',
-    width: 200
+    "--hwList-max-height": "300px",
+    boxSizing: "content-box",
+    width: 200,
   };
 
   return (
@@ -433,30 +496,32 @@ export const SimpleListDelayedContent = () => {
   const [source, setSource] = useState([]);
 
   const loadSource = () => {
-    console.log('load source');
+    console.log("load source");
     setSource(usa_states);
   };
 
   return (
     <div
       style={{
-        alignItems: 'flex-start',
-        display: 'flex',
-        flexDirection: 'column',
+        alignItems: "flex-start",
+        display: "flex",
+        flexDirection: "column",
         gap: 6,
-        ...fullWidthHeight
-      }}>
+        ...fullWidthHeight,
+      }}
+    >
       <Button onClick={loadSource}>Load States</Button>
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <List source={source} />
       </div>
       <input type="text" />

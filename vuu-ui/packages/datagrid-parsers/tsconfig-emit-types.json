@@ -1,0 +1,10 @@
+{
+    "extends": "../../tsconfig-emit-types.json",
+    "compilerOptions": {
+      "outDir": "../../dist/datagrid-parsers/types"
+    },
+    "include": [
+      "src"
+    ]
+  }
+  

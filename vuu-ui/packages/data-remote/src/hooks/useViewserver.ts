@@ -1,58 +1,122 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { SimpleStore } from '@vuu-ui/utils';
-import { useServerConnection } from './useServerConnection';
-import { columnMetaData as columnConfig } from './columnMetaData';
-import { DataSource } from '../data-source';
-import { ClientToServerRpcCall, VuuMenuItem } from '@vuu-ui/data-types';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { SimpleStore } from "@vuu-ui/utils";
+import { useServerConnection } from "./useServerConnection";
+import { columnMetaData as columnConfig } from "./columnMetaData";
+import {
+  DataSource,
+  DataSourceMenusMessage,
+  DataSourceVisualLinkCreatedMessage,
+  DataSourceVisualLinkRemovedMessage,
+} from "../data-source";
+import {
+  ClientToServerRpcCall,
+  ColumnDataType,
+  TypeAheadMethod,
+  TypeaheadParams,
+  VuuMenuContext,
+  VuuMenuItem,
+  VuuTable,
+} from "@vuu-ui/data-types";
+import { RpcResponse, TableMeta } from "../vuuUIMessageTypes";
+import { AnyTxtRecord } from "dns";
+import { ContextMenuLocation } from "@vuu-ui/data-grid/src/context-menu";
 
-export const addRowsFromInstruments = 'addRowsFromInstruments';
-export const RpcCall = 'RPC_CALL';
+export const addRowsFromInstruments = "addRowsFromInstruments";
+export const RpcCall = "RPC_CALL";
 
-const tableStore = new SimpleStore({});
+export type SchemaColumn = {
+  name: string;
+  serverDataType: ColumnDataType;
+  label?: string;
+  type?: { name: string };
+  width?: number;
+};
+
+export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
+
+// const SPECIAL_SPACE = "\u00A0";
+const SPECIAL_SPACE = "_";
+
+export type TableSchema = {
+  columns: SchemaColumn[];
+  table: VuuTable;
+};
+
+export type VuuTableSchemas = { [key: string]: TableSchema };
+
+const tableStore = new SimpleStore<{ [key: string]: TableSchema }>({});
 
 const contextSortPriorities = {
-  'selected-rows': 0,
+  "selected-rows": 0,
   cell: 1,
   row: 2,
-  grid: 3
+  grid: 3,
 };
 
 const byContext = (menu1: VuuMenuItem, menu2: VuuMenuItem) => {
-  return contextSortPriorities[menu1.context] - contextSortPriorities[menu2.context];
+  return (
+    contextSortPriorities[menu1.context] - contextSortPriorities[menu2.context]
+  );
 };
 
-const contextCompatibleWithLocation = (location, context, selectedRowCount) => {
+const containSpace = (text: string) => text.indexOf(" ") !== -1;
+const replaceSpace = (text: string) => text.replace(/\s/g, SPECIAL_SPACE);
+
+const contextCompatibleWithLocation = (
+  location: ContextMenuLocation,
+  context: VuuMenuContext,
+  selectedRowCount: number
+) => {
   switch (location) {
-    case 'grid':
-      if (context === 'selected-rows') {
+    case "grid":
+      if (context === "selected-rows") {
         return selectedRowCount > 0;
       } else {
         return true;
       }
-    case 'header':
-      return context === 'grid';
+    case "header":
+      return context === "grid";
     default:
       return false;
   }
 };
 
-const extendSchema = ({ columns, dataTypes, table }) => {
+const createSchemaFromTableMetadata = ({
+  columns,
+  dataTypes,
+  table,
+}: TableMeta): TableSchema => {
   return {
     table,
     columns: columns.map((col, idx) =>
       columnConfig[col]
         ? { ...columnConfig[col], serverDataType: dataTypes[idx] }
         : { name: col, serverDataType: dataTypes[idx] }
-    )
+    ),
   };
 };
 
+export type ConfigChangeMessage =
+  | DataSourceVisualLinkCreatedMessage
+  | DataSourceVisualLinkRemovedMessage;
+
+export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
+
+export interface ViewServerHookResult {
+  buildViewserverMenuOptions: any;
+  dispatchGridAction: any;
+  getTypeaheadSuggestions: any;
+  handleMenuAction: AnyTxtRecord;
+  tables: VuuTableSchemas;
+  makeRpcCall: any;
+}
+
 export interface ViewServerHookProps {
   loadSession?: () => any;
-  onConfigChange?: () => void;
-  onRpcResponse?: () => void;
+  onConfigChange?: ConfigChangeHandler;
+  onRpcResponse?: (response: RpcResponse) => void;
   rpcServer?: DataSource;
-  saveSession?: () => void;
+  saveSession?: (state: any, key: string) => void;
 }
 
 // Either a DataSource or a Connection is acceptable as rpcServer, both support the rpc interface
@@ -61,40 +125,44 @@ export const useViewserver = ({
   onConfigChange,
   onRpcResponse,
   rpcServer,
-  saveSession
-}: ViewServerHookProps = {}) => {
+  saveSession,
+}: ViewServerHookProps = {}): ViewServerHookResult => {
   const [tables, setTables] = useState(tableStore.value);
 
   // IF we're passed in an rpcServer, whether its a dataSource or connection,
   // why do we need to get server here ?
   const server = useServerConnection(undefined);
+  console.log(`useViewServer server`, {
+    server,
+  });
   const contextMenuOptions = useMemo(
-    () => loadSession?.('vs-context-menu') ?? undefined,
+    () => loadSession?.("vs-context-menu") ?? undefined,
     [loadSession]
   );
   const contextMenu = useRef(contextMenuOptions);
   const visualLinks = useRef();
 
-  const buildTables = useCallback((schemas) => {
-    const newTables = {};
+  const buildTables = useCallback((schemas: TableMeta[]) => {
+    const newTables: { [key: string]: TableSchema } = {};
     schemas.forEach((schema) => {
-      newTables[schema.table.table] = extendSchema(schema);
+      newTables[schema.table.table] = createSchemaFromTableMetadata(schema);
     });
     tableStore.value = newTables;
   }, []);
 
   useEffect(() => {
-    tableStore.on('loaded', (_, tables) => {
+    tableStore.on("loaded", (_, tables) => {
+      console.log({ tables });
       setTables(tables);
     });
   }, []);
 
   const makeRpcCall = useCallback(
-    async (rpcRequest: Omit<ClientToServerRpcCall, 'service'>) => {
+    async (rpcRequest: Omit<ClientToServerRpcCall, "service">) => {
       const response = await server.rpcCall(rpcRequest);
       switch (response.method) {
         case addRowsFromInstruments:
-          onRpcResponse?.('showOrderEntry');
+          onRpcResponse?.("showOrderEntry");
           break;
         default:
           return response.result;
@@ -103,7 +171,35 @@ export const useViewserver = ({
     [onRpcResponse, server]
   );
 
+  const getTypeaheadSuggestions: SuggestionFetcher = useCallback(
+    async (params: TypeaheadParams) => {
+      console.log(
+        `%c⚡ [ParsedInput.story] getSuggestions params [${params.join(",")}]`,
+        "color: purple; font-weight: bold;"
+      );
+      const method: TypeAheadMethod =
+        params.length === 2
+          ? "getUniqueFieldValues"
+          : "getUniqueFieldValuesStartingWith";
+
+      const suggestions = await makeRpcCall({
+        type: "RPC_CALL",
+        method,
+        params,
+      });
+
+      return suggestions.some(containSpace)
+        ? suggestions.map(replaceSpace)
+        : suggestions;
+    },
+    [makeRpcCall]
+  );
+
   const buildViewserverMenuOptions = useCallback((location, options) => {
+    console.log(`[useViewServer] buildViewserverMenuOptions`, {
+      location,
+      options,
+    });
     const { selectedRowCount = 0 } = options;
     const descriptors = [];
 
@@ -111,44 +207,54 @@ export const useViewserver = ({
       visualLinks.current.forEach((linkDescriptor) => {
         descriptors.push({
           label: `Link to ${linkDescriptor.link.toTable}`,
-          action: 'link-table',
-          options: linkDescriptor
+          action: "link-table",
+          options: linkDescriptor,
         });
       });
     }
 
     if (contextMenu.current) {
-      contextMenu.current.menus.sort(byContext).forEach(({ name, filter, rpcName, context }) => {
-        if (contextCompatibleWithLocation(location, context, selectedRowCount)) {
-          descriptors.push({
-            label: name,
-            action: 'MENU_RPC_CALL',
-            options: {
-              context,
-              filter,
-              rpcName
-            }
-          });
-        }
-      });
+      contextMenu.current.menus
+        .sort(byContext)
+        .forEach(({ name, filter, rpcName, context }) => {
+          if (
+            contextCompatibleWithLocation(location, context, selectedRowCount)
+          ) {
+            descriptors.push({
+              label: name,
+              action: "MENU_RPC_CALL",
+              options: {
+                context,
+                filter,
+                rpcName,
+              },
+            });
+          }
+        });
     }
 
     return descriptors;
   }, []);
 
   const dispatchGridAction = useCallback(
-    (action) => {
-      if (action.type === 'VIEW_PORT_MENUS_RESP') {
+    (action: DataSourceVisualLinkCreatedMessage | DataSourceMenusMessage) => {
+      if (action.type === "VIEW_PORT_MENUS_RESP") {
+        console.log(`[useViewserver] VIEW_PORT_MENUS_RESP`);
         contextMenu.current = action.menu;
-        saveSession?.(action.menu, 'vs-context-menu');
+        saveSession?.(action.menu, "vs-context-menu");
         return true;
-      } else if (action.type === 'VP_VISUAL_LINKS_RESP') {
+      } else if (action.type === "VP_VISUAL_LINKS_RESP") {
         visualLinks.current = action.links;
         return true;
-      } else if (action.type === 'visual-link-created') {
+      } else if (
+        action.type === "CREATE_VISUAL_LINK_SUCCESS" ||
+        action.type === "REMOVE_VISUAL_LINK_SUCCESS"
+      ) {
         onConfigChange?.(action);
       } else {
-        console.log(`useViewserver dispatchGridAction no handler for ${action.type}`);
+        console.log(
+          `useViewserver dispatchGridAction no handler for ${action.type}`
+        );
       }
     },
     [onConfigChange, saveSession]
@@ -156,12 +262,12 @@ export const useViewserver = ({
 
   const handleMenuAction = useCallback(
     (type, options) => {
-      if (type === 'MENU_RPC_CALL') {
+      if (type === "MENU_RPC_CALL") {
         rpcServer.rpcCall({ type, ...options }).then((result) => {
           onRpcResponse && onRpcResponse(result);
         });
         return true;
-      } else if (type === 'link-table') {
+      } else if (type === "link-table") {
         // the createLink method only exists on dataSource
         return rpcServer.createLink(options), true;
       } else {
@@ -173,14 +279,20 @@ export const useViewserver = ({
 
   useEffect(() => {
     async function fetchTableMetadata() {
-      tableStore.status = 'loading';
-      const { tables } = await server.getTableList();
-      buildTables(
-        await Promise.all(tables.map((tableDescriptor) => server.getTableMeta(tableDescriptor)))
-      );
+      tableStore.status = "loading";
+      if (server) {
+        const { tables } = await server.getTableList();
+        buildTables(
+          await Promise.all(
+            tables.map((tableDescriptor) =>
+              server.getTableMeta(tableDescriptor)
+            )
+          )
+        );
+      }
     }
 
-    if (server && tableStore.status === '') {
+    if (server && tableStore.status === "") {
       fetchTableMetadata();
     }
   }, [buildTables, server, setTables]);
@@ -188,8 +300,9 @@ export const useViewserver = ({
   return {
     buildViewserverMenuOptions,
     dispatchGridAction,
+    getTypeaheadSuggestions,
     handleMenuAction,
     tables,
-    makeRpcCall
+    makeRpcCall,
   };
 };

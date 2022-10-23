@@ -1,21 +1,22 @@
-import path from 'path';
-import React, { useContext } from 'react';
-import { ViewAction } from './viewTypes';
+import path from "path";
+import React, { SyntheticEvent, useContext } from "react";
+import { ViewAction } from "./viewTypes";
 
 export type ViewDispatch = <Action extends ViewAction = ViewAction>(
   action: Action,
-  evt: any
+  evt?: SyntheticEvent
 ) => Promise<boolean | void>;
 
 export interface ViewContextProps {
   dispatch: ViewDispatch | null;
   id: string;
-  load?: (key: string) => void;
-  loadSession?: (key: string) => void;
+  load: (key?: string) => any;
+  loadSession: (key?: string) => any;
   onConfigChange?: (config: any) => void;
   path?: string;
-  save?: (state: any, key: string) => void;
-  saveSession?: (state: any, key: string) => void;
+  purge: (key: string) => void;
+  save: (state: any, key: string) => void;
+  saveSession: (state: any, key: string) => void;
   title?: string;
 }
 

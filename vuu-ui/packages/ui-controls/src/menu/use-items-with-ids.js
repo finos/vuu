@@ -1,8 +1,8 @@
-import React, { useCallback, useMemo } from 'react';
-import { MenuItemGroup, Separator } from './MenuList';
+import React, { useCallback, useMemo } from "react";
+import { MenuItemGroup, Separator } from "./MenuList";
 
 export const isMenuItemGroup = (child) =>
-  child.type === MenuItemGroup || !!child.props['data-group'];
+  child.type === MenuItemGroup || !!child.props["data-group"];
 
 export const useItemsWithIds = (sourceProp, childrenProp) => {
   const normalizeChildren = useCallback(() => {
@@ -10,7 +10,12 @@ export const useItemsWithIds = (sourceProp, childrenProp) => {
       return;
     }
 
-    const collectChildren = (children, path = 'root', menus = {}, actions = {}) => {
+    const collectChildren = (
+      children,
+      path = "root",
+      menus = {},
+      actions = {}
+    ) => {
       const list = (menus[path] = []);
       let idx = 0;
       let hasSeparator = false;
@@ -20,11 +25,16 @@ export const useItemsWithIds = (sourceProp, childrenProp) => {
           hasSeparator = true;
         } else {
           const group = isMenuItemGroup(child);
-          const childPath = path === 'root' ? `${idx}` : `${path}.${idx}`;
+          const childPath = path === "root" ? `${idx}` : `${path}.${idx}`;
           const {
-            props: { action, options }
+            props: { action, options },
           } = child;
-          const [childWithId, grandChildren] = assignId(child, childPath, group, hasSeparator);
+          const [childWithId, grandChildren] = assignId(
+            child,
+            childPath,
+            group,
+            hasSeparator
+          );
           list.push(childWithId);
           if (grandChildren) {
             collectChildren(grandChildren, childPath, menus, actions);
@@ -40,23 +50,26 @@ export const useItemsWithIds = (sourceProp, childrenProp) => {
 
     const assignId = (child, path, group, hasSeparator = false) => {
       const {
-        props: { children }
+        props: { children },
       } = child;
       return [
         React.cloneElement(child, {
           hasSeparator,
           id: `${path}`,
           key: path,
-          children: group ? undefined : children
+          children: group ? undefined : children,
         }),
-        group ? children : undefined
+        group ? children : undefined,
       ];
     };
 
     return collectChildren(childrenProp);
   }, [childrenProp]);
 
-  const [children, actions] = useMemo(() => normalizeChildren(), [normalizeChildren]);
+  const [children, actions] = useMemo(
+    () => normalizeChildren(),
+    [normalizeChildren]
+  );
 
   return [children, actions];
 };

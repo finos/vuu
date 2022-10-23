@@ -1,26 +1,31 @@
-const LEFT_RIGHT = ['left', 'right'];
-const TOP_BOTTOM = ['top', 'bottom'];
+const LEFT_RIGHT = ["left", "right"];
+const TOP_BOTTOM = ["top", "bottom"];
 // duplicated in repsonsive
 
 export const measureElementSizeAndPosition = (
   element,
-  dimension = 'width',
+  dimension = "width",
   includeAutoMargin = false
 ) => {
-  const pos = dimension === 'width' ? 'left' : 'top';
-  const { [dimension]: size, [pos]: position } = element.getBoundingClientRect();
+  const pos = dimension === "width" ? "left" : "top";
+  const { [dimension]: size, [pos]: position } =
+    element.getBoundingClientRect();
   const { padEnd = false, padStart = false } = element.dataset;
   const style = getComputedStyle(element);
-  const [start, end] = dimension === 'width' ? LEFT_RIGHT : TOP_BOTTOM;
+  const [start, end] = dimension === "width" ? LEFT_RIGHT : TOP_BOTTOM;
   const marginStart =
-    padStart && !includeAutoMargin ? 0 : parseInt(style.getPropertyValue(`margin-${start}`), 10);
+    padStart && !includeAutoMargin
+      ? 0
+      : parseInt(style.getPropertyValue(`margin-${start}`), 10);
   const marginEnd =
-    padEnd && !includeAutoMargin ? 0 : parseInt(style.getPropertyValue(`margin-${end}`), 10);
+    padEnd && !includeAutoMargin
+      ? 0
+      : parseInt(style.getPropertyValue(`margin-${end}`), 10);
 
   let minWidth = size;
-  const flexShrink = parseInt(style.getPropertyValue('flex-shrink'), 10);
+  const flexShrink = parseInt(style.getPropertyValue("flex-shrink"), 10);
   if (flexShrink > 0) {
-    const flexBasis = parseInt(style.getPropertyValue('flex-basis'), 10);
+    const flexBasis = parseInt(style.getPropertyValue("flex-basis"), 10);
     if (!isNaN(flexBasis) && flexBasis > 0) {
       minWidth = flexBasis;
     }
@@ -30,25 +35,25 @@ export const measureElementSizeAndPosition = (
 
 const DIMENSIONS = {
   horizontal: {
-    CLIENT_SIZE: 'clientWidth',
-    CONTRA: 'top',
-    DIMENSION: 'width',
-    END: 'right',
-    POS: 'clientX',
-    SCROLL_POS: 'scrollLeft',
-    SCROLL_SIZE: 'scrollWidth',
-    START: 'left'
+    CLIENT_SIZE: "clientWidth",
+    CONTRA: "top",
+    DIMENSION: "width",
+    END: "right",
+    POS: "clientX",
+    SCROLL_POS: "scrollLeft",
+    SCROLL_SIZE: "scrollWidth",
+    START: "left",
   },
   vertical: {
-    CLIENT_SIZE: 'clientHeight',
-    CONTRA: 'left',
-    DIMENSION: 'height',
-    END: 'bottom',
-    POS: 'clientY',
-    SCROLL_POS: 'scrollTop',
-    SCROLL_SIZE: 'scrollHeight',
-    START: 'top'
-  }
+    CLIENT_SIZE: "clientHeight",
+    CONTRA: "left",
+    DIMENSION: "height",
+    END: "bottom",
+    POS: "clientY",
+    SCROLL_POS: "scrollTop",
+    SCROLL_SIZE: "scrollHeight",
+    START: "top",
+  },
 };
 export const dimensions = (orientation) => DIMENSIONS[orientation];
 
@@ -57,7 +62,7 @@ export const getDraggedItem = (measuredItems) => {
   if (result) {
     return result;
   } else {
-    throw Error('measuredItems do not contain a draggedElement');
+    throw Error("measuredItems do not contain a draggedElement");
   }
 };
 
@@ -136,7 +141,12 @@ export const moveDragItem = (measuredItems, dropTarget) => {
 
 export const isDraggedElement = (item) => item.isDraggedElement;
 
-export const measureDropTargets = (container, orientation, draggedItem, itemQuery) => {
+export const measureDropTargets = (
+  container,
+  orientation,
+  draggedItem,
+  itemQuery
+) => {
   const dropTargets = [];
   const startTime = performance.now();
 
@@ -148,7 +158,7 @@ export const measureDropTargets = (container, orientation, draggedItem, itemQuer
   );
   for (let index = 0, len = children.length; index < len; index++) {
     const element = children[index];
-    const dimension = orientation === 'horizontal' ? 'width' : 'height';
+    const dimension = orientation === "horizontal" ? "width" : "height";
     let [start, size] = measureElementSizeAndPosition(element, dimension);
     const isDraggedElement = element === draggedItem.element;
     const adjustedSize = isDraggedElement ? draggedItem?.size ?? size : size;
@@ -166,7 +176,7 @@ export const measureDropTargets = (container, orientation, draggedItem, itemQuer
       // will be triggered by drag-scroll, at which point draggedItem has zero size
       // but original size will be passed in with draggedItem param.
       size: adjustedSize,
-      mid: start + appliedAdjustment + adjustedSize / 2
+      mid: start + appliedAdjustment + adjustedSize / 2,
     });
 
     if (isDraggedElement) {
@@ -181,7 +191,7 @@ export const measureDropTargets = (container, orientation, draggedItem, itemQuer
 
 export const getNextDropTarget = (dropTargets, pos, direction) => {
   const len = dropTargets.length;
-  if (direction === 'fwd') {
+  if (direction === "fwd") {
     for (let index = 0; index < len; index++) {
       let dropTarget = dropTargets[index];
       const { start, mid, end } = dropTarget;

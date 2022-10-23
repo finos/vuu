@@ -1,8 +1,9 @@
 export const getRpcService = (method) => {
   switch (method) {
-    case 'getUniqueFieldValues':
-      return ['TypeAheadRpcHandler', 'TYPEAHEAD'];
+    case "getUniqueFieldValues":
+    case "getUniqueFieldValuesStartingWith":
+      return ["TypeAheadRpcHandler", "TYPEAHEAD"];
     default:
-      return ['OrderEntryRpcHandler', 'SIMUL'];
+      return ["OrderEntryRpcHandler", "SIMUL"];
   }
 };

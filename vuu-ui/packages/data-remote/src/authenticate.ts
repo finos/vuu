@@ -14,9 +14,6 @@ export const authenticate = async (
   })
     .then((response) => {
       if (response.ok) {
-        console.log({
-          headers: response.headers,
-        });
         const authToken = response.headers.get("vuu-auth-token");
         if (typeof authToken === "string" && authToken.length > 0) {
           return authToken;

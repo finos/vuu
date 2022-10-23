@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from "react";
 import {
   ArrowDown,
   ArrowLeft,
@@ -6,8 +6,8 @@ import {
   ArrowUp,
   getIndexOfNode,
   isNavigationKey,
-  useControlled
-} from '../utils';
+  useControlled,
+} from "../utils";
 
 function nextItemIdx(count, key, idx) {
   if (key === ArrowUp || key === ArrowLeft) {
@@ -33,12 +33,12 @@ const isFocusable = (item) => isLeaf(item) || item.expanded !== undefined;
 const ArrowKeys = {
   horizontal: {
     bwd: ArrowLeft,
-    fwd: ArrowRight
+    fwd: ArrowRight,
   },
   vertical: {
     bwd: ArrowUp,
-    fwd: ArrowDown
-  }
+    fwd: ArrowDown,
+  },
 };
 
 // we need a way to set highlightedIdx when selection changes
@@ -47,16 +47,20 @@ export const useKeyboardNavigation = ({
   highlightedIdx: highlightedIdxProp,
   indexPositions,
   onHighlight,
-  onKeyboardNavigation,
-  orientation = 'vertical',
-  selected = []
+  onKeyboardNavigation = null,
+  orientation = "vertical",
+  selected = [],
 }) => {
-  const { bwd: ArrowBwd, fwd: ArrowFwd } = useMemo(() => ArrowKeys[orientation], [orientation]);
+  const { bwd: ArrowBwd, fwd: ArrowFwd } = useMemo(
+    () => ArrowKeys[orientation],
+    [orientation]
+  );
 
-  const [highlightedIdx, setHighlightedIdx, isControlledHighlighting] = useControlled({
-    controlled: highlightedIdxProp,
-    default: defaultHighlightedIdx
-  });
+  const [highlightedIdx, setHighlightedIdx, isControlledHighlighting] =
+    useControlled({
+      controlled: highlightedIdxProp,
+      default: defaultHighlightedIdx,
+    });
 
   const setHighlightedIndex = useCallback(
     (idx) => {
@@ -107,7 +111,12 @@ export const useKeyboardNavigation = ({
         onKeyboardNavigation?.(e, nextIdx);
       }
     },
-    [highlightedIdx, nextFocusableItemIdx, onKeyboardNavigation, setHighlightedIndex]
+    [
+      highlightedIdx,
+      nextFocusableItemIdx,
+      onKeyboardNavigation,
+      setHighlightedIndex,
+    ]
   );
 
   const handleKeyDown = useCallback(
@@ -145,7 +154,7 @@ export const useKeyboardNavigation = ({
         keyBoardNavigation.current = true;
         setIgnoreFocus(false);
         setHighlightedIndex(-1);
-      }
+      },
     }),
     [handleFocus, handleKeyDown, setHighlightedIndex]
   );
@@ -157,6 +166,6 @@ export const useKeyboardNavigation = ({
     hiliteItemAtIndex: setHighlightedIndex,
     keyBoardNavigation,
     listProps,
-    setIgnoreFocus
+    setIgnoreFocus,
   };
 };

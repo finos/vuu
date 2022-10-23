@@ -1,5 +1,148 @@
-import { VuuAggregation, VuuFilter, VuuGroupBy, VuuSort, VuuTable } from '@vuu-ui/data-types';
-import { VuuUIMessageIn } from './vuuUIMessageTypes';
+import {
+  VuuAggregation,
+  VuuColumns,
+  VuuFilter,
+  VuuGroupBy,
+  VuuLink,
+  VuuMenu,
+  VuuRange,
+  VuuRowDataItemType,
+  VuuSort,
+  VuuTable,
+} from "@vuu-ui/data-types";
+import { Filter } from "@vuu-ui/utils";
+
+type RowIndex = number;
+type RenderKey = string;
+type IsLeaf = boolean;
+type IsExpanded = boolean;
+type Depth = number;
+type ChildCount = number;
+type RowKey = string;
+type IsSelected = 0 | 1 | 2;
+
+export type DataSourceRow = [
+  RowIndex,
+  RenderKey,
+  IsLeaf,
+  IsExpanded,
+  Depth,
+  ChildCount,
+  RowKey,
+  IsSelected,
+  ...VuuRowDataItemType[]
+];
+
+export type DataSourceRowPredicate = (row: DataSourceRow) => boolean;
+
+export interface MessageWithClientViewportId {
+  clientViewportId: string;
+}
+export interface DataSourceDataMessage extends MessageWithClientViewportId {
+  rows?: DataSourceRow[];
+  size?: number;
+  type: "viewport-update";
+}
+
+export interface DataSourceAggregateMessage
+  extends MessageWithClientViewportId {
+  aggregations: VuuAggregation[];
+  type: "aggregate";
+}
+export interface VuuUIMessageInDisabled extends MessageWithClientViewportId {
+  type: "disabled";
+}
+export interface VuuUIMessageInEnabled extends MessageWithClientViewportId {
+  type: "enabled";
+}
+
+export interface DataSourceFilterMessage extends MessageWithClientViewportId {
+  type: "filter";
+  filter: any;
+  filterQuery: any;
+}
+
+export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
+  type: "groupBy";
+  groupBy: VuuGroupBy | null;
+}
+
+export interface DataSourceSortMessage extends MessageWithClientViewportId {
+  type: "sort";
+  sort: VuuSort;
+}
+
+export interface DataSourceSubscribedMessage
+  extends MessageWithClientViewportId,
+    MessageWithClientViewportId {
+  aggregations: VuuAggregation[];
+  columns: VuuColumns;
+  filter?: Filter;
+  filterSpec: VuuFilter;
+  groupBy: VuuGroupBy;
+  range: VuuRange;
+  type: "subscribed";
+}
+
+export interface DataSourceMenusMessage extends MessageWithClientViewportId {
+  type: "VIEW_PORT_MENUS_RESP";
+  menu: VuuMenu;
+}
+
+export interface DataSourceVisualLinksMessage
+  extends MessageWithClientViewportId {
+  type: "VP_VISUAL_LINKS_RESP";
+  links: VuuLink[];
+}
+
+export interface DataSourceVisualLinkCreatedMessage
+  extends MessageWithClientViewportId {
+  colName: string;
+  parentViewportId: string;
+  parentColName: string;
+  type: "CREATE_VISUAL_LINK_SUCCESS";
+}
+
+export interface DataSourceVisualLinkRemovedMessage {
+  clientViewportId: string;
+  type: "REMOVE_VISUAL_LINK_SUCCESS";
+}
+
+export type DataSourceCallbackMessage =
+  | DataSourceAggregateMessage
+  | DataSourceDataMessage
+  | VuuUIMessageInDisabled
+  | VuuUIMessageInEnabled
+  | DataSourceFilterMessage
+  | DataSourceGroupByMessage
+  | DataSourceMenusMessage
+  | DataSourceSortMessage
+  | DataSourceSubscribedMessage
+  | DataSourceVisualLinkCreatedMessage
+  | DataSourceVisualLinkRemovedMessage
+  | DataSourceVisualLinksMessage;
+
+const datasourceMessages = [
+  "aggregate",
+  "CREATE_VISUAL_LINK_SUCCESS",
+  "disabled",
+  "enabled",
+  "filter",
+  "groupBy",
+  "REMOVE_VISUAL_LINK_SUCCESS",
+  "sort",
+  "subscribed",
+  "viewport-update",
+  "VIEW_PORT_MENUS_RESP",
+  "VP_VISUAL_LINKS_RESP",
+];
+
+export const shouldMessageBeRoutedToDataSource = (
+  message: unknown
+): message is DataSourceCallbackMessage => {
+  const type = (message as DataSourceCallbackMessage).type;
+  return datasourceMessages.includes(type);
+};
 
 export interface DataSourceProps {
   bufferSize?: number;
@@ -13,7 +156,7 @@ export interface DataSourceProps {
   configUrl?: any;
   serverUrl: string;
   viewport?: string;
-  'visual-link'?: any;
+  "visual-link"?: any;
 }
 
 export interface SubscribeProps {
@@ -28,9 +171,12 @@ export interface SubscribeProps {
   filterQuery?: any;
 }
 
-export type SubscribeCallback = (message: VuuUIMessageIn) => void;
+export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 
 export interface DataSource {
   setRange: (from: number, to: number) => void;
-  subscribe: (props: SubscribeProps, callback: SubscribeCallback) => Promise<any>;
+  subscribe: (
+    props: SubscribeProps,
+    callback: SubscribeCallback
+  ) => Promise<any>;
 }

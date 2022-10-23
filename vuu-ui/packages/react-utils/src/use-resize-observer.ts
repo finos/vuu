@@ -1,12 +1,16 @@
-import { RefObject, useCallback, useEffect, useRef } from 'react';
+import { RefObject, useCallback, useEffect, useRef } from "react";
 
-export const WidthHeight = ['height', 'width'];
-export const WidthOnly = ['width'];
+export const WidthHeight = ["height", "width"];
+export const WidthOnly = ["width"];
 
 export type measurements<T = string | number> = {
   height?: T;
-  scrollHeight?: T;
-  scrollWidth?: T;
+  clientHeight?: number;
+  clientWidth?: number;
+  contentHeight?: number;
+  contentWidth?: number;
+  scrollHeight?: number;
+  scrollWidth?: number;
   width?: T;
 };
 type measuredDimension = keyof measurements<number>;
@@ -21,18 +25,31 @@ const observedMap = new Map<HTMLElement, observedDetails>();
 
 const getTargetSize = (
   element: HTMLElement,
-  contentRect: { height: number; width: number },
+  size: {
+    height: number;
+    width: number;
+    contentHeight: number;
+    contentWidth: number;
+  },
   dimension: measuredDimension
 ): number => {
   switch (dimension) {
-    case 'height':
-      return contentRect.height;
-    case 'scrollHeight':
+    case "height":
+      return size.height;
+    case "clientHeight":
+      return element.clientHeight;
+    case "clientWidth":
+      return element.clientWidth;
+    case "contentHeight":
+      return size.contentHeight;
+    case "contentWidth":
+      return size.contentWidth;
+    case "scrollHeight":
       return Math.ceil(element.scrollHeight);
-    case 'scrollWidth':
+    case "scrollWidth":
       return Math.ceil(element.scrollWidth);
-    case 'width':
-      return contentRect.width;
+    case "width":
+      return size.width;
     default:
       return 0;
   }
@@ -40,23 +57,24 @@ const getTargetSize = (
 
 const isScrollAttribute = {
   scrollHeight: true,
-  scrollWidth: true
+  scrollWidth: true,
 };
 
 // TODO should we make this create-on-demand
 const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
   for (const entry of entries) {
-    const { target, borderBoxSize } = entry;
+    const { target, borderBoxSize, contentBoxSize } = entry;
     const observedTarget = observedMap.get(target as HTMLElement);
     if (observedTarget) {
       const [{ blockSize: height, inlineSize: width }] = borderBoxSize;
-      const rect = { height, width };
+      const [{ blockSize: contentHeight, inlineSize: contentWidth }] =
+        contentBoxSize;
       const { onResize, measurements } = observedTarget;
       let sizeChanged = false;
       for (let [dimension, size] of Object.entries(measurements)) {
         const newSize = getTargetSize(
           target as HTMLElement,
-          { height, width },
+          { height, width, contentHeight, contentWidth },
           dimension as measuredDimension
         );
 
@@ -67,7 +85,6 @@ const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
       }
       if (sizeChanged) {
         // TODO only return measured sizes
-        // const { height, width } = contentRect;
         onResize && onResize(measurements);
       }
     }
@@ -85,11 +102,19 @@ export function useResizeObserver(
   const dimensionsRef = useRef(dimensions);
 
   const measure = useCallback((target: HTMLElement): measurements<number> => {
-    const rect = target.getBoundingClientRect();
-    return dimensionsRef.current.reduce((map: { [key: string]: number }, dim) => {
-      map[dim] = getTargetSize(target, rect, dim as measuredDimension);
-      return map;
-    }, {});
+    const { width, height } = target.getBoundingClientRect();
+    const { clientWidth: contentWidth, clientHeight: contentHeight } = target;
+    return dimensionsRef.current.reduce(
+      (map: { [key: string]: number }, dim) => {
+        map[dim] = getTargetSize(
+          target,
+          { width, height, contentHeight, contentWidth },
+          dim as measuredDimension
+        );
+        return map;
+      },
+      {}
+    );
   }, []);
 
   // TODO use ref to store resizeHandler here
@@ -118,7 +143,7 @@ export function useResizeObserver(
       } else {
         console.log(
           `%cuseResizeObserver an target expected to be under observation wa snot found. This warrants investigation`,
-          'font-weight:bold; color:red;'
+          "font-weight:bold; color:red;"
         );
       }
     }
@@ -126,7 +151,9 @@ export function useResizeObserver(
     if (target) {
       // TODO might we want multiple callers to attach a listener to the same element ?
       if (observedMap.has(target)) {
-        throw Error('useResizeObserver attemping to observe same element twice');
+        throw Error(
+          "useResizeObserver attemping to observe same element twice"
+        );
       }
       // TODO set a pending entry on map
       registerObserver();
