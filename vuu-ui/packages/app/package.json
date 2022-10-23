@@ -6,15 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node ./scripts/build.mjs",
-    "build:dev": "node ./scripts/build.mjs --dev",
-    "start": "serve -p 5001 public"
+    "build:dev": "node ./scripts/build.mjs --dev"
   },
   "keywords": [],
   "author": "heswell",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "serve": "^12.0.1"
-  },
   "dependencies": {
     "@vuu-ui/layout": "0.0.26",
     "@vuu-ui/react-utils": "0.0.26",

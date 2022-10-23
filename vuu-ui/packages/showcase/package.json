@@ -11,8 +11,7 @@
     "stories": "node ./scripts/parse-stories.mjs",
     "build": "node ./scripts/build-prod.mjs",
     "build:dev": "node ./scripts/build.mjs",
-    "build:packages": "node ./scripts/build-packages.mjs",
-    "serve": "serve public"
+    "build:packages": "node ./scripts/build-packages.mjs"
   },
   "keywords": [],
   "author": "heswell",
