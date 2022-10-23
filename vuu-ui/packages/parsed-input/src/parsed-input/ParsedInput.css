@@ -1,71 +1,26 @@
-.hwParsedInput {
-  --text-color: #262324;
-  /* --font-size: var(--hwParsedInput-input-font-size, 13px); */
-  /* --height: var(--hwParsedInput-height, 20px); */
-  --font-size: var(--hwParsedInput-input-font-size, 24px);
-  --height: var(--hwParsedInput-height, 36px);
-  --inpur-height: var(--hwParsedInput-input-height, var(--height));
+.vuuParsedInput:not(.uitkDropdown-popup) {
+  --vuuView-flex-grow: 0;
+  --vuuView-flex-shrink: 0;
+  --parsedInput-fontSize: var(--uitk-text-fontSize, 24px);
+  --parsedInput-height: var(--uitk-size-base, 36px);
   --padding-end: 0px;
   --padding-start: 6px;
-  --padding-start-end: calc(var(--padding-start) + var(--padding-end));
-  --hwTokenMirror-font-size: var(--font-size);
-  --hwTokenMirror-height: 100%;
-  --hwTokenMirror-left: var(--padding-left);
-  --hwTokenMirror-line-height: var(--height);
-  --hwTokenMirror-position: absolute;
-  --hwTokenMirror-text-color: var(--text-color);
-  --hwTokenMirror-top: 0;
-  --hwTokenMirror-width: 100%;
 
-  align-items: center;
-  background: var(--hwParsedInput-background, inherit);
-  border-color: var(--hwParsedInput-border-color, #ccc);
-  border-style: var(--hwParsedInput-border-style, solid);
-  border-width: var(--hwParsedInput-border-width, 1px);
-  box-sizing: border-box;
-  display: var(--hwParsedInput-display, flex);
-  flex-grow: 0;
-  flex-shrink: 0;
-  font-family: Roboto;
-  height: var(--height);
+  --vuuTokenMirror-fontSize: var(--parsedInput-fontSize);
+  --vuuTokenMirror-height: 100%;
+  --vuuTokenMirror-left: var(--padding-left);
+  --vuuTokenMirror-lineHeight: var(--parsedInput-height);
+  --vuuTokenMirror-position: absolute;
+  --vuuTokenMirror-top: 0;
+  --vuuTokenMirror-width: 100%;
+
+
+  border-color: var(--vuuParsedInput-border-color, #ccc);
+  border-style: var(--vuuParsedInput-border-style, solid);
+  border-width: var(--vuuParsedInput-border-width, 1px);
+
+  height: var(--parsedInput-height);
   padding: 0 var(--padding-end) 0 var(--padding-start);
-  position: relative;
-  width: var(--hwParsedInput-width, auto);
 }
 
-.hwParsedInput-input-container {
-  flex: 1 1 100%;
-  height: var(--height);
-  position: relative;
-}
 
-.hwParsedInput-input {
-  background-color: transparent;
-  border: none;
-  caret-color: black;
-  color: var(--hwTokenMirror-text-color, black);
-  font-size: var(--font-size);
-  height: 100%;
-  letter-spacing: normal;
-  line-height: var(--height);
-  outline: 0;
-  padding: 0;
-  position: absolute;
-  top: 0;
-  white-space: pre;
-  width: 100%;
-}
-
-.hwParsedInput-dropdown {
-  max-height: 400px;
-}
-
-.hwParsedInput-clear .hwIconContainer {
-  --menu-icon-size: 12px;
-  --menu-icon: var(--svg-close-circle);
-  --menu-item-icon-color: black;
-  background-color: var(--menu-item-icon-color);
-  flex: 1 1 auto;
-  -webkit-mask: var(--menu-icon) center center/var(--menu-icon-size) var(--menu-icon-size) no-repeat;
-  mask: var(--menu-icon) center center/var(--menu-icon-size) var(--menu-icon-size) no-repeat;
-}

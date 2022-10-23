@@ -7,7 +7,7 @@ import io.venuu.vuu.net.rpc.RpcHandler
 
 trait TypeAheadRpcHandler{
   def getUniqueFieldValues(tableMap: Map[String, String], column: String, ctx: RequestContext): Array[String]
-  def getUniqueFieldValuesStaringWith(tableMap: Map[String, String], column: String, starts: String, ctx: RequestContext): Array[String]
+  def getUniqueFieldValuesStartingWith(tableMap: Map[String, String], column: String, starts: String, ctx: RequestContext): Array[String]
 }
 
 
@@ -32,7 +32,7 @@ class TypeAheadRpcHandlerImpl(val tableContainer: TableContainer) extends RpcHan
   }
 
 
-  override def getUniqueFieldValuesStaringWith(tableMap: Map[String, String], column: String, starts: String, ctx: RequestContext): Array[String] = {
+  override def getUniqueFieldValuesStartingWith(tableMap: Map[String, String], column: String, starts: String, ctx: RequestContext): Array[String] = {
     val tableName = tableMap("table")
 
     tableContainer.getTable(tableName) match {

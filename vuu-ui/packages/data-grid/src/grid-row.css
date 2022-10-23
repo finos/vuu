@@ -1,4 +1,4 @@
-.hwDataGridRow {
+.vuuDataGridRow {
   background: var(--row-background);
   box-sizing: border-box;
   height: var(--grid-row-height);
@@ -11,23 +11,27 @@
   width: 100%;
 }
 
-.hwDataGridRow-even {
-  --row-background: var(--hwDataGridRow-background-even, var(--grid-row-background));
+.vuuDataGridRow-even {
+  --row-background: var(--uitk-palette-neutral-background-high);
 }
 
-.hwDataGridRow:not(.hwDataGridRow-even) {
-  --row-background: var(--hwDataGridRow-background-odd, var(--grid-row-background));
+.vuuDataGridRow:not(.vuuDataGridRow-even) {
+  --row-background: var(--hwDataGridRow-background-odd, inherit);
 }
 
-.hwDataGridRow .group .GridCell:first-child {
+.vuuDataGridRow .group .vuuDataGridCell:first-child {
   padding: 0 6px 0 3px;
 }
 
-.hwDataGridRow[aria-selected='true'] {
+.vuuDataGridRow[aria-selected='true'] {
   background-color: var(--grid-row-background-selected);
-  color: white;
+  --cell-border-top-color: var(--uitk-selectable-borderColor-selected);
 }
 
-.hwDataGridRow.expanded {
+.vuuDataGridRow-lastSelected {
+  --cell-border-bottom-color: var(--uitk-selectable-borderColor-selected);
+}
+
+.vuuDataGridRow.expanded {
   --row-toggle-icon-transform: rotate(90deg);
 }

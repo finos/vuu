@@ -1,3 +1,8 @@
 .vuuShell {
   background-color: ivory;
 }
+
+.vuuShell-palette {
+  --vuuView-border: none;
+  --vuuView-margin: 0;
+}

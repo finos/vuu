@@ -1,2 +1,2 @@
-export * from './SuggestionList';
-export * from './use-suggestions';
+export * from "./SuggestionList";
+export * from "./useSuggestions";

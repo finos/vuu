@@ -1,44 +1,45 @@
-import { build as esbuild } from 'esbuild';
+import { build as esbuild } from "esbuild";
 
 export async function build(config) {
   const start = process.hrtime();
   const {
     banner,
     entryPoints,
-    env = 'production',
+    env = "production",
     external,
     footer,
-    format = 'esm',
+    format = "esm",
     jsx,
     outdir,
     outfile,
     sourcemap = true,
-    splitting
+    splitting,
   } = config;
   return esbuild({
     entryPoints,
     banner,
     bundle: true,
     define: {
-      'process.env.NODE_ENV': `"${env}"`,
-      'process.env.NODE_DEBUG': `false`
+      "process.env.NODE_ENV": `"${env}"`,
+      "process.env.NODE_DEBUG": `false`,
     },
     external,
     footer,
     format,
     jsx,
     loader: {
-      '.woff2': 'dataurl',
-      '.ttf': 'file'
+      ".woff2": "dataurl",
+      ".ttf": "file",
     },
     metafile: true,
-    minify: config.env === 'production',
+    // minify: config.env === 'production',
+    minify: false,
     outdir,
     outfile,
     sourcemap,
     splitting,
-    target: 'esnext',
-    watch: false
+    target: "esnext",
+    watch: false,
   })
     .then((result) => {
       const [seconds, nanoSeconds] = process.hrtime(start);

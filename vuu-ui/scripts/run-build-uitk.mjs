@@ -1,5 +1,6 @@
-import build from './build.mjs';
+import build from "./build.mjs";
 build({
-  distPath: '../../../dist',
-  jsx: 'automatic'
+  distPath: "../../../dist",
+  jsx: "automatic",
+  licencePath: "../../LICENSE",
 });

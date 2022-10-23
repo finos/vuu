@@ -1,10 +1,14 @@
-import React, { useCallback, useState } from 'react';
-import { useId } from '@vuu-ui/react-utils';
-import { Button, sourceItems, List, ListItem, useItemsWithIds } from '@vuu-ui/ui-controls';
+import React, { useCallback, useState } from "react";
+import { useId } from "@vuu-ui/react-utils";
+import {
+  Button,
+  sourceItems,
+  List,
+  ListItem,
+  useItemsWithIds,
+} from "@vuu-ui/ui-controls";
 
-import { usa_states } from '../List.data';
-
-import '@vuu-ui/theme/index.css';
+import { usa_states } from "../List.data";
 
 let displaySequence = 1;
 
@@ -54,7 +58,7 @@ export const PartiallyControlledList = () => {
 
   return (
     <div style={{ height: 600 }}>
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: "flex", gap: 12 }}>
         <Button onClick={moveDown}>Highlight down</Button>
         <Button onClick={moveUp}>Highlight up</Button>
         <Button onClick={selectCurrent}>Select</Button>
@@ -64,7 +68,8 @@ export const PartiallyControlledList = () => {
           highlightedIdx={hilitedIdx}
           onHighlight={handleHighlight}
           selected={selected}
-          onChange={handleChange}>
+          onChange={handleChange}
+        >
           {sourceWithIds.map((item) => (
             <ListItem id={item.id} key={item.id} label={item.label} />
           ))}

@@ -1,8 +1,10 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Button, Dropdown } from '@vuu-ui/ui-controls';
-import { UserPanel } from './UserPanel';
+import React, { useCallback, useRef, useState } from "react";
+import { Button } from "@heswell/uitk-core";
+import { DropdownBase } from "@heswell/uitk-lab";
+import { UserSolidIcon } from "@heswell/uitk-icons";
+import { UserPanel } from "./UserPanel";
 
-import './UserProfile.css';
+import "./UserProfile.css";
 
 export const UserProfile = ({ layoutId, onNavigate, user }) => {
   const [open, setOpen] = useState(false);
@@ -29,16 +31,16 @@ export const UserProfile = ({ layoutId, onNavigate, user }) => {
 
   return (
     <div className="vuuUserProfile">
-      <Button active={open} ref={buttonRef} onClick={toggle} data-icon />
-      <Dropdown
-        autofocus
-        align="bottom-right"
-        anchorEl={buttonRef.current}
-        onCancel={toggle}
-        open={open}
-        width={300}>
-        {open && <UserPanel layoutId={layoutId} onNavigate={handleNavigate} user={user} />}
-      </Dropdown>
+      <DropdownBase placement="bottom-end" onCancel={toggle}>
+        <Button ref={buttonRef} variant="secondary">
+          <UserSolidIcon />
+        </Button>
+        <UserPanel
+          layoutId={layoutId}
+          onNavigate={handleNavigate}
+          user={user}
+        />
+      </DropdownBase>
     </div>
   );
 };

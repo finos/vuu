@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { WindowRange, getFullRange } from '@vuu-ui/utils';
-import { DataSource, SubscribeCallback } from '../data-source';
-import { VuuRange } from '@vuu-ui/data-types';
-import { VuuUIRow } from '../vuuUIMessageTypes';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { WindowRange, getFullRange, metadataKeys } from "@vuu-ui/utils";
+import { DataSource, DataSourceRow, SubscribeCallback } from "../data-source";
+import { VuuRange } from "@vuu-ui/data-types";
+
+const { SELECTED } = metadataKeys;
 
 export interface DataSourceHookProps {
   dataSource: DataSource;
@@ -11,13 +12,19 @@ export interface DataSourceHookProps {
 
 export function useDataSource({
   dataSource,
-  renderBufferSize = 10
-}: DataSourceHookProps): [VuuUIRow[], number, VuuRange, (range: VuuRange) => void] {
+  renderBufferSize = 10,
+}: DataSourceHookProps): [
+  DataSourceRow[],
+  number,
+  VuuRange,
+  (range: VuuRange) => void
+] {
+  console.log("IS THIS ACTYUALLY USED");
   const [, forceUpdate] = useState(null);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
   const rafHandle = useRef(null);
-  const data = useRef<VuuUIRow[]>([]);
+  const data = useRef<DataSourceRow[]>([]);
   const rangeRef = useRef({ from: 0, to: 10 });
 
   const dataWindow = useMemo(
@@ -26,7 +33,7 @@ export function useDataSource({
   );
 
   const setData = useCallback(
-    (updates) => {
+    (updates: DataSourceRow[]) => {
       if (updates.length > 0 && updates[updates.length - 1] == undefined) {
         console.log(`useDataSource updates have empty data`, { updates });
       }
@@ -34,10 +41,16 @@ export function useDataSource({
       for (const row of updates) {
         dataWindow.add(row);
       }
+      console.table(dataWindow.data);
       // Why bother with the slice ?
       data.current = dataWindow.data.slice();
-      if (data.current.length > 0 && data.current[data.current.length - 1] == undefined) {
-        console.log(`dataWindow.data.slice() have empty data`, { data: data.current });
+      if (
+        data.current.length > 0 &&
+        data.current[data.current.length - 1] == undefined
+      ) {
+        console.log(`dataWindow.data.slice() have empty data`, {
+          data: data.current,
+        });
       }
 
       hasUpdated.current = true;
@@ -47,11 +60,11 @@ export function useDataSource({
 
   const datasourceMessageHandler: SubscribeCallback = useCallback(
     (message) => {
-      if (message.type === 'subscribed') {
+      if (message.type === "subscribed") {
         if (message.filter) {
           console.log(`there is a filter ${JSON.stringify(message.filter)}`);
         }
-      } else if (message.type === 'viewport-update') {
+      } else if (message.type === "viewport-update") {
         if (message.size !== undefined) {
           dataWindow.setRowCount(message.size);
         }
@@ -63,7 +76,7 @@ export function useDataSource({
           data.current = dataWindow.data.slice();
           hasUpdated.current = true;
         }
-      } else if (message.type === 'filter') {
+      } else if (message.type === "filter") {
         const { filter, filterQuery } = message;
         console.log(`filter message ${filterQuery}`);
       }
@@ -117,7 +130,7 @@ export function useDataSource({
     const { from, to } = getFullRange(rangeRef.current, renderBufferSize);
     dataSource.subscribe(
       {
-        range: { from, to }
+        range: { from, to },
       },
       datasourceMessageHandler
     );
@@ -134,14 +147,13 @@ export function useDataSource({
     data.current,
     dataWindow.rowCount,
     getFullRange(rangeRef.current, renderBufferSize),
-    setRange
+    setRange,
   ];
 }
 
 export class MovingWindow {
-  public data: any[];
+  public data: DataSourceRow[];
   public rowCount: number = 0;
-
   private range: WindowRange;
 
   constructor({ from, to }: VuuRange) {
@@ -161,6 +173,15 @@ export class MovingWindow {
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
       this.data[internalIndex] = data;
+      if (this.data[internalIndex - 1]) {
+        // assign 'post-selected' selection state
+        if (
+          this.data[internalIndex - 1][SELECTED] === 1 &&
+          data[SELECTED] === 0
+        ) {
+          data[SELECTED] = 2;
+        }
+      }
       if (index === this.rowCount - 1) {
         this.data.length = internalIndex + 1;
       }
@@ -168,7 +189,8 @@ export class MovingWindow {
   }
 
   getAtIndex(index: number) {
-    return this.range.isWithin(index) && this.data[index - this.range.from] != null
+    return this.range.isWithin(index) &&
+      this.data[index - this.range.from] != null
       ? this.data[index - this.range.from]
       : undefined;
   }

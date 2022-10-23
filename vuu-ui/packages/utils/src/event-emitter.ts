@@ -12,7 +12,9 @@ function isArrayOfListeners(
   return Array.isArray(listeners);
 }
 
-function isOnlyListener(listeners: EventListener | EventListener[]): listeners is EventListener {
+function isOnlyListener(
+  listeners: EventListener | EventListener[]
+): listeners is EventListener {
   return !Array.isArray(listeners);
 }
 
@@ -86,7 +88,7 @@ export class EventEmitter {
       if (handler) {
         invokeHandler(handler, type, args);
       }
-      const wildcardHandler = this._events['*'];
+      const wildcardHandler = this._events["*"];
       if (wildcardHandler) {
         invokeHandler(wildcardHandler, type, args);
       }
@@ -107,7 +109,11 @@ export class EventEmitter {
   }
 }
 
-function invokeHandler(handler: EventListener | EventListener[], type: string, args: unknown[]) {
+function invokeHandler(
+  handler: EventListener | EventListener[],
+  type: string,
+  args: unknown[]
+) {
   if (isArrayOfListeners(handler)) {
     handler.slice().forEach((listener) => invokeHandler(listener, type, args));
   } else {

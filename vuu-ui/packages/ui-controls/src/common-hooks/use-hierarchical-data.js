@@ -53,10 +53,10 @@ export const useHierarchicalData = (source, label) => {
   const setData = (value) => {
     statefulSource.current = value;
     indexPositions.current = populateIndices(value);
-    console.log(
-      `data set in ${label} (${indexPositions.current.length} visible items)`,
-      indexPositions.current.map((i) => ({ index: i.index, label: i.label }))
-    );
+    // console.log(
+    //   `data set in ${label} (${indexPositions.current.length} visible items)`,
+    //   indexPositions.current.map((i) => ({ index: i.index, label: i.label }))
+    // );
     forceUpdate({});
   };
 

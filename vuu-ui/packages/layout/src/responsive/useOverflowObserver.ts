@@ -1,11 +1,11 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { useResizeObserver } from './useResizeObserver';
-import { measureMinimumNodeSize } from './measureMinimumNodeSize';
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useResizeObserver } from "./useResizeObserver";
+import { measureMinimumNodeSize } from "./measureMinimumNodeSize";
 
 const MONITORED_DIMENSIONS = {
-  horizontal: ['width', 'scrollHeight'],
-  vertical: ['height', 'scrollWidth'],
-  none: []
+  horizontal: ["width", "scrollHeight"],
+  vertical: ["height", "scrollWidth"],
+  none: [],
 };
 const NO_OVERFLOW_INDICATOR = {};
 const NO_DATA = {};
@@ -67,18 +67,21 @@ const getOverflowIndicator = (visibleRef) =>
 
 const Dimensions = {
   horizontal: {
-    size: 'clientWidth',
-    depth: 'clientHeight',
-    scrollDepth: 'scrollHeight'
+    size: "clientWidth",
+    depth: "clientHeight",
+    scrollDepth: "scrollHeight",
   },
   vertical: {
-    size: 'clientHeight',
-    depth: 'clientWidth',
-    scrollDepth: 'scrollWidth'
-  }
+    size: "clientHeight",
+    depth: "clientWidth",
+    scrollDepth: "scrollWidth",
+  },
 };
 
-const measureContainerOverflow = ({ current: innerEl }, orientation = 'horizontal') => {
+const measureContainerOverflow = (
+  { current: innerEl },
+  orientation = "horizontal"
+) => {
   const dim = Dimensions[orientation];
   const { [dim.depth]: containerDepth } = innerEl.parentNode;
   const { [dim.scrollDepth]: scrollDepth, [dim.size]: contentSize } = innerEl;
@@ -122,51 +125,55 @@ const useOverflowStatus = () => {
 };
 
 const measureChildNodes = ({ current: innerEl }, dimension) => {
-  const measurements = Array.from(innerEl.childNodes).reduce((list, node: Node) => {
-    const {
-      collapsible,
-      collapsed,
-      collapsing,
-      index,
-      priority = '1',
-      overflowIndicator,
-      overflowed
-    } = node?.dataset ?? NO_DATA;
-    if (index) {
-      const size = measureMinimumNodeSize(node, dimension);
-      if (overflowed) {
-        delete node.dataset.overflowed;
-      }
-      list.push({
+  const measurements = Array.from(innerEl.childNodes).reduce(
+    (list, node: Node) => {
+      const {
         collapsible,
-        collapsed: collapsible ? collapsed === 'true' : undefined,
+        collapsed,
         collapsing,
-        // only to be populated in case of collapse
-        // TODO check the role of this - especially the way we check it in useEffect
-        // to detect collapse
-        fullSize: null,
-        index: parseInt(index, 10),
-        isOverflowIndicator: overflowIndicator,
-        label: node.title || node.innerText,
-        priority: parseInt(priority, 10),
-        size
-      });
-    }
-    return list;
-  }, []);
+        index,
+        priority = "1",
+        overflowIndicator,
+        overflowed,
+      } = node?.dataset ?? NO_DATA;
+      if (index) {
+        const size = measureMinimumNodeSize(node, dimension);
+        if (overflowed) {
+          delete node.dataset.overflowed;
+        }
+        list.push({
+          collapsible,
+          collapsed: collapsible ? collapsed === "true" : undefined,
+          collapsing,
+          // only to be populated in case of collapse
+          // TODO check the role of this - especially the way we check it in useEffect
+          // to detect collapse
+          fullSize: null,
+          index: parseInt(index, 10),
+          isOverflowIndicator: overflowIndicator,
+          label: node.title || node.innerText,
+          priority: parseInt(priority, 10),
+          size,
+        });
+      }
+      return list;
+    },
+    []
+  );
 
   return measurements.sort(byDescendingPriority);
 };
 
 const getElementForItem = (ref, item) =>
-  ref.current.querySelector(`:scope > [data-index='${item.index}']`);
+  ref.current.querySelector(`:scope > [data-idx='${item.index}']`);
 
 // value could be anything which might require a re-evaluation. In the case of tabs
 // we might have selected an overflowed tab. Can we make this more efficient, only
 // needs action if an overflowed item re-enters the visible section
-export function useOverflowObserver(orientation = 'horizontal', label = '') {
+export function useOverflowObserver(orientation = "horizontal", label = "") {
   const ref = useRef(null);
-  const [overflowingRef, overflowing, updateOverflowStatus] = useOverflowStatus();
+  const [overflowingRef, overflowing, updateOverflowStatus] =
+    useOverflowStatus();
   // const [, forceUpdate] = useState();
   const visibleRef = useRef([]);
   const overflowedRef = useRef([]);
@@ -174,7 +181,7 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
   const collapsingRef = useRef(false);
   const rootDepthRef = useRef(null);
   const containerSizeRef = useRef(null);
-  const horizontalRef = useRef(orientation === 'horizontal');
+  const horizontalRef = useRef(orientation === "horizontal");
   const overflowIndicatorSizeRef = useRef(36); // should default by density
   const minSizeRef = useRef(0);
 
@@ -182,12 +189,12 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
     (size) => {
       const isHorizontal = horizontalRef.current;
       if (size === undefined) {
-        const dimension = isHorizontal ? 'width' : 'height';
+        const dimension = isHorizontal ? "width" : "height";
         ({ [dimension]: size } = ref.current.getBoundingClientRect());
       }
       minSizeRef.current = size;
-      const styleDimension = isHorizontal ? 'minWidth' : 'minHeight';
-      ref.current.style[styleDimension] = size + 'px';
+      const styleDimension = isHorizontal ? "minWidth" : "minHeight";
+      ref.current.style[styleDimension] = size + "px";
     },
     [ref]
   );
@@ -200,10 +207,12 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
       // may kick off a chain of renders and remeasures if there are multiple collapsible
       // items and each yields only a part of the shrinkage we need to apply.
       //  That's the worst case scenario.
-      if (visibleRef.current.some((item) => item.collapsible && !item.collapsed)) {
+      if (
+        visibleRef.current.some((item) => item.collapsible && !item.collapsed)
+      ) {
         for (let i = visibleRef.current.length - 1; i >= 0; i--) {
           const item = visibleRef.current[i];
-          if (item.collapsible === 'instant' && !item.collapsed) {
+          if (item.collapsible === "instant" && !item.collapsed) {
             item.collapsed = true;
             const target = getElementForItem(ref, item);
             target.dataset.collapsed = true;
@@ -212,7 +221,11 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
             // it to render, so we can re-measure and determine how much space
             // this has saved.
             return 1;
-          } else if (item.collapsible === 'dynamic' && !item.collapsed && !item.collapsing) {
+          } else if (
+            item.collapsible === "dynamic" &&
+            !item.collapsed &&
+            !item.collapsing
+          ) {
             item.collapsing = true;
             const target = getElementForItem(ref, item);
             target.dataset.collapsing = true;
@@ -256,7 +269,10 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
       // COLLAPSE too
       // We want to re-introduce overflowed items before we start to restore collapsed items
       // When we are dealing with overflowed items, we just use the current width of collapsed items.
-      let visibleContentSize = visibleRef.current.reduce(addAllExceptOverflowIndicator, 0);
+      let visibleContentSize = visibleRef.current.reduce(
+        addAllExceptOverflowIndicator,
+        0
+      );
       let diff = containerSize - visibleContentSize;
 
       if (collapsedOnly(overflowingRef.current)) {
@@ -290,8 +306,14 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
             // we can only ignore the width of overflow Indicator if either there is only one remaining
             // overflow item (so overflowIndicator will be removed) or diff is big enough to accommodate
             // the overflow Ind.
-            if (overflowedRef.current.length === 1 || diff >= nextSize + overflowSize) {
-              const overflowedItem = moveOverflowItem(overflowedRef, visibleRef);
+            if (
+              overflowedRef.current.length === 1 ||
+              diff >= nextSize + overflowSize
+            ) {
+              const overflowedItem = moveOverflowItem(
+                overflowedRef,
+                visibleRef
+              );
               visibleContentSize += overflowedItem.size;
               const target = getElementForItem(ref, overflowedItem);
               delete target.dataset.overflowed;
@@ -338,7 +360,7 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
       target.dataset.collapsed = item.collapsed = true;
 
       const rest = visibleRef.current.filter(
-        ({ collapsible, collapsed }) => collapsible === 'dynamic' && !collapsed
+        ({ collapsible, collapsed }) => collapsible === "dynamic" && !collapsed
       );
       const last = rest.pop();
       if (last) {
@@ -363,10 +385,10 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
     (containerHasGrown) => {
       // The order must matter here
       const collapsingItem = visibleRef.current.find(
-        ({ collapsible, collapsing }) => collapsible === 'dynamic' && collapsing
+        ({ collapsible, collapsing }) => collapsible === "dynamic" && collapsing
       );
       const collapsedItem = visibleRef.current.find(
-        ({ collapsible, collapsed }) => collapsible === 'dynamic' && collapsed
+        ({ collapsible, collapsed }) => collapsible === "dynamic" && collapsed
       );
 
       if (collapsingItem === undefined && collapsedItem === undefined) {
@@ -381,7 +403,7 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
       }
 
       const target = getElementForItem(ref, collapsingItem);
-      const dimension = horizontalRef.current ? 'width' : 'height';
+      const dimension = horizontalRef.current ? "width" : "height";
 
       if (containerHasGrown && collapsedItem) {
         const size = measureMinimumNodeSize(target, dimension);
@@ -404,10 +426,8 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
   );
 
   const resetMeasurements = useCallback(() => {
-    const [isOverflowing, innerContainerSize, rootContainerDepth] = measureContainerOverflow(
-      ref,
-      orientation
-    );
+    const [isOverflowing, innerContainerSize, rootContainerDepth] =
+      measureContainerOverflow(ref, orientation);
 
     containerSizeRef.current = innerContainerSize;
     rootDepthRef.current = rootContainerDepth;
@@ -415,7 +435,7 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
     const hasDynamicItems = hasUncollapsedDynamicItems(ref);
 
     if (hasDynamicItems || isOverflowing) {
-      const dimension = horizontalRef.current ? 'width' : 'height';
+      const dimension = horizontalRef.current ? "width" : "height";
       const measurements = measureChildNodes(ref, dimension);
       visibleRef.current = measurements;
       overflowedRef.current = [];
@@ -440,18 +460,33 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
       }
     } else if (isOverflowing) {
       // We may already have an overflowIndicator here, if caller is Tabstrip
-      let renderedSize = visibleRef.current.reduce(addAllExceptOverflowIndicator, 0);
+      let renderedSize = visibleRef.current.reduce(
+        addAllExceptOverflowIndicator,
+        0
+      );
       const result = markOverflowingItems(
         renderedSize,
         innerContainerSize - overflowIndicatorSizeRef.current
       );
       updateOverflowStatus(+result);
     }
-  }, [initializeDynamicContent, markOverflowingItems, orientation, updateOverflowStatus]);
+  }, [
+    initializeDynamicContent,
+    markOverflowingItems,
+    orientation,
+    updateOverflowStatus,
+  ]);
 
   const resizeHandler = useCallback(
-    ({ scrollHeight, height = scrollHeight, scrollWidth, width = scrollWidth }) => {
-      const [size, depth] = horizontalRef.current ? [width, height] : [height, width];
+    ({
+      scrollHeight,
+      height = scrollHeight,
+      scrollWidth,
+      width = scrollWidth,
+    }) => {
+      const [size, depth] = horizontalRef.current
+        ? [width, height]
+        : [height, width];
 
       const wasFullSize = overflowingRef.current === 0;
       const overflowDetected = depth > rootDepthRef.current;
@@ -492,15 +527,17 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
       resetMeasurements,
       markOverflowingItems,
       overflowingRef,
-      updateOverflowStatus
+      updateOverflowStatus,
     ]
   );
 
   useLayoutEffect(() => {
-    const dimension = horizontalRef.current ? 'width' : 'height';
+    const dimension = horizontalRef.current ? "width" : "height";
     if (newlyCollapsed(visibleRef.current)) {
       // These are in reverse priority order, so last collapsed will always be first
-      const [collapsedItem] = visibleRef.current.filter((item) => item.collapsed);
+      const [collapsedItem] = visibleRef.current.filter(
+        (item) => item.collapsed
+      );
       if (collapsedItem.fullSize === null) {
         const target = getElementForItem(ref, collapsedItem);
         if (target) {
@@ -520,23 +557,35 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
         }
       }
     } else if (includesOverflow(overflowing)) {
-      const target = ref.current.querySelector(`:scope > [data-overflow-indicator='true']`);
+      const target = ref.current.querySelector(
+        `:scope > [data-overflow-indicator='true']`
+      );
       if (target) {
-        const { index, priority = '1' } = target?.dataset ?? NO_DATA;
+        const { index, priority = "1" } = target?.dataset ?? NO_DATA;
         const item = {
           index: parseInt(index, 10),
           isOverflowIndicator: true,
           priority: parseInt(priority, 10),
           label: target.innerText,
-          size: measureMinimumNodeSize(target, dimension)
+          size: measureMinimumNodeSize(target, dimension),
         };
         overflowIndicatorSizeRef.current = item.size;
-        visibleRef.current = visibleRef.current.concat(item).sort(byDescendingPriority);
+        visibleRef.current = visibleRef.current
+          .concat(item)
+          .sort(byDescendingPriority);
       }
     } else if (getOverflowIndicator(visibleRef)) {
-      visibleRef.current = visibleRef.current.filter((item) => !item.isOverflowIndicator);
+      visibleRef.current = visibleRef.current.filter(
+        (item) => !item.isOverflowIndicator
+      );
     }
-  }, [markOverflowingItems, overflowing, ref, updateOverflowStatus, visibleRef]);
+  }, [
+    markOverflowingItems,
+    overflowing,
+    ref,
+    updateOverflowStatus,
+    visibleRef,
+  ]);
 
   // Measurement occurs post-render, by necessity, need to trigger a render
   useLayoutEffect(() => {
@@ -546,7 +595,7 @@ export function useOverflowObserver(orientation = 'horizontal', label = '') {
         resetMeasurements();
       }
     }
-    if (orientation !== 'none') {
+    if (orientation !== "none") {
       measure();
     }
   }, [label, orientation, resetMeasurements]);

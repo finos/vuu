@@ -1,16 +1,16 @@
-import { useCallback, useRef } from 'react';
-import { useControlled } from '../utils';
+import { useCallback, useRef } from "react";
+import { useControlled } from "../utils";
 
-export const SINGLE = 'single';
-export const CHECKBOX = 'checkbox';
-export const MULTI = 'multi';
-export const EXTENDED = 'extended';
+export const SINGLE = "single";
+export const CHECKBOX = "checkbox";
+export const MULTI = "multi";
+export const EXTENDED = "extended";
 
-export const GROUP_SELECTION_NONE = 'none';
-export const GROUP_SELECTION_SINGLE = 'single';
-export const GROUP_SELECTION_CASCADE = 'cascade';
+export const GROUP_SELECTION_NONE = "none";
+export const GROUP_SELECTION_SINGLE = "single";
+export const GROUP_SELECTION_CASCADE = "cascade";
 
-const defaultSelectionKeys = ['Enter', ' '];
+const defaultSelectionKeys = ["Enter", " "];
 
 const NO_HANDLERS = {};
 
@@ -29,7 +29,7 @@ export const useSelection = ({
   onChange,
   selected: selectedProp,
   selection = SINGLE,
-  selectionKeys = defaultSelectionKeys
+  selectionKeys = defaultSelectionKeys,
 }) => {
   // TODO is the count enough ?
   const prevCount = useRef(count);
@@ -39,11 +39,14 @@ export const useSelection = ({
   const extendedSelect = selection === EXTENDED;
   const lastActive = useRef(-1);
 
-  const isSelectionEvent = useCallback((evt) => selectionKeys.includes(evt.key), [selectionKeys]);
+  const isSelectionEvent = useCallback(
+    (evt) => selectionKeys.includes(evt.key),
+    [selectionKeys]
+  );
 
   const [selected, setSelected] = useControlled({
     controlled: selectedProp,
-    default: defaultSelected ?? []
+    default: defaultSelected ?? [],
   });
 
   // const highlightedIdxRef = useRef();
@@ -60,13 +63,16 @@ export const useSelection = ({
   const selectItemAtIndex = useCallback(
     (evt, idx, id, rangeSelect, preserveExistingSelection) => {
       const { current: active } = lastActive;
-      const isSelected = selected.includes(id);
+      const isSelected = selected?.includes(id);
       const inactiveRange = active === -1;
       const actsLikeSingleSelect =
         singleSelect ||
-        (extendedSelect && !preserveExistingSelection && (!rangeSelect || inactiveRange));
+        (extendedSelect &&
+          !preserveExistingSelection &&
+          (!rangeSelect || inactiveRange));
       const actsLikeMultiSelect =
-        multiSelect || (extendedSelect && preserveExistingSelection && !rangeSelect);
+        multiSelect ||
+        (extendedSelect && preserveExistingSelection && !rangeSelect);
 
       let newSelected;
       if (actsLikeSingleSelect && isSelected) {
@@ -92,7 +98,15 @@ export const useSelection = ({
         onChange(evt, newSelected);
       }
     },
-    [extendedSelect, indexPositions, multiSelect, onChange, selected, setSelected, singleSelect]
+    [
+      extendedSelect,
+      indexPositions,
+      multiSelect,
+      onChange,
+      selected,
+      setSelected,
+      singleSelect,
+    ]
   );
 
   const handleKeyDown = useCallback(
@@ -100,13 +114,25 @@ export const useSelection = ({
       if (~highlightedIdx && isSelectionEvent(evt)) {
         evt.preventDefault();
         const item = indexPositions[highlightedIdx];
-        selectItemAtIndex(evt, highlightedIdx, item.id, false, evt.ctrlKey || evt.metaKey);
+        selectItemAtIndex(
+          evt,
+          highlightedIdx,
+          item.id,
+          false,
+          evt.ctrlKey || evt.metaKey
+        );
         if (extendedSelect) {
           lastActive.current = highlightedIdx;
         }
       }
     },
-    [extendedSelect, highlightedIdx, indexPositions, isSelectionEvent, selectItemAtIndex]
+    [
+      extendedSelect,
+      highlightedIdx,
+      indexPositions,
+      isSelectionEvent,
+      selectItemAtIndex,
+    ]
   );
 
   const handleKeyboardNavigation = useCallback(
@@ -120,11 +146,11 @@ export const useSelection = ({
   );
 
   const listHandlers =
-    selection === 'none'
+    selection === "none"
       ? NO_HANDLERS
       : {
           onKeyDown: handleKeyDown,
-          onKeyboardNavigation: handleKeyboardNavigation
+          onKeyboardNavigation: handleKeyboardNavigation,
         };
 
   const handleClick = useCallback(
@@ -134,27 +160,39 @@ export const useSelection = ({
         if (!isCollapsibleItem(item)) {
           evt.preventDefault();
           evt.stopPropagation();
-          selectItemAtIndex(evt, highlightedIdx, item.id, evt.shiftKey, evt.ctrlKey || evt.metaKey);
+          selectItemAtIndex(
+            evt,
+            highlightedIdx,
+            item.id,
+            evt.shiftKey,
+            evt.ctrlKey || evt.metaKey
+          );
           if (extendedSelect) {
             lastActive.current = highlightedIdx;
           }
         }
       }
     },
-    [disableSelection, extendedSelect, highlightedIdx, indexPositions, selectItemAtIndex]
+    [
+      disableSelection,
+      extendedSelect,
+      highlightedIdx,
+      indexPositions,
+      selectItemAtIndex,
+    ]
   );
 
   const listItemHandlers =
-    selection === 'none'
+    selection === "none"
       ? NO_HANDLERS
       : {
-          onClick: handleClick
+          onClick: handleClick,
         };
 
   return {
     listHandlers,
     listItemHandlers,
     selected,
-    setSelected
+    setSelected,
   };
 };

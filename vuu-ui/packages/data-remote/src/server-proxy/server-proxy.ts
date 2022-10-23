@@ -1,21 +1,20 @@
-import * as Message from './messages';
-import { Viewport } from './viewport';
-import { getRpcService } from './rpc-services';
-import { Connection } from '../connectionTypes';
+import * as Message from "./messages";
+import { Viewport } from "./viewport";
+import { getRpcService } from "./rpc-services";
+import { Connection } from "../connectionTypes";
 import {
   ServerToClientMessage,
   ClientToServerMessage,
   VuuLink,
   VuuMenuContext,
-  VuuTable
-} from '@vuu-ui/data-types';
+  VuuTable,
+} from "@vuu-ui/data-types";
 import {
   isViewporttMessage as isViewportMessage,
   ServerProxySubscribeMessage,
   VuuUIMessageIn,
   VuuUIMessageInTableList,
   VuuUIMessageInTableMeta,
-  VuuUIMessageInViewportUpdates,
   VuuUIMessageOut,
   VuuUIMessageOutAggregate,
   VuuUIMessageOutConnect,
@@ -32,10 +31,13 @@ import {
   VuuUIMessageOutSort,
   VuuUIMessageOutSubscribe,
   VuuUIMessageOutUnsubscribe,
-  VuuUIMessageOutViewRange
-} from '../vuuUIMessageTypes';
+  VuuUIMessageOutViewRange,
+} from "../vuuUIMessageTypes";
+import { DataSourceCallbackMessage } from "../data-source";
 
-export type PostMessageToClientCallback = (message: VuuUIMessageIn) => void;
+export type PostMessageToClientCallback = (
+  message: VuuUIMessageIn | DataSourceCallbackMessage
+) => void;
 
 // TEST_DATA_COLLECTION
 // import { saveTestData } from '../../test-data-collection';
@@ -48,13 +50,13 @@ const EMPTY_ARRAY: unknown[] = [];
 const DEFAULT_OPTIONS = {};
 
 const getRPCType = (
-  msgType: 'MENU_RPC_CALL',
+  msgType: "MENU_RPC_CALL",
   context: VuuMenuContext
-): 'VIEW_PORT_MENUS_SELECT_RPC' => {
-  if (msgType === 'MENU_RPC_CALL' && context === 'selected-rows') {
-    return 'VIEW_PORT_MENUS_SELECT_RPC';
+): "VIEW_PORT_MENUS_SELECT_RPC" => {
+  if (msgType === "MENU_RPC_CALL" && context === "selected-rows") {
+    return "VIEW_PORT_MENUS_SELECT_RPC";
   } else {
-    throw Error('No RPC command for ${msgType} / ${context}');
+    throw Error("No RPC command for ${msgType} / ${context}");
   }
 };
 
@@ -67,10 +69,10 @@ export class ServerProxy {
   private postMessageToClient: PostMessageToClientCallback;
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
-  private authToken: string = '';
+  private authToken: string = "";
   private pendingLogin?: PendingLogin;
   private sessionId?: string;
-  private queuedRequests: Array<ClientToServerMessage['body']> = [];
+  private queuedRequests: Array<ClientToServerMessage["body"]> = [];
 
   constructor(connection: Connection, callback: PostMessageToClientCallback) {
     this.connection = connection;
@@ -83,11 +85,16 @@ export class ServerProxy {
     if (authToken) {
       this.authToken = authToken;
       return new Promise((resolve, reject) => {
-        this.sendMessageToServer({ type: Message.LOGIN, token: this.authToken, user: 'user' }, '');
+        this.sendMessageToServer(
+          { type: Message.LOGIN, token: this.authToken, user: "user" },
+          ""
+        );
         this.pendingLogin = { resolve, reject };
       });
-    } else if (this.authToken === '') {
-      console.warn(`ServerProxy login, cannot login until auth token has been obtained`);
+    } else if (this.authToken === "") {
+      console.warn(
+        `ServerProxy login, cannot login until auth token has been obtained`
+      );
     }
   }
 
@@ -98,35 +105,47 @@ export class ServerProxy {
       this.viewports.set(message.viewport, viewport);
       // use client side viewport as request id, so that when we process the response,
       // with the serverside viewport we can establish a mapping between the two
-      this.sendIfReady(viewport.subscribe(), message.viewport, this.sessionId !== '');
+      this.sendIfReady(
+        viewport.subscribe(),
+        message.viewport,
+        this.sessionId !== ""
+      );
     } else {
       console.log(`ServerProxy spurious subscribe call ${message.viewport}`);
     }
   }
 
   public unsubscribe(clientViewportId: string) {
-    const serverViewportId = this.mapClientToServerViewport.get(clientViewportId);
+    const serverViewportId =
+      this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
       this.sendMessageToServer({
         type: Message.REMOVE_VP,
-        viewPortId: serverViewportId
+        viewPortId: serverViewportId,
       });
     } else {
-      console.error(`ServerProxy: failed to unsubscribe client viewport ${clientViewportId}`);
+      console.error(
+        `ServerProxy: failed to unsubscribe client viewport ${clientViewportId}`
+      );
     }
   }
 
   private getViewportForClient(clientViewportId: string): Viewport {
-    const serverViewportId = this.mapClientToServerViewport.get(clientViewportId);
+    const serverViewportId =
+      this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
       const viewport = this.viewports.get(serverViewportId);
       if (viewport) {
         return viewport;
       } else {
-        throw Error(`Viewport not found for client viewport ${clientViewportId}`);
+        throw Error(
+          `Viewport not found for client viewport ${clientViewportId}`
+        );
       }
     } else {
-      throw Error(`Viewport server id not found for client viewport ${clientViewportId}`);
+      throw Error(
+        `Viewport server id not found for client viewport ${clientViewportId}`
+      );
     }
   }
 
@@ -135,16 +154,22 @@ export class ServerProxy {
   /**********************************************************************/
   private setViewRange(viewport: Viewport, message: VuuUIMessageOutViewRange) {
     const requestId = nextRequestId();
-    const [serverRequest, rows] = viewport.rangeRequest(requestId, message.range);
+    const [serverRequest, rows] = viewport.rangeRequest(
+      requestId,
+      message.range
+    );
     if (serverRequest) {
-      this.sendIfReady(serverRequest, requestId, viewport.status === 'subscribed');
+      this.sendIfReady(
+        serverRequest,
+        requestId,
+        viewport.status === "subscribed"
+      );
     }
     if (rows) {
       this.postMessageToClient({
-        type: 'viewport-updates',
-        viewports: {
-          [viewport.clientViewportId]: { rows }
-        }
+        type: "viewport-update",
+        clientViewportId: viewport.clientViewportId,
+        rows,
       });
     }
   }
@@ -152,82 +177,87 @@ export class ServerProxy {
   private aggregate(viewport: Viewport, message: VuuUIMessageOutAggregate) {
     const requestId = nextRequestId();
     const request = viewport.aggregateRequest(requestId, message.aggregations);
-    this.sendIfReady(request, requestId, viewport.status === 'subscribed');
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
   private sort(viewport: Viewport, message: VuuUIMessageOutSort) {
     const requestId = nextRequestId();
     const request = viewport.sortRequest(requestId, message.sortDefs);
-    this.sendIfReady(request, requestId, viewport.status === 'subscribed');
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
   private groupBy(viewport: Viewport, message: VuuUIMessageOutGroupby) {
     const requestId = nextRequestId();
     const request = viewport.groupByRequest(requestId, message.groupBy);
-    this.sendIfReady(request, requestId, viewport.status === 'subscribed');
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
   private filter(viewport: Viewport, message: VuuUIMessageOutFilterQuery) {
     const requestId = nextRequestId();
     const { filter, filterQuery } = message;
     const request = viewport.filterRequest(requestId, filter, filterQuery);
-    this.sendIfReady(request, requestId, viewport.status === 'subscribed');
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
   private select(viewport: Viewport, message: VuuUIMessageOutSelect) {
     const requestId = nextRequestId();
     const { selected } = message;
     const request = viewport.selectRequest(requestId, selected);
-    this.sendIfReady(request, requestId, viewport.status === 'subscribed');
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
   //TODO when do we ever checj the disabled state ?
   private disableViewport(viewport: Viewport, message: VuuUIMessageOutDisable) {
     const requestId = nextRequestId();
     const request = viewport.disable(requestId);
-    this.sendIfReady(request, requestId, viewport.status === 'subscribed');
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
   private enableViewport(viewport: Viewport, message: VuuUIMessageOutEnable) {
     const requestId = nextRequestId();
     const request = viewport.enable(requestId);
-    this.sendIfReady(request, requestId, viewport.status === 'subscribed');
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
   private resumeViewport(viewport: Viewport) {
     const rows = viewport.resume();
     this.postMessageToClient({
-      type: 'viewport-updates',
-      viewports: {
-        [viewport.clientViewportId]: { rows }
-      }
+      clientViewportId: viewport.clientViewportId,
+      rows,
+      type: "viewport-update",
     });
   }
 
-  private openTreeNode(viewport: Viewport, message: VuuUIMessageOutOpenTreeNode) {
+  private openTreeNode(
+    viewport: Viewport,
+    message: VuuUIMessageOutOpenTreeNode
+  ) {
     if (viewport.serverViewportId) {
       this.sendIfReady(
         {
           type: Message.OPEN_TREE_NODE,
           vpId: viewport.serverViewportId,
-          treeKey: message.key
+          treeKey: message.key,
         },
         nextRequestId(),
-        viewport.status === 'subscribed'
+        viewport.status === "subscribed"
       );
     }
   }
 
-  private closeTreeNode(viewport: Viewport, message: VuuUIMessageOutCloseTreeNode) {
+  private closeTreeNode(
+    viewport: Viewport,
+    message: VuuUIMessageOutCloseTreeNode
+  ) {
     if (viewport.serverViewportId) {
       this.sendIfReady(
         {
           type: Message.CLOSE_TREE_NODE,
           vpId: viewport.serverViewportId,
-          treeKey: message.key
+          treeKey: message.key,
         },
         nextRequestId(),
-        viewport.status === 'subscribed'
+        viewport.status === "subscribed"
       );
     }
   }
@@ -235,7 +265,18 @@ export class ServerProxy {
   private createLink(viewport: Viewport, message: VuuUIMessageOutCreateLink) {
     const { parentVpId, parentColumnName, childColumnName } = message;
     const requestId = nextRequestId();
-    const request = viewport.createLink(requestId, childColumnName, parentVpId, parentColumnName);
+    const request = viewport.createLink(
+      requestId,
+      childColumnName,
+      parentVpId,
+      parentColumnName
+    );
+    this.sendMessageToServer(request, requestId);
+  }
+
+  private removeLink(viewport: Viewport) {
+    const requestId = nextRequestId();
+    const request = viewport.removeLink(requestId);
     this.sendMessageToServer(request, requestId);
   }
 
@@ -246,7 +287,7 @@ export class ServerProxy {
         {
           type: getRPCType(message.type, context),
           rpcName,
-          vpId: viewport.serverViewportId
+          vpId: viewport.serverViewportId,
         },
         message.requestId
       );
@@ -263,7 +304,7 @@ export class ServerProxy {
         service,
         method,
         params: message.params /*|| [viewport.serverViewportId]*/,
-        namedParams: {}
+        namedParams: {},
       },
       requestId,
       { module }
@@ -273,39 +314,43 @@ export class ServerProxy {
   public handleMessageFromClient(
     message: Exclude<
       VuuUIMessageOut,
-      VuuUIMessageOutConnect | VuuUIMessageOutSubscribe | VuuUIMessageOutUnsubscribe
+      | VuuUIMessageOutConnect
+      | VuuUIMessageOutSubscribe
+      | VuuUIMessageOutUnsubscribe
     >
   ) {
     if (isViewportMessage(message)) {
       const viewport = this.getViewportForClient(message.viewport);
       switch (message.type) {
-        case 'setViewRange':
+        case "setViewRange":
           return this.setViewRange(viewport, message);
-        case 'aggregate':
+        case "aggregate":
           return this.aggregate(viewport, message);
-        case 'sort':
+        case "sort":
           return this.sort(viewport, message);
-        case 'groupBy':
+        case "groupBy":
           return this.groupBy(viewport, message);
-        case 'filterQuery':
+        case "filterQuery":
           return this.filter(viewport, message);
-        case 'select':
+        case "select":
           return this.select(viewport, message);
-        case 'suspend':
+        case "suspend":
           return viewport.suspend();
-        case 'resume':
+        case "resume":
           return this.resumeViewport(viewport);
-        case 'disable':
+        case "disable":
           return this.disableViewport(viewport, message);
-        case 'enable':
+        case "enable":
           return this.enableViewport(viewport, message);
-        case 'openTreeNode':
+        case "openTreeNode":
           return this.openTreeNode(viewport, message);
-        case 'closeTreeNode':
+        case "closeTreeNode":
           return this.closeTreeNode(viewport, message);
-        case 'createLink':
+        case "createLink":
           return this.createLink(viewport, message);
-        case 'MENU_RPC_CALL':
+        case "removeLink":
+          return this.removeLink(viewport);
+        case "MENU_RPC_CALL":
           return this.menuRpcCall(viewport, message);
         default:
       }
@@ -315,20 +360,27 @@ export class ServerProxy {
         case Message.GET_TABLE_LIST:
           return this.sendMessageToServer({ type }, requestId);
         case Message.GET_TABLE_META:
-          return this.sendMessageToServer({ type, table: message.table }, requestId);
+          return this.sendMessageToServer(
+            { type, table: message.table },
+            requestId
+          );
         case Message.RPC_CALL:
           return this.rpcCall(message);
         default:
       }
     }
-    console.log(`Vuu ServerProxy Unexpected message from client ${JSON.stringify(message)}`);
+    console.log(
+      `Vuu ServerProxy Unexpected message from client ${JSON.stringify(
+        message
+      )}`
+    );
     // TEST DATA COLLECTION
     // saveTestData(message, 'client');
     //---------------------
   }
 
   public sendIfReady(
-    message: ClientToServerMessage['body'],
+    message: ClientToServerMessage["body"],
     requestId: string,
     isReady: boolean = true,
     options?: any
@@ -344,11 +396,11 @@ export class ServerProxy {
   }
 
   public sendMessageToServer(
-    body: ClientToServerMessage['body'],
+    body: ClientToServerMessage["body"],
     requestId: string = `${_requestId++}`,
     options: any = DEFAULT_OPTIONS
   ) {
-    const { module = 'CORE', ...restOptions } = options;
+    const { module = "CORE", ...restOptions } = options;
     // const { clientId } = this.connection;
     if (this.authToken) {
       this.connection.send(
@@ -356,9 +408,9 @@ export class ServerProxy {
           requestId,
           sessionId: this.sessionId,
           token: this.authToken,
-          user: 'user',
+          user: "user",
           module,
-          body
+          body,
         } as ClientToServerMessage
         // restOptions
       );
@@ -373,20 +425,29 @@ export class ServerProxy {
     const { viewports } = this;
     switch (body.type) {
       case Message.HB:
-        this.sendMessageToServer({ type: Message.HB_RESP, ts: +new Date() }, 'NA');
+        this.sendMessageToServer(
+          { type: Message.HB_RESP, ts: +new Date() },
+          "NA"
+        );
         break;
 
       case Message.LOGIN_SUCCESS:
-        this.sessionId = sessionId;
-        // we should tear down the pending Login now
-        this.pendingLogin?.resolve(sessionId);
+        if (sessionId) {
+          this.sessionId = sessionId;
+          // we should tear down the pending Login now
+          this.pendingLogin?.resolve(sessionId);
+        } else {
+          throw Error(`LOGIN_SUCCESS did not provide sessionId `);
+        }
         break;
-      // what about if login is rejected ?
+      // TODO login rejected
 
       case Message.CREATE_VP_SUCCESS:
         {
           const viewport = viewports.get(requestId);
-          // The clientViewportId was used as requestId for CREATE_VP message
+          // The clientViewportId was used as requestId for CREATE_VP message. From this point,
+          // we will key viewports using serverViewPortId and maintain a mapping between client
+          // and server viewport ids.
           if (viewport) {
             const { viewPortId: serverViewportId } = body;
 
@@ -399,8 +460,26 @@ export class ServerProxy {
             if (response) {
               this.postMessageToClient(response);
             }
-            this.sendMessageToServer({ type: Message.GET_VP_VISUAL_LINKS, vpId: serverViewportId });
-            this.sendMessageToServer({ type: Message.GET_VIEW_PORT_MENUS, vpId: serverViewportId });
+            this.sendMessageToServer({
+              type: Message.GET_VP_VISUAL_LINKS,
+              vpId: serverViewportId,
+            });
+            this.sendMessageToServer({
+              type: Message.GET_VIEW_PORT_MENUS,
+              vpId: serverViewportId,
+            });
+
+            // Resend requests for links from other viewports already on page, they may be linkable to this viewport
+            Array.from(viewports.entries())
+              .filter(
+                ([id, { disabled }]) => id !== serverViewportId && !disabled
+              )
+              .forEach(([vpId]) => {
+                this.sendMessageToServer({
+                  type: Message.GET_VP_VISUAL_LINKS,
+                  vpId,
+                });
+              });
           }
         }
         break;
@@ -445,13 +524,11 @@ export class ServerProxy {
             if (response) {
               this.postMessageToClient(response);
               const rows = viewport.currentData();
-              const clientMessage = {
-                type: 'viewport-updates',
-                viewports: {
-                  [viewport.clientViewportId]: { rows }
-                }
-              } as VuuUIMessageInViewportUpdates;
-              this.postMessageToClient(clientMessage);
+              this.postMessageToClient({
+                clientViewportId: viewport.clientViewportId,
+                rows,
+                type: "viewport-update",
+              });
             }
           }
         }
@@ -459,7 +536,8 @@ export class ServerProxy {
       case Message.TABLE_ROW:
         {
           const { timeStamp } = body;
-          const [{ ts: firstBatchTimestamp } = { ts: timeStamp }] = body.rows || EMPTY_ARRAY;
+          const [{ ts: firstBatchTimestamp } = { ts: timeStamp }] =
+            body.rows || EMPTY_ARRAY;
           // onsole.log(`\nbatch timestamp ${time(timeStamp)} first timestamp ${time(firstBatchTimestamp)} ${body.rows.length} rows in batch`)
           for (const row of body.rows) {
             const { viewPortId, rowIndex, rowKey, updateType } = row;
@@ -468,13 +546,19 @@ export class ServerProxy {
               // onsole.log(`row timestamp ${time(row.ts)}`)
               // This might miss rows if we receive rows after submitting a groupByRequest but before
               // receiving the ACK
-              if (viewport.isTree && updateType === 'U' && !rowKey.startsWith('$root')) {
-                console.log('Ignore blank rows sent after GroupBy');
+              if (
+                viewport.isTree &&
+                updateType === "U" &&
+                !rowKey.startsWith("$root")
+              ) {
+                console.log("Ignore blank rows sent after GroupBy");
               } else {
                 viewport.handleUpdate(updateType, rowIndex, row);
               }
             } else {
-              console.warn(`TABLE_ROW message received for non registered viewport ${viewPortId}`);
+              console.warn(
+                `TABLE_ROW message received for non registered viewport ${viewPortId}`
+              );
             }
             // onsole.log(`%c[ServerProxy] after updates, movingWindow has ${viewport.dataWindow.internalData.length} records`,'color:brown')
           }
@@ -497,7 +581,7 @@ export class ServerProxy {
       case Message.CLOSE_TREE_SUCCESS:
         break;
 
-      case Message.CREATE_VISUAL_LINK_SUCCESS:
+      case "CREATE_VISUAL_LINK_SUCCESS":
         {
           const viewport = this.viewports.get(body.childVpId);
           const parentViewport = this.viewports.get(body.parentVpId);
@@ -516,11 +600,23 @@ export class ServerProxy {
         }
         break;
 
+      case "REMOVE_VISUAL_LINK_SUCCESS":
+        {
+          const viewport = this.viewports.get(body.childVpId);
+          if (viewport) {
+            const response = viewport.completeOperation(requestId);
+            if (response) {
+              this.postMessageToClient(response);
+            }
+          }
+        }
+        break;
+
       case Message.TABLE_LIST_RESP:
         this.postMessageToClient({
           type: Message.TABLE_LIST_RESP,
           tables: body.tables,
-          requestId
+          requestId,
         } as VuuUIMessageInTableList);
         break;
 
@@ -530,7 +626,7 @@ export class ServerProxy {
           table: body.table,
           columns: body.columns,
           dataTypes: body.dataTypes,
-          requestId
+          requestId,
         } as VuuUIMessageInTableMeta);
         break;
 
@@ -554,7 +650,8 @@ export class ServerProxy {
             if (pendingLink) {
               const { colName, parentViewportId, parentColName } = pendingLink;
               const requestId = nextRequestId();
-              const serverViewportId = this.mapClientToServerViewport.get(parentViewportId);
+              const serverViewportId =
+                this.mapClientToServerViewport.get(parentViewportId);
               if (serverViewportId) {
                 const message = viewport.createLink(
                   requestId,
@@ -569,7 +666,7 @@ export class ServerProxy {
         }
         break;
 
-      case Message.VIEW_PORT_MENUS_RESP:
+      case "VIEW_PORT_MENUS_RESP":
         if (body.menu.name) {
           const viewport = this.viewports.get(body.vpId);
           if (viewport) {
@@ -586,7 +683,7 @@ export class ServerProxy {
             type: Message.VIEW_PORT_MENU_RESP,
             action,
             tableAlreadyOpen: this.isTableOpen(action.table),
-            requestId
+            requestId,
           });
         }
         break;
@@ -599,12 +696,12 @@ export class ServerProxy {
             type: Message.RPC_RESP,
             method,
             result,
-            requestId
+            requestId,
           });
         }
         break;
 
-      case 'ERROR':
+      case "ERROR":
         console.error(body.msg);
         break;
 
@@ -633,29 +730,18 @@ export class ServerProxy {
   }
 
   processUpdates(timeStamp: number) {
-    let clientMessage: VuuUIMessageInViewportUpdates;
     this.viewports.forEach((viewport) => {
       if (viewport.hasUpdatesToProcess) {
         const rows = viewport.getClientRows(timeStamp);
         const size = viewport.getNewRowCount();
         if (size !== undefined || (rows && rows.length > 0)) {
-          clientMessage = clientMessage || {
-            type: 'viewport-updates',
-            viewports: {}
-          };
-          clientMessage.viewports[viewport.clientViewportId] = { rows, size };
+          this.postMessageToClient({
+            clientViewportId: viewport.clientViewportId,
+            rows,
+            size,
+            type: "viewport-update",
+          });
         }
-      }
-      if (clientMessage) {
-        // const now = performance.now();
-        // if (updateTime){
-        //   onsole.log(`time between updates ${now - updateTime}`)
-        // }
-        // updateTime = now;
-        // Object.values(clientMessage.viewports).forEach(({rows, size}) =>
-        //   onsole.log(`%c[ServerProxy] processUpdates, posting ${rows.length} rows (size ${size})`,'color:brown')
-        // )
-        this.postMessageToClient(clientMessage);
       }
     });
   }

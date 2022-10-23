@@ -140,17 +140,17 @@
   z-index: -1;
 }
 
-.GridCell .flasher {
+.vuuDataGridCell .flasher {
   text-align: left;
 }
-.GridCell .flasher + .num {
+.vuuDataGridCell .flasher + .num {
   padding-left: 8px;
 }
 
-.GridCell.right .flasher {
+.vuuDataGridCell.right .flasher {
   text-align: right;
 }
-.GridCell.right .flasher + .num {
+.vuuDataGridCell.right .flasher + .num {
   padding-right: 8px;
 }
 

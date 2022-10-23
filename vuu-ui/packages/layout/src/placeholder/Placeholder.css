@@ -1,10 +1,10 @@
-.hwPlaceholder {
+.vuuPlaceholder {
   flex-basis: 0;
   flex-grow: 1;
   flex-shrink: 1;
 }
 
-.hwPlaceholder-shim {
+.vuuPlaceholder-shim {
   flex-grow: 0;
   flex-shrink: 0;
 }

@@ -2,9 +2,11 @@
   --dialog-border: var(--hw-dialog-border, solid 1px #ccc);
   --dialog-padding: var(--hw-dialog-padding, 0);
   --dialog-shadow: var(--hw-dialog-shadow, none);
+  --vuuView-margin: 0;
+  --vuuView-flex-wrap: none;
 
   border: var(--dialog-border);
-  margin: var(--hwDialog-margin, auto auto);
+  margin: var(--hwDialog-margin, 200px auto 0 auto);
   padding: var(--dialog-padding);
   box-shadow: var(--dialog-shadow);
 }
