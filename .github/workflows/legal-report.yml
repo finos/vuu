@@ -18,10 +18,17 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn clean install -Dmaven.test.skip=true
-    - name: Legal report
+    - name: License report
       run: mvn org.apache.maven.plugins:maven-site-plugin:3.12.1:site org.apache.maven.plugins:maven-project-info-reports-plugin:3.4.1:licenses -P legal-report
-    - name: Upload legal reports
+    - name: License XML report
+      run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
+    - name: Upload license reports
       uses: actions/upload-artifact@v3
       with:
         name: license-reports
         path: '**/dependencies.html'
+    - name: Upload license XML report
+      uses: actions/upload-artifact@v3
+      with:
+        name: license-xml-report
+        path: 'target/generated-resources/licenses.xml'
