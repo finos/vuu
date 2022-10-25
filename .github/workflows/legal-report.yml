@@ -42,7 +42,7 @@ jobs:
       run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
     - name: Validate XML report
       run: |
-        LICENSE_REPORT=`xq "//dependency[licenses/license/name!='The Apache Software License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license' and licenses/license/name!='Apache License, Version 2.0']" {{ $package-folder }}/target/generated-resources/licenses.xml`
+        LICENSE_REPORT=`xq "//dependency[licenses/license/name!='The Apache Software License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license' and licenses/license/name!='Apache License, Version 2.0']" ${{ matrix.package-folder }}/target/generated-resources/licenses.xml`
         LINES_FOUND=`echo $LICENSE_REPORT | wc -l`
         if [ $LINES_FOUND -gt 1 ]; then echo $LICENSE_REPORT ; exit -1; fi
     - name: Upload license reports
