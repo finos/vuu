@@ -97,13 +97,11 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
 
     assertVpEq(updates) {
       Table(
-        ("_isOpen", "_depth", "_treeKey", "_isLeaf", "_childCount", "_caption", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
-        (true, 2, "$root|chris|VOD.L", false, 5, "VOD.L", "", "1", "VOD.L", "", "1500.0", "", "", "", "", ""),
-        (true, 1, "$root|steve", false, 2, "steve", "", "1", "", "", "1600.0", "", "", "", "", ""),
-        (false, 2, "$root|steve|BT.L", false, 1, "BT.L", "", "1", "BT.L", "", "1000.0", "", "", "", "", ""),
-        (true, 1, "$root|chris", false, 2, "chris", "", "1", "", "", "2200.0", "", "", "", "", ""),
-        (false, 2, "$root|steve|VOD.L", false, 1, "VOD.L", "", "1", "VOD.L", "", "600.0", "", "", "", "", ""),
-        (false, 2, "$root|chris|BT.L", false, 1, "BT.L", "", "1", "BT.L", "", "700.0", "", "", "", "", "")
+        ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
+        (false     ,2         ,"$root|chris|BT.L",false     ,1         ,"BT.L"    ,""        ,"1"       ,"BT.L"    ,""        ,"700.0"   ,""        ,""        ,""        ,""        ,""        ),
+        (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"1"       ,""        ,""        ,"1600.0"  ,""        ,""        ,""        ,""        ,""        ),
+        (false     ,2         ,"$root|steve|BT.L",false     ,1         ,"BT.L"    ,""        ,"1"       ,"BT.L"    ,""        ,"1000.0"  ,""        ,""        ,""        ,""        ,""        ),
+        (true      ,1         ,"$root|chris",false     ,2         ,"chris"   ,""        ,"1"       ,""        ,""        ,"2200.0"  ,""        ,""        ,""        ,""        ,""        )
       )
 
     }
@@ -137,7 +135,6 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
         (false     ,2         ,"$root|steve|BT.L",false     ,1         ,"BT.L"    ,""        ,"1"       ,"BT.L"    ,""        ,"1000.0"  ,""        ,""        ,""        ,""        ,""        ),
         (true      ,1         ,"$root|chris",false     ,2         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1200.0"  ,""        ,""        ,""        ,""        ,""        ),
         (true      ,2         ,"$root|chris|VOD.L",false     ,1         ,"VOD.L"   ,""        ,"1"       ,"VOD.L"   ,""        ,"500.0"   ,""        ,""        ,""        ,""        ,""        ),
-        (false     ,2         ,"$root|chris|BT.L",false     ,1         ,"BT.L"    ,""        ,"1"       ,"BT.L"    ,""        ,"700.0"   ,""        ,""        ,""        ,""        ,""        ),
         (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"1"       ,""        ,""        ,"2600.0"  ,""        ,""        ,""        ,""        ,""        ),
         (true      ,2         ,"$root|steve|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"1"       ,"VOD.L"   ,""        ,"1600.0"  ,""        ,""        ,""        ,""        ,""        )
       )
