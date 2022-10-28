@@ -12,7 +12,6 @@ function buildPackage(packageName) {
 
 const packages = [
   "utils",
-  "ag-grid",
   "react-utils",
   "theme",
   "theme-uitk",
@@ -21,6 +20,7 @@ const packages = [
   "datagrid-parsers",
   "ui-controls",
   "data-grid",
+  "ag-grid",
   "layout",
   "parsed-input",
   "shell",
