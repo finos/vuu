@@ -80,15 +80,10 @@ case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = fals
 
 trait RowData {
   def get(field: String): Any
-
   def get(column: Column): Any
-
   def getFullyQualified(column: Column): Any
-
   def set(field: String, value: Any): RowData
-
   def toArray(columns: List[Column]): Array[Any]
-
   def size(): Int
 }
 
@@ -98,12 +93,12 @@ case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: L
 
 case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
-
-
   def this(key: String, data: java.util.Map[String, Any]) {
 
     this(key, JavaConverters.asScala(data).toMap);
   }
+
+  //override def hashCode(): Int = 37 * (key.hashCode + data.hashCode())
 
   override def size(): Int = data.size
 
@@ -152,6 +147,8 @@ object EmptyRowData extends RowData {
   override def getFullyQualified(column: Column): Any = null
 
   override def set(field: String, value: Any): RowData = EmptyRowData
+
+
 }
 
 
