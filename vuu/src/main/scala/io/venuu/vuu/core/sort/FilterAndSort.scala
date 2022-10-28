@@ -2,7 +2,7 @@ package io.venuu.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.collection.array.ImmutableArray
-import io.venuu.vuu.core.filter.{Filter, FilterClause}
+import io.venuu.vuu.core.filter.{Filter, FilterClause, NoFilter}
 import io.venuu.vuu.core.index._
 import io.venuu.vuu.core.table.{Column, DataType}
 import io.venuu.vuu.viewport.{RowSource, ViewPortVisualLink}
@@ -94,6 +94,8 @@ case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogg
 
 trait FilterAndSort {
   def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String]
+  def filter: Filter
+  def sort: Sort
 }
 
 case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAndSort with StrictLogging {
@@ -123,6 +125,8 @@ class NoFilterNoSort() extends FilterAndSort {
   override def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
     primaryKeys
   }
+  override def filter: Filter = NoFilter
+  override def sort: Sort = NoSort
 }
 
 

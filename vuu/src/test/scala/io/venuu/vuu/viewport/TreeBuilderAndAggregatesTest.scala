@@ -51,6 +51,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        None,
         None
       ).build()
 
@@ -78,6 +79,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         .withHigh("quantity")
         .asClause(),
         FilterSpec(""),
+        None,
         None
       ).build()
 
@@ -105,6 +107,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         .withLow("quantity")
         .asClause(),
         FilterSpec(""),
+        None,
         None
       ).build()
 
@@ -134,6 +137,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         .withCount("trader")
         .asClause(),
         FilterSpec(""),
+        None,
         None
       ).build()
 
@@ -160,7 +164,8 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         .withCount("trader")
         .asClause(),
         FilterSpec(""),
-        Some(tree)).build()
+        Some(tree),
+        None).build()
 
       tree2.closeAll()
       tree2.open("$root|chris")

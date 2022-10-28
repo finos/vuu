@@ -58,6 +58,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        None,
         None
       ).build()
 
@@ -65,6 +66,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        None,
         None
       ).build()
 
@@ -80,6 +82,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        None,
         None
       ).build()
 
@@ -115,6 +118,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        None,
         None
       ).build()
 
@@ -123,6 +127,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        None,
         None
       ).build()
 
