@@ -22,6 +22,7 @@ import io.venuu.vuu.{core, viewport}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, IteratorHasAsScala, SetHasAsScala}
+import scala.jdk.javaapi.CollectionConverters
 import scala.util.{Failure, Success, Try}
 
 trait ViewPortContainerMBean {
@@ -529,7 +530,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     table match {
       case tbl: TreeSessionTableImpl =>
 
-        val oldTree = tbl.getTree
+        val oldTree      = tbl.getTree
+        val oldNodeState = CollectionConverters.asScala(tbl.getTree.nodeState).toMap
 
         val (millis, tree) = timeIt {
           new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
@@ -552,7 +554,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
         val (millis5, _) = timeIt {
 
-          val branchKeys = TreeUtils.diffOldVsNewBranches(oldTree, tree)
+          val branchKeys = TreeUtils.diffOldVsNewBranches(oldTree, tree, oldNodeState)
 
           viewPort.updateSpecificKeys(branchKeys)
         }

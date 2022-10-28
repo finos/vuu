@@ -79,7 +79,7 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
     }
 
     //root is always open
-    val tree = TreeImpl(TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy)), nodeState, groupBy)
+    val tree = TreeImpl(new TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy)), nodeState, groupBy)
 
     var count = 0
 
@@ -131,25 +131,32 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
         case null =>
           logger.debug(s"adding new node: $treeKey to parent ${parent.key}")
 
-          val treeKeysByColumn = if (isLeaf)
+          val treeKeysByColumn = if (isLeaf) {
             parent.keysByColumn
-          else
+          } else {
             parent.keysByColumn ++ Map(column.name -> (if (data == null) "" else data.toString))
+          }
 
           val aggregations = Aggregation.createAggregations(groupBy)
 
-          if (isLeaf) parent.processRowForAggregation(row)
+          if (isLeaf){
+            parent.processRowForAggregation(row)
+          }
 
-          Some(tree.addChild(parent, TreeNodeImpl(isLeaf, treeKey, if (data == null) "" else data.toString, new JList[TreeNode](), parent, parent.depth + 1, treeKeysByColumn, aggregations)))
+          Some(tree.addChild(parent, new TreeNodeImpl(isLeaf, treeKey, if (data == null) "" else data.toString, new JList[TreeNode](), parent, parent.depth + 1, treeKeysByColumn, aggregations)))
         case node =>
           logger.debug(s"Node ${treeKey} already exists, just adding to parent:" + parent.key)
 
           if (!tree.hasChild(parent, node)) {
-            if (isLeaf) parent.processRowForAggregation(row)
+            if (isLeaf) {
+              parent.processRowForAggregation(row)
+            }
             Some(tree.addChild(parent, node))
           }
           else {
-            if (isLeaf) parent.processRowForAggregation(row)
+            if (isLeaf){
+              parent.processRowForAggregation(row)
+            }
 
             Some(node)
           }
