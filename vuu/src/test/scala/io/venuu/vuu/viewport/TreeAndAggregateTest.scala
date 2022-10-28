@@ -83,7 +83,6 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
           (false     ,3         ,"$root|steve|BT.L|NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
           (false     ,3         ,"$root|steve|BT.L|NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
           (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
-          (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
           (true      ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"1"       ,"VOD.L"   ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
           (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"1"       ,""        ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        ),
           (true      ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"1"       ,"BT.L"    ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
@@ -133,9 +132,6 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
       assertVpEq(updates3) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (true      ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"1"       ,"VOD.L"   ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
-          (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"1"       ,""        ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        ),
-          (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
           (false     ,2         ,"$root|steve|VOD.L",false     ,1         ,"VOD.L"   ,""        ,"1"       ,"VOD.L"   ,""        ,"600.0"   ,""        ,""        ,""        ,""        ,""        ),
           (true      ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"1"       ,"BT.L"    ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
           (false     ,3         ,"$root|steve|BT.L|NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
@@ -153,11 +149,8 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
       assertVpEq(updates4) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (true      ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"1"       ,"VOD.L"   ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
           (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"1"       ,""        ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        ),
           (true      ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"1"       ,"BT.L"    ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
-          (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
-          (false     ,2         ,"$root|steve|VOD.L",false     ,1         ,"VOD.L"   ,""        ,"1"       ,"VOD.L"   ,""        ,"600.0"   ,""        ,""        ,""        ,""        ,""        ),
           (false     ,3         ,"$root|steve|BT.L|NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,510.0     ,511.0     ,null      ,null      ,null      ),
           (false     ,3         ,"$root|steve|BT.L|NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,510.0     ,511.0     ,null      ,null      ,null      )
         )
@@ -238,7 +231,6 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
         (true      ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,"1"       ,"BT.L"    ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
         (false     ,3         ,"$root|steve|BT.L|NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
         (false     ,3         ,"$root|steve|BT.L|NYC-0008",true      ,0         ,"NYC-0008","NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
-        (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
         (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
         (true      ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,"1"       ,"VOD.L"   ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
         (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"1"       ,""        ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        ),
