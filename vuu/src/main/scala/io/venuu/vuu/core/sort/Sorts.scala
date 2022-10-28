@@ -135,7 +135,13 @@ object SortFunctions extends StrictLogging {
   }
 
   protected def stringSort(a: Any, b: Any, direction: Char): Boolean = {
-    if (direction == 'A')
+    if(a == null && b == null){
+      false
+    } else if(a == null && b != null){
+      true
+    }else if(a != null && b == null){
+      false
+    } else if (direction == 'A')
       a.asInstanceOf[String] > b.asInstanceOf[String]
     else
       a.asInstanceOf[String] < b.asInstanceOf[String]
