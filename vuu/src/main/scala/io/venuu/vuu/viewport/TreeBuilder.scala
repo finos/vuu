@@ -6,9 +6,9 @@ import io.venuu.toolbox.logging.LogAtFrequency
 import io.venuu.toolbox.time.Clock
 import io.venuu.vuu.core.filter.{FilterSpecParser, NoFilter}
 import io.venuu.vuu.core.tree.TreeSessionTableImpl
-import io.venuu.vuu.core.sort.AntlrBasedFilter
+import io.venuu.vuu.core.sort.{AntlrBasedFilter, GenericSort, NoSort, Sort}
 import io.venuu.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData}
-import io.venuu.vuu.net.FilterSpec
+import io.venuu.vuu.net.{FilterSpec, SortSpec}
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.{LinkedList => JList}
@@ -22,14 +22,14 @@ object TreeBuilder {
   //  def apply(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): GroupByTreeBuilder = {
   //    new GroupByTreeBuilderImpl(table, groupBy, filter, previousTree)
   //  }
-  def create(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): TreeBuilder = {
-    new TreeBuilderImpl(table, groupBy, filter, previousTree)
+  def create(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree], sort: Option[Sort])(implicit timeProvider: Clock): TreeBuilder = {
+    new TreeBuilderImpl(table, groupBy, filter, previousTree, sort)
   }
 
 }
 
 
-class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock) extends TreeBuilder with StrictLogging {
+class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree], sort: Option[Sort])(implicit timeProvider: Clock) extends TreeBuilder with StrictLogging {
 
   final val EMPTY_TREE_NODE_STATE = new ConcurrentHashMap[String, TreeNodeState]()
 
@@ -59,6 +59,16 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
       table.sourceTable.primaryKeys
   }
 
+  private def applySort(filteredKeys: ImmutableArray[String]): ImmutableArray[String] = {
+    sort match {
+      case Some(aSort) =>
+        val keys = aSort.doSort(table.sourceTable, filteredKeys)
+        keys
+      case None =>
+        filteredKeys
+    }
+
+  }
 
   override def build(): Tree = {
 
@@ -66,6 +76,8 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
     logger.debug("Applying Filter()")
 
     val keys = applyFilter()
+
+    val sortedKeys = applySort(keys)
 
     logger.debug("building tree")
 
@@ -79,11 +91,11 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
     }
 
     //root is always open
-    val tree = TreeImpl(TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy)), nodeState, groupBy)
+    val tree = TreeImpl(new TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy)), nodeState, groupBy)
 
     var count = 0
 
-    keys.foreach(key => {
+    sortedKeys.foreach(key => {
 
       if (logEvery.shouldLog()) logger.debug(s"Done nodes ${count}")
 
@@ -131,25 +143,32 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
         case null =>
           logger.debug(s"adding new node: $treeKey to parent ${parent.key}")
 
-          val treeKeysByColumn = if (isLeaf)
+          val treeKeysByColumn = if (isLeaf) {
             parent.keysByColumn
-          else
+          } else {
             parent.keysByColumn ++ Map(column.name -> (if (data == null) "" else data.toString))
+          }
 
           val aggregations = Aggregation.createAggregations(groupBy)
 
-          if (isLeaf) parent.processRowForAggregation(row)
+          if (isLeaf){
+            parent.processRowForAggregation(row)
+          }
 
-          Some(tree.addChild(parent, TreeNodeImpl(isLeaf, treeKey, if (data == null) "" else data.toString, new JList[TreeNode](), parent, parent.depth + 1, treeKeysByColumn, aggregations)))
+          Some(tree.addChild(parent, new TreeNodeImpl(isLeaf, treeKey, if (data == null) "" else data.toString, new JList[TreeNode](), parent, parent.depth + 1, treeKeysByColumn, aggregations)))
         case node =>
           logger.debug(s"Node ${treeKey} already exists, just adding to parent:" + parent.key)
 
           if (!tree.hasChild(parent, node)) {
-            if (isLeaf) parent.processRowForAggregation(row)
+            if (isLeaf) {
+              parent.processRowForAggregation(row)
+            }
             Some(tree.addChild(parent, node))
           }
           else {
-            if (isLeaf) parent.processRowForAggregation(row)
+            if (isLeaf){
+              parent.processRowForAggregation(row)
+            }
 
             Some(node)
           }

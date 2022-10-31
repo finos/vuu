@@ -1,0 +1,9 @@
+.vuuPalette {
+  --list-item-header-bg: inherit;
+  --list-item-header-color: inherit;
+  --list-item-padding: 0 6px 0 24px;
+  --list-item-header-twisty-color: black;
+  --list-item-header-twisty-left: 3px;
+  --list-item-header-twisty-right: auto;
+}
+

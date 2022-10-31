@@ -1,19 +1,20 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
-import { useViewContext } from '@vuu-ui/layout';
-import { Grid } from '@vuu-ui/data-grid';
-import { createDataSource } from '@vuu-ui/data-remote';
+import React, { useCallback, useEffect, useMemo } from "react";
+import { useViewContext } from "@vuu-ui/layout";
+import { Grid } from "@vuu-ui/data-grid";
+import { createDataSource } from "@vuu-ui/data-remote";
 
 export const MetricsTable = ({ onServiceRequest, schema, ...props }) => {
-  const { id, dispatch, load, save, loadSession, saveSession } = useViewContext();
+  const { id, dispatch, load, save, loadSession, saveSession } =
+    useViewContext();
   const config = useMemo(() => load(), [load]);
 
   const dataSource = useMemo(() => {
-    let ds = loadSession('data-source');
+    let ds = loadSession("data-source");
     if (ds) {
       return ds;
     }
     ds = createDataSource({ id, table: schema.table, schema, config });
-    saveSession(ds, 'data-source');
+    saveSession(ds, "data-source");
     return ds;
   }, [config, id, loadSession, saveSession, schema]);
 
@@ -32,30 +33,30 @@ export const MetricsTable = ({ onServiceRequest, schema, ...props }) => {
     ({ type, ...op }) => {
       // TODO consolidate these messages
       switch (type) {
-        case 'group':
+        case "group":
           save(op.groupBy, type);
-          dispatch({ type: 'save' });
+          dispatch({ type: "save" });
           break;
-        case 'sort':
+        case "sort":
           save(op.sort, type);
-          dispatch({ type: 'save' });
+          dispatch({ type: "save" });
           break;
-        case 'filter':
+        case "filter":
           save(op.filter, type);
-          dispatch({ type: 'save' });
+          dispatch({ type: "save" });
           break;
-        case 'visual-link-created':
+        case "CREATE_VISUAL_LINK_SUCCESS":
           dispatch({
-            type: 'toolbar-contribution',
-            location: 'post-title',
+            type: "toolbar-contribution",
+            location: "post-title",
             content: (
               <Button aria-label="remove-link" onClick={unlink}>
                 <LinkIcon />
               </Button>
-            )
+            ),
           });
-          save(op, 'visual-link');
-          dispatch({ type: 'save' });
+          save(op, "visual-link");
+          dispatch({ type: "save" });
           break;
         default:
           console.log(`unknown config change type ${type}`);

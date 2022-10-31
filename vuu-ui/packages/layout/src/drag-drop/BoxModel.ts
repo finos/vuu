@@ -1,9 +1,9 @@
-import { ReactElement } from 'react';
-import { getProps, typeOf } from '../utils';
-import { isContainer } from '../registry/ComponentRegistry';
-import { LayoutModel } from '../layout-reducer';
-import { DragDropRect, DropPos, RelativePosition } from './dragDropTypes';
-import { rect } from '../common-types';
+import { ReactElement } from "react";
+import { getProps, typeOf } from "../utils";
+import { isContainer } from "../registry/ComponentRegistry";
+import { LayoutModel } from "../layout-reducer";
+import { DragDropRect, DropPos, RelativePosition } from "./dragDropTypes";
+import { rect } from "../common-types";
 
 export var positionValues = {
   north: 1,
@@ -12,44 +12,49 @@ export var positionValues = {
   west: 8,
   header: 16,
   centre: 32,
-  absolute: 64
+  absolute: 64,
 };
 
 export const RelativeDropPosition = {
-  AFTER: 'after' as RelativePosition,
-  BEFORE: 'before' as RelativePosition
+  AFTER: "after" as RelativePosition,
+  BEFORE: "before" as RelativePosition,
 };
 
 export var Position = Object.freeze({
-  North: _position('north'),
-  East: _position('east'),
-  South: _position('south'),
-  West: _position('west'),
-  Header: _position('header'),
-  Centre: _position('centre'),
-  Absolute: _position('absolute')
+  North: _position("north"),
+  East: _position("east"),
+  South: _position("south"),
+  West: _position("west"),
+  Header: _position("header"),
+  Centre: _position("centre"),
+  Absolute: _position("absolute"),
 });
 
 function _position(str: keyof typeof positionValues) {
   return Object.freeze({
-    offset: str === 'north' || str === 'west' ? 0 : str === 'south' || str === 'east' ? 1 : NaN,
+    offset:
+      str === "north" || str === "west"
+        ? 0
+        : str === "south" || str === "east"
+        ? 1
+        : NaN,
     valueOf: function () {
       return positionValues[str];
     },
     toString: function () {
       return str;
     },
-    North: str === 'north',
-    South: str === 'south',
-    East: str === 'east',
-    West: str === 'west',
-    Header: str === 'header',
-    Centre: str === 'centre',
-    NorthOrSouth: str === 'north' || str === 'south',
-    EastOrWest: str === 'east' || str === 'west',
-    NorthOrWest: str === 'north' || str === 'west',
-    SouthOrEast: str === 'east' || str === 'south',
-    Absolute: str === 'absolute'
+    North: str === "north",
+    South: str === "south",
+    East: str === "east",
+    West: str === "west",
+    Header: str === "header",
+    Centre: str === "centre",
+    NorthOrSouth: str === "north" || str === "south",
+    EastOrWest: str === "east" || str === "west",
+    NorthOrWest: str === "north" || str === "west",
+    SouthOrEast: str === "east" || str === "south",
+    Absolute: str === "absolute",
   });
 }
 
@@ -68,7 +73,10 @@ export class BoxModel {
   //TODO we should accept initial let,top offsets here
   // if dropTargets are supplied, we will only allow drop operations directly on these targets
   // TODO we will need to make this more flexible e.g allowing drop anywhere within these target
-  static measure(model: ReactElement, dropTargetPaths: string[] = []): Measurements {
+  static measure(
+    model: ReactElement,
+    dropTargetPaths: string[] = []
+  ): Measurements {
     var measurements: Measurements = {};
     measureRootComponent(model, measurements, dropTargetPaths);
     return measurements;
@@ -81,11 +89,22 @@ export class BoxModel {
     y: number,
     validDropTargets?: string[]
   ) {
-    return allBoxesContainingPoint(layout, measurements, x, y, validDropTargets).reverse();
+    return allBoxesContainingPoint(
+      layout,
+      measurements,
+      x,
+      y,
+      validDropTargets
+    ).reverse();
   }
 }
 
-export function pointPositionWithinRect(x: number, y: number, rect: DragDropRect, borderZone = 30) {
+export function pointPositionWithinRect(
+  x: number,
+  y: number,
+  rect: DragDropRect,
+  borderZone = 30
+) {
   const width = rect.right - rect.left;
   const height = rect.bottom - rect.top;
   const posX = x - rect.left;
@@ -104,14 +123,14 @@ export function getPosition(
   x: number,
   y: number,
   rect: DragDropRect,
-  targetOrientation?: 'row' | 'column'
+  targetOrientation?: "row" | "column"
 ): DropPos {
   const { BEFORE, AFTER } = RelativeDropPosition;
   const { pctX, pctY, closeToTheEdge } = pointPositionWithinRect(x, y, rect);
   let position;
   let tab;
 
-  if (targetOrientation === 'row') {
+  if (targetOrientation === "row") {
     position = pctX < 0.5 ? WEST : EAST;
   } else if (rect.header && containsPoint(rect.header, x, y)) {
     position = HEADER;
@@ -123,18 +142,21 @@ export function getPosition(
           index: -1,
           left: rect.left,
           positionRelativeToTab: AFTER,
-          width: 0
+          width: 0,
         };
       } else {
         //TODO account for gaps between tabs
-        const targetTab = rect.Stack.find(({ left, right }) => x >= left && x <= right);
+        const targetTab = rect.Stack.find(
+          ({ left, right }) => x >= left && x <= right
+        );
         if (targetTab) {
           const tabWidth = targetTab.right - targetTab.left;
           tab = {
             index: rect.Stack.indexOf(targetTab),
             left: targetTab.left,
-            positionRelativeToTab: (x - targetTab.left) / tabWidth < 0.5 ? BEFORE : AFTER,
-            width: tabWidth
+            positionRelativeToTab:
+              (x - targetTab.left) / tabWidth < 0.5 ? BEFORE : AFTER,
+            width: tabWidth,
           };
         } else {
           const lastTab = rect.Stack[tabCount - 1];
@@ -142,7 +164,7 @@ export function getPosition(
             left: lastTab.right,
             width: 0,
             index: tabCount,
-            positionRelativeToTab: AFTER
+            positionRelativeToTab: AFTER,
           };
         }
       }
@@ -151,15 +173,16 @@ export function getPosition(
       tab = {
         index: -1,
         left: rect.left,
-        positionRelativeToTab: (x - rect.left) / tabWidth < 0.5 ? BEFORE : AFTER,
-        width: tabWidth
+        positionRelativeToTab:
+          (x - rect.left) / tabWidth < 0.5 ? BEFORE : AFTER,
+        width: tabWidth,
       };
     } else {
       tab = {
         left: rect.left,
         width: 0,
         positionRelativeToTab: BEFORE,
-        index: -1
+        index: -1,
       };
     }
   } else {
@@ -180,23 +203,28 @@ function getPositionWithinBox(
   if (containsPoint(centerBox, x, y)) {
     return CENTRE;
   } else {
-    const quadrant = `${pctY < 0.5 ? 'north' : 'south'}${pctX < 0.5 ? 'west' : 'east'}`;
+    const quadrant = `${pctY < 0.5 ? "north" : "south"}${
+      pctX < 0.5 ? "west" : "east"
+    }`;
 
     switch (quadrant) {
-      case 'northwest':
+      case "northwest":
         return pctX > pctY ? NORTH : WEST;
-      case 'northeast':
+      case "northeast":
         return 1 - pctX > pctY ? NORTH : EAST;
-      case 'southeast':
+      case "southeast":
         return pctX > pctY ? EAST : SOUTH;
-      case 'southwest':
+      case "southwest":
         return 1 - pctX > pctY ? WEST : SOUTH;
       default:
     }
   }
 }
 
-function getCenteredBox({ right, left, top, bottom }: DragDropRect, pctSize: number) {
+function getCenteredBox(
+  { right, left, top, bottom }: DragDropRect,
+  pctSize: number
+) {
   const pctOffset = (1 - pctSize) / 2;
   const w = (right - left) * pctOffset;
   const h = (bottom - top) * pctOffset;
@@ -208,7 +236,11 @@ function measureRootComponent(
   measurements: Measurements,
   dropTargets: any[]
 ) {
-  const { id, 'data-path': dataPath, path = dataPath } = getProps(rootComponent);
+  const {
+    id,
+    "data-path": dataPath,
+    path = dataPath,
+  } = getProps(rootComponent);
   const type = typeOf(rootComponent) as string;
 
   if (id && path) {
@@ -226,27 +258,33 @@ function measureComponent(
   el: HTMLElement,
   measurements: Measurements
 ) {
-  const { 'data-path': dataPath, path = dataPath, header } = getProps(component);
+  const {
+    "data-path": dataPath,
+    path = dataPath,
+    header,
+  } = getProps(component);
 
   measurements[path] = rect;
 
   const type = typeOf(component);
-  if (header || type === 'Stack') {
-    const headerEl = el.querySelector('.hwHeader');
+  if (header || type === "Stack") {
+    const headerEl = el.querySelector(".vuuHeader");
     if (headerEl) {
       const { top, left, right, bottom } = headerEl.getBoundingClientRect();
       measurements[path].header = {
         top: Math.round(top),
         left: Math.round(left),
         right: Math.round(right),
-        bottom: Math.round(bottom)
+        bottom: Math.round(bottom),
       };
-      if (type === 'Stack') {
-        measurements[path].Stack = Array.from(headerEl.querySelectorAll('.hwTab'))
+      if (type === "Stack") {
+        measurements[path].Stack = Array.from(
+          headerEl.querySelectorAll(".uitkTab")
+        )
           .map((tab) => tab.getBoundingClientRect())
           .map(({ left, right }) => ({ left, right }));
       } else {
-        const titleEl = headerEl.querySelector('[class^="hwHeader-title"]');
+        const titleEl = headerEl.querySelector('[class^="vuuHeader-title"]');
         const { header } = measurements[path];
         if (titleEl && header) {
           header.titleWidth = titleEl.clientWidth;
@@ -269,17 +307,17 @@ function collectChildMeasurements(
 ) {
   const {
     children,
-    'data-path': dataPath,
+    "data-path": dataPath,
     path = dataPath,
     style,
-    active = 0
+    active = 0,
   } = getProps(component);
 
   const type = typeOf(component);
-  const isFlexbox = type === 'Flexbox';
-  const isStack = type === 'Stack';
-  const isTower = isFlexbox && style.flexDirection === 'column';
-  const isTerrace = isFlexbox && style.flexDirection === 'row';
+  const isFlexbox = type === "Flexbox";
+  const isStack = type === "Stack";
+  const isTower = isFlexbox && style.flexDirection === "column";
+  const isTerrace = isFlexbox && style.flexDirection === "row";
 
   const childrenToMeasure = isStack
     ? children.filter((_child: ReactElement, idx: number) => idx === active)
@@ -287,74 +325,83 @@ function collectChildMeasurements(
 
   type measuredTuple = [DragDropRect, HTMLElement, ReactElement];
   // Collect all the measurements in first pass ...
-  const childMeasurements: measuredTuple[] = childrenToMeasure.map((child: ReactElement) => {
-    const [rect, el] = measureComponentDomElement(child);
+  const childMeasurements: measuredTuple[] = childrenToMeasure.map(
+    (child: ReactElement) => {
+      const [rect, el] = measureComponentDomElement(child);
 
-    return [
-      {
-        ...rect,
-        top: rect.top - preY,
-        right: rect.right + posX,
-        bottom: rect.bottom + posY,
-        left: rect.left - preX
-      },
-      el,
-      child
-    ];
-  });
+      return [
+        {
+          ...rect,
+          top: rect.top - preY,
+          right: rect.right + posX,
+          bottom: rect.bottom + posY,
+          left: rect.left - preX,
+        },
+        el,
+        child,
+      ];
+    }
+  );
 
   // ...so that, in the second pass, we can identify gaps ...
-  const expandedMeasurements = childMeasurements.map(([rect, el, child], i, all) => {
-    // generate a 'local' splitter adjustment for children adjacent to splitters
-    let localPreX;
-    let localPosX;
-    let localPreY;
-    let localPosY;
-    let gapPre;
-    let gapPos;
-    const n = all.length - 1;
-    if (isTerrace) {
-      gapPre = i === 0 ? 0 : rect.left - all[i - 1][0].right;
-      gapPos = i === n ? 0 : all[i + 1][0].left - rect.right;
-      // we don't need to divide the leading gap, as half the gap will
-      // already have been assigned to the preceeding child in the
-      // previous loop iteration.
-      localPreX = i === 0 ? 0 : gapPre === 0 ? 0 : gapPre;
-      localPosX = i === n ? 0 : gapPos === 0 ? 0 : gapPos - gapPos / 2;
-      rect.left -= localPreX;
-      rect.right += localPosX;
-      localPreY = preY;
-      localPosY = posY;
-    } else if (isTower) {
-      gapPre = i === 0 ? 0 : rect.top - all[i - 1][0].bottom;
-      gapPos = i === n ? 0 : all[i + 1][0].top - rect.bottom;
-      // we don't need to divide the leading gap, as half the gap will
-      // already have been assigned to the preceeding child in the
-      // previous loop iteration.
-      localPreY = i === 0 ? 0 : gapPre === 0 ? 0 : gapPre;
-      localPosY = i === n ? 0 : gapPos === 0 ? 0 : gapPos - gapPos / 2;
-      rect.top -= localPreY;
-      rect.bottom += localPosY;
-      localPreX = preX;
-      localPosX = posX;
-    }
+  const expandedMeasurements = childMeasurements.map(
+    ([rect, el, child], i, all) => {
+      // generate a 'local' splitter adjustment for children adjacent to splitters
+      let localPreX;
+      let localPosX;
+      let localPreY;
+      let localPosY;
+      let gapPre;
+      let gapPos;
+      const n = all.length - 1;
+      if (isTerrace) {
+        gapPre = i === 0 ? 0 : rect.left - all[i - 1][0].right;
+        gapPos = i === n ? 0 : all[i + 1][0].left - rect.right;
+        // we don't need to divide the leading gap, as half the gap will
+        // already have been assigned to the preceeding child in the
+        // previous loop iteration.
+        localPreX = i === 0 ? 0 : gapPre === 0 ? 0 : gapPre;
+        localPosX = i === n ? 0 : gapPos === 0 ? 0 : gapPos - gapPos / 2;
+        rect.left -= localPreX;
+        rect.right += localPosX;
+        localPreY = preY;
+        localPosY = posY;
+      } else if (isTower) {
+        gapPre = i === 0 ? 0 : rect.top - all[i - 1][0].bottom;
+        gapPos = i === n ? 0 : all[i + 1][0].top - rect.bottom;
+        // we don't need to divide the leading gap, as half the gap will
+        // already have been assigned to the preceeding child in the
+        // previous loop iteration.
+        localPreY = i === 0 ? 0 : gapPre === 0 ? 0 : gapPre;
+        localPosY = i === n ? 0 : gapPos === 0 ? 0 : gapPos - gapPos / 2;
+        rect.top -= localPreY;
+        rect.bottom += localPosY;
+        localPreX = preX;
+        localPosX = posX;
+      }
 
-    const componentMeasurements = measureComponent(child, rect, el, measurements);
-
-    const childType = typeOf(child) as string;
-    if (isContainer(childType)) {
-      collectChildMeasurements(
+      const componentMeasurements = measureComponent(
         child,
-        measurements,
-        dropTargets,
-        localPreX,
-        localPosX,
-        localPreY,
-        localPosY
+        rect,
+        el,
+        measurements
       );
+
+      const childType = typeOf(child) as string;
+      if (isContainer(childType)) {
+        collectChildMeasurements(
+          child,
+          measurements,
+          dropTargets,
+          localPreX,
+          localPosX,
+          localPreY,
+          localPosY
+        );
+      }
+      return componentMeasurements;
     }
-    return componentMeasurements;
-  });
+  );
   if (childMeasurements.length) {
     measurements[path].children = expandedMeasurements;
   }
@@ -364,7 +411,7 @@ function omitDragging(component: ReactElement) {
   const { id } = getProps(component);
   const el = document.getElementById(id);
   if (el) {
-    return el.dataset.dragging !== 'true';
+    return el.dataset.dragging !== "true";
   } else {
     console.warn(`BoxModel: no element found with id #${id}`);
     return false;
@@ -398,10 +445,10 @@ function measureComponentDomElement(
       bottom: Math.round(bottom),
       height: Math.round(height),
       width: Math.round(width),
-      scrolling
+      scrolling,
     },
     el,
-    component
+    component,
   ];
 }
 
@@ -413,7 +460,11 @@ function allBoxesContainingPoint(
   dropTargets?: string[],
   boxes: LayoutModel[] = []
 ): LayoutModel[] {
-  const { children, 'data-path': dataPath, path = dataPath } = getProps(component);
+  const {
+    children,
+    "data-path": dataPath,
+    path = dataPath,
+  } = getProps(component);
 
   const type = typeOf(component) as string;
   var rect = measurements[path];
@@ -422,7 +473,9 @@ function allBoxesContainingPoint(
   if (dropTargets && dropTargets.length) {
     if (dropTargets.includes(path)) {
       boxes.push(component);
-    } else if (dropTargets.some((dropTargetPath) => dropTargetPath.startsWith(path))) {
+    } else if (
+      dropTargets.some((dropTargetPath) => dropTargetPath.startsWith(path))
+    ) {
       // keep going
     } else {
       return boxes;
@@ -444,10 +497,16 @@ function allBoxesContainingPoint(
   }
 
   for (var i = 0; i < children.length; i++) {
-    if (type === 'Stack' && component.props.active !== i) {
+    if (type === "Stack" && component.props.active !== i) {
       continue;
     }
-    const nestedBoxes = allBoxesContainingPoint(children[i], measurements, x, y, dropTargets);
+    const nestedBoxes = allBoxesContainingPoint(
+      children[i],
+      measurements,
+      x,
+      y,
+      dropTargets
+    );
     if (nestedBoxes.length) {
       return boxes.concat(nestedBoxes);
     }
@@ -461,18 +520,22 @@ function containsPoint(rect: rect, x: number, y: number) {
   }
 }
 
-function scrollIntoViewIfNeccesary({ top, bottom, scrolling }: DragDropRect, x: number, y: number) {
+function scrollIntoViewIfNeccesary(
+  { top, bottom, scrolling }: DragDropRect,
+  x: number,
+  y: number
+) {
   if (scrolling) {
     const { id, scrollTop, scrollHeight } = scrolling;
     const height = bottom - top;
     if (scrollTop === 0 && bottom - y < 50) {
       const scrollMax = scrollHeight - height;
       const el = document.getElementById(id) as HTMLElement;
-      el.scrollTo({ left: 0, top: scrollMax, behavior: 'smooth' });
+      el.scrollTo({ left: 0, top: scrollMax, behavior: "smooth" });
       scrolling.scrollTop = scrollMax;
     } else if (scrollTop > 0 && y - top < 50) {
       const el = document.getElementById(id) as HTMLElement;
-      el.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
+      el.scrollTo({ left: 0, top: 0, behavior: "smooth" });
       scrolling.scrollTop = 0;
     } else {
       return false;

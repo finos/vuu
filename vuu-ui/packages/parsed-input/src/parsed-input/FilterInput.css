@@ -1,0 +1,28 @@
+.vuuFilterInput {
+
+    --vuuTokenMirror-font-size: var(--font-size);
+    --vuuTokenMirror-height: 100%;
+    --vuuTokenMirror-left: var(--padding-left);
+    --vuuTokenMirror-line-height: var(--height);
+    --vuuTokenMirror-position: absolute;
+    --vuuTokenMirror-text-color: var(--text-color);
+    --vuuTokenMirror-top: 0;
+    --vuuTokenMirror-width: 100%;
+  
+    box-sizing: border-box;
+    --font-size: var(--hwParsedInput-input-font-size, 24px);
+    height: var(--parsedInput-height, 44px);
+    position: relative;
+
+}
+
+.vuuFilterInput-input {
+    caret-color: black;
+    font-size: var(--parsedInput-fontSize);
+    line-height: var(--parsedInput-height);
+    height: var(--parsedInput-height);
+    outline: 0;
+    position: relative;
+    white-space: pre;
+   
+}

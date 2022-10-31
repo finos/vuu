@@ -57,7 +57,7 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val exchange = table.getTableDef.columnForName("exchange")
 
-      val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None)
+      val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None, None)
 
       logger.info("Starting tree build")
 
@@ -65,7 +65,7 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       logger.info(s"Complete tree build in $millis ms")
 
-      val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), None)
+      val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), None, None)
 
       val (sizeMillis, _) = timeIt{ groupByTable.size() }
 

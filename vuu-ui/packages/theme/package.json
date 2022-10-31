@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/theme",
-  "version": "0.0.21",
+  "version": "0.0.26",
   "author": "heswell",
   "main": "src/index.ts",
   "types": "src/index.ts",

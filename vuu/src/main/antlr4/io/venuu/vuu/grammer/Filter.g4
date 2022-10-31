@@ -11,7 +11,7 @@ NEQ : '!=';
 IN : 'in';
 STARTS : 'starts';
 ENDS : 'ends';
-PATHSEP : '/';
+//PATHSEP : '/';
 LBRACK : '[';
 RBRACK : ']';
 LPAREN : '(';
@@ -31,6 +31,28 @@ operator : LT | GT | EQ | NEQ | IN | STARTS | ENDS;
 
 INT : '0'..'9'+;
 FLOAT : ('0'..'9')+ '.' ('0'..'9')*;
-STRING : '"'('a'..'z'|'A'..'Z'|'0'..'9'|'.'|'-')* '"';
+//STRING : '"'('a'..'z'|'A'..'Z'|'0'..'9'|'.'|'-')* '"';
+STRING
+   : '"' SUPPCHAR* '"'
+   ;
+
+//this code allows us to support more exotica (unicode, but also rserved chars) in the filter box
+//TODO: CJS Add example of unicode filtering to tests
+fragment
+SUPPCHAR
+    :   ~["\\\r\n]
+    |   ESC
+    ;
+
+fragment ESC
+   : '\\' (["\\/bfnrt] | UNICODE)
+   ;
+fragment UNICODE
+   : 'u' HEX HEX HEX HEX
+   ;
+fragment HEX
+   : [0-9a-fA-F]
+   ;
+
 ID : ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'.'|'-')*;
 WS  :   [ \t\r\n]+ -> skip;

@@ -22,6 +22,7 @@ import io.venuu.vuu.{core, viewport}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, IteratorHasAsScala, SetHasAsScala}
+import scala.jdk.javaapi.CollectionConverters
 import scala.util.{Failure, Success, Try}
 
 trait ViewPortContainerMBean {
@@ -287,7 +288,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       throw new Exception(s"view port not found $id")
     }
 
-
     val aSort = parseSort(sort, viewPort.table)
 
     val aFilter = parseFilter(filterSpec)
@@ -308,7 +308,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
 
-      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None).build()
+      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None, Some(aSort)).build()
       val keys = tree.toKeys()
       sessionTable.setTree(tree, keys)
       viewPort.setKeys(keys)
@@ -361,7 +361,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
 
-      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None).build()
+      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None, Some(aSort)).build()
 
       val keys = tree.toKeys()
 
@@ -530,10 +530,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     table match {
       case tbl: TreeSessionTableImpl =>
 
-        val oldTree = tbl.getTree
+        val oldTree      = tbl.getTree
+        val oldNodeState = CollectionConverters.asScala(tbl.getTree.nodeState).toMap
 
         val (millis, tree) = timeIt {
-          new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree)).build()
+          new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree), Option(viewPort.getStructure.filtAndSort.sort)).build()
         }
 
         val (millis2, keys) = timeIt {
@@ -553,7 +554,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
         val (millis5, _) = timeIt {
 
-          val branchKeys = TreeUtils.diffOldVsNewBranches(oldTree, tree)
+          val branchKeys = TreeUtils.diffOldVsNewBranches(oldTree, tree, oldNodeState)
 
           viewPort.updateSpecificKeys(branchKeys)
         }

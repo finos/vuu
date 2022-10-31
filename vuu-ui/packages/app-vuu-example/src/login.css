@@ -4,4 +4,14 @@ body {
   flex-direction: column;
   justify-content: center;
   margin: 0;
+  font-family: "uitk-sans";
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
 }

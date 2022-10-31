@@ -1,10 +1,13 @@
-import React, { useCallback, useState } from 'react';
-import { useId } from '@vuu-ui/react-utils';
-import { Button, sourceItems, List, useItemsWithIds } from '@vuu-ui/ui-controls';
+import React, { useCallback, useState } from "react";
+import { useId } from "@vuu-ui/react-utils";
+import {
+  Button,
+  sourceItems,
+  List,
+  useItemsWithIds,
+} from "@vuu-ui/ui-controls";
 
-import { usa_states } from '../List.data';
-
-import '@vuu-ui/theme/index.css';
+import { usa_states } from "../List.data";
 
 let displaySequence = 1;
 
@@ -23,7 +26,7 @@ export const ListControlsList = () => {
   };
 
   return (
-    <div style={{ display: 'flex', height: 600 }}>
+    <div style={{ display: "flex", height: 600 }}>
       <div>
         <input type="text" />
         <List
@@ -80,7 +83,7 @@ export const FullyControlledList = () => {
 
   return (
     <div style={{ height: 600 }}>
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: "flex", gap: 12 }}>
         <Button onClick={moveDown}>Highlight down</Button>
         <Button onClick={moveUp}>Highlight up</Button>
         <Button onClick={selectCurrent}>Select</Button>
@@ -142,7 +145,7 @@ export const PartiallyControlledList = () => {
 
   return (
     <div style={{ height: 600 }}>
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: "flex", gap: 12 }}>
         <Button onClick={moveDown}>Highlight down</Button>
         <Button onClick={moveUp}>Highlight up</Button>
         <Button onClick={selectCurrent}>Select</Button>

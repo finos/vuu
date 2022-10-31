@@ -1,19 +1,22 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 
-import { useEffectSkipFirst } from '@vuu-ui/react-utils';
-import useAdornments from '../use-adornments';
-import modelReducer, { initModel } from './grid-model-reducer';
-import { ROW_HEIGHT } from './grid-model-actions';
-import { useResizeObserver, WidthHeight } from '@vuu-ui/react-utils';
+import { useEffectSkipFirst } from "@vuu-ui/react-utils";
+import useAdornments from "../use-adornments";
+import modelReducer, { initModel } from "./grid-model-reducer";
+import { ROW_HEIGHT } from "./grid-model-actions";
+import { useResizeObserver, WidthHeight } from "@vuu-ui/react-utils";
 
-const sizeOrUndefined = (value) => (value == null || value === 'auto' ? undefined : value);
+const ClientWidthHeight = ["clientHeight", "clientWidth"];
+
+const sizeOrUndefined = (value) =>
+  value == null || value === "auto" ? undefined : value;
 
 const useSize = (style, height, width) => {
   const [size, _setSize] = useState({
     height: sizeOrUndefined(style?.height ?? height),
     measuredHeight: null,
     width: sizeOrUndefined(style?.width ?? width),
-    measuredWidth: null
+    measuredWidth: null,
   });
 
   const setSize = useCallback(
@@ -21,7 +24,7 @@ const useSize = (style, height, width) => {
       _setSize((state) => ({
         ...state,
         measuredHeight: height,
-        measuredWidth: width
+        measuredWidth: width,
       }));
     },
     [_setSize]
@@ -30,7 +33,13 @@ const useSize = (style, height, width) => {
   return [size, setSize];
 };
 
-export const useGridModel = ({ dataSource: dataSourceProp, style, height, width, ...props }) => {
+export const useGridModel = ({
+  dataSource: dataSourceProp,
+  style,
+  height,
+  width,
+  ...props
+}) => {
   const rootRef = useRef(null);
   const firstRender = useRef(true);
   const [dataSource, setDataSource] = useState(dataSourceProp);
@@ -40,23 +49,35 @@ export const useGridModel = ({ dataSource: dataSourceProp, style, height, width,
   const [size, setSize] = useSize(style, height, width);
 
   const onResize = useCallback(
-    ({ width, height }) => {
-      setSize({ width: Math.floor(width), height: Math.floor(height) });
+    ({ clientWidth, clientHeight }) => {
+      setSize({
+        width: Math.floor(clientWidth),
+        height: Math.floor(clientHeight),
+      });
     },
     [setSize]
   );
 
-  useResizeObserver(rootRef, WidthHeight, onResize, /* reportInitialSize = */ true);
+  useResizeObserver(
+    rootRef,
+    ClientWidthHeight,
+    onResize,
+    /* reportInitialSize = */ true
+  );
 
-  const [gridModel, dispatchGridModel] = useReducer(modelReducer, [props, size, custom], initModel);
+  const [gridModel, dispatchGridModel] = useReducer(
+    modelReducer,
+    [props, size, custom],
+    initModel
+  );
 
   useEffectSkipFirst(() => {
     dispatchGridModel({
-      type: 'resize',
+      type: "resize",
       // The totalHeaderHeight will be set as top padding, which will not be included
       // in contentHeight measured by Observer
       height: size.measuredHeight,
-      width: size.measuredWidth
+      width: size.measuredWidth,
     });
   }, [size.measuredHeight, size.measuredWidth]);
 
@@ -68,7 +89,9 @@ export const useGridModel = ({ dataSource: dataSourceProp, style, height, width,
     if (firstRender.current) {
       if (props.rowHeight === undefined) {
         const rowHeight = parseInt(
-          getComputedStyle(rootRef.current).getPropertyValue('--grid-row-height')
+          getComputedStyle(rootRef.current).getPropertyValue(
+            "--grid-row-height"
+          )
         );
         if (!isNaN(rowHeight) && rowHeight !== gridModel.rowHeight) {
           dispatchGridModel({ type: ROW_HEIGHT, rowHeight });
@@ -84,7 +107,7 @@ export const useGridModel = ({ dataSource: dataSourceProp, style, height, width,
   //TODO do we need to useCallback here - can we ever send stale props ?
   useEffectSkipFirst(() => {
     // onsole.log(`dispatchGridModel initialize`)
-    dispatchGridModel({ type: 'initialize', props });
+    dispatchGridModel({ type: "initialize", props });
     if (dataSourceProp !== dataSource) {
       setDataSource(dataSourceProp);
     }

@@ -40,7 +40,6 @@
 
 .innerHeaderCell {
   flex: 1 1 100%;
-  font-family: RobotoCondensedBold;
   overflow: hidden;
   padding: var(--cell-padding);
   position: relative;

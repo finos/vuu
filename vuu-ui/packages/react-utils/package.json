@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/react-utils",
-  "version": "0.0.21",
+  "version": "0.0.26",
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
@@ -14,7 +14,7 @@
   },
   "types": "src/index.ts",
   "dependencies": {
-    "@vuu-ui/utils": "0.0.21"
+    "@vuu-ui/utils": "0.0.26"
   },
   "peerDependencies": {
     "react": "^17.0.2",

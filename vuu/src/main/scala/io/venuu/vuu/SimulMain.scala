@@ -1,5 +1,7 @@
 package io.venuu.vuu
 
+import com.typesafe.config.ConfigFactory
+import com.typesafe.scalalogging.StrictLogging
 import io.venuu.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import io.venuu.toolbox.lifecycle.LifecycleContainer
 import io.venuu.toolbox.time.{Clock, DefaultClock}
@@ -19,13 +21,15 @@ import io.venuu.vuu.state.{MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, V
 chrome://flags/#allow-insecure-localhost
  */
 
-object SimulMain extends App {
+object SimulMain extends App with StrictLogging {
 
   JmxInfra.enableJmx()
 
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
   implicit val clock: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+
+  logger.info("[VUU] Starting...")
 
   val store = new MemoryBackedVuiStateStore()
 
@@ -36,13 +40,20 @@ object SimulMain extends App {
   val authenticator: Authenticator = new AlwaysHappyAuthenticator
   val loginTokenValidator: LoggedInTokenValidator = new LoggedInTokenValidator
 
+  val defaultConfig = ConfigFactory.load()
+
+  //look in application.conf for default values
+  val webRoot = defaultConfig.getString("vuu.webroot")
+  val certPath = defaultConfig.getString("vuu.certPath")
+  val keyPath = defaultConfig.getString("vuu.keyPath")
+
   val config = VuuServerConfig(
     VuuHttp2ServerOptions()
       //only specify webroot if we want to load the source locally, we'll load it from the jar
       //otherwise
-      .withWebRoot("vuu-ui/deployed_apps/app-vuu-example")
-      .withSsl("vuu/src/main/resources/certs/cert.pem",
-        "vuu/src/main/resources/certs/key.pem")
+      .withWebRoot(webRoot)
+      .withSsl(certPath, keyPath)
+      //don't leave me on in prod pls....
       .withDirectoryListings(true)
       .withPort(8443),
     VuuWebSocketOptions()
@@ -63,6 +74,8 @@ object SimulMain extends App {
   //  LifecycleGraphviz("vuu", lifecycle.dependencyGraph)
 
   lifecycle.start()
+
+  logger.info("[VUU] Ready.");
 
   vuuServer.join()
 }

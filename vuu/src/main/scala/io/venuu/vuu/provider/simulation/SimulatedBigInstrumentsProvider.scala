@@ -11,7 +11,7 @@ import io.venuu.vuu.provider.Provider
 import scala.concurrent.duration.DurationInt
 import scala.util.Random
 
-class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging {
+class SimulatedBigInstrumentsProvider(table: DataTable)(implicit clock: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging {
 
   private val runner: RunOnceLifeCycleRunner = new RunOnceLifeCycleRunner("simulInstrumentsProvider", () => build())
 
@@ -56,7 +56,7 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
 
   def build() = {
 
-    Thread.sleep(5.seconds.toMillis)
+    clock.sleep(5.seconds.toMillis)
 
     val rics = ricBuilder
 
@@ -67,8 +67,8 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit timeProvider: C
     rows.foreach(row => {
 
       if (i % 10000 == 0) {
-        Thread.sleep(10)
-        logger.info(s"Loaded ${i} instruments")
+        clock.sleep(10)
+        logger.debug(s"Loaded ${i} instruments")
       }
 
       table.processUpdate(row("ric").toString, RowWithData(row("ric").toString, row), System.currentTimeMillis())

@@ -1,12 +1,26 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { metadataKeys } from '@vuu-ui/utils/src/column-utils';
-import { WindowRange, getFullRange } from '@vuu-ui/utils/src/range-utils';
+import { DataSourceRow, SubscribeCallback } from "@vuu-ui/data-remote";
+import { VuuDataRow, VuuRange } from "@vuu-ui/data-types";
+import { getFullRange, metadataKeys, WindowRange } from "@vuu-ui/utils";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-import GridContext from './grid-context';
+import GridContext from "./grid-context";
 
 const { RENDER_IDX } = metadataKeys;
 
-const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
+const byKey = (row1: VuuDataRow, row2: VuuDataRow) =>
+  row1[RENDER_IDX] - row2[RENDER_IDX];
+
+type SubscriptionDetails = {
+  columnNames: string[];
+  range: { from: number; to: number };
+};
 
 // const uniqueKeys = rows => {
 //   const keys = rows.map(row => row[1]).filter(i => i !== undefined);
@@ -16,32 +30,37 @@ const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
 
 //TODO allow subscription details to be set before subscribe call
 export default function useDataSource(
-  subscriptionDetails,
+  subscriptionDetails: SubscriptionDetails,
   gridModel,
   onConfigChange,
   onSizeChange
 ) {
-  const { dataSource, dispatchGridAction, dispatchGridModelAction } = useContext(GridContext);
+  const { dataSource, dispatchGridAction, dispatchGridModelAction } =
+    useContext(GridContext);
   const [, forceUpdate] = useState(null);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
   const rafHandle = useRef(null);
+  const data = useRef([]);
 
   const dataWindow = useMemo(
-    () => new MovingWindow(getFullRange(subscriptionDetails.range, gridModel.renderBufferSize)),
+    () =>
+      new MovingWindow(
+        getFullRange(subscriptionDetails.range, gridModel.renderBufferSize)
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [gridModel.renderBufferSize]
   );
 
   const setData = useCallback(
-    (updates) => {
+    (updates: DataSourceRow[]) => {
       //     onsole.log(`%c[useDataSource] setData
       // [${updates.map(d => d[0]).join(',')}]`,'color:blue')
       for (const row of updates) {
         dataWindow.add(row);
       }
 
-      // WHy bother with the slixe ?
+      // Why bother with the slice ?
       data.current = dataWindow.data.slice().sort(byKey);
       //     onsole.log(`%c[useDataSource] data.current has ${data.current.length} records
       // [${data.current.map(d => d[0]).join(',')}]
@@ -51,48 +70,49 @@ export default function useDataSource(
     [dataWindow]
   );
 
-  const datasourceMessageHandler = useCallback(
+  const datasourceMessageHandler: SubscribeCallback = useCallback(
     (message) => {
-      const { type, ...msg } = message;
-      if (type === 'subscribed') {
+      if (message.type === "subscribed") {
         dispatchGridModelAction({
-          type: 'set-available-columns',
-          columns: msg.columns
+          type: "set-available-columns",
+          columns: message.columns,
         });
-        if (msg.filter) {
-          dispatchGridModelAction({ type: 'filter', filter: msg.filter });
+        if (message.filter) {
+          dispatchGridModelAction({ type: "filter", filter: message.filter });
         }
-      } else if (type === 'viewport-update') {
-        const sizeChanged = msg.size !== undefined;
+      } else if (message.type === "viewport-update") {
+        const sizeChanged = message.size !== undefined;
         if (sizeChanged) {
-          onSizeChange(msg.size);
-          dataWindow.setRowCount(msg.size);
+          onSizeChange(message.size);
+          dataWindow.setRowCount(message.size);
         }
-        if (msg.rows) {
-          setData(msg.rows);
+        if (message.rows) {
+          setData(message.rows);
         } else if (sizeChanged) {
-          // TODO is this roght ?s
+          // TODO is this right ?
           data.current = dataWindow.data.slice().sort(byKey);
           hasUpdated.current = true;
         }
-      } else if (type === 'sort') {
-        const { sort } = msg;
+      } else if (message.type === "sort") {
+        const { sort } = message;
         dispatchGridModelAction(message);
         onConfigChange({ sort });
-      } else if (type === 'aggregate') {
-        const { aggregations } = msg;
-        console.log(`[useDataSource] aggregations ACKED ${JSON.stringify(aggregations)}`);
-        dispatchGridModelAction({ type: 'set-aggregations', aggregations });
+      } else if (message.type === "aggregate") {
+        const { aggregations } = message;
+        console.log(
+          `[useDataSource] aggregations ACKED ${JSON.stringify(aggregations)}`
+        );
+        dispatchGridModelAction({ type: "set-aggregations", aggregations });
         onConfigChange({ aggregations });
-      } else if (type === 'groupBy') {
-        const { groupBy } = msg;
-        dispatchGridModelAction({ type: 'group', groupBy });
+      } else if (message.type === "groupBy") {
+        const { groupBy } = message;
+        dispatchGridModelAction({ type: "group", groupBy });
         onConfigChange({ group: groupBy });
-      } else if (type === 'filter') {
-        const { filter, filterQuery } = msg;
+      } else if (message.type === "filter") {
+        const { filter, filterQuery } = message;
         dispatchGridModelAction(message);
         onConfigChange({ filter, filterQuery });
-        dataSource.emit('filter', filter);
+        dataSource.emit("filter", filter);
       } else {
         dispatchGridAction(message);
       }
@@ -104,7 +124,7 @@ export default function useDataSource(
       dispatchGridModelAction,
       onConfigChange,
       onSizeChange,
-      setData
+      setData,
     ]
   );
 
@@ -133,12 +153,13 @@ export default function useDataSource(
     rafHandle.current = requestAnimationFrame(refreshIfUpdated);
   }, [refreshIfUpdated]);
 
-  const data = useRef([]);
-
   const setRange = useCallback(
     (from, to) => {
-      const range = getFullRange({ from, to }, gridModel.renderBufferSize, dataSource.rowCount);
-      // onsole.log(`[useDataSource] setRange ${lo} ${hi} > full range ${from} ${to}`)
+      const range = getFullRange(
+        { from, to },
+        gridModel.renderBufferSize,
+        dataSource.rowCount
+      );
       dataSource.setRange(range.from, range.to);
       dataWindow.setRange(range.from, range.to);
     },
@@ -151,11 +172,16 @@ export default function useDataSource(
     dataSource.subscribe(
       {
         ...rest,
-        range: { from, to }
+        range: { from, to },
       },
       datasourceMessageHandler
     );
-  }, [dataSource, datasourceMessageHandler, gridModel.renderBufferSize, subscriptionDetails]);
+  }, [
+    dataSource,
+    datasourceMessageHandler,
+    gridModel.renderBufferSize,
+    subscriptionDetails,
+  ]);
 
   useEffect(
     () => () => {
@@ -168,14 +194,18 @@ export default function useDataSource(
 }
 
 export class MovingWindow {
-  constructor({ from, to }) {
+  public data: DataSourceRow[];
+  public rowCount: number = 0;
+  private range: WindowRange;
+
+  constructor({ from, to }: VuuRange) {
     this.range = new WindowRange(from, to);
     //internal data is always 0 based, we add range.from to determine an offset
     this.data = new Array(to - from);
     this.rowCount = 0;
   }
 
-  setRowCount = (rowCount) => {
+  setRowCount = (rowCount: number) => {
     if (rowCount < this.data.length) {
       this.data.length = rowCount;
     }
@@ -193,21 +223,21 @@ export class MovingWindow {
     this.rowCount = rowCount;
   };
 
-  add(data) {
+  add(data: DataSourceRow) {
     const [index] = data;
     //onsole.log(`ingest row at rowIndex ${index} [${index - this.range.from}]`)
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
       this.data[internalIndex] = data;
-
       // if (!sequential(this.data)){
       //   debugger;
       // }
     }
   }
 
-  getAtIndex(index) {
-    return this.range.isWithin(index) && this.data[index - this.range.from] != null
+  getAtIndex(index: number) {
+    return this.range.isWithin(index) &&
+      this.data[index - this.range.from] != null
       ? this.data[index - this.range.from]
       : undefined;
   }

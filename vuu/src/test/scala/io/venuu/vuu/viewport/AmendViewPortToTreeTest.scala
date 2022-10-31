@@ -277,7 +277,6 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
         (2         ,true      ,"$root|BT.L|chris",false     ,true      ,"chris"   ,2         ,""        ,"chris"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
         (2         ,false     ,"$root|BT.L|steve",false     ,false     ,"steve"   ,2         ,""        ,"steve"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
         (1         ,true      ,"$root|BT.L",false     ,true      ,"BT.L"    ,2         ,""        ,""        ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (1         ,false     ,"$root|VOD.L",false     ,false     ,"VOD.L"   ,1         ,""        ,""        ,"VOD.L"   ,""        ,""        ,""        ,""        ,""        ,""        ),
         (3         ,false     ,"$root|BT.L|chris|NYC-0002",true      ,false     ,"NYC-0002",0         ,"NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      ),
         (3         ,false     ,"$root|BT.L|chris|NYC-0003",true      ,false     ,"NYC-0003",0         ,"NYC-0003","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      ),
         (2         ,true      ,"$root|BT.L|chris",false     ,true      ,"chris"   ,2         ,""        ,"chris"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        )

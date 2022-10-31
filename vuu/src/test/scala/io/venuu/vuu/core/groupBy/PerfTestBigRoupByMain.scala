@@ -50,7 +50,7 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
 
   val exchange = table.getTableDef.columnForName("exchange")
 
-  val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None)
+  val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None, None)
 
   for(a <- 0 until 5000){
     logger.info("Starting tree build")

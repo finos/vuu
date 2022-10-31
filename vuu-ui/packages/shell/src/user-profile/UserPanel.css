@@ -11,6 +11,7 @@ vuuUserPanel-history {
 }
 
 .vuuUserPanel-buttonBar {
+  --uitkButton-width: 100%;
   align-items: flex-end;
   border-top: 1px solid var(--surface3);
   display: flex;
