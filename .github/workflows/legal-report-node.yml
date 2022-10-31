@@ -4,8 +4,7 @@ on:
   push:
     paths:
       - '**/package.json'
-      - '.github/workflows/cve-scanning-node.yml'
-      - 'vuu-ui/allow-list.json'
+      - '.github/workflows/legal-report-node.yml'
 
 jobs:
   scan-packages:
@@ -21,5 +20,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: yarn install --production --frozen-lockfile
         working-directory: vuu-ui
-      - run: npx --yes auditjs ossi --whitelist allow-list.json
+      - run: npx node-license-validator . --allow-licenses MIT ISC 0BSD BSD BSD-3-Clause Apache-2.0
         working-directory: vuu-ui
