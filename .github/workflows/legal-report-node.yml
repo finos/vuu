@@ -1,4 +1,4 @@
-name: Node CVE Scanning
+name: Legal report with Node
 
 on:
   push:
