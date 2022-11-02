@@ -62,18 +62,19 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>16</maven.compiler.source>
         <maven.compiler.target>16</maven.compiler.target>
-        <scala.version>2.13.5</scala.version>
+        <scala.version>2.13.9</scala.version>
         <metrics.version>4.2.5</metrics.version>
         <curator.version>3.1.0</curator.version>
         <scalatest.version>3.2.9</scalatest.version>
         <scala.logging>3.9.4</scala.logging>
-        <jackson.version>2.13.4</jackson.version>
+        <jackson.version>2.14.0-rc3</jackson.version>
         <aeron.version>1.17.0</aeron.version>
-        <antlr.version>4.9.1</antlr.version>
-        <netty.version>4.1.70.Final</netty.version>
+        <antlr.version>4.11.1</antlr.version>
+        <netty.version>4.1.82.Final</netty.version>
         <maven.scala.plugin>2.15.2</maven.scala.plugin>
-        <vertx.version>4.0.3</vertx.version>
+        <vertx.version>4.3.4</vertx.version>
         <typesafe.conf.version>1.4.2</typesafe.conf.version>
+        <logback.version>1.2.9</logback.version>
     </properties>
 
     <modules>
