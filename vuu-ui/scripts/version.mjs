@@ -1,6 +1,5 @@
-import shell from "shelljs";
+import { execWait, readPackageJson } from "./utils.mjs";
 import fs from "fs";
-import { readPackageJson } from "./utils.mjs";
 
 const packages = [
   "utils",
@@ -31,27 +30,29 @@ const rewriteDependencyVersions = (dependencies, version) => {
   });
 };
 
-export const bumpDependencies = () => {
-  let json = readPackageJson();
+export const bumpDependencies = (packageName) => {
+  const packageJsonPath = `packages/${packageName}/package.json`;
+  let json = readPackageJson(packageJsonPath);
   let { version, dependencies, peerDependencies } = json;
   if (dependencies || peerDependencies) {
     dependencies && rewriteDependencyVersions(dependencies, version);
     peerDependencies && rewriteDependencyVersions(peerDependencies, version);
-    fs.writeFileSync("package.json", JSON.stringify(json, null, 2));
+    fs.writeFileSync(packageJsonPath, JSON.stringify(json, null, 2));
   }
 };
 
-function bumpPackageVersion(packageName) {
-  shell.cd(`packages/${packageName}`);
-  shell.exec("yarn version --patch --no-git-tag-version");
-  shell.cd("../..");
+async function bumpPackageVersion(packageName) {
+  await execWait(
+    "yarn version --patch --no-git-tag-version",
+    `packages/${packageName}`
+  );
 }
 
 function bumpPackageDependencyVersions(packageName) {
-  shell.cd(`packages/${packageName}`);
-  bumpDependencies();
-  shell.cd("../..");
+  bumpDependencies(packageName);
 }
 
-packages.forEach((packageName) => bumpPackageVersion(packageName));
+await Promise.all(
+  packages.map((packageName) => bumpPackageVersion(packageName))
+);
 packages.forEach((packageName) => bumpPackageDependencyVersions(packageName));

@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { registerComponent } from "@vuu-ui/layout";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Loader } from "./Loader";
+import { importCSS } from "./css-module-loader";
 
 export interface FeatureProps<Params extends object | undefined = undefined> {
   height?: number;
@@ -19,14 +20,24 @@ function RawFeature<Params extends object | undefined>({
   ...props
 }: FeatureProps<Params>) {
   if (css) {
-    import(css, { assert: { type: "css" } }).then((cssModule) => {
+    // import(/* @vite-ignore */ css, { assert: { type: "css" } }).then(
+    //   (cssModule) => {
+    //     document.adoptedStyleSheets = [
+    //       ...document.adoptedStyleSheets,
+    //       cssModule.default,
+    //     ];
+    //   }
+    // );
+    // Polyfill until vite build supports import assertions
+    // Note: already fully supported in esbuild, so vite dev
+    importCSS(css).then((styleSheet) => {
       document.adoptedStyleSheets = [
         ...document.adoptedStyleSheets,
-        cssModule.default,
+        styleSheet,
       ];
     });
   }
-  const LazyFeature = React.lazy(() => import(url));
+  const LazyFeature = React.lazy(() => import(/* @vite-ignore */ url));
   return (
     <ErrorBoundary>
       <Suspense fallback={<Loader />}>

@@ -1,6 +1,7 @@
 @-webkit-keyframes reactbgup1 {
   from {
-    background-color: green;
+    background-color: var(--uitk-differential-positive-background
+    );
   }
   to {
     background-color: transparent;
@@ -9,7 +10,8 @@
 
 @-webkit-keyframes reactbgup2 {
   from {
-    background-color: green;
+    background-color: var(--uitk-differential-positive-background
+    );
   }
   to {
     background-color: transparent;
@@ -18,7 +20,8 @@
 
 @-webkit-keyframes reactbgdown1 {
   from {
-    background-color: red;
+    background-color: var(--uitk-differential-negative-background
+    );
   }
   to {
     background-color: transparent;
@@ -27,7 +30,8 @@
 
 @-webkit-keyframes reactbgdown2 {
   from {
-    background-color: red;
+    background-color: var(--uitk-differential-negative-background
+    );
   }
   to {
     background-color: transparent;
@@ -36,7 +40,8 @@
 
 @-webkit-keyframes reactarrowup1 {
   from {
-    color: green;
+    color: var(--uitk-differential-positive-foreground
+    );
   }
   to {
     color: transparent;
@@ -45,7 +50,8 @@
 
 @-webkit-keyframes reactarrowup2 {
   from {
-    color: green;
+    color: var(--uitk-differential-positive-foreground
+    );
   }
   to {
     color: transparent;
@@ -54,7 +60,8 @@
 
 @-webkit-keyframes reactarrowdown1 {
   from {
-    color: red;
+    color: var(--uitk-differential-negative-foreground
+    );
   }
   to {
     color: transparent;
@@ -63,7 +70,8 @@
 
 @-webkit-keyframes reactarrowdown2 {
   from {
-    color: red;
+    color: var(--uitk-differential-negative-foreground
+    );
   }
   to {
     color: transparent;
@@ -72,11 +80,14 @@
 
 @-webkit-keyframes reactbgarrowup1 {
   0% {
-    color: green;
-    background-color: green;
+    color: var(--uitk-differential-positive-foreground
+    );
+    background-color: var(--uitk-differential-positive-background
+    );
   }
   20% {
-    color: green;
+    color: var(--uitk-differential-positive-foreground
+    );
     background-color: transparent;
   }
   100% {
@@ -87,11 +98,14 @@
 
 @-webkit-keyframes reactbgarrowup2 {
   0% {
-    color: green;
-    background-color: green;
+    color: var(--uitk-differential-positive-foreground
+    );
+    background-color: var(--uitk-differential-positive-background
+    );
   }
   20% {
-    color: green;
+    color: var(--uitk-differential-positive-foreground
+    );
     background-color: transparent;
   }
   100% {
@@ -102,11 +116,14 @@
 
 @-webkit-keyframes reactbgarrowdown1 {
   0% {
-    color: red;
-    background-color: red;
+    color: var(--uitk-differential-negative-foreground
+    );
+    background-color: var(--uitk-differential-negative-background
+    );
   }
   20% {
-    color: red;
+    color: var(--uitk-differential-negative-foreground
+    );
     background-color: transparent;
   }
   100% {
@@ -117,11 +134,14 @@
 
 @-webkit-keyframes reactbgarrowdown2 {
   0% {
-    color: red;
-    background-color: red;
+    color: var(--uitk-differential-negative-foreground
+    );
+    background-color: var(--uitk-differential-negative-background
+    );
   }
   20% {
-    color: red;
+    color: var(--uitk-differential-negative-foreground
+    );
     background-color: transparent;
   }
   100% {

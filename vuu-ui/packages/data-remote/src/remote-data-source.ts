@@ -1,4 +1,3 @@
-import { P } from "@heswell/uitk-lab";
 import {
   ClientToServerRpcCall,
   VuuGroupBy,
@@ -16,12 +15,17 @@ import {
   SubscribeCallback,
   SubscribeProps,
 } from "./data-source";
-import {
-  VuuUIMessageOutGroupby,
-  VuuUIMessageOutMenuRPC,
-} from "./vuuUIMessageTypes";
+import { VuuUIMessageOutMenuRPC } from "./vuuUIMessageTypes";
 
 export interface DataSourceColumn {}
+
+// const log = (message: string, ...rest: unknown[]) => {
+//   console.log(
+//     `%c[RemoteDataSource] ${message}`,
+//     "color: brown; font-weight: bold",
+//     ...rest
+//   );
+// };
 
 /*-----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
@@ -38,8 +42,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   private initialGroup: VuuGroupBy | undefined;
   private initialRange: VuuRange = { from: 0, to: 0 };
   private initialSort: any;
-  private initialFilter: any;
-  private initialFilterQuery: any;
+  private initialFilter: Filter | undefined;
+  private initialFilterQuery: string | undefined;
   private initialAggregations: any;
   private pendingServer: any;
   private clientCallback: any;
@@ -118,12 +122,13 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       return;
     }
 
-    console.log(
-      `%c[remoteDataSource] ${this.viewport} subscribe 
-        range ${JSON.stringify(range)}
-        status ${this.status}`,
-      "color:green;font-weight: bold;"
-    );
+    // console.log(
+    //   `%c[remoteDataSource] ${this.viewport} subscribe
+    //     RemoteDataSource bufferSize ${this.bufferSize}
+    //     range ${JSON.stringify(range)}
+    //     status ${this.status}`,
+    //   "color:green;font-weight: bold;"
+    // );
 
     this.status = "subscribing";
     this.viewport = viewport;
@@ -131,7 +136,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.columns = columns;
 
     this.server = await this.pendingServer;
-    console.log(`RemoteDataSource server is now available`);
 
     const { bufferSize } = this;
     this.server?.subscribe(
@@ -177,15 +181,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   unsubscribe() {
     if (!this.disabled && !this.suspended) {
-      console.log(
-        `unsubscribe from ${
-          this.table ? JSON.stringify(this.table) : "no table"
-        } (viewport ${this?.viewport})`
-      );
       if (this.viewport) {
         this.server?.unsubscribe(this.viewport);
       }
-      this.server?.destroy();
+      this.server?.destroy(this.viewport);
     }
   }
 
@@ -254,6 +253,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   setRange(from: number, to: number) {
     if (this.viewport) {
+      // log(`setRange ${from} - ${to}`);
       const message = {
         viewport: this.viewport,
         type: "setViewRange",
@@ -261,7 +261,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       } as const;
 
       if (this.server) {
-        this.server?.send(message);
+        this.server.send(message);
       } else {
         this.initialRange = { from, to };
       }
@@ -270,16 +270,39 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   group(groupBy: VuuGroupBy) {
     if (this.viewport) {
+      // log(`groupBy ${JSON.stringify(groupBy)}`);
       const message = {
         viewport: this.viewport,
         type: "groupBy",
         groupBy,
-      } as VuuUIMessageOutGroupby;
+      } as const;
 
       if (this.server) {
-        this.server?.send(message);
+        this.server.send(message);
       } else {
         this.initialGroup = groupBy;
+      }
+    }
+  }
+
+  //TODO I think we should have a clear filter for API clarity
+  filter(filter: Filter | undefined, filterQuery: string) {
+    if (this.viewport) {
+      // log(`filter ${filterQuery}`, {
+      //   filter,
+      // });
+      const message = {
+        viewport: this.viewport,
+        type: "filterQuery",
+        filter,
+        filterQuery,
+      } as const;
+
+      if (this.server) {
+        this.server.send(message);
+      } else {
+        this.initialFilter = filter;
+        this.initialFilterQuery = filterQuery;
       }
     }
   }
@@ -324,6 +347,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   openTreeNode(key: string) {
     if (this.viewport) {
+      log(`openTreeNode ${key}`);
       this.server?.send({
         viewport: this.viewport,
         type: "openTreeNode",
@@ -334,6 +358,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   closeTreeNode(key: string) {
     if (this.viewport) {
+      // log(`closeTreeNode ${key}`);
       this.server?.send({
         viewport: this.viewport,
         type: "closeTreeNode",
@@ -352,29 +377,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       });
     }
   }
-
-  //TODO I think we should have a clear filter for API clarity
-  filter(filter: Filter | undefined, filterQuery: string) {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "filterQuery",
-        filter,
-        filterQuery,
-      });
-    }
-  }
-
-  // getFilterData(column: string, searchText: string) {
-  //   if (this.viewport) {
-  //     this.server?.send({
-  //     viewport: this.viewport,
-  //     type: 'getFilterData',
-  //     column,
-  //     searchText
-  //   });
-  // }
-  // }
 
   createLink({ parentVpId, link: { fromColumn, toColumn } }: any) {
     if (this.viewport) {

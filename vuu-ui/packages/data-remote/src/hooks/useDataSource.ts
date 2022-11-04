@@ -19,7 +19,7 @@ export function useDataSource({
   VuuRange,
   (range: VuuRange) => void
 ] {
-  console.log("IS THIS ACTYUALLY USED");
+  console.log("IS THIS ACTUALLY USED");
   const [, forceUpdate] = useState(null);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);

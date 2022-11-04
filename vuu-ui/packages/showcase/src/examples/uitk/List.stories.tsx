@@ -1,6 +1,7 @@
 import { List, VirtualizedList } from "@heswell/uitk-lab";
 import { useCallback, useEffect, useState } from "react";
 import { usa_states } from "./List.data";
+import { ListVisualizer } from "./ListVisualizer";
 
 export const DefaultList = () => {
   return (
@@ -32,19 +33,19 @@ export const DefaultVirtualisedList = () => {
     />
   );
 };
+
 export const DraggableListItems = () => {
   const [data, setData] = useState(usa_states);
 
   const handleDrop = useCallback(
     (fromIndex, toIndex) => {
-      console.log(`handleDrop from ${fromIndex} to ${toIndex}`);
       const newData = data.slice();
-      const [tab] = newData.splice(fromIndex, 1);
+      const [item] = newData.splice(fromIndex, 1);
       if (toIndex === -1) {
-        setData(newData.concat(tab));
+        setData(newData.concat(item));
       } else {
-        // const offset = toIndex < fromIndex ? +1 : 0;
-        newData.splice(toIndex, 0, tab);
+        const offset = toIndex > fromIndex ? 0 : 0;
+        newData.splice(toIndex + offset, 0, item);
         setData(newData);
       }
     },
@@ -58,12 +59,57 @@ export const DraggableListItems = () => {
   }, []);
 
   return (
-    <List
-      aria-label="Drag Drop Listbox example"
-      allowDragDrop
-      maxWidth={292}
-      onMoveListItem={handleDrop}
-      source={data}
-    />
+    <ListVisualizer>
+      <List
+        // itemHeight={50}
+        aria-label="Drag Drop Listbox example"
+        allowDragDrop
+        onSelect={handleSelect}
+        maxWidth={292}
+        onMoveListItem={handleDrop}
+        selectionStrategy="multiple"
+        source={data}
+      />
+    </ListVisualizer>
+  );
+};
+export const DraggableListItemsDropIndicator = () => {
+  const [data, setData] = useState(usa_states);
+
+  const handleDrop = useCallback(
+    (fromIndex, toIndex) => {
+      const newData = data.slice();
+      const [item] = newData.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        setData(newData.concat(item));
+      } else {
+        const offset = toIndex > fromIndex ? 0 : 0;
+        newData.splice(toIndex + offset, 0, item);
+        setData(newData);
+      }
+    },
+    [data]
+  );
+
+  const handleSelect = useCallback((evt, item) => {
+    console.log("select", {
+      item,
+    });
+  }, []);
+
+  return (
+    <ListVisualizer>
+      <List
+        // itemHeight={50}
+        aria-label="Drag Drop Listbox example"
+        allowDragDrop="drop-indicator"
+        // allowDragDrop
+        onSelect={handleSelect}
+        maxWidth={292}
+        onMoveListItem={handleDrop}
+        selectionStrategy="default"
+        source={data}
+      />
+    </ListVisualizer>
   );
 };

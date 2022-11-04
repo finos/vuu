@@ -1,5 +1,11 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
-import { useTestDataSource } from "../utils/useTestDataSource";
+import { Button } from "@heswell/uitk-core";
+import {
+  ToggleButton,
+  ToggleButtonGroup,
+  ToggleButtonGroupChangeEventHandler,
+} from "@heswell/uitk-lab";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { ErrorDisplay, useTestDataSource } from "../utils";
 
 import { Grid } from "@vuu-ui/data-grid";
 import { RemoteDataSource } from "@vuu-ui/data-remote";
@@ -10,11 +16,10 @@ import {
   instrumentSchemaHeaders,
 } from "./columnMetaData";
 
-import { Button } from "@vuu-ui/ui-controls";
 import { Flexbox, View } from "@vuu-ui/layout";
 import { ParsedInput, ParserProvider } from "@vuu-ui/parsed-input";
 
-import { parseFilter, extractFilter } from "@vuu-ui/datagrid-parsers";
+import { extractFilter, parseFilter } from "@vuu-ui/datagrid-parsers";
 import suggestionFactory from "./filter-suggestion-factory";
 
 import "./Grid.stories.css";
@@ -24,24 +29,66 @@ export default {
   component: Grid,
 };
 
-export const EmptyGrid = () => <Grid />;
+let displaySequence = 1;
+
+// export const EmptyGrid = () => <Grid />;
+// EmptyGrid.displaySequence = displaySequence++;
 
 export const DefaultGrid = () => {
-  const { dataSource, instrumentColumns } = useTestDataSource();
+  const tables = useMemo(
+    () => ["instruments", "orders", "parentOrders", "prices"],
+    []
+  );
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const { columns, dataSource, error } = useTestDataSource({
+    tablename: tables[selectedIndex],
+  });
+
+  const handleChange: ToggleButtonGroupChangeEventHandler = (
+    event,
+    index,
+    toggled
+  ) => {
+    console.log(`onChange [${index}] toggled ${toggled}`);
+    setSelectedIndex(index);
+  };
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
   return (
-    <Grid
-      dataSource={dataSource}
-      columns={instrumentColumns}
-      columnSizing="fill"
-      height={600}
-      selectionModel="extended"
-    />
+    <>
+      <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
+        <ToggleButton ariaLabel="alert" tooltipText="Alert">
+          Instruments
+        </ToggleButton>
+        <ToggleButton ariaLabel="home" tooltipText="Home">
+          Orders
+        </ToggleButton>
+        <ToggleButton ariaLabel="print" tooltipText="Print">
+          Parent Orders
+        </ToggleButton>
+        <ToggleButton tooltipText="Search">Prices</ToggleButton>
+      </ToggleButtonGroup>
+
+      <Grid
+        dataSource={dataSource}
+        columns={columns}
+        columnSizing="fill"
+        height={600}
+        selectionModel="extended"
+      />
+    </>
   );
 };
+DefaultGrid.displaySequence = displaySequence++;
 
 export const BasicGrid = () => {
-  const { dataSource, instrumentColumns } = useTestDataSource();
-  const gridRef = useRef(null);
+  const { columns, dataSource, error } = useTestDataSource({
+    tablename: "instruments",
+  });
+  const gridRef = useRef<HTMLDivElement>(null);
   const [rowHeight, setRowHeight] = useState(18);
 
   const incrementProp = () => {
@@ -53,46 +100,55 @@ export const BasicGrid = () => {
   };
 
   const incrementCssProperty = () => {
-    const rowHeight = parseInt(
-      getComputedStyle(gridRef.current).getPropertyValue("--hw-grid-row-height")
-    );
-    gridRef.current.style.setProperty(
-      "--grid-row-height",
-      `${rowHeight + 1}px`
-    );
+    if (gridRef.current) {
+      const rowHeight = parseInt(
+        getComputedStyle(gridRef.current).getPropertyValue(
+          "--hw-grid-row-height"
+        )
+      );
+      gridRef.current.style.setProperty(
+        "--grid-row-height",
+        `${rowHeight + 1}px`
+      );
+    }
   };
 
   const decrementCssProperty = () => {
-    const rowHeight = parseInt(
-      getComputedStyle(gridRef.current).getPropertyValue("--hw-grid-row-height")
-    );
-    gridRef.current.style.setProperty(
-      "--grid-row-height",
-      `${rowHeight - 1}px`
-    );
+    if (gridRef.current) {
+      const rowHeight = parseInt(
+        getComputedStyle(gridRef.current).getPropertyValue(
+          "--hw-grid-row-height"
+        )
+      );
+      gridRef.current?.style.setProperty(
+        "--grid-row-height",
+        `${rowHeight - 1}px`
+      );
+    }
   };
 
   const setLowDensity = () => {
-    gridRef.current.style.setProperty("--grid-row-height", `32px`);
+    gridRef.current?.style.setProperty("--grid-row-height", `32px`);
   };
   const setHighDensity = () => {
-    gridRef.current.style.setProperty("--grid-row-height", `20px`);
+    gridRef.current?.style.setProperty("--grid-row-height", `20px`);
   };
 
   const handleConfigChange = (config) => {
     console.log(`handleConfigChange ${JSON.stringify(config, null, 2)}`);
   };
 
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
   return (
     <>
-      <div>
-        <input defaultValue="Life is" />
-      </div>
       <Grid
         // cellSelectionModel="single-cell"
         className="StoryGrid"
         dataSource={dataSource}
-        columns={instrumentColumns}
+        columns={columns}
         // columnSizing="fill"
         height={624}
         onConfigChange={handleConfigChange}
@@ -118,32 +174,22 @@ export const BasicGrid = () => {
   );
 };
 
+BasicGrid.displaySequence = displaySequence++;
+
 export const PersistConfig = () => {
   const configRef = useRef({
     columns: instrumentSchema.columns,
   });
   const [configDisplay, setConfigDisplay] = useState(() => configRef.current);
   const [config, setConfig] = useState(() => configRef.current);
-  const [rowHeight, setRowHeight] = useState(18);
 
   const applyConfig = () => {
     setConfig(configRef.current);
   };
 
-  const dataConfig = useMemo(
-    () => ({
-      bufferSize: 0,
-      columns: instrumentSchema.columns.map((col) => col.name),
-      tableName: "instruments",
-      configUrl: "/tables/instruments/config.js",
-    }),
-    []
-  );
-
-  const dataSource1 = useMemo(
-    () => new RemoteDataSource(dataConfig),
-    [dataConfig]
-  );
+  const { columns, dataSource, error } = useTestDataSource({
+    tablename: "instruments",
+  });
 
   const handleConfigChange = useCallback(
     (updates) => {
@@ -163,6 +209,10 @@ export const PersistConfig = () => {
 
   console.log(`render`, config);
 
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
   return (
     <>
       <style>{gridStyles}</style>
@@ -171,14 +221,13 @@ export const PersistConfig = () => {
       </div>
       <Grid
         className="StoryGrid"
-        dataSource={dataSource1}
-        columns={config.columns}
+        dataSource={dataSource}
+        columns={columns}
         // columns={instrumentSchema.columns}
         columnSizing="fill"
         height={300}
         onConfigChange={handleConfigChange}
         renderBufferSize={50}
-        rowHeight={rowHeight}
         selectionModel="single"
         style={{ margin: 10, border: "solid 1px #ccc" }}
       />
@@ -191,6 +240,7 @@ export const PersistConfig = () => {
     </>
   );
 };
+PersistConfig.displaySequence = displaySequence++;
 
 // export const BasicGridColumnLabels = () => {
 //   const gridRef = useRef(null)
@@ -232,10 +282,16 @@ export const BasicGridColumnFixedCols = () => {
     []
   );
 
-  const dataSource = useMemo(
-    () => new RemoteDataSource(dataConfig),
-    [dataConfig]
-  );
+  const { columns, dataSource, error } = useTestDataSource({
+    columnConfig: { description: { locked: true } },
+    tablename: "instruments",
+  });
+
+  console.log({ columns });
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
 
   return (
     <>
@@ -244,7 +300,7 @@ export const BasicGridColumnFixedCols = () => {
       </div>
       <Grid
         dataSource={dataSource}
-        columns={instrumentSchemaFixed.columns}
+        columns={columns}
         height={600}
         ref={gridRef}
         renderBufferSize={20}
@@ -253,6 +309,8 @@ export const BasicGridColumnFixedCols = () => {
     </>
   );
 };
+
+BasicGridColumnFixedCols.displaySequence = displaySequence++;
 
 export const BasicGridColumnHeaders = () => {
   const gridRef = useRef(null);
@@ -288,6 +346,8 @@ export const BasicGridColumnHeaders = () => {
     </>
   );
 };
+
+BasicGridColumnHeaders.displaySequence = displaySequence++;
 
 export const BasicGridWithFilter = () => {
   const gridRef = useRef(null);
@@ -351,3 +411,5 @@ export const FilteredGridInLayout = () => {
     </Flexbox>
   );
 };
+
+BasicGridWithFilter.displaySequence = displaySequence++;

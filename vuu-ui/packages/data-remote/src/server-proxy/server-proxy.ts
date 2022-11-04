@@ -69,7 +69,7 @@ export class ServerProxy {
   private postMessageToClient: PostMessageToClientCallback;
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
-  private authToken: string = "";
+  private authToken = "";
   private pendingLogin?: PendingLogin;
   private sessionId?: string;
   private queuedRequests: Array<ClientToServerMessage["body"]> = [];
@@ -125,7 +125,7 @@ export class ServerProxy {
       });
     } else {
       console.error(
-        `ServerProxy: failed to unsubscribe client viewport ${clientViewportId}`
+        `ServerProxy: failed to unsubscribe client viewport ${clientViewportId}, viewport not found`
       );
     }
   }
@@ -486,6 +486,7 @@ export class ServerProxy {
 
       case Message.REMOVE_VP_SUCCESS:
         {
+          console.log(`ACK viewport removed`);
           const viewport = this.viewports.get(body.viewPortId);
           if (viewport) {
             // do we need a destroy method on viewport for cleanup ?

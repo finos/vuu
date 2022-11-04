@@ -1,10 +1,12 @@
-import shell from "shelljs";
 import { formatBytes, formatDuration } from "../../../scripts/utils.mjs";
 import { build } from "../../../scripts/esbuild.mjs";
+import fs from "fs";
+import path from "path";
 
 const entryPoints = ["src/index.tsx", "src/login.tsx"];
 
 const featureEntryPoints = [
+  "src/features/ag-grid/index.ts",
   "src/features/filtered-grid/index.ts",
   "src/features/metrics/index.js",
   "src/features/simple-component/index.js",
@@ -29,8 +31,8 @@ const mainConfig = {
 
 async function main() {
   function createDeployFolder() {
-    shell.rm("-rf", outdir);
-    shell.mkdir("-p", outdir);
+    fs.rmSync(outdir, { recursive: true, force: true });
+    fs.mkdirSync(outdir, { recursive: true });
   }
 
   console.log("[CLEAN]");
@@ -48,7 +50,19 @@ async function main() {
   });
 
   console.log("[DEPLOY public assets]");
-  shell.cp(`./public/**`, `${outdir}`);
+  const publicContent = fs.readdirSync(`./public`);
+  publicContent.forEach((file) => {
+    if (file !== ".DS_Store") {
+      fs.cp(
+        path.resolve("public", file),
+        path.resolve(outdir, file),
+        { recursive: true },
+        (err) => {
+          if (err) throw err;
+        }
+      );
+    }
+  });
 
   entryPoints.concat(featureEntryPoints).forEach((fileName) => {
     const outJS = `${outdir}/${fileName

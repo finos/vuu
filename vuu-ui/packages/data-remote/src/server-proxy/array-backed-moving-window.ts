@@ -1,6 +1,6 @@
-import { WindowRange } from '@vuu-ui/utils';
-import { bufferBreakout } from './buffer-range';
-import { VuuRange, VuuRow } from '@vuu-ui/data-types';
+import { WindowRange } from "@vuu-ui/utils";
+import { bufferBreakout } from "./buffer-range";
+import { VuuRange, VuuRow } from "@vuu-ui/data-types";
 
 const EMPTY_ARRAY = [] as const;
 
@@ -9,7 +9,7 @@ type RangeTuple = [boolean, readonly VuuRow[], readonly VuuRow[]];
 export class ArrayBackedMovingWindow {
   private bufferSize: number;
   private range: WindowRange;
-  private internalData: any[];
+  private internalData: VuuRow[];
   private rowsWithinRange: number;
 
   public clientRange: WindowRange;
@@ -35,7 +35,8 @@ export class ArrayBackedMovingWindow {
     return (
       this.rowsWithinRange === this.clientRange.to - this.clientRange.from ||
       // this.rowsWithinRange === this.range.to - this.range.from ||
-      (this.rowCount > 0 && this.clientRange.from + this.rowsWithinRange === this.rowCount)
+      (this.rowCount > 0 &&
+        this.clientRange.from + this.rowsWithinRange === this.rowCount)
     );
   }
 
@@ -57,7 +58,7 @@ export class ArrayBackedMovingWindow {
     this.rowCount = rowCount;
   };
 
-  setAtIndex(index: number, data: any) {
+  setAtIndex(index: number, data: VuuRow) {
     const isWithinClientRange = this.isWithinClientRange(index);
     if (isWithinClientRange || this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
@@ -65,13 +66,15 @@ export class ArrayBackedMovingWindow {
         this.rowsWithinRange += 1;
         //onsole.log(`rowsWithinRange is now ${this.rowsWithinRange} out of ${this.range.to - this.range.from}`)
       }
+
       this.internalData[internalIndex] = data;
     }
     return isWithinClientRange;
   }
 
   getAtIndex(index: number): any {
-    return this.range.isWithin(index) && this.internalData[index - this.range.from] != null
+    return this.range.isWithin(index) &&
+      this.internalData[index - this.range.from] != null
       ? this.internalData[index - this.range.from]
       : undefined;
   }
@@ -119,7 +122,9 @@ export class ArrayBackedMovingWindow {
     } else if (this.rowsWithinRange > 0) {
       if (to > originalRange.to) {
         const start = Math.max(from, originalRange.to);
-        holdingRows = this.internalData.slice(start - offset, to - offset).filter((row) => !!row);
+        holdingRows = this.internalData
+          .slice(start - offset, to - offset)
+          .filter((row) => !!row);
       } else {
         const end = Math.max(originalRange.from, to);
         holdingRows = this.internalData
@@ -128,7 +133,12 @@ export class ArrayBackedMovingWindow {
       }
     }
 
-    const serverDataRequired = bufferBreakout(this.range, from, to, this.bufferSize);
+    const serverDataRequired = bufferBreakout(
+      this.range,
+      from,
+      to,
+      this.bufferSize
+    );
     return [serverDataRequired, clientRows, holdingRows] as RangeTuple;
   }
 
@@ -159,7 +169,12 @@ export class ArrayBackedMovingWindow {
     const { from: clientFrom, to: clientTo } = this.clientRange;
     const startOffset = Math.max(0, clientFrom - from);
     // TEMP hack, whu wouldn't we have rowCount ?
-    const endOffset = Math.min(to - from, to, clientTo - from, this.rowCount ?? to);
+    const endOffset = Math.min(
+      to - from,
+      to,
+      clientTo - from,
+      this.rowCount ?? to
+    );
     // const endOffset = Math.min(to-from, to, hi - from, this.rowCount);
     return this.internalData.slice(startOffset, endOffset);
   }

@@ -1,5 +1,5 @@
 import { SetFilterValuesFuncParams } from "ag-grid-community";
-import { FilterDataProvider } from "./FilterDataProvider";
+import { FilterDataProvider } from "@vuu-ui/ag-grid";
 
 export const createColumnDefs = (setFilterDataProvider: FilterDataProvider) => [
   {
@@ -11,7 +11,7 @@ export const createColumnDefs = (setFilterDataProvider: FilterDataProvider) => [
   {
     field: "currency",
     // hide: true,
-    // rowGroup: true,
+    enableRowGroup: true,
     sortable: true,
     width: 120,
     filter: "agSetColumnFilter",
@@ -27,6 +27,7 @@ export const createColumnDefs = (setFilterDataProvider: FilterDataProvider) => [
     filter: "agTextColumnFilter",
   },
   {
+    enableRowGroup: true,
     field: "exchange",
     sortable: true,
     filter: "agSetColumnFilter",

@@ -1,15 +1,11 @@
-import {
-  TableSchema,
-  useViewserver,
-  VuuTableSchemas,
-} from "@vuu-ui/data-remote";
-import { Dialog } from "@vuu-ui/layout";
+import { ToolkitProvider } from "@heswell/uitk-core";
+import { useViewserver, VuuTableSchemas } from "@vuu-ui/data-remote";
+import { Dialog, registerComponent } from "@vuu-ui/layout";
 import { Feature, Shell, VuuUser } from "@vuu-ui/shell";
 import { ReactElement, useCallback, useMemo, useRef, useState } from "react";
 import AppContext, { RpcResponse } from "./app-context";
-import { ToolkitProvider } from "@heswell/uitk-core";
+import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
-import { registerComponent } from "@vuu-ui/layout";
 
 import "./App.css";
 
@@ -23,78 +19,34 @@ const metricsCss = "./features/metrics.css";
 
 registerComponent("Stack", Stack, "container");
 
-const byModule = (schema1: TableSchema, schema2: TableSchema) => {
-  const m1 = schema1.table.module.toLowerCase();
-  const m2 = schema2.table.module.toLowerCase();
-
-  if (m1 < m2) {
-    return -1;
-  } else if (m1 > m2) {
-    return 1;
-  } else if (schema1.table.table < schema2.table.table) {
-    return -1;
-  } else if (schema1.table.table > schema2.table.table) {
-    return 1;
-  } else {
-    return 0;
-  }
-};
-
-const capitalize = (text: string) =>
-  text.length === 0 ? "" : text[0].toUpperCase() + text.slice(1);
-
-const regexp_worfify = /(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])/;
-const wordify = (text: string) => {
-  const [firstWord, ...rest] = text.split(regexp_worfify);
-  return `${capitalize(firstWord)} ${rest.join(" ")}`;
-};
-
-const getTables = (tables: VuuTableSchemas) => {
-  const tableList = Object.values(tables);
-  return tableList.sort(byModule).map((schema) => ({
-    className: "vuFilteredGrid",
-    closeable: true,
-    header: true,
-    label: `${schema.table.module} ${wordify(schema.table.table)}`,
-    resizeable: true,
-    resize: "defer",
-    type: "Feature",
-    props: {
-      params: { schema },
-      css: filteredGridCss,
-      url: filteredGridUrl,
-    },
-  }));
-};
-
-const getPaletteConfig = (tables: VuuTableSchemas) => [
-  {
-    label: "Features",
-    items: [
-      {
-        header: true,
-        label: "Simple Component",
-        type: "Feature",
-        props: {
-          url: simpleComponentUrl,
-        },
-      },
-      {
-        header: true,
-        label: "Metrics",
-        type: "Feature",
-        props: {
-          css: metricsCss,
-          url: metricsUrl,
-        },
-      },
-    ],
-  },
-  {
-    label: "Tables",
-    items: getTables(tables),
-  },
-];
+// const getPaletteConfig = (tables: VuuTableSchemas) => [
+//   {
+//     label: "Features",
+//     items: [
+//       {
+//         header: true,
+//         label: "Simple Component",
+//         type: "Feature",
+//         props: {
+//           url: simpleComponentUrl,
+//         },
+//       },
+//       {
+//         header: true,
+//         label: "Metrics",
+//         type: "Feature",
+//         props: {
+//           css: metricsCss,
+//           url: metricsUrl,
+//         },
+//       },
+//     ],
+//   },
+//   {
+//     label: "Tables",
+//     items: getTables(tables),
+//   },
+// ];
 
 const defaultLayout = {
   type: "Stack",
@@ -123,10 +75,6 @@ export const App = ({ user }: { user: VuuUser }) => {
   const tablesRef = useRef<VuuTableSchemas>();
 
   const { tables } = useViewserver();
-
-  const paletteConfig = useMemo(() => {
-    return getPaletteConfig(tables);
-  }, [tables]);
 
   tablesRef.current = tables;
 
@@ -160,7 +108,7 @@ export const App = ({ user }: { user: VuuUser }) => {
       <AppContext.Provider value={{ handleRpcResponse }}>
         <Shell
           defaultLayout={defaultLayout}
-          paletteConfig={paletteConfig}
+          leftSidePanel={<AppSidePanel tables={tables} />}
           serverUrl={serverUrl}
           user={user}
         >

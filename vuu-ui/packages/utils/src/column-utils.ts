@@ -84,7 +84,9 @@ export const toKeyedColumn = (
   return { ...column, key };
 };
 
-export function buildColumnMap(columns?: Column[]): ColumnMap | null {
+const EMPTY_COLUMN_MAP = {} as const;
+
+export function buildColumnMap(columns?: (Column | string)[]): ColumnMap {
   const start = metadataKeys.count;
   if (columns) {
     return columns.reduce((map, column, i) => {
@@ -98,7 +100,7 @@ export function buildColumnMap(columns?: Column[]): ColumnMap | null {
       return map;
     }, {} as ColumnMap);
   } else {
-    return null;
+    return EMPTY_COLUMN_MAP;
   }
 }
 
@@ -155,6 +157,7 @@ export const metadataKeys = {
   KEY: 6,
   SELECTED: 7,
   count: 8,
+  // TODO following only used in datamodel
   PARENT_IDX: "parent_idx",
   IDX_POINTER: "idx_pointer",
   FILTER_COUNT: "filter_count",

@@ -15,7 +15,7 @@ import * as GridModelAction from "./grid-model/grid-model-actions";
 import { RowHeightCanary } from "./row-height-canary";
 import { ComponentProvider } from "./component-context";
 import { useGridModel } from "./grid-model/use-grid-model";
-import useDataSourceModelBindings from "./use-datasource-model-bindings";
+// import useDataSourceModelBindings from "./use-datasource-model-bindings";
 import {
   useGridActions,
   useKeyboardNavigation,
@@ -66,6 +66,8 @@ const Grid = forwardRef(function Grid(
   },
   ref
 ) {
+  console.log({ columns });
+
   const viewportRef = useRef(null);
   const gridModelRef = useRef(null);
   const [columnDragData, setColumnDragData] = useState(null);
@@ -165,7 +167,7 @@ const Grid = forwardRef(function Grid(
     dispatchGridModelAction,
   });
 
-  useDataSourceModelBindings(dataSource, gridModel);
+  // useDataSourceModelBindings(dataSource, gridModel);
   const handleChangeRange = useKeyboardNavigation(rootRef, gridModel);
 
   const handleColumnDragStart = useCallback(

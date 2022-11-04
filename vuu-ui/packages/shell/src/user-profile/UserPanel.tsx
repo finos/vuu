@@ -17,7 +17,7 @@ const HistoryListItem = (props) => {
 };
 
 export const UserPanel = forwardRef(function UserPanel(
-  { onNavigate, user, layoutId = "latest" },
+  { loginUrl, onNavigate, user, layoutId = "latest" },
   forwardedRef
 ) {
   const [history, setHistory] = useState([]);
@@ -50,6 +50,10 @@ export const UserPanel = forwardRef(function UserPanel(
     [onNavigate]
   );
 
+  const handleLogout = useCallback(() => {
+    logout(loginUrl);
+  }, [loginUrl]);
+
   const selected =
     history.length === 0
       ? []
@@ -68,7 +72,7 @@ export const UserPanel = forwardRef(function UserPanel(
         source={history}
       />
       <div className="vuuUserPanel-buttonBar">
-        <Button aria-label="logout" onClick={logout}>
+        <Button aria-label="logout" onClick={handleLogout}>
           <ExportIcon /> Logout
         </Button>
       </div>

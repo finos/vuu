@@ -1,7 +1,10 @@
-import { ServerToClientMessage, ClientToServerMessage } from '@vuu-ui/data-types';
-import { Connection } from './connectionTypes';
+import {
+  ServerToClientMessage,
+  ClientToServerMessage,
+} from "@vuu-ui/data-types";
+import { Connection } from "./connectionTypes";
 
-import { ConnectionStatus, ConnectionStatusMessage } from './vuuUIMessageTypes';
+import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
 
 export type ConnectionMessage = ServerToClientMessage | ConnectionStatusMessage;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
@@ -15,8 +18,8 @@ const connectionAttempts: {
   [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
 } = {};
 
-const setWebsocket = Symbol('setWebsocket');
-const connectionCallback = Symbol('connectionCallback');
+const setWebsocket = Symbol("setWebsocket");
+const connectionCallback = Symbol("connectionCallback");
 
 export async function connect(
   connectionString: string,
@@ -39,43 +42,44 @@ async function makeConnection(
     connectionAttempts[url] ||
     (connectionAttempts[url] = {
       attemptsRemaining: 5,
-      status: 'disconnected'
+      status: "disconnected",
     });
 
   try {
-    callback({ type: 'connection-status', status: 'connecting' });
-    const reconnecting = typeof connection !== 'undefined';
+    callback({ type: "connection-status", status: "connecting" });
+    const reconnecting = typeof connection !== "undefined";
     const ws = await createWebsocket(url);
 
     console.log(
       `%c⚡ %c${url}`,
-      'font-size: 24px;color: green;font-weight: bold;',
-      'color:green; font-size: 14px;'
+      "font-size: 24px;color: green;font-weight: bold;",
+      "color:green; font-size: 14px;"
     );
 
     if (connection !== undefined) {
       connection[setWebsocket](ws);
     }
 
-    const websocketConnection = connection ?? new WebsocketConnection(ws, url, callback);
+    const websocketConnection =
+      connection ?? new WebsocketConnection(ws, url, callback);
 
-    const status = reconnecting ? 'reconnected' : 'connected';
-    callback({ type: 'connection-status', status });
+    const status = reconnecting ? "reconnected" : "connected";
+    callback({ type: "connection-status", status });
     websocketConnection.status = status;
 
     return websocketConnection as Connection;
   } catch (evt) {
     const retry = --connectionStatus.attemptsRemaining > 0;
     callback({
-      type: 'connection-status',
-      status: 'disconnected',
-      reason: 'failed to connect',
-      retry
+      type: "connection-status",
+      status: "disconnected",
+      reason: "failed to connect",
+      retry,
     });
     if (retry) {
       return makeConnectionIn(url, callback, connection, 10000);
     } else {
-      throw Error('Failed to establish connection');
+      throw Error("Failed to establish connection");
     }
   }
 }
@@ -95,7 +99,7 @@ const makeConnectionIn = (
 const createWebsocket = (connectionString: string): Promise<WebSocket> =>
   new Promise((resolve, reject) => {
     //TODO add timeout
-    const ws = new WebSocket('ws://' + connectionString);
+    const ws = new WebSocket("ws://" + connectionString);
     ws.onopen = () => resolve(ws);
     ws.onerror = (evt) => reject(evt);
   });
@@ -121,7 +125,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   close: () => void = closeWarn;
   requiresLogin = true;
   send: (msg: ClientToServerMessage) => void = sendWarn;
-  status: 'closed' | 'ready' | 'connected' | 'reconnected' = 'ready';
+  status: "closed" | "ready" | "connected" | "reconnected" = "ready";
 
   private url: string;
 
@@ -137,7 +141,6 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
 
   [setWebsocket](ws: WebSocket) {
     const callback = this[connectionCallback];
-
     ws.onmessage = (evt) => {
       // TEST DATA COLLECTION
       // saveTestData(evt.data, 'server');
@@ -154,15 +157,15 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     ws.onerror = () => {
       console.log(
         `%c⚡ %c${this.url}`,
-        'font-size: 24px;color: red;font-weight: bold;',
-        'color:red; font-size: 14px;'
+        "font-size: 24px;color: red;font-weight: bold;",
+        "color:red; font-size: 14px;"
       );
       callback({
-        type: 'connection-status',
-        status: 'disconnected',
-        reason: 'error'
+        type: "connection-status",
+        status: "disconnected",
+        reason: "error",
       });
-      if (this.status !== 'closed') {
+      if (this.status !== "closed") {
         reconnect(this);
         this.send = queue;
       }
@@ -171,34 +174,39 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     ws.onclose = () => {
       console.log(
         `%c⚡ %c${this.url}`,
-        'font-size: 24px;color: orange;font-weight: bold;',
-        'color:orange; font-size: 14px;'
+        "font-size: 24px;color: orange;font-weight: bold;",
+        "color:orange; font-size: 14px;"
       );
       callback({
-        type: 'connection-status',
-        status: 'disconnected',
-        reason: 'close'
+        type: "connection-status",
+        status: "disconnected",
+        reason: "close",
       });
-      if (this.status !== 'closed') {
+      if (this.status !== "closed") {
         reconnect(this);
         this.send = queue;
       }
     };
 
     const send = (msg: ClientToServerMessage) => {
-      // console.log(`%c>>>  (WebSocket) ${JSON.stringify(msg)}`, 'color:blue;font-weight:bold;');
+      // console.log(
+      //   `%c>>>  (WebSocket) ${JSON.stringify(msg)}`,
+      //   "color:blue;font-weight:bold;"
+      // );
       ws.send(JSON.stringify(msg));
     };
 
     const queue = (msg: ClientToServerMessage) => {
-      console.log(`queuing message ${JSON.stringify(msg)} until websocket reconnected`);
+      console.log(
+        `queuing message ${JSON.stringify(msg)} until websocket reconnected`
+      );
     };
 
     this.send = send;
 
     this.close = () => {
-      console.log('[Connection] close websocket');
-      this.status = 'closed';
+      console.log("[Connection] close websocket");
+      this.status = "closed";
       ws.close();
       this.close = closeWarn;
       this.send = sendWarn;

@@ -1,6 +1,4 @@
-import shell from "shelljs";
 import { build } from "./esbuild.mjs";
-
 import fs from "fs";
 import path from "path";
 import { formatBytes, formatDuration, readPackageJson } from "./utils.mjs";
@@ -65,8 +63,8 @@ export default async function main(customConfig) {
     : undefined;
 
   function createDistFolder() {
-    shell.rm("-rf", outdir);
-    shell.mkdir("-p", outdir);
+    fs.rmSync(outdir, { recursive: true, force: true });
+    fs.mkdirSync(outdir, { recursive: true });
   }
 
   const GeneratedFiles = /^(worker|index)\.(js|css)(\.map)?$/;
@@ -81,7 +79,10 @@ export default async function main(customConfig) {
         if (filesToPublish.length) {
           filesToPublish.forEach((fileName) => {
             const filePath = fileName.replace(/^\//, "./");
-            shell.cp("-r", filePath, `${outdir}`);
+            const outPath = `${outdir}${fileName}`;
+            fs.cp(filePath, outPath, { recursive: true }, (err) => {
+              if (err) throw err;
+            });
           });
         }
       }
@@ -125,11 +126,14 @@ export default async function main(customConfig) {
 
   function relocateCSSToPackageRoot() {
     if (cjs) {
-      shell.rm(`${outdir}/cjs/index.css`);
-      shell.rm(`${outdir}/cjs/index.css.map`);
+      fs.rmSync(`${outdir}/cjs/index.css`);
+      fs.rmSync(`${outdir}/cjs/index.css.map`);
     }
-    shell.mv(`${outdir}/esm/index.css`, outdir);
-    shell.mv(`${outdir}/esm/index.css.map`, outdir);
+    fs.renameSync(`${outdir}/esm/index.css`, path.resolve(outdir, "index.css"));
+    fs.renameSync(
+      `${outdir}/esm/index.css.map`,
+      path.resolve(outdir, "index.css.map")
+    );
   }
 
   createDistFolder();

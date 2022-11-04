@@ -8,7 +8,11 @@
   z-index: 100;
 }
 
-.vuuSimpleDraggable {
+.vuuSimpleDraggableWrapper {
   background-color: white;
   box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.2);
+}
+.vuuSimpleDraggableWrapper > * {
+  height: 100%;
+  width: 100%;
 }

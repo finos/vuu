@@ -1,6 +1,9 @@
 import { connectToServer /*, useViewserver */ } from "@vuu-ui/data-remote";
-import React, {
+import {
+  cloneElement,
+  HTMLAttributes,
   MouseEvent,
+  ReactElement,
   ReactNode,
   useCallback,
   useEffect,
@@ -8,6 +11,7 @@ import React, {
   useState,
 } from "react";
 import useLayoutConfig from "./use-layout-config";
+import cx from "classnames";
 
 import {
   Chest,
@@ -19,7 +23,7 @@ import {
 } from "@vuu-ui/layout";
 
 import { AppHeader } from "./app-header";
-import { AppPalette } from "./app-palette";
+// import { AppPalette } from "./app-palette";
 
 import { LayoutJSON } from "@vuu-ui/layout/src/layout-reducer";
 import "./shell.css";
@@ -29,20 +33,40 @@ export type VuuUser = {
   token: string;
 };
 
-export interface ShellProps {
+const warningLayout = {
+  type: "View",
+  props: {
+    style: { height: "calc(100% - 6px)" },
+  },
+  children: [
+    {
+      props: {
+        className: "vuuShell-warningPlaceholder",
+      },
+      type: "Placeholder",
+    },
+  ],
+};
+
+export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   defaultLayout?: LayoutJSON;
-  paletteConfig: any;
-  serverUrl: string;
+  leftSidePanel?: ReactElement;
+  loginUrl?: string;
+  // paletteConfig: any;
+  serverUrl?: string;
   user: VuuUser;
 }
 
 export const Shell = ({
   children,
-  defaultLayout,
-  paletteConfig,
+  className,
+  defaultLayout = warningLayout,
+  leftSidePanel,
+  loginUrl,
   serverUrl,
   user,
+  ...htmlAttributes
 }: ShellProps) => {
   const paletteView = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -76,56 +100,66 @@ export const Shell = ({
   );
 
   useEffect(() => {
-    connectToServer(serverUrl, user.token);
+    if (serverUrl && user.token) {
+      connectToServer(serverUrl, user.token);
+    }
   }, [serverUrl, user.token]);
+
+  const getDrawers = () => {
+    const drawers: ReactElement[] = [];
+    if (leftSidePanel) {
+      drawers.push(
+        <Drawer
+          key="left-panel"
+          onClick={handleDrawerClick}
+          open={open}
+          position="left"
+          inline
+          peekaboo
+          sizeOpen={200}
+          toggleButton="end"
+        >
+          <View
+            className="vuuShell-palette"
+            id="vw-app-palette"
+            key="app-palette"
+            ref={paletteView}
+            style={{ height: "100%" }}
+          >
+            {leftSidePanel}
+          </View>
+        </Drawer>
+      );
+    }
+
+    return drawers;
+  };
 
   return (
     <>
       <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
         <DraggableLayout
-          className="hw"
-          style={{ width: "100vw", height: "100vh" }}
-
-          // layout={layout}
+          className={cx("vuuShell", className)}
+          {...htmlAttributes}
         >
           <Flexbox
             className="App"
-            style={{ flexDirection: "column", height: "100%" }}
+            style={{ flexDirection: "column", height: "100%", width: "100%" }}
           >
             <AppHeader
               layoutId={layoutId.current}
+              loginUrl={loginUrl}
               user={user}
               onNavigate={handleNavigate}
             />
             <Chest style={{ flex: 1 }}>
-              <Drawer
-                onClick={handleDrawerClick}
-                open={open}
-                position="left"
-                inline
-                peekaboo
-                sizeOpen={200}
-                toggleButton="end"
-              >
-                <View
-                  className="vuuShell-palette"
-                  id="vw-app-palette"
-                  key="app-palette"
-                  ref={paletteView}
-                  title="Views"
-                  header
-                  style={{ height: "100%" }}
-                >
-                  <AppPalette
-                    config={paletteConfig}
-                    style={{ flex: 1, width: 200 }}
-                  />
-                </View>
-              </Drawer>
-              <DraggableLayout
-                dropTarget
-                style={{ width: "100%", height: "100%" }}
-              ></DraggableLayout>
+              {getDrawers().concat(
+                <DraggableLayout
+                  dropTarget
+                  key="main-content"
+                  style={{ width: "100%", height: "100%" }}
+                />
+              )}
             </Chest>
           </Flexbox>
         </DraggableLayout>

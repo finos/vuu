@@ -7,4 +7,5 @@ export * as Table from "./Table";
 export * as Tools from "./Tools";
 export * as UITK from "./uitk";
 export * as VUU from "./VUU";
+export * as Shell from "./Shell";
 export * as VUU_uitk from "./VUU-uitk";

@@ -1,15 +1,15 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef } from "react";
 import {
   closestListItemIndex,
   useCollapsibleGroups,
   useHierarchicalData,
   useKeyboardNavigation,
   useSelection,
-  useViewportTracking
-} from '../common-hooks';
+  useViewportTracking,
+} from "../common-hooks";
 
-import { useDragDrop } from '../common-hooks/use-drag-drop';
-import { useTypeahead } from './hooks';
+import { useDragDrop } from "../common-hooks/use-drag-drop";
+import { useTypeahead } from "./hooks";
 
 const EMPTY_ARRAY = [];
 
@@ -29,7 +29,7 @@ export const useList = ({
   selection,
   selectionKeys,
   sourceWithIds,
-  stickyHeaders
+  stickyHeaders,
 }) => {
   const lastSelection = useRef(EMPTY_ARRAY);
   const dataHook = useHierarchicalData(sourceWithIds);
@@ -43,10 +43,10 @@ export const useList = ({
     highlightedIdx: highlightedIdxProp,
     id,
     indexPositions: dataHook.indexPositions,
-    label: 'List',
+    label: "List",
     onHighlight: onHighlightProp,
     onKeyboardNavigation: handleKeyboardNavigation,
-    selected: lastSelection.current
+    selected: lastSelection.current,
   });
 
   const collapsibleHook = useCollapsibleGroups({
@@ -54,7 +54,7 @@ export const useList = ({
     highlightedIdx,
     indexPositions: dataHook.indexPositions,
     setVisibleData: dataHook.setData,
-    source: dataHook.data
+    source: dataHook.data,
   });
 
   const handleDrop = useCallback(
@@ -75,10 +75,10 @@ export const useList = ({
 
   const { onMouseDown, ...dragDropHook } = useDragDrop({
     allowDragDrop,
-    orientation: 'vertical',
+    orientation: "vertical",
     containerRef,
-    itemQuery: '.hwListItem',
-    onDrop: handleDrop
+    itemQuery: ".hwListItem",
+    onDrop: handleDrop,
   });
 
   const selectionHook = useSelection({
@@ -87,16 +87,16 @@ export const useList = ({
     highlightedIdx,
     indexPositions: dataHook.indexPositions,
     onChange,
-    label: 'useList',
+    label: "useList",
     selected,
     selection,
-    selectionKeys
+    selectionKeys,
   });
 
   const typeaheadHook = useTypeahead({
     hiliteItemAtIndex: keyboardHook.hiliteItemAtIndex,
     typeToNavigate: true,
-    source: sourceWithIds
+    source: sourceWithIds,
   });
 
   // TODO just assign directly in listProps
@@ -152,7 +152,11 @@ export const useList = ({
     [keyboardHook]
   );
 
-  const isScrolling = useViewportTracking(containerRef, highlightedIdx, stickyHeaders);
+  const isScrolling = useViewportTracking(
+    containerRef,
+    highlightedIdx,
+    stickyHeaders
+  );
 
   const handleMouseEnterListItem = useCallback(
     (evt) => {
@@ -177,14 +181,14 @@ export const useList = ({
   lastSelection.current = selectionHook.selected;
 
   const listProps = {
-    'aria-activedescendant': getActiveDescendant(),
+    "aria-activedescendant": getActiveDescendant(),
     onBlur: handleBlur,
     onFocus: handleFocus,
     onKeyDown: handleKeyDown,
     onMouseDown: onMouseDown,
     onMouseDownCapture: handleMouseDownCapture,
     onMouseLeave: handleMouseLeave,
-    onMouseMove: handleMouseMove
+    onMouseMove: handleMouseMove,
   };
 
   return {
@@ -196,12 +200,12 @@ export const useList = ({
     listItemHeaderHandlers: collapsibleHook.listItemHandlers,
     listItemHandlers: listItemHandlersProp || {
       ...selectionHook.listItemHandlers,
-      onMouseEnter: handleMouseEnterListItem
+      onMouseEnter: handleMouseEnterListItem,
     },
     listProps,
     selected: selectionHook.selected,
     setIgnoreFocus: keyboardHook.setIgnoreFocus,
     visibleData: dataHook.indexPositions,
-    ...dragDropHook
+    ...dragDropHook,
   };
 };

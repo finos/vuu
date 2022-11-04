@@ -151,7 +151,6 @@ function initDrag(
   dropTargets?: string[]
 ) {
   _dragContainer = getDragContainer(rootContainer, dragContainerPath);
-
   const { "data-path": dataPath, path = dataPath } = getProps(_dragContainer);
 
   if (dropTargets) {
@@ -169,7 +168,7 @@ function initDrag(
   // var end = window.performance.now();
   // onsole.log(`[Draggable] measurements took ${end - start}ms`, _measurements);
 
-  var dragZone = _measurements[path];
+  const dragZone = _measurements[path];
 
   _dragState = new DragState(
     dragZone,
@@ -179,8 +178,8 @@ function initDrag(
     intrinsicSize
   );
 
-  var pctX = Math.round(_dragState.x.mousePct * 100);
-  var pctY = Math.round(_dragState.y.mousePct * 100);
+  const pctX = Math.round(_dragState.x.mousePct * 100);
+  const pctY = Math.round(_dragState.y.mousePct * 100);
 
   window.addEventListener("mousemove", dragMousemoveHandler, false);
   window.addEventListener("mouseup", dragMouseupHandler, false);
@@ -199,10 +198,9 @@ function dragMousemoveHandler(evt: MouseEvent) {
   const x = evt.clientX;
   const y = evt.clientY;
   const dragState = _dragState;
-  var currentDropTarget = _dropTarget;
-  var dropTarget;
-
-  var newX, newY;
+  const currentDropTarget = _dropTarget;
+  let dropTarget;
+  let newX, newY;
 
   if (dragState.update("x", x)) {
     newX = dragState.x.pos;

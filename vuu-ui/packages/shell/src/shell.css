@@ -1,8 +1,15 @@
 .vuuShell {
-  background-color: ivory;
+  background-color: var(--uitk-palette-neutral-background-medium, ivory);
+  height: var(--vuuShell-height, 100vh);
+  width: var(--vuuShell-width, 100vw);
 }
 
 .vuuShell-palette {
   --vuuView-border: none;
   --vuuView-margin: 0;
+}
+
+.vuuShell-warningPlaceholder {
+  background-color: var(--uitk-container-background-high);
+  height: 100%;
 }
