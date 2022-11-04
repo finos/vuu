@@ -139,8 +139,9 @@ export type MousedownViewAction = {
 
 // TODO split this out into separate actions for different drag scenarios
 export type DragStartAction = {
-  component?: ReactElement;
+  payload?: ReactElement;
   dragContainerPath?: string;
+  dragElement?: HTMLElement;
   dragRect: DragDropRect;
   dropTargets?: string[];
   evt: MouseEvent;

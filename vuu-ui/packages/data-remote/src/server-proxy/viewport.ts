@@ -97,7 +97,7 @@ export class Viewport {
   private filter: any;
   private filterSpec: any;
   private groupBy: any;
-  private hasUpdates: boolean = false;
+  private hasUpdates = false;
   private holdingPen: DataSourceRow[] = [];
   private keys: any;
   private lastTouchIdx: number | null = null;
@@ -106,16 +106,16 @@ export class Viewport {
   private pendingLinkedParent: any;
   private pendingOperations: any = new Map<string, AsyncOperation>();
   private pendingRangeRequest: any = null;
-  private rowCountChanged: boolean = false;
+  private rowCountChanged = false;
   private sort: any;
-  private tableSize: number = -1;
+  private tableSize = -1;
 
   public clientViewportId: string;
-  public disabled: boolean = false;
-  public isTree: boolean = false;
+  public disabled = false;
+  public isTree = false;
   public serverViewportId?: string;
   public status: "" | "subscribed" = "";
-  public suspended: boolean = false;
+  public suspended = false;
   public table: VuuTable;
 
   constructor({
@@ -157,6 +157,13 @@ export class Viewport {
   }
 
   subscribe() {
+    // console.log(`ViewPort subscribe ${this.table.table}
+    // bufferSize ${this.bufferSize}
+    // clientRange : ${this.clientRange.from} - ${this.clientRange.to}
+    // range subscribed ${JSON.stringify(
+    //   getFullRange(this.clientRange, this.bufferSize)
+    // )}
+    // `);
     return {
       type: Message.CREATE_VP,
       table: this.table,
@@ -319,7 +326,8 @@ export class Viewport {
           ? ({
               type,
               viewPortId: this.serverViewportId,
-              ...getFullRange(range, this.bufferSize, this.dataWindow.rowCount),
+              // ...getFullRange(range, this.bufferSize, this.dataWindow.rowCount),
+              ...getFullRange(range, this.bufferSize),
             } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
@@ -471,7 +479,7 @@ export class Viewport {
   }
 
   groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
-    const type = groupBy === EMPTY_GROUPBY ? "groupByClear" : "groupBy";
+    const type = groupBy.length === 0 ? "groupByClear" : "groupBy";
     this.awaitOperation(requestId, { type, data: groupBy });
     return this.createRequest({ groupBy });
   }

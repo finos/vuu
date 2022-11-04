@@ -1,95 +1,47 @@
-import { AgGridReact } from "ag-grid-react";
-import { createColumnDefs } from "./createColumnDefs";
-import { instrumentDataSourceConfig } from "./dataSourceConfig";
-import {
-  AgGridViewportRowModelDataSource,
-  useAgGridDataSource,
-} from "@vuu-ui/ag-grid";
-import { SuggestionFetcher, useViewserver } from "@vuu-ui/data-remote";
 import { ToolkitProvider } from "@heswell/uitk-core";
-
-import "ag-grid-enterprise";
+import { useAgGridDataSource } from "@vuu-ui/ag-grid";
 import "ag-grid-community/dist/styles/ag-grid.css";
-import "./VuuGrid.css";
-import "./VuuAgGrid.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.css";
+import "ag-grid-enterprise";
+import { AgGridReact } from "ag-grid-react";
+import { CSSProperties, useMemo } from "react";
+import { createColumnDefs } from "./createColumnDefs";
+import { ErrorDisplay, useAutoLoginToVuuServer } from "../utils";
 
-import {
-  authenticate as vuuAuthenticate,
-  connectToServer,
-  RemoteDataSource,
-} from "@vuu-ui/data-remote";
-import { CSSProperties, useEffect, useMemo, useRef } from "react";
+import "./VuuAgGrid.css";
+import "./VuuGrid.css";
 
-export const AgGridViewportRowModel = () => {
-  const { getTypeaheadSuggestions } = useViewserver();
-  const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
-    getTypeaheadSuggestions
-  );
-  getTypeaheadSuggestionsRef.current = getTypeaheadSuggestions;
+let displaySequence = 0;
 
-  const { agGridDataSource, columnDefs } = useMemo(() => {
-    const dataSource = new RemoteDataSource(instrumentDataSourceConfig);
-    const agGridDataSource = new AgGridViewportRowModelDataSource(
-      dataSource,
-      getTypeaheadSuggestionsRef
-    );
-    const columnDefs = createColumnDefs(agGridDataSource);
-
-    return {
-      agGridDataSource,
-      columnDefs,
-    };
-  }, []);
-
-  useEffect(() => {
-    const connect = async () => {
-      console.log(
-        `2 ? [AgGrid.stories] useEffect DataList stories authenticate as steve`
-      );
-      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
-      connectToServer("127.0.0.1:8090/websocket", authToken);
-    };
-    connect();
-  }, []);
-
-  const layout = {
-    display: "grid",
-    gridTemplateColumns: "1fr",
-    gridTemplateRows: "1fr",
-    gap: "10px 20px",
-    height: 500,
-    margin: "10px auto",
-    width: 800,
-  } as CSSProperties;
-
-  return (
-    <div style={layout}>
-      <div className="ag-theme-balham">
-        <AgGridReact
-          columnDefs={columnDefs}
-          onFilterChanged={agGridDataSource.handleFilterChanged}
-          onFilterModified={agGridDataSource.handleFilterModified}
-          onFilterOpened={agGridDataSource.handleFilterOpened}
-          onSortChanged={agGridDataSource.handleSortChanged}
-          viewportDatasource={agGridDataSource}
-          rowModelType="viewport"
-        />
-      </div>
-    </div>
-  );
+const instrumentDataSourceConfig = {
+  bufferSize: 100,
+  columns: [
+    "bbg",
+    "currency",
+    "description",
+    "exchange",
+    "isin",
+    "lotSize",
+    "ric",
+  ],
+  table: { table: "instruments", module: "SIMUL" },
+  serverUrl: "127.0.0.1:8090/websocket",
 };
 
 export const AgGridServersideRowModel = () => {
-  const gridConfig = useAgGridDataSource();
+  const error = useAutoLoginToVuuServer();
 
-  useEffect(() => {
-    const connect = async () => {
-      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
-      connectToServer("127.0.0.1:8090/websocket", authToken);
-    };
-    connect();
-  }, []);
+  const { createFilterDataProvider, ...gridConfig } = useAgGridDataSource(
+    instrumentDataSourceConfig
+  );
+
+  const columnDefs = useMemo(
+    () =>
+      createColumnDefs(
+        createFilterDataProvider(instrumentDataSourceConfig.table)
+      ),
+    [createFilterDataProvider]
+  );
 
   const layout = {
     display: "grid",
@@ -101,13 +53,23 @@ export const AgGridServersideRowModel = () => {
     width: 800,
   } as CSSProperties;
 
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
   return (
     <ToolkitProvider density="high">
       <div style={layout}>
         <div className="ag-theme-balham">
-          <AgGridReact {...gridConfig} headerHeight={18} rowHeight={18} />
+          <AgGridReact
+            {...gridConfig}
+            columnDefs={columnDefs}
+            headerHeight={18}
+            rowGroupPanelShow="always"
+            rowHeight={18}
+          />
         </div>
       </div>
     </ToolkitProvider>
   );
 };
+AgGridServersideRowModel.displaySequence = displaySequence++;

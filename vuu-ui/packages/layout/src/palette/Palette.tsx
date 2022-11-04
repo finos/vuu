@@ -1,45 +1,51 @@
-import { List } from "@vuu-ui/ui-controls";
+import { List, ListItem, ListItemProps } from "@heswell/uitk-lab";
 import { uuid } from "@vuu-ui/utils";
 import cx from "classnames";
-import { HTMLAttributes, MouseEvent, ReactElement, ReactNode } from "react";
+import {
+  cloneElement,
+  HTMLAttributes,
+  memo,
+  MouseEvent,
+  ReactElement,
+} from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { View } from "../layout-view";
 import { registerComponent } from "../registry/ComponentRegistry";
 
 import "./Palette.css";
 
-// All props are spread to the View
-export const PaletteItem = (props: { children: ReactNode }) => props.children;
-
-export interface ComponentIconProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onMouseDown"> {
-  component: ReactElement;
-  idx: number;
-  onMouseDown: (evt: MouseEvent, idx: number) => void;
-  text: string;
-}
-
-const ComponentIcon = ({
-  className,
-  component,
-  idx,
-  text,
-  onMouseDown,
-  ...props
-}: ComponentIconProps) => {
-  const handleMouseDown = (evt: MouseEvent) => onMouseDown(evt, idx);
-  return (
-    <div
-      className="hwComponentIcon hwListItem"
-      onMouseDown={handleMouseDown}
-      {...props}
-    >
-      <span>{text}</span>
-    </div>
-  );
+const clonePaletteItem = (paletteItem: HTMLElement) => {
+  const dolly = paletteItem.cloneNode(true) as HTMLElement;
+  dolly.id = "";
+  delete dolly.dataset.idx;
+  return dolly;
 };
 
-export interface PaletteProps extends HTMLAttributes<HTMLDivElement> {
+export interface PaletteItemProps extends ListItemProps {
+  children: ReactElement;
+  closeable?: boolean;
+  header?: boolean;
+  idx?: number;
+  resize?: "defer";
+  resizeable?: boolean;
+}
+
+export const PaletteItem = memo(
+  ({ className, children: component, idx, ...props }: PaletteItemProps) => {
+    return (
+      <ListItem
+        className={cx("vuuPaletteItem", className)}
+        data-icon="grab-handle"
+        {...props}
+      />
+    );
+  }
+);
+
+PaletteItem.displayName = "PaletteItem";
+
+export interface PaletteProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   children: ReactElement[];
   orientation: "horizontal" | "vertical";
   selection?: string;
@@ -49,18 +55,27 @@ export const Palette = ({
   children,
   className,
   orientation = "horizontal",
-  selection = "none",
   ...props
 }: PaletteProps) => {
   const dispatch = useLayoutProviderDispatch();
+  const classBase = "vuuPalette";
 
-  const classBase = "hwPalette";
-
-  function handleMouseDown(evt: MouseEvent, idx: number) {
+  function handleMouseDown(evt: MouseEvent) {
+    const target = evt.target as HTMLElement;
+    const listItemElement = target.closest(".vuuPaletteItem") as HTMLElement;
+    const idx = parseInt(listItemElement.dataset.idx ?? "-1");
+    if (idx !== -1) {
+      console.log({
+        children,
+        idx,
+        listItemElement,
+      });
+    }
     const {
       props: { caption, children: payload, template, ...props },
     } = children[idx];
-    const { left, top, width } = evt.currentTarget.getBoundingClientRect();
+    const { height, left, top, width } =
+      listItemElement.getBoundingClientRect();
     const id = uuid();
     const identifiers = { id, key: id };
     const component = template ? (
@@ -72,45 +87,43 @@ export const Palette = ({
     );
 
     dispatch({
-      type: "drag-start",
-      evt: evt.nativeEvent,
-      path: "*",
-      component,
-      instructions: {
-        DoNotRemove: true,
-        DoNotTransform: true,
-        RemoveDraggableOnDragEnd: true,
-        dragThreshold: 10,
-      },
       dragRect: {
         left,
         top,
         right: left + width,
         bottom: top + 150,
         width,
-        height: 100,
+        height,
       },
+      dragElement: clonePaletteItem(listItemElement),
+      evt: evt.nativeEvent,
+      instructions: {
+        DoNotRemove: true,
+        DoNotTransform: true,
+        RemoveDraggableOnDragEnd: true,
+        dragThreshold: 10,
+      },
+      path: "*",
+      payload: component,
+      type: "drag-start",
     });
   }
 
   return (
     <List
       {...props}
+      borderless
       className={cx(classBase, className, `${classBase}-${orientation}`)}
-      selection={selection}
+      maxHeight={800}
+      selected={null}
     >
       {children.map((child, idx) =>
-        child.type === PaletteItem ? (
-          <ComponentIcon
-            key={idx}
-            idx={idx}
-            text={child.props.caption || child.props.label}
-            component={child}
-            onMouseDown={handleMouseDown}
-          ></ComponentIcon>
-        ) : (
-          child
-        )
+        child.type === PaletteItem
+          ? cloneElement(child, {
+              key: idx,
+              onMouseDown: handleMouseDown,
+            })
+          : child
       )}
     </List>
   );

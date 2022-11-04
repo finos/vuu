@@ -13,7 +13,7 @@ import {
 import { Filter } from "@vuu-ui/utils";
 
 type RowIndex = number;
-type RenderKey = string;
+type RenderKey = number;
 type IsLeaf = boolean;
 type IsExpanded = boolean;
 type Depth = number;
@@ -149,12 +149,12 @@ export interface DataSourceProps {
   table: VuuTable;
   aggregations?: VuuAggregation[];
   columns: string[];
-  filter?: VuuFilter;
-  filterQuery?: any;
+  filter?: Filter;
+  filterQuery?: string;
   group?: VuuGroupBy;
   sort?: VuuSort;
   configUrl?: any;
-  serverUrl: string;
+  serverUrl?: string;
   viewport?: string;
   "visual-link"?: any;
 }
@@ -162,13 +162,13 @@ export interface DataSourceProps {
 export interface SubscribeProps {
   viewport?: string;
   table?: VuuTable;
-  columns?: any;
+  columns?: string[];
   aggregations?: any;
   range?: any;
   sort?: any;
   groupBy?: any;
-  filter?: any;
-  filterQuery?: any;
+  filter?: Filter;
+  filterQuery?: string;
 }
 
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
@@ -178,5 +178,6 @@ export interface DataSource {
   subscribe: (
     props: SubscribeProps,
     callback: SubscribeCallback
-  ) => Promise<any>;
+  ) => Promise<void>;
+  unsubscribe: () => void;
 }

@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import { useResizeObserver } from '@vuu-ui/react-utils';
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { useResizeObserver } from "@vuu-ui/react-utils";
 
-const HeightOnly = ['height', 'scrollHeight'];
+const HeightOnly = ["height", "scrollHeight"];
 
-export const useViewportTracking = (root, highlightedIdx, stickyHeaders = false) => {
+export const useViewportTracking = (
+  root,
+  highlightedIdx,
+  stickyHeaders = false
+) => {
   const scrollTop = useRef(0);
   const scrolling = useRef(false);
   const rootHeight = useRef(0);
@@ -20,7 +24,9 @@ export const useViewportTracking = (root, highlightedIdx, stickyHeaders = false)
 
       if (t + h > viewportEnd || t < viewportStart) {
         scrollTop.current =
-          t + h > viewportEnd ? scrollTop.current + (t + h) - viewportEnd : t - headerHeight;
+          t + h > viewportEnd
+            ? scrollTop.current + (t + h) - viewportEnd
+            : t - headerHeight;
 
         scrolling.current = true;
         root.current.scrollTop = scrollTop.current;
@@ -39,18 +45,21 @@ export const useViewportTracking = (root, highlightedIdx, stickyHeaders = false)
   useEffect(() => {
     const { current: rootEl } = root;
     if (rootEl) {
-      rootEl.addEventListener('scroll', scrollHandler);
+      rootEl.addEventListener("scroll", scrollHandler);
     }
 
     return () => {
       if (rootEl) {
-        rootEl.removeEventListener('scroll', scrollHandler);
+        rootEl.removeEventListener("scroll", scrollHandler);
       }
     };
   }, [root, scrollHandler]);
 
   useLayoutEffect(() => {
-    if (highlightedIdx !== -1 && rootScrollHeight.current > rootHeight.current) {
+    if (
+      highlightedIdx !== -1 &&
+      rootScrollHeight.current > rootHeight.current
+    ) {
       const item = root.current.querySelector(`
       [data-idx='${highlightedIdx}'],
       [aria-posinset='${highlightedIdx + 1}']

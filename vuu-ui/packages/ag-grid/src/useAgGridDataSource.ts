@@ -1,36 +1,43 @@
 import {
-  RemoteDataSource,
+  DataSourceProps,
   SuggestionFetcher,
   useViewserver,
 } from "@vuu-ui/data-remote";
-import { GridApi, GridOptions, GridReadyEvent } from "ag-grid-community";
+import { VuuTable } from "@vuu-ui/data-types";
+import {
+  ColumnRowGroupChangedEvent,
+  FilterChangedEvent,
+  FilterOpenedEvent,
+  GridApi,
+  GridOptions,
+  GridReadyEvent,
+  RowGroupOpenedEvent,
+  SortChangedEvent,
+} from "ag-grid-community";
 import { useCallback, useMemo, useRef } from "react";
 import { AgGridServersideRowModelDataSource } from "./AgGridServersideRowModelDataSource";
-import { createColumnDefs } from "./createColumnDefs";
 import { FilterDataProvider } from "./FilterDataProvider";
-// import { useAgGridServersideRowModel } from "./useAgGridServersideRowModel";
-
-export const instrumentDataSourceConfig = {
-  bufferSize: 100,
-  columns: [
-    "bbg",
-    "currency",
-    "description",
-    "exchange",
-    "isin",
-    "lotSize",
-    "ric",
-  ],
-  table: { table: "instruments", module: "SIMUL" },
-  serverUrl: "127.0.0.1:8090/websocket",
-};
 
 export type AgGridDataSourceHookResult = Pick<
   GridOptions,
-  "columnDefs" | "onGridReady" | "rowModelType" | "serverSideInfiniteScroll"
->;
+  | "cacheBlockSize"
+  | "defaultColDef"
+  | "maxBlocksInCache"
+  | "onColumnRowGroupChanged"
+  | "onFilterChanged"
+  | "onFilterOpened"
+  | "onGridReady"
+  | "onRowGroupOpened"
+  | "onSortChanged"
+  | "purgeClosedRowNodes"
+  | "rowModelType"
+  | "serverSideInfiniteScroll"
+  | "serverSideStoreType"
+> & { createFilterDataProvider: (table: VuuTable) => FilterDataProvider };
 
-export const useAgGridDataSource = (): AgGridDataSourceHookResult => {
+export const useAgGridDataSource = (
+  config: DataSourceProps
+): AgGridDataSourceHookResult => {
   const { getTypeaheadSuggestions } = useViewserver();
   const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
     getTypeaheadSuggestions
@@ -38,24 +45,19 @@ export const useAgGridDataSource = (): AgGridDataSourceHookResult => {
   getTypeaheadSuggestionsRef.current = getTypeaheadSuggestions;
 
   const dataSource = useMemo(() => {
-    return new AgGridServersideRowModelDataSource(instrumentDataSourceConfig);
+    return new AgGridServersideRowModelDataSource(config);
+  }, [config]);
+
+  const createFilterDataProvider = useCallback((table: VuuTable) => {
+    return new FilterDataProvider(table, getTypeaheadSuggestionsRef);
   }, []);
 
-  const filterDataProvider = useMemo(() => {
-    return new FilterDataProvider(getTypeaheadSuggestionsRef);
-  }, []);
-
-  const { columnDefs } = useMemo(() => {
-    const columnDefs = createColumnDefs(filterDataProvider);
-
-    return {
-      columnDefs,
-    };
-  }, []);
-
-  const initDataSource = useCallback((gridApi: GridApi) => {
-    gridApi.setServerSideDatasource(dataSource);
-  }, []);
+  const initDataSource = useCallback(
+    (gridApi: GridApi) => {
+      gridApi.setServerSideDatasource(dataSource);
+    },
+    [dataSource]
+  );
 
   const handleGridReady = useCallback(
     (evt: GridReadyEvent) => {
@@ -65,10 +67,57 @@ export const useAgGridDataSource = (): AgGridDataSourceHookResult => {
     [initDataSource]
   );
 
+  const onRowGroupOpened = useCallback(
+    (evt: RowGroupOpenedEvent) => {
+      dataSource.toggleGroupNode(evt);
+    },
+    [dataSource]
+  );
+
+  const onColumnRowGroupChanged = useCallback(
+    (evt: ColumnRowGroupChangedEvent) => {
+      dataSource.columRowGroupChanged(evt);
+    },
+    [dataSource]
+  );
+
+  const onFilterOpened = useCallback((evt: FilterOpenedEvent) => {
+    const { column } = evt;
+    console.log(`Filter OPENED on ${column.getId()}`, {
+      evt,
+    });
+  }, []);
+
+  const onFilterChanged = useCallback(
+    (evt: FilterChangedEvent) => {
+      dataSource.filterChanged(evt);
+    },
+    [dataSource]
+  );
+
+  const onSortChanged = useCallback(
+    (evt: SortChangedEvent) => {
+      dataSource.sortChanged(evt);
+    },
+    [dataSource]
+  );
+
   return {
-    columnDefs,
+    cacheBlockSize: 100,
+    createFilterDataProvider,
+    defaultColDef: {
+      sortable: true,
+    },
+    maxBlocksInCache: 1,
+    onFilterChanged,
+    onColumnRowGroupChanged,
+    onFilterOpened,
     onGridReady: handleGridReady,
+    onRowGroupOpened,
+    onSortChanged,
+    purgeClosedRowNodes: true,
     rowModelType: "serverSide",
     serverSideInfiniteScroll: true,
+    serverSideStoreType: "partial",
   };
 };

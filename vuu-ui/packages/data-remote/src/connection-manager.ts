@@ -23,8 +23,8 @@ const workerSource = InlinedWorker.toString().replace(
   /(?:^function\s+[a-zA-Z]+\(\)\s*\{)|(?:\}$)/g,
   ""
 );
-var workerBlob = new Blob([workerSource], { type: "text/javascript" });
-var workerBlobUrl = URL.createObjectURL(workerBlob);
+const workerBlob = new Blob([workerSource], { type: "text/javascript" });
+const workerBlobUrl = URL.createObjectURL(workerBlob);
 
 type WorkerResolver = {
   resolve: (value: Worker | PromiseLike<Worker>) => void;
@@ -32,7 +32,7 @@ type WorkerResolver = {
 
 let worker: Worker;
 let pendingWorker: Promise<Worker>;
-let pendingWorkerNoToken: WorkerResolver[] = [];
+const pendingWorkerNoToken: WorkerResolver[] = [];
 
 export type PostMessageToClientCallback = (
   msg: DataSourceCallbackMessage
@@ -53,7 +53,7 @@ const pendingRequests = new Map();
 // while they wait for worker.
 const getWorker = async (
   url: string,
-  token: string = "",
+  token = "",
   handleConnectionStatusChange: (msg: any) => void
 ) => {
   if (token === "" && pendingWorker === undefined) {
@@ -145,7 +145,7 @@ const asyncRequest = <T = VuuUIMessageInRPC>(
 };
 
 export interface ServerAPI {
-  destroy: () => void;
+  destroy: (viewportId?: string) => void;
   getTableMeta: (table: VuuTable) => Promise<TableMeta>;
   getTableList: () => Promise<TableList>;
   rpcCall: (msg: ClientToServerRpcCall) => Promise<VuuUIMessageInRPC>;
@@ -193,8 +193,8 @@ class _ConnectionManager extends EventEmitter {
         worker.postMessage(message);
       },
 
-      destroy: () => {
-        console.log("destroy");
+      destroy: (viewportId?: string) => {
+        console.log(`ServerAPI destroy ${viewportId}`);
         // TODO kill all subscriptions
       },
 
@@ -209,6 +209,7 @@ class _ConnectionManager extends EventEmitter {
   }
 
   destroy() {
+    console.log(`MEGA DESYTRO`);
     worker.terminate();
   }
 }

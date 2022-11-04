@@ -23,11 +23,6 @@ body {
   padding: 0 8px;
 }
 
-.DraggableLayout {
-  width: 100%;
-  height: 100%;
-}
-
 .DragIcon.dragging {
   background-color: orange !important;
 }

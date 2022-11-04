@@ -1,4 +1,9 @@
-.hwProgressCell-progress-container {
+.vuuProgressCell {
+  --uitkLinearProgress-minWidth: 100px;
+  --uitkLinearProgress-width: 100%;
+}
+
+.vuuProgressCell-progress-container {
   position: absolute;
   top: 2px;
   bottom: 2px;
@@ -6,7 +11,7 @@
   right: 3px;
 }
 
-.hwProgressCell-progress-bar {
+.vuuProgressCell-progress-bar {
   background-color: cornflowerblue;
   height: 100%;
   position: absolute;
@@ -17,7 +22,7 @@
   transition-duration: 0.1s;
 }
 
-.hwProgressCell .num {
+.vuuProgressCell .num {
   position: absolute;
   top: 2px;
   bottom: 2px;

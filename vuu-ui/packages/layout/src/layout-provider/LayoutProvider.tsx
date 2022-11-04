@@ -53,20 +53,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   const [, forceRefresh] = useState<any>(null);
 
-  const dispatchLayoutAction = useCallback(
-    (action: LayoutReducerAction, suppressSave = false) => {
-      const nextState = layoutReducer(state.current as ReactElement, action);
-      if (nextState !== state.current) {
-        state.current = nextState;
-        forceRefresh({});
-        if (!suppressSave && shouldSave(action)) {
-          serializeState(nextState);
-        }
-      }
-    },
-    [forceRefresh]
-  );
-
   const serializeState = useCallback(
     (source) => {
       if (onLayoutChange) {
@@ -81,6 +67,20 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
       }
     },
     [onLayoutChange]
+  );
+
+  const dispatchLayoutAction = useCallback(
+    (action: LayoutReducerAction, suppressSave = false) => {
+      const nextState = layoutReducer(state.current as ReactElement, action);
+      if (nextState !== state.current) {
+        state.current = nextState;
+        forceRefresh({});
+        if (!suppressSave && shouldSave(action)) {
+          serializeState(nextState);
+        }
+      }
+    },
+    [serializeState]
   );
 
   const layoutActionDispatcher: LayoutProviderDispatch = useCallback(
@@ -98,7 +98,12 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
         dispatchLayoutAction(action);
       }
     },
-    []
+    [dispatchLayoutAction, serializeState]
+  );
+
+  const prepareToDragLayout = useLayoutDragDrop(
+    state as MutableRefObject<ReactElement>,
+    layoutActionDispatcher
   );
 
   useEffect(() => {
@@ -125,7 +130,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
           };
       dispatchLayoutAction(action, true);
     }
-  }, [layout]);
+  }, [dispatchLayoutAction, layout]);
 
   if (state.current === undefined) {
     state.current = processLayoutElement(children);
@@ -133,11 +138,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
     state.current = processLayoutElement(children, state.current);
     childrenRef.current = children;
   }
-
-  const prepareToDragLayout = useLayoutDragDrop(
-    state as MutableRefObject<ReactElement>,
-    layoutActionDispatcher
-  );
 
   return (
     <LayoutProviderContext.Provider

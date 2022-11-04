@@ -115,6 +115,7 @@
   --uitk-palette-navigate-indicator-hover: var(--uitk-color-grey-90);
 
   /* Negative */
+  --uitk-palette-negative-background: var(--uitk-color-red-40);
   --uitk-palette-negative-foreground: var(--uitk-color-red-700);
 
   /* Neutral */
@@ -140,6 +141,7 @@
   --uitk-palette-neutral-secondary-foreground-disabled: var(--uitk-color-grey-200-fade-foreground);
 
   /* Positive */
+  --uitk-palette-positive-background: var(--uitk-color-green-20);
   --uitk-palette-positive-foreground: var(--uitk-color-green-700);
 
   /* Rate */

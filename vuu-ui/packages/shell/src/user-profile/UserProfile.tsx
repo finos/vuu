@@ -6,7 +6,7 @@ import { UserPanel } from "./UserPanel";
 
 import "./UserProfile.css";
 
-export const UserProfile = ({ layoutId, onNavigate, user }) => {
+export const UserProfile = ({ layoutId, loginUrl, onNavigate, user }) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
   const buttonRef = useRef(null);
@@ -37,6 +37,7 @@ export const UserProfile = ({ layoutId, onNavigate, user }) => {
         </Button>
         <UserPanel
           layoutId={layoutId}
+          loginUrl={loginUrl}
           onNavigate={handleNavigate}
           user={user}
         />

@@ -132,9 +132,6 @@ export const useViewserver = ({
   // IF we're passed in an rpcServer, whether its a dataSource or connection,
   // why do we need to get server here ?
   const server = useServerConnection(undefined);
-  console.log(`useViewServer server`, {
-    server,
-  });
   const contextMenuOptions = useMemo(
     () => loadSession?.("vs-context-menu") ?? undefined,
     [loadSession]
@@ -152,7 +149,6 @@ export const useViewserver = ({
 
   useEffect(() => {
     tableStore.on("loaded", (_, tables) => {
-      console.log({ tables });
       setTables(tables);
     });
   }, []);

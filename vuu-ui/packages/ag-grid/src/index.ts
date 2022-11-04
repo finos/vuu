@@ -1,4 +1,5 @@
 export * from "./AgGridViewportRowModelDataSource";
 export * from "./AgGridServersideRowModelDataSource";
 export * from "./AgGridFilterUtils";
+export * from "./FilterDataProvider";
 export * from "./useAgGridDataSource";

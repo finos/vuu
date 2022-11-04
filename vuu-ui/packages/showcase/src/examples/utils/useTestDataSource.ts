@@ -1,45 +1,149 @@
-import {
-  authenticate,
-  connectToServer,
-  RemoteDataSource,
-} from "@vuu-ui/data-remote";
-import { useEffect, useMemo } from "react";
+import { RemoteDataSource } from "@vuu-ui/data-remote";
+import { VuuTable } from "@vuu-ui/data-types";
+import { useMemo } from "react";
+import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
 
-const instrumentColumns = [
-  { name: "bbg", type: "string" },
-  { name: "currency", type: "string" },
-  { name: "description", type: "string" },
-  { name: "exchange", type: "string" },
-  { name: "isin", type: "string" },
-  { name: "lotSize", type: "int" },
-  { name: "ric", type: "string" },
-];
+type Schema = { table: VuuTable; columns: { name: string; type: any }[] };
+const Schemas: { [key: string]: Schema } = {
+  instruments: {
+    columns: [
+      { name: "bbg", type: "string" },
+      { name: "currency", type: "string" },
+      { name: "description", type: "string" },
+      { name: "exchange", type: "string" },
+      { name: "isin", type: "string" },
+      { name: "lotSize", type: "int" },
+      { name: "ric", type: "string" },
+    ],
+    table: { module: "SIMUL", table: "instruments" },
+  },
+  orders: {
+    columns: [
+      { name: "ccy", type: "string" },
+      { name: "created", type: "long" },
+      {
+        name: "filledQuantity",
+        label: "Filled Quantity %",
+        type: {
+          name: "number",
+          renderer: { name: "progress", associatedField: "quantity" },
+          format: { decimals: 0 },
+        },
+      },
+      { name: "lastUpdate", type: "long" },
+      { name: "orderId", type: "string" },
+      { name: "quantity", type: "double" },
+      { name: "ric", type: "string" },
+      { name: "side", type: "char" },
+      { name: "trader", type: "string" },
+    ],
+    table: { module: "SIMUL", table: "orders" },
+  },
+  parentOrders: {
+    columns: [
+      { name: "account", type: "string" },
+      { name: "algo", type: "string" },
+      { name: "averagePrice", type: "double" },
+      { name: "ccy", type: "string" },
+      { name: "childCount", type: "int" },
+      { name: "exchange", type: "string" },
+      { name: "filledQty", type: "int" },
+      { name: "id", type: "string" },
+      { name: "idAsInt", type: "int" },
+      { name: "lastUpdate", type: "long" },
+      { name: "openQty", type: "int" },
+      { name: "price", type: "double" },
+      { name: "quantity", type: "int" },
+      { name: "ric", type: "string" },
+      { name: "side", type: "string" },
+      { name: "status", type: "string" },
+      { name: "volLimit", type: "double" },
+    ],
+    table: { module: "SIMUL", table: "parentOrders" },
+  },
+  prices: {
+    columns: [
+      {
+        name: "ask",
+        label: "Ask",
+        type: {
+          name: "number",
+          renderer: { name: "background", flashStyle: "arrow-bg" },
+          formatting: { decimals: 2, zeroPad: true },
+        },
+        aggregate: "avg",
+      },
+      { name: "askSize", type: "int" },
+      {
+        label: "Bid",
+        name: "bid",
+        type: {
+          name: "number",
+          renderer: { name: "background", flashStyle: "arrow-bg" },
+          formatting: { decimals: 2, zeroPad: true },
+        },
+        aggregate: "avg",
+      },
+      { name: "bidSize", type: "int" },
+      { name: "close", type: "double" },
+      { name: "last", type: "double" },
+      { name: "open", type: "double" },
+      { name: "phase", type: "string" },
+      { name: "ric", type: "string" },
+      { name: "scenario", type: "string" },
+    ],
+    table: { module: "SIMUL", table: "prices" },
+  },
+};
 
-const instrumentColumnNames = instrumentColumns.map((col) => col.name);
+const configureColumns = (columns: any, columnConfig?: any) => {
+  if (columnConfig) {
+    return columns.map((col: any) => {
+      if (columnConfig[col.name]) {
+        return {
+          ...col,
+          ...columnConfig[col.name],
+        };
+      } else {
+        return col;
+      }
+    });
+  } else {
+    return columns;
+  }
+};
 
-export const useTestDataSource = ({ autoLogin = true } = {}) => {
+export const useTestDataSource = ({
+  autoLogin = true,
+  columnConfig = {},
+  tablename = "instruments",
+} = {}) => {
+  const [columns, columnNames, table] = useMemo(() => {
+    const schema = Schemas[tablename];
+    return [
+      configureColumns(schema.columns, columnConfig),
+      schema.columns.map((col) => col.name),
+      schema.table,
+    ];
+  }, [tablename]);
+
   const dataSource = useMemo(() => {
+    console.log(`create data source`);
+
     const dataConfig = {
       bufferSize: 100,
-      columns: instrumentColumnNames,
-      table: { table: "instruments", module: "SIMUL" },
+      columns: columnNames,
+      table,
       serverUrl: "127.0.0.1:8090/websocket",
     };
     return new RemoteDataSource(dataConfig);
-  }, []);
+  }, [columnNames, table]);
 
-  useEffect(() => {
-    const connect = async () => {
-      const authToken = (await authenticate("steve", "xyz")) as string;
-      connectToServer("127.0.0.1:8090/websocket", authToken);
-    };
-    if (autoLogin) {
-      connect();
-    }
-  }, []);
+  const error = useAutoLoginToVuuServer(autoLogin);
 
   return {
     dataSource,
-    instrumentColumns,
+    columns,
+    error,
   };
 };

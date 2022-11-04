@@ -41,7 +41,7 @@ export const PaletteListItem = (props: PaletteListItemProps) => {
       type: "drag-start",
       evt: evt.nativeEvent,
       path: "*",
-      component,
+      payload: component,
       instructions: {
         DoNotRemove: true,
         DoNotTransform: true,
