@@ -1,6 +1,11 @@
-import React from 'react';
-import cx from 'classnames';
-import { ComponentRegistry, isRegistered, Palette, PaletteItem } from '@vuu-ui/layout';
+import React from "react";
+import cx from "classnames";
+import {
+  ComponentRegistry,
+  isRegistered,
+  Palette,
+  PaletteItem,
+} from "@vuu-ui/vuu-layout";
 
 const getPaletteItems = (config) => {
   const paletteItems = [];
@@ -26,7 +31,7 @@ const getPaletteItems = (config) => {
           <PaletteItem {...args} key={i}>
             {React.createElement(Component, {
               ...props,
-              key: i
+              key: i,
             })}
           </PaletteItem>
         );
@@ -40,10 +45,11 @@ const getPaletteItems = (config) => {
 export const AppPalette = ({ className, config, ...props }) => {
   return (
     <Palette
-      className={cx('TableList', className)}
+      className={cx("TableList", className)}
       orientation="vertical"
       collapsibleHeaders
-      {...props}>
+      {...props}
+    >
       {getPaletteItems(config)}
     </Palette>
   );
