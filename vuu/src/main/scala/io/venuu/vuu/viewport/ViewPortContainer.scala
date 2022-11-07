@@ -6,6 +6,7 @@ import io.venuu.toolbox.collection.array.ImmutableArray
 import io.venuu.toolbox.jmx.{JmxAble, MetricsProvider}
 import io.venuu.toolbox.text.AsciiUtil
 import io.venuu.toolbox.thread.RunInThread
+import io.venuu.toolbox.thread.balancing.TimedWork
 import io.venuu.toolbox.time.TimeIt.timeIt
 import io.venuu.toolbox.time.{Clock, TimeIt}
 import io.venuu.vuu.api.{Link, NoViewPortDef, ViewPortDef}
@@ -43,7 +44,7 @@ trait ViewPortContainerMBean {
   def closeGroupByKey(vpId: String, treeKey: String): String
 }
 
-class ViewPortContainer(val tableContainer: TableContainer, val providerContainer: ProviderContainer)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
+class ViewPortContainer(val tableContainer: TableContainer, val providerContainer: ProviderContainer)(implicit clock: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
 
   private val groupByhistogram = metrics.histogram("io.venuu.vuu.thread.groupby.cycleTime")
   private val viewPorthistogram = metrics.histogram("io.venuu.vuu.thread.viewport.cycleTime")
@@ -83,6 +84,16 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       case None =>
         throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
     }
+  }
+
+  def toViewPortUnitsOfWork(): List[TimedWork[ViewPort]] = {
+
+    val (millis, work) = timeIt {
+      CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => !vp.hasGroupBy).map(vp => {
+        TimedWork(vp, vp.getAvgBalancingTimeInMillis)
+      }).toList
+    }
+    work
   }
 
   def callRpcTable(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
@@ -582,7 +593,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.setKeys(sorted)
       }
 
-      viewPortHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+      viewPortHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.viewport." + s)).update(millis)
     } else {
       viewPort.setKeys(ImmutableArray.empty[String])
     }

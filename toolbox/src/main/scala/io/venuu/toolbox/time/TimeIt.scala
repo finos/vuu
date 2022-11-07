@@ -3,13 +3,13 @@ package io.venuu.toolbox.time
 
 object TimeIt {
 
-  def timeIt[R](block: => R)(implicit timeProvider: Clock): (Long, R) = {
+  def timeIt[R](block: => R)(implicit clock: Clock): (Long, R) = {
 
-    val start = timeProvider.now()
+    val start = clock.now()
 
     val r = block
 
-    val end = timeProvider.now()
+    val end = clock.now()
 
     (end - start, r)
   }

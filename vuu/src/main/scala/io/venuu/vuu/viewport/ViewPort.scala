@@ -130,6 +130,10 @@ trait ViewPort {
   override def toString: String = "VP(user:" + session.user + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
 
   def delete(): Unit
+
+  def getAvgBalancingTimeInMillis: Double
+
+  def setAvgBalancingTimeInMillis(millis: Double)
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
@@ -473,4 +477,9 @@ case class ViewPortImpl(id: String,
   }
 
   override def getVisualLink: Option[ViewPortVisualLink] = this.viewPortVisualLink
+
+  @volatile var averageBalancingTimeInMillis: Double = 0.0
+
+  override def getAvgBalancingTimeInMillis: Double = averageBalancingTimeInMillis
+  override def setAvgBalancingTimeInMillis(millis: Double): Unit = averageBalancingTimeInMillis = millis
 }
