@@ -1,15 +1,18 @@
-import React, { forwardRef, useLayoutEffect, useRef } from 'react';
-import { Portal } from '@vuu-ui/theme';
-import { useForkRef } from '../utils';
+import React, { forwardRef, useLayoutEffect, useRef } from "react";
+import { Portal } from "../portal";
+import { useForkRef } from "../utils";
 
-import './Draggable.css';
+import "./Draggable.css";
 
-const Draggable = forwardRef(function Draggable({ className, element, rect }, forwardedRef) {
+const Draggable = forwardRef(function Draggable(
+  { className, element, rect },
+  forwardedRef
+) {
   const ref = useRef(null);
   const forkedRef = useForkRef(forwardedRef, ref);
   useLayoutEffect(() => {
     if (ref.current) {
-      ref.current.innerHTML = '';
+      ref.current.innerHTML = "";
       ref.current.appendChild(element);
     }
   }, [element]);
@@ -26,7 +29,12 @@ const Draggable = forwardRef(function Draggable({ className, element, rect }, fo
 export const renderDraggable = (ref, element, className, rect) => {
   return (
     <Portal>
-      <Draggable ref={ref} element={element} className={className} rect={rect} />
+      <Draggable
+        ref={ref}
+        element={element}
+        className={className}
+        rect={rect}
+      />
     </Portal>
   );
 };

@@ -1,12 +1,12 @@
-import React, { useLayoutEffect, useMemo, useRef } from 'react';
-import cx from 'classnames';
-import { useId } from '@vuu-ui/react-utils';
-import { useKeyboardNavigation } from './use-keyboard-navigation';
-import { isMenuItemGroup } from './use-items-with-ids';
+import React, { useLayoutEffect, useMemo, useRef } from "react";
+import cx from "classnames";
+import { useId } from "../utils";
+import { useKeyboardNavigation } from "./use-keyboard-navigation";
+import { isMenuItemGroup } from "./use-items-with-ids";
 
-import './MenuList.css';
+import "./MenuList.css";
 
-const classBase = 'hwMenuList';
+const classBase = "hwMenuList";
 
 export const Separator = () => <li className="hwMenuItem-divider" />;
 
@@ -17,7 +17,7 @@ export const MenuItem = ({ children, idx, ...props }) => {
   return <div {...props}>{children}</div>;
 };
 
-const hasIcon = (child) => child.props['data-icon'];
+const hasIcon = (child) => child.props["data-icon"];
 
 const MenuList = ({
   activatedByKeyboard,
@@ -57,7 +57,7 @@ const MenuList = ({
     onHighlight: onHighlightMenuItem,
     onOpenMenu: handleOpenMenu,
     onCloseMenu,
-    id
+    id,
   });
 
   const appliedFocusVisible = childMenuShowing == -1 ? focusVisible : -1;
@@ -79,13 +79,14 @@ const MenuList = ({
       {...listProps}
       aria-activedescendant={getActiveDescendant()}
       className={cx(classBase, {
-        [`${classBase}-childMenuShowing`]: childMenuShowing !== -1
+        [`${classBase}-childMenuShowing`]: childMenuShowing !== -1,
       })}
       data-root={isRoot || undefined}
       id={`${id}-${menuId}`}
       ref={root}
       role="menu"
-      tabIndex={0}>
+      tabIndex={0}
+    >
       {renderContent()}
     </div>
   );
@@ -93,14 +94,23 @@ const MenuList = ({
   function renderContent() {
     const propsCommonToAllListItems = {
       ...listItemProps,
-      role: 'menuitem'
+      role: "menuitem",
     };
 
     const maybeIcon = (children, withIcon) =>
-      withIcon ? [<span className="hwIconContainer" key="icon" />].concat(children) : children;
+      withIcon
+        ? [<span className="hwIconContainer" key="icon" />].concat(children)
+        : children;
 
     function addClonedChild(list, child, idx, withIcon) {
-      const { children, className, id: itemId, hasSeparator, label, ...props } = child.props;
+      const {
+        children,
+        className,
+        id: itemId,
+        hasSeparator,
+        label,
+        ...props
+      } = child.props;
       const hasSubMenu = isMenuItemGroup(child);
       const subMenuShowing = hasSubMenu && childMenuShowing === idx;
       const ariaControls = subMenuShowing ? `${id}-${itemId}` : undefined;
@@ -121,8 +131,11 @@ const MenuList = ({
           )}
           aria-controls={ariaControls}
           aria-haspopup={hasSubMenu || undefined}
-          aria-expanded={subMenuShowing || undefined}>
-          {hasSubMenu ? maybeIcon(label, withIcon) : maybeIcon(children, withIcon)}
+          aria-expanded={subMenuShowing || undefined}
+        >
+          {hasSubMenu
+            ? maybeIcon(label, withIcon)
+            : maybeIcon(children, withIcon)}
         </MenuItem>
       );
       // mapIdxToId.set(idx, itemId);
@@ -154,13 +167,13 @@ const getMenuItemProps = (
 ) => ({
   id: `${baseId}-${itemId}`,
   key: key ?? idx,
-  'data-idx': idx,
-  'data-highlighted': idx === highlightedIdx || undefined,
-  className: cx('hwMenuItem', className, {
-    'hwMenuItem-separator': hasSeparator,
-    focusVisible: focusVisible === idx
-  })
+  "data-idx": idx,
+  "data-highlighted": idx === highlightedIdx || undefined,
+  className: cx("hwMenuItem", className, {
+    "hwMenuItem-separator": hasSeparator,
+    focusVisible: focusVisible === idx,
+  }),
 });
 
-MenuList.displayName = 'MenuList';
+MenuList.displayName = "MenuList";
 export default MenuList;

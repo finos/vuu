@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import { useResizeObserver } from "@vuu-ui/react-utils";
+import { useResizeObserver } from "./use-resize-observer";
 
 const HeightOnly = ["height", "scrollHeight"];
 
