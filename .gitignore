@@ -14,13 +14,7 @@ target/
 node_modules
 yarn-debug.log*
 yarn-error.log*
-/vuu-ui/stories/public/worker.js
-/vuu-ui/stories/public/worker.js.map
-/vuu-ui/packages/*/types
-/vuu-ui/packages/*/public/stories/*.*
-/vuu-ui/packages/showcase/public/packages
 
-/vuu-ui/storybook-static
 deployed_apps
 dist
 /vuu-ui-legacy/target/

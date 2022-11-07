@@ -14,13 +14,13 @@ import {
   useState,
 } from "react";
 import { FilterInput } from "./FilterInput";
-import { useSuggestions } from "./suggestions";
-
-import { getCompletionAtIndex } from "./input-utils";
 import {
+  useSuggestions,
   itemToString,
   SuggestionListItem,
-} from "./suggestions/SuggestionListItem";
+} from "./suggestions";
+
+import { getCompletionAtIndex } from "./input-utils";
 import { useParsedInput } from "./useParsedInput";
 import { useParsedText } from "./useParsedText";
 

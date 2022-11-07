@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { Button, TextInput } from '@vuu-ui/ui-controls';
+import React, { useState } from "react";
+import { TextInput } from "@vuu-ui/ui-controls";
+import { Button } from "@heswell/uitk-core";
 
-import './LoginPanel.css';
+import "./LoginPanel.css";
 
-const classBase = 'vuuLoginPanel';
+const classBase = "vuuLoginPanel";
 
 export const LoginPanel = ({ onSubmit }) => {
-  const [username, setUserName] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUserName] = useState("");
+  const [password, setPassword] = useState("");
 
   const login = () => {
     onSubmit(username, password);
@@ -24,7 +25,11 @@ export const LoginPanel = ({ onSubmit }) => {
   return (
     <div className={classBase}>
       <label htmlFor="txt-username">User Id</label>
-      <TextInput defaultValue={username} id="text-username" onCommit={handleUsername} />
+      <TextInput
+        defaultValue={username}
+        id="text-username"
+        onCommit={handleUsername}
+      />
       <label htmlFor="txt-password">Password</label>
       <TextInput
         defaultValue={password}

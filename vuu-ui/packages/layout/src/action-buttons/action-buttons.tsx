@@ -1,24 +1,24 @@
-import React from 'react';
+import React from "react";
 import {
   AddIcon,
-  Button,
-  ButtonProps,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   CloseIcon,
   MaximizeIcon,
   MinimizeIcon,
-  MoreSmallListVertIcon
-} from '@vuu-ui/ui-controls';
+  MoreSmallListVertIcon,
+} from "@vuu-ui/ui-controls";
+import { Button, ButtonProps } from "@heswell/uitk-core";
 
-import './action-buttons.css';
+import "./action-buttons.css";
 
 export const AddButton = (props: ButtonProps) => (
   <Button
     className="hwActionButton"
     variant="secondary"
     aria-label="Add"
-    {...props}>
+    {...props}
+  >
     <AddIcon />
   </Button>
 );
@@ -28,7 +28,8 @@ export const ChevronDoubleLeftButton = (props: ButtonProps) => (
     className="hwActionButton"
     variant="secondary"
     aria-label="Close"
-    {...props}>
+    {...props}
+  >
     <ChevronDoubleLeftIcon />
   </Button>
 );
@@ -38,13 +39,19 @@ export const ChevronDoubleRightButton = (props: ButtonProps) => (
     className="hwActionButton"
     variant="secondary"
     aria-label="Close"
-    {...props}>
+    {...props}
+  >
     <ChevronDoubleRightIcon />
   </Button>
 );
 
 export const CloseButton = (props: ButtonProps) => (
-  <Button className="hwActionButton" variant="secondary" aria-label="Close" {...props}>
+  <Button
+    className="hwActionButton"
+    variant="secondary"
+    aria-label="Close"
+    {...props}
+  >
     <CloseIcon />
   </Button>
 );

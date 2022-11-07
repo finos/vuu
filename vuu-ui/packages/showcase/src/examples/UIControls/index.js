@@ -1,10 +1,2 @@
-export * as Button from './Button.stories';
-export * as Combobox from './Combobox.stories';
-export * as DatePicker from './DatePicker.stories';
-export * as Dropdown from './Dropdown.stories';
-export * as DropdownList from './DropdownList.stories';
-export * as Form from './Form.stories';
-export * as Menu from './Menu.stories';
-export * as Pills from './Pills';
-export * as List from './List';
-export * as Tree from './Tree.stories';
+export * as Menu from "./Menu.stories";
+export * as Tree from "./Tree.stories";
