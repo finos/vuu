@@ -98,15 +98,12 @@ const Schemas: { [key: string]: Schema } = {
 
 const configureColumns = (columns: any, columnConfig?: any) => {
   if (columnConfig) {
-    return columns.map((col: any) => {
-      if (columnConfig[col.name]) {
-        return {
-          ...col,
-          ...columnConfig[col.name],
-        };
-      } else {
-        return col;
-      }
+    return Object.keys(columnConfig).map((colname: string) => {
+      const column = columns.find((col) => col.name === colname);
+      return {
+        ...column,
+        ...columnConfig[colname],
+      };
     });
   } else {
     return columns;
@@ -115,14 +112,19 @@ const configureColumns = (columns: any, columnConfig?: any) => {
 
 export const useTestDataSource = ({
   autoLogin = true,
-  columnConfig = {},
+  columnConfig,
   tablename = "instruments",
-} = {}) => {
+}: {
+  autoLogin?: boolean;
+  columnConfig?: any;
+  tablename?: string;
+}) => {
   const [columns, columnNames, table] = useMemo(() => {
     const schema = Schemas[tablename];
+    const configuredColumns = configureColumns(schema.columns, columnConfig);
     return [
-      configureColumns(schema.columns, columnConfig),
-      schema.columns.map((col) => col.name),
+      configuredColumns,
+      configuredColumns.map((col) => col.name),
       schema.table,
     ];
   }, [tablename]);

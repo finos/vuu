@@ -1,29 +1,28 @@
 import { createContext, useCallback, useContext, useState } from "react";
+import cx from "classnames";
+
+import "./ListVisualizer.css";
 
 const ListVizContext = createContext<unknown>({});
 
 export const useListViz = () => useContext(ListVizContext);
 
-const format = (data) =>
-  Array.isArray(data)
-    ? data.map((item) => `\n${item.element.textContent}`).join("")
-    : "";
-
-const colours = ["rgba(255,0,0,.3)", "rgba(0,255,255,.3 )"];
-
 export const ListVisualizer: React.FC<unknown> = ({ children }) => {
   const [content, setContent] = useState([]);
+  const [dropTarget, setDropTarget] = useState([]);
+  const [dropZone, setDropZone] = useState([]);
   const [vizKey, setVisKey] = useState(1);
 
-  const setMeasurements = useCallback((measurements: any) => {
-    console.log(`setContent`, {
-      measurements,
-    });
-    setContent(measurements);
-    setVisKey((vk) => vk + 1);
-  }, []);
+  const setMeasurements = useCallback(
+    (measurements: any, dropTarget: any, dropZone = "") => {
+      setContent(measurements);
+      setDropTarget(dropTarget);
+      setDropZone(dropZone);
+      setVisKey((vk) => vk + 1);
+    },
+    []
+  );
 
-  console.log(`render VIZ`);
   return (
     <ListVizContext.Provider value={{ setMeasurements }}>
       <div style={{ display: "flex" }}>
@@ -31,10 +30,13 @@ export const ListVisualizer: React.FC<unknown> = ({ children }) => {
         <div data-key={vizKey} style={{ flex: "auto 1 1" }}>
           {content.map((item, i) => (
             <div
+              className={cx("ListVizItem", {
+                ["ListVizItem-dropTarget"]: item === dropTarget,
+                [`ListVizItem-dropTarget-${dropZone}`]: item === dropTarget,
+              })}
               key={i}
               style={{
                 alignItems: "center",
-                background: colours[i % 2],
                 display: "flex",
                 position: "absolute",
                 height: item.size,
