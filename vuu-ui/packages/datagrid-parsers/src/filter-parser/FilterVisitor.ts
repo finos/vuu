@@ -19,7 +19,7 @@ import {
   Numeric_columnContext,
 } from "../../generated/parsers/filter/FilterParser";
 import { TerminalNode } from "antlr4ts/tree";
-import { Filter } from "@vuu-ui/utils";
+import { Filter } from "@vuu-ui/vuu-utils";
 
 // This class defines a complete generic visitor for a parse tree produced by FilterParser.
 

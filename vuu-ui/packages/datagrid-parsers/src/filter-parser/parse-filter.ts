@@ -1,6 +1,6 @@
 import { CharStreams } from "antlr4ts/CharStreams";
 import { CommonTokenStream } from "antlr4ts/CommonTokenStream";
-import { Filter, lastWord } from "@vuu-ui/utils";
+import { Filter, lastWord } from "@vuu-ui/vuu-utils";
 import { FilterParser } from "../../generated/parsers/filter/FilterParser";
 import { FilterLexer } from "../../generated/parsers/filter/FilterLexer";
 import { CharacterSubstitution, FilterVisitor } from "./FilterVisitor.js";

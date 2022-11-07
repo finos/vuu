@@ -1,5 +1,5 @@
 import { FilterParser } from "../../generated/parsers/filter/FilterParser";
-import { Filter } from "@vuu-ui/utils";
+import { Filter } from "@vuu-ui/vuu-utils";
 import { CharacterSubstitution } from "./FilterVisitor";
 import { CommonTokenStream } from "antlr4ts";
 
