@@ -2,21 +2,17 @@ import { execWait, readPackageJson } from "./utils.mjs";
 import fs from "fs";
 
 const packages = [
-  "utils",
-  "ag-grid",
-  "react-utils",
-  "theme",
-  "theme-uitk",
-  "data-remote",
-  "data-store",
+  "vuu-utils",
+  "vuu-data-ag-grid",
+  "vuu-theme",
+  "vuu-data",
   "datagrid-parsers",
   "ui-controls",
   "ui-forms",
-  "data-grid",
-  "layout",
+  "vuu-datagrid",
+  "vuu-layout",
   "parsed-input",
-  "shell",
-  "app",
+  "vuu-shell",
   "app-vuu-example",
   "showcase",
 ];
