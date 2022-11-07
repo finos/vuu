@@ -8,19 +8,13 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { ErrorDisplay, useTestDataSource } from "../utils";
 
 import { Grid } from "@vuu-ui/data-grid";
-import { RemoteDataSource } from "@vuu-ui/data-remote";
 
-import {
-  instrumentSchema,
-  instrumentSchemaFixed,
-  instrumentSchemaHeaders,
-} from "./columnMetaData";
+import { instrumentSchema } from "./columnMetaData";
 
 import { Flexbox, View } from "@vuu-ui/layout";
 import { ParsedInput, ParserProvider } from "@vuu-ui/parsed-input";
-
+import { VuuFilter } from "../utils/VuuFilter";
 import { extractFilter, parseFilter } from "@vuu-ui/datagrid-parsers";
-import suggestionFactory from "./filter-suggestion-factory";
 
 import "./Grid.stories.css";
 
@@ -41,6 +35,15 @@ export const DefaultGrid = () => {
   );
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const { columns, dataSource, error } = useTestDataSource({
+    columnConfig: {
+      bbg: { label: "BBG" },
+      currency: { label: "Currency" },
+      description: { label: "Description" },
+      exchange: { label: "Exchange" },
+      isin: { label: "ISIN" },
+      lotSize: { label: "Lot Size" },
+      ric: { label: "RIC" },
+    },
     tablename: tables[selectedIndex],
   });
 
@@ -272,22 +275,19 @@ PersistConfig.displaySequence = displaySequence++;
 export const BasicGridColumnFixedCols = () => {
   const gridRef = useRef(null);
 
-  const dataConfig = useMemo(
-    () => ({
-      bufferSize: 0,
-      columns: instrumentSchemaFixed.columns.map((col) => col.name),
-      tableName: "instruments",
-      configUrl: "/tables/instruments/config.js",
-    }),
-    []
-  );
-
   const { columns, dataSource, error } = useTestDataSource({
-    columnConfig: { description: { locked: true } },
+    columnConfig: {
+      description: { label: "Description", locked: true },
+      bbg: { label: "BBG" },
+      currency: { label: "Currency" },
+      exchange: { label: "Exchange" },
+      isin: { label: "ISIN" },
+      lotSize: { label: "Lot Size" },
+      ric: { label: "RIC" },
+    },
+
     tablename: "instruments",
   });
-
-  console.log({ columns });
 
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
@@ -315,20 +315,22 @@ BasicGridColumnFixedCols.displaySequence = displaySequence++;
 export const BasicGridColumnHeaders = () => {
   const gridRef = useRef(null);
 
-  const dataConfig = useMemo(
-    () => ({
-      bufferSize: 0,
-      columns: instrumentSchema.columns.map((col) => col.name),
-      tableName: "instruments",
-      configUrl: "/tables/instruments/config.js",
-    }),
-    []
-  );
+  const { columns, dataSource, error } = useTestDataSource({
+    columnConfig: {
+      bbg: { heading: ["BBG", "Instrument"] },
+      isin: { heading: ["ISIN", "Instrument"] },
+      ric: { heading: ["RIC", "Instrument"] },
+      description: { heading: ["Description", "Instrument"] },
+      currency: { heading: ["Currency", "Exchange Details"] },
+      exchange: { heading: ["Exchange", "Exchange Details"] },
+      lotSize: { heading: ["Lot Size", "Exchange Details"] },
+    },
+    tablename: "instruments",
+  });
 
-  const dataSource = useMemo(
-    () => new RemoteDataSource(dataConfig),
-    [dataConfig]
-  );
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
 
   return (
     <>
@@ -337,7 +339,7 @@ export const BasicGridColumnHeaders = () => {
       </div>
       <Grid
         dataSource={dataSource}
-        columns={instrumentSchemaHeaders.columns}
+        columns={columns}
         height={600}
         ref={gridRef}
         renderBufferSize={20}
@@ -353,20 +355,9 @@ export const BasicGridWithFilter = () => {
   const gridRef = useRef(null);
   const [namedFilters, setNamedFilters] = useState([]);
 
-  const dataConfig = useMemo(
-    () => ({
-      bufferSize: 0,
-      columns: instrumentSchema.columns.map((col) => col.name),
-      tableName: "instruments",
-      configUrl: "/tables/instruments/config.js",
-    }),
-    []
-  );
-
-  const dataSource = useMemo(
-    () => new RemoteDataSource(dataConfig),
-    [dataConfig]
-  );
+  const { columns, dataSource, error } = useTestDataSource({
+    tablename: "instruments",
+  });
 
   const handleCommit = (result) => {
     const { filter, name } = extractFilter(result);
@@ -376,22 +367,16 @@ export const BasicGridWithFilter = () => {
     }
   };
 
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
   return (
     <>
-      <ParserProvider
-        parser={parseFilter}
-        suggestionFactory={suggestionFactory({
-          columnNames: dataConfig.columns,
-          namedFilters,
-        })}
-      >
-        <div style={{ width: 600, flex: "0 0 32px" }}>
-          <ParsedInput onCommit={handleCommit} />
-        </div>
-      </ParserProvider>
+      <VuuFilter columns={columns} />
       <Grid
         dataSource={dataSource}
-        columns={instrumentSchema.columns}
+        columns={columns}
         height={600}
         ref={gridRef}
         renderBufferSize={20}

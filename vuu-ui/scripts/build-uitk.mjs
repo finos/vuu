@@ -1,15 +1,13 @@
-import { exec } from "child_process";
-import { execCallback } from "./utils.mjs";
+import { execWait } from "./utils.mjs";
 
 const args = process.argv.slice(2);
 const dev = args.includes("--dev") ? " --dev" : "";
 const cjs = args.includes("--cjs") ? " --cjs" : "";
 
 function buildPackage(packageName) {
-  exec(
+  execWait(
     `node ../../../scripts/run-build-uitk.mjs${dev}${cjs}`,
-    { cwd: `uitk/packages/${packageName}` },
-    execCallback
+    `uitk/packages/${packageName}`
   );
 }
 
