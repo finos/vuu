@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 
-import { useEffectSkipFirst } from "@vuu-ui/react-utils";
+import { useEffectSkipFirst, useResizeObserver } from "../utils";
 import useAdornments from "../use-adornments";
 import modelReducer, { initModel } from "./grid-model-reducer";
 import { ROW_HEIGHT } from "./grid-model-actions";
-import { useResizeObserver, WidthHeight } from "@vuu-ui/react-utils";
 
 const ClientWidthHeight = ["clientHeight", "clientWidth"];
 

@@ -8,7 +8,7 @@ import React, {
   useRef,
 } from "react";
 import cx from "classnames";
-import { metadataKeys } from "@vuu-ui/utils";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 import GridContext from "./grid-context";
 import ColumnGroupHeader from "./column-group-header";
 import useScroll from "./use-scroll";

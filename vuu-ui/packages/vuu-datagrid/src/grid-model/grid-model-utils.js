@@ -1,5 +1,5 @@
-import { metadataKeys } from '@vuu-ui/utils';
-import { SortType } from '../constants';
+import { metadataKeys } from "@vuu-ui/vuu-utils";
+import { SortType } from "../constants";
 
 export const getHorizontalScrollbarHeight = (columnGroups) =>
   columnGroups
@@ -9,7 +9,7 @@ export const getHorizontalScrollbarHeight = (columnGroups) =>
     : 0;
 
 export function getColumnGroup({ columnGroups }, target) {
-  if (typeof target === 'number') {
+  if (typeof target === "number") {
     // this can be simplified, dom\t need to iterate columns
     const lastGroup = columnGroups.length - 1;
     for (let i = 0, idx = 0; i <= lastGroup; i++) {
@@ -18,7 +18,11 @@ export function getColumnGroup({ columnGroups }, target) {
       for (let j = 0; j < columnCount; j++, idx++) {
         if (target === idx) {
           return columnGroup;
-        } else if (i === lastGroup && target === idx + 1 && j === columnCount - 1) {
+        } else if (
+          i === lastGroup &&
+          target === idx + 1 &&
+          j === columnCount - 1
+        ) {
           return columnGroup;
         }
       }
@@ -54,7 +58,7 @@ export const Column = {
   /** @type {(column: Column, columnGroup: ColumnGroup) => Column} */
   clone: (column, { locked }) => {
     return { ...column, locked };
-  }
+  },
 };
 
 export const ColumnGroup = {
@@ -64,7 +68,9 @@ export const ColumnGroup = {
     return columns;
   },
   moveColumnTo: (columnGroup, column, idx) => {
-    const sourceIdx = columnGroup.columns.findIndex((col) => col.key === column.key);
+    const sourceIdx = columnGroup.columns.findIndex(
+      (col) => col.key === column.key
+    );
     const columns = columnGroup.columns.slice();
     if (sourceIdx < idx) {
       columns.splice(idx, 0, column);
@@ -74,7 +80,7 @@ export const ColumnGroup = {
       columns.splice(idx, 0, column);
     }
     return columns;
-  }
+  },
 };
 
 export const measureColumns = (gridModel, left) => {
@@ -127,11 +133,13 @@ export const getColumnOffset = (gridModel, columnGroupIdx, columnIdx) => {
 };
 
 function updateGroupColumnWidth(state, column, width) {
-  if (state.columnSizing === 'fill') {
+  if (state.columnSizing === "fill") {
     return updateGroupFillColumnWidth(state, column, width);
   }
 
-  const [columnGroups, groupIdx] = GridModel.updateGroupColumn(state, column, { width });
+  const [columnGroups, groupIdx] = GridModel.updateGroupColumn(state, column, {
+    width,
+  });
   const updatedGroup = columnGroups[groupIdx];
   updateColumnHeading(updatedGroup);
   const widthAdjustment = width - column.width;
@@ -145,7 +153,7 @@ function updateGroupColumnWidth(state, column, width) {
       const { locked, width } = columnGroups[i];
       columnGroups[i] = {
         ...columnGroups[i],
-        width: locked ? width : width - widthAdjustment
+        width: locked ? width : width - widthAdjustment,
       };
     }
   }
@@ -166,7 +174,9 @@ function updateGroupColumnWidth(state, column, width) {
  *    disallow the resize
  */
 function updateGroupFillColumnWidth(state, column, width) {
-  const columns = state.columnGroups.flatMap((columnGroup) => columnGroup.columns);
+  const columns = state.columnGroups.flatMap(
+    (columnGroup) => columnGroup.columns
+  );
   // const columns = GridModel.columns(state);
   const { length: noFlexCount } = columns.filter((c) => c.flex === undefined);
   const noFlexValues = noFlexCount === columns.length;
@@ -189,12 +199,12 @@ function updateGroupFillColumnWidth(state, column, width) {
     if (affectedColumn.name === column.name) {
       return {
         ...affectedColumn,
-        width
+        width,
       };
     } else {
       return {
         ...affectedColumn,
-        width: affectedColumn.width + widthDiffsPerColumn
+        width: affectedColumn.width + widthDiffsPerColumn,
       };
     }
   });
@@ -213,7 +223,7 @@ function updateGroupFillColumnWidth(state, column, width) {
           } else {
             return col;
           }
-        })
+        }),
       };
     } else {
       return columnGroup;
@@ -229,19 +239,32 @@ function updateColumnHeading(group) {
     group.headings = group.headings.map((heading) =>
       heading.map((colHeading) => {
         const indices = columnKeysToIndices(splitKeys(colHeading.key), columns);
-        const colWidth = indices.reduce((sum, idx) => sum + columns[idx].width, 0);
-        return colWidth === colHeading.width ? colHeading : { ...colHeading, width: colWidth };
+        const colWidth = indices.reduce(
+          (sum, idx) => sum + columns[idx].width,
+          0
+        );
+        return colWidth === colHeading.width
+          ? colHeading
+          : { ...colHeading, width: colWidth };
       })
     );
   }
 }
 
 function updateGroupColumn({ columnGroups: groups }, column, updates) {
-  const { groupIdx: idx, groupColIdx: colIdx } = getColumnPosition(groups, column);
+  const { groupIdx: idx, groupColIdx: colIdx } = getColumnPosition(
+    groups,
+    column
+  );
   const { columns, ...rest } = groups[idx];
   const updatedGroups = groups.map((group, i) =>
     i === idx
-      ? { ...rest, columns: columns.map((col, i) => (i === colIdx ? { ...col, ...updates } : col)) }
+      ? {
+          ...rest,
+          columns: columns.map((col, i) =>
+            i === colIdx ? { ...col, ...updates } : col
+          ),
+        }
       : group
   );
   return [updatedGroups, idx];
@@ -258,7 +281,11 @@ function addGroupColumn({ groupBy }, column) {
   }
 }
 
-function addSortColumn({ sort }, { name: columnName }, sortType = SortType.ASC) {
+function addSortColumn(
+  { sort },
+  { name: columnName },
+  sortType = SortType.ASC
+) {
   const sortEntry = { column: columnName, sortType };
   if (sort) {
     return sort.concat(sortEntry);
@@ -273,7 +300,11 @@ function setSortColumn({ sort }, { name: column }, sortType) {
     const columnSort = sort?.find((item) => item.column === column);
     if (columnSort) {
       return [
-        { column, sortType: columnSort.sortType === SortType.ASC ? SortType.DSC : SortType.ASC }
+        {
+          column,
+          sortType:
+            columnSort.sortType === SortType.ASC ? SortType.DSC : SortType.ASC,
+        },
       ];
     }
   }
@@ -300,7 +331,9 @@ const addColumnToColumns = (column, columns, index) => {
     return columns;
   } else {
     let newColumns =
-      currentIndex !== -1 ? columns.filter((_, i) => i !== currentIndex) : columns.slice();
+      currentIndex !== -1
+        ? columns.filter((_, i) => i !== currentIndex)
+        : columns.slice();
     newColumns.splice(index, 0, column);
     return newColumns;
   }
@@ -331,14 +364,17 @@ export const GridModel = {
   countLeadingSystemColumns,
   columns: (gridModel) =>
     flattenColumnGroup(
-      gridModel.columnGroups.flatMap((columnGroup) => columnGroup.columns.filter(omitSystemColumns))
+      gridModel.columnGroups.flatMap((columnGroup) =>
+        columnGroup.columns.filter(omitSystemColumns)
+      )
     ),
-  columnNames: (gridModel) => GridModel.columns(gridModel).map((column) => column.name),
+  columnNames: (gridModel) =>
+    GridModel.columns(gridModel).map((column) => column.name),
   removeGroupColumn,
   setAggregation,
   setSortColumn,
   updateGroupColumn,
-  updateGroupColumnWidth
+  updateGroupColumnWidth,
 };
 
 function getColumnPosition(groups, column) {
@@ -353,11 +389,11 @@ function getColumnPosition(groups, column) {
 
 export function expandStatesfromGroupState({ columns }, groupState) {
   const results = Array(columns.length).fill(-1);
-  let all = groupState && groupState['*'];
+  let all = groupState && groupState["*"];
   let idx = 0;
   while (all) {
     results[idx] = 1;
-    all = all['*'];
+    all = all["*"];
   }
   return results;
 }
@@ -388,7 +424,7 @@ export function extractGroupColumn(columns, groupBy) {
         if (groupBy.includes(column.name)) {
           g.push({
             ...column,
-            originalIdx: i
+            originalIdx: i,
           });
         } else {
           r.push(column);
@@ -411,17 +447,17 @@ export function extractGroupColumn(columns, groupBy) {
       const column = groupedColumns.find((col) => col.name === name);
       return {
         ...column,
-        groupLevel: groupCount - idx
+        groupLevel: groupCount - idx,
       };
     });
 
     const groupCol = {
       key: -1,
-      name: 'group-col',
-      heading: ['group-col'],
+      name: "group-col",
+      heading: ["group-col"],
       isGroup: true,
       columns: groupCols,
-      width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100
+      width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
     };
 
     return [groupCol, rest];
@@ -429,20 +465,21 @@ export function extractGroupColumn(columns, groupBy) {
   return [null, columns];
 }
 
-export const splitKeys = (compositeKey) => `${compositeKey}`.split(':').map((k) => parseInt(k, 10));
+export const splitKeys = (compositeKey) =>
+  `${compositeKey}`.split(":").map((k) => parseInt(k, 10));
 
 // need to rename this
 export const assignKeysToColumns = (columns, defaultWidth) => {
   const start = metadataKeys.count;
   return columns.map((column, i) =>
-    typeof column === 'string'
+    typeof column === "string"
       ? { name: column, key: start + i, width: defaultWidth }
-      : typeof column.key === 'number'
+      : typeof column.key === "number"
       ? column
       : {
           ...column,
           key: start + i,
-          width: column.width || defaultWidth
+          width: column.width || defaultWidth,
         }
   );
 };
@@ -456,7 +493,7 @@ export const getGroupValueAndOffset = (columns, row) => {
   if (isLeaf || depth > columns.length) {
     return [null, null];
   } else if (depth === 0) {
-    return ['$root', 0];
+    return ["$root", 0];
   } else {
     // offset 1 for now to allow for $root
     const column = columns[depth - 1];

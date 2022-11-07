@@ -9,8 +9,8 @@ import React, {
   useMemo,
 } from "react";
 import { useContextMenu } from "@vuu-ui/ui-controls";
-import { useEffectSkipFirst } from "@vuu-ui/react-utils";
-import { metadataKeys } from "@vuu-ui/utils";
+import { useEffectSkipFirst } from "./utils";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 import useScroll from "./use-scroll";
 import useUpdate from "./use-update";
 import useDataSource from "./use-data-source";

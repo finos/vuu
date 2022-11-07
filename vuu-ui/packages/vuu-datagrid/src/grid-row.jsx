@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from "react";
 import cx from "classnames";
-import { metadataKeys } from "@vuu-ui/utils";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 import { GridCell, GroupCell } from "./grid-cells";
 
 import "./grid-row.css";

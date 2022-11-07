@@ -1,6 +1,6 @@
-import { DataSourceRow, SubscribeCallback } from "@vuu-ui/data-remote";
-import { VuuDataRow, VuuRange } from "@vuu-ui/data-types";
-import { getFullRange, metadataKeys, WindowRange } from "@vuu-ui/utils";
+import { DataSourceRow, SubscribeCallback } from "@vuu-ui/vuu-data";
+import { VuuDataRow, VuuRange } from "../../vuu-protocol-types";
+import { getFullRange, metadataKeys, WindowRange } from "@vuu-ui/vuu-utils";
 import {
   useCallback,
   useContext,

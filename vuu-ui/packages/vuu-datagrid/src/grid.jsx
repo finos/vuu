@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import { ContextMenuProvider } from "@vuu-ui/ui-controls";
-import { useForkRef } from "@vuu-ui/react-utils";
+import { useForkRef } from "@heswell/uitk-core";
 import cx from "classnames";
 import { GridProvider } from "./grid-context";
 import { buildContextMenuDescriptors, useContextMenu } from "./context-menu";
@@ -15,7 +15,6 @@ import * as GridModelAction from "./grid-model/grid-model-actions";
 import { RowHeightCanary } from "./row-height-canary";
 import { ComponentProvider } from "./component-context";
 import { useGridModel } from "./grid-model/use-grid-model";
-// import useDataSourceModelBindings from "./use-datasource-model-bindings";
 import {
   useGridActions,
   useKeyboardNavigation,

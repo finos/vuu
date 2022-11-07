@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { getFullRange } from "@vuu-ui/utils/src/range-utils";
+import { getFullRange } from "@vuu-ui/vuu-utils/src/range-utils";
 
 const RowNavKey = {
   ArrowUp: true,

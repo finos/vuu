@@ -1,9 +1,9 @@
-import { useCallback, useContext, useRef } from 'react';
-import { useResizeObserver } from '@vuu-ui/react-utils';
-import { ROW_HEIGHT } from './grid-model/grid-model-actions';
-import GridContext from './grid-context';
+import { useCallback, useContext, useRef } from "react";
+import { useResizeObserver } from "./utils";
+import { ROW_HEIGHT } from "./grid-model/grid-model-actions";
+import GridContext from "./grid-context";
 
-const dimensions = ['height'];
+const dimensions = ["height"];
 
 export const useRowHeight = () => {
   const { dispatchGridModelAction } = useContext(GridContext);

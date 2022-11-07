@@ -1,6 +1,6 @@
 import React, { useCallback, useContext } from "react";
 import cx from "classnames";
-import { metadataKeys } from "@vuu-ui/utils";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 import GridContext from "../grid-context";
 import { getGroupValueAndOffset } from "../grid-model/grid-model-utils";
 

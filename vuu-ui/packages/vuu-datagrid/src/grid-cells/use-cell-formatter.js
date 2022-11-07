@@ -1,13 +1,13 @@
-import { STARTS_WITH } from '@vuu-ui/utils';
-import { createElement, useRef } from 'react';
-import { roundDecimal } from './grid-cell-number-utils';
+import { STARTS_WITH } from "@vuu-ui/vuu-utils";
+import { createElement, useRef } from "react";
+import { roundDecimal } from "./grid-cell-number-utils";
 
-const defaultFormatter = (value) => (value == null ? '' : value);
+const defaultFormatter = (value) => (value == null ? "" : value);
 
 const getFormatter = (column) => {
   if (column.type) {
     const { name, format } = column.type;
-    if (name === 'number') {
+    if (name === "number") {
       return numericFormatter(format);
     }
   }
@@ -25,21 +25,28 @@ export default useFormatter;
 const DEFAULT_NUMERIC_FORMATTING = {};
 
 function numericFormatter({
-  align = 'right',
+  align = "right",
   alignOnDecimals = false,
   decimals = 4,
-  zeroPad = false
+  zeroPad = false,
 } = DEFAULT_NUMERIC_FORMATTING) {
-  const props = { className: 'num' };
+  const props = { className: "num" };
   // eslint-disable-next-line react/display-name
   return (value) => {
-    if (typeof value === 'string' && (value.startsWith('Σ') || value.startsWith('['))) {
+    if (
+      typeof value === "string" &&
+      (value.startsWith("Σ") || value.startsWith("["))
+    ) {
       return value;
     }
     const number =
-      typeof value === 'number' ? value : typeof value === 'string' ? parseFloat(value) : null;
+      typeof value === "number"
+        ? value
+        : typeof value === "string"
+        ? parseFloat(value)
+        : null;
     return createElement(
-      'div',
+      "div",
       props,
       roundDecimal(number, align, decimals, zeroPad, alignOnDecimals)
     );

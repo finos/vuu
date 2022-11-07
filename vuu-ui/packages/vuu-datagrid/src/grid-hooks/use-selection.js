@@ -1,12 +1,12 @@
-import { useCallback, useRef } from 'react';
-import { metadataKeys } from '@vuu-ui/utils';
+import { useCallback, useRef } from "react";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 
 const { IDX, SELECTED } = metadataKeys;
 
-export const SINGLE = 'single';
-export const CHECKBOX = 'checkbox';
-export const MULTI = 'multi';
-export const EXTENDED = 'extended';
+export const SINGLE = "single";
+export const CHECKBOX = "checkbox";
+export const MULTI = "multi";
+export const EXTENDED = "extended";
 
 export const useSelection = ({ onChange, selection = SINGLE }) => {
   const singleSelect = selection === SINGLE;
@@ -16,7 +16,11 @@ export const useSelection = ({ onChange, selection = SINGLE }) => {
   const selected = useRef([]);
 
   const handleSelectionChange = useCallback(
-    ({ row, rangeSelect, keepExistingSelection: preserveExistingSelection }) => {
+    ({
+      row,
+      rangeSelect,
+      keepExistingSelection: preserveExistingSelection,
+    }) => {
       const { [IDX]: idx, [SELECTED]: isSelected } = row;
       const { current: active } = lastActive;
       const { current: currentSelected } = selected;
@@ -24,9 +28,12 @@ export const useSelection = ({ onChange, selection = SINGLE }) => {
       const inactiveRange = active === -1;
       const actsLikeSingleSelect =
         singleSelect ||
-        (extendedSelect && !preserveExistingSelection && (!rangeSelect || inactiveRange));
+        (extendedSelect &&
+          !preserveExistingSelection &&
+          (!rangeSelect || inactiveRange));
       const actsLikeMultiSelect =
-        multiSelect || (extendedSelect && preserveExistingSelection && !rangeSelect);
+        multiSelect ||
+        (extendedSelect && preserveExistingSelection && !rangeSelect);
 
       let newSelected;
       if (actsLikeSingleSelect && isSelected) {
