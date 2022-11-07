@@ -5,8 +5,8 @@ import {
   VuuRange,
   VuuSortCol,
   VuuTable,
-} from "@vuu-ui/data-types";
-import { EventEmitter, Filter, uuid } from "@vuu-ui/utils";
+} from "../../vuu-protocol-types";
+import { EventEmitter, Filter, uuid } from "@vuu-ui/vuu-utils";
 import { ConnectionManager, ServerAPI } from "./connection-manager";
 import {
   DataSource,

@@ -9,8 +9,8 @@ import {
   VuuRowDataItemType,
   VuuSort,
   VuuTable,
-} from "@vuu-ui/data-types";
-import { Filter } from "@vuu-ui/utils";
+} from "../../vuu-protocol-types";
+import { Filter } from "@vuu-ui/vuu-utils";
 
 type RowIndex = number;
 type RenderKey = number;

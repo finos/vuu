@@ -1,6 +1,6 @@
-import { WindowRange } from "@vuu-ui/utils";
+import { WindowRange } from "@vuu-ui/vuu-utils";
 import { bufferBreakout } from "./buffer-range";
-import { VuuRange, VuuRow } from "@vuu-ui/data-types";
+import { VuuRange, VuuRow } from "../../../vuu-protocol-types";
 
 const EMPTY_ARRAY = [] as const;
 

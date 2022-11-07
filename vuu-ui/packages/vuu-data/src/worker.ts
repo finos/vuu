@@ -1,10 +1,10 @@
-import { connect as connectWebsocket } from "@vuu-ui/data-remote/src/websocket-connection";
-import { ServerProxy } from "@vuu-ui/data-remote/src/server-proxy/server-proxy";
+import { connect as connectWebsocket } from "@vuu-ui/vuu-data/src/websocket-connection";
+import { ServerProxy } from "@vuu-ui/vuu-data/src/server-proxy/server-proxy";
 import {
   ConnectionStatusMessage,
   isConnectionStatusMessage,
   VuuUIMessageOut,
-} from "@vuu-ui/data-remote/src/vuuUIMessageTypes";
+} from "@vuu-ui/vuu-data/src/vuuUIMessageTypes";
 
 let server: ServerProxy;
 

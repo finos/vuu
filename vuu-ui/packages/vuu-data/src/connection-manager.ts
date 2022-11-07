@@ -1,4 +1,4 @@
-import { EventEmitter, uuid } from "@vuu-ui/utils";
+import { EventEmitter, uuid } from "@vuu-ui/vuu-utils";
 import * as Message from "./server-proxy/messages";
 import {
   isConnectionStatusMessage,
@@ -14,7 +14,7 @@ import {
   ClientToServerTableList,
   ClientToServerTableMeta,
   VuuTable,
-} from "@vuu-ui/data-types";
+} from "../../vuu-protocol-types";
 import { shouldMessageBeRoutedToDataSource as messageShouldBeRoutedToDataSource } from "./data-source";
 // Note: the InlinedWorker is a generated file, it must be built
 import { InlinedWorker } from "./inlined-worker";

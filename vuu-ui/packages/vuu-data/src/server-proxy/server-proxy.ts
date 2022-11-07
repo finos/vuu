@@ -8,7 +8,7 @@ import {
   VuuLink,
   VuuMenuContext,
   VuuTable,
-} from "@vuu-ui/data-types";
+} from "../../../vuu-protocol-types";
 import {
   isViewporttMessage as isViewportMessage,
   ServerProxySubscribeMessage,
