@@ -1,5 +1,5 @@
 {
-  "name": "@vuu-ui/data-types",
+  "name": "@vuu-ui/vuu-protocol-types",
   "version": "1.0.0",
   "main": "",
   "types": "index.d.ts",
