@@ -1,5 +1,5 @@
-import { SuggestionFetcher } from "@vuu-ui/data-remote";
-import { TypeaheadParams, VuuTable } from "@vuu-ui/data-types";
+import { SuggestionFetcher } from "@vuu-ui/vuu-data";
+import { TypeaheadParams, VuuTable } from "../../vuu-protocol-types";
 import { SetFilterValuesFuncParams } from "ag-grid-community";
 import { MutableRefObject } from "react";
 

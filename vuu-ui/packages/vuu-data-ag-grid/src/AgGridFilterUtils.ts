@@ -1,11 +1,11 @@
-import { VuuSort, VuuSortCol } from "@vuu-ui/data-types";
+import { VuuSort, VuuSortCol } from "../../vuu-protocol-types";
 import { filterAsQuery } from "@vuu-ui/datagrid-parsers";
-import { Filter, MultiClauseFilter } from "@vuu-ui/utils";
+import { Filter, MultiClauseFilter } from "@vuu-ui/vuu-utils";
 import {
   AndFilter,
   FilterClause,
   SingleValueFilterClauseOp,
-} from "@vuu-ui/utils";
+} from "@vuu-ui/vuu-utils";
 
 export type AgGridSetFilter = {
   filterType: "set";

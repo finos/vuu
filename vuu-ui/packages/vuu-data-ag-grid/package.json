@@ -1,5 +1,5 @@
 {
-  "name": "@vuu-ui/ag-grid",
+  "name": "@vuu-ui/vuu-data-ag-grid",
   "version": "0.0.26",
   "main": "src/index.ts",
   "author": "heswell",
@@ -14,9 +14,9 @@
     "/src"
   ],
   "peerDependencies": {
-    "@vuu-ui/data-remote": "0.0.26",
+    "@vuu-ui/vuu-data": "0.0.26",
     "@vuu-ui/datagrid-parsers": "0.0.26",
-    "@vuu-ui/utils": "0.0.26",
+    "@vuu-ui/vuu-utils": "0.0.26",
     "ag-grid-community": "^28.2.0",
     "ag-grid-enterprise": "^28.2.0",
     "ag-grid-react": "^28.2.0",

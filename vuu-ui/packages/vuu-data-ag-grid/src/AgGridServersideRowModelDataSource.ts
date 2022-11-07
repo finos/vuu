@@ -2,8 +2,13 @@ import {
   DataSourceProps,
   RemoteDataSource,
   SubscribeCallback,
-} from "@vuu-ui/data-remote";
-import { metadataKeys, DataRow, DataWindow, getFullRange } from "@vuu-ui/utils";
+} from "@vuu-ui/vuu-data";
+import {
+  metadataKeys,
+  DataRow,
+  DataWindow,
+  getFullRange,
+} from "@vuu-ui/vuu-utils";
 import {
   ColumnRowGroupChangedEvent,
   FilterChangedEvent,

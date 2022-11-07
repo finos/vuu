@@ -2,8 +2,8 @@ import {
   DataSourceProps,
   SuggestionFetcher,
   useViewserver,
-} from "@vuu-ui/data-remote";
-import { VuuTable } from "@vuu-ui/data-types";
+} from "@vuu-ui/vuu-data";
+import { VuuTable } from "../../vuu-protocol-types";
 import {
   ColumnRowGroupChangedEvent,
   FilterChangedEvent,

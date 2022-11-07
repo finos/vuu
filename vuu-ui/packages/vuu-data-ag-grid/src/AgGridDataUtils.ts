@@ -1,5 +1,5 @@
-import { DataSourceRow } from "@vuu-ui/data-remote";
-import { VuuSortCol } from "@vuu-ui/data-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data";
+import { VuuSortCol } from "../../vuu-protocol-types";
 import {
   ColumnState,
   ColumnVO,
