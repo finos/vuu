@@ -29,6 +29,17 @@
   --svg-grab-handle: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">  <circle cx="7" cy="13" r="1"/><circle cx="7" cy="10" r="1"/><circle cx="7" cy="7" r="1"/><circle cx="7" cy="4" r="1"/><circle cx="10" cy="13" r="1"/><circle cx="10" cy="10" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="10" cy="4" r="1"/></svg>');
 }
 
+[data-icon]:after {
+  content: "";
+  background-color: black;
+  height: var(--vuu-icon-size);
+  inset: calc(50% - var(--vuu-icon-size) / 2) auto 0 calc(50% - var(--vuu-icon-size) / 2);
+  -webkit-mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+  mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+  position: absolute;
+  width: var(--vuu-icon-size);
+}
+
 
 [data-icon='filter'] {
   --svg-icon: var(--svg-filter);

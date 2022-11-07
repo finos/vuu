@@ -9,7 +9,7 @@ const buildPackage = async (packageName) =>
 
 // TODO determine the dependency graph/build order programatically
 const wave1 = ["utils", "react-utils", "theme", "theme-uitk"];
-const wave2 = ["data-remote", "data-store", "datagrid-parsers", "ui-controls"];
+const wave2 = ["data-remote", "datagrid-parsers", "ui-controls"];
 const wave3 = ["data-grid", "ag-grid", "layout", "parsed-input", "shell"];
 
 await Promise.all(wave1.map(buildPackage));

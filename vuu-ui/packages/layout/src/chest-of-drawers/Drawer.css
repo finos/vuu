@@ -145,6 +145,9 @@
 }
 
 .hwToggleButton-container {
-  --svg-close: var(--svg-chevron-double-left);
+  --uitkButton-height: 28px;
+  --uitkButton-width: 28px;
+  --vuu-icon-size: 12px;
+  --vuu-icon-svg: var(--svg-chevron-double-left);
   flex: 0 0 28px;
 }

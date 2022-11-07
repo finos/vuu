@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useState } from "react";
-import { formatDate } from "@vuu-ui/ui-controls";
+import { formatDate } from "@vuu-ui/utils";
 import { logout } from "../login";
 import { getLayoutHistory } from "../get-layout-history";
 import { ExportIcon } from "@heswell/uitk-icons";

@@ -1,6 +1,7 @@
 export { EventEmitter } from "./event-emitter";
 export * from "./column-utils";
 export * from "./DataWindow";
+export * from "./date-utils";
 export * from "./getUniqueId";
 export * from "./input-utils";
 export * from "./invariant";

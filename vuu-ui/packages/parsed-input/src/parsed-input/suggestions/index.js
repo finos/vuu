@@ -1,2 +1,2 @@
-export * from "./SuggestionList";
 export * from "./useSuggestions";
+export * from "./SuggestionListItem";

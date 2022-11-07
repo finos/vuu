@@ -1,9 +1,0 @@
-.hwStateButton {
-  --checked-bg: var(--hw-button-active-bg, cornflowerblue);
-  --checked-color: var(--button-highlight-color, white);
-}
-
-.hwStateButton-checked {
-  background-color: var(--checked-bg);
-  color: var(--checked-color);
-}

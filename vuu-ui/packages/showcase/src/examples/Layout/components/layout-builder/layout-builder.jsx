@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { atom, useSetRecoilState, useRecoilValue } from 'recoil';
+import React, { useRef, useState } from "react";
+import { atom, useSetRecoilState, useRecoilValue } from "recoil";
 import {
   Flexbox,
   Component as PlaceHolder,
@@ -8,33 +8,28 @@ import {
   PaletteItem,
   registerComponent,
   View,
-  useViewContext
-} from '@vuu-ui/layout';
-import { Select } from '@vuu-ui/ui-controls';
-import { Control } from '@vuu-ui/ui-forms';
+  useViewContext,
+} from "@vuu-ui/layout";
+import { Dropdown } from "@heswell/uitk-lab";
 
 // import LayoutConfigurator from '../layout-configurator';
 // import {  LayoutTreeViewer } from '../layout-tree-viewer';
 
-import './layout-builder.css';
+import "./layout-builder.css";
 
 const layouts = [];
 
 const availableLayouts = atom({
-  key: 'availableLayouts', // unique ID (with respect to other atoms/selectors)
-  default: []
+  key: "availableLayouts", // unique ID (with respect to other atoms/selectors)
+  default: [],
 });
 
 const LayoutPicker = ({ onCommit }) => {
   const availableValues = useRecoilValue(availableLayouts);
-  return (
-    <Control>
-      <Select onCommit={onCommit} values={availableValues} />
-    </Control>
-  );
+  return <Dropdown onSelect={onCommit} values={availableValues} />;
 };
 
-const StatefulComponent = ({ initialState = '', style, stateKey }) => {
+const StatefulComponent = ({ initialState = "", style, stateKey }) => {
   const { load, save } = useViewContext();
   const state = useRef(load(stateKey) ?? initialState);
   const [value, setValue] = useState(state.current);
@@ -45,25 +40,35 @@ const StatefulComponent = ({ initialState = '', style, stateKey }) => {
   return <textarea style={style} onChange={handleChange} value={value} />;
 };
 
-registerComponent('StatefulComponent', StatefulComponent);
+registerComponent("StatefulComponent", StatefulComponent);
 
 const BuilderPalette = (props) => {
   return (
     <Palette {...props}>
       <PaletteItem header resizeable closeable title="Blue Monday">
-        <StatefulComponent style={{ backgroundColor: 'cornflowerblue', height: '100%' }} />
+        <StatefulComponent
+          style={{ backgroundColor: "cornflowerblue", height: "100%" }}
+        />
       </PaletteItem>
       <PaletteItem header resizeable closeable title="Brown Sugar">
-        <StatefulComponent style={{ backgroundColor: 'brown', height: '100%' }} />
+        <StatefulComponent
+          style={{ backgroundColor: "brown", height: "100%" }}
+        />
       </PaletteItem>
       <PaletteItem header resizeable closeable title="Green Day">
-        <StatefulComponent style={{ backgroundColor: 'green', height: '100%' }} />
+        <StatefulComponent
+          style={{ backgroundColor: "green", height: "100%" }}
+        />
       </PaletteItem>
       <PaletteItem header resizeable closeable title="Lemonheads">
-        <StatefulComponent style={{ backgroundColor: 'yellow', height: '100%' }} />
+        <StatefulComponent
+          style={{ backgroundColor: "yellow", height: "100%" }}
+        />
       </PaletteItem>
       <PaletteItem header resizeable closeable title="Fade to Grey">
-        <StatefulComponent style={{ backgroundColor: '#ddd', height: '100%' }} />
+        <StatefulComponent
+          style={{ backgroundColor: "#ddd", height: "100%" }}
+        />
       </PaletteItem>
     </Palette>
   );
@@ -74,7 +79,7 @@ export const LayoutBuilder = ({ enableSave, width = 800, height = 1000 }) => {
     layoutModel: undefined,
     managedLayoutNode: null,
     selectedLayoutNode: null,
-    selectedId: null
+    selectedId: null,
   });
 
   const setAvailableValues = useSetRecoilState(availableLayouts);
@@ -108,8 +113,8 @@ export const LayoutBuilder = ({ enableSave, width = 800, height = 1000 }) => {
       ...state,
       layoutModel: {
         ...layoutModel,
-        id
-      }
+        id,
+      },
     }));
   };
 
@@ -128,18 +133,23 @@ export const LayoutBuilder = ({ enableSave, width = 800, height = 1000 }) => {
     <DraggableLayout onLayoutChange={onLayoutModel} layout={state.layoutModel}>
       <Flexbox
         className="LayoutBuilder"
-        style={{ flexDirection: 'column', width: 900, height: 600 }}>
+        style={{ flexDirection: "column", width: 900, height: 600 }}
+      >
         <Flexbox
           className="builder-top"
           style={{
             height: 60,
-            backgroundColor: 'rgb(90,90,90)',
-            flexBasis: 'auto',
+            backgroundColor: "rgb(90,90,90)",
+            flexBasis: "auto",
             flexGrow: 0,
-            flexShrink: 0
-          }}>
-          <BuilderPalette style={{ flex: 1, backgroundColor: 'inherit' }} />
-          <div className="layout-edit-controls" style={{ backgroundColor: 'red', width: 250 }}>
+            flexShrink: 0,
+          }}
+        >
+          <BuilderPalette style={{ flex: 1, backgroundColor: "inherit" }} />
+          <div
+            className="layout-edit-controls"
+            style={{ backgroundColor: "red", width: 250 }}
+          >
             <LayoutPicker onCommit={selectLayout} />
           </div>
         </Flexbox>
@@ -151,8 +161,8 @@ export const LayoutBuilder = ({ enableSave, width = 800, height = 1000 }) => {
           //   $path: state.selectedLayoutNode.$path
           // }: null}
         >
-          <View resizeable style={{ flex: 1, width: '100%', height: '100%' }}>
-            <PlaceHolder style={{ flex: 1, backgroundColor: 'lightgrey' }} />
+          <View resizeable style={{ flex: 1, width: "100%", height: "100%" }}>
+            <PlaceHolder style={{ flex: 1, backgroundColor: "lightgrey" }} />
           </View>
         </DraggableLayout>
       </Flexbox>
