@@ -9,7 +9,6 @@ const featureEntryPoints = [
   "src/features/ag-grid/index.ts",
   "src/features/filtered-grid/index.ts",
   "src/features/metrics/index.js",
-  "src/features/simple-component/index.js",
 ];
 
 const outbase = "src";

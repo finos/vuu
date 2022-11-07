@@ -1,11 +1,15 @@
-import { ColumnDataType, TypeaheadParams, VuuTable } from "@vuu-ui/data-types";
+import {
+  ColumnDataType,
+  TypeaheadParams,
+  VuuTable,
+} from "../../../../vuu-protocol-types";
 import {
   NamedFilter,
   SuggestionItem,
   SuggestionProviderProps,
 } from "@vuu-ui/datagrid-parsers";
-import { Filter, isMultiClauseFilter } from "@vuu-ui/utils";
-import { SchemaColumn } from "@vuu-ui/data-remote";
+import { Filter, isMultiClauseFilter } from "@vuu-ui/vuu-utils";
+import { SchemaColumn } from "@vuu-ui/vuu-data";
 
 type ObjectValue = { [key: string]: string };
 type Value = string | ObjectValue;

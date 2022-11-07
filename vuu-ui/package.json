@@ -6,6 +6,8 @@
   "private": true,
   "workspaces": [
     "packages/**",
+    "sample-apps/**",
+    "showcase",
     "uitk/packages/core",
     "uitk/packages/icons",
     "uitk/packages/lab"
@@ -18,9 +20,9 @@
     "build:uitk": "node ./scripts/build-uitk.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "start:electron": "cd packages/electron && node ./node_modules/.bin/electron .",
-    "showcase": "cd packages/showcase && vite",
-    "build:app": "cd packages/app-vuu-example && node scripts/build.mjs",
-    "build:app:dev": "cd packages/app-vuu-example && node scripts/build.mjs --dev",
+    "showcase": "cd showcase && vite",
+    "build:app": "cd sample-apps/app-vuu-example && node scripts/build.mjs",
+    "build:app:dev": "cd sample-apps/app-vuu-example && node scripts/build.mjs --dev",
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.mjs",
     "typecheck": "tsc --noEmit"

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo } from "react";
-import { useViewContext } from "@vuu-ui/layout";
-import { Grid } from "@vuu-ui/data-grid";
-import { createDataSource } from "@vuu-ui/data-remote";
+import { useViewContext } from "@vuu-ui/vuu-layout";
+import { Grid } from "@vuu-ui/vuu-datagrid";
+import { createDataSource } from "@vuu-ui/vuu-data";
 
 export const MetricsTable = ({ onServiceRequest, schema, ...props }) => {
   const { id, dispatch, load, save, loadSession, saveSession } =

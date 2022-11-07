@@ -1,9 +1,14 @@
-import React, { useRef, useState } from 'react';
-import cx from 'classnames';
-import { Button, CloseIcon, FilterIcon, StateButton } from '@vuu-ui/ui-controls';
-import { Toolbar, Tooltray, useViewContext } from '@vuu-ui/layout';
+import React, { useRef, useState } from "react";
+import cx from "classnames";
+import {
+  Button,
+  CloseIcon,
+  FilterIcon,
+  StateButton,
+} from "@vuu-ui/ui-controls";
+import { Toolbar, Tooltray, useViewContext } from "@vuu-ui/vuu-layout";
 
-import './query-filter.css';
+import "./query-filter.css";
 
 const isValidQuery = (filterQuery) => {
   if (!filterQuery || !filterQuery.trim()) {
@@ -13,7 +18,7 @@ const isValidQuery = (filterQuery) => {
   return true;
 };
 
-const buildFilterQuery = (filters, joinOp = 'or') =>
+const buildFilterQuery = (filters, joinOp = "or") =>
   Object.values(filters)
     .filter(({ enabled }) => enabled)
     .map(({ filterQuery }) => filterQuery)
@@ -25,9 +30,9 @@ const QueryFilter = ({ onChange }) => {
   // const filterRef = useRef(load("query-filter") ?? {})
   const filterRef = useRef({});
   const [filters, setFilters] = useState(filterRef.current);
-  const [joinOp, setJoinOp] = useState('or');
+  const [joinOp, setJoinOp] = useState("or");
 
-  const [filterValue, setFilterValue] = useState('');
+  const [filterValue, setFilterValue] = useState("");
 
   const handleFilterValueChange = (e) => {
     setFilterValue(e.target.value);
@@ -47,20 +52,20 @@ const QueryFilter = ({ onChange }) => {
       ...filters,
       [filterName]: {
         filterQuery,
-        enabled: true
-      }
+        enabled: true,
+      },
     };
 
     onChange(buildFilterQuery(newState));
 
     setFilters((filterRef.current = newState));
 
-    save(filterRef.current, 'query-filter');
+    save(filterRef.current, "query-filter");
   };
 
   const removeFilter = (filterName) => {
     const newState = {
-      ...filters
+      ...filters,
     };
 
     delete newState[filterName];
@@ -69,18 +74,18 @@ const QueryFilter = ({ onChange }) => {
 
     setFilters((filterRef.current = newState));
 
-    save(filterRef.current, 'query-filter');
+    save(filterRef.current, "query-filter");
   };
 
   // useEffect(() => () => save(filterRef.current, "query-filter") ,[save])
 
   const handleKeyDown = ({ key }) => {
-    if (key === 'Enter') {
+    if (key === "Enter") {
       if (isValidQuery(filterValue)) {
         addFilter(filterValue);
-        setFilterValue('');
+        setFilterValue("");
       } else {
-        console.log('not valid yet');
+        console.log("not valid yet");
       }
     }
   };
@@ -90,8 +95,8 @@ const QueryFilter = ({ onChange }) => {
       ...filters,
       [filterName]: {
         ...filters[filterName],
-        enabled: !filters[filterName].enabled
-      }
+        enabled: !filters[filterName].enabled,
+      },
     };
 
     onChange(buildFilterQuery(newState, joinOp));
@@ -99,7 +104,7 @@ const QueryFilter = ({ onChange }) => {
   };
 
   const toggleOr = (evt, value) => {
-    const op = joinOp === 'or' ? 'and' : 'or';
+    const op = joinOp === "or" ? "and" : "or";
     if (joinOp !== op) {
       onChange(buildFilterQuery(filters, op));
       setJoinOp(op);
@@ -108,12 +113,12 @@ const QueryFilter = ({ onChange }) => {
 
   const handleClearFilters = () => {
     setFilters({});
-    setFilterValue('');
-    onChange('');
+    setFilterValue("");
+    onChange("");
   };
 
   const handleFilterTagKeyDown = ({ key }, filterName) => {
-    if (key === 'Backspace') {
+    if (key === "Backspace") {
       removeFilter(filterName);
     }
   };
@@ -122,15 +127,16 @@ const QueryFilter = ({ onChange }) => {
     <StateButton
       width={25}
       className={cx(`${classBase}-andor`, {
-        [`${classBase}-andor-selected`]: joinOp === 'or'
+        [`${classBase}-andor-selected`]: joinOp === "or",
       })}
-      checked={joinOp === 'or'}
-      onChange={toggleOr}>
+      checked={joinOp === "or"}
+      onChange={toggleOr}
+    >
       {joinOp}
     </StateButton>
   );
 
-  const classBase = 'hwQueryFilter';
+  const classBase = "hwQueryFilter";
   const filterKeys = Object.keys(filters);
   return (
     <Toolbar className={cx(classBase)}>
@@ -153,7 +159,8 @@ const QueryFilter = ({ onChange }) => {
                 checked={filters[filterName].enabled}
                 key={i}
                 onChange={() => toggleFilter(filterName)}
-                onKeyDown={(e) => handleFilterTagKeyDown(e, filterName)}>
+                onKeyDown={(e) => handleFilterTagKeyDown(e, filterName)}
+              >
                 <span>{filterName}</span>
               </StateButton>
             );

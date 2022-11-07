@@ -1,13 +1,13 @@
-// import { useViewContext } from "@vuu-ui/layout";
+// import { useViewContext } from "@vuu-ui/vuu-layout";
 import { useMemo } from "react";
 import "ag-grid-enterprise";
 import { AgGridReact } from "ag-grid-react";
-import { useAgGridDataSource } from "@vuu-ui/ag-grid";
+import { useAgGridDataSource } from "@vuu-ui/vuu-data-ag-grid";
 import { createColumnDefs } from "./createColumnDefs";
 
-import { TableSchema } from "@vuu-ui/data-remote";
+import { TableSchema } from "@vuu-ui/vuu-data";
 
-import { FeatureProps } from "@vuu-ui/shell";
+import { FeatureProps } from "@vuu-ui/vuu-shell";
 
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.css";

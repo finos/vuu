@@ -5,8 +5,8 @@ import {
   AccordionSection,
   AccordionSummary,
 } from "@heswell/uitk-lab";
-import { Palette, PaletteItem } from "@vuu-ui/layout";
-import { Feature } from "@vuu-ui/shell";
+import { Palette, PaletteItem } from "@vuu-ui/vuu-layout";
+import { Feature } from "@vuu-ui/vuu-shell";
 import {
   ToggleButton,
   ToggleButtonGroup,
@@ -14,7 +14,7 @@ import {
 } from "@heswell/uitk-lab";
 
 import { useMemo, useState } from "react";
-import { TableSchema, VuuTableSchemas } from "@vuu-ui/data-remote";
+import { TableSchema, VuuTableSchemas } from "@vuu-ui/vuu-data";
 
 //prettier-ignore
 const tables = [

@@ -1,5 +1,5 @@
 import { SetFilterValuesFuncParams } from "ag-grid-community";
-import { FilterDataProvider } from "@vuu-ui/ag-grid";
+import { FilterDataProvider } from "@vuu-ui/vuu-data-ag-grid";
 
 export const createColumnDefs = (setFilterDataProvider: FilterDataProvider) => [
   {
