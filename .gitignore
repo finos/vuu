@@ -19,3 +19,13 @@ deployed_apps
 dist
 /vuu-ui-legacy/target/
 /vuu-ui-legacy/vuu-ui-legacy.iml
+
+# Docusaurus generated folders
+website/translated_docs/
+website/build/
+website/i18n/
+website/.docusaurus/
+website/package-lock.json
+
+# Generated docs
+docs/contributing.md
