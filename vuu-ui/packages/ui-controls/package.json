@@ -19,7 +19,6 @@
   },
   "types": "src/index.ts",
   "peerDependencies": {
-    "@vuu-ui/react-utils": "0.0.26",
     "@vuu-ui/vuu-utils": "0.0.26",
     "classnames": "^2.2.6",
     "react": "^17.0.2",
