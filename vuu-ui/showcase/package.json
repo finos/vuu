@@ -22,7 +22,6 @@
     "@heswell/uitk-lab": "0.7.1-vuu.4",
     "@vuu-ui/vuu-layout": "0.0.26",
     "@vuu-ui/parsed-input": "0.0.26",
-    "@vuu-ui/react-utils": "0.0.26",
     "@vuu-ui/vuu-theme": "0.0.26",
     "@vuu-ui/ui-controls": "0.0.26",
     "@vuu-ui/vuu-utils": "0.0.26",
