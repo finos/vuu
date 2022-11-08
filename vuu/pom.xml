@@ -208,6 +208,23 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>legal-report</id>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.scala-tools</groupId>
+                        <artifactId>maven-scala-plugin</artifactId>
+                        <version>${maven.scala.plugin}</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </reporting>
+        </profile>
     </profiles>
 
     <build>

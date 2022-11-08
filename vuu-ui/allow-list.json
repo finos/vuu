@@ -1,0 +1,6 @@
+{
+    "ignore": [
+        { "id": "sonatype-2014-0038", "reason": "ShellJS is poorly designed - https://github.com/shelljs/shelljs/pull/524#issuecomment-507152989" },
+        { "id": "sonatype-2017-0717", "reason": "Low score; issue still present in React 18; check for resolution on https://github.com/facebook/react/issues/10506"}
+    ]
+}
