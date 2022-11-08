@@ -1,20 +1,19 @@
-import React, { forwardRef, useRef } from 'react';
-import cx from 'classnames';
-import { useId } from '@vuu-ui/react-utils';
+import React, { forwardRef, useRef } from "react";
+import cx from "classnames";
 import {
   closestListItemIndex,
   groupSelectionEnabled,
   useItemsWithIds,
   useViewportTracking,
-  GROUP_SELECTION_NONE
-} from '../common-hooks';
+  GROUP_SELECTION_NONE,
+} from "../common-hooks";
 
-import { useTree } from './useTree';
-import { useForkRef } from '../utils/use-fork-ref';
+import { useTree } from "./useTree";
+import { useForkRef, useId } from "../utils";
 
-import './Tree.css';
+import "./Tree.css";
 
-const classBase = 'hwTree';
+const classBase = "hwTree";
 
 // eslint-disable-next-line no-unused-vars
 export const TreeNode = ({ children, idx, ...props }) => {
@@ -32,7 +31,7 @@ const Tree = forwardRef(function Tree(
     onSelectionChange,
     revealSelected,
     selected: selectedProp,
-    selection = 'single',
+    selection = "single",
     source,
     ...htmlAttributes
   },
@@ -42,9 +41,15 @@ const Tree = forwardRef(function Tree(
   const root = useRef(null);
 
   // returns the full source data
-  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(source, id, {
-    revealSelected: revealSelected ? selectedProp ?? defaultSelected ?? false : undefined
-  });
+  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(
+    source,
+    id,
+    {
+      revealSelected: revealSelected
+        ? selectedProp ?? defaultSelected ?? false
+        : undefined,
+    }
+  );
 
   const handleSelectionChange = (evt, selected) => {
     onSelectionChange?.(
@@ -61,7 +66,7 @@ const Tree = forwardRef(function Tree(
     listProps,
     listItemHandlers,
     selected,
-    visibleData
+    visibleData,
   } = useTree({
     allowDragDrop,
     containerRef: root,
@@ -73,7 +78,7 @@ const Tree = forwardRef(function Tree(
     selected: selectedProp,
     selection,
     sourceWithIds,
-    totalItemCount
+    totalItemCount,
   });
 
   // const isScrolling = useViewportTracking(root, highlightedIdx);
@@ -86,13 +91,13 @@ const Tree = forwardRef(function Tree(
       hiliteItemAtIndex(idx);
       // onMouseEnterListItem && onMouseEnterListItem(evt, idx);
       // }
-    }
+    },
   };
 
   const propsCommonToAllListItems = {
     ...defaultItemHandlers,
     ...listItemHandlers,
-    role: 'treeitem'
+    role: "treeitem",
   };
   const allowGroupSelect = groupSelectionEnabled(groupSelection);
 
@@ -103,7 +108,8 @@ const Tree = forwardRef(function Tree(
     list.push(
       <TreeNode
         {...propsCommonToAllListItems}
-        {...getListItemProps(item, idx, highlightedIdx, selected, focusVisible)}>
+        {...getListItemProps(item, idx, highlightedIdx, selected, focusVisible)}
+      >
         {item.icon ? <span className={`${classBase}Node-icon`} /> : null}
         <span>{item.label}</span>
       </TreeNode>
@@ -122,14 +128,15 @@ const Tree = forwardRef(function Tree(
         aria-selected={selected.includes(id) || undefined}
         className={cx(`${classBase}Node`, {
           focusVisible: focusVisible === i,
-          [`${classBase}Node-toggle`]: !allowGroupSelect
+          [`${classBase}Node-toggle`]: !allowGroupSelect,
         })}
         data-icon={child.icon}
         data-idx={i}
         data-highlighted={i === highlightedIdx || undefined}
         data-selectable
         id={id}
-        key={`header-${i}`}>
+        key={`header-${i}`}
+      >
         {allowGroupSelect ? (
           <div className={`${classBase}Node-label`}>
             <span className={`${classBase}Node-toggle`} />
@@ -141,7 +148,9 @@ const Tree = forwardRef(function Tree(
             <span>{title}</span>
           </div>
         )}
-        <ul role="group">{child.expanded ? renderSourceContent(child.childNodes, idx) : ''}</ul>
+        <ul role="group">
+          {child.expanded ? renderSourceContent(child.childNodes, idx) : ""}
+        </ul>
       </TreeNode>
     );
   }
@@ -168,23 +177,33 @@ const Tree = forwardRef(function Tree(
       id={`Tree-${id}`}
       ref={useForkRef(root, forwardedRef)}
       role="tree"
-      tabIndex={0}>
+      tabIndex={0}
+    >
       {renderSourceContent(visibleData)}
       {draggable}
     </ul>
   );
 });
 
-const getListItemProps = (item, idx, highlightedIdx, selected, focusVisible, className) => ({
+const getListItemProps = (
+  item,
+  idx,
+  highlightedIdx,
+  selected,
+  focusVisible,
+  className
+) => ({
   id: item.id,
   key: item.id,
-  'aria-level': item.level,
-  'aria-selected': selected.includes(item.id) || undefined,
-  'data-icon': item.icon,
-  'data-idx': idx.value,
-  'data-highlighted': idx.value === highlightedIdx || undefined,
-  className: cx('hwTreeNode', className, { focusVisible: focusVisible === idx.value })
+  "aria-level": item.level,
+  "aria-selected": selected.includes(item.id) || undefined,
+  "data-icon": item.icon,
+  "data-idx": idx.value,
+  "data-highlighted": idx.value === highlightedIdx || undefined,
+  className: cx("hwTreeNode", className, {
+    focusVisible: focusVisible === idx.value,
+  }),
 });
 
-Tree.displayName = 'Tree';
+Tree.displayName = "Tree";
 export default Tree;

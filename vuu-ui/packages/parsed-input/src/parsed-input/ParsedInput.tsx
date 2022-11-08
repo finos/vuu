@@ -1,6 +1,6 @@
+import { useIdMemo as useId } from "@heswell/uitk-core";
 import { Dropdown } from "@heswell/uitk-lab";
-import { useId } from "@vuu-ui/react-utils";
-import { Filter } from "@vuu-ui/utils";
+import { Filter } from "@vuu-ui/vuu-utils";
 import { useItemsWithIds } from "@vuu-ui/ui-controls";
 import {
   ForwardedRef,
@@ -14,13 +14,13 @@ import {
   useState,
 } from "react";
 import { FilterInput } from "./FilterInput";
-import { useSuggestions } from "./suggestions";
-
-import { getCompletionAtIndex } from "./input-utils";
 import {
+  useSuggestions,
   itemToString,
   SuggestionListItem,
-} from "./suggestions/SuggestionListItem";
+} from "./suggestions";
+
+import { getCompletionAtIndex } from "./input-utils";
 import { useParsedInput } from "./useParsedInput";
 import { useParsedText } from "./useParsedText";
 

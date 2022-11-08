@@ -1,29 +1,23 @@
-import shell from "shelljs";
+import { execWait } from "./utils.mjs";
 
 const args = process.argv.slice(2);
 const dev = args.includes("--dev") ? " --dev" : "";
 const cjs = args.includes("--cjs") ? " --cjs" : "";
 
-function buildPackage(packageName) {
-  shell.cd(`packages/${packageName}`);
-  shell.exec(`yarn --silent build${dev}${cjs}`);
-  shell.cd("../..");
-}
+const buildPackage = async (packageName) =>
+  execWait(`yarn --silent build${dev}${cjs}`, `packages/${packageName}`);
 
-const packages = [
-  "utils",
-  "react-utils",
-  "theme",
-  "theme-uitk",
-  "data-remote",
-  "data-store",
-  "datagrid-parsers",
-  "ui-controls",
-  "data-grid",
-  "ag-grid",
-  "layout",
+// TODO determine the dependency graph/build order programatically
+const wave1 = ["vuu-utils", "vuu-theme"];
+const wave2 = ["vuu-data", "datagrid-parsers", "ui-controls"];
+const wave3 = [
+  "vuu-datagrid",
+  "vuu-data-ag-grid",
+  "vuu-layout",
   "parsed-input",
-  "shell",
+  "vuu-shell",
 ];
 
-packages.forEach((packageName) => buildPackage(packageName));
+await Promise.all(wave1.map(buildPackage));
+await Promise.all(wave2.map(buildPackage));
+await Promise.all(wave3.map(buildPackage));

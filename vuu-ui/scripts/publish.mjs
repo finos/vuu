@@ -1,26 +1,25 @@
-import shell from "shelljs";
+import { exec } from "child_process";
+import { execCallback } from "./utils.mjs";
 
 const packages = [
-  "utils",
-  "ag-grid",
-  "react-utils",
-  "theme",
-  "data-remote",
-  "data-store",
+  "vuu-utils",
+  "vuu-data-ag-grid",
+  "vuu-theme",
+  "vuu-data",
   "datagrid-parsers",
   "ui-controls",
-  "data-grid",
-  "layout",
+  "vuu-datagrid",
+  "vuu-layout",
   "parsed-input",
-  "shell",
+  "vuu-shell",
 ];
 
 function publishPackage(packageName) {
-  shell.cd(`dist/${packageName}`);
-  shell.exec(
-    "npm publish --registry https://registry.npmjs.org --access-public --dry-run"
+  exec(
+    "npm publish --registry https://registry.npmjs.org --access-public",
+    { cwd: `packages/${packageName}` },
+    execCallback
   );
-  shell.cd("../..");
 }
 
 packages.forEach((packageName) => publishPackage(packageName));

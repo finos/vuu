@@ -1,0 +1,235 @@
+@-webkit-keyframes reactbgup1 {
+  from {
+    background-color: var(--uitk-differential-positive-background
+    );
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@-webkit-keyframes reactbgup2 {
+  from {
+    background-color: var(--uitk-differential-positive-background
+    );
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@-webkit-keyframes reactbgdown1 {
+  from {
+    background-color: var(--uitk-differential-negative-background
+    );
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@-webkit-keyframes reactbgdown2 {
+  from {
+    background-color: var(--uitk-differential-negative-background
+    );
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@-webkit-keyframes reactarrowup1 {
+  from {
+    color: var(--uitk-differential-positive-foreground
+    );
+  }
+  to {
+    color: transparent;
+  }
+}
+
+@-webkit-keyframes reactarrowup2 {
+  from {
+    color: var(--uitk-differential-positive-foreground
+    );
+  }
+  to {
+    color: transparent;
+  }
+}
+
+@-webkit-keyframes reactarrowdown1 {
+  from {
+    color: var(--uitk-differential-negative-foreground
+    );
+  }
+  to {
+    color: transparent;
+  }
+}
+
+@-webkit-keyframes reactarrowdown2 {
+  from {
+    color: var(--uitk-differential-negative-foreground
+    );
+  }
+  to {
+    color: transparent;
+  }
+}
+
+@-webkit-keyframes reactbgarrowup1 {
+  0% {
+    color: var(--uitk-differential-positive-foreground
+    );
+    background-color: var(--uitk-differential-positive-background
+    );
+  }
+  20% {
+    color: var(--uitk-differential-positive-foreground
+    );
+    background-color: transparent;
+  }
+  100% {
+    color: transparent;
+    background-color: transparent;
+  }
+}
+
+@-webkit-keyframes reactbgarrowup2 {
+  0% {
+    color: var(--uitk-differential-positive-foreground
+    );
+    background-color: var(--uitk-differential-positive-background
+    );
+  }
+  20% {
+    color: var(--uitk-differential-positive-foreground
+    );
+    background-color: transparent;
+  }
+  100% {
+    color: transparent;
+    background-color: transparent;
+  }
+}
+
+@-webkit-keyframes reactbgarrowdown1 {
+  0% {
+    color: var(--uitk-differential-negative-foreground
+    );
+    background-color: var(--uitk-differential-negative-background
+    );
+  }
+  20% {
+    color: var(--uitk-differential-negative-foreground
+    );
+    background-color: transparent;
+  }
+  100% {
+    color: transparent;
+    background-color: transparent;
+  }
+}
+
+@-webkit-keyframes reactbgarrowdown2 {
+  0% {
+    color: var(--uitk-differential-negative-foreground
+    );
+    background-color: var(--uitk-differential-negative-background
+    );
+  }
+  20% {
+    color: var(--uitk-differential-negative-foreground
+    );
+    background-color: transparent;
+  }
+  100% {
+    color: transparent;
+    background-color: transparent;
+  }
+}
+
+.flasher {
+  color: transparent;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+}
+
+.vuuDataGridCell .flasher {
+  text-align: left;
+}
+.vuuDataGridCell .flasher + .num {
+  padding-left: 8px;
+}
+
+.vuuDataGridCell.right .flasher {
+  text-align: right;
+}
+.vuuDataGridCell.right .flasher + .num {
+  padding-right: 8px;
+}
+
+.up1 > .flasher {
+  -webkit-animation-duration: 3s;
+  -webkit-animation-name: reactbgup1;
+}
+
+.up2 > .flasher {
+  -webkit-animation-duration: 3s;
+  -webkit-animation-name: reactbgup2;
+}
+
+.down1 > .flasher {
+  -webkit-animation-duration: 3s;
+  -webkit-animation-name: reactbgdown1;
+}
+
+.down2 > .flasher {
+  -webkit-animation-duration: 3s;
+  -webkit-animation-name: reactbgdown2;
+}
+
+.up1.arrow-only > .flasher {
+  -webkit-animation-duration: 30s;
+  -webkit-animation-name: reactarrowup1;
+}
+
+.up2.arrow-only > .flasher {
+  -webkit-animation-duration: 30s;
+  -webkit-animation-name: reactarrowup2;
+}
+
+.down1.arrow-only > .flasher {
+  -webkit-animation-duration: 30s;
+  -webkit-animation-name: reactarrowdown1;
+}
+
+.down2.arrow-only > .flasher {
+  -webkit-animation-duration: 30s;
+  -webkit-animation-name: reactarrowdown2;
+}
+
+.up1.arrow > .flasher {
+  -webkit-animation-duration: 30s;
+  -webkit-animation-name: reactbgarrowup1;
+}
+
+.up2.arrow > .flasher {
+  -webkit-animation-duration: 30s;
+  -webkit-animation-name: reactbgarrowup2;
+}
+
+.down1.arrow > .flasher {
+  -webkit-animation-duration: 30s;
+  -webkit-animation-name: reactbgarrowdown1;
+}
+
+.down2.arrow > .flasher {
+  -webkit-animation-duration: 30s;
+  -webkit-animation-name: reactbgarrowdown2;
+}

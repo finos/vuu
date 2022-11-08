@@ -5,9 +5,11 @@
   },
   "extends": [
     "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended"
   ],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
@@ -23,6 +25,8 @@
   },
   "rules": {
     "react/prop-types": 0,
-    "no-unused-vars": ["error", { "ignoreRestSiblings": true }]
+    "react/react-in-jsx-scope": 0,
+    "no-unused-vars": 0,
+  "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]
   }
 }

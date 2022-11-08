@@ -1,14 +1,14 @@
-import React, { useCallback, useRef } from 'react';
-import { useId } from '@vuu-ui/react-utils';
-import { Portal } from '@vuu-ui/theme';
+import React, { useCallback, useRef } from "react";
+import { useId } from "../utils";
+import { Portal } from "../portal";
 
-import { useItemsWithIds } from './use-items-with-ids';
-import { getItemId, getMenuId, useCascade } from './use-cascade';
+import { useItemsWithIds } from "./use-items-with-ids";
+import { getItemId, getMenuId, useCascade } from "./use-cascade";
 
-import MenuList from './MenuList';
+import MenuList from "./MenuList";
 
-import './ContextMenu.css';
-import { useClickAway } from './use-click-away';
+import "./ContextMenu.css";
+import { useClickAway } from "./use-click-away";
 
 const ContextMenu = ({
   activatedWithKeyboard = false,
@@ -17,7 +17,7 @@ const ContextMenu = ({
   onClose = () => undefined,
   position = { x: 0, y: 0 },
   source: sourceProp,
-  style
+  style,
 }) => {
   const id = useId(idProp);
   const closeMenuRef = useRef(null);
@@ -30,18 +30,19 @@ const ContextMenu = ({
   const handleActivate = useCallback(
     (menuId) => {
       const { action, options } = actions[menuId];
-      closeMenuRef.current('root');
+      closeMenuRef.current("root");
       onClose(action, options);
     },
     [actions, onClose]
   );
 
-  const { closeMenu, listItemProps, openMenu, openMenus, handleRender } = useCascade({
-    id,
-    onActivate: handleActivate,
-    onMouseEnterItem: handleMouseEnterItem,
-    position
-  });
+  const { closeMenu, listItemProps, openMenu, openMenus, handleRender } =
+    useCascade({
+      id,
+      onActivate: handleActivate,
+      onMouseEnterItem: handleMouseEnterItem,
+      position,
+    });
   closeMenuRef.current = closeMenu;
 
   console.log({ openMenus });
@@ -52,9 +53,9 @@ const ContextMenu = ({
   }, [closeMenu, onClose]);
 
   useClickAway({
-    containerClassName: 'hwMenuList',
+    containerClassName: "hwMenuList",
     onClose: handleClose,
-    isOpen: openMenus.length > 0
+    isOpen: openMenus.length > 0,
   });
 
   const handleOpenMenu = (id) => {
@@ -79,8 +80,9 @@ const ContextMenu = ({
       return -1;
     } else {
       const { id: menuId } = openMenus[i + 1];
-      const pos = menuId.lastIndexOf('.');
-      const idx = pos === -1 ? parseInt(menuId, 10) : parseInt(menuId.slice(-pos), 10);
+      const pos = menuId.lastIndexOf(".");
+      const idx =
+        pos === -1 ? parseInt(menuId, 10) : parseInt(menuId.slice(-pos), 10);
       return idx;
     }
   };
@@ -104,7 +106,8 @@ const ContextMenu = ({
               onHighlightMenuItem={handleHighlightMenuItem}
               onCloseMenu={handleCloseMenu}
               onOpenMenu={handleOpenMenu}
-              style={style}>
+              style={style}
+            >
               {menus[menuId]}
             </MenuList>
           </Portal>
@@ -114,5 +117,5 @@ const ContextMenu = ({
   );
 };
 
-ContextMenu.displayName = 'ContextMenu';
+ContextMenu.displayName = "ContextMenu";
 export default ContextMenu;

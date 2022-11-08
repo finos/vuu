@@ -1,0 +1,18 @@
+.DraggableLayout {
+  display: inline-block;
+  outline: none;
+}
+
+[data-dragging='true'] {
+  position: absolute !important;
+  z-index: 100;
+}
+
+.vuuSimpleDraggableWrapper {
+  background-color: white;
+  box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.2);
+}
+.vuuSimpleDraggableWrapper > * {
+  height: 100%;
+  width: 100%;
+}

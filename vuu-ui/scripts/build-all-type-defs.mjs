@@ -1,24 +1,25 @@
-import shell from 'shelljs';
+import { exec } from "child_process";
+import { execCallback } from "./utils.mjs";
 
 function buildPackage(packageName) {
-  shell.cd(`packages/${packageName}`);
-  shell.exec('yarn type-defs');
-  shell.cd('../..');
+  exec(
+    "yarn --silent type-defs",
+    { cwd: `packages/${packageName}` },
+    execCallback
+  );
 }
 
 const packages = [
-  'utils',
+  "vuu-utils",
   //   'react-utils',
-  //   'theme',
-  'data-remote',
-  //   'data-store',
-  //   'data-worker',
-  'datagrid-parsers'
+  //   'vuu-theme',
+  "vuu-data",
+  "datagrid-parsers",
   //   'ui-controls',
-  //   'data-grid',
-  //   'layout',
+  //   'vuu-datagrid',
+  //   'vuu-layout',
   //   'parsed-input',
-  //   'shell'
+  //   'vuu-shell'
 ];
 
-packages.forEach((packageName) => buildPackage(packageName));
+packages.forEach(buildPackage);
