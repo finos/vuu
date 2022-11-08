@@ -1,0 +1,10 @@
+{
+  "name": "@vuu-ui/vuu-protocol-types",
+  "version": "1.0.0",
+  "main": "",
+  "types": "index.d.ts",
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "dependencies": {},
+  "peerDependencies": {}
+}

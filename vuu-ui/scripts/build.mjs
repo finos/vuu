@@ -157,7 +157,6 @@ export default async function main(customConfig) {
   buildTasks.push(copyStaticFiles());
 
   const [, esmOutput, cjsOutput] = await Promise.all(buildTasks).catch((e) => {
-    console.error(e);
     process.exit(1);
   });
 

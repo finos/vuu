@@ -1,6 +1,6 @@
+import { useIdMemo as useId } from "@heswell/uitk-core";
 import { Dropdown } from "@heswell/uitk-lab";
-import { useId } from "@vuu-ui/react-utils";
-import { Filter } from "@vuu-ui/utils";
+import { Filter } from "@vuu-ui/vuu-utils";
 import { useItemsWithIds } from "@vuu-ui/ui-controls";
 import {
   ForwardedRef,

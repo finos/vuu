@@ -1,9 +1,9 @@
-import React, { createElement, useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom';
-import { renderPortal } from '@vuu-ui/theme';
-import cx from 'classnames';
+import React, { createElement, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
+import { renderPortal } from "../portal";
+import cx from "classnames";
 
-import './popup-service.css';
+import "./popup-service.css";
 window.popupReact = React;
 
 let _dialogOpen = false;
@@ -14,7 +14,9 @@ function specialKeyHandler(e) {
     if (_popups.length) {
       closeAllPopups();
     } else if (_dialogOpen) {
-      ReactDOM.unmountComponentAtNode(document.body.querySelector('.hwReactDialog'));
+      ReactDOM.unmountComponentAtNode(
+        document.body.querySelector(".hwReactDialog")
+      );
     }
   }
 }
@@ -22,7 +24,7 @@ function specialKeyHandler(e) {
 function outsideClickHandler(e) {
   if (_popups.length) {
     // onsole.log(`Popup.outsideClickHandler`);
-    const popupContainers = document.body.querySelectorAll('.hwReactPopup');
+    const popupContainers = document.body.querySelectorAll(".hwReactPopup");
     for (let i = 0; i < popupContainers.length; i++) {
       if (popupContainers[i].contains(e.target)) {
         return;
@@ -35,25 +37,25 @@ function outsideClickHandler(e) {
 function closeAllPopups() {
   if (_popups.length) {
     // onsole.log(`closeAllPopups`);
-    const popupContainers = document.body.querySelectorAll('.hwReactPopup');
+    const popupContainers = document.body.querySelectorAll(".hwReactPopup");
     for (let i = 0; i < popupContainers.length; i++) {
       ReactDOM.unmountComponentAtNode(popupContainers[i]);
     }
-    popupClosed('*');
+    popupClosed("*");
   }
 }
 
 function dialogOpened() {
   if (_dialogOpen === false) {
     _dialogOpen = true;
-    window.addEventListener('keydown', specialKeyHandler, true);
+    window.addEventListener("keydown", specialKeyHandler, true);
   }
 }
 
 function dialogClosed() {
   if (_dialogOpen) {
     _dialogOpen = false;
-    window.removeEventListener('keydown', specialKeyHandler, true);
+    window.removeEventListener("keydown", specialKeyHandler, true);
   }
 }
 
@@ -62,15 +64,15 @@ function popupOpened(name /*, group*/) {
     _popups.push(name);
     //onsole.log('PopupService, popup opened ' + name + '  popups : ' + _popups);
     if (_dialogOpen === false) {
-      window.addEventListener('keydown', specialKeyHandler, true);
-      window.addEventListener('click', outsideClickHandler, true);
+      window.addEventListener("keydown", specialKeyHandler, true);
+      window.addEventListener("click", outsideClickHandler, true);
     }
   }
 }
 
 function popupClosed(name /*, group=null*/) {
   if (_popups.length) {
-    if (name === '*') {
+    if (name === "*") {
       _popups.length = 0;
     } else {
       const pos = _popups.indexOf(name);
@@ -80,45 +82,49 @@ function popupClosed(name /*, group=null*/) {
     }
     //onsole.log('PopupService, popup closed ' + name + '  popups : ' + _popups);
     if (_popups.length === 0 && _dialogOpen === false) {
-      window.removeEventListener('keydown', specialKeyHandler, true);
-      window.removeEventListener('click', outsideClickHandler, true);
+      window.removeEventListener("keydown", specialKeyHandler, true);
+      window.removeEventListener("click", outsideClickHandler, true);
     }
   }
 }
 
 const PopupComponent = ({ children, position, style }) => {
-  const className = cx('hwPopup', 'hwPopupContainer', position);
-  return createElement('div', { className, style }, children);
+  const className = cx("hwPopup", "hwPopupContainer", position);
+  return createElement("div", { className, style }, children);
 };
 
 let incrementingKey = 1;
 
 export class PopupService {
   static showPopup({
-    name = 'anon',
-    group = 'all',
-    position = '',
+    name = "anon",
+    group = "all",
+    position = "",
     left = 0,
-    right = 'auto',
+    right = "auto",
     top = 0,
-    width = 'auto',
-    component
+    width = "auto",
+    component,
   }) {
     if (!component) {
       throw Error(`PopupService showPopup, no component supplied`);
     }
     popupOpened(name, group);
-    let el = document.body.querySelector('.hwReactPopup.' + group);
+    let el = document.body.querySelector(".hwReactPopup." + group);
     if (el === null) {
-      el = document.createElement('div');
-      el.className = 'hwReactPopup ' + group;
+      el = document.createElement("div");
+      el.className = "hwReactPopup " + group;
       document.body.appendChild(el);
     }
 
     const style = { width };
 
     renderPortal(
-      createElement(PopupComponent, { key: incrementingKey++, position, style }, component),
+      createElement(
+        PopupComponent,
+        { key: incrementingKey++, position, style },
+        component
+      ),
       el,
       left,
       top,
@@ -128,36 +134,44 @@ export class PopupService {
     );
   }
 
-  static hidePopup(name = 'anon', group = 'all') {
+  static hidePopup(name = "anon", group = "all") {
     //onsole.log('PopupService.hidePopup name=' + name + ', group=' + group)
 
     if (_popups.indexOf(name) !== -1) {
       popupClosed(name, group);
-      ReactDOM.unmountComponentAtNode(document.body.querySelector(`.hwReactPopup.${group}`));
+      ReactDOM.unmountComponentAtNode(
+        document.body.querySelector(`.hwReactPopup.${group}`)
+      );
     }
   }
 
-  static keepWithinThePage(el, right = 'auto') {
-    const target = el.querySelector('.hwPopupContainer > *');
+  static keepWithinThePage(el, right = "auto") {
+    const target = el.querySelector(".hwPopupContainer > *");
     if (target) {
-      const { top, left, width, height, right: currentRight } = target.getBoundingClientRect();
+      const {
+        top,
+        left,
+        width,
+        height,
+        right: currentRight,
+      } = target.getBoundingClientRect();
 
       const w = window.innerWidth;
       const h = window.innerHeight;
 
       const overflowH = h - (top + height);
       if (overflowH < 0) {
-        target.style.top = parseInt(top, 10) + overflowH + 'px';
+        target.style.top = parseInt(top, 10) + overflowH + "px";
       }
 
       const overflowW = w - (left + width);
       if (overflowW < 0) {
-        target.style.left = parseInt(left, 10) + overflowW + 'px';
+        target.style.left = parseInt(left, 10) + overflowW + "px";
       }
 
-      if (typeof right === 'number' && right !== currentRight) {
+      if (typeof right === "number" && right !== currentRight) {
         const adjustment = right - currentRight;
-        target.style.left = left + adjustment + 'px';
+        target.style.left = left + adjustment + "px";
       }
     }
   }
@@ -165,7 +179,7 @@ export class PopupService {
 
 export class DialogService {
   static showDialog(dialog) {
-    const containerEl = '.hwReactDialog';
+    const containerEl = ".hwReactDialog";
     const onClose = dialog.props.onClose;
 
     dialogOpened();
@@ -178,7 +192,7 @@ export class DialogService {
           if (onClose) {
             onClose();
           }
-        }
+        },
       }),
       document.body.querySelector(containerEl)
     );
@@ -186,7 +200,9 @@ export class DialogService {
 
   static closeDialog() {
     dialogClosed();
-    ReactDOM.unmountComponentAtNode(document.body.querySelector('.hwReactDialog'));
+    ReactDOM.unmountComponentAtNode(
+      document.body.querySelector(".hwReactDialog")
+    );
   }
 }
 
@@ -211,13 +227,13 @@ export const Popup = (props) => {
         left: targetLeft,
         top: targetTop,
         width: clientWidth,
-        bottom: targetBottom
+        bottom: targetBottom,
       } = boundingClientRect;
 
-      if (position === 'below') {
+      if (position === "below") {
         left = targetLeft;
         top = targetBottom;
-      } else if (position === 'above') {
+      } else if (position === "above") {
         left = targetLeft;
         top = targetTop;
       }
@@ -231,7 +247,7 @@ export const Popup = (props) => {
           left,
           top,
           width: width || clientWidth,
-          component
+          component,
         });
       }, 10);
     }
@@ -250,7 +266,7 @@ export const Popup = (props) => {
     };
   }, [props]);
 
-  return React.createElement('div', { className: 'popup-proxy', ref });
+  return React.createElement("div", { className: "popup-proxy", ref });
 
   // componentWillReceiveProps(nextProps) {
 

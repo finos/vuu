@@ -10,18 +10,16 @@ function buildPackage(packageName) {
 }
 
 const packages = [
-  "utils",
+  "vuu-utils",
   //   'react-utils',
-  //   'theme',
-  "data-remote",
-  //   'data-store',
-  //   'data-worker',
+  //   'vuu-theme',
+  "vuu-data",
   "datagrid-parsers",
   //   'ui-controls',
-  //   'data-grid',
-  //   'layout',
+  //   'vuu-datagrid',
+  //   'vuu-layout',
   //   'parsed-input',
-  //   'shell'
+  //   'vuu-shell'
 ];
 
 packages.forEach(buildPackage);
