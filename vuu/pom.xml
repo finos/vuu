@@ -21,7 +21,7 @@
         <dependency>
             <groupId>io.venuu</groupId>
             <artifactId>toolbox</artifactId>
-            <version>0.355-SNAPSHOT</version>
+            <version>0.355</version>
         </dependency>
 
         <dependency>
