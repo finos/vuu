@@ -66,7 +66,7 @@
         <metrics.version>4.2.5</metrics.version>
         <curator.version>3.1.0</curator.version>
         <scalatest.version>3.2.9</scalatest.version>
-        <scala.logging>3.9.4</scala.logging>
+        <scala.logging>3.9.5</scala.logging>
         <jackson.version>2.14.0-rc3</jackson.version>
         <aeron.version>1.17.0</aeron.version>
         <antlr.version>4.11.1</antlr.version>
