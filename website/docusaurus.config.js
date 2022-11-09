@@ -9,7 +9,7 @@ const copyrightOwner = "UBS";
 
 module.exports = {
   title: `FINOS ${projectName}`,
-  tagline: `FINOS ${projectName}`,
+  tagline: `An open source view server and html 5 based UI system`,
   url: "https://vuu.finos.org",
   baseUrl: "/",
   favicon: "img/favicon/favicon-finos.ico",
