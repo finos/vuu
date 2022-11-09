@@ -347,7 +347,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   openTreeNode(key: string) {
     if (this.viewport) {
-      log(`openTreeNode ${key}`);
+      // log(`openTreeNode ${key}`);
       this.server?.send({
         viewport: this.viewport,
         type: "openTreeNode",
