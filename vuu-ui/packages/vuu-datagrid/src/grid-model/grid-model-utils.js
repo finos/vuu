@@ -1,10 +1,11 @@
 import { metadataKeys } from "@vuu-ui/vuu-utils";
 import { SortType } from "../constants";
 
+// 15px works on Mac, Windows requires 17, unless we style the scrollbars
 export const getHorizontalScrollbarHeight = (columnGroups) =>
   columnGroups
     ? columnGroups.some(({ width, contentWidth }) => width < contentWidth)
-      ? 15
+      ? 17
       : 0
     : 0;
 

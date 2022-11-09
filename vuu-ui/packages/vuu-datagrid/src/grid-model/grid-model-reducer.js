@@ -521,7 +521,7 @@ function buildColumnGroups(state, columns) {
   let column = null;
   let columnGroup = null;
   let columnGroups = [];
-  let gridContentWidth = gridWidth - 15; // how do we know about vertical scrollbar
+  let gridContentWidth = gridWidth - 17; // how do we know about vertical scrollbar
   let availableWidth = gridContentWidth;
 
   const preCols =

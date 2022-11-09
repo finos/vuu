@@ -1,12 +1,18 @@
-import { SetFilterValuesFuncParams } from "ag-grid-community";
+import { ColDef, SetFilterValuesFuncParams } from "ag-grid-community";
 import { FilterDataProvider } from "@vuu-ui/vuu-data-ag-grid";
 
-export const createColumnDefs = (setFilterDataProvider: FilterDataProvider) => [
+export type ColumnOverrides = { [key: string]: Partial<ColDef> };
+
+export const createColumnDefs = (
+  setFilterDataProvider: FilterDataProvider,
+  columnOverrides?: ColumnOverrides
+) => [
   {
     field: "bbg",
     sortable: true,
     width: 100,
     filter: "agTextColumnFilter",
+    ...columnOverrides?.bbg,
   },
   {
     field: "currency",
@@ -20,11 +26,13 @@ export const createColumnDefs = (setFilterDataProvider: FilterDataProvider) => [
         setFilterDataProvider.getSetFilterData(params).then(params.success);
       },
     },
+    ...columnOverrides?.currency,
   },
   {
     field: "description",
     sortable: true,
     filter: "agTextColumnFilter",
+    ...columnOverrides?.description,
   },
   {
     enableRowGroup: true,
@@ -36,13 +44,27 @@ export const createColumnDefs = (setFilterDataProvider: FilterDataProvider) => [
         setFilterDataProvider.getSetFilterData(params).then(params.success);
       },
     },
+    ...columnOverrides?.exchange,
   },
-  { field: "isin", sortable: true, filter: true, width: 120 },
+  {
+    field: "isin",
+    sortable: true,
+    filter: true,
+    width: 120,
+    ...columnOverrides?.isin,
+  },
   {
     field: "lotSize",
     sortable: true,
     filter: "agNumberColumnFilter",
     width: 120,
+    ...columnOverrides?.lotSize,
   },
-  { field: "ric", sortable: true, filter: true, width: 100 },
+  {
+    field: "ric",
+    sortable: true,
+    filter: true,
+    width: 100,
+    ...columnOverrides?.ric,
+  },
 ];

@@ -4,9 +4,9 @@ import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.css";
 import "ag-grid-enterprise";
 import { AgGridReact } from "ag-grid-react";
-import { CSSProperties, useMemo } from "react";
-import { createColumnDefs } from "./createColumnDefs";
+import { useMemo } from "react";
 import { ErrorDisplay, useAutoLoginToVuuServer } from "../utils";
+import { createColumnDefs } from "./createColumnDefs";
 
 import "./VuuAgGrid.css";
 import "./VuuGrid.css";
@@ -28,7 +28,7 @@ const instrumentDataSourceConfig = {
   serverUrl: "127.0.0.1:8090/websocket",
 };
 
-export const AgGridServersideRowModel = () => {
+export const AgGridInstruments = () => {
   const error = useAutoLoginToVuuServer();
 
   const { createFilterDataProvider, ...gridConfig } = useAgGridDataSource(
@@ -43,33 +43,66 @@ export const AgGridServersideRowModel = () => {
     [createFilterDataProvider]
   );
 
-  const layout = {
-    display: "grid",
-    gridTemplateColumns: "1fr",
-    gridTemplateRows: "1fr",
-    gap: "10px 20px",
-    height: 500,
-    margin: "10px auto",
-    width: 800,
-  } as CSSProperties;
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+  return (
+    <ToolkitProvider density="high">
+      <div style={{ width: 800, height: 500 }} className="ag-theme-balham">
+        <AgGridReact
+          {...gridConfig}
+          columnDefs={columnDefs}
+          headerHeight={24}
+          rowGroupPanelShow="always"
+          rowHeight={18}
+        />
+      </div>
+    </ToolkitProvider>
+  );
+};
+AgGridInstruments.displaySequence = displaySequence++;
+
+export const AgGridInstrumentsGrouped = () => {
+  const error = useAutoLoginToVuuServer();
+
+  const { createFilterDataProvider, ...gridConfig } = useAgGridDataSource({
+    ...instrumentDataSourceConfig,
+    group: ["currency", "exchange"],
+  });
+
+  const columnDefs = useMemo(
+    () =>
+      createColumnDefs(
+        createFilterDataProvider(instrumentDataSourceConfig.table),
+        {
+          currency: {
+            rowGroup: true,
+          },
+          exchange: {
+            rowGroup: true,
+          },
+        }
+      ),
+    [createFilterDataProvider]
+  );
+
+  console.log({ columnDefs });
 
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
   }
   return (
     <ToolkitProvider density="high">
-      <div style={layout}>
-        <div className="ag-theme-balham">
-          <AgGridReact
-            {...gridConfig}
-            columnDefs={columnDefs}
-            headerHeight={18}
-            rowGroupPanelShow="always"
-            rowHeight={18}
-          />
-        </div>
+      <div style={{ width: 800, height: 500 }} className="ag-theme-balham">
+        <AgGridReact
+          {...gridConfig}
+          columnDefs={columnDefs}
+          headerHeight={24}
+          rowGroupPanelShow="always"
+          rowHeight={18}
+        />
       </div>
     </ToolkitProvider>
   );
 };
-AgGridServersideRowModel.displaySequence = displaySequence++;
+AgGridInstrumentsGrouped.displaySequence = displaySequence++;
