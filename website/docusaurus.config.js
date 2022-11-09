@@ -3,7 +3,7 @@
 // Replace 'project-blueprint' with {project name}
 const projectName = "VUU";
 // Replace 'project-blueprint' with {project name}
-const projectSlug = "Vuu";
+const projectSlug = "vuu";
 // Replace 'FINOS' with {name of copyright owner}
 const copyrightOwner = "UBS";
 
