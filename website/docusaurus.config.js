@@ -53,7 +53,7 @@ module.exports = {
           items: [
             {
               label: "Getting Started",
-              to: "docs/intro",
+              to: "docs/introduction/intro",
             },
             {
               label: "Roadmap",
@@ -79,7 +79,7 @@ module.exports = {
             {
               label: "Community Handbook",
               to: "https://community.finos.org",
-            }
+            },
           ],
         },
         {
@@ -108,8 +108,7 @@ module.exports = {
       {
         docs: {
           path: "../docs",
-          editUrl:
-            "https://github.com/finos/vuu/edit/master/website/",
+          editUrl: "https://github.com/finos/vuu/edit/master/website/",
           sidebarPath: require.resolve("./sidebars.js"),
         },
         theme: {
