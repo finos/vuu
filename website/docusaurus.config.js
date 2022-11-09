@@ -10,7 +10,7 @@ const copyrightOwner = "UBS";
 module.exports = {
   title: `FINOS ${projectName}`,
   tagline: `FINOS ${projectName}`,
-  url: "https://finos.org",
+  url: "https://vuu.finos.org",
   baseUrl: "/",
   favicon: "img/favicon/favicon-finos.ico",
   projectName: `FINOS ${projectName}`,
@@ -78,12 +78,8 @@ module.exports = {
             },
             {
               label: "Community Handbook",
-              to: "https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/80642059/Community+Handbook",
-            },
-            {
-              label: "Community Governance",
-              to: "https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530783/Community+Governance",
-            },
+              to: "https://community.finos.org",
+            }
           ],
         },
         {
