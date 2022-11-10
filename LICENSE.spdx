@@ -1,7 +1,7 @@
 SPDXVersion: SPDX-2.0
 DataLicense: CC0-1.0
-Creator: venuu-io
+Creator: UBS
 PackageName: Vuu
-PackageOriginator: venuu-io
+PackageOriginator: UBS
 PackageHomePage: https://github.com/finos/vuu
 PackageLicenseDeclared: Apache-2.0
