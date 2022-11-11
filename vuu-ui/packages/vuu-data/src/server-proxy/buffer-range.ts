@@ -1,9 +1,11 @@
-export interface FromToRange {
-  from: number;
-  to: number;
-}
+import { VuuRange } from "@/vuu-protocol-types";
 
-export const bufferBreakout = (range: FromToRange, from: number, to: number, bufferSize: number): boolean => {
+export const bufferBreakout = (
+  range: VuuRange,
+  from: number,
+  to: number,
+  bufferSize: number
+): boolean => {
   const bufferPerimeter = bufferSize * 0.25;
   if (!range || !bufferSize) {
     return true;

@@ -42,7 +42,7 @@ export type PostMessageToClientCallback = (
 // TEST_DATA_COLLECTION
 // import { saveTestData } from '../../test-data-collection';
 
-let _requestId: number = 1;
+let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
 const nextRequestId = () => `${_requestId++}`;
@@ -552,7 +552,7 @@ export class ServerProxy {
                 updateType === "U" &&
                 !rowKey.startsWith("$root")
               ) {
-                console.log("Ignore blank rows sent after GroupBy");
+                // Ignore blank rows sent after GroupBy;
               } else {
                 viewport.handleUpdate(updateType, rowIndex, row);
               }
