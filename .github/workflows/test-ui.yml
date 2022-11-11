@@ -1,0 +1,35 @@
+name: "Test"
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "yarn"
+      - name: Install dependencies
+        run: cd ./vuu-ui && yarn
+      - run: cd ./vuu-ui && yarn run test:vite
+
+  # ensure the showcase still builds
+  showcase-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "yarn"
+      - name: Install dependencies
+        run: cd ./vuu-ui && yarn
+      - name: Build theme editor
+        run: cd ./vuu-ui && yarn showcase:build
