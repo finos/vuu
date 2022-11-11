@@ -8,7 +8,7 @@ import React, {
   useRef,
 } from "react";
 import cx from "classnames";
-import { metadataKeys } from "@vuu-ui/vuu-utils";
+import { buildColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
 import GridContext from "./grid-context";
 import ColumnGroupHeader from "./column-group-header";
 import useScroll from "./use-scroll";
@@ -17,7 +17,7 @@ import canvasReducer, { initCanvasReducer } from "./canvas-reducer";
 import Row from "./grid-row";
 import { getColumnOffset } from "./grid-model/grid-model-utils";
 
-const { IDX, RENDER_IDX, SELECTED, count: metadataCount } = metadataKeys;
+const { IDX, RENDER_IDX, SELECTED } = metadataKeys;
 // const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
 
 const classBase = "vuuDataGridCanvas";
@@ -52,12 +52,10 @@ const Canvas = forwardRef(function Canvas(
     initCanvasReducer
   );
 
-  const columnMap = useMemo(() => {
-    return gridModel.columnNames.reduce((map, columnName, idx) => {
-      map[columnName] = metadataCount + idx;
-      return map;
-    }, {});
-  }, [gridModel.columnNames]);
+  const columnMap = useMemo(
+    () => buildColumnMap(gridModel.columnNames),
+    [gridModel.columnNames]
+  );
 
   useUpdate(() => {
     dispatchCanvasAction({ type: "refresh", columnGroup });
