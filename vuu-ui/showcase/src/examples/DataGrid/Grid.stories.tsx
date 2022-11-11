@@ -1,10 +1,11 @@
-import { Button } from "@heswell/uitk-core";
+import { Button, FormField, Input } from "@heswell/uitk-core";
+import { Toolbar, Tooltray } from "@heswell/uitk-lab";
 import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
 } from "@heswell/uitk-lab";
-import { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { ErrorDisplay, useTestDataSource } from "../utils";
 
 import { Grid } from "@vuu-ui/vuu-datagrid";
@@ -12,9 +13,8 @@ import { Grid } from "@vuu-ui/vuu-datagrid";
 import { instrumentSchema } from "./columnMetaData";
 
 import { Flexbox, View } from "@vuu-ui/vuu-layout";
-import { ParsedInput, ParserProvider } from "@vuu-ui/parsed-input";
 import { VuuFilter } from "../utils/VuuFilter";
-import { extractFilter, parseFilter } from "@vuu-ui/datagrid-parsers";
+import { extractFilter } from "@vuu-ui/datagrid-parsers";
 
 import "./Grid.stories.css";
 
@@ -35,15 +35,6 @@ export const DefaultGrid = () => {
   );
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const { columns, dataSource, error } = useTestDataSource({
-    columnConfig: {
-      bbg: { label: "BBG" },
-      currency: { label: "Currency" },
-      description: { label: "Description" },
-      exchange: { label: "Exchange" },
-      isin: { label: "ISIN" },
-      lotSize: { label: "Lot Size" },
-      ric: { label: "RIC" },
-    },
     tablename: tables[selectedIndex],
   });
 
@@ -385,6 +376,7 @@ export const BasicGridWithFilter = () => {
     </>
   );
 };
+BasicGridWithFilter.displaySequence = displaySequence++;
 
 export const FilteredGridInLayout = () => {
   return (
@@ -397,4 +389,87 @@ export const FilteredGridInLayout = () => {
   );
 };
 
-BasicGridWithFilter.displaySequence = displaySequence++;
+FilteredGridInLayout.displaySequence = displaySequence++;
+
+export const BufferVariations = () => {
+  const { columns, dataSource, error } = useTestDataSource({
+    bufferSize: 10,
+    tablename: "instruments",
+  });
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  const handleConfigChange = (config) => {
+    console.log(`handleConfigChange ${JSON.stringify(config, null, 2)}`);
+  };
+
+  const [bufferSize, setBufferSize] = useState(10);
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(10);
+
+  const handleSetBufferSize = useCallback(
+    (evt, value) => setBufferSize(value),
+    []
+  );
+  const handleSetFrom = useCallback(
+    (evt, value) => setFrom(parseInt(value, 10)),
+    []
+  );
+  const handleSetTo = useCallback(
+    (evt, value) => setTo(parseInt(value, 10)),
+    []
+  );
+
+  const handleSetRange = useCallback(() => {
+    console.log(`setRange ${from} - ${to}`);
+    dataSource.setRange(from, to);
+  }, [dataSource, from, to]);
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
+  return (
+    <>
+      <Grid
+        dataSource={dataSource}
+        columns={columns}
+        // columnSizing="fill"
+        headerHeight={36}
+        height={380}
+        onConfigChange={handleConfigChange}
+        ref={gridRef}
+        renderBufferSize={0}
+        rowHeight={36}
+        selectionModel="single"
+        style={{ margin: 10, border: "solid 1px #ccc" }}
+      />
+      <br />
+      <Toolbar>
+        <Tooltray>
+          <FormField label="buffer size" labelPlacement="left">
+            <Input
+              onChange={handleSetBufferSize}
+              value={`${bufferSize}`}
+              style={{ width: 50 }}
+            />
+          </FormField>
+        </Tooltray>
+        <Tooltray>
+          <FormField label="from" labelPlacement="left">
+            <Input
+              onChange={handleSetFrom}
+              value={from}
+              style={{ width: 50 }}
+            />
+          </FormField>
+          <FormField label="to" labelPlacement="left">
+            <Input onChange={handleSetTo} value={to} style={{ width: 50 }} />
+          </FormField>
+          <Button onClick={handleSetRange}>set range</Button>
+        </Tooltray>
+      </Toolbar>
+    </>
+  );
+};
+
+BufferVariations.displaySequence = displaySequence++;

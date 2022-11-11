@@ -8,6 +8,7 @@ import {
   ColumnRowGroupChangedEvent,
   FilterChangedEvent,
   FilterOpenedEvent,
+  GetRowIdParams,
   GridApi,
   GridOptions,
   GridReadyEvent,
@@ -22,6 +23,7 @@ export type AgGridDataSourceHookResult = Pick<
   GridOptions,
   | "cacheBlockSize"
   | "defaultColDef"
+  | "getRowId"
   | "maxBlocksInCache"
   | "onColumnRowGroupChanged"
   | "onFilterChanged"
@@ -36,12 +38,14 @@ export type AgGridDataSourceHookResult = Pick<
 > & { createFilterDataProvider: (table: VuuTable) => FilterDataProvider };
 
 export const useAgGridDataSource = (
-  config: DataSourceProps
+  config: DataSourceProps,
+  tableKey = "bbg"
 ): AgGridDataSourceHookResult => {
   const { getTypeaheadSuggestions } = useViewserver();
   const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
     getTypeaheadSuggestions
   );
+
   getTypeaheadSuggestionsRef.current = getTypeaheadSuggestions;
 
   const dataSource = useMemo(() => {
@@ -54,6 +58,7 @@ export const useAgGridDataSource = (
 
   const initDataSource = useCallback(
     (gridApi: GridApi) => {
+      dataSource.setGridApi(gridApi);
       gridApi.setServerSideDatasource(dataSource);
     },
     [dataSource]
@@ -102,12 +107,18 @@ export const useAgGridDataSource = (
     [dataSource]
   );
 
+  const getRowId = useMemo(
+    () => (params: GetRowIdParams) => params.data[tableKey],
+    [tableKey]
+  );
+
   return {
     cacheBlockSize: 100,
     createFilterDataProvider,
     defaultColDef: {
       sortable: true,
     },
+    getRowId,
     maxBlocksInCache: 1,
     onFilterChanged,
     onColumnRowGroupChanged,

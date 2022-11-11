@@ -7,42 +7,42 @@ import {
   SortModelItem,
 } from "ag-grid-community";
 import { AgGridFilter } from "./AgGridFilterUtils";
+import { ColumnMap } from "@vuu-ui/vuu-utils";
 
 export type AgGridDataRow = Record<string, number | string | boolean>;
 export type AgGridDataSet = { [key: number]: AgGridDataRow };
 
 export const convertToAgGridDataSet = (
-  rows: DataSourceRow[]
+  rows: DataSourceRow[],
+  columnMap: ColumnMap
 ): AgGridDataSet => {
   const result: AgGridDataSet = {};
   rows.forEach((row) => {
     const [rowIdx] = row;
-    result[rowIdx] = toAgGridRow(row);
+    result[rowIdx] = toAgGridRow(row, columnMap);
   });
   return result;
 };
 
 export const convertToAgGridDataRows = (
-  rows: DataSourceRow[]
+  rows: DataSourceRow[],
+  columnMap: ColumnMap
 ): AgGridDataRow[] => {
   const result: AgGridDataRow[] = [];
   rows.forEach((row) => {
-    result.push(toAgGridRow(row));
+    result.push(toAgGridRow(row, columnMap));
   });
   return result;
 };
 
 // TODO compute the col names
-export const toAgGridRow = (data: DataSourceRow) => {
-  return {
-    bbg: data[8],
-    currency: data[9],
-    description: data[10],
-    exchange: data[11],
-    isin: data[12],
-    lotSize: data[13],
-    ric: data[14],
-  };
+export const toAgGridRow = (data: DataSourceRow, columnMap: ColumnMap) => {
+  const row: AgGridDataRow = {};
+  // TODO precompute the keys once
+  for (const colName of Object.keys(columnMap)) {
+    row[colName] = data[columnMap[colName]];
+  }
+  return row;
 };
 
 export type Changes = {

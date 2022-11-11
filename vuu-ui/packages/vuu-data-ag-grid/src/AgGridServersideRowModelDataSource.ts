@@ -1,22 +1,27 @@
 import {
   DataSourceProps,
+  DataSourceRow,
   RemoteDataSource,
   SubscribeCallback,
 } from "@vuu-ui/vuu-data";
 import {
+  buildColumnMap,
   metadataKeys,
   DataRow,
   DataWindow,
   getFullRange,
+  ColumnMap,
 } from "@vuu-ui/vuu-utils";
 import {
   ColumnRowGroupChangedEvent,
   FilterChangedEvent,
+  GridApi,
   IServerSideDatasource,
   IServerSideGetRowsParams,
   IServerSideGetRowsRequest,
   LoadSuccessParams,
   RowGroupOpenedEvent,
+  ServerSideTransaction,
   SortChangedEvent,
 } from "ag-grid-community";
 import {
@@ -50,7 +55,7 @@ const { COUNT, IDX } = metadataKeys;
 export class AgGridServersideRowModelDataSource
   implements IServerSideDatasource
 {
-  private rowGroupCols: string[] = [];
+  private rowGroupCols: string[];
   private bufferSize = 150;
   private rowCount = -1;
   private dataWindow = new DataWindow(
@@ -61,6 +66,8 @@ export class AgGridServersideRowModelDataSource
   private queuedVuuRequests: QueuedRequest[] = [];
   private queuedAgGridRequests = new AgGridRequestQueue();
   private agGridRequest: IServerSideGetRowsRequest | undefined;
+  private gridApi: GridApi | undefined;
+  private columnMap: ColumnMap;
 
   constructor(dataSourceConfig: DataSourceProps) {
     // console.log(
@@ -84,6 +91,8 @@ export class AgGridServersideRowModelDataSource
       this.handleMessageFromDataSource
     );
     this.queuedVuuRequests.push({ from: 0, to: 100 });
+    this.rowGroupCols = dataSourceConfig.group ?? [];
+    this.columnMap = buildColumnMap(dataSourceConfig.columns);
   }
 
   dataRequested(startRow: number, endRow: number) {
@@ -95,6 +104,10 @@ export class AgGridServersideRowModelDataSource
     }
 
     return false;
+  }
+
+  public setGridApi(gridApi: GridApi) {
+    this.gridApi = gridApi;
   }
 
   public filterChanged(evt: FilterChangedEvent) {
@@ -278,6 +291,11 @@ export class AgGridServersideRowModelDataSource
       }
     } else if (this.dataWindow.hasData(startRow, endRow)) {
       console.log(`the dataWindow already has this data`);
+      const data = this.dataWindow.getData(startRow, endRow + 1);
+      success({
+        rowData: convertToAgGridDataRows(data),
+        rowCount: this.dataWindow.rowCount,
+      });
     } else {
       const lastRow = Math.min(this.dataWindow.rowCount - 1, endRow);
       this.queuedAgGridRequests.push({
@@ -313,8 +331,17 @@ export class AgGridServersideRowModelDataSource
         //     ${this.queuedAgGridRequests.toString()}`
         // );
 
+        const updates = [];
         for (const row of message.rows) {
-          this.dataWindow.add(row);
+          const isUpdate = this.dataWindow.add(row);
+          if (isUpdate) {
+            updates.push(row);
+          }
+        }
+        if (updates.length) {
+          this.gridApi?.applyServerSideTransactionAsync(
+            this.batchUpdatesIntoTransaction(updates)
+          );
         }
 
         const queue = this.queuedAgGridRequests;
@@ -354,6 +381,12 @@ export class AgGridServersideRowModelDataSource
     }
   };
 
+  batchUpdatesIntoTransaction(updates: DataSourceRow[]): ServerSideTransaction {
+    return {
+      update: convertToAgGridDataRows(updates, this.columnMap),
+    };
+  }
+
   pushDataToAgGrid = (
     from: number,
     to: number,
@@ -363,7 +396,7 @@ export class AgGridServersideRowModelDataSource
     if (this.dataWindow.hasData(from, to)) {
       const data = this.dataWindow.getData(from, to);
       success({
-        rowData: convertToAgGridDataRows(data),
+        rowData: convertToAgGridDataRows(data, this.columnMap),
         rowCount,
       });
       return true;
