@@ -89,10 +89,10 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
-"@heswell/component-anatomy@0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@heswell/component-anatomy/-/component-anatomy-0.0.4.tgz#fa63022ca091f15ffbda84f709c7ed31f1f53d05"
-  integrity sha512-FvhIv7Ds/F+LPb9ZBR4SfYxl+kJg+7duvY805QVNd3jtj8PzXaxP6sSv71Zndw0NgUxA0VqFgsUHVrhRvdns2w==
+"@heswell/component-anatomy@0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@heswell/component-anatomy/-/component-anatomy-0.0.5.tgz#cf75e642fb7c2184794114fe62f2382d4196846a"
+  integrity sha512-pwuowxKvsxPoOkAbtHFNyqdzjTj8CHDZtk7+P8jRtJJmsJTzblOMn6WNS9csFf6gU1NdvD11EcTCnFZaG8TLxg==
 
 "@heswell/uitk-core@0.7.0-vuu.1":
   version "0.7.0-vuu.1"

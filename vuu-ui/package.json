@@ -41,7 +41,7 @@
     "recoil": "^0.1.3"
   },
   "devDependencies": {
-    "@heswell/component-anatomy": "0.0.4",
+    "@heswell/component-anatomy": "0.0.5",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "esbuild": "0.15.9",
     "eslint": "^8.27.0",
