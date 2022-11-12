@@ -21,6 +21,7 @@ import {
   VuuSortCol,
   VuuRange,
   ClientToServerRemoveLink,
+  VuuFilter,
 } from "../../../vuu-protocol-types";
 import { ServerProxySubscribeMessage } from "../vuuUIMessageTypes";
 
@@ -32,7 +33,6 @@ import {
   DataSourceRowPredicate,
 } from "../data-source";
 
-const EMPTY_ARRAY: unknown[] = [];
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
 interface Disable {
@@ -45,7 +45,7 @@ interface ChangeViewportRange {
   type: "CHANGE_VP_RANGE";
 }
 interface Filter {
-  data: { filter: any; filterQuery: string };
+  data: { filter: Filter; filterQuery: string };
   type: "filter";
 }
 interface Aggregate {
@@ -90,25 +90,25 @@ const byRowIndex: RowSortPredicate = ([index1], [index2]) => index1 - index2;
 export class Viewport {
   private aggregations: VuuAggregation[];
   private bufferSize: number;
+  /**
+   * clientRange is always the range requested by the client. We should assume
+   * these are the rows visible to the user
+   */
   private clientRange: VuuRange;
   private columns: any[];
   // TODO create this in constructor so we don't have to mark is as optional
   private dataWindow?: ArrayBackedMovingWindow = undefined;
-  private filter: any;
-  private filterSpec: any;
-  private groupBy: any;
+  private filter: Filter;
+  private filterSpec: VuuFilter;
+  private groupBy: string[];
   private hasUpdates = false;
   private holdingPen: DataSourceRow[] = [];
-  private keys: any;
-  private lastTouchIdx: number | null = null;
-  private links: VuuLink[] = [];
-  private linkedParent: any = null;
+  private keys: KeySet;
   private pendingLinkedParent: any;
   private pendingOperations: any = new Map<string, AsyncOperation>();
   private pendingRangeRequest: any = null;
   private rowCountChanged = false;
   private sort: any;
-  private tableSize = -1;
 
   public clientViewportId: string;
   public disabled = false;
@@ -198,21 +198,21 @@ export class Viewport {
       this.bufferSize
     );
 
-    console.log(
-      `%cViewport subscribed
-        clientVpId: ${this.clientViewportId}
-        serverVpId: ${this.serverViewportId}
-        table: ${this.table}
-        aggregations: ${JSON.stringify(aggregations)}
-        columns: ${columns.join(",")}
-        range: ${JSON.stringify(range)}
-        sort: ${JSON.stringify(sort)}
-        groupBy: ${JSON.stringify(groupBy)}
-        filterSpec: ${JSON.stringify(filterSpec)}
-        bufferSize: ${this.bufferSize}
-      `,
-      "color: blue"
-    );
+    // console.log(
+    //   `%cViewport subscribed
+    //     clientVpId: ${this.clientViewportId}
+    //     serverVpId: ${this.serverViewportId}
+    //     table: ${this.table}
+    //     aggregations: ${JSON.stringify(aggregations)}
+    //     columns: ${columns.join(",")}
+    //     range: ${JSON.stringify(range)}
+    //     sort: ${JSON.stringify(sort)}
+    //     groupBy: ${JSON.stringify(groupBy)}
+    //     filterSpec: ${JSON.stringify(filterSpec)}
+    //     bufferSize: ${this.bufferSize}
+    //   `,
+    //   "color: blue"
+    // );
 
     return {
       type: "subscribed",
@@ -326,8 +326,8 @@ export class Viewport {
           ? ({
               type,
               viewPortId: this.serverViewportId,
-              // ...getFullRange(range, this.bufferSize, this.dataWindow.rowCount),
-              ...getFullRange(range, this.bufferSize),
+              ...getFullRange(range, this.bufferSize, this.dataWindow.rowCount),
+              // ...getFullRange(range, this.bufferSize),
             } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
@@ -348,7 +348,7 @@ export class Viewport {
       }
 
       const toClient = this.isTree
-        ? toClientRowTree(this.groupBy, this.columns)
+        ? toClientRowTree(this.columns)
         : toClientRow;
 
       if (holdingRows.length) {
@@ -532,9 +532,7 @@ export class Viewport {
     if (this.hasUpdates && this.dataWindow) {
       const records = this.dataWindow.getData();
       const { keys } = this;
-      const toClient = this.isTree
-        ? toClientRowTree(this.groupBy, this.columns)
-        : toClientRow;
+      const toClient = this.isTree ? toClientRowTree : toClientRow;
 
       // NOte this should probably just check that we have all client rows within range ?
       const clientRows = this.dataWindow.hasAllRowsWithinRange
@@ -585,29 +583,23 @@ const toClientRow = (
     isSelected,
   ].concat(data) as DataSourceRow;
 
-const toClientRowTree =
-  (groupBy: VuuGroupBy, columns: VuuColumns) =>
-  ({ rowIndex, rowKey, sel: isSelected, data }: VuuRow, keys: KeySet) => {
-    let [depth, isExpanded /* path */, , isLeaf /* label */, , count, ...rest] =
-      data;
+const toClientRowTree = (
+  { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
+  keys: KeySet
+) => {
+  const [depth, isExpanded /* path */, , isLeaf /* label */, , count, ...rest] =
+    data;
 
-    // TODO do we need this - the data is already there
-    const steps = rowKey.split("|").slice(1);
-    groupBy.forEach((col, i) => {
-      const idx = columns.indexOf(col);
-      rest[idx] = steps[i];
-    });
+  const record = [
+    rowIndex,
+    keys.keyFor(rowIndex),
+    isLeaf,
+    isExpanded,
+    depth,
+    count,
+    rowKey,
+    isSelected,
+  ].concat(rest);
 
-    const record = [
-      rowIndex,
-      keys.keyFor(rowIndex),
-      isLeaf,
-      isExpanded,
-      depth,
-      count,
-      rowKey,
-      isSelected,
-    ].concat(rest);
-
-    return record as DataSourceRow;
-  };
+  return record as DataSourceRow;
+};
