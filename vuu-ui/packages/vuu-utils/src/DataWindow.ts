@@ -48,15 +48,16 @@ export class DataWindow {
     this.rowCount = rowCount;
   };
 
+  // return true if existing row was updated
   add(data: DataRow) {
     const [index] = data;
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
+      const isUpdate = this.data[internalIndex] !== undefined;
       this.data[internalIndex] = data;
-
-      // if (!sequential(this.data)){
-      //   debugger;
-      // }
+      return isUpdate;
+    } else {
+      return false;
     }
   }
 

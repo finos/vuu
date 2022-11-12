@@ -29,6 +29,7 @@ const Schemas: { [key: string]: Schema } = {
           renderer: { name: "progress", associatedField: "quantity" },
           format: { decimals: 0 },
         },
+        width: 120,
       },
       { name: "lastUpdate", type: "long" },
       { name: "orderId", type: "string" },
@@ -112,10 +113,12 @@ const configureColumns = (columns: any, columnConfig?: any) => {
 
 export const useTestDataSource = ({
   autoLogin = true,
+  bufferSize = 100,
   columnConfig,
   tablename = "instruments",
 }: {
   autoLogin?: boolean;
+  bufferSize?: number;
   columnConfig?: any;
   tablename?: string;
 }) => {
@@ -127,19 +130,19 @@ export const useTestDataSource = ({
       configuredColumns.map((col) => col.name),
       schema.table,
     ];
-  }, [tablename]);
+  }, [columnConfig, tablename]);
 
   const dataSource = useMemo(() => {
     console.log(`create data source`);
 
     const dataConfig = {
-      bufferSize: 100,
+      bufferSize,
       columns: columnNames,
       table,
       serverUrl: "127.0.0.1:8090/websocket",
     };
     return new RemoteDataSource(dataConfig);
-  }, [columnNames, table]);
+  }, [bufferSize, columnNames, table]);
 
   const error = useAutoLoginToVuuServer(autoLogin);
 

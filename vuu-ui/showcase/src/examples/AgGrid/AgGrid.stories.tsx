@@ -65,15 +65,21 @@ AgGridInstruments.displaySequence = displaySequence++;
 export const AgGridInstrumentsGrouped = () => {
   const error = useAutoLoginToVuuServer();
 
-  const { createFilterDataProvider, ...gridConfig } = useAgGridDataSource({
-    ...instrumentDataSourceConfig,
-    group: ["currency", "exchange"],
-  });
+  const dataConfig = useMemo(() => {
+    return {
+      ...instrumentDataSourceConfig,
+      group: ["currency", "exchange"],
+    };
+  }, []);
+
+  const { createFilterDataProvider, ...gridConfig } =
+    useAgGridDataSource(dataConfig);
 
   const columnDefs = useMemo(
     () =>
       createColumnDefs(
         createFilterDataProvider(instrumentDataSourceConfig.table),
+        "instruments",
         {
           currency: {
             rowGroup: true,
