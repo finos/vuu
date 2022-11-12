@@ -57,6 +57,7 @@ const defaultLayout = {
     },
     showTabs: true,
     enableAddTab: true,
+    enableRemoveTab: true,
     preserve: true,
     active: 0,
   },
