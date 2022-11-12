@@ -1,0 +1,41 @@
+name: "Test"
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      # Enable node module caching only when yarn.lock is available
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: yarn-deps-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            yarn-deps-${{ hashFiles('yarn.lock') }}
+      - name: Install dependencies
+        run: cd ./vuu-ui && yarn
+      - run: cd ./vuu-ui && yarn test:vite
+
+  # ensure the showcase still builds
+  # showcase-build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Use Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: "16"
+  #     - name: Install dependencies
+  #       run: cd ./vuu-ui && yarn
+  #     - name: Build showcase
+  #       run: cd ./vuu-ui && yarn showcase:build

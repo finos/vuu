@@ -6,6 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "node ../../scripts/run-build.mjs",
+    "test": "vitest run",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "files": [
