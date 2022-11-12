@@ -13,10 +13,17 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16"
-          cache: "yarn"
+      # Enable node module caching only when yarn.lock is available
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: yarn-deps-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            yarn-deps-${{ hashFiles('yarn.lock') }}
       - name: Install dependencies
         run: cd ./vuu-ui && yarn
-      - run: cd ./vuu-ui && yarn run test:vite
+      - run: cd ./vuu-ui && yarn test:vite
 
   # ensure the showcase still builds
   showcase-build:
@@ -28,8 +35,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16"
-          cache: "yarn"
       - name: Install dependencies
         run: cd ./vuu-ui && yarn
-      - name: Build theme editor
+      - name: Build showcase
         run: cd ./vuu-ui && yarn showcase:build
