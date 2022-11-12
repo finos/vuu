@@ -96,10 +96,29 @@
     no-scroll "^2.1.1"
     warning "^4.0.3"
 
+"@heswell/uitk-core@0.7.0-vuu.2":
+  version "0.7.0-vuu.2"
+  resolved "https://registry.yarnpkg.com/@heswell/uitk-core/-/uitk-core-0.7.0-vuu.2.tgz#522dbd83203efd9ab3a151ac8668981af88f730e"
+  integrity sha512-mB9CBFPjaioNhESJ11lGdtXfek8H2Go1jHr5N+IyPUudV6i7i69Pb0Di6bmnen77SCEjQEZU0FhW37iqfTNjYg==
+  dependencies:
+    "@floating-ui/react-dom-interactions" "^0.5.0"
+    "@heswell/uitk-icons" "0.6.0-vuu.1"
+    aria-hidden "^1.1.1"
+    classnames "^2.2.6"
+    no-scroll "^2.1.1"
+    warning "^4.0.3"
+
 "@heswell/uitk-icons@0.5.0-vuu.1":
   version "0.5.0-vuu.1"
   resolved "https://registry.yarnpkg.com/@heswell/uitk-icons/-/uitk-icons-0.5.0-vuu.1.tgz#c140b13bc9794ed190505a1441d6619b2f7d2ea6"
   integrity sha512-9DeEkaCTK9zsCk+Ur3fZZTcfQfkKnHzahnCdBQE+QVEJDWoPozrxMxFcVVkZgbmTglAThiQKmdMCmIGxLIDhKQ==
+  dependencies:
+    classnames "^2.2.6"
+
+"@heswell/uitk-icons@0.6.0-vuu.1":
+  version "0.6.0-vuu.1"
+  resolved "https://registry.yarnpkg.com/@heswell/uitk-icons/-/uitk-icons-0.6.0-vuu.1.tgz#a0fd03b808b2a63f4f3a4fab4fc345b517345ad2"
+  integrity sha512-RNWNLIID2ygaICnXyn5JQtoycVDaVbbVy231nQzxWc7A4leOrOAyTmobGdvaeqXun5RcfBWUQuHlp/Q/wWClKg==
   dependencies:
     classnames "^2.2.6"
 

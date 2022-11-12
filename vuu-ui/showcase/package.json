@@ -14,7 +14,7 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "dependencies": {
-    "@heswell/uitk-core": "0.7.0-vuu.1",
+    "@heswell/uitk-core": "0.7.0-vuu.2",
     "@heswell/uitk-icons": "0.5.0-vuu.1",
     "@heswell/uitk-lab": "0.7.1-vuu.4",
     "@vuu-ui/parsed-input": "0.0.26",

@@ -18,7 +18,7 @@
   ],
   "types": "src/index.ts",
   "peerDependencies": {
-    "@heswell/uitk-core": "0.7.0-vuu.1",
+    "@heswell/uitk-core": "0.7.0-vuu.2",
     "@heswell/uitk-icons": "0.5.0-vuu.1",
     "@heswell/uitk-lab": "0.7.1-vuu.4",
     "@vuu-ui/ui-controls": "0.0.26",
