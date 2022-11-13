@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.venuu</groupId>
+        <groupId>org.finos</groupId>
         <artifactId>vuu-parent</artifactId>
         <version>0.355-SNAPSHOT</version>
     </parent>
@@ -14,12 +14,12 @@
     <artifactId>vuu</artifactId>
     <name>vuu</name>
     <description>vuu</description>
-    <inceptionYear>2014</inceptionYear>
+    <inceptionYear>2015</inceptionYear>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>io.venuu</groupId>
+            <groupId>org.finos</groupId>
             <artifactId>toolbox</artifactId>
             <version>0.355-SNAPSHOT</version>
         </dependency>
@@ -418,7 +418,7 @@
                         <argument>-Dvuu.keyPath=src/main/resources/certs/key.pem</argument>
                         <argument>-Dvuu.certPath=src/main/resources/certs/cert.pem</argument>
                         <argument>-Dlogback.configurationFile=logback-netty.xml</argument>
-                        <argument>io.venuu.vuu.SimulMain</argument>
+                        <argument>org.finos.vuu.SimulMain</argument>
                     </arguments>
                 </configuration>
             </plugin>
