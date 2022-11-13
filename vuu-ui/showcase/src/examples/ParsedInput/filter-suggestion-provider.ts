@@ -1,4 +1,4 @@
-import { SchemaColumn } from "@vuu-ui/vuu-data";
+import { SchemaColumn } from "@finos/vuu-data";
 import {
   ColumnDataType,
   TypeaheadParams,
@@ -9,8 +9,8 @@ import {
   SuggestionItem,
   SuggestionProviderProps,
   SuggestionResult,
-} from "@vuu-ui/datagrid-parsers";
-import { Filter, isMultiClauseFilter } from "@vuu-ui/vuu-utils";
+} from "@finos/datagrid-parsers";
+import { Filter, isMultiClauseFilter } from "@finos/vuu-utils";
 
 type ObjectValue = { [key: string]: string };
 type Value = string | ObjectValue;

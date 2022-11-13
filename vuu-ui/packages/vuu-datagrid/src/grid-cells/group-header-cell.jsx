@@ -1,24 +1,28 @@
-import React, { useRef, useEffect, useCallback } from 'react';
-import cx from 'classnames';
-import { useContextMenu } from '@vuu-ui/ui-controls';
-import Draggable from '../draggable';
-import { expandStatesfromGroupState } from '../grid-model/grid-model-utils';
+import React, { useRef, useEffect, useCallback } from "react";
+import cx from "classnames";
+import { useContextMenu } from "@finos/ui-controls";
+import Draggable from "../draggable";
+import { expandStatesfromGroupState } from "../grid-model/grid-model-utils";
 
-import './group-header-cell.css';
+import "./group-header-cell.css";
 
-const classBase = 'hwGroupHeaderCell';
+const classBase = "hwGroupHeaderCell";
 
 const ColHeader = (props) => {
-  const { column, className, onClick, onRemoveColumn, expandState, onToggle } = props;
+  const { column, className, onClick, onRemoveColumn, expandState, onToggle } =
+    props;
   const expanded = expandState === 1;
   return (
     <div
-      className={cx(`${classBase}-col`, className, { expanded, collapsed: !expanded })}
+      className={cx(`${classBase}-col`, className, {
+        expanded,
+        collapsed: !expanded,
+      })}
       role="columnheader"
     >
       <span
         className="hwIconContainer"
-        data-icon={expanded ? 'arrow-down' : 'arrow-right'}
+        data-icon={expanded ? "arrow-down" : "arrow-right"}
         onClick={() => onToggle(column, -expandState)}
       />
 
@@ -41,7 +45,7 @@ export const GroupHeaderCell = ({
   onClick,
   onRemoveColumn,
   onResize,
-  onToggleGroupState
+  onToggleGroupState,
 }) => {
   const el = useRef(null);
   const column = useRef(groupCol);
@@ -55,13 +59,13 @@ export const GroupHeaderCell = ({
   };
 
   // All duplicated in header-cell
-  const handleResizeStart = () => onResize('begin', column.current);
+  const handleResizeStart = () => onResize("begin", column.current);
 
   const handleResize = useCallback(
     (e) => {
       const width = getWidthFromMouseEvent(e);
       if (width > 0) {
-        onResize('resize', column.current, width);
+        onResize("resize", column.current, width);
       }
     },
     [onResize]
@@ -69,7 +73,7 @@ export const GroupHeaderCell = ({
 
   const handleResizeEnd = (e) => {
     const width = getWidthFromMouseEvent(e);
-    onResize('end', column.current, width);
+    onResize("end", column.current, width);
   };
 
   const getWidthFromMouseEvent = (e) => {
@@ -80,12 +84,12 @@ export const GroupHeaderCell = ({
 
   const showContextMenu = useContextMenu();
   const handleContextMenu = (e) => {
-    showContextMenu(e, 'header', { column });
+    showContextMenu(e, "header", { column });
   };
 
   const { columns, resizing, width } = groupCol;
-  const className = cx('hwHeaderCell', classBase, classNameProp, {
-    [`${classBase}-resizing`]: resizing
+  const className = cx("hwHeaderCell", classBase, classNameProp, {
+    [`${classBase}-resizing`]: resizing,
   });
   const expandStates = expandStatesfromGroupState(groupCol, groupState);
   return (
@@ -108,7 +112,7 @@ export const GroupHeaderCell = ({
         ))}
       </div>
       <Draggable
-        className={'resizeHandle'}
+        className={"resizeHandle"}
         onDrag={handleResize}
         onDragStart={handleResizeStart}
         onDragEnd={handleResizeEnd}

@@ -2,7 +2,7 @@ import { SyntheticEvent, useCallback } from "react";
 import {
   useDropdownBehaviour,
   useKeyboardNavigation,
-} from "@vuu-ui/ui-controls";
+} from "@finos/ui-controls";
 import { useInputEditing } from "./useInputEditing";
 import { useHierarchicalData } from "./use-hierarchical-data";
 

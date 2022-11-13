@@ -3,8 +3,8 @@ import {
   extractFilter,
   filterAsQuery,
   parseFilter,
-} from "@vuu-ui/datagrid-parsers";
-import { ParsedInput, ParserProvider } from "@vuu-ui/parsed-input";
+} from "@finos/datagrid-parsers";
+import { ParsedInput, ParserProvider } from "@finos/parsed-input";
 import { useCallback, useState } from "react";
 import { createSuggestionProvider } from "./filter-suggestion-provider";
 

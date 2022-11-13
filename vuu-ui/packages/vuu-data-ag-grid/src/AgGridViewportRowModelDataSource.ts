@@ -1,4 +1,4 @@
-import { RemoteDataSource, SubscribeCallback } from "@vuu-ui/vuu-data";
+import { RemoteDataSource, SubscribeCallback } from "@finos/vuu-data";
 import { TypeaheadParams, VuuSortCol } from "../../vuu-protocol-types";
 import {
   ColumnState,
@@ -10,7 +10,7 @@ import {
   SetFilterValuesFuncParams,
   SortChangedEvent,
 } from "ag-grid-community";
-import { SuggestionFetcher } from "@vuu-ui/vuu-data";
+import { SuggestionFetcher } from "@finos/vuu-data";
 import { MutableRefObject } from "react";
 import { agGridFilterModelToVuuFilter } from "./AgGridFilterUtils";
 import { AgGridDataSet, convertToAgGridDataSet } from "./AgGridDataUtils";

@@ -1,5 +1,5 @@
 import { ColDef, SetFilterValuesFuncParams } from "ag-grid-community";
-import { FilterDataProvider } from "@vuu-ui/vuu-data-ag-grid";
+import { FilterDataProvider } from "@finos/vuu-data-ag-grid";
 
 export type ColumnOverrides = { [key: string]: Partial<ColDef> };
 

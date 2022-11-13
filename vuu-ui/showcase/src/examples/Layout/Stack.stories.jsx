@@ -5,10 +5,10 @@ import {
   LayoutProvider,
   StackLayout,
   View,
-} from "@vuu-ui/vuu-layout";
+} from "@finos/vuu-layout";
 
-// import '@vuu-ui/theme/index.css';
-// import '@vuu-ui/vuu-layout/index.css';
+// import '@finos/theme/index.css';
+// import '@finos/vuu-layout/index.css';
 
 export default {
   title: "Layout/Stack",

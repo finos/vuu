@@ -4,12 +4,12 @@ import {
   LayoutProvider,
   Placeholder,
   View,
-} from "@vuu-ui/vuu-layout";
+} from "@finos/vuu-layout";
 import { ToolkitProvider } from "@heswell/uitk-core";
 
 import { AppSidePanel } from "app-vuu-example/src/app-sidepanel";
 import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
-import { useViewserver } from "@vuu-ui/vuu-data";
+import { useViewserver } from "@finos/vuu-data";
 import { useMemo } from "react";
 
 export const DefaultAppSidePanel = () => {

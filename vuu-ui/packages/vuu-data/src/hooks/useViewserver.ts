@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SimpleStore } from "@vuu-ui/vuu-utils";
+import { SimpleStore } from "@finos/vuu-utils";
 import { useServerConnection } from "./useServerConnection";
 import { columnMetaData as columnConfig } from "./columnMetaData";
 import {
@@ -19,7 +19,7 @@ import {
 } from "../../../vuu-protocol-types";
 import { RpcResponse, TableMeta } from "../vuuUIMessageTypes";
 import { AnyTxtRecord } from "dns";
-import { ContextMenuLocation } from "@vuu-ui/vuu-datagrid/src/context-menu";
+import { ContextMenuLocation } from "@finos/vuu-datagrid/src/context-menu";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
 export const RpcCall = "RPC_CALL";

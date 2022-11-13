@@ -1,4 +1,4 @@
-import { metadataKeys } from "@vuu-ui/vuu-utils";
+import { metadataKeys } from "@finos/vuu-utils";
 import { SortType } from "../constants";
 
 // 15px works on Mac, Windows requires 17, unless we style the scrollbars

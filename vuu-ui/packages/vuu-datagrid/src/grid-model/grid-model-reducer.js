@@ -1,4 +1,4 @@
-import { metadataKeys } from "@vuu-ui/vuu-utils";
+import { metadataKeys } from "@finos/vuu-utils";
 import {
   assignKeysToColumns,
   columnKeysToIndices,

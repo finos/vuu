@@ -1,4 +1,4 @@
-import { connectToServer /*, useViewserver */ } from "@vuu-ui/vuu-data";
+import { connectToServer /*, useViewserver */ } from "@finos/vuu-data";
 import {
   cloneElement,
   HTMLAttributes,
@@ -20,12 +20,12 @@ import {
   FlexboxLayout as Flexbox,
   LayoutProvider,
   View,
-} from "@vuu-ui/vuu-layout";
+} from "@finos/vuu-layout";
 
 import { AppHeader } from "./app-header";
 // import { AppPalette } from "./app-palette";
 
-import { LayoutJSON } from "@vuu-ui/vuu-layout/src/layout-reducer";
+import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
 import "./shell.css";
 
 export type VuuUser = {

@@ -2,15 +2,15 @@ import {
   authenticate as vuuAuthenticate,
   connectToServer,
   useViewserver,
-} from "@vuu-ui/vuu-data";
+} from "@finos/vuu-data";
 import {
   extractFilter,
   filterAsQuery,
   NamedFilter,
   parseFilter,
-} from "@vuu-ui/datagrid-parsers";
-import { ParsedInput, ParserProvider } from "@vuu-ui/parsed-input";
-import { Filter } from "@vuu-ui/vuu-utils";
+} from "@finos/datagrid-parsers";
+import { ParsedInput, ParserProvider } from "@finos/parsed-input";
+import { Filter } from "@finos/vuu-utils";
 import { useEffect, useState } from "react";
 import { createSuggestionProvider } from "./vuu-filter-suggestion-provider";
 
