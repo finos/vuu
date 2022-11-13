@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@vuu-ui/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data";
 import { VuuSortCol } from "../../vuu-protocol-types";
 import {
   ColumnState,
@@ -7,7 +7,7 @@ import {
   SortModelItem,
 } from "ag-grid-community";
 import { AgGridFilter } from "./AgGridFilterUtils";
-import { ColumnMap } from "@vuu-ui/vuu-utils";
+import { ColumnMap } from "@finos/vuu-utils";
 
 export type AgGridDataRow = Record<string, number | string | boolean>;
 export type AgGridDataSet = { [key: number]: AgGridDataRow };

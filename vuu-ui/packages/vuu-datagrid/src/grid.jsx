@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { ContextMenuProvider } from "@vuu-ui/ui-controls";
+import { ContextMenuProvider } from "@finos/ui-controls";
 import { useForkRef } from "@heswell/uitk-core";
 import cx from "classnames";
 import { GridProvider } from "./grid-context";

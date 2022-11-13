@@ -1,5 +1,5 @@
 {
-  "name": "@vuu-ui/vuu-utils",
+  "name": "@finos/vuu-utils",
   "version": "0.0.26",
   "author": "heswell",
   "main": "src/index.ts",

@@ -1,6 +1,6 @@
 import React from "react";
 import cx from "classnames";
-import { metadataKeys } from "@vuu-ui/vuu-utils";
+import { metadataKeys } from "@finos/vuu-utils";
 import useFormatter from "../grid-cells/use-cell-formatter";
 import useDirection, { UP1, UP2, DOWN1, DOWN2 } from "./use-direction";
 

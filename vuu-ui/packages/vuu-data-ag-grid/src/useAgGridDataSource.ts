@@ -2,7 +2,7 @@ import {
   DataSourceProps,
   SuggestionFetcher,
   useViewserver,
-} from "@vuu-ui/vuu-data";
+} from "@finos/vuu-data";
 import { VuuTable } from "../../vuu-protocol-types";
 import {
   ColumnRowGroupChangedEvent,

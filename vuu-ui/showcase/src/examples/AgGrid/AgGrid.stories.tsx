@@ -1,5 +1,5 @@
 import { ToolkitProvider } from "@heswell/uitk-core";
-import { useAgGridDataSource } from "@vuu-ui/vuu-data-ag-grid";
+import { useAgGridDataSource } from "@finos/vuu-data-ag-grid";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.css";
 import "ag-grid-enterprise";

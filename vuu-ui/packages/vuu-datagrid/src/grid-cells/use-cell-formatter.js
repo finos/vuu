@@ -1,4 +1,4 @@
-import { STARTS_WITH } from "@vuu-ui/vuu-utils";
+import { STARTS_WITH } from "@finos/vuu-utils";
 import { createElement, useRef } from "react";
 import { roundDecimal } from "./grid-cell-number-utils";
 

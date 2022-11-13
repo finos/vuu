@@ -1,5 +1,5 @@
 import { ListItem, ListItemProps } from "@heswell/uitk-lab";
-import { SuggestionItem } from "@vuu-ui/datagrid-parsers";
+import { SuggestionItem } from "@finos/datagrid-parsers";
 import cx from "classnames";
 
 import "./SuggestionListItem.css";
@@ -44,7 +44,8 @@ export const SuggestionListItem = (props: ListItemProps<SuggestionItem>) => {
         [`${classBase}-close-list`]: value === "]",
       })}
       id={id}
-      key={id}>
+      key={id}
+    >
       {formatDisplayValue(displayValue)}
     </ListItem>
   );

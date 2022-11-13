@@ -1,15 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { App } from "./App";
-import { getAuthDetailsFromCookies, redirectToLogin } from "@vuu-ui/vuu-shell";
+import { getAuthDetailsFromCookies, redirectToLogin } from "@finos/vuu-shell";
 
-// import '@vuu-ui/theme/index.css';
-// import '@vuu-ui/vuu-shell/index.css';
-// import '@vuu-ui/vuu-layout/index.css';
-// import '@vuu-ui/ui-controls/index.css';
-// import '@vuu-ui/vuu-datagrid/index.css';
+// import '@finos/theme/index.css';
+// import '@finos/vuu-shell/index.css';
+// import '@finos/vuu-layout/index.css';
+// import '@finos/ui-controls/index.css';
+// import '@finos/vuu-datagrid/index.css';
 // import "./index.css";
-import "@vuu-ui/vuu-theme/index.css";
+import "@finos/vuu-theme/index.css";
 
 const [username, token] = getAuthDetailsFromCookies();
 if (!username || !token) {

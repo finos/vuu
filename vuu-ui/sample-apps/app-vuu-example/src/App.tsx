@@ -1,7 +1,7 @@
 import { ToolkitProvider } from "@heswell/uitk-core";
-import { useViewserver, VuuTableSchemas } from "@vuu-ui/vuu-data";
-import { Dialog, registerComponent } from "@vuu-ui/vuu-layout";
-import { Feature, Shell, VuuUser } from "@vuu-ui/vuu-shell";
+import { useViewserver, VuuTableSchemas } from "@finos/vuu-data";
+import { Dialog, registerComponent } from "@finos/vuu-layout";
+import { Feature, Shell, VuuUser } from "@finos/vuu-shell";
 import { ReactElement, useCallback, useMemo, useRef, useState } from "react";
 import AppContext, { RpcResponse } from "./app-context";
 import { AppSidePanel } from "./app-sidepanel";

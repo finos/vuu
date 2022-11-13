@@ -1,7 +1,7 @@
 import { useIdMemo as useId } from "@heswell/uitk-core";
 import { Dropdown } from "@heswell/uitk-lab";
-import { Filter } from "@vuu-ui/vuu-utils";
-import { useItemsWithIds } from "@vuu-ui/ui-controls";
+import { Filter } from "@finos/vuu-utils";
+import { useItemsWithIds } from "@finos/ui-controls";
 import {
   ForwardedRef,
   forwardRef,
@@ -25,7 +25,7 @@ import { useParsedInput } from "./useParsedInput";
 import { useParsedText } from "./useParsedText";
 
 import { SelectionChangeHandler, SelectionStrategy } from "@heswell/uitk-lab";
-import { SuggestionItem } from "@vuu-ui/datagrid-parsers";
+import { SuggestionItem } from "@finos/datagrid-parsers";
 
 import "./ParsedInput.css";
 

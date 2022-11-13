@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { Flexbox, View } from "@vuu-ui/vuu-layout";
-import { useViewserver } from "@vuu-ui/vuu-data";
+import { Flexbox, View } from "@finos/vuu-layout";
+import { useViewserver } from "@finos/vuu-data";
 import { MetricsTable } from "./metrics-table";
 
 import "./metrics.css";

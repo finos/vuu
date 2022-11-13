@@ -1,37 +1,46 @@
-import React from 'react';
-import { ComponentAnatomy } from '@heswell/component-anatomy';
+import React from "react";
+import { ComponentAnatomy } from "@heswell/component-anatomy";
 
-import { Tree, useItemsWithIds } from '@vuu-ui/ui-controls';
-import { usa_states_cities, groupByInitialLetter } from './List/List.data';
-import { folderData } from './Tree.data';
+import { Tree, useItemsWithIds } from "@finos/ui-controls";
+import { usa_states_cities, groupByInitialLetter } from "./List/List.data";
+import { folderData } from "./Tree.data";
 
 export default {
-  title: 'UI Controls/Tree',
-  component: Tree
+  title: "UI Controls/Tree",
+  component: Tree,
 };
 
 let displaySequence = 1;
 
 export const SimpleTree = () => {
   const handleChange = (e, selected) => {
-    console.log(`selected ${selected.join(',')}`);
+    console.log(`selected ${selected.join(",")}`);
   };
   return (
-    <div style={{ width: 900, height: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+    <div
+      style={{
+        width: 900,
+        height: 900,
+        display: "flex",
+        gap: 50,
+        alignItems: "flex-start",
+      }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
           height: 400,
           maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}>
+          position: "relative",
+          border: "solid 1px #ccc",
+        }}
+      >
         <Tree
           onSelectionChange={handleChange}
           selection="checkbox"
-          source={groupByInitialLetter(usa_states_cities, 'groups-only')}
+          source={groupByInitialLetter(usa_states_cities, "groups-only")}
         />
       </div>
       {/* <div
@@ -66,19 +75,26 @@ const iconTreeStyle = `
 
 export const SimpleTreeIcons = () => {
   const handleChange = (e, selected) => {
-    console.log(`selected ${selected.join(',')}`);
+    console.log(`selected ${selected.join(",")}`);
   };
   return (
-    <div style={{ width: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+    <div
+      style={{ width: 900, display: "flex", gap: 50, alignItems: "flex-start" }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
-          position: 'relative'
-        }}>
+          position: "relative",
+        }}
+      >
         <style>{iconTreeStyle}</style>
-        <Tree className="arrow-toggle" onSelectionChange={handleChange} source={folderData} />
+        <Tree
+          className="arrow-toggle"
+          onSelectionChange={handleChange}
+          source={folderData}
+        />
       </div>
       <input type="text" />
     </div>
@@ -87,17 +103,20 @@ export const SimpleTreeIcons = () => {
 
 export const DragDropTreeIcons = () => {
   const handleChange = (e, selected) => {
-    console.log(`selected ${selected.join(',')}`);
+    console.log(`selected ${selected.join(",")}`);
   };
   return (
-    <div style={{ width: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+    <div
+      style={{ width: 900, display: "flex", gap: 50, alignItems: "flex-start" }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           width: 150,
-          position: 'relative'
-        }}>
+          position: "relative",
+        }}
+      >
         <style>{iconTreeStyle}</style>
         <Tree
           allowDragDrop
@@ -115,7 +134,7 @@ SimpleTreeIcons.displaySequence = displaySequence++;
 
 export const RevealSelected = () => {
   const handleChange = (e, selected) => {
-    console.log(`selected ${selected.join(',')}`);
+    console.log(`selected ${selected.join(",")}`);
   };
 
   const [, source] = useItemsWithIds(folderData);
@@ -123,19 +142,22 @@ export const RevealSelected = () => {
 
   console.log({ source });
   return (
-    <div style={{ width: 900, display: 'flex', gap: 50, alignItems: 'flex-start' }}>
+    <div
+      style={{ width: 900, display: "flex", gap: 50, alignItems: "flex-start" }}
+    >
       <input type="text" />
       <div
         style={{
-          fontFamily: 'Roboto',
+          fontFamily: "Roboto",
           maxHeight: 800,
           width: 150,
-          position: 'relative'
-        }}>
+          position: "relative",
+        }}
+      >
         <style>{iconTreeStyle}</style>
         <Tree
           className="arrow-toggle"
-          defaultSelected={['root-0.1.0.0.0']}
+          defaultSelected={["root-0.1.0.0.0"]}
           onSelectionChange={handleChange}
           source={source}
           revealSelected
@@ -151,20 +173,24 @@ RevealSelected.displaySequence = displaySequence++;
 export const SimpleTreeWithAnatomy = () => {
   const source = [
     {
-      label: 'Fruits',
+      label: "Fruits",
       childNodes: [
-        { label: 'Oranges' },
-        { label: 'Pineapple' },
+        { label: "Oranges" },
+        { label: "Pineapple" },
         {
-          label: 'Apples',
-          childNodes: [{ label: 'Macintosh' }, { label: 'Granny Smith' }, { label: 'Fuji' }]
+          label: "Apples",
+          childNodes: [
+            { label: "Macintosh" },
+            { label: "Granny Smith" },
+            { label: "Fuji" },
+          ],
         },
-        { label: 'Bananas' },
-        { label: 'Pears' }
-      ]
+        { label: "Bananas" },
+        { label: "Pears" },
+      ],
     },
-    { label: 'Vegatables' },
-    { label: 'Grain' }
+    { label: "Vegatables" },
+    { label: "Grain" },
   ];
 
   return (

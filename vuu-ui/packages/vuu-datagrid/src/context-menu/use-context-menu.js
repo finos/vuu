@@ -1,5 +1,5 @@
 /* eslint-disable no-sequences */
-import { removeColumnFromFilter } from "@vuu-ui/vuu-utils";
+import { removeColumnFromFilter } from "@finos/vuu-utils";
 import * as Action from "./context-menu-actions";
 // for now ...
 import { GridModel } from "../grid-model/grid-model-utils";

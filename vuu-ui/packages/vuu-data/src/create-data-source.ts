@@ -1,5 +1,5 @@
 import { VuuTable } from "../../vuu-protocol-types";
-import { Column } from "@vuu-ui/vuu-utils";
+import { Column } from "@finos/vuu-utils";
 
 import { getServerUrl } from "./hooks/useServerConnection";
 import { RemoteDataSource } from "./remote-data-source";

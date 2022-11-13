@@ -1,4 +1,4 @@
-import { RpcResponse } from "@vuu-ui/vuu-data";
+import { RpcResponse } from "@finos/vuu-data";
 import { createContext } from "react";
 
 export interface AppContextProps {

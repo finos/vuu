@@ -3,7 +3,7 @@ import {
   DataSourceRow,
   RemoteDataSource,
   SubscribeCallback,
-} from "@vuu-ui/vuu-data";
+} from "@finos/vuu-data";
 import {
   buildColumnMap,
   metadataKeys,
@@ -11,7 +11,7 @@ import {
   DataWindow,
   getFullRange,
   ColumnMap,
-} from "@vuu-ui/vuu-utils";
+} from "@finos/vuu-utils";
 import {
   ColumnRowGroupChangedEvent,
   FilterChangedEvent,

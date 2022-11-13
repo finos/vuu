@@ -7,7 +7,7 @@ import {
   MaximizeIcon,
   MinimizeIcon,
   MoreSmallListVertIcon,
-} from "@vuu-ui/ui-controls";
+} from "@finos/ui-controls";
 import { Button, ButtonProps } from "@heswell/uitk-core";
 
 import "./action-buttons.css";

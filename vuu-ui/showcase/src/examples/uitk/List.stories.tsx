@@ -10,7 +10,7 @@ import { dragStrategy } from "@heswell/uitk-lab/src/tabs/drag-drop";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usa_states } from "./List.data";
 import { ListVisualizer } from "./ListVisualizer";
-import { Flexbox } from "@vuu-ui/vuu-layout";
+import { Flexbox } from "@finos/vuu-layout";
 
 export const DefaultList = () => {
   return (

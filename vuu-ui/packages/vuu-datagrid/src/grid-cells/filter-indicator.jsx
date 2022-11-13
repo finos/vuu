@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import cx from "classnames";
-import { filterIncludesColumn } from "@vuu-ui/vuu-utils";
-import { useContextMenu } from "@vuu-ui/ui-controls";
+import { filterIncludesColumn } from "@finos/vuu-utils";
+import { useContextMenu } from "@finos/ui-controls";
 
 import "./filter-indicator.css";
 

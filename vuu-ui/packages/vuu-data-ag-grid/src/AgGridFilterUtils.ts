@@ -1,11 +1,11 @@
 import { VuuSort, VuuSortCol } from "../../vuu-protocol-types";
-import { filterAsQuery } from "@vuu-ui/datagrid-parsers";
-import { Filter, MultiClauseFilter } from "@vuu-ui/vuu-utils";
+import { filterAsQuery } from "@finos/datagrid-parsers";
+import { Filter, MultiClauseFilter } from "@finos/vuu-utils";
 import {
   AndFilter,
   FilterClause,
   SingleValueFilterClauseOp,
-} from "@vuu-ui/vuu-utils";
+} from "@finos/vuu-utils";
 
 export type AgGridSetFilter = {
   filterType: "set";
@@ -73,7 +73,7 @@ const agToSingleValueVuuFilterType = (
       return "!=";
     default:
       throw Error(
-        `@vuu-ui/ag0grid AgGridFilterUtils AgGrid filter type ${type} not supported`
+        `@finos/ag0grid AgGridFilterUtils AgGrid filter type ${type} not supported`
       );
   }
 };
