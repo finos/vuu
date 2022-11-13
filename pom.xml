@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>io.venuu</groupId>
+    <groupId>org.finos</groupId>
     <artifactId>vuu-parent</artifactId>
     <version>0.355-SNAPSHOT</version>
     <name>vuu-parent</name>
     <description>Vuu - A View Server in Scala and React</description>
-    <url>https://github.com/venuu-io/vuu</url>
+    <url>https://github.com/finos/vuu</url>
     <packaging>pom</packaging>
 
     <licenses>
@@ -29,9 +29,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:https://github.com/venuu-io/vuu.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/venuu-io/vuu.git</developerConnection>
-        <url>https://github.com/venuu-io/vuu/tree/master</url>
+        <connection>scm:git:https://github.com/finos/vuu.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/finos/vuu.git</developerConnection>
+        <url>https://github.com/finos/vuu/tree/master</url>
         <tag>HEAD</tag>
     </scm>
 

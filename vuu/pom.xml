@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.venuu</groupId>
+        <groupId>org.finos</groupId>
         <artifactId>vuu-parent</artifactId>
         <version>0.355-SNAPSHOT</version>
     </parent>
@@ -19,7 +19,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.venuu</groupId>
+            <groupId>org.finos</groupId>
             <artifactId>toolbox</artifactId>
             <version>0.355-SNAPSHOT</version>
         </dependency>
