@@ -347,9 +347,7 @@ export class Viewport {
         );
       }
 
-      const toClient = this.isTree
-        ? toClientRowTree(this.columns)
-        : toClientRow;
+      const toClient = this.isTree ? toClientRowTree : toClientRow;
 
       if (holdingRows.length) {
         holdingRows.forEach((row) => {
@@ -432,9 +430,7 @@ export class Viewport {
     if (this.dataWindow) {
       const records = this.dataWindow.getData();
       const { keys } = this;
-      const toClient = this.isTree
-        ? toClientRowTree(this.groupBy, this.columns)
-        : toClientRow;
+      const toClient = this.isTree ? toClientRowTree : toClientRow;
       for (let row of records) {
         if (row) {
           out.push(toClient(row, keys));
