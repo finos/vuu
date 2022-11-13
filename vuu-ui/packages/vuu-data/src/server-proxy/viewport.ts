@@ -264,7 +264,7 @@ export class Viewport {
       };
     } else if (type === "sort") {
       this.sort = { sortDefs: data };
-      return { clientViewportId, type, sort: data };
+      return { clientViewportId, type, sort: this.sort };
     } else if (type === "selection") {
       // should we do this here ?
       // this.selection = data;

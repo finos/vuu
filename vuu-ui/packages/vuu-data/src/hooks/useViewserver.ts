@@ -4,10 +4,10 @@ import { SimpleStore } from "@finos/vuu-utils";
 import { useServerConnection } from "./useServerConnection";
 import { getColumnConfig } from "./columnMetaData";
 import {
+  ConfigChangeHandler,
   DataSource,
   DataSourceMenusMessage,
   DataSourceVisualLinkCreatedMessage,
-  DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
 } from "../data-source";
 import {
@@ -100,12 +100,6 @@ const createSchemaFromTableMetadata = ({
     }),
   };
 };
-
-export type ConfigChangeMessage =
-  | DataSourceVisualLinkCreatedMessage
-  | DataSourceVisualLinkRemovedMessage;
-
-export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
 
 export interface ViewServerHookResult {
   buildViewserverMenuOptions: any;

@@ -1,7 +1,7 @@
 {
     "extends": "../../tsconfig-emit-types.json",
     "compilerOptions": {
-      "outDir": "../../dist/data-remote/types"
+      "outDir": "../../dist/vuu-data/types"
     },
     "include": [
       "src"

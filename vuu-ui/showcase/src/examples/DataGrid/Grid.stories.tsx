@@ -69,7 +69,7 @@ export const DefaultGrid = () => {
       <Grid
         dataSource={dataSource}
         columns={columns}
-        columnSizing="fill"
+        // columnSizing="fill"
         height={600}
         selectionModel="extended"
       />
@@ -236,48 +236,30 @@ export const PersistConfig = () => {
 };
 PersistConfig.displaySequence = displaySequence++;
 
-// export const BasicGridColumnLabels = () => {
-//   const gridRef = useRef(null)
-
-//   const dataConfig = useMemo(() => ({
-//     bufferSize: 100,
-//     columns: instrumentSchemaLabels.columns.map(col => col.name),
-//     tableName: 'instruments',
-//     configUrl: '/tables/instruments/config.js',
-//   }),[]);
-
-//   const dataSource = useMemo(() => new RemoteDataSource(dataConfig), [dataConfig]);
-
-//   return <>
-//     <div>
-//       <input defaultValue="Life is" />
-//     </div>
-//     <Grid
-//       dataSource={dataSource}
-//       columns={instrumentSchemaLabels.columns}
-//       height={600}
-//       ref={gridRef}
-//       renderBufferSize={20}
-//       style={{ margin: 10, border: 'solid 1px #ccc' }}
-//     />
-//   </>;
-// };
-
 export const BasicGridColumnFixedCols = () => {
   const gridRef = useRef(null);
 
   const { columns, dataSource, error } = useTestDataSource({
     columnConfig: {
-      description: { label: "Description", locked: true },
-      bbg: { label: "BBG" },
-      currency: { label: "Currency" },
-      exchange: { label: "Exchange" },
-      isin: { label: "ISIN" },
-      lotSize: { label: "Lot Size" },
-      ric: { label: "RIC" },
+      account: { label: "Account", locked: true },
+      algo: { label: "Algo", locked: true },
+      averagePrice: { label: "Avg Price" },
+      ccy: { label: "Currency" },
+      childCount: { type: "int" },
+      exchange: { type: "string" },
+      filledQty: { type: "int" },
+      id: { type: "string" },
+      idAsInt: { type: "int" },
+      lastUpdate: { type: "long" },
+      openQty: { type: "int" },
+      price: { type: "double" },
+      quantity: { type: "int" },
+      ric: { type: "string" },
+      side: { type: "string" },
+      status: { type: "string" },
+      volLimit: { type: "double" },
     },
-
-    tablename: "instruments",
+    tablename: "parentOrders",
   });
 
   if (error) {
@@ -303,7 +285,7 @@ export const BasicGridColumnFixedCols = () => {
 
 BasicGridColumnFixedCols.displaySequence = displaySequence++;
 
-export const BasicGridColumnHeaders = () => {
+export const ColumnHeaders1Level = () => {
   const gridRef = useRef(null);
 
   const { columns, dataSource, error } = useTestDataSource({
@@ -340,7 +322,46 @@ export const BasicGridColumnHeaders = () => {
   );
 };
 
-BasicGridColumnHeaders.displaySequence = displaySequence++;
+ColumnHeaders1Level.displaySequence = displaySequence++;
+
+export const ColumnHeaders2Levels = () => {
+  const gridRef = useRef(null);
+
+  const { columns, dataSource, error } = useTestDataSource({
+    columnConfig: {
+      bbg: { heading: ["BBG", "Group 1", "Instrument"] },
+      isin: { heading: ["ISIN", "Group 1", "Instrument"] },
+      ric: { heading: ["RIC", "Group 2", "Instrument"] },
+      description: { heading: ["Description", "Group 2", "Instrument"] },
+      currency: { heading: ["Currency", "Group 3", "Exchange Details"] },
+      exchange: { heading: ["Exchange", "Group 3", "Exchange Details"] },
+      lotSize: { heading: ["Lot Size", "Group 4", "Exchange Details"] },
+    },
+    tablename: "instruments",
+  });
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
+  return (
+    <>
+      <div>
+        <input defaultValue="Life is" />
+      </div>
+      <Grid
+        dataSource={dataSource}
+        columns={columns}
+        height={600}
+        ref={gridRef}
+        renderBufferSize={20}
+        style={{ margin: 10, border: "solid 1px #ccc" }}
+      />
+    </>
+  );
+};
+
+ColumnHeaders2Levels.displaySequence = displaySequence++;
 
 export const BasicGridWithFilter = () => {
   const gridRef = useRef(null);

@@ -1,7 +1,7 @@
 {
     "extends": "../../tsconfig-emit-types.json",
     "compilerOptions": {
-      "outDir": "../../dist/utils/types"
+      "outDir": "../../dist/vuu-utils/types"
     },
     "include": [
       "src"

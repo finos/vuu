@@ -28,12 +28,12 @@ const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
 export interface SingleValueFilterClause {
   op: SingleValueFilterClauseOp;
   column: string;
-  value: any;
+  value: string | number;
 }
 export interface MultiValueFilterClause {
   op: MultipleValueFilterClauseOp;
   column: string;
-  values: any[];
+  values: string[] | number[];
 }
 
 export type FilterClause = SingleValueFilterClause | MultiValueFilterClause;
