@@ -3,46 +3,61 @@
 # Vuu
 ## The Realtime View Server
 
-Welcome. We maintain an md book containing all the details of the project. Why not get started there: 
+Welcome. We maintain a docusaurus book containing all the details of the project. Why not get started there: 
 
-https://venuu-io.github.io/vuu/
+https://vuu.finos.org/docs/introduction/intro
 
-## Installation
+## Installation - Server
+
+### Prerequisites
+
+See the [Docs](https://vuu.finos.org/docs/getting_started/developing) for Java versions and install dependencies you need to have. 
 
 OS X & Linux:
 
 ```sh
-npm install my-crazy-module --save
+#In your favourite code directory...
+git clone https://github.com/finos/vuu.git
+#cd into the repository
+cd vuu
+#run the maven compile step
+mvn compile
+#cd into vuu, child in repo
+cd vuu
+#The server should now be started on your machine
+mvn exec:exec
 ```
 
 Windows:
 
 ```sh
-edit autoexec.bat
+this should be the same as Linux & macos just with windows adjusted paths
 ```
+
+## Installation - Client
+```sh
+#in vuu repo (not vuu child directory in repo)
+cd vuu-ui
+yarn
+yarn build
+yarn buid:app
+cd packages/electron
+#this should open an electron window pointing at https://localhost:8443/index.html
+yarn start
+```
+
 
 ## Usage example
 
-A few motivating and useful examples of how your project can be used. Spice this up with code blocks and potentially screenshots / videos ([LiceCap](https://www.cockos.com/licecap/) is great for this kind of thing).
-
-_For more examples and usage, please refer to the [Wiki][wiki]._
-
-## Development setup
-
-Describe how to install all development dependencies and how to run an automated test-suite of some kind. Potentially do this for multiple platforms.
-
-```sh
-make install
-npm test
+```
+Work In Progress!
 ```
 
 ## Roadmap
 
 List the roadmap steps; alternatively link the Confluence Wiki page where the project roadmap is published.
 
-1. Item 1
-2. Item 2
-3. ....
+1. In Progress
 
 ## Contributing
 For any questions, bugs or feature requests please open an [issue](https://github.com/finos/vuu/issues).
