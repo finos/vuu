@@ -1,5 +1,8 @@
-import { metadataKeys } from "@finos/vuu-utils";
+import { DataRow, metadataKeys } from "@finos/vuu-utils";
+import { VuuGroupBy } from "../../../vuu-protocol-types";
 import { SortType } from "../constants";
+import { ColumnDescriptor } from "../gridTypes";
+import { KeyedColumnDescriptor } from "./gridModelTypes";
 
 // 15px works on Mac, Windows requires 17, unless we style the scrollbars
 export const getHorizontalScrollbarHeight = (columnGroups) =>
@@ -271,8 +274,10 @@ function updateGroupColumn({ columnGroups: groups }, column, updates) {
   return [updatedGroups, idx];
 }
 
-export const columnKeysToIndices = (keys, columns) =>
-  keys.map((key) => columns.findIndex((c) => c.key === key));
+export const columnKeysToIndices = (
+  keys: string[],
+  columns: ColumnDescriptor[]
+) => keys.map((key) => columns.findIndex((c) => c.key === key));
 
 function addGroupColumn({ groupBy }, column) {
   if (groupBy) {
@@ -415,7 +420,10 @@ const flattenColumnGroup = (columns) => {
   return nonGroupColumns;
 };
 
-export function extractGroupColumn(columns, groupBy) {
+export function extractGroupColumn(
+  columns: ColumnDescriptor[],
+  groupBy: VuuGroupBy
+): [ColumnDescriptor | null, ColumnDescriptor[]] {
   if (groupBy && groupBy.length > 0) {
     // Note: groupedColumns will be in column order, not groupBy order
     const [groupedColumns, rest] = columns.reduce(
@@ -466,16 +474,21 @@ export function extractGroupColumn(columns, groupBy) {
   return [null, columns];
 }
 
-export const splitKeys = (compositeKey) =>
+export const splitKeys = (compositeKey: string) =>
   `${compositeKey}`.split(":").map((k) => parseInt(k, 10));
 
-// need to rename this
-export const assignKeysToColumns = (columns, defaultWidth) => {
+const isKeyedColumn = (column: unknown): column is KeyedColumnDescriptor =>
+  typeof (column as KeyedColumnDescriptor).key === "number";
+
+export const assignKeysToColumns = (
+  columns: (ColumnDescriptor | KeyedColumnDescriptor | string)[],
+  defaultWidth?: number
+): KeyedColumnDescriptor[] => {
   const start = metadataKeys.count;
   return columns.map((column, i) =>
     typeof column === "string"
       ? { name: column, key: start + i, width: defaultWidth }
-      : typeof column.key === "number"
+      : isKeyedColumn(column)
       ? column
       : {
           ...column,
@@ -487,7 +500,10 @@ export const assignKeysToColumns = (columns, defaultWidth) => {
 
 const { DEPTH, IS_LEAF } = metadataKeys;
 
-export const getGroupValueAndOffset = (columns, row) => {
+export const getGroupValueAndOffset = (
+  columns: KeyedColumnDescriptor[],
+  row: DataRow
+) => {
   const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
   // Depth can be greater tha group columns when we have just removed a column from groupby
   // but new data has not yet been received.

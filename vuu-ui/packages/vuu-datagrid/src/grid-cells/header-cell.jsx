@@ -1,9 +1,9 @@
-import React, { useCallback, useContext, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import cx from "classnames";
 import { useContextMenu } from "@finos/ui-controls";
 
-import GridContext from "../grid-context";
-import { GridModel } from "../grid-model/grid-model-utils";
+import { useGridContext } from "../grid-context";
+import { GridModel } from "../grid-model/gridModelUtils";
 import { useDragStart } from "../use-drag";
 import { FilterIndicator } from "./filter-indicator";
 import { SortIndicator } from "./sort-indicator";
@@ -35,7 +35,7 @@ export const HeaderCell = function HeaderCell({
   const el = useRef(null);
   const col = useRef(column);
   const isResizing = useRef(false);
-  const { dispatchGridAction, gridModel } = useContext(GridContext);
+  const { dispatchGridAction, gridModel } = useGridContext();
 
   // essential that handlers for resize do not use stale column
   // we could mitigate this by only passing column key and passing delta,

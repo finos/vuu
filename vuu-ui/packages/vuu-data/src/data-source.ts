@@ -8,6 +8,7 @@ import {
   VuuRange,
   VuuRowDataItemType,
   VuuSort,
+  VuuSortCol,
   VuuTable,
 } from "../../vuu-protocol-types";
 import { Filter } from "@finos/vuu-utils";
@@ -165,8 +166,8 @@ export interface SubscribeProps {
   columns?: string[];
   aggregations?: VuuAggregation[];
   range?: VuuRange;
-  sort?: any;
-  groupBy?: any;
+  sort?: VuuSortCol[];
+  groupBy?: VuuGroupBy;
   filter?: Filter;
   filterQuery?: string;
   title?: string;
@@ -175,7 +176,12 @@ export interface SubscribeProps {
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 
 export interface DataSource {
+  closeTreeNode: (key: string) => void;
+  group: (groupBy: VuuGroupBy) => void;
+  openTreeNode: (key: string) => void;
+  select: (selected: number[]) => void;
   setRange: (from: number, to: number) => void;
+  sort: (columns: VuuSortCol[]) => void;
   subscribe: (
     props: SubscribeProps,
     callback: SubscribeCallback

@@ -1,12 +1,12 @@
 import { useCallback, useContext, useRef } from "react";
 import { useResizeObserver } from "./utils";
-import { ROW_HEIGHT } from "./grid-model/grid-model-actions";
-import GridContext from "./grid-context";
+import { ROW_HEIGHT } from "./grid-model/gridModelActions";
+import { useGridContext } from "./grid-context";
 
 const dimensions = ["height"];
 
 export const useRowHeight = () => {
-  const { dispatchGridModelAction } = useContext(GridContext);
+  const { dispatchGridModelAction } = useGridContext();
   const ref = useRef();
 
   const onResize = useCallback(

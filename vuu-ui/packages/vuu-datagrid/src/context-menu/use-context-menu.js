@@ -2,7 +2,7 @@
 import { removeColumnFromFilter } from "@finos/vuu-utils";
 import * as Action from "./context-menu-actions";
 // for now ...
-import { GridModel } from "../grid-model/grid-model-utils";
+import { GridModel } from "../grid-model/gridModelUtils";
 import { AggregationType, SortType } from "../constants";
 
 export const useContextMenu = ({

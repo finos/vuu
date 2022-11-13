@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useCallback } from "react";
 import cx from "classnames";
 import { useContextMenu } from "@finos/ui-controls";
 import Draggable from "../draggable";
-import { expandStatesfromGroupState } from "../grid-model/grid-model-utils";
+import { expandStatesfromGroupState } from "../grid-model/gridModelUtils";
 
 import "./group-header-cell.css";
 

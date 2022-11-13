@@ -1,14 +1,13 @@
 import React, {
   forwardRef,
   useCallback,
-  useContext,
   useImperativeHandle,
   useRef,
 } from "react";
 import cx from "classnames";
-import GridContext from "./grid-context";
-import { GridModel } from "./grid-model/grid-model-utils";
-import * as Action from "./grid-model/grid-model-actions";
+import { useGridContext } from "./grid-context";
+import { GridModel } from "./grid-model/gridModelUtils";
+import * as Action from "./grid-model/gridModelActions";
 
 import ColumnGroupContext from "./column-group-context";
 import { SortType } from "./constants";
@@ -33,7 +32,7 @@ const ColumnGroupHeader = React.memo(
     const columnGroupHeader = useRef(null);
     const scrollingHeaderWrapper = useRef(null);
     const { custom, dispatchGridAction, dispatchGridModelAction, gridModel } =
-      useContext(GridContext);
+      useGridContext();
 
     const sortIndicator = (sort, column) => {
       if (!sort) {

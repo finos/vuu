@@ -1,17 +1,15 @@
-import { DataSourceRow, SubscribeCallback } from "@finos/vuu-data";
-import { VuuDataRow, VuuRange } from "../../vuu-protocol-types";
-import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-
-import GridContext from "./grid-context";
+  ConfigChangeHandler,
+  DataSourceRow,
+  SubscribeCallback,
+} from "@finos/vuu-data";
+import { VuuDataRow, VuuRange } from "../../../vuu-protocol-types";
+import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useViewContext } from "@finos/vuu-layout";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { useGridContext } from "../grid-context";
+import { GridModelType } from "../grid-model/gridModelTypes";
 
 const { RENDER_IDX } = metadataKeys;
 
@@ -30,14 +28,14 @@ type SubscriptionDetails = {
 // }
 
 //TODO allow subscription details to be set before subscribe call
-export default function useDataSource(
+export function useDataSource(
   subscriptionDetails: SubscriptionDetails,
-  gridModel,
-  onConfigChange,
+  gridModel: GridModelType,
+  onConfigChange: ConfigChangeHandler,
   onSizeChange
 ) {
   const { dataSource, dispatchGridAction, dispatchGridModelAction } =
-    useContext(GridContext);
+    useGridContext();
   const { title } = useViewContext();
   const [, forceUpdate] = useState(null);
   const isMounted = useRef(true);
@@ -75,12 +73,12 @@ export default function useDataSource(
   const datasourceMessageHandler: SubscribeCallback = useCallback(
     (message) => {
       if (message.type === "subscribed") {
-        dispatchGridModelAction({
+        dispatchGridModelAction?.({
           type: "set-available-columns",
           columns: message.columns,
         });
         if (message.filter) {
-          dispatchGridModelAction({ type: "filter", filter: message.filter });
+          dispatchGridModelAction?.({ type: "filter", filter: message.filter });
         }
       } else if (message.type === "viewport-update") {
         const sizeChanged = message.size !== undefined;
@@ -97,22 +95,22 @@ export default function useDataSource(
         }
       } else if (message.type === "sort") {
         const { sort } = message;
-        dispatchGridModelAction(message);
+        dispatchGridModelAction?.(message);
         onConfigChange({ sort });
       } else if (message.type === "aggregate") {
         const { aggregations } = message;
         console.log(
           `[useDataSource] aggregations ACKED ${JSON.stringify(aggregations)}`
         );
-        dispatchGridModelAction({ type: "set-aggregations", aggregations });
+        dispatchGridModelAction?.({ type: "set-aggregations", aggregations });
         onConfigChange({ aggregations });
       } else if (message.type === "groupBy") {
         const { groupBy } = message;
-        dispatchGridModelAction({ type: "group", groupBy });
+        dispatchGridModelAction?.({ type: "group", groupBy });
         onConfigChange({ group: groupBy });
       } else if (message.type === "filter") {
         const { filter, filterQuery } = message;
-        dispatchGridModelAction(message);
+        dispatchGridModelAction?.(message);
         onConfigChange({ filter, filterQuery });
         dataSource.emit("filter", filter);
       } else {

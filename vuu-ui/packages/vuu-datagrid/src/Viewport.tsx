@@ -1,4 +1,4 @@
-import React, {
+import {
   createRef,
   forwardRef,
   useCallback,
@@ -7,18 +7,20 @@ import React, {
   useLayoutEffect,
   useRef,
   useMemo,
+  ForwardedRef,
 } from "react";
 import { useContextMenu } from "@finos/ui-controls";
 import { useEffectSkipFirst } from "./utils";
 import { metadataKeys } from "@finos/vuu-utils";
 import useScroll from "./use-scroll";
 import useUpdate from "./use-update";
-import useDataSource from "./use-data-source";
-import { getColumnGroupColumnIdx } from "./grid-model/grid-model-utils.js";
+import { useDataSource } from "./grid-hooks";
+import { getColumnGroupColumnIdx } from "./grid-model/gridModelUtils.js";
 
-import Canvas from "./canvas";
+import { Canvas } from "./canvas";
 import ColumnBearer from "./column-bearer";
 import InsertIndicator from "./insert-indicator";
+import { ViewportProps } from "./gridTypes";
 
 const DEFAULT_TOGGLE_STRATEGY = {};
 
@@ -42,8 +44,7 @@ const countSelectedRows = (data) => {
   return count;
 };
 
-/** @type {Viewport} */
-const Viewport = forwardRef(function Viewport(
+export const Viewport = forwardRef(function Viewport(
   {
     columnDragData,
     gridModel,
@@ -52,8 +53,8 @@ const Viewport = forwardRef(function Viewport(
     onConfigChange,
     onChangeRange,
     onRowClick,
-  },
-  ref
+  }: ViewportProps,
+  forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const viewportEl = useRef(null);
   const scrollingEl = useRef(null);
@@ -266,7 +267,7 @@ const Viewport = forwardRef(function Viewport(
     showContextMenu(e, "grid", contextMenuOptions);
   };
 
-  useImperativeHandle(ref, () => ({
+  useImperativeHandle(forwardedRef, () => ({
     beginHorizontalScroll: () => {
       if (!showColumnBearer.current) {
         const header =
@@ -414,5 +415,3 @@ const Viewport = forwardRef(function Viewport(
     </>
   );
 });
-
-export default Viewport;

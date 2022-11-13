@@ -9,12 +9,19 @@ import {
   extractGroupColumn,
   GridModel,
   splitKeys,
-} from "./grid-model-utils";
+} from "./gridModelUtils";
+import {
+  GridModelType,
+  GridModelReducerInitializerTuple,
+  ColumnGroupType,
+  KeyedColumnDescriptor,
+} from "./gridModelTypes";
 
-import * as Action from "./grid-model-actions";
+import * as Action from "./gridModelActions";
+import { ColumnDescriptor } from "../gridTypes";
 
 const DEFAULT_COLUMN_TYPE = { name: "string" };
-const CHECKBOX_COLUMN = {
+const CHECKBOX_COLUMN: KeyedColumnDescriptor = {
   name: "",
   key: metadataKeys.SELECTED,
   width: 25,
@@ -28,7 +35,7 @@ const CHECKBOX_COLUMN = {
   },
 };
 
-const LINE_NUMBER_COLUMN = {
+const LINE_NUMBER_COLUMN: KeyedColumnDescriptor = {
   className: "vuuLineNumber",
   flex: 0,
   isSystemColumn: true,
@@ -41,15 +48,13 @@ const LINE_NUMBER_COLUMN = {
 const RESIZING = { resizing: true, flex: 0 };
 const NOT_RESIZING = { resizing: false };
 
-const GridModelReducer = (state, action) => {
+export const GridModelReducer = (state: GridModelType, action) => {
   // console.log(
   //   `%cGridModelReducer ${action.type}`,
   //   "color:red;font-weight:bold;"
   // );
-  // @ts-ignore
   return reducerActionHandlers[action.type](state, action);
 };
-export default GridModelReducer;
 
 const reducerActionHandlers = {
   resize: resizeGrid,
@@ -67,7 +72,13 @@ const reducerActionHandlers = {
   [Action.ROW_HEIGHT]: setRowHeight,
 };
 
-export const initModel = ([gridProps, size, custom]) => {
+export type initModelProps = [];
+
+export const initModel = ([
+  gridProps,
+  size,
+  custom,
+]: GridModelReducerInitializerTuple): GridModelType => {
   const {
     aggregations = [],
     cellSelectionModel,
@@ -106,7 +117,7 @@ export const initModel = ([gridProps, size, custom]) => {
     inlineHeader: { height: customInlineHeaderHeight },
   } = custom;
 
-  const state = {
+  const state: GridModelType = {
     aggregations,
     assignedHeight,
     assignedWidth,
@@ -142,11 +153,11 @@ export const initModel = ([gridProps, size, custom]) => {
   if (isDefaultInitialSize) {
     return state;
   } else {
-    return buildColumnsAndApplyMeasurements(state, height);
+    return buildColumnsAndApplyMeasurements(state);
   }
 };
 
-function buildColumnsAndApplyMeasurements(state) {
+function buildColumnsAndApplyMeasurements(state: GridModelType): GridModelType {
   const {
     columns,
     customFooterHeight,
@@ -505,7 +516,7 @@ function setRowHeight(state, { rowHeight }) {
 
 const NO_COLUMN_GROUPS = { headingDepth: 0 };
 
-function buildColumnGroups(state, columns) {
+function buildColumnGroups(state: GridModelType, columns: ColumnDescriptor[]) {
   if (!columns) {
     return NO_COLUMN_GROUPS;
   }
@@ -520,11 +531,11 @@ function buildColumnGroups(state, columns) {
   } = state;
   let column = null;
   let columnGroup = null;
-  let columnGroups = [];
-  let gridContentWidth = gridWidth - 17; // how do we know about vertical scrollbar
+  const columnGroups: ColumnGroupType[] = [];
+  const gridContentWidth = gridWidth - 17; // how do we know about vertical scrollbar
   let availableWidth = gridContentWidth;
 
-  const preCols =
+  const preCols: ColumnDescriptor[] =
     selectionModel === "checkbox"
       ? [CHECKBOX_COLUMN]
       : showLineNumbers
@@ -533,12 +544,8 @@ function buildColumnGroups(state, columns) {
 
   const headingDepth = getMaxHeadingDepth(columns);
   // TODO separate keys from columns
-  const keyedColumns = assignKeysToColumns(
-    columns,
-    defaultColumnWidth,
-    showLineNumbers
-  );
-  const columnNames = keyedColumns.map((col) => col.name);
+  const keyedColumns = assignKeysToColumns(columns, defaultColumnWidth);
+  const columnNames: string[] = keyedColumns.map((col) => col.name);
 
   const [groupColumn, nonGroupedColumns] = extractGroupColumn(
     keyedColumns,
@@ -836,7 +843,10 @@ function updateGroupHeadings(
   return { columnGroups, updatedGroup };
 }
 
-function getHeadingPosition(groups, column) {
+function getHeadingPosition(
+  groups: ColumnGroupType[],
+  column: ColumnDescriptor
+) {
   for (let i = 0; i < groups.length; i++) {
     const { headings = null } = groups[i];
     for (let j = 0; headings && j < headings.length; j++) {
@@ -851,7 +861,7 @@ function getHeadingPosition(groups, column) {
   return { groupIdx: -1, groupHeadingIdx: -1, headingColIdx: -1 };
 }
 
-function getColumnPositions(groups, keys) {
+function getColumnPositions(groups: ColumnGroupType[], keys: string[]) {
   for (let i = 0; i < groups.length; i++) {
     const indices = columnKeysToIndices(keys, groups[i].columns);
     if (indices.every((key) => key !== -1)) {
@@ -861,7 +871,7 @@ function getColumnPositions(groups, keys) {
   return { groupIdx: -1, groupColIdx: [] };
 }
 
-function getColumnAdjustments(pos, numCols, diff) {
+function getColumnAdjustments(pos: number, numCols: number, diff: number) {
   const sign = diff < 0 ? -1 : 1;
   const absDiff = diff * sign;
   const numSlotsToFill = Math.min(absDiff, numCols);
@@ -881,9 +891,8 @@ function getColumnAdjustments(pos, numCols, diff) {
   return [pos, results];
 }
 
-function endsWith(string, subString) {
-  const str = typeof string === "string" ? string : string.toString();
-
+function endsWith(value: string | number, subString: string) {
+  const str = typeof value === "string" ? value : value.toString();
   return subString.length >= str.length
     ? false
     : str.slice(-subString.length) === subString;

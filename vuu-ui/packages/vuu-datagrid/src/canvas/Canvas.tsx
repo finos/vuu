@@ -9,13 +9,13 @@ import React, {
 } from "react";
 import cx from "classnames";
 import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
-import GridContext from "./grid-context";
-import ColumnGroupHeader from "./column-group-header";
-import useScroll from "./use-scroll";
-import useUpdate from "./use-update";
+import { useGridContext } from "../grid-context";
+import ColumnGroupHeader from "../column-group-header";
+import useScroll from "../use-scroll";
+import useUpdate from "../use-update";
 import canvasReducer, { initCanvasReducer } from "./canvas-reducer";
-import Row from "./grid-row";
-import { getColumnOffset } from "./grid-model/grid-model-utils";
+import Row from "../grid-row";
+import { getColumnOffset } from "../grid-model/gridModelUtils";
 
 const { IDX, RENDER_IDX, SELECTED } = metadataKeys;
 // const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
@@ -23,7 +23,7 @@ const { IDX, RENDER_IDX, SELECTED } = metadataKeys;
 const classBase = "vuuDataGridCanvas";
 
 /** @type {Canvas} */
-const Canvas = forwardRef(function Canvas(
+export const Canvas = forwardRef(function Canvas(
   {
     columnGroupIdx,
     contentHeight,
@@ -40,7 +40,7 @@ const Canvas = forwardRef(function Canvas(
   const canvasEl = useRef(null);
   const contentEl = useRef(null);
   const columnGroupHeader = useRef(null);
-  const { dispatchGridAction } = useContext(GridContext);
+  const { dispatchGridAction } = useGridContext();
   const columnGroup = gridModel.columnGroups[columnGroupIdx];
   const scrollbarHeightAdjustment = columnGroup.locked
     ? horizontalScrollbarHeight
@@ -236,7 +236,7 @@ const Canvas = forwardRef(function Canvas(
       if (scrollEvent === "scroll") {
         dispatchCanvasAction({ type: "scroll-left", scrollLeft });
       } else if (scrollEvent === "scroll-start") {
-        dispatchGridAction({ type: "scroll-start-horizontal", scrollLeft });
+        dispatchGridAction?.({ type: "scroll-start-horizontal", scrollLeft });
         columnGroupHeader.current.beginHorizontalScroll(
           columnGroup.contentWidth
         );
@@ -248,7 +248,7 @@ const Canvas = forwardRef(function Canvas(
           scrollLeft,
           columnGroup.width
         );
-        dispatchGridAction({ type: "scroll-end-horizontal", scrollLeft });
+        dispatchGridAction?.({ type: "scroll-end-horizontal", scrollLeft });
       }
     },
     [
@@ -270,7 +270,7 @@ const Canvas = forwardRef(function Canvas(
         onRowClick(row);
       }
 
-      dispatchGridAction({
+      dispatchGridAction?.({
         type: "selection",
         idx,
         row,
@@ -342,8 +342,6 @@ const Canvas = forwardRef(function Canvas(
     </div>
   );
 });
-
-export default Canvas;
 
 const getHeaderCells = (canvasEl) =>
   Array.from(canvasEl.current.querySelectorAll("[role='columnheader']"));

@@ -1,58 +1,45 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-
-import { useEffectSkipFirst, useResizeObserver } from "../utils";
-import useAdornments from "../use-adornments";
-import modelReducer, { initModel } from "./grid-model-reducer";
-import { ROW_HEIGHT } from "./grid-model-actions";
+import { useAdornments } from "../grid-adornments";
+import { useEffectSkipFirst, useResizeObserver, ResizeHandler } from "../utils";
+import { ROW_HEIGHT } from "./gridModelActions";
+import { GridModelReducer, initModel } from "./GridModelReducer";
+import { GridModelHookProps, GridModelHookResult } from "./gridModelTypes";
+import { useSize } from "./useSize";
 
 const ClientWidthHeight = ["clientHeight", "clientWidth"];
 
-const sizeOrUndefined = (value) =>
-  value == null || value === "auto" ? undefined : value;
-
-const useSize = (style, height, width) => {
-  const [size, _setSize] = useState({
-    height: sizeOrUndefined(style?.height ?? height),
-    measuredHeight: null,
-    width: sizeOrUndefined(style?.width ?? width),
-    measuredWidth: null,
-  });
-
-  const setSize = useCallback(
-    ({ height, width }) => {
-      _setSize((state) => ({
-        ...state,
-        measuredHeight: height,
-        measuredWidth: width,
-      }));
-    },
-    [_setSize]
-  );
-
-  return [size, setSize];
-};
-
 export const useGridModel = ({
+  children,
   dataSource: dataSourceProp,
   style,
   height,
   width,
   ...props
-}) => {
+}: GridModelHookProps): GridModelHookResult => {
   const rootRef = useRef(null);
   const firstRender = useRef(true);
   const [dataSource, setDataSource] = useState(dataSourceProp);
 
-  const custom = useAdornments(props);
+  const custom = useAdornments(children);
 
   const [size, setSize] = useSize(style, height, width);
 
-  const onResize = useCallback(
-    ({ clientWidth, clientHeight }) => {
-      setSize({
-        width: Math.floor(clientWidth),
-        height: Math.floor(clientHeight),
-      });
+  const onResize: ResizeHandler = useCallback(
+    ({
+      clientWidth,
+      clientHeight,
+    }: {
+      clientWidth?: number;
+      clientHeight?: number;
+    }) => {
+      // Note: we know here that these values will be returned as numbers, we can enforce
+      // this by typing useResizeObserver with generics
+      if (typeof clientWidth === "number" && typeof clientHeight === "number") {
+        setSize({
+          width: Math.floor(clientWidth),
+          height: Math.floor(clientHeight),
+        });
+      }
     },
     [setSize]
   );
@@ -65,7 +52,7 @@ export const useGridModel = ({
   );
 
   const [gridModel, dispatchGridModel] = useReducer(
-    modelReducer,
+    GridModelReducer,
     [props, size, custom],
     initModel
   );
@@ -85,7 +72,7 @@ export const useGridModel = ({
   // },[gridModel.columnGroups])
 
   useEffect(() => {
-    if (firstRender.current) {
+    if (firstRender.current && rootRef.current) {
       if (props.rowHeight === undefined) {
         const rowHeight = parseInt(
           getComputedStyle(rootRef.current).getPropertyValue(
