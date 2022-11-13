@@ -418,7 +418,7 @@
                         <argument>-Dvuu.keyPath=src/main/resources/certs/key.pem</argument>
                         <argument>-Dvuu.certPath=src/main/resources/certs/cert.pem</argument>
                         <argument>-Dlogback.configurationFile=logback-netty.xml</argument>
-                        <argument>io.venuu.vuu.SimulMain</argument>
+                        <argument>org.finos.vuu.SimulMain</argument>
                     </arguments>
                 </configuration>
             </plugin>
