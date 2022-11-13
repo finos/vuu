@@ -14,7 +14,7 @@
     <artifactId>vuu</artifactId>
     <name>vuu</name>
     <description>vuu</description>
-    <inceptionYear>2014</inceptionYear>
+    <inceptionYear>2015</inceptionYear>
     <packaging>jar</packaging>
 
     <dependencies>

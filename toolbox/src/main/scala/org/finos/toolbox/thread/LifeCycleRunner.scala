@@ -1,0 +1,41 @@
+package org.finos.toolbox.thread
+
+import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
+import org.finos.toolbox.time.Clock
+
+class LifeCycleRunner(name: String, func: () => Unit, minCycleTime: Long = 100)(implicit lifecycle: LifecycleContainer, timeProvider: Clock) extends Runner(name, func, minCycleTime) with LifecycleEnabled {
+
+  lifecycle(this)
+
+  override def doStart(): Unit = runInBackground()
+  override def doStop(): Unit = stop()
+  override def doInitialize(): Unit = {}
+  override def doDestroy(): Unit = {}
+
+  override val lifecycleId: String = "lifeCycleRunner-" + name
+
+  override def toString: String = name
+}
+
+/**
+  * Lifecycle runner that runs once then exits, it is also lifecycle aware, so will exit if it is interrupted.
+  *
+  * @param name
+  * @param func
+  * @param minCycleTime
+  * @param lifecycle
+  * @param timeProvider
+  */
+class RunOnceLifeCycleRunner(name: String, func: () => Unit, minCycleTime: Long = 100)(implicit lifecycle: LifecycleContainer, timeProvider: Clock) extends Runner(name, func, minCycleTime, runOnce = true) with LifecycleEnabled {
+
+  lifecycle(this)
+
+  override def doStart(): Unit = runInBackground()
+  override def doStop(): Unit = stop()
+  override def doInitialize(): Unit = {}
+  override def doDestroy(): Unit = {}
+
+  override val lifecycleId: String = "runOnceLifeCycleRunner-" + name
+
+}
+
