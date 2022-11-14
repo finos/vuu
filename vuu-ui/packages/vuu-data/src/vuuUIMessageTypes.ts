@@ -28,15 +28,6 @@ export const isConnectionStatusMessage = (
 ): msg is ConnectionStatusMessage =>
   (msg as ConnectionStatusMessage).type === "connection-status";
 
-type RowIndex = number;
-type RenderKey = string;
-type IsLeaf = boolean;
-type IsExpanded = boolean;
-type Depth = number;
-type ChildCount = number;
-type RowKey = string;
-type IsSelected = boolean;
-
 export interface ServerProxySubscribeMessage {
   aggregations: VuuAggregation[];
   bufferSize?: number;
@@ -47,6 +38,7 @@ export interface ServerProxySubscribeMessage {
   range: VuuRange;
   sort: any;
   table: VuuTable;
+  title?: string;
   viewport: string;
   visualLink: any;
 }

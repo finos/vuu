@@ -163,12 +163,13 @@ export interface SubscribeProps {
   viewport?: string;
   table?: VuuTable;
   columns?: string[];
-  aggregations?: any;
-  range?: any;
+  aggregations?: VuuAggregation[];
+  range?: VuuRange;
   sort?: any;
   groupBy?: any;
   filter?: Filter;
   filterQuery?: string;
+  title?: string;
 }
 
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;

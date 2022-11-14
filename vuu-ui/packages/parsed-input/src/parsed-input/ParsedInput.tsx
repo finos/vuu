@@ -96,7 +96,7 @@ export const ParsedInput = forwardRef(function ParsedInput(
     (text: string) => {
       setText(text);
     },
-    [insertSymbol, setCurrentText, setText]
+    [setText]
   );
 
   const clear = useCallback(() => {
@@ -128,7 +128,7 @@ export const ParsedInput = forwardRef(function ParsedInput(
       acceptSuggestion?.(evt, selectedSuggestions, insertSymbol);
       setSelected(selectedSuggestions, false);
     },
-    [acceptSuggestion, insertSymbol]
+    [acceptSuggestion, insertSymbol, setSelected]
   );
 
   const handleSingleSuggestionSelection: SelectionChangeHandler<

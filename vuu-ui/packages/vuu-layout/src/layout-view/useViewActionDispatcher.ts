@@ -35,13 +35,13 @@ export const useViewActionDispatcher = (
       saveSessionState(id, "contributions", updatedContributions);
       setContributions(updatedContributions);
     },
-    [contributions]
+    [contributions, id, saveSessionState]
   );
 
   const clearContributions = useCallback(() => {
     purgeSessionState(id, "contributions");
     setContributions([]);
-  }, [purgeSessionState]);
+  }, [id, purgeSessionState]);
 
   const handleMouseDown = useCallback(
     async (evt, index, preDragActivity): Promise<boolean> => {
@@ -94,7 +94,13 @@ export const useViewActionDispatcher = (
         }
       }
     },
-    [handleMouseDown, dispatch, updateContributions, viewPath]
+    [
+      dispatch,
+      viewPath,
+      handleMouseDown,
+      updateContributions,
+      clearContributions,
+    ]
   );
 
   return [dispatchAction, contributions];

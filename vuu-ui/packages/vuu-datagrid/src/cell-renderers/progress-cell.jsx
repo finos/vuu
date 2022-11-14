@@ -14,14 +14,22 @@ const ProgressCell = React.memo(function ProgressCell({
   const value = row[column.key];
   const associatedValue = row[columnMap[associatedField]];
   const percentage =
-    value === 0 ? 0 : Math.round((value / associatedValue) * 100);
+    value === 0
+      ? 0
+      : Math.min(Math.round((value / associatedValue) * 100), 100);
+
+  const showProgress = isFinite(percentage);
 
   return (
     <div
-      className={cx("vuuDataGridCell", "vuuProgressCell")}
+      className={cx("vuuDataGridCell", { vuuProgressCell: showProgress })}
       style={{ marginLeft: column.marginLeft, width }}
     >
-      <LinearProgress size="small" value={percentage} />
+      {showProgress ? (
+        <LinearProgress size="small" value={percentage} />
+      ) : (
+        value
+      )}
     </div>
   );
 });
