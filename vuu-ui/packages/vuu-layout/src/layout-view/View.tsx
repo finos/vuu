@@ -1,6 +1,6 @@
 import { useForkRef, useIdMemo as useId } from "@heswell/uitk-core";
 import cx from "classnames";
-import React, { ForwardedRef, forwardRef, useRef } from "react";
+import React, { ForwardedRef, forwardRef, useMemo, useRef } from "react";
 import { Header } from "../layout-header/Header";
 import { registerComponent } from "../registry/ComponentRegistry";
 import { ViewContext } from "./ViewContext";
@@ -46,6 +46,7 @@ const View = forwardRef(function View(
     load,
     loadSession,
     onConfigChange,
+    onEditTitle,
     purge,
     restoredState,
     save,
@@ -74,6 +75,33 @@ const View = forwardRef(function View(
     }
   };
 
+  const viewContextValue = useMemo(
+    () => ({
+      dispatch: dispatchViewAction,
+      id,
+      path,
+      title,
+      load,
+      loadSession,
+      onConfigChange,
+      purge,
+      save,
+      saveSession,
+    }),
+    [
+      dispatchViewAction,
+      id,
+      load,
+      loadSession,
+      onConfigChange,
+      path,
+      purge,
+      save,
+      saveSession,
+      title,
+    ]
+  );
+
   const headerProps = typeof header === "object" ? header : {};
 
   return (
@@ -90,20 +118,7 @@ const View = forwardRef(function View(
       style={style}
       tabIndex={-1}
     >
-      <ViewContext.Provider
-        value={{
-          dispatch: dispatchViewAction,
-          id,
-          path,
-          title,
-          load,
-          loadSession,
-          onConfigChange,
-          purge,
-          save,
-          saveSession,
-        }}
-      >
+      <ViewContext.Provider value={viewContextValue}>
         {header ? (
           <Header
             {...headerProps}
@@ -111,6 +126,7 @@ const View = forwardRef(function View(
             contributions={contributions}
             expanded={expanded}
             closeable={closeable}
+            onEditTitle={onEditTitle}
             orientation={/*collapsed || */ orientation}
             tearOut={tearOut}
             // title={`${title} v${version} #${id}`}

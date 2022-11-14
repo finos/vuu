@@ -40,6 +40,15 @@ export const useView = ({
     [loadState, titleProp]
   );
 
+  const onEditTitle = useCallback(
+    (title: string) => {
+      if (path) {
+        layoutDispatch({ type: "set-title", path, title });
+      }
+    },
+    [layoutDispatch, path]
+  );
+
   const restoredState = useMemo(() => loadState(id), [id, loadState]);
 
   const load = useCallback(
@@ -85,6 +94,7 @@ export const useView = ({
     load,
     loadSession,
     onConfigChange,
+    onEditTitle,
     purge,
     restoredState,
     save,

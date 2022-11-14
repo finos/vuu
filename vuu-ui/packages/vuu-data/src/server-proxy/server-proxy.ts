@@ -39,6 +39,10 @@ export type PostMessageToClientCallback = (
   message: VuuUIMessageIn | DataSourceCallbackMessage
 ) => void;
 
+export type LinkWithLabel = VuuLink & {
+  label?: string;
+};
+
 // TEST_DATA_COLLECTION
 // import { saveTestData } from '../../test-data-collection';
 
@@ -59,6 +63,24 @@ const getRPCType = (
     throw Error("No RPC command for ${msgType} / ${context}");
   }
 };
+
+function addLabelsToLinks(
+  links: VuuLink[],
+  viewports: Map<string, Viewport>
+): LinkWithLabel[] {
+  return links.map<LinkWithLabel>((link) => {
+    const { parentVpId } = link;
+    const viewport = viewports.get(parentVpId);
+    if (viewport && viewport.title) {
+      return {
+        ...link,
+        label: viewport.title,
+      };
+    } else {
+      return link;
+    }
+  });
+}
 
 interface PendingLogin {
   resolve: (value: string) => void; // TODO
@@ -646,7 +668,9 @@ export class ServerProxy {
           const links = this.getActiveLinks(body.links);
           const viewport = this.viewports.get(body.vpId);
           if (links.length && viewport) {
-            const [clientMessage, pendingLink] = viewport.setLinks(links);
+            const linksWithLabels = addLabelsToLinks(links, this.viewports);
+            const [clientMessage, pendingLink] =
+              viewport.setLinks(linksWithLabels);
             this.postMessageToClient(clientMessage);
             if (pendingLink) {
               const { colName, parentViewportId, parentColName } = pendingLink;

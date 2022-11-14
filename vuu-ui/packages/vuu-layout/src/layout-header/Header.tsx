@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import { Contribution, useViewDispatch } from "../layout-view";
+
 import {
   EditableLabel,
   Toolbar,
@@ -24,6 +25,7 @@ export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
   contributions?: Contribution[];
   expanded?: boolean;
   closeable?: boolean;
+  onEditTitle: (value: string) => void;
   orientation?: "horizontal" | "vertical";
   tearOut?: boolean;
 }
@@ -34,6 +36,7 @@ export const Header = ({
   collapsed,
   expanded,
   closeable,
+  onEditTitle,
   orientation: orientationProp = "horizontal",
   style,
   tearOut,
@@ -43,13 +46,13 @@ export const Header = ({
   const [value, setValue] = useState<string>(title);
   const [editing, setEditing] = useState<boolean>(false);
 
-  const layoutDispatch = useViewDispatch();
+  const viewDispatch = useViewDispatch();
   const handleAction = (
     evt: MouseEvent,
     actionId: "maximize" | "restore" | "minimize" | "tearout"
-  ) => layoutDispatch?.({ type: actionId }, evt);
+  ) => viewDispatch?.({ type: actionId }, evt);
   const handleClose = (evt: MouseEvent) =>
-    layoutDispatch?.({ type: "remove" }, evt);
+    viewDispatch?.({ type: "remove" }, evt);
   const classBase = "vuuHeader";
 
   const handleTitleMouseDown = (e: MouseEvent) => {
@@ -90,6 +93,7 @@ export const Header = ({
       setValue(originalValue);
     } else if (finalValue !== originalValue) {
       setValue(finalValue);
+      onEditTitle?.(finalValue);
     }
     if (allowDeactivation === false) {
       labelFieldRef.current?.focus();
@@ -97,7 +101,7 @@ export const Header = ({
   };
 
   const handleMouseDown = (e: MouseEvent) => {
-    layoutDispatch?.({ type: "mousedown" }, e);
+    viewDispatch?.({ type: "mousedown" }, e);
   };
 
   const toolbarItems: ReactElement[] = [];

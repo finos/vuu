@@ -208,24 +208,35 @@ export class FilterVisitor extends AbstractParseTreeVisitor<any> {
       case FilterParser.RBRACK:
       case FilterParser.AS:
         return EMPTY;
-      default:
-        console.log(`visit ID`);
+      default: {
+        let text = ctx.text;
         if (
           this.substitutions &&
           this.substitutions.length > 0 &&
           this.pattern.test(ctx.text)
         ) {
           const { startIndex, stopIndex } = ctx.symbol;
-          const {
-            substitutedChar,
-            sourceChar,
-            sourceCharUnderlying = sourceChar,
-          } = this.substitutions.shift() as CharacterSubstitution;
-          const regexp = new RegExp(`${substitutedChar}`);
-          return `"${ctx.text.replace(regexp, sourceCharUnderlying)}"`;
-        } else {
-          return ctx.text;
+          let QUOTE = '"';
+          while (this.substitutions.length) {
+            const {
+              index,
+              substitutedChar,
+              sourceChar,
+              sourceCharUnderlying = sourceChar,
+            } = this.substitutions[0] as CharacterSubstitution;
+            const regexp = new RegExp(`${substitutedChar}`);
+            if (index >= startIndex && index <= stopIndex) {
+              this.substitutions.shift();
+              text = `${QUOTE}${text.replace(
+                regexp,
+                sourceCharUnderlying
+              )}${QUOTE}`;
+              QUOTE = "";
+            }
+          }
         }
+        return text;
+      }
     }
   }
 }

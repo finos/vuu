@@ -11,10 +11,8 @@ import {
   ClientToServerEnable,
   ClientToServerSelection,
   ClientToServerViewPortRange,
-  VuuColumns,
   VuuMenu,
   VuuGroupBy,
-  VuuLink,
   VuuRow,
   VuuTable,
   VuuAggregation,
@@ -32,6 +30,7 @@ import {
   DataSourceRow,
   DataSourceRowPredicate,
 } from "../data-source";
+import { LinkWithLabel } from "./server-proxy";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
@@ -117,36 +116,39 @@ export class Viewport {
   public status: "" | "subscribed" = "";
   public suspended = false;
   public table: VuuTable;
+  public title: string | undefined;
 
   constructor({
-    viewport,
-    table,
     aggregations,
-    columns,
-    range,
     bufferSize = 50,
+    columns,
     filter = "",
     filterQuery = "",
-    sort = [],
     groupBy = [],
+    table,
+    range,
+    sort = [],
+    title,
+    viewport,
     visualLink,
   }: ServerProxySubscribeMessage) {
-    this.clientViewportId = viewport;
-    this.table = table;
     this.aggregations = aggregations;
-    this.columns = columns;
-    this.clientRange = range;
     this.bufferSize = bufferSize;
-    this.sort = {
-      sortDefs: sort,
-    };
-    this.groupBy = groupBy;
+    this.clientRange = range;
+    this.clientViewportId = viewport;
+    this.columns = columns;
     this.filterSpec = {
       filter: filterQuery,
     };
     this.filter = filter;
+    this.groupBy = groupBy;
     this.keys = new KeySet(range);
     this.pendingLinkedParent = visualLink;
+    this.table = table;
+    this.sort = {
+      sortDefs: sort,
+    };
+    this.title = title;
   }
 
   get hasUpdatesToProcess() {
@@ -198,21 +200,21 @@ export class Viewport {
       this.bufferSize
     );
 
-    // console.log(
-    //   `%cViewport subscribed
-    //     clientVpId: ${this.clientViewportId}
-    //     serverVpId: ${this.serverViewportId}
-    //     table: ${this.table}
-    //     aggregations: ${JSON.stringify(aggregations)}
-    //     columns: ${columns.join(",")}
-    //     range: ${JSON.stringify(range)}
-    //     sort: ${JSON.stringify(sort)}
-    //     groupBy: ${JSON.stringify(groupBy)}
-    //     filterSpec: ${JSON.stringify(filterSpec)}
-    //     bufferSize: ${this.bufferSize}
-    //   `,
-    //   "color: blue"
-    // );
+    console.log(
+      `%cViewport subscribed
+        clientVpId: ${this.clientViewportId}
+        serverVpId: ${this.serverViewportId}
+        table: ${this.table}
+        aggregations: ${JSON.stringify(aggregations)}
+        columns: ${columns.join(",")}
+        range: ${JSON.stringify(range)}
+        sort: ${JSON.stringify(sort)}
+        groupBy: ${JSON.stringify(groupBy)}
+        filterSpec: ${JSON.stringify(filterSpec)}
+        bufferSize: ${this.bufferSize}
+      `,
+      "color: blue"
+    );
 
     return {
       type: "subscribed",
@@ -370,8 +372,7 @@ export class Viewport {
     }
   }
 
-  setLinks(links: VuuLink[]) {
-    this.links = links;
+  setLinks(links: LinkWithLabel[]) {
     return [
       {
         type: "VP_VISUAL_LINKS_RESP",

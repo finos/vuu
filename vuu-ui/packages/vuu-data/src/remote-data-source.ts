@@ -104,6 +104,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       groupBy = this.initialGroup,
       filter = this.initialFilter,
       filterQuery = this.initialFilterQuery,
+      title,
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
@@ -140,16 +141,17 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     const { bufferSize } = this;
     this.server?.subscribe(
       {
-        viewport,
-        table,
-        columns,
         aggregations,
-        range: this.initialRange,
-        sort,
-        groupBy: this.initialGroup,
+        bufferSize,
+        columns,
         filter,
         filterQuery,
-        bufferSize,
+        groupBy: this.initialGroup,
+        viewport,
+        table,
+        range: this.initialRange,
+        sort,
+        title,
         visualLink: this.visualLink,
       },
       this.handleMessageFromServer

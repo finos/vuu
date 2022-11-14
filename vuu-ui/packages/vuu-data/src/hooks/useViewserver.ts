@@ -1,12 +1,14 @@
+//TODO split this hook into functionality which is specific to a View instance and functionality which isn't
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SimpleStore } from "@finos/vuu-utils";
 import { useServerConnection } from "./useServerConnection";
-import { columnMetaData as columnConfig } from "./columnMetaData";
+import { getColumnConfig } from "./columnMetaData";
 import {
   DataSource,
   DataSourceMenusMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
+  DataSourceVisualLinksMessage,
 } from "../data-source";
 import {
   ClientToServerRpcCall,
@@ -20,6 +22,8 @@ import {
 import { RpcResponse, TableMeta } from "../vuuUIMessageTypes";
 import { AnyTxtRecord } from "dns";
 import { ContextMenuLocation } from "@finos/vuu-datagrid/src/context-menu";
+import { useViewContext } from "@finos/vuu-layout";
+import { LinkWithLabel } from "../server-proxy/server-proxy";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
 export const RpcCall = "RPC_CALL";
@@ -88,11 +92,12 @@ const createSchemaFromTableMetadata = ({
 }: TableMeta): TableSchema => {
   return {
     table,
-    columns: columns.map((col, idx) =>
-      columnConfig[col]
-        ? { ...columnConfig[col], serverDataType: dataTypes[idx] }
-        : { name: col, serverDataType: dataTypes[idx] }
-    ),
+    columns: columns.map((col, idx) => {
+      const columnConfig = getColumnConfig(table.table, col);
+      return columnConfig
+        ? { ...columnConfig, serverDataType: dataTypes[idx] }
+        : { name: col, serverDataType: dataTypes[idx] };
+    }),
   };
 };
 
@@ -112,22 +117,19 @@ export interface ViewServerHookResult {
 }
 
 export interface ViewServerHookProps {
-  loadSession?: () => any;
   onConfigChange?: ConfigChangeHandler;
   onRpcResponse?: (response: RpcResponse) => void;
   rpcServer?: DataSource;
-  saveSession?: (state: any, key: string) => void;
 }
 
 // Either a DataSource or a Connection is acceptable as rpcServer, both support the rpc interface
 export const useViewserver = ({
-  loadSession,
   onConfigChange,
   onRpcResponse,
   rpcServer,
-  saveSession,
 }: ViewServerHookProps = {}): ViewServerHookResult => {
   const [tables, setTables] = useState(tableStore.value);
+  const { load, loadSession, saveSession } = useViewContext();
 
   // IF we're passed in an rpcServer, whether its a dataSource or connection,
   // why do we need to get server here ?
@@ -137,7 +139,6 @@ export const useViewserver = ({
     [loadSession]
   );
   const contextMenu = useRef(contextMenuOptions);
-  const visualLinks = useRef();
 
   const buildTables = useCallback((schemas: TableMeta[]) => {
     const newTables: { [key: string]: TableSchema } = {};
@@ -191,56 +192,64 @@ export const useViewserver = ({
     [makeRpcCall]
   );
 
-  const buildViewserverMenuOptions = useCallback((location, options) => {
-    console.log(`[useViewServer] buildViewserverMenuOptions`, {
-      location,
-      options,
-    });
-    const { selectedRowCount = 0 } = options;
-    const descriptors = [];
+  const buildViewserverMenuOptions = useCallback(
+    (location, options) => {
+      const { selectedRowCount = 0 } = options;
+      const descriptors = [];
 
-    if (visualLinks.current) {
-      visualLinks.current.forEach((linkDescriptor) => {
-        descriptors.push({
-          label: `Link to ${linkDescriptor.link.toTable}`,
-          action: "link-table",
-          options: linkDescriptor,
+      const visualLinks = loadSession?.("visual-links");
+      const visualLink = load?.("visual-link");
+      if (visualLinks && !visualLink) {
+        visualLinks.forEach((linkDescriptor: LinkWithLabel) => {
+          const { link, label: linkLabel } = linkDescriptor;
+          const label = linkLabel ? linkLabel : link.toTable;
+          descriptors.push({
+            label: `Link to ${label}`,
+            action: "link-table",
+            options: linkDescriptor,
+          });
         });
-      });
-    }
+      }
 
-    if (contextMenu.current) {
-      contextMenu.current.menus
-        .sort(byContext)
-        .forEach(({ name, filter, rpcName, context }) => {
-          if (
-            contextCompatibleWithLocation(location, context, selectedRowCount)
-          ) {
-            descriptors.push({
-              label: name,
-              action: "MENU_RPC_CALL",
-              options: {
-                context,
-                filter,
-                rpcName,
-              },
-            });
-          }
-        });
-    }
+      if (contextMenu.current) {
+        contextMenu.current.menus
+          .sort(byContext)
+          .forEach(({ name, filter, rpcName, context }) => {
+            if (
+              contextCompatibleWithLocation(location, context, selectedRowCount)
+            ) {
+              descriptors.push({
+                label: name,
+                action: "MENU_RPC_CALL",
+                options: {
+                  context,
+                  filter,
+                  rpcName,
+                },
+              });
+            }
+          });
+      }
 
-    return descriptors;
-  }, []);
+      return descriptors;
+    },
+    [loadSession]
+  );
 
   const dispatchGridAction = useCallback(
-    (action: DataSourceVisualLinkCreatedMessage | DataSourceMenusMessage) => {
+    (
+      action:
+        | DataSourceVisualLinkCreatedMessage
+        | DataSourceMenusMessage
+        | DataSourceVisualLinksMessage
+    ) => {
       if (action.type === "VIEW_PORT_MENUS_RESP") {
         console.log(`[useViewserver] VIEW_PORT_MENUS_RESP`);
         contextMenu.current = action.menu;
         saveSession?.(action.menu, "vs-context-menu");
         return true;
       } else if (action.type === "VP_VISUAL_LINKS_RESP") {
-        visualLinks.current = action.links;
+        saveSession?.(action.links, "visual-links");
         return true;
       } else if (
         action.type === "CREATE_VISUAL_LINK_SUCCESS" ||

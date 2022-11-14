@@ -45,7 +45,6 @@ export const Stack = forwardRef(function Stack(
     onTabSelectionChanged,
     showTabs,
     style,
-    toolbarContent,
   }: StackProps,
   ref: ForwardedRef<HTMLDivElement>
 ) {
@@ -85,14 +84,14 @@ export const Stack = forwardRef(function Stack(
 
   const handleExitEditMode = useCallback(
     (
-      oldText: string,
+      _oldText: string,
       newText: string,
-      allowDeactivation: boolean,
+      _allowDeactivation: boolean,
       tabIndex: number
     ) => {
       onTabEdit?.(tabIndex, newText);
     },
-    []
+    [onTabEdit]
   );
 
   const activeChild = () => {

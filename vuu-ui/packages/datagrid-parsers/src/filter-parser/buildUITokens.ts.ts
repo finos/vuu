@@ -64,9 +64,6 @@ export function buildUITokens(
       const regexp = new RegExp(`${substitution.substitutedChar}`);
       tokenText = tokenText.replace(regexp, substitution.sourceChar);
     }
-    console.log({
-      type: tokenPositions[t.startIndex] ?? tokenType(t.type as TokenType),
-    });
     tokens.push({
       type: tokenPositions[t.startIndex] ?? tokenType(t.type as TokenType),
       text: (tokenText && typeSubstitution[tokenText]) ?? tokenText ?? "",

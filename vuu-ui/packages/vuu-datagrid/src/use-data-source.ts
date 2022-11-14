@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import GridContext from "./grid-context";
+import { useViewContext } from "@finos/vuu-layout";
 
 const { RENDER_IDX } = metadataKeys;
 
@@ -37,6 +38,7 @@ export default function useDataSource(
 ) {
   const { dataSource, dispatchGridAction, dispatchGridModelAction } =
     useContext(GridContext);
+  const { title } = useViewContext();
   const [, forceUpdate] = useState(null);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
@@ -173,6 +175,7 @@ export default function useDataSource(
       {
         ...rest,
         range: { from, to },
+        title,
       },
       datasourceMessageHandler
     );
@@ -181,6 +184,7 @@ export default function useDataSource(
     datasourceMessageHandler,
     gridModel.renderBufferSize,
     subscriptionDetails,
+    title,
   ]);
 
   useEffect(

@@ -96,11 +96,9 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
     getTypeaheadSuggestions,
     handleMenuAction,
   } = useViewserver({
-    loadSession,
     rpcServer: dataSource,
     onConfigChange: handleConfigChange,
     onRpcResponse: handleRpcResponse,
-    saveSession,
   });
 
   const handleCommit = useCallback(
