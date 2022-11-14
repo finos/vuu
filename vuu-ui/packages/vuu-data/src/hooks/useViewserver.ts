@@ -128,6 +128,9 @@ export const useViewserver = ({
   // IF we're passed in an rpcServer, whether its a dataSource or connection,
   // why do we need to get server here ?
   const server = useServerConnection(undefined);
+  console.log(`useViewserver server`, {
+    server,
+  });
   const contextMenuOptions = useMemo(
     () => loadSession?.("vs-context-menu") ?? undefined,
     [loadSession]
@@ -150,13 +153,17 @@ export const useViewserver = ({
 
   const makeRpcCall = useCallback(
     async (rpcRequest: Omit<ClientToServerRpcCall, "service">) => {
-      const response = await server.rpcCall(rpcRequest);
-      switch (response.method) {
-        case addRowsFromInstruments:
-          onRpcResponse?.("showOrderEntry");
-          break;
-        default:
-          return response.result;
+      if (server) {
+        const response = await server.rpcCall(rpcRequest);
+        switch (response.method) {
+          case addRowsFromInstruments:
+            onRpcResponse?.("showOrderEntry");
+            break;
+          default:
+            return response.result;
+        }
+      } else {
+        throw Error("Server not ready");
       }
     },
     [onRpcResponse, server]
