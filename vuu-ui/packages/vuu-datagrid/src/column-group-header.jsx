@@ -1,22 +1,33 @@
-import React, { forwardRef, useCallback, useContext, useImperativeHandle, useRef } from 'react';
-import cx from 'classnames';
-import GridContext from './grid-context';
-import { GridModel } from './grid-model/grid-model-utils';
-import * as Action from './grid-model/grid-model-actions';
+import React, {
+  forwardRef,
+  useCallback,
+  useContext,
+  useImperativeHandle,
+  useRef,
+} from "react";
+import cx from "classnames";
+import GridContext from "./grid-context";
+import { GridModel } from "./grid-model/grid-model-utils";
+import * as Action from "./grid-model/grid-model-actions";
 
-import ColumnGroupContext from './column-group-context';
-import { SortType } from './constants';
+import ColumnGroupContext from "./column-group-context";
+import { SortType } from "./constants";
 
-import { HeaderCell, HeadingCell, GroupHeaderCell } from './grid-cells';
+import { HeaderCell, HeadingCell, GroupHeaderCell } from "./grid-cells";
 
-import './column-group-header.css';
+import "./column-group-header.css";
 
-const classBase = 'hwColumnGroupHeader';
+const classBase = "hwColumnGroupHeader";
 
 /** @type {ColumnGroupHeaderType} */
 const ColumnGroupHeader = React.memo(
   forwardRef(function ColumnGroupHeader(
-    { columnGroup, columnGroupIdx, columns = columnGroup.columns, onColumnDragStart },
+    {
+      columnGroup,
+      columnGroupIdx,
+      columns = columnGroup.columns,
+      onColumnDragStart,
+    },
     ref
   ) {
     const columnGroupHeader = useRef(null);
@@ -33,22 +44,23 @@ const ColumnGroupHeader = React.memo(
         return sortEntry === undefined
           ? undefined
           : multiColumnSort
-          ? (sort.indexOf(sortEntry) + 1) * (sortEntry.sortType === SortType.DSC ? -1 : 1)
+          ? (sort.indexOf(sortEntry) + 1) *
+            (sortEntry.sortType === SortType.DSC ? -1 : 1)
           : sortEntry.sortType === SortType.ASC
-          ? 'asc'
-          : 'dsc';
+          ? "asc"
+          : "dsc";
       }
     };
 
     useImperativeHandle(ref, () => ({
       beginHorizontalScroll: (width) => {
-        columnGroupHeader.current.style.width = width + 'px';
+        columnGroupHeader.current.style.width = width + "px";
         scrollingHeaderWrapper.current.style.transform = `translate3d(0px, 0px, 0px)`;
       },
       endHorizontalScroll: (scrollLeft, width) => {
         scrollingHeaderWrapper.current.style.transform = `translate3d(-${scrollLeft}px, 0px, 0px)`;
-        columnGroupHeader.current.style.width = width + 'px';
-      }
+        columnGroupHeader.current.style.width = width + "px";
+      },
     }));
 
     const handleColumnResize = useCallback(
@@ -61,10 +73,10 @@ const ColumnGroupHeader = React.memo(
     const handleHeadingResize = useCallback(
       (phase, column, width) => {
         dispatchGridModelAction({
-          type: 'resize-heading',
+          type: "resize-heading",
           phase,
           column,
-          width
+          width,
         });
       },
       [dispatchGridModelAction]
@@ -72,7 +84,13 @@ const ColumnGroupHeader = React.memo(
 
     const handleDrag = useCallback(
       (phase, column, columnPosition, mousePosition) => {
-        onColumnDragStart(phase, columnGroupIdx, column, columnPosition, mousePosition);
+        onColumnDragStart(
+          phase,
+          columnGroupIdx,
+          column,
+          columnPosition,
+          mousePosition
+        );
       },
       [columnGroupIdx, onColumnDragStart]
     );
@@ -80,8 +98,18 @@ const ColumnGroupHeader = React.memo(
     const handleRemoveGroup = useCallback(
       (column) => {
         dispatchGridAction({
-          type: 'group',
-          key: GridModel.removeGroupColumn(gridModel, column)
+          type: "group",
+          key: GridModel.removeGroupColumn(gridModel, column),
+        });
+      },
+      [dispatchGridAction, gridModel]
+    );
+
+    const handleHeaderClick = useCallback(
+      (_groupColumn, column) => {
+        dispatchGridAction({
+          type: "sort",
+          columns: GridModel.setSortColumn(gridModel, column),
         });
       },
       [dispatchGridAction, gridModel]
@@ -92,7 +120,7 @@ const ColumnGroupHeader = React.memo(
       customInlineHeaderHeight,
       headerHeight,
       headingDepth,
-      sort
+      sort,
     } = gridModel;
     const height = headerHeight * headingDepth;
 
@@ -100,7 +128,7 @@ const ColumnGroupHeader = React.memo(
       heading.map((item, idx) => (
         <HeadingCell
           key={idx}
-          className={cx({ noBottomBorder: item.label === '' })}
+          className={cx({ noBottomBorder: item.label === "" })}
           column={item}
           onResize={handleHeadingResize}
         />
@@ -111,8 +139,12 @@ const ColumnGroupHeader = React.memo(
       <div
         className={classBase}
         ref={columnGroupHeader}
-        style={{ height: height + customInlineHeaderHeight, top, width }}>
-        <div ref={scrollingHeaderWrapper} style={{ height, width: contentWidth }}>
+        style={{ height: height + customInlineHeaderHeight, top, width }}
+      >
+        <div
+          ref={scrollingHeaderWrapper}
+          style={{ height, width: contentWidth }}
+        >
           {headings
             .map((heading, idx) => (
               <div key={idx} style={{ height: headerHeight, width }}>
@@ -127,9 +159,9 @@ const ColumnGroupHeader = React.memo(
                 <GroupHeaderCell
                   column={column}
                   key={column.key}
-                  onClick={() => console.log('onClick')}
+                  onClick={handleHeaderClick}
                   onResize={handleColumnResize}
-                  onToggleGroupState={() => console.log('onToggleGroupState')}
+                  onToggleGroupState={() => console.log("onToggleGroupState")}
                   onRemoveColumn={handleRemoveGroup}
                 />
               ) : (
@@ -155,4 +187,4 @@ const ColumnGroupHeader = React.memo(
 
 export default ColumnGroupHeader;
 
-ColumnGroupHeader.displayName = 'ColumnGroupHeader';
+ColumnGroupHeader.displayName = "ColumnGroupHeader";
