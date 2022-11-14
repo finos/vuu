@@ -54,8 +54,8 @@ export const GroupHeaderCell = ({
     column.current = groupCol;
   }, [groupCol]);
 
-  const handleClick = () => {
-    onClick(groupCol);
+  const handleClick = (column) => {
+    onClick(groupCol, column);
   };
 
   // All duplicated in header-cell

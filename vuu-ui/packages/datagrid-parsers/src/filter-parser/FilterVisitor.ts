@@ -232,6 +232,8 @@ export class FilterVisitor extends AbstractParseTreeVisitor<any> {
                 sourceCharUnderlying
               )}${QUOTE}`;
               QUOTE = "";
+            } else if (index > stopIndex) {
+              break;
             }
           }
         }
