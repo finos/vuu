@@ -1,4 +1,5 @@
 import {
+  assertFileExists,
   copyFolderSync,
   formatBytes,
   formatDuration,
@@ -10,13 +11,14 @@ import path from "path";
 const entryPoints = ["src/index.tsx", "src/login.tsx"];
 
 const featureEntryPoints = [
+  // "src/features/ag-grid/index.ts",
   "src/features/filtered-grid/index.ts",
   "src/features/metrics/index.js",
 ];
 
 const outbase = "src";
 const outdir = "../../deployed_apps/app-vuu-example";
-let configFile = "./config/localhost.config.js";
+let configFile = "./config/localhost.config.json";
 
 const stripOutdir = (file) => file.replace(RegExp(`^${outdir}\/`), "");
 
@@ -27,16 +29,7 @@ const hasConfigPath = args.includes("--config");
 if (hasConfigPath) {
   const switchIndex = args.indexOf("--config");
   const configPath = args[switchIndex + 1];
-  let isFile = false;
-  try {
-    isFile = fs.lstatSync(path.resolve(configPath)).isFile();
-  } catch (e) {
-    // ignore, we handle it below
-  }
-  if (!isFile) {
-    console.error(`config file ${configPath} not found`);
-    process.exit(1);
-  } else {
+  if (assertFileExists(configPath, true)) {
     configFile = configPath;
   }
 }
@@ -94,7 +87,7 @@ async function main() {
   });
 
   console.log("[DEPLOY config]");
-  copyFolderSync(path.resolve(configFile), path.resolve(outdir, "config.js"));
+  copyFolderSync(path.resolve(configFile), path.resolve(outdir, "config.json"));
 
   entryPoints.concat(featureEntryPoints).forEach((fileName) => {
     const outJS = `${outdir}/${fileName

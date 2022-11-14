@@ -1,5 +1,5 @@
 declare global {
-  const vuuConfig: VuuConfig;
+  const vuuConfig: Promise<VuuConfig>;
 }
 
 export interface FeatureConfig {
