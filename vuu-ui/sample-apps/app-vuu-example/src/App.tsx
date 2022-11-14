@@ -9,7 +9,7 @@ import { Stack } from "./AppStack";
 
 import "./App.css";
 
-const { websocketUrl: serverUrl } = vuuConfig;
+const { websocketUrl: serverUrl } = await vuuConfig;
 
 const filteredGridUrl = "./features/filtered-grid/index.js";
 

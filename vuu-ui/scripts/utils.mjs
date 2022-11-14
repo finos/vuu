@@ -2,7 +2,9 @@ import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
 
-export const readPackageJson = (path = "package.json") => {
+export const readPackageJson = (path = "package.json") => readJson(path);
+
+export const readJson = (path) => {
   let rawdata = fs.readFileSync(path);
   let json = JSON.parse(rawdata);
   return json;
@@ -58,3 +60,39 @@ export function copyFolderSync(from, to) {
     });
   }
 }
+
+export const assertFileExists = (fileName, exitIfFalse) => {
+  let isFile = false;
+  try {
+    isFile = fs.lstatSync(path.resolve(fileName)).isFile();
+  } catch (e) {
+    // ignore, we handle it below
+  }
+  if (!isFile) {
+    console.error(`file ${fileName} not found`);
+    if (exitIfFalse) {
+      process.exit(1);
+    } else {
+      return false;
+    }
+  }
+  return true;
+};
+
+export const assertFolderExists = (folderName, exitIfFalse) => {
+  let isFolder = false;
+  try {
+    isFolder = fs.lstatSync(path.resolve(folderName)).isDirectory();
+  } catch (e) {
+    // ignore, we handle it below
+  }
+  if (!isFolder) {
+    console.error(`folder ${path.resolve(folderName)} not found`);
+    if (exitIfFalse) {
+      process.exit(1);
+    } else {
+      return false;
+    }
+  }
+  return true;
+};
