@@ -20,16 +20,13 @@ class NiaiveImmutableArray[T :ClassTag](val array: Array[T] = Array.empty) exten
   }
 
   override def equals(obj: scala.Any): Boolean = {
-    if(obj.isInstanceOf[NiaiveImmutableArray[T]]){
-
-      val toCheck = obj.asInstanceOf[NiaiveImmutableArray[T]].array
-
-      val isEq = toCheck == array
-
-      isEq
-
-    } else{
-      false
+    obj match {
+      case value: NiaiveImmutableArray[_] =>
+        val toCheck = value.array
+        val isEq = toCheck == array
+        isEq
+      case _ =>
+        false
     }
   }
 
