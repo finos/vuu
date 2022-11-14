@@ -35,6 +35,14 @@ this should be the same as Linux & macos just with windows adjusted paths
 ```
 
 ## Installation - Client
+
+Please note, while we are in the process of making the ag-grid dependencies optional you will 
+need to run this command from the vuu/vuu-ui directory. 
+
+```sh
+yarn add -W ag-grid-community ag-grid-enterprise ag-grid-react
+```
+Then this: 
 ```sh
 #in vuu repo (not vuu child directory in repo)
 cd vuu-ui
@@ -45,7 +53,6 @@ cd packages/electron
 #this should open an electron window pointing at https://localhost:8443/index.html
 yarn start
 ```
-
 
 ## Usage example
 

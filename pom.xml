@@ -66,8 +66,8 @@
         <metrics.version>4.2.5</metrics.version>
         <curator.version>3.1.0</curator.version>
         <scalatest.version>3.2.9</scalatest.version>
-        <scala.logging>3.9.4</scala.logging>
-        <jackson.version>2.14.0-rc3</jackson.version>
+        <scala.logging>3.9.5</scala.logging>
+        <jackson.version>2.14.0</jackson.version>
         <aeron.version>1.17.0</aeron.version>
         <antlr.version>4.11.1</antlr.version>
         <netty.version>4.1.82.Final</netty.version>
@@ -113,6 +113,46 @@
                     <artifactId>scala-library</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe.scala-logging</groupId>
+            <artifactId>scala-logging_2.13</artifactId>
+            <version>${scala.logging}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-reflect</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <version>1.7.32</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.32</version>
         </dependency>
 
         <dependency>

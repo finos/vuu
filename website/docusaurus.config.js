@@ -34,7 +34,7 @@ module.exports = {
         { to: "docs/roadmap", label: "Roadmap", position: "right" },
         { to: "docs/team", label: "Team", position: "right" },
         {
-          href: "https://github.com/finos/",
+          href: "https://github.com/finos/vuu",
           label: "GitHub",
           position: "right",
         },
@@ -74,7 +74,7 @@ module.exports = {
           items: [
             {
               label: "FINOS Website",
-              to: "https://regulationinnovation.org/air-events/",
+              to: "https://www.finos.org",
             },
             {
               label: "Community Handbook",

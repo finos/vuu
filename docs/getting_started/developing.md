@@ -1,6 +1,6 @@
 # Developing Vuu
 
-## Developing the server
+## Prerequisites
 
 1) Install IntelliJ Community Edition (latest version, tested with 2021.3)
 2) Install SDKMan from the [website](https://sdkman.io/) or using your own mechanism
@@ -9,11 +9,6 @@
 5) Open the project as a Maven build by selecting the root pom.xml (make sure you select "enable adding maven modules, auto import etc..)
 6) You should get one root module vuu-parent in a project list, select this
 7) When the project opens you should have 2 sub-modules (vuu and toolbox) 
-
-## Running the Vuu Server Simulation Module
-
-1) Go to the SimulMain.scala, right click and run (add these into JVM args -Xmx10G -Xms5G)
-2) Go to the SwingClientMain.scala, right click and run
 
 ## Developing the client
 
@@ -25,25 +20,58 @@ You can install command line maven via any means you please, but sdkman makes it
 sdk install maven
 ```
 
-```bash
-#after checking out the code, in project root dir
-mvn clean compile
-#then into the vuu subfolder
+## Installation - Server - Command Line
+
+### Prerequisites
+
+See the [Docs](https://vuu.finos.org/docs/getting_started/developing) for Java versions and install dependencies you need to have.
+
+OS X & Linux:
+
+```sh
+#In your favourite code directory...
+git clone https://github.com/finos/vuu.git
+#cd into the repository
 cd vuu
-#run SimulMain using maven exec:exec plugin
+#run the maven compile step
+mvn compile
+#cd into vuu, child in repo
+cd vuu
+#The server should now be started on your machine with Simulation module
 mvn exec:exec
 ```
 
+Windows:
 
+```sh
+this should be the same as Linux & MacOS just with Windows adjusted paths
+```
 
-1) install node.js version 14+ and yarn
-2) In a terminal, change directory into the ./vuu-ui folder
-3) yarn install
-4) type> ```yarn```
-5) build the ui library packages
-6) type> ```yarn build```
-7) build the sample application
-8) type> ```yarn build:app```
+## Running the Vuu Server Simulation Module from IDE
+
+1) Go to the SimulMain.scala, right click and run (add these into JVM args -Xmx10G -Xms5G)
+2) Go to the SwingClientMain.scala, right click and run
+
+## Installation - Client
+
+Please note, while we are in the process of making the ag-grid dependencies optional you will
+need to run this command from the vuu/vuu-ui directory.
+
+```sh
+#Please note these are licenced software components, they will be made optional shortly in Vuu
+yarn add -W ag-grid-community ag-grid-enterprise ag-grid-react
+```
+Then this:
+```sh
+#in vuu repo (not vuu child directory in repo)
+cd vuu-ui
+yarn
+yarn build
+yarn buid:app
+cd packages/electron
+#this should open an electron window pointing at https://localhost:8443/index.html
+yarn start
+```
 
 
 You should know be able to use a local browser to see the Vuu demo app. [localhost:8443](https://localhost:8443/index.html) 
