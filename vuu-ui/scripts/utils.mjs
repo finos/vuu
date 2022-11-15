@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import { exec } from "child_process";
 
 export const readPackageJson = (path = "package.json") => {
@@ -42,3 +43,14 @@ export const execWait = (cmd, cwd) =>
       resolve();
     });
   });
+
+export function copyFolderSync(from, to) {
+  fs.mkdirSync(to);
+  fs.readdirSync(from).forEach((element) => {
+    if (fs.lstatSync(path.join(from, element)).isFile()) {
+      fs.copyFileSync(path.join(from, element), path.join(to, element));
+    } else {
+      copyFolderSync(path.join(from, element), path.join(to, element));
+    }
+  });
+}
