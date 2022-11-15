@@ -1,7 +1,12 @@
 import { build } from "./esbuild.mjs";
 import fs from "fs";
 import path from "path";
-import { formatBytes, formatDuration, readPackageJson } from "./utils.mjs";
+import {
+  copyFolderSync,
+  formatBytes,
+  formatDuration,
+  readPackageJson,
+} from "./utils.mjs";
 const NO_DEPENDENCIES = {};
 
 const defaultConfig = {
@@ -80,9 +85,15 @@ export default async function main(customConfig) {
           filesToPublish.forEach((fileName) => {
             const filePath = fileName.replace(/^\//, "./");
             const outPath = `${outdir}${fileName}`;
-            fs.cp(filePath, outPath, { recursive: true }, (err) => {
-              if (err) throw err;
-            });
+            if (typeof fs.cp === "function") {
+              // node v16.7 +
+              fs.cp(filePath, outPath, { recursive: true }, (err) => {
+                if (err) throw err;
+              });
+            } else {
+              // delete once we no longer need to support node16 < .7
+              copyFolderSync(filePath, outPath);
+            }
           });
         }
       }
