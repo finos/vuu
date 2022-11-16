@@ -78,9 +78,9 @@ const gridFeatures = [
     js: "./features/filtered-grid/index.js",
   },
   {
-    className: "vuuAgGridFeature",
-    css: "./features/ag-grid/index.css",
-    js: "./features/ag-grid/index.js",
+    className: "vuuFilteredGrid",
+    css: "./features/filtered-grid/index.css",
+    js: "./features/filtered-grid/index.js",
   },
 ];
 

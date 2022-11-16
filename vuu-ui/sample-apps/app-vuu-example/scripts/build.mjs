@@ -6,7 +6,6 @@ import path from "path";
 const entryPoints = ["src/index.tsx", "src/login.tsx"];
 
 const featureEntryPoints = [
-  "src/features/ag-grid/index.ts",
   "src/features/filtered-grid/index.ts",
   "src/features/metrics/index.js",
 ];
