@@ -1,9 +1,10 @@
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://community.finos.org/docs/governance/Software-Projects/stages/incubating)
 
 # Vuu
+
 ## The Realtime View Server
 
-Welcome. We maintain a docusaurus book containing all the details of the project. Why not get started there: 
+Welcome. We maintain a docusaurus book containing all the details of the project. Why not get started there:
 
 https://vuu.finos.org/docs/introduction/intro
 
@@ -11,7 +12,7 @@ https://vuu.finos.org/docs/introduction/intro
 
 ### Prerequisites
 
-See the [Docs](https://vuu.finos.org/docs/getting_started/developing) for Java versions and install dependencies you need to have. 
+See the [Docs](https://vuu.finos.org/docs/getting_started/developing) for Java versions and install dependencies you need to have.
 
 OS X & Linux:
 
@@ -36,15 +37,10 @@ this should be the same as Linux & macos just with windows adjusted paths
 
 ## Installation - Client
 
-Please note, while we are in the process of making the ag-grid dependencies optional you will 
-need to run this command from the vuu/vuu-ui directory. 
+The UI scripts all run from the vuu/vuu-ui directory.
 
 ```sh
-yarn add -W ag-grid-community ag-grid-enterprise ag-grid-react
-```
-Then this: 
-```sh
-#in vuu repo (not vuu child directory in repo)
+#from top-level vuu repo (not vuu child directory in repo)
 cd vuu-ui
 yarn
 yarn build
@@ -67,9 +63,11 @@ List the roadmap steps; alternatively link the Confluence Wiki page where the pr
 1. In Progress
 
 ## Contributing
+
 For any questions, bugs or feature requests please open an [issue](https://github.com/finos/vuu/issues).
 
 To submit a contribution:
+
 1. Fork it (<https://github.com/finos/vuu/fork>)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
 3. Read our [contribution guidelines](.github/CONTRIBUTING.md) and [Community Code of Conduct](https://www.finos.org/code-of-conduct)
@@ -79,7 +77,7 @@ To submit a contribution:
 
 _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted from those contributors with an active, executed Individual Contributor License Agreement (ICLA) with FINOS OR who are covered under an existing and active Corporate Contribution License Agreement (CCLA) executed with FINOS. Commits from individuals not covered under an ICLA or CCLA will be flagged and blocked by the FINOS Clabot tool (or [EasyCLA](https://community.finos.org/docs/governance/Software-Projects/easycla)). Please note that some CCLAs require individuals/employees to be explicitly named on the CCLA.
 
-*Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@finos.org](mailto:help@finos.org)*
+_Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@finos.org](mailto:help@finos.org)_
 
 ## License
 
