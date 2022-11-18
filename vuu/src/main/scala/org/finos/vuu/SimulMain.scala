@@ -7,7 +7,7 @@ import org.finos.vuu.core.module.metrics.MetricsModule
 import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.typeahead.TypeAheadModule
 import org.finos.vuu.core.module.vui.VuiStateModule
-import org.finos.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import org.finos.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
@@ -61,7 +61,9 @@ object SimulMain extends App with StrictLogging {
       .withWsPort(8090),
     VuuSecurityOptions()
       .withAuthenticator(authenticator)
-      .withLoginValidator(new AlwaysHappyLoginValidator)
+      .withLoginValidator(new AlwaysHappyLoginValidator),
+    VuuThreadingOptions()
+      .withViewPortThreads(1)
   ).withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(VuiStateModule(store))
