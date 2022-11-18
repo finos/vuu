@@ -9,11 +9,11 @@ import scala.util.control.NonFatal
 
 class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce: Boolean = false)(implicit clock: Clock) extends StrictLogging {
 
-  private val thread = new NamedThreadFactory(name).newThread(getRunnable)
+  private val thread = new NamedThreadFactory(name).newThread(getRunnable())
 
   private val shouldContinue = new AtomicBoolean(true)
 
-  private def doMinCycleTime(start: Long, end: Long): Unit = {
+  def doMinCycleTime(start: Long, end: Long): Unit = {
     val takenMillis = end - start
     if(takenMillis < minCycleTime){
 
@@ -38,7 +38,7 @@ class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce:
     thread.interrupt()
   }
 
-  protected def getRunnable = {
+  protected def getRunnable(): Runnable = {
     new Runnable {
       override def run(): Unit = {
         try{
