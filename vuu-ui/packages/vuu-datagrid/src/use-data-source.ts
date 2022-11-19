@@ -187,12 +187,13 @@ export default function useDataSource(
     title,
   ]);
 
-  useEffect(
-    () => () => {
-      dataSource.unsubscribe();
-    },
-    [dataSource]
-  );
+  // we rely on the view to unsubscribe. DOing it here interferes with the disable/enable mechanism
+  // useEffect(
+  //   () => () => {
+  //     dataSource.unsubscribe();
+  //   },
+  //   [dataSource]
+  // );
 
   return [data.current, setRange, dataSource];
 }

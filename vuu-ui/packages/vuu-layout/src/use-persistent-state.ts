@@ -40,7 +40,7 @@ export const usePersistentState = () => {
     }
   }, []);
 
-  const purgeSessionState = useCallback((id, key) => {
+  const purgeSessionState = useCallback((id: string, key?: string) => {
     if (sessionState.has(id)) {
       if (key === undefined) {
         sessionState.delete(id);
@@ -86,7 +86,7 @@ export const usePersistentState = () => {
     []
   );
 
-  const purgeState = useCallback((id, key) => {
+  const purgeState = useCallback((id: string, key?: string) => {
     if (persistentState.has(id)) {
       if (key === undefined) {
         persistentState.delete(id);
