@@ -152,22 +152,31 @@ export class ServerProxy {
     }
   }
 
-  private getViewportForClient(clientViewportId: string): Viewport {
+  private getViewportForClient(clientViewportId: string): Viewport;
+  private getViewportForClient(
+    clientViewportId: string,
+    throws: false
+  ): Viewport | null;
+  private getViewportForClient(clientViewportId: string, throws = true) {
     const serverViewportId =
       this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
       const viewport = this.viewports.get(serverViewportId);
       if (viewport) {
         return viewport;
-      } else {
+      } else if (throws) {
         throw Error(
           `Viewport not found for client viewport ${clientViewportId}`
         );
+      } else {
+        return null;
       }
-    } else {
+    } else if (throws) {
       throw Error(
         `Viewport server id not found for client viewport ${clientViewportId}`
       );
+    } else {
+      return null;
     }
   }
 
@@ -342,39 +351,47 @@ export class ServerProxy {
     >
   ) {
     if (isViewportMessage(message)) {
-      const viewport = this.getViewportForClient(message.viewport);
-      switch (message.type) {
-        case "setViewRange":
-          return this.setViewRange(viewport, message);
-        case "aggregate":
-          return this.aggregate(viewport, message);
-        case "sort":
-          return this.sort(viewport, message);
-        case "groupBy":
-          return this.groupBy(viewport, message);
-        case "filterQuery":
-          return this.filter(viewport, message);
-        case "select":
-          return this.select(viewport, message);
-        case "suspend":
-          return viewport.suspend();
-        case "resume":
-          return this.resumeViewport(viewport);
-        case "disable":
+      if (message.type === "disable") {
+        // Viewport may already have been unsubscribed
+        const viewport = this.getViewportForClient(message.viewport, false);
+        if (viewport !== null) {
           return this.disableViewport(viewport, message);
-        case "enable":
-          return this.enableViewport(viewport, message);
-        case "openTreeNode":
-          return this.openTreeNode(viewport, message);
-        case "closeTreeNode":
-          return this.closeTreeNode(viewport, message);
-        case "createLink":
-          return this.createLink(viewport, message);
-        case "removeLink":
-          return this.removeLink(viewport);
-        case "MENU_RPC_CALL":
-          return this.menuRpcCall(viewport, message);
-        default:
+        } else {
+          return;
+        }
+      } else {
+        const viewport = this.getViewportForClient(message.viewport);
+        switch (message.type) {
+          case "setViewRange":
+            return this.setViewRange(viewport, message);
+          case "aggregate":
+            return this.aggregate(viewport, message);
+          case "sort":
+            return this.sort(viewport, message);
+          case "groupBy":
+            return this.groupBy(viewport, message);
+          case "filterQuery":
+            return this.filter(viewport, message);
+          case "select":
+            return this.select(viewport, message);
+          case "suspend":
+            return viewport.suspend();
+          case "resume":
+            return this.resumeViewport(viewport);
+          case "enable":
+            return this.enableViewport(viewport, message);
+          case "openTreeNode":
+            return this.openTreeNode(viewport, message);
+          case "closeTreeNode":
+            return this.closeTreeNode(viewport, message);
+          case "createLink":
+            return this.createLink(viewport, message);
+          case "removeLink":
+            return this.removeLink(viewport);
+          case "MENU_RPC_CALL":
+            return this.menuRpcCall(viewport, message);
+          default:
+        }
       }
     } else {
       const { type, requestId } = message;

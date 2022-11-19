@@ -194,8 +194,9 @@ class _ConnectionManager extends EventEmitter {
       },
 
       destroy: (viewportId?: string) => {
-        console.log(`ServerAPI destroy ${viewportId}`);
-        // TODO kill all subscriptions
+        if (viewportId && viewports.has(viewportId)) {
+          viewports.delete(viewportId);
+        }
       },
 
       rpcCall: async (message) => asyncRequest(message),

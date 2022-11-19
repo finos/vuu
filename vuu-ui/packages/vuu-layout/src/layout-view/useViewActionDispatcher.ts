@@ -10,10 +10,11 @@ import { DragStartAction } from "../layout-reducer";
 import { ViewDispatch } from "./ViewContext";
 import { ViewAction } from "./viewTypes";
 import { usePersistentState } from "../use-persistent-state";
+import { DataSource } from "@finos/vuu-data";
 
 export type Contribution = {
   index?: number;
-  location?: any;
+  location?: string;
   content: ReactElement;
 };
 
@@ -23,15 +24,18 @@ export const useViewActionDispatcher = (
   viewPath?: string,
   dropTargets?: string[]
 ): [ViewDispatch, Contribution[] | undefined] => {
-  const { purgeSessionState, loadSessionState, saveSessionState } =
+  const { loadSessionState, purgeSessionState, purgeState, saveSessionState } =
     usePersistentState();
+
   const [contributions, setContributions] = useState<Contribution[]>(
     loadSessionState(id, "contributions") ?? []
   );
-  const dispatch = useLayoutProviderDispatch();
+  const dispatchLayoutAction = useLayoutProviderDispatch();
   const updateContributions = useCallback(
-    (location: string, content?: ReactElement) => {
-      const updatedContributions = contributions.concat({ location, content });
+    (location: string, content: ReactElement) => {
+      const updatedContributions = contributions.concat([
+        { location, content },
+      ]);
       saveSessionState(id, "contributions", updatedContributions);
       setContributions(updatedContributions);
     },
@@ -43,13 +47,33 @@ export const useViewActionDispatcher = (
     setContributions([]);
   }, [id, purgeSessionState]);
 
+  const handleRemove = useCallback(() => {
+    // TODO this requires a bit more thought. I works BECAUSE filteredGrid has
+    // stored its datasource in sessionState. It is highly pretty much a
+    // requirement for features to do so - how do we enforce it.
+    const ds = loadSessionState(id, "data-source") as DataSource;
+    if (ds) {
+      ds.unsubscribe();
+    }
+    purgeSessionState(id);
+    purgeState(id);
+    dispatchLayoutAction({ type: "remove", path: viewPath });
+  }, [
+    dispatchLayoutAction,
+    id,
+    loadSessionState,
+    purgeSessionState,
+    purgeState,
+    viewPath,
+  ]);
+
   const handleMouseDown = useCallback(
     async (evt, index, preDragActivity): Promise<boolean> => {
       evt.stopPropagation();
       const dragRect = root.current?.getBoundingClientRect();
       return new Promise((resolve, reject) => {
         // TODO should we check if we are allowed to drag ?
-        dispatch({
+        dispatchLayoutAction({
           type: "drag-start",
           evt,
           path: index === undefined ? viewPath : `${viewPath}.${index}`,
@@ -61,7 +85,7 @@ export const useViewActionDispatcher = (
         } as DragStartAction);
       });
     },
-    [root, dispatch, viewPath, dropTargets]
+    [root, dispatchLayoutAction, viewPath, dropTargets]
   );
 
   // TODO should be event, action, then this method can bea assigned directly to a html element
@@ -73,12 +97,13 @@ export const useViewActionDispatcher = (
     ): Promise<boolean | void> => {
       const { type } = action;
       switch (type) {
-        case "remove":
         case "maximize":
         case "minimize":
         case "restore":
           // case Action.TEAR_OUT:
-          return dispatch({ type, path: action.path ?? viewPath });
+          return dispatchLayoutAction({ type, path: action.path ?? viewPath });
+        case "remove":
+          return handleRemove();
         case "mousedown":
           console.log("2) ViewActionDispatch Hook dispatch Action mousedown");
           return handleMouseDown(evt, action.index, action.preDragActivity);
@@ -95,8 +120,9 @@ export const useViewActionDispatcher = (
       }
     },
     [
-      dispatch,
+      dispatchLayoutAction,
       viewPath,
+      handleRemove,
       handleMouseDown,
       updateContributions,
       clearContributions,

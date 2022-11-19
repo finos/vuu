@@ -182,12 +182,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   };
 
   unsubscribe() {
-    if (!this.disabled && !this.suspended) {
-      if (this.viewport) {
-        this.server?.unsubscribe(this.viewport);
-      }
-      this.server?.destroy(this.viewport);
+    if (this.viewport) {
+      this.server?.unsubscribe(this.viewport);
     }
+    this.server?.destroy(this.viewport);
   }
 
   suspend() {
