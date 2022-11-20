@@ -21,7 +21,7 @@ object FilterSpecParser extends StrictLogging {
 
     val result = eval.visit(tree)
 
-    logger.info(s"Parsed $result")
+    logger.debug(s"Parsed $result")
 
     result
   }

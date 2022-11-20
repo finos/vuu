@@ -17,3 +17,20 @@ object ViewPortWorkItem{
     }
   }
 }
+
+object ViewPortTreeWorkItem{
+  def apply(viewPort: ViewPort, container: ViewPortContainer): WorkItem[ViewPort] = {
+    new WorkItem[ViewPort] {
+      override def doWork(): ViewPort = {
+        container.refreshOneTreeViewPort(viewPort)
+        viewPort
+      }
+      override def toString: String = "TreeRunner:[" + viewPort + "]"
+      override def hashCode(): Int = viewPort.hashCode()
+      override def equals(obj: Any): Boolean = {
+        this.hashCode() == obj.hashCode()
+      }
+    }
+  }
+}
+
