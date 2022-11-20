@@ -36,11 +36,7 @@ const getDragElement = (
   const wrapper = document.createElement("div");
   wrapper.className = "vuuSimpleDraggableWrapper";
   // TODO caller needs to supply the uitk classes
-  wrapper.classList.add(
-    "vuuSimpleDraggableWrapper",
-    "uitk-light",
-    "uitk-density-medium"
-  );
+  wrapper.classList.add("vuuSimpleDraggableWrapper", "uitk-density-medium");
   wrapper.dataset.dragging = "true";
 
   const div = dragElement ?? document.createElement("div");
