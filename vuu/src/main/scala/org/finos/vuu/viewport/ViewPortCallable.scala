@@ -11,6 +11,16 @@ object ViewPortCallable {
       viewport
     }
   }
-
-
 }
+
+object ViewPortTreeCallable {
+
+  def apply(r: FutureTask[ViewPort], viewPortContainer: ViewPortContainer): Callable[ViewPort] = {
+    () => {
+      val viewport = r.get()
+      viewPortContainer.refreshOneTreeViewPort(viewport)
+      viewport
+    }
+  }
+}
+

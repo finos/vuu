@@ -65,23 +65,29 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   lifecycle(handlerRunner).dependsOn(joinProviderRunner)
 
   val viewPortRunner = if(config.threading.viewportThreads == 1){
-    val viewPortRunner = new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
-    lifecycle(viewPortRunner).dependsOn(server)
-    viewPortRunner
-
+    new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
   }else {
-    val viewPortRunner =
       new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threading.viewportThreads}]", config.threading.viewportThreads, () =>  {
-      viewPortContainer.getViewPorts().filter(_.isEnabled).map(vp => ViewPortWorkItem(vp, viewPortContainer)) })
+      viewPortContainer.getViewPorts().filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => ViewPortWorkItem(vp, viewPortContainer)) })
     {
       override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortCallable(r, viewPortContainer)
       override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = ViewPortWorkItem(r.get(), viewPortContainer)
     }
-    lifecycle(viewPortRunner).dependsOn(server)
-    viewPortRunner
   }
 
-  val groupByRunner = new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce())
+  lifecycle(viewPortRunner).dependsOn(server)
+
+  val groupByRunner = if(config.threading.treeThreads == 1) {
+    new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce())
+  }else{
+    new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner-Tree[${config.threading.treeThreads}]", config.threading.treeThreads, () =>  {
+      viewPortContainer.getViewPorts().filter(vp => vp.isEnabled && vp.hasGroupBy).map(vp => ViewPortTreeWorkItem(vp, viewPortContainer)) })
+    {
+      override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortTreeCallable(r, viewPortContainer)
+      override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = ViewPortTreeWorkItem(r.get(), viewPortContainer)
+    }
+  }
+
   lifecycle(groupByRunner).dependsOn(server)
 
   def createTable(tableDef: TableDef): DataTable = {

@@ -517,13 +517,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def runGroupByOnce(): Unit = {
 
     val (millis, _) = timeIt {
-      CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => vp.hasGroupBy && vp.isEnabled).foreach(vp => refreshOneGroupByViewPort(vp))
+      CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => vp.hasGroupBy && vp.isEnabled).foreach(vp => refreshOneTreeViewPort(vp))
     }
 
     groupByhistogram.update(millis)
   }
 
-  protected def refreshOneGroupByViewPort(viewPort: ViewPort): Unit = {
+  def refreshOneTreeViewPort(viewPort: ViewPort): Unit = {
 
     val table = viewPort.table.asTable
 
