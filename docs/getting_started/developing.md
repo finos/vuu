@@ -4,11 +4,11 @@
 
 1) Install IntelliJ Community Edition (latest version, tested with 2021.3)
 2) Install SDKMan from the [website](https://sdkman.io/) or using your own mechanism
-3) type>```sdk install java 16.0.1-open``` and then >```sdk d java 16.0.1-open``` to make sure you're using the correct one.
+3) type>```sdk install java 11.0.12-open``` and then >```sdk d java 11.0.12-open``` to make sure you're using the correct one.
 4) Clone the repo into a directory on your machine
 5) Open the project as a Maven build by selecting the root pom.xml (make sure you select "enable adding maven modules, auto import etc..)
 6) You should get one root module vuu-parent in a project list, select this
-7) When the project opens you should have 2 sub-modules (vuu and toolbox) 
+7) When the project opens you should have 3 sub-modules (vuu, toolbox and vuu-ui) 
 
 ## Developing the client
 
@@ -54,14 +54,11 @@ this should be the same as Linux & MacOS just with Windows adjusted paths
 
 ## Installation - Client
 
+You will need npm at version 16 or greater and yarn installed to build the client. 
+
 Please note, while we are in the process of making the ag-grid dependencies optional you will
 need to run this command from the vuu/vuu-ui directory.
 
-```sh
-#Please note these are licenced software components, they will be made optional shortly in Vuu
-yarn add -W ag-grid-community ag-grid-enterprise ag-grid-react
-```
-Then this:
 ```sh
 #in vuu repo (not vuu child directory in repo)
 cd vuu-ui
@@ -73,8 +70,7 @@ cd packages/electron
 yarn start
 ```
 
-
-You should know be able to use a local browser to see the Vuu demo app. [localhost:8443](https://localhost:8443/index.html) 
+You should now be able to use a local browser to see the Vuu demo app. [localhost:8443](https://localhost:8443/index.html) 
 
 If you are getting certificate errors when you connect, set this browser setting in chrome: 
 
@@ -84,13 +80,4 @@ chrome://flags/#allow-insecure-localhost (set to true)
 
 ## Developing the Vuu Book
 
-We use the excellent [mdbook](https://github.com/rust-lang/mdBook) rust module for developing the Vuu book. To use this you first have to install rust, and 
-then use the rust package manager cargo to install mdbook module. 
-
-To build the book locally, run: 
-
-```
-mdbook build vuu-book
-```
-
-in the root vuu directory. 
+We use [docusaurus](https://docusaurus.io/blog/2022/08/01/announcing-docusaurus-2.0) to generate the Vuu docs from markdown. 
