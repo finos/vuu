@@ -35,12 +35,7 @@ expression : EQ term EOF;
 //operator : PLUS | MULTIPLY | DIVIDE | SUBTRACT;
 operator : LT | GT | EQ | NEQ | IN | STARTS | ENDS | PLUS | MULTIPLY | DIVIDE | SUBTRACT;
 
-term : atom  | //=foo, or =100
-       atom operator atom | //=foo* 100, or =bid*price
-       atom operator LBRACK atom (',' atom)* RBRACK | //=foo in [X, Y, Z]
-       LPAREN atom operator atom RPAREN (operator term)? |
-       LPAREN atom RPAREN (operator term)? |
-       atom ( operator term)?;
+term : atom ( operator atom)? | atom operator LBRACK atom (',' atom)* RBRACK | LPAREN atom ( operator atom)? RPAREN ( operator atom)?;
 
 function :
     ABS LPAREN arguments RPAREN |
