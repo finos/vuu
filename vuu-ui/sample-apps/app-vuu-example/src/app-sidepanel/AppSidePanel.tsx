@@ -33,40 +33,6 @@ const tables = [
   {table: "uiState", module: "vui" },
 ];
 
-// const getPaletteItems = (config) => {
-//   const paletteItems = [];
-
-//   config.forEach((configItem) => {
-//     const { label, items = [] } = configItem;
-//     paletteItems.push(
-//       <div key={label} data-header>
-//         {label}
-//       </div>
-//     );
-//     items.forEach((paletteItem, i) => {
-//       const { component, type, props, ...args } = paletteItem;
-//       if (component) {
-//         paletteItems.push(
-//           <PaletteItem {...args} key={i}>
-//             {component}
-//           </PaletteItem>
-//         );
-//       } else if (type && isRegistered(type)) {
-//         const Component = ComponentRegistry[type];
-//         paletteItems.push(
-//           <PaletteItem {...args} key={i}>
-//             {React.createElement(Component, {
-//               ...props,
-//               key: i,
-//             })}
-//           </PaletteItem>
-//         );
-//       }
-//     });
-//   });
-
-//   return paletteItems;
-// };
 export interface AppSidePanelProps {
   tables: VuuTableSchemas;
 }
