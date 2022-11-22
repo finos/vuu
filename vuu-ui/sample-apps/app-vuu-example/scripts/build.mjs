@@ -1,4 +1,8 @@
-import { formatBytes, formatDuration } from "../../../scripts/utils.mjs";
+import {
+  copyFolderSync,
+  formatBytes,
+  formatDuration,
+} from "../../../scripts/utils.mjs";
 import { build } from "../../../scripts/esbuild.mjs";
 import fs from "fs";
 import path from "path";
@@ -51,14 +55,23 @@ async function main() {
   const publicContent = fs.readdirSync(`./public`);
   publicContent.forEach((file) => {
     if (file !== ".DS_Store") {
-      fs.cp(
-        path.resolve("public", file),
-        path.resolve(outdir, file),
-        { recursive: true },
-        (err) => {
-          if (err) throw err;
-        }
-      );
+      if (typeof fs.cp === "function") {
+        // node v16.7 +
+        fs.cp(
+          path.resolve("public", file),
+          path.resolve(outdir, file),
+          { recursive: true },
+          (err) => {
+            if (err) throw err;
+          }
+        );
+      } else {
+        // delete once we no longer need to support node16 < .7
+        copyFolderSync(
+          path.resolve("public", file),
+          path.resolve(outdir, file)
+        );
+      }
     }
   });
 
