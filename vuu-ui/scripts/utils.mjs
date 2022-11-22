@@ -45,12 +45,16 @@ export const execWait = (cmd, cwd) =>
   });
 
 export function copyFolderSync(from, to) {
-  fs.mkdirSync(to);
-  fs.readdirSync(from).forEach((element) => {
-    if (fs.lstatSync(path.join(from, element)).isFile()) {
-      fs.copyFileSync(path.join(from, element), path.join(to, element));
-    } else {
-      copyFolderSync(path.join(from, element), path.join(to, element));
-    }
-  });
+  if (fs.lstatSync(from).isFile()) {
+    fs.copyFileSync(from, to);
+  } else {
+    fs.mkdirSync(to);
+    fs.readdirSync(from).forEach((element) => {
+      if (fs.lstatSync(path.join(from, element)).isFile()) {
+        fs.copyFileSync(path.join(from, element), path.join(to, element));
+      } else {
+        copyFolderSync(path.join(from, element), path.join(to, element));
+      }
+    });
+  }
 }
