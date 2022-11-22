@@ -45,7 +45,6 @@ export const execWait = (cmd, cwd) =>
   });
 
 export function copyFolderSync(from, to) {
-  console.log(`copy from ${from} to ${to}`);
   if (fs.lstatSync(from).isFile()) {
     fs.copyFileSync(from, to);
   } else {
