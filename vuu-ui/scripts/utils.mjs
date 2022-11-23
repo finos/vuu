@@ -69,7 +69,11 @@ export const assertFileExists = (fileName, exitIfFalse) => {
     // ignore, we handle it below
   }
   if (!isFile) {
-    console.error(`file ${fileName} not found`);
+    const message =
+      typeof exitIfFalse === "string"
+        ? exitIfFalse
+        : `file ${fileName} not found`;
+    console.error(message);
     if (exitIfFalse) {
       process.exit(1);
     } else {
@@ -96,3 +100,19 @@ export const assertFolderExists = (folderName, exitIfFalse) => {
   }
   return true;
 };
+
+export const writeMetaFile = async (meta, outdir) =>
+  new Promise((resolve, reject) => {
+    console.log(`write bundle metafile`);
+    fs.writeFile(
+      `${outdir}/meta.json`,
+      JSON.stringify(meta, null, 2),
+      (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      }
+    );
+  });

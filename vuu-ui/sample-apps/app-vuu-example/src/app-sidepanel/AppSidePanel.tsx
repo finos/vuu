@@ -40,13 +40,13 @@ export interface AppSidePanelProps {
 const gridFeatures = [
   {
     className: "vuuFilteredGrid",
-    css: "./features/filtered-grid/index.css",
-    js: "./features/filtered-grid/index.js",
+    css: "./features/feature-filtered-grid/index.css",
+    js: "./features/feature-filtered-grid/index.js",
   },
   {
     className: "vuuFilteredGrid",
-    css: "./features/filtered-grid/index.css",
-    js: "./features/filtered-grid/index.js",
+    css: "./features/feature-filtered-grid/index.css",
+    js: "./features/feature-filtered-grid/index.js",
   },
 ];
 

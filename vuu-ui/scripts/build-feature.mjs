@@ -5,15 +5,22 @@ import {
   readPackageJson,
   formatBytes,
   formatDuration,
+  writeMetaFile,
 } from "./utils.mjs";
 import { build } from "./esbuild.mjs";
 import fs from "fs";
 import path from "path";
+const NO_DEPENDENCIES = {};
 
 const entryPoints = ["src/index.ts"];
 
+const packageJson = readPackageJson();
+const { name: featureName, peerDependencies = NO_DEPENDENCIES } = packageJson;
+const external = Object.keys(peerDependencies);
+
 const outbase = "src";
-let outdir = "../../deployed_apps/app-vuu-example";
+// let outdir = "../../deployed_apps/app-vuu-example";
+let outdir = `../../dist/${featureName}`;
 let configPath = `${outdir}/config.json`;
 
 const stripOutdir = (file) => file.replace(RegExp(`^${outdir}\/`), "");
@@ -29,17 +36,18 @@ if (hasDeployPath) {
   outdir = deployPath;
 }
 
-const packageJson = readPackageJson();
-const { name: featureName } = packageJson;
-
-if (assertFolderExists(outdir, true)) {
-  outdir = `${outdir}/features/${featureName}`;
-  assertFileExists(configPath, true);
-}
+// if (assertFolderExists(outdir, true)) {
+//   outdir = `${outdir}/features/${featureName}`;
+//   assertFileExists(
+//     configPath,
+//     `No config.json at ${outdir}, has this project been built correctly ?`
+//   );
+// }
 
 const mainConfig = {
   entryPoints: entryPoints,
   env: development ? "development" : "production",
+  external,
   name: featureName,
   outdir,
   splitting: true,
@@ -89,7 +97,6 @@ async function main() {
   });
 
   console.log("[WRITE FEATURE DETAILS TO CONFIG]");
-
   const [fileName] = entryPoints;
   const outJS = `${outdir}/${fileName
     .replace(new RegExp(`^${outbase}\\/`), "")
@@ -98,6 +105,7 @@ async function main() {
   const featureFiles = {
     js: "index.js",
   };
+
   const outCSS = outJS.replace(/js$/, "css");
   const {
     outputs: { [outJS]: jsOutput, [outCSS]: cssOutput },
@@ -111,7 +119,10 @@ async function main() {
     console.log(`\t${stripOutdir(outCSS)}: ${formatBytes(cssOutput.bytes)}`);
     featureFiles.css = "index.css";
   }
-  await writeConfigJSON(featureFiles);
+  // await writeConfigJSON(featureFiles);
+
+  console.log("[DEPLOY bundle meta]");
+  await writeMetaFile(metafile, outdir);
 }
 
 main();

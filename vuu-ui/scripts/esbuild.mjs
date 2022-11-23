@@ -15,6 +15,11 @@ export async function build(config) {
     sourcemap = true,
     splitting,
   } = config;
+
+  console.log(`esbuild `, {
+    external,
+  });
+
   return esbuild({
     entryPoints,
     banner,

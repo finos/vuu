@@ -14,12 +14,13 @@ import { Grid, GridProvider } from "@finos/vuu-datagrid";
 import {
   ConfigChangeMessage,
   createDataSource,
+  DataSource,
   RemoteDataSource,
   TableSchema,
   useViewserver,
 } from "@finos/vuu-data";
 import { ContextMenuProvider } from "@finos/ui-controls";
-import AppContext from "../../app-context";
+// import AppContext from "../../app-context";
 
 import { NamedFilter } from "@finos/datagrid-parsers";
 import { Filter } from "@finos/vuu-utils";
@@ -35,7 +36,7 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
   const { id, dispatch, load, purge, save, loadSession, saveSession } =
     useViewContext();
   const config = useMemo(() => load(), [load]);
-  const { handleRpcResponse } = useContext(AppContext);
+  // const { handleRpcResponse } = useContext(AppContext);
   const [namedFilters, setNamedFilters] = useState<NamedFilter[]>([]);
 
   const dataSource: RemoteDataSource = useMemo(() => {
@@ -96,9 +97,9 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
     getTypeaheadSuggestions,
     handleMenuAction,
   } = useViewserver({
-    rpcServer: dataSource,
+    // rpcServer: dataSource,
     onConfigChange: handleConfigChange,
-    onRpcResponse: handleRpcResponse,
+    // onRpcResponse: handleRpcResponse,
   });
 
   const handleCommit = useCallback(

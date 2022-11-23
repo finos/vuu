@@ -8,12 +8,12 @@ import { build } from "../../../scripts/esbuild.mjs";
 import fs from "fs";
 import path from "path";
 
-const entryPoints = ["src/index.tsx", "src/login.tsx"];
+const entryPoints = ["index.tsx", "login.tsx"];
 
 const featureEntryPoints = [
   // "src/features/ag-grid/index.ts",
-  "src/features/filtered-grid/index.ts",
-  "src/features/metrics/index.js",
+  "../feature-filtered-grid/index.ts",
+  // "src/features/metrics/index.js",
 ];
 
 const outbase = "src";
@@ -90,14 +90,17 @@ async function main() {
   copyFolderSync(path.resolve(configFile), path.resolve(outdir, "config.json"));
 
   entryPoints.concat(featureEntryPoints).forEach((fileName) => {
+    console.log({ fileName, outbase });
     const outJS = `${outdir}/${fileName
       .replace(new RegExp(`^${outbase}\\/`), "")
       .replace(/x$/, "")
       .replace(/ts$/, "js")}`;
+    console.log({ outJS });
     const outCSS = outJS.replace(/js$/, "css");
     const {
       outputs: { [outJS]: jsOutput, [outCSS]: cssOutput },
     } = metafile;
+    console.log({ outputs: metafile.outputs });
     console.log(
       `\t${stripOutdir(outJS)}:  ${formatBytes(
         jsOutput.bytes

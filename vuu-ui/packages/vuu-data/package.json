@@ -15,7 +15,7 @@
     "/src"
   ],
   "devDependencies": {
-    "@finos/vuu-protocol-types": "1.0.0"
+    "@finos/vuu-protocol-types": "0.0.26"
   },
   "peerDependencies": {
     "@finos/vuu-utils": "0.0.27",
