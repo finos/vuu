@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ParsedInput } from "@finos/vuu-filters";
 import { useSuggestionProvider } from "./useSuggestionProvider";
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
 } from "@finos/vuu-data";
+import { Filter } from "@finos/vuu-utils";
 
 // import "./ParsedInput.stories.css";
 
@@ -24,6 +25,9 @@ const schemaColumns = [
 
 //TODO combine parser and getTokenTypes into a parser
 export const ParsedFilterInput = () => {
+  const [filter, setFilter] = useState<Filter>();
+  const [filterQuery, setFilterQuery] = useState<string>("");
+  const [filterName, setFilterName] = useState<string>("");
   const suggestionProvider = useSuggestionProvider({
     columns: schemaColumns,
     table,
@@ -37,6 +41,30 @@ export const ParsedFilterInput = () => {
     connect();
   }, []);
 
-  return <ParsedInput suggestionProvider={suggestionProvider} />;
+  const handleSubmitFilter = useCallback(
+    (filter: Filter | undefined, filterQuery: string, filterName?: string) => {
+      setFilter(filter);
+      setFilterQuery(filterQuery);
+      setFilterName(filterName);
+    },
+    []
+  );
+
+  return (
+    <>
+      <ParsedInput
+        onSubmitFilter={handleSubmitFilter}
+        suggestionProvider={suggestionProvider}
+      />
+      <br />
+      <br />
+      <div>{filterQuery}</div>
+      <br />
+      <div>{filterName}</div>
+      <br />
+      <br />
+      <div>{JSON.stringify(filter)}</div>
+    </>
+  );
 };
 ParsedFilterInput.displaySequence = displaySequence++;

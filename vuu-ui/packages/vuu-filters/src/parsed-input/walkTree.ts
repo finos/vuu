@@ -1,6 +1,7 @@
 import { Tree } from "@lezer/common";
 
 class Filter {
+  #name: string | undefined;
   expression?: OrExpression;
   get lastExpression(): AndExpression | undefined {
     if (this.expression) {
@@ -14,6 +15,13 @@ class Filter {
       const { filters: f } = andExpression;
       return f[f.length - 1];
     }
+  }
+
+  get name(): string | undefined {
+    return this.#name;
+  }
+  setName(value: string) {
+    this.#name = value;
   }
   toJson() {
     return this.expression?.toJson();
@@ -82,12 +90,12 @@ class Column {
   constructor(public name: string, private from: number, private to: number) {}
 }
 
-const peek = <T extends unknown>(arr: unknown[]) => arr[arr.length - 1] as T;
+const peek = <T>(arr: unknown[]) => arr[arr.length - 1] as T;
 
 export const walkTree = (tree: Tree, source: string) => {
   const queue: unknown[] = [];
-  let cursor = tree.cursor();
-  do {
+  const cursor = tree.cursor();
+  next: do {
     const { name, from, to } = cursor;
     console.log(
       `Node ${name} [${from}:${to}] '${source.substring(
@@ -129,11 +137,13 @@ export const walkTree = (tree: Tree, source: string) => {
         break;
 
       case "ColumnSetExpression":
-        const lastExpression = peek<Filter>(queue).lastExpression;
-        if (lastExpression) {
-          lastExpression.add(new ColumnSetExpression());
-        } else {
-          throw Error("hoo");
+        {
+          const lastExpression = peek<Filter>(queue).lastExpression;
+          if (lastExpression) {
+            lastExpression.add(new ColumnSetExpression());
+          } else {
+            throw Error("hoo");
+          }
         }
         break;
 
@@ -169,6 +179,8 @@ export const walkTree = (tree: Tree, source: string) => {
         cursor.next();
         cursor.next();
       // fall thru
+
+      // eslint-disable-next-line no-fallthrough
       case "Int":
         {
           const lastFilterClause = peek<Filter>(queue).lastFilterClause;
@@ -195,8 +207,18 @@ export const walkTree = (tree: Tree, source: string) => {
 
       case "AsClause":
         {
-          // peek<Filter>(queue).expression?.add(new AndExpression());
-          debugger;
+          console.log(`as clause ${source.substring(from, to)}`);
+          cursor.next();
+          const { name: nm1, from: f1, to: t1 } = cursor;
+          if (nm1 === "As") {
+            cursor.next();
+            const { name: nm2, from: f2, to: t2 } = cursor;
+            if (nm2 === "Identifier") {
+              peek<Filter>(queue)?.setName(source.substring(f2, t2));
+            }
+          } else {
+            continue next;
+          }
         }
         break;
 

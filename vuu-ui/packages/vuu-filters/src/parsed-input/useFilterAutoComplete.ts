@@ -1,9 +1,22 @@
-import { useCallback, useMemo } from "react";
-import { CompletionContext, CompletionSource } from "@codemirror/autocomplete";
-import { syntaxTree } from "@codemirror/language";
+import { MutableRefObject, useCallback, useMemo } from "react";
+import {
+  Completion,
+  CompletionContext,
+  CompletionSource,
+} from "@codemirror/autocomplete";
+import { ensureSyntaxTree, syntaxTree } from "@codemirror/language";
 import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
 import { ISuggestionProvider } from "./ParsedInput";
+import { EditorView } from "@codemirror/view";
+import { walkTree } from "./walkTree";
+
+export type ApplyCompletion = (
+  view: EditorView,
+  completion: Completion,
+  from: number,
+  to: number
+) => void;
 
 const getValue = (node: SyntaxNode, state: EditorState) =>
   state.doc.sliceString(node.from, node.to);
@@ -61,9 +74,22 @@ const getSetValues = (node: SyntaxNode, state: EditorState): string[] => {
   return values;
 };
 
-export const useAutoComplete = (suggestionProvider: ISuggestionProvider) => {
+export const useAutoComplete = (
+  suggestionProvider: ISuggestionProvider,
+  onSubmit: MutableRefObject<ApplyCompletion>
+) => {
   const joinOperands = useMemo(
     () => [
+      {
+        label: "Press ENTER to submit",
+        apply: (
+          view: EditorView,
+          completion: Completion,
+          from: number,
+          to: number
+        ) => onSubmit.current(view, completion, from, to),
+        boost: 6,
+      },
       { label: "and", apply: "and ", boost: 5 },
       { label: "or", apply: "or ", boost: 3 },
       { label: "as", apply: "as ", boost: 1 },

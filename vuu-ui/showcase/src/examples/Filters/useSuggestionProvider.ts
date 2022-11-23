@@ -37,11 +37,17 @@ const numericOperators: Completion[] = [
   { label: "<", boost: 7 },
 ];
 
-const toSuggestions = (values: string[], prefix = ""): Completion[] =>
-  values.map((value) => ({
+const toSuggestions = (
+  values: string[],
+  quoted = false,
+  prefix = ""
+): Completion[] => {
+  const quote = quoted ? '"' : "";
+  return values.map((value) => ({
     label: value,
-    apply: `${prefix}${value} `,
+    apply: `${prefix}${quote}${value}${quote} `,
   }));
+};
 
 const withApplySpace = (suggestions: Completion[]): Completion[] =>
   suggestions.map((suggestion) => ({
@@ -109,16 +115,20 @@ export const useSuggestionProvider = ({
         const suggestions = await tableColumns;
         return (latestSuggestionsRef.current = withApplySpace(suggestions));
       } else if (columnName) {
+        const column = columns.find((col) => col.name === columnName);
         const prefix = Array.isArray(selection)
           ? selection.length === 0
             ? "["
             : ","
           : "";
-        console.log(`PREFIX ${prefix}`);
         const params = getTypeaheadParams(table, columnName, startsWith);
         const suggestions = await getTypeaheadSuggestions(params);
         // prob don;t want to save the preix
-        latestSuggestionsRef.current = toSuggestions(suggestions, prefix);
+        latestSuggestionsRef.current = toSuggestions(
+          suggestions,
+          column?.serverDataType === "string",
+          prefix
+        );
         if (Array.isArray(selection) && selection?.length > 1) {
           return [doneCommand, ...latestSuggestionsRef.current];
         } else {
