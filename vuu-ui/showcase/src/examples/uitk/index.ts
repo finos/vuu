@@ -1,5 +1,6 @@
 export * as Accordion from "./Accordion.stories";
 export * as Button from "./Button.stories";
+export * as ComboBox from "./Combobox.stories";
 export * as Input from "./Input.examples";
 export * as ToggleButton from "./ToggleButton.stories";
 export * as Dropdown from "./Dropdown.stories";
