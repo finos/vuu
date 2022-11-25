@@ -30,7 +30,7 @@ export const formatBytes = (bytes, decimals = 2, displayLength = 10) => {
 export const formatDuration = ({ seconds, nanoSeconds }) =>
   `${seconds}s ${Math.round(nanoSeconds / 1_000_000)}ms`;
 
-export const execWait = (cmd, cwd) =>
+export const execWait = (cmd, cwd = ".") =>
   new Promise((resolve, reject) => {
     exec(cmd, { cwd }, (err, stdout, stderr) => {
       if (err) {

@@ -1,7 +1,7 @@
 import fs from "fs";
 import { readPackageJson } from "./utils.mjs";
 import { exec } from "child_process";
-import { execCallback } from "./utils.mjs";
+import { execWait } from "./utils.mjs";
 
 const packageJson = readPackageJson();
 const { name: scopedPackageName } = packageJson;
@@ -11,7 +11,7 @@ const DIST_PATH = `../../dist`;
 const outdir = `${DIST_PATH}/${packageName}`;
 
 async function createTypeDefs() {
-  exec("tsc --project ./tsconfig-emit-types.json", execCallback);
+  execWait("tsc --project ./tsconfig-emit-types.json");
 }
 
 function writePackageJSON() {

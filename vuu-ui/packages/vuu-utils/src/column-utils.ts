@@ -1,46 +1,8 @@
+import {
+  ColumnDescriptor,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid/src/grid-model/gridModelTypes";
 import { Row } from "./row-utils";
-
-interface Heading {
-  key: string;
-  isHeading: true;
-  label: string;
-  width: number;
-}
-
-export interface Column {
-  isGroup?: never;
-  key?: number;
-  name: string;
-  type?:
-    | {
-        name: string;
-      }
-    | string
-    | null;
-}
-
-export interface ColumnGroup {
-  isGroup: true;
-  columns: Column[];
-  contentWidth: number;
-  headings?: Heading[];
-  locked: boolean;
-  left?: number;
-  width: number;
-}
-
-export type ColumnType = Column | ColumnGroup;
-
-export interface KeyedColumn {
-  key: number;
-  name: string;
-  type?:
-    | {
-        name: string;
-      }
-    | string
-    | null;
-}
 
 export interface ColumnMap {
   [columnName: string]: number;
@@ -67,14 +29,20 @@ export function mapSortCriteria(
   });
 }
 
-export function isKeyedColumn(column: Column): column is KeyedColumn {
-  return typeof column.key === "number";
+export function isKeyedColumn(
+  column: ColumnDescriptor
+): column is KeyedColumnDescriptor {
+  return typeof (column as KeyedColumnDescriptor).key === "number";
 }
 
+export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
+  name,
+});
+
 export const toKeyedColumn = (
-  column: string | Column,
+  column: string | ColumnDescriptor,
   key: number
-): KeyedColumn => {
+): KeyedColumnDescriptor => {
   if (typeof column === "string") {
     return { key, name: column };
   }
@@ -117,7 +85,7 @@ export function projectUpdates(updates: number[]): number[] {
 
 export function projectColumns(
   tableRowColumnMap: ColumnMap,
-  columns: Column[]
+  columns: ColumnDescriptor[]
 ) {
   const columnCount = columns.length;
   const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, count } = metadataKeys;

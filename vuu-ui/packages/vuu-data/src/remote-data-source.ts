@@ -3,8 +3,8 @@ import {
   VuuGroupBy,
   VuuAggregation,
   VuuRange,
-  VuuSortCol,
   VuuTable,
+  VuuSort,
 } from "../../vuu-protocol-types";
 import { EventEmitter, Filter, uuid } from "@finos/vuu-utils";
 import { ConnectionManager, ServerAPI } from "./connection-manager";
@@ -368,12 +368,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   // TODO columns cannot simply be strings
-  sort(columns: VuuSortCol[]) {
+  sort(sort: VuuSort) {
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
         type: "sort",
-        sortDefs: columns,
+        sortDefs: sort.sortDefs,
       });
     }
   }
