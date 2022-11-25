@@ -97,12 +97,6 @@ export const parseFilter = (
   const [safeText, characterSubstitutions] =
     replaceProblematicCharacters(typedInput);
   const errors: RecognitionException[] = [];
-  console.log(
-    `%c[parse-filter] input: '${input}', typedInput: '${typedInput}' safeText='${safeText}'
-      substitutions: ${JSON.stringify(characterSubstitutions)}
-    `,
-    "background: green; color: white; font-weight: bold"
-  );
   const parser = constructParser(`${safeText}${insertSymbol}`);
 
   const errorListener = new ExprErrorListener(errors);
