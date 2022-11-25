@@ -200,21 +200,21 @@ export class Viewport {
       this.bufferSize
     );
 
-    console.log(
-      `%cViewport subscribed
-        clientVpId: ${this.clientViewportId}
-        serverVpId: ${this.serverViewportId}
-        table: ${this.table}
-        aggregations: ${JSON.stringify(aggregations)}
-        columns: ${columns.join(",")}
-        range: ${JSON.stringify(range)}
-        sort: ${JSON.stringify(sort)}
-        groupBy: ${JSON.stringify(groupBy)}
-        filterSpec: ${JSON.stringify(filterSpec)}
-        bufferSize: ${this.bufferSize}
-      `,
-      "color: blue"
-    );
+    // console.log(
+    //   `%cViewport subscribed
+    //     clientVpId: ${this.clientViewportId}
+    //     serverVpId: ${this.serverViewportId}
+    //     table: ${this.table}
+    //     aggregations: ${JSON.stringify(aggregations)}
+    //     columns: ${columns.join(",")}
+    //     range: ${JSON.stringify(range)}
+    //     sort: ${JSON.stringify(sort)}
+    //     groupBy: ${JSON.stringify(groupBy)}
+    //     filterSpec: ${JSON.stringify(filterSpec)}
+    //     bufferSize: ${this.bufferSize}
+    //   `,
+    //   "color: blue"
+    // );
 
     return {
       type: "subscribed",

@@ -430,7 +430,7 @@ export const ComplexNestedLayout = () => {
                 style={{ width: "100%", height: "100%" }}
                 title="View Palette"
               >
-                <PaletteItem label="Blue Monday" resizeable header>
+                <PaletteItem label="Blue Monday" closeable resizeable header>
                   <Component
                     style={{
                       backgroundColor: "cornflowerblue",
@@ -438,17 +438,17 @@ export const ComplexNestedLayout = () => {
                     }}
                   />
                 </PaletteItem>
-                <PaletteItem label="Brown Sugar" resizeable header>
+                <PaletteItem label="Brown Sugar" closeable resizeable header>
                   <Component
                     style={{ backgroundColor: "brown", height: "100%" }}
                   />
                 </PaletteItem>
-                <PaletteItem label="Green Day" resizeable header>
+                <PaletteItem label="Green Day" closeable resizeable header>
                   <Component
                     style={{ backgroundColor: "green", height: "100%" }}
                   />
                 </PaletteItem>
-                <PaletteItem label="Lemonheads" resizeable header>
+                <PaletteItem label="Lemonheads" closeable resizeable header>
                   <Component
                     style={{ backgroundColor: "yellow", height: "100%" }}
                   />

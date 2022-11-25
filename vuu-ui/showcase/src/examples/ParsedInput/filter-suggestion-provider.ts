@@ -190,10 +190,6 @@ const suggestNamedFilters = (
   text: string
 ): SuggestionResult => {
   if (text.startsWith(":")) {
-    console.log(`suggestNamedFilters text = '${text}'`, {
-      filters,
-    });
-
     const values: SuggestionItem[] = filters.map(({ name }) => ({
       isIllustration: false,
       isListItem: false,
@@ -263,12 +259,6 @@ export const createSuggestionProvider =
     text,
     selectedTokens = [],
   }: SuggestionProviderProps) => {
-    // console.log(
-    //   `[SuggestionProvider] getSuggestions, isListItem ${isListItem},  selectedValues`,
-    //   {
-    //     selectedTokens,
-    //   }
-    // );
     switch (tokenId) {
       case "COLUMN-NAME":
         return suggestColumnNames(annotateWithTypes(columns), text, isListItem);

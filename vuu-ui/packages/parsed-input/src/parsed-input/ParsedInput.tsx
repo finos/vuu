@@ -86,7 +86,6 @@ export const ParsedInput = forwardRef(function ParsedInput(
 
   const setCurrentText = useCallback(
     (text: string) => {
-      console.log(`[ParsedInput] setCurrentText '${text}'`);
       textRef.current = text;
     },
     [textRef]
@@ -147,10 +146,6 @@ export const ParsedInput = forwardRef(function ParsedInput(
 
   const handleDropdownChange = useCallback((isOpen: boolean, reason) => {
     {
-      console.log(`handle dropdown change ${reason}`, {
-        isOpen,
-      });
-
       if (reason !== "selection") {
         setOpen(isOpen);
       }

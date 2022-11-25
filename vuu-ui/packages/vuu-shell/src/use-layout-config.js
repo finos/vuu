@@ -4,10 +4,6 @@ const useLayoutConfig = (user, defaultLayout) => {
   const [layout, _setLayout] = useState(defaultLayout);
 
   const setLayout = (layout) => {
-    console.log(
-      `%cuseLayoutConfig setLayout #${layout.id}`,
-      "color:red;font-weight:bold;"
-    );
     _setLayout(layout);
   };
 
@@ -32,7 +28,6 @@ const useLayoutConfig = (user, defaultLayout) => {
 
   const saveData = useCallback(
     (data) => {
-      // console.log(JSON.stringify(data,null,2))
       fetch(`api/vui/${user.username}`, {
         method: "POST",
         headers: {
@@ -49,7 +44,6 @@ const useLayoutConfig = (user, defaultLayout) => {
 
   const loadLayoutById = useCallback(
     (id) => {
-      console.log(`load layout by if ${id}`);
       load(id);
     },
     [load]

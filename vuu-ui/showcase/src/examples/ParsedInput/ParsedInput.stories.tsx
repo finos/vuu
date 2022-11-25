@@ -30,15 +30,15 @@ export const ParsedFilterInput = () => {
   const handleCommit = (result) => {
     const { filter, name } = extractFilter(result);
     const filterQuery = filterAsQuery(filter, namedFilters);
-    console.log(
-      `extracted filter 
-      ${JSON.stringify(filter)} 
-      %c${filterQuery}
-      %c${name ? name : ""}
-      `,
-      "color:blue;font-weight:bold;",
-      "color:black"
-    );
+    // console.log(
+    //   `extracted filter
+    //   ${JSON.stringify(filter)}
+    //   %c${filterQuery}
+    //   %c${name ? name : ""}
+    //   `,
+    //   "color:blue;font-weight:bold;",
+    //   "color:black"
+    // );
     if (name) {
       setNamedFilters(namedFilters.concat({ name, filter }));
     }
