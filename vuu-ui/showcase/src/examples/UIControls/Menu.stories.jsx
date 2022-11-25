@@ -59,8 +59,8 @@ const SampleContextMenu = (props) => (
 );
 
 export const DefaultContextMenu = () => {
-  const handleClose = (action, options) => {
-    console.log(`clicked menu action ${action}`, options);
+  const handleClose = (/*action, options*/) => {
+    console.log(`clicked menu action`);
   };
 
   const [ref, position] = usePosition();
@@ -189,8 +189,8 @@ export const ContextMenuPopup = () => {
     }
   };
 
-  const handleClose = (menuId) => {
-    console.log(`closed with menuId ${menuId}`);
+  const handleClose = (/* menuId */) => {
+    console.log(`closed with menuId`);
     setPosition(null);
   };
 
@@ -259,8 +259,8 @@ export const SimpleContextMenuProvider = () => {
     { label: "Group", action: "group" },
   ];
 
-  const handleMenuAction = (type, options) => {
-    console.log(`handleContextMenu ${type}`, options);
+  const handleMenuAction = (/*type, options*/) => {
+    console.log(`handleContextMenu`);
   };
 
   const menuBuilder = () => menuDescriptors;
@@ -296,8 +296,8 @@ export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
     },
   ];
 
-  const handleMenuAction = (type, options) => {
-    console.log(`handleContextMenu ${type}`, options);
+  const handleMenuAction = (/* type, options */) => {
+    console.log(`handleContextMenu`);
   };
 
   const menuBuilder = (location, options) =>

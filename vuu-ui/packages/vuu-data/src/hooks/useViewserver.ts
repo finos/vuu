@@ -164,10 +164,6 @@ export const useViewserver = ({
 
   const getTypeaheadSuggestions: SuggestionFetcher = useCallback(
     async (params: TypeaheadParams) => {
-      console.log(
-        `%c⚡ [ParsedInput.story] getSuggestions params [${params.join(",")}]`,
-        "color: purple; font-weight: bold;"
-      );
       const method: TypeAheadMethod =
         params.length === 2
           ? "getUniqueFieldValues"

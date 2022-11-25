@@ -91,7 +91,7 @@ const getWorker = async (
         } else if (isConnectionStatusMessage(message)) {
           handleConnectionStatusChange(msg);
         } else {
-          console.log(`Unexpected message from the worker ${message.type}`);
+          console.log(`Unexpected message from the worker`);
         }
       };
       // TODO handle error
@@ -122,9 +122,8 @@ function handleMessageFromWorker({
       resolve(rest);
     } else {
       console.log(
-        `%cUnexpected message from the worker ${message.type} requestId ${requestId}`,
-        "color:red;font-weight:bold;",
-        pendingRequests
+        `%cUnexpected message from the worker requestId`,
+        "color:red;font-weight:bold;"
       );
     }
   }
