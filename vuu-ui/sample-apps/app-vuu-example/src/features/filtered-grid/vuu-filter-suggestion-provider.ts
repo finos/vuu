@@ -2,7 +2,7 @@ import {
   ColumnDataType,
   TypeaheadParams,
   VuuTable,
-} from "../../../../vuu-protocol-types";
+} from "@finos/vuu-protocol-types";
 import {
   NamedFilter,
   SuggestionItem,
@@ -200,10 +200,6 @@ const suggestNamedFilters = (
   text: string
 ): SuggestionResult => {
   if (text.startsWith(":")) {
-    console.log(`suggestNamedFilters text = '${text}'`, {
-      filters,
-    });
-
     const values: SuggestionItem[] = filters.map(({ name }) => ({
       isIllustration: false,
       isListItem: false,
@@ -291,9 +287,7 @@ export const createSuggestionProvider =
       case "NAMED-FILTER":
         return suggestNamedFilters(namedFilters, text);
       default:
-        console.log(
-          `[filter-suggestion-factory] no suggestions for ${tokenId} '${text}''`
-        );
+        // no suggestions
         return { values: [] };
     }
   };
