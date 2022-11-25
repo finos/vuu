@@ -169,8 +169,10 @@ export const parseSuggestions = (
     // TODO if we have multiple substitutions, we want the last
     const substitution =
       characterSubstitutions.shift() as CharacterSubstitution;
-    const regexp = new RegExp(`${substitution.substitutedChar}`);
-    text = text.replace(regexp, substitution.sourceChar);
+    text = text.replaceAll(
+      substitution.substitutedChar,
+      substitution.sourceChar
+    );
   }
 
   let rules, tokens;
