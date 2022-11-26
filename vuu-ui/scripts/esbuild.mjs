@@ -11,14 +11,11 @@ export async function build(config) {
     format = "esm",
     jsx,
     outdir,
+    outbase,
     outfile,
     sourcemap = true,
     splitting,
   } = config;
-
-  console.log(`esbuild `, {
-    external,
-  });
 
   return esbuild({
     entryPoints,
@@ -40,6 +37,7 @@ export async function build(config) {
     metafile: true,
     // minify: config.env === "production",
     minify: false,
+    outbase,
     outdir,
     outfile,
     sourcemap,

@@ -12,11 +12,11 @@
     <script type=""module"">
       window.vuuConfig = fetch('/config.json').then(res => {if (res.ok) {return res.json()} else { throw Error('Failed to load application config')}})
     </script>
-    <link rel="stylesheet" href="index.css"/>
+    <link rel="stylesheet" href="app-vuu-example/index.css"/>
     <title>VUU App</title>
   </head>
   <body>
     <div id="root"></div>
-    <script src="index.js" type="module"></script>
+    <script src="app-vuu-example/index.js" type="module"></script>
   </body>
 </html>

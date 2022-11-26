@@ -3,7 +3,8 @@ declare global {
 }
 
 export interface FeatureConfig {
-  id: string;
+  name: string;
+  title: string;
   url: string;
   css?: string;
 }

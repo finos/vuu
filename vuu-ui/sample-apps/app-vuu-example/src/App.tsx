@@ -9,9 +9,9 @@ import { Stack } from "./AppStack";
 
 import "./App.css";
 
-const { websocketUrl: serverUrl } = await vuuConfig;
+const { websocketUrl: serverUrl, features } = await vuuConfig;
 
-const filteredGridUrl = "./features/filtered-grid/index.js";
+const filteredGridUrl = "./feature-filtered-grid/index.js";
 
 registerComponent("Stack", Stack, "container");
 
@@ -76,7 +76,7 @@ export const App = ({ user }: { user: VuuUser }) => {
       <AppContext.Provider value={{ handleRpcResponse }}>
         <Shell
           defaultLayout={defaultLayout}
-          leftSidePanel={<AppSidePanel tables={tables} />}
+          leftSidePanel={<AppSidePanel features={features} tables={tables} />}
           serverUrl={serverUrl}
           user={user}
         >

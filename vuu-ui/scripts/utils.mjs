@@ -116,3 +116,28 @@ export const writeMetaFile = async (meta, outdir) =>
       }
     );
   });
+
+export const padRight = (str, length) => {
+  return (str + Array(length).fill(" ").join("")).slice(0, length);
+};
+export const byFileName = ({ fileName: f1 }, { fileName: f2 }) => {
+  return f2 > f1 ? -1 : f2 < f1 ? 1 : 0;
+};
+
+export const getCommandLineArg = (argName, expectValue) => {
+  const args = process.argv.slice(2);
+  const hasArg = args.includes(argName);
+  if (hasArg && expectValue) {
+    const pos = args.indexOf(argName);
+    const argValue = args[pos + 1];
+    if (argValue === undefined) {
+      console.log(`value expected after arg ${argName}`);
+    } else if (argValue.startsWith("--")) {
+      console.log(`value expected after arg ${argName}, found ${argValue}`);
+    } else {
+      return argValue;
+    }
+  } else {
+    return hasArg;
+  }
+};
