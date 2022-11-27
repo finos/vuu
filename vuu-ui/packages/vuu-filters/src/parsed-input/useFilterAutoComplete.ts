@@ -4,12 +4,11 @@ import {
   CompletionContext,
   CompletionSource,
 } from "@codemirror/autocomplete";
-import { ensureSyntaxTree, syntaxTree } from "@codemirror/language";
+import { syntaxTree } from "@codemirror/language";
 import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
-import { ISuggestionProvider } from "./ParsedInput";
+import { ISuggestionProvider } from "./useCodeMirrorEditor";
 import { EditorView } from "@codemirror/view";
-import { walkTree } from "./walkTree";
 
 export type ApplyCompletion = (
   view: EditorView,
@@ -94,7 +93,7 @@ export const useAutoComplete = (
       { label: "or", apply: "or ", boost: 3 },
       { label: "as", apply: "as ", boost: 1 },
     ],
-    []
+    [onSubmit]
   );
 
   return useCallback(
@@ -126,8 +125,25 @@ export const useAutoComplete = (
           const columnName = getColumnName(nodeBefore, state);
           const operator = getOperator(nodeBefore, state);
           const clauseOperator = getClauseOperator(nodeBefore, state);
-          if (clauseOperator === "As") {
-            return;
+          console.log(
+            `operator = ${operator} clauseOperator ${clauseOperator}`
+          );
+          if (clauseOperator === "as") {
+            return {
+              from: context.pos,
+              options: [
+                {
+                  label: "press ENTER to apply filter and save",
+                  apply: (
+                    view: EditorView,
+                    completion: Completion,
+                    from: number,
+                    to: number
+                  ) => onSubmit.current(view, completion, from, to),
+                  boost: 5,
+                },
+              ],
+            };
           } else {
             const identifierIsColumn = word.text === columnName;
             const isPartialMatch = identifierIsColumn
@@ -234,9 +250,19 @@ export const useAutoComplete = (
         case "Or":
         case "And":
         case "Eq":
-        case "AsClause":
           console.log(`we have a ${nodeBefore.name}`);
           break;
+        case "AsClause":
+          return {
+            from: context.pos,
+            options: [
+              {
+                label: "enter name for this filter",
+                // apply: "and ",
+                boost: 5,
+              },
+            ],
+          };
 
         case "AndExpression":
         case "OrExpression": {

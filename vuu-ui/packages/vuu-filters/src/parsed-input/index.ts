@@ -1,2 +1,2 @@
-export * from "./ParsedInput";
+export * from "./FilterInput";
 export * from "./useCodeMirrorEditor";

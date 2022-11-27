@@ -24,7 +24,7 @@ const schemaColumns = [
 ];
 
 //TODO combine parser and getTokenTypes into a parser
-export const ParsedFilterInput = () => {
+export const DefaultFilterInput = () => {
   const [filter, setFilter] = useState<Filter>();
   const [filterQuery, setFilterQuery] = useState<string>("");
   const [filterName, setFilterName] = useState<string>("");
@@ -67,4 +67,4 @@ export const ParsedFilterInput = () => {
     </>
   );
 };
-ParsedFilterInput.displaySequence = displaySequence++;
+DefaultFilterInput.displaySequence = displaySequence++;

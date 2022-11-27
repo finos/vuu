@@ -42,29 +42,29 @@
 
 
 [data-icon='filter'] {
-  --svg-icon: var(--svg-filter);
+  --vuu-icon-svg: var(--svg-filter);
 }
 
 [data-icon='user'] {
-  --svg-icon: var(--svg-user);
+  --vuu-icon-svg: var(--svg-user);
 }
 
 [data-icon='box'] {
-  --svg-icon: var(--svg-box);
+  --vuu-icon-svg: var(--svg-box);
 }
 
 [data-icon='rings'] {
-  --svg-icon: var(--svg-rings);
+  --vuu-icon-svg: var(--svg-rings);
 }
 
 [data-icon='close'] {
-  --svg-icon: var(--svg-close);
+  --vuu-icon-svg: var(--svg-close);
 }
 
 [data-icon='close-circle'] {
-  --svg-icon: var(--svg-close-circle);
+  --vuu-icon-svg: var(--svg-close-circle);
 }
 
 :is([data-icon='folder'], [data-icon='folder-closed']) {
-  --svg-icon: var(--svg-folder-closed);
+  --vuu-icon-svg: var(--svg-folder-closed);
 }

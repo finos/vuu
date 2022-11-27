@@ -71,7 +71,7 @@ export const useCodeMirrorEditor = ({
   const viewRef = useRef<EditorView>();
   const completionFn = useAutoComplete(suggestionProvider, onSubmit);
 
-  const createState = useMemo(() => {
+  const [createState, clearInput] = useMemo(() => {
     const parseFilter = ():
       | [Filter, string, string | undefined]
       | [undefined, "", undefined] => {
@@ -86,10 +86,14 @@ export const useCodeMirrorEditor = ({
       }
     };
 
+    const clearInput = () => {
+      getView(viewRef).setState(createState());
+    };
+
     const submitFilterAndClearInput = () => {
       const [filter, filterQuery, filterName] = parseFilter();
       onSubmitFilter?.(filter, filterQuery, filterName);
-      getView(viewRef).setState(createState());
+      clearInput();
     };
 
     const submitFilter = (key: string) => {
@@ -152,7 +156,7 @@ export const useCodeMirrorEditor = ({
       }, 100);
     };
 
-    return createState;
+    return [createState, clearInput];
   }, [completionFn, onSubmitFilter]);
 
   useEffect(() => {
@@ -170,5 +174,5 @@ export const useCodeMirrorEditor = ({
     };
   }, [completionFn, createState]);
 
-  return editorRef;
+  return { editorRef, clearInput };
 };

@@ -1,5 +1,5 @@
 
-.vuuFilterEditor {
+.vuuFilterInput {
     --vuuFilterEditor-background: var(--uitk-container-background-medium);
     --vuuFilterEditor-color: var(--uitk-text-primary-foreground);
     --vuuFilterEditor-fontFamily: var(--uitk-typography-fontFamily);
@@ -11,9 +11,24 @@
     --vuuFilterEditor-tooltipElevation: var(--uitk-overlayable-shadow-popout);
     --vuuFilterEditor-suggestion-selectedBackground: var(--uitk-selectable-background-selected);
     --vuuFilterEditor-suggestion-height: 24px;
-
     --vuuFilterEditor-variableColor: blue;
 
+    align-items: center;
     border: solid 1px lightgray;
     box-sizing: border-box;
+    display: flex;
+    height: 30px;
 }
+
+.vuuFilterInput-Editor {
+    flex: 1 1 auto;
+    height: 100%;
+}
+
+.vuuFilterInput-FilterButton,
+.vuuFilterInput-ClearButton {
+    --vuu-icon-size: 12px;
+    --uitkButton-width: 28px;
+}
+
+

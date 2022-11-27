@@ -1,2 +1,2 @@
-export * from "./ParsedInputFilter.stories";
+export * from "./FilterInput.stories";
 export * from "./FilterToolbar.stories";
