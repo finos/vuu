@@ -32,7 +32,6 @@ export interface DataSourceColumn {}
   ----------------------------------------------------------------*/
 export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
-  private viewport: string | undefined;
   private server: ServerAPI | null = null;
   private url: string;
   private visualLink: string;
@@ -52,6 +51,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   public columns: DataSourceColumn[];
   public rowCount: number | undefined;
   public table: VuuTable;
+  public viewport: string | undefined;
 
   constructor({
     bufferSize = 100,

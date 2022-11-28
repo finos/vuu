@@ -324,6 +324,37 @@ export const ColumnHeaders1Level = () => {
 
 ColumnHeaders1Level.displaySequence = displaySequence++;
 
+export const SizeSpecifiedInProps = () => {
+  const gridRef = useRef(null);
+
+  const { columns, dataSource, error } = useTestDataSource({
+    tablename: "instruments",
+  });
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
+  return (
+    <>
+      <div>
+        <input defaultValue="Life is" />
+      </div>
+      <Grid
+        dataSource={dataSource}
+        columns={columns}
+        height={400}
+        ref={gridRef}
+        renderBufferSize={20}
+        style={{ margin: 10, border: "solid 1px #ccc" }}
+        width={700}
+      />
+    </>
+  );
+};
+
+SizeSpecifiedInProps.displaySequence = displaySequence++;
+
 export const ColumnHeaders2Levels = () => {
   const gridRef = useRef(null);
 

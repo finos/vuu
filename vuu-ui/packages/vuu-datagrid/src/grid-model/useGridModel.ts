@@ -29,7 +29,6 @@ export const useGridModel = ({
   const custom = useAdornments(children);
 
   const size = useMeasuredSize(rootRef, height, width);
-
   // useEffect(() => {
   //   onsole.log(`%cchange to columnGroups ${JSON.stringify(gridModel.columnGroups,null,2)}`,'color:brown;font-weight: bold;')
   // },[gridModel.columnGroups])
@@ -59,7 +58,6 @@ export const useGridModel = ({
   }, [props.rowHeight, gridModel.rowHeight]);
 
   useEffect(() => {
-    console.log(`useGridModel size change ${JSON.stringify(size)}`);
     if (isMeasured(size)) {
       dispatchGridModel({
         size,

@@ -51,7 +51,7 @@ async function makeConnection(
     const ws = await createWebsocket(url);
 
     console.log(
-      `%c⚡ connected`,
+      "%c⚡ %cconnected",
       "font-size: 24px;color: green;font-weight: bold;",
       "color:green; font-size: 14px;"
     );

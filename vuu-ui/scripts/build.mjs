@@ -6,6 +6,7 @@ import {
   formatBytes,
   formatDuration,
   readPackageJson,
+  writeMetaFile,
 } from "./utils.mjs";
 const NO_DEPENDENCIES = {};
 
@@ -30,7 +31,6 @@ export default async function main(customConfig) {
     packageJson;
 
   const [, packageName] = scopedPackageName.split("/");
-
   const external = Object.keys(peerDependencies);
 
   const workerTS = "src/worker.ts";
@@ -170,6 +170,8 @@ export default async function main(customConfig) {
   const [, esmOutput, cjsOutput] = await Promise.all(buildTasks).catch((e) => {
     process.exit(1);
   });
+
+  await writeMetaFile(esmOutput.result.metafile, outdir);
 
   const {
     outputs: {

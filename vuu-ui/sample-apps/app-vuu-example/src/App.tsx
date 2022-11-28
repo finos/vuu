@@ -1,17 +1,21 @@
 import { ToolkitProvider } from "@heswell/uitk-core";
 import { RpcResponse, useViewserver, VuuTableSchemas } from "@finos/vuu-data";
 import { Dialog, registerComponent } from "@finos/vuu-layout";
-import { Feature, Shell, VuuUser } from "@finos/vuu-shell";
+import {
+  Feature,
+  Shell,
+  ShellContextProvider,
+  VuuUser,
+} from "@finos/vuu-shell";
 import { ReactElement, useCallback, useRef, useState } from "react";
-import AppContext from "./app-context";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 
 import "./App.css";
 
-const { websocketUrl: serverUrl } = vuuConfig;
+const { websocketUrl: serverUrl, features } = await vuuConfig;
 
-const filteredGridUrl = "./features/filtered-grid/index.js";
+const filteredGridUrl = "./feature-filtered-grid/index.js";
 
 registerComponent("Stack", Stack, "container");
 
@@ -73,10 +77,10 @@ export const App = ({ user }: { user: VuuUser }) => {
   // TODO get Context from Shell
   return (
     <ToolkitProvider density="high">
-      <AppContext.Provider value={{ handleRpcResponse }}>
+      <ShellContextProvider value={{ handleRpcResponse }}>
         <Shell
           defaultLayout={defaultLayout}
-          leftSidePanel={<AppSidePanel tables={tables} />}
+          leftSidePanel={<AppSidePanel features={features} tables={tables} />}
           serverUrl={serverUrl}
           user={user}
         >
@@ -89,7 +93,7 @@ export const App = ({ user }: { user: VuuUser }) => {
             {dialogContent}
           </Dialog>
         </Shell>
-      </AppContext.Provider>
+      </ShellContextProvider>
     </ToolkitProvider>
   );
 };

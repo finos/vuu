@@ -1,53 +1,91 @@
 import {
+  assertFileExists,
+  byFileName,
   copyFolderSync,
   formatBytes,
   formatDuration,
+  getCommandLineArg,
+  padRight,
+  readJson,
+  readPackageJson,
 } from "../../../scripts/utils.mjs";
 import { build } from "../../../scripts/esbuild.mjs";
 import fs from "fs";
 import path from "path";
 
-const entryPoints = ["src/index.tsx", "src/login.tsx"];
+const entryPoints = ["index.tsx", "login.tsx"];
 
 const featureEntryPoints = [
-  "src/features/filtered-grid/index.ts",
-  "src/features/metrics/index.js",
+  // "src/features/ag-grid/index.ts",
+  "../feature-filtered-grid/index.ts",
+  // "src/features/metrics/index.js",
 ];
 
-const outbase = "src";
 const outdir = "../../deployed_apps/app-vuu-example";
-let configFile = "./config/localhost.config.js";
+let configFile = "./config/localhost.config.json";
 
-const stripOutdir = (file) => file.replace(RegExp(`^${outdir}\/`), "");
-
-const args = process.argv.slice(2);
-const watch = args.includes("--watch");
-const development = watch || args.includes("--dev");
-const hasConfigPath = args.includes("--config");
-if (hasConfigPath) {
-  const switchIndex = args.indexOf("--config");
-  const configPath = args[switchIndex + 1];
-  let isFile = false;
-  try {
-    isFile = fs.lstatSync(path.resolve(configPath)).isFile();
-  } catch (e) {
-    // ignore, we handle it below
-  }
-  if (!isFile) {
-    console.error(`config file ${configPath} not found`);
-    process.exit(1);
-  } else {
-    configFile = configPath;
-  }
+const watch = getCommandLineArg("--watch");
+const development = watch || getCommandLineArg("--dev");
+const configPath = getCommandLineArg("--config", true);
+if (configPath) {
+  configFile = configPath;
 }
 
-const mainConfig = {
+assertFileExists(configFile, true);
+
+const { name: projectName } = readPackageJson();
+
+const exbuildConfig = {
   entryPoints: entryPoints.concat(featureEntryPoints),
   env: development ? "development" : "production",
   name: "app-vuu-example",
   outdir,
   splitting: true,
 };
+
+async function writeFeatureEntriesToConfigJson(featureBundles) {
+  return new Promise((resolve, reject) => {
+    console.log("[DEPLOY config]");
+    const configJson = readJson(configFile);
+    let { features } = configJson;
+    if (features === undefined) {
+      features = configJson.features = {};
+    }
+
+    const featureFilePath = (featureName, files, matchPattern) => {
+      const file = files.find(({ fileName }) =>
+        fileName.endsWith(matchPattern)
+      );
+      if (file) {
+        return `./feature-${featureName}/${file.fileName}`;
+      }
+    };
+
+    featureBundles.forEach(({ name, files }) => {
+      const { description = name } = readJson(
+        path.resolve(`../feature-${name}/package.json`)
+      );
+      features[name] = {
+        title: description,
+        name,
+        url: featureFilePath(name, files, ".js"),
+        css: featureFilePath(name, files, ".css"),
+      };
+    });
+
+    fs.writeFile(
+      path.resolve(outdir, "config.json"),
+      JSON.stringify(configJson, null, 2),
+      (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      }
+    );
+  });
+}
 
 async function main() {
   function createDeployFolder() {
@@ -64,7 +102,7 @@ async function main() {
       result: { metafile },
       duration,
     },
-  ] = await Promise.all([build(mainConfig)]).catch((e) => {
+  ] = await Promise.all([build(exbuildConfig)]).catch((e) => {
     console.error(e);
     process.exit(1);
   });
@@ -93,27 +131,49 @@ async function main() {
     }
   });
 
-  console.log("[DEPLOY config]");
-  copyFolderSync(path.resolve(configFile), path.resolve(outdir, "config.js"));
-
-  entryPoints.concat(featureEntryPoints).forEach((fileName) => {
-    const outJS = `${outdir}/${fileName
-      .replace(new RegExp(`^${outbase}\\/`), "")
-      .replace(/x$/, "")
-      .replace(/ts$/, "js")}`;
-    const outCSS = outJS.replace(/js$/, "css");
-    const {
-      outputs: { [outJS]: jsOutput, [outCSS]: cssOutput },
-    } = metafile;
-    console.log(
-      `\t${stripOutdir(outJS)}:  ${formatBytes(
-        jsOutput.bytes
-      )} (${formatDuration(duration)})`
-    );
-    if (cssOutput) {
-      console.log(`\t${stripOutdir(outCSS)}: ${formatBytes(cssOutput.bytes)}`);
+  const outputs = {
+    core: [],
+    common: [],
+    features: [],
+  };
+  for (const [file, { bytes }] of Object.entries(metafile.outputs)) {
+    if (file.endsWith("js") || file.endsWith("css")) {
+      const fileName = file.replace(`${outdir}/`, "");
+      if (fileName.startsWith(projectName)) {
+        outputs.core.push({ fileName, bytes });
+      } else if (fileName.startsWith("feature")) {
+        const [name, featureFileName] = fileName.split("/");
+        const featureName = name.replace("feature-", "");
+        let feature = outputs.features.find((f) => f.name === featureName);
+        if (feature === undefined) {
+          feature = { name: featureName, files: [] };
+          outputs.features.push(feature);
+        }
+        feature.files.push({ fileName: featureFileName, bytes });
+      } else {
+        outputs.common.push({ fileName, bytes });
+      }
     }
+  }
+
+  console.log("\ncore");
+  outputs.core.sort(byFileName).forEach(({ fileName, bytes }) => {
+    console.log(`${padRight(fileName, 30)} ${formatBytes(bytes)}`);
   });
+  console.log("\ncommon");
+  outputs.common.forEach(({ fileName, bytes }) => {
+    console.log(`${padRight(fileName, 30)} ${formatBytes(bytes)}`);
+  });
+  outputs.features.forEach(({ name, files }) => {
+    console.log(`\nfeature: ${name}`);
+    files.forEach(({ fileName, bytes }) => {
+      console.log(`${padRight(fileName, 30)} ${formatBytes(bytes)}`);
+    });
+  });
+
+  console.log(`\nbuild took ${formatDuration(duration)}`);
+
+  await writeFeatureEntriesToConfigJson(outputs.features);
 }
 
 main();

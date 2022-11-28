@@ -234,7 +234,6 @@ export const useViewserver = ({
         | DataSourceVisualLinksMessage
     ) => {
       if (action.type === "VIEW_PORT_MENUS_RESP") {
-        console.log(`[useViewserver] VIEW_PORT_MENUS_RESP`);
         contextMenu.current = action.menu;
         saveSession?.(action.menu, "vs-context-menu");
         return true;
@@ -247,9 +246,7 @@ export const useViewserver = ({
       ) {
         onConfigChange?.(action);
       } else {
-        console.log(
-          `useViewserver dispatchGridAction no handler for ${action.type}`
-        );
+        console.log(`useViewserver dispatchGridAction no handler for action`);
       }
     },
     [onConfigChange, saveSession]
@@ -266,7 +263,9 @@ export const useViewserver = ({
         // the createLink method only exists on dataSource
         return rpcServer.createLink(options), true;
       } else {
-        console.log(`useViewServer handleMenuAction,  can't handle ${type}`);
+        console.log(
+          `useViewServer handleMenuAction,  can't handle action type`
+        );
       }
     },
     [rpcServer, onRpcResponse]

@@ -3,14 +3,13 @@ import {
   filterAsQuery,
   parseFilter,
 } from "@finos/datagrid-parsers";
-import { useViewContext } from "@finos/vuu-layout";
 import { ParsedInput, ParserProvider } from "@finos/parsed-input";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useViewContext } from "@finos/vuu-layout";
+import { useShellContext } from "@finos/vuu-shell";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createSuggestionProvider } from "./vuu-filter-suggestion-provider";
 
-import { LinkedIcon } from "@heswell/uitk-icons";
-import { ToolbarButton } from "@heswell/uitk-lab";
-import { Grid, GridProvider } from "@finos/vuu-datagrid";
+import { ContextMenuProvider } from "@finos/ui-controls";
 import {
   ConfigChangeMessage,
   createDataSource,
@@ -18,12 +17,13 @@ import {
   TableSchema,
   useViewserver,
 } from "@finos/vuu-data";
-import { ContextMenuProvider } from "@finos/ui-controls";
-import AppContext from "../../app-context";
+import { Grid, GridProvider } from "@finos/vuu-datagrid";
+import { LinkedIcon } from "@heswell/uitk-icons";
+import { ToolbarButton } from "@heswell/uitk-lab";
 
 import { NamedFilter } from "@finos/datagrid-parsers";
-import { Filter } from "@finos/vuu-utils";
 import { FeatureProps } from "@finos/vuu-shell";
+import { Filter } from "@finos/vuu-utils";
 
 import "./filtered-grid.css";
 
@@ -35,7 +35,7 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
   const { id, dispatch, load, purge, save, loadSession, saveSession } =
     useViewContext();
   const config = useMemo(() => load(), [load]);
-  const { handleRpcResponse } = useContext(AppContext);
+  const { handleRpcResponse } = useShellContext();
   const [namedFilters, setNamedFilters] = useState<NamedFilter[]>([]);
 
   const dataSource: RemoteDataSource = useMemo(() => {
@@ -87,7 +87,7 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
         }
       }
     },
-    [dispatch, save]
+    [dispatch, purge, removeVisualLink, save]
   );
 
   const {
@@ -113,8 +113,6 @@ const FilteredGrid = ({ schema, ...props }: FilteredGridProps) => {
     },
     [dataSource, namedFilters]
   );
-
-  console.log({ dataSourceColumns: dataSource.columns });
 
   return (
     <ContextMenuProvider

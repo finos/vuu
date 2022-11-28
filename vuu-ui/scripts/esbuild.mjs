@@ -11,10 +11,12 @@ export async function build(config) {
     format = "esm",
     jsx,
     outdir,
+    outbase,
     outfile,
     sourcemap = true,
     splitting,
   } = config;
+
   return esbuild({
     entryPoints,
     banner,
@@ -35,6 +37,7 @@ export async function build(config) {
     metafile: true,
     // minify: config.env === "production",
     minify: false,
+    outbase,
     outdir,
     outfile,
     sourcemap,

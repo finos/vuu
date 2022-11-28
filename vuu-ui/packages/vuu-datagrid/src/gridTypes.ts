@@ -69,7 +69,7 @@ export interface GridProps extends HTMLAttributes<HTMLDivElement> {
    * default styles, this will vary by density, 20px in High Density mode.
    */
   rowHeight?: number;
-  selectionModel?: "none" | "checkbox"; // there are others
+  selectionModel?: "none" | "single" | "checkbox" | "extended"; // there are others
   showLineNumbers?: boolean;
   sort?: VuuSort;
   /**
