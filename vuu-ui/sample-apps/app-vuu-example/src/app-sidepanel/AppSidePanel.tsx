@@ -14,8 +14,9 @@ import cx from "classnames";
 import { TableSchema, VuuTableSchemas } from "@finos/vuu-data";
 import React, { ReactElement, useMemo, useState } from "react";
 
+const NO_FEATURES: Features = {};
 export interface AppSidePanelProps {
-  features: Features;
+  features?: Features;
   tables: VuuTableSchemas;
 }
 
@@ -44,7 +45,10 @@ const wordify = (text: string) => {
   return `${capitalize(firstWord)} ${rest.join(" ")}`;
 };
 
-export const AppSidePanel = ({ features, tables }: AppSidePanelProps) => {
+export const AppSidePanel = ({
+  features = NO_FEATURES,
+  tables,
+}: AppSidePanelProps) => {
   const classBase = "vuuAppSidePanel";
 
   const gridFeatures = useMemo(

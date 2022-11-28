@@ -31,7 +31,15 @@ export interface PaletteItemProps extends ListItemProps {
 }
 
 export const PaletteItem = memo(
-  ({ className, children: component, idx, ...props }: PaletteItemProps) => {
+  ({
+    className,
+    children: component,
+    idx,
+    resizeable,
+    header,
+    closeable,
+    ...props
+  }: PaletteItemProps) => {
     return (
       <ListItem
         className={cx("vuuPaletteItem", className)}

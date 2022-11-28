@@ -1,9 +1,13 @@
 import { ToolkitProvider } from "@heswell/uitk-core";
 import { RpcResponse, useViewserver, VuuTableSchemas } from "@finos/vuu-data";
 import { Dialog, registerComponent } from "@finos/vuu-layout";
-import { Feature, Shell, VuuUser } from "@finos/vuu-shell";
+import {
+  Feature,
+  Shell,
+  ShellContextProvider,
+  VuuUser,
+} from "@finos/vuu-shell";
 import { ReactElement, useCallback, useRef, useState } from "react";
-import AppContext from "./app-context";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 
@@ -73,7 +77,7 @@ export const App = ({ user }: { user: VuuUser }) => {
   // TODO get Context from Shell
   return (
     <ToolkitProvider density="high">
-      <AppContext.Provider value={{ handleRpcResponse }}>
+      <ShellContextProvider value={{ handleRpcResponse }}>
         <Shell
           defaultLayout={defaultLayout}
           leftSidePanel={<AppSidePanel features={features} tables={tables} />}
@@ -89,7 +93,7 @@ export const App = ({ user }: { user: VuuUser }) => {
             {dialogContent}
           </Dialog>
         </Shell>
-      </AppContext.Provider>
+      </ShellContextProvider>
     </ToolkitProvider>
   );
 };

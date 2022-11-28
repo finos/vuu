@@ -55,7 +55,6 @@ const ColumnGroupHeader = React.memo(
       sort: VuuSort | undefined,
       column: KeyedColumnDescriptor
     ) => {
-      console.log({ sort });
       if (!sort || sort.sortDefs.length === 0) {
         return undefined;
       } else {

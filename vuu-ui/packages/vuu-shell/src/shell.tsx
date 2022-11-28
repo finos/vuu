@@ -1,6 +1,5 @@
 import { connectToServer /*, useViewserver */ } from "@finos/vuu-data";
 import {
-  cloneElement,
   HTMLAttributes,
   MouseEvent,
   ReactElement,
@@ -11,6 +10,7 @@ import {
   useState,
 } from "react";
 import useLayoutConfig from "./use-layout-config";
+import { ShellContextProvider } from "./ShellContextProvider";
 import cx from "classnames";
 
 import {
@@ -136,7 +136,8 @@ export const Shell = ({
   };
 
   return (
-    <>
+    // ShellContext TBD
+    <ShellContextProvider value={undefined}>
       <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
         <DraggableLayout
           className={cx("vuuShell", className)}
@@ -165,6 +166,6 @@ export const Shell = ({
         </DraggableLayout>
       </LayoutProvider>
       {children}
-    </>
+    </ShellContextProvider>
   );
 };

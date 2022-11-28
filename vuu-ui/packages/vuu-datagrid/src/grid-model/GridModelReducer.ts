@@ -161,7 +161,6 @@ export const initModel = ([
     viewportRowCount: 0,
     visualLinks: undefined,
   };
-
   if (isMeasured(size)) {
     return buildColumnsAndApplyMeasurements(state, size);
   } else {
@@ -183,7 +182,13 @@ function buildColumnsAndApplyMeasurements(
     rowHeight,
   } = state;
 
-  const { clientHeight: height, clientWidth: width } = size;
+  // client height and width are always measured, width and height may come from props
+  const {
+    height: fullHeight,
+    clientHeight: height = fullHeight,
+    width: fullWidth,
+    clientWidth: width = fullWidth,
+  } = size;
 
   const { columnNames, columnGroups, headingDepth } = buildColumnGroups(
     state,
@@ -456,8 +461,9 @@ function hideColumn(
   };
 }
 
-function showColumn(state: GridModelType, action: GridModelActionShowColumn) {
-  console.log(`show Columns ${action.column.name}`);
+function showColumn(
+  state: GridModelType /*, action: GridModelActionShowColumn*/
+) {
   return state;
 }
 
@@ -522,7 +528,6 @@ function resizeColumn(
   state: GridModelType,
   { phase, columnName, width }: GridModelActionResizeColumn
 ): GridModelType {
-  console.log(`GridModelReducer resizeColumn ${phase} width ${width}`);
   if (phase === "resize") {
     const columnGroups = GridModel.updateGroupColumnWidth(
       state,
@@ -623,10 +628,6 @@ function buildColumnGroups(
       : showLineNumbers
       ? [LINE_NUMBER_COLUMN]
       : [];
-
-  console.log(
-    `buildColumnGroups width = ${gridWidth} gridContentWidth ${gridContentWidth}`
-  );
 
   const headingDepth = getMaxHeadingDepth(columns);
   // TODO separate keys from columns
