@@ -38,4 +38,4 @@ jobs:
       - name: Install dependencies
         run: cd ./vuu-ui && yarn
       - name: Build showcase
-        run: cd ./vuu-ui && yarn build
+        run: cd ./vuu-ui && yarn showcase:build

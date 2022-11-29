@@ -1,52 +1,23 @@
 import { ToolkitProvider } from "@heswell/uitk-core";
-import { useViewserver, VuuTableSchemas } from "@finos/vuu-data";
+import { RpcResponse, useViewserver, VuuTableSchemas } from "@finos/vuu-data";
 import { Dialog, registerComponent } from "@finos/vuu-layout";
-import { Feature, Shell, VuuUser } from "@finos/vuu-shell";
-import { ReactElement, useCallback, useMemo, useRef, useState } from "react";
-import AppContext, { RpcResponse } from "./app-context";
+import {
+  Feature,
+  Shell,
+  ShellContextProvider,
+  VuuUser,
+} from "@finos/vuu-shell";
+import { ReactElement, useCallback, useRef, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 
 import "./App.css";
 
-export const serverUrl = "127.0.0.1:8090/websocket";
-const filteredGridUrl = "./features/filtered-grid/index.js";
-const filteredGridCss = "./features/filtered-grid/index.css";
-const simpleComponentUrl = "./features/simple-component/index.js";
+const { websocketUrl: serverUrl, features } = await vuuConfig;
 
-const metricsUrl = "./features/metrics.js";
-const metricsCss = "./features/metrics.css";
+const filteredGridUrl = "./feature-filtered-grid/index.js";
 
 registerComponent("Stack", Stack, "container");
-
-// const getPaletteConfig = (tables: VuuTableSchemas) => [
-//   {
-//     label: "Features",
-//     items: [
-//       {
-//         header: true,
-//         label: "Simple Component",
-//         type: "Feature",
-//         props: {
-//           url: simpleComponentUrl,
-//         },
-//       },
-//       {
-//         header: true,
-//         label: "Metrics",
-//         type: "Feature",
-//         props: {
-//           css: metricsCss,
-//           url: metricsUrl,
-//         },
-//       },
-//     ],
-//   },
-//   {
-//     label: "Tables",
-//     items: getTables(tables),
-//   },
-// ];
 
 const defaultLayout = {
   type: "Stack",
@@ -106,10 +77,10 @@ export const App = ({ user }: { user: VuuUser }) => {
   // TODO get Context from Shell
   return (
     <ToolkitProvider density="high">
-      <AppContext.Provider value={{ handleRpcResponse }}>
+      <ShellContextProvider value={{ handleRpcResponse }}>
         <Shell
           defaultLayout={defaultLayout}
-          leftSidePanel={<AppSidePanel tables={tables} />}
+          leftSidePanel={<AppSidePanel features={features} tables={tables} />}
           serverUrl={serverUrl}
           user={user}
         >
@@ -122,7 +93,7 @@ export const App = ({ user }: { user: VuuUser }) => {
             {dialogContent}
           </Dialog>
         </Shell>
-      </AppContext.Provider>
+      </ShellContextProvider>
     </ToolkitProvider>
   );
 };

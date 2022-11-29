@@ -106,9 +106,6 @@ export const LayoutConfigurator = ({
   width,
 }) => {
   const state = normalizeStyle(managedStyle);
-  // console.log(`
-  //     ${JSON.stringify(state,null,2)}
-  // `)
 
   const handleChange = (feature, dimension, strValue) => {
     const value = parseInt(strValue || "0", 10);
@@ -261,12 +258,6 @@ export function XXXnormalizeStyles(
 
 function normalizeStyle(managedStyle = NO_STYLE) {
   const style = { ...managedStyle };
-  console.log(
-    `%cnormalize
-   ${JSON.stringify(style, null, 2)}
-   `,
-    "color: blue; font-weight: bold;"
-  );
 
   // if (BORDER_LIST.some(bs => style[bs])) {
   let match;

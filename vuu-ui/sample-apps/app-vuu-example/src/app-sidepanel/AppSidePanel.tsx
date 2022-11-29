@@ -1,88 +1,24 @@
-import cx from "classnames";
+import { Palette, PaletteItem } from "@finos/vuu-layout";
+import { Feature, Features } from "@finos/vuu-shell";
 import {
   Accordion,
   AccordionDetails,
   AccordionSection,
   AccordionSummary,
-} from "@heswell/uitk-lab";
-import { Palette, PaletteItem } from "@finos/vuu-layout";
-import { Feature } from "@finos/vuu-shell";
-import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
 } from "@heswell/uitk-lab";
+import cx from "classnames";
 
-import { useMemo, useState } from "react";
 import { TableSchema, VuuTableSchemas } from "@finos/vuu-data";
+import React, { ReactElement, useMemo, useState } from "react";
 
-//prettier-ignore
-const tables = [
-  { table: "childOrders", module: "SIMUL" },
-  {table: "instrumentPrices", module: "SIMUL" },
-  {table: "instruments", module: "SIMUL" },
-  {table: "metricsGroupBy", module: "METRICS" },
-  {table: "metricsTables", module: "METRICS" },
-  {table: "metricsViewports", module: "METRICS" },
-  {table: "orderEntry", module: "SIMUL" },
-  {table: "orderEntryPrices", module: "SIMUL" },
-  {table: "orders", module: "SIMUL" },
-  {table: "ordersPrices", module: "SIMUL" },
-  {table: "parentOrders", module: "SIMUL" },
-  {table: "prices",  module: "SIMUL" },
-  {table: "uiState", module: "vui" },
-];
-
-// const getPaletteItems = (config) => {
-//   const paletteItems = [];
-
-//   config.forEach((configItem) => {
-//     const { label, items = [] } = configItem;
-//     paletteItems.push(
-//       <div key={label} data-header>
-//         {label}
-//       </div>
-//     );
-//     items.forEach((paletteItem, i) => {
-//       const { component, type, props, ...args } = paletteItem;
-//       if (component) {
-//         paletteItems.push(
-//           <PaletteItem {...args} key={i}>
-//             {component}
-//           </PaletteItem>
-//         );
-//       } else if (type && isRegistered(type)) {
-//         const Component = ComponentRegistry[type];
-//         paletteItems.push(
-//           <PaletteItem {...args} key={i}>
-//             {React.createElement(Component, {
-//               ...props,
-//               key: i,
-//             })}
-//           </PaletteItem>
-//         );
-//       }
-//     });
-//   });
-
-//   return paletteItems;
-// };
+const NO_FEATURES: Features = {};
 export interface AppSidePanelProps {
+  features?: Features;
   tables: VuuTableSchemas;
 }
-
-const gridFeatures = [
-  {
-    className: "vuuFilteredGrid",
-    css: "./features/filtered-grid/index.css",
-    js: "./features/filtered-grid/index.js",
-  },
-  {
-    className: "vuuAgGridFeature",
-    css: "./features/ag-grid/index.css",
-    js: "./features/ag-grid/index.js",
-  },
-];
 
 const byModule = (schema1: TableSchema, schema2: TableSchema) => {
   const m1 = schema1.table.module.toLowerCase();
@@ -109,8 +45,24 @@ const wordify = (text: string) => {
   return `${capitalize(firstWord)} ${rest.join(" ")}`;
 };
 
-export const AppSidePanel = ({ tables }: AppSidePanelProps) => {
+export const AppSidePanel = ({
+  features = NO_FEATURES,
+  tables,
+}: AppSidePanelProps) => {
   const classBase = "vuuAppSidePanel";
+
+  const gridFeatures = useMemo(
+    () =>
+      Object.entries(features).map(([featureName, { title, url, css }]) => {
+        return {
+          className: featureName,
+          css,
+          js: url,
+          title,
+        };
+      }),
+    [features]
+  );
 
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const handleChange: ToggleButtonGroupChangeEventHandler = (
@@ -143,7 +95,33 @@ export const AppSidePanel = ({ tables }: AppSidePanelProps) => {
           label: `${schema.table.module} ${wordify(schema.table.table)}`,
         };
       });
-  }, [selectedIndex, tables]);
+  }, [gridFeatures, selectedIndex, tables]);
+
+  const toggleButtons = (): ReactElement => {
+    const featureNames = Object.keys(features);
+    if (featureNames.length === 1) {
+      return <div>{gridFeatures[0].title}</div>;
+    } else {
+      return (
+        <ToggleButtonGroup
+          onChange={handleChange}
+          selectedIndex={selectedIndex}
+        >
+          {Object.values(features).map(({ title }) => (
+            <ToggleButton ariaLabel="alert" key={title} tooltipText="Alert">
+              {title}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      );
+    }
+  };
+
+  Object.keys(features).map((featureName) => (
+    <ToggleButton ariaLabel="alert" key={featureName} tooltipText="Alert">
+      Vuu Grid
+    </ToggleButton>
+  ));
 
   return (
     <div className={cx(classBase)}>
@@ -155,18 +133,7 @@ export const AppSidePanel = ({ tables }: AppSidePanelProps) => {
         <AccordionSection key={"rivers-and-lakes"} id="tables">
           <AccordionSummary>Vuu Tables</AccordionSummary>
           <AccordionDetails>
-            <ToggleButtonGroup
-              onChange={handleChange}
-              selectedIndex={selectedIndex}
-            >
-              <ToggleButton ariaLabel="alert" tooltipText="Alert">
-                Vuu Grid
-              </ToggleButton>
-              <ToggleButton ariaLabel="home" tooltipText="Home">
-                Ag Grid
-              </ToggleButton>
-            </ToggleButtonGroup>
-
+            {toggleButtons()}
             <Palette
               orientation="vertical"
               style={{ width: "100%", height: "100%" }}

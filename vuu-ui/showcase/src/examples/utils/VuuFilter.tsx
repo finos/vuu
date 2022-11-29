@@ -16,17 +16,17 @@ export const VuuFilter = ({ columns }: { columns: SchemaColumn[] }) => {
 
   const handleCommit = (result: Filter) => {
     const { filter, name } = extractFilter(result);
-    const filterQuery = filterAsQuery(filter, namedFilters);
-    console.log(
-      `extracted filter 
-      %c${JSON.stringify(filter)} 
-      %c${filterQuery}
-      %c${name ? name : ""}
-      `,
-      "color:blue;font-weight:bold;",
-      "color:green; font-weight: bold;",
-      "color:red; font-weight: bold;"
-    );
+    // const filterQuery = filterAsQuery(filter, namedFilters);
+    // console.log(
+    //   `extracted filter
+    //   %c${JSON.stringify(filter)}
+    //   %c${filterQuery}
+    //   %c${name ? name : ""}
+    //   `,
+    //   "color:blue;font-weight:bold;",
+    //   "color:green; font-weight: bold;",
+    //   "color:red; font-weight: bold;"
+    // );
     if (name) {
       const namedFilter = { name, filter } as NamedFilter;
       setNamedFilters(namedFilters.concat(namedFilter));

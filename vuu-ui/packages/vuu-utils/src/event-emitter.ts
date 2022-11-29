@@ -18,7 +18,11 @@ function isOnlyListener(
   return !Array.isArray(listeners);
 }
 
-export class EventEmitter {
+export interface IEventEmitter {
+  emit: (type: string, ...args: unknown[]) => void;
+}
+
+export class EventEmitter implements IEventEmitter {
   private _events?: EventListenerMap;
 
   constructor() {

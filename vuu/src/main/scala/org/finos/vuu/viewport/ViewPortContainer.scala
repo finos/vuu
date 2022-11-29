@@ -53,6 +53,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]()
 
+  def getViewPorts() = CollectionHasAsScala(viewPorts.values()).asScala.toList
+
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
 
     val viewPort = this.getViewPortById(vpId)
@@ -515,13 +517,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def runGroupByOnce(): Unit = {
 
     val (millis, _) = timeIt {
-      CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => vp.hasGroupBy && vp.isEnabled).foreach(vp => refreshOneGroupByViewPort(vp))
+      CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => vp.hasGroupBy && vp.isEnabled).foreach(vp => refreshOneTreeViewPort(vp))
     }
 
     groupByhistogram.update(millis)
   }
 
-  protected def refreshOneGroupByViewPort(viewPort: ViewPort): Unit = {
+  def refreshOneTreeViewPort(viewPort: ViewPort): Unit = {
 
     val table = viewPort.table.asTable
 
@@ -570,7 +572,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
 
-  protected def refreshOneViewPort(viewPort: ViewPort): Unit = {
+  def refreshOneViewPort(viewPort: ViewPort): Unit = {
 
     if (viewPort.isEnabled) {
       val keys = viewPort.table.primaryKeys

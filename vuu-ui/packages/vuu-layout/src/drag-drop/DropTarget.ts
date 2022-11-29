@@ -1,20 +1,22 @@
-import { ReactElement } from 'react';
+import { ReactElement } from "react";
 import {
   BoxModel,
   positionValues,
   getPosition,
   Position,
   RelativeDropPosition,
-  Measurements
-} from './BoxModel';
-import { getProps, typeOf } from '../utils';
-import { DragDropRect, DropPos, DropPosTab } from './dragDropTypes';
-import { LayoutModel } from '../layout-reducer';
-import { DragState } from './DragState';
-import { rect, rectTuple } from '../common-types';
+  Measurements,
+} from "./BoxModel";
+import { getProps, typeOf } from "../utils";
+import { DragDropRect, DropPos, DropPosTab } from "./dragDropTypes";
+import { LayoutModel } from "../layout-reducer";
+import { DragState } from "./DragState";
+import { rect, rectTuple } from "../common-types";
 
 export const isTabstrip = (dropTarget: DropTarget) =>
-  dropTarget.pos.tab && typeOf(dropTarget.component) === 'Stack' && dropTarget.pos.position.Header;
+  dropTarget.pos.tab &&
+  typeOf(dropTarget.component) === "Stack" &&
+  dropTarget.pos.position.Header;
 
 const { north, south, east, west } = positionValues;
 const eastwest = east + west;
@@ -27,7 +29,16 @@ export interface DropTargetProps {
   nextDropTarget: DropTarget | null;
 }
 
-export type GuideLine = [number, number, number, number, number, number, number, number];
+export type GuideLine = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number
+];
 export interface TargetDropOutline {
   l: number;
   r: number;
@@ -53,7 +64,7 @@ export class DropTarget {
     component,
     pos,
     clientRect /*, closeToTheEdge*/,
-    nextDropTarget
+    nextDropTarget,
   }: DropTargetProps) {
     this.component = component;
     this.pos = pos;
@@ -65,7 +76,9 @@ export class DropTarget {
 
   targetTabPos(tab: DropPosTab) {
     const { left: tabLeft, width: tabWidth, positionRelativeToTab } = tab;
-    return positionRelativeToTab === RelativeDropPosition.BEFORE ? tabLeft : tabLeft + tabWidth;
+    return positionRelativeToTab === RelativeDropPosition.BEFORE
+      ? tabLeft
+      : tabLeft + tabWidth;
   }
 
   /**
@@ -75,20 +88,26 @@ export class DropTarget {
    * @param {*} dragState
    * @returns {l, t, r, b, tabLeft, tabWidth, tabHeight}
    */
-  getTargetDropOutline(lineWidth: number, dragState?: DragState): TargetDropOutline {
+  getTargetDropOutline(
+    lineWidth: number,
+    dragState?: DragState
+  ): TargetDropOutline {
     if (this.pos.tab) {
       return this.getDropTabOutline(lineWidth, this.pos.tab);
     } else if (dragState && dragState.hasIntrinsicSize()) {
       return this.getIntrinsicDropRect(dragState);
     } else {
-      const [l, t, r, b] = this.getDropRectOutline(lineWidth, dragState) as rectTuple;
+      const [l, t, r, b] = this.getDropRectOutline(
+        lineWidth,
+        dragState
+      ) as rectTuple;
       return { l, t, r, b };
     }
   }
 
   getDropTabOutline(lineWidth: number, tab: DropPosTab): TargetDropOutline {
     const {
-      clientRect: { top, left, right, bottom, header }
+      clientRect: { top, left, right, bottom, header },
     } = this;
 
     const inset = 0;
@@ -113,13 +132,10 @@ export class DropTarget {
     let width = dragState.intrinsicSize?.height ?? 0;
 
     if (height && height > rect.height) {
-      console.log(`we;re going to blow the gaff rect height = ${rect.height}, height = ${height}`);
+      console.log(`DropTarget: we're going to blow the gaff`);
       height = rect.height;
     } else if (width && width > rect.width) {
-      console.log(
-        `we;re going to blow the gaff rect width = ${rect.width}, width = ${width}`,
-        rect
-      );
+      console.log(`DropTarget: we're going to blow the gaff`);
       width = rect.width;
     }
 
@@ -131,7 +147,12 @@ export class DropTarget {
       rect.bottom - height,
       Math.max(rect.top, Math.round(pos.y - y.mousePct * height))
     );
-    const [l, t, r, b] = (this.dropRect = [left, top, left + width, top + height]);
+    const [l, t, r, b] = (this.dropRect = [
+      left,
+      top,
+      left + width,
+      top + height,
+    ]);
 
     const guideLines: GuideLine = pos.position.EastOrWest
       ? [l, rect.top, l, rect.bottom, r, rect.top, r, rect.bottom]
@@ -147,7 +168,8 @@ export class DropTarget {
     const { pos, clientRect: rect } = this;
     const { width: suggestedWidth, height: suggestedHeight, position } = pos;
 
-    const { width: intrinsicWidth, height: intrinsicHeight } = dragState?.intrinsicSize ?? {};
+    const { width: intrinsicWidth, height: intrinsicHeight } =
+      dragState?.intrinsicSize ?? {};
     const sizeHeight = intrinsicHeight ?? suggestedHeight ?? 0;
     const sizeWidth = intrinsicWidth ?? suggestedWidth ?? 0;
 
@@ -162,28 +184,36 @@ export class DropTarget {
       case Position.North:
       case Position.Header: {
         const halfHeight = Math.round((b - t) / 2);
-        const height = sizeHeight ? Math.min(halfHeight, Math.round(sizeHeight)) : halfHeight;
+        const height = sizeHeight
+          ? Math.min(halfHeight, Math.round(sizeHeight))
+          : halfHeight;
         return sizeWidth && l + sizeWidth < r
           ? [l + gap, t + gap, l + sizeWidth - gap, t + gap + height] // need flex direction indicator
           : [l + gap, t + gap, r - gap, t + gap + height];
       }
       case Position.West: {
         const halfWidth = Math.round((r - l) / 2);
-        const width = sizeWidth ? Math.min(halfWidth, Math.round(sizeWidth)) : halfWidth;
+        const width = sizeWidth
+          ? Math.min(halfWidth, Math.round(sizeWidth))
+          : halfWidth;
         return sizeHeight && t + sizeHeight < b
           ? [l + gap, t + gap, l - gap + width, t + sizeHeight + gap] // need flex direction indicator
           : [l + gap, t + gap, l - gap + width, b - gap];
       }
       case Position.East: {
         const halfWidth = Math.round((r - l) / 2);
-        const width = sizeWidth ? Math.min(halfWidth, Math.round(sizeWidth)) : halfWidth;
+        const width = sizeWidth
+          ? Math.min(halfWidth, Math.round(sizeWidth))
+          : halfWidth;
         return sizeHeight && t + sizeHeight < b
           ? [r - gap - width, t + gap, r - gap, t + sizeHeight + gap] // need flex direction indicator
           : [r - gap - width, t + gap, r - gap, b - gap];
       }
       case Position.South: {
         const halfHeight = Math.round((b - t) / 2);
-        const height = sizeHeight ? Math.min(halfHeight, Math.round(sizeHeight)) : halfHeight;
+        const height = sizeHeight
+          ? Math.min(halfHeight, Math.round(sizeHeight))
+          : halfHeight;
 
         return sizeWidth && l + sizeWidth < r
           ? [l + gap, b - gap - height, l + sizeWidth - gap, b - gap] // need flex direction indicator
@@ -244,18 +274,28 @@ export function identifyDropTarget(
   if (allBoxesContainingPoint.length) {
     const [component, ...containers] = allBoxesContainingPoint;
     const {
-      'data-path': dataPath,
+      "data-path": dataPath,
       path = dataPath,
-      'data-row-placeholder': isRowPlaceholder
+      "data-row-placeholder": isRowPlaceholder,
     } = getProps(component);
     const clientRect = measurements[path];
-    const placeholderOrientation = intrinsicSize && isRowPlaceholder ? 'row' : undefined;
+    const placeholderOrientation =
+      intrinsicSize && isRowPlaceholder ? "row" : undefined;
     const pos = getPosition(x, y, clientRect, placeholderOrientation);
     const box = measurements[path];
 
-    function nextDropTarget([nextTarget, ...targets]: LayoutModel[]): DropTarget | undefined {
+    function nextDropTarget([nextTarget, ...targets]: LayoutModel[]):
+      | DropTarget
+      | undefined {
       if (pos.position?.Header || pos.closeToTheEdge) {
-        const targetPosition = getTargetPosition(nextTarget, pos, box, measurements, x, y);
+        const targetPosition = getTargetPosition(
+          nextTarget,
+          pos,
+          box,
+          measurements,
+          x,
+          y
+        );
         if (targetPosition) {
           const [containerPos, clientRect] = targetPosition;
 
@@ -263,7 +303,7 @@ export function identifyDropTarget(
             component: nextTarget,
             pos: containerPos,
             clientRect,
-            nextDropTarget: nextDropTarget(targets) ?? null
+            nextDropTarget: nextDropTarget(targets) ?? null,
           });
         } else if (targets.length) {
           return nextDropTarget(targets);
@@ -274,7 +314,7 @@ export function identifyDropTarget(
       component,
       pos,
       clientRect,
-      nextDropTarget: nextDropTarget(containers) ?? null
+      nextDropTarget: nextDropTarget(containers) ?? null,
     }).activate();
   }
   return dropTarget;
@@ -288,7 +328,7 @@ function getTargetPosition(
   x: number,
   y: number
 ): [DropPos, DragDropRect] | undefined {
-  if (!container || container.type === 'DraggableLayout') {
+  if (!container || container.type === "DraggableLayout") {
     return;
   }
 
@@ -299,18 +339,26 @@ function getTargetPosition(
   const closeToLeft = closeToTheEdge & positionValues.west;
 
   const atTop =
-    (closeToTop || position.Header) && Math.round(box.top) === Math.round(containingBox.top);
-  const atRight = closeToRight && Math.round(box.right) === Math.round(containingBox.right);
-  const atBottom = closeToBottom && Math.round(box.bottom) === Math.round(containingBox.bottom);
-  const atLeft = closeToLeft && Math.round(box.left) === Math.round(containingBox.left);
+    (closeToTop || position.Header) &&
+    Math.round(box.top) === Math.round(containingBox.top);
+  const atRight =
+    closeToRight && Math.round(box.right) === Math.round(containingBox.right);
+  const atBottom =
+    closeToBottom &&
+    Math.round(box.bottom) === Math.round(containingBox.bottom);
+  const atLeft =
+    closeToLeft && Math.round(box.left) === Math.round(containingBox.left);
 
   if (atTop || atRight || atBottom || atLeft) {
-    const { 'data-path': dataPath, path = dataPath } = container.props;
+    const { "data-path": dataPath, path = dataPath } = container.props;
     const clientRect = measurements[path];
     let containerPos = getPosition(x, y, clientRect);
 
     // if its a VBox and we're close to left or right ...
-    if ((isVBox(container) || isTabbedContainer(container)) && closeToTheEdge & eastwest) {
+    if (
+      (isVBox(container) || isTabbedContainer(container)) &&
+      closeToTheEdge & eastwest
+    ) {
       containerPos.width = 120;
       return [containerPos, clientRect];
     }
@@ -326,13 +374,19 @@ function getTargetPosition(
 }
 
 function isTabbedContainer(component: LayoutModel) {
-  return typeOf(component) === 'Stack';
+  return typeOf(component) === "Stack";
 }
 
 function isVBox(component: LayoutModel) {
-  return typeOf(component) === 'Flexbox' && component.props.style.flexDirection === 'column';
+  return (
+    typeOf(component) === "Flexbox" &&
+    component.props.style.flexDirection === "column"
+  );
 }
 
 function isHBox(component: LayoutModel) {
-  return typeOf(component) === 'Flexbox' && component.props.style.flexDirection === 'row';
+  return (
+    typeOf(component) === "Flexbox" &&
+    component.props.style.flexDirection === "row"
+  );
 }

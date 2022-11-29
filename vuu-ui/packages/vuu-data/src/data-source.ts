@@ -8,9 +8,15 @@ import {
   VuuRange,
   VuuRowDataItemType,
   VuuSort,
+  VuuSortCol,
   VuuTable,
 } from "../../vuu-protocol-types";
 import { Filter } from "@finos/vuu-utils";
+import { IEventEmitter } from "@finos/vuu-utils/src/event-emitter";
+import {
+  ColumnDescriptor,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid/src/grid-model";
 
 type RowIndex = number;
 type RenderKey = number;
@@ -44,32 +50,39 @@ export interface DataSourceDataMessage extends MessageWithClientViewportId {
   type: "viewport-update";
 }
 
+// GridModelActions
 export interface DataSourceAggregateMessage
   extends MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   type: "aggregate";
 }
-export interface VuuUIMessageInDisabled extends MessageWithClientViewportId {
+
+export interface DataSourceSortMessage extends MessageWithClientViewportId {
+  type: "sort";
+  sort: VuuSort;
+}
+export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
+  type: "groupBy";
+  groupBy: VuuGroupBy | undefined;
+}
+
+export interface DataSourceFilterMessage extends MessageWithClientViewportId {
+  type: "filter";
+  filter: Filter;
+  filterQuery: string;
+}
+
+export interface DataSourceDisabledMessage extends MessageWithClientViewportId {
   type: "disabled";
 }
-export interface VuuUIMessageInEnabled extends MessageWithClientViewportId {
+export interface DataSourceEnabledMessage extends MessageWithClientViewportId {
   type: "enabled";
 }
 
 export interface DataSourceFilterMessage extends MessageWithClientViewportId {
   type: "filter";
-  filter: any;
-  filterQuery: any;
-}
-
-export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
-  type: "groupBy";
-  groupBy: VuuGroupBy | null;
-}
-
-export interface DataSourceSortMessage extends MessageWithClientViewportId {
-  type: "sort";
-  sort: VuuSort;
+  filter: Filter;
+  filterQuery: string;
 }
 
 export interface DataSourceSubscribedMessage
@@ -111,8 +124,8 @@ export interface DataSourceVisualLinkRemovedMessage {
 export type DataSourceCallbackMessage =
   | DataSourceAggregateMessage
   | DataSourceDataMessage
-  | VuuUIMessageInDisabled
-  | VuuUIMessageInEnabled
+  | DataSourceDisabledMessage
+  | DataSourceEnabledMessage
   | DataSourceFilterMessage
   | DataSourceGroupByMessage
   | DataSourceMenusMessage
@@ -124,18 +137,34 @@ export type DataSourceCallbackMessage =
 
 const datasourceMessages = [
   "aggregate",
-  "CREATE_VISUAL_LINK_SUCCESS",
   "disabled",
   "enabled",
   "filter",
   "groupBy",
-  "REMOVE_VISUAL_LINK_SUCCESS",
   "sort",
   "subscribed",
   "viewport-update",
+  "CREATE_VISUAL_LINK_SUCCESS",
+  "REMOVE_VISUAL_LINK_SUCCESS",
   "VIEW_PORT_MENUS_RESP",
   "VP_VISUAL_LINKS_RESP",
 ];
+
+export type ConfigChangeColumnsMessage = {
+  type: "columns";
+  columns?: ColumnDescriptor[];
+};
+
+export type ConfigChangeMessage =
+  | ConfigChangeColumnsMessage
+  | DataSourceAggregateMessage
+  | DataSourceFilterMessage
+  | DataSourceGroupByMessage
+  | DataSourceSortMessage
+  | DataSourceVisualLinkCreatedMessage
+  | DataSourceVisualLinkRemovedMessage;
+
+export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
 
 export const shouldMessageBeRoutedToDataSource = (
   message: unknown
@@ -165,8 +194,8 @@ export interface SubscribeProps {
   columns?: string[];
   aggregations?: VuuAggregation[];
   range?: VuuRange;
-  sort?: any;
-  groupBy?: any;
+  sort?: VuuSortCol[];
+  groupBy?: VuuGroupBy;
   filter?: Filter;
   filterQuery?: string;
   title?: string;
@@ -174,11 +203,20 @@ export interface SubscribeProps {
 
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 
-export interface DataSource {
+export interface DataSource extends IEventEmitter {
+  aggregate: (aggregations: VuuAggregation[]) => void;
+  closeTreeNode: (key: string) => void;
+  filter: (filter: Filter | undefined, filterQuery: string) => void;
+  group: (groupBy: VuuGroupBy) => void;
+  openTreeNode: (key: string) => void;
+  rowCount: number | undefined;
+  select: (selected: number[]) => void;
   setRange: (from: number, to: number) => void;
+  sort: (sort: VuuSort) => void;
   subscribe: (
     props: SubscribeProps,
     callback: SubscribeCallback
   ) => Promise<void>;
   unsubscribe: () => void;
+  viewport?: string;
 }

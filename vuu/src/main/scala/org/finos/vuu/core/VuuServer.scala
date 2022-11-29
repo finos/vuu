@@ -1,66 +1,26 @@
 package org.finos.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
+import org.finos.toolbox.thread.{LifeCycleRunOncePerThreadExecutorRunner, LifeCycleRunner, WorkItem}
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net._
-import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
-import org.finos.vuu.net.http.{Http2Server, VuuHttp2Server, VuuHttp2ServerOptions, VuuSecurityOptions}
+import org.finos.vuu.net.http.{Http2Server, VuuHttp2Server}
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import org.finos.vuu.net.ws.WebSocketServer
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
-import org.finos.vuu.viewport.{ViewPortAction, ViewPortActionMixin, ViewPortContainer}
-import org.finos.toolbox.jmx.MetricsProvider
-import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
-import org.finos.toolbox.thread.LifeCycleRunner
-import org.finos.toolbox.time.Clock
+import org.finos.vuu.viewport._
 
-object VuuSecurityOptions{
-  def apply(): VuuSecurityOptions = {
-    VuuSecurityOptionsImpl(new AlwaysHappyAuthenticator, new AlwaysHappyLoginValidator)
-  }
-}
-
-object VuuWebSocketOptions {
-  def apply(): VuuWebSocketOptions = {
-    VuuWebSocketOptionsImpl(8090, "/websocket")
-  }
-}
-
-trait VuuWebSocketOptions {
-
-  def wsPort: Int
-
-  def uri: String
-
-  def withWsPort(port: Int): VuuWebSocketOptions
-
-  def withUri(uri: String): VuuWebSocketOptions
-
-}
-
-case class VuuSecurityOptionsImpl(authenticator: Authenticator, loginTokenValidator: LoginTokenValidator) extends VuuSecurityOptions{
-  override def withAuthenticator(authenticator: Authenticator): VuuSecurityOptions = this.copy(authenticator = authenticator)
-  override def withLoginValidator(tokenValidator: LoginTokenValidator): VuuSecurityOptions = this.copy(authenticator = authenticator)
-}
-
-case class VuuWebSocketOptionsImpl(wsPort: Int, uri: String) extends VuuWebSocketOptions {
-  override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
-
-  override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
-}
-
-case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions = VuuHttp2ServerOptions(), wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(), security: VuuSecurityOptions = VuuSecurityOptions(), modules: List[ViewServerModule] = List()) {
-  def withModule(module: ViewServerModule): VuuServerConfig = {
-    this.copy(modules = modules ++ List(module))
-  }
-}
+import java.util.concurrent.{Callable, FutureTask}
 
 /**
- * View Server
+ * Vuu Server
  */
 class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging {
 
@@ -89,10 +49,6 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   val serverApi = new CoreServerApiHander(viewPortContainer, tableContainer, providerContainer)
 
-  //val processor = new RequestProcessor(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer)
-
-  //val handler = new ViewServerHandler(serializer, processor)
-
   val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
 
   //order of creation here is important
@@ -108,10 +64,30 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = 1)
   lifecycle(handlerRunner).dependsOn(joinProviderRunner)
 
-  val viewPortRunner = new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
+  val viewPortRunner = if(config.threading.viewportThreads == 1){
+    new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
+  }else {
+      new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threading.viewportThreads}]", config.threading.viewportThreads, () =>  {
+      viewPortContainer.getViewPorts().filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => ViewPortWorkItem(vp, viewPortContainer)) })
+    {
+      override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortCallable(r, viewPortContainer)
+      override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = ViewPortWorkItem(r.get(), viewPortContainer)
+    }
+  }
+
   lifecycle(viewPortRunner).dependsOn(server)
 
-  val groupByRunner = new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce())
+  val groupByRunner = if(config.threading.treeThreads == 1) {
+    new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce())
+  }else{
+    new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner-Tree[${config.threading.treeThreads}]", config.threading.treeThreads, () =>  {
+      viewPortContainer.getViewPorts().filter(vp => vp.isEnabled && vp.hasGroupBy).map(vp => ViewPortTreeWorkItem(vp, viewPortContainer)) })
+    {
+      override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortTreeCallable(r, viewPortContainer)
+      override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = ViewPortTreeWorkItem(r.get(), viewPortContainer)
+    }
+  }
+
   lifecycle(groupByRunner).dependsOn(server)
 
   def createTable(tableDef: TableDef): DataTable = {
@@ -140,25 +116,16 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
     val realized = new RealizedViewServerModule {
       override def rpcHandlers: List[RpcHandler] = module.rpcHandlersUnrealized.map(_.apply(vs))
-
       override def restServices: List[RestService] = module.restServicesUnrealized.map(_.apply(vs))
-
       override def name: String = module.name
-
       override def tableDefs: List[TableDef] = module.tableDefs
-
       override def serializationMixin: AnyRef = module.serializationMixin
-
       override def rpcHandlersUnrealized: List[VuuServer => RpcHandler] = module.rpcHandlersUnrealized
-
       override def restServicesUnrealized: List[VuuServer => RestService] = module.restServicesUnrealized
-
       override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }
-
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
-
       override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer) => ViewPortDef] = module.viewPortDefs
     }
 

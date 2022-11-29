@@ -51,7 +51,7 @@ async function makeConnection(
     const ws = await createWebsocket(url);
 
     console.log(
-      `%c⚡ %c${url}`,
+      "%c⚡ %cconnected",
       "font-size: 24px;color: green;font-weight: bold;",
       "color:green; font-size: 14px;"
     );
@@ -156,7 +156,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
 
     ws.onerror = () => {
       console.log(
-        `%c⚡ %c${this.url}`,
+        `%c⚡ connection error`,
         "font-size: 24px;color: red;font-weight: bold;",
         "color:red; font-size: 14px;"
       );
@@ -173,7 +173,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
 
     ws.onclose = () => {
       console.log(
-        `%c⚡ %c${this.url}`,
+        `%c⚡ connection close`,
         "font-size: 24px;color: orange;font-weight: bold;",
         "color:orange; font-size: 14px;"
       );
@@ -196,10 +196,8 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
       ws.send(JSON.stringify(msg));
     };
 
-    const queue = (msg: ClientToServerMessage) => {
-      console.log(
-        `queuing message ${JSON.stringify(msg)} until websocket reconnected`
-      );
+    const queue = (_msg: ClientToServerMessage) => {
+      console.log(`TODO queue message until websocket reconnected`);
     };
 
     this.send = send;

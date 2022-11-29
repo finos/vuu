@@ -4,10 +4,10 @@ import { SimpleStore } from "@finos/vuu-utils";
 import { useServerConnection } from "./useServerConnection";
 import { getColumnConfig } from "./columnMetaData";
 import {
+  ConfigChangeHandler,
   DataSource,
   DataSourceMenusMessage,
   DataSourceVisualLinkCreatedMessage,
-  DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
 } from "../data-source";
 import {
@@ -101,12 +101,6 @@ const createSchemaFromTableMetadata = ({
   };
 };
 
-export type ConfigChangeMessage =
-  | DataSourceVisualLinkCreatedMessage
-  | DataSourceVisualLinkRemovedMessage;
-
-export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
-
 export interface ViewServerHookResult {
   buildViewserverMenuOptions: any;
   dispatchGridAction: any;
@@ -170,10 +164,6 @@ export const useViewserver = ({
 
   const getTypeaheadSuggestions: SuggestionFetcher = useCallback(
     async (params: TypeaheadParams) => {
-      console.log(
-        `%c⚡ [ParsedInput.story] getSuggestions params [${params.join(",")}]`,
-        "color: purple; font-weight: bold;"
-      );
       const method: TypeAheadMethod =
         params.length === 2
           ? "getUniqueFieldValues"
@@ -244,7 +234,6 @@ export const useViewserver = ({
         | DataSourceVisualLinksMessage
     ) => {
       if (action.type === "VIEW_PORT_MENUS_RESP") {
-        console.log(`[useViewserver] VIEW_PORT_MENUS_RESP`);
         contextMenu.current = action.menu;
         saveSession?.(action.menu, "vs-context-menu");
         return true;
@@ -257,9 +246,7 @@ export const useViewserver = ({
       ) {
         onConfigChange?.(action);
       } else {
-        console.log(
-          `useViewserver dispatchGridAction no handler for ${action.type}`
-        );
+        console.log(`useViewserver dispatchGridAction no handler for action`);
       }
     },
     [onConfigChange, saveSession]
@@ -276,7 +263,9 @@ export const useViewserver = ({
         // the createLink method only exists on dataSource
         return rpcServer.createLink(options), true;
       } else {
-        console.log(`useViewServer handleMenuAction,  can't handle ${type}`);
+        console.log(
+          `useViewServer handleMenuAction,  can't handle action type`
+        );
       }
     },
     [rpcServer, onRpcResponse]

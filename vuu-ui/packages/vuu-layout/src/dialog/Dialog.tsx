@@ -6,9 +6,10 @@ import React, {
 } from "react";
 import cx from "classnames";
 import { Flexbox } from "../flexbox";
-import { Toolbar } from "@heswell/uitk-lab";
 import { View } from "../layout-view";
-import { CloseButton } from "../action-buttons";
+
+import { Toolbar, ToolbarButton } from "@heswell/uitk-lab";
+import { CloseIcon } from "@heswell/uitk-icons";
 
 import "./Dialog.css";
 
@@ -45,7 +46,9 @@ const Dialog = ({
         style={{ flexDirection: "column", width: "100%", height: "100%" }}
       >
         <Toolbar style={{ height: 32 }}>
-          <CloseButton data-pad-left={true} onClick={close} />
+          <ToolbarButton key="close" onClick={close} data-align="right">
+            <CloseIcon /> Close
+          </ToolbarButton>
         </Toolbar>
         <View style={{ flex: 1 }}>{children}</View>
       </Flexbox>

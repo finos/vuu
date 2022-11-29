@@ -10,6 +10,7 @@ import FeaturesTwo from '../components/featuresTwo';
 import { featuresTwo } from '../components/featuresTwo-config';
 
 function Home() {
+
   const context = useDocusaurusContext();
   const {siteConfig = {}} = context;
   return (

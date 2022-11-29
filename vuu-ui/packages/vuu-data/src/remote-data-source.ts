@@ -3,8 +3,8 @@ import {
   VuuGroupBy,
   VuuAggregation,
   VuuRange,
-  VuuSortCol,
   VuuTable,
+  VuuSort,
 } from "../../vuu-protocol-types";
 import { EventEmitter, Filter, uuid } from "@finos/vuu-utils";
 import { ConnectionManager, ServerAPI } from "./connection-manager";
@@ -32,7 +32,6 @@ export interface DataSourceColumn {}
   ----------------------------------------------------------------*/
 export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
-  private viewport: string | undefined;
   private server: ServerAPI | null = null;
   private url: string;
   private visualLink: string;
@@ -52,6 +51,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   public columns: DataSourceColumn[];
   public rowCount: number | undefined;
   public table: VuuTable;
+  public viewport: string | undefined;
 
   constructor({
     bufferSize = 100,
@@ -182,12 +182,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   };
 
   unsubscribe() {
-    if (!this.disabled && !this.suspended) {
-      if (this.viewport) {
-        this.server?.unsubscribe(this.viewport);
-      }
-      this.server?.destroy(this.viewport);
+    if (this.viewport) {
+      this.server?.unsubscribe(this.viewport);
     }
+    this.server?.destroy(this.viewport);
   }
 
   suspend() {
@@ -370,12 +368,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   // TODO columns cannot simply be strings
-  sort(columns: VuuSortCol[]) {
+  sort(sort: VuuSort) {
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
         type: "sort",
-        sortDefs: columns,
+        sortDefs: sort.sortDefs,
       });
     }
   }
