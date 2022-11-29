@@ -25,14 +25,8 @@ export const useGridModel = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const firstRender = useRef(true);
   const [dataSource, setDataSource] = useState(dataSourceProp);
-
   const custom = useAdornments(children);
-
   const size = useMeasuredSize(rootRef, height, width);
-  // useEffect(() => {
-  //   onsole.log(`%cchange to columnGroups ${JSON.stringify(gridModel.columnGroups,null,2)}`,'color:brown;font-weight: bold;')
-  // },[gridModel.columnGroups])
-
   const [gridModel, dispatchGridModel] = useReducer<
     GridModelReducer,
     GridModelReducerInitializerTuple
@@ -41,7 +35,6 @@ export const useGridModel = ({
   useEffect(() => {
     if (firstRender.current && rootRef.current) {
       if (typeof props.rowHeight === "number") {
-        // onsole.log(`dispatchGridModel rowHeight`)
         dispatchGridModel({ type: ROW_HEIGHT, rowHeight: props.rowHeight });
       } else {
         const rowHeight = parseInt(

@@ -1,12 +1,7 @@
 import { RefObject, useCallback, useState } from "react";
 import { useResizeObserver, ResizeHandler } from "../utils";
 
-const FullAndClientWidthHeight = [
-  "clientHeight",
-  "clientWidth",
-  "height",
-  "width",
-];
+const FullAndClientWidthHeight = ["clientHeight", "clientWidth"];
 
 export type Size = {
   clientHeight?: number;
@@ -23,7 +18,7 @@ export type MeasuredSize = {
 };
 
 export const isMeasured = (size: Size | MeasuredSize): size is MeasuredSize =>
-  typeof size.height === "number" && typeof size.width === "number";
+  typeof size.clientHeight === "number" && typeof size.clientWidth === "number";
 
 export const useMeasuredSize = (
   containerRef: RefObject<HTMLDivElement>,
@@ -31,40 +26,29 @@ export const useMeasuredSize = (
   width?: number
 ): Size => {
   const [size, setSize] = useState<Size>({ height, width });
-
   const onResize: ResizeHandler = useCallback(
     ({
       clientWidth,
       clientHeight,
-      height,
-      width,
     }: {
       clientWidth?: number;
       clientHeight?: number;
-      height?: number;
-      width?: number;
     }) => {
       // Note: we know here that these values will be returned as numbers, we can enforce
       // this by typing useResizeObserver with generics
-      if (
+      setSize((currentSize) =>
         typeof clientHeight === "number" &&
         typeof clientWidth === "number" &&
-        typeof height === "number" &&
-        typeof width === "number" &&
-        (clientWidth !== size.clientWidth ||
-          clientHeight !== size.clientHeight ||
-          height !== size.height ||
-          width !== size.width)
-      ) {
-        setSize({
-          clientWidth: Math.floor(clientWidth),
-          clientHeight: Math.floor(clientHeight),
-          height: Math.floor(height),
-          width: Math.floor(width),
-        });
-      }
+        (clientWidth !== currentSize.clientWidth ||
+          clientHeight !== currentSize.clientHeight)
+          ? {
+              clientWidth: Math.floor(clientWidth),
+              clientHeight: Math.floor(clientHeight),
+            }
+          : currentSize
+      );
     },
-    [size, setSize]
+    [setSize]
   );
 
   useResizeObserver(containerRef, FullAndClientWidthHeight, onResize, true);

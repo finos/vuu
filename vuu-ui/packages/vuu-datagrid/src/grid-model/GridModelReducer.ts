@@ -32,7 +32,6 @@ import {
   GridModelActionResizeHeading,
   GridModelActionRowHeight,
   GridModelActionSetColumns,
-  GridModelActionShowColumn,
   GridModelActionSort,
 } from "../grid-context";
 import { isMeasured, MeasuredSize } from "./useMeasuredSize";
@@ -183,12 +182,12 @@ function buildColumnsAndApplyMeasurements(
   } = state;
 
   // client height and width are always measured, width and height may come from props
-  const {
-    height: fullHeight,
-    clientHeight: height = fullHeight,
-    width: fullWidth,
-    clientWidth: width = fullWidth,
-  } = size;
+  // const {
+  //   height: fullHeight,
+  //   clientHeight: height = fullHeight,
+  //   width: fullWidth,
+  //   clientWidth: width = fullWidth,
+  // } = size;
 
   const { columnNames, columnGroups, headingDepth } = buildColumnGroups(
     state,
@@ -200,20 +199,22 @@ function buildColumnsAndApplyMeasurements(
     : headerHeight * headingDepth + customHeaderHeight;
 
   const viewportHeight =
-    height - totalHeaderHeight - customFooterHeight - customInlineHeaderHeight;
+    size.clientHeight -
+    totalHeaderHeight -
+    customFooterHeight -
+    customInlineHeaderHeight;
 
   return {
     ...state,
+    ...size,
     columnGroups,
     columnNames,
     headingDepth,
-    height,
     horizontalScrollbarHeight: getHorizontalScrollbarHeight(columnGroups),
     status: "ready",
     totalHeaderHeight,
-    width,
     viewportHeight,
-    viewportRowCount: (height - totalHeaderHeight) / rowHeight,
+    viewportRowCount: (size.clientHeight - totalHeaderHeight) / rowHeight,
   };
 }
 
@@ -234,7 +235,7 @@ function resizeGrid(
   { size }: GridModelActionResize
 ): GridModelType {
   let { columnGroups } = state;
-  if (state.width === undefined || state.height === undefined) {
+  if (state.clientWidth === undefined || state.clientHeight === undefined) {
     return buildColumnsAndApplyMeasurements(state, size);
   } else {
     const {
@@ -245,11 +246,11 @@ function resizeGrid(
       totalHeaderHeight,
     } = state;
     const viewportHeight =
-      size.height -
+      size.clientHeight -
       totalHeaderHeight -
       customFooterHeight -
       customInlineHeaderHeight;
-    const widthDiff = size.width - state.width;
+    const widthDiff = size.clientWidth - state.clientWidth;
 
     if (widthDiff === 0) {
       columnGroups = state.columnGroups;
@@ -271,8 +272,7 @@ function resizeGrid(
         }
       });
     }
-
-    const actualRowCount = (size.height - totalHeaderHeight) / rowHeight;
+    const actualRowCount = (size.clientHeight - totalHeaderHeight) / rowHeight;
     return {
       ...state,
       ...size,
@@ -602,7 +602,7 @@ function buildColumnGroups(
     return NO_COLUMN_GROUPS;
   }
 
-  const gridWidth = size?.width ?? state.width;
+  const gridWidth = size?.clientWidth ?? state.width;
 
   if (gridWidth === undefined) {
     throw Error(
