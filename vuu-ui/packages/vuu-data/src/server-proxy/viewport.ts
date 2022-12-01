@@ -183,6 +183,7 @@ export class Viewport {
     viewport,
     visualLink,
   }: ServerProxySubscribeMessage) {
+    console.log(`Viewport::constructor bufferSize: ${bufferSize}`);
     this.aggregations = aggregations;
     this.bufferSize = bufferSize;
     this.clientRange = range;

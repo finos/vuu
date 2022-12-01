@@ -26,13 +26,14 @@ export type RangeLike = { from: number; to: number };
 
 const { KEY } = metadataKeys;
 
-// const log = (message: string) =>
-//   console.log(`%c[DataWindow] ${message}`, "color: purple;font-weight: bold;");
+const log = (message: string) =>
+  console.log(`%c[DataWindow] ${message}`, "color: purple;font-weight: bold;");
 export class DataWindow {
   private range: WindowRange;
   public data: DataRow[];
   public rowCount = 0;
   constructor({ from, to }: RangeLike) {
+    log(`constructor ${from} - ${to}`);
     this.range = new WindowRange(from, to);
     //internal data is always 0 based, we add range.from to determine an offset
     this.data = new Array(to - from);
@@ -77,7 +78,7 @@ export class DataWindow {
   }
 
   setRange(from: number, to: number) {
-    // log(`setRange ${from} ${to}`);
+    log(`setRange ${from} ${to}`);
     if (from !== this.range.from || to !== this.range.to) {
       const [overlapFrom, overlapTo] = this.range.overlap(from, to);
       const newData = new Array(to - from);

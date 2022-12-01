@@ -27,6 +27,7 @@ export const useGridModel = ({
   const [dataSource, setDataSource] = useState(dataSourceProp);
   const custom = useAdornments(children);
   const size = useMeasuredSize(rootRef, height, width);
+  console.log({ size });
   const [gridModel, dispatchGridModel] = useReducer<
     GridModelReducer,
     GridModelReducerInitializerTuple
