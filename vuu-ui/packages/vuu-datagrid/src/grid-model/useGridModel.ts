@@ -27,6 +27,7 @@ export const useGridModel = ({
   const [dataSource, setDataSource] = useState(dataSourceProp);
   const custom = useAdornments(children);
   const size = useMeasuredSize(rootRef, height, width);
+  console.log({ size });
   const [gridModel, dispatchGridModel] = useReducer<
     GridModelReducer,
     GridModelReducerInitializerTuple
@@ -66,6 +67,7 @@ export const useGridModel = ({
     // eg sort, groupBy
     dispatchGridModel({ type: "initialize", props, size });
     if (dataSourceProp !== dataSource) {
+      dataSource.unsubscribe();
       setDataSource(dataSourceProp);
     }
   }, [props.columns, props.columnSizing, dataSourceProp, props.groupBy]);

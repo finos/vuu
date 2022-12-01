@@ -679,6 +679,11 @@ export class ServerProxy {
           const [{ ts: firstBatchTimestamp } = { ts: timeStamp }] =
             body.rows || EMPTY_ARRAY;
           // onsole.log(`\nbatch timestamp ${time(timeStamp)} first timestamp ${time(firstBatchTimestamp)} ${body.rows.length} rows in batch`)
+          // console.log(`TABLE_ROWS  ${body.rows.length} rows
+          //   [${body.rows[0].rowIndex}] ${body.rows[0].data}
+          //   [${body.rows[body.rows.length - 1].rowIndex}] ${body.rows[0].data}
+          // `);
+
           for (const row of body.rows) {
             const { viewPortId, rowIndex, rowKey, updateType } = row;
             const viewport = viewports.get(viewPortId);

@@ -178,4 +178,33 @@ export class ArrayBackedMovingWindow {
     // const endOffset = Math.min(to-from, to, hi - from, this.rowCount);
     return this.internalData.slice(startOffset, endOffset);
   }
+
+  // used only for debugging
+  getCurrentDataRange() {
+    const rows = this.internalData;
+    const len = rows.length;
+    let [firstRow] = this.internalData;
+    let lastRow = this.internalData[len - 1];
+    if (firstRow && lastRow) {
+      return [firstRow.rowIndex, lastRow.rowIndex];
+    } else {
+      for (let i = 0; i < len; i++) {
+        if (rows[i] !== undefined) {
+          firstRow = rows[i];
+          break;
+        }
+      }
+      for (let i = len - 1; i >= 0; i--) {
+        if (rows[i] !== undefined) {
+          lastRow = rows[i];
+          break;
+        }
+      }
+      if (firstRow && lastRow) {
+        return [firstRow.rowIndex, lastRow.rowIndex];
+      } else {
+        return [-1, -1];
+      }
+    }
+  }
 }

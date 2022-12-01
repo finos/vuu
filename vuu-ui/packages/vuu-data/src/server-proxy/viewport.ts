@@ -155,6 +155,7 @@ export class Viewport {
     viewport,
     visualLink,
   }: ServerProxySubscribeMessage) {
+    console.log(`Viewport::constructor bufferSize: ${bufferSize}`);
     this.aggregations = aggregations;
     this.bufferSize = bufferSize;
     this.clientRange = range;
@@ -345,6 +346,15 @@ export class Viewport {
     if (this.dataWindow) {
       const [serverDataRequired, clientRows, holdingRows] =
         this.dataWindow.setClientRange(range.from, range.to);
+
+      console.log(
+        `Viewport [${range.from}]:[${
+          range.to
+        }] requested, dataWindow has  ${this.dataWindow
+          .getCurrentDataRange()
+          .join(":")}`
+      );
+
       const serverRequest =
         serverDataRequired &&
         bufferBreakout(

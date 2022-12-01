@@ -21,6 +21,7 @@ const wave2 = ["vuu-data", "vuu-filters", "vuu-popups"];
 const wave3 = [
   "vuu-datagrid",
   "vuu-datatable",
+  "vuu-data-ag-grid",
   "vuu-datagrid-extras",
   "vuu-layout",
   "vuu-shell",

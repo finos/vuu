@@ -1,36 +1,15 @@
-import { WindowRange } from "./range-utils";
-import { metadataKeys } from "./column-utils";
+import { WindowRange } from "@finos/vuu-utils";
 
-export type DataItem = string | number | boolean;
-export type DataRow = [
-  /** index */
-  number,
-  /** render index */
-  number,
-  /** isLeaf */
-  boolean,
-  /** isExpanded */
-  boolean,
-  /** depth  */
-  number,
-  /** child count */
-  number,
-  /** key  */
-  string,
-  /** selected */
-  number,
-  /** data values  */
-  ...DataItem[]
-];
+export type AgDataItem = string | number | boolean;
+export type AgData = { [key: string]: AgDataItem };
+export type AgDataRow = [number, AgData];
 export type RangeLike = { from: number; to: number };
-
-const { KEY } = metadataKeys;
 
 const log = (message: string) =>
   console.log(`%c[DataWindow] ${message}`, "color: purple;font-weight: bold;");
-export class DataWindow {
+export class AgDataWindow {
   private range: WindowRange;
-  public data: DataRow[];
+  public data: AgDataRow[];
   public rowCount = 0;
   constructor({ from, to }: RangeLike) {
     log(`constructor ${from} - ${to}`);
@@ -50,7 +29,7 @@ export class DataWindow {
   };
 
   // return true if existing row was updated
-  add(data: DataRow) {
+  add(data: AgDataRow) {
     const [index] = data;
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
@@ -67,10 +46,6 @@ export class DataWindow {
       this.data[index - this.range.from] != null
       ? this.data[index - this.range.from]
       : undefined;
-  }
-
-  getByKey(key: string) {
-    return this.data.find((row) => row[KEY] === key);
   }
 
   isWithinRange(index: number) {
