@@ -22,7 +22,7 @@ const renderDOMPortal = (component, container, x, y, onRender) => {
   container.style.cssText = `left:${x}px; top:${y}px;position: absolute;`;
 
   ReactDOM.render(
-    <ToolkitProvider>{component}</ToolkitProvider>,
+    <ToolkitProvider applyClassesTo="scope">{component}</ToolkitProvider>,
     container,
     onRender
   );
@@ -54,7 +54,7 @@ const renderElectronPortal = (component, x, y, el, onRender) => {
   };
 
   ReactDOM.render(
-    <ToolkitProvider>{component}</ToolkitProvider>,
+    <ToolkitProvider applyClassesTo="scope">{component}</ToolkitProvider>,
     portalContainer,
     handleRender
   );

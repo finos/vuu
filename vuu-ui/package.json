@@ -7,10 +7,7 @@
   "workspaces": [
     "packages/**",
     "sample-apps/**",
-    "showcase",
-    "uitk/packages/core",
-    "uitk/packages/lab",
-    "uitk/packages/icons"
+    "showcase"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.jsx",
