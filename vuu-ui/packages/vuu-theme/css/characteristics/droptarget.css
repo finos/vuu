@@ -1,6 +1,6 @@
 /* TODO: Characteristics revamp */
-.uitk-light,
-.uitk-dark {
+/* deprecated see target */
+.uitk-theme {
   --uitk-dropTarget-borderStyle: dashed;
   --uitk-dropTarget-borderStyle-hover: dashed;
   --uitk-dropTarget-borderStyle-disabled: dashed;

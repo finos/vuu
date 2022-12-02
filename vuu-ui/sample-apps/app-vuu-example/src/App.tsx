@@ -76,7 +76,7 @@ export const App = ({ user }: { user: VuuUser }) => {
 
   // TODO get Context from Shell
   return (
-    <ToolkitProvider density="high">
+    <ToolkitProvider applyClassesTo="scope" density="high" mode="light">
       <ShellContextProvider value={{ handleRpcResponse }}>
         <Shell
           defaultLayout={defaultLayout}

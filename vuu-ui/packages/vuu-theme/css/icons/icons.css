@@ -1,4 +1,4 @@
-.uitk-light, .uitk-dark {
+.uitk-theme {
   --svg-add: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><path d="M29 16h-9V7a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v9H7a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h9v9a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-9h9a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1z"/></svg>');
   --svg-checkbox: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M26,4H6A2,2,0,0,0,4,6V26a2,2,0,0,0,2,2H26a2,2,0,0,0,2-2V6A2,2,0,0,0,26,4ZM6,26V6H26V26Z"/><rect fill="none" width="32" height="32"/></svg>');
   --svg-checkbox-checked: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M26,4H6A2,2,0,0,0,4,6V26a2,2,0,0,0,2,2H26a2,2,0,0,0,2-2V6A2,2,0,0,0,26,4ZM6,26V6H26V26Z"/><polygon points="14 21.5 9 16.54 10.59 15 14 18.35 21.41 11 23 12.58 14 21.5"/><rect fill="none" width="32" height="32"/></svg>');

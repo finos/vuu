@@ -94,33 +94,33 @@
   resolved "https://registry.yarnpkg.com/@heswell/component-anatomy/-/component-anatomy-0.0.5.tgz#cf75e642fb7c2184794114fe62f2382d4196846a"
   integrity sha512-pwuowxKvsxPoOkAbtHFNyqdzjTj8CHDZtk7+P8jRtJJmsJTzblOMn6WNS9csFf6gU1NdvD11EcTCnFZaG8TLxg==
 
-"@heswell/uitk-core@0.7.0-vuu.1":
-  version "0.7.0-vuu.1"
-  resolved "https://registry.yarnpkg.com/@heswell/uitk-core/-/uitk-core-0.7.0-vuu.1.tgz#4b21c24e174c422ae83ef68363f05ad0f8de3a99"
-  integrity sha512-IVzhCZ2UafzEr8VIWUO4JO6U745MFHZKjqzWk0zqL37X7u4zSLMwWS5mq8jcebEzaCmShCjuLL9OBqB5lp0n5A==
+"@heswell/uitk-core@0.8.0-vuu.1":
+  version "0.8.0-vuu.1"
+  resolved "https://registry.yarnpkg.com/@heswell/uitk-core/-/uitk-core-0.8.0-vuu.1.tgz#059c6c2b104787a191d27c79e7d964ddad4e2c90"
+  integrity sha512-OpgrZzb6hl+oMRPt2Ia6eJ3FcAmzCjiCPEd8L8vagXRhi/Z+pnnmZmin6F0/kHP5oewXydu0iWgGfuou3mON/g==
   dependencies:
     "@floating-ui/react-dom-interactions" "^0.5.0"
-    "@heswell/uitk-icons" "0.5.0-vuu.1"
+    "@heswell/uitk-icons" "0.7.0-vuu.1"
     aria-hidden "^1.1.1"
     classnames "^2.2.6"
     no-scroll "^2.1.1"
     warning "^4.0.3"
 
-"@heswell/uitk-icons@0.5.0-vuu.1":
-  version "0.5.0-vuu.1"
-  resolved "https://registry.yarnpkg.com/@heswell/uitk-icons/-/uitk-icons-0.5.0-vuu.1.tgz#c140b13bc9794ed190505a1441d6619b2f7d2ea6"
-  integrity sha512-9DeEkaCTK9zsCk+Ur3fZZTcfQfkKnHzahnCdBQE+QVEJDWoPozrxMxFcVVkZgbmTglAThiQKmdMCmIGxLIDhKQ==
+"@heswell/uitk-icons@0.7.0-vuu.1":
+  version "0.7.0-vuu.1"
+  resolved "https://registry.yarnpkg.com/@heswell/uitk-icons/-/uitk-icons-0.7.0-vuu.1.tgz#3aa4a35dcc14c8947974986bc44455e8d5ac5de4"
+  integrity sha512-cNqFJE6L54xVO5wuDEJENevGb5fGTdvhsuoTif/N+6zH6XopGj8q+6vDpvn15VCVRnYUSAuCUhUKe/e9dGCDjw==
   dependencies:
     classnames "^2.2.6"
 
-"@heswell/uitk-lab@0.7.1-vuu.4":
-  version "0.7.1-vuu.4"
-  resolved "https://registry.yarnpkg.com/@heswell/uitk-lab/-/uitk-lab-0.7.1-vuu.4.tgz#78ef9766f9e7d56ac5110d01cf1977eda38eff56"
-  integrity sha512-RjG9bODDMDedSR/Ohfu8ezdK1M6mPpxVzRY7uEZ8i/bboD2WMnxZbYnCVez5lfW/wChMwsVMuYZ2PHr8u/6Bbg==
+"@heswell/uitk-lab@0.8.0-vuu.1":
+  version "0.8.0-vuu.1"
+  resolved "https://registry.yarnpkg.com/@heswell/uitk-lab/-/uitk-lab-0.8.0-vuu.1.tgz#92f5ad15e99736e6415a752541035e0db8d4c7af"
+  integrity sha512-EdEh9oeoRQRxyncRggpQZXjJTJY9iqnyR9z8JKWzU/fnYBekmaRK+ix2cJiSJAlVVEDWl4DaH5Y6nWvaINRvKQ==
   dependencies:
     "@floating-ui/react-dom-interactions" "^0.5.0"
-    "@heswell/uitk-core" "0.7.0-vuu.1"
-    "@heswell/uitk-icons" "0.5.0-vuu.1"
+    "@heswell/uitk-core" "0.8.0-vuu.1"
+    "@heswell/uitk-icons" "0.7.0-vuu.1"
     "@internationalized/date" "^3.0.0"
     attr-accept "^2.0.0"
     classnames "^2.2.6"
@@ -402,23 +402,6 @@ acorn@^8.8.0:
   version "8.8.1"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.8.1.tgz#0a3f9cbecc4ec3bea6f0a80b66ae8dd2da250b73"
   integrity sha512-7zFpHzhnqYKrkYdUjF1HI1bzd0VygEGX8lFk4k5zVMqHEoES+P+7TKI+EvLO9WVMJ8eekdO0aDEK044xTXwPPA==
-
-ag-grid-community@^28.2.1:
-  version "28.2.1"
-  resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-28.2.1.tgz#50778cb2254ee79497222781909d8364007dd91e"
-  integrity sha512-DMZh/xD/FqYP17qJ1M92PolTYe+hrKuEaf+A4h13O6qn2x/xZQrTRGW5DgnQLR/uLMe1XXZQPKR3UKgAlKo69A==
-
-ag-grid-enterprise@^28.2.1:
-  version "28.2.1"
-  resolved "https://registry.yarnpkg.com/ag-grid-enterprise/-/ag-grid-enterprise-28.2.1.tgz#e5685c879b2a80ee9a4e111d5b8f0774fcc682b0"
-  integrity sha512-FIqIiaMMO9m8eqfu64rZ7dOK8vQFqD+Dp9CTpSfjMtyUp4IoRE36c+mUpUGLX/bIix9LltpaUmr185nFM1Alrw==
-
-ag-grid-react@^28.2.1:
-  version "28.2.1"
-  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-28.2.1.tgz#c38585b8f165a5cf9343eab6994c06855f5b2caf"
-  integrity sha512-3vbw+B77uWwAyiOJxQA5U+PQFRCCccUx7L5PIwrnA4Y7c1yAu8sB65hAZdBc9kuW26iltwv7asq0UzP7UAQUpg==
-  dependencies:
-    prop-types "^15.8.1"
 
 ajv@^6.10.0, ajv@^6.12.4:
   version "6.12.6"
