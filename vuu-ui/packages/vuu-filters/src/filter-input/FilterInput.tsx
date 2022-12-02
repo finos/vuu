@@ -9,7 +9,8 @@ import { Button } from "@heswell/uitk-core";
 import "./FilterInput.css";
 
 const classBase = "vuuFilterInput";
-export interface ParsedInputProps extends HTMLAttributes<HTMLDivElement> {
+
+export interface FilterInputProps extends HTMLAttributes<HTMLDivElement> {
   onSubmitFilter?: (
     filter: Filter | undefined,
     filterQuery: string,
@@ -18,10 +19,10 @@ export interface ParsedInputProps extends HTMLAttributes<HTMLDivElement> {
   suggestionProvider: ISuggestionProvider;
 }
 
-export const ParsedInput = ({
+export const FilterInput = ({
   onSubmitFilter,
   suggestionProvider,
-}: ParsedInputProps) => {
+}: FilterInputProps) => {
   const { editorRef, clearInput } = useCodeMirrorEditor({
     onSubmitFilter,
     suggestionProvider,

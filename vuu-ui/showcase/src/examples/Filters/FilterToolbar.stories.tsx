@@ -1,16 +1,13 @@
-import {
-  ExportIcon,
-  NotificationIcon,
-  ShareIcon,
-  TearOutIcon,
-} from "@heswell/uitk-icons";
+// import { Switch } from "@heswell/uitk-core";
+import { Pill } from "@heswell/uitk-core";
 import {
   Dropdown,
-  Toolbar,
-  ToolbarButton,
+  ToggleButton,
+  ToggleButtonToggleEventHandler,
   ToolbarField,
 } from "@heswell/uitk-lab";
-import React from "react";
+import React, { useCallback, useState } from "react";
+import { FilterToolbar } from "@finos/vuu-filters";
 
 import "./FilterToolbar.stories.css";
 
@@ -26,11 +23,25 @@ export const DefaultFilterToolbar = () => {
   //     "Last Year",
   //   ];
 
-  const logItemName = (buttonName: string) =>
-    console.log(`${buttonName} button clicked'`);
+  const [testOneEnabled, enableTestOne] = useState(true);
+  const [testTwoEnabled, enableTestTwo] = useState(true);
+  const [testThreeEnabled, enableTestThree] = useState(true);
+
+  const handleToggleTestOne: ToggleButtonToggleEventHandler = useCallback(
+    (evt, toggled) => enableTestOne(toggled),
+    []
+  );
+  const handleToggleTestTwo: ToggleButtonToggleEventHandler = useCallback(
+    (evt, toggled) => enableTestTwo(toggled),
+    []
+  );
+  const handleToggleTestThree: ToggleButtonToggleEventHandler = useCallback(
+    (evt, toggled) => enableTestThree(toggled),
+    []
+  );
 
   return (
-    <Toolbar id="toolbar-default">
+    <FilterToolbar id="toolbar-default">
       <ToolbarField
         className="vuuFilterDropdown"
         label="Currency"
@@ -55,18 +66,33 @@ export const DefaultFilterToolbar = () => {
           style={{ width: 90 }}
         />
       </ToolbarField>
-      <ToolbarButton onClick={() => logItemName("export")}>
-        <ExportIcon /> Export
-      </ToolbarButton>
-      <ToolbarButton onClick={() => logItemName("share")}>
-        <ShareIcon /> Share
-      </ToolbarButton>
-      <ToolbarButton onClick={() => logItemName("alerts")}>
-        <NotificationIcon /> Set Alerts
-      </ToolbarButton>
-      <ToolbarButton onClick={() => logItemName("expand")}>
-        <TearOutIcon /> Expand
-      </ToolbarButton>
-    </Toolbar>
+      <ToggleButton
+        className="vuuToggleButton"
+        onToggle={handleToggleTestOne}
+        toggled={testOneEnabled}
+        variant="secondary"
+      >
+        Test One
+      </ToggleButton>
+      <ToggleButton
+        className="vuuToggleButton"
+        onToggle={handleToggleTestTwo}
+        toggled={testTwoEnabled}
+      >
+        Test Two
+      </ToggleButton>
+      <ToggleButton
+        className="vuuToggleButton"
+        onToggle={handleToggleTestThree}
+        toggled={testThreeEnabled}
+      >
+        Test Three
+      </ToggleButton>
+      <Pill
+        className="vuuFilterPill"
+        label="Test Four"
+        variant="selectable"
+      ></Pill>
+    </FilterToolbar>
   );
 };

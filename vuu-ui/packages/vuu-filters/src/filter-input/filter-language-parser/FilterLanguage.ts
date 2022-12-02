@@ -1,5 +1,5 @@
 import { LanguageSupport, LRLanguage } from "@codemirror/language";
-import { parser } from "../generated/filter-parser";
+import { parser } from "./generated/filter-parser";
 import { styleTags, tags as tag } from "@lezer/highlight";
 
 const filterLanguage = LRLanguage.define({

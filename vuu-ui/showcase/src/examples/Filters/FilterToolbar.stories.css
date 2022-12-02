@@ -1,3 +1,4 @@
-.vuuFilterDropdown {
+.vuuFilterDropdown,
+.vuuFilterSwitch {
     --uitkToolbarField-marginTop: 0;
 }

@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "node ../../scripts/run-build.mjs",
-    "lezer-generate": "lezer-generator --output ./src/generated/filter-parser.js ./src/grammar/filter.grammar",
+    "lezer-generate": "lezer-generator --output ./src/filter-input/parser/generated/filter-parser.js ./src/filter-input/parser/grammar/filter.grammar",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "files": [

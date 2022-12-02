@@ -5,7 +5,7 @@ import { EditorView, keymap } from "@codemirror/view";
 import { Filter } from "@finos/vuu-utils";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
 import { minimalSetup } from "./codemirror-basic-setup";
-import { filterLanguageSupport } from "./FilterLanguage";
+import { filterLanguageSupport } from "./filter-language-parser";
 import { vuuHighlighting } from "./highlighting";
 import { vuuTheme } from "./theme";
 import { walkTree } from "./walkTree";

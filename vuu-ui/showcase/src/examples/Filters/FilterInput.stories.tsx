@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ParsedInput } from "@finos/vuu-filters";
+import { FilterInput, FilterToolbar } from "@finos/vuu-filters";
+import { Pill } from "@heswell/uitk-core";
+import {
+  Dropdown,
+  ToggleButton,
+  ToggleButtonToggleEventHandler,
+  ToolbarField,
+} from "@heswell/uitk-lab";
+
 import { useSuggestionProvider } from "./useSuggestionProvider";
 import {
   authenticate as vuuAuthenticate,
@@ -23,7 +31,6 @@ const schemaColumns = [
   { name: "ric", serverDataType: "string" } as const,
 ];
 
-//TODO combine parser and getTokenTypes into a parser
 export const DefaultFilterInput = () => {
   const [filter, setFilter] = useState<Filter>();
   const [filterQuery, setFilterQuery] = useState<string>("");
@@ -52,7 +59,7 @@ export const DefaultFilterInput = () => {
 
   return (
     <>
-      <ParsedInput
+      <FilterInput
         onSubmitFilter={handleSubmitFilter}
         suggestionProvider={suggestionProvider}
       />
@@ -68,3 +75,102 @@ export const DefaultFilterInput = () => {
   );
 };
 DefaultFilterInput.displaySequence = displaySequence++;
+
+export const FilterInputWithToolbar = () => {
+  const [filter, setFilter] = useState<Filter>();
+  const [filterQuery, setFilterQuery] = useState<string>("");
+  const [filterName, setFilterName] = useState<string>("");
+  const suggestionProvider = useSuggestionProvider({
+    columns: schemaColumns,
+    table,
+  });
+
+  useEffect(() => {
+    const connect = async () => {
+      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
+      connectToServer("127.0.0.1:8090/websocket", authToken);
+    };
+    connect();
+  }, []);
+
+  const handleSubmitFilter = useCallback(
+    (filter: Filter | undefined, filterQuery: string, filterName?: string) => {
+      setFilter(filter);
+      setFilterQuery(filterQuery);
+      setFilterName(filterName);
+    },
+    []
+  );
+
+  return (
+    <>
+      <FilterInput
+        onSubmitFilter={handleSubmitFilter}
+        suggestionProvider={suggestionProvider}
+      />
+      <br />
+      <FilterToolbar id="toolbar-default">
+        {/* <ToolbarField
+          className="vuuFilterDropdown"
+          label="Currency"
+          labelPlacement="top"
+        >
+          <Dropdown
+            defaultSelected={[currencies[0]]}
+            selectionStrategy="multiple"
+            source={currencies}
+            style={{ width: 100 }}
+          />
+        </ToolbarField>
+        <ToolbarField
+          className="vuuFilterDropdown"
+          label="Exchange"
+          labelPlacement="top"
+        >
+          <Dropdown
+            defaultSelected={[exchanges[0]]}
+            selectionStrategy="multiple"
+            source={exchanges}
+            style={{ width: 90 }}
+          />
+        </ToolbarField>
+        <ToggleButton
+          className="vuuToggleButton"
+          onToggle={handleToggleTestOne}
+          toggled={testOneEnabled}
+          variant="secondary"
+        >
+          Test One
+        </ToggleButton>
+        <ToggleButton
+          className="vuuToggleButton"
+          onToggle={handleToggleTestTwo}
+          toggled={testTwoEnabled}
+        >
+          Test Two
+        </ToggleButton>
+        <ToggleButton
+          className="vuuToggleButton"
+          onToggle={handleToggleTestThree}
+          toggled={testThreeEnabled}
+        >
+          Test Three
+        </ToggleButton>
+        <Pill
+          className="vuuFilterPill"
+          label="Test Four"
+          variant="selectable"
+        ></Pill> */}
+      </FilterToolbar>
+
+      <br />
+      <div>{filterQuery}</div>
+      <br />
+      <div>{filterName}</div>
+      <br />
+      <br />
+      <div>{JSON.stringify(filter)}</div>
+    </>
+  );
+};
+FilterInputWithToolbar.displaySequence = displaySequence++;
