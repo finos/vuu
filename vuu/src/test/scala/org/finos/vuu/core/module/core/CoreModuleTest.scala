@@ -29,17 +29,18 @@ class CoreModuleTest extends AnyFeatureSpec with Matchers with StrictLogging wit
     val config = VuuServerConfig(
       VuuHttp2ServerOptions()
         .withWebRoot("vuu/src/main/resources/www")
-        .withSsl("vuu/vuu/src/main/resources/certs/cert.pem", "vuu/vuu/src/main/resources/certs/key.pem")
+        .withSsl("vuu/src/main/resources/certs/cert.pem", "vuu/src/main/resources/certs/key.pem")
         .withDirectoryListings(true),
       VuuWebSocketOptions()
         .withUri("websocket")
-        .withWsPort(8090),
-      VuuSecurityOptions()
+        .withWsPort(8090)
+        .withWss("vuu/src/main/resources/certs/cert.pem", "vuu/src/main/resources/certs/key.pem"),
+        VuuSecurityOptions()
     ).withModule(SimulationModule())
 
     val viewServer = new VuuServer(config)
 
-    val client = new WebSocketClient("ws://localhost:8090/websocket", 8090)
+    val client = new WebSocketClient("wss://localhost:8090/websocket", 8090)
 
     lifecycle(client).dependsOn(viewServer.server)
 
@@ -68,7 +69,6 @@ class CoreModuleTest extends AnyFeatureSpec with Matchers with StrictLogging wit
       implicit val theClient: ViewServerClient = client
 
       val columns = Array("ric", "description", "currency", "exchange", "lotSize")
-
 
       val result = createVp(session, token, "chris", ViewPortTable("instruments", "SIMUL"), columns)
 
