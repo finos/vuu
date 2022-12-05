@@ -1,4 +1,4 @@
-import { Filter } from "@finos/vuu-utils";
+import { Filter } from "@finos/vuu-filters";
 import { HTMLAttributes } from "react";
 import {
   ISuggestionProvider,
@@ -11,6 +11,7 @@ import "./FilterInput.css";
 const classBase = "vuuFilterInput";
 
 export interface FilterInputProps extends HTMLAttributes<HTMLDivElement> {
+  existingFilter?: Filter;
   onSubmitFilter?: (
     filter: Filter | undefined,
     filterQuery: string,
@@ -20,10 +21,12 @@ export interface FilterInputProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const FilterInput = ({
+  existingFilter,
   onSubmitFilter,
   suggestionProvider,
 }: FilterInputProps) => {
   const { editorRef, clearInput } = useCodeMirrorEditor({
+    existingFilter,
     onSubmitFilter,
     suggestionProvider,
   });

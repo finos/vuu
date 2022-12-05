@@ -1,4 +1,4 @@
-.vuuFilterInput {
+.vuuFilterInputDeprecated {
 
     --vuuTokenMirror-font-size: var(--font-size);
     --vuuTokenMirror-height: 100%;
@@ -16,7 +16,7 @@
 
 }
 
-.vuuFilterInput-input {
+.vuuFilterInputDeprecated-input {
     caret-color: black;
     font-size: var(--parsedInput-fontSize);
     line-height: var(--parsedInput-height);

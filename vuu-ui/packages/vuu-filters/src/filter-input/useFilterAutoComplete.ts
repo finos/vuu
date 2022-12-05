@@ -9,12 +9,14 @@ import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
 import { ISuggestionProvider } from "./useCodeMirrorEditor";
 import { EditorView } from "@codemirror/view";
+import { Filter } from "@finos/vuu-filters";
 
 export type ApplyCompletion = (
   view: EditorView,
   completion: Completion,
   from: number,
-  to: number
+  to: number,
+  mode?: "add" | "replace"
 ) => void;
 
 const getValue = (node: SyntaxNode, state: EditorState) =>
@@ -75,10 +77,16 @@ const getSetValues = (node: SyntaxNode, state: EditorState): string[] => {
 
 export const useAutoComplete = (
   suggestionProvider: ISuggestionProvider,
-  onSubmit: MutableRefObject<ApplyCompletion>
+  onSubmit: MutableRefObject<ApplyCompletion>,
+  existingFilter?: Filter
 ) => {
-  const joinOperands = useMemo(
-    () => [
+  const joinOperands = useMemo(() => {
+    const operands = [
+      { label: "and", apply: "and ", boost: 5 },
+      { label: "or", apply: "or ", boost: 3 },
+      { label: "as", apply: "as ", boost: 1 },
+    ];
+    const defaultResult = [
       {
         label: "Press ENTER to submit",
         apply: (
@@ -89,12 +97,38 @@ export const useAutoComplete = (
         ) => onSubmit.current(view, completion, from, to),
         boost: 6,
       },
-      { label: "and", apply: "and ", boost: 5 },
-      { label: "or", apply: "or ", boost: 3 },
-      { label: "as", apply: "as ", boost: 1 },
-    ],
-    [onSubmit]
-  );
+      ...operands,
+    ];
+
+    const withSaveAddReplace = [
+      {
+        label: "Submit (add to existing filter)",
+        apply: (
+          view: EditorView,
+          completion: Completion,
+          from: number,
+          to: number
+        ) => onSubmit.current(view, completion, from, to, "add"),
+        boost: 7,
+      },
+      {
+        label: "Submit (replace existing filter)",
+        apply: (
+          view: EditorView,
+          completion: Completion,
+          from: number,
+          to: number
+        ) => onSubmit.current(view, completion, from, to, "replace"),
+        boost: 6,
+      },
+      ...operands,
+    ];
+
+    return {
+      default: defaultResult,
+      withSaveAddReplace,
+    };
+  }, [onSubmit]);
 
   return useCallback(
     async (context: CompletionContext) => {
@@ -117,7 +151,9 @@ export const useAutoComplete = (
           } else {
             return {
               from: context.pos,
-              options: joinOperands,
+              options: existingFilter
+                ? joinOperands.withSaveAddReplace
+                : joinOperands.default,
             };
           }
         case "Identifier": {
@@ -280,6 +316,6 @@ export const useAutoComplete = (
         }
       }
     },
-    [joinOperands, suggestionProvider]
+    [joinOperands, onSubmit, suggestionProvider]
   ) as CompletionSource;
 };

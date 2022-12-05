@@ -61,24 +61,24 @@ class AndExpression {
 }
 class ColumnValueExpression {
   column?: Column;
-  operator?: string;
+  op?: string;
   value?: string | number;
   toJson() {
     return {
       column: this.column?.name,
-      operator: this.operator,
+      op: this.op,
       value: this.value,
     };
   }
 }
 class ColumnSetExpression {
   column?: Column;
-  operator?: "in";
+  op?: "in";
   values: (string | number)[] = [];
   toJson() {
     return {
       column: this.column?.name,
-      operator: "in",
+      op: "in",
       values: this.values,
     };
   }
@@ -165,7 +165,7 @@ export const walkTree = (tree: Tree, source: string) => {
           const lastFilterClause = peek<Filter>(queue).lastFilterClause;
           if (lastFilterClause) {
             const value = source.substring(from, to);
-            lastFilterClause.operator = value;
+            lastFilterClause.op = value;
             cursor.next();
           } else {
             throw Error("wah");

@@ -4,10 +4,10 @@ import {
   Dropdown,
   ToggleButton,
   ToggleButtonToggleEventHandler,
+  Toolbar,
   ToolbarField,
 } from "@heswell/uitk-lab";
 import React, { useCallback, useState } from "react";
-import { FilterToolbar } from "@finos/vuu-filters";
 
 import "./FilterToolbar.stories.css";
 
@@ -41,7 +41,7 @@ export const DefaultFilterToolbar = () => {
   );
 
   return (
-    <FilterToolbar id="toolbar-default">
+    <Toolbar id="toolbar-default">
       <ToolbarField
         className="vuuFilterDropdown"
         label="Currency"
@@ -93,6 +93,6 @@ export const DefaultFilterToolbar = () => {
         label="Test Four"
         variant="selectable"
       ></Pill>
-    </FilterToolbar>
+    </Toolbar>
   );
 };

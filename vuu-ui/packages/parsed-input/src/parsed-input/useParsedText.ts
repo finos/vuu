@@ -1,5 +1,5 @@
 import { SuggestionResult, UIToken } from "@finos/datagrid-parsers";
-import { Filter } from "@finos/vuu-utils";
+import { Filter } from "@finos/vuu-filters";
 import { MutableRefObject, useCallback, useRef, useState } from "react";
 import { useParser } from "../parser-provider";
 

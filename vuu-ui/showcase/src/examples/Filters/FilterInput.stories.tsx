@@ -1,19 +1,17 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { FilterInput, FilterToolbar } from "@finos/vuu-filters";
-import { Pill } from "@heswell/uitk-core";
 import {
-  Dropdown,
-  ToggleButton,
-  ToggleButtonToggleEventHandler,
-  ToolbarField,
-} from "@heswell/uitk-lab";
+  Filter,
+  FilterInput,
+  FilterToolbar,
+  updateFilter,
+} from "@finos/vuu-filters";
 
 import { useSuggestionProvider } from "./useSuggestionProvider";
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
 } from "@finos/vuu-data";
-import { Filter } from "@finos/vuu-utils";
+import {} from "@finos/vuu-utils";
 
 // import "./ParsedInput.stories.css";
 
@@ -94,8 +92,14 @@ export const FilterInputWithToolbar = () => {
   }, []);
 
   const handleSubmitFilter = useCallback(
-    (filter: Filter | undefined, filterQuery: string, filterName?: string) => {
-      setFilter(filter);
+    (
+      filter: Filter | undefined,
+      filterQuery: string,
+      filterName?: string,
+      mode = "add"
+    ) => {
+      console.log(`setFilter ${JSON.stringify(filter)}`);
+      setFilter((existingFilter) => updateFilter(existingFilter, filter, mode));
       setFilterQuery(filterQuery);
       setFilterName(filterName);
     },
@@ -105,35 +109,13 @@ export const FilterInputWithToolbar = () => {
   return (
     <>
       <FilterInput
+        existingFilter={filter}
         onSubmitFilter={handleSubmitFilter}
         suggestionProvider={suggestionProvider}
       />
       <br />
-      <FilterToolbar id="toolbar-default">
-        {/* <ToolbarField
-          className="vuuFilterDropdown"
-          label="Currency"
-          labelPlacement="top"
-        >
-          <Dropdown
-            defaultSelected={[currencies[0]]}
-            selectionStrategy="multiple"
-            source={currencies}
-            style={{ width: 100 }}
-          />
-        </ToolbarField>
-        <ToolbarField
-          className="vuuFilterDropdown"
-          label="Exchange"
-          labelPlacement="top"
-        >
-          <Dropdown
-            defaultSelected={[exchanges[0]]}
-            selectionStrategy="multiple"
-            source={exchanges}
-            style={{ width: 90 }}
-          />
-        </ToolbarField>
+      <FilterToolbar id="toolbar-default" filter={filter}>
+        {/*
         <ToggleButton
           className="vuuToggleButton"
           onToggle={handleToggleTestOne}

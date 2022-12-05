@@ -8,8 +8,6 @@ export * from "./invariant";
 export * from "./nanoid";
 export * from "./array-utils";
 export * from "./constants";
-export * from "./filter-utils";
-export * from "./filterTypes";
 export * from "./range-utils";
 export * from "./row-utils";
 export * from "./simple-store";

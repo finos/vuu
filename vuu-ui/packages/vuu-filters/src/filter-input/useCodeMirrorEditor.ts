@@ -2,7 +2,7 @@ import { defaultKeymap } from "@codemirror/commands";
 import { ensureSyntaxTree } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
-import { Filter } from "@finos/vuu-utils";
+import { Filter } from "@finos/vuu-filters";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
 import { minimalSetup } from "./codemirror-basic-setup";
 import { filterLanguageSupport } from "./filter-language-parser";
@@ -54,6 +54,7 @@ const stripName = (filterQuery: string) => {
 const noop = () => console.log("noooop");
 
 export interface CodeMirrorEditorProps {
+  existingFilter?: Filter;
   onSubmitFilter?: (
     filter: Filter | undefined,
     filterQuery: string,
@@ -63,13 +64,18 @@ export interface CodeMirrorEditorProps {
 }
 
 export const useCodeMirrorEditor = ({
+  existingFilter,
   onSubmitFilter,
   suggestionProvider,
 }: CodeMirrorEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const onSubmit = useRef<ApplyCompletion>(noop);
   const viewRef = useRef<EditorView>();
-  const completionFn = useAutoComplete(suggestionProvider, onSubmit);
+  const completionFn = useAutoComplete(
+    suggestionProvider,
+    onSubmit,
+    existingFilter
+  );
 
   const [createState, clearInput] = useMemo(() => {
     const parseFilter = ():

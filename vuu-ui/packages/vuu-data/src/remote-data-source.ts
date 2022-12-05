@@ -6,7 +6,8 @@ import {
   VuuTable,
   VuuSort,
 } from "../../vuu-protocol-types";
-import { EventEmitter, Filter, uuid } from "@finos/vuu-utils";
+import { EventEmitter, uuid } from "@finos/vuu-utils";
+import { Filter } from "@finos/vuu-filters";
 import { ConnectionManager, ServerAPI } from "./connection-manager";
 import {
   DataSource,
