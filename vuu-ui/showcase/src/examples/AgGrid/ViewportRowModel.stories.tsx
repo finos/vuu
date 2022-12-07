@@ -49,7 +49,7 @@ const dataSourceConfig = [
 }
 ];
 
-export const AgGridInstruments = () => {
+export const AgGridTables = () => {
   const error = useAutoLoginToVuuServer();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
@@ -108,4 +108,4 @@ export const AgGridInstruments = () => {
     </ToolkitProvider>
   );
 };
-AgGridInstruments.displaySequence = displaySequence++;
+AgGridTables.displaySequence = displaySequence++;
