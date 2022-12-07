@@ -114,23 +114,12 @@ export const FilterInputWithToolbar = () => {
         suggestionProvider={suggestionProvider}
       />
       <br />
-      <FilterToolbar id="toolbar-default" filter={filter}>
+      <FilterToolbar
+        id="toolbar-default"
+        filter={filter}
+        suggestionProvider={suggestionProvider}
+      >
         {/*
-        <ToggleButton
-          className="vuuToggleButton"
-          onToggle={handleToggleTestOne}
-          toggled={testOneEnabled}
-          variant="secondary"
-        >
-          Test One
-        </ToggleButton>
-        <ToggleButton
-          className="vuuToggleButton"
-          onToggle={handleToggleTestTwo}
-          toggled={testTwoEnabled}
-        >
-          Test Two
-        </ToggleButton>
         <ToggleButton
           className="vuuToggleButton"
           onToggle={handleToggleTestThree}

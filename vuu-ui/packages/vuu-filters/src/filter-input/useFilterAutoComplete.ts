@@ -1,23 +1,12 @@
 import { MutableRefObject, useCallback, useMemo } from "react";
-import {
-  Completion,
-  CompletionContext,
-  CompletionSource,
-} from "@codemirror/autocomplete";
+import { CompletionContext, CompletionSource } from "@codemirror/autocomplete";
 import { syntaxTree } from "@codemirror/language";
 import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
 import { ISuggestionProvider } from "./useCodeMirrorEditor";
-import { EditorView } from "@codemirror/view";
 import { Filter } from "@finos/vuu-filters";
 
-export type ApplyCompletion = (
-  view: EditorView,
-  completion: Completion,
-  from: number,
-  to: number,
-  mode?: "add" | "replace"
-) => void;
+export type ApplyCompletion = (mode?: "add" | "replace") => void;
 
 const getValue = (node: SyntaxNode, state: EditorState) =>
   state.doc.sliceString(node.from, node.to);
@@ -89,12 +78,7 @@ export const useAutoComplete = (
     const defaultResult = [
       {
         label: "Press ENTER to submit",
-        apply: (
-          view: EditorView,
-          completion: Completion,
-          from: number,
-          to: number
-        ) => onSubmit.current(view, completion, from, to),
+        apply: () => onSubmit.current(),
         boost: 6,
       },
       ...operands,
@@ -103,22 +87,12 @@ export const useAutoComplete = (
     const withSaveAddReplace = [
       {
         label: "Submit (add to existing filter)",
-        apply: (
-          view: EditorView,
-          completion: Completion,
-          from: number,
-          to: number
-        ) => onSubmit.current(view, completion, from, to, "add"),
+        apply: () => onSubmit.current("add"),
         boost: 7,
       },
       {
         label: "Submit (replace existing filter)",
-        apply: (
-          view: EditorView,
-          completion: Completion,
-          from: number,
-          to: number
-        ) => onSubmit.current(view, completion, from, to, "replace"),
+        apply: () => onSubmit.current("replace"),
         boost: 6,
       },
       ...operands,
@@ -170,12 +144,7 @@ export const useAutoComplete = (
               options: [
                 {
                   label: "press ENTER to apply filter and save",
-                  apply: (
-                    view: EditorView,
-                    completion: Completion,
-                    from: number,
-                    to: number
-                  ) => onSubmit.current(view, completion, from, to),
+                  apply: () => onSubmit.current(),
                   boost: 5,
                 },
               ],
@@ -316,6 +285,12 @@ export const useAutoComplete = (
         }
       }
     },
-    [joinOperands, onSubmit, suggestionProvider]
+    [
+      existingFilter,
+      joinOperands.default,
+      joinOperands.withSaveAddReplace,
+      onSubmit,
+      suggestionProvider,
+    ]
   ) as CompletionSource;
 };

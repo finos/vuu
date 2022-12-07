@@ -1,13 +1,30 @@
 import {
   Filter,
+  isNamedFilter,
   isMultiValueFilter,
   isSingleValueFilter,
 } from "@finos/vuu-filters";
-import { Dropdown, ToolbarField } from "@heswell/uitk-lab";
+import { ToggleButton, ToolbarField } from "@heswell/uitk-lab";
 import { ReactElement } from "react";
+import { ISuggestionProvider, SuggestionConsumer } from "@finos/vuu-filters";
+import { FilterDropdown } from "./FilterDropdown";
 
-const filterToControl = (filter: Filter): ReactElement | ReactElement[] => {
-  if (isSingleValueFilter(filter)) {
+const filterToControl = (
+  filter: Filter,
+  suggestionProvider: ISuggestionProvider
+): ReactElement | ReactElement[] => {
+  if (isNamedFilter(filter)) {
+    return (
+      <ToggleButton
+        className="vuuToggleButton"
+        // onToggle={handleToggleTestOne}
+        toggled={true}
+        variant="secondary"
+      >
+        {filter.name}
+      </ToggleButton>
+    );
+  } else if (isSingleValueFilter(filter)) {
     const { column, value } = filter;
     return (
       <ToolbarField
@@ -16,10 +33,12 @@ const filterToControl = (filter: Filter): ReactElement | ReactElement[] => {
         label={column}
         labelPlacement="top"
       >
-        <Dropdown
-          defaultSelected={value}
+        <FilterDropdown
+          column={column}
+          selected={value}
           selectionStrategy="default"
           source={[value]}
+          suggestionProvider={suggestionProvider}
           style={{ width: 100 }}
         />
       </ToolbarField>
@@ -33,22 +52,33 @@ const filterToControl = (filter: Filter): ReactElement | ReactElement[] => {
         key={column}
         labelPlacement="top"
       >
-        <Dropdown
-          defaultSelected={values}
+        <FilterDropdown
+          column={column}
+          selected={values}
           selectionStrategy="multiple"
           source={values}
+          suggestionProvider={suggestionProvider}
           style={{ width: 100 }}
         />
       </ToolbarField>
     );
   } else {
-    return filter.filters.map(filterToControl) as ReactElement[];
+    return filter.filters.map((filter) =>
+      filterToControl(filter, suggestionProvider)
+    ) as ReactElement[];
   }
 };
 
-export const useFilterToolbar = ({ filter }: { filter?: Filter }) => {
+export interface FilterToolbarProps extends SuggestionConsumer {
+  filter?: Filter;
+}
+
+export const useFilterToolbar = ({
+  filter,
+  suggestionProvider,
+}: FilterToolbarProps) => {
   if (filter) {
-    return filterToControl(filter);
+    return filterToControl(filter, suggestionProvider);
   } else {
     return [];
   }

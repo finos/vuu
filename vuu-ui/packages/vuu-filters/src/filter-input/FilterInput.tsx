@@ -1,23 +1,21 @@
 import { Filter } from "@finos/vuu-filters";
 import { HTMLAttributes } from "react";
-import {
-  ISuggestionProvider,
-  useCodeMirrorEditor,
-} from "./useCodeMirrorEditor";
+import { SuggestionConsumer, useCodeMirrorEditor } from "./useCodeMirrorEditor";
 import { Button } from "@heswell/uitk-core";
 
 import "./FilterInput.css";
 
 const classBase = "vuuFilterInput";
 
-export interface FilterInputProps extends HTMLAttributes<HTMLDivElement> {
+export interface FilterInputProps
+  extends SuggestionConsumer,
+    HTMLAttributes<HTMLDivElement> {
   existingFilter?: Filter;
   onSubmitFilter?: (
     filter: Filter | undefined,
     filterQuery: string,
     filterName?: string
   ) => void;
-  suggestionProvider: ISuggestionProvider;
 }
 
 export const FilterInput = ({

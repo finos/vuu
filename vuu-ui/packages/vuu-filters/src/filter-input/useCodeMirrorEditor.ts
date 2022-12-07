@@ -8,7 +8,7 @@ import { minimalSetup } from "./codemirror-basic-setup";
 import { filterLanguageSupport } from "./filter-language-parser";
 import { vuuHighlighting } from "./highlighting";
 import { vuuTheme } from "./theme";
-import { walkTree } from "./walkTree";
+import { walkTree } from "./filter-language-parser/walkTree";
 import {
   autocompletion,
   Completion,
@@ -17,6 +17,8 @@ import {
 import { ApplyCompletion, useAutoComplete } from "./useFilterAutoComplete";
 
 export type SuggestionType = "column" | "columnValue" | "operator";
+
+// TODO move this somewhere neutral
 export interface ISuggestionProvider {
   getSuggestions: (
     valueType: SuggestionType,
@@ -29,6 +31,10 @@ export interface ISuggestionProvider {
     columnName?: string,
     text?: string | undefined
   ) => Promise<boolean>;
+}
+
+export interface SuggestionConsumer {
+  suggestionProvider: ISuggestionProvider;
 }
 
 const getView = (ref: MutableRefObject<EditorView | undefined>): EditorView => {
@@ -58,7 +64,8 @@ export interface CodeMirrorEditorProps {
   onSubmitFilter?: (
     filter: Filter | undefined,
     filterQuery: string,
-    filterName?: string
+    filterName?: string,
+    mode?: "add" | "replace"
   ) => void;
   suggestionProvider: ISuggestionProvider;
 }
@@ -96,9 +103,9 @@ export const useCodeMirrorEditor = ({
       getView(viewRef).setState(createState());
     };
 
-    const submitFilterAndClearInput = () => {
+    const submitFilterAndClearInput = (mode?: "add" | "replace") => {
       const [filter, filterQuery, filterName] = parseFilter();
-      onSubmitFilter?.(filter, filterQuery, filterName);
+      onSubmitFilter?.(filter, filterQuery, filterName, mode);
       clearInput();
     };
 
@@ -154,8 +161,8 @@ export const useCodeMirrorEditor = ({
         ],
       });
 
-    onSubmit.current = () => {
-      submitFilterAndClearInput();
+    onSubmit.current = (mode?: "add" | "replace") => {
+      submitFilterAndClearInput(mode);
       // TODO refocu sthe editor
       setTimeout(() => {
         getView(viewRef).focus();

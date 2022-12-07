@@ -1,4 +1,5 @@
 import { Tree } from "@lezer/common";
+import { Filter as FilterType } from "../../filterTypes";
 
 class Filter {
   #name: string | undefined;
@@ -23,8 +24,8 @@ class Filter {
   setName(value: string) {
     this.#name = value;
   }
-  toJson() {
-    return this.expression?.toJson();
+  toJson(): FilterType {
+    return this.expression?.toJson(this.#name);
   }
 }
 class OrExpression {
@@ -32,11 +33,12 @@ class OrExpression {
     this.filters.push(expression);
   }
   filters: any[] = [];
-  toJson() {
+  toJson(name?: string) {
     if (this.filters.length === 1) {
-      return this.filters[0].toJson();
+      return this.filters[0].toJson(name);
     } else if (this.filters.length > 1) {
       return {
+        name,
         type: "or",
         filters: this.filters.map((f) => f.toJson()),
       };
@@ -48,11 +50,12 @@ class AndExpression {
     this.filters.push(expression);
   }
   filters: FilterClause[] = [];
-  toJson() {
+  toJson(name?: string) {
     if (this.filters.length === 1) {
-      return this.filters[0].toJson();
+      return this.filters[0].toJson(name);
     } else if (this.filters.length > 1) {
       return {
+        name,
         type: "and",
         filters: this.filters.map((f) => f.toJson()),
       };
@@ -63,9 +66,10 @@ class ColumnValueExpression {
   column?: Column;
   op?: string;
   value?: string | number;
-  toJson() {
+  toJson(name?: string) {
     return {
       column: this.column?.name,
+      name,
       op: this.op,
       value: this.value,
     };
@@ -75,9 +79,10 @@ class ColumnSetExpression {
   column?: Column;
   op?: "in";
   values: (string | number)[] = [];
-  toJson() {
+  toJson(name?: string) {
     return {
       column: this.column?.name,
+      name,
       op: "in",
       values: this.values,
     };

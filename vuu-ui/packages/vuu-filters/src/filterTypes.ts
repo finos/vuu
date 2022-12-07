@@ -25,12 +25,16 @@ const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "ends",
 ]);
 
-export interface SingleValueFilterClause {
+export interface NamedFilter {
+  name?: string;
+}
+
+export interface SingleValueFilterClause extends NamedFilter {
   op: SingleValueFilterClauseOp;
   column: string;
   value: string | number;
 }
-export interface MultiValueFilterClause {
+export interface MultiValueFilterClause extends NamedFilter {
   op: MultipleValueFilterClauseOp;
   column: string;
   values: string[] | number[];
@@ -38,7 +42,7 @@ export interface MultiValueFilterClause {
 
 export type FilterClause = SingleValueFilterClause | MultiValueFilterClause;
 
-export interface MultiClauseFilter {
+export interface MultiClauseFilter extends NamedFilter {
   column?: never;
   op: FilterCombinatorOp;
   filters: Filter[];
@@ -53,6 +57,11 @@ export interface OrFilter extends MultiClauseFilter {
 
 export type Filter = FilterClause | MultiClauseFilter;
 
+// convenience methods to check filter type
+export const isNamedFilter = (f?: Filter) =>
+  f !== undefined && f.name !== undefined;
+
+// ... with type constraints
 export const isSingleValueFilter = (f?: Filter): f is SingleValueFilterClause =>
   f !== undefined &&
   singleValueFilterOps.has(f.op as SingleValueFilterClauseOp);
