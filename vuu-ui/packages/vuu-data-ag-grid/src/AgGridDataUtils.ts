@@ -40,7 +40,7 @@ export type AgDataItem = string | number | boolean;
 export type AgDataRow = { [key: string]: AgDataItem };
 export type AgViewportRows = { [key: string]: AgDataRow };
 
-const toAgViewportRow = (data: DataSourceRow, columnMap: ColumnMap) => {
+export const toAgViewportRow = (data: DataSourceRow, columnMap: ColumnMap) => {
   const row: AgGridDataRow = {};
   const {
     [DEPTH]: depth,

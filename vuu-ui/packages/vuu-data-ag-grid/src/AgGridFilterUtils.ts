@@ -94,12 +94,21 @@ export const agGridFilterModelToVuuFilter = (filterModel: {
       values,
     });
     if (filterType === "set") {
-      const filterClause: FilterClause = {
-        op: "in",
-        column,
-        values,
-      };
-      filterClauses.push(filterClause);
+      if (values.length === 1) {
+        const filterClause: FilterClause = {
+          op: "=",
+          column,
+          value: values[0],
+        };
+        filterClauses.push(filterClause);
+      } else if (values.length > 0) {
+        const filterClause: FilterClause = {
+          op: "in",
+          column,
+          values,
+        };
+        filterClauses.push(filterClause);
+      }
     } else if (type === "lessThanOrEqual") {
       const filterClause: MultiClauseFilter = {
         op: "or",

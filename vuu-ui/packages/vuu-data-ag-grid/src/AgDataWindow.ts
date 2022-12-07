@@ -1,16 +1,23 @@
-import { WindowRange } from "@finos/vuu-utils";
+import { DataSourceRow } from "@finos/vuu-data";
+import { ColumnMap, WindowRange } from "@finos/vuu-utils";
+import { updateSourceFile } from "typescript";
 
 export type AgDataItem = string | number | boolean;
 export type AgData = { [key: string]: AgDataItem };
 export type AgDataRow = [number, AgData];
 export type RangeLike = { from: number; to: number };
 
-const log = (message: string) =>
-  console.log(`%c[DataWindow] ${message}`, "color: purple;font-weight: bold;");
+const log = (message: string, ...args: unknown[]) =>
+  console.log(
+    `%c[AgDataWindow] ${message}`,
+    "color: purple;font-weight: bold;",
+    ...args
+  );
 export class AgDataWindow {
   private range: WindowRange;
-  public data: AgDataRow[];
+  public data: DataSourceRow[];
   public rowCount = 0;
+
   constructor({ from, to }: RangeLike) {
     log(`constructor ${from} - ${to}`);
     this.range = new WindowRange(from, to);
@@ -21,23 +28,42 @@ export class AgDataWindow {
   }
 
   setRowCount = (rowCount: number) => {
-    // log(`rowCount => ${rowCount}`);
+    log(`rowCount => ${rowCount}`);
     if (rowCount < this.data.length) {
       this.data.length = rowCount;
     }
     this.rowCount = rowCount;
   };
 
-  // return true if existing row was updated
-  add(data: AgDataRow) {
+  add(data: DataSourceRow) {
+    log(`add row ${JSON.stringify(data)}`);
     const [index] = data;
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
-      const isUpdate = this.data[internalIndex] !== undefined;
       this.data[internalIndex] = data;
-      return isUpdate;
-    } else {
-      return false;
+    }
+  }
+
+  update(
+    data: DataSourceRow,
+    reverseColumnMap: Map<number, string>
+  ): (string | number | boolean)[] | undefined {
+    const [index] = data;
+    const internalIndex = index - this.range.from;
+    const dataRow = this.data[internalIndex];
+    if (dataRow) {
+      let updates: (string | number | boolean)[] | undefined = undefined;
+      for (let i = 1; i < dataRow.length; i++) {
+        if (dataRow[i] !== data[i]) {
+          const key = reverseColumnMap.get(i);
+          if (key) {
+            const out = updates ?? (updates = []);
+            dataRow[i] = data[i];
+            out.push(key, data[i]);
+          }
+        }
+      }
+      return updates;
     }
   }
 
@@ -68,6 +94,11 @@ export class AgDataWindow {
       this.range.from = from;
       this.range.to = to;
     }
+  }
+
+  hasRow([rowIndex]: DataSourceRow) {
+    const offset = this.range.from;
+    return this.data[rowIndex + offset] !== undefined;
   }
 
   hasData(from: number, to: number) {

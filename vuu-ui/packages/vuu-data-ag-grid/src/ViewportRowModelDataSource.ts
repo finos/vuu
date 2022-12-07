@@ -8,10 +8,19 @@ import {
   IViewportDatasourceParams,
 } from "ag-grid-community";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
-import { AgGridDataSet, convertToAgViewportRows } from "./AgGridDataUtils";
+import { convertToAgViewportRows, toAgViewportRow } from "./AgGridDataUtils";
 import { VuuGroupBy, VuuSortCol } from "@finos/vuu-protocol-types";
+import { Filter } from "@finos/vuu-utils/src/filterTypes";
+import { AgDataWindow } from "./AgDataWindow";
 
-const log = (message: string, ...rest: any[]) =>
+const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
+  new Map<number, string>(
+    Object.entries(columnMap).map(
+      (entry) => entry.reverse() as [number, string]
+    )
+  );
+
+const log = (message: string, ...rest: unknown[]) =>
   console.log(
     `%c[ViewportDataSource] ${message}`,
     "color: blue;font-weight: bold;",
@@ -20,9 +29,11 @@ const log = (message: string, ...rest: any[]) =>
 
 export class ViewportRowModelDataSource implements IViewportDatasource {
   private columnMap: ColumnMap;
+  private reverseColumnMap: Map<number, string>;
   private rowCount = 0;
 
   private dataSource: RemoteDataSource;
+  private dataWindow: AgDataWindow = new AgDataWindow({ from: 0, to: 0 });
 
   constructor(dataSourceConfig: DataSourceProps) {
     console.log(
@@ -32,17 +43,19 @@ export class ViewportRowModelDataSource implements IViewportDatasource {
 
     this.dataSource.subscribe({}, this.handleMessageFromDataSource);
     this.columnMap = buildColumnMap(dataSourceConfig.columns);
+    this.reverseColumnMap = reverseColumnMap(this.columnMap);
   }
 
-  setAgRowCount(count: number) {
-    console.error("setRowCount called before init");
-  }
-  getAgRow(rowIndex: number) {
-    console.error(`getRow [${rowIndex}] called before init`);
-  }
-  setAgRowData(rows: AgGridDataSet) {
-    console.error("setRowData called before init");
-  }
+  setAgRowCount: IViewportDatasourceParams["setRowCount"] = () => {
+    throw Error("setRowCount called before init");
+  };
+
+  getAgRow: IViewportDatasourceParams["getRow"] = (rowIndex: number) => {
+    throw Error(`getRow [${rowIndex}] called before init`);
+  };
+  setAgRowData: IViewportDatasourceParams["setRowData"] = () => {
+    throw Error("setRowData called before init");
+  };
 
   init({ setRowData, setRowCount, getRow }: IViewportDatasourceParams): void {
     this.setAgRowCount = setRowCount;
@@ -52,6 +65,7 @@ export class ViewportRowModelDataSource implements IViewportDatasource {
 
   setViewportRange(firstRow: number, lastRow: number): void {
     // console.log(`setViewport Range called by Ag Grid ${firstRow} - ${lastRow}`);
+    this.dataWindow.setRange(firstRow, lastRow + 1);
     this.dataSource.setRange(firstRow, lastRow + 1);
   }
 
@@ -67,6 +81,11 @@ export class ViewportRowModelDataSource implements IViewportDatasource {
       this.dataSource.openTreeNode(key);
     }
   }
+
+  filter(filter: Filter, filterQuery: string) {
+    this.dataSource.filter(filter, filterQuery);
+  }
+
   sort(sortDefs: VuuSortCol[]) {
     this.dataSource.sort({
       sortDefs,
@@ -76,22 +95,40 @@ export class ViewportRowModelDataSource implements IViewportDatasource {
   handleMessageFromDataSource: SubscribeCallback = (message) => {
     if (message.type === "viewport-update") {
       if (message.size !== undefined) {
-        if (message.size !== this.rowCount) {
-          this.rowCount = message.size;
+        if (message.size !== this.dataWindow.rowCount) {
+          this.dataWindow.setRowCount(message.size);
           this.setAgRowCount(message.size);
         }
       }
       if (message.rows) {
-        // log(
-        //   `>>> viewport-update
-        //   ${message.rows.length} data rows from server [${
-        //     message.rows[0][0]
-        //   }] - [${message.rows[message.rows.length - 1][0]}]
-        // `
-        // );
+        log(
+          `>>> viewport-update
+          ${message.rows.length} data rows from server [${
+            message.rows[0][0]
+          }] - [${message.rows[message.rows.length - 1][0]}]
+        `
+        );
 
-        const agRowData = convertToAgViewportRows(message.rows, this.columnMap);
-        this.setAgRowData(agRowData);
+        const { columnMap, reverseColumnMap } = this;
+
+        if (message.rows.some(this.dataWindow.hasRow, this.dataWindow)) {
+          for (const dataRow of message.rows) {
+            const [rowIndex] = dataRow;
+            const updates = this.dataWindow.update(dataRow, reverseColumnMap);
+            if (updates) {
+              const agRowNode = this.getAgRow(rowIndex);
+              for (let i = 0; i < updates.length; i += 2) {
+                agRowNode.setDataValue(updates[i] as string, updates[i + 1]);
+              }
+            }
+          }
+        } else {
+          const agRowData = convertToAgViewportRows(message.rows, columnMap);
+          for (const dataRow of message.rows) {
+            this.dataWindow.add(dataRow);
+          }
+          this.setAgRowData(agRowData);
+        }
       }
     }
   };

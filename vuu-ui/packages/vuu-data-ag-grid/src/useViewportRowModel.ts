@@ -12,6 +12,7 @@ import {
 } from "ag-grid-community";
 import { useCallback, useMemo, useRef } from "react";
 import { bySortIndex, isSortedColumn, toSortDef } from "./AgGridDataUtils";
+import { agGridFilterModelToVuuFilter } from "./AgGridFilterUtils";
 import { FilterDataProvider } from "./FilterDataProvider";
 import { GroupCellRenderer } from "./GroupCellRenderer";
 import { ViewportRowModelDataSource } from "./ViewportRowModelDataSource";
@@ -23,10 +24,6 @@ export const useViewportRowModel = (config: DataSourceProps) => {
   );
 
   const dataSource: ViewportRowModelDataSource = useMemo(() => {
-    console.log(
-      `useViewportRowModel, creating ViewportRowModelDataSource with config bufferSize ${config.bufferSize}`
-    );
-
     return new ViewportRowModelDataSource(config);
   }, [config]);
 
@@ -61,20 +58,27 @@ export const useViewportRowModel = (config: DataSourceProps) => {
     [dataSource]
   );
 
-  const handleSortChanged = useCallback((evt: SortChangedEvent) => {
-    const columnState = evt.columnApi.getColumnState();
-    const sortDefs = columnState
-      .filter(isSortedColumn)
-      .sort(bySortIndex)
-      .map(toSortDef);
-    dataSource.sort(sortDefs);
-  }, []);
+  const handleSortChanged = useCallback(
+    (evt: SortChangedEvent) => {
+      const columnState = evt.columnApi.getColumnState();
+      const sortDefs = columnState
+        .filter(isSortedColumn)
+        .sort(bySortIndex)
+        .map(toSortDef);
+      dataSource.sort(sortDefs);
+    },
+    [dataSource]
+  );
 
-  const handleFilterChanged = useCallback((evt: FilterChangedEvent) => {
-    console.log("filterhanged", {
-      evt,
-    });
-  }, []);
+  const handleFilterChanged = useCallback(
+    (evt: FilterChangedEvent) => {
+      const filterModel = evt.api.getFilterModel();
+      const [filterQuery, vuuFilter] =
+        agGridFilterModelToVuuFilter(filterModel);
+      dataSource.filter(vuuFilter, filterQuery);
+    },
+    [dataSource]
+  );
 
   const autoGroupColumnDef = {
     headerName: "Group",

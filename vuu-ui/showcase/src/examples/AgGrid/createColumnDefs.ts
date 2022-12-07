@@ -79,7 +79,7 @@ export const createColumnDefs = (
       ];
     case "prices":
       return [
-        { field: "ask" },
+        { field: "ask", cellRenderer: "agAnimateShowChangeCellRenderer" },
         { field: "askSize" },
         { field: "bid" },
         { field: "bidSize" },
