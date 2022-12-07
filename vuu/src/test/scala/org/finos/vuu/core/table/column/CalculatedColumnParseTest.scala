@@ -1,9 +1,10 @@
 package org.finos.vuu.core.table.column
 
-import org.finos.vuu.grammer.{CalculatedColumnLexer, CalculatedColumnParser}
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
-import org.finos.vuu.core.filter.FilterTreeVisitor
-import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.module.ModuleFactory.stringToString
+import org.finos.vuu.core.table.{Columns, RowWithData}
+import org.finos.vuu.grammer.{CalculatedColumnLexer, CalculatedColumnParser}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -20,13 +21,24 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
 
     System.out.println(tree.toStringTree(parser)) // print LISP-style tree
 
-    val eval = new CalculatedColumnVisitor()
+    val tableDef = TableDef(
+        "CalColTest",
+         "id",
+          Columns.fromNames("id".string(), "price".double(), "quantity".long(),
+                            "sigfig".double(), "negpos".double(),
+                            "intVal1".int(), "intVal2".int(), "intVal3".int(),
+                            "text1".string(), "text2".string(),
+                            "bid".double(), "ask".double()
+          )
+    )
+
+    val eval = new CalculatedColumnVisitor(tableDef)
 
     val result = eval.visit(tree)
 
     System.out.println(result) // print LISP-style tree
 
-    val row = RowWithData("foo", Map("price" -> 12.23, "quantity" -> 200))
+    val row = RowWithData("foo", Map("price" -> 12.23, "quantity" -> 200L))
 
     println(result.calculate(row))
   }
@@ -52,7 +64,7 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
       len(x)
       upper(x)
       lower(x)
-      replace(x, y)
+      replace(x, y, count)
       left(x, y)
       right(x, y)
       search
@@ -69,12 +81,12 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
     Scenario("run samples of grammar, and check parse or fail"){
 
       val samples = List(
-        "=price*quantity"
-//        "=abs(negpos)",
-//        "=min(colx, coly)",
+        "=price*quantity",
+        "=abs(negpos)",
+        "=min(intVal1, intVal2)",
 //        "=max(colx, coly, colz)",
-//        "=(bid * ask) / 2",
-//        "=concatenate(max(colx, coly), text(quantity))",
+        "=(bid + ask) / 2",
+        "=concatenate(max(intVal1, intVal2), text(quantity))",
 //        "=right(client, 3)",
 //        "=left(client, 3)"
       )
