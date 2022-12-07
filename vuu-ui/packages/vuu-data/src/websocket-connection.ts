@@ -9,7 +9,6 @@ import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
 export type ConnectionMessage = ServerToClientMessage | ConnectionStatusMessage;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
-const logger = console;
 const WS_PATTERN = /^ws(s)?:\/\/.+/;
 
 const connectionAttempts: {
@@ -106,11 +105,11 @@ const createWebsocket = (connectionString: string): Promise<WebSocket> =>
   });
 
 const closeWarn = () => {
-  logger.log(`Connection cannot be closed, socket not yet opened`);
+  console.log(`Connection cannot be closed, socket not yet opened`);
 };
 
 const sendWarn = (msg: ClientToServerMessage) => {
-  logger.log(`Message cannot be sent, socket closed: ${msg.body.type}`);
+  console.log(`Message cannot be sent, socket closed`);
 };
 
 const parseMessage = (message: string): ServerToClientMessage => {
@@ -143,42 +142,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   [setWebsocket](ws: WebSocket) {
     const callback = this[connectionCallback];
     ws.onmessage = (evt) => {
-      // TEST DATA COLLECTION
-      // saveTestData(evt.data, 'server');
       const vuuMessageFromServer = parseMessage(evt.data);
-      // console.log(
-      //   `%c<<< [${new Date().toISOString().slice(11, 23)}]  (WebSocket) ${
-      //     vuuMessageFromServer.body.type
-      //   }
-      //   ${JSON.stringify(vuuMessageFromServer)}
-      //   `,
-      //   "color:white;background-color:blue;font-weight:bold;"
-      // );
-      const rowData = [];
-      let sizeMessage = "";
-      let message = "";
-      if (vuuMessageFromServer.body.type === "TABLE_ROW") {
-        for (const row of vuuMessageFromServer.body.rows) {
-          const { updateType, vpSize } = row;
-          if (updateType === "SIZE") {
-            sizeMessage = `SIZE=${vpSize}`;
-          } else {
-            rowData.push(row);
-          }
-        }
-
-        if (rowData.length > 0) {
-          const [firstRow] = rowData;
-          const lastRow = rowData[rowData.length - 1];
-          message = `   ${rowData.length} rows   [${firstRow.rowIndex}] - [${lastRow.rowIndex}]`;
-        }
-
-        console.log(
-          `%c<<<  ${vuuMessageFromServer.body.type} ${sizeMessage} ${message}`,
-          "color:blue;font-weight:bold;"
-        );
-      }
-
       callback(vuuMessageFromServer);
     };
 
@@ -221,19 +185,6 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
       //   `%c>>>  (WebSocket) ${JSON.stringify(msg)}`,
       //   "color:blue;font-weight:bold;"
       // );
-
-      if (msg.body.type === "CREATE_VP") {
-        console.log(
-          `%c>>>  ${msg.body.type} [${msg.body.range.from}:${msg.body.range.to}]`,
-          "color:brown;font-weight:bold;"
-        );
-      } else if (msg.body.type === "CHANGE_VP_RANGE") {
-        console.log(
-          `%c>>>  ${msg.body.type} [${msg.body.from}:${msg.body.to}]`,
-          "color:brown;font-weight:bold;"
-        );
-      }
-
       ws.send(JSON.stringify(msg));
     };
 

@@ -59,7 +59,7 @@ const BackgroundCell = React.memo(function BackgroundCell({
 
   return (
     <div
-      className={cx("vuuDataGridCell", "Background-cell", dirClass, arrowClass)}
+      className={cx("vuuDataGridCell", dirClass, arrowClass)}
       style={{ marginLeft: column.marginLeft, width }}
       tabIndex={-1}
     >

@@ -15,7 +15,7 @@
   ],
   "peerDependencies": {
     "@finos/vuu-data": "0.0.26",
-    "@finos/datagrid-parsers": "0.0.26",
+    "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "ag-grid-community": "^28.2.0",
     "ag-grid-enterprise": "^28.2.0",

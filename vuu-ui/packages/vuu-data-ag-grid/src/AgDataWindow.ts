@@ -1,34 +1,29 @@
 import { DataSourceRow } from "@finos/vuu-data";
-import { ColumnMap, WindowRange } from "@finos/vuu-utils";
-import { updateSourceFile } from "typescript";
+import { WindowRange } from "@finos/vuu-utils";
 
 export type AgDataItem = string | number | boolean;
 export type AgData = { [key: string]: AgDataItem };
 export type AgDataRow = [number, AgData];
 export type RangeLike = { from: number; to: number };
 
-const log = (message: string, ...args: unknown[]) =>
-  console.log(
-    `%c[AgDataWindow] ${message}`,
-    "color: purple;font-weight: bold;",
-    ...args
-  );
+// const log = (message: string, ...args: unknown[]) =>
+//   console.log(
+//     `%c[AgDataWindow] ${message}`,
+//     "color: purple;font-weight: bold;",
+//     ...args
+//   );
 export class AgDataWindow {
   private range: WindowRange;
   public data: DataSourceRow[];
   public rowCount = 0;
 
   constructor({ from, to }: RangeLike) {
-    log(`constructor ${from} - ${to}`);
     this.range = new WindowRange(from, to);
     //internal data is always 0 based, we add range.from to determine an offset
     this.data = new Array(to - from);
-    // window.dataWindow = this.data;
-    // log(`constructor initial range ${from} - ${to}`);
   }
 
   setRowCount = (rowCount: number) => {
-    log(`rowCount => ${rowCount}`);
     if (rowCount < this.data.length) {
       this.data.length = rowCount;
     }
@@ -36,7 +31,6 @@ export class AgDataWindow {
   };
 
   add(data: DataSourceRow) {
-    log(`add row ${JSON.stringify(data)}`);
     const [index] = data;
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
@@ -79,7 +73,6 @@ export class AgDataWindow {
   }
 
   setRange(from: number, to: number) {
-    log(`setRange ${from} ${to}`);
     if (from !== this.range.from || to !== this.range.to) {
       const [overlapFrom, overlapTo] = this.range.overlap(from, to);
       const newData = new Array(to - from);
@@ -109,7 +102,7 @@ export class AgDataWindow {
   }
 
   getData(from: number, to: number): any[] {
-    const { from: clientFrom, to: clientTo } = this.range;
+    const { from: clientFrom } = this.range;
     const startOffset = Math.max(0, from - clientFrom);
     const endOffset = Math.min(to - clientFrom, this.rowCount ?? to);
     return this.data.slice(startOffset, endOffset);

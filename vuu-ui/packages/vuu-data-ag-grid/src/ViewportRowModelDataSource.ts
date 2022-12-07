@@ -8,9 +8,9 @@ import {
   IViewportDatasourceParams,
 } from "ag-grid-community";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
-import { convertToAgViewportRows, toAgViewportRow } from "./AgGridDataUtils";
+import { convertToAgViewportRows } from "./AgGridDataUtils";
 import { VuuGroupBy, VuuSortCol } from "@finos/vuu-protocol-types";
-import { Filter } from "@finos/vuu-utils/src/filterTypes";
+import { Filter } from "@finos/vuu-filters";
 import { AgDataWindow } from "./AgDataWindow";
 
 const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
@@ -20,17 +20,16 @@ const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
     )
   );
 
-const log = (message: string, ...rest: unknown[]) =>
-  console.log(
-    `%c[ViewportDataSource] ${message}`,
-    "color: blue;font-weight: bold;",
-    ...rest
-  );
+// const log = (message: string, ...rest: unknown[]) =>
+//   console.log(
+//     `%c[ViewportDataSource] ${message}`,
+//     "color: blue;font-weight: bold;",
+//     ...rest
+//   );
 
 export class ViewportRowModelDataSource implements IViewportDatasource {
   private columnMap: ColumnMap;
   private reverseColumnMap: Map<number, string>;
-  private rowCount = 0;
 
   private dataSource: RemoteDataSource;
   private dataWindow: AgDataWindow = new AgDataWindow({ from: 0, to: 0 });
@@ -101,14 +100,6 @@ export class ViewportRowModelDataSource implements IViewportDatasource {
         }
       }
       if (message.rows) {
-        log(
-          `>>> viewport-update
-          ${message.rows.length} data rows from server [${
-            message.rows[0][0]
-          }] - [${message.rows[message.rows.length - 1][0]}]
-        `
-        );
-
         const { columnMap, reverseColumnMap } = this;
 
         if (message.rows.some(this.dataWindow.hasRow, this.dataWindow)) {

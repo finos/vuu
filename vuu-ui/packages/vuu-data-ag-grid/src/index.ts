@@ -1,3 +1,4 @@
+export * from "./BackgroundCellRenderer";
 export * from "./ViewportRowModelDataSource";
 export * from "./ServersideRowModelDataSource";
 export * from "./AgGridFilterUtils";

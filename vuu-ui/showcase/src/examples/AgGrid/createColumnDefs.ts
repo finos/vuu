@@ -1,5 +1,8 @@
 import { ColDef, SetFilterValuesFuncParams } from "ag-grid-community";
-import { FilterDataProvider } from "@finos/vuu-data-ag-grid";
+import {
+  BackgroundCellRenderer,
+  FilterDataProvider,
+} from "@finos/vuu-data-ag-grid";
 
 export type ColumnOverrides = { [key: string]: Partial<ColDef> };
 
@@ -79,9 +82,9 @@ export const createColumnDefs = (
       ];
     case "prices":
       return [
-        { field: "ask", cellRenderer: "agAnimateShowChangeCellRenderer" },
+        { field: "ask", cellRenderer: BackgroundCellRenderer },
         { field: "askSize" },
-        { field: "bid" },
+        { field: "bid", cellRenderer: BackgroundCellRenderer },
         { field: "bidSize" },
         { field: "close" },
         { field: "last" },
