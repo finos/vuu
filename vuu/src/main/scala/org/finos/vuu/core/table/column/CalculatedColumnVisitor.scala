@@ -4,7 +4,8 @@ import com.typesafe.scalalogging.StrictLogging
 import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.DataType
-import org.finos.vuu.grammer.CalculatedColumnParser.FunctionContext
+import org.finos.vuu.grammer.CalculatedColumnParser.{FunctionContext, TermContext}
+import org.finos.vuu.grammer.FilterParser.AtomContext
 import org.finos.vuu.grammer.{CalculatedColumnBaseVisitor, CalculatedColumnLexer, CalculatedColumnParser}
 
 import scala.jdk.CollectionConverters._
@@ -18,8 +19,8 @@ class CalculatedColumnVisitor(val tableDef: TableDef) extends CalculatedColumnBa
    */
   override def visitExpression(ctx: CalculatedColumnParser.ExpressionContext): CalculatedColumnClause = {
     logger.info("VISIT: Expression:" + ctx)
-    visit(ctx.term())
-    //super.visitExpression(ctx)
+    val term = visit(ctx.term())
+    term
   }
 
   /**
@@ -44,27 +45,60 @@ class CalculatedColumnVisitor(val tableDef: TableDef) extends CalculatedColumnBa
    * {@link # visitChildren} on {@code ctx}.</p>
    */
   override def visitTerm(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
-    logger.info("VISIT TERM:" + ctx)
-    super.visitTerm(ctx)
+    logger.info("VISIT TERM:" + ctx.getText)
 
-    val operator = ctx.operator()
-    val atoms = ctx.atom()
+    ctx.operator().size() match {
+      case 1 => processOperatorTerm(ctx)
+      case _ => null
+    }
 
-    val clause: CalculatedColumnClause = if(operator.size() > 0) {
-      val opText = operator.get(0).getText
-      opText match {
-        case "*" =>
-          val atomClauses = (0 until atoms.size()).map(i => visitAtom(atoms.get(i)).asInstanceOf[NumericClause]).toList
-          MultiplyClause(atomClauses)
-        case _ =>
-          NullCalculatedColumnClause()
-      }
-    }
-    else{
-      NullCalculatedColumnClause()
-    }
-    clause
+
+    //super.visitTerm(ctx)
+
+    //val operator = ctx.operator()
+
+//    operator.size() match {
+//      //this case is for non math operators (so functions basically)
+//      case 0 =>
+//          println("no operator")
+//          null
+//      case _ => processOperatorTerm(ctx)
+//    }
   }
+
+  private def processOperatorTerm(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
+
+    val operator = ctx.operator.get(0)
+
+    val children = CollectionHasAsScala(ctx.children).asScala.filter(_.getText != "(").filter(_.getText != ")").toList
+
+    val leftChild = children(0)
+    val op = children(1)
+    val rightChild = children(2)
+
+    logger.info(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
+
+    val leftClause = leftChild match {
+      case ctx: CalculatedColumnParser.AtomContext => visitAtom(ctx)
+      case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
+      case node: TerminalNode => null
+    }
+
+    val rightClause = rightChild match {
+      case ctx: CalculatedColumnParser.AtomContext => visitAtom(ctx)
+      case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
+      case node: TerminalNode => null
+    }
+
+    operator.getText match {
+      case "*" =>  MultiplyClause(List(leftClause, rightClause))
+      case "+" =>  AddClause(List(leftClause, rightClause))
+      case "-" =>  SubtractClause(List(leftClause, rightClause))
+    }
+
+  }
+
+
 
   /**
    * {@inheritDoc }
@@ -85,17 +119,22 @@ class CalculatedColumnVisitor(val tableDef: TableDef) extends CalculatedColumnBa
    */
   override def visitAtom(ctx: CalculatedColumnParser.AtomContext): CalculatedColumnClause = {
     logger.info("VISIT: ATOM" + ctx)
-    //super.visitAtom(ctx)
+    super.visitAtom(ctx)
     val clause = ctx.children.get(0) match {
       case term: TerminalNode =>
         term.getSymbol.getType match {
-          case CalculatedColumnLexer.ID => processIDSymbol(term)
-          case CalculatedColumnLexer.INT => {
-            logger.info("VISIT: ATOM - Processing Literal: " + term.getText )
-            LiteralIntColumnClause(Integer.parseInt(term.getText))
-          }
+          case CalculatedColumnLexer.ID =>
+            processIDSymbol(term)
+          case CalculatedColumnLexer.INT =>
+            logger.info("VISIT: ATOM - Processing Literal int: " + term.getText )
+            LiteralIntColumnClause(term.getText.toInt)
+          case CalculatedColumnLexer.FLOAT =>
+            logger.info("VISIT: ATOM - Processing Literal float: " + term.getText)
+            LiteralDoubleColumnClause(term.getText.toDouble)
+          case CalculatedColumnLexer.STRING =>
+            logger.info("VISIT: ATOM - Processing Literal string: " + term.getText)
+            LiteralStringColumnClause(term.getText)
         }
-
 
       case term: FunctionContext =>
         logger.info("VISIT ATOM: FunctionContext: " + term.getText)
@@ -131,11 +170,18 @@ class CalculatedColumnVisitor(val tableDef: TableDef) extends CalculatedColumnBa
 
   override def visitTerminal(node: TerminalNode): CalculatedColumnClause = {
     logger.info("VISIT: TERMINAL: " + node.getText)
+//    node.getSymbol.getType match {
+//      case CalculatedColumnLexer.LPAREN =>
+//        logger.info("\t\t open paretheses")
+//
+//      case CalculatedColumnLexer.RPAREN =>
+//        logger.info("\t\t close paretheses")
+//    }
     super.visitTerminal(node)
   }
 
   override def aggregateResult(aggregate: CalculatedColumnClause, nextResult: CalculatedColumnClause): CalculatedColumnClause = {
-    logger.info("VISIT: Aggregate Results" + aggregate)
+    //logger.info("VISIT: Aggregate Results" + aggregate)
     super.aggregateResult(aggregate, nextResult)
   }
 

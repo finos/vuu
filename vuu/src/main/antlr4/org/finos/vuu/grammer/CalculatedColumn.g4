@@ -35,7 +35,7 @@ expression : EQ term EOF;
 //operator : PLUS | MULTIPLY | DIVIDE | SUBTRACT;
 operator : LT | GT | EQ | NEQ | IN | STARTS | ENDS | PLUS | MULTIPLY | DIVIDE | SUBTRACT;
 
-term : atom ( operator atom)? | atom operator LBRACK atom (',' atom)* RBRACK | LPAREN atom ( operator atom)? RPAREN ( operator atom)?;
+term : atom ( operator atom)? | atom operator LBRACK atom (',' atom)* RBRACK | LPAREN atom (operator atom)? RPAREN (operator term)? | atom ( operator term)?;
 
 function :
     ABS LPAREN arguments RPAREN |

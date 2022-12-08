@@ -19,14 +19,15 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
 
     val tree = parser.expression() // begin parsing at init rule
 
-    System.out.println(tree.toStringTree(parser)) // print LISP-style tree
+    System.out.println("IN:" + s)
+    System.out.println("OUT" + tree.toStringTree(parser)) // print LISP-style tree
 
     val tableDef = TableDef(
         "CalColTest",
          "id",
           Columns.fromNames("id".string(), "price".double(), "quantity".long(),
                             "sigfig".double(), "negpos".double(),
-                            "intVal1".int(), "intVal2".int(), "intVal3".int(),
+                            "i1".int(), "i2".int(), "i3".int(),
                             "text1".string(), "text2".string(),
                             "bid".double(), "ask".double()
           )
@@ -38,7 +39,7 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
 
     System.out.println(result) // print LISP-style tree
 
-    val row = RowWithData("foo", Map("price" -> 12.23, "quantity" -> 200L))
+    val row = RowWithData("foo", Map("price" -> 12.23, "quantity" -> 200L, "id" -> "foo", "intVal1" -> 100, "intVal2" -> 10, "intVal3" -> 1, "bid" -> 99.00D, "ask" -> 101.01D))
 
     println(result.calculate(row))
   }
@@ -81,12 +82,18 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
     Scenario("run samples of grammar, and check parse or fail"){
 
       val samples = List(
-        "=price*quantity",
-        "=abs(negpos)",
-        "=min(intVal1, intVal2)",
+        "=bid+(price*quantity)",
+//        "=price*quantity*bid",
+//        "=price*quantity",
+//        "=(i1-i2)-i3",
+//        "=(bid*ask)+(price-quantity)",
+//        "=min(intVal1, intVal2)",
+        //"=(bid + ask) / 2",
+        //"=abs(negpos)",
+        //"=min(intVal1, intVal2)",
 //        "=max(colx, coly, colz)",
-        "=(bid + ask) / 2",
-        "=concatenate(max(intVal1, intVal2), text(quantity))",
+//        "=(bid + ask) / 2",
+        //"=concatenate(max(intVal1, intVal2), text(quantity))",
 //        "=right(client, 3)",
 //        "=left(client, 3)"
       )

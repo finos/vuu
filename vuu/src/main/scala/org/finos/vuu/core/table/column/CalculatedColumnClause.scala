@@ -10,6 +10,19 @@ case class LiteralIntColumnClause(i: Int) extends NumericClause {
   def calculate(data: RowData): Number = i
 }
 
+case class LiteralDoubleColumnClause(i: Double) extends NumericClause {
+  def calculate(data: RowData): Number = i
+}
+
+case class LiteralLongColumnClause(i: Long) extends NumericClause {
+  def calculate(data: RowData): Number = i
+}
+
+case class LiteralStringColumnClause(i: String) extends CalculatedColumnClause {
+  def calculate(data: RowData): String = i
+}
+
+
 trait CalculatedColumnClause {
   def calculate(data: RowData): Any
 }
@@ -43,15 +56,38 @@ case class StringColumnClause(column: Column) extends CalculatedColumnClause {
 //  override def calculate(data: RowData): Number = data.get(column).asInstanceOf[Long]
 //}
 
-case class MultiplyClause(clauses: List[NumericClause]) extends CalculatedColumnClause {
+private case class MultiplyClause(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
   def calculate(data: RowData): Any = {
     clauses.foldLeft(0.0)((x,y) => {
       if(x == 0.0){
-        y.calculate(data).doubleValue()
+        y.calculate(data).asInstanceOf[Double]
       }else{
-        x * y.calculate(data).doubleValue()
+        x * y.calculate(data).asInstanceOf[Double]
       }
     })
   }
 }
 
+case class AddClause(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
+  def calculate(data: RowData): Any = {
+    clauses.foldLeft(0.0)((x,y) => {
+      if(x == 0.0){
+        y.calculate(data).asInstanceOf[Int]
+      }else{
+        x + y.calculate(data).asInstanceOf[Int]
+      }
+    })
+  }
+}
+
+case class SubtractClause(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
+  def calculate(data: RowData): Any = {
+    clauses.foldLeft(0.0)((x,y) => {
+      if(x == 0.0){
+        y.calculate(data).asInstanceOf[Int]
+      }else{
+        x - y.calculate(data).asInstanceOf[Int]
+      }
+    })
+  }
+}
