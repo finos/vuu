@@ -1,78 +1,139 @@
-div#page {
-  max-width: 900px; /* just to demonstrate horizontal scrolling & stickiness */
+.vuuTable {
+  
+  --vuuTable-contentHeight: var(--content-height, 'auto');
+  --vuuTable-contentWidth: var(--content-width, 'auto');
+  --vuuTableHeaderHeight: var(--header-height, 30px);
+  --vuuTable-height: var(--table-height, 100%);
+  --vuuTable-pinnedWidthLeft: var(--pinned-width-left, 0pxs);
+  --vuuTable-rowHeight: 25px;
+  --vuuTable-scrollbarSize: var(--scrollbar-size, 15px);
+  --vuuTable-width: var(--table-width, 100%);
+
+  height: calc(var(--vuuTable-height) + var(--vuuTable-scrollbarSize));
+  left: 0px;
+  padding-bottom: var(--vuuTable-scrollbarSize);
+  padding-right: var(--vuuTable-scrollbarSize);
+  position: relative;
+  overflow: auto;
+  overscroll-behavior: none;
+  top: 0px;
+  width: calc(var(--vuuTable-width) + var(--vuuTable-scrollbarSize));
 }
 
-div#chartWrapper {
+.vuuTable::-webkit-scrollbar {
+  display: none;
+}
+
+.vuuTable-scrollContainer {
+  overflow: auto;
+  position: fixed;
+  height: calc(var(--vuuTable-height) + var(--vuuTable-scrollbarSize) - var(--header-height));
+  left:200px;
+  top: 0px;
+  width: calc(var(--vuuTable-width) + var(--vuuTable-scrollbarSize) - var(--pinned-width-left));
+}
+
+.vuuTable-scrollContainerHeader {
+  background: #777;
+  height: var(--header-height);
+  position: fixed;
+  top:0;
+  right:0;
+  width: var(--vuuTable-scrollbarSize);
+}
+.vuuTable-scrollContainerFooter {
+  background-color: green;
+  height: var(--vuuTable-scrollbarSize);
+  position: fixed;
+  bottom:0;
+  left:0;
+  width: var(--pinned-width-left);
+
+}
+
+.vuuTable-scrollContent {
+  position: absolute;
+  height: var(--vuuTable-contentHeight);
+  width: var(--vuuTable-contentWidth);
+}
+
+.vuuTable-tableContainer {
   position: sticky;
   left: 0px;
   top: 0px;
-  width: 700px;
-  height: 900px;
+  width: var(--vuuTable-width);
+  height: var(--vuuTable-height);
   overflow: hidden;
+  white-space: nowrap;
+
 }
 
-table#chart {
+
+.vuuTable-table {
   position: absolute;
   top: 0;
   left: 0;
-}
 
-.table-root {
-  position: absolute;
-  left: 95px;
-  top: 45px;
-  width: 715px;
-  height: 915px;
-}
-
-#scroller {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 715px;
-  height: 915px;
-  overflow: auto;
-}
-
-table#chart {
-  width: 1600px;
-  margin: 0;
-  border: none;
-  background-color: #fff;
   border-collapse: separate;
   border-spacing: 0;
   border-left: 1px solid #ccc;
+  margin: 0;
+  border: none;
+  background-color: #fff;
+  width: var(--vuuTable-contentWidth);
 }
-table#chart th {
+
+.vuuTable-columnBased {
+  display: inline-table;
+  position: static;
+}
+
+.vuuTable-row {
+}
+
+.vuuTable-filler {
+  height: var(--filler-height);
+}
+
+.vuuTable-headerCell {
   background: #777;
   border-right: 1px solid #999;
   color: #fff;
   padding: 3px;
   position: sticky;
   top: 0;
-  height: 25px;
+  height: var(--vuuTableHeaderHeight);
   /* ensure header row sits atop everything else when scrolling down */
   z-index: 1;
 }
-table#chart td {
+
+.vuuTable-table td {
   background: #fff;
   border-right: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
-  padding: 4px 5px;
-}
-/* ensure first header cell sits atop everything else when scrolling right */
-table#chart th:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-}
-/* make first column sticky when scrolling right */
-table#chart td:first-child {
-  position: sticky;
-  left: 0;
-  border-right-color: #aaa;
+  line-height: calc(var(--vuuTable-rowHeight) - 1px);
+  padding: 0 5px;
 }
 
-table#chart tr {
-  height: 25px;
+.vuuTable-table td {
+  height: var(--vuuTable-rowHeight);
 }
+
+.vuuPinLeft {
+  position: sticky;
+  left: 0;
+}
+
+th.vuuPinLeft {
+  top:0;
+  z-index: 2;
+}
+
+table.vuuPinLeft {
+  z-index: 10;
+}
+
+/* .vuuTable-row {
+  transform: translate3d(0px, 25px, 0px);
+} */
+

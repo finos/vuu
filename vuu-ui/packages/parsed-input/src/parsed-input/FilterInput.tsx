@@ -4,7 +4,7 @@ import { TokenMirror } from "./TokenMirror";
 
 import "./FilterInput.css";
 
-const classBase = "vuuFilterInput";
+const classBase = "vuuFilterInputDeprecated";
 
 export interface FilterInputProps extends HTMLAttributes<HTMLDivElement> {
   completion?: string;

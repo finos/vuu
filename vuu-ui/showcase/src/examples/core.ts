@@ -1,4 +1,5 @@
 export * as DataGrid from "./DataGrid";
+export * as Filters from "./Filters";
 export * as Layout from "./Layout";
 export * as ParsedInput from "./ParsedInput";
 export * as UIControls from "./UIControls";

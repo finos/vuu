@@ -23,7 +23,7 @@ import { ToolbarButton } from "@heswell/uitk-lab";
 
 import { NamedFilter } from "@finos/datagrid-parsers";
 import { FeatureProps } from "@finos/vuu-shell";
-import { Filter } from "@finos/vuu-utils";
+import { Filter } from "@finos/vuu-filters";
 
 import "./filtered-grid.css";
 

@@ -1,5 +1,4 @@
-import { Column, ColumnGroup } from "./column-utils";
-import { partition } from "./array-utils";
+import { partition } from "@finos/vuu-utils/src/array-utils";
 import {
   AndFilter,
   Filter,
@@ -13,7 +12,7 @@ import {
   OrFilter,
   isSingleValueFilter,
 } from "./filterTypes";
-import { Row } from "./row-utils";
+import { Row } from "@finos/vuu-utils/src/row-utils";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
 
 export const AND = "and";
@@ -135,12 +134,6 @@ function includesNoValues(filter?: Filter | null): boolean {
   );
 }
 
-export function isColumnGroup(
-  column: Column | ColumnGroup
-): column is ColumnGroup {
-  return column.isGroup === true;
-}
-
 export function getFilterColumn(column: Column | ColumnGroup) {
   return isColumnGroup(column) ? column.columns[0] : column;
 }
@@ -174,39 +167,12 @@ interface CommonFilter {
   filters?: Filter[];
 }
 
-interface CombinedFilter extends CommonFilter {
-  type: "and" | "or"; // TODO any other types?
-  filters: Filter[];
-}
-
-// 'and' filter must have 'filters'
-// export interface AndFilter extends CombinedFilter {
-//   type: 'and';
-// }
-
-// export function createAndFilter(filters: Filter[]): AndFilter {
-//   return {
-//     type: 'and',
-//     filters
-//   };
-// }
-
 export interface OtherFilter extends CommonFilter {
   type: FilterType;
   values?: any[];
 }
 
 export type RowFilterFn = (row: Row) => boolean;
-
-function applyFilter(rows: Row[], filter: RowFilterFn) {
-  const results = [];
-  for (let i = 0; i < rows.length; i++) {
-    if (filter(rows[i])) {
-      results.push(rows[i]);
-    }
-  }
-  return results;
-}
 
 // export function shouldShowFilter(filterColumnName: string, column: Column): boolean {
 //   const filterColumn = getFilterColumn(column);
@@ -495,3 +461,23 @@ function sameValues<T>(arr1: T[], arr2: T[]) {
   }
   return false;
 }
+
+export const updateFilter = (
+  filter: Filter | undefined,
+  newFilter: Filter,
+  mode: "add" | "replace"
+): Filter => {
+  if (mode === "replace" || filter === undefined) {
+    return newFilter;
+  } else if (filter.op === "and") {
+    return {
+      ...filter,
+      filters: filter.filters.concat(newFilter),
+    };
+  } else {
+    return {
+      op: "and",
+      filters: [filter, newFilter],
+    };
+  }
+};
