@@ -4,8 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.DataType
-import org.finos.vuu.grammer.CalculatedColumnParser.{FunctionContext, TermContext}
-import org.finos.vuu.grammer.FilterParser.AtomContext
+import org.finos.vuu.grammer.CalculatedColumnParser.FunctionContext
 import org.finos.vuu.grammer.{CalculatedColumnBaseVisitor, CalculatedColumnLexer, CalculatedColumnParser}
 
 import scala.jdk.CollectionConverters._
