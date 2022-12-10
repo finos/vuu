@@ -1,20 +1,25 @@
-import React from "react";
-import { TableProps } from "./Table";
-import { TableMeasurements } from "./useTableScroll";
+import { metadataKeys } from "@finos/vuu-utils";
+import React, { MouseEvent, useCallback } from "react";
+import { TableImplementationProps } from "./dataTableTypes";
+import { TableRow } from "./TableRow";
+import { TableHeaderCell } from "./TableHeaderCell";
 
-const classBase = "vuuTable";
-const headerCell = `${classBase}-headerCell`;
-const headerCellLeftPinned = `${classBase}-headerCell vuuPinLeft`;
+const classBase = "vuuDataTable";
+const { RENDER_IDX } = metadataKeys;
 
-export type RowBasedTableProps = Pick<TableProps, "columns" | "data">;
-
-export const RowBasedTable = ({ columns, data }: RowBasedTableProps) => {
-  const pinnedLeftOffset = columns
-    .filter((col) => col.pin === "left")
-    .map((col, i, cols) => {
-      return i === 0 ? 0 : cols[i - 1].width;
-    });
-
+export const RowBasedTable = ({
+  columnMap,
+  columns,
+  data,
+  onHeaderCellDragStart,
+  rowHeight,
+}: TableImplementationProps) => {
+  const handleDragStart = useCallback(
+    (evt: MouseEvent) => {
+      onHeaderCellDragStart?.(evt);
+    },
+    [onHeaderCellDragStart]
+  );
   return (
     <table className={`${classBase}-table`}>
       <colgroup>
@@ -24,42 +29,29 @@ export const RowBasedTable = ({ columns, data }: RowBasedTableProps) => {
       </colgroup>
       <thead>
         <tr>
-          {columns.map((column, i) =>
-            column.pin === "left" ? (
-              <th
-                className={headerCellLeftPinned}
-                key={i}
-                style={{ left: pinnedLeftOffset[i] }}
-              >
-                {column.name}
-              </th>
-            ) : (
-              <th className={headerCell} key={i}>
-                {column.name}
-              </th>
-            )
-          )}
+          {columns.map((column, i) => (
+            <TableHeaderCell
+              column={column}
+              data-idx={i}
+              key={i}
+              onDragStart={handleDragStart}
+              style={{ left: column.pinnedLeftOffset }}
+            />
+          ))}
         </tr>
       </thead>
       <tbody>
         {data.map((row, i) => (
-          <tr className={`vuuTable-row`} key={i}>
-            {columns.map((column, j) =>
-              column.pin === "left" ? (
-                <td
-                  className="vuuPinLeft"
-                  key={j}
-                  style={{ left: pinnedLeftOffset[j] }}
-                >
-                  {row[j]}
-                </td>
-              ) : (
-                <td key={j}>{row[j]}</td>
-              )
-            )}
-          </tr>
+          <TableRow
+            columnMap={columnMap}
+            columns={columns}
+            height={rowHeight}
+            index={i}
+            key={row[RENDER_IDX]}
+            row={row}
+          />
         ))}
-        <tr className="vuuTable-filler" />
+        <tr className={`${classBase}-filler`} />
       </tbody>
     </table>
   );

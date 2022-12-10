@@ -1,16 +1,17 @@
+import { Flexbox } from "@finos/vuu-layout";
 import {
   DragDropProvider,
+  dragStrategy,
   List,
+  moveItem,
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
   VirtualizedList,
 } from "@heswell/salt-lab";
-import { dragStrategy } from "@heswell/salt-lab/src/tabs/drag-drop";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { usa_states } from "./List.data";
 import { ListVisualizer } from "./ListVisualizer";
-import { Flexbox } from "@finos/vuu-layout";
 
 export const DefaultList = () => {
   return (
@@ -19,7 +20,7 @@ export const DefaultList = () => {
 };
 
 export const DefaultVirtualisedList = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<string[]>([]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -63,41 +64,12 @@ export const MultiSelectionList = () => {
   );
 };
 
-const applyDrop = function <T>(
-  data: T[],
-  fromIndex: number,
-  toIndex: number
-): T[] {
-  const newData = data.slice();
-  const [item] = newData.splice(fromIndex, 1);
-  if (toIndex === -1) {
-    return newData.concat(item);
-  } else {
-    console.log(`old data ${data.slice(0, 10).join(",")}`);
-    const offset = toIndex > fromIndex ? 0 : 0;
-    newData.splice(toIndex + offset, 0, item);
-    console.log(`new data ${newData.slice(0, 10).join(",")}`);
-    return newData;
-  }
-};
-
 export const DraggableListItems = () => {
   const [data, setData] = useState(usa_states);
 
-  const handleDrop = useCallback(
-    (fromIndex, toIndex) => {
-      const newData = data.slice();
-      const [item] = newData.splice(fromIndex, 1);
-      if (toIndex === -1) {
-        setData(newData.concat(item));
-      } else {
-        const offset = toIndex > fromIndex ? 0 : 0;
-        newData.splice(toIndex + offset, 0, item);
-        setData(newData);
-      }
-    },
-    [data]
-  );
+  const handleDrop = useCallback((fromIndex, toIndex) => {
+    setData((d) => moveItem(d, fromIndex, toIndex));
+  }, []);
 
   const handleSelect = useCallback((evt, item) => {
     console.log("select", {
@@ -130,7 +102,7 @@ export const DraggableListItemsDropIndicator = () => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const handleDrop = useCallback((fromIndex, toIndex) => {
-    setData((data) => applyDrop(data, fromIndex, toIndex));
+    setData((data) => moveItem(data, fromIndex, toIndex));
   }, []);
 
   const handleSelect = useCallback((evt, item) => {

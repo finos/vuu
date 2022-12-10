@@ -1,0 +1,16 @@
+.vuuDataTableRow-even {
+    --row-background: var(--uitk-palette-neutral-background-high);
+  }
+  
+  .vuuDataTableRow:not(.vuuDataTableRow-even) {
+    --row-background: var(--vuuTableRow-backgroundColor-odd, var(--table-background));
+  }
+
+  .vuuDataTableRow {
+    background: var(--row-background);
+  }
+
+  .vuuDataTableRow .vuuPinLeft {
+    background-color: var(--row-background);
+  }
+  

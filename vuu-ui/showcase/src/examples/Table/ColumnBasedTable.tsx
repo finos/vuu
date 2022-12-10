@@ -1,14 +1,25 @@
-import React from "react";
-import { TableProps } from "./Table";
-import { TableMeasurements } from "./useTableScroll";
+import { metadataKeys } from "@finos/vuu-utils";
+import React, { CSSProperties, useCallback } from "react";
+import { TableImplementationProps } from "./dataTableTypes";
 import cx from "classnames";
+import { TableRow } from "./TableRow";
+import { TableHeaderCell } from "./TableHeaderCell";
 
-const classBase = "vuuTable";
-const headerCell = `${classBase}-headerCell`;
+const classBase = "vuuDataTable";
+const { RENDER_IDX } = metadataKeys;
 
-export type ColumnBasedTableProps = Pick<TableProps, "columns" | "data">;
+export const ColumnBasedTable = ({
+  columnMap,
+  columns,
+  data,
+  headerHeight,
+  onHeaderCellDragEnd,
+  rowHeight,
+}: TableImplementationProps) => {
+  const handleDragEnd = useCallback(() => {
+    onHeaderCellDragEnd?.();
+  }, [onHeaderCellDragEnd]);
 
-export const ColumnBasedTable = ({ columns, data }: ColumnBasedTableProps) => {
   const pinnedLeftOffset = columns
     .filter((col) => col.pin === "left")
     .map((col, i, cols) => {
@@ -22,19 +33,38 @@ export const ColumnBasedTable = ({ columns, data }: ColumnBasedTableProps) => {
           className={cx(`${classBase}-table`, `${classBase}-columnBased`, {
             vuuPinLeft: column.pin === "left",
           })}
-          key={i}
-          style={{ width: column.width, left: pinnedLeftOffset[i] }}
+          data-idx={i}
+          id={`col-${i}`}
+          key={column.name}
+          style={
+            {
+              width: column.width,
+              left: pinnedLeftOffset[i],
+              "--vuuTableHeaderHeight": `${headerHeight}px`,
+              "--row-height": `${rowHeight}px`,
+            } as CSSProperties
+          }
         >
           <tbody>
             <tr key="header">
-              <th className={headerCell} key={i}>
-                {column.name}
-              </th>
+              <TableHeaderCell
+                column={column}
+                data-idx={i}
+                key={i}
+                onDragEnd={handleDragEnd}
+              />
             </tr>
             {data.map((row, j) => (
-              <tr className={`vuuTable-row`} key={j}>
-                <td>{row[i]}</td>
-              </tr>
+              <TableRow
+                columnMap={columnMap}
+                columns={columns}
+                columnIndex={i}
+                height={rowHeight}
+                index={j}
+                key={row[RENDER_IDX]}
+                row={row}
+                tableLayout="column"
+              />
             ))}
             <tr className="vuuTable-filler" />
           </tbody>

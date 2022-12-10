@@ -1,0 +1,15 @@
+.vuuTable-headerCell {
+  text-align: left;
+    background: var(--table-background);
+    border-right: 1px solid var(--uitk-container-borderColor-medium);
+    border-bottom: 1px solid var(--uitk-container-borderColor-medium);
+    color: var(--uitk-text-secondary-foreground);
+    cursor: default;
+    padding-left: 3px;
+    position: sticky;
+    top: 0;
+    height: var(--vuuTableHeaderHeight);
+    /* ensure header row sits atop everything else when scrolling down */
+    z-index: 1;
+  }
+ 

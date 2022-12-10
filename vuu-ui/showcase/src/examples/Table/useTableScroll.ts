@@ -1,10 +1,5 @@
-import { RefObject, useCallback, useLayoutEffect, useState } from "react";
-
-export type TableMeasurements = {
-  left: number;
-  right: number;
-  top: number;
-};
+import { RefObject, useCallback, useLayoutEffect, useRef } from "react";
+import { Viewport } from "./dataTableTypes";
 
 const getPctScroll = (container: HTMLElement) => {
   const { scrollLeft, scrollTop } = container;
@@ -19,30 +14,46 @@ const getMaxScroll = (container: HTMLElement) => {
   return [scrollWidth - clientWidth, scrollHeight - clientHeight];
 };
 
-export const useTableScroll = (
-  rootRef: RefObject<HTMLDivElement>,
-  scrollContainerRef: RefObject<HTMLDivElement>,
-  tableContainerRef: RefObject<HTMLDivElement>
-) => {
-  const [tableMeasurements, setTableMeasurements] = useState<TableMeasurements>(
-    {
-      left: -1,
-      right: -1,
-      top: -1,
-    }
-  );
+export interface TableScrollHookProps {
+  onRangeChange: (from: number, to: number) => void;
+  rootRef: RefObject<HTMLDivElement>;
+  rowHeight: number;
+  scrollContainerRef: RefObject<HTMLDivElement>;
+  tableContainerRef: RefObject<HTMLDivElement>;
+  viewportHeight: number;
+  viewport: Viewport;
+}
 
-  const viewportRowCount = 25;
+export const useTableScroll = ({
+  onRangeChange,
+  rootRef,
+  rowHeight,
+  scrollContainerRef,
+  tableContainerRef,
+  viewport,
+}: TableScrollHookProps) => {
+  const firstRowRef = useRef<number>(-1);
+  const rootScrolledRef = useRef(false);
+  const {
+    rowCount: viewportRowCount,
+    maxScrollContainerScrollHorizontal: maxScrollLeft,
+    maxScrollContainerScrollVertical: maxScrollTop,
+  } = viewport;
 
   const scrollTable = useCallback(
     (scrollLeft, scrollTop) => {
       const { current: tableContainer } = tableContainerRef;
       if (tableContainer) {
+        const firstRow = Math.floor(scrollTop / rowHeight);
+        if (firstRow !== firstRowRef.current) {
+          firstRowRef.current = firstRow;
+          onRangeChange(firstRow, firstRow + viewportRowCount);
+        }
         tableContainer.scrollLeft = scrollLeft;
         tableContainer.scrollTop = scrollTop;
       }
     },
-    [tableContainerRef]
+    [onRangeChange, rowHeight, tableContainerRef, viewportRowCount]
   );
 
   const handleRootScroll = useCallback(() => {
@@ -51,17 +62,20 @@ export const useTableScroll = (
     if (rootContainer && scrollContainer) {
       const [pctScrollLeft, pctScrollTop, scrollLeft, scrollTop] =
         getPctScroll(rootContainer);
-      const [maxScrollLeft, maxScrollTop] = getMaxScroll(scrollContainer);
+      rootScrolledRef.current = true;
       scrollContainer.scrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
       scrollContainer.scrollTop = Math.round(pctScrollTop * maxScrollTop);
       scrollTable(scrollLeft, scrollTop);
     }
-  }, [rootRef, scrollContainerRef, scrollTable]);
+  }, [maxScrollLeft, maxScrollTop, rootRef, scrollContainerRef, scrollTable]);
 
   const handleScrollbarScroll = useCallback(() => {
     const { current: rootContainer } = rootRef;
     const { current: scrollContainer } = scrollContainerRef;
-    if (rootContainer && scrollContainer) {
+    const { current: rootScrolled } = rootScrolledRef;
+    if (rootScrolled) {
+      rootScrolledRef.current = false;
+    } else if (rootContainer && scrollContainer) {
       const [pctScrollLeft, pctScrollTop] = getPctScroll(scrollContainer);
       const [maxScrollLeft, maxScrollTop] = getMaxScroll(rootContainer);
       const rootScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
@@ -72,22 +86,13 @@ export const useTableScroll = (
     }
   }, [rootRef, scrollContainerRef, scrollTable]);
 
+  // TODO this is going to scroll to top in situations where this won't be right
   useLayoutEffect(() => {
-    if (rootRef.current) {
-      const { left, right, top } = rootRef.current.getBoundingClientRect();
-      console.log(`top ${top}`);
-      setTableMeasurements({
-        left,
-        right,
-        top,
-      });
-    }
-  }, [rootRef]);
+    scrollTable(0, 0);
+  }, [scrollTable]);
 
   return {
     handleScrollbarScroll,
     handleRootScroll,
-    tableMeasurements,
-    viewportRowCount,
   };
 };
