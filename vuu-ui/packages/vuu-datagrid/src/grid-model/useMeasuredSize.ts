@@ -42,6 +42,7 @@ export const useMeasuredSize = (
         (clientWidth !== currentSize.clientWidth ||
           clientHeight !== currentSize.clientHeight)
           ? {
+              ...currentSize,
               clientWidth: Math.floor(clientWidth),
               clientHeight: Math.floor(clientHeight),
             }

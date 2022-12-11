@@ -23,6 +23,7 @@ const Dialog = ({
   className,
   isOpen = false,
   onClose,
+  title,
   ...props
 }: DialogProps) => {
   const classRoot = "hwDialog";
@@ -40,13 +41,19 @@ const Dialog = ({
   }, [onClose]);
 
   return (
-    <dialog {...props} className={cx(classRoot, className)} ref={root}>
+    <dialog
+      {...props}
+      className={cx(classRoot, className)}
+      ref={root}
+      onCancel={close}
+    >
       {/* <Flexbox style={{ flexDirection: "column", width: "fit-content" }}> */}
       <Flexbox
         style={{ flexDirection: "column", width: "100%", height: "100%" }}
       >
         <Toolbar style={{ height: 32 }}>
-          <ToolbarButton key="close" onClick={close} data-align="right">
+          <span>{title}</span>
+          <ToolbarButton key="close" onClick={close} data-align-end>
             <CloseIcon /> Close
           </ToolbarButton>
         </Toolbar>

@@ -1,0 +1,39 @@
+.vuuDatagridSettingsPanel {
+    --saltToolbar-background : transparent;
+    --vuuView-borderStyle: solid;
+    --vuuColumnPicker-width: 60%;
+    background-color: var(--salt-container-primary-background);
+    display: flex;
+    flex-direction: column;
+    height: 440px;
+    width: 600px;
+}
+
+.vuuDatagridSettingsPanel-header {
+flex: 0 0 50px;
+}
+
+.vuuDatagridSettingsPanel-main {
+    flex: 1;
+    display: flex;
+    gap: calc(var(--salt-size-unit) * 3);
+    margin: calc(var(--salt-size-unit) * 3);
+}
+
+.vuuDatagridSettingsPanel-columnToolbar {
+    --saltButton-width: 60px;
+}
+
+.vuuDatagridSettingsPanel-columnToolbar > .Responsive-inner {
+    align-items: center;
+}
+
+.vuuDatagridSettingsPanel-buttonBar {
+align-items: center;
+    display: flex;
+    flex: 0 0 40px;
+    gap: var(--salt-size-unit);
+    justify-content: flex-end;
+    padding: 0 var(--salt-size-unit);
+    }
+    
