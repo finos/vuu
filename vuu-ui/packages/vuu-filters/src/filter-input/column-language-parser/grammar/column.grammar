@@ -1,0 +1,49 @@
+
+@precedence {
+  call,
+  times @left,
+  plus @left
+}
+
+@top ColumnExpression { "=" expression }
+
+expression { 
+  Column | 
+  Number |
+  ParenthesizedExpression |
+  BinaryExpression |
+  CallExpression
+}
+
+ParenthesizedExpression { "(" expression ")" }
+
+BinaryExpression {
+  expression !times (Divide | Times) expression |
+  expression !plus (Plus | Minus) expression 
+}
+
+CallExpression {
+  Function ArgList
+}
+
+ArgList {
+  "(" expression ("," expression)* ")"
+}
+
+Column { identifier }
+
+Function { identifier }
+
+@skip { space  }
+
+@tokens {
+  Plus {"+"}
+  Minus {"-"}
+  Divide {"/"}
+  Times {"*"}
+  identifier { $[a-zA-Z_]$[a-zA-Z_0-9]* }
+  Number {
+    @digit @digit* ("." @digit*)? | "." @digit @digit*
+  }
+  space { $[ \t\n\r]+ }
+}
