@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync } from "fs";
 
 /**
  * Executes shell command as it would happen in BASH script
@@ -8,31 +8,33 @@ import { readFileSync, writeFileSync } from 'fs';
  * @returns {Promise<{code: number, data: string | undefined, error: Object}>}
  */
 export function exec(command, { capture = false, echo = false } = {}) {
-  command = command.replace(/\\?\n/g, ''); // need to merge multi-line commands into one string
+  command = command.replace(/\\?\n/g, ""); // need to merge multi-line commands into one string
 
   if (echo) {
     console.log(command);
   }
 
-  const spawn = require('child_process').spawn;
-  const childProcess = spawn('bash', ['-c', command], { stdio: capture ? 'pipe' : 'inherit' });
+  const spawn = require("child_process").spawn;
+  const childProcess = spawn("bash", ["-c", command], {
+    stdio: capture ? "pipe" : "inherit",
+  });
 
   return new Promise((resolve, reject) => {
-    let stdout = '';
+    let stdout = "";
 
     if (capture) {
-      childProcess.stdout.on('data', (data) => {
+      childProcess.stdout.on("data", (data) => {
         stdout += data;
       });
     }
 
-    childProcess.on('error', function (error) {
+    childProcess.on("error", function (error) {
       reject({ code: 1, error: error });
     });
 
-    childProcess.on('close', function (code) {
+    childProcess.on("close", function (code) {
       if (code > 0) {
-        reject({ code: code, error: 'Command failed with code ' + code });
+        reject({ code: code, error: "Command failed with code " + code });
       } else {
         resolve({ code: code, data: stdout });
       }
@@ -43,7 +45,7 @@ export function exec(command, { capture = false, echo = false } = {}) {
 const rewriteDependencyVersions = (dependencies, version) => {
   let deps = Object.keys(dependencies).slice();
   deps.forEach((pckName) => {
-    if (pckName.startsWith('@vuu-ui')) {
+    if (pckName.startsWith("@finos")) {
       dependencies[pckName] = version;
     }
   });
@@ -60,24 +62,27 @@ export function bumpDependencies(pathToPackage) {
   }
 }
 
-export function readPackageJson(path = 'package.json') {
-  let rawdata = readFileSync('package.json');
+export function readPackageJson(path = "package.json") {
+  let rawdata = readFileSync("package.json");
   let json = JSON.parse(rawdata);
   return json;
 }
 
 function frontPad(text, length) {
-  const spaces = Array(length).fill(' ').join('');
+  const spaces = Array(length).fill(" ").join("");
   return (spaces + text).slice(-length);
 }
 
 export function formatBytes(bytes, decimals = 2, displayLength = 10) {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
   const { log, floor, pow } = Math;
 
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = floor(log(bytes) / log(k));
-  return frontPad(parseFloat((bytes / pow(k, i)).toFixed(dm)) + ' ' + sizes[i], displayLength);
+  return frontPad(
+    parseFloat((bytes / pow(k, i)).toFixed(dm)) + " " + sizes[i],
+    displayLength
+  );
 }

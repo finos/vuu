@@ -2,7 +2,13 @@
   "name": "@finos/vuu-protocol-types",
   "version": "0.0.26",
   "main": "",
+  "scripts": {
+    "build": "node ../../scripts/run-build.mjs"
+  },
   "types": "index.d.ts",
+  "files": [
+    "index.d.ts"
+  ],
   "author": "heswell",
   "license": "Apache-2.0",
   "dependencies": {},
