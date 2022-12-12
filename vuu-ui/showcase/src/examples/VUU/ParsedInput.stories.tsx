@@ -10,7 +10,7 @@ import {
   parseFilter,
 } from "@finos/datagrid-parsers";
 import { ParsedInput, ParserProvider } from "@finos/parsed-input";
-import { Filter } from "@finos/vuu-utils";
+import { Filter } from "@finos/vuu-filters";
 import { useEffect, useState } from "react";
 import { createSuggestionProvider } from "./vuu-filter-suggestion-provider";
 

@@ -1,5 +1,5 @@
 import {
-  // DragDropProvider,
+  DragDropProvider,
   List,
   ToggleButton,
   ToggleButtonGroup,
@@ -7,7 +7,7 @@ import {
   VirtualizedList,
 } from "@heswell/uitk-lab";
 import { dragStrategy } from "@heswell/uitk-lab/src/tabs/drag-drop";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usa_states } from "./List.data";
 import { ListVisualizer } from "./ListVisualizer";
 import { Flexbox } from "@finos/vuu-layout";
@@ -41,6 +41,24 @@ export const DefaultVirtualisedList = () => {
       source={data}
     />
   );
+};
+
+const applyDrop = function <T>(
+  data: T[],
+  fromIndex: number,
+  toIndex: number
+): T[] {
+  const newData = data.slice();
+  const [item] = newData.splice(fromIndex, 1);
+  if (toIndex === -1) {
+    return newData.concat(item);
+  } else {
+    console.log(`old data ${data.slice(0, 10).join(",")}`);
+    const offset = toIndex > fromIndex ? 0 : 0;
+    newData.splice(toIndex + offset, 0, item);
+    console.log(`new data ${newData.slice(0, 10).join(",")}`);
+    return newData;
+  }
 };
 
 export const DraggableListItems = () => {
@@ -91,20 +109,9 @@ export const DraggableListItemsDropIndicator = () => {
   const [data, setData] = useState(usa_states);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
-  const handleDrop = useCallback(
-    (fromIndex, toIndex) => {
-      const newData = data.slice();
-      const [item] = newData.splice(fromIndex, 1);
-      if (toIndex === -1) {
-        setData(newData.concat(item));
-      } else {
-        const offset = toIndex > fromIndex ? 0 : 0;
-        newData.splice(toIndex + offset, 0, item);
-        setData(newData);
-      }
-    },
-    [data]
-  );
+  const handleDrop = useCallback((fromIndex, toIndex) => {
+    setData((data) => applyDrop(data, fromIndex, toIndex));
+  }, []);
 
   const handleSelect = useCallback((evt, item) => {
     console.log("select", {
@@ -145,28 +152,33 @@ export const DraggableListItemsDropIndicator = () => {
   );
 };
 
-// export const DraggableLists = () => {
-//   return (
-//     <DragDropProvider>
-//       <Flexbox>
-//         <List
-//           aria-label="Listbox example"
-//           id="list1"
-//           maxWidth={292}
-//           source={usa_states}
-//           allowDragDrop
-//           allowDragTo="list2"
-//         />
-//         <div style={{ flexBasis: 24, flexShrink: 0, flexGrow: 0 }} />
-//         <List
-//           aria-label="Listbox example"
-//           id="list2"
-//           maxWidth={292}
-//           source={usa_states}
-//           allowDragDrop
-//           acceptDropFrom="list1"
-//         />
-//       </Flexbox>
-//     </DragDropProvider>
-//   );
-// };
+export const DraggableLists = () => {
+  const dragSource = useMemo(
+    () => ({
+      list1: { dropTargets: "list2" },
+    }),
+    []
+  );
+
+  return (
+    <DragDropProvider dragSources={dragSource}>
+      <Flexbox>
+        <List
+          aria-label="Listbox example"
+          id="list1"
+          maxWidth={292}
+          source={usa_states}
+          allowDragDrop
+        />
+        <div style={{ flexBasis: 24, flexShrink: 0, flexGrow: 0 }} />
+        <List
+          aria-label="Listbox example"
+          id="list2"
+          maxWidth={292}
+          source={usa_states}
+          allowDragDrop
+        />
+      </Flexbox>
+    </DragDropProvider>
+  );
+};

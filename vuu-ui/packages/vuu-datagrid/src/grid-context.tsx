@@ -1,5 +1,6 @@
 import { DataSource } from "@finos/vuu-data";
-import { DataRow, Filter } from "@finos/vuu-utils";
+import { DataRow } from "@finos/vuu-utils";
+import { Filter } from "@finos/vuu-filters";
 import React, { ReactNode, useContext, useMemo } from "react";
 import { VuuAggregation, VuuGroupBy, VuuSort } from "../../vuu-protocol-types";
 import { AdornmentsDescriptor } from "./grid-adornments";

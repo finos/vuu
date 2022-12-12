@@ -15,6 +15,7 @@
     "format": "prettier --write './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "build": "node ./scripts/build-all.mjs",
     "build:uitk": "node ./scripts/build-uitk.mjs",
+    "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "visualize-bundle": "esbuild-visualizer --metadata ./deployed_apps/app-vuu-example/features/feature-filtered-grid/meta.json",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "start:electron": "cd packages/electron && node ./node_modules/.bin/electron .",

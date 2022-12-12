@@ -10,7 +10,7 @@ import {
   SuggestionProviderProps,
   SuggestionResult,
 } from "@finos/datagrid-parsers";
-import { Filter, isMultiClauseFilter } from "@finos/vuu-utils";
+import { Filter, isMultiClauseFilter } from "@finos/vuu-filters";
 
 type ObjectValue = { [key: string]: string };
 type Value = string | ObjectValue;

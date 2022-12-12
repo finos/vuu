@@ -38,7 +38,7 @@ const getDragElement = (
   // TODO caller needs to supply the uitk classes
   wrapper.classList.add(
     "vuuSimpleDraggableWrapper",
-    "uitk-light",
+    "uitk-theme",
     "uitk-density-medium"
   );
   wrapper.dataset.dragging = "true";

@@ -27,7 +27,7 @@ import { Viewport } from "./Viewport";
 
 import { Footer, GridAdornment, Header, InlineHeader } from "./grid-adornments";
 
-import "./grid.css";
+import "./DataGrid.css";
 import { ConfigChangeMessage } from "@finos/vuu-data";
 
 // TODO use a null datasource and empty columns defs

@@ -99,8 +99,8 @@
   display: inline-block;
   height: 18px;
   margin-right: 6px;
-  -webkit-mask: var(--svg-icon) center center/12px 12px no-repeat;
-  mask: var(--svg-icon) center center/12px 12px no-repeat;
+  -webkit-mask: var(--vuu-icon-svg) center center/12px 12px no-repeat;
+  mask: var(--vuu-icon-svg) center center/12px 12px no-repeat;
   flex: 0 0 18px;
 }
 

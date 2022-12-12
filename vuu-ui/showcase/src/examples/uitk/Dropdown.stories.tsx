@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { ArrowDownIcon, ArrowUpIcon } from "@heswell/uitk-icons";
 import { Button } from "@heswell/uitk-core";
@@ -27,6 +27,8 @@ export const DefaultDropdown = () => {
   );
 };
 
+DefaultDropdown.displaySequence = displaySequence++;
+
 export const SizedDropdown = () => {
   const handleChange: SelectionChangeHandler = (event, selectedItem) => {
     console.log("selection changed", selectedItem);
@@ -40,6 +42,8 @@ export const SizedDropdown = () => {
     />
   );
 };
+
+SizedDropdown.displaySequence = displaySequence++;
 
 export const FullyControlledDropdown = () => {
   const buttonsRef = useRef<HTMLDivElement>(null);
@@ -79,18 +83,21 @@ export const FullyControlledDropdown = () => {
       />
       <div
         ref={buttonsRef}
-        style={{ display: "flex", justifyContent: "flex-end", zIndex: 1 }}>
+        style={{ display: "flex", justifyContent: "flex-end", zIndex: 1 }}
+      >
         <Button onClick={handleOpen} style={{ width: 80 }}>
           {open ? "Close" : "Open"}
         </Button>
         <Button
           disabled={!open || highlightedIndex === usa_states.length - 1}
-          onClick={handleArrowDown}>
+          onClick={handleArrowDown}
+        >
           <ArrowDownIcon />
         </Button>
         <Button
           disabled={!open || highlightedIndex <= 0}
-          onClick={handleArrowUp}>
+          onClick={handleArrowUp}
+        >
           <ArrowUpIcon />
         </Button>
         <Button disabled={!open} onClick={handleSelect}>
@@ -101,4 +108,33 @@ export const FullyControlledDropdown = () => {
   );
 };
 
-DefaultDropdown.displaySequence = displaySequence++;
+FullyControlledDropdown.displaySequence = displaySequence++;
+
+export const DataOnDemand = () => {
+  const [data, setData] = useState(["EUR"]);
+
+  const handleChange: SelectionChangeHandler = (event, selectedItem) => {
+    console.log("selection changed", selectedItem);
+  };
+
+  const handleOpenChange = useCallback((isOpen) => {
+    console.log(`handleOpenChange ${isOpen}`);
+    if (isOpen) {
+      setTimeout(() => {
+        setData(["AUD", "CHF", "EUR", "GBP", "USD"]);
+      }, 300);
+    }
+  }, []);
+
+  return (
+    <Dropdown
+      selected={"EUR"}
+      fullWidth
+      onOpenChange={handleOpenChange}
+      onSelectionChange={handleChange}
+      source={data}
+    />
+  );
+};
+
+DataOnDemand.displaySequence = displaySequence++;

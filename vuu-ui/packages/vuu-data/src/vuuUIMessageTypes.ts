@@ -8,7 +8,7 @@ import {
   VuuSortCol,
   VuuTable,
 } from "../../vuu-protocol-types";
-import { Filter } from "@finos/vuu-utils";
+import { Filter } from "@finos/vuu-filters";
 
 export type ConnectionStatus =
   | "connecting"

@@ -355,6 +355,57 @@ export const SizeSpecifiedInProps = () => {
 
 SizeSpecifiedInProps.displaySequence = displaySequence++;
 
+export const GridResize = () => {
+  const {
+    columns: cols1,
+    dataSource: ds1,
+    error: err1,
+  } = useTestDataSource({
+    tablename: "instruments",
+  });
+  const {
+    columns: cols2,
+    dataSource: ds2,
+    error: err2,
+  } = useTestDataSource({
+    tablename: "instruments",
+  });
+
+  if (err1) {
+    return <ErrorDisplay>{err1}</ErrorDisplay>;
+  } else if (err2) {
+    return <ErrorDisplay>{err2}</ErrorDisplay>;
+  }
+
+  return (
+    <Flexbox
+      style={{
+        width: 800,
+        height: 600,
+        flexDirection: "row",
+        border: "solid 1px lightgrey",
+      }}
+    >
+      <View resizeable style={{ flex: 1 }}>
+        <Grid
+          dataSource={ds1}
+          columns={cols1}
+          style={{ border: "solid 1px #ccc" }}
+        />
+      </View>
+      <View resizeable style={{ flex: 1 }}>
+        <Grid
+          dataSource={ds2}
+          columns={cols2}
+          style={{ border: "solid 1px #ccc" }}
+        />
+      </View>
+    </Flexbox>
+  );
+};
+
+GridResize.displaySequence = displaySequence++;
+
 export const ColumnHeaders2Levels = () => {
   const gridRef = useRef(null);
 

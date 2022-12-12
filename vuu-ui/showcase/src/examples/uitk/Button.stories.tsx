@@ -9,7 +9,14 @@ export const DefaultButton = () => {
 
 export const IconButtons = () => {
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 12,
+        "--vuu-icon-size": "12px",
+      }}
+    >
       <Button data-icon="filter" />
       <Button data-icon="filter">Filter</Button>
     </div>

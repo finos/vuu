@@ -1,0 +1,17 @@
+----- div.vuuTable ------------------
+|
+| ------- div.scroll-content ------ position: absolute
+|
+| ---------------------------------
+|
+| ------- div.tableContainer -------position: sticky
+|
+| | --- table#chart -----------
+| | | <thead /> | | |
+| | | <tbody /> | | |
+| | . ------------------------
+| --------------------------------
+
+vuuTable is acrollable. The sceollsize is forced by .scroll-content
+scroll events on .vuuTable are handled and scroll position is transferred
+to .tableContainer

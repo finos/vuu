@@ -8,7 +8,7 @@ import {
   SuggestionItem,
   SuggestionProviderProps,
 } from "@finos/datagrid-parsers";
-import { Filter, isMultiClauseFilter } from "@finos/vuu-utils";
+import { Filter, isMultiClauseFilter } from "@finos/vuu-filters";
 import { SchemaColumn } from "@finos/vuu-data";
 
 type ObjectValue = { [key: string]: string };

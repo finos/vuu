@@ -11,7 +11,7 @@ import {
   VuuSortCol,
   VuuTable,
 } from "../../vuu-protocol-types";
-import { Filter } from "@finos/vuu-utils";
+import { Filter } from "@finos/vuu-filters";
 import { IEventEmitter } from "@finos/vuu-utils/src/event-emitter";
 import {
   ColumnDescriptor,
