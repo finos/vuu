@@ -13,7 +13,7 @@ import {
   View,
   DraggableLayout,
   LayoutProvider,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 
 import {
   LayoutBuilder,

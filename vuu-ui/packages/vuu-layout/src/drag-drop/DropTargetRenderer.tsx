@@ -1,5 +1,5 @@
 import React from "react";
-import { PopupService } from "@finos/ui-controls";
+import { PopupService } from "@vuu-ui/ui-controls";
 import { DropMenu, computeMenuPosition } from "./DropMenu";
 import { RelativeDropPosition } from "./BoxModel";
 

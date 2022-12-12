@@ -1,7 +1,7 @@
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
-} from "@finos/vuu-data";
+} from "@vuu-ui/vuu-data";
 import { useEffect, useState } from "react";
 import { ContentStatus } from "@heswell/uitk-lab";
 

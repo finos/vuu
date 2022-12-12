@@ -1,4 +1,4 @@
-import { UIToken } from "@finos/datagrid-parsers/src/filter-parser/ui-tokens";
+import { UIToken } from "@vuu-ui/datagrid-parsers/src/filter-parser/ui-tokens";
 import { ForwardedRef, forwardRef, HTMLAttributes, RefObject } from "react";
 import { TokenMirror } from "./TokenMirror";
 

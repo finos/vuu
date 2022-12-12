@@ -2,7 +2,7 @@ import React, { HTMLAttributes } from "react";
 import cx from "classnames";
 
 import "./TokenMirror.css";
-import { UIToken } from "@finos/datagrid-parsers/src/filter-parser/ui-tokens";
+import { UIToken } from "@vuu-ui/datagrid-parsers/src/filter-parser/ui-tokens";
 
 const classBase = "vuuTokenMirror";
 

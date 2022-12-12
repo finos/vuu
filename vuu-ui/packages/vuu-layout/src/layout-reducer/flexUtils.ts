@@ -1,6 +1,6 @@
 import React from "react";
 import { CSSProperties, ReactElement, ReactNode } from "react";
-import { uuid } from "@finos/vuu-utils";
+import { uuid } from "@vuu-ui/vuu-utils";
 import { ComponentRegistry } from "../registry/ComponentRegistry";
 import { getProps, resetPath } from "../utils";
 import { dimension, rect, rectTuple } from "../common-types";

@@ -1,4 +1,4 @@
-import { Shell } from "@finos/vuu-shell";
+import { Shell } from "@vuu-ui/vuu-shell";
 import { AppSidePanel } from "app-vuu-example/src/app-sidepanel";
 import { CSSProperties, useMemo } from "react";
 

@@ -1,9 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { App } from "./src/App";
-import { getAuthDetailsFromCookies, redirectToLogin } from "@finos/vuu-shell";
+import { getAuthDetailsFromCookies, redirectToLogin } from "@vuu-ui/vuu-shell";
 
-import "@finos/vuu-theme/index.css";
+import "@vuu-ui/vuu-theme/index.css";
 
 const [username, token] = getAuthDetailsFromCookies();
 if (!username || !token) {

@@ -1,4 +1,4 @@
-import { DataSource } from "@finos/vuu-data";
+import { DataSource } from "@vuu-ui/vuu-data";
 import { MutableRefObject } from "react";
 import { VuuAggregation, VuuLink } from "../../../vuu-protocol-types";
 import { AdornmentsDescriptor } from "../grid-adornments";

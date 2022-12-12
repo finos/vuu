@@ -2,7 +2,7 @@ import React from "react";
 import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
-} from "@finos/ui-controls";
+} from "@vuu-ui/ui-controls";
 import { Button, ButtonProps } from "@heswell/uitk-core";
 
 import "./action-buttons.css";

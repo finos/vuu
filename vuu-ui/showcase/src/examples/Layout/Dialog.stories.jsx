@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { Dialog, Component } from "@finos/vuu-layout";
+import { Dialog, Component } from "@vuu-ui/vuu-layout";
 
 export default {
   title: "Layout/Dialog",

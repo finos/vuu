@@ -8,7 +8,7 @@ import {
   isTypeDescriptor,
   KeyedColumnDescriptor,
 } from "../grid-model/gridModelTypes";
-import { ColumnMap, DataRow } from "@finos/vuu-utils";
+import { ColumnMap, DataRow } from "@vuu-ui/vuu-utils";
 
 const columnType = (column: KeyedColumnDescriptor) =>
   !column.type

@@ -1,4 +1,4 @@
-import { RemoteDataSource } from "@finos/vuu-data";
+import { RemoteDataSource } from "@vuu-ui/vuu-data";
 import { VuuTable } from "../../../../packages/vuu-protocol-types";
 import { useMemo } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";

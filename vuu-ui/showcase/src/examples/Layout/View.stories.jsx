@@ -1,5 +1,5 @@
 import React from "react";
-import { Component, View } from "@finos/vuu-layout";
+import { Component, View } from "@vuu-ui/vuu-layout";
 
 export default {
   title: "Layout/View",

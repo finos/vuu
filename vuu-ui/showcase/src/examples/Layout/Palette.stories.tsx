@@ -7,7 +7,7 @@ import {
   PaletteItem,
   Placeholder,
   View,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 
 import "./DraggableLayout.stories.css";
 

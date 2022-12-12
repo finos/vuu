@@ -1,6 +1,6 @@
-import { SchemaColumn, useViewserver } from "@finos/vuu-data";
-import { ISuggestionProvider, SuggestionType } from "@finos/vuu-filters";
-import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
+import { SchemaColumn, useViewserver } from "@vuu-ui/vuu-data";
+import { ISuggestionProvider, SuggestionType } from "@vuu-ui/vuu-filters";
+import { TypeaheadParams, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useCallback, useRef } from "react";
 import { Completion } from "@codemirror/autocomplete";
 

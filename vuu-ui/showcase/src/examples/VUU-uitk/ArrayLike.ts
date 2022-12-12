@@ -1,4 +1,4 @@
-import { WindowRange } from "@finos/vuu-utils";
+import { WindowRange } from "@vuu-ui/vuu-utils";
 
 export class ArrayLike<T = string> {
   public range: WindowRange;

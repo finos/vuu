@@ -1,4 +1,4 @@
-import { Placeholder, StackLayout, StackProps, View } from "@finos/vuu-layout";
+import { Placeholder, StackLayout, StackProps, View } from "@vuu-ui/vuu-layout";
 
 const createPlaceholder = (index: number) => (
   // Note make this width 100% and height 100% and we get a weird error where view continually resizes - growing

@@ -1,6 +1,6 @@
 {
-  "name": "@finos/vuu-utils",
-  "version": "0.0.26",
+  "name": "@vuu-ui/vuu-utils",
+  "version": "0.0.27",
   "author": "heswell",
   "main": "src/index.ts",
   "license": "Apache-2.0",

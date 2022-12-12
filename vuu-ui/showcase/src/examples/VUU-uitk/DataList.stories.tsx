@@ -9,7 +9,7 @@ import {
   RemoteDataSource,
   useDataSource,
   useViewserver,
-} from "@finos/vuu-data";
+} from "@vuu-ui/vuu-data";
 import {
   CSSProperties,
   useCallback,
@@ -18,7 +18,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { metadataKeys, WindowRange } from "@finos/vuu-utils";
+import { metadataKeys, WindowRange } from "@vuu-ui/vuu-utils";
 
 const { IDX, KEY } = metadataKeys;
 

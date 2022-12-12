@@ -1,6 +1,6 @@
 {
-  "name": "@finos/ui-controls",
-  "version": "0.0.26",
+  "name": "@vuu-ui/ui-controls",
+  "version": "0.0.27",
   "license": "Apache-2.0",
   "author": "heswell",
   "main": "src/index.ts",
@@ -19,7 +19,7 @@
   },
   "types": "src/index.ts",
   "peerDependencies": {
-    "@finos/vuu-utils": "0.0.26",
+    "@vuu-ui/vuu-utils": "0.0.27",
     "classnames": "^2.2.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

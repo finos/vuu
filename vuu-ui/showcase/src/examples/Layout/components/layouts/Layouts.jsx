@@ -1,5 +1,5 @@
 import React from "react";
-import { FlexboxLayout as Flexbox, Placeholder, View } from "@finos/vuu-layout";
+import { FlexboxLayout as Flexbox, Placeholder, View } from "@vuu-ui/vuu-layout";
 
 const fullFlex = { flexBasis: 1, flexGrow: 1, flexShrink: 1 };
 const noFlex = { flexGrow: 0, flexShrink: 0 };

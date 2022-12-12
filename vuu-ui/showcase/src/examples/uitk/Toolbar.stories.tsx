@@ -13,7 +13,7 @@ import {
 } from "@heswell/uitk-icons";
 import { Button } from "@heswell/uitk-core";
 import { ColumnChooserIcon, CsvIcon, PdfIcon } from "@heswell/uitk-icons";
-import { Flexbox } from "@finos/vuu-layout";
+import { Flexbox } from "@vuu-ui/vuu-layout";
 
 import "@heswell/component-anatomy/esm/index.css";
 import { useState } from "react";

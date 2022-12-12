@@ -1,5 +1,5 @@
-import { VuuRange } from "@finos/vuu-protocol-types";
-import { getFullRange } from "@finos/vuu-utils/src/range-utils";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { getFullRange } from "@vuu-ui/vuu-utils/src/range-utils";
 import { MutableRefObject, useCallback, useEffect, useRef } from "react";
 import { GridModelType } from "../grid-model";
 

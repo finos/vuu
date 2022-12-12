@@ -11,9 +11,9 @@ import {
   useMemo,
   ForwardedRef,
 } from "react";
-import { useContextMenu } from "@finos/ui-controls";
+import { useContextMenu } from "@vuu-ui/ui-controls";
 import { useEffectSkipFirst } from "./utils";
-import { metadataKeys } from "@finos/vuu-utils";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 import useScroll from "./use-scroll";
 import useUpdate from "./use-update";
 import { SubscriptionDetails, useDataSource } from "./grid-hooks";
@@ -23,7 +23,7 @@ import { Canvas, CanvasAPI } from "./canvas";
 import { ColumnBearer, ColumnBearerAPI } from "./ColumnBearer";
 import InsertIndicator from "./InsertIndicator";
 import { ViewportProps } from "./gridTypes";
-import { DataSourceRow } from "@finos/vuu-data";
+import { DataSourceRow } from "@vuu-ui/vuu-data";
 
 // Temp, until we manage selection properly
 const countSelectedRows = (data: DataSourceRow[]) => {

@@ -1,4 +1,4 @@
-import { SuggestionItem } from "@finos/datagrid-parsers";
+import { SuggestionItem } from "@vuu-ui/datagrid-parsers";
 import { useCallback, useRef } from "react";
 import { getCompletion } from "../input-utils";
 import {

@@ -1,4 +1,4 @@
-import { ContextMenuProvider } from "@finos/ui-controls";
+import { ContextMenuProvider } from "@vuu-ui/ui-controls";
 import { useForkRef } from "@heswell/uitk-core";
 import cx from "classnames";
 import {
@@ -28,7 +28,7 @@ import { Viewport } from "./Viewport";
 import { Footer, GridAdornment, Header, InlineHeader } from "./grid-adornments";
 
 import "./DataGrid.css";
-import { ConfigChangeMessage } from "@finos/vuu-data";
+import { ConfigChangeMessage } from "@vuu-ui/vuu-data";
 
 // TODO use a null datasource and empty columns defs
 // display a warning if loaded with no dataSource

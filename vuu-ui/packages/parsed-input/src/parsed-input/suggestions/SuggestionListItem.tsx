@@ -1,5 +1,5 @@
 import { ListItem, ListItemProps } from "@heswell/uitk-lab";
-import { SuggestionItem } from "@finos/datagrid-parsers";
+import { SuggestionItem } from "@vuu-ui/datagrid-parsers";
 import cx from "classnames";
 
 import "./SuggestionListItem.css";

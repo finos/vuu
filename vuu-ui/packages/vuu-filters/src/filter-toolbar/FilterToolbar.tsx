@@ -1,4 +1,4 @@
-import { Filter } from "@finos/vuu-filters";
+import { Filter } from "@vuu-ui/vuu-filters";
 import { Toolbar, ToolbarProps } from "@heswell/uitk-lab";
 import cx from "classnames";
 import { useFilterToolbar } from "./useFilterToolbar";

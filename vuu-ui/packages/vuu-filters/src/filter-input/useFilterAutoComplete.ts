@@ -4,7 +4,7 @@ import { syntaxTree } from "@codemirror/language";
 import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
 import { ISuggestionProvider } from "./useCodeMirrorEditor";
-import { Filter } from "@finos/vuu-filters";
+import { Filter } from "@vuu-ui/vuu-filters";
 
 export type ApplyCompletion = (mode?: "add" | "replace") => void;
 

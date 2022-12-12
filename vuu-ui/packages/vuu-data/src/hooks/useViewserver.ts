@@ -1,6 +1,6 @@
 //TODO split this hook into functionality which is specific to a View instance and functionality which isn't
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SimpleStore } from "@finos/vuu-utils";
+import { SimpleStore } from "@vuu-ui/vuu-utils";
 import { useServerConnection } from "./useServerConnection";
 import { getColumnConfig } from "./columnMetaData";
 import {
@@ -21,8 +21,8 @@ import {
 } from "../../../vuu-protocol-types";
 import { RpcResponse, TableMeta } from "../vuuUIMessageTypes";
 import { AnyTxtRecord } from "dns";
-import { ContextMenuLocation } from "@finos/vuu-datagrid/src/context-menu";
-import { useViewContext } from "@finos/vuu-layout";
+import { ContextMenuLocation } from "@vuu-ui/vuu-datagrid/src/context-menu";
+import { useViewContext } from "@vuu-ui/vuu-layout";
 import { LinkWithLabel } from "../server-proxy/server-proxy";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";

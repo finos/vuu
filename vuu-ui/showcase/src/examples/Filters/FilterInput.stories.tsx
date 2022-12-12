@@ -4,14 +4,14 @@ import {
   FilterInput,
   FilterToolbar,
   updateFilter,
-} from "@finos/vuu-filters";
+} from "@vuu-ui/vuu-filters";
 
 import { useSuggestionProvider } from "./useSuggestionProvider";
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
-} from "@finos/vuu-data";
-import {} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data";
+import {} from "@vuu-ui/vuu-utils";
 
 // import "./ParsedInput.stories.css";
 

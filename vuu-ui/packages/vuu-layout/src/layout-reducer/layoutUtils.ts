@@ -1,4 +1,4 @@
-import { uuid } from "@finos/vuu-utils";
+import { uuid } from "@vuu-ui/vuu-utils";
 import { CSSProperties, ReactElement } from "react";
 import React, { cloneElement } from "react";
 import { dimension } from "../common-types";

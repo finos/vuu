@@ -9,7 +9,7 @@ import {
   registerComponent,
   View,
   useViewContext,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 import { Dropdown } from "@heswell/uitk-lab";
 
 // import LayoutConfigurator from '../layout-configurator';

@@ -1,4 +1,4 @@
-import { WindowRange } from "@finos/vuu-utils";
+import { WindowRange } from "@vuu-ui/vuu-utils";
 import { bufferBreakout } from "./buffer-range";
 import { VuuRange, VuuRow } from "../../../vuu-protocol-types";
 

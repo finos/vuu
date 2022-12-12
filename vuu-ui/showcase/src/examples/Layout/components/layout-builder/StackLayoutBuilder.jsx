@@ -9,7 +9,7 @@ import {
   Placeholder,
   StackLayout,
   View,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 import { ListItemHeader } from "@heswell/uitk-lab";
 import * as layout from "../layouts";
 

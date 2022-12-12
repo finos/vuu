@@ -1,7 +1,7 @@
 import React, { HTMLAttributes, ReactElement } from "react";
 import cx from "classnames";
 import Drawer from "./Drawer";
-import { partition } from "@finos/vuu-utils";
+import { partition } from "@vuu-ui/vuu-utils";
 import { registerComponent } from "../registry/ComponentRegistry";
 
 import "./Chest.css";

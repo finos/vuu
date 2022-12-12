@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react";
 // import { TerraceAlignment } from "../components/alignment-tools/terrace-with-alignment";
 
-import { LayoutConfigurator as VuuLayoutConfigurator } from "@finos/vuu-layout";
+import { LayoutConfigurator as VuuLayoutConfigurator } from "@vuu-ui/vuu-layout";
 
 export default {
   title: "Layout/Tools",

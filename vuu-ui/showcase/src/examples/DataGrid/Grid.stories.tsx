@@ -8,13 +8,13 @@ import {
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { ErrorDisplay, useTestDataSource } from "../utils";
 
-import { Grid } from "@finos/vuu-datagrid";
+import { Grid } from "@vuu-ui/vuu-datagrid";
 
 import { instrumentSchema } from "./columnMetaData";
 
-import { Flexbox, View } from "@finos/vuu-layout";
+import { Flexbox, View } from "@vuu-ui/vuu-layout";
 import { VuuFilter } from "../utils/VuuFilter";
-import { extractFilter } from "@finos/datagrid-parsers";
+import { extractFilter } from "@vuu-ui/datagrid-parsers";
 
 import "./Grid.stories.css";
 

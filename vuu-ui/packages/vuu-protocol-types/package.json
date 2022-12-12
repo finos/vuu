@@ -1,6 +1,6 @@
 {
-  "name": "@finos/vuu-protocol-types",
-  "version": "0.0.26",
+  "name": "@vuu-ui/vuu-protocol-types",
+  "version": "0.0.27",
   "main": "",
   "types": "index.d.ts",
   "author": "heswell",

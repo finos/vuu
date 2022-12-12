@@ -15,9 +15,9 @@ import { getColumnGroup } from "./grid-model/gridModelUtils";
 
 import "./column-bearer.css";
 import { GridModelType, KeyedColumnDescriptor } from "./grid-model";
-import { DataSourceRow } from "@finos/vuu-data";
+import { DataSourceRow } from "@vuu-ui/vuu-data";
 import { ColumnDragState, dragPhase } from "./gridTypes";
-import { buildColumnMap } from "@finos/vuu-utils";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
 
 const LEFT = "left";
 const RIGHT = "right";
