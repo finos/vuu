@@ -2,6 +2,7 @@ import { exec } from "child_process";
 import { execCallback } from "./utils.mjs";
 
 const packages = [
+  "vuu-protocol-types",
   "vuu-utils",
   "vuu-data-ag-grid",
   "vuu-theme",

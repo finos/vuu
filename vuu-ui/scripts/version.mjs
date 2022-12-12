@@ -2,6 +2,7 @@ import { execWait, readPackageJson } from "./utils.mjs";
 import fs from "fs";
 
 const packages = [
+  "packages/vuu-protocol-types",
   "packages/vuu-utils",
   "packages/vuu-theme",
   "packages/vuu-data",
