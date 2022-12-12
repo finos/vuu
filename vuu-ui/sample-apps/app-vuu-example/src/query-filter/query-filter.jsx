@@ -1,12 +1,7 @@
 import React, { useRef, useState } from "react";
 import cx from "classnames";
-import {
-  Button,
-  CloseIcon,
-  FilterIcon,
-  StateButton,
-} from "@vuu-ui/ui-controls";
-import { Toolbar, Tooltray, useViewContext } from "@vuu-ui/vuu-layout";
+import { Button, CloseIcon, FilterIcon, StateButton } from "@finos/ui-controls";
+import { Toolbar, Tooltray, useViewContext } from "@finos/vuu-layout";
 
 import "./query-filter.css";
 

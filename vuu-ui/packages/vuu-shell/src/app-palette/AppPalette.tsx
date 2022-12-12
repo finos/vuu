@@ -5,7 +5,7 @@ import {
   isRegistered,
   Palette,
   PaletteItem,
-} from "@vuu-ui/vuu-layout";
+} from "@finos/vuu-layout";
 
 const getPaletteItems = (config) => {
   const paletteItems = [];

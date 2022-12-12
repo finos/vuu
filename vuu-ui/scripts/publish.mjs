@@ -2,14 +2,12 @@ import { exec } from "child_process";
 import { execCallback } from "./utils.mjs";
 
 const packages = [
-  "vuu-protocol-types",
   "vuu-utils",
   "vuu-data-ag-grid",
   "vuu-theme",
   "vuu-data",
   "datagrid-parsers",
   "ui-controls",
-  "vuu-filters",
   "vuu-datagrid",
   "vuu-layout",
   "parsed-input",

@@ -2,20 +2,20 @@ import {
   ConfigChangeHandler,
   DataSourceRow,
   SubscribeCallback,
-} from "@vuu-ui/vuu-data";
+} from "@finos/vuu-data";
 import {
   VuuDataRow,
   VuuRange,
   VuuSort,
   VuuSortCol,
-} from "@vuu-ui/vuu-protocol-types";
+} from "@finos/vuu-protocol-types";
 import {
   getFullRange,
   metadataKeys,
   toColumnDescriptor,
   WindowRange,
-} from "@vuu-ui/vuu-utils";
-import { useViewContext } from "@vuu-ui/vuu-layout";
+} from "@finos/vuu-utils";
+import { useViewContext } from "@finos/vuu-layout";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useGridContext } from "../grid-context";

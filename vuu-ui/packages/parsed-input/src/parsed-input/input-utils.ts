@@ -1,5 +1,5 @@
 import { CollectionItem } from "@heswell/uitk-lab";
-import { SuggestionItem } from "@vuu-ui/datagrid-parsers";
+import { SuggestionItem } from "@finos/datagrid-parsers";
 
 const QUOTE = '"';
 

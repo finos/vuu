@@ -2,19 +2,18 @@ import { execWait, readPackageJson } from "./utils.mjs";
 import fs from "fs";
 
 const packages = [
-  "packages/vuu-protocol-types",
-  "packages/vuu-utils",
-  "packages/vuu-theme",
-  "packages/vuu-data",
-  "packages/datagrid-parsers",
-  "packages/ui-controls",
-  "packages/vuu-datagrid",
-  "packages/vuu-layout",
-  "packages/parsed-input",
-  "packages/vuu-shell",
-  "packages/vuu-filters",
-  "sample-apps/app-vuu-example",
-  "sample-apps/feature-filtered-grid",
+  "vuu-utils",
+  "vuu-data-ag-grid",
+  "vuu-theme",
+  "vuu-data",
+  "datagrid-parsers",
+  "ui-controls",
+  "ui-forms",
+  "vuu-datagrid",
+  "vuu-layout",
+  "parsed-input",
+  "vuu-shell",
+  "app-vuu-example",
   "showcase",
 ];
 
@@ -27,8 +26,8 @@ const rewriteDependencyVersions = (dependencies, version) => {
   });
 };
 
-export const bumpDependencies = (packagePath) => {
-  const packageJsonPath = `${packagePath}/package.json`;
+export const bumpDependencies = (packageName) => {
+  const packageJsonPath = `packages/${packageName}/package.json`;
   let json = readPackageJson(packageJsonPath);
   let { version, dependencies, peerDependencies } = json;
   if (dependencies || peerDependencies) {
@@ -38,20 +37,18 @@ export const bumpDependencies = (packagePath) => {
   }
 };
 
-async function bumpPackageVersion(packagePath) {
-  try {
-    await execWait("yarn version --patch --no-git-tag-version", packagePath);
-  } catch (e) {
-    console.log(e.message);
-    process.exit(1);
-  }
+async function bumpPackageVersion(packageName) {
+  await execWait(
+    "yarn version --patch --no-git-tag-version",
+    `packages/${packageName}`
+  );
 }
 
-function bumpPackageDependencyVersions(packagePath) {
-  bumpDependencies(packagePath);
+function bumpPackageDependencyVersions(packageName) {
+  bumpDependencies(packageName);
 }
 
 await Promise.all(
-  packages.map((packagePath) => bumpPackageVersion(packagePath))
+  packages.map((packageName) => bumpPackageVersion(packageName))
 );
-packages.forEach((packagePath) => bumpPackageDependencyVersions(packagePath));
+packages.forEach((packageName) => bumpPackageDependencyVersions(packageName));

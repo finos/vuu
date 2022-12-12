@@ -4,7 +4,7 @@ import {
   Flexbox,
   StackLayout as Stack,
   View,
-} from "@vuu-ui/vuu-layout";
+} from "@finos/vuu-layout";
 import { StatefulComponent } from "./components";
 
 export default {

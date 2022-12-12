@@ -10,7 +10,7 @@ import {
   PaletteItem,
   StackLayout as Stack,
   View,
-} from "@vuu-ui/vuu-layout";
+} from "@finos/vuu-layout";
 import * as layout from "../layouts";
 
 import "./layout-builder.css";
