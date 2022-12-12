@@ -15,7 +15,7 @@
     "/src"
   ],
   "devDependencies": {
-    "@vuu-ui/vuu-protocol-types": "0.0.26"
+    "@vuu-ui/vuu-protocol-types": "0.0.27"
   },
   "peerDependencies": {
     "@vuu-ui/vuu-utils": "0.0.27",

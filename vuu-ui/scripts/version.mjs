@@ -12,6 +12,7 @@ const packages = [
   "packages/vuu-layout",
   "packages/parsed-input",
   "packages/vuu-shell",
+  "packages/vuu-filters",
   "sample-apps/app-vuu-example",
   "sample-apps/feature-filtered-grid",
   "showcase",

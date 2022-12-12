@@ -9,6 +9,7 @@ const packages = [
   "vuu-data",
   "datagrid-parsers",
   "ui-controls",
+  "vuu-filters",
   "vuu-datagrid",
   "vuu-layout",
   "parsed-input",
