@@ -1,7 +1,7 @@
 import {
   ColumnDescriptor,
   KeyedColumnDescriptor,
-} from "@vuu-ui/vuu-datagrid/src/grid-model/gridModelTypes";
+} from "@finos/vuu-datagrid/src/grid-model/gridModelTypes";
 import { Row } from "./row-utils";
 
 export interface ColumnMap {

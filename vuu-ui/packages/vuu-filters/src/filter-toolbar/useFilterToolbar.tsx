@@ -3,10 +3,10 @@ import {
   isNamedFilter,
   isMultiValueFilter,
   isSingleValueFilter,
-} from "@vuu-ui/vuu-filters";
+} from "@finos/vuu-filters";
 import { ToggleButton, ToolbarField } from "@heswell/uitk-lab";
 import { ReactElement } from "react";
-import { ISuggestionProvider, SuggestionConsumer } from "@vuu-ui/vuu-filters";
+import { ISuggestionProvider, SuggestionConsumer } from "@finos/vuu-filters";
 import { FilterDropdown } from "./FilterDropdown";
 
 const filterToControl = (

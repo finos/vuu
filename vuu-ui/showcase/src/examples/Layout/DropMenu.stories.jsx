@@ -1,7 +1,7 @@
 import React from "react";
 
-import { PopupService } from "@vuu-ui/ui-controls";
-import { DropMenu, computeMenuPosition, DropTarget } from "@vuu-ui/vuu-layout";
+import { PopupService } from "@finos/ui-controls";
+import { DropMenu, computeMenuPosition, DropTarget } from "@finos/vuu-layout";
 
 export default {
   title: "Layout/DropMenu",

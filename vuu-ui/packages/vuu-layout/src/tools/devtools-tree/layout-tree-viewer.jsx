@@ -3,7 +3,7 @@ import cx from "classnames";
 import { typeOf } from "../../utils";
 
 import "./layout-tree-viewer.css";
-import { Tree } from "@vuu-ui/ui-controls";
+import { Tree } from "@finos/ui-controls";
 
 const classBaseTree = "hwLayoutTreeViewer";
 

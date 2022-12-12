@@ -7,9 +7,9 @@ import {
   NamedFilter,
   SuggestionItem,
   SuggestionProviderProps,
-} from "@vuu-ui/datagrid-parsers";
-import { Filter, isMultiClauseFilter } from "@vuu-ui/vuu-filters";
-import { SchemaColumn } from "@vuu-ui/vuu-data";
+} from "@finos/datagrid-parsers";
+import { Filter, isMultiClauseFilter } from "@finos/vuu-filters";
+import { SchemaColumn } from "@finos/vuu-data";
 
 type ObjectValue = { [key: string]: string };
 type Value = string | ObjectValue;

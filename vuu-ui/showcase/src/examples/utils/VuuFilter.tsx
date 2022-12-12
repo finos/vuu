@@ -1,12 +1,12 @@
-import { SchemaColumn, useViewserver } from "@vuu-ui/vuu-data";
+import { SchemaColumn, useViewserver } from "@finos/vuu-data";
 import {
   extractFilter,
   filterAsQuery,
   NamedFilter,
   parseFilter,
-} from "@vuu-ui/datagrid-parsers";
-import { ParsedInput, ParserProvider } from "@vuu-ui/parsed-input";
-import { Filter } from "@vuu-ui/vuu-filters";
+} from "@finos/datagrid-parsers";
+import { ParsedInput, ParserProvider } from "@finos/parsed-input";
+import { Filter } from "@finos/vuu-filters";
 import { useState } from "react";
 import { createSuggestionProvider } from "./vuu-filter-suggestion-provider";
 
