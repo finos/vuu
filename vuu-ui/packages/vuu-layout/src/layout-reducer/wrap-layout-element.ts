@@ -1,5 +1,5 @@
 import React, { ReactElement } from "react";
-import { uuid } from "@finos/vuu-utils";
+import { uuid } from "@vuu-ui/vuu-utils";
 import { getProp, getProps, nextStep, resetPath, typeOf } from "../utils";
 import { ComponentRegistry } from "../registry/ComponentRegistry";
 import {

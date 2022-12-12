@@ -1,6 +1,6 @@
 import React, { HTMLAttributes } from "react";
 import cx from "classnames";
-import { Column2AIcon, Column2BIcon } from "@finos/ui-controls";
+import { Column2AIcon, Column2BIcon } from "@vuu-ui/ui-controls";
 import "./DropMenu.css";
 import { DropTarget } from "./DropTarget";
 

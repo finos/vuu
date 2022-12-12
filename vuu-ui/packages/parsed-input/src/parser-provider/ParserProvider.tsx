@@ -1,4 +1,4 @@
-import { ParserResults } from "@finos/datagrid-parsers";
+import { ParserResults } from "@vuu-ui/datagrid-parsers";
 import { createContext, ReactNode, useCallback, useContext } from "react";
 
 export const ParserContext = createContext<{

@@ -1,6 +1,6 @@
 {
   "name": "feature-filtered-grid",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "description": "Vuu DataGrid",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -16,15 +16,15 @@
   ],
   "devDependencies": {},
   "dependencies": {
-    "@finos/vuu-data": "0.0.26",
-    "@finos/vuu-layout": "0.0.26",
-    "@finos/vuu-protocol-types": "0.0.26",
-    "@finos/vuu-shell": "0.0.26",
-    "@finos/vuu-theme": "0.0.26",
-    "@finos/vuu-utils": "0.0.26",
     "@heswell/uitk-core": "0.8.0-vuu.1",
     "@heswell/uitk-icons": "0.7.0-vuu.1",
-    "@heswell/uitk-lab": "0.8.0-vuu.1"
+    "@heswell/uitk-lab": "0.8.0-vuu.1",
+    "@vuu-ui/vuu-data": "0.0.27",
+    "@vuu-ui/vuu-layout": "0.0.27",
+    "@vuu-ui/vuu-protocol-types": "0.0.27",
+    "@vuu-ui/vuu-shell": "0.0.27",
+    "@vuu-ui/vuu-theme": "0.0.27",
+    "@vuu-ui/vuu-utils": "0.0.27"
   },
   "peerDependencies": {
     "classnames": "^2.3.1",

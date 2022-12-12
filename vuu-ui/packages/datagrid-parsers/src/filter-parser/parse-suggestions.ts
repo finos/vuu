@@ -7,7 +7,7 @@ import {
 } from "../../generated/parsers/filter/FilterParser";
 import { computeTokenIndexAndText } from "./parse-utils";
 import { UIToken } from "./buildUITokens.ts";
-import { Filter } from "@finos/vuu-filters";
+import { Filter } from "@vuu-ui/vuu-filters";
 import { CharacterSubstitution } from "./FilterVisitor";
 
 interface SuggestionToken {

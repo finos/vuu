@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { getUniqueId } from "@finos/vuu-utils";
+import { getUniqueId } from "@vuu-ui/vuu-utils";
 import { Splitter } from "./Splitter";
 import { Placeholder } from "../placeholder";
 

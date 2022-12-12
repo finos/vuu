@@ -1,6 +1,6 @@
 /* eslint-disable no-sequences */
-import { DataSource } from "@finos/vuu-data";
-import { removeColumnFromFilter } from "@finos/vuu-filters";
+import { DataSource } from "@vuu-ui/vuu-data";
+import { removeColumnFromFilter } from "@vuu-ui/vuu-filters";
 import { AggregationType } from "../constants";
 import { GridModelDispatch } from "../grid-context";
 import { GridModelType } from "../grid-model/gridModelTypes";

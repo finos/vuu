@@ -9,7 +9,7 @@ import React, {
   useRef,
 } from "react";
 import cx from "classnames";
-import { buildColumnMap, DataRow, metadataKeys } from "@finos/vuu-utils";
+import { buildColumnMap, DataRow, metadataKeys } from "@vuu-ui/vuu-utils";
 import { useGridContext } from "../grid-context";
 import ColumnGroupHeader, { ColumnGroupHeaderAPI } from "../ColumnGroupHeader";
 import useScroll from "../use-scroll";

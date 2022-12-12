@@ -2,8 +2,8 @@ import React, { useMemo } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ToolkitProvider } from "@heswell/uitk-core";
 
-import { Flexbox } from "@finos/vuu-layout";
-import { Tree } from "@finos/ui-controls";
+import { Flexbox } from "@vuu-ui/vuu-layout";
+import { Tree } from "@vuu-ui/ui-controls";
 
 import "./App.css";
 

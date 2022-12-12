@@ -1,5 +1,5 @@
 import { SelectionStrategy } from "@heswell/uitk-lab";
-import { SuggestionItem } from "@finos/datagrid-parsers";
+import { SuggestionItem } from "@vuu-ui/datagrid-parsers";
 import { RefObject } from "react";
 
 export type AcceptSuggestion<Selection extends SelectionStrategy> = (

@@ -1,5 +1,5 @@
 import { List, ListItem, ListItemProps, ListProps } from "@heswell/uitk-lab";
-import { uuid } from "@finos/vuu-utils";
+import { uuid } from "@vuu-ui/vuu-utils";
 import cx from "classnames";
 import { MouseEvent, ReactElement } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";

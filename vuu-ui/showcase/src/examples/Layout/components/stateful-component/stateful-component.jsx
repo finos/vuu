@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { useViewContext } from "@finos/vuu-layout";
+import { useViewContext } from "@vuu-ui/vuu-layout";
 
 export const StatefulComponent = ({ initialState = "", style, stateKey }) => {
   const { load, save } = useViewContext();

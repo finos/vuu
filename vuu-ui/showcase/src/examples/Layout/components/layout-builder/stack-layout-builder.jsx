@@ -8,7 +8,7 @@ import {
   Placeholder,
   StackLayout,
   View,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 import * as layout from "../layouts";
 
 import "./layout-builder.css";

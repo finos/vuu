@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React from "react";
 import cx from "classnames";
-import { metadataKeys } from "@finos/vuu-utils";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 
 import "./checkbox-cell.css";
 

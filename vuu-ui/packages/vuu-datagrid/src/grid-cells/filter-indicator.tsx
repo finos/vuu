@@ -1,5 +1,5 @@
-import { useContextMenu } from "@finos/ui-controls";
-import { Filter, filterIncludesColumn } from "@finos/vuu-filters";
+import { useContextMenu } from "@vuu-ui/ui-controls";
+import { Filter, filterIncludesColumn } from "@vuu-ui/vuu-filters";
 import cx from "classnames";
 import { HTMLAttributes, useCallback, useMemo } from "react";
 

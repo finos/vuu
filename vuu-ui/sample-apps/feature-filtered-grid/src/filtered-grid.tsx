@@ -2,28 +2,28 @@ import {
   extractFilter,
   filterAsQuery,
   parseFilter,
-} from "@finos/datagrid-parsers";
-import { ParsedInput, ParserProvider } from "@finos/parsed-input";
-import { useViewContext } from "@finos/vuu-layout";
-import { useShellContext } from "@finos/vuu-shell";
+} from "@vuu-ui/datagrid-parsers";
+import { ParsedInput, ParserProvider } from "@vuu-ui/parsed-input";
+import { useViewContext } from "@vuu-ui/vuu-layout";
+import { useShellContext } from "@vuu-ui/vuu-shell";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createSuggestionProvider } from "./vuu-filter-suggestion-provider";
 
-import { ContextMenuProvider } from "@finos/ui-controls";
+import { ContextMenuProvider } from "@vuu-ui/ui-controls";
 import {
   ConfigChangeMessage,
   createDataSource,
   RemoteDataSource,
   TableSchema,
   useViewserver,
-} from "@finos/vuu-data";
-import { Grid, GridProvider } from "@finos/vuu-datagrid";
+} from "@vuu-ui/vuu-data";
+import { Grid, GridProvider } from "@vuu-ui/vuu-datagrid";
 import { LinkedIcon } from "@heswell/uitk-icons";
 import { ToolbarButton } from "@heswell/uitk-lab";
 
-import { NamedFilter } from "@finos/datagrid-parsers";
-import { FeatureProps } from "@finos/vuu-shell";
-import { Filter } from "@finos/vuu-filters";
+import { NamedFilter } from "@vuu-ui/datagrid-parsers";
+import { FeatureProps } from "@vuu-ui/vuu-shell";
+import { Filter } from "@vuu-ui/vuu-filters";
 
 import "./filtered-grid.css";
 

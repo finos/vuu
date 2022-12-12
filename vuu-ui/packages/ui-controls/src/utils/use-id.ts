@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { uuid } from "@finos/vuu-utils";
+import { uuid } from "@vuu-ui/vuu-utils";
 
 export const useId = (idProp?: string) => {
   const id = useMemo(() => {

@@ -14,7 +14,6 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: cd ./vuu-ui && yarn
       - run: cd ./vuu-ui && yarn build
-      - run: cd ./vuu-ui && yarn bump
-        # - run: cd ./vuu-ui && yarn publish
+      - run: cd ./vuu-ui && yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

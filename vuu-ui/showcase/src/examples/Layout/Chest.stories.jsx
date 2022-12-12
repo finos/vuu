@@ -10,7 +10,7 @@ import {
   Flexbox,
   Stack,
   View,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 
 import "./Chest.stories.css";
 

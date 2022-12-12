@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { registerComponent } from "@finos/vuu-layout";
+import { registerComponent } from "@vuu-ui/vuu-layout";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Loader } from "./Loader";
 import { importCSS } from "./css-module-loader";

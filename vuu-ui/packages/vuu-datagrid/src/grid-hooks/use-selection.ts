@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { metadataKeys } from "@finos/vuu-utils";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 
 const { IDX, SELECTED } = metadataKeys;
 

@@ -1,10 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { LoginPanel } from "@finos/vuu-shell";
-import { authenticate } from "@finos/vuu-data";
+import { LoginPanel } from "@vuu-ui/vuu-shell";
+import { authenticate } from "@vuu-ui/vuu-data";
 import { ToolkitProvider } from "@heswell/uitk-core";
 
-import "@finos/vuu-theme/index.css";
+import "@vuu-ui/vuu-theme/index.css";
 import "./login.css";
 
 async function login(username: string, password: string) {

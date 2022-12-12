@@ -8,10 +8,10 @@ import {
   Tooltray,
 } from "@heswell/uitk-lab";
 import { CloseIcon } from "@heswell/uitk-icons";
-import { Header } from "@finos/vuu-layout";
+import { Header } from "@vuu-ui/vuu-layout";
 
 import "@heswell/component-anatomy/esm/index.css";
-import { Flexbox } from "@finos/vuu-layout";
+import { Flexbox } from "@vuu-ui/vuu-layout";
 
 const toolbarStyle = {
   "--uitkToolbar-background": "white",

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { FluidGrid } from "@finos/vuu-layout";
+import { FluidGrid } from "@vuu-ui/vuu-layout";
 
 const RED = "rgba(255,0,0,.4)";
 const ORANGE = "rgba(255,165,0,.7)";

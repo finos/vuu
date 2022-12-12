@@ -12,7 +12,7 @@ import {
 } from "@heswell/uitk-lab";
 
 import "@heswell/component-anatomy/esm/index.css";
-import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
+import { FlexboxLayout, LayoutProvider } from "@vuu-ui/vuu-layout";
 
 export const Default = () => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);

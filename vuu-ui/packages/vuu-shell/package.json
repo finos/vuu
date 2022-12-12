@@ -1,6 +1,6 @@
 {
-  "name": "@finos/vuu-shell",
-  "version": "0.0.26",
+  "name": "@vuu-ui/vuu-shell",
+  "version": "0.0.27",
   "description": "VUU UI Shell",
   "main": "src/index.ts",
   "author": "heswell",
@@ -19,10 +19,10 @@
     "@heswell/uitk-core": "0.8.0-vuu.1",
     "@heswell/uitk-icons": "0.7.0-vuu.1",
     "@heswell/uitk-lab": "0.8.0-vuu.1",
-    "@finos/vuu-data": "0.0.26",
-    "@finos/vuu-layout": "0.0.26",
-    "@finos/ui-controls": "0.0.26",
-    "@finos/vuu-utils": "0.0.26",
+    "@vuu-ui/ui-controls": "0.0.27",
+    "@vuu-ui/vuu-data": "0.0.27",
+    "@vuu-ui/vuu-layout": "0.0.27",
+    "@vuu-ui/vuu-utils": "0.0.27",
     "classnames": "^2.2.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

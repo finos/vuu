@@ -1,5 +1,5 @@
-import { ConfigChangeHandler, DataSource } from "@finos/vuu-data";
-import { Filter } from "@finos/vuu-filters";
+import { ConfigChangeHandler, DataSource } from "@vuu-ui/vuu-data";
+import { Filter } from "@vuu-ui/vuu-filters";
 import { HTMLAttributes } from "react";
 import {
   VuuAggregation,

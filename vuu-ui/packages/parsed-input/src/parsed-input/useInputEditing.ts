@@ -1,5 +1,5 @@
 import { KeyboardEvent, useCallback, useRef } from "react";
-import { isCharacterKey, isQuoteKey } from "@finos/vuu-utils";
+import { isCharacterKey, isQuoteKey } from "@vuu-ui/vuu-utils";
 
 export interface InputEditingHookProps {
   onChange: (newValue: string) => void;

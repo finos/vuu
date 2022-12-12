@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { WindowRange, getFullRange, metadataKeys } from "@finos/vuu-utils";
+import { WindowRange, getFullRange, metadataKeys } from "@vuu-ui/vuu-utils";
 import { DataSource, DataSourceRow, SubscribeCallback } from "../data-source";
 import { VuuRange } from "../../../vuu-protocol-types";
 

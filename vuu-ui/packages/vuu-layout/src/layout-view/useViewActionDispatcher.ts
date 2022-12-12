@@ -10,7 +10,7 @@ import { DragStartAction } from "../layout-reducer";
 import { ViewDispatch } from "./ViewContext";
 import { ViewAction } from "./viewTypes";
 import { usePersistentState } from "../use-persistent-state";
-import { DataSource } from "@finos/vuu-data";
+import { DataSource } from "@vuu-ui/vuu-data";
 
 export type Contribution = {
   index?: number;

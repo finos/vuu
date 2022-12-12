@@ -1,4 +1,4 @@
-import { EventEmitter, uuid } from "@finos/vuu-utils";
+import { EventEmitter, uuid } from "@vuu-ui/vuu-utils";
 import * as Message from "./server-proxy/messages";
 import {
   isConnectionStatusMessage,

@@ -7,7 +7,7 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { getUniqueId } from "@finos/vuu-utils";
+import { getUniqueId } from "@vuu-ui/vuu-utils";
 import { gatherChildMeta } from "./flexbox-utils";
 import { BreakPoint } from "./flexboxTypes";
 

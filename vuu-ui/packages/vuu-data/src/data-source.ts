@@ -11,12 +11,12 @@ import {
   VuuSortCol,
   VuuTable,
 } from "../../vuu-protocol-types";
-import { Filter } from "@finos/vuu-filters";
-import { IEventEmitter } from "@finos/vuu-utils/src/event-emitter";
+import { Filter } from "@vuu-ui/vuu-filters";
+import { IEventEmitter } from "@vuu-ui/vuu-utils/src/event-emitter";
 import {
   ColumnDescriptor,
   KeyedColumnDescriptor,
-} from "@finos/vuu-datagrid/src/grid-model";
+} from "@vuu-ui/vuu-datagrid/src/grid-model";
 
 type RowIndex = number;
 type RenderKey = number;

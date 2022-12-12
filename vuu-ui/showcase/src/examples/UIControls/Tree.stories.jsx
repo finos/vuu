@@ -1,7 +1,7 @@
 import React from "react";
 import { ComponentAnatomy } from "@heswell/component-anatomy";
 
-import { Tree, useItemsWithIds } from "@finos/ui-controls";
+import { Tree, useItemsWithIds } from "@vuu-ui/ui-controls";
 import { usa_states_cities, groupByInitialLetter } from "./List/List.data";
 import { folderData } from "./Tree.data";
 

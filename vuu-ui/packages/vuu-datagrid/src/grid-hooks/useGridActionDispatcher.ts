@@ -1,4 +1,4 @@
-import { ConfigChangeHandler } from "@finos/vuu-data";
+import { ConfigChangeHandler } from "@vuu-ui/vuu-data";
 import { useCallback } from "react";
 import {
   DataSourceAction,

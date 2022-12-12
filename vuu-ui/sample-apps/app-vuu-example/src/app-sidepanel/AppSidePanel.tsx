@@ -1,5 +1,5 @@
-import { Palette, PaletteItem } from "@finos/vuu-layout";
-import { Feature, Features } from "@finos/vuu-shell";
+import { Palette, PaletteItem } from "@vuu-ui/vuu-layout";
+import { Feature, Features } from "@vuu-ui/vuu-shell";
 import {
   Accordion,
   AccordionDetails,
@@ -11,7 +11,7 @@ import {
 } from "@heswell/uitk-lab";
 import cx from "classnames";
 
-import { TableSchema, VuuTableSchemas } from "@finos/vuu-data";
+import { TableSchema, VuuTableSchemas } from "@vuu-ui/vuu-data";
 import React, { ReactElement, useMemo, useState } from "react";
 
 const NO_FEATURES: Features = {};

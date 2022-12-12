@@ -7,7 +7,7 @@ import {
   Stack,
   View,
   Component,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 import { Brown } from "./components";
 
 const story = {

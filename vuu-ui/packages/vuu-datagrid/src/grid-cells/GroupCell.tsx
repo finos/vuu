@@ -1,4 +1,4 @@
-import { DataRow, metadataKeys } from "@finos/vuu-utils";
+import { DataRow, metadataKeys } from "@vuu-ui/vuu-utils";
 import React, { useCallback } from "react";
 import { useGridContext } from "../grid-context";
 import { GroupColumnDescriptor } from "../grid-model";

@@ -1,5 +1,5 @@
 import { ErrorNode, TerminalNode } from "antlr4ts/tree";
-import { Filter } from "@finos/vuu-utils";
+import { Filter } from "@vuu-ui/vuu-utils";
 
 //TODO need to ingestthese in a non-specific way
 import { FilterParser } from "../../generated/parsers/filter/FilterParser";

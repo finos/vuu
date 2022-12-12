@@ -7,9 +7,9 @@ import {
   MenuItemGroup,
   Separator,
   useContextMenu,
-} from "@finos/ui-controls";
+} from "@vuu-ui/ui-controls";
 
-import { Flexbox } from "@finos/vuu-layout";
+import { Flexbox } from "@vuu-ui/vuu-layout";
 
 const story = {
   title: "UI Controls/ContextMenu",

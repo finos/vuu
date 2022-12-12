@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Grid, GridProvider } from "@finos/vuu-datagrid";
-import { ContextMenuProvider } from "@finos/ui-controls";
-import { StackLayout as Stack, View, useViewContext } from "@finos/vuu-layout";
+import { Grid, GridProvider } from "@vuu-ui/vuu-datagrid";
+import { ContextMenuProvider } from "@vuu-ui/ui-controls";
+import { StackLayout as Stack, View, useViewContext } from "@vuu-ui/vuu-layout";
 import { Button } from "@heswell/uitk-core";
 import { List, ListItem } from "@heswell/uitk-lab";
 import { useTestDataSource } from "../utils/useTestDataSource";
@@ -11,10 +11,10 @@ import {
   connectToServer,
   RemoteDataSource,
   useViewserver,
-} from "@finos/vuu-data";
+} from "@vuu-ui/vuu-data";
 
-import { ParsedInput, ParserProvider } from "@finos/parsed-input";
-import { parseFilter, extractFilter } from "@finos/datagrid-parsers";
+import { ParsedInput, ParserProvider } from "@vuu-ui/parsed-input";
+import { parseFilter, extractFilter } from "@vuu-ui/datagrid-parsers";
 import { createSuggestionProvider } from "./vuu-filter-suggestion-provider";
 import { testTableMeta } from "./Vuu.data";
 
