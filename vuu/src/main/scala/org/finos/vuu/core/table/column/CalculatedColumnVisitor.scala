@@ -3,13 +3,15 @@ package org.finos.vuu.core.table.column
 import com.typesafe.scalalogging.StrictLogging
 import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.DataType
+import org.finos.vuu.core.table.{Column, DataType}
 import org.finos.vuu.grammer.CalculatedColumnParser.FunctionContext
+import org.finos.vuu.grammer.FilterParser.AtomContext
 import org.finos.vuu.grammer.{CalculatedColumnBaseVisitor, CalculatedColumnLexer, CalculatedColumnParser}
+import org.finos.vuu.viewport.ViewPortColumns
 
 import scala.jdk.CollectionConverters._
 
-class CalculatedColumnVisitor(val tableDef: TableDef) extends CalculatedColumnBaseVisitor[CalculatedColumnClause] with StrictLogging {
+class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedColumnBaseVisitor[CalculatedColumnClause] with StrictLogging {
 
   override def visitExpression(ctx: CalculatedColumnParser.ExpressionContext): CalculatedColumnClause = {
     logger.debug("VISIT: Expression:" + ctx)
@@ -183,10 +185,21 @@ class CalculatedColumnVisitor(val tableDef: TableDef) extends CalculatedColumnBa
     logger.debug("VISIT FUNCTION:" + ctx)
     val children = CollectionHasAsScala(ctx.children).asScala.toList
     val funcName = children.head.getText
-    val argsClauseList = children(2) match {
-      case ctx: CalculatedColumnParser.ArgumentsContext => processArguments(ctx)
+    val clause = children(2) match {
+      case ctx: CalculatedColumnParser.ArgumentsContext => {
+        ctx.children.size() match {
+          case 1 =>
+            val argClause = visitAtom(ctx.children.get(0).asInstanceOf[CalculatedColumnParser.AtomContext])
+            Functions.create(funcName, argClause)
+          case _ =>
+            val argsClauseList = processArguments(ctx)
+            Functions.create(funcName, argsClauseList)
+        }
+
+      }
+
     }
-    Functions.create(funcName, argsClauseList)
+    clause
   }
 
   private def processArguments(ctx: CalculatedColumnParser.ArgumentsContext): List[CalculatedColumnClause] = {
@@ -226,8 +239,16 @@ class CalculatedColumnVisitor(val tableDef: TableDef) extends CalculatedColumnBa
     clause
   }
 
+  private def getColumn(name: String): Option[Column] = {
+    columns.getColumnForName(name)
+  }
+
   private def processIDSymbol(term: TerminalNode): CalculatedColumnClause = {
-    val column = tableDef.columnForName(term.getText)
+    val column = getColumn(term.getText) match {
+      case Some(column) => column
+      case None => throw new RuntimeException("Column not found")
+    }
+
     logger.debug("VISIT ATOM: TerminalNode: " + term.getText + " " + column)
     column.dataType match {
       case DataType.IntegerDataType => IntColumnClause(column)
@@ -237,6 +258,8 @@ class CalculatedColumnVisitor(val tableDef: TableDef) extends CalculatedColumnBa
       case DataType.BooleanDataType => BooleanColumnClause(column)
     }
   }
+
+
 
   /**
    * {@inheritDoc }

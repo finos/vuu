@@ -15,6 +15,26 @@ case class MinFunction(clauses: List[CalculatedColumnClause]) extends Calculated
   }
 }
 
+case class AbsFunction(clause: CalculatedColumnClause) extends CalculatedColumnClause {
+  override def dataType: ClauseDataType = clause.dataType
+  override def calculate(data: RowData): Any = {
+    this.dataType match {
+      case ClauseDataType.LONG => Math.abs(clause.calculate(data).asInstanceOf[Long])
+      case ClauseDataType.INTEGER => Math.abs(clause.calculate(data).asInstanceOf[Int])
+      case ClauseDataType.DOUBLE => Math.abs(clause.calculate(data).asInstanceOf[Double])
+    }
+  }
+}
+
+case class LenFunction(clause: CalculatedColumnClause) extends CalculatedColumnClause {
+  override def dataType: ClauseDataType = ClauseDataType.INTEGER
+  override def calculate(data: RowData): Any = {
+    this.dataType match {
+      case ClauseDataType.STRING => TextFunction(List(clause)).calculate(data).toString.length
+    }
+  }
+}
+
 case class MaxFunction(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
   override def dataType: ClauseDataType = Clauses.findWidest(clauses)
   override def calculate(data: RowData): Any = {
@@ -53,6 +73,13 @@ case class ConcatenateFunction(clauses: List[CalculatedColumnClause]) extends Ca
 }
 
 object Functions {
+
+  def create(name: String, arg: CalculatedColumnClause): CalculatedColumnClause = {
+    name.toLowerCase match {
+      case "abs" => AbsFunction(arg)
+      case "len" => LenFunction(arg)
+    }
+  }
 
   def create(name: String, args: List[CalculatedColumnClause]): CalculatedColumnClause = {
     name.toLowerCase match {

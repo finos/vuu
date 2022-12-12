@@ -29,6 +29,7 @@ CONCATENATE : 'concatenate';
 TEXT : 'text';
 LEFT : 'left';
 RIGHT : 'right';
+LEN : 'len';
 
 expression : EQ term EOF;
 
@@ -46,7 +47,8 @@ function :
     ABS LPAREN arguments RPAREN |
     MIN LPAREN arguments RPAREN |
     MAX LPAREN arguments RPAREN |
-    ABS LPAREN arguments RPAREN |
+    ABS LPAREN atom RPAREN |
+    LEN LPAREN atom RPAREN |
     TEXT LPAREN arguments RPAREN |
     CONCATENATE LPAREN arguments RPAREN |
     LEFT LPAREN atom ',' INT RPAREN |
