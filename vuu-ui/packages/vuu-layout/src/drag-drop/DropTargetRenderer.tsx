@@ -1,12 +1,11 @@
-import React from "react";
-import { PopupService } from "@finos/ui-controls";
-import { DropMenu, computeMenuPosition } from "./DropMenu";
+import { PopupService } from "../popup";
 import { RelativeDropPosition } from "./BoxModel";
-
-import "./DropTargetRenderer.css";
-import { DropTarget, GuideLine } from "./DropTarget";
 import { DragDropRect } from "./dragDropTypes";
 import { DragState } from "./DragState";
+import { computeMenuPosition, DropMenu } from "./DropMenu";
+import { DropTarget, GuideLine } from "./DropTarget";
+
+import "./DropTargetRenderer.css";
 
 type Point = [number, number];
 type TabMode = "full-view" | "tab-only";

@@ -1,9 +1,9 @@
-import React, { useCallback, useRef } from "react";
-import { useId } from "../utils";
+import { useIdMemo as useId } from "@heswell/uitk-core";
+import { useCallback, useRef } from "react";
 import { Portal } from "../portal";
 
-import { useItemsWithIds } from "./use-items-with-ids";
 import { getItemId, getMenuId, useCascade } from "./use-cascade";
+import { useItemsWithIds } from "./use-items-with-ids";
 
 import MenuList from "./MenuList";
 

@@ -1,6 +1,7 @@
-import { useCallback, useRef, useState } from 'react';
-import { hasPopup, isRoot } from './utils';
-import { applyHandlers, isNavigationKey } from '../utils';
+import { useCallback, useRef, useState } from "react";
+import { hasPopup, isRoot } from "./utils";
+import { applyHandlers } from "../utils/apply-handlers";
+import { isNavigationKey } from "./key-code";
 
 // we need a way to set highlightedIdx when selection changes
 export const useKeyboardNavigation = (
@@ -12,12 +13,14 @@ export const useKeyboardNavigation = (
     onHighlight,
     onKeyDown,
     onCloseMenu,
-    onOpenMenu
+    onOpenMenu,
   },
   ...additionalHandlers
 ) => {
   // const prevCount = useRef(count);
-  const highlightedIndexRef = useRef(highlightedIdxProp ?? autoHighlightFirstItem ? 0 : -1);
+  const highlightedIndexRef = useRef(
+    highlightedIdxProp ?? autoHighlightFirstItem ? 0 : -1
+  );
   const [, forceRefresh] = useState(null);
   const controlledHighlighting = highlightedIdxProp !== undefined;
 
@@ -33,7 +36,7 @@ export const useKeyboardNavigation = (
     (idx) => {
       highlightedIndexRef.current = idx;
       onHighlight && onHighlight(idx);
-      applyHandlers(additionalHandlers, 'onHighlight', idx);
+      applyHandlers(additionalHandlers, "onHighlight", idx);
       forceRefresh({});
     },
     [additionalHandlers, onHighlight]
@@ -55,7 +58,9 @@ export const useKeyboardNavigation = (
     [controlledHighlighting, setHighlightedIndex]
   );
 
-  const highlightedIdx = controlledHighlighting ? highlightedIdxProp : highlightedIndexRef.current;
+  const highlightedIdx = controlledHighlighting
+    ? highlightedIdxProp
+    : highlightedIndexRef.current;
 
   const listProps = {
     onFocus: () => {
@@ -70,13 +75,13 @@ export const useKeyboardNavigation = (
         keyBoardNavigation.current = true;
         navigateChildldItems(e);
       } else if (
-        (e.key === 'ArrowRight' || e.key === 'Enter') &&
+        (e.key === "ArrowRight" || e.key === "Enter") &&
         hasPopup(e.target, highlightedIdx)
       ) {
         onOpenMenu(highlightedIdx);
-      } else if (e.key === 'ArrowLeft' && !isRoot(e.target)) {
+      } else if (e.key === "ArrowLeft" && !isRoot(e.target)) {
         onCloseMenu(highlightedIdx);
-      } else if (e.key === 'Enter') {
+      } else if (e.key === "Enter") {
         onActivate && onActivate(highlightedIdx);
       }
       // Is there any harm in allowing other keyDown Handlers to fire ?
@@ -92,7 +97,7 @@ export const useKeyboardNavigation = (
         onKeyDown(e);
       }
 
-      applyHandlers(additionalHandlers, 'onKeyDown', e);
+      applyHandlers(additionalHandlers, "onKeyDown", e);
     },
     onMouseDownCapture: () => {
       keyBoardNavigation.current = false;
@@ -110,14 +115,14 @@ export const useKeyboardNavigation = (
       keyBoardNavigation.current = true;
       setIgnoreFocus(false);
       hiliteItemAtIndex(-1);
-    }
+    },
   };
 
   const navigateChildldItems = (e) => {
     const nextIdx = nextItemIdx(count, e.key, highlightedIndexRef.current);
     if (nextIdx !== highlightedIndexRef.current) {
       hiliteItemAtIndex(nextIdx);
-      applyHandlers(additionalHandlers, 'onKeyboardNavigation', e, nextIdx);
+      applyHandlers(additionalHandlers, "onKeyboardNavigation", e, nextIdx);
     }
   };
 
@@ -133,13 +138,13 @@ export const useKeyboardNavigation = (
     hiliteItemAtIndex,
     keyBoardNavigation,
     listProps,
-    setIgnoreFocus
+    setIgnoreFocus,
   };
 };
 
 // need to be able to accommodate disabled items
 function nextItemIdx(count, key, idx) {
-  if (key === 'Up') {
+  if (key === "Up") {
     if (idx > 0) {
       return idx - 1;
     } else {

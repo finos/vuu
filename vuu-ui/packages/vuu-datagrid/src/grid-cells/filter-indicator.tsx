@@ -1,4 +1,4 @@
-import { useContextMenu } from "@finos/ui-controls";
+import { useContextMenu } from "@finos/vuu-layout";
 import { Filter, filterIncludesColumn } from "@finos/vuu-filters";
 import cx from "classnames";
 import { HTMLAttributes, useCallback, useMemo } from "react";
