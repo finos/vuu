@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { isGroupNode, isHeader } from '../utils';
+import { useRef, useState } from "react";
+import { isGroupNode, isHeader } from "./hierarchical-data-utils";
 
 const populateIndices = (nodes, results = [], idx = { value: 0 }) => {
   let skipToNextHeader = false;
@@ -64,6 +64,6 @@ export const useHierarchicalData = (source, label) => {
     // data, // do we actually use the data anywhere
     data: statefulSource.current,
     indexPositions: indexPositions.current,
-    setData
+    setData,
   };
 };

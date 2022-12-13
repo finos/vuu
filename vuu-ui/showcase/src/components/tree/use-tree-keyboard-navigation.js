@@ -1,12 +1,17 @@
-import { useCallback } from 'react';
-import { ArrowLeft, getNodeById, getNodeParentPath, getIndexOfNode } from '../utils';
+import { useCallback } from "react";
+import { ArrowLeft } from "./key-code";
+import {
+  getNodeById,
+  getNodeParentPath,
+  getIndexOfNode,
+} from "./hierarchical-data-utils";
 
 // we need a way to set highlightedIdx when selection changes
 export const useKeyboardNavigation = ({
   highlightedIdx,
   hiliteItemAtIndex,
   indexPositions,
-  source
+  source,
 }) => {
   const handleKeyDown = useCallback(
     (e) => {
@@ -25,10 +30,10 @@ export const useKeyboardNavigation = ({
   );
 
   const listHandlers = {
-    onKeyDown: handleKeyDown
+    onKeyDown: handleKeyDown,
   };
 
   return {
-    listHandlers
+    listHandlers,
   };
 };

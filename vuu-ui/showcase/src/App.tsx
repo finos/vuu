@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ToolkitProvider } from "@heswell/uitk-core";
 
 import { Flexbox } from "@finos/vuu-layout";
-import { Tree } from "@finos/ui-controls";
+import { Tree } from "./components";
 
 import "./App.css";
 

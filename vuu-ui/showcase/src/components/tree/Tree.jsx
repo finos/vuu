@@ -1,15 +1,11 @@
-import React, { forwardRef, useRef } from "react";
 import cx from "classnames";
-import {
-  closestListItemIndex,
-  groupSelectionEnabled,
-  useItemsWithIds,
-  useViewportTracking,
-  GROUP_SELECTION_NONE,
-} from "../common-hooks";
-
+import React, { forwardRef, useRef } from "react";
+import { useForkRef, useIdMemo as useId } from "@heswell/uitk-core";
+import { closestListItemIndex } from "./list-dom-utils";
+import { useItemsWithIds } from "./use-items-with-ids";
+import { groupSelectionEnabled, GROUP_SELECTION_NONE } from "./use-selection";
+import { useViewportTracking } from "./use-viewport-tracking";
 import { useTree } from "./useTree";
-import { useForkRef, useId } from "../utils";
 
 import "./Tree.css";
 
@@ -59,7 +55,6 @@ const Tree = forwardRef(function Tree(
   };
 
   const {
-    draggable,
     focusVisible,
     highlightedIdx,
     hiliteItemAtIndex,
@@ -68,7 +63,6 @@ const Tree = forwardRef(function Tree(
     selected,
     visibleData,
   } = useTree({
-    allowDragDrop,
     containerRef: root,
     defaultSelected,
     groupSelection,
@@ -180,7 +174,6 @@ const Tree = forwardRef(function Tree(
       tabIndex={0}
     >
       {renderSourceContent(visibleData)}
-      {draggable}
     </ul>
   );
 });

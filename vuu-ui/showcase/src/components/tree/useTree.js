@@ -1,18 +1,13 @@
-import { useCallback, useRef } from 'react';
-import {
-  useCollapsibleGroups,
-  useHierarchicalData,
-  useKeyboardNavigation,
-  useSelection
-} from '../common-hooks';
-import { useKeyboardNavigation as useTreeNavigation } from './use-tree-keyboard-navigation';
-import { useDragDrop } from '../common-hooks/use-hierarchical-drag-drop';
+import { useCallback, useRef } from "react";
+import { useKeyboardNavigation } from "./use-keyboard-navigation";
+import { useSelection } from "./use-selection";
+import { useHierarchicalData } from "./use-hierarchical-data";
+import { useCollapsibleGroups } from "./use-collapsible-groups";
+import { useKeyboardNavigation as useTreeNavigation } from "./use-tree-keyboard-navigation";
 
 const EMPTY_ARRAY = [];
 
 export const useTree = ({
-  allowDragDrop,
-  containerRef,
   defaultSelected,
   sourceWithIds,
   groupSelection,
@@ -21,7 +16,7 @@ export const useTree = ({
   onHighlight: onHighlightProp,
   selected: selectedProp,
   selection,
-  totalItemCount
+  totalItemCount,
 }) => {
   const lastSelection = useRef(EMPTY_ARRAY);
   const dataHook = useHierarchicalData(sourceWithIds);
@@ -35,7 +30,7 @@ export const useTree = ({
     indexPositions: dataHook.indexPositions,
     onHighlight: onHighlightProp,
     onKeyboardNavigation: handleKeyboardNavigation,
-    selected: lastSelection.current
+    selected: lastSelection.current,
   });
 
   const collapsibleHook = useCollapsibleGroups({
@@ -44,30 +39,7 @@ export const useTree = ({
     highlightedIdx,
     indexPositions: dataHook.indexPositions,
     setVisibleData: dataHook.setData,
-    source: dataHook.data
-  });
-
-  const handleDrop = useCallback(
-    (fromIndex, toIndex) => {
-      const data = dataHook.data.slice();
-      const [target] = data.splice(fromIndex, 1);
-      if (toIndex === -1) {
-        data.push(target);
-      } else {
-        data.splice(toIndex, 0, target);
-      }
-      dataHook.setData(data);
-      keyboardHook.hiliteItemAtIndex(toIndex);
-    },
-    [dataHook, keyboardHook]
-  );
-
-  const { onMouseDown, ...dragDropHook } = useDragDrop({
-    allowDragDrop,
-    orientation: 'vertical',
-    containerRef,
-    itemQuery: '.hwTreeNode:not(.hwTreeNode-toggle)',
-    onDrop: handleDrop
+    source: dataHook.data,
   });
 
   const selectionHook = useSelection({
@@ -77,14 +49,14 @@ export const useTree = ({
     indexPositions: dataHook.indexPositions,
     onChange,
     selected: selectedProp,
-    selection
+    selection,
   });
 
   const treeNavigationHook = useTreeNavigation({
     source: dataHook.data,
     highlightedIdx,
     hiliteItemAtIndex: keyboardHook.hiliteItemAtIndex,
-    indexPositions: dataHook.indexPositions
+    indexPositions: dataHook.indexPositions,
   });
 
   const handleClick = useCallback(
@@ -114,7 +86,7 @@ export const useTree = ({
       collapsibleHook.listHandlers,
       keyboardHook.listProps,
       selectionHook.listHandlers,
-      treeNavigationHook.listHandlers
+      treeNavigationHook.listHandlers,
     ]
   );
 
@@ -127,18 +99,17 @@ export const useTree = ({
   lastSelection.current = selectionHook.selected;
 
   const listProps = {
-    'aria-activedescendant': getActiveDescendant(),
+    "aria-activedescendant": getActiveDescendant(),
     onBlur: keyboardHook.listProps.onBlur,
     onFocus: keyboardHook.listProps.onFocus,
     onKeyDown: handleKeyDown,
-    onMouseDown,
     onMouseDownCapture: keyboardHook.listProps.onMouseDownCapture,
     onMouseLeave: keyboardHook.listProps.onMouseLeave,
-    onMouseMove: keyboardHook.listProps.onMouseMove
+    onMouseMove: keyboardHook.listProps.onMouseMove,
   };
 
   const listItemHandlers = {
-    onClick: handleClick
+    onClick: handleClick,
   };
 
   return {
@@ -149,6 +120,5 @@ export const useTree = ({
     listItemHandlers,
     selected: selectionHook.selected,
     visibleData: dataHook.data,
-    ...dragDropHook
   };
 };

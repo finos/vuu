@@ -1,13 +1,13 @@
 import { useCallback, useMemo, useRef } from "react";
+import { getIndexOfNode } from "./hierarchical-data-utils";
+import { useControlled } from "@heswell/uitk-core";
 import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
-  getIndexOfNode,
   isNavigationKey,
-  useControlled,
-} from "../utils";
+} from "./key-code";
 
 function nextItemIdx(count, key, idx) {
   if (key === ArrowUp || key === ArrowLeft) {

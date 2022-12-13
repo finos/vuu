@@ -1,16 +1,18 @@
-import { useCallback, useRef } from 'react';
-import { closestListItem } from './list-dom-utils';
-import { ArrowLeft, ArrowRight, Enter, getNodeById, replaceNode } from '../utils';
+import { useCallback, useRef } from "react";
+import { closestListItem } from "./list-dom-utils";
+import { ArrowLeft, ArrowRight, Enter } from "./key-code";
+import { getNodeById, replaceNode } from "./hierarchical-data-utils";
 
 const NO_HANDLERS = {};
-const isToggleElement = (element) => element && element.hasAttribute('aria-expanded');
+const isToggleElement = (element) =>
+  element && element.hasAttribute("aria-expanded");
 
 export const useCollapsibleGroups = ({
   collapsibleHeaders,
   highlightedIdx,
   indexPositions,
   setVisibleData,
-  source
+  source,
 }) => {
   const fullSource = useRef(source);
   const stateSource = useRef(fullSource.current);
@@ -63,7 +65,7 @@ export const useCollapsibleGroups = ({
    */
   const listHandlers = collapsibleHeaders
     ? {
-        onKeyDown: handleKeyDown
+        onKeyDown: handleKeyDown,
       }
     : NO_HANDLERS;
 
@@ -85,11 +87,11 @@ export const useCollapsibleGroups = ({
   );
 
   const listItemHandlers = {
-    onClick: handleClick
+    onClick: handleClick,
   };
 
   return {
     listHandlers,
-    listItemHandlers
+    listItemHandlers,
   };
 };
