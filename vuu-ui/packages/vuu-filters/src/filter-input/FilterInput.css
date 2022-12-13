@@ -1,4 +1,10 @@
 
+.uitk-density-high {
+    --vuuFilterEditor-buttonWidth: 20px;
+    --vuuFilterEditor-height: 22px;
+}
+
+
 .vuuFilterInput {
     --vuuFilterEditor-background: var(--uitk-container-background-medium);
     --vuuFilterEditor-color: var(--uitk-text-primary-foreground);
@@ -14,10 +20,12 @@
     --vuuFilterEditor-variableColor: blue;
 
     align-items: center;
-    border: solid 1px lightgray;
+    border-color: var(--uitk-container-borderColor-medium);
+    border-style: solid none;
+    border-width: 1px;
     box-sizing: border-box;
     display: flex;
-    height: 30px;
+    height: var(--vuuFilterEditor-height, 30px);
 }
 
 .vuuFilterInput-Editor {
@@ -28,7 +36,7 @@
 .vuuFilterInput-FilterButton,
 .vuuFilterInput-ClearButton {
     --vuu-icon-size: 12px;
-    --uitkButton-width: 28px;
+    --uitkButton-width: var(--vuuFilterEditor-buttonWidth, 28px);
 }
 
 

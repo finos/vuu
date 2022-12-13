@@ -124,7 +124,19 @@ export const byFileName = ({ fileName: f1 }, { fileName: f2 }) => {
   return f2 > f1 ? -1 : f2 < f1 ? 1 : 0;
 };
 
-export const getCommandLineArg = (argName, expectValue) => {
+/**
+ * argName can be a simple switch e.g --watch
+ * argName can also expect a value following eg --features my-feature
+ * if expectValue is true, user MUST provide a value
+ * defaultValue, if provided, is returned ONLY if user does not use the switch at all
+ * @param {
+ *
+ * } argName
+ * @param {*} expectValue
+ * @param {*} defaultValue
+ * @returns
+ */
+export const getCommandLineArg = (argName, expectValue, defaultValue) => {
   const args = process.argv.slice(2);
   const hasArg = args.includes(argName);
   if (hasArg && expectValue) {
@@ -137,6 +149,8 @@ export const getCommandLineArg = (argName, expectValue) => {
     } else {
       return argValue;
     }
+  } else if (!hasArg && defaultValue) {
+    return defaultValue;
   } else {
     return hasArg;
   }

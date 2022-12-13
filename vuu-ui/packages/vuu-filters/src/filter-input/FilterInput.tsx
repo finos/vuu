@@ -30,7 +30,7 @@ export const FilterInput = ({
   });
 
   return (
-    <div className={classBase} style={{ width: 600 }}>
+    <div className={classBase}>
       <Button className={`${classBase}-FilterButton`} data-icon="filter" />
       <div className={`${classBase}-Editor`} ref={editorRef} />
       <Button

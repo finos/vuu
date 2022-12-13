@@ -1,0 +1,32 @@
+The Sample App comprises a login page, an index page (the VUU Shell) + one or more features
+
+By default, the Filtered Grid feature is loaded. This can be overridden by useing the --features flag with the build
+
+To build Sample App with just the Vuu Blotter
+
+```
+yarn build:app --features feature-vuu-blotter
+```
+
+To build Sample App with both the Vuu Blotter and the FilteredGrid
+
+```
+yarn build:app --features feature-filtered-grid,feature-vuu-blotter
+```
+
+A Feature must have the following properties
+
+- index.ts entrypoint at top level of feature folder
+- index.ts exposes a default export which is a React Component
+- feature folder sits inside sample-apps
+
+When the build runs, features and the Shell will be combined as multiple entryPoints. The code-splitting logic of the
+bundler (presently Esbuild) will create an optimised set of bundles. At the minimum, there will be one main js and css bundle, plus
+one such pair for each feature. Code shared across features or between shell and features will end up in common bundles.
+Features are loaded dynamically at runtime.
+This is a very basic mechanism for decoupling shell and features and is 100% dependent on running everything through a single build.
+In future, the plan is to move towards a truly decoupled patternm for feature loading - utilising ES6 module hosting.
+
+All build outputs are written to vuu-ui/deployed-apps. The Vuuserver is configured by default to serve assets from here.
+
+Note: pass --dev switch to any build to build in development mode.

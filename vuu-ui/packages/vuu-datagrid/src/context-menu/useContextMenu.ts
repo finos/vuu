@@ -51,7 +51,8 @@ export const useContextMenu = ({
         case "group": return dataSource.group(GridModel.addGroupColumn({}, column)), true;
         case "group-add": return dataSource.group(GridModel.addGroupColumn(gridModel, column)), true;
         case "column-hide": return dispatchGridModelAction({type, column}),true;
-        case "filter-remove-column": return handleRemoveColumnFromFilter(options, dataSource);
+        case "filter-remove-column": return handleRemoveColumnFromFilter(options, dataSource), true;
+        case "remove-filters": return dataSource.filter(undefined, ""), true;
         case "agg-avg": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Average)), true;
         case "agg-high": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, High)), true;
         case "agg-low": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Low)), true;
@@ -59,8 +60,6 @@ export const useContextMenu = ({
         case "agg-sum": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Sum)), true;
         default:
       }
-    } else if (type === "filter-remove") {
-      return dataSource.filter(undefined, ""), true;
     }
     return false;
   };

@@ -15,6 +15,7 @@ const packages = [
   "packages/vuu-filters",
   "sample-apps/app-vuu-example",
   "sample-apps/feature-filtered-grid",
+  "sample-apps/feature-vuu-blotter",
   "showcase",
 ];
 

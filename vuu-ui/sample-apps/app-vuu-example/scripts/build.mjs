@@ -15,21 +15,29 @@ import path from "path";
 
 const entryPoints = ["index.tsx", "login.tsx"];
 
-const featureEntryPoints = [
-  // "src/features/ag-grid/index.ts",
-  "../feature-filtered-grid/index.ts",
-  // "src/features/metrics/index.js",
-];
-
 const outdir = "../../deployed_apps/app-vuu-example";
 let configFile = "./config/localhost.config.json";
 
 const watch = getCommandLineArg("--watch");
 const development = watch || getCommandLineArg("--dev");
 const configPath = getCommandLineArg("--config", true);
+const features = getCommandLineArg("--features", true, "feature-filtered-grid");
+console.log({ features });
 if (configPath) {
   configFile = configPath;
 }
+
+const featureEntryPoints = features
+  .split(",")
+  .map((featureName) => `../${featureName}/index.ts`);
+
+console.log({ featureEntryPoints });
+// const featureEntryPoints = [
+//   // "src/features/ag-grid/index.ts",
+//   "../feature-filtered-grid/index.ts",
+//   "../feature-vuu-blotter/index.ts",
+//   // "src/features/metrics/index.js",
+// ];
 
 assertFileExists(configFile, true);
 
