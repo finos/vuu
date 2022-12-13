@@ -6,7 +6,6 @@ const packages = [
   "packages/vuu-utils",
   "packages/vuu-theme",
   "packages/vuu-data",
-  "packages/ui-controls",
   "packages/vuu-datagrid",
   "packages/vuu-layout",
   "packages/vuu-shell",

@@ -1,4 +1,3 @@
-export * from "./action-buttons";
 export * from "./chest-of-drawers";
 export { default as Component } from "./Component";
 export * from "./common-types";

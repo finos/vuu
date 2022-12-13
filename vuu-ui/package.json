@@ -7,7 +7,9 @@
   "workspaces": [
     "packages/**",
     "sample-apps/**",
-    "showcase"
+    "showcase",
+    "uitk/packages/core",
+    "uitk/packages/lab"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.jsx",

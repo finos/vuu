@@ -1,15 +1,14 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
-import { ComponentAnatomy as RenderVisualiser } from "@heswell/component-anatomy";
 import {
   ContextMenu,
   ContextMenuProvider,
+  Flexbox,
   MenuItem,
   MenuItemGroup,
   Separator,
   useContextMenu,
-} from "@finos/ui-controls";
-
-import { Flexbox } from "@finos/vuu-layout";
+} from "@finos/vuu-layout";
+import { ComponentAnatomy as RenderVisualiser } from "@heswell/component-anatomy";
+import React, { useLayoutEffect, useRef, useState } from "react";
 
 const story = {
   title: "UI Controls/ContextMenu",
