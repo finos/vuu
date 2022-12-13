@@ -39,7 +39,7 @@ class OrExpression {
     } else if (this.filters.length > 1) {
       return {
         name,
-        type: "or",
+        op: "or",
         filters: this.filters.map((f) => f.toJson()),
       };
     }
@@ -56,7 +56,7 @@ class AndExpression {
     } else if (this.filters.length > 1) {
       return {
         name,
-        type: "and",
+        op: "and",
         filters: this.filters.map((f) => f.toJson()),
       };
     }

@@ -5,9 +5,14 @@ export const vuuTheme = EditorView.theme(
     "&": {
       color: "var(--vuuFilterEditor-color)",
       backgroundColor: "var(--vuuFilterEditor-background)",
+      fontSize: "var(--vuuFilterEditor-fontSize)",
     },
     ".cm-content": {
       caretColor: "var(--vuuFilterEditor-cursorColor)",
+      padding: 0,
+    },
+    ".cm-line": {
+      lineHeight: "20px",
     },
     "&.cm-focused .cm-cursor": {
       borderLeftColor: "var(--vuuFilterEditor-cursorColor)",

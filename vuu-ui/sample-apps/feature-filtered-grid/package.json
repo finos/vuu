@@ -17,11 +17,14 @@
   "devDependencies": {},
   "dependencies": {
     "@finos/vuu-data": "0.0.26",
+    "@finos/vuu-datagrid": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
     "@finos/vuu-protocol-types": "0.0.26",
     "@finos/vuu-shell": "0.0.26",
     "@finos/vuu-theme": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
+    "@finos/datagrid-parsers": "0.0.26",
+    "@finos/parsed-input": "0.0.26",
     "@heswell/uitk-core": "0.8.0-vuu.1",
     "@heswell/uitk-icons": "0.7.0-vuu.1",
     "@heswell/uitk-lab": "0.8.0-vuu.1"

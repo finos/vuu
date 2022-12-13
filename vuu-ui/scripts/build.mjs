@@ -5,6 +5,7 @@ import {
   copyFolderSync,
   formatBytes,
   formatDuration,
+  getCommandLineArg,
   readPackageJson,
   writeMetaFile,
 } from "./utils.mjs";
@@ -17,8 +18,6 @@ const defaultConfig = {
 };
 
 export default async function main(customConfig) {
-  const args = process.argv.slice(2);
-
   const config = {
     ...defaultConfig,
     ...customConfig,
@@ -40,9 +39,9 @@ export default async function main(customConfig) {
   const indexCSS = "index.css";
 
   const outdir = `${DIST_PATH}/${packageName}`;
-  const watch = args.includes("--watch");
-  const development = watch || args.includes("--dev");
-  const cjs = args.includes("--cjs") ? " --cjs" : "";
+  const watch = getCommandLineArg("--watch");
+  const development = watch || getCommandLineArg("--dev");
+  const cjs = getCommandLineArg("--cjs") ? " --cjs" : "";
 
   const hasWorker = fs.existsSync(workerTS);
   const isTypeScript = fs.existsSync(indexTS);
