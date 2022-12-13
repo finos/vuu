@@ -410,8 +410,8 @@ export const ComplexNestedLayout = () => {
   };
   return (
     <LayoutProvider onLayoutChange={handleLayoutChange}>
-      <DraggableLayout dropTarget>
-        <Flexbox column style={{ height: "90vh", width: "100vw" }}>
+      <DraggableLayout style={{ height: "100%", width: "100%" }}>
+        <Flexbox column style={{ height: "100%", width: "100%" }}>
           <Flexbox style={{ flex: 1 }}>
             <View
               closeable
@@ -455,63 +455,82 @@ export const ComplexNestedLayout = () => {
                 </PaletteItem>
               </Palette>
             </View>
-            <Flexbox resizeable column style={{ flex: 1 }}>
-              <View header resizeable style={{ flex: 1 }} title="Brown Bear">
-                <Brown style={{ height: "100%" }} />
-              </View>
-              <View header resizeable style={{ flex: 1 }} title="Red Panda">
-                <Component style={{ backgroundColor: "red", height: "100%" }} />
-              </View>
-
-              <Flexbox resizeable style={{ flex: 1 }}>
-                <StackLayout
-                  showTabs
-                  enableAddTab
+            <DraggableLayout
+              dropTarget
+              style={{ flex: 1, "--vuuView-margin": "0px" }}
+            >
+              <Flexbox
+                resizeable
+                column
+                style={{ width: "100%", height: "100%" }}
+              >
+                <View
+                  closeable
+                  header
                   resizeable
                   style={{ flex: 1 }}
-                  keyBoardActivation="manual"
+                  title="Brown Bear"
                 >
-                  <View closeable header resizeable title="Home">
-                    <Component
-                      style={{ backgroundColor: "white", height: "100%" }}
-                    />
-                  </View>
-                  <View title="Transactions">
-                    {/* <Toolbar>
-                      {/* <input type="text" className="tool-text" value="text 1" />
-                  <input type="text" className="tool-text" value="text 2" />
-                  <input type="text" className="tool-text" value="text 3" />
-                  <input type="text" className="tool-text" value="text 4" />
-                    </Toolbar> */}
-                    <Component style={{ backgroundColor: "yellow", flex: 1 }} />
-                  </View>
-                  <View closeable header resizeable title="Loans">
-                    <Component
-                      style={{ backgroundColor: "cream", height: "100%" }}
-                    />
-                  </View>
-                  <View closeable header resizeable title="Checks">
-                    <Component
-                      style={{ backgroundColor: "ivory", height: "100%" }}
-                    />
-                  </View>
-                  <View closeable header resizeable title="Liquidity">
-                    <Component
-                      style={{ backgroundColor: "lightgrey", height: "100%" }}
-                    />
-                  </View>
-                </StackLayout>
-                <Component
+                  <Brown style={{ height: "100%" }} />
+                </View>
+                <View
+                  closeable
+                  header
                   resizeable
-                  style={{
-                    backgroundColor: "green",
-                    width: 50,
-                    flexBasis: "auto",
-                    flexGrow: 0,
-                  }}
-                />
+                  style={{ flex: 1 }}
+                  title="Red Panda"
+                >
+                  <Component
+                    style={{ backgroundColor: "red", height: "100%" }}
+                  />
+                </View>
+
+                <Flexbox resizeable style={{ flex: 1 }}>
+                  <StackLayout
+                    showTabs
+                    enableAddTab
+                    resizeable
+                    style={{ flex: 1 }}
+                    keyBoardActivation="manual"
+                  >
+                    <View closeable header resizeable title="Home">
+                      <Component
+                        style={{ backgroundColor: "white", height: "100%" }}
+                      />
+                    </View>
+                    <View title="Transactions">
+                      <Component
+                        style={{ backgroundColor: "yellow", flex: 1 }}
+                      />
+                    </View>
+                    <View closeable header resizeable title="Loans">
+                      <Component
+                        style={{ backgroundColor: "cream", height: "100%" }}
+                      />
+                    </View>
+                    <View closeable header resizeable title="Checks">
+                      <Component
+                        style={{ backgroundColor: "ivory", height: "100%" }}
+                      />
+                    </View>
+                    <View closeable header resizeable title="Liquidity">
+                      <Component
+                        style={{ backgroundColor: "lightgrey", height: "100%" }}
+                      />
+                    </View>
+                  </StackLayout>
+                  <Component
+                    resizeable
+                    style={{
+                      backgroundColor: "green",
+                      width: 50,
+                      flexBasis: "auto",
+                      flexGrow: 0,
+                    }}
+                  />
+                </Flexbox>
               </Flexbox>
-            </Flexbox>
+            </DraggableLayout>
           </Flexbox>
           <Component
             style={{

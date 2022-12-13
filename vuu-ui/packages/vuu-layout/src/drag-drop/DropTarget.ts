@@ -262,7 +262,7 @@ export function identifyDropTarget(
 ) {
   let dropTarget = null;
 
-  var allBoxesContainingPoint = BoxModel.allBoxesContainingPoint(
+  const allBoxesContainingPoint = BoxModel.allBoxesContainingPoint(
     rootLayout,
     measurements,
     x,
@@ -283,9 +283,9 @@ export function identifyDropTarget(
     const pos = getPosition(x, y, clientRect, placeholderOrientation);
     const box = measurements[path];
 
-    function nextDropTarget([nextTarget, ...targets]: LayoutModel[]):
+    const nextDropTarget = ([nextTarget, ...targets]: LayoutModel[]):
       | DropTarget
-      | undefined {
+      | undefined => {
       if (pos.position?.Header || pos.closeToTheEdge) {
         const targetPosition = getTargetPosition(
           nextTarget,
@@ -308,7 +308,7 @@ export function identifyDropTarget(
           return nextDropTarget(targets);
         }
       }
-    }
+    };
     dropTarget = new DropTarget({
       component,
       pos,
@@ -316,6 +316,7 @@ export function identifyDropTarget(
       nextDropTarget: nextDropTarget(containers) ?? null,
     }).activate();
   }
+
   return dropTarget;
 }
 
@@ -351,7 +352,7 @@ function getTargetPosition(
   if (atTop || atRight || atBottom || atLeft) {
     const { "data-path": dataPath, path = dataPath } = container.props;
     const clientRect = measurements[path];
-    let containerPos = getPosition(x, y, clientRect);
+    const containerPos = getPosition(x, y, clientRect);
 
     // if its a VBox and we're close to left or right ...
     if (

@@ -1,3 +1,8 @@
+body {
+  /* TEMP avoid the dragged item triggering scrollbars */
+  overflow: hidden;
+}
+
 .ShowcaseNav {
   --hwTree-toggle-expand: var(--svg-chevron-right);
   --hwTree-toggle-collapse: var(--svg-chevron-right);
