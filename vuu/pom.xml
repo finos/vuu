@@ -19,7 +19,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.finos</groupId>
+            <groupId>org.finos.vuu</groupId>
             <artifactId>toolbox</artifactId>
             <version>0.355-SNAPSHOT</version>
         </dependency>
