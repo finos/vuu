@@ -1,4 +1,4 @@
-import { useViewContext } from "@finos/vuu-layout";
+import { ContextMenuProvider, useViewContext } from "@finos/vuu-layout";
 import { useShellContext } from "@finos/vuu-shell";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSuggestionProvider } from "./useSuggestionProvider";
@@ -10,7 +10,6 @@ import {
   updateFilter,
 } from "@finos/vuu-filters";
 
-import { ContextMenuProvider } from "@finos/ui-controls";
 import {
   ConfigChangeMessage,
   createDataSource,

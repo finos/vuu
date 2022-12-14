@@ -1,4 +1,4 @@
-.hwDropMenu {
+.vuuDropMenu {
   margin-left: -50%;
   margin-bottom: -50%;
   background-color: white;
@@ -10,20 +10,21 @@
   border-radius: 3px;
 }
 
-.hwDropMenu.left,
-.hwDropMenu.right {
+.vuuDropMenu-left,
+.vuuDropMenu-right {
   flex-direction: column;
 }
 
-.hwDropMenu.bottom {
+.vuuDropMenu-bottom {
   transform: translate(0, -30px);
 }
 
-.hwDropMenu.right {
+.vuuDropMenu-right {
   transform: translate(-20px, 0);
 }
 
-.hwDropMenu-item {
+.vuuDropMenu-item {
+  --vuu-icon-size: 20px;
   width: 32px;
   height: 32px;
   background-color: var(--grey20);
@@ -34,37 +35,37 @@
   justify-content: center;
 }
 
-.hwDropMenu-item .Icon {
+.vuuDropMenu-item .Icon {
   transform: scale(1.25);
   transform-origin: center center;
 }
 
-.hwDropMenu.left .hwDropMenu-item .hwIcon {
+.vuuDropMenu-left .vuuDropMenu-item .hwIcon {
   transform: scale(1.25) rotate(180deg);
   transform-origin: center center;
 }
 
-.hwDropMenu.top .hwDropMenu-item .hwIcon {
+.vuuDropMenu-top .vuuDropMenu-item .hwIcon {
   transform: scale(1.25) rotate(270deg);
   transform-origin: center center;
 }
 
-.hwDropMenu.bottom .hwDropMenu-item .hwIcon {
+.vuuDropMenu-bottom .vuuDropMenu-item .hwIcon {
   transform: scale(1.25) rotate(90deg);
   transform-origin: center center;
 }
 
-.hwDropMenu-item .hwIcon-path {
+.vuuDropMenu-item .hwIcon-path {
   fill: grey;
 }
-.hwDropMenu-item:hover {
+.vuuDropMenu-item:hover {
   background-color: rgba(200, 200, 200, 0.5);
 }
 
-.hwDropMenu-item:hover .hwIcon-path-2 {
+.vuuDropMenu-item:hover .hwIcon-path-2 {
   fill: blue;
 }
 
-.hwDropMenu-item:last-child {
+.vuuDropMenu-item:last-child {
   border-bottom: none;
 }

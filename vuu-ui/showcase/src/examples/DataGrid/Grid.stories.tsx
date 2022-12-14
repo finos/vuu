@@ -1,20 +1,16 @@
+import { Grid } from "@finos/vuu-datagrid";
+import { Flexbox, View } from "@finos/vuu-layout";
 import { Button, FormField, Input } from "@heswell/uitk-core";
-import { Toolbar, Tooltray } from "@heswell/uitk-lab";
 import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
+  Toolbar,
+  Tooltray,
 } from "@heswell/uitk-lab";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { ErrorDisplay, useTestDataSource } from "../utils";
-
-import { Grid } from "@finos/vuu-datagrid";
-
 import { instrumentSchema } from "./columnMetaData";
-
-import { Flexbox, View } from "@finos/vuu-layout";
-import { VuuFilter } from "../utils/VuuFilter";
-import { extractFilter } from "@finos/datagrid-parsers";
 
 import "./Grid.stories.css";
 
@@ -444,55 +440,6 @@ export const ColumnHeaders2Levels = () => {
 };
 
 ColumnHeaders2Levels.displaySequence = displaySequence++;
-
-export const BasicGridWithFilter = () => {
-  const gridRef = useRef(null);
-  const [namedFilters, setNamedFilters] = useState([]);
-
-  const { columns, dataSource, error } = useTestDataSource({
-    tablename: "instruments",
-  });
-
-  const handleCommit = (result) => {
-    const { filter, name } = extractFilter(result);
-    dataSource.filterQuery(filter);
-    if (name) {
-      setNamedFilters(namedFilters.concat({ name, filter }));
-    }
-  };
-
-  if (error) {
-    return <ErrorDisplay>{error}</ErrorDisplay>;
-  }
-
-  return (
-    <>
-      <VuuFilter columns={columns} />
-      <Grid
-        dataSource={dataSource}
-        columns={columns}
-        height={600}
-        ref={gridRef}
-        renderBufferSize={20}
-        style={{ border: "solid 1px #ccc" }}
-      />
-    </>
-  );
-};
-BasicGridWithFilter.displaySequence = displaySequence++;
-
-export const FilteredGridInLayout = () => {
-  return (
-    <Flexbox style={{ width: 800, height: 600, flexDirection: "column" }}>
-      <View title="DataGrid" header style={{ flex: 1 }} resizeable>
-        <BasicGridWithFilter />
-      </View>
-      <div style={{ flex: 1, backgroundColor: "blue" }} data-resizeable></div>
-    </Flexbox>
-  );
-};
-
-FilteredGridInLayout.displaySequence = displaySequence++;
 
 export const BufferVariations = () => {
   const { columns, dataSource, error } = useTestDataSource({

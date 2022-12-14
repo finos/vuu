@@ -21,7 +21,7 @@ let configFile = "./config/localhost.config.json";
 const watch = getCommandLineArg("--watch");
 const development = watch || getCommandLineArg("--dev");
 const configPath = getCommandLineArg("--config", true);
-const features = getCommandLineArg("--features", true, "feature-filtered-grid");
+const features = getCommandLineArg("--features", true, "feature-vuu-blotter");
 console.log({ features });
 if (configPath) {
   configFile = configPath;

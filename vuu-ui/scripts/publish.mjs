@@ -5,12 +5,9 @@ const packages = [
   "vuu-utils",
   "vuu-theme",
   "vuu-data",
-  "datagrid-parsers",
-  "ui-controls",
   "vuu-filters",
   "vuu-datagrid",
   "vuu-layout",
-  "parsed-input",
   "vuu-shell",
 ];
 

@@ -1,8 +1,9 @@
-export * from "./action-buttons";
 export * from "./chest-of-drawers";
 export { default as Component } from "./Component";
 export * from "./common-types";
 export * from "./dialog";
+export * from "./menu";
+export * from "./popup";
 export * from "./DraggableLayout";
 export * from "./drag-drop";
 export * from "./flexbox";
