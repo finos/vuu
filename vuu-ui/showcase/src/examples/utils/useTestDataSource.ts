@@ -48,6 +48,7 @@ export const useTestDataSource = ({
       columns: columnNames,
       table,
       serverUrl: "127.0.0.1:8090/websocket",
+      viewport: `test-${table.table}`,
     };
     return new RemoteDataSource(dataConfig);
   }, [bufferSize, columnNames, table]);

@@ -151,11 +151,10 @@ export const VuuDataTable = () => {
 
       <DataTable
         dataSource={dataSource}
-        data={[]}
         columns={columns}
         // columnSizing="fill"
         height={600}
-        selectionModel="extended"
+        width={700}
       />
     </>
   );

@@ -112,11 +112,15 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     if (!table) throw Error("RemoteDataSource subscribe called without table");
 
     this.clientCallback = callback;
+    console.log("subscribe");
 
     // store the range before we await the server. It's is possible the
     // range will be updated from the client before we have been able to
     // subscribe. This ensures we will subscribe with latest value.
     this.initialGroup = groupBy;
+    console.log(
+      `set initial range before wait was ${this.initialRange.to} is now ${range.to}`
+    );
     this.initialRange = range;
 
     if (this.status !== "initialising") {
@@ -138,6 +142,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.columns = columns;
 
     this.server = await this.pendingServer;
+
+    console.log(`subscribe range = ${(this, this.initialRange.to)}`);
 
     const { bufferSize } = this;
     this.server?.subscribe(
@@ -264,6 +270,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       if (this.server) {
         this.server.send(message);
       } else {
+        console.log(`set initial range to ${from} ${to}`);
         this.initialRange = { from, to };
       }
     }

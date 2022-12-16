@@ -19,6 +19,7 @@
     "@heswell/uitk-core": "0.8.0-vuu.1",
     "@heswell/uitk-lab": "0.8.0-vuu.1",
     "@finos/ui-controls": "0.0.27",
+    "@finos/ui-data": "0.0.27",
     "@finos/vuu-utils": "0.0.27",
     "classnames": "^2.2.6",
     "react": "^17.0.2",

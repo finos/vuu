@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@finos/vuu-data";
+import { DataSource, DataSourceRow } from "@finos/vuu-data";
 import { ColumnMap } from "@finos/vuu-utils";
 import { HTMLAttributes, MouseEvent } from "react";
 
@@ -13,7 +13,8 @@ export interface Column {
 
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   columns: Column[];
-  data: DataSourceRow[];
+  data?: DataSourceRow[];
+  dataSource?: DataSource;
   headerHeight?: number;
   height?: number;
   rowHeight?: number;

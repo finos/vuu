@@ -19,6 +19,7 @@ const styleHidden: CSSProperties = { display: "none" };
 export const DataTable = ({
   columns: columnsProp,
   data: dataProp,
+  dataSource,
   headerHeight = 25,
   height,
   rowHeight = 20,
@@ -33,6 +34,7 @@ export const DataTable = ({
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const { data, setRangeVertical, rowCount } = useTableData({
     data: dataProp,
+    dataSource,
   });
   const [columns, setColumns] = useState<Column[]>(columnsProp);
 
