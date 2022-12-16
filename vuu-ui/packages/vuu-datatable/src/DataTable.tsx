@@ -1,11 +1,5 @@
 import { buildColumnMap } from "@finos/vuu-utils";
-import React, {
-  CSSProperties,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { CSSProperties, useCallback, useMemo, useRef, useState } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
 import { RowBasedTable } from "./RowBasedTable";
 import { useTableData } from "./useTableData";

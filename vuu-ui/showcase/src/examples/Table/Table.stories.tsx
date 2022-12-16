@@ -1,17 +1,22 @@
-import React, { useCallback } from "react";
-import { DataTable } from "./DataTable";
-import { Column } from "./dataTableTypes";
-import { Toolbar, ToggleButton } from "@heswell/uitk-lab";
-import { DragVisualizer } from "./DragVisualizer";
-
-import { useState } from "react";
 import { DataSourceRow } from "@finos/vuu-data";
+import { Column, DataTable } from "@finos/vuu-datatable";
 import { Flexbox, View } from "@finos/vuu-layout";
+import {
+  ToggleButton,
+  ToggleButtonGroup,
+  ToggleButtonGroupChangeEventHandler,
+  Toolbar,
+} from "@heswell/uitk-lab";
+import { useCallback, useMemo, useState } from "react";
+import { DragVisualizer } from "../../../../packages/vuu-datatable/src/DragVisualizer";
+import { ErrorDisplay, useTestDataSource } from "../utils";
 
 export default {
   title: "Table/Table",
   component: "table",
 };
+
+let displaySequence = 1;
 
 const columns: Column[] = [
   { name: "row number", pin: "left", width: 150 },
@@ -36,7 +41,7 @@ for (let i = 0; i < count; i++) {
   ]);
 }
 
-export const BetterTable = () => {
+export const DefaultTable = () => {
   const [isColumnBased, setIsColumnBased] = useState<boolean>(false);
   const handleToggleLayout = useCallback(() => {
     setIsColumnBased((value) => !value);
@@ -61,6 +66,8 @@ export const BetterTable = () => {
   );
 };
 
+DefaultTable.displaySequence = displaySequence++;
+
 export const BetterTableFillContainer = () => {
   return (
     <div style={{ height: 700, width: 700 }}>
@@ -68,6 +75,7 @@ export const BetterTableFillContainer = () => {
     </div>
   );
 };
+BetterTableFillContainer.displaySequence = displaySequence++;
 
 export const BetterTableWithBorder = () => {
   return (
@@ -80,6 +88,8 @@ export const BetterTableWithBorder = () => {
     </div>
   );
 };
+
+BetterTableWithBorder.displaySequence = displaySequence++;
 
 export const FlexLayoutTables = () => {
   return (
@@ -105,3 +115,49 @@ export const FlexLayoutTables = () => {
     </Flexbox>
   );
 };
+FlexLayoutTables.displaySequence = displaySequence++;
+
+export const VuuDataTable = () => {
+  const tables = useMemo(
+    () => ["instruments", "orders", "parentOrders", "prices"],
+    []
+  );
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const { columns, dataSource, error } = useTestDataSource({
+    tablename: tables[selectedIndex],
+  });
+
+  const handleChange: ToggleButtonGroupChangeEventHandler = (
+    event,
+    index,
+    toggled
+  ) => {
+    console.log(`onChange [${index}] toggled ${toggled}`);
+    setSelectedIndex(index);
+  };
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
+  return (
+    <>
+      <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
+        <ToggleButton tooltipText="Alert">Instruments</ToggleButton>
+        <ToggleButton tooltipText="Home">Orders</ToggleButton>
+        <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
+        <ToggleButton tooltipText="Search">Prices</ToggleButton>
+      </ToggleButtonGroup>
+
+      <DataTable
+        dataSource={dataSource}
+        data={[]}
+        columns={columns}
+        // columnSizing="fill"
+        height={600}
+        selectionModel="extended"
+      />
+    </>
+  );
+};
+VuuDataTable.displaySequence = displaySequence++;
