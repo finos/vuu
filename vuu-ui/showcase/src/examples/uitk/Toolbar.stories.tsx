@@ -10,9 +10,9 @@ import {
   ShareIcon,
   NotificationIcon,
   TearOutIcon,
-} from "@heswell/uitk-icons";
+} from "@salt-ds/icons";
 import { Button } from "@heswell/uitk-core";
-import { ColumnChooserIcon, CsvIcon, PdfIcon } from "@heswell/uitk-icons";
+import { ColumnChooserIcon, CsvIcon, PdfIcon } from "@salt-ds/icons";
 import { Flexbox } from "@finos/vuu-layout";
 
 import "@heswell/component-anatomy/esm/index.css";

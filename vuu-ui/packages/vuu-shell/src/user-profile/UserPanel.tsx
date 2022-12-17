@@ -2,7 +2,7 @@ import React, { forwardRef, useCallback, useEffect, useState } from "react";
 import { formatDate } from "@finos/vuu-utils";
 import { logout } from "../login";
 import { getLayoutHistory } from "../get-layout-history";
-import { ExportIcon } from "@heswell/uitk-icons";
+import { ExportIcon } from "@salt-ds/icons";
 import { Button } from "@heswell/uitk-core";
 import { List, ListItem } from "@heswell/uitk-lab";
 

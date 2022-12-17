@@ -16,7 +16,7 @@ import {
   ToolbarField,
   Tooltray,
 } from "@heswell/uitk-lab";
-import { CloseIcon } from "@heswell/uitk-icons";
+import { CloseIcon } from "@salt-ds/icons";
 
 import "./Header.css";
 

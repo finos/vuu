@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 
-import { ArrowDownIcon, ArrowUpIcon } from "@heswell/uitk-icons";
+import { ArrowDownIcon, ArrowUpIcon } from "@salt-ds/icons";
 import { Button } from "@heswell/uitk-core";
 import { Dropdown, List, SelectionChangeHandler } from "@heswell/uitk-lab";
 import { usa_states } from "./List.data";

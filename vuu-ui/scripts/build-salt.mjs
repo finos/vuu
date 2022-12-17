@@ -6,11 +6,11 @@ const cjs = args.includes("--cjs") ? " --cjs" : "";
 
 function buildPackage(packageName) {
   execWait(
-    `node ../../../scripts/run-build-uitk.mjs${dev}${cjs}`,
-    `uitk/packages/${packageName}`
+    `node ../../../scripts/run-build-salt.mjs${dev}${cjs}`,
+    `salt/packages/${packageName}`
   );
 }
 
-const packages = ["icons", "core", "lab"];
+const packages = ["core", "lab"];
 
 packages.forEach((packageName) => buildPackage(packageName));

@@ -242,6 +242,13 @@
   resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.0.3.tgz#953b88c20ea00d0eddaffdc1b115c08474aa295d"
   integrity sha512-ceuyTSs7PZ/tQqi19YZNBc5X7kj1f8p+4DIyrcIYFY9h+hd1OKm4RqtiWldR9eGEvIiJfsqwM4BsuCtRIuEw6Q==
 
+"@salt-ds/icons@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/icons/-/icons-1.0.0.tgz#ce874c4c2da375b37951376bdad1255822ae9d75"
+  integrity sha512-l/ro5ci+5BUhttJ20GJUCfIVifOvT61XgCDjgNmqaPIK3qkVGETkwsNEmiPXdiH3H7mDgMQTI/TXLlhE1O2bVQ==
+  dependencies:
+    classnames "^2.2.6"
+
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"

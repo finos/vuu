@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from "react";
 import { Button } from "@heswell/uitk-core";
 import { DropdownBase } from "@heswell/uitk-lab";
-import { UserSolidIcon } from "@heswell/uitk-icons";
+import { UserSolidIcon } from "@salt-ds/icons";
 import { UserPanel } from "./UserPanel";
 
 import "./UserProfile.css";
