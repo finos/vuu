@@ -5,7 +5,7 @@
   plus @left
 }
 
-@top ColumnExpression { "=" expression }
+@top ColumnDefinitionExpression { Equal expression }
 
 expression { 
   Column | 
@@ -15,7 +15,7 @@ expression {
   CallExpression
 }
 
-ParenthesizedExpression { "(" expression ")" }
+ParenthesizedExpression { OpenBrace expression CloseBrace }
 
 BinaryExpression {
   expression !times (Divide | Times) expression |
@@ -27,7 +27,7 @@ CallExpression {
 }
 
 ArgList {
-  "(" expression ("," expression)* ")"
+  OpenBrace expression ("," expression)* CloseBrace
 }
 
 Column { identifier }
@@ -37,6 +37,9 @@ Function { identifier }
 @skip { space  }
 
 @tokens {
+  Equal {"="}
+  OpenBrace {"("}
+  CloseBrace {")"}
   Plus {"+"}
   Minus {"-"}
   Divide {"/"}

@@ -1,5 +1,7 @@
 import { parser } from "./generated/column-parser.js";
 
+const strictParser = parser.configure({ strict: true });
+
 export const walkTree = (tree, source) => {
   const cursor = tree.cursor();
   do {
@@ -77,7 +79,7 @@ const samples = [
   "=left(client, 3)",
 ];
 
-const str = samples[18];
+const str = "=bid";
 
 const result = parser.parse(str);
 
