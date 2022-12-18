@@ -1,9 +1,4 @@
-import {
-  FormField,
-  FormFieldProps,
-  Input
-} from "@heswell/uitk-core";
-
+import { FormField, FormFieldProps, Input } from "@salt-ds/lab";
 
 export const Default = (props: FormFieldProps) => {
   return (
@@ -22,4 +17,3 @@ export const Default = (props: FormFieldProps) => {
     </>
   );
 };
-

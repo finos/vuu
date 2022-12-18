@@ -1,6 +1,6 @@
 import { ConfigChangeMessage } from "@finos/vuu-data";
 import { ContextMenuProvider } from "@finos/vuu-layout";
-import { useForkRef } from "@heswell/uitk-core";
+import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import {
   ForwardedRef,

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Button } from "@heswell/uitk-core";
+import { Button } from "@salt-ds/core";
 import {
   Dialog,
   DialogActions,
@@ -9,7 +9,7 @@ import {
   TabDescriptor,
   Tabstrip,
   TabPanel,
-} from "@heswell/uitk-lab";
+} from "@salt-ds/lab";
 
 import "@heswell/component-anatomy/esm/index.css";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";

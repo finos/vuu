@@ -1,7 +1,3 @@
-import { Button, FormField, Input } from "@heswell/uitk-core";
-import { List, VirtualizedList } from "@heswell/uitk-lab";
-import { CollectionProvider, ScrollingAPI } from "@heswell/uitk-lab";
-import { ArrayLike } from "./ArrayLike";
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
@@ -10,6 +6,16 @@ import {
   useDataSource,
   useViewserver,
 } from "@finos/vuu-data";
+import { metadataKeys, WindowRange } from "@finos/vuu-utils";
+import { Button } from "@salt-ds/core";
+import {
+  CollectionProvider,
+  FormField,
+  Input,
+  List,
+  ScrollingAPI,
+  VirtualizedList,
+} from "@salt-ds/lab";
 import {
   CSSProperties,
   useCallback,
@@ -18,7 +24,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { metadataKeys, WindowRange } from "@finos/vuu-utils";
+import { ArrayLike } from "./ArrayLike";
 
 const { IDX, KEY } = metadataKeys;
 

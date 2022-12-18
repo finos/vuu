@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemProps, ListProps } from "@heswell/uitk-lab";
+import { List, ListItem, ListItemProps, ListProps } from "@salt-ds/lab";
 import { uuid } from "@finos/vuu-utils";
 import cx from "classnames";
 import { MouseEvent, ReactElement } from "react";
@@ -6,7 +6,7 @@ import { useLayoutProviderDispatch } from "../layout-provider";
 import { View } from "../layout-view";
 import { registerComponent } from "../registry/ComponentRegistry";
 
-import "./PaletteUitk.css";
+import "./PaletteSalt.css";
 
 const classBase = "vuuPalette";
 
@@ -65,7 +65,7 @@ export const PaletteListItem = (props: PaletteListItemProps) => {
   );
 };
 
-export const PaletteUitk = ({ className, ...props }: ListProps) => {
+export const PaletteSalt = ({ className, ...props }: ListProps) => {
   return (
     <List
       {...props}
@@ -76,4 +76,4 @@ export const PaletteUitk = ({ className, ...props }: ListProps) => {
   );
 };
 
-registerComponent("PaletteUitk", PaletteUitk, "view");
+registerComponent("PaletteSalt", PaletteSalt, "view");

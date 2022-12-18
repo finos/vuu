@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 
 import { ArrowDownIcon, ArrowUpIcon } from "@salt-ds/icons";
-import { Button } from "@heswell/uitk-core";
-import { Dropdown, List, SelectionChangeHandler } from "@heswell/uitk-lab";
+import { Button } from "@salt-ds/core";
+import { Dropdown, List, SelectionChangeHandler } from "@salt-ds/lab";
 import { usa_states } from "./List.data";
 
 const story = {

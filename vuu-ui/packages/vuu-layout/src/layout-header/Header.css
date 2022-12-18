@@ -1,8 +1,8 @@
 .vuuHeader {
-  --uitkToolbar-background: var(--uitk-container-background-low);
+  --saltToolbar-background: var(--salt-container-tertiary-background);
 }
 
-.uitk-density-high .vuuHeader {
---uitkToolbarField-marginTop: 0;
+.salt-density-high .vuuHeader {
+--saltToolbarField-marginTop: 0;
 }
 

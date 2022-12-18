@@ -1,5 +1,5 @@
 import "./layout-configurator.css";
-import { FormField, Input } from "@heswell/uitk-core";
+import { FormField, Input } from "@salt-ds/lab";
 
 const NO_STYLE = {};
 

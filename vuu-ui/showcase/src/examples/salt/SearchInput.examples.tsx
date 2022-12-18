@@ -1,6 +1,5 @@
 import React from "react";
-import { FormField } from "@heswell/uitk-core";
-import { SearchInput } from "@heswell/uitk-lab";
+import { FormField, SearchInput } from "@salt-ds/lab";
 
 export const DefaultSearch = () => {
   return <SearchInput defaultValue="Value" />;

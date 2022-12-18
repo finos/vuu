@@ -1,5 +1,5 @@
 import * as ReactDOM from "react-dom";
-import { ToolkitProvider } from "@heswell/uitk-core";
+import { SaltProvider } from "@salt-ds/core";
 
 import { getPortalContainer } from "./utils";
 
@@ -22,7 +22,7 @@ const renderDOMPortal = (component, container, x, y, onRender) => {
   container.style.cssText = `left:${x}px; top:${y}px;position: absolute;`;
 
   ReactDOM.render(
-    <ToolkitProvider applyClassesTo="scope">{component}</ToolkitProvider>,
+    <SaltProvider applyClassesTo="scope">{component}</SaltProvider>,
     container,
     onRender
   );
@@ -54,7 +54,7 @@ const renderElectronPortal = (component, x, y, el, onRender) => {
   };
 
   ReactDOM.render(
-    <ToolkitProvider applyClassesTo="scope">{component}</ToolkitProvider>,
+    <SaltProvider applyClassesTo="scope">{component}</SaltProvider>,
     portalContainer,
     handleRender
   );

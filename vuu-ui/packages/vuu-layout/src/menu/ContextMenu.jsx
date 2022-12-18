@@ -1,4 +1,4 @@
-import { useIdMemo as useId } from "@heswell/uitk-core";
+import { useIdMemo as useId } from "@salt-ds/core";
 import { useCallback, useRef } from "react";
 import { Portal } from "../portal";
 

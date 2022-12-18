@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from "react";
-import { Button } from "@heswell/uitk-core";
-import { DropdownBase } from "@heswell/uitk-lab";
+import { Button } from "@salt-ds/core";
+import { DropdownBase } from "@salt-ds/lab";
 import { UserSolidIcon } from "@salt-ds/icons";
 import { UserPanel } from "./UserPanel";
 

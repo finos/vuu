@@ -1,6 +1,6 @@
 .vuuProgressCell {
-  --uitkLinearProgress-minWidth: 100px;
-  --uitkLinearProgress-width: 100%;
+  --saltLinearProgress-minWidth: 100px;
+  --saltLinearProgress-width: 100%;
 }
 
 .vuuProgressCell-progress-container {

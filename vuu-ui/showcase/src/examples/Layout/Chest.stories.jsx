@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 
-import { Button } from "@heswell/uitk-core";
-import { List, ListItem } from "@heswell/uitk-lab";
+import { Button } from "@salt-ds/core";
+import { List, ListItem } from "@salt-ds/lab";
 import {
   Component,
   Chest,

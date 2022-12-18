@@ -8,7 +8,7 @@ import cx from "classnames";
 import { Flexbox } from "../flexbox";
 import { View } from "../layout-view";
 
-import { Toolbar, ToolbarButton } from "@heswell/uitk-lab";
+import { Toolbar, ToolbarButton } from "@salt-ds/lab";
 import { CloseIcon } from "@salt-ds/icons";
 
 import "./Dialog.css";

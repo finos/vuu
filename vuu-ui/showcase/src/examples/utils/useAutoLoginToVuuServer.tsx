@@ -3,7 +3,7 @@ import {
   connectToServer,
 } from "@finos/vuu-data";
 import { useEffect, useState } from "react";
-import { ContentStatus } from "@heswell/uitk-lab";
+import { ContentStatus } from "@salt-ds/lab";
 
 export const useAutoLoginToVuuServer = (autoLogin = true) => {
   const [errorMessage, setErrorMessage] = useState("");

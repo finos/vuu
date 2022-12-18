@@ -1,4 +1,4 @@
-import { useForkRef } from "@heswell/uitk-core";
+import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import { ForwardedRef, forwardRef } from "react";
 import { useBreakpoints } from "../responsive";

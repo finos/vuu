@@ -135,17 +135,15 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
+"@fontsource/open-sans@^4.5.13":
+  version "4.5.13"
+  resolved "https://registry.yarnpkg.com/@fontsource/open-sans/-/open-sans-4.5.13.tgz#2c99e4c055d129a75f14c11b77d040282e0388b8"
+  integrity sha512-/UzqP7ZFk145XAq8KG4pvFPP7UQhtreDGXgqXZjagCDreKxcrhwn/x7DYz9rPcycWkLUVApIybcoczGZiM0cRg==
+
 "@heswell/component-anatomy@0.0.5":
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/@heswell/component-anatomy/-/component-anatomy-0.0.5.tgz#cf75e642fb7c2184794114fe62f2382d4196846a"
   integrity sha512-pwuowxKvsxPoOkAbtHFNyqdzjTj8CHDZtk7+P8jRtJJmsJTzblOMn6WNS9csFf6gU1NdvD11EcTCnFZaG8TLxg==
-
-"@heswell/uitk-icons@0.7.0-vuu.1":
-  version "0.7.0-vuu.1"
-  resolved "https://registry.yarnpkg.com/@heswell/uitk-icons/-/uitk-icons-0.7.0-vuu.1.tgz#3aa4a35dcc14c8947974986bc44455e8d5ac5de4"
-  integrity sha512-cNqFJE6L54xVO5wuDEJENevGb5fGTdvhsuoTif/N+6zH6XopGj8q+6vDpvn15VCVRnYUSAuCUhUKe/e9dGCDjw==
-  dependencies:
-    classnames "^2.2.6"
 
 "@humanwhocodes/config-array@^0.11.6":
   version "0.11.7"

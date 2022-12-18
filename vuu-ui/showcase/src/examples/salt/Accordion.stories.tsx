@@ -3,8 +3,8 @@ import {
   AccordionDetails,
   AccordionSection,
   AccordionSummary,
-} from "@heswell/uitk-lab";
-import { Panel } from "@heswell/uitk-core";
+} from "@salt-ds/lab";
+import { Panel } from "@salt-ds/lab";
 
 import { ReactNode } from "react";
 

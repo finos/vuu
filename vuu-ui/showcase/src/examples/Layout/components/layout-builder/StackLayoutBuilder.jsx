@@ -1,16 +1,16 @@
-import { ToolkitProvider } from "@heswell/uitk-core";
+import { SaltProvider } from "@salt-ds/core";
 import {
   FlexboxLayout,
   Component,
   DraggableLayout,
   LayoutProvider,
-  PaletteUitk as Palette,
+  PaletteSalt as Palette,
   PaletteListItem,
   Placeholder,
   StackLayout,
   View,
 } from "@finos/vuu-layout";
-import { ListItemHeader } from "@heswell/uitk-lab";
+import { ListItemHeader } from "@salt-ds/lab";
 import * as layout from "../layouts";
 
 import "./layout-builder.css";
@@ -25,7 +25,7 @@ export const StackLayoutBuilderUitk = ({ width = 800, height = 1000 }) => {
   };
 
   return (
-    <ToolkitProvider density="high">
+    <SaltProvider density="high">
       <LayoutProvider>
         <DraggableLayout style={{ width: "100%", height: "100%" }}>
           <FlexboxLayout
@@ -308,6 +308,6 @@ export const StackLayoutBuilderUitk = ({ width = 800, height = 1000 }) => {
           </FlexboxLayout>
         </DraggableLayout>
       </LayoutProvider>
-    </ToolkitProvider>
+    </SaltProvider>
   );
 };

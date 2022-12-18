@@ -5,8 +5,8 @@ import {
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
   VirtualizedList,
-} from "@heswell/uitk-lab";
-import { dragStrategy } from "@heswell/uitk-lab/src/tabs/drag-drop";
+} from "@salt-ds/lab";
+import { dragStrategy } from "@salt-ds/lab/src/tabs/drag-drop";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usa_states } from "./List.data";
 import { ListVisualizer } from "./ListVisualizer";

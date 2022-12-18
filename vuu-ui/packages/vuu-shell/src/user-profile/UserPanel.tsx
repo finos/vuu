@@ -3,8 +3,8 @@ import { formatDate } from "@finos/vuu-utils";
 import { logout } from "../login";
 import { getLayoutHistory } from "../get-layout-history";
 import { ExportIcon } from "@salt-ds/icons";
-import { Button } from "@heswell/uitk-core";
-import { List, ListItem } from "@heswell/uitk-lab";
+import { Button } from "@salt-ds/core";
+import { List, ListItem } from "@salt-ds/lab";
 
 import "./UserPanel.css";
 

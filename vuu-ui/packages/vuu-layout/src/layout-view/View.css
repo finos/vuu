@@ -1,8 +1,11 @@
 .vuuView {
-  border: var(--vuuView-border, solid 1px var(--uitk-container-borderColor-medium));
+  border-color: var(--vuuView-borderColor, var(--salt-container-primary-borderColor));
+  border-width: var(--vuuView-borderWidth, 1px);
+  border-style: var(--vuuView-borderStyle, none);
+
   display: flex;
   flex-direction: column;
-  margin: var(--vuuView-margin, 3px);
+  margin: var(--vuuView-margin, 0px);
   min-height: 50px;
   min-width: 50px;
   outline: none;

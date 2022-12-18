@@ -9,7 +9,7 @@
   --vuuDataGrid-flex: 100% 0 0;
   --vuuDataGrid-font-size: 10px;
   --vuuDataGridCell-border-style: none;
-  --vuuDataGridRow-background-odd: var(--uitk-palette-neutral-background-high);
+  --vuuDataGridRow-background-odd: var(--salt-palette-neutral-background-high);
 }
 
 .vuuBlotter-gridContainer {
