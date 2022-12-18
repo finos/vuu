@@ -1,4 +1,4 @@
-import { useResizeObserver, WidthHeight } from "@salt-ds/lab";
+import { useResizeObserver, WidthHeight } from "@heswell/salt-lab";
 import { RefObject, useCallback, useRef } from "react";
 
 const NO_MEASUREMENT: string[] = [];

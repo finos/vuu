@@ -4,7 +4,7 @@ import {
   isMultiValueFilter,
   isSingleValueFilter,
 } from "@finos/vuu-filters";
-import { ToggleButton, ToolbarField } from "@salt-ds/lab";
+import { ToggleButton, ToolbarField } from "@heswell/salt-lab";
 import { ReactElement } from "react";
 import { ISuggestionProvider, SuggestionConsumer } from "@finos/vuu-filters";
 import { FilterDropdown } from "./FilterDropdown";

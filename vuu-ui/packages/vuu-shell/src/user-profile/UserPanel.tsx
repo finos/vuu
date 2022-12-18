@@ -4,7 +4,7 @@ import { logout } from "../login";
 import { getLayoutHistory } from "../get-layout-history";
 import { ExportIcon } from "@salt-ds/icons";
 import { Button } from "@salt-ds/core";
-import { List, ListItem } from "@salt-ds/lab";
+import { List, ListItem } from "@heswell/salt-lab";
 
 import "./UserPanel.css";
 

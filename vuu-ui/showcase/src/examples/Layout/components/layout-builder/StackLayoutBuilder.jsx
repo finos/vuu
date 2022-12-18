@@ -10,7 +10,7 @@ import {
   StackLayout,
   View,
 } from "@finos/vuu-layout";
-import { ListItemHeader } from "@salt-ds/lab";
+import { ListItemHeader } from "@heswell/salt-lab";
 import * as layout from "../layouts";
 
 import "./layout-builder.css";

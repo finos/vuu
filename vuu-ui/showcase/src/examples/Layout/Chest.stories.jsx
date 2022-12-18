@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 
 import { Button } from "@salt-ds/core";
-import { List, ListItem } from "@salt-ds/lab";
+import { List, ListItem } from "@heswell/salt-lab";
 import {
   Component,
   Chest,

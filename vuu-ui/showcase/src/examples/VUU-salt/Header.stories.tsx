@@ -6,7 +6,7 @@ import {
   ToolbarButton,
   ToolbarField,
   Tooltray,
-} from "@salt-ds/lab";
+} from "@heswell/salt-lab";
 import { CloseIcon } from "@salt-ds/icons";
 import { Header } from "@finos/vuu-layout";
 

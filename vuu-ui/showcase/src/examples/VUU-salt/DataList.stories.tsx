@@ -15,7 +15,7 @@ import {
   List,
   ScrollingAPI,
   VirtualizedList,
-} from "@salt-ds/lab";
+} from "@heswell/salt-lab";
 import {
   CSSProperties,
   useCallback,

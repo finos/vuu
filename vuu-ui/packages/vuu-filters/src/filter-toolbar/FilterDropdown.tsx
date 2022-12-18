@@ -1,4 +1,4 @@
-import { Dropdown, DropdownProps } from "@salt-ds/lab";
+import { Dropdown, DropdownProps } from "@heswell/salt-lab";
 import { useCallback, useState } from "react";
 import { ISuggestionProvider } from "../filter-input";
 

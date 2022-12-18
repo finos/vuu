@@ -1,14 +1,14 @@
 import { Grid } from "@finos/vuu-datagrid";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Button } from "@salt-ds/core";
-import { FormField, Input } from "@salt-ds/lab";
+import { FormField, Input } from "@heswell/salt-lab";
 import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
   Toolbar,
   Tooltray,
-} from "@salt-ds/lab";
+} from "@heswell/salt-lab";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { ErrorDisplay, useTestDataSource } from "../utils";
 import { instrumentSchema } from "./columnMetaData";

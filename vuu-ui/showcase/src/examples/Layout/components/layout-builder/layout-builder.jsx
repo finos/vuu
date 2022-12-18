@@ -10,7 +10,7 @@ import {
   View,
   useViewContext,
 } from "@finos/vuu-layout";
-import { Dropdown } from "@salt-ds/lab";
+import { Dropdown } from "@heswell/salt-lab";
 
 // import LayoutConfigurator from '../layout-configurator';
 // import {  LayoutTreeViewer } from '../layout-tree-viewer';

@@ -1,5 +1,5 @@
 import { useIdMemo as useId } from "@salt-ds/core";
-import { Tab, Tabstrip, Toolbar, ToolbarField } from "@salt-ds/lab";
+import { Tab, Tabstrip, Toolbar, ToolbarField } from "@heswell/salt-lab";
 import React, {
   ForwardedRef,
   forwardRef,

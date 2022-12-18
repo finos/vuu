@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemProps, ListProps } from "@salt-ds/lab";
+import { List, ListItem, ListItemProps, ListProps } from "@heswell/salt-lab";
 import { uuid } from "@finos/vuu-utils";
 import cx from "classnames";
 import { MouseEvent, ReactElement } from "react";
