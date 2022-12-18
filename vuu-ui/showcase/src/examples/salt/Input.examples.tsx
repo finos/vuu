@@ -1,5 +1,5 @@
 import React from "react";
-import { FormField, Input } from "@salt-ds/lab";
+import { FormField, Input } from "@heswell/salt-lab";
 
 export const WithFormField = () => {
   return (

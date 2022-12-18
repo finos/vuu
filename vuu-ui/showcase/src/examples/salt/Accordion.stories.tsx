@@ -3,14 +3,8 @@ import {
   AccordionDetails,
   AccordionSection,
   AccordionSummary,
-} from "@salt-ds/lab";
-import { Panel } from "@salt-ds/lab";
-
-import { ReactNode } from "react";
-
-const DetailsContent = ({ children }: { children?: ReactNode }) => {
-  return <div className={"accordion-story-details"}>{children}</div>;
-};
+  Panel,
+} from "@heswell/salt-lab";
 
 export const DefaultAccordion = () => {
   return (

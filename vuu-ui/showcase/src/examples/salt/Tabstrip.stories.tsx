@@ -9,7 +9,7 @@ import {
   TabDescriptor,
   Tabstrip,
   TabPanel,
-} from "@salt-ds/lab";
+} from "@heswell/salt-lab";
 
 import "@heswell/component-anatomy/esm/index.css";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";

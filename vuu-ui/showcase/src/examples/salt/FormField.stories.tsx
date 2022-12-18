@@ -1,4 +1,4 @@
-import { FormField, FormFieldProps, Input } from "@salt-ds/lab";
+import { FormField, FormFieldProps, Input } from "@heswell/salt-lab";
 
 export const Default = (props: FormFieldProps) => {
   return (

@@ -4,7 +4,7 @@ import {
   Tooltray,
   ToolbarButton,
   ToolbarField,
-} from "@salt-ds/lab";
+} from "@heswell/salt-lab";
 import {
   ExportIcon,
   ShareIcon,

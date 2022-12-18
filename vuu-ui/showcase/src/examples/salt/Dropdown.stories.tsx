@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 
 import { ArrowDownIcon, ArrowUpIcon } from "@salt-ds/icons";
 import { Button } from "@salt-ds/core";
-import { Dropdown, List, SelectionChangeHandler } from "@salt-ds/lab";
+import { Dropdown, List, SelectionChangeHandler } from "@heswell/salt-lab";
 import { usa_states } from "./List.data";
 
 const story = {

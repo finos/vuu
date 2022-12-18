@@ -1,4 +1,4 @@
-import { EditableLabel } from "@salt-ds/lab";
+import { EditableLabel } from "@heswell/salt-lab";
 import { useState } from "react";
 
 export const EditableLabelControlledValueUncontrolledEditing = () => {
