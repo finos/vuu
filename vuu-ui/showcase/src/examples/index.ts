@@ -1,6 +1,5 @@
 export * as ColumnConfiguration from "./ColumnConfiguration";
 export * as DataGrid from "./DataGrid";
-export * as ColumnConfiguration from "./ColumnConfiguration";
 export * as Filters from "./Filters";
 export * as Layout from "./Layout";
 export * as ShowcaseControls from "./ShowcaseControls";
