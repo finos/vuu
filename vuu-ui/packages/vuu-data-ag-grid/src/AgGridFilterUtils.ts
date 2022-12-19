@@ -1,12 +1,13 @@
 import {
   AndFilter,
   Filter,
-  filterAsQuery,
   FilterClause,
   MultiClauseFilter,
   SingleValueFilterClauseOp,
-} from "@finos/vuu-filters";
-import { VuuSortCol } from "../../vuu-protocol-types";
+} from "@finos/vuu-filter-types";
+import { filterAsQuery } from "@finos/vuu-filters";
+
+import { VuuSortCol } from "@finos/vuu-protocol-types";
 
 export type AgGridSetFilter = {
   filterType: "set";
@@ -74,7 +75,7 @@ const agToSingleValueVuuFilterType = (
       return "!=";
     default:
       throw Error(
-        `@finos/ag0grid AgGridFilterUtils AgGrid filter type ${type} not supported`
+        `@finos/vuu-data-ag-grid AgGridFilterUtils AgGrid filter type ${type} not supported`
       );
   }
 };
@@ -84,9 +85,9 @@ type AgGridSortCol = {
   colId: string;
 };
 
-export const agGridFilterModelToVuuFilter = (filterModel: {
-  [key: string]: any;
-}): [string, Filter | undefined] => {
+export const agGridFilterModelToVuuFilter = (
+  filterModel: AgGridFilter
+): [string, Filter | undefined] => {
   const filterClauses: Filter[] = [];
   Object.entries(filterModel).forEach(([column, agGridFilter]) => {
     const { filterType, filter: value, type, values } = agGridFilter;

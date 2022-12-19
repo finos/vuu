@@ -1,5 +1,25 @@
-import { GroupCellRendererParams } from "ag-grid-community";
+type Column = {
+  getColId: () => string;
+};
 
+type GroupCellRendererParams = {
+  columnApi: {
+    getRowGroupColumns: () => Column[];
+  };
+  data: {
+    expanded: boolean;
+    groupRow: boolean;
+    level: number;
+  };
+  node: {
+    data: {
+      groupRow: boolean;
+      [key: string]: string | boolean | number;
+    };
+    key: string | null;
+    setExpanded: (expanded: boolean) => void;
+  };
+};
 export class GroupCellRenderer {
   private eGui: HTMLDivElement | null = null;
   private eContainer: HTMLSpanElement | null = null;
@@ -16,10 +36,10 @@ export class GroupCellRenderer {
     const TEMPLATE =
       /* html */
       `<span class="ag-cell-wrapper">
-              <span class="ag-group-expanded" ref="eExpanded">
+              <span class="ag-group-expanded ag-hidden" ref="eExpanded">
               <span class="ag-icon ag-icon-tree-open" unselectable="on" role="presentation"></span>
               </span>
-              <span class="ag-group-contracted" ref="eContracted">
+              <span class="ag-group-contracted ag-hidden" ref="eContracted">
               <span class="ag-icon ag-icon-tree-closed" unselectable="on" role="presentation"></span></span>
               <span class="ag-group-checkbox ag-invisible" ref="eCheckbox"></span>
               <span class="ag-group-value" ref="eValue"></span>
@@ -41,17 +61,11 @@ export class GroupCellRenderer {
         // prettier-ignore
         const col = params.columnApi
           .getRowGroupColumns()[params.data.level].getColId();
-        this.params.node.key = params.node.data[col];
+        this.params.node.key = params.node.data[col].toString();
         if (this.eValue) {
-          this.eValue.innerHTML = params.node.data[col];
+          this.eValue.innerHTML = params.node.data[col].toString();
         }
-      }
-      if (isChild) {
-        this.setDisplayed(this.eContracted, false);
-        this.setDisplayed(this.eExpanded, false);
-      } else {
         const expanded = params.data.expanded;
-
         if (expanded) {
           this.setDisplayed(this.eContracted, false);
           this.setDisplayed(this.eExpanded, true);

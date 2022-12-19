@@ -38,6 +38,10 @@ export class AgDataWindow {
     }
   }
 
+  clear() {
+    this.setRowCount(0);
+  }
+
   update(
     data: DataSourceRow,
     reverseColumnMap: Map<number, string>
@@ -45,6 +49,7 @@ export class AgDataWindow {
     const [index] = data;
     const internalIndex = index - this.range.from;
     const dataRow = this.data[internalIndex];
+
     if (dataRow) {
       let updates: (string | number | boolean)[] | undefined = undefined;
       for (let i = 1; i < dataRow.length; i++) {

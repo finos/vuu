@@ -11,7 +11,6 @@ export const createColumnDefs = (
   table = "instruments",
   columnOverrides?: ColumnOverrides
 ) => {
-  console.log(`createColumnDefs ${table}`);
   switch (table) {
     case "instruments":
       return [
@@ -113,6 +112,20 @@ export const createColumnDefs = (
         { field: "status" },
         { field: "volLimit" },
       ];
+
+    case "orders":
+      return [
+        { field: "ccy" },
+        { field: "created" },
+        { field: "filledQuantity" },
+        { field: "lastUpdate" },
+        { field: "orderId" },
+        { field: "quantity" },
+        { field: "ric" },
+        { field: "side" },
+        { field: "trader" },
+      ];
+
     default:
       console.log(`do not currently support table ${table}`);
   }

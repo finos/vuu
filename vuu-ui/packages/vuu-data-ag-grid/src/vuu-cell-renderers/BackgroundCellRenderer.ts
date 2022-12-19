@@ -1,27 +1,25 @@
 import {
-  AgPromise,
-  ICellRendererComp,
-  ICellRendererParams,
-} from "ag-grid-community";
-
-import { roundDecimal } from "@finos/vuu-datagrid";
-import {
-  getMovingValueDirection,
-  isValidNumber,
-  valueChangeDirection,
   DOWN1,
   DOWN2,
+  getMovingValueDirection,
+  isValidNumber,
+  roundDecimal,
   UP1,
   UP2,
+  valueChangeDirection,
 } from "@finos/vuu-utils";
 
 import "./BackgroundCellRenderer.css";
+
+type RendererParams = {
+  value?: number;
+};
 
 const dummyEl = document.createElement("div");
 const CHAR_ARROW_UP = String.fromCharCode(11014);
 const CHAR_ARROW_DOWN = String.fromCharCode(11015);
 
-export class BackgroundCellRenderer implements ICellRendererComp {
+export class BackgroundCellRenderer {
   private rootEl: HTMLDivElement = dummyEl;
   private flasherEl: HTMLDivElement = dummyEl;
   private contentEl: HTMLDivElement = dummyEl;
@@ -32,7 +30,7 @@ export class BackgroundCellRenderer implements ICellRendererComp {
     return this.rootEl as HTMLElement;
   }
 
-  init(params: ICellRendererParams<unknown, number>): void | AgPromise<void> {
+  init(params: RendererParams): void {
     this.currentValue = params.value;
     this.rootEl = document.createElement("div");
     this.flasherEl = document.createElement("div");
@@ -44,7 +42,7 @@ export class BackgroundCellRenderer implements ICellRendererComp {
     this.rootEl.appendChild(this.flasherEl);
     this.rootEl.appendChild(this.contentEl);
   }
-  refresh(params: ICellRendererParams<any, any>): boolean {
+  refresh(params: RendererParams): boolean {
     const direction =
       isValidNumber(params.value) && isValidNumber(this.currentValue)
         ? getMovingValueDirection(
@@ -66,7 +64,7 @@ export class BackgroundCellRenderer implements ICellRendererComp {
 
     this.rootEl.className = direction;
     this.flasherEl.innerText = arrow;
-    this.contentEl.innerText = params.value;
+    this.contentEl.innerText = params.value?.toString() ?? "";
 
     return true;
   }

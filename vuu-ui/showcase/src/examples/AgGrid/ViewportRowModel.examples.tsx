@@ -1,18 +1,19 @@
-import { ToolkitProvider } from "@heswell/uitk-core";
 import { useViewportRowModel } from "@finos/vuu-data-ag-grid";
-import "ag-grid-community/dist/styles/ag-grid.css";
-import "ag-grid-community/dist/styles/ag-theme-balham.css";
-import "ag-grid-enterprise";
-import { AgGridReact } from "ag-grid-react";
-import React, { useMemo, useState } from "react";
-import { ErrorDisplay, useAutoLoginToVuuServer } from "../utils";
-import { createColumnDefs } from "./createColumnDefs";
 import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
-} from "@heswell/uitk-lab";
+} from "@heswell/salt-lab";
+import { SaltProvider } from "@salt-ds/core";
+import "ag-grid-community/dist/styles/ag-grid.css";
+import "ag-grid-community/dist/styles/ag-theme-balham.css";
+import "ag-grid-enterprise";
+import { AgGridReact } from "ag-grid-react";
+import { useMemo, useState } from "react";
+import { ErrorDisplay, useAutoLoginToVuuServer } from "../utils";
+import { createColumnDefs } from "./createColumnDefs";
 
+import { RemoteDataSource } from "@finos/vuu-data";
 import "./VuuAgGrid.css";
 import "./VuuGrid.css";
 
@@ -31,7 +32,7 @@ const dataSourceConfig = [
 },  {
   bufferSize: 100,
   columns: [
-    "ccy", "created", "filledQuantity", "lastUpdate", "orderId", "quantity", "ric", "size", "trader"],
+    "ccy", "created", "filledQuantity", "lastUpdate", "orderId", "quantity", "ric", "side", "trader"],
   table: { table: "orders", module },
   serverUrl,
 }, {
@@ -53,9 +54,13 @@ export const AgGridTables = () => {
   const error = useAutoLoginToVuuServer();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
-  const { createFilterDataProvider, ...gridConfig } = useViewportRowModel(
-    dataSourceConfig[selectedIndex]
+  const dataSource = useMemo(
+    () => new RemoteDataSource(dataSourceConfig[selectedIndex]),
+    [selectedIndex]
   );
+
+  const { createFilterDataProvider, ...gridConfig } =
+    useViewportRowModel(dataSource);
 
   const columnDefs = useMemo(
     () =>
@@ -71,7 +76,6 @@ export const AgGridTables = () => {
     index,
     toggled
   ) => {
-    console.log(`onChange [${index}] toggled ${toggled}`);
     setSelectedIndex(index);
   };
 
@@ -82,17 +86,11 @@ export const AgGridTables = () => {
   console.log({ columnDefs });
 
   return (
-    <ToolkitProvider density="high">
+    <SaltProvider density="high">
       <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
-        <ToggleButton ariaLabel="alert" tooltipText="Alert">
-          Instruments
-        </ToggleButton>
-        <ToggleButton ariaLabel="home" tooltipText="Home">
-          Orders
-        </ToggleButton>
-        <ToggleButton ariaLabel="print" tooltipText="Print">
-          Parent Orders
-        </ToggleButton>
+        <ToggleButton tooltipText="Alert">Instruments</ToggleButton>
+        <ToggleButton tooltipText="Home">Orders</ToggleButton>
+        <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
         <ToggleButton tooltipText="Search">Prices</ToggleButton>
       </ToggleButtonGroup>
 
@@ -105,7 +103,7 @@ export const AgGridTables = () => {
           rowHeight={18}
         />
       </div>
-    </ToolkitProvider>
+    </SaltProvider>
   );
 };
 AgGridTables.displaySequence = displaySequence++;

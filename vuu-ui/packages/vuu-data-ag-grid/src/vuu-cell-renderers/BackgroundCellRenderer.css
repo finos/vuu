@@ -1,6 +1,6 @@
 @-webkit-keyframes reactbgup1 {
   from {
-    background-color: var(--uitk-differential-positive-background
+    background-color: var(--salt-differential-positive-background
     );
   }
   to {
@@ -10,7 +10,7 @@
 
 @-webkit-keyframes reactbgup2 {
   from {
-    background-color: var(--uitk-differential-positive-background
+    background-color: var(--salt-differential-positive-background
     );
   }
   to {
@@ -20,7 +20,7 @@
 
 @-webkit-keyframes reactbgdown1 {
   from {
-    background-color: var(--uitk-differential-negative-background
+    background-color: var(--salt-differential-negative-background
     );
   }
   to {
@@ -30,7 +30,7 @@
 
 @-webkit-keyframes reactbgdown2 {
   from {
-    background-color: var(--uitk-differential-negative-background
+    background-color: var(--salt-differential-negative-background
     );
   }
   to {
@@ -40,7 +40,7 @@
 
 @-webkit-keyframes reactarrowup1 {
   from {
-    color: var(--uitk-differential-positive-foreground
+    color: var(--salt-differential-positive-foreground
     );
   }
   to {
@@ -50,7 +50,7 @@
 
 @-webkit-keyframes reactarrowup2 {
   from {
-    color: var(--uitk-differential-positive-foreground
+    color: var(--salt-differential-positive-foreground
     );
   }
   to {
@@ -60,7 +60,7 @@
 
 @-webkit-keyframes reactarrowdown1 {
   from {
-    color: var(--uitk-differential-negative-foreground
+    color: var(--salt-differential-negative-foreground
     );
   }
   to {
@@ -70,7 +70,7 @@
 
 @-webkit-keyframes reactarrowdown2 {
   from {
-    color: var(--uitk-differential-negative-foreground
+    color: var(--salt-differential-negative-foreground
     );
   }
   to {
@@ -80,13 +80,13 @@
 
 @-webkit-keyframes reactbgarrowup1 {
   0% {
-    color: var(--uitk-differential-positive-foreground
+    color: var(--salt-differential-positive-foreground
     );
-    background-color: var(--uitk-differential-positive-background
+    background-color: var(--salt-differential-positive-background
     );
   }
   20% {
-    color: var(--uitk-differential-positive-foreground
+    color: var(--salt-differential-positive-foreground
     );
     background-color: transparent;
   }
@@ -98,13 +98,13 @@
 
 @-webkit-keyframes reactbgarrowup2 {
   0% {
-    color: var(--uitk-differential-positive-foreground
+    color: var(--salt-differential-positive-foreground
     );
-    background-color: var(--uitk-differential-positive-background
+    background-color: var(--salt-differential-positive-background
     );
   }
   20% {
-    color: var(--uitk-differential-positive-foreground
+    color: var(--salt-differential-positive-foreground
     );
     background-color: transparent;
   }
@@ -116,13 +116,13 @@
 
 @-webkit-keyframes reactbgarrowdown1 {
   0% {
-    color: var(--uitk-differential-negative-foreground
+    color: var(--salt-differential-negative-foreground
     );
-    background-color: var(--uitk-differential-negative-background
+    background-color: var(--salt-differential-negative-background
     );
   }
   20% {
-    color: var(--uitk-differential-negative-foreground
+    color: var(--salt-differential-negative-foreground
     );
     background-color: transparent;
   }
@@ -134,13 +134,13 @@
 
 @-webkit-keyframes reactbgarrowdown2 {
   0% {
-    color: var(--uitk-differential-negative-foreground
+    color: var(--salt-differential-negative-foreground
     );
-    background-color: var(--uitk-differential-negative-background
+    background-color: var(--salt-differential-negative-background
     );
   }
   20% {
-    color: var(--uitk-differential-negative-foreground
+    color: var(--salt-differential-negative-foreground
     );
     background-color: transparent;
   }

@@ -1,16 +1,33 @@
 import { DataSourceRow } from "@finos/vuu-data";
 import { VuuSortCol } from "../../vuu-protocol-types";
-import {
-  ColumnState,
-  ColumnVO,
-  IServerSideGetRowsRequest,
-  SortModelItem,
-} from "ag-grid-community";
 import { AgGridFilter } from "./AgGridFilterUtils";
 import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
 
 export type AgGridDataRow = Record<string, number | string | boolean>;
 export type AgGridDataSet = { [key: number]: AgGridDataRow };
+
+type ColumnVO = {
+  id: string;
+};
+
+type IServerSideGetRowsRequest = {
+  endRow: number;
+  filterModel: AgGridFilter;
+  groupKeys: string[];
+  rowGroupCols: ColumnVO[];
+  sortModel: SortModelItem[];
+  startRow: number;
+};
+
+type SortModelItem = {
+  colId: string;
+};
+
+type ColumnState = {
+  colId: string;
+  sort?: unknown;
+  sortIndex?: number;
+};
 
 const { DEPTH, IS_LEAF, IS_EXPANDED, KEY } = metadataKeys;
 export const convertToAgGridDataSet = (
@@ -92,7 +109,7 @@ export type Changes = {
 };
 
 // TODO make this more efficient
-const filterChanged = (previousFilter: AgGridFilter, filter: AgGridFilter[]) =>
+const filterChanged = (previousFilter: AgGridFilter, filter: AgGridFilter) =>
   JSON.stringify(previousFilter) !== JSON.stringify(filter);
 
 const groupKeysChanged = (previousGroup: string[], group: string[]) =>

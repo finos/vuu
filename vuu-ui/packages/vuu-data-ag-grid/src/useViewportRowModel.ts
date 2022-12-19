@@ -1,31 +1,54 @@
 import {
-  DataSourceProps,
+  DataSource,
   SuggestionFetcher,
-  useViewserver,
+  useTypeaheadSuggestions,
 } from "@finos/vuu-data";
 import { VuuTable } from "@finos/vuu-protocol-types";
-import {
-  ColumnRowGroupChangedEvent,
-  FilterChangedEvent,
-  RowGroupOpenedEvent,
-  SortChangedEvent,
-} from "ag-grid-community";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { bySortIndex, isSortedColumn, toSortDef } from "./AgGridDataUtils";
-import { agGridFilterModelToVuuFilter } from "./AgGridFilterUtils";
+import {
+  AgGridFilter,
+  agGridFilterModelToVuuFilter,
+} from "./AgGridFilterUtils";
 import { FilterDataProvider } from "./FilterDataProvider";
 import { GroupCellRenderer } from "./GroupCellRenderer";
 import { ViewportRowModelDataSource } from "./ViewportRowModelDataSource";
 
-export const useViewportRowModel = (config: DataSourceProps) => {
-  const { getTypeaheadSuggestions } = useViewserver();
-  const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
-    getTypeaheadSuggestions
-  );
+type Column = {
+  getId: () => string;
+};
+type ColumnRowGroupChangedEvent = {
+  columns: Column[];
+};
+interface FilterChangedEvent {
+  api: {
+    getFilterModel: () => AgGridFilter;
+  };
+}
+type RowGroupOpenedEvent = {
+  data: {
+    expanded: boolean;
+    groupKey: string;
+  };
+};
+type ColumnState = { colId: string; sortIndex: number }[];
+type SortChangedEvent = {
+  columnApi: {
+    getColumnState: () => ColumnState;
+  };
+};
 
-  const dataSource: ViewportRowModelDataSource = useMemo(() => {
-    return new ViewportRowModelDataSource(config);
-  }, [config]);
+const NullSuggestionFetcher: SuggestionFetcher = async () => [];
+
+export const useViewportRowModel = (dataSource: DataSource) => {
+  const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
+    NullSuggestionFetcher
+  );
+  getTypeaheadSuggestionsRef.current = useTypeaheadSuggestions();
+
+  const viewportDatasource: ViewportRowModelDataSource = useMemo(() => {
+    return new ViewportRowModelDataSource(dataSource);
+  }, [dataSource]);
 
   const handleGridReady = useCallback(() => {
     console.log("Grid Ready");
@@ -44,18 +67,18 @@ export const useViewportRowModel = (config: DataSourceProps) => {
         // const valueCols = evt.columnApi
         //   .getValueColumns()
         //   .map((c) => ({ aggFunc: c.getAggFunc(), id: c.getId() }));
-        dataSource.setRowGroups(colIds);
+        viewportDatasource.setRowGroups(colIds);
       }
     },
-    [dataSource]
+    [viewportDatasource]
   );
 
   const handleRowGroupOpened = useCallback(
     (evt: RowGroupOpenedEvent) => {
       const { expanded, groupKey } = evt.data;
-      dataSource.setExpanded(groupKey, expanded);
+      viewportDatasource.setExpanded(groupKey, expanded);
     },
-    [dataSource]
+    [viewportDatasource]
   );
 
   const handleSortChanged = useCallback(
@@ -65,9 +88,9 @@ export const useViewportRowModel = (config: DataSourceProps) => {
         .filter(isSortedColumn)
         .sort(bySortIndex)
         .map(toSortDef);
-      dataSource.sort(sortDefs);
+      viewportDatasource.sort({ sortDefs: sortDefs });
     },
-    [dataSource]
+    [viewportDatasource]
   );
 
   const handleFilterChanged = useCallback(
@@ -75,9 +98,9 @@ export const useViewportRowModel = (config: DataSourceProps) => {
       const filterModel = evt.api.getFilterModel();
       const [filterQuery, vuuFilter] =
         agGridFilterModelToVuuFilter(filterModel);
-      dataSource.filter(vuuFilter, filterQuery);
+      viewportDatasource.filter(vuuFilter, filterQuery);
     },
-    [dataSource]
+    [viewportDatasource]
   );
 
   const autoGroupColumnDef = {
@@ -88,22 +111,17 @@ export const useViewportRowModel = (config: DataSourceProps) => {
 
   return {
     autoGroupColumnDef,
-    // cacheBlockSize: 100,
     createFilterDataProvider,
-    viewportDatasource: dataSource,
+    viewportDatasource,
     defaultColDef: {
       sortable: true,
     },
-    // maxBlocksInCache: 1,
     onColumnRowGroupChanged: handleColumnRowGroupChanged,
     onFilterChanged: handleFilterChanged,
     onGridReady: handleGridReady,
     onRowGroupOpened: handleRowGroupOpened,
     onSortChanged: handleSortChanged,
-    // purgeClosedRowNodes: true,
-    rowModelType: "viewport",
-    rowSelection: "single",
-    // serverSideInfiniteScroll: true,
-    // serverSideStoreType: "partial",
+    rowModelType: "viewport" as const,
+    rowSelection: "single" as const,
   };
 };

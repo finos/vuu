@@ -1,17 +1,19 @@
-import {
-  DataSourceProps,
-  RemoteDataSource,
-  SubscribeCallback,
-} from "@finos/vuu-data";
-import {
-  IViewportDatasource,
-  IViewportDatasourceParams,
-} from "ag-grid-community";
+import { DataSource, SubscribeCallback } from "@finos/vuu-data";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
-import { convertToAgViewportRows } from "./AgGridDataUtils";
-import { VuuGroupBy, VuuSortCol } from "@finos/vuu-protocol-types";
-import { Filter } from "@finos/vuu-filters";
+import { AgViewportRows, convertToAgViewportRows } from "./AgGridDataUtils";
+import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
+import { Filter } from "@finos/vuu-filter-types";
 import { AgDataWindow } from "./AgDataWindow";
+
+type AgRow = {
+  setDataValue: (field: string, value: string | number | boolean) => void;
+};
+
+type IViewportDatasourceParams = {
+  getRow: (rowIndex: number) => AgRow;
+  setRowCount: (rowCount: number) => void;
+  setRowData: (data: AgViewportRows) => void;
+};
 
 const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
   new Map<number, string>(
@@ -27,21 +29,15 @@ const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
 //     ...rest
 //   );
 
-export class ViewportRowModelDataSource implements IViewportDatasource {
+export class ViewportRowModelDataSource {
   private columnMap: ColumnMap;
   private reverseColumnMap: Map<number, string>;
 
-  private dataSource: RemoteDataSource;
   private dataWindow: AgDataWindow = new AgDataWindow({ from: 0, to: 0 });
 
-  constructor(dataSourceConfig: DataSourceProps) {
-    console.log(
-      `ViewportRowModelDataSource create RemoteDataSource with bufferSize ${dataSourceConfig.bufferSize}`
-    );
-    this.dataSource = new RemoteDataSource(dataSourceConfig);
-
+  constructor(private dataSource: DataSource) {
     this.dataSource.subscribe({}, this.handleMessageFromDataSource);
-    this.columnMap = buildColumnMap(dataSourceConfig.columns);
+    this.columnMap = buildColumnMap(dataSource.columns);
     this.reverseColumnMap = reverseColumnMap(this.columnMap);
   }
 
@@ -70,7 +66,8 @@ export class ViewportRowModelDataSource implements IViewportDatasource {
 
   setRowGroups(groupBy: VuuGroupBy) {
     // console.log(`roupBy ${groupBy.join(",")}`);
-    this.dataSource.group(groupBy);
+    this.dataSource.groupBy = groupBy;
+    this.dataWindow.clear();
   }
 
   setExpanded(key: string, expanded: boolean) {
@@ -79,22 +76,23 @@ export class ViewportRowModelDataSource implements IViewportDatasource {
     } else {
       this.dataSource.openTreeNode(key);
     }
+    this.dataWindow.clear();
   }
 
-  filter(filter: Filter, filterQuery: string) {
+  filter(filter: Filter | undefined, filterQuery: string) {
     this.dataSource.filter(filter, filterQuery);
   }
 
-  sort(sortDefs: VuuSortCol[]) {
-    this.dataSource.sort({
-      sortDefs,
-    });
+  sort(sort: VuuSort) {
+    this.dataSource.sort = sort;
   }
 
   handleMessageFromDataSource: SubscribeCallback = (message) => {
     if (message.type === "viewport-update") {
       if (message.size !== undefined) {
+        console.log(`size = ${message.size}`);
         if (message.size !== this.dataWindow.rowCount) {
+          console.log(`(which has changed, by the way)`);
           this.dataWindow.setRowCount(message.size);
           this.setAgRowCount(message.size);
         }

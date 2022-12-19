@@ -19,6 +19,12 @@
     "jsx": "react-jsx",
     "sourceMap": true
   },
-  "include": ["packages/*/src", "sample-apps/*/src", "showcase/src"],
+  "include": [
+    "packages/*/src", 
+    "sample-apps/*/src", 
+    "showcase/src", 
+    "sample-apps/*/index.ts",
+    "sample-apps/*/src"
+  ],
   "exclude": ["**/*.cy.*", "**/*.spec.*", "**/*.test.*"]
 }

@@ -1,8 +1,12 @@
 import { SuggestionFetcher } from "@finos/vuu-data";
-import { TypeaheadParams, VuuTable } from "../../vuu-protocol-types";
-import { SetFilterValuesFuncParams } from "ag-grid-community";
+import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { MutableRefObject } from "react";
 
+type SetFilterValuesFuncParams = {
+  colDef: {
+    field: string;
+  };
+};
 /**
  * This adapts a Vuu typeahead suggestion rpc call to the AgGrid filter API.
  */
