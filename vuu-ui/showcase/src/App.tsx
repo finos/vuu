@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { ToolkitProvider } from "@heswell/uitk-core";
+import { SaltProvider } from "@salt-ds/core";
 
 import { Flexbox } from "@finos/vuu-layout";
 import { Tree } from "./components";
@@ -49,7 +49,7 @@ export const App = ({ stories }) => {
   const { pathname } = useLocation();
   const handleChange = (evt, [selected]) => navigate(selected.id);
   return (
-    <ToolkitProvider>
+    <SaltProvider>
       <Flexbox
         style={{ flexDirection: "row", width: "100vw", height: "100vh" }}
       >
@@ -74,6 +74,6 @@ export const App = ({ stories }) => {
           <Outlet />
         </div>
       </Flexbox>
-    </ToolkitProvider>
+    </SaltProvider>
   );
 };

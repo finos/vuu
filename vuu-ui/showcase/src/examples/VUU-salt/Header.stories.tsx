@@ -6,15 +6,15 @@ import {
   ToolbarButton,
   ToolbarField,
   Tooltray,
-} from "@heswell/uitk-lab";
-import { CloseIcon } from "@heswell/uitk-icons";
+} from "@heswell/salt-lab";
+import { CloseIcon } from "@salt-ds/icons";
 import { Header } from "@finos/vuu-layout";
 
 import "@heswell/component-anatomy/esm/index.css";
 import { Flexbox } from "@finos/vuu-layout";
 
 const toolbarStyle = {
-  "--uitkToolbar-background": "white",
+  "--saltToolbar-background": "white",
 } as CSSProperties;
 
 export const DefaultHeader = () => {

@@ -3,14 +3,8 @@ import {
   AccordionDetails,
   AccordionSection,
   AccordionSummary,
-} from "@heswell/uitk-lab";
-import { Panel } from "@heswell/uitk-core";
-
-import { ReactNode } from "react";
-
-const DetailsContent = ({ children }: { children?: ReactNode }) => {
-  return <div className={"accordion-story-details"}>{children}</div>;
-};
+  Panel,
+} from "@heswell/salt-lab";
 
 export const DefaultAccordion = () => {
   return (

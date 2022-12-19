@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useMemo, useRef } from "react";
 import cx from "classnames";
-import { useIdMemo as useId } from "@heswell/uitk-core";
+import { useIdMemo as useId } from "@salt-ds/core";
 import { useKeyboardNavigation } from "./use-keyboard-navigation";
 import { isMenuItemGroup } from "./use-items-with-ids";
 

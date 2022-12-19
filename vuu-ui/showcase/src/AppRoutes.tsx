@@ -3,9 +3,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { App } from "./App";
 
-import "@finos/vuu-theme/index.css";
-import "@heswell/component-anatomy/esm/index.css";
-
 import "./index.css";
 
 const createRoutes = (stories, prefix = "") =>

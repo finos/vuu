@@ -1,9 +1,9 @@
 .vuuDataGrid {
-  --grid-background: var(--uitk-container-background-medium, inherit);
+  --grid-background: var(--salt-container-tertiary-background, inherit);
   --grid-row-background: inherit;
   --grid-row-height: var(--grid-row-height, 20px);
   --grid-row-line-height: 19px;
-  --grid-row-background-selected: var(--uitk-palette-neutral-highlight);
+  --grid-row-background-selected: var(--salt-palette-neutral-highlight);
   --grid-header-cell-highlight-bg: var(--surface3);
 
   --hw-activation-indicator-thumb-bg: #2c2c2c;
@@ -11,7 +11,7 @@
   --grid-cell-bg: var(--grid-cell-bg, var(--background));
   --cell-border-top-color: transparent;
   --cell-border-bottom-color: transparent;
-  --cell-border-right-color: var(--grid-cell-border-color, var(--uitk-container-borderColor-medium));
+  --cell-border-right-color: var(--grid-cell-border-color, var(--salt-separable-tertiary-borderColor));
   --cell-border-style: var(--hwDataGridCell-border-style, solid);
   --cell-highlight-bg: var(--grid-cell-highlight-bg);
   --drag-column-bg: var(--grid-drag-column-bg, 'ivory');

@@ -10,7 +10,7 @@
 }
 
 .vuuPaletteItem {
-  --vuu-icon-color: var(--uitk-separable-primary-background);
+  --vuu-icon-color: var(--salt-separable-primary-background);
   --vuu-icon-inset: calc(50% - 12px) auto auto -3px;
   --vuu-icon-svg: var(--svg-grab-handle);
   --vuu-icon-height: 24px;
@@ -33,5 +33,5 @@
 }
 
 .vuuSimpleDraggableWrapper > .vuuPaletteItem {
-  --vuu-icon-color: var(--uitk-selectable-foreground);
+  --vuu-icon-color: var(--salt-selectable-foreground);
 }

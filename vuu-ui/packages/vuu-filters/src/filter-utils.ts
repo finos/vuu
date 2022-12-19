@@ -16,7 +16,7 @@ import {
 } from "./filterTypes";
 import { Row } from "@finos/vuu-utils/src/row-utils";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
-import { P } from "@heswell/uitk-lab";
+import { P } from "@heswell/salt-lab";
 
 export const AND = "and";
 export const EQUALS = "=";

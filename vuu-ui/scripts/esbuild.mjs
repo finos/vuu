@@ -30,6 +30,7 @@ export async function build(config) {
     format,
     jsx,
     loader: {
+      ".woff": "file",
       ".woff2": "dataurl",
       ".ttf": "file",
     },

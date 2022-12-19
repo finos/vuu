@@ -4,15 +4,15 @@ import {
   Tooltray,
   ToolbarButton,
   ToolbarField,
-} from "@heswell/uitk-lab";
+} from "@heswell/salt-lab";
 import {
   ExportIcon,
   ShareIcon,
   NotificationIcon,
   TearOutIcon,
-} from "@heswell/uitk-icons";
-import { Button } from "@heswell/uitk-core";
-import { ColumnChooserIcon, CsvIcon, PdfIcon } from "@heswell/uitk-icons";
+} from "@salt-ds/icons";
+import { Button } from "@salt-ds/core";
+import { ColumnChooserIcon, CsvIcon, PdfIcon } from "@salt-ds/icons";
 import { Flexbox } from "@finos/vuu-layout";
 
 import "@heswell/component-anatomy/esm/index.css";

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef } from "react";
 import { getIndexOfNode } from "./hierarchical-data-utils";
-import { useControlled } from "@heswell/uitk-core";
+import { useControlled } from "@salt-ds/core";
 import {
   ArrowDown,
   ArrowLeft,

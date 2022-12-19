@@ -1,5 +1,5 @@
-import { useIdMemo as useId } from "@heswell/uitk-core";
-import { Tab, Tabstrip, Toolbar, ToolbarField } from "@heswell/uitk-lab";
+import { useIdMemo as useId } from "@salt-ds/core";
+import { Tab, Tabstrip, Toolbar, ToolbarField } from "@heswell/salt-lab";
 import React, {
   ForwardedRef,
   forwardRef,
@@ -135,6 +135,7 @@ export const Stack = forwardRef(function Stack(
             disableFocusRing
             data-collapsible="dynamic"
             data-priority="3"
+            style={{ alignSelf: "flex-end" }}
           >
             <Tabstrip
               enableRenameTab

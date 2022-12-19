@@ -7,7 +7,7 @@ body {
   --hwTree-toggle-expand: var(--svg-chevron-right);
   --hwTree-toggle-collapse: var(--svg-chevron-right);
   --hwTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
-  --hwTree-icon-color: var(--uitk-palette-accent-background);
+  --hwTree-icon-color: var(--salt-palette-accent-background);
   --hwTree-font-size: 12px;
-  border-right: solid 1px var(--uitk-container-primary-borderColor);
+  border-right: solid 1px var(--salt-container-primary-borderColor);
 }

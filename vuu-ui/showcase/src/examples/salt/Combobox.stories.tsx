@@ -1,7 +1,6 @@
 import React from "react";
 
-import { FormField } from "@heswell/uitk-core";
-import { ComboBox } from "@heswell/uitk-lab";
+import { ComboBox, FormField } from "@heswell/salt-lab";
 import { usa_states } from "./List.data";
 
 let displaySequence = 1;

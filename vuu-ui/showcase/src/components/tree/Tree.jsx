@@ -1,6 +1,6 @@
 import cx from "classnames";
 import React, { forwardRef, useRef } from "react";
-import { useForkRef, useIdMemo as useId } from "@heswell/uitk-core";
+import { useForkRef, useIdMemo as useId } from "@salt-ds/core";
 import { closestListItemIndex } from "./list-dom-utils";
 import { useItemsWithIds } from "./use-items-with-ids";
 import { groupSelectionEnabled, GROUP_SELECTION_NONE } from "./use-selection";

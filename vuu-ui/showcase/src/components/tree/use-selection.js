@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { useControlled } from "@heswell/uitk-core";
+import { useControlled } from "@salt-ds/core";
 
 export const SINGLE = "single";
 export const CHECKBOX = "checkbox";

@@ -5,7 +5,7 @@
   border-bottom: solid 1px var(--heading-border-color);
   border-right: 1px solid var(--heading-border-color);
   box-sizing: border-box;
-  color: var(--uitk-text-secondary-foreground);
+  color: var(--salt-text-secondary-foreground);
   cursor: default;
   display: inline-flex;
   font-weight: bold;

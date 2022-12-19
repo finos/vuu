@@ -14,7 +14,8 @@ body {
   --spectrum-global-dimension-size-85: 3px;
   --spectrum-global-dimension-size-225: 16px;
 
-  --hwDrawer-leading-edge-border: solid 1px var(--surface2);
+  --vuuView-borderStyle: none solid solid none;
+
 }
 
 .ToolbarField .Input {

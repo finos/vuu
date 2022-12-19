@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Grid } from "@finos/vuu-datagrid";
 import { StackLayout as Stack, View, useViewContext } from "@finos/vuu-layout";
-import { List, ListItem } from "@heswell/uitk-lab";
+import { List, ListItem } from "@heswell/salt-lab";
 
 import {
   authenticate as vuuAuthenticate,

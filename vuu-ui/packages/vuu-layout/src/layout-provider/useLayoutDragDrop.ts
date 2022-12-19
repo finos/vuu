@@ -35,11 +35,11 @@ const getDragElement = (
 ): [HTMLElement, string, number, number] => {
   const wrapper = document.createElement("div");
   wrapper.className = "vuuSimpleDraggableWrapper";
-  // TODO caller needs to supply the uitk classes
+  // TODO caller needs to supply the salt classes
   wrapper.classList.add(
     "vuuSimpleDraggableWrapper",
-    "uitk-theme",
-    "uitk-density-medium"
+    "salt-theme",
+    "salt-density-medium"
   );
   wrapper.dataset.dragging = "true";
 

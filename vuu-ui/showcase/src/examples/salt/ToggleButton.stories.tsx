@@ -3,7 +3,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
-} from "@heswell/uitk-lab";
+} from "@heswell/salt-lab";
 
 import "@heswell/component-anatomy/esm/index.css";
 import { useState } from "react";

@@ -18,8 +18,8 @@ import {
   useViewserver,
 } from "@finos/vuu-data";
 import { Grid, GridProvider } from "@finos/vuu-datagrid";
-import { LinkedIcon } from "@heswell/uitk-icons";
-import { ToolbarButton } from "@heswell/uitk-lab";
+import { LinkedIcon } from "@salt-ds/icons";
+import { ToolbarButton } from "@heswell/salt-lab";
 
 import { FeatureProps } from "@finos/vuu-shell";
 

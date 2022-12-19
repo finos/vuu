@@ -279,7 +279,7 @@ function measureComponent(
       };
       if (type === "Stack") {
         measurements[path].Stack = Array.from(
-          headerEl.querySelectorAll(".uitkTab")
+          headerEl.querySelectorAll(".saltTab")
         )
           .map((tab) => tab.getBoundingClientRect())
           .map(({ left, right }) => ({ left, right }));

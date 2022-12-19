@@ -3,7 +3,7 @@ import cx from "classnames";
 import { typeOf } from "../../utils";
 
 import "./layout-tree-viewer.css";
-import { Tree } from "@heswell/uitk-lab";
+import { Tree } from "@heswell/salt-lab";
 
 const classBaseTree = "hwLayoutTreeViewer";
 

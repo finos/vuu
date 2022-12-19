@@ -135,17 +135,15 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
+"@fontsource/open-sans@^4.5.13":
+  version "4.5.13"
+  resolved "https://registry.yarnpkg.com/@fontsource/open-sans/-/open-sans-4.5.13.tgz#2c99e4c055d129a75f14c11b77d040282e0388b8"
+  integrity sha512-/UzqP7ZFk145XAq8KG4pvFPP7UQhtreDGXgqXZjagCDreKxcrhwn/x7DYz9rPcycWkLUVApIybcoczGZiM0cRg==
+
 "@heswell/component-anatomy@0.0.5":
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/@heswell/component-anatomy/-/component-anatomy-0.0.5.tgz#cf75e642fb7c2184794114fe62f2382d4196846a"
   integrity sha512-pwuowxKvsxPoOkAbtHFNyqdzjTj8CHDZtk7+P8jRtJJmsJTzblOMn6WNS9csFf6gU1NdvD11EcTCnFZaG8TLxg==
-
-"@heswell/uitk-icons@0.7.0-vuu.1":
-  version "0.7.0-vuu.1"
-  resolved "https://registry.yarnpkg.com/@heswell/uitk-icons/-/uitk-icons-0.7.0-vuu.1.tgz#3aa4a35dcc14c8947974986bc44455e8d5ac5de4"
-  integrity sha512-cNqFJE6L54xVO5wuDEJENevGb5fGTdvhsuoTif/N+6zH6XopGj8q+6vDpvn15VCVRnYUSAuCUhUKe/e9dGCDjw==
-  dependencies:
-    classnames "^2.2.6"
 
 "@humanwhocodes/config-array@^0.11.6":
   version "0.11.7"
@@ -241,6 +239,21 @@
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.0.3.tgz#953b88c20ea00d0eddaffdc1b115c08474aa295d"
   integrity sha512-ceuyTSs7PZ/tQqi19YZNBc5X7kj1f8p+4DIyrcIYFY9h+hd1OKm4RqtiWldR9eGEvIiJfsqwM4BsuCtRIuEw6Q==
+
+"@salt-ds/core@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.0.0.tgz#a52fda944bf8a50f20899ac26472a704047c5c2b"
+  integrity sha512-Xng/b97Npif4hFgxBYUVKoRX+NdbLrUcWRKva1ytO3Nv9GNp5kfBuNmAq75HG1MvwCjiQ/h4aGQaFfMmqaNIyw==
+  dependencies:
+    "@salt-ds/icons" "1.0.0"
+    classnames "^2.2.6"
+
+"@salt-ds/icons@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/icons/-/icons-1.0.0.tgz#ce874c4c2da375b37951376bdad1255822ae9d75"
+  integrity sha512-l/ro5ci+5BUhttJ20GJUCfIVifOvT61XgCDjgNmqaPIK3qkVGETkwsNEmiPXdiH3H7mDgMQTI/TXLlhE1O2bVQ==
+  dependencies:
+    classnames "^2.2.6"
 
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
@@ -471,7 +484,7 @@ argparse@^2.0.1:
   resolved "https://registry.yarnpkg.com/argparse/-/argparse-2.0.1.tgz#246f50f3ca78a3240f6c997e8a9bd1eac49e4b38"
   integrity sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==
 
-aria-hidden@^1.1.1, aria-hidden@^1.1.3:
+aria-hidden@^1.1.3:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/aria-hidden/-/aria-hidden-1.2.1.tgz#ad8c1edbde360b454eb2bf717ea02da00bfee0f8"
   integrity sha512-PN344VAf9j1EAi+jyVHOJ8XidQdPVssGco39eNcsGdM4wcsILtxrKLkbuiMfLWYROK1FjRQasMWCBttrhjnr6A==

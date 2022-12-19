@@ -1,4 +1,4 @@
-import { Button } from "@heswell/uitk-core";
+import { Button } from "@salt-ds/core";
 
 export const DefaultButton = () => {
   const handleClick = (e) => {
