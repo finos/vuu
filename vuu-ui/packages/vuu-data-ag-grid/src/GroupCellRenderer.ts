@@ -57,6 +57,24 @@ const buildCellWrapper = () => {
 
 const cellWrapper = buildCellWrapper();
 
+type GroupCellRendererParams = {
+  columnApi: {
+    getRowGroupColumns: () => Column[];
+  };
+  data: {
+    expanded: boolean;
+    groupRow: boolean;
+    level: number;
+  };
+  node: {
+    data: {
+      groupRow: boolean;
+      [key: string]: string | boolean | number;
+    };
+    key: string | null;
+    setExpanded: (expanded: boolean) => void;
+  };
+};
 export class GroupCellRenderer {
   private eGui: HTMLDivElement | null = null;
   private eContainer: HTMLSpanElement | null = null;

@@ -94,7 +94,9 @@ export class ViewportRowModelDataSource {
   handleMessageFromDataSource: SubscribeCallback = (message) => {
     if (message.type === "viewport-update") {
       if (message.size !== undefined) {
+        console.log(`size = ${message.size}`);
         if (message.size !== this.dataWindow.rowCount) {
+          console.log(`(which has changed, by the way)`);
           this.dataWindow.setRowCount(message.size);
           this.setAgRowCount(message.size);
         }
