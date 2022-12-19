@@ -6,7 +6,7 @@ import {
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
   Toolbar,
-} from "@heswell/uitk-lab";
+} from "@heswell/salt-lab";
 import { useCallback, useMemo, useState } from "react";
 import { DragVisualizer } from "../../../../packages/vuu-datatable/src/DragVisualizer";
 import { ErrorDisplay, useTestDataSource } from "../utils";

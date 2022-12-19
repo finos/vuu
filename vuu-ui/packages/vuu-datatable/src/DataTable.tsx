@@ -6,7 +6,7 @@ import { useTableData } from "./useTableData";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 import { Column, TableProps } from "./dataTableTypes";
-import { moveItem } from "@heswell/uitk-lab";
+import { moveItem } from "@heswell/salt-lab";
 
 import "./DataTable.css";
 import { useDraggableColumn } from "./useDraggableColumn";

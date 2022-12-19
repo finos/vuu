@@ -1,13 +1,13 @@
 
 .vuuDataTable {
-  background-color: var(--uitk-container-background-medium, inherit);
+  background-color: var(--salt-container-primary-background, inherit);
   height: var(--table-height);
   position: relative;
   width: var(--table-width);
 }
 .vuuDataTable-content {
   
-  --table-background: var(--uitk-container-background-medium, inherit);
+  --table-background: var(--salt-container-primary-background, inherit);
 
   --vuuTable-contentHeight: var(--content-height, 'auto');
   --vuuTable-contentWidth: var(--content-width, 'auto');
@@ -17,7 +17,7 @@
   --vuuTable-scrollbarSize: var(--scrollbar-size, 15px);
   --vuuTable-width: calc(var(--table-width) - var(--scrollbar-size));
 
-  background-color: var(--uitk-container-background-medium);
+  background-color: var(--salt-container-primary-background);
 
   height: var(--vuuTable-height);
   position: relative;
@@ -31,8 +31,8 @@
 }
 
 .vuuDataTable-scrollContainer {
-  border-left: solid 1px var(--uitk-container-borderColor-medium);
-  border-top: solid 1px var(--uitk-container-borderColor-medium);
+  border-left: solid 1px var(--salt-container-primary-borderColor);
+  border-top: solid 1px var(--salt-container-primary-borderColor);
   overflow: auto;
   position: absolute;
   height: calc(var(--table-pixel-height) - var(--header-height) + 1px);
@@ -65,7 +65,7 @@
 
 .vuuDataTable-tableContainer {
   background-color: var(--table-background);
-  border-bottom: solid 1px var(--uitk-container-borderColor-medium);
+  border-bottom: solid 1px var(--salt-container-primary-borderColor);
   height: calc(var(--table-pixel-height) - var(--scrollbar-size));
   left: 0px;
   overflow: hidden;
@@ -80,7 +80,7 @@
 .vuuDataTable-table {
   --vuuTable-rowHeight: var(--row-height);
   --vuuTableCell-border-bottomColor: transparent;
-  --vuuTableCell-border-rightColor: var(--uitk-container-borderColor-medium);
+  --vuuTableCell-border-rightColor: var(--salt-separable-tertiary-borderColor);
 
   position: absolute;
   top: 0;
@@ -120,7 +120,7 @@
 }
 
 .vuuDataTable-table td {
-  color: var(--uitk-text-primary-foreground);
+  color: var(--salt-text-primary-foreground);
   cursor: default;
   height: var(--vuuTable-rowHeight);
 }

@@ -1,9 +1,9 @@
 .vuuTable-headerCell {
   text-align: left;
     background: var(--table-background);
-    border-right: 1px solid var(--uitk-container-borderColor-medium);
-    border-bottom: 1px solid var(--uitk-container-borderColor-medium);
-    color: var(--uitk-text-secondary-foreground);
+    border-right: 1px solid var(--salt-separable-tertiary-borderColor);
+    border-bottom: 2px solid var(--salt-separable-tertiary-borderColor);
+    color: var(--salt-text-secondary-foreground);
     cursor: default;
     padding-left: 3px;
     position: sticky;

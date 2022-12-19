@@ -1,4 +1,4 @@
-import { useDragDrop } from "@heswell/uitk-lab";
+import { useDragDrop } from "@heswell/salt-lab";
 import {
   MouseEvent,
   useCallback,

@@ -1,5 +1,5 @@
 .vuuDataTableRow-even {
-    --row-background: var(--uitk-palette-neutral-background-high);
+    --row-background: var(--salt-container-secondary-background);
   }
   
   .vuuDataTableRow:not(.vuuDataTableRow-even) {
