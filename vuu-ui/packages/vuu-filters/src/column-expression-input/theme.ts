@@ -37,6 +37,10 @@ export const vuuTheme = EditorView.theme(
       },
       "&.cm-tooltip-autocomplete li[aria-selected]": {
         background: "var(--vuuFilterEditor-suggestion-selectedBackground)",
+        color: "var(--vuuFilterEditor-suggestion-selectedColor)",
+      },
+      "&.cm-tooltip-autocomplete li .cm-completionDetail": {
+        color: "var(--vuuFilterEditor-suggestion-detailColor)",
       },
     },
   },

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Filter, ColumnExpressionInput } from "@finos/vuu-filters";
+import { ColumnExpressionInput } from "@finos/vuu-filters";
 
 import { useSuggestionProvider } from "./useSuggestionProvider";
 import {
@@ -8,8 +8,6 @@ import {
 } from "@finos/vuu-data";
 import {} from "@finos/vuu-utils";
 import { Expression } from "@finos/vuu-filters/src/column-expression-input/column-language-parser/Expression";
-
-// import "./ParsedInput.stories.css";
 
 let displaySequence = 1;
 

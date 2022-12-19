@@ -15,22 +15,52 @@ const withApplySpace = (suggestions: Completion[]): Completion[] =>
   }));
 
 const tableColumns: Completion[] = [
-  { label: "bbg" },
-  { label: "description" },
-  { label: "currency" },
-  { label: "exchange" },
-  { label: "lotSize" },
-  { label: "isin" },
-  { label: "ric" },
+  { label: "bbg", boost: 5 },
+  { label: "description", boost: 5 },
+  { label: "currency", boost: 5 },
+  { label: "exchange", boost: 5 },
+  { label: "lotSize", boost: 5 },
+  { label: "isin", boost: 5 },
+  { label: "ric", boost: 5 },
 ];
 
 const functions: Completion[] = [
-  { label: "concatenate", apply: "concatenate( " },
-  { label: "max", apply: "max( " },
-  { label: "min", apply: "min( " },
-  { label: "text", apply: "text( " },
-  { label: "right", apply: "right( " },
-  { label: "left", apply: "left( " },
+  {
+    label: "concatenate",
+    apply: "concatenate( ",
+    boost: 2,
+    type: "function",
+  },
+  {
+    label: "max",
+    apply: "max( ",
+    boost: 2,
+    type: "function",
+  },
+  {
+    label: "min",
+    apply: "min( ",
+    boost: 2,
+    type: "function",
+  },
+  {
+    label: "text",
+    apply: "text( ",
+    boost: 2,
+    type: "function",
+  },
+  {
+    label: "right",
+    apply: "right( ",
+    boost: 2,
+    type: "function",
+  },
+  {
+    label: "left",
+    apply: "left( ",
+    boost: 2,
+    type: "function",
+  },
 ];
 
 const expressions = withApplySpace(tableColumns).concat(functions);

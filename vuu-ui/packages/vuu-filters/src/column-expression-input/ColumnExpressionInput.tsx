@@ -4,7 +4,7 @@ import {
   SuggestionConsumer2,
   useColumnExpressionEditor,
 } from "./useColumnExpressionEditor";
-import { Button } from "@heswell/uitk-core";
+import { Button } from "@salt-ds/core";
 
 import "./ColumnExpressionInput.css";
 

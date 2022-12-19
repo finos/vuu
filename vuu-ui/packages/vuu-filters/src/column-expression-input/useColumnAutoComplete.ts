@@ -110,7 +110,7 @@ export const useColumnAutoComplete = (
               options = [
                 {
                   apply: ") ",
-                  boost: 5,
+                  boost: 10,
                   label: "Done - no more arguments",
                 } as Completion,
               ].concat(options);
