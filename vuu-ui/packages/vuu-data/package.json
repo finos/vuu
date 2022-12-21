@@ -15,10 +15,11 @@
     "/src"
   ],
   "devDependencies": {
+    "@finos/vuu-filter-types": "0.0.26",
     "@finos/vuu-protocol-types": "0.0.26"
   },
   "peerDependencies": {
-    "@finos/vuu-utils": "0.0.27",
+    "@finos/vuu-utils": "0.0.26",
     "react": "^17.0.2"
   }
 }

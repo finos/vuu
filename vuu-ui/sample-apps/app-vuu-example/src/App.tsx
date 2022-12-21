@@ -1,5 +1,5 @@
 import { SaltProvider } from "@salt-ds/core";
-import { RpcResponse, useViewserver, VuuTableSchemas } from "@finos/vuu-data";
+import { RpcResponse, useVuuTables } from "@finos/vuu-data";
 import { Dialog, registerComponent } from "@finos/vuu-layout";
 import {
   Feature,
@@ -7,7 +7,7 @@ import {
   ShellContextProvider,
   VuuUser,
 } from "@finos/vuu-shell";
-import { ReactElement, useCallback, useRef, useState } from "react";
+import { ReactElement, useCallback, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 
@@ -43,18 +43,13 @@ const defaultLayout = {
 export const App = ({ user }: { user: VuuUser }) => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
 
-  // Needed because of circular ref between useViewserver and handleRpcResponse
-  const tablesRef = useRef<VuuTableSchemas>();
-
-  const { tables } = useViewserver();
-
-  tablesRef.current = tables;
+  const tables = useVuuTables();
 
   const handleRpcResponse = useCallback((response: RpcResponse) => {
     if (response?.action?.type === "OPEN_DIALOG_ACTION") {
       const { table } = response.action;
-      if (tablesRef.current) {
-        const { [table.table]: schema } = tablesRef.current;
+      if (tables) {
+        const schema = tables.get(table.table);
         if (schema) {
           // If we already have this table open in this viewport, ignore
           setDialogContent(

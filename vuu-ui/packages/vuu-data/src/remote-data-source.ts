@@ -5,9 +5,9 @@ import {
   VuuRange,
   VuuTable,
   VuuSort,
-} from "../../vuu-protocol-types";
+} from "@finos/vuu-protocol-types";
 import { EventEmitter, uuid } from "@finos/vuu-utils";
-import { Filter } from "@finos/vuu-filters";
+import { Filter } from "@finos/vuu-filter-types";
 import { ConnectionManager, ServerAPI } from "./connection-manager";
 import {
   DataSource,
@@ -401,10 +401,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  async rpcCall(rpcRequest: ClientToServerRpcCall | VuuUIMessageOutMenuRPC) {
-    return this.server?.rpcCall({
-      viewport: this.viewport,
-      ...rpcRequest,
-    });
+  async menuRpcCall(rpcRequest: Omit<VuuUIMessageOutMenuRPC, "viewport">) {
+    if (this.viewport) {
+      return this.server?.rpcCall({
+        viewport: this.viewport,
+        ...rpcRequest,
+      });
+    }
   }
 }

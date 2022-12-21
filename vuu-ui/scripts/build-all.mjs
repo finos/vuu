@@ -8,7 +8,12 @@ const buildPackage = async (packageName) =>
   execWait(`yarn --silent build${dev}${cjs}`, `packages/${packageName}`);
 
 // TODO determine the dependency graph/build order programatically
-const wave1 = ["vuu-utils", "vuu-theme", "vuu-protocol-types"];
+const wave1 = [
+  "vuu-filter-types",
+  "vuu-protocol-types",
+  "vuu-utils",
+  "vuu-theme",
+];
 const wave2 = ["vuu-data", "vuu-filters"];
 const wave3 = ["vuu-datagrid", "vuu-layout", "vuu-shell"];
 

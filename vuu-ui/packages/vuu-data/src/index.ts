@@ -1,9 +1,9 @@
 export * from "./authenticate";
+export * from "./connection-manager";
 export * from "./constants";
 export * from "./create-data-source";
 export * from "./data-source";
-export * from "./remote-data-source";
-export { connect } from "./websocket-connection";
-export * from "./connection-manager";
 export * from "./hooks";
+export * from "./remote-data-source";
 export * from "./vuuUIMessageTypes";
+export * from "./websocket-connection";

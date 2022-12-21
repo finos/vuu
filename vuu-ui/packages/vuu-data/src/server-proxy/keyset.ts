@@ -1,4 +1,4 @@
-import { VuuRange } from "../../../vuu-protocol-types";
+import { VuuRange } from "@finos/vuu-protocol-types";
 
 export class KeySet {
   private keys: Map<number, number>;

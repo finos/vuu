@@ -4,7 +4,7 @@ import {
   DataSourceRow,
   RemoteDataSource,
   useDataSource,
-  useViewserver,
+  useRpcService,
 } from "@finos/vuu-data";
 import { metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
@@ -85,7 +85,7 @@ export const DefaultList = () => {
     debugger;
   }
   const selectedRow = data2.find((row) => row[7]) ?? null;
-  const { makeRpcCall } = useViewserver();
+  const makeRpcCall = useRpcService();
 
   useEffect(() => {
     const connect = async () => {
@@ -98,6 +98,7 @@ export const DefaultList = () => {
 
   const load = useCallback(async () => {
     const data = await makeRpcCall({
+      service: "TypeAheadRpcHandler",
       type: "RPC_CALL",
       method: "getUniqueFieldValues",
       params: [{ table: "instruments", module: "SIMUL" }, "description"],

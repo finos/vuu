@@ -7,8 +7,8 @@ import {
   VuuRowDataItemType,
   VuuSortCol,
   VuuTable,
-} from "../../vuu-protocol-types";
-import { Filter } from "@finos/vuu-filters";
+} from "@finos/vuu-protocol-types";
+import { Filter } from "@finos/vuu-filter-types";
 
 export type ConnectionStatus =
   | "connecting"
@@ -59,12 +59,16 @@ export interface ViewportMessageIn {
   clientViewportId: string;
 }
 
+// TODO use generic to type result
 export interface VuuUIMessageInRPC {
   method: string;
-  result: any;
+  result: unknown;
   requestId: string;
   type: "RPC_RESP";
 }
+
+export const messageHasResult = (msg: object): msg is VuuUIMessageInRPC =>
+  typeof (msg as VuuUIMessageInRPC).result !== "undefined";
 
 export type RpcResponse = {
   action: {
@@ -234,7 +238,7 @@ export const isViewporttMessage = (
 
 export interface VuuUIMessageOutRPC extends RequestMessage {
   method: string;
-  params: any[];
+  params: unknown[];
   type: "RPC_CALL";
 }
 
@@ -266,13 +270,3 @@ export type VuuUIMessageOut =
   | VuuUIMessageOutAsyncRequest
   | VuuUIMessageOutViewport
   | VuuUIMessageOutRpcCall;
-
-export type TableMeta = {
-  columns: string[];
-  dataTypes: VuuRowDataItemType[];
-  table: VuuTable;
-};
-
-export type TableList = {
-  tables: VuuTable[];
-};

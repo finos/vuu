@@ -17,7 +17,7 @@
     "build": "node ./scripts/build-all.mjs",
     "build:salt": "node ./scripts/build-salt.mjs",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
-    "visualize-bundle": "esbuild-visualizer --metadata ./deployed_apps/app-vuu-example/features/feature-filtered-grid/meta.json",
+    "view-bundle": "node ./scripts/visualize-bundle.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "start:electron": "cd packages/electron && node ./node_modules/.bin/electron .",
     "showcase": "cd showcase && vite",

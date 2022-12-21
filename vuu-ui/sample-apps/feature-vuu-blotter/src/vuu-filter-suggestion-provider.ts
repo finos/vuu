@@ -1,5 +1,5 @@
 import {
-  ColumnDataType,
+  VuuColumnDataType,
   TypeaheadParams,
   VuuTable,
 } from "@finos/vuu-protocol-types";
@@ -218,7 +218,7 @@ const suggestNamedFilters = (
   }
 };
 
-const toJSType = (type: ColumnDataType): "string" | "number" => {
+const toJSType = (type: VuuColumnDataType): "string" | "number" => {
   switch (type) {
     case "int":
     case "long":
@@ -229,7 +229,7 @@ const toJSType = (type: ColumnDataType): "string" | "number" => {
   }
 };
 
-const typeChar = (type: ColumnDataType) => {
+const typeChar = (type: VuuColumnDataType) => {
   switch (type) {
     case "int":
     case "long":

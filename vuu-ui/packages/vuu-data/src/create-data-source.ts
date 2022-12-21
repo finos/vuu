@@ -1,4 +1,4 @@
-import { VuuTable } from "../../vuu-protocol-types";
+import { VuuTable } from "@finos/vuu-protocol-types";
 import { Column } from "@finos/vuu-utils";
 
 import { getServerUrl } from "./hooks/useServerConnection";

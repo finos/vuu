@@ -1,7 +1,7 @@
 import {
   ServerToClientMessage,
   ClientToServerMessage,
-} from "../../vuu-protocol-types";
+} from "@finos/vuu-protocol-types";
 import { Connection } from "./connectionTypes";
 
 import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
