@@ -11,9 +11,12 @@ import {
   isInFilter,
   OrFilter,
   isSingleValueFilter,
+  MultiClauseFilter,
+  isFilterClause,
 } from "./filterTypes";
 import { Row } from "@finos/vuu-utils/src/row-utils";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
+import { P } from "@heswell/salt-lab";
 
 export const AND = "and";
 export const EQUALS = "=";
@@ -335,35 +338,27 @@ export const overrideColName = (filter: Filter, column: string): Filter => {
 };
 
 export function extractFilterForColumn(
-  filter: Filter | null,
+  filter: Filter | undefined,
   columnName: string
 ) {
-  if (!filter) {
-    return null;
-  }
-  const { op, column } = filter;
-  switch (op) {
-    case AND:
-    case OR:
-      return collectFiltersForColumn(
-        op,
-        (filter as AndFilter | OrFilter).filters,
-        columnName
-      );
-    default:
-      return column === columnName ? filter : null;
+  if (isMultiClauseFilter(filter)) {
+    return collectFiltersForColumn(filter, columnName);
+  } else if (isFilterClause(filter)) {
+    return filter.column === columnName ? filter : undefined;
+  } else {
+    return undefined;
   }
 }
 
 function collectFiltersForColumn(
-  op: "and" | "or",
-  filters: Filter[],
+  filter: MultiClauseFilter,
   columnName: string
 ) {
+  const { filters, op } = filter;
   const results: Filter[] = [];
   filters.forEach((filter) => {
     const ffc = extractFilterForColumn(filter, columnName);
-    if (ffc !== null) {
+    if (ffc) {
       results.push(ffc);
     }
   });
@@ -462,22 +457,39 @@ function sameValues<T>(arr1: T[], arr2: T[]) {
   return false;
 }
 
+/** Add a new filter to an existing filter  */
+// TODO a lot more work required here to accommodate every
+// permutation of filter merging
 export const updateFilter = (
   filter: Filter | undefined,
-  newFilter: Filter,
+  newFilter: Filter | undefined,
   mode: "add" | "replace"
-): Filter => {
-  if (mode === "replace" || filter === undefined) {
+): Filter | undefined => {
+  if (filter && newFilter) {
+    if (mode === "replace") {
+      return newFilter;
+    } else if (filter.op === "and") {
+      return {
+        ...filter,
+        filters: filter.filters.concat(newFilter),
+      };
+    } else {
+      const existingClause = newFilter.column
+        ? extractFilterForColumn(filter, newFilter.column)
+        : undefined;
+      if (existingClause) {
+        //TODO merge filters here
+        return filter;
+      } else {
+        return {
+          op: "and",
+          filters: [filter, newFilter],
+        };
+      }
+    }
+  } else if (newFilter) {
     return newFilter;
-  } else if (filter.op === "and") {
-    return {
-      ...filter,
-      filters: filter.filters.concat(newFilter),
-    };
   } else {
-    return {
-      op: "and",
-      filters: [filter, newFilter],
-    };
+    return filter;
   }
 };

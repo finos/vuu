@@ -1,10 +1,10 @@
-import { ToolkitProvider } from "@heswell/uitk-core";
+import { SaltProvider } from "@salt-ds/core";
 import { HTMLAttributes } from "react";
 
 export type ErrorDisplayProps = HTMLAttributes<HTMLDivElement>;
 
 export const ErrorDisplay = ({ children, ...props }: ErrorDisplayProps) => (
-  <ToolkitProvider>
+  <SaltProvider>
     <div
       {...props}
       style={{
@@ -16,5 +16,5 @@ export const ErrorDisplay = ({ children, ...props }: ErrorDisplayProps) => (
     >
       {children}
     </div>
-  </ToolkitProvider>
+  </SaltProvider>
 );

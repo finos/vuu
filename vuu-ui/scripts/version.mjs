@@ -2,32 +2,31 @@ import { execWait, readPackageJson } from "./utils.mjs";
 import fs from "fs";
 
 const packages = [
-  "vuu-utils",
-  "vuu-data-ag-grid",
-  "vuu-theme",
-  "vuu-data",
-  "datagrid-parsers",
-  "ui-controls",
-  "ui-forms",
-  "vuu-datagrid",
-  "vuu-layout",
-  "parsed-input",
-  "vuu-shell",
-  "app-vuu-example",
+  "packages/vuu-protocol-types",
+  "packages/vuu-utils",
+  "packages/vuu-theme",
+  "packages/vuu-data",
+  "packages/vuu-datagrid",
+  "packages/vuu-layout",
+  "packages/vuu-shell",
+  "packages/vuu-filters",
+  "sample-apps/app-vuu-example",
+  "sample-apps/feature-filtered-grid",
+  "sample-apps/feature-vuu-blotter",
   "showcase",
 ];
 
 const rewriteDependencyVersions = (dependencies, version) => {
   let deps = Object.keys(dependencies).slice();
   deps.forEach((pckName) => {
-    if (pckName.startsWith("@vuu-ui")) {
+    if (pckName.startsWith("@finos")) {
       dependencies[pckName] = version;
     }
   });
 };
 
-export const bumpDependencies = (packageName) => {
-  const packageJsonPath = `packages/${packageName}/package.json`;
+export const bumpDependencies = (packagePath) => {
+  const packageJsonPath = `${packagePath}/package.json`;
   let json = readPackageJson(packageJsonPath);
   let { version, dependencies, peerDependencies } = json;
   if (dependencies || peerDependencies) {
@@ -37,18 +36,20 @@ export const bumpDependencies = (packageName) => {
   }
 };
 
-async function bumpPackageVersion(packageName) {
-  await execWait(
-    "yarn version --patch --no-git-tag-version",
-    `packages/${packageName}`
-  );
+async function bumpPackageVersion(packagePath) {
+  try {
+    await execWait("yarn version --patch --no-git-tag-version", packagePath);
+  } catch (e) {
+    console.log(e.message);
+    process.exit(1);
+  }
 }
 
-function bumpPackageDependencyVersions(packageName) {
-  bumpDependencies(packageName);
+function bumpPackageDependencyVersions(packagePath) {
+  bumpDependencies(packagePath);
 }
 
 await Promise.all(
-  packages.map((packageName) => bumpPackageVersion(packageName))
+  packages.map((packagePath) => bumpPackageVersion(packagePath))
 );
-packages.forEach((packageName) => bumpPackageDependencyVersions(packageName));
+packages.forEach((packagePath) => bumpPackageDependencyVersions(packagePath));

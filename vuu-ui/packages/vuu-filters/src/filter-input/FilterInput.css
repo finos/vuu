@@ -1,23 +1,31 @@
 
+.salt-density-high {
+    --vuuFilterEditor-buttonWidth: 20px;
+    --vuuFilterEditor-height: 22px;
+}
+
+
 .vuuFilterInput {
-    --vuuFilterEditor-background: var(--uitk-container-background-medium);
-    --vuuFilterEditor-color: var(--uitk-text-primary-foreground);
-    --vuuFilterEditor-fontFamily: var(--uitk-typography-fontFamily);
-    --vuuFilterEditor-fontSize: var(--uitk-text-fontSize);
-    --vuuFilterEditor-cursorColor: var(--uitk-text-secondary-foreground);
-    --vuuFilterEditor-selectionBackground: var(--uitk-text-background-selected);
-    --vuuFilterEditor-tooltipBackground: var(--uitk-container-background-high);
-    --vuuFilterEditor-tooltipBorder: var(--tooltip-status-borderColor) var(--uitk-container-borderWidth) var(--uitk-container-borderStyle); 
-    --vuuFilterEditor-tooltipElevation: var(--uitk-overlayable-shadow-popout);
-    --vuuFilterEditor-suggestion-selectedBackground: var(--uitk-selectable-background-selected);
+    --vuuFilterEditor-background: var(--salt-container-background-medium);
+    --vuuFilterEditor-color: var(--salt-text-primary-foreground);
+    --vuuFilterEditor-fontFamily: var(--salt-typography-fontFamily);
+    --vuuFilterEditor-fontSize: var(--salt-text-fontSize);
+    --vuuFilterEditor-cursorColor: var(--salt-text-secondary-foreground);
+    --vuuFilterEditor-selectionBackground: var(--salt-text-background-selected);
+    --vuuFilterEditor-tooltipBackground: var(--salt-container-background-high);
+    --vuuFilterEditor-tooltipBorder: var(--tooltip-status-borderColor) var(--salt-container-borderWidth) var(--salt-container-borderStyle); 
+    --vuuFilterEditor-tooltipElevation: var(--salt-overlayable-shadow-popout);
+    --vuuFilterEditor-suggestion-selectedBackground: var(--salt-selectable-background-selected);
     --vuuFilterEditor-suggestion-height: 24px;
     --vuuFilterEditor-variableColor: blue;
 
     align-items: center;
-    border: solid 1px lightgray;
+    border-color: var(--salt-container-borderColor-medium);
+    border-style: solid none;
+    border-width: 1px;
     box-sizing: border-box;
     display: flex;
-    height: 30px;
+    height: var(--vuuFilterEditor-height, 30px);
 }
 
 .vuuFilterInput-Editor {
@@ -28,7 +36,7 @@
 .vuuFilterInput-FilterButton,
 .vuuFilterInput-ClearButton {
     --vuu-icon-size: 12px;
-    --uitkButton-width: 28px;
+    --saltButton-width: var(--vuuFilterEditor-buttonWidth, 28px);
 }
 
 

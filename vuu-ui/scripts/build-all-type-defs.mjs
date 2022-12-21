@@ -14,11 +14,9 @@ const packages = [
   //   'react-utils',
   //   'vuu-theme',
   "vuu-data",
-  "datagrid-parsers",
   //   'ui-controls',
   //   'vuu-datagrid',
   //   'vuu-layout',
-  //   'parsed-input',
   //   'vuu-shell'
 ];
 

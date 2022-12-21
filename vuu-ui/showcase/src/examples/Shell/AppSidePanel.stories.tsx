@@ -5,7 +5,7 @@ import {
   Placeholder,
   View,
 } from "@finos/vuu-layout";
-import { ToolkitProvider } from "@heswell/uitk-core";
+import { SaltProvider } from "@salt-ds/core";
 
 import { AppSidePanel } from "app-vuu-example/src/app-sidepanel";
 import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
@@ -44,7 +44,7 @@ export const VuuConnectedAppSidePanel = () => {
   console.log({ tables });
 
   if (error) {
-    return <ToolkitProvider>{error}</ToolkitProvider>;
+    return <SaltProvider>{error}</SaltProvider>;
   }
 
   return (

@@ -7,14 +7,15 @@
   "workspaces": [
     "packages/**",
     "sample-apps/**",
-    "showcase"
+    "showcase",
+    "salt/packages/lab"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.jsx",
     "prettier": "prettier './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "format": "prettier --write './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "build": "node ./scripts/build-all.mjs",
-    "build:uitk": "node ./scripts/build-uitk.mjs",
+    "build:salt": "node ./scripts/build-salt.mjs",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "visualize-bundle": "esbuild-visualizer --metadata ./deployed_apps/app-vuu-example/features/feature-filtered-grid/meta.json",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",

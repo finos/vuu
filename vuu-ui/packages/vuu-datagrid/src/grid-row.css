@@ -12,7 +12,7 @@
 }
 
 .vuuDataGridRow-even {
-  --row-background: var(--uitk-palette-neutral-background-high);
+  --row-background: var(--salt-container-secondary-background);
 }
 
 .vuuDataGridRow:not(.vuuDataGridRow-even) {
@@ -25,11 +25,11 @@
 
 .vuuDataGridRow[aria-selected='true'] {
   background-color: var(--grid-row-background-selected);
-  --cell-border-top-color: var(--uitk-selectable-borderColor-selected);
+  --cell-border-top-color: var(--salt-selectable-borderColor-selected);
 }
 
 .vuuDataGridRow-lastSelected {
-  --cell-border-bottom-color: var(--uitk-selectable-borderColor-selected);
+  --cell-border-bottom-color: var(--salt-selectable-borderColor-selected);
 }
 
 .vuuDataGridRow.expanded {

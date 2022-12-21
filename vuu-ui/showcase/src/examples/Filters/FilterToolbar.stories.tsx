@@ -1,12 +1,12 @@
-// import { Switch } from "@heswell/uitk-core";
-import { Pill } from "@heswell/uitk-core";
+// import { Switch } from "@salt-ds/core";
+import { Pill } from "@heswell/salt-lab";
 import {
   Dropdown,
   ToggleButton,
   ToggleButtonToggleEventHandler,
   Toolbar,
   ToolbarField,
-} from "@heswell/uitk-lab";
+} from "@heswell/salt-lab";
 import React, { useCallback, useState } from "react";
 
 import "./FilterToolbar.stories.css";

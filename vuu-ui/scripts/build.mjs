@@ -5,6 +5,7 @@ import {
   copyFolderSync,
   formatBytes,
   formatDuration,
+  getCommandLineArg,
   readPackageJson,
   writeMetaFile,
 } from "./utils.mjs";
@@ -17,8 +18,6 @@ const defaultConfig = {
 };
 
 export default async function main(customConfig) {
-  const args = process.argv.slice(2);
-
   const config = {
     ...defaultConfig,
     ...customConfig,
@@ -35,16 +34,18 @@ export default async function main(customConfig) {
 
   const workerTS = "src/worker.ts";
   const indexTS = "src/index.ts";
+  const indexDTS = "index.d.ts";
   const indexJS = "src/index.js";
   const indexCSS = "index.css";
 
   const outdir = `${DIST_PATH}/${packageName}`;
-  const watch = args.includes("--watch");
-  const development = watch || args.includes("--dev");
-  const cjs = args.includes("--cjs") ? " --cjs" : "";
+  const watch = getCommandLineArg("--watch");
+  const development = watch || getCommandLineArg("--dev");
+  const cjs = getCommandLineArg("--cjs") ? " --cjs" : "";
 
   const hasWorker = fs.existsSync(workerTS);
   const isTypeScript = fs.existsSync(indexTS);
+  const isTypeLib = fs.existsSync(indexDTS);
   const isJavaScript = fs.existsSync(indexJS);
 
   const buildConfig = {
@@ -84,7 +85,7 @@ export default async function main(customConfig) {
         if (filesToPublish.length) {
           filesToPublish.forEach((fileName) => {
             const filePath = fileName.replace(/^\//, "./");
-            const outPath = `${outdir}${fileName}`;
+            const outPath = `${outdir}/${fileName}`;
             if (typeof fs.cp === "function") {
               // node v16.7 +
               fs.cp(filePath, outPath, { recursive: true }, (err) => {
@@ -97,14 +98,15 @@ export default async function main(customConfig) {
           });
         }
       }
-      const newPackage = {
-        ...packageRest,
-        files,
-        module: "esm/index.js",
-      };
+      const newPackage = { ...packageRest, files };
 
-      if (cjs) {
-        newPackage.main = "cjs/index.js";
+      if (isTypeLib) {
+        newPackage.types = types;
+      } else {
+        newPackage.module = "esm/index.js";
+        if (cjs) {
+          newPackage.main = "cjs/index.js";
+        }
       }
 
       fs.writeFile(
@@ -155,15 +157,18 @@ export default async function main(customConfig) {
   }
 
   // Compose the list of async tasks we are going to run
-  const buildTasks = [writePackageJSON(), build(buildConfig)];
-  if (cjs) {
-    buildTasks.push(
-      build({
-        ...buildConfig,
-        format: "cjs",
-        outdir: `${outdir}/cjs`,
-      })
-    );
+  const buildTasks = [writePackageJSON()];
+  if (!isTypeLib) {
+    buildTasks.push(build(buildConfig));
+    if (cjs) {
+      buildTasks.push(
+        build({
+          ...buildConfig,
+          format: "cjs",
+          outdir: `${outdir}/cjs`,
+        })
+      );
+    }
   }
   buildTasks.push(copyStaticFiles());
 
@@ -171,41 +176,43 @@ export default async function main(customConfig) {
     process.exit(1);
   });
 
-  await writeMetaFile(esmOutput.result.metafile, outdir);
-
-  const {
-    outputs: {
-      [`${outdir}/esm/index.js`]: jsOut,
-      [`${outdir}/esm/index.css`]: cssOut,
-    },
-  } = esmOutput.result.metafile;
-
   console.log(`[${scopedPackageName}]`);
 
-  if (cssOut) {
-    relocateCSSToPackageRoot();
-    console.log(`    \tindex.css:     ${formatBytes(cssOut.bytes)}`);
-  }
+  if (esmOutput) {
+    await writeMetaFile(esmOutput.result.metafile, outdir);
 
-  if (jsOut) {
-    console.log(
-      `\tesm/index.js:  ${formatBytes(jsOut.bytes)} (${formatDuration(
-        esmOutput.duration
-      )})`
-    );
-  }
-
-  if (cjs) {
     const {
-      outputs: { [`${outdir}/cjs/index.js`]: jsOut },
-    } = cjsOutput.result.metafile;
+      outputs: {
+        [`${outdir}/esm/index.js`]: jsOut,
+        [`${outdir}/esm/index.css`]: cssOut,
+      },
+    } = esmOutput.result.metafile;
+
+    if (cssOut) {
+      relocateCSSToPackageRoot();
+      console.log(`    \tindex.css:     ${formatBytes(cssOut.bytes)}`);
+    }
 
     if (jsOut) {
       console.log(
-        `\tcjs/index.js:  ${formatBytes(jsOut.bytes)} (${formatDuration(
-          cjsOutput.duration
+        `\tesm/index.js:  ${formatBytes(jsOut.bytes)} (${formatDuration(
+          esmOutput.duration
         )})`
       );
+    }
+
+    if (cjs) {
+      const {
+        outputs: { [`${outdir}/cjs/index.js`]: jsOut },
+      } = cjsOutput.result.metafile;
+
+      if (jsOut) {
+        console.log(
+          `\tcjs/index.js:  ${formatBytes(jsOut.bytes)} (${formatDuration(
+            cjsOutput.duration
+          )})`
+        );
+      }
     }
   }
 }

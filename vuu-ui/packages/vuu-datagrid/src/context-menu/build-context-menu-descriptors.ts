@@ -58,20 +58,21 @@ export const buildContextMenuDescriptors =
         options,
       });
 
+      descriptors.push({
+        label: "Remove filter",
+        action: "filter-remove-column",
+        options,
+      });
+
       if (column && !colIsOnlyFilter) {
         // TODO col might still be the only column in the filter if it is
         // involved in all clauses
         descriptors.push({
-          label: `Remove ${column.name} from filter`,
-          action: "filter-remove-column",
+          label: `Remove all filters`,
+          action: "remove-filters",
           options,
         });
       }
-      descriptors.push({
-        label: "Remove filter",
-        action: "filter-remove",
-        options,
-      });
     }
 
     // if (options?.selectedRowCount){

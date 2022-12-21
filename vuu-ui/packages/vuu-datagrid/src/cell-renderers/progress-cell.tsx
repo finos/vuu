@@ -1,4 +1,4 @@
-import { LinearProgress } from "@heswell/uitk-lab";
+import { LinearProgress } from "@heswell/salt-lab";
 import cx from "classnames";
 import React from "react";
 

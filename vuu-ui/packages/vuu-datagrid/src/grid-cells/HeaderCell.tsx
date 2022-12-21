@@ -1,4 +1,4 @@
-import { useContextMenu } from "@finos/ui-controls";
+import { useContextMenu } from "@finos/vuu-layout";
 import { Filter } from "@finos/vuu-filters";
 import cx from "classnames";
 import { MouseEvent, useCallback, useRef } from "react";

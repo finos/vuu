@@ -1,2 +1,2 @@
 export * from "./Palette";
-export * from "./PaletteUitk";
+export * from "./PaletteSalt";

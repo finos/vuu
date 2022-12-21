@@ -1,4 +1,4 @@
-import { ToolkitProvider } from "@heswell/uitk-core";
+import { SaltProvider } from "@salt-ds/core";
 import { RpcResponse, useViewserver, VuuTableSchemas } from "@finos/vuu-data";
 import { Dialog, registerComponent } from "@finos/vuu-layout";
 import {
@@ -76,9 +76,10 @@ export const App = ({ user }: { user: VuuUser }) => {
 
   // TODO get Context from Shell
   return (
-    <ToolkitProvider applyClassesTo="scope" density="high" mode="light">
+    <SaltProvider applyClassesTo="scope" density="high" mode="light">
       <ShellContextProvider value={{ handleRpcResponse }}>
         <Shell
+          className="App"
           defaultLayout={defaultLayout}
           leftSidePanel={<AppSidePanel features={features} tables={tables} />}
           serverUrl={serverUrl}
@@ -94,6 +95,6 @@ export const App = ({ user }: { user: VuuUser }) => {
           </Dialog>
         </Shell>
       </ShellContextProvider>
-    </ToolkitProvider>
+    </SaltProvider>
   );
 };

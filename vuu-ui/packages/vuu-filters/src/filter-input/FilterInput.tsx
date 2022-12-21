@@ -1,7 +1,7 @@
 import { Filter } from "@finos/vuu-filters";
 import { HTMLAttributes } from "react";
 import { SuggestionConsumer, useCodeMirrorEditor } from "./useCodeMirrorEditor";
-import { Button } from "@heswell/uitk-core";
+import { Button } from "@salt-ds/core";
 
 import "./FilterInput.css";
 
@@ -30,7 +30,7 @@ export const FilterInput = ({
   });
 
   return (
-    <div className={classBase} style={{ width: 600 }}>
+    <div className={classBase}>
       <Button className={`${classBase}-FilterButton`} data-icon="filter" />
       <div className={`${classBase}-Editor`} ref={editorRef} />
       <Button

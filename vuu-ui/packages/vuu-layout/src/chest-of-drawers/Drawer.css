@@ -1,5 +1,7 @@
-.hwDrawer {
-  --drawer-leading-edge-border: solid 1px var(--uitk-container-borderColor-medium, none);
+.vuuDrawer {
+  --drawer-leading-edge-border: solid 1px var(--salt-container-primary-borderColor, none);
+  --vuu-close-icon-svg: var(--svg-chevron-double-right);
+
   transition: flex-basis;
   transition-duration: var(--drawer-transition-duration);
   position: relative;
@@ -12,25 +14,25 @@
   display: flex;
 }
 
-.hwDrawer-peekaboo {
+.vuuDrawer-peekaboo {
   flex-basis: var(--drawer-peek-size);
   flex-grow: 0;
   flex-shrink: 0;
 }
 
-.hwDrawer-inline.hwDrawer-open {
+.vuuDrawer-inline.vuuDrawer-open {
   flex-basis: var(--drawer-size);
   flex-grow: 0;
   flex-shrink: 0;
 }
 
-.hwDrawer-liner {
+.vuuDrawer-liner {
   background-color: var(--drawer-bg);
   overflow: hidden;
   position: relative;
 }
 
-.hwDrawer-content {
+.vuuDrawer-content {
   height: 100%;
   overflow: hidden;
   position: absolute;
@@ -42,112 +44,116 @@
   flex: 1 1 100%;
 }
 
-.hwDrawer-open .hwDrawer-content {
+.vuuDrawer-open .vuuDrawer-content {
   right: 0;
 }
 
-/* .hwDrawer:not(.hwDrawer-open) .hwDrawer-liner > * {
+/* .vuuDrawer:not(.vuuDrawer-open) .vuuDrawer-liner > * {
   display: none;
 } */
 
-.hwDrawer-left {
+.vuuDrawer-left {
   border-right: var(--drawer-leading-edge-border);
 }
-.hwDrawer-right {
+.vuuDrawer-right {
   border-left: var(--drawer-leading-edge-border);
 }
-.hwDrawer-top {
+.vuuDrawer-top {
   border-bottom: var(--drawer-leading-edge-border);
 }
-.hwDrawer-bottom {
+.vuuDrawer-bottom {
   border-top: var(--drawer-leading-edge-border);
 }
 
-.hwDrawer-left .hwDrawer-liner,
-.hwDrawer-right .hwDrawer-liner {
+.vuuDrawer-left .vuuDrawer-liner,
+.vuuDrawer-right .vuuDrawer-liner {
   height: 100%;
   transition: width;
 }
 
-.hwDrawer-top .hwDrawer-liner,
-.hwDrawer-bottom .hwDrawer-liner {
+.vuuDrawer-top .vuuDrawer-liner,
+.vuuDrawer-bottom .vuuDrawer-liner {
   width: 100%;
   transition: height;
 }
 
-.hwDrawer-inline .hwDrawer-liner {
+.vuuDrawer-inline .vuuDrawer-liner {
   width: 100%;
   height: 100%;
 }
 
-.hwDrawer-over .hwDrawer-liner {
+.vuuDrawer-over .vuuDrawer-liner {
   position: absolute;
   transition-duration: 0.4s;
 }
 
-.hwDrawer-over.hwDrawer-left .hwDrawer-liner {
+.vuuDrawer-over.vuuDrawer-left .vuuDrawer-liner {
   top: 0;
   left: 0;
   width: 0;
 }
 
-.hwDrawer-over.hwDrawer-right .hwDrawer-liner {
+.vuuDrawer-over.vuuDrawer-right .vuuDrawer-liner {
   top: 0;
   right: 0;
   width: 0;
 }
 
-.hwDrawer-over.hwDrawer-top .hwDrawer-liner {
+.vuuDrawer-over.vuuDrawer-top .vuuDrawer-liner {
   height: 0;
   top: 0;
   left: 0;
 }
 
-.hwDrawer-over.hwDrawer-bottom .hwDrawer-liner {
+.vuuDrawer-over.vuuDrawer-bottom .vuuDrawer-liner {
   bottom: 0;
   height: 0;
   left: 0;
 }
 
-.hwDrawer-left.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner,
-.hwDrawer-right.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner {
+.vuuDrawer-left.vuuDrawer-over.vuuDrawer-peekaboo .vuuDrawer-liner,
+.vuuDrawer-right.vuuDrawer-over.vuuDrawer-peekaboo .vuuDrawer-liner {
   width: var(--drawer-peek-size);
 }
 
-.hwDrawer-top.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner,
-.hwDrawer-bottom.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner {
+.vuuDrawer-top.vuuDrawer-over.vuuDrawer-peekaboo .vuuDrawer-liner,
+.vuuDrawer-bottom.vuuDrawer-over.vuuDrawer-peekaboo .vuuDrawer-liner {
   height: var(--drawer-peek-size);
 }
 
-.hwDrawer-left.hwDrawer-over.hwDrawer-open .hwDrawer-liner,
-.hwDrawer-right.hwDrawer-over.hwDrawer-open .hwDrawer-liner {
+.vuuDrawer-left.vuuDrawer-over.vuuDrawer-open .vuuDrawer-liner,
+.vuuDrawer-right.vuuDrawer-over.vuuDrawer-open .vuuDrawer-liner {
   width: var(--drawer-size);
 }
 
-.hwDrawer-top.hwDrawer-over.hwDrawer-open .hwDrawer-liner,
-.hwDrawer-bottom.hwDrawer-over.hwDrawer-open .hwDrawer-liner {
+.vuuDrawer-top.vuuDrawer-over.vuuDrawer-open .vuuDrawer-liner,
+.vuuDrawer-bottom.vuuDrawer-over.vuuDrawer-open .vuuDrawer-liner {
   height: var(--drawer-size);
 }
 
-.hwDrawer-top,
-.hwDrawer-left {
+.vuuDrawer-top,
+.vuuDrawer-left {
   order: 0;
 }
 
-.hwDrawer-bottom,
-.hwDrawer-right {
+.vuuDrawer-bottom,
+.vuuDrawer-right {
   order: 99;
 }
 
-.hwDrawer-left,
-.hwDrawer-right {
+.vuuDrawer-left,
+.vuuDrawer-right {
   flex-direction: column;
 }
 
-.hwToggleButton-container {
-  --uitkButton-height: 28px;
-  --uitkButton-width: 28px;
+.vuuToggleButton-container {
+  --saltButton-height: 28px;
+  --saltButton-width: 28px;
   --vuu-icon-size: 12px;
-  --vuu-icon-svg: var(--svg-chevron-double-left);
   flex: 0 0 28px;
+}
+
+.vuuDrawer-open {
+  --vuu-close-icon-svg: var(--svg-chevron-double-left);
+
 }
