@@ -8,7 +8,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
-} from "@heswell/uitk-lab";
+} from "@heswell/salt-lab";
 import cx from "classnames";
 
 import { TableSchema, VuuTableSchemas } from "@finos/vuu-data";

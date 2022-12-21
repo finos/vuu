@@ -1,6 +1,6 @@
 import React from "react";
 import { Table } from "./Table";
-import { Toolbar, ToggleButton } from "@heswell/uitk-lab";
+import { Toolbar, ToggleButton } from "@heswell/salt-lab";
 
 import "./Table.css";
 

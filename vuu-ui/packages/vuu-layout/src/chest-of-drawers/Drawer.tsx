@@ -1,8 +1,10 @@
 import React, { CSSProperties, HTMLAttributes, useCallback } from "react";
 import cx from "classnames";
-import { Button, useControlled } from "@heswell/uitk-core";
+import { Button, useControlled } from "@salt-ds/core";
 
 import "./Drawer.css";
+
+const classBase = "vuuDrawer";
 
 const sizeAttribute = (value: string | number) => {
   return typeof value === "string" ? value : value + "px";
@@ -65,8 +67,6 @@ const Drawer = ({
     state: "open",
   });
 
-  const classBase = "hwDrawer";
-
   const className = cx(classBase, classNameProp, `${classBase}-${position}`, {
     [`${classBase}-open`]: open,
     [`${classBase}-inline`]: inline,
@@ -84,7 +84,7 @@ const Drawer = ({
   const handleClick = clickToOpen ? toggleDrawer : onClick;
 
   const renderToggleButton = () => (
-    <div className={cx("hwToggleButton-container")}>
+    <div className={cx("vuuToggleButton-container")}>
       {open ? (
         <Button
           aria-label="close"

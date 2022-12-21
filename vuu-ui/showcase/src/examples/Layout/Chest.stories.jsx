@@ -1,9 +1,8 @@
 import React, { useRef, useState } from "react";
 
-import { List, ListItem } from "@heswell/uitk-lab";
+import { Button } from "@salt-ds/core";
+import { List, ListItem } from "@heswell/salt-lab";
 import {
-  ChevronDoubleLeftButton,
-  ChevronDoubleRightButton,
   Component,
   Chest,
   Drawer,
@@ -165,8 +164,24 @@ export const LeftInlineDrawerFlexbox = () => {
             alignItems: "flex-end",
           }}
         >
-          <div style={{ height: 40, width: "100%", backgroundColor: "#ddd" }}>
-            {open ? <ChevronDoubleLeftButton onClick={handleClick} /> : null}
+          <div
+            style={{
+              height: 40,
+              width: "100%",
+              backgroundColor: "#ddd",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              paddingRight: 4,
+            }}
+          >
+            {open ? (
+              <Button
+                onClick={handleClick}
+                data-icon="chevron-double-left"
+                style={{ "--vuu-icon-size": "12px", width: 28 }}
+              />
+            ) : null}
           </div>
         </div>
       </Drawer>
@@ -195,7 +210,13 @@ export const LeftInlineDrawerFlexbox = () => {
           </View>
         </Flexbox>
         <div style={{ height: 40, backgroundColor: "#ccc" }}>
-          {open ? null : <ChevronDoubleRightButton onClick={handleClick} />}
+          {open ? (
+            <Button
+              onClick={handleClick}
+              data-icon="chevron-double-left"
+              style={{ "--vuu-icon-size": "12px", width: 28 }}
+            />
+          ) : null}
         </div>
       </Flexbox>
     </Chest>
@@ -224,7 +245,13 @@ export const InlineDrawerFlexboxVariants = () => {
             }}
           >
             <div style={{ height: 40, width: "100%" }}>
-              {open ? <ChevronDoubleLeftButton onClick={handleClick} /> : null}
+              {open ? (
+                <Button
+                  onClick={handleClick}
+                  data-icon="chevron-double-left"
+                  style={{ "--vuu-icon-size": "12px", width: 28 }}
+                />
+              ) : null}
             </div>
           </div>
         </Drawer>
@@ -248,7 +275,13 @@ export const InlineDrawerFlexboxVariants = () => {
             />
           </Flexbox>
           <div style={{ height: 40, backgroundColor: "#ccc" }}>
-            {open ? null : <ChevronDoubleLeftButton onClick={handleClick} />}
+            {open ? (
+              <Button
+                onClick={handleClick}
+                data-icon="chevron-double-left"
+                style={{ "--vuu-icon-size": "12px", width: 28 }}
+              />
+            ) : null}
           </div>
         </Flexbox>
       </Chest>
@@ -292,9 +325,17 @@ export const InlineDrawerFlexboxVariants = () => {
         </Chest>
         <div style={{ height: 40, backgroundColor: "#ccc" }}>
           {open ? (
-            <ChevronDoubleLeftButton onClick={handleClick} />
+            <Button
+              onClick={handleClick}
+              data-icon="chevron-double-left"
+              style={{ "--vuu-icon-size": "12px", width: 28 }}
+            />
           ) : (
-            <ChevronDoubleRightButton onClick={handleClick} />
+            <Button
+              onClick={handleClick}
+              data-icon="chevron-double-right"
+              style={{ "--vuu-icon-size": "12px", width: 28 }}
+            />
           )}
         </div>
       </Flexbox>

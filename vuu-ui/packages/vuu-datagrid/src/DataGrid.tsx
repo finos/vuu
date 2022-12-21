@@ -1,5 +1,6 @@
-import { ContextMenuProvider } from "@finos/ui-controls";
-import { useForkRef } from "@heswell/uitk-core";
+import { ConfigChangeMessage } from "@finos/vuu-data";
+import { ContextMenuProvider } from "@finos/vuu-layout";
+import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import {
   ForwardedRef,
@@ -11,11 +12,12 @@ import {
 } from "react";
 import { ComponentProvider } from "./component-context";
 import { buildContextMenuDescriptors, useContextMenu } from "./context-menu";
+import { Footer, GridAdornment, Header, InlineHeader } from "./grid-adornments";
 import { GridProvider } from "./grid-context";
 import {
   useGridActionDispatcher,
-  useKeyboardNavigation,
   useHorizonatlScrollSync,
+  useKeyboardNavigation,
   useSelection,
 } from "./grid-hooks";
 import { measureColumns, useGridModel } from "./grid-model";
@@ -25,10 +27,7 @@ import { RowHeightCanary } from "./RowHeightCanary";
 import components from "./standard-renderers";
 import { Viewport } from "./Viewport";
 
-import { Footer, GridAdornment, Header, InlineHeader } from "./grid-adornments";
-
 import "./DataGrid.css";
-import { ConfigChangeMessage } from "@finos/vuu-data";
 
 // TODO use a null datasource and empty columns defs
 // display a warning if loaded with no dataSource

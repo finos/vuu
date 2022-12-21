@@ -1,8 +1,8 @@
-import React, { HTMLAttributes } from "react";
 import cx from "classnames";
-import { Column2AIcon, Column2BIcon } from "@finos/ui-controls";
-import "./DropMenu.css";
+import { HTMLAttributes } from "react";
 import { DropTarget } from "./DropTarget";
+
+import "./DropMenu.css";
 
 export function computeMenuPosition(
   dropTarget: DropTarget,
@@ -25,13 +25,7 @@ export function computeMenuPosition(
       ];
 }
 
-const getIcon = (i: number) => {
-  if (i === 0) {
-    return <Column2AIcon />;
-  } else {
-    return <Column2BIcon />;
-  }
-};
+const classBase = "vuuDropMenu";
 
 export interface DropMenuProps extends HTMLAttributes<HTMLDivElement> {
   dropTarget: DropTarget;
@@ -51,17 +45,16 @@ export const DropMenu = ({
 
   return (
     <div
-      className={cx("hwDropMenu", className, orientation)}
+      className={cx(classBase, className, `${classBase}-${orientation}`)}
       onMouseLeave={() => onHover(null)}
     >
       {dropTargets.map((target, i) => (
         <div
           key={i}
-          className="hwDropMenu-item"
+          className={`${classBase}-item`}
+          data-icon={i === 0 ? "column-2A" : "column-2B"}
           onMouseEnter={() => onHover(target)}
-        >
-          {getIcon(i)}
-        </div>
+        />
       ))}
     </div>
   );

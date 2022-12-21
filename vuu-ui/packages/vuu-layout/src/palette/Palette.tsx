@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemProps } from "@heswell/uitk-lab";
+import { List, ListItem, ListItemProps } from "@heswell/salt-lab";
 import { uuid } from "@finos/vuu-utils";
 import cx from "classnames";
 import {

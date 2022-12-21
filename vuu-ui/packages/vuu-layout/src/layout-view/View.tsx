@@ -1,4 +1,4 @@
-import { useForkRef, useIdMemo as useId } from "@heswell/uitk-core";
+import { useForkRef, useIdMemo as useId } from "@salt-ds/core";
 import cx from "classnames";
 import React, { ForwardedRef, forwardRef, useMemo, useRef } from "react";
 import { Header } from "../layout-header/Header";

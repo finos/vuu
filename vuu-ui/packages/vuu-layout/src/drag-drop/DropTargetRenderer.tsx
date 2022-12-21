@@ -1,12 +1,11 @@
-import React from "react";
-import { PopupService } from "@finos/ui-controls";
-import { DropMenu, computeMenuPosition } from "./DropMenu";
+import { PopupService } from "../popup";
 import { RelativeDropPosition } from "./BoxModel";
-
-import "./DropTargetRenderer.css";
-import { DropTarget, GuideLine } from "./DropTarget";
 import { DragDropRect } from "./dragDropTypes";
 import { DragState } from "./DragState";
+import { computeMenuPosition, DropMenu } from "./DropMenu";
+import { DropTarget, GuideLine } from "./DropTarget";
+
+import "./DropTargetRenderer.css";
 
 type Point = [number, number];
 type TabMode = "full-view" | "tab-only";
@@ -41,7 +40,7 @@ function insertSVGRoot() {
       <svg width="100%" height="100%">
         <path id="hw-drop-guides" />
         <path
-          id="hw-drop-outline"
+          id="vuu-drop-outline"
           d="M300,132 L380,132 L380,100 L460,100 L460,132, L550,132 L550,350 L300,350z">
           <animate
             attributeName="d"
@@ -71,15 +70,11 @@ export default class DropTargetCanvas {
     this.currentPath = null;
     this.tabMode = tabMode;
 
-    const { top, left, right, bottom } = dragRect;
-    const width = right - left;
-    const height = bottom - top;
-
     const points = this.getPoints(0, 0, 0, 0);
     // const points = this.getPoints(left, top, width, height);
     const d = pathFromPoints(points);
 
-    const dropOutlinePath = document.getElementById("hw-drop-outline");
+    const dropOutlinePath = document.getElementById("vuu-drop-outline");
     dropOutlinePath?.setAttribute("d", d);
     this.currentPath = d;
   }
@@ -210,7 +205,7 @@ export default class DropTargetCanvas {
       const h = b - t;
 
       if (this.currentPath) {
-        const path = document.getElementById("hw-drop-outline");
+        const path = document.getElementById("vuu-drop-outline");
         path?.setAttribute("d", this.currentPath);
       }
 

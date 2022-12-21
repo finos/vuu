@@ -1,11 +1,11 @@
 .vuuFilterDropdown,
 .vuuFilterSwitch {
-    --uitkToolbarField-marginTop: 0;
+    --saltToolbarField-marginTop: 0;
 
     height: 100%;
 }
 
-.vuuFilterDropdown.uitkFormField-focused:before {
+.vuuFilterDropdown.saltFormField-focused:before {
     top: 2px !important;
     bottom: 2px !important;
 }

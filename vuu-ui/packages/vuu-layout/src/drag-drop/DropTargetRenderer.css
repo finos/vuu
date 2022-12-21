@@ -27,9 +27,9 @@ path.drop-target.centre {
   stroke: red;
 }
 
-#hw-drop-outline {
-  fill: none;
-  stroke: red;
+#vuu-drop-outline {
+  fill: rgba(0,0,255,.3);
+  stroke: none;
   stroke-dasharray: 4 2;
 }
 

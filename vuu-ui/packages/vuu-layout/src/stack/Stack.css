@@ -15,9 +15,9 @@
 }
 
 .vuuTabHeader {
-  --uitkTabs-activationIndicator-background: transparent;
-  --uitkToolbarField-marginTop: calc(var(--uitk-size-unit) - 1px);
-  border-bottom: solid 1px var(--uitk-container-borderColor-medium);
+  --saltTabs-activationIndicator-background: transparent;
+  --saltToolbarField-marginTop: calc(var(--salt-size-unit) - 1px);
+  border-bottom: solid 1px var(--salt-container-primary-borderColor);
 }
 
 .vuuTabHeader + .hwFlexbox,

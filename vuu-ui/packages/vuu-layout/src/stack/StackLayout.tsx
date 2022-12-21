@@ -1,4 +1,4 @@
-import { useIdMemo as useId } from "@heswell/uitk-core";
+import { useIdMemo as useId } from "@salt-ds/core";
 import React, { ReactElement, useRef } from "react";
 import { Stack } from "./Stack";
 // import { Tooltray } from "../toolbar";
