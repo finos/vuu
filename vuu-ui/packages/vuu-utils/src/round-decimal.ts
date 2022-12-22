@@ -1,6 +1,6 @@
 const PUNCTUATION_STR = String.fromCharCode(8200);
 const DIGIT_STR = String.fromCharCode(8199);
-export const DECIMALS_AUTO = -1;
+const DECIMALS_AUTO = -1;
 
 type PadMap = {
   DIGIT: string;
@@ -29,8 +29,10 @@ const Zero: PadMap = {
   FULL_PADDING: [null, "0", "00", "000", "0000"],
 };
 
-// const LEADING_THOUSAND = DIGIT_STR + DIGIT_STR + DIGIT_STR + PUNCTUATION_STR;
-//const LEADING_FILL = LEADING_THOUSAND + LEADING_THOUSAND + LEADING_THOUSAND;
+function padLeft(value: string, maxLength = 6) {
+  return (LEADING_FILL + value).slice(-maxLength);
+}
+
 const LEADING_FILL =
   DIGIT_STR +
   DIGIT_STR +
@@ -42,7 +44,7 @@ const LEADING_FILL =
   DIGIT_STR +
   DIGIT_STR;
 
-export const Align = {
+const Align = {
   Right: "right",
   Center: "center",
   Left: "left",
@@ -81,7 +83,6 @@ export function roundDecimal(
   zeroPad?: boolean,
   alignOnDecimals?: boolean
 ) {
-  //onsole.log(`roundDecimal ${value} dp ${decimals} align=${align} zeroPad ? ${zeroPad} alignOnDecimals ${alignOnDecimals}`);
   if (value === undefined || typeof value !== "number" || isNaN(value)) {
     return "";
   }
@@ -122,8 +123,4 @@ export function roundDecimal(
   }
 
   return integral + (fraction ? "." + fraction : "");
-}
-
-export function padLeft(value: string, maxLength = 6) {
-  return (LEADING_FILL + value).slice(-maxLength);
 }

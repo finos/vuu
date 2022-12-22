@@ -1,10 +1,10 @@
+import { roundDecimal } from "@finos/vuu-utils";
 import { createElement, useRef } from "react";
 import {
   isTypeDescriptor,
   KeyedColumnDescriptor,
   TypeFormatting,
 } from "../grid-model";
-import { roundDecimal } from "./grid-cell-number-utils";
 
 const defaultFormatter = (value: unknown) => (value == null ? "" : value);
 
