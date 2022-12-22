@@ -1,4 +1,4 @@
-export declare type ColumnDataType =
+export declare type VuuColumnDataType =
   | "int"
   | "long"
   | "double"
@@ -86,12 +86,21 @@ export interface ServerToClientTableList {
   type: "TABLE_LIST_RESP";
   tables: VuuTable[];
 }
+
+export type VuuTableList = Pick<ServerToClientTableList, "tables">;
+
 export interface ServerToClientTableMeta {
   columns: VuuColumns;
-  dataTypes: ColumnDataType[];
+  dataTypes: VuuColumnDataType[];
   type: "TABLE_META_RESP";
   table: VuuTable;
 }
+
+export type VuuTableMeta = Pick<
+  ServerToClientTableMeta,
+  "columns" | "dataTypes" | "table"
+>;
+
 export interface ServerToClientMenus {
   type: "VIEW_PORT_MENUS_RESP";
   menu: VuuMenu;
@@ -337,6 +346,34 @@ export interface ClientToServerMenuSelectRPC {
   rpcName: string;
   vpId: string;
 }
+export interface ClientToServerMenuTableRPC {
+  type: "VIEW_PORT_MENU_TABLE_RPC";
+  rpcName: string;
+  vpId: string;
+}
+export interface ClientToServerMenuRowRPC {
+  type: "VIEW_PORT_MENU_ROW_RPC";
+  rpcName: string;
+  vpId: string;
+}
+export interface ClientToServerMenuCellRPC {
+  type: "VIEW_PORT_MENU_CELL_RPC";
+  rpcName: string;
+  vpId: string;
+}
+
+export type ClientToServerMenuRPCType =
+  | "VIEW_PORT_MENUS_SELECT_RPC"
+  | "VIEW_PORT_MENU_TABLE_RPC"
+  | "VIEW_PORT_MENU_ROW_RPC"
+  | "VIEW_PORT_MENU_CELL_RPC";
+
+export type ClientToServerMenuRPC =
+  | ClientToServerMenuSelectRPC
+  | ClientToServerMenuTableRPC
+  | ClientToServerMenuRowRPC
+  | ClientToServerMenuCellRPC;
+
 export declare type VuuRpcMessagesOut = ClientToServerMenuSelectRPC;
 export declare type ClientToServerBody =
   | ClientToServerAuth
@@ -357,7 +394,7 @@ export declare type ClientToServerBody =
   | ClientToServerCloseTreeNode
   | ClientToServerCreateLink
   | ClientToServerRemoveLink
-  | ClientToServerMenuSelectRPC
+  | ClientToServerMenuRPC
   | ClientToServerRpcCall;
 export interface ClientToServerMessage<
   TBody extends ClientToServerBody = ClientToServerBody

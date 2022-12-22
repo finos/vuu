@@ -7,7 +7,8 @@ import {
   authenticate as vuuAuthenticate,
   connectToServer,
   RemoteDataSource,
-  useViewserver,
+  useVuuMenuActions,
+  useVuuTables,
 } from "@finos/vuu-data";
 
 import { testTableMeta } from "./Vuu.data";
@@ -23,7 +24,7 @@ const instrumentColumns = columns.map((name, index) => {
 });
 
 export const VuuTables = () => {
-  const { tables } = useViewserver();
+  const tables = useVuuTables();
 
   useEffect(() => {
     const connect = async () => {
@@ -34,10 +35,14 @@ export const VuuTables = () => {
   }, []);
 
   return (
-    <List>
-      {Object.entries(tables).map(([table, schema]) => (
-        <ListItem>{`[${schema.table.module}] ${schema.table.table}`}</ListItem>
-      ))}
+    <List width={200}>
+      {tables
+        ? Array.from(tables.entries()).map(([tableName, schema]) => (
+            <ListItem
+              key={tableName}
+            >{`[${schema.table.module}] ${schema.table.table}`}</ListItem>
+          ))
+        : null}
     </List>
   );
 };
@@ -80,7 +85,7 @@ export const useViewState = (config) => {
 const InstrumentGrid = ({ sort }) => {
   const [dataSource, onConfigChange] = useViewState(instrumentConfig);
 
-  useViewserver({ dataSource });
+  useVuuMenuActions({ dataSource });
 
   useEffect(() => {
     dataSource.enable();
@@ -108,6 +113,8 @@ const InstrumentGrid = ({ sort }) => {
   );
 };
 
+VuuTables.displaySequence = displaySequence++;
+
 export const TabbedTables = () => {
   const gridRef = useRef(null);
   const [namedFilters, setNamedFilters] = useState([]);
@@ -125,7 +132,7 @@ export const TabbedTables = () => {
 
   const dataSource = useMemo(() => new RemoteDataSource(dataConfig), []);
   const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction } =
-    useViewserver({
+    useVuuMenuActions({
       dataSource,
       onRpcResponse,
     });
@@ -157,3 +164,5 @@ export const TabbedTables = () => {
     </Stack>
   );
 };
+
+TabbedTables.displaySequence = displaySequence++;

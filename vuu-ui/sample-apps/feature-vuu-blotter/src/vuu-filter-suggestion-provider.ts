@@ -1,14 +1,14 @@
 import {
-  ColumnDataType,
+  VuuColumnDataType,
   TypeaheadParams,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import {
-  NamedFilter,
-  SuggestionItem,
-  SuggestionProviderProps,
-} from "@finos/datagrid-parsers";
-import { Filter, isMultiClauseFilter } from "@finos/vuu-filters";
+// import {
+//   SuggestionItem,
+//   SuggestionProviderProps,
+// } from "@finos/datagrid-parsers";
+import { Filter, NamedFilter } from "@finos/vuu-filter-types";
+import { isMultiClauseFilter } from "@finos/vuu-filters";
 import { SchemaColumn } from "@finos/vuu-data";
 
 type ObjectValue = { [key: string]: string };
@@ -218,7 +218,7 @@ const suggestNamedFilters = (
   }
 };
 
-const toJSType = (type: ColumnDataType): "string" | "number" => {
+const toJSType = (type: VuuColumnDataType): "string" | "number" => {
   switch (type) {
     case "int":
     case "long":
@@ -229,7 +229,7 @@ const toJSType = (type: ColumnDataType): "string" | "number" => {
   }
 };
 
-const typeChar = (type: ColumnDataType) => {
+const typeChar = (type: VuuColumnDataType) => {
   switch (type) {
     case "int":
     case "long":

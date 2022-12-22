@@ -1,21 +1,26 @@
 
+.salt-theme {
+    --vuuFilterEditor-lineHeight: 28px;
+}
+
 .salt-density-high {
     --vuuFilterEditor-buttonWidth: 20px;
     --vuuFilterEditor-height: 22px;
+    --vuuFilterEditor-lineHeight: 20px;
 }
 
-
 .vuuFilterInput {
-    --vuuFilterEditor-background: var(--salt-container-background-medium);
+    --vuuFilterEditor-background: var(--salt-container-primary-background);
     --vuuFilterEditor-color: var(--salt-text-primary-foreground);
     --vuuFilterEditor-fontFamily: var(--salt-typography-fontFamily);
     --vuuFilterEditor-fontSize: var(--salt-text-fontSize);
     --vuuFilterEditor-cursorColor: var(--salt-text-secondary-foreground);
     --vuuFilterEditor-selectionBackground: var(--salt-text-background-selected);
-    --vuuFilterEditor-tooltipBackground: var(--salt-container-background-high);
+    --vuuFilterEditor-tooltipBackground: var(--salt-container-primary-background);
     --vuuFilterEditor-tooltipBorder: var(--tooltip-status-borderColor) var(--salt-container-borderWidth) var(--salt-container-borderStyle); 
     --vuuFilterEditor-tooltipElevation: var(--salt-overlayable-shadow-popout);
     --vuuFilterEditor-suggestion-selectedBackground: var(--salt-selectable-background-selected);
+    --vuuFilterEditor-suggestion-selectedColor: var(--vuuFilterEditor-color);
     --vuuFilterEditor-suggestion-height: 24px;
     --vuuFilterEditor-variableColor: blue;
 

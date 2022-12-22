@@ -1,7 +1,7 @@
+import { VuuRange } from "@finos/vuu-protocol-types";
+import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { WindowRange, getFullRange, metadataKeys } from "@finos/vuu-utils";
 import { DataSource, DataSourceRow, SubscribeCallback } from "../data-source";
-import { VuuRange } from "../../../vuu-protocol-types";
 
 const { SELECTED } = metadataKeys;
 

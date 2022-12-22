@@ -10,5 +10,4 @@ export * from "./array-utils";
 export * from "./constants";
 export * from "./range-utils";
 export * from "./row-utils";
-export * from "./simple-store";
 export * from "./text-utils";

@@ -11,12 +11,10 @@ import {
   VuuSortCol,
   VuuTable,
 } from "../../vuu-protocol-types";
-import { Filter } from "@finos/vuu-filters";
+import { Filter } from "@finos/vuu-filter-types";
 import { IEventEmitter } from "@finos/vuu-utils/src/event-emitter";
-import {
-  ColumnDescriptor,
-  KeyedColumnDescriptor,
-} from "@finos/vuu-datagrid/src/grid-model";
+import { ColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
+import { VuuUIMessageOutMenuRPC } from "./vuuUIMessageTypes";
 
 type RowIndex = number;
 type RenderKey = number;
@@ -164,7 +162,12 @@ export type ConfigChangeMessage =
   | DataSourceVisualLinkCreatedMessage
   | DataSourceVisualLinkRemovedMessage;
 
-export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
+export type ConfigChangeHandler = (
+  msg:
+    | ConfigChangeMessage
+    | DataSourceMenusMessage
+    | DataSourceVisualLinksMessage
+) => void;
 
 export const shouldMessageBeRoutedToDataSource = (
   message: unknown
@@ -206,9 +209,14 @@ export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 export interface DataSource extends IEventEmitter {
   aggregate: (aggregations: VuuAggregation[]) => void;
   closeTreeNode: (key: string) => void;
+  createLink: ({ parentVpId, link: { fromColumn, toColumn } }: any) => void;
   filter: (filter: Filter | undefined, filterQuery: string) => void;
   group: (groupBy: VuuGroupBy) => void;
+  menuRpcCall: (
+    rpcRequest: Omit<VuuUIMessageOutMenuRPC, "viewport">
+  ) => Promise<unknown>;
   openTreeNode: (key: string) => void;
+  removeLink: () => void;
   rowCount: number | undefined;
   select: (selected: number[]) => void;
   setRange: (from: number, to: number) => void;

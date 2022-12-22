@@ -8,7 +8,8 @@ import {
   VuuLink,
   VuuMenuContext,
   VuuTable,
-} from "../../../vuu-protocol-types";
+  ClientToServerMenuRPCType,
+} from "@finos/vuu-protocol-types";
 import {
   isViewporttMessage as isViewportMessage,
   ServerProxySubscribeMessage,
@@ -43,6 +44,10 @@ export type LinkWithLabel = VuuLink & {
   label?: string;
 };
 
+export type MessageOptions = {
+  module?: string;
+};
+
 // TEST_DATA_COLLECTION
 // import { saveTestData } from '../../test-data-collection';
 
@@ -51,17 +56,18 @@ export const TEST_setRequestId = (id: number) => (_requestId = id);
 
 const nextRequestId = () => `${_requestId++}`;
 const EMPTY_ARRAY: unknown[] = [];
-const DEFAULT_OPTIONS = {};
+const DEFAULT_OPTIONS: MessageOptions = {};
 
-const getRPCType = (
-  msgType: "MENU_RPC_CALL",
-  context: VuuMenuContext
-): "VIEW_PORT_MENUS_SELECT_RPC" => {
-  if (msgType === "MENU_RPC_CALL" && context === "selected-rows") {
-    return "VIEW_PORT_MENUS_SELECT_RPC";
-  } else {
-    throw Error("No RPC command for ${msgType} / ${context}");
-  }
+const getMenuRPCType = (context: VuuMenuContext): ClientToServerMenuRPCType => {
+  // prettier-ignore
+  switch(context){
+    case "selected-rows": return "VIEW_PORT_MENUS_SELECT_RPC";
+    case "row": return "VIEW_PORT_MENU_ROW_RPC";
+    case "cell": return "VIEW_PORT_MENU_CELL_RPC";
+    case "grid": return "VIEW_PORT_MENU_TABLE_RPC";
+    default:
+      throw Error("No RPC command for ${msgType} / ${context}");
+    }
 };
 
 function addLabelsToLinks(
@@ -316,7 +322,7 @@ export class ServerProxy {
       const { context, rpcName } = message;
       this.sendMessageToServer(
         {
-          type: getRPCType(message.type, context),
+          type: getMenuRPCType(context),
           rpcName,
           vpId: viewport.serverViewportId,
         },
@@ -436,23 +442,19 @@ export class ServerProxy {
 
   public sendMessageToServer(
     body: ClientToServerMessage["body"],
-    requestId: string = `${_requestId++}`,
-    options: any = DEFAULT_OPTIONS
+    requestId = `${_requestId++}`,
+    options: MessageOptions = DEFAULT_OPTIONS
   ) {
-    const { module = "CORE", ...restOptions } = options;
-    // const { clientId } = this.connection;
+    const { module = "CORE" } = options;
     if (this.authToken) {
-      this.connection.send(
-        {
-          requestId,
-          sessionId: this.sessionId,
-          token: this.authToken,
-          user: "user",
-          module,
-          body,
-        } as ClientToServerMessage
-        // restOptions
-      );
+      this.connection.send({
+        requestId,
+        sessionId: this.sessionId,
+        token: this.authToken,
+        user: "user",
+        module,
+        body,
+      } as ClientToServerMessage);
     }
   }
 

@@ -3,19 +3,17 @@ import { useShellContext } from "@finos/vuu-shell";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSuggestionProvider } from "./useSuggestionProvider";
 
-import {
-  Filter,
-  filterAsQuery,
-  FilterInput,
-  updateFilter,
-} from "@finos/vuu-filters";
+import { Filter } from "@finos/vuu-filter-types";
+import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
 
 import {
   ConfigChangeMessage,
   createDataSource,
+  DataSourceMenusMessage,
+  DataSourceVisualLinksMessage,
   RemoteDataSource,
   TableSchema,
-  useViewserver,
+  useVuuMenuActions,
 } from "@finos/vuu-data";
 import { Grid, GridProvider } from "@finos/vuu-datagrid";
 import { LinkedIcon } from "@salt-ds/icons";
@@ -65,41 +63,72 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
   }, [dataSource]);
 
   const handleConfigChange = useCallback(
-    (update: ConfigChangeMessage) => {
-      console.log(`handleConfigChange`, {
-        update,
-      });
-      if (update.type === "CREATE_VISUAL_LINK_SUCCESS") {
-        dispatch?.({
-          type: "add-toolbar-contribution",
-          location: "post-title",
-          content: (
-            <ToolbarButton aria-label="remove-link" onClick={removeVisualLink}>
-              <LinkedIcon />
-            </ToolbarButton>
-          ),
-        });
-        save(update, "visual-link");
-      } else if (update.type === "REMOVE_VISUAL_LINK_SUCCESS") {
-        dispatch?.({
-          type: "remove-toolbar-contribution",
-          location: "post-title",
-        });
-        purge("visual-link");
-      } else {
-        for (let [key, state] of Object.entries(update)) {
-          save(state, key);
-        }
+    (
+      update:
+        | ConfigChangeMessage
+        | DataSourceMenusMessage
+        | DataSourceVisualLinksMessage
+    ) => {
+      switch (update.type) {
+        case "VIEW_PORT_MENUS_RESP":
+          {
+            // We only need to save the context menu into session state
+            // not state (which gets persisted), They are loaded afresh
+            // from the server on application load.
+            saveSession?.(update.menu, "vs-context-menu");
+          }
+          break;
+        case "VP_VISUAL_LINKS_RESP":
+          {
+            // See comment above, same here.
+            saveSession?.(update.links, "visual-links");
+          }
+          break;
+        case "CREATE_VISUAL_LINK_SUCCESS":
+          {
+            dispatch?.({
+              type: "add-toolbar-contribution",
+              location: "post-title",
+              content: (
+                <ToolbarButton
+                  aria-label="remove-link"
+                  onClick={removeVisualLink}
+                >
+                  <LinkedIcon />
+                </ToolbarButton>
+              ),
+            });
+            save(update, "visual-link");
+          }
+          break;
+
+        case "REMOVE_VISUAL_LINK_SUCCESS":
+          {
+            dispatch?.({
+              type: "remove-toolbar-contribution",
+              location: "post-title",
+            });
+            purge("visual-link");
+          }
+          break;
+
+        default:
+          for (let [key, state] of Object.entries(update)) {
+            save(state, key);
+          }
       }
     },
-    [dispatch, purge, removeVisualLink, save]
+    [dispatch, purge, removeVisualLink, save, saveSession]
   );
 
   const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction } =
-    useViewserver({
-      rpcServer: dataSource,
+    useVuuMenuActions({
+      vuuMenu: loadSession("vs-context-menu"),
+      dataSource,
       onConfigChange: handleConfigChange,
       onRpcResponse: handleRpcResponse,
+      visualLink: load("visual-link"),
+      visualLinks: loadSession("visual-links"),
     });
 
   const handleSubmitFilter = useCallback(

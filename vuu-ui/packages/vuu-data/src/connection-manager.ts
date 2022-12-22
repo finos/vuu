@@ -1,24 +1,29 @@
-import { EventEmitter, uuid } from "@finos/vuu-utils";
-import * as Message from "./server-proxy/messages";
 import {
-  isConnectionStatusMessage,
-  ServerProxySubscribeMessage,
-  TableMeta,
-  TableList,
-  VuuUIMessageIn,
-  VuuUIMessageInRPC,
-  VuuUIMessageOut,
-} from "./vuuUIMessageTypes";
-import {
-  ClientToServerRpcCall,
   ClientToServerTableList,
   ClientToServerTableMeta,
   VuuTable,
-} from "../../vuu-protocol-types";
-import { shouldMessageBeRoutedToDataSource as messageShouldBeRoutedToDataSource } from "./data-source";
+  VuuTableList,
+  VuuTableMeta,
+} from "@finos/vuu-protocol-types";
+import { EventEmitter, uuid } from "@finos/vuu-utils";
+import {
+  DataSourceCallbackMessage,
+  shouldMessageBeRoutedToDataSource as messageShouldBeRoutedToDataSource,
+} from "./data-source";
+import * as Message from "./server-proxy/messages";
+import {
+  isConnectionStatusMessage,
+  messageHasResult,
+  ServerProxySubscribeMessage,
+  VuuUIMessageIn,
+  VuuUIMessageInRPC,
+  VuuUIMessageInTableList,
+  VuuUIMessageInTableMeta,
+  VuuUIMessageOut,
+  VuuUIMessageOutRpcCall,
+} from "./vuuUIMessageTypes";
 // Note: the InlinedWorker is a generated file, it must be built
 import { InlinedWorker } from "./inlined-worker";
-import { DataSourceCallbackMessage } from "./data-source";
 const workerSource = InlinedWorker.toString().replace(
   /(?:^function\s+[a-zA-Z]+\(\)\s*\{)|(?:\}$)/g,
   ""
@@ -118,8 +123,20 @@ function handleMessageFromWorker({
     if (pendingRequests.has(requestId)) {
       const { resolve } = pendingRequests.get(requestId);
       pendingRequests.delete(requestId);
-      const { type: _1, requestId: _2, ...rest } = message as VuuUIMessageInRPC;
-      resolve(rest);
+      const {
+        type: _1,
+        requestId: _2,
+        ...rest
+      } = message as
+        | VuuUIMessageInRPC
+        | VuuUIMessageInTableList
+        | VuuUIMessageInTableMeta;
+
+      if (messageHasResult(message)) {
+        resolve(message.result);
+      } else {
+        resolve(rest);
+      }
     } else {
       console.log(
         `%cUnexpected message from the worker requestId`,
@@ -130,8 +147,11 @@ function handleMessageFromWorker({
 }
 
 // Can be a straight protocol message body
-const asyncRequest = <T = VuuUIMessageInRPC>(
-  msg: ClientToServerRpcCall | ClientToServerTableList | ClientToServerTableMeta
+const asyncRequest = <T = unknown>(
+  msg:
+    | VuuUIMessageOutRpcCall
+    | ClientToServerTableList
+    | ClientToServerTableMeta
 ): Promise<T> => {
   const requestId = uuid();
   worker.postMessage({
@@ -145,9 +165,9 @@ const asyncRequest = <T = VuuUIMessageInRPC>(
 
 export interface ServerAPI {
   destroy: (viewportId?: string) => void;
-  getTableMeta: (table: VuuTable) => Promise<TableMeta>;
-  getTableList: () => Promise<TableList>;
-  rpcCall: (msg: ClientToServerRpcCall) => Promise<VuuUIMessageInRPC>;
+  getTableMeta: (table: VuuTable) => Promise<VuuTableMeta>;
+  getTableList: () => Promise<VuuTableList>;
+  rpcCall: <T = unknown>(msg: VuuUIMessageOutRpcCall) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
     message: ServerProxySubscribeMessage,
@@ -166,12 +186,6 @@ class _ConnectionManager extends EventEmitter {
     worker = await getWorker(url, authToken, handleMessageFromWorker);
 
     worker.onmessage = handleMessageFromWorker;
-
-    // TEST DATA COLLECTION
-    // setDataCollectionMethod(() => {
-    //   console.log(`sending 'send-websocket-data' message to worker`)
-    //   worker.postMessage({type: "send-websocket-data"})
-    // })
 
     // This is a serverConnection, referred to in calling code as a 'server'
     return {
@@ -198,18 +212,19 @@ class _ConnectionManager extends EventEmitter {
         }
       },
 
-      rpcCall: async (message) => asyncRequest(message),
+      rpcCall: async <T = unknown>(message: VuuUIMessageOutRpcCall) =>
+        asyncRequest<T>(message),
 
       getTableList: async () =>
-        asyncRequest<TableList>({ type: Message.GET_TABLE_LIST }),
+        asyncRequest<VuuTableList>({ type: Message.GET_TABLE_LIST }),
 
       getTableMeta: async (table) =>
-        asyncRequest<TableMeta>({ type: Message.GET_TABLE_META, table }),
+        asyncRequest<VuuTableMeta>({ type: Message.GET_TABLE_META, table }),
     };
   }
 
   destroy() {
-    console.log(`MEGA DESYTRO`);
+    console.log(`MEGA DESTROY`);
     worker.terminate();
   }
 }
