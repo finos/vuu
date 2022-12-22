@@ -1,4 +1,4 @@
-import { Filter } from "@finos/vuu-filters";
+import { Filter } from "@finos/vuu-filter-types";
 import { Toolbar, ToolbarProps } from "@heswell/salt-lab";
 import cx from "classnames";
 import { useFilterToolbar } from "./useFilterToolbar";

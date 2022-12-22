@@ -1,10 +1,10 @@
-import { MutableRefObject, useCallback, useMemo } from "react";
 import { CompletionContext, CompletionSource } from "@codemirror/autocomplete";
 import { syntaxTree } from "@codemirror/language";
-import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
+import { Filter } from "@finos/vuu-filter-types";
+import { SyntaxNode } from "@lezer/common";
+import { MutableRefObject, useCallback, useMemo } from "react";
 import { ISuggestionProvider } from "./useCodeMirrorEditor";
-import { Filter } from "@finos/vuu-filters";
 
 export type ApplyCompletion = (mode?: "add" | "replace") => void;
 

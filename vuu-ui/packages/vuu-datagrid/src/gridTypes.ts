@@ -1,16 +1,16 @@
 import { ConfigChangeHandler, DataSource } from "@finos/vuu-data";
-import { Filter } from "@finos/vuu-filters";
-import { HTMLAttributes } from "react";
+import { Filter } from "@finos/vuu-filter-types";
 import {
   VuuAggregation,
   VuuGroupBy,
   VuuRange,
   VuuSort,
-} from "../../vuu-protocol-types";
+} from "@finos/vuu-protocol-types";
+import { HTMLAttributes } from "react";
 import { AdornmentsDescriptor } from "./grid-adornments";
 import {
-  GridModelType,
   ColumnDescriptor,
+  GridModelType,
   KeyedColumnDescriptor,
 } from "./grid-model/gridModelTypes";
 

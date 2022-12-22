@@ -3,12 +3,8 @@ import { useShellContext } from "@finos/vuu-shell";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSuggestionProvider } from "./useSuggestionProvider";
 
-import {
-  Filter,
-  filterAsQuery,
-  FilterInput,
-  updateFilter,
-} from "@finos/vuu-filters";
+import { Filter } from "@finos/vuu-filter-types";
+import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
 
 import {
   ConfigChangeMessage,
