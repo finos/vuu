@@ -24,7 +24,7 @@ export default async function main(customConfig) {
   };
 
   const packageJson = readPackageJson();
-  const { distPath: DIST_PATH, licencePath: LICENCE_PATH } = config;
+  const { distPath: DIST_PATH, licencePath: LICENCE_PATH, target } = config;
 
   const { name: scopedPackageName, peerDependencies = NO_DEPENDENCIES } =
     packageJson;
@@ -54,6 +54,7 @@ export default async function main(customConfig) {
     external,
     outdir: `${outdir}/esm`,
     name: scopedPackageName,
+    target,
   };
 
   const inlineWorkerConfig = hasWorker
