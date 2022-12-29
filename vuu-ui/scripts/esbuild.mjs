@@ -15,6 +15,7 @@ export async function build(config) {
     outfile,
     sourcemap = true,
     splitting,
+    target = ["es2020", "chrome79"],
   } = config;
 
   return esbuild({
@@ -36,14 +37,13 @@ export async function build(config) {
     },
     mainFields: ["module", "main"],
     metafile: true,
-    // minify: config.env === "production",
-    minify: false,
+    minify: config.env === "production",
     outbase,
     outdir,
     outfile,
     sourcemap,
     splitting,
-    target: ["es2020", "chrome79"],
+    target,
     watch: false,
   })
     .then((result) => {

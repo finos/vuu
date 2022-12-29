@@ -31,24 +31,17 @@ const featureEntryPoints = features
   .split(",")
   .map((featureName) => `../${featureName}/index.ts`);
 
-console.log({ featureEntryPoints });
-// const featureEntryPoints = [
-//   // "src/features/ag-grid/index.ts",
-//   "../feature-filtered-grid/index.ts",
-//   "../feature-vuu-blotter/index.ts",
-//   // "src/features/metrics/index.js",
-// ];
-
 assertFileExists(configFile, true);
 
 const { name: projectName } = readPackageJson();
 
-const exbuildConfig = {
+const esbuildConfig = {
   entryPoints: entryPoints.concat(featureEntryPoints),
   env: development ? "development" : "production",
   name: "app-vuu-example",
   outdir,
   splitting: true,
+  target: "esnext",
 };
 
 async function writeFeatureEntriesToConfigJson(featureBundles) {
@@ -110,7 +103,7 @@ async function main() {
       result: { metafile },
       duration,
     },
-  ] = await Promise.all([build(exbuildConfig)]).catch((e) => {
+  ] = await Promise.all([build(esbuildConfig)]).catch((e) => {
     console.error(e);
     process.exit(1);
   });
