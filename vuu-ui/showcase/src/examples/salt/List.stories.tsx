@@ -43,6 +43,26 @@ export const DefaultVirtualisedList = () => {
   );
 };
 
+export const MultiSelectionList = () => {
+  return (
+    <div style={{ display: "flex", gap: 24, width: 700, height: 600 }}>
+      <List
+        aria-label="MultiSelection Listbox example"
+        checkable={false}
+        width={292}
+        selectionStrategy="multiple"
+        source={usa_states}
+      />
+      <List
+        aria-label="MultiSelection Listbox example"
+        width={292}
+        selectionStrategy="multiple"
+        source={usa_states}
+      />
+    </div>
+  );
+};
+
 const applyDrop = function <T>(
   data: T[],
   fromIndex: number,

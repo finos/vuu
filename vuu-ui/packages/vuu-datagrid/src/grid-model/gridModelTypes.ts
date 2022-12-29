@@ -1,6 +1,10 @@
 import { DataSource } from "@finos/vuu-data";
 import { MutableRefObject } from "react";
-import { VuuAggregation, VuuLink } from "../../../vuu-protocol-types";
+import {
+  VuuAggregation,
+  VuuColumnDataType,
+  VuuLink,
+} from "@finos/vuu-protocol-types";
 import { AdornmentsDescriptor } from "../grid-adornments";
 import { GridModelDispatch } from "../grid-context";
 import { GridProps } from "../gridTypes";
@@ -51,6 +55,7 @@ export const isNumericColumn = (type?: ColumnType) =>
     : type === "number" || (type as ColumnTypeDescriptor).name === "number";
 
 export interface ColumnDescriptor {
+  align?: "left" | "right";
   className?: string;
   flex?: number;
   heading?: [...string[]];
@@ -66,6 +71,7 @@ export interface ColumnDescriptor {
   originalIdx?: number;
   resizeable?: boolean;
   resizing?: boolean;
+  serverDataType?: VuuColumnDataType;
   sortable?: boolean;
   type?: ColumnType;
   width?: number;

@@ -1,5 +1,5 @@
 {
-  "name": "@finos/vuu-datagrid",
+  "name": "@finos/vuu-datagrid-extras",
   "version": "0.0.26",
   "author": "heswell",
   "main": "src/index.ts",
@@ -22,7 +22,6 @@
   "peerDependencies": {
     "@salt-ds/core": "1.0.0",
     "@heswell/salt-lab": "1.0.0-alpha.0",
-    "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-utils": "0.0.27",
     "classnames": "^2.2.6",
     "react": "^17.0.2",

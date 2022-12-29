@@ -2,14 +2,11 @@ import React, { useState } from "react";
 
 import { Dialog, Component } from "@finos/vuu-layout";
 
-export default {
-  title: "Layout/Dialog",
-  component: Dialog,
-};
+let displaySequence = 1;
 
 export const SimpleDialog = () => {
   return (
-    <Dialog isOpen>
+    <Dialog isOpen center={true}>
       <Component
         title="Cornflower"
         style={{ backgroundColor: "cornflowerblue", height: 400, width: 300 }}
@@ -17,19 +14,22 @@ export const SimpleDialog = () => {
     </Dialog>
   );
 };
+SimpleDialog.displaySequence = displaySequence++;
 
 export const DialogOpenClose = () => {
   const [open, setOpen] = useState(false);
   const openDialog = () => {
     setOpen(true);
   };
-  const handleClose = () => {
+  const closeDialog = () => {
     setOpen(false);
   };
   return (
     <div>
-      <button onClick={openDialog}>Open Dialog</button>
-      <Dialog isOpen={open} onClose={handleClose}>
+      <button onClick={open ? closeDialog : openDialog}>{`${
+        open ? "Close" : "Open"
+      } Dialog`}</button>
+      <Dialog isOpen={open} onClose={closeDialog}>
         <Component
           title="Cornflower"
           style={{ backgroundColor: "cornflowerblue", height: 400, width: 300 }}
@@ -38,3 +38,4 @@ export const DialogOpenClose = () => {
     </div>
   );
 };
+DialogOpenClose.displaySequence = displaySequence++;

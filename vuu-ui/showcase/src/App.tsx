@@ -49,7 +49,7 @@ export const App = ({ stories }) => {
   const { pathname } = useLocation();
   const handleChange = (evt, [selected]) => navigate(selected.id);
   return (
-    <SaltProvider>
+    <SaltProvider applyClassesTo="scope">
       <Flexbox
         style={{ flexDirection: "row", width: "100vw", height: "100vh" }}
       >

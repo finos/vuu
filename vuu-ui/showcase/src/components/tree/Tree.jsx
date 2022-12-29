@@ -104,7 +104,9 @@ const Tree = forwardRef(function Tree(
         {...propsCommonToAllListItems}
         {...getListItemProps(item, idx, highlightedIdx, selected, focusVisible)}
       >
-        {item.icon ? <span className={`${classBase}Node-icon`} /> : null}
+        {item.icon ? (
+          <span className={`${classBase}Node-icon`} data-icon={item.icon} />
+        ) : null}
         <span>{item.label}</span>
       </TreeNode>
     );
@@ -124,7 +126,6 @@ const Tree = forwardRef(function Tree(
           focusVisible: focusVisible === i,
           [`${classBase}Node-toggle`]: !allowGroupSelect,
         })}
-        data-icon={child.icon}
         data-idx={i}
         data-highlighted={i === highlightedIdx || undefined}
         data-selectable
@@ -138,7 +139,12 @@ const Tree = forwardRef(function Tree(
           </div>
         ) : (
           <div className={`${classBase}Node-label`}>
-            {child.icon ? <span className={`${classBase}Node-icon`} /> : null}
+            {child.icon ? (
+              <span
+                className={`${classBase}Node-icon`}
+                data-icon={child.icon}
+              />
+            ) : null}
             <span>{title}</span>
           </div>
         )}
@@ -190,7 +196,6 @@ const getListItemProps = (
   key: item.id,
   "aria-level": item.level,
   "aria-selected": selected.includes(item.id) || undefined,
-  "data-icon": item.icon,
   "data-idx": idx.value,
   "data-highlighted": idx.value === highlightedIdx || undefined,
   className: cx("hwTreeNode", className, {

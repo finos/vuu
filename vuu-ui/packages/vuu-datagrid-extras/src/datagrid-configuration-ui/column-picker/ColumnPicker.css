@@ -1,0 +1,19 @@
+.vuuColumnPicker {
+    --vuu-icon-color: var(--salt-text-primary-foreground);
+    --vuu-icon-left: 0px;
+    --vuu-icon-size: 12px;
+
+    display: flex;
+    gap: calc(var(--salt-size-unit) * 2);
+    width: var(--vuuColumnPicker-width, 100%);
+}
+
+.vuuColumnPicker-listColumn {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.vuuColumnPicker-listContainer {
+    border: solid 1px var(--salt-container-primary-borderColor);
+}

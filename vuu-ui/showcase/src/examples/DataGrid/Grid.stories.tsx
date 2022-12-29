@@ -1,5 +1,6 @@
 import { Grid } from "@finos/vuu-datagrid";
-import { Flexbox, View } from "@finos/vuu-layout";
+import { GridConfig, DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
+import { Dialog, Flexbox, View } from "@finos/vuu-layout";
 import { Button } from "@salt-ds/core";
 import { FormField, Input } from "@heswell/salt-lab";
 import {
@@ -7,11 +8,13 @@ import {
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
   Toolbar,
+  ToolbarButton,
   Tooltray,
 } from "@heswell/salt-lab";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { ErrorDisplay, useTestDataSource } from "../utils";
 import { instrumentSchema } from "./columnMetaData";
+import { useSchemas } from "../utils/useSchemas";
 
 import "./Grid.stories.css";
 
@@ -31,7 +34,11 @@ export const DefaultGrid = () => {
     []
   );
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
+  const { schemas } = useSchemas();
+
   const { columns, dataSource, error } = useTestDataSource({
+    schemas,
     tablename: tables[selectedIndex],
   });
 
@@ -44,24 +51,51 @@ export const DefaultGrid = () => {
     setSelectedIndex(index);
   };
 
+  const handleConfigChange = useCallback((config: GridConfig) => {
+    console.log("config change", {
+      config,
+    });
+  }, []);
+
+  const showSettings = useCallback(() => {
+    setDialogContent(
+      <DatagridSettingsPanel
+        availableColumns={columns}
+        gridConfig={{
+          columns,
+        }}
+        onConfigChange={handleConfigChange}
+      />
+    );
+  }, [columns]);
+
+  const hideSettings = useCallback(() => {
+    setDialogContent(null);
+  }, []);
+
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
   }
 
   return (
     <>
-      <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
-        <ToggleButton ariaLabel="alert" tooltipText="Alert">
-          Instruments
-        </ToggleButton>
-        <ToggleButton ariaLabel="home" tooltipText="Home">
-          Orders
-        </ToggleButton>
-        <ToggleButton ariaLabel="print" tooltipText="Print">
-          Parent Orders
-        </ToggleButton>
-        <ToggleButton tooltipText="Search">Prices</ToggleButton>
-      </ToggleButtonGroup>
+      <Toolbar style={{ alignItems: "center", width: 700 }}>
+        <ToggleButtonGroup
+          onChange={handleChange}
+          selectedIndex={selectedIndex}
+        >
+          <ToggleButton tooltipText="Alert">Instruments</ToggleButton>
+          <ToggleButton tooltipText="Home">Orders</ToggleButton>
+          <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
+          <ToggleButton tooltipText="Search">Prices</ToggleButton>
+        </ToggleButtonGroup>
+        <ToolbarButton
+          data-align-end
+          data-icon="settings"
+          onClick={showSettings}
+          style={{ width: 28 }}
+        />
+      </Toolbar>
 
       <Grid
         dataSource={dataSource}
@@ -69,7 +103,11 @@ export const DefaultGrid = () => {
         // columnSizing="fill"
         height={600}
         selectionModel="extended"
+        width={900}
       />
+      <Dialog isOpen={dialogContent !== null} onClose={hideSettings}>
+        {dialogContent}
+      </Dialog>
     </>
   );
 };
