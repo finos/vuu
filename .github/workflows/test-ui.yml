@@ -39,4 +39,5 @@ jobs:
         run: cd ./vuu-ui && yarn
       - name: Build showcase
         run: cd ./vuu-ui && yarn showcase:build
-      - run: cd ./vuu-ui && yarn build:app
+      - name: Build Vuu app
+        run: cd ./vuu-ui && yarn build:app
