@@ -1,9 +1,10 @@
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { List } from "@heswell/salt-lab";
 import { Button, Text, useIdMemo as useId } from "@salt-ds/core";
 import { Dispatch, HTMLAttributes, useCallback, useState } from "react";
-import { ColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
-import "./ColumnPicker.css";
 import { ColumnAction } from "../settings-panel/useColumns";
+
+import "./ColumnPicker.css";
 
 const classBase = "vuuColumnPicker";
 const removeSelectedColumns = (

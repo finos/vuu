@@ -1,19 +1,25 @@
 {
-  "name": "@finos/vuu-datagrid-extras",
+  "name": "@finos/vuu-popups",
   "version": "0.0.26",
-  "author": "heswell",
+  "description": "VUU popup components - Context Menu, Dialog etc",
   "main": "src/index.ts",
+  "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
     "build": "node ../../scripts/run-build.mjs",
-    "type-defs": "node ../../scripts/build-type-defs.mjs"
+    "type-defs": "tsc --project tsconfig-emit-types.json"
   },
-  "devDependencies": {
-    "@finos/vuu-filter-types": "0.0.26",
-    "@finos/vuu-protocol-types": "0.0.26"
-  },
+  "files": [
+    "index.js",
+    "index.css",
+    "index.js.map",
+    "index.css.map",
+    "/src"
+  ],
+  "types": "src/index.ts",
   "peerDependencies": {
     "@salt-ds/core": "1.0.0",
+    "@salt-ds/icons": "1.0.0",
     "@heswell/salt-lab": "1.0.0-alpha.0",
     "@finos/vuu-utils": "0.0.26",
     "classnames": "^2.2.6",

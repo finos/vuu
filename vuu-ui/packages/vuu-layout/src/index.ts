@@ -1,9 +1,7 @@
 export * from "./chest-of-drawers";
 export { default as Component } from "./Component";
 export * from "./common-types";
-export * from "./dialog";
-export * from "./menu";
-export * from "./popup";
+export * from "@finos/vuu-popups/src/dialog";
 export * from "./DraggableLayout";
 export * from "./drag-drop";
 export * from "./flexbox";

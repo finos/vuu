@@ -1,12 +1,12 @@
-import { Dispatch, useMemo } from "react";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Panel, PanelProps } from "@heswell/salt-lab";
 import cx from "classnames";
-import { ColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
+import { Dispatch, useMemo } from "react";
+import { ColumnAction } from "../settings-panel/useColumns";
 import { NumericColumnPanel } from "./NumericColumnPanel";
 import { StringColumnPanel } from "./StringColumnPanel";
 
 import "./ColumnTypePanel.css";
-import { Panel, PanelProps } from "@heswell/salt-lab";
-import { ColumnAction } from "../settings-panel/useColumns";
 
 const classBase = "vuuColumnTypepanel";
 

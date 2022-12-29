@@ -1,7 +1,7 @@
-import React, { useCallback, useContext, useMemo } from 'react';
-import { PopupService } from '../popup';
-import ContextMenu from './ContextMenu';
-import { MenuItem, MenuItemGroup } from './MenuList';
+import React, { useCallback, useContext, useMemo } from "react";
+import { PopupService } from "../popup";
+import { ContextMenu } from "./ContextMenu";
+import { MenuItem, MenuItemGroup } from "./MenuList";
 
 const showContextMenu = (e, menuDescriptors, handleContextMenuAction) => {
   const { clientX: left, clientY: top } = e;
@@ -38,7 +38,7 @@ const showContextMenu = (e, menuDescriptors, handleContextMenuAction) => {
 export const ContextMenuContext = React.createContext(null);
 
 const NO_INHERITED_CONTEXT = {
-  menuItemDescriptors: []
+  menuItemDescriptors: [],
 };
 
 // The menuBuilder will always be supplied by the code that will display the local
@@ -59,7 +59,11 @@ export const useContextMenu = () => {
   const handleShowContextMenu = (e, location, options) => {
     e.stopPropagation();
     e.preventDefault();
-    const menuItemDescriptors = buildMenuOptions(menuBuilders, location, options);
+    const menuItemDescriptors = buildMenuOptions(
+      menuBuilders,
+      location,
+      options
+    );
     if (menuItemDescriptors.length) {
       showContextMenu(e, menuItemDescriptors, menuActionHandler);
     }
@@ -70,9 +74,12 @@ export const useContextMenu = () => {
 
 const Provider = ({
   children,
-  context: { menuBuilders: inheritedMenuBuilders, menuActionHandler: inheritedMenuActionHandler },
+  context: {
+    menuBuilders: inheritedMenuBuilders,
+    menuActionHandler: inheritedMenuActionHandler,
+  },
   menuActionHandler,
-  menuBuilder
+  menuBuilder,
 }) => {
   const menuBuilders = useMemo(() => {
     if (inheritedMenuBuilders && menuBuilder) {
@@ -90,7 +97,10 @@ const Provider = ({
         return true;
       }
 
-      if (inheritedMenuActionHandler && inheritedMenuActionHandler(type, options)) {
+      if (
+        inheritedMenuActionHandler &&
+        inheritedMenuActionHandler(type, options)
+      ) {
         return true;
       }
     },
@@ -101,7 +111,7 @@ const Provider = ({
     <ContextMenuContext.Provider
       value={{
         menuActionHandler: handleMenuAction,
-        menuBuilders
+        menuBuilders,
       }}
     >
       {children}
@@ -115,7 +125,7 @@ export const ContextMenuProvider = ({
   menuActionHandler,
   menuBuilder,
   menuItemDescriptors,
-  label
+  label,
 }) => {
   return (
     <ContextMenuContext.Consumer>

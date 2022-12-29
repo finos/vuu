@@ -1,9 +1,10 @@
+import cx from "classnames";
 import React, { createElement, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { renderPortal } from "../portal";
-import cx from "classnames";
 
 import "./popup-service.css";
+// TODO what !
 window.popupReact = React;
 
 let _dialogOpen = false;

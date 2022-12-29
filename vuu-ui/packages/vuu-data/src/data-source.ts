@@ -1,3 +1,6 @@
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Filter } from "@finos/vuu-filter-types";
+import { IEventEmitter } from "@finos/vuu-utils";
 import {
   VuuAggregation,
   VuuColumns,
@@ -10,10 +13,7 @@ import {
   VuuSort,
   VuuSortCol,
   VuuTable,
-} from "../../vuu-protocol-types";
-import { Filter } from "@finos/vuu-filter-types";
-import { IEventEmitter } from "@finos/vuu-utils/src/event-emitter";
-import { ColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
+} from "@finos/vuu-protocol-types";
 import { VuuUIMessageOutMenuRPC } from "./vuuUIMessageTypes";
 
 type RowIndex = number;

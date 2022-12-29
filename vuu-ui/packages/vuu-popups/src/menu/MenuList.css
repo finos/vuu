@@ -1,4 +1,4 @@
-.hwMenuList {
+.vuuMenuList {
   --context-menu-color: #161616;
   --context-menu-padding: var(--hw-list-item-padding, 0 6px);
   --context-menu-shadow: var(--hw-dialog-shadow, 0 6px 12px rgba(0, 0, 0, 0.175));
@@ -27,7 +27,7 @@
   position: absolute;
 }
 
-.hwMenuItem {
+.vuuMenuItem {
   align-items: center;
   color: var(--context-menu-color);
   display: flex;
@@ -39,7 +39,7 @@
   white-space: nowrap;
 }
 
-.hwIconContainer {
+.vuuIconContainer {
   display: inline-block;
   flex: 12px 0 0;
   height: var(--menu-icon-size);
@@ -47,42 +47,15 @@
   width: var(--menu-icon-size);
 }
 
-[data-icon='filter'] {
-  --menu-icon-size: 12px;
-  --menu-icon: var(--svg-filter);
-}
-
-[data-icon='filter'] {
-  --menu-icon: var(--svg-filter);
-}
-
-[data-icon='sort'] {
-  --menu-icon: var(--svg-sort-order-down);
-}
-
-[data-icon='sorted-asc'] {
-  --menu-icon: var(--svg-sorted-asc);
-}
-
-[data-icon='sorted-dsc'] {
-  --menu-icon: var(--svg-sorted-dsc);
-}
-
-[data-icon] > .hwIconContainer {
-  background-color: var(--menu-item-icon-color);
-  -webkit-mask: var(--menu-icon) center center/var(--menu-icon-size) var(--menu-icon-size);
-  mask: var(--menu-icon) center center/var(--menu-icon-size) var(--menu-icon-size);
-}
-
-.hwMenuItem[aria-expanded='true'] {
+.vuuMenuItem[aria-expanded='true'] {
   background-color: var(--context-menu-blur-focus-bg);
 }
 
-.hwMenuItem-separator {
+.vuuMenuItem-separator {
   border-top: solid 1px var(--context-menu-blur-focus-bg);
 }
 
-.hwMenuItem[aria-haspopup='true']:after {
+.vuuMenuItem[aria-haspopup='true']:after {
   content: var(--menu-item-twisty-content);
   -webkit-mask: var(--svg-chevron-right) center center/12px 12px;
   mask: var(--svg-chevron-down) center center/12px 12px;
@@ -98,20 +71,20 @@
   width: 16px;
 }
 
-.hwMenuItem[data-highlighted] {
+.vuuMenuItem[data-highlighted] {
   background-color: var(--context-menu-highlight-bg);
 }
 
-.hwMenuItem:hover {
+.vuuMenuItem:hover {
   background-color: var(--context-menu-highlight-bg);
   cursor: default;
 }
 
-.hwMenuList-childMenuShowing .hwMenuItem[data-highlighted] {
+.vuuMenuList-childMenuShowing .hwMenuItem[data-highlighted] {
   background-color: var(--context-menu-blur-focus-bg);
 }
 
-.hwMenuItem.focusVisible:before {
+.vuuMenuItem.focusVisible:before {
   content: '';
   position: absolute;
   top: 0;
@@ -121,7 +94,7 @@
   border: dotted var(--focus-visible-border-color) 2px;
 }
 
-.hwPopupContainer.top-bottom-right-right .popup-menu {
+.vuuPopupContainer.top-bottom-right-right .popup-menu {
   left: auto;
   right: 0;
 }
@@ -133,8 +106,7 @@
   color: rgb(0, 0, 0);
   background-color: rgb(220, 220, 220);
 }
-
-.hwMenuItem-button:active,
+.vuuMenuItem-button:active,
 .hwMenuItem-button:hover {
   outline: 0;
 }

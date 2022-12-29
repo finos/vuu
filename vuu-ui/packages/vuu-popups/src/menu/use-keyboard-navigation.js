@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { hasPopup, isRoot } from "./utils";
-import { applyHandlers } from "../utils/apply-handlers";
+import { applyHandlers } from "./apply-handlers";
 import { isNavigationKey } from "./key-code";
 
 // we need a way to set highlightedIdx when selection changes

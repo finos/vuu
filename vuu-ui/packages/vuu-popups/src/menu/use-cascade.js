@@ -37,7 +37,7 @@ const getPosition = (el, openMenus) => {
   const [{ left, top: menuTop }] = openMenus.slice(-1);
   // const {top, right, bottom, left} = el.getBoundingClientRect();
   // this will not work for MenuList within window, we need the
-  // const {offsetLeft: left, offsetTop: menuTop} = el.closest('.hwMenuList');
+  // const {offsetLeft: left, offsetTop: menuTop} = el.closest('.vuuMenuList');
   const { offsetWidth: width, offsetTop: top } = el;
   return { left: left + width, top: top + menuTop };
 };

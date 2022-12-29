@@ -1,5 +1,5 @@
 import { HTMLAttributes, useCallback, useState } from "react";
-import { ColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ColumnSettingsPanel } from "./ColumnSettingsPanel";
 import { useColumns } from "./useColumns";
 

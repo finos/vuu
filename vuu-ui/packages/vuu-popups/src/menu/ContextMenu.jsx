@@ -1,18 +1,17 @@
 import { useIdMemo as useId } from "@salt-ds/core";
 import { useCallback, useRef } from "react";
 import { Portal } from "../portal";
-
-import { getItemId, getMenuId, useCascade } from "./use-cascade";
-import { useItemsWithIds } from "./use-items-with-ids";
-
 import MenuList from "./MenuList";
+import { useItemsWithIds } from "./use-items-with-ids";
+import { getItemId, getMenuId, useCascade } from "./use-cascade";
 
 import "./ContextMenu.css";
 import { useClickAway } from "./use-click-away";
 
-const ContextMenu = ({
+export const ContextMenu = ({
   activatedWithKeyboard = false,
   children: childrenProp,
+  className,
   id: idProp,
   onClose = () => undefined,
   position = { x: 0, y: 0 },
@@ -53,7 +52,7 @@ const ContextMenu = ({
   }, [closeMenu, onClose]);
 
   useClickAway({
-    containerClassName: "hwMenuList",
+    containerClassName: "vuuMenuList",
     onClose: handleClose,
     isOpen: openMenus.length > 0,
   });
@@ -97,6 +96,7 @@ const ContextMenu = ({
             <MenuList
               activatedByKeyboard={navigatingWithKeyboard.current}
               childMenuShowing={childMenuIndex}
+              className={className}
               id={id}
               menuId={menuId}
               isRoot={i === 0}
@@ -118,4 +118,3 @@ const ContextMenu = ({
 };
 
 ContextMenu.displayName = "ContextMenu";
-export default ContextMenu;

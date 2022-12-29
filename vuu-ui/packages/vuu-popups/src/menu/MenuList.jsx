@@ -6,9 +6,9 @@ import { isMenuItemGroup } from "./use-items-with-ids";
 
 import "./MenuList.css";
 
-const classBase = "hwMenuList";
+const classBase = "vuuMenuList";
 
-export const Separator = () => <li className="hwMenuItem-divider" />;
+export const Separator = () => <li className="vuuMenuItem-divider" />;
 
 // Purely used as markers, props will be extracted
 export const MenuItemGroup = () => null;
@@ -23,6 +23,7 @@ const MenuList = ({
   activatedByKeyboard,
   childMenuShowing = -1,
   children,
+  className,
   highlightedIdx: highlightedIdxProp,
   id: idProp,
   isRoot,
@@ -78,7 +79,7 @@ const MenuList = ({
       {...props}
       {...listProps}
       aria-activedescendant={getActiveDescendant()}
-      className={cx(classBase, {
+      className={cx(classBase, className, {
         [`${classBase}-childMenuShowing`]: childMenuShowing !== -1,
       })}
       data-root={isRoot || undefined}
@@ -97,15 +98,22 @@ const MenuList = ({
       role: "menuitem",
     };
 
-    const maybeIcon = (children, withIcon) =>
+    const maybeIcon = (children, withIcon, iconName) =>
       withIcon
-        ? [<span className="hwIconContainer" key="icon" />].concat(children)
+        ? [
+            <span
+              className="vuuIconContainer"
+              data-icon={iconName}
+              key="icon"
+            />,
+          ].concat(children)
         : children;
 
     function addClonedChild(list, child, idx, withIcon) {
       const {
         children,
         className,
+        "data-icon": iconName,
         id: itemId,
         hasSeparator,
         label,
@@ -134,8 +142,8 @@ const MenuList = ({
           aria-expanded={subMenuShowing || undefined}
         >
           {hasSubMenu
-            ? maybeIcon(label, withIcon)
-            : maybeIcon(children, withIcon)}
+            ? maybeIcon(label, withIcon, iconName)
+            : maybeIcon(children, withIcon, iconName)}
         </MenuItem>
       );
       // mapIdxToId.set(idx, itemId);
@@ -169,8 +177,8 @@ const getMenuItemProps = (
   key: key ?? idx,
   "data-idx": idx,
   "data-highlighted": idx === highlightedIdx || undefined,
-  className: cx("hwMenuItem", className, {
-    "hwMenuItem-separator": hasSeparator,
+  className: cx("vuuMenuItem", className, {
+    "vuuMenuItem-separator": hasSeparator,
     focusVisible: focusVisible === idx,
   }),
 });
