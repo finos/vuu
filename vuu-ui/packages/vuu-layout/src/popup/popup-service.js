@@ -15,7 +15,7 @@ function specialKeyHandler(e) {
       closeAllPopups();
     } else if (_dialogOpen) {
       ReactDOM.unmountComponentAtNode(
-        document.body.querySelector(".hwReactDialog")
+        document.body.querySelector(".vuuDialog")
       );
     }
   }
@@ -24,7 +24,7 @@ function specialKeyHandler(e) {
 function outsideClickHandler(e) {
   if (_popups.length) {
     // onsole.log(`Popup.outsideClickHandler`);
-    const popupContainers = document.body.querySelectorAll(".hwReactPopup");
+    const popupContainers = document.body.querySelectorAll(".vuuPopup");
     for (let i = 0; i < popupContainers.length; i++) {
       if (popupContainers[i].contains(e.target)) {
         return;
@@ -37,7 +37,7 @@ function outsideClickHandler(e) {
 function closeAllPopups() {
   if (_popups.length) {
     // onsole.log(`closeAllPopups`);
-    const popupContainers = document.body.querySelectorAll(".hwReactPopup");
+    const popupContainers = document.body.querySelectorAll(".vuuPopup");
     for (let i = 0; i < popupContainers.length; i++) {
       ReactDOM.unmountComponentAtNode(popupContainers[i]);
     }
@@ -110,10 +110,10 @@ export class PopupService {
       throw Error(`PopupService showPopup, no component supplied`);
     }
     popupOpened(name, group);
-    let el = document.body.querySelector(".hwReactPopup." + group);
+    let el = document.body.querySelector(".vuuPopup." + group);
     if (el === null) {
       el = document.createElement("div");
-      el.className = "hwReactPopup " + group;
+      el.className = "vuuPopup " + group;
       document.body.appendChild(el);
     }
 
@@ -140,13 +140,13 @@ export class PopupService {
     if (_popups.indexOf(name) !== -1) {
       popupClosed(name, group);
       ReactDOM.unmountComponentAtNode(
-        document.body.querySelector(`.hwReactPopup.${group}`)
+        document.body.querySelector(`.vuuPopup.${group}`)
       );
     }
   }
 
   static keepWithinThePage(el, right = "auto") {
-    const target = el.querySelector(".hwPopupContainer > *");
+    const target = el.querySelector(".vuuPopupContainer > *");
     if (target) {
       const {
         top,
@@ -179,7 +179,7 @@ export class PopupService {
 
 export class DialogService {
   static showDialog(dialog) {
-    const containerEl = ".hwReactDialog";
+    const containerEl = ".vuuDialog";
     const onClose = dialog.props.onClose;
 
     dialogOpened();
@@ -200,9 +200,7 @@ export class DialogService {
 
   static closeDialog() {
     dialogClosed();
-    ReactDOM.unmountComponentAtNode(
-      document.body.querySelector(".hwReactDialog")
-    );
+    ReactDOM.unmountComponentAtNode(document.body.querySelector(".vuuDialog"));
   }
 }
 

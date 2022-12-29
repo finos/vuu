@@ -1,4 +1,5 @@
-import { DatagridSettingsPanel, Grid, GridConfig } from "@finos/vuu-datagrid";
+import { Grid } from "@finos/vuu-datagrid";
+import { GridConfig, DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
 import { Dialog, Flexbox, View } from "@finos/vuu-layout";
 import { Button } from "@salt-ds/core";
 import { FormField, Input } from "@heswell/salt-lab";
@@ -13,7 +14,7 @@ import {
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ErrorDisplay, useTestDataSource } from "../utils";
 import { instrumentSchema } from "./columnMetaData";
-import { useColumns } from "../utils/useColumns";
+import { useSchemas } from "../utils/useSchemas";
 
 import "./Grid.stories.css";
 
@@ -34,7 +35,7 @@ export const DefaultGrid = () => {
   );
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
-  const { schemas, dispatch } = useColumns();
+  const { schemas } = useSchemas();
 
   const { columns, dataSource, error } = useTestDataSource({
     schemas,

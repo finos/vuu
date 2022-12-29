@@ -1,4 +1,8 @@
 .vuuColumnPicker {
+    --vuu-icon-color: var(--salt-text-primary-foreground);
+    --vuu-icon-left: 0px;
+    --vuu-icon-size: 12px;
+
     display: flex;
     gap: calc(var(--salt-size-unit) * 2);
     width: var(--vuuColumnPicker-width, 100%);

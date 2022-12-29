@@ -1,22 +1,24 @@
-import { useLayoutEffect, useMemo } from 'react';
-import * as ReactDOM from 'react-dom';
-import { createContainer, renderPortal } from './render-portal';
+import { ReactElement, useLayoutEffect, useMemo } from "react";
+import * as ReactDOM from "react-dom";
+import { createContainer, renderPortal } from "./render-portal";
 
-export const Portal = function Portal(props) {
+export interface PortalProps {
+  children: ReactElement;
+  onRender?: () => void;
+  x?: number;
+  y?: number;
+}
+
+export const Portal = function Portal({
+  children,
+  x = 0,
+  y = 0,
+  onRender,
+}: PortalProps) {
   // Do we need to accept container here as a prop ?
-  const { children, x, y, onRender } = props;
-  let renderContainer = useMemo(() => {
+  const renderContainer = useMemo(() => {
     return createContainer();
   }, []);
-
-  // console.log(`Portal render x ${x} y ${y}`);
-
-  // useEffect(() => {
-  //   console.log(`Portal mounted`);
-  //   return () => {
-  //     console.log('Portal unmounted');
-  //   };
-  // }, []);
 
   useLayoutEffect(() => {
     renderPortal(children, renderContainer, x, y, onRender);
@@ -26,8 +28,8 @@ export const Portal = function Portal(props) {
     return () => {
       if (renderContainer) {
         ReactDOM.unmountComponentAtNode(renderContainer);
-        if (renderContainer.classList.contains('hwReactPopup')) {
-          renderContainer.parentElement.removeChild(renderContainer);
+        if (renderContainer.classList.contains("vuuPopup")) {
+          renderContainer.parentElement?.removeChild(renderContainer);
         }
       }
     };

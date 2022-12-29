@@ -1,3 +1,4 @@
+import { TabstripProps } from "@heswell/salt-lab";
 import { HTMLAttributes, MouseEvent, ReactElement, ReactNode } from "react";
 
 export interface StackProps
@@ -16,4 +17,5 @@ export interface StackProps
   path?: string;
   showTabs?: boolean;
   toolbarContent?: ReactNode;
+  TabstripProps?: Partial<TabstripProps>;
 }

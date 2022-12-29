@@ -1,7 +1,7 @@
 import { RemoteDataSource } from "@finos/vuu-data";
 import { useMemo } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
-import { Schema } from "./useColumns";
+import { Schema } from "./useSchemas";
 
 const configureColumns = (columns: any, columnConfig?: any) => {
   if (columnConfig) {

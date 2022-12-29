@@ -1,4 +1,4 @@
-import { partition } from "@finos/vuu-utils/src/array-utils";
+import { partition } from "@finos/vuu-utils";
 import {
   AndFilter,
   Filter,

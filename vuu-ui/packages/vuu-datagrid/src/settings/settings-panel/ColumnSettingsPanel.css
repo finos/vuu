@@ -1,8 +1,0 @@
-.vuuColumnSettingsPanel {
-    --saltFormField-margin: 3px 0;
-    align-items: flex-start;
-    border-left: solid 1px var(--salt-container-primary-borderColor);
-    display: flex;
-    flex-direction: column;
-    padding-left: calc(var(--salt-size-unit) * 3);
-}

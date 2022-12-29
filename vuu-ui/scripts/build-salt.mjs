@@ -11,6 +11,6 @@ function buildPackage(packageName) {
   );
 }
 
-const packages = ["core", "lab"];
+const packages = ["lab"];
 
 packages.forEach((packageName) => buildPackage(packageName));

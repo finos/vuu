@@ -43,7 +43,7 @@ export async function build(config) {
     outfile,
     sourcemap,
     splitting,
-    target: "esnext",
+    target: ["es2020", "chrome79"],
     watch: false,
   })
     .then((result) => {

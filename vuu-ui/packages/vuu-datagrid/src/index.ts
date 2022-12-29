@@ -5,4 +5,3 @@ export { default as ComponentContext } from "./component-context";
 export * from "./grid-cells";
 export { default as Measure } from "./measure";
 export * from "./measure";
-export * from "./settings";

@@ -55,6 +55,7 @@ export const isNumericColumn = (type?: ColumnType) =>
     : type === "number" || (type as ColumnTypeDescriptor).name === "number";
 
 export interface ColumnDescriptor {
+  align?: "left" | "right";
   className?: string;
   flex?: number;
   heading?: [...string[]];

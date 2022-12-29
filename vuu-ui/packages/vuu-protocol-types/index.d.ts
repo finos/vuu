@@ -1,9 +1,5 @@
-export declare type VuuColumnDataType =
-  | "int"
-  | "long"
-  | "double"
-  | "string"
-  | "char";
+// prettier-ignore
+export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char";
 export declare type VuuMenuContext = "cell" | "row" | "grid" | "selected-rows";
 export interface VuuMenuItem {
   context: VuuMenuContext;

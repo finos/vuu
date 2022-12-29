@@ -30,24 +30,50 @@
   --svg-grab-handle: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">  <circle cx="7" cy="13" r="1"/><circle cx="7" cy="10" r="1"/><circle cx="7" cy="7" r="1"/><circle cx="7" cy="4" r="1"/><circle cx="10" cy="13" r="1"/><circle cx="10" cy="10" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="10" cy="4" r="1"/></svg>');
   --svg-column-2A: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18"><path d="M16,1H10V17h6a1,1,0,0,0,1-1V2A1,1,0,0,0,16,1Z" /><path d="M8,1H2A1,1,0,0,0,1,2V16a1,1,0,0,0,1,1H8Z" /></svg>');
   --svg-column-2B: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18"><path d="M16,1H13V17h3a1,1,0,0,0,1-1V2A1,1,0,0,0,16,1Z" /><path d="M11,1H2A1,1,0,0,0,1,2V16a1,1,0,0,0,1,1h9Z" /></svg>');
+  --svg-arrow-thin: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18"><path d="M17.75,8.04h-14L8.72,3.07a.48349.48349,0,0,0,.01642-.68357L8.72,2.37l-.35-.36a.5135.5135,0,0,0-.71,0L1.24,8.44a.5135.5135,0,0,0,0,.71l6.39,6.84a.5135.5135,0,0,0,.71,0l.35-.35a.5135.5135,0,0,0,0-.71L3.76,9.5H17.75A.25.25,0,0,0,18,9.25V8.29A.25.25,0,0,0,17.75,8.04Z" /></svg>');
 
   --vuu-icon-size: 12px;
 }
 
+span[data-icon]{
+  display: inline-block;
+  height: var(--vuu-icon-height, var(--vuu-icon-size,18px));
+  position: relative;
+  width: var(--vuu-icon-width, var(--vuu-icon-size, 18px));
+}
 
 [data-icon]:after {
   content: "";
-  background-color: black;
+  background-color: var(--vuu-icon-color, black);
+  left: var(--vuu-icon-left, auto);
   height: var(--vuu-icon-size, 12px);
-  /* inset: calc(50% - var(--vuu-icon-size) / 2) auto 0 calc(50% - var(--vuu-icon-size) / 2); */
   -webkit-mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
   mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
   position: absolute;
+  top: var(--vuu-icon-top, auto);
   width: var(--vuu-icon-size, 12px);
 }
 
 [data-icon='filter'] {
   --vuu-icon-svg: var(--svg-filter);
+}
+
+[data-icon='arrow-thin-left'] {
+  --vuu-icon-svg: var(--svg-arrow-thin);
+}
+
+[data-icon='arrow-thin-right'] {
+  --vuu-icon-svg: var(--svg-arrow-thin);
+  transform: rotate(180deg);
+}
+
+[data-icon='arrow-thin-up'] {
+  --vuu-icon-svg: var(--svg-arrow-thin);
+  transform: rotate(90deg);
+}
+[data-icon='arrow-thin-down'] {
+  --vuu-icon-svg: var(--svg-arrow-thin);
+  transform: rotate(270deg);
 }
 
 [data-icon='chevron-double-right'] {
