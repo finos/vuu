@@ -1,11 +1,10 @@
 import React, { HTMLAttributes, useCallback, useRef, useState } from "react";
 import cx from "classnames";
-import { View } from "@finos/vuu-layout/src/layout-view";
 import { Portal } from "../portal";
 import { Scrim } from "@heswell/salt-lab";
 
+import { Text } from "@salt-ds/core";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
-import { CloseIcon } from "@salt-ds/icons";
 
 import "./Dialog.css";
 
@@ -52,13 +51,16 @@ export const Dialog = ({
     <Portal onRender={handleRender} x={posX} y={posY}>
       <Scrim className={`${classBase}-scrim`} open={isOpen}>
         <div {...props} className={cx(classBase, className)} ref={root}>
-          <Toolbar style={{ height: 32 }}>
-            <span>{title}</span>
-            <ToolbarButton key="close" onClick={close} data-align-end>
-              <CloseIcon /> Close
-            </ToolbarButton>
+          <Toolbar className={`${classBase}-header`}>
+            <Text>{title}</Text>
+            <ToolbarButton
+              key="close"
+              onClick={close}
+              data-align-end
+              data-icon="close"
+            />
           </Toolbar>
-          <View style={{ flex: 1 }}>{children}</View>
+          {children}
         </div>
       </Scrim>
     </Portal>

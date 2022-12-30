@@ -82,7 +82,7 @@ export const ColumnPicker = ({
     <div className={classBase} id={id}>
       <div className={`${classBase}-listColumn`}>
         <label htmlFor={`available-${id}`}>
-          <Text as="h4">Available Columns</Text>
+          <Text as="h4">Hidden Columns</Text>
         </label>
         <div className={`${classBase}-listContainer`} style={{ flex: 1 }}>
           <List<ColumnDescriptor, "extended">
@@ -101,14 +101,14 @@ export const ColumnPicker = ({
           style={{ display: "flex", alignItems: "center", flex: "0 0 32px" }}
         >
           <Button onClick={addColumn} disabled={selected1.length === 0}>
-            Add
+            Show
             <span data-icon="arrow-thin-right" style={{ marginLeft: 8 }} />
           </Button>
         </div>
       </div>
       <div className={`${classBase}-listColumn`}>
         <label htmlFor={`selected-${id}`}>
-          <Text as="h4">Chosen Columns</Text>
+          <Text as="h4">Visible Columns</Text>
         </label>
         <div className={`${classBase}-listContainer`} style={{ flex: 1 }}>
           <List<ColumnDescriptor>
@@ -132,7 +132,7 @@ export const ColumnPicker = ({
         >
           <Button onClick={removeColumn} disabled={selectedColumn === null}>
             <span data-icon="arrow-thin-left" style={{ marginRight: 8 }} />
-            Remove
+            Hide
           </Button>
           <Button
             aria-label="Move column up"

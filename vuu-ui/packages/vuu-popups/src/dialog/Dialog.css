@@ -1,17 +1,28 @@
 .vuuDialog {
-  --dialog-border: var(--hw-dialog-border, solid 1px #ccc);
-  --dialog-padding: var(--hw-dialog-padding, 0);
-  --dialog-shadow: var(--hw-dialog-shadow, none);
-  --vuuView-margin: 0;
-  --vuuView-flex-wrap: none;
-
-  border: var(--dialog-border);
-  padding: var(--dialog-padding);
-  box-shadow: var(--dialog-shadow);
+  background: var(--salt-container-primary-background);
+  border: var(--vuuDialog-border, solid 1px #ccc);
+  border-radius: 5px;
+  padding: var(--vuuDialog-padding, 0);
+  box-shadow: var(--salt-overlayable-shadow, none);
   height: var(--vuuDialog-height, fit-content);
   width: var(--vuuDialog-width, fit-content);
+}
 
+.vuuDialog-header {
+  --saltButton-height: 28px;
+  --saltButton-width: 28px;
 
+  --saltToolbar-background: transparent;
+  --saltToolbar-height: calc(var(--salt-size-base) + 5px);
+  border-bottom: solid 1px var(--salt-container-primary-borderColor);
+}
+
+.vuuDialog-header > .Responsive-inner {
+  align-items: center;
+}
+
+.vuuDialog-header > .Responsive-inner > :last-child{
+  right: 2px;
 }
 
 

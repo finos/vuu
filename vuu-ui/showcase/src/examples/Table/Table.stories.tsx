@@ -1,26 +1,24 @@
 import { DataSourceRow } from "@finos/vuu-data";
+import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
+import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Column, DataTable } from "@finos/vuu-datatable";
 import { Flexbox, View } from "@finos/vuu-layout";
+import { Dialog } from "@finos/vuu-popups";
 import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
   Toolbar,
 } from "@heswell/salt-lab";
-import { useCallback, useMemo, useState } from "react";
+import { ReactElement, useCallback, useMemo, useRef, useState } from "react";
 import { DragVisualizer } from "../../../../packages/vuu-datatable/src/DragVisualizer";
-import { ErrorDisplay, useTestDataSource } from "../utils";
-
-export default {
-  title: "Table/Table",
-  component: "table",
-};
+import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 
 let displaySequence = 1;
 
 const columns: Column[] = [
-  { name: "row number", pin: "left", width: 150 },
-  { name: "column 1", pin: "left", width: 120 },
+  { name: "row number", width: 150 },
+  { name: "column 1", width: 120 },
   { name: "column 2", width: 120 },
   { name: "column 3", width: 120 },
   { name: "column 4", width: 120 },
@@ -32,6 +30,13 @@ const columns: Column[] = [
   { name: "column 10", width: 120 },
 ];
 
+const pinnedColumns = columns.map((col, i) => ({
+  ...col,
+  pin: i < 2 ? ("left" as const) : undefined,
+}));
+
+const defaultConfig = { columns };
+
 const count = 100;
 const data: DataSourceRow[] = [];
 for (let i = 0; i < count; i++) {
@@ -40,8 +45,26 @@ for (let i = 0; i < count; i++) {
     i, i, true, false, 1, 0, `row ${i + 1}`, 0, `row ${i + 1}`, "value 1", "value 2", "value 3", "value 4", "value 5", "value 6", "value 7",  "value 8", "value 9", "value 10" 
   ]);
 }
+const pinnedConfig = { columns: pinnedColumns };
 
 export const DefaultTable = () => {
+  return (
+    <>
+      <DragVisualizer orientation="horizontal">
+        <DataTable
+          config={defaultConfig}
+          data={data}
+          height={700}
+          width={700}
+        />
+      </DragVisualizer>
+    </>
+  );
+};
+
+DefaultTable.displaySequence = displaySequence++;
+
+export const PinnedColumns = () => {
   const [isColumnBased, setIsColumnBased] = useState<boolean>(false);
   const handleToggleLayout = useCallback(() => {
     setIsColumnBased((value) => !value);
@@ -55,7 +78,7 @@ export const DefaultTable = () => {
       </Toolbar>
       <DragVisualizer orientation="horizontal">
         <DataTable
-          columns={columns}
+          config={pinnedConfig}
           data={data}
           height={700}
           tableLayout={isColumnBased ? "column" : "row"}
@@ -66,12 +89,12 @@ export const DefaultTable = () => {
   );
 };
 
-DefaultTable.displaySequence = displaySequence++;
+PinnedColumns.displaySequence = displaySequence++;
 
 export const BetterTableFillContainer = () => {
   return (
     <div style={{ height: 700, width: 700 }}>
-      <DataTable columns={columns} data={data} />
+      <DataTable config={defaultConfig} data={data} />
     </div>
   );
 };
@@ -81,7 +104,7 @@ export const BetterTableWithBorder = () => {
   return (
     <div style={{ height: 700, width: 700 }}>
       <DataTable
-        columns={columns}
+        config={defaultConfig}
         data={data}
         style={{ border: "solid 2px red" }}
       />
@@ -96,20 +119,20 @@ export const FlexLayoutTables = () => {
     <Flexbox style={{ flexDirection: "column", width: 800, height: 700 }}>
       <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
         <View resizeable style={{ flex: 1 }}>
-          <DataTable columns={columns} data={data} />
+          <DataTable config={defaultConfig} data={data} />
         </View>
 
         <View resizeable style={{ flex: 1 }}>
-          <DataTable columns={columns} data={data} />
+          <DataTable config={defaultConfig} data={data} />
         </View>
       </Flexbox>
       <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
         <View resizeable style={{ flex: 1 }}>
-          <DataTable columns={columns} data={data} />
+          <DataTable config={defaultConfig} data={data} />
         </View>
 
         <View resizeable style={{ flex: 1 }}>
-          <DataTable columns={columns} data={data} />
+          <DataTable config={defaultConfig} data={data} />
         </View>
       </Flexbox>
     </Flexbox>
@@ -123,9 +146,20 @@ export const VuuDataTable = () => {
     []
   );
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
-  const { columns, dataSource, error } = useTestDataSource({
+  const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
+
+  const { schemas } = useSchemas();
+  const { columns, config, dataSource, error } = useTestDataSource({
+    schemas,
     tablename: tables[selectedIndex],
   });
+
+  const configRef = useRef<GridConfig>(config);
+  const [tableConfig, setTableConfig] = useState<GridConfig>(config);
+
+  useMemo(() => {
+    setTableConfig((configRef.current = config));
+  }, [config]);
 
   const handleChange: ToggleButtonGroupChangeEventHandler = (
     event,
@@ -135,6 +169,34 @@ export const VuuDataTable = () => {
     console.log(`onChange [${index}] toggled ${toggled}`);
     setSelectedIndex(index);
   };
+
+  const handleConfigChange = useCallback(
+    (config: GridConfig, closePanel = false) => {
+      setTableConfig((configRef.current = config));
+      closePanel && setDialogContent(null);
+    },
+    []
+  );
+
+  const handleTableConfigChange = useCallback((config: GridConfig) => {
+    // we want this to be used when editor is opened next, but we don;t want
+    // to trigger a re-render of our dataTable
+    configRef.current = config;
+  }, []);
+
+  const showConfigEditor = useCallback(() => {
+    setDialogContent(
+      <DatagridSettingsPanel
+        availableColumns={columns}
+        gridConfig={configRef.current}
+        onConfigChange={handleConfigChange}
+      />
+    );
+  }, [columns, handleConfigChange]);
+
+  const hideSettings = useCallback(() => {
+    setDialogContent(null);
+  }, []);
 
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
@@ -150,12 +212,23 @@ export const VuuDataTable = () => {
       </ToggleButtonGroup>
 
       <DataTable
+        allowConfigEditing
         dataSource={dataSource}
-        columns={columns}
+        config={tableConfig}
         // columnSizing="fill"
         height={600}
+        onConfigChange={handleTableConfigChange}
+        onShowConfigEditor={showConfigEditor}
         width={700}
       />
+      <Dialog
+        className="vuuDialog-gridConfig"
+        isOpen={dialogContent !== null}
+        onClose={hideSettings}
+        title="Grid and Column Settings"
+      >
+        {dialogContent}
+      </Dialog>
     </>
   );
 };

@@ -1,28 +1,30 @@
-import { buildColumnMap } from "@finos/vuu-utils";
-import { CSSProperties, useCallback, useMemo, useRef, useState } from "react";
+import { Button } from "@salt-ds/core";
+import { CSSProperties, useCallback, useRef } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
+import { TableProps } from "./dataTableTypes";
 import { RowBasedTable } from "./RowBasedTable";
+import { useDraggableColumn } from "./useDraggableColumn";
+import { isFullSize, isMeasured, useMeasuredSize } from "./useMeasuredSize";
 import { useTableData } from "./useTableData";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
-import { Column, TableProps } from "./dataTableTypes";
-import { moveItem } from "@heswell/salt-lab";
 
 import "./DataTable.css";
-import { useDraggableColumn } from "./useDraggableColumn";
-import { isFullSize, isMeasured, useMeasuredSize } from "./useMeasuredSize";
 
 const classBase = "vuuDataTable";
 
 const styleHidden: CSSProperties = { display: "none" };
 
 export const DataTable = ({
-  columns: columnsProp,
+  config,
   data: dataProp,
   dataSource,
   headerHeight = 25,
   height,
+  onConfigChange,
+  onShowConfigEditor: onShowSettings,
   rowHeight = 20,
+  allowConfigEditing: showSettings = false,
   style: styleProp,
   tableLayout: tableLayoutProp = "row",
   width,
@@ -32,11 +34,19 @@ export const DataTable = ({
   const scrollableRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
-  const { data, setRangeVertical, rowCount } = useTableData({
+  const {
+    columnMap,
+    columns,
+    data,
+    dispatchColumnAction,
+    setRangeVertical,
+    rowCount,
+  } = useTableData({
+    config,
     data: dataProp,
     dataSource,
+    onConfigChange,
   });
-  const [columns, setColumns] = useState<Column[]>(columnsProp);
 
   const size = useMeasuredSize(rootRef, height, width);
 
@@ -49,10 +59,13 @@ export const DataTable = ({
     size,
   });
 
-  const handleDropColumn = useCallback((fromIndex: number, toIndex: number) => {
-    console.log(`drop column ${fromIndex} - ${toIndex}`);
-    setColumns((cols) => moveItem(cols, fromIndex, toIndex));
-  }, []);
+  const handleDropColumn = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      const column = columns[fromIndex];
+      dispatchColumnAction({ type: "moveColumn", column, moveTo: toIndex });
+    },
+    [columns, dispatchColumnAction]
+  );
 
   const { handleRootScroll, handleScrollbarScroll } = useTableScroll({
     onRangeChange: setRangeVertical,
@@ -74,8 +87,6 @@ export const DataTable = ({
     tableContainerRef,
     tableLayout: tableLayoutProp,
   });
-
-  const columnMap = useMemo(() => buildColumnMap(columns), [columns]);
 
   if (isFullSize(size) && !isMeasured(size)) {
     return (
@@ -152,6 +163,14 @@ export const DataTable = ({
         </div>
         {draggable}
       </div>
+      {showSettings ? (
+        <Button
+          className={`${classBase}-settings`}
+          data-icon="settings"
+          onClick={onShowSettings}
+          variant="secondary"
+        />
+      ) : null}
     </div>
   );
 };

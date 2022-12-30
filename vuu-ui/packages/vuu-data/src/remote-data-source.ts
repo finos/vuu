@@ -1,5 +1,4 @@
 import {
-  ClientToServerRpcCall,
   VuuGroupBy,
   VuuAggregation,
   VuuRange,
@@ -17,8 +16,6 @@ import {
   SubscribeProps,
 } from "./data-source";
 import { VuuUIMessageOutMenuRPC } from "./vuuUIMessageTypes";
-
-export interface DataSourceColumn {}
 
 // const log = (message: string, ...rest: unknown[]) => {
 //   console.log(
@@ -49,7 +46,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   private clientCallback: any;
   // private serverViewportId?: string;
 
-  public columns: DataSourceColumn[];
+  public columns: string[];
   public rowCount: number | undefined;
   public table: VuuTable;
   public viewport: string | undefined;
@@ -87,6 +84,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.initialFilterQuery = filterQuery;
     this.initialAggregations = aggregations;
 
+    console.log(`constructor`, {
+      columns,
+    });
+
     if (!serverUrl && !configUrl) {
       throw Error("RemoteDataSource expects serverUrl or configUrl");
     }
@@ -110,6 +111,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     callback: SubscribeCallback
   ) {
     if (!table) throw Error("RemoteDataSource subscribe called without table");
+
+    console.log(`subscribe`, {
+      columns,
+    });
 
     this.clientCallback = callback;
     console.log("subscribe");

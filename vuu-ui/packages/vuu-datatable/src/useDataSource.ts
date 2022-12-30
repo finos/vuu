@@ -1,4 +1,9 @@
-import { DataSourceRow, SubscribeCallback } from "@finos/vuu-data";
+import {
+  DataSource,
+  DataSourceRow,
+  DataSourceSubscribedMessage,
+  SubscribeCallback,
+} from "@finos/vuu-data";
 import { VuuDataRow, VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useViewContext } from "@finos/vuu-layout";
@@ -15,12 +20,20 @@ export type SubscriptionDetails = {
   sort?: VuuSortCol[];
 };
 
+export interface DataSourceHookProps {
+  dataSource?: DataSource;
+  onSizeChange: (size: number) => void;
+  onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
+  range?: VuuRange;
+}
+
 //TODO allow subscription details to be set before subscribe call
 export function useDataSource({
   dataSource,
   onSizeChange,
+  onSubscribed,
   range = { from: 0, to: 0 },
-}) {
+}: DataSourceHookProps) {
   const { title } = useViewContext();
   const [, forceUpdate] = useState<unknown>(null);
   const isMounted = useRef(true);
@@ -55,7 +68,7 @@ export function useDataSource({
   const datasourceMessageHandler: SubscribeCallback = useCallback(
     (message) => {
       if (message.type === "subscribed") {
-        console.log("subscribed");
+        onSubscribed?.(message);
       } else if (message.type === "viewport-update") {
         if (typeof message.size === "number") {
           onSizeChange?.(message.size);
@@ -70,7 +83,7 @@ export function useDataSource({
         }
       }
     },
-    [dataWindow, onSizeChange, setData]
+    [dataWindow, onSizeChange, onSubscribed, setData]
   );
 
   useEffect(

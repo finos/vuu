@@ -1,5 +1,5 @@
 import React, { HTMLAttributes, MouseEvent, useCallback } from "react";
-import { Column } from "./dataTableTypes";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import cx from "classnames";
 
 import "./TableHeaderCell.css";
@@ -8,7 +8,7 @@ const classBase = "vuuTable-headerCell";
 
 export interface TableHeaderCellProps
   extends HTMLAttributes<HTMLTableCellElement> {
-  column: Column;
+  column: KeyedColumnDescriptor;
   debugString?: string;
   onDragStart?: (evt: MouseEvent) => void;
   onDragEnd?: () => void;
@@ -41,7 +41,7 @@ export const TableHeaderCell = ({
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
     >
-      {column.name}
+      {column.label}
     </th>
   );
 };

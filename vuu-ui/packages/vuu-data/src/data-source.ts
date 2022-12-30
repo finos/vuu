@@ -3,6 +3,7 @@ import { Filter } from "@finos/vuu-filter-types";
 import { IEventEmitter } from "@finos/vuu-utils";
 import {
   VuuAggregation,
+  VuuColumnDataType,
   VuuColumns,
   VuuFilter,
   VuuGroupBy,
@@ -92,6 +93,7 @@ export interface DataSourceSubscribedMessage
   filterSpec: VuuFilter;
   groupBy: VuuGroupBy;
   range: VuuRange;
+  tableMeta: { columns: string[]; dataTypes: VuuColumnDataType[] } | null;
   type: "subscribed";
 }
 
@@ -209,6 +211,7 @@ export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 export interface DataSource extends IEventEmitter {
   aggregate: (aggregations: VuuAggregation[]) => void;
   closeTreeNode: (key: string) => void;
+  columns: string[];
   createLink: ({ parentVpId, link: { fromColumn, toColumn } }: any) => void;
   filter: (filter: Filter | undefined, filterQuery: string) => void;
   group: (groupBy: VuuGroupBy) => void;

@@ -107,6 +107,10 @@ export class Viewport {
   private pendingOperations: any = new Map<string, AsyncOperation>();
   private pendingRangeRequest: any = null;
   private rowCountChanged = false;
+  private serverTableMeta: {
+    columns: string[];
+    dataTypes: VuuColumnDataType[];
+  } | null = null;
   private sort: any;
 
   public clientViewportId: string;
@@ -222,6 +226,7 @@ export class Viewport {
       columns,
       filter: this.filter,
       filterSpec: this.filterSpec,
+      tableMeta: this.serverTableMeta,
     };
   }
 
@@ -389,6 +394,10 @@ export class Viewport {
       menu,
       clientViewportId: this.clientViewportId,
     };
+  }
+
+  setTableMeta(columns: string[], dataTypes: VuuColumnDataType[]) {
+    this.serverTableMeta = { columns, dataTypes };
   }
 
   createLink(

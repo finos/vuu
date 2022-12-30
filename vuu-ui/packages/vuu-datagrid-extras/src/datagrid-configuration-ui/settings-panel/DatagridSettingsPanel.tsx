@@ -1,5 +1,5 @@
-import { HTMLAttributes, useCallback, useState } from "react";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { HTMLAttributes, MouseEvent, useCallback, useState } from "react";
+import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { ColumnSettingsPanel } from "./ColumnSettingsPanel";
 import { useColumns } from "./useColumns";
 
@@ -8,15 +8,12 @@ import { ColumnPicker } from "../column-picker";
 import { Button } from "@salt-ds/core";
 import { Panel } from "@heswell/salt-lab";
 
-export type GridConfig = {
-  columns: ColumnDescriptor[];
-};
-
 export interface DatagridSettingsPanelProps
   extends HTMLAttributes<HTMLDivElement> {
   availableColumns: ColumnDescriptor[];
   gridConfig: GridConfig;
-  onConfigChange?: (config: GridConfig) => void;
+  onCancel?: () => void;
+  onConfigChange?: (config: GridConfig, closePanel?: boolean) => void;
 }
 
 const classBase = "vuuDatagridSettingsPanel";
@@ -24,6 +21,7 @@ const classBase = "vuuDatagridSettingsPanel";
 export const DatagridSettingsPanel = ({
   availableColumns,
   gridConfig,
+  onCancel,
   onConfigChange,
 }: DatagridSettingsPanelProps) => {
   console.log(`DatagridSettingsPanel render`);
@@ -44,12 +42,23 @@ export const DatagridSettingsPanel = ({
     []
   );
 
-  const handleApply = useCallback(() => {
-    onConfigChange?.({
-      ...config,
-      columns: chosenColumns,
-    });
-  }, [chosenColumns, config, onConfigChange]);
+  const handleApply = useCallback(
+    (evt: MouseEvent, closePanel = false) => {
+      onConfigChange?.(
+        {
+          ...config,
+          columns: chosenColumns,
+        },
+        closePanel
+      );
+    },
+    [chosenColumns, config, onConfigChange]
+  );
+
+  const handleSave = useCallback(
+    (evt: MouseEvent) => handleApply(evt, true),
+    [handleApply]
+  );
 
   const selectedColumn =
     selectedColumnName === null
@@ -58,7 +67,7 @@ export const DatagridSettingsPanel = ({
 
   return (
     <div className={classBase}>
-      <div className={`${classBase}-header`} />
+      {/* <div className={`${classBase}-header`} /> */}
       <div className={`${classBase}-main`}>
         <ColumnPicker
           availableColumns={availableColumns}
@@ -80,9 +89,9 @@ export const DatagridSettingsPanel = ({
         )}
       </div>
       <div className={`${classBase}-buttonBar`}>
-        <Button>Cancel</Button>
+        <Button onClick={onCancel}>Cancel</Button>
         <Button onClick={handleApply}>Apply</Button>
-        <Button>Save</Button>
+        <Button onClick={handleSave}>Save</Button>
       </div>
     </div>
   );

@@ -1,5 +1,9 @@
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 
+export declare type GridConfig = {
+  columns: ColumnDescriptor[];
+};
+
 export declare type TypeFormatting = {
   align?: "left" | "right";
   alignOnDecimals?: boolean;
@@ -25,19 +29,35 @@ export interface ColumnDescriptor {
   className?: string;
   flex?: number;
   heading?: [...string[]];
-  isGroup?: boolean;
   isSystemColumn?: boolean;
   label?: string;
   locked?: boolean;
-  marginLeft?: number;
   minWidth?: number;
-  moving?: boolean;
   name: string;
+  pin?: "left" | "right";
+  resizeable?: boolean;
+  serverDataType?: VuuColumnDataType;
+  sortable?: boolean;
+  type?: ColumnType;
+  width?: number;
+}
+export interface KeyedColumnDescriptor extends ColumnDescriptor {
+  align?: "left" | "right";
+  className?: string;
+  flex?: number;
+  heading?: [...string[]];
+  isGroup?: boolean;
+  isSystemColumn?: boolean;
+  key: number;
+  label: string;
+  locked?: boolean;
+  marginLeft?: number;
+  moving?: boolean;
   /** used only when column is a child of GroupColumn  */
   originalIdx?: number;
+  pin?: "left" | "right";
   resizeable?: boolean;
   resizing?: boolean;
-  serverDataType?: VuuColumnDataType;
   sortable?: boolean;
   type?: ColumnType;
   width?: number;

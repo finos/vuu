@@ -22,6 +22,8 @@ export const useDraggableColumn = ({
   const mousePosRef = useRef<MousePos>();
 
   const handleDropSettle = useCallback(() => {
+    console.log(`handleDropSettle`);
+    mousePosRef.current = undefined;
     setTableLayout("row");
   }, []);
 
@@ -49,14 +51,20 @@ export const useDraggableColumn = ({
   }, []);
 
   useLayoutEffect(() => {
-    if (tableLayout === "column" && mousePosRef.current) {
+    console.log(
+      `useDraggableColumn useLayoutEffect tableLayout ${tableLayout}`,
+      {
+        mousePosRef: mousePosRef.current,
+      }
+    );
+    if (tableLayout === "column" && mousePosRef.current && !draggable) {
       const { clientX, clientY, idx } = mousePosRef.current;
       const target = tableContainerRef.current?.querySelector(
         `.vuuDataTable-table[data-idx="${idx}"]`
       ) as HTMLElement;
       if (target) {
         const evt = {
-          persist: () => console.log("persist"),
+          persist: () => undefined,
           nativeEvent: {
             clientX,
             clientY,
@@ -66,7 +74,7 @@ export const useDraggableColumn = ({
         onMouseDown?.(evt as unknown as MouseEvent);
       }
     }
-  }, [onMouseDown, tableContainerRef, tableLayout]);
+  }, [draggable, onMouseDown, tableContainerRef, tableLayout]);
 
   return {
     draggable,

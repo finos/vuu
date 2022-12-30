@@ -1,4 +1,5 @@
 import { DataSource, DataSourceRow } from "@finos/vuu-data";
+import { KeyedColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { ColumnMap } from "@finos/vuu-utils";
 import { HTMLAttributes, MouseEvent } from "react";
 
@@ -7,24 +8,28 @@ export type tableLayoutType = "row" | "column";
 export interface Column {
   name: string;
   pin?: "left" | "right";
+  // TODO add this to internal extension of Column type
   pinnedLeftOffset?: number;
   width?: number;
 }
 
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
-  columns: Column[];
+  config: GridConfig;
   data?: DataSourceRow[];
   dataSource?: DataSource;
   headerHeight?: number;
   height?: number;
   rowHeight?: number;
+  onConfigChange?: (config: GridConfig) => void;
+  onShowConfigEditor?: () => void;
+  allowConfigEditing?: boolean;
   tableLayout?: tableLayoutType;
   width?: number;
 }
 
-export interface TableImplementationProps
-  extends Pick<TableProps, "columns" | "data"> {
+export interface TableImplementationProps extends Pick<TableProps, "data"> {
   columnMap: ColumnMap;
+  columns: KeyedColumnDescriptor[];
   headerHeight: number;
   onHeaderCellDragEnd?: () => void;
   onHeaderCellDragStart?: (evt: MouseEvent) => void;

@@ -4,7 +4,6 @@ import {
   VuuColumns,
   VuuMenuContext,
   VuuRange,
-  VuuRowDataItemType,
   VuuSortCol,
   VuuTable,
 } from "@finos/vuu-protocol-types";

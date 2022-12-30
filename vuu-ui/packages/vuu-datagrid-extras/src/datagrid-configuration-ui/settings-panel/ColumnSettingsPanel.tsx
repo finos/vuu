@@ -42,7 +42,6 @@ export const ColumnSettingsPanel = ({
   ...props
 }: ColumnSettingsPanelProps) => {
   const [activeTab, setActiveTab] = useState(0);
-  console.log(`ColumnSettingsPanel render ${JSON.stringify(column, null, 2)}`);
 
   const dispatchUpdate = useCallback(
     (values: Partial<Pick<ColumnDescriptor, "align" | "label" | "width">>) =>

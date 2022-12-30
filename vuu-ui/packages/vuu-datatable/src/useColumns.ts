@@ -1,8 +1,32 @@
 import {
   ColumnDescriptor,
   ColumnTypeDescriptor,
+  KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
+import { moveItem } from "@heswell/salt-lab";
+import { metadataKeys } from "@finos/vuu-utils";
+
 import { Reducer, useReducer } from "react";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+
+const DEFAULT_COLUMN_WIDTH = 100;
+const KEY_OFFSET = metadataKeys.count;
+
+const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
+  serverDataType === undefined;
+
+const getDataType = (
+  column: ColumnDescriptor,
+  columnNames: string[],
+  dataTypes: VuuColumnDataType[]
+): VuuColumnDataType => {
+  const index = columnNames.indexOf(column.name);
+  if (index !== -1 && dataTypes[index]) {
+    return dataTypes[index];
+  } else {
+    return column.serverDataType ?? "string";
+  }
+};
 
 export interface ColumnActionAdd {
   type: "addColumn";
@@ -11,15 +35,27 @@ export interface ColumnActionAdd {
   index?: number;
 }
 
+export interface ColumnActionInit {
+  type: "init";
+  columns: ColumnDescriptor[];
+}
+
 export interface ColumnActionMove {
   type: "moveColumn";
-  column: ColumnDescriptor;
+  column: KeyedColumnDescriptor;
   moveBy?: 1 | -1;
+  moveTo?: number;
 }
 
 export interface ColumnActionRemove {
   type: "removeColumn";
   column: ColumnDescriptor;
+}
+
+export interface ColumnActionSetTypes {
+  type: "setTypes";
+  columnNames: string[];
+  serverDataTypes: VuuColumnDataType[];
 }
 
 export interface ColumnActionUpdate {
@@ -44,42 +80,68 @@ export interface ColumnActionUpdateTypeFormatting {
 
 export type ColumnAction =
   | ColumnActionAdd
+  | ColumnActionInit
   | ColumnActionMove
   | ColumnActionRemove
+  | ColumnActionSetTypes
   | ColumnActionUpdate
   | ColumnActionUpdateProp
   | ColumnActionUpdateTypeFormatting;
 
-export type ColumnReducer = Reducer<ColumnDescriptor[], ColumnAction>;
+export type ColumnReducer = Reducer<KeyedColumnDescriptor[], ColumnAction>;
 
 const columnReducer: ColumnReducer = (state, action) => {
+  console.log(`column reducer ${action.type}`);
   switch (action.type) {
-    case "addColumn":
-      return addColumn(state, action);
+    case "init":
+      return init(action.columns);
+    // case "addColumn":
+    //   return addColumn(state, action);
     case "moveColumn":
       return moveColumn(state, action);
     case "removeColumn":
       return removeColumn(state, action);
-    case "updateColumn":
-      return state;
+    case "setTypes":
+      return setTypes(state, action);
+    // case "updateColumn":
+    //   return state;
     case "updateColumnProp":
       return updateColumnProp(state, action);
-    case "updateColumnTypeFormatting":
-      return updateColumnTypeFormatting(state, action);
+    // case "updateColumnTypeFormatting":
+    //   return updateColumnTypeFormatting(state, action);
     default:
+      console.log(`unhandled action ${action.type}`);
       return state;
   }
 };
 
-export const useColumns = (columns: ColumnDescriptor[]) => {
+export const useColumns = () => {
   const [state, dispatchColumnAction] = useReducer<ColumnReducer>(
     columnReducer,
-    columns
+    []
   );
 
   return {
     columns: state,
     dispatchColumnAction,
+  };
+};
+
+function init(columns: ColumnDescriptor[]): KeyedColumnDescriptor[] {
+  return columns.map(applyDefaultColumnValues);
+}
+
+const applyDefaultColumnValues = (
+  column: ColumnDescriptor,
+  index: number
+): KeyedColumnDescriptor => {
+  const { name, label = name, width = DEFAULT_COLUMN_WIDTH, ...rest } = column;
+  return {
+    ...rest,
+    label,
+    key: index + KEY_OFFSET,
+    name,
+    width,
   };
 };
 
@@ -98,39 +160,64 @@ function addColumn(
 }
 
 function removeColumn(
-  columns: ColumnDescriptor[],
+  columns: KeyedColumnDescriptor[],
   { column }: ColumnActionRemove
 ) {
   return columns.filter((col) => col.name !== column.name);
 }
 
 function moveColumn(
-  columns: ColumnDescriptor[],
-  { column, moveBy }: ColumnActionMove
+  state: KeyedColumnDescriptor[],
+  { column, moveBy, moveTo }: ColumnActionMove
 ) {
   if (typeof moveBy === "number") {
-    const idx = columns.indexOf(column);
-    const newColumns = columns.slice();
+    const idx = state.indexOf(column);
+    const newColumns = state.slice();
     const [movedColumns] = newColumns.splice(idx, 1);
     newColumns.splice(idx + moveBy, 0, movedColumns);
     return newColumns;
+  } else if (typeof moveTo === "number") {
+    const index = state.indexOf(column);
+    return moveItem(state, index, moveTo);
+  }
+  return state;
+}
+
+function setTypes(
+  state: KeyedColumnDescriptor[],
+  { columnNames, serverDataTypes }: ColumnActionSetTypes
+) {
+  if (state.some(columnWithoutDataType)) {
+    const cols = state.map((column) => ({
+      ...column,
+      serverDataType: getDataType(column, columnNames, serverDataTypes),
+    }));
+    console.log({ cols });
+    return cols;
+    // return state.map((column) => ({
+    //   ...column,
+    //   serverDataType: getDataType(column, columnNames, serverDataTypes),
+    // }));
   } else {
-    return columns;
+    return state;
   }
 }
 
 function updateColumnProp(
-  state: ColumnDescriptor[],
+  state: KeyedColumnDescriptor[],
   { align, column, label, width }: ColumnActionUpdateProp
 ) {
-  if (align === "left" || align === "right") {
-    state = replaceColumn(state, { ...column, align });
-  }
-  if (typeof label === "string") {
-    state = replaceColumn(state, { ...column, label });
-  }
-  if (typeof width === "number") {
-    state = replaceColumn(state, { ...column, width });
+  const targetColumn = state.find((col) => col.name === column.name);
+  if (targetColumn) {
+    if (align === "left" || align === "right") {
+      state = replaceColumn(state, { ...targetColumn, align });
+    }
+    if (typeof label === "string") {
+      state = replaceColumn(state, { ...targetColumn, label });
+    }
+    if (typeof width === "number") {
+      state = replaceColumn(state, { ...targetColumn, width });
+    }
   }
   return state;
 }
@@ -181,6 +268,9 @@ function updateColumnTypeFormatting(
   }
 }
 
-function replaceColumn(state: ColumnDescriptor[], column: ColumnDescriptor) {
+function replaceColumn(
+  state: KeyedColumnDescriptor[],
+  column: KeyedColumnDescriptor
+) {
   return state.map((col) => (col.name === column.name ? column : col));
 }
