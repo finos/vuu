@@ -1,15 +1,33 @@
 .vuuTable-headerCell {
+  --cell-align: 'flex-start';
   text-align: left;
     background: var(--table-background);
     border-right: 1px solid var(--salt-separable-tertiary-borderColor);
     border-bottom: 2px solid var(--salt-separable-tertiary-borderColor);
     color: var(--salt-text-secondary-foreground);
     cursor: default;
-    padding-left: 3px;
+    padding: 0 !important;
     position: sticky;
     top: 0;
     height: var(--vuuTableHeaderHeight);
     /* ensure header row sits atop everything else when scrolling down */
     z-index: 1;
   }
+
+  .vuuTable-headerCell-right {
+    --cell-align: flex-end;
+  }
  
+  .vuuTable-headerCell-inner {
+    align-items: stretch;
+    display: flex;
+    height: 100%;
+    padding: 0 0 0 3px;
+  }
+
+  .vuuTable-headerCell-label {
+    align-items: center;
+    justify-content: var(--cell-align);
+    display: flex;
+    flex: 1 1 auto;
+  }

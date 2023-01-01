@@ -3,26 +3,72 @@ import {
   DataSourceRow,
   DataSourceSubscribedMessage,
 } from "@finos/vuu-data";
-import { GridConfig } from "@finos/vuu-datagrid-types";
-import { buildColumnMap } from "@finos/vuu-utils";
+import {
+  ColumnDescriptor,
+  GridConfig,
+  KeyedColumnDescriptor,
+  TypeFormatting,
+} from "@finos/vuu-datagrid-types";
+import { buildColumnMap, roundDecimal } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
+import { ValueFormatter, ValueFormatters } from "./dataTableTypes";
 import { KeySet } from "./KeySet";
 import { useColumns } from "./useColumns";
 import { useDataSource } from "./useDataSource";
 
-export interface TableDataHookProps {
+export interface DataTableHookProps {
   config: GridConfig;
   data?: DataSourceRow[];
   dataSource?: DataSource;
   onConfigChange?: (config: GridConfig) => void;
 }
 
-export const useTableData = ({
+const DEFAULT_NUMERIC_FORMAT: TypeFormatting = {};
+const defaultValueFormatter = (value: unknown) =>
+  value == null ? "" : typeof value === "string" ? value : value.toString();
+const numericFormatter = ({ align = "right", type }: ColumnDescriptor) => {
+  if (type === undefined || typeof type === "string") {
+    return defaultValueFormatter;
+  } else {
+    const {
+      alignOnDecimals = false,
+      decimals,
+      zeroPad = false,
+    } = type.formatting ?? DEFAULT_NUMERIC_FORMAT;
+    return (value: unknown) => {
+      if (
+        typeof value === "string" &&
+        (value.startsWith("Σ") || value.startsWith("["))
+      ) {
+        return value;
+      }
+      const number =
+        typeof value === "number"
+          ? value
+          : typeof value === "string"
+          ? parseFloat(value)
+          : undefined;
+      return roundDecimal(number, align, decimals, zeroPad, alignOnDecimals);
+    };
+  }
+};
+
+const getValueFormatter = (column: KeyedColumnDescriptor): ValueFormatter => {
+  const { serverDataType } = column;
+  if (serverDataType === "string" || serverDataType === "char") {
+    return (value: unknown) => value as string;
+  } else if (serverDataType === "double") {
+    return numericFormatter(column);
+  }
+  return defaultValueFormatter;
+};
+
+export const useDataTable = ({
   config,
   data: dataProp,
   dataSource,
   onConfigChange,
-}: TableDataHookProps) => {
+}: DataTableHookProps) => {
   const keys = useMemo(() => new KeySet({ from: 0, to: 0 }), []);
   const [visibleRows, setVisibleRows] = useState<DataSourceRow[]>([]);
   const [rowCount, setRowCount] = useState<number>(dataProp?.length ?? 0);
@@ -57,6 +103,13 @@ export const useTableData = ({
     [dataSource?.columns]
   );
 
+  const valueFormatters = useMemo(() => {
+    return columns.reduce<ValueFormatters>(
+      (map, column) => ((map[column.name] = getValueFormatter(column)), map),
+      {}
+    );
+  }, [columns]);
+
   useMemo(() => {
     onConfigChange?.({
       ...config,
@@ -90,6 +143,7 @@ export const useTableData = ({
   );
 
   return {
+    valueFormatters,
     columnMap,
     columns,
     data: dataSource ? data : visibleRows,

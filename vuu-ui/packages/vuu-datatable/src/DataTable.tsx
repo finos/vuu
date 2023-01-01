@@ -5,7 +5,7 @@ import { TableProps } from "./dataTableTypes";
 import { RowBasedTable } from "./RowBasedTable";
 import { useDraggableColumn } from "./useDraggableColumn";
 import { isFullSize, isMeasured, useMeasuredSize } from "./useMeasuredSize";
-import { useTableData } from "./useTableData";
+import { useDataTable } from "./useDataTable";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 
@@ -41,7 +41,8 @@ export const DataTable = ({
     dispatchColumnAction,
     setRangeVertical,
     rowCount,
-  } = useTableData({
+    valueFormatters,
+  } = useDataTable({
     config,
     data: dataProp,
     dataSource,
@@ -159,6 +160,7 @@ export const DataTable = ({
               tableLayout === "row" ? handleHeaderCellDragStart : undefined
             }
             rowHeight={rowHeight}
+            valueFormatters={valueFormatters}
           />
         </div>
         {draggable}

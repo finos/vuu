@@ -5,6 +5,7 @@
     border-left: solid 1px var(--salt-container-primary-borderColor);
     display: flex;
     flex-direction: column;
+    min-width: 220px;
     padding-left: calc(var(--salt-size-unit) * 3);
 }
 
@@ -18,7 +19,7 @@
 
 .vuuColumnSettingsPanel .saltPanel {
     --saltFormField-margin: 3px 0;
-    margin-top: var(--salt-size-unit);
+    margin-top: var(--settings-panel-marginTop, var(--salt-size-unit));
 
     align-items: stretch;
     display: flex;

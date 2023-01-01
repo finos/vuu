@@ -1,5 +1,5 @@
 import { metadataKeys } from "@finos/vuu-utils";
-import React, { CSSProperties, useCallback } from "react";
+import { CSSProperties, useCallback } from "react";
 import { TableImplementationProps } from "./dataTableTypes";
 import cx from "classnames";
 import { TableRow } from "./TableRow";
@@ -20,12 +20,6 @@ export const ColumnBasedTable = ({
     onHeaderCellDragEnd?.();
   }, [onHeaderCellDragEnd]);
 
-  const pinnedLeftOffset = columns
-    .filter((col) => col.pin === "left")
-    .map((col, i, cols) => {
-      return i === 0 ? 0 : cols[i - 1].width;
-    });
-
   return (
     <>
       {columns.map((column, i) => (
@@ -39,7 +33,7 @@ export const ColumnBasedTable = ({
           style={
             {
               width: column.width,
-              left: pinnedLeftOffset[i],
+              left: column.pinnedLeftOffset,
               "--vuuTableHeaderHeight": `${headerHeight}px`,
               "--row-height": `${rowHeight}px`,
             } as CSSProperties
@@ -57,7 +51,7 @@ export const ColumnBasedTable = ({
             {data.map((row, j) => (
               <TableRow
                 columnMap={columnMap}
-                columns={columns}
+                columns={[column]}
                 columnIndex={i}
                 height={rowHeight}
                 index={j}

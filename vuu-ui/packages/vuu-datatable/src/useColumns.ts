@@ -28,6 +28,14 @@ const getDataType = (
   }
 };
 
+const numericTypes = ["int", "long", "double"];
+const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
+  serverDataType === undefined
+    ? undefined
+    : numericTypes.includes(serverDataType)
+    ? "right"
+    : "left";
+
 export interface ColumnActionAdd {
   type: "addColumn";
   columns?: ColumnDescriptor[];
@@ -135,9 +143,16 @@ const applyDefaultColumnValues = (
   column: ColumnDescriptor,
   index: number
 ): KeyedColumnDescriptor => {
-  const { name, label = name, width = DEFAULT_COLUMN_WIDTH, ...rest } = column;
+  const {
+    align = getDefaultAlignment(column.serverDataType),
+    name,
+    label = name,
+    width = DEFAULT_COLUMN_WIDTH,
+    ...rest
+  } = column;
   return {
     ...rest,
+    align,
     label,
     key: index + KEY_OFFSET,
     name,
@@ -188,10 +203,14 @@ function setTypes(
   { columnNames, serverDataTypes }: ColumnActionSetTypes
 ) {
   if (state.some(columnWithoutDataType)) {
-    const cols = state.map((column) => ({
-      ...column,
-      serverDataType: getDataType(column, columnNames, serverDataTypes),
-    }));
+    const cols = state.map((column) => {
+      const serverDataType = getDataType(column, columnNames, serverDataTypes);
+      return {
+        ...column,
+        align: column.align ?? getDefaultAlignment(serverDataType),
+        serverDataType,
+      };
+    });
     console.log({ cols });
     return cols;
     // return state.map((column) => ({

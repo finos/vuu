@@ -13,6 +13,7 @@ export const RowBasedTable = ({
   data,
   onHeaderCellDragStart,
   rowHeight,
+  valueFormatters,
 }: TableImplementationProps) => {
   const handleDragStart = useCallback(
     (evt: MouseEvent) => {
@@ -41,7 +42,7 @@ export const RowBasedTable = ({
         </tr>
       </thead>
       <tbody>
-        {data.map((row, i) => (
+        {data?.map((row, i) => (
           <TableRow
             columnMap={columnMap}
             columns={columns}
@@ -49,6 +50,7 @@ export const RowBasedTable = ({
             index={i}
             key={row[RENDER_IDX]}
             row={row}
+            valueFormatters={valueFormatters}
           />
         ))}
         <tr className={`${classBase}-filler`} />

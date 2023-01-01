@@ -130,6 +130,10 @@
   left: 0;
 }
 
+.vuuAlignRight {
+  text-align: right;
+}
+
 th.vuuPinLeft {
   top:0;
   z-index: 2;

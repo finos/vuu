@@ -27,6 +27,10 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   width?: number;
 }
 
+export type ValueFormatter = (value: unknown) => string;
+export type ValueFormatters = {
+  [key: string]: ValueFormatter;
+};
 export interface TableImplementationProps extends Pick<TableProps, "data"> {
   columnMap: ColumnMap;
   columns: KeyedColumnDescriptor[];
@@ -34,6 +38,7 @@ export interface TableImplementationProps extends Pick<TableProps, "data"> {
   onHeaderCellDragEnd?: () => void;
   onHeaderCellDragStart?: (evt: MouseEvent) => void;
   rowHeight: number;
+  valueFormatters?: ValueFormatters;
 }
 
 type MeasureStatus = "unmeasured" | "measured";

@@ -86,7 +86,7 @@ export const ColumnSettingsPanel = ({
         onTabSelectionChanged={setActiveTab}
         TabstripProps={tabstripProps}
       >
-        <Panel title="Header">
+        <Panel title="Column">
           <FormField label="Label" labelPlacement="left">
             <Input
               value={column.label ?? column.name}
@@ -118,7 +118,7 @@ export const ColumnSettingsPanel = ({
         <ColumnTypePanel
           column={column}
           dispatchColumnAction={dispatchColumnAction}
-          title="Data"
+          title="Data Cell"
         />
         <Panel title="Vuu" variant="secondary">
           <FormField

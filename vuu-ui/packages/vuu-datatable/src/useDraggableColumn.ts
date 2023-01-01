@@ -39,9 +39,12 @@ export const useDraggableColumn = ({
 
   const handleHeaderCellDragStart = useCallback((evt: MouseEvent) => {
     const { clientX, clientY } = evt;
+    const sourceElement = evt.target as HTMLElement;
+    console.log({ sourceElement });
+    const thElement = sourceElement.closest(".vuuTable-headerCell");
     const {
       dataset: { idx = "-1" },
-    } = evt.target as HTMLElement;
+    } = thElement as HTMLElement;
     mousePosRef.current = {
       clientX,
       clientY,

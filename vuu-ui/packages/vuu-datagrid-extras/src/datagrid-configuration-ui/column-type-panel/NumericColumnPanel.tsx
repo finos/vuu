@@ -1,9 +1,10 @@
-import "./ColumnTypePanel.css";
-import { ColumnTypePanelProps } from "./ColumnTypePanel";
+import { ColumnType } from "@finos/vuu-datagrid-types";
 import { FormField, StepperInput, Switch } from "@heswell/salt-lab";
 import { Text } from "@salt-ds/core";
-import { ColumnType } from "@finos/vuu-datagrid/src/grid-model";
 import { useCallback } from "react";
+import { ColumnTypePanelProps } from "./ColumnTypePanel";
+
+import "./ColumnTypePanel.css";
 
 type NumericColumnConfig = {
   alignOnDecimals: boolean;
@@ -50,9 +51,6 @@ export const NumericColumnPanel = ({
   dispatchColumnAction,
 }: ColumnTypePanelProps) => {
   const { decimals, alignOnDecimals, zeroPad } = getColumnValues(column?.type);
-
-  console.log(`NumericColumnPanel render`);
-  console.log(JSON.stringify(column, null, 2));
 
   const dispatchUpdate = useCallback(
     (values: Partial<NumericColumnConfig>) =>

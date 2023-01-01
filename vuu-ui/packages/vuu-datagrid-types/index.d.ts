@@ -5,7 +5,6 @@ export declare type GridConfig = {
 };
 
 export declare type TypeFormatting = {
-  align?: "left" | "right";
   alignOnDecimals?: boolean;
   decimals?: number;
   zeroPad?: boolean;
@@ -56,6 +55,7 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
   /** used only when column is a child of GroupColumn  */
   originalIdx?: number;
   pin?: "left" | "right";
+  pinnedLeftOffset?: number;
   resizeable?: boolean;
   resizing?: boolean;
   sortable?: boolean;
