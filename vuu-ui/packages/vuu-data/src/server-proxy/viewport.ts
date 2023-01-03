@@ -1,7 +1,7 @@
 import { KeySet } from "./keyset";
 import * as Message from "./messages";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
-import { getFullRange } from "@finos/vuu-utils/src/range-utils";
+import { getFullRange } from "@finos/vuu-utils";
 import { bufferBreakout } from "./buffer-range";
 import {
   ServerToClientCreateViewPortSuccess,
@@ -20,7 +20,7 @@ import {
   VuuRange,
   ClientToServerRemoveLink,
   VuuFilter,
-} from "../../../vuu-protocol-types";
+} from "@finos/vuu-protocol-types";
 import { ServerProxySubscribeMessage } from "../vuuUIMessageTypes";
 
 import {
