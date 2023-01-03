@@ -9,11 +9,6 @@
     "lezer-generate": "lezer-generator --output ./src/filter-input/parser/generated/filter-parser.js ./src/filter-input/parser/grammar/filter.grammar",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
-  "files": [
-    "index.js",
-    "index.js.map",
-    "/src"
-  ],
   "devDependencies": {
     "@lezer/generator": "^1.1.1"
   },

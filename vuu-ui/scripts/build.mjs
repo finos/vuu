@@ -17,6 +17,29 @@ const defaultConfig = {
   licencePath: "../../../LICENSE",
 };
 
+const workerTS = "src/worker.ts";
+const indexTS = "src/index.ts";
+const indexDTS = "index.d.ts";
+const indexJS = "src/index.js";
+const indexCSS = "index.css";
+const README = "README.md";
+
+const getDefaultFilesToPublish = ({
+  includeJS,
+  includeCSS,
+  includeCJS,
+  includeDTS,
+  includeReadme,
+}) => {
+  const filesToPublish = [];
+  includeCJS && filesToPublish.push("cjs");
+  includeJS && filesToPublish.push("esm");
+  includeCSS && filesToPublish.push("index.css", "index.css.map");
+  includeDTS && filesToPublish.push(indexDTS);
+  includeReadme && filesToPublish.push(README);
+  return filesToPublish;
+};
+
 export default async function main(customConfig) {
   const config = {
     ...defaultConfig,
@@ -32,18 +55,13 @@ export default async function main(customConfig) {
   const [, packageName] = scopedPackageName.split("/");
   const external = Object.keys(peerDependencies);
 
-  const workerTS = "src/worker.ts";
-  const indexTS = "src/index.ts";
-  const indexDTS = "index.d.ts";
-  const indexJS = "src/index.js";
-  const indexCSS = "index.css";
-
   const outdir = `${DIST_PATH}/${packageName}`;
   const watch = getCommandLineArg("--watch");
   const development = watch || getCommandLineArg("--dev");
   const cjs = getCommandLineArg("--cjs") ? " --cjs" : "";
 
   const hasWorker = fs.existsSync(workerTS);
+  const hasReadme = fs.existsSync(README);
   const isTypeScript = fs.existsSync(indexTS);
   const isTypeLib = fs.existsSync(indexDTS);
   const isJavaScript = fs.existsSync(indexJS);
@@ -74,11 +92,19 @@ export default async function main(customConfig) {
     fs.mkdirSync(outdir, { recursive: true });
   }
 
-  const GeneratedFiles = /^(worker|index)\.(js|css)(\.map)?$/;
+  const GeneratedFiles = /^(worker|index)\.(js|css)(\.map)|(esm)?$/;
 
-  async function writePackageJSON() {
+  async function writePackageJSON(options) {
     return new Promise((resolve, reject) => {
-      const { files, main, types, ...packageRest } = packageJson;
+      const {
+        files = getDefaultFilesToPublish(options),
+        // eslint-disable-next-line no-unused-vars
+        main,
+        // eslint-disable-next-line no-unused-vars
+        scripts,
+        types,
+        ...packageRest
+      } = packageJson;
       if (files) {
         const filesToPublish = files.filter(
           (fileName) => !GeneratedFiles.test(fileName)
@@ -124,13 +150,27 @@ export default async function main(customConfig) {
     });
   }
 
-  async function copyStaticFiles() {
+  async function copyLicense() {
     return fs.copyFile(
       path.resolve(LICENCE_PATH),
       path.resolve(outdir, "LICENSE"),
       (err) => {
         if (err) {
           console.log("error copying LICENSE", {
+            err,
+          });
+        }
+      }
+    );
+  }
+
+  async function copyReadme() {
+    return fs.copyFile(
+      path.resolve(README),
+      path.resolve(outdir, README),
+      (err) => {
+        if (err) {
+          console.log("error copying README", {
             err,
           });
         }
@@ -158,7 +198,8 @@ export default async function main(customConfig) {
   }
 
   // Compose the list of async tasks we are going to run
-  const buildTasks = [writePackageJSON()];
+  const buildTasks = [];
+  // const buildTasks = [];
   if (!isTypeLib) {
     buildTasks.push(build(buildConfig));
     if (cjs) {
@@ -171,23 +212,32 @@ export default async function main(customConfig) {
       );
     }
   }
-  buildTasks.push(copyStaticFiles());
+  buildTasks.push(copyLicense());
+  if (hasReadme) {
+    buildTasks.push(copyReadme());
+  }
 
-  const [, esmOutput, cjsOutput] = await Promise.all(buildTasks).catch((e) => {
+  const [esmOutput, cjsOutput] = await Promise.all(buildTasks).catch((e) => {
+    console.log(e.message);
     process.exit(1);
   });
 
   console.log(`[${scopedPackageName}]`);
 
-  if (esmOutput) {
-    await writeMetaFile(esmOutput.result.metafile, outdir);
+  const jsOut = esmOutput?.result.metafile.outputs?.[`${outdir}/esm/index.js`];
+  const cssOut =
+    esmOutput?.result.metafile.outputs?.[`${outdir}/esm/index.css`];
 
-    const {
-      outputs: {
-        [`${outdir}/esm/index.js`]: jsOut,
-        [`${outdir}/esm/index.css`]: cssOut,
-      },
-    } = esmOutput.result.metafile;
+  await writePackageJSON({
+    includeCSS: cssOut !== undefined,
+    includeJS: jsOut !== undefined,
+    includeCJS: cjs,
+    includeDTS: isTypeLib,
+    includeReadme: hasReadme,
+  });
+
+  if (jsOut || cssOut) {
+    await writeMetaFile(esmOutput.result.metafile, outdir);
 
     if (cssOut) {
       relocateCSSToPackageRoot();
