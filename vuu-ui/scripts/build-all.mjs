@@ -15,7 +15,12 @@ const wave1 = [
   "vuu-theme",
 ];
 const wave2 = ["vuu-data", "vuu-filters"];
-const wave3 = ["vuu-datagrid", "vuu-layout", "vuu-shell"];
+const wave3 = [
+  "vuu-datagrid",
+  "vuu-datagrid-extras",
+  "vuu-layout",
+  "vuu-shell",
+];
 
 await Promise.all(wave1.map(buildPackage));
 await Promise.all(wave2.map(buildPackage));
