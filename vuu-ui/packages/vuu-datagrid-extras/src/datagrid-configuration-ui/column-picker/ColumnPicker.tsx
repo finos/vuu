@@ -7,6 +7,7 @@ import { ColumnAction } from "../settings-panel/useColumns";
 import "./ColumnPicker.css";
 
 const classBase = "vuuColumnPicker";
+
 const removeSelectedColumns = (
   availableColumns: ColumnDescriptor[],
   selectedColumns: ColumnDescriptor[]
@@ -78,6 +79,14 @@ export const ColumnPicker = ({
     [onSelectionChange]
   );
 
+  const handleDrop = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      const column = selectedColumns[fromIndex];
+      dispatch({ type: "moveColumn", column, moveTo: toIndex });
+    },
+    [dispatch, selectedColumns]
+  );
+
   return (
     <div className={classBase} id={id}>
       <div className={`${classBase}-listColumn`}>
@@ -112,10 +121,12 @@ export const ColumnPicker = ({
         </label>
         <div className={`${classBase}-listContainer`} style={{ flex: 1 }}>
           <List<ColumnDescriptor>
+            allowDragDrop
             borderless
             id={`selected-${id}`}
             itemHeight={24}
             itemToString={(item) => item.name}
+            onMoveListItem={handleDrop}
             onSelectionChange={handleSelectionChange2}
             selected={selectedColumn}
             style={{ flex: 1 }}

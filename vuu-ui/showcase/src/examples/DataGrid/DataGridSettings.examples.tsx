@@ -33,6 +33,7 @@ export const InstrumentsTableSettings = () => {
       availableColumns={availableColumns}
       gridConfig={config}
       onConfigChange={handleConfigChange}
+      style={{ border: "solid 1px var(--salt-container-primary-borderColor)" }}
     />
   );
 };
@@ -70,6 +71,7 @@ export const PricesTableSettings = () => {
       availableColumns={availableColumns}
       gridConfig={config}
       onConfigChange={handleConfigChange}
+      style={{ border: "solid 1px var(--salt-container-primary-borderColor)" }}
     />
   );
 };

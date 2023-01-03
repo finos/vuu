@@ -5,8 +5,11 @@
     border-left: solid 1px var(--salt-container-primary-borderColor);
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
     min-width: 220px;
-    padding-left: calc(var(--salt-size-unit) * 3);
+    padding-left: calc(var(--salt-size-unit) * 2);
+    width: var(--vuuColumnSettings-width, auto);
+
 }
 
 .vuuColumnSettingsPanel-columnTabs {

@@ -10,13 +10,6 @@ import {
 } from "@finos/vuu-layout";
 import { Brown } from "./components";
 
-const story = {
-  title: "Layout/FlexboxLayout",
-  component: FlexboxLayout,
-};
-
-export default story;
-
 let displaySequence = 1;
 
 export const Empty = () => (

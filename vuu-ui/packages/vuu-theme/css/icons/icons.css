@@ -47,12 +47,14 @@ span[data-icon]{
   content: "";
   background-color: var(--vuu-icon-color, black);
   left: var(--vuu-icon-left, auto);
-  height: var(--vuu-icon-size, 12px);
+  height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
   -webkit-mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
   mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
   position: absolute;
   top: var(--vuu-icon-top, auto);
-  width: var(--vuu-icon-size, 12px);
+  width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
 }
 
 [data-icon='filter'] {
