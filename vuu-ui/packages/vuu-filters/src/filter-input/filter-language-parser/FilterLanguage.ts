@@ -1,6 +1,6 @@
 import { LanguageSupport, LRLanguage } from "@codemirror/language";
-import { parser } from "./generated/filter-parser";
 import { styleTags, tags as tag } from "@lezer/highlight";
+import { parser } from "./generated/filter-parser";
 
 const filterLanguage = LRLanguage.define({
   name: "VuuFilterQuery",
@@ -17,5 +17,5 @@ const filterLanguage = LRLanguage.define({
 });
 
 export const filterLanguageSupport = () => {
-  return new LanguageSupport(filterLanguage /*, [exampleCompletion]*/);
+  return new LanguageSupport(filterLanguage);
 };

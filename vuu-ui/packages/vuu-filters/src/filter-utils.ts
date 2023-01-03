@@ -1,328 +1,228 @@
-import { partition } from "@finos/vuu-utils";
+import { KeyedColumnDescriptor } from '@finos/vuu-datagrid/src/grid-model'
+import { partition } from '@finos/vuu-utils/src/array-utils'
+import { Row } from '@finos/vuu-utils/src/row-utils'
+import { Column } from '../../../showcase/src/examples/Table/Table'
 import {
   AndFilter,
   Filter,
   FilterClause,
   FilterCombinatorOp,
+  isAndFilter,
+  isFilterClause,
+  isInFilter,
   isMultiClauseFilter,
   isMultiValueFilter,
-  isAndFilter,
   isOrFilter,
-  isInFilter,
-  OrFilter,
   isSingleValueFilter,
-  MultiClauseFilter,
-  isFilterClause,
-} from "./filterTypes";
-import { Row } from "@finos/vuu-utils/src/row-utils";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
+  MultiClauseFilter
+} from './filterTypes'
 
-export const AND = "and";
-export const EQUALS = "=";
-export const GREATER_THAN = ">";
-export const LESS_THAN = "<";
-export const OR = "or";
-export const STARTS_WITH = "starts";
-export const ENDS_WITH = "ends";
-export const IN = "in";
+export const AND = 'and'
+export const EQUALS = '='
+export const GREATER_THAN = '>'
+export const LESS_THAN = '<'
+export const OR = 'or'
+export const STARTS_WITH = 'starts'
+export const ENDS_WITH = 'ends'
+export const IN = 'in'
 
-export type FilterType =
-  | "and"
-  | "="
-  | ">"
-  | ">="
-  | "in"
-  | "<="
-  | "<"
-  | "NOT_IN"
-  | "NOT_SW"
-  | "or"
-  | "SW";
+export type FilterType = 'and' | '=' | '>' | '>=' | 'in' | '<=' | '<' | 'NOT_IN' | 'NOT_SW' | 'or' | 'SW'
 
 export const SET_FILTER_DATA_COLUMNS = [
-  { name: "name", flex: 1 },
-  { name: "count", width: 40, type: "number" },
-  { name: "totalCount", width: 40, type: "number" },
-];
+  { name: 'name', flex: 1 },
+  { name: 'count', width: 40, type: 'number' },
+  { name: 'totalCount', width: 40, type: 'number' },
+]
 
-export const BIN_FILTER_DATA_COLUMNS = [
-  { name: "bin" },
-  { name: "count" },
-  { name: "bin-lo" },
-  { name: "bin-hi" },
-];
+export const BIN_FILTER_DATA_COLUMNS = [{ name: 'bin' }, { name: 'count' }, { name: 'bin-lo' }, { name: 'bin-hi' }]
 
-export const filterClauses = (
-  filter: Filter | null,
-  clauses: FilterClause[] = []
-) => {
+export const filterClauses = (filter: Filter | null, clauses: FilterClause[] = []) => {
   if (filter) {
     if (isMultiClauseFilter(filter)) {
-      filter.filters.forEach((f) => clauses.push(...filterClauses(f)));
+      filter.filters.forEach((f) => clauses.push(...filterClauses(f)))
     } else {
-      // TODO why did we originally stringify 'values' ?
-      // clauses.push({ column, op, value: value ?? values?.join(',') });
-      clauses.push(filter);
+      clauses.push(filter)
     }
   }
-  return clauses;
-};
+  return clauses
+}
 
 type AddFilterOptions = {
-  combineWith: FilterCombinatorOp;
-};
+  combineWith: FilterCombinatorOp
+}
 
 const DEFAULT_ADD_FILTER_OPTS: AddFilterOptions = {
-  combineWith: "and",
-};
+  combineWith: 'and',
+}
 
-export function addFilter(
+export const addFilter = (
   existingFilter: Filter | null,
   filter: Filter,
   { combineWith = AND }: AddFilterOptions = DEFAULT_ADD_FILTER_OPTS
-): Filter | null {
+): Filter | null => {
   if (includesNoValues(filter)) {
     if (isMultiClauseFilter(filter)) {
       // TODO identify the column that is contributing the no-values filter
     } else {
       existingFilter = removeFilterForColumn(existingFilter, {
         name: filter.column,
-      });
+      })
     }
   } else if (includesAllValues(filter)) {
-    // A filter that returns all values is a way to remove filtering for this column
     if (isMultiClauseFilter(filter)) {
       // TODO identify the column that is contributing the all-values filter
-    } else {
-      return removeFilterForColumn(existingFilter, { name: filter.column });
     }
+    return removeFilterForColumn(existingFilter, { name: filter.column ?? '' })
   }
 
   if (!existingFilter) {
-    return filter;
-  } else if (!filter) {
-    return existingFilter;
+    return filter
   }
-
+  if (!filter) {
+    return existingFilter
+  }
   if (existingFilter.op === AND && filter.op === AND) {
     return {
       op: AND,
       filters: combine(existingFilter.filters, filter.filters),
-    };
-  } else if (existingFilter.op === AND) {
-    const filters = replaceOrInsert(existingFilter.filters, filter);
-    return filters.length > 1 ? { op: AND, filters } : filters[0];
-  } else if (filter.op === AND) {
-    return { op: AND, filters: filter.filters.concat(existingFilter) };
-  } else if (filterEquals(existingFilter, filter, true)) {
-    return filter;
-  } else if (sameColumn(existingFilter, filter)) {
-    return merge(existingFilter, filter);
-  } else {
-    return { op: combineWith, filters: [existingFilter, filter] };
+    }
   }
+  if (existingFilter.op === AND) {
+    const filters = replaceOrInsert(existingFilter.filters, filter)
+    return filters.length > 1 ? { op: AND, filters } : filters[0]
+  }
+  if (filter.op === AND) {
+    return { op: AND, filters: filter.filters.concat(existingFilter) }
+  }
+  if (filterEquals(existingFilter, filter, true)) {
+    return filter
+  }
+  if (sameColumn(existingFilter, filter)) {
+    return merge(existingFilter, filter)
+  }
+  return { op: combineWith, filters: [existingFilter, filter] }
 }
 
-function includesNoValues(filter?: Filter | null): boolean {
-  // TODO make sure we catch all cases...
+const includesNoValues = (filter?: Filter | null): boolean => {
   if (!filter) {
-    return false;
+    return false
   }
   if (isInFilter(filter) && filter.values.length === 0) {
-    return true;
+    return true
   }
-  return (
-    isAndFilter(filter) && filter.filters!.some((f) => includesNoValues(f))
-  );
+  return isAndFilter(filter) && filter.filters.some((f) => includesNoValues(f))
 }
 
-export function getFilterColumn(column: Column | ColumnGroup) {
-  return isColumnGroup(column) ? column.columns[0] : column;
-}
-
-//TODO might need some refinement for Quotes etc
 export const filterAsQuery = (f: Filter, namedFilters = {}): string => {
   if (isMultiClauseFilter(f)) {
-    const [clause1, clause2] = f.filters;
-    return `${filterAsQuery(clause1, namedFilters)} ${f.op} ${filterAsQuery(
-      clause2,
-      namedFilters
-    )}`;
-  } else if (isMultiValueFilter(f)) {
-    return `${f.column} ${f.op} [${f.values.join(",")}]`;
-  } else {
-    return `${f.column} ${f.op} ${f.value}`;
+    const [clause1, clause2] = f.filters
+    return `${filterAsQuery(clause1, namedFilters)} ${f.op} ${filterAsQuery(clause2, namedFilters)}`
   }
-};
-
-// TODO types for different types of filters
+  if (isMultiValueFilter(f)) {
+    return `${f.column} ${f.op} [${f.values.join(',')}]`
+  }
+  return `${f.column} ${f.op} ${f.value}`
+}
 
 interface CommonFilter {
-  colName?: string;
-  otherColFilters?: Filter[];
-  // values?: any[];
-  mode?: any;
-  value?: any;
-  values?: any;
-  op?: "or" | "and";
-  column?: string;
-  filters?: Filter[];
+  colName?: string
+  otherColFilters?: Filter[]
+  mode?: any
+  value?: any
+  values?: any
+  op?: 'or' | 'and'
+  column?: string
+  filters?: Filter[]
 }
 
 export interface OtherFilter extends CommonFilter {
-  type: FilterType;
-  values?: any[];
+  type: FilterType
+  values?: any[]
 }
 
-export type RowFilterFn = (row: Row) => boolean;
+export type RowFilterFn = (row: Row) => boolean
 
-// export function shouldShowFilter(filterColumnName: string, column: Column): boolean {
-//   const filterColumn = getFilterColumn(column);
-//   if (isColumnGroup(filterColumn)) {
-//     return filterColumn.columns.some((col) => col.name === filterColumnName);
-//   } else {
-//     return filterColumnName === filterColumn.name;
-//   }
-// }
-
-function includesAllValues(filter?: Filter | null): boolean {
+const includesAllValues = (filter?: Filter | null): boolean => {
   if (!filter) {
-    return false;
-  } else if (filter.op === STARTS_WITH && filter.value === "") {
-    return true;
+    return false
   }
-  return filter.op === STARTS_WITH && filter.value === "";
+  if (filter.op === STARTS_WITH && filter.value === '') {
+    return true
+  }
+  return filter.op === STARTS_WITH && filter.value === ''
 }
 
-// If we add an IN filter and there is an existing NOT_IN, we would always expect the IN
-// values to exist in the NOT_IN set (as long as user interaction is driving the filtering)
-function replaceOrInsert(filters: Filter[], filter: Filter) {
-  // const { type, column, values } = filter;
-  // if (type === IN) {
-  //   let idx = filters.findIndex((f) => f.type === EQUALS && f.column === column);
-  //   if (idx !== -1) {
-  //     const { values: existingValues } = filters[idx];
-  //     if (values.every((value) => existingValues.indexOf(value) !== -1)) {
-  //       if (values.length === existingValues.length) {
-  //         // we simply remove the existing 'other' filter ...
-  //         return filters.filter((f, i) => i !== idx);
-  //       } else {
-  //         // ... or strip the matching values from the 'other' filter values
-  //         let newValues = existingValues.filter((value) => !values.includes(value));
-  //         return filters.map((filter, i) =>
-  //           i === idx ? { ...filter, values: newValues } : filter
-  //         );
-  //       }
-  //     } else if (values.some((value) => existingValues.indexOf(value) !== -1)) {
-  //       console.log(`partial overlap between IN and NOT_IN`);
-  //     }
-  //   } else {
-  //     idx = filters.findIndex((f) => f.type === type && f.colName === filter.colName);
-  //     if (idx !== -1) {
-  //       return filters.map((f, i) => (i === idx ? merge(f, filter) : f));
-  //     }
-  //   }
-  // }
-
-  return filters.concat(filter);
+const replaceOrInsert = (filters: Filter[], filter: Filter) => {
+  return filters.concat(filter)
 }
 
-function merge(f1: Filter, f2: Filter): Filter | null {
-  const { op: t1 } = f1;
-  const { op: t2 } = f2;
-
+const merge = (f1: Filter, f2: Filter): Filter | null => {
   if (includesNoValues(f2)) {
-    return f2;
-  } else if (isInFilter(f1) && isInFilter(f2)) {
+    return f2
+  }
+  if (isInFilter(f1) && isInFilter(f2)) {
     return {
       ...f1,
-      values: f1.values.concat(
-        f2.values.filter((v: any) => !f1.values.includes(v))
-      ),
-    };
-  } else if (f1.op === STARTS_WITH && f2.op === STARTS_WITH) {
+      values: [...f1.values, ...(f2.values as any[]).filter((v: string | number) => !(f1.values as any[]).includes(v))]
+    }
+  }
+  if (f1.op === STARTS_WITH && f2.op === STARTS_WITH) {
     return {
       op: OR,
       filters: [f1, f2],
-    };
-  }
-
-  return f2;
-}
-
-function combine(existingFilters: Filter[], replacementFilters: Filter[]) {
-  // TODO need a safer REGEX here
-  function equivalentType({ op: t1 }: Filter, { op: t2 }: Filter) {
-    return t1 === t2 || t1[0] === t2[0];
-  }
-
-  const replaces = (existingFilter: Filter, replacementFilter: Filter) => {
-    return (
-      existingFilter.column === replacementFilter.column &&
-      equivalentType(existingFilter, replacementFilter)
-    );
-  };
-
-  const stillApplicable = (existingFilter: Filter) =>
-    replacementFilters.some((replacementFilter) =>
-      replaces(existingFilter, replacementFilter)
-    ) === false;
-
-  return existingFilters.filter(stillApplicable).concat(replacementFilters);
-}
-
-export function removeColumnFromFilter(
-  column: KeyedColumnDescriptor,
-  filter: Filter
-): [Filter | undefined, string] {
-  // TODO need to recurse into nested and/or
-  if (isMultiClauseFilter(filter)) {
-    const [clause1, clause2] = filter.filters;
-    if (clause1.column === column.name) {
-      return [clause2, filterAsQuery(clause2)];
-    } else if (clause2.column === column.name) {
-      return [clause1, filterAsQuery(clause1)];
     }
   }
-  return [undefined, ""];
+  return f2
 }
 
-export function removeFilter(sourceFilter: Filter, filterToRemove: Filter) {
+const combine = (existingFilters: Filter[], replacementFilters: Filter[]) => {
+  const equivalentType = ({ op: t1 }: Filter, { op: t2 }: Filter) => {
+    return t1 === t2 || t1[0] === t2[0]
+  }
+  const replaces = (existingFilter: Filter, replacementFilter: Filter) => {
+    return existingFilter.column === replacementFilter.column && equivalentType(existingFilter, replacementFilter)
+  }
+  const stillApplicable = (existingFilter: Filter) =>
+    replacementFilters.some((replacementFilter) => replaces(existingFilter, replacementFilter)) === false
+  return existingFilters.filter(stillApplicable).concat(replacementFilters)
+}
+
+export const removeColumnFromFilter = (column: KeyedColumnDescriptor, filter: Filter): [Filter | undefined, string] => {
+  if (isMultiClauseFilter(filter)) {
+    const [clause1, clause2] = filter.filters
+    if (clause1.column === column.name) {
+      return [clause2, filterAsQuery(clause2)]
+    }
+    if (clause2.column === column.name) {
+      return [clause1, filterAsQuery(clause1)]
+    }
+  }
+  return [undefined, '']
+}
+
+export const removeFilter = (sourceFilter: Filter, filterToRemove: Filter) => {
   if (filterEquals(sourceFilter, filterToRemove, true)) {
-    return null;
-  } else if (sourceFilter.op !== AND) {
-    throw Error(
-      `removeFilter cannot remove ${JSON.stringify(
-        filterToRemove
-      )} from ${JSON.stringify(sourceFilter)}`
-    );
-  } else {
-    const filters = (sourceFilter as AndFilter).filters.filter(
-      (f) => !filterEquals(f, filterToRemove)
-    );
-    return filters.length > 0 ? { type: AND, filters } : null;
+    return null
   }
+  if (sourceFilter.op !== AND) {
+    throw Error(`removeFilter cannot remove ${JSON.stringify(filterToRemove)} from ${JSON.stringify(sourceFilter)}`)
+  }
+  const filters = sourceFilter.filters.filter((f) => !filterEquals(f, filterToRemove))
+  return filters.length > 0 ? { type: AND, filters } : null
 }
 
-export function splitFilterOnColumn(
-  filter: Filter | null,
-  columnName: string
-): [Filter | null, Filter | null] {
+export const splitFilterOnColumn = (filter: Filter | null, columnName: string): [Filter | null, Filter | null] => {
   if (!filter) {
-    return [null, null];
-  } else if (filter.column === columnName) {
-    return [filter, null];
-  } else if (filter.op !== AND) {
-    return [null, filter];
-  } else {
-    const [[columnFilter = null], filters] = partition(
-      (filter as AndFilter).filters,
-      (f) => f.column === columnName
-    );
-    return filters.length === 1
-      ? [columnFilter, filters[0]]
-      : [columnFilter, { op: AND, filters }];
+    return [null, null]
   }
+  if (filter.column === columnName) {
+    return [filter, null]
+  }
+  if (filter.op !== AND) {
+    return [null, filter]
+  }
+  const [[columnFilter = null], filters] = partition((filter as AndFilter).filters, (f) => f.column === columnName)
+  return filters.length === 1 ? [columnFilter, filters[0]] : [columnFilter, { op: AND, filters }]
 }
 
 export const overrideColName = (filter: Filter, column: string): Filter => {
@@ -330,165 +230,131 @@ export const overrideColName = (filter: Filter, column: string): Filter => {
     return {
       op: filter.op,
       filters: filter.filters.map((f) => overrideColName(f, column)),
-    };
-  } else {
-    return { ...filter, column };
-  }
-};
-
-export function extractFilterForColumn(
-  filter: Filter | undefined,
-  columnName: string
-) {
-  if (isMultiClauseFilter(filter)) {
-    return collectFiltersForColumn(filter, columnName);
-  } else if (isFilterClause(filter)) {
-    return filter.column === columnName ? filter : undefined;
-  } else {
-    return undefined;
-  }
-}
-
-function collectFiltersForColumn(
-  filter: MultiClauseFilter,
-  columnName: string
-) {
-  const { filters, op } = filter;
-  const results: Filter[] = [];
-  filters.forEach((filter) => {
-    const ffc = extractFilterForColumn(filter, columnName);
-    if (ffc) {
-      results.push(ffc);
     }
-  });
+  }
+  return { ...filter, column }
+}
+
+export const extractFilterForColumn = (filter: Filter | undefined, columnName: string) => {
+  if (isMultiClauseFilter(filter)) {
+    return collectFiltersForColumn(filter, columnName)
+  }
+  if (isFilterClause(filter)) {
+    return filter.column === columnName ? filter : undefined
+  }
+  return undefined
+}
+
+const collectFiltersForColumn = (filter: MultiClauseFilter, columnName: string) => {
+  const { filters, op } = filter
+  const results: Filter[] = []
+  filters.forEach((filter) => {
+    const ffc = extractFilterForColumn(filter, columnName)
+    if (ffc) {
+      results.push(ffc)
+    }
+  })
   if (results.length === 1) {
-    return results[0];
-  } else {
-    return {
-      op,
-      filters: results,
-    };
+    return results[0]
+  }
+  return {
+    op,
+    filters: results,
   }
 }
 
-export function filterIncludesColumn(
-  filter: Filter,
-  column: KeyedColumnDescriptor
-): boolean {
+export const filterIncludesColumn = (filter: Filter, column: KeyedColumnDescriptor): boolean => {
   if (!filter) {
-    return false;
+    return false
   }
-  const { op, column: filterColName } = filter;
+  const { op, column: filterColName } = filter
   switch (op) {
     case AND:
     case OR:
-      return (
-        filter.filters != null &&
-        filter.filters.some((f) => filterIncludesColumn(f, column))
-      );
+      return filter.filters != null && filter.filters.some((f) => filterIncludesColumn(f, column))
     default:
-      return filterColName === column.name;
+      return filterColName === column.name
   }
 }
 
-function removeFilterForColumn(
-  sourceFilter: Filter | null,
-  column: Column
-): Filter | null {
-  const colName = column.name;
+const removeFilterForColumn = (sourceFilter: Filter | null, column: Column): Filter | null => {
+  const colName = column.name
   if (!sourceFilter) {
-    return null;
-  } else if (sourceFilter.column === colName) {
-    return null;
-  } else if (isAndFilter(sourceFilter) || isOrFilter(sourceFilter)) {
-    const { op } = sourceFilter;
-    const filters = sourceFilter.filters;
-    const otherColFilters = filters.filter((f) => f.column !== colName);
+    return null
+  }
+  if (sourceFilter.column === colName) {
+    return null
+  }
+  if (isAndFilter(sourceFilter) || isOrFilter(sourceFilter)) {
+    const { op } = sourceFilter
+    const filters = sourceFilter.filters
+    const otherColFilters = filters.filter((f) => f.column !== colName)
     switch (otherColFilters.length) {
       case 0:
-        return null;
+        return null
       case 1:
-        return otherColFilters[0];
+        return otherColFilters[0]
       default:
-        return { op, filters: otherColFilters };
+        return { op, filters: otherColFilters }
     }
-  } else {
-    return sourceFilter;
   }
+  return sourceFilter
 }
 
-const sameColumn = (f1: Filter, f2: Filter) => f1.column === f2.column;
+const sameColumn = (f1: Filter, f2: Filter) => f1.column === f2.column
 
-export function filterEquals(f1?: Filter, f2?: Filter, strict = false) {
-  if (f1 && f2 && sameColumn(f1, f2)) {
-    if (!strict) {
-      return true;
-    } else {
-      return (
-        f1.op === f2.op &&
-        ((isSingleValueFilter(f1) &&
-          isSingleValueFilter(f2) &&
-          f1.value === f2.value) ||
-          (isMultiValueFilter(f1) &&
-            isMultiValueFilter(f2) &&
-            sameValues(f1.values, f2.values)))
-      );
-    }
-  } else {
-    return false;
-  }
-}
-
-//TODO roll this into next function
-export function projectFilterData(filterRows: Row[]) {
-  return filterRows.map((row, idx) => [idx, 0, 0, null, row.name, row.count]);
-}
-
-// only suitable for small arrays of simple types (e.g. filter values)
-function sameValues<T>(arr1: T[], arr2: T[]) {
+const sameValues = <T>(arr1: T[], arr2: T[]) => {
   if (arr1 === arr2) {
-    return true;
-  } else if (arr1.length === arr2.length) {
-    const a = arr1.slice().sort();
-    const b = arr2.slice().sort();
-    return a.join("|") === b.join("|");
+    return true
   }
-  return false;
+  if (arr1.length === arr2.length) {
+    const a = arr1.slice().sort()
+    const b = arr2.slice().sort()
+    return a.join('|') === b.join('|')
+  }
+  return false
 }
 
-/** Add a new filter to an existing filter  */
-// TODO a lot more work required here to accommodate every
-// permutation of filter merging
+export const filterEquals = (f1?: Filter, f2?: Filter, strict = false) => {
+  if (!strict) {
+    return true
+  }
+  if (f1 && f2 && sameColumn(f1, f2)) {
+    return (
+      f1.op === f2.op &&
+      ((isSingleValueFilter(f1) && isSingleValueFilter(f2) && f1.value === f2.value) ||
+        (isMultiValueFilter(f1) && isMultiValueFilter(f2) && sameValues((f1.values as any[]), f2.values)))
+    )
+  }
+  return false
+}
+
 export const updateFilter = (
   filter: Filter | undefined,
   newFilter: Filter | undefined,
-  mode: "add" | "replace"
+  mode: 'add' | 'replace'
 ): Filter | undefined => {
   if (filter && newFilter) {
-    if (mode === "replace") {
-      return newFilter;
-    } else if (filter.op === "and") {
+    if (mode === 'replace') {
+      return newFilter
+    }
+    if (filter.op === 'and') {
       return {
         ...filter,
         filters: filter.filters.concat(newFilter),
-      };
-    } else {
-      const existingClause = newFilter.column
-        ? extractFilterForColumn(filter, newFilter.column)
-        : undefined;
-      if (existingClause) {
-        //TODO merge filters here
-        return filter;
-      } else {
-        return {
-          op: "and",
-          filters: [filter, newFilter],
-        };
       }
     }
-  } else if (newFilter) {
-    return newFilter;
-  } else {
-    return filter;
+    const existingClause = newFilter.column ? extractFilterForColumn(filter, newFilter.column) : undefined
+    if (existingClause) {
+      return filter
+    }
+    return {
+      op: 'and',
+      filters: [filter, newFilter],
+    }
   }
-};
+  if (newFilter) {
+    return newFilter
+  }
+  return filter
+}
