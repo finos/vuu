@@ -99,7 +99,6 @@ export type ColumnAction =
 export type ColumnReducer = Reducer<KeyedColumnDescriptor[], ColumnAction>;
 
 const columnReducer: ColumnReducer = (state, action) => {
-  console.log(`column reducer ${action.type}`);
   switch (action.type) {
     case "init":
       return init(action.columns);
@@ -211,7 +210,6 @@ function setTypes(
         serverDataType,
       };
     });
-    console.log({ cols });
     return cols;
     // return state.map((column) => ({
     //   ...column,

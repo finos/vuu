@@ -4,7 +4,6 @@
     --vuu-icon-size: 12px;
 
     display: flex;
-    flex-wrap: wrap;
     flex-shrink: 0;
 
     gap: calc(var(--salt-size-unit) * 2);

@@ -13,11 +13,38 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { usa_states } from "./List.data";
 import { ListVisualizer } from "./ListVisualizer";
 
+let displaySequence = 1;
+
 export const DefaultList = () => {
   return (
     <List aria-label="Listbox example" maxWidth={292} source={usa_states} />
   );
 };
+DefaultList.displaySequence = displaySequence++;
+
+export const ListHeight100Pct = () => {
+  return (
+    <Flexbox style={{ flexDirection: "column", width: 300, height: 800 }}>
+      <div data-resizeable style={{ flex: 1, overflow: "hidden" }}>
+        <List
+          aria-label="Listbox example"
+          maxWidth={292}
+          source={usa_states}
+          height="100%"
+        />
+      </div>
+      <div data-resizeable style={{ flex: 1, overflow: "hidden" }}>
+        <List
+          aria-label="Listbox example"
+          maxWidth={292}
+          source={usa_states}
+          height="100%"
+        />
+      </div>
+    </Flexbox>
+  );
+};
+ListHeight100Pct.displaySequence = displaySequence++;
 
 export const DefaultVirtualisedList = () => {
   const [data, setData] = useState<string[]>([]);

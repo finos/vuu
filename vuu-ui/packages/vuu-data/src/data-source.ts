@@ -223,6 +223,8 @@ export interface DataSource extends IEventEmitter {
   rowCount: number | undefined;
   select: (selected: number[]) => void;
   setRange: (from: number, to: number) => void;
+  /** Set the title associated with this viewport in UI. This can be used as a link target */
+  setTitle?: (title: string) => void;
   sort: (sort: VuuSort) => void;
   subscribe: (
     props: SubscribeProps,

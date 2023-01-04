@@ -44,6 +44,7 @@ flex: 0 0 50px;
 .vuuDatagridSettingsPanel-stack {
     flex: 1;
     gap: 24px;
+    overflow: hidden;
 
 }
 

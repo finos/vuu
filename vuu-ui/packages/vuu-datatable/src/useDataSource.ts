@@ -38,6 +38,7 @@ export function useDataSource({
   const [, forceUpdate] = useState<unknown>(null);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
+  const rangeRef = useRef<VuuRange>({ from: 0, to: 0 });
   const rafHandle = useRef<number | null>(null);
   const data = useRef<DataSourceRow[]>([]);
 
@@ -113,7 +114,7 @@ export function useDataSource({
 
   const setRange = useCallback(
     (from, to) => {
-      const range = getFullRange({ from, to });
+      rangeRef.current = { from, to };
       dataSource?.setRange(from, to);
       dataWindow.setRange(from, to);
     },
@@ -123,11 +124,15 @@ export function useDataSource({
   useEffect(() => {
     dataSource?.subscribe(
       {
-        title,
+        range: rangeRef.current,
       },
       datasourceMessageHandler
     );
-  }, [dataSource, datasourceMessageHandler, title]);
+
+    return () => {
+      dataSource?.unsubscribe();
+    };
+  }, [dataSource, datasourceMessageHandler]);
 
   return {
     data: data.current,

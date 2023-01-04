@@ -1,4 +1,4 @@
-import { SchemaColumn, useViewserver } from "@finos/vuu-data";
+import { SchemaColumn, useTypeaheadSuggestions } from "@finos/vuu-data";
 import {
   ColumnExpressionSuggestionType,
   ISuggestionProvider2,
@@ -107,7 +107,7 @@ export const useSuggestionProvider = ({
   table,
 }: SuggestionProviderHookProps): ISuggestionProvider2 => {
   const latestSuggestionsRef = useRef<Completion[]>();
-  const { getTypeaheadSuggestions } = useViewserver();
+  const getTypeaheadSuggestions = useTypeaheadSuggestions();
   const getSuggestions = useCallback(
     async (
       valueType: ColumnExpressionSuggestionType,

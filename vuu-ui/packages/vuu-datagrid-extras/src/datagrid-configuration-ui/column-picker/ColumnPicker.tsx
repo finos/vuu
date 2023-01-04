@@ -30,16 +30,13 @@ export const ColumnPicker = ({
   id: idProp,
   dispatchColumnAction: dispatch,
   onSelectionChange,
-  chosenColumns: selectedColumns,
+  chosenColumns,
   selectedColumn,
 }: ColumnPickerProps) => {
   const [selected1, setSelected1] = useState<ColumnDescriptor[]>([]);
   const id = useId(idProp);
 
-  const unusedColumns = removeSelectedColumns(
-    availableColumns,
-    selectedColumns
-  );
+  const unusedColumns = removeSelectedColumns(availableColumns, chosenColumns);
 
   const addColumn = useCallback(() => {
     if (selected1.length > 0) {
@@ -80,11 +77,10 @@ export const ColumnPicker = ({
   );
 
   const handleDrop = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      const column = selectedColumns[fromIndex];
-      dispatch({ type: "moveColumn", column, moveTo: toIndex });
+    (moveFrom: number, moveTo: number) => {
+      dispatch({ type: "moveColumn", moveFrom, moveTo });
     },
-    [dispatch, selectedColumns]
+    [dispatch]
   );
 
   return (
@@ -93,10 +89,14 @@ export const ColumnPicker = ({
         <label htmlFor={`available-${id}`}>
           <Text as="h4">Hidden Columns</Text>
         </label>
-        <div className={`${classBase}-listContainer`} style={{ flex: 1 }}>
+        <div
+          className={`${classBase}-listContainer`}
+          style={{ flex: 1, overflow: "hidden" }}
+        >
           <List<ColumnDescriptor, "extended">
             borderless
             checkable={false}
+            height="100%"
             id={`available-${id}`}
             itemHeight={24}
             itemToString={(item) => item.name}
@@ -107,7 +107,12 @@ export const ColumnPicker = ({
           />
         </div>
         <div
-          style={{ display: "flex", alignItems: "center", flex: "0 0 32px" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            flex: "0 0 32px",
+            marginTop: "var(--salt-size-basis-unit)",
+          }}
         >
           <Button onClick={addColumn} disabled={selected1.length === 0}>
             Show
@@ -119,10 +124,14 @@ export const ColumnPicker = ({
         <label htmlFor={`selected-${id}`}>
           <Text as="h4">Visible Columns</Text>
         </label>
-        <div className={`${classBase}-listContainer`} style={{ flex: 1 }}>
+        <div
+          className={`${classBase}-listContainer`}
+          style={{ flex: 1, overflow: "hidden" }}
+        >
           <List<ColumnDescriptor>
             allowDragDrop
             borderless
+            height="100%"
             id={`selected-${id}`}
             itemHeight={24}
             itemToString={(item) => item.name}
@@ -130,7 +139,7 @@ export const ColumnPicker = ({
             onSelectionChange={handleSelectionChange2}
             selected={selectedColumn}
             style={{ flex: 1 }}
-            source={selectedColumns}
+            source={chosenColumns}
           />
         </div>
         <div
@@ -139,6 +148,7 @@ export const ColumnPicker = ({
             flex: "0 0 32px",
             display: "flex",
             gap: 6,
+            marginTop: "var(--salt-size-basis-unit)",
           }}
         >
           <Button onClick={removeColumn} disabled={selectedColumn === null}>
@@ -150,7 +160,7 @@ export const ColumnPicker = ({
             onClick={moveColumnUp}
             disabled={
               selectedColumn === null ||
-              selectedColumns?.indexOf(selectedColumn) === 0
+              chosenColumns?.indexOf(selectedColumn) === 0
             }
             style={{ width: 28 }}
           >
@@ -161,8 +171,7 @@ export const ColumnPicker = ({
             onClick={moveColumnDown}
             disabled={
               selectedColumn === null ||
-              selectedColumns.indexOf(selectedColumn) ===
-                selectedColumns.length - 1
+              chosenColumns.indexOf(selectedColumn) === chosenColumns.length - 1
             }
             style={{ width: 28 }}
           >
