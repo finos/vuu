@@ -1,9 +1,9 @@
-import React, { HTMLAttributes, useCallback, useRef, useState } from "react";
+import { Scrim } from "@heswell/salt-lab";
 import cx from "classnames";
+import { HTMLAttributes, useCallback, useRef, useState } from "react";
 import { Flexbox } from "../flexbox";
 import { View } from "../layout-view";
 import { Portal } from "../portal";
-import { Scrim } from "@heswell/salt-lab";
 
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { CloseIcon } from "@salt-ds/icons";
@@ -26,11 +26,10 @@ export const Dialog = ({
   ...props
 }: DialogProps) => {
   const root = useRef<HTMLDivElement>(null);
-  const [posX, setPosX] = useState(0);
-  const [posY, setPosY] = useState(0);
+  const [posX] = useState(0);
+  const [posY] = useState(0);
 
   const close = useCallback(() => {
-    // TODO
     onClose?.();
   }, [onClose]);
 
