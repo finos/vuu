@@ -1,3 +1,4 @@
+import { getUniqueId } from "@finos/vuu-utils";
 import {
   cloneElement,
   CSSProperties,
@@ -5,9 +6,8 @@ import {
   ReactElement,
   useCallback,
   useMemo,
-  useRef,
+  useRef
 } from "react";
-import { getUniqueId } from "@finos/vuu-utils";
 import { gatherChildMeta } from "./flexbox-utils";
 import { BreakPoint } from "./flexboxTypes";
 
@@ -52,11 +52,9 @@ export const useResponsiveSizing = ({
         const {
           style: { flex, ...rest },
         } = child.props;
-        // TODO do we always need to clone ?
-        // TODO emit the --col-span based on media query
         content.push(
           cloneElement(child, {
-            key: getUniqueId(), // need to store these
+            key: getUniqueId(),
             style: {
               ...rest,
               "--parent-col-count": cols,
@@ -71,7 +69,6 @@ export const useResponsiveSizing = ({
   );
 
   useMemo(() => {
-    // console.log(`useMemo<initialCotent>`, children)
     const [content, meta] = buildContent(children, dimension);
     metaRef.current = meta;
     contentRef.current = content;

@@ -3,8 +3,7 @@ import {
   HTMLAttributes,
   MutableRefObject,
   ReactElement,
-  ReactNode,
-  RefObject
+  ReactNode
 } from 'react';
 import { SplitterProps } from './Splitter';
 

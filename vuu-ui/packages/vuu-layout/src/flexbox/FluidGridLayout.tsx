@@ -1,6 +1,5 @@
-import React from 'react';
-import {FluidGrid, FluidGridProps} from './FluidGrid';
 import { registerComponent } from '../registry/ComponentRegistry';
+import { FluidGrid, FluidGridProps } from './FluidGrid';
 
 export const FluidGridLayout = function FluidGridLayout(props: FluidGridProps) {
   return <FluidGrid {...props} />;

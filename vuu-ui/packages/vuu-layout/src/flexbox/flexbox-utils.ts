@@ -1,6 +1,6 @@
-import { getProp } from '../utils';
-import { getIntrinsicSize, hasUnboundedFlexStyle } from '../layout-reducer/flexUtils';
 import { ReactElement } from 'react';
+import { getIntrinsicSize, hasUnboundedFlexStyle } from '../layout-reducer/flexUtils';
+import { getProp } from '../utils';
 import type { BreakPoint, ContentMeta } from './flexboxTypes';
 
 const NO_INTRINSIC_SIZE: {
@@ -91,7 +91,7 @@ export const identifyResizeParties = (contentMeta: ContentMeta[], idx: number) =
 
 function identifyResizeBystanders(contentMeta: ContentMeta[], participants?: number[]) {
   if (participants) {
-    let bystanders = [];
+    const bystanders = [];
     for (let i = 0; i < contentMeta.length; i++) {
       if (contentMeta[i].flexOpen && !participants.includes(i)) {
         bystanders.push(i);
@@ -113,8 +113,8 @@ function getLeadingResizeablePos(contentMeta: ContentMeta[], idx: number) {
 
 function getTrailingResizeablePos(contentMeta: ContentMeta[], idx: number) {
   let pos = idx,
-    resizeable = false,
-    count = contentMeta.length;
+    resizeable = false
+  const count = contentMeta.length;
   while (pos < count && !resizeable) {
     pos = pos + 1;
     resizeable = isResizeable(contentMeta, pos);

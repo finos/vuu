@@ -1,10 +1,14 @@
-import React, { useCallback } from 'react';
-import Flexbox from './Flexbox';
+import { useCallback } from 'react';
 import { Action } from '../layout-action';
-import { registerComponent } from '../registry/ComponentRegistry';
 import { useLayoutProviderDispatch } from '../layout-provider';
+import { registerComponent } from '../registry/ComponentRegistry';
+import Flexbox from './Flexbox';
 
-export const FlexboxLayout = function FlexboxLayout(props) {
+type FlexboxLayoutProps = {
+  path: string
+}
+
+export const FlexboxLayout = function FlexboxLayout(props: FlexboxLayoutProps) {
   const { path } = props;
   const dispatch = useLayoutProviderDispatch();
 
@@ -19,7 +23,7 @@ export const FlexboxLayout = function FlexboxLayout(props) {
     [dispatch, path]
   );
 
-  return <Flexbox {...props} onSplitterMoved={handleSplitterMoved} />;
+  return <Flexbox {...props} onSplitterMoved={handleSplitterMoved} ><></><></></Flexbox>;
 };
 FlexboxLayout.displayName = 'Flexbox';
 

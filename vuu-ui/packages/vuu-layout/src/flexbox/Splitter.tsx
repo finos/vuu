@@ -1,5 +1,5 @@
-import React, { HTMLAttributes, KeyboardEvent, useCallback, useRef, useState } from 'react';
 import cx from 'classnames';
+import React, { HTMLAttributes, KeyboardEvent, useCallback, useRef, useState } from 'react';
 
 import './Splitter.css';
 
@@ -32,7 +32,6 @@ export const Splitter = React.memo(function Splitter({
 
   const handleKeyDownDrag = useCallback(
     ({ key, shiftKey }) => {
-      // TODO calc max distance
       const distance = shiftKey ? 10 : 1;
       if (column && key === 'ArrowDown') {
         onDrag(index, distance);
@@ -69,7 +68,6 @@ export const Splitter = React.memo(function Splitter({
       ignoreClick.current = true;
       const pos = e[column ? 'clientY' : 'clientX'];
       const diff = pos - lastPos.current;
-      // we seem to get a final value of zero
       if (pos && pos !== lastPos.current) {
         onDrag(index, diff);
       }
@@ -98,10 +96,6 @@ export const Splitter = React.memo(function Splitter({
     [column, handleMouseMove, handleMouseUp, index, onDragStart, setActive]
   );
 
-  const handleFocus = () => {
-    // TODO
-  };
-
   const handleClick = () => {
     if (ignoreClick.current) {
       ignoreClick.current = false;
@@ -111,7 +105,6 @@ export const Splitter = React.memo(function Splitter({
   };
 
   const handleBlur = () => {
-    // TODO
     keyDownHandlerRef.current = handleKeyDownInitDrag;
   };
 
@@ -125,7 +118,6 @@ export const Splitter = React.memo(function Splitter({
       style={style}
       onBlur={handleBlur}
       onClick={handleClick}
-      onFocus={handleFocus}
       onKeyDown={handleKeyDown}
       onMouseDown={handleMouseDown}
       tabIndex={0}>

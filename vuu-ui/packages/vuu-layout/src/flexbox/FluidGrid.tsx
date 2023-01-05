@@ -39,7 +39,6 @@ export const FluidGrid = forwardRef(function FluidGrid(
   const { cols, content, rootRef } = useResponsiveSizing({
     children,
     cols: colsProp,
-    // onSplitterMoved,
     style: styleProp,
   });
 
@@ -61,7 +60,6 @@ export const FluidGrid = forwardRef(function FluidGrid(
   const style = {
     ...styleProp,
     "--spacing": spacing,
-    // only needed to display the cols
     "--grid-col-count": cols,
     "--grid-gap": gap,
   };

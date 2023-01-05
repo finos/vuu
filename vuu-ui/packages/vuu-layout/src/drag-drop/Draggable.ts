@@ -116,12 +116,12 @@ export const Draggable = {
 };
 
 function preDragMousemoveHandler(e: MouseEvent) {
-  var x = true;
-  var y = true;
+  const x = true;
+  const y = true;
 
-  let x_diff = x ? e.clientX - _dragStartX : 0;
-  let y_diff = y ? e.clientY - _dragStartY : 0;
-  let mouseMoveDistance = Math.max(Math.abs(x_diff), Math.abs(y_diff));
+  const x_diff = x ? e.clientX - _dragStartX : 0;
+  const y_diff = y ? e.clientY - _dragStartY : 0;
+  const mouseMoveDistance = Math.max(Math.abs(x_diff), Math.abs(y_diff));
 
   // when we do finally move the draggee, we are going to 'jump' by the amount of the drag threshold, should we
   // attempt to animate this ?
@@ -216,7 +216,7 @@ function dragMousemoveHandler(evt: MouseEvent) {
     _dragMoveCallback?.(newX, newY);
   }
 
-  if (_simpleDrag) {
+  if (_simpleDrag || !_dragContainer || !_validDropTargetPaths) {
     return;
   }
 
@@ -224,16 +224,16 @@ function dragMousemoveHandler(evt: MouseEvent) {
     dropTarget = identifyDropTarget(
       x,
       y,
-      _dragContainer!,
+      _dragContainer,
       _measurements,
       dragState.hasIntrinsicSize(),
-      _validDropTargetPaths!
+      _validDropTargetPaths
     );
   } else {
     dropTarget = identifyDropTarget(
       dragState.dropX(),
       dragState.dropY(),
-      _dragContainer!,
+      _dragContainer,
       _measurements
     );
   }
@@ -256,6 +256,9 @@ function dragMouseupHandler() {
 }
 
 function onDragEnd() {
+  if (!_dragContainer) { 
+    return 
+  }
   if (_dropTarget) {
     const dropTarget =
       _dropTargetRenderer.hoverDropTarget ||
@@ -266,7 +269,7 @@ function onDragEnd() {
     _dropTarget = null;
   } else {
     _dragEndCallback?.({
-      component: _dragContainer!,
+      component: _dragContainer,
       pos: { position: Position.Absolute } as any,
     });
   }
