@@ -1,3 +1,8 @@
-.vuuTypePanel {
-    background-color: red;
+.vuuColumnTypePanel {
+    --settings-panel-marginTop: 0px;
+}
+
+.vuuColumnTypePanel-renderer {
+    --saltButton-background: var(--salt-container-secondary-background);
+    --saltButton-background-hover: var(--salt-actionable-secondary-background-hover);
 }

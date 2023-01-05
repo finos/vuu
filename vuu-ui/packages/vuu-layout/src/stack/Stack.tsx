@@ -15,6 +15,9 @@ import "./Stack.css";
 
 const classBase = "Tabs";
 
+const getDefaultTabIcon = (component: ReactElement, tabIndex: number) =>
+  undefined;
+
 const getDefaultTabLabel = (component: ReactElement, tabIndex: number) =>
   component.props?.title ?? `Tab ${tabIndex + 1}`;
 
@@ -39,6 +42,7 @@ export const Stack = forwardRef(function Stack(
     className: classNameProp,
     enableAddTab,
     enableCloseTabs,
+    getTabIcon = getDefaultTabIcon,
     getTabLabel = getDefaultTabLabel,
     id: idProp,
     keyBoardActivation = "manual",
@@ -116,12 +120,13 @@ export const Stack = forwardRef(function Stack(
       return (
         <Tab
           ariaControls={`${rootId}-tab`}
+          data-icon={getTabIcon(child, idx)}
           draggable
           key={childId ?? idx} // Important that we key by child identifier, not using index
           id={rootId}
           label={getTabLabel(child, idx)}
           closeable={closeable}
-          editable={true}
+          editable={TabstripProps?.enableRenameTab !== false}
           // onEdit={handleTabEdit}
         />
       );
@@ -131,7 +136,9 @@ export const Stack = forwardRef(function Stack(
 
   return (
     <div
-      className={cx(classBase, classNameProp)}
+      className={cx(classBase, classNameProp, {
+        [`${classBase}-horizontal`]: TabstripProps?.orientation === "vertical",
+      })}
       style={style}
       id={id}
       ref={ref}
@@ -139,6 +146,7 @@ export const Stack = forwardRef(function Stack(
       {showTabs ? (
         <Toolbar
           className="vuuTabHeader vuuHeader"
+          orientation={TabstripProps?.orientation}
           // onMouseDown={handleMouseDown}
         >
           <ToolbarField
@@ -149,7 +157,7 @@ export const Stack = forwardRef(function Stack(
           >
             <Tabstrip
               {...TabstripProps}
-              enableRenameTab
+              enableRenameTab={TabstripProps?.enableRenameTab !== false}
               enableAddTab={enableAddTab}
               enableCloseTab={enableCloseTabs}
               keyBoardActivation={keyBoardActivation}
@@ -158,7 +166,9 @@ export const Stack = forwardRef(function Stack(
               onCloseTab={handleTabClose}
               onExitEditMode={handleExitEditMode}
               onMouseDown={handleMouseDown}
-              activeTabIndex={active || (child === null ? -1 : 0)}
+              activeTabIndex={
+                TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
+              }
             >
               {renderTabs()}
             </Tabstrip>

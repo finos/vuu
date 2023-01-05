@@ -1,4 +1,4 @@
-import { useContextMenu } from "@finos/vuu-layout";
+import { useContextMenu } from "@finos/vuu-popups";
 import { Filter } from "@finos/vuu-filter-types";
 import { filterIncludesColumn } from "@finos/vuu-filters";
 import cx from "classnames";

@@ -11,7 +11,7 @@ import {
   useMemo,
   ForwardedRef,
 } from "react";
-import { useContextMenu } from "@finos/vuu-layout";
+import { useContextMenu } from "@finos/vuu-popups";
 import { useEffectSkipFirst } from "./utils";
 import { metadataKeys } from "@finos/vuu-utils";
 import useScroll from "./use-scroll";

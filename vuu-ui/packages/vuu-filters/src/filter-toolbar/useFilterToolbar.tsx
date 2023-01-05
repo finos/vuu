@@ -6,12 +6,12 @@ import {
 } from "@finos/vuu-filters";
 import { ToggleButton, ToolbarField } from "@heswell/salt-lab";
 import { ReactElement } from "react";
-import { ISuggestionProvider, SuggestionConsumer } from "@finos/vuu-filters";
+import { ISuggestionProvider2, SuggestionConsumer2 } from "@finos/vuu-filters";
 import { FilterDropdown } from "./FilterDropdown";
 
 const filterToControl = (
   filter: Filter,
-  suggestionProvider: ISuggestionProvider
+  suggestionProvider: ISuggestionProvider2
 ): ReactElement | ReactElement[] => {
   if (isNamedFilter(filter)) {
     return (
@@ -69,7 +69,7 @@ const filterToControl = (
   }
 };
 
-export interface FilterToolbarProps extends SuggestionConsumer {
+export interface FilterToolbarProps extends SuggestionConsumer2 {
   filter?: Filter;
 }
 

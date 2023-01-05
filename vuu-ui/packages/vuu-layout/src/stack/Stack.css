@@ -4,6 +4,12 @@
   flex-direction: column;
 }
 
+.Tabs-horizontal {
+  flex-direction: row;
+}
+
+
+
 .Tabs .Toolbar:before {
   left: 0;
   width: 100%;

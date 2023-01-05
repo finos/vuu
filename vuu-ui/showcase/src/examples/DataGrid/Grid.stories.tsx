@@ -1,9 +1,10 @@
 import { Grid } from "@finos/vuu-datagrid";
-import { GridConfig, DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
-import { Dialog, Flexbox, View } from "@finos/vuu-layout";
-import { Button } from "@salt-ds/core";
-import { FormField, Input } from "@heswell/salt-lab";
+import { DatagridSettingsPanel, GridConfig } from "@finos/vuu-datagrid-extras";
+import { Flexbox, View } from "@finos/vuu-layout";
+import { Dialog } from "@finos/vuu-popups";
 import {
+  FormField,
+  Input,
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
@@ -11,10 +12,10 @@ import {
   ToolbarButton,
   Tooltray,
 } from "@heswell/salt-lab";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { ErrorDisplay, useTestDataSource } from "../utils";
+import { Button } from "@salt-ds/core";
+import { ReactElement, useCallback, useMemo, useRef, useState } from "react";
+import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 import { instrumentSchema } from "./columnMetaData";
-import { useSchemas } from "../utils/useSchemas";
 
 import "./Grid.stories.css";
 

@@ -1,5 +1,5 @@
-import { DatagridSettingsPanel, GridConfig } from "@finos/vuu-datagrid-extras";
-import { ColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
+import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
+import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { useCallback, useMemo } from "react";
 import { useColumns } from "../utils/useColumns";
 
@@ -33,6 +33,7 @@ export const InstrumentsTableSettings = () => {
       availableColumns={availableColumns}
       gridConfig={config}
       onConfigChange={handleConfigChange}
+      style={{ border: "solid 1px var(--salt-container-primary-borderColor)" }}
     />
   );
 };
@@ -70,6 +71,7 @@ export const PricesTableSettings = () => {
       availableColumns={availableColumns}
       gridConfig={config}
       onConfigChange={handleConfigChange}
+      style={{ border: "solid 1px var(--salt-container-primary-borderColor)" }}
     />
   );
 };

@@ -1,11 +1,13 @@
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { List } from "@heswell/salt-lab";
 import { Button, Text, useIdMemo as useId } from "@salt-ds/core";
 import { Dispatch, HTMLAttributes, useCallback, useState } from "react";
-import { ColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
-import "./ColumnPicker.css";
 import { ColumnAction } from "../settings-panel/useColumns";
 
+import "./ColumnPicker.css";
+
 const classBase = "vuuColumnPicker";
+
 const removeSelectedColumns = (
   availableColumns: ColumnDescriptor[],
   selectedColumns: ColumnDescriptor[]
@@ -28,16 +30,13 @@ export const ColumnPicker = ({
   id: idProp,
   dispatchColumnAction: dispatch,
   onSelectionChange,
-  chosenColumns: selectedColumns,
+  chosenColumns,
   selectedColumn,
 }: ColumnPickerProps) => {
   const [selected1, setSelected1] = useState<ColumnDescriptor[]>([]);
   const id = useId(idProp);
 
-  const unusedColumns = removeSelectedColumns(
-    availableColumns,
-    selectedColumns
-  );
+  const unusedColumns = removeSelectedColumns(availableColumns, chosenColumns);
 
   const addColumn = useCallback(() => {
     if (selected1.length > 0) {
@@ -77,16 +76,27 @@ export const ColumnPicker = ({
     [onSelectionChange]
   );
 
+  const handleDrop = useCallback(
+    (moveFrom: number, moveTo: number) => {
+      dispatch({ type: "moveColumn", moveFrom, moveTo });
+    },
+    [dispatch]
+  );
+
   return (
     <div className={classBase} id={id}>
       <div className={`${classBase}-listColumn`}>
         <label htmlFor={`available-${id}`}>
-          <Text as="h4">Available Columns</Text>
+          <Text as="h4">Hidden Columns</Text>
         </label>
-        <div className={`${classBase}-listContainer`} style={{ flex: 1 }}>
+        <div
+          className={`${classBase}-listContainer`}
+          style={{ flex: 1, overflow: "hidden" }}
+        >
           <List<ColumnDescriptor, "extended">
             borderless
             checkable={false}
+            height="100%"
             id={`available-${id}`}
             itemHeight={24}
             itemToString={(item) => item.name}
@@ -97,28 +107,39 @@ export const ColumnPicker = ({
           />
         </div>
         <div
-          style={{ display: "flex", alignItems: "center", flex: "0 0 32px" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            flex: "0 0 32px",
+            marginTop: "var(--salt-size-basis-unit)",
+          }}
         >
           <Button onClick={addColumn} disabled={selected1.length === 0}>
-            Add
+            Show
             <span data-icon="arrow-thin-right" style={{ marginLeft: 8 }} />
           </Button>
         </div>
       </div>
       <div className={`${classBase}-listColumn`}>
         <label htmlFor={`selected-${id}`}>
-          <Text as="h4">Chosen Columns</Text>
+          <Text as="h4">Visible Columns</Text>
         </label>
-        <div className={`${classBase}-listContainer`} style={{ flex: 1 }}>
+        <div
+          className={`${classBase}-listContainer`}
+          style={{ flex: 1, overflow: "hidden" }}
+        >
           <List<ColumnDescriptor>
+            allowDragDrop
             borderless
+            height="100%"
             id={`selected-${id}`}
             itemHeight={24}
             itemToString={(item) => item.name}
+            onMoveListItem={handleDrop}
             onSelectionChange={handleSelectionChange2}
             selected={selectedColumn}
             style={{ flex: 1 }}
-            source={selectedColumns}
+            source={chosenColumns}
           />
         </div>
         <div
@@ -127,18 +148,19 @@ export const ColumnPicker = ({
             flex: "0 0 32px",
             display: "flex",
             gap: 6,
+            marginTop: "var(--salt-size-basis-unit)",
           }}
         >
           <Button onClick={removeColumn} disabled={selectedColumn === null}>
             <span data-icon="arrow-thin-left" style={{ marginRight: 8 }} />
-            Remove
+            Hide
           </Button>
           <Button
             aria-label="Move column up"
             onClick={moveColumnUp}
             disabled={
               selectedColumn === null ||
-              selectedColumns?.indexOf(selectedColumn) === 0
+              chosenColumns?.indexOf(selectedColumn) === 0
             }
             style={{ width: 28 }}
           >
@@ -149,8 +171,7 @@ export const ColumnPicker = ({
             onClick={moveColumnDown}
             disabled={
               selectedColumn === null ||
-              selectedColumns.indexOf(selectedColumn) ===
-                selectedColumns.length - 1
+              chosenColumns.indexOf(selectedColumn) === chosenColumns.length - 1
             }
             style={{ width: 28 }}
           >
