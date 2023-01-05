@@ -1,7 +1,7 @@
-import { KeyedColumnDescriptor } from '@finos/vuu-datagrid/src/grid-model'
-import { partition } from '@finos/vuu-utils/src/array-utils'
-import { Row } from '@finos/vuu-utils/src/row-utils'
-import { Column } from '../../../showcase/src/examples/Table/Table'
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model"
+import { partition } from "@finos/vuu-utils/src/array-utils"
+import { Row } from "@finos/vuu-utils/src/row-utils"
+import { Column } from "../../../showcase/src/examples/Table/Table"
 import {
   AndFilter,
   Filter,
@@ -15,26 +15,26 @@ import {
   isOrFilter,
   isSingleValueFilter,
   MultiClauseFilter
-} from './filterTypes'
+} from "./filterTypes"
 
-export const AND = 'and'
-export const EQUALS = '='
-export const GREATER_THAN = '>'
-export const LESS_THAN = '<'
-export const OR = 'or'
-export const STARTS_WITH = 'starts'
-export const ENDS_WITH = 'ends'
-export const IN = 'in'
+export const AND = "and"
+export const EQUALS = "="
+export const GREATER_THAN = ">"
+export const LESS_THAN = "<"
+export const OR = "or"
+export const STARTS_WITH = "starts"
+export const ENDS_WITH = "ends"
+export const IN = "in"
 
-export type FilterType = 'and' | '=' | '>' | '>=' | 'in' | '<=' | '<' | 'NOT_IN' | 'NOT_SW' | 'or' | 'SW'
+export type FilterType = "and" | "=" | ">" | ">=" | "in" | "<=" | "<" | "NOT_IN" | "NOT_SW" | "or" | "SW"
 
 export const SET_FILTER_DATA_COLUMNS = [
-  { name: 'name', flex: 1 },
-  { name: 'count', width: 40, type: 'number' },
-  { name: 'totalCount', width: 40, type: 'number' },
+  { name: "name", flex: 1 },
+  { name: "count", width: 40, type: "number" },
+  { name: "totalCount", width: 40, type: "number" },
 ]
 
-export const BIN_FILTER_DATA_COLUMNS = [{ name: 'bin' }, { name: 'count' }, { name: 'bin-lo' }, { name: 'bin-hi' }]
+export const BIN_FILTER_DATA_COLUMNS = [{ name: "bin" }, { name: "count" }, { name: "bin-lo" }, { name: "bin-hi" }]
 
 export const filterClauses = (filter: Filter | null, clauses: FilterClause[] = []) => {
   if (filter) {
@@ -52,7 +52,7 @@ type AddFilterOptions = {
 }
 
 const DEFAULT_ADD_FILTER_OPTS: AddFilterOptions = {
-  combineWith: 'and',
+  combineWith: "and",
 }
 
 export const addFilter = (
@@ -72,7 +72,7 @@ export const addFilter = (
     if (isMultiClauseFilter(filter)) {
       // TODO identify the column that is contributing the all-values filter
     }
-    return removeFilterForColumn(existingFilter, { name: filter.column ?? '' })
+    return removeFilterForColumn(existingFilter, { name: filter.column ?? "" })
   }
 
   if (!existingFilter) {
@@ -122,7 +122,7 @@ export const filterAsQuery = (f: Filter, namedFilters = {}): string => {
     return `${filterAsQuery(clause1, namedFilters)} ${f.op} ${filterAsQuery(clause2, namedFilters)}`
   }
   if (isMultiValueFilter(f)) {
-    return `${f.column} ${f.op} [${f.values.join(',')}]`
+    return `${f.column} ${f.op} [${f.values.join(",")}]`
   }
   return `${f.column} ${f.op} ${f.value}`
 }
@@ -133,7 +133,7 @@ interface CommonFilter {
   mode?: any
   value?: any
   values?: any
-  op?: 'or' | 'and'
+  op?: "or" | "and"
   column?: string
   filters?: Filter[]
 }
@@ -149,10 +149,10 @@ const includesAllValues = (filter?: Filter | null): boolean => {
   if (!filter) {
     return false
   }
-  if (filter.op === STARTS_WITH && filter.value === '') {
+  if (filter.op === STARTS_WITH && filter.value === "") {
     return true
   }
-  return filter.op === STARTS_WITH && filter.value === ''
+  return filter.op === STARTS_WITH && filter.value === ""
 }
 
 const replaceOrInsert = (filters: Filter[], filter: Filter) => {
@@ -200,7 +200,7 @@ export const removeColumnFromFilter = (column: KeyedColumnDescriptor, filter: Fi
       return [clause1, filterAsQuery(clause1)]
     }
   }
-  return [undefined, '']
+  return [undefined, ""]
 }
 
 export const removeFilter = (sourceFilter: Filter, filterToRemove: Filter) => {
@@ -313,7 +313,7 @@ const sameValues = <T>(arr1: T[], arr2: T[]) => {
   if (arr1.length === arr2.length) {
     const a = arr1.slice().sort()
     const b = arr2.slice().sort()
-    return a.join('|') === b.join('|')
+    return a.join("|") === b.join("|")
   }
   return false
 }
@@ -335,13 +335,13 @@ export const filterEquals = (f1?: Filter, f2?: Filter, strict = false) => {
 export const updateFilter = (
   filter: Filter | undefined,
   newFilter: Filter | undefined,
-  mode: 'add' | 'replace'
+  mode: "add" | "replace"
 ): Filter | undefined => {
   if (filter && newFilter) {
-    if (mode === 'replace') {
+    if (mode === "replace") {
       return newFilter
     }
-    if (filter.op === 'and') {
+    if (filter.op === "and") {
       return {
         ...filter,
         filters: filter.filters.concat(newFilter),
@@ -352,7 +352,7 @@ export const updateFilter = (
       return filter
     }
     return {
-      op: 'and',
+      op: "and",
       filters: [filter, newFilter],
     }
   }
