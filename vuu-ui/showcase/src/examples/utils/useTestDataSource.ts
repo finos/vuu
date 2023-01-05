@@ -30,19 +30,18 @@ export const useTestDataSource = ({
   schemas: { [key: string]: Schema };
   tablename?: string;
 }) => {
-  const [columns, columnNames, table] = useMemo(() => {
+  const [columns, config, columnNames, table] = useMemo(() => {
     const schema = schemas[tablename];
     const configuredColumns = configureColumns(schema.columns, columnConfig);
     return [
       configuredColumns,
+      { columns: configuredColumns },
       configuredColumns.map((col) => col.name),
       schema.table,
     ];
   }, [columnConfig, schemas, tablename]);
 
   const dataSource = useMemo(() => {
-    console.log(`create data source`);
-
     const dataConfig = {
       bufferSize,
       columns: columnNames,
@@ -57,6 +56,7 @@ export const useTestDataSource = ({
   return {
     dataSource,
     columns,
+    config,
     error,
   };
 };

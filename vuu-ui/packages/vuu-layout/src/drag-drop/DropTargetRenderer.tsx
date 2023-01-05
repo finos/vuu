@@ -1,4 +1,4 @@
-import { PopupService } from "../popup";
+import { PopupService } from "../../../vuu-popups/src/popup";
 import { RelativeDropPosition } from "./BoxModel";
 import { DragDropRect } from "./dragDropTypes";
 import { DragState } from "./DragState";

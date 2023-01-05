@@ -5,6 +5,7 @@ import { Connection } from "../connectionTypes";
 import {
   ServerToClientMessage,
   ClientToServerMessage,
+  VuuColumnDataType,
   VuuLink,
   VuuMenuContext,
   VuuTable,
@@ -99,8 +100,13 @@ export class ServerProxy {
   private mapClientToServerViewport: Map<string, string>;
   private authToken = "";
   private pendingLogin?: PendingLogin;
+  private pendingTableMetaRequests = new Map<string, string>();
   private sessionId?: string;
   private queuedRequests: Array<ClientToServerMessage["body"]> = [];
+  private cachedTableMeta: Map<
+    string,
+    { columns: string[]; serverDataTypes: VuuColumnDataType[] }
+  > = new Map();
 
   constructor(connection: Connection, callback: PostMessageToClientCallback) {
     this.connection = connection;
@@ -129,6 +135,14 @@ export class ServerProxy {
   public subscribe(message: ServerProxySubscribeMessage) {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
+      if (!this.hasMetaDataFor(message.table)) {
+        const requestId = nextRequestId();
+        this.sendMessageToServer(
+          { type: "GET_TABLE_META", table: message.table },
+          requestId
+        );
+        this.pendingTableMetaRequests.set(requestId, message.viewport);
+      }
       const viewport = new Viewport(message);
       this.viewports.set(message.viewport, viewport);
       // use client side viewport as request id, so that when we process the response,
@@ -402,14 +416,14 @@ export class ServerProxy {
     } else {
       const { type, requestId } = message;
       switch (type) {
-        case Message.GET_TABLE_LIST:
+        case "GET_TABLE_LIST":
           return this.sendMessageToServer({ type }, requestId);
-        case Message.GET_TABLE_META:
+        case "GET_TABLE_META":
           return this.sendMessageToServer(
             { type, table: message.table },
             requestId
           );
-        case Message.RPC_CALL:
+        case "RPC_CALL":
           return this.rpcCall(message);
         default:
       }
@@ -663,25 +677,36 @@ export class ServerProxy {
         break;
 
       case Message.TABLE_META_RESP:
-        this.postMessageToClient({
-          type: Message.TABLE_META_RESP,
-          table: body.table,
-          columns: body.columns,
-          dataTypes: body.dataTypes,
-          requestId,
-        } as VuuUIMessageInTableMeta);
+        // This request may have originated from client or may have been made by
+        // ServerProxy whilst creating a new subscription
+        {
+          this.cacheTableMeta(body.table, body.columns, body.dataTypes);
+          const clientViewportId = this.pendingTableMetaRequests.get(requestId);
+          if (clientViewportId) {
+            this.pendingTableMetaRequests.delete(requestId);
+            // If the viewport is still stored under clientViewportId, the subscription has not
+            // yet been acknowledged and client not informed. If the subscription has already
+            // been acknowledged, the viewport will be stored under serverViewportId;
+            const viewport = this.viewports.get(clientViewportId);
+            if (viewport) {
+              viewport.setTableMeta(body.columns, body.dataTypes);
+            } else {
+              console.log(
+                "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
+              );
+            }
+          } else {
+            this.postMessageToClient({
+              type: Message.TABLE_META_RESP,
+              table: body.table,
+              columns: body.columns,
+              dataTypes: body.dataTypes,
+              requestId,
+            } as VuuUIMessageInTableMeta);
+          }
+        }
         break;
 
-      /*
-
-  private createLink(viewport: Viewport, message: VuuUIMessageOutCreateLink) {
-    const { parentVpId, parentColumnName, childColumnName } = message;
-    const requestId = nextRequestId();
-    const request = viewport.createLink(requestId, childColumnName, parentVpId, parentColumnName);
-    this.sendMessageToServer(request, requestId);
-  }
-
-        */
       case Message.VP_VISUAL_LINKS_RESP:
         {
           const links = this.getActiveLinks(body.links);
@@ -751,6 +776,23 @@ export class ServerProxy {
 
       default:
         console.log(`handleMessageFromServer ${(body as any).type as string}.`);
+    }
+  }
+
+  private hasMetaDataFor(table: VuuTable) {
+    return this.cachedTableMeta.has(`${table.module}:${table.table}`);
+  }
+
+  private cacheTableMeta(
+    table: VuuTable,
+    columns: string[],
+    serverDataTypes: VuuColumnDataType[]
+  ) {
+    if (!this.hasMetaDataFor(table)) {
+      this.cachedTableMeta.set(`${table.module}:${table.table}`, {
+        columns,
+        serverDataTypes,
+      });
     }
   }
 

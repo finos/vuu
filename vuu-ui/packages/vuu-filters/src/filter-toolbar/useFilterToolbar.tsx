@@ -1,5 +1,5 @@
 import {
-  Filter, isMultiValueFilter, isNamedFilter, isSingleValueFilter, ISuggestionProvider, SuggestionConsumer
+  Filter, isMultiValueFilter, isNamedFilter, isSingleValueFilter, ISuggestionProvider2, SuggestionConsumer2
 } from "@finos/vuu-filters";
 import { ToggleButton, ToolbarField } from "@heswell/salt-lab";
 import { ReactElement } from "react";
@@ -7,7 +7,7 @@ import { FilterDropdown } from "./FilterDropdown";
 
 const filterToControl = (
   filter: Filter,
-  suggestionProvider: ISuggestionProvider
+  suggestionProvider: ISuggestionProvider2
 ): ReactElement | ReactElement[] => {
   if (isNamedFilter(filter)) {
     return (
@@ -65,7 +65,7 @@ const filterToControl = (
   ) as ReactElement[];
 };
 
-export interface FilterToolbarProps extends SuggestionConsumer {
+export interface FilterToolbarProps extends SuggestionConsumer2 {
   filter?: Filter;
 }
 

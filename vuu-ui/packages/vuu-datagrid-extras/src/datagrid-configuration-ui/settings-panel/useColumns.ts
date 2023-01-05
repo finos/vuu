@@ -1,8 +1,9 @@
 import {
   ColumnDescriptor,
   ColumnTypeDescriptor,
-} from "@finos/vuu-datagrid/src/grid-model";
+} from "@finos/vuu-datagrid-types";
 import { Reducer, useReducer } from "react";
+import { moveItem } from "@heswell/salt-lab";
 
 export interface ColumnActionAdd {
   type: "addColumn";
@@ -13,8 +14,10 @@ export interface ColumnActionAdd {
 
 export interface ColumnActionMove {
   type: "moveColumn";
-  column: ColumnDescriptor;
+  column?: ColumnDescriptor;
   moveBy?: 1 | -1;
+  moveTo?: number;
+  moveFrom?: number;
 }
 
 export interface ColumnActionRemove {
@@ -106,14 +109,16 @@ function removeColumn(
 
 function moveColumn(
   columns: ColumnDescriptor[],
-  { column, moveBy }: ColumnActionMove
+  { column, moveBy, moveFrom, moveTo }: ColumnActionMove
 ) {
-  if (typeof moveBy === "number") {
+  if (column && typeof moveBy === "number") {
     const idx = columns.indexOf(column);
     const newColumns = columns.slice();
     const [movedColumns] = newColumns.splice(idx, 1);
     newColumns.splice(idx + moveBy, 0, movedColumns);
     return newColumns;
+  } else if (typeof moveFrom === "number" && typeof moveTo === "number") {
+    return moveItem(columns, moveFrom, moveTo);
   } else {
     return columns;
   }

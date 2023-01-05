@@ -1,4 +1,5 @@
-import { ContextMenuProvider, useViewContext } from "@finos/vuu-layout";
+import { useViewContext } from "@finos/vuu-layout";
+import { ContextMenuProvider } from "@finos/vuu-popups";
 import { useShellContext } from "@finos/vuu-shell";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSuggestionProvider } from "./useSuggestionProvider";

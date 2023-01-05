@@ -9,13 +9,20 @@ const buildPackage = async (packageName) =>
 
 // TODO determine the dependency graph/build order programatically
 const wave1 = [
+  "vuu-datagrid-types",
   "vuu-filter-types",
   "vuu-protocol-types",
   "vuu-utils",
   "vuu-theme",
 ];
-const wave2 = ["vuu-data", "vuu-filters"];
-const wave3 = ["vuu-datagrid", "vuu-layout", "vuu-shell"];
+const wave2 = ["vuu-data", "vuu-filters", "vuu-popups"];
+const wave3 = [
+  "vuu-datagrid",
+  "vuu-datatable",
+  "vuu-datagrid-extras",
+  "vuu-layout",
+  "vuu-shell",
+];
 
 await Promise.all(wave1.map(buildPackage));
 await Promise.all(wave2.map(buildPackage));

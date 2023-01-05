@@ -1,5 +1,5 @@
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Stack } from "@finos/vuu-layout";
-import cx from "classnames";
 import {
   FormField,
   Input,
@@ -9,6 +9,7 @@ import {
   StepperInput,
 } from "@heswell/salt-lab";
 import { Text } from "@salt-ds/core";
+import cx from "classnames";
 import {
   ChangeEvent,
   Dispatch,
@@ -16,7 +17,6 @@ import {
   useCallback,
   useState,
 } from "react";
-import { ColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
 import { ColumnTypePanel } from "../column-type-panel";
 
 import "./ColumnSettingsPanel.css";
@@ -42,7 +42,6 @@ export const ColumnSettingsPanel = ({
   ...props
 }: ColumnSettingsPanelProps) => {
   const [activeTab, setActiveTab] = useState(0);
-  console.log(`ColumnSettingsPanel render ${JSON.stringify(column, null, 2)}`);
 
   const dispatchUpdate = useCallback(
     (values: Partial<Pick<ColumnDescriptor, "align" | "label" | "width">>) =>
@@ -87,7 +86,7 @@ export const ColumnSettingsPanel = ({
         onTabSelectionChanged={setActiveTab}
         TabstripProps={tabstripProps}
       >
-        <Panel title="Header">
+        <Panel title="Column">
           <FormField label="Label" labelPlacement="left">
             <Input
               value={column.label ?? column.name}
@@ -119,7 +118,7 @@ export const ColumnSettingsPanel = ({
         <ColumnTypePanel
           column={column}
           dispatchColumnAction={dispatchColumnAction}
-          title="Data"
+          title="Data Cell"
         />
         <Panel title="Vuu" variant="secondary">
           <FormField

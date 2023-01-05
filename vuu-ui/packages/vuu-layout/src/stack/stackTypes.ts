@@ -7,7 +7,8 @@ export interface StackProps
   createNewChild?: (index: number) => ReactElement;
   enableAddTab?: boolean;
   enableCloseTabs?: boolean;
-  getTabLabel?: (component: ReactElement, index: number) => string;
+  getTabIcon?: (component: ReactElement, index: number) => string | undefined;
+  getTabLabel?: (component: ReactElement, index: number) => string | undefined;
   keyBoardActivation?: "automatic" | "manual";
   onMouseDown?: (e: MouseEvent, tabIndex: number) => void;
   onTabAdd?: (tabIndex: number) => void;

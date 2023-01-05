@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Reducer, useReducer } from "react";
 
 export interface ColumnActionAdd {
