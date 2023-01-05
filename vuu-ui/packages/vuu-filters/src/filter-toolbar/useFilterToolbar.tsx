@@ -1,12 +1,8 @@
 import {
-  Filter,
-  isNamedFilter,
-  isMultiValueFilter,
-  isSingleValueFilter,
+  Filter, isMultiValueFilter, isNamedFilter, isSingleValueFilter, ISuggestionProvider2, SuggestionConsumer2
 } from "@finos/vuu-filters";
 import { ToggleButton, ToolbarField } from "@heswell/salt-lab";
 import { ReactElement } from "react";
-import { ISuggestionProvider2, SuggestionConsumer2 } from "@finos/vuu-filters";
 import { FilterDropdown } from "./FilterDropdown";
 
 const filterToControl = (
@@ -17,14 +13,14 @@ const filterToControl = (
     return (
       <ToggleButton
         className="vuuToggleButton"
-        // onToggle={handleToggleTestOne}
         toggled={true}
         variant="secondary"
       >
         {filter.name}
       </ToggleButton>
     );
-  } else if (isSingleValueFilter(filter)) {
+  }
+  if (isSingleValueFilter(filter)) {
     const { column, value } = filter;
     return (
       <ToolbarField
@@ -35,15 +31,16 @@ const filterToControl = (
       >
         <FilterDropdown
           column={column}
-          selected={value}
+          selected={value.toString()}
           selectionStrategy="default"
-          source={[value]}
+          source={[value.toString()]}
           suggestionProvider={suggestionProvider}
           style={{ width: 100 }}
         />
       </ToolbarField>
     );
-  } else if (isMultiValueFilter(filter)) {
+  }
+  if (isMultiValueFilter(filter)) {
     const { column, values } = filter;
     return (
       <ToolbarField
@@ -52,21 +49,20 @@ const filterToControl = (
         key={column}
         labelPlacement="top"
       >
-        <FilterDropdown
+        { values.map((value, idx) => <FilterDropdown
+          key={`filter-dropdown-${idx}`}
           column={column}
-          selected={values}
-          selectionStrategy="multiple"
-          source={values}
+          selected={value.toString()}
           suggestionProvider={suggestionProvider}
           style={{ width: 100 }}
-        />
+        />)}
+        
       </ToolbarField>
     );
-  } else {
-    return filter.filters.map((filter) =>
-      filterToControl(filter, suggestionProvider)
-    ) as ReactElement[];
   }
+  return filter.filters.map((filter) =>
+    filterToControl(filter, suggestionProvider)
+  ) as ReactElement[];
 };
 
 export interface FilterToolbarProps extends SuggestionConsumer2 {
@@ -79,7 +75,6 @@ export const useFilterToolbar = ({
 }: FilterToolbarProps) => {
   if (filter) {
     return filterToControl(filter, suggestionProvider);
-  } else {
-    return [];
   }
+  return [];
 };
