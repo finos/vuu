@@ -94,12 +94,15 @@ export const addFilter = (
   if (filter.op === AND) {
     return { op: AND, filters: filter.filters.concat(existingFilter) }
   }
+  
   if (filterEquals(existingFilter, filter, true)) {
     return filter
   }
+  
   if (sameColumn(existingFilter, filter)) {
     return merge(existingFilter, filter)
   }
+  
   return { op: combineWith, filters: [existingFilter, filter] }
 }
 
