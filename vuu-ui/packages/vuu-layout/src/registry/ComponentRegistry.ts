@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 
 const _containers: { [key: string]: boolean } = {};
 const _views: { [key: string]: boolean } = {};
@@ -19,9 +19,9 @@ export const isLayoutComponent = (type: string) => isContainer(type) || isView(t
 
 export const isRegistered = (className: string) => !!ComponentRegistry[className];
 
-// We could check and set displayName in here
 export function registerComponent(
   componentName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: FunctionComponent<any>,
   type: layoutComponentType = 'component'
 ) {
