@@ -90,7 +90,7 @@ export const useVuuMenuActions = ({
 }: VuuMenuActionHookProps): ViewServerHookResult => {
   const contextMenu = useRef(vuuMenu);
 
-  const buildViewserverMenuOptions = useCallback(
+  const buildVuuMenuOptions = useCallback(
     (location, options) => {
       const { selectedRowCount = 0 } = options;
       const descriptors: VuuContextMenuDescriptor[] = [];
@@ -153,7 +153,7 @@ export const useVuuMenuActions = ({
     (type, options) => {
       if (type === "MENU_RPC_CALL") {
         dataSource.menuRpcCall({ type, ...options }).then((result) => {
-          onRpcResponse && onRpcResponse(result);
+          onRpcResponse && onRpcResponse(result as RpcResponse);
         });
         return true;
       } else if (type === "link-table") {
@@ -169,7 +169,7 @@ export const useVuuMenuActions = ({
   );
 
   return {
-    buildViewserverMenuOptions,
+    buildViewserverMenuOptions: buildVuuMenuOptions,
     dispatchGridAction,
     handleMenuAction,
   };

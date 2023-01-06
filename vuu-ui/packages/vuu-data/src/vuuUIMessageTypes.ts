@@ -1,13 +1,15 @@
-import { msgType } from "./constants";
 import {
+  ClientToServerTableList,
+  ClientToServerTableMeta,
+  TypeAheadMethod,
   VuuAggregation,
   VuuColumns,
-  VuuMenuContext,
   VuuRange,
   VuuSortCol,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { Filter } from "@finos/vuu-filter-types";
+import { WithRequestId } from "./message-utils";
 
 export type ConnectionStatus =
   | "connecting"
@@ -204,14 +206,6 @@ export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
   type: "groupBy";
 }
 
-export interface VuuUIMessageOutMenuRPC
-  extends RequestMessage,
-    ViewportMessageOut {
-  context: VuuMenuContext;
-  rpcName: string;
-  type: "MENU_RPC_CALL";
-}
-
 export type VuuUIMessageOutViewport =
   | VuuUIMessageOutAggregate
   | VuuUIMessageOutCloseTreeNode
@@ -228,44 +222,22 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutSelectNone
   | VuuUIMessageOutSuspend
   | VuuUIMessageOutSort
-  | VuuUIMessageOutViewRange
-  | VuuUIMessageOutMenuRPC;
+  | VuuUIMessageOutViewRange;
 
 export const isViewporttMessage = (
   msg: object
 ): msg is VuuUIMessageOutViewport => "viewport" in msg;
 
-export interface VuuUIMessageOutRPC extends RequestMessage {
-  method: string;
-  params: unknown[];
+export interface TypeAheadRpcRequest {
+  method: TypeAheadMethod;
+  params: [VuuTable, ...string[]];
   type: "RPC_CALL";
 }
-
-export type VuuUIMessageOutRpcCall =
-  | VuuUIMessageOutRPC
-  | VuuUIMessageOutMenuRPC;
-
-export interface VuuUIMessageOutTableList extends RequestMessage {
-  type: "GET_TABLE_LIST";
-}
-
-export interface VuuUIMessageOutTableMeta extends RequestMessage {
-  type: "GET_TABLE_META";
-  table: VuuTable;
-}
-
-export type VuuUIMessageOutAsyncRequest =
-  | VuuUIMessageOutTableList
-  | VuuUIMessageOutTableMeta;
-
-export const isAsyncRequestMessage = (
-  msg: object
-): msg is VuuUIMessageOutAsyncRequest => "requestId" in msgType;
 
 export type VuuUIMessageOut =
   | VuuUIMessageOutConnect
   | VuuUIMessageOutSubscribe
   | VuuUIMessageOutUnsubscribe
-  | VuuUIMessageOutAsyncRequest
   | VuuUIMessageOutViewport
-  | VuuUIMessageOutRpcCall;
+  | WithRequestId<ClientToServerTableList>
+  | WithRequestId<ClientToServerTableMeta>;

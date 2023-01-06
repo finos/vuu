@@ -9,7 +9,6 @@ import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
 
 import {
   ConfigChangeMessage,
-  createDataSource,
   DataSourceMenusMessage,
   DataSourceVisualLinksMessage,
   RemoteDataSource,
@@ -47,7 +46,13 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
     if (ds) {
       return ds;
     }
-    ds = createDataSource({ id, table: schema.table, schema, config });
+    const columns = schema.columns.map((col) => col.name);
+    ds = new RemoteDataSource({
+      viewport: id,
+      columns,
+      table: schema.table,
+      ...config,
+    });
     saveSession(ds, "data-source");
     return ds;
   }, [config, id, loadSession, saveSession, schema]);
