@@ -229,7 +229,7 @@ export class Viewport {
       type: "subscribed",
       clientViewportId: this.clientViewportId,
       columns,
-      filter: this.filter.data.filter,
+      filter: this.filter,
       filterSpec: this.filterSpec,
       groupBy,
       range,
