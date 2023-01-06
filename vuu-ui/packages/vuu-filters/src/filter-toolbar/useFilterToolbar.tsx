@@ -49,14 +49,14 @@ const filterToControl = (
         key={column}
         labelPlacement="top"
       >
-        { values.map((value, idx) => <FilterDropdown
-          key={`filter-dropdown-${idx}`}
+        <FilterDropdown
           column={column}
-          selected={value.toString()}
+          selected={values}
+          selectionStrategy="multiple"
+          source={values}
           suggestionProvider={suggestionProvider}
           style={{ width: 100 }}
-        />)}
-        
+        />
       </ToolbarField>
     );
   }
