@@ -1,24 +1,12 @@
-import {
-  keymap,
-  highlightSpecialChars,
-  drawSelection,
-  // highlightActiveLine,
-  // dropCursor,
-  // rectangularSelection,
-  // crosshairCursor,
-  // lineNumbers,
-  // highlightActiveLineGutter,
-} from "@codemirror/view";
-import { Extension, EditorState } from "@codemirror/state";
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import {
   defaultHighlightStyle,
-  syntaxHighlighting,
-  // indentOnInput,
-  // bracketMatching,
-  // foldGutter,
-  // foldKeymap,
+  syntaxHighlighting
 } from "@codemirror/language";
-import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import { Extension } from "@codemirror/state";
+import {
+  drawSelection, highlightSpecialChars, keymap
+} from "@codemirror/view";
 // import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
 // import {
 //   autocompletion,

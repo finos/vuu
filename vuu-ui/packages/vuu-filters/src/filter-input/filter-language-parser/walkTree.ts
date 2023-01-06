@@ -214,7 +214,7 @@ export const walkTree = (tree: Tree, source: string) => {
         {
           console.log(`as clause ${source.substring(from, to)}`);
           cursor.next();
-          const { name: nm1, from: f1, to: t1 } = cursor;
+          const { name: nm1 } = cursor;
           if (nm1 === "As") {
             cursor.next();
             const { name: nm2, from: f2, to: t2 } = cursor;
