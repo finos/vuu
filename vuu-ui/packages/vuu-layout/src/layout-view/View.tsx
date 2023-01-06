@@ -3,10 +3,10 @@ import cx from "classnames";
 import React, { ForwardedRef, forwardRef, useMemo, useRef } from "react";
 import { Header } from "../layout-header/Header";
 import { registerComponent } from "../registry/ComponentRegistry";
-import { ViewContext } from "./ViewContext";
-import { ViewProps } from "./viewTypes";
 import { useView } from "./useView";
 import { useViewResize } from "./useViewResize";
+import { ViewContext } from "./ViewContext";
+import { ViewProps } from "./viewTypes";
 
 import "./View.css";
 

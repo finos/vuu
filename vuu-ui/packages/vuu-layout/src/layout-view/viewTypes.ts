@@ -1,14 +1,11 @@
 import { HTMLAttributes } from "react";
 import { HeaderProps } from "../layout-header";
 import {
-  MaximizeAction,
+  AddToolbarContributionViewAction, MaximizeAction,
   MinimizeAction,
   MousedownViewAction,
-  RemoveAction,
-  RestoreAction,
-  TearoutAction,
-  AddToolbarContributionViewAction,
-  RemoveToolbarContributionViewAction,
+  RemoveAction, RemoveToolbarContributionViewAction, RestoreAction,
+  TearoutAction
 } from "../layout-reducer";
 
 export type ViewAction =
@@ -27,6 +24,7 @@ export interface ViewProps extends HTMLAttributes<HTMLDivElement> {
   "data-resizeable"?: boolean;
   dropTargets?: string[];
   expanded?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   flexFill?: any;
   header?: boolean | Partial<HeaderProps>;
   orientation?: "vertical" | "horizontal";

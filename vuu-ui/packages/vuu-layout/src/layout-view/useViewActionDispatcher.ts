@@ -1,16 +1,16 @@
+import { DataSource } from "@finos/vuu-data";
 import {
   ReactElement,
   RefObject,
   SyntheticEvent,
   useCallback,
-  useState,
+  useState
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { DragStartAction } from "../layout-reducer";
+import { usePersistentState } from "../use-persistent-state";
 import { ViewDispatch } from "./ViewContext";
 import { ViewAction } from "./viewTypes";
-import { usePersistentState } from "../use-persistent-state";
-import { DataSource } from "@finos/vuu-data";
 
 export type Contribution = {
   index?: number;
