@@ -9,12 +9,8 @@
     "test": "vitest run",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
-  "files": [
-    "index.js",
-    "index.js.map",
-    "/src"
-  ],
   "devDependencies": {
+    "@finos/vuu-datagrid-types": "0.0.26",
     "@finos/vuu-filter-types": "0.0.26",
     "@finos/vuu-protocol-types": "0.0.26"
   },

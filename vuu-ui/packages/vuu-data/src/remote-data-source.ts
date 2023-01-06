@@ -1,5 +1,4 @@
 import {
-  ClientToServerRpcCall,
   VuuGroupBy,
   VuuAggregation,
   VuuRange,
@@ -17,8 +16,6 @@ import {
   SubscribeProps,
 } from "./data-source";
 import { VuuUIMessageOutMenuRPC } from "./vuuUIMessageTypes";
-
-export interface DataSourceColumn {}
 
 // const log = (message: string, ...rest: unknown[]) => {
 //   console.log(
@@ -49,7 +46,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   private clientCallback: any;
   // private serverViewportId?: string;
 
-  public columns: DataSourceColumn[];
+  public columns: string[];
   public rowCount: number | undefined;
   public table: VuuTable;
   public viewport: string | undefined;
@@ -105,7 +102,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       groupBy = this.initialGroup,
       filter = this.initialFilter,
       filterQuery = this.initialFilterQuery,
-      title,
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
@@ -152,7 +148,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         table,
         range: this.initialRange,
         sort,
-        title,
         visualLink: this.visualLink,
       },
       this.handleMessageFromServer
@@ -264,6 +259,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       if (this.server) {
         this.server.send(message);
       } else {
+        console.log(`set initial range to ${from} ${to}`);
         this.initialRange = { from, to };
       }
     }
@@ -408,5 +404,9 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         ...rpcRequest,
       });
     }
+  }
+
+  setTitle(title: string) {
+    console.log(`RemoteDataSource setTitle ${title}`);
   }
 }

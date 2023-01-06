@@ -4,11 +4,6 @@
   "author": "heswell",
   "main": "src/index.ts",
   "license": "Apache-2.0",
-  "files": [
-    "index.js",
-    "index.js.map",
-    "/src"
-  ],
   "types": "src/index.ts",
   "scripts": {
     "build": "node ../../scripts/run-build.mjs",

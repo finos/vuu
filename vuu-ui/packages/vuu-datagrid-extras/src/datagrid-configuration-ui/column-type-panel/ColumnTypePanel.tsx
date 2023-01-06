@@ -1,19 +1,38 @@
-import { Dispatch, useMemo } from "react";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Dropdown, Panel, PanelProps } from "@heswell/salt-lab";
 import cx from "classnames";
-import { ColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
+import { Dispatch, useMemo } from "react";
+import { ColumnAction } from "../settings-panel/useColumns";
 import { NumericColumnPanel } from "./NumericColumnPanel";
 import { StringColumnPanel } from "./StringColumnPanel";
 
 import "./ColumnTypePanel.css";
-import { Panel, PanelProps } from "@heswell/salt-lab";
-import { ColumnAction } from "../settings-panel/useColumns";
 
-const classBase = "vuuColumnTypepanel";
+const classBase = "vuuColumnTypePanel";
 
 export interface ColumnTypePanelProps extends PanelProps {
   column: ColumnDescriptor;
   dispatchColumnAction: Dispatch<ColumnAction>;
 }
+
+const integerCellRenderers = ["Default Renderer (int, long)"];
+const doubleCellRenderers = ["Default Renderer (double)"];
+const stringCellRenderers = ["Default Renderer (string)"];
+
+const getAvailableCellRenderers = (column: ColumnDescriptor) => {
+  switch (column.serverDataType) {
+    case "char":
+    case "string":
+      return stringCellRenderers;
+    case "int":
+    case "long":
+      return integerCellRenderers;
+    case "double":
+      return doubleCellRenderers;
+    default:
+      return stringCellRenderers;
+  }
+};
 
 export const ColumnTypePanel = ({
   className,
@@ -43,13 +62,22 @@ export const ColumnTypePanel = ({
   }, [column, dispatchColumnAction]);
 
   const { serverDataType = "string" } = column;
+  const availableRenderers = getAvailableCellRenderers(column);
 
   return (
-    <Panel
-      {...props}
-      className={cx(classBase, className, `${classBase}-${serverDataType}`)}
-    >
-      {content}
-    </Panel>
+    <>
+      <Dropdown
+        className={cx(`${classBase}-renderer`)}
+        fullWidth
+        selected={availableRenderers[0]}
+        source={availableRenderers}
+      />
+      <Panel
+        {...props}
+        className={cx(classBase, className, `${classBase}-${serverDataType}`)}
+      >
+        {content}
+      </Panel>
+    </>
   );
 };

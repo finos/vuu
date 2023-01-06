@@ -1,0 +1,52 @@
+
+@precedence {
+  call,
+  times @left,
+  plus @left
+}
+
+@top ColumnDefinitionExpression { Equal expression }
+
+expression { 
+  Column | 
+  Number |
+  ParenthesizedExpression |
+  BinaryExpression |
+  CallExpression
+}
+
+ParenthesizedExpression { OpenBrace expression CloseBrace }
+
+BinaryExpression {
+  expression !times (Divide | Times) expression |
+  expression !plus (Plus | Minus) expression 
+}
+
+CallExpression {
+  Function ArgList
+}
+
+ArgList {
+  OpenBrace expression ("," expression)* CloseBrace
+}
+
+Column { identifier }
+
+Function { identifier }
+
+@skip { space  }
+
+@tokens {
+  Equal {"="}
+  OpenBrace {"("}
+  CloseBrace {")"}
+  Plus {"+"}
+  Minus {"-"}
+  Divide {"/"}
+  Times {"*"}
+  identifier { $[a-zA-Z_]$[a-zA-Z_0-9]* }
+  Number {
+    @digit @digit* ("." @digit*)? | "." @digit @digit*
+  }
+  space { $[ \t\n\r]+ }
+}

@@ -41,7 +41,7 @@ if (url.searchParams.has("standalone")) {
       const root = document.getElementById("root") as HTMLDivElement;
       root.classList.add("salt-theme", "salt-density-medium");
       root.dataset.mode = "light";
-      const targetExamples = await import(importPath);
+      const targetExamples = await import(/* @vite-ignore */ importPath);
       if (exampleName in targetExamples) {
         const Component = targetExamples[exampleName];
         ReactDOM.render(<Component />, root);

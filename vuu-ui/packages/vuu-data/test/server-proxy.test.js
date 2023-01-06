@@ -56,13 +56,14 @@ describe("ServerProxy", () => {
       const serverProxy = new ServerProxy(mockConnection, callback);
       serverProxy.subscribe(clientSubscription);
       serverProxy.handleMessageFromServer(serverSubscription);
-
+      //TODO civer tableMeta in test
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
         clientViewportId: "client-vp-1",
         columns: ["col-1", "col-2", "col-3", "col-4"],
         filter: "",
         filterSpec: { filter: "" },
+        tableMeta: null,
         type: "subscribed",
       });
     });
@@ -1356,7 +1357,7 @@ describe("ServerProxy", () => {
       expect(mockConnection.send).toHaveBeenCalledTimes(1);
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       TEST_setRequestId(2);
-
+      // TODO test for the call to get nmetadata as well
       expect(mockConnection.send).toHaveBeenCalledWith({
         user: "user",
         body: {
@@ -1366,7 +1367,7 @@ describe("ServerProxy", () => {
           to: 36,
         },
         module: "CORE",
-        requestId: "3",
+        requestId: "4",
         sessionId: "dsdsd",
         token: "test",
       });

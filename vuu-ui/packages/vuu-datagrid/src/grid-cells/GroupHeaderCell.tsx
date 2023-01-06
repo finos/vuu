@@ -1,4 +1,4 @@
-import { useContextMenu } from "@finos/vuu-layout";
+import { useContextMenu } from "@finos/vuu-popups";
 import cx from "classnames";
 import React, { HTMLAttributes, useCallback, useEffect, useRef } from "react";
 import { GroupColumnDescriptor, KeyedColumnDescriptor } from "../grid-model";
