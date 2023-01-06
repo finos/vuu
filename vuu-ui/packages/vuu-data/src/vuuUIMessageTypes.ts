@@ -4,6 +4,7 @@ import {
   TypeAheadMethod,
   VuuAggregation,
   VuuColumns,
+  VuuGroupBy,
   VuuRange,
   VuuSortCol,
   VuuTable,
@@ -33,11 +34,11 @@ export interface ServerProxySubscribeMessage {
   aggregations: VuuAggregation[];
   bufferSize?: number;
   columns: VuuColumns;
-  filter: any;
-  filterQuery: any;
-  groupBy: any;
+  filter?: Filter;
+  filterQuery?: string;
+  groupBy?: VuuGroupBy;
   range: VuuRange;
-  sort: any;
+  sort?: VuuSortCol[];
   table: VuuTable;
   title?: string;
   viewport: string;

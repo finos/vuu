@@ -100,7 +100,7 @@ export class Viewport {
   private columns: string[];
   // TODO create this in constructor so we don't have to mark is as optional
   private dataWindow?: ArrayBackedMovingWindow = undefined;
-  private filter: ViewportFilter;
+  private filter: Filter | undefined;
   private filterSpec: VuuFilter;
   private groupBy: string[];
   private hasUpdates = false;
@@ -130,7 +130,7 @@ export class Viewport {
     aggregations,
     bufferSize = 50,
     columns,
-    filter = "",
+    filter,
     filterQuery = "",
     groupBy = [],
     table,
@@ -229,7 +229,7 @@ export class Viewport {
       type: "subscribed",
       clientViewportId: this.clientViewportId,
       columns,
-      filter: this.filter.data.filter,
+      filter: this.filter,
       filterSpec: this.filterSpec,
       groupBy,
       range,
@@ -267,6 +267,7 @@ export class Viewport {
       };
     } else if (type === "filter") {
       this.filterSpec = { filter: data.filterQuery };
+      this.filter = data.filter;
       return { clientViewportId, type, ...data };
     } else if (type === "aggregate") {
       this.aggregations = data as VuuAggregation[];
@@ -474,7 +475,7 @@ export class Viewport {
     } as ClientToServerDisable;
   }
 
-  filterRequest(requestId: string, filter: any, filterQuery: string) {
+  filterRequest(requestId: string, filter: Filter, filterQuery: string) {
     this.awaitOperation(requestId, {
       type: "filter",
       data: { filter, filterQuery },
