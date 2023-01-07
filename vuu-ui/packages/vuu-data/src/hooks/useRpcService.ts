@@ -1,11 +1,11 @@
-import { ClientToServerRpcCall } from "@finos/vuu-protocol-types";
+import { VuuRpcRequest } from "@finos/vuu-protocol-types";
 import { useCallback } from "react";
 import { useServerConnection } from "./useServerConnection";
 
 export const useRpcService = () => {
   const server = useServerConnection(undefined);
   const makeRpcCall = useCallback(
-    async <T = unknown>(rpcRequest: ClientToServerRpcCall) => {
+    async <T = unknown>(rpcRequest: VuuRpcRequest) => {
       if (server) {
         return server.rpcCall<T>(rpcRequest);
       } else {

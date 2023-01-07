@@ -127,9 +127,9 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   send: (msg: ClientToServerMessage) => void = sendWarn;
   status: "closed" | "ready" | "connected" | "reconnected" = "ready";
 
-  private url: string;
+  public url: string;
 
-  constructor(ws: any, url: string, callback: ConnectionCallback) {
+  constructor(ws: WebSocket, url: string, callback: ConnectionCallback) {
     this.url = url;
     this[connectionCallback] = callback;
     this[setWebsocket](ws);
@@ -197,7 +197,9 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     const queue = (_msg: ClientToServerMessage) => {
-      console.log(`TODO queue message until websocket reconnected`);
+      console.log(`TODO queue message until websocket reconnected`, {
+        _msg,
+      });
     };
 
     this.send = send;

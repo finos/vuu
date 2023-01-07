@@ -1,6 +1,6 @@
 import { metadataKeys } from "@finos/vuu-utils";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
-  ColumnDescriptor,
   ColumnGroupType,
   GridModelReducerInitializerTuple,
   GridModelType,

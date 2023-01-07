@@ -1,6 +1,8 @@
 import {
   ClientToServerTableList,
   ClientToServerTableMeta,
+  VuuMenuRpcRequest,
+  VuuRpcRequest,
   VuuTable,
   VuuTableList,
   VuuTableMeta,
@@ -20,7 +22,6 @@ import {
   VuuUIMessageInTableList,
   VuuUIMessageInTableMeta,
   VuuUIMessageOut,
-  VuuUIMessageOutRpcCall,
 } from "./vuuUIMessageTypes";
 // Note: the InlinedWorker is a generated file, it must be built
 import { InlinedWorker } from "./inlined-worker";
@@ -106,7 +107,7 @@ const getWorker = async (
 
 function handleMessageFromWorker({
   data: message,
-}: MessageEvent<VuuUIMessageIn>) {
+}: MessageEvent<VuuUIMessageIn | DataSourceCallbackMessage>) {
   if (isConnectionStatusMessage(message)) {
     ConnectionManager.emit("connection-status", message);
   } else if (messageShouldBeRoutedToDataSource(message)) {
@@ -146,10 +147,10 @@ function handleMessageFromWorker({
   }
 }
 
-// Can be a straight protocol message body
 const asyncRequest = <T = unknown>(
   msg:
-    | VuuUIMessageOutRpcCall
+    | VuuRpcRequest
+    | VuuMenuRpcRequest
     | ClientToServerTableList
     | ClientToServerTableMeta
 ): Promise<T> => {
@@ -167,7 +168,7 @@ export interface ServerAPI {
   destroy: (viewportId?: string) => void;
   getTableMeta: (table: VuuTable) => Promise<VuuTableMeta>;
   getTableList: () => Promise<VuuTableList>;
-  rpcCall: <T = unknown>(msg: VuuUIMessageOutRpcCall) => Promise<T>;
+  rpcCall: <T = unknown>(msg: VuuRpcRequest | VuuMenuRpcRequest) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
     message: ServerProxySubscribeMessage,
@@ -212,8 +213,9 @@ class _ConnectionManager extends EventEmitter {
         }
       },
 
-      rpcCall: async <T = unknown>(message: VuuUIMessageOutRpcCall) =>
-        asyncRequest<T>(message),
+      rpcCall: async <T = unknown>(
+        message: VuuRpcRequest | VuuMenuRpcRequest
+      ) => asyncRequest<T>(message),
 
       getTableList: async () =>
         asyncRequest<VuuTableList>({ type: Message.GET_TABLE_LIST }),
