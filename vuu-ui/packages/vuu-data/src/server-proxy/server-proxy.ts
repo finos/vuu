@@ -7,9 +7,7 @@ import {
   ClientToServerMessage,
   VuuColumnDataType,
   VuuLink,
-  VuuMenuContext,
   VuuTable,
-  ClientToServerMenuRPCType,
   VuuRpcRequest,
   VuuMenuRpcRequest,
 } from "@finos/vuu-protocol-types";
@@ -61,18 +59,6 @@ export const TEST_setRequestId = (id: number) => (_requestId = id);
 const nextRequestId = () => `${_requestId++}`;
 const EMPTY_ARRAY: unknown[] = [];
 const DEFAULT_OPTIONS: MessageOptions = {};
-
-const getMenuRPCType = (context: VuuMenuContext): ClientToServerMenuRPCType => {
-  // prettier-ignore
-  switch(context){
-    case "selected-rows": return "VIEW_PORT_MENUS_SELECT_RPC";
-    case "row": return "VIEW_PORT_MENU_ROW_RPC";
-    case "cell": return "VIEW_PORT_MENU_CELL_RPC";
-    case "grid": return "VIEW_PORT_MENU_TABLE_RPC";
-    default:
-      throw Error("No RPC command for ${msgType} / ${context}");
-    }
-};
 
 function addLabelsToLinks(
   links: VuuLink[],
@@ -742,11 +728,11 @@ export class ServerProxy {
         }
         break;
 
-      case Message.VIEW_PORT_MENU_RESP:
+      case "VIEW_PORT_MENU_RESP":
         {
           const { action } = body;
           this.postMessageToClient({
-            type: Message.VIEW_PORT_MENU_RESP,
+            type: "VIEW_PORT_MENU_RESP",
             action,
             tableAlreadyOpen: this.isTableOpen(action.table),
             requestId,

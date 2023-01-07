@@ -17,6 +17,7 @@ import {
   SubscribeProps,
 } from "./data-source";
 import { getServerUrl } from "./hooks/useServerConnection";
+import { MenuRpcResponse } from "./vuuUIMessageTypes";
 
 // const log = (message: string, ...rest: unknown[]) => {
 //   console.log(
@@ -288,9 +289,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   //TODO I think we should have a clear filter for API clarity
   filter(filter: Filter | undefined, filterQuery: string) {
     if (this.viewport) {
-      // log(`filter ${filterQuery}`, {
-      //   filter,
-      // });
       const message = {
         viewport: this.viewport,
         type: "filterQuery",
@@ -402,7 +400,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   async menuRpcCall(rpcRequest: Omit<VuuMenuRpcRequest, "vpId">) {
     if (this.viewport) {
-      return this.server?.rpcCall({
+      return this.server?.rpcCall<MenuRpcResponse>({
         vpId: this.viewport,
         ...rpcRequest,
       } as VuuMenuRpcRequest);

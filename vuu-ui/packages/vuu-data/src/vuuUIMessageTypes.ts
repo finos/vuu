@@ -1,6 +1,7 @@
 import {
   ClientToServerTableList,
   ClientToServerTableMeta,
+  MenuRpcAction,
   TypeAheadMethod,
   VuuAggregation,
   VuuColumns,
@@ -72,13 +73,6 @@ export interface VuuUIMessageInRPC {
 export const messageHasResult = (msg: object): msg is VuuUIMessageInRPC =>
   typeof (msg as VuuUIMessageInRPC).result !== "undefined";
 
-export type RpcResponse = {
-  action: {
-    type: "OPEN_DIALOG_ACTION";
-    table: VuuTable;
-  };
-};
-
 export interface VuuUIMessageInTableList {
   requestId: string;
   type: "TABLE_LIST_RESP";
@@ -91,10 +85,8 @@ export interface VuuUIMessageInTableMeta {
   table: VuuTable;
   type: "TABLE_META_RESP";
 }
-export interface VuuUIMessageInMenu {
-  action: {
-    table: VuuTable;
-  };
+export interface MenuRpcResponse {
+  action: MenuRpcAction;
   requestId: string;
   tableAlreadyOpen?: boolean;
   type: "VIEW_PORT_MENU_RESP";
@@ -104,7 +96,7 @@ export type VuuUIMessageIn =
   | VuuUIMessageInConnected
   | VuuUIMessageInWorkerReady
   | VuuUIMessageInRPC
-  | VuuUIMessageInMenu
+  | MenuRpcResponse
   | VuuUIMessageInTableList
   | VuuUIMessageInTableMeta;
 
@@ -198,12 +190,12 @@ export interface VuuUIMessageOutSuspend extends ViewportMessageOut {
 }
 
 export interface VuuUIMessageOutFilterQuery extends ViewportMessageOut {
-  filter?: Filter;
+  filter: Filter | undefined;
   filterQuery: string;
   type: "filterQuery";
 }
 export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
-  groupBy: any[];
+  groupBy: VuuGroupBy;
   type: "groupBy";
 }
 

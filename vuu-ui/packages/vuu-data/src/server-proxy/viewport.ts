@@ -47,7 +47,7 @@ interface ChangeViewportRange {
   type: "CHANGE_VP_RANGE";
 }
 interface ViewportFilter {
-  data: { filter: Filter; filterQuery: string };
+  data: { filter: Filter | undefined; filterQuery: string };
   type: "filter";
 }
 interface Aggregate {
@@ -475,7 +475,11 @@ export class Viewport {
     } as ClientToServerDisable;
   }
 
-  filterRequest(requestId: string, filter: Filter, filterQuery: string) {
+  filterRequest(
+    requestId: string,
+    filter: Filter | undefined,
+    filterQuery: string
+  ) {
     this.awaitOperation(requestId, {
       type: "filter",
       data: { filter, filterQuery },

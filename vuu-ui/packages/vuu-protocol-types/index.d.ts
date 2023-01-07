@@ -407,12 +407,14 @@ export interface ClientToServerMessage<
 
 /** Menu RPC services */
 export interface OpenDialogAction {
-  type: "OPEN_DIALOG";
+  type: "OPEN_DIALOG_ACTION";
   table: VuuTable;
 }
 export interface NoAction {
   type: "NO_ACTION";
 }
+
+export declare type MenuRpcAction = OpenDialogAction | NoAction;
 export interface VuuAddRowsToOrdersSelectMenuRpcRequest {
   type: "VIEW_PORT_MENU_RESP";
   rpcName: "ADD_ROWS_TO_ORDERS";

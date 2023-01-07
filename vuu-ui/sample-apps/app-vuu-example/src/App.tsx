@@ -1,5 +1,5 @@
 import { SaltProvider } from "@salt-ds/core";
-import { RpcResponse, useVuuTables } from "@finos/vuu-data";
+import { MenuRpcResponse, useVuuTables } from "@finos/vuu-data";
 import { Dialog, registerComponent } from "@finos/vuu-layout";
 import {
   Feature,
@@ -15,7 +15,7 @@ import "./App.css";
 
 const { websocketUrl: serverUrl, features } = await vuuConfig;
 
-const filteredGridUrl = "./feature-filtered-grid/index.js";
+const vuuBlotterUrl = "./feature-vuu-blotter/index.js";
 
 registerComponent("Stack", Stack, "container");
 
@@ -45,27 +45,30 @@ export const App = ({ user }: { user: VuuUser }) => {
 
   const tables = useVuuTables();
 
-  const handleRpcResponse = useCallback((response: RpcResponse) => {
-    if (response?.action?.type === "OPEN_DIALOG_ACTION") {
-      const { table } = response.action;
-      if (tables) {
-        const schema = tables.get(table.table);
-        if (schema) {
-          // If we already have this table open in this viewport, ignore
-          setDialogContent(
-            <Feature
-              height={400}
-              params={{ schema }}
-              url={filteredGridUrl}
-              width={700}
-            />
-          );
+  const handleRpcResponse = useCallback(
+    (response?: MenuRpcResponse) => {
+      if (response?.action?.type === "OPEN_DIALOG_ACTION") {
+        const { table } = response.action;
+        if (tables) {
+          const schema = tables.get(table.table);
+          if (schema) {
+            // If we already have this table open in this viewport, ignore
+            setDialogContent(
+              <Feature
+                height={400}
+                params={{ schema }}
+                url={vuuBlotterUrl}
+                width={700}
+              />
+            );
+          }
         }
+      } else {
+        console.warn(`App, handleServiceRequest ${JSON.stringify(response)}`);
       }
-    } else {
-      console.warn(`App, handleServiceRequest ${JSON.stringify(response)}`);
-    }
-  }, []);
+    },
+    [tables]
+  );
 
   const handleClose = () => setDialogContent(undefined);
 

@@ -16,6 +16,7 @@ import {
   VuuSortCol,
   VuuTable,
 } from "@finos/vuu-protocol-types";
+import { MenuRpcResponse } from "./vuuUIMessageTypes";
 
 type RowIndex = number;
 type RenderKey = number;
@@ -213,7 +214,7 @@ export interface DataSource extends IEventEmitter {
   group: (groupBy: VuuGroupBy) => void;
   menuRpcCall: (
     rpcRequest: Omit<VuuMenuRpcRequest, "vpId">
-  ) => Promise<unknown>;
+  ) => Promise<MenuRpcResponse | undefined>;
   openTreeNode: (key: string) => void;
   removeLink: () => void;
   rowCount: number | undefined;
