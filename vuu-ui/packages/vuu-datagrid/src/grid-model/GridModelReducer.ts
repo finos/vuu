@@ -602,7 +602,7 @@ function buildColumnGroups(
     return NO_COLUMN_GROUPS;
   }
 
-  const gridWidth = size?.clientWidth ?? state.width;
+  const gridWidth = size?.clientWidth ?? state.width ?? state.clientWidth;
 
   if (gridWidth === undefined) {
     throw Error(

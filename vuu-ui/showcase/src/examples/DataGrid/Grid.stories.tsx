@@ -1,5 +1,6 @@
 import { Grid } from "@finos/vuu-datagrid";
-import { DatagridSettingsPanel, GridConfig } from "@finos/vuu-datagrid-extras";
+import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
+import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
@@ -37,7 +38,6 @@ export const DefaultGrid = () => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
   const { schemas } = useSchemas();
-
   const { columns, dataSource, error } = useTestDataSource({
     schemas,
     tablename: tables[selectedIndex],
@@ -68,7 +68,7 @@ export const DefaultGrid = () => {
         onConfigChange={handleConfigChange}
       />
     );
-  }, [columns]);
+  }, [columns, handleConfigChange]);
 
   const hideSettings = useCallback(() => {
     setDialogContent(null);
@@ -115,7 +115,9 @@ export const DefaultGrid = () => {
 DefaultGrid.displaySequence = displaySequence++;
 
 export const BasicGrid = () => {
+  const { schemas } = useSchemas();
   const { columns, dataSource, error } = useTestDataSource({
+    schemas,
     tablename: "instruments",
   });
   const gridRef = useRef<HTMLDivElement>(null);
@@ -217,7 +219,9 @@ export const PersistConfig = () => {
     setConfig(configRef.current);
   };
 
+  const { schemas } = useSchemas();
   const { columns, dataSource, error } = useTestDataSource({
+    schemas,
     tablename: "instruments",
   });
 
@@ -275,28 +279,25 @@ PersistConfig.displaySequence = displaySequence++;
 export const BasicGridColumnFixedCols = () => {
   const gridRef = useRef(null);
 
+  const { schemas } = useSchemas();
   const { columns, dataSource, error } = useTestDataSource({
-    columnConfig: {
-      account: { label: "Account", locked: true },
-      algo: { label: "Algo", locked: true },
-      averagePrice: { label: "Avg Price" },
-      ccy: { label: "Currency" },
-      childCount: { type: "int" },
-      exchange: { type: "string" },
-      filledQty: { type: "int" },
-      id: { type: "string" },
-      idAsInt: { type: "int" },
-      lastUpdate: { type: "long" },
-      openQty: { type: "int" },
-      price: { type: "double" },
-      quantity: { type: "int" },
-      ric: { type: "string" },
-      side: { type: "string" },
-      status: { type: "string" },
-      volLimit: { type: "double" },
-    },
+    schemas,
     tablename: "parentOrders",
   });
+
+  const fixedColumns = useMemo(
+    () =>
+      columns.map((column) =>
+        column.name === "account" || column.name === "algo"
+          ? {
+              ...column,
+              locked: true,
+            }
+          : column
+      ),
+
+    [columns]
+  );
 
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
@@ -309,7 +310,7 @@ export const BasicGridColumnFixedCols = () => {
       </div>
       <Grid
         dataSource={dataSource}
-        columns={columns}
+        columns={fixedColumns}
         height={600}
         ref={gridRef}
         renderBufferSize={20}
@@ -392,11 +393,13 @@ export const SizeSpecifiedInProps = () => {
 SizeSpecifiedInProps.displaySequence = displaySequence++;
 
 export const GridResize = () => {
+  const { schemas } = useSchemas();
   const {
     columns: cols1,
     dataSource: ds1,
     error: err1,
   } = useTestDataSource({
+    schemas,
     tablename: "instruments",
   });
   const {
@@ -404,6 +407,7 @@ export const GridResize = () => {
     dataSource: ds2,
     error: err2,
   } = useTestDataSource({
+    schemas,
     tablename: "instruments",
   });
 
