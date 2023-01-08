@@ -11,6 +11,8 @@ const packages = [
   "vuu-data",
   //   'ui-controls',
   //   'vuu-datagrid',
+  "vuu-datatable",
+  // "vuu-datagrid-extras",
   //   'vuu-layout',
   //   'vuu-shell'
 ];
