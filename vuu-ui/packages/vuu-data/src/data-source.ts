@@ -65,6 +65,10 @@ export interface DataSourceEnabledMessage extends MessageWithClientViewportId {
   type: "enabled";
 }
 
+export interface DataSourceColumnsMessage extends MessageWithClientViewportId {
+  type: "columns";
+  columns: VuuColumns;
+}
 export interface DataSourceFilterMessage extends MessageWithClientViewportId {
   type: "filter";
   filter: Filter;
@@ -120,6 +124,7 @@ export interface DataSourceVisualLinksMessage
 
 export type DataSourceCallbackMessage =
   | DataSourceAggregateMessage
+  | DataSourceColumnsMessage
   | DataSourceDataMessage
   | DataSourceDisabledMessage
   | DataSourceEnabledMessage
@@ -135,6 +140,7 @@ export type DataSourceCallbackMessage =
 const datasourceMessages = [
   "aggregate",
   "viewport-update",
+  "columns",
   "disabled",
   "enabled",
   "filter",
@@ -220,6 +226,7 @@ export interface DataSource extends IEventEmitter {
   rowCount: number | undefined;
   select: (selected: number[]) => void;
   setRange: (from: number, to: number) => void;
+  setSubscribedColumns: (columns: string[]) => void;
   /** Set the title associated with this viewport in UI. This can be used as a link target */
   setTitle?: (title: string) => void;
   sort: (sort: VuuSort) => void;

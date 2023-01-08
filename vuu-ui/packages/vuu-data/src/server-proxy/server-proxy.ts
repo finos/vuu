@@ -30,6 +30,7 @@ import {
   VuuUIMessageOutSubscribe,
   VuuUIMessageOutUnsubscribe,
   VuuUIMessageOutViewRange,
+  VuuUIMessageOutColumns,
 } from "../vuuUIMessageTypes";
 import { DataSourceCallbackMessage } from "../data-source";
 import {
@@ -239,6 +240,13 @@ export class ServerProxy {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
+  private setColumns(viewport: Viewport, message: VuuUIMessageOutColumns) {
+    const requestId = nextRequestId();
+    const { columns } = message;
+    const request = viewport.columnRequest(requestId, columns);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+
   private select(viewport: Viewport, message: VuuUIMessageOutSelect) {
     const requestId = nextRequestId();
     const { selected } = message;
@@ -390,6 +398,8 @@ export class ServerProxy {
             return this.createLink(viewport, message);
           case "removeLink":
             return this.removeLink(viewport);
+          case "setColumns":
+            return this.setColumns(viewport, message);
           default:
         }
       }

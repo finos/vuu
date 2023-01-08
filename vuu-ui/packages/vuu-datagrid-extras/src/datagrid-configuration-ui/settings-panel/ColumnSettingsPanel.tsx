@@ -20,7 +20,7 @@ import {
 import { ColumnTypePanel } from "../column-type-panel";
 
 import "./ColumnSettingsPanel.css";
-import { ColumnAction } from "./useColumns";
+import { ColumnAction } from "./useGridSettings";
 
 const classBase = "vuuColumnSettingsPanel";
 

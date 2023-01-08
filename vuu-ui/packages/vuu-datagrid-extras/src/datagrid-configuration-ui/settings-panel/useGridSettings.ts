@@ -1,6 +1,7 @@
 import {
   ColumnDescriptor,
   ColumnTypeDescriptor,
+  GridConfig,
 } from "@finos/vuu-datagrid-types";
 import { Reducer, useReducer } from "react";
 import { moveItem } from "@heswell/salt-lab";
@@ -37,6 +38,12 @@ export interface ColumnActionUpdateProp {
   width?: ColumnDescriptor["width"];
 }
 
+export interface ColumnActionUpdateGridSettings {
+  type: "updateGridSettings";
+  columnDefaultWidth?: number;
+  columnFormatHeader?: "capitalize" | "uppercase";
+}
+
 export interface ColumnActionUpdateTypeFormatting {
   type: "updateColumnTypeFormatting";
   column: ColumnDescriptor;
@@ -47,15 +54,17 @@ export interface ColumnActionUpdateTypeFormatting {
 
 export type ColumnAction =
   | ColumnActionAdd
+  | ColumnActionUpdateGridSettings
   | ColumnActionMove
   | ColumnActionRemove
   | ColumnActionUpdate
   | ColumnActionUpdateProp
   | ColumnActionUpdateTypeFormatting;
 
-export type ColumnReducer = Reducer<ColumnDescriptor[], ColumnAction>;
+export type GridSettingsReducer = Reducer<GridConfig, ColumnAction>;
 
-const columnReducer: ColumnReducer = (state, action) => {
+const gridSettingsReducer: GridSettingsReducer = (state, action) => {
+  console.log(`gridSettingsReducer ${action.type}`);
   switch (action.type) {
     case "addColumn":
       return addColumn(state, action);
@@ -67,6 +76,8 @@ const columnReducer: ColumnReducer = (state, action) => {
       return state;
     case "updateColumnProp":
       return updateColumnProp(state, action);
+    case "updateGridSettings":
+      return updateGridSettings(state, action);
     case "updateColumnTypeFormatting":
       return updateColumnTypeFormatting(state, action);
     default:
@@ -74,74 +85,97 @@ const columnReducer: ColumnReducer = (state, action) => {
   }
 };
 
-export const useColumns = (columns: ColumnDescriptor[]) => {
-  const [state, dispatchColumnAction] = useReducer<ColumnReducer>(
-    columnReducer,
-    columns
+export const useGridSettings = (config: GridConfig) => {
+  const [state, dispatchColumnAction] = useReducer<GridSettingsReducer>(
+    gridSettingsReducer,
+    config
   );
 
   return {
-    columns: state,
+    gridSettings: state,
     dispatchColumnAction,
   };
 };
 
 function addColumn(
-  state: ColumnDescriptor[],
+  state: GridConfig,
   { column, columns, index = -1 }: ColumnActionAdd
 ) {
+  const { columns: stateColumns } = state;
   if (index === -1) {
     if (Array.isArray(columns)) {
-      return state.concat(columns);
+      return { ...state, columns: stateColumns.concat(columns) };
     } else if (column) {
-      return state.concat(column);
+      return { ...state, columns: stateColumns.concat(column) };
     }
   }
   return state;
 }
 
-function removeColumn(
-  columns: ColumnDescriptor[],
-  { column }: ColumnActionRemove
-) {
-  return columns.filter((col) => col.name !== column.name);
+function removeColumn(state: GridConfig, { column }: ColumnActionRemove) {
+  const { columns: stateColumns } = state;
+  return {
+    ...state,
+    columns: stateColumns.filter((col) => col.name !== column.name),
+  };
 }
 
 function moveColumn(
-  columns: ColumnDescriptor[],
+  state: GridConfig,
   { column, moveBy, moveFrom, moveTo }: ColumnActionMove
 ) {
+  const { columns: stateColumns } = state;
   if (column && typeof moveBy === "number") {
-    const idx = columns.indexOf(column);
-    const newColumns = columns.slice();
+    const idx = stateColumns.indexOf(column);
+    const newColumns = stateColumns.slice();
     const [movedColumns] = newColumns.splice(idx, 1);
     newColumns.splice(idx + moveBy, 0, movedColumns);
-    return newColumns;
+    return {
+      ...state,
+      columns: newColumns,
+    };
   } else if (typeof moveFrom === "number" && typeof moveTo === "number") {
-    return moveItem(columns, moveFrom, moveTo);
+    return {
+      ...state,
+      columns: moveItem(stateColumns, moveFrom, moveTo),
+    };
   } else {
-    return columns;
+    return state;
   }
 }
 
 function updateColumnProp(
-  state: ColumnDescriptor[],
+  state: GridConfig,
   { align, column, label, width }: ColumnActionUpdateProp
 ) {
+  let { columns: stateColumns } = state;
   if (align === "left" || align === "right") {
-    state = replaceColumn(state, { ...column, align });
+    stateColumns = replaceColumn(stateColumns, { ...column, align });
   }
   if (typeof label === "string") {
-    state = replaceColumn(state, { ...column, label });
+    stateColumns = replaceColumn(stateColumns, { ...column, label });
   }
   if (typeof width === "number") {
-    state = replaceColumn(state, { ...column, width });
+    stateColumns = replaceColumn(stateColumns, { ...column, width });
   }
-  return state;
+  return {
+    ...state,
+    columns: stateColumns,
+  };
+}
+
+function updateGridSettings(
+  state: GridConfig,
+  { columnFormatHeader: formatColumnHeaders }: ColumnActionUpdateGridSettings
+) {
+  return {
+    ...state,
+    formatColumnHeaders: formatColumnHeaders ?? state.columnFormatHeader,
+  };
 }
 
 function updateColumnTypeFormatting(
-  state: ColumnDescriptor[],
+  state: GridConfig,
   {
     alignOnDecimals,
     column,
@@ -149,7 +183,8 @@ function updateColumnTypeFormatting(
     zeroPad,
   }: ColumnActionUpdateTypeFormatting
 ) {
-  const targetColumn = state.find((col) => col.name === column.name);
+  const { columns: stateColumns } = state;
+  const targetColumn = stateColumns.find((col) => col.name === column.name);
   if (targetColumn) {
     const { serverDataType = "string", type: columnType = serverDataType } =
       column;
@@ -180,12 +215,15 @@ function updateColumnTypeFormatting(
       };
     }
 
-    return replaceColumn(state, { ...column, type });
+    return {
+      ...state,
+      columns: replaceColumn(stateColumns, { ...column, type }),
+    };
   } else {
     return state;
   }
 }
 
-function replaceColumn(state: ColumnDescriptor[], column: ColumnDescriptor) {
-  return state.map((col) => (col.name === column.name ? column : col));
+function replaceColumn(columns: ColumnDescriptor[], column: ColumnDescriptor) {
+  return columns.map((col) => (col.name === column.name ? column : col));
 }

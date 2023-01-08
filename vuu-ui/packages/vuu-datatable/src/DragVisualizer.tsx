@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import cx from "classnames";
+import { MeasuredDropTarget } from "@heswell/salt-lab";
 
 import "./DragVisualizer.css";
 
@@ -24,15 +25,19 @@ export const DragVisualizer: React.FC<DragVisualizerProps> = ({
   children,
   orientation = "vertical",
 }) => {
-  const [content, setContent] = useState([]);
-  const [dropTarget, setDropTarget] = useState([]);
+  const [content, setContent] = useState<MeasuredDropTarget[]>([]);
+  const [dropTarget, setDropTarget] = useState<MeasuredDropTarget>();
   const [dropZone, setDropZone] = useState([]);
   const [vizKey, setVisKey] = useState(1);
-  const vizRootRef = useRef<HTMLDivElement>();
+  const vizRootRef = useRef<HTMLDivElement>(null);
   const vizRootOffset = useRef(0);
 
   const setMeasurements = useCallback(
-    (measurements: any, dropTarget: any, dropZone = "") => {
+    (
+      measurements: MeasuredDropTarget[],
+      dropTarget: MeasuredDropTarget,
+      dropZone = ""
+    ) => {
       console.log(measurements);
       setContent(measurements);
       setDropTarget(dropTarget);

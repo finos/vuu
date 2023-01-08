@@ -7,6 +7,7 @@ import {
 import { Button } from "@salt-ds/core";
 
 import "./ColumnExpressionInput.css";
+import { Expression } from "./column-language-parser";
 
 const classBase = "vuuColumnExpressionInput";
 
@@ -15,20 +16,17 @@ export interface ColumnExpressionInputProps
     HTMLAttributes<HTMLDivElement> {
   existingFilter?: Filter;
   onSubmitExpression?: (
-    filter: Filter | undefined,
-    filterQuery: string,
-    filterName?: string
+    expression: Expression | undefined,
+    source: string
   ) => void;
 }
 
 export const ColumnExpressionInput = ({
-  existingFilter,
-  onSubmitExpression: onSubmitFilter,
+  onSubmitExpression,
   suggestionProvider,
 }: ColumnExpressionInputProps) => {
   const { editorRef, clearInput } = useColumnExpressionEditor({
-    existingFilter,
-    onSubmitExpression: onSubmitFilter,
+    onSubmitExpression,
     suggestionProvider,
   });
 

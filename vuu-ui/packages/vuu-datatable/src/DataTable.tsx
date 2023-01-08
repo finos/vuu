@@ -35,7 +35,6 @@ export const DataTable = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const {
-    columnMap,
     columns,
     data,
     dispatchColumnAction,
@@ -152,7 +151,6 @@ export const DataTable = ({
         <div className={`${classBase}-scrollContent`} />
         <div className={`${classBase}-tableContainer`} ref={tableContainerRef}>
           <Table
-            columnMap={columnMap}
             columns={columns.filter((col, i) => i !== draggedItemIndex)}
             data={data}
             headerHeight={headerHeight}

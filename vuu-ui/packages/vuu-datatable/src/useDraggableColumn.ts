@@ -1,6 +1,7 @@
 import { useDragDrop } from "@heswell/salt-lab";
 import {
   MouseEvent,
+  RefObject,
   useCallback,
   useLayoutEffect,
   useRef,
@@ -13,11 +14,17 @@ type MousePos = {
   idx: string;
 };
 
+export interface DraggableColumnHookProps {
+  onDrop: (fromIndex: number, toIndex: number) => void;
+  tableContainerRef: RefObject<HTMLDivElement>;
+  tableLayout: "column" | "row";
+}
+
 export const useDraggableColumn = ({
   onDrop,
   tableContainerRef,
   tableLayout: tableLayoutProp,
-}) => {
+}: DraggableColumnHookProps) => {
   const [tableLayout, setTableLayout] = useState(tableLayoutProp);
   const mousePosRef = useRef<MousePos>();
 
