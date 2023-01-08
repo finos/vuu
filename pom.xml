@@ -30,7 +30,7 @@
 
     <scm>
         <connection>scm:git:https://github.com/finos/vuu.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/finos/vuu.git</developerConnection>
+        <developerConnection>scm:git:https://github.com/finos/vuu.git</developerConnection>
         <url>https://github.com/finos/vuu/tree/master</url>
         <tag>HEAD</tag>
     </scm>
