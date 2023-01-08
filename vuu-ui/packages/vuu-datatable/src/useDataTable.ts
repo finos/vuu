@@ -9,11 +9,11 @@ import {
   KeyedColumnDescriptor,
   TypeFormatting,
 } from "@finos/vuu-datagrid-types";
-import { buildColumnMap, roundDecimal } from "@finos/vuu-utils";
+import { roundDecimal } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import { ValueFormatter, ValueFormatters } from "./dataTableTypes";
 import { KeySet } from "./KeySet";
-import { useColumns } from "./useColumns";
+import { useGridModel } from "./useGridModel";
 import { useDataSource } from "./useDataSource";
 
 export interface DataTableHookProps {
@@ -81,7 +81,7 @@ export const useDataTable = ({
     setRowCount(size);
   }, []);
 
-  const { columns, dispatchColumnAction } = useColumns();
+  const { columns, dispatchColumnAction } = useGridModel(config);
 
   const onSubscribed = useCallback(
     (subscription: DataSourceSubscribedMessage) => {
@@ -96,11 +96,6 @@ export const useDataTable = ({
       }
     },
     [dispatchColumnAction]
-  );
-
-  const columnMap = useMemo(
-    () => buildColumnMap(dataSource?.columns),
-    [dataSource?.columns]
   );
 
   const valueFormatters = useMemo(() => {
@@ -118,8 +113,9 @@ export const useDataTable = ({
   }, [columns, config, onConfigChange]);
 
   useMemo(() => {
-    dispatchColumnAction({ type: "init", columns: config.columns });
-  }, [config.columns, dispatchColumnAction]);
+    console.log(`config has changed re-init store`);
+    dispatchColumnAction({ type: "init", config });
+  }, [config, dispatchColumnAction]);
 
   const { data, setRange } = useDataSource({
     dataSource,
@@ -144,7 +140,6 @@ export const useDataTable = ({
 
   return {
     valueFormatters,
-    columnMap,
     columns,
     data: dataSource ? data : visibleRows,
     dispatchColumnAction,

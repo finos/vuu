@@ -4,8 +4,8 @@ import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Column, DataTable } from "@finos/vuu-datatable";
 import { Flexbox, View, ViewContext } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
+import { itemsChanged } from "@finos/vuu-utils";
 import {
-  Input,
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
@@ -169,10 +169,17 @@ export const VuuDataTable = () => {
 
   const handleConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
-      setTableConfig((configRef.current = config));
+      setTableConfig((currentConfig) => {
+        if (itemsChanged(currentConfig.columns, config.columns, "name")) {
+          dataSource.setSubscribedColumns(
+            config.columns.map((col) => col.name)
+          );
+        }
+        return (configRef.current = config);
+      });
       closePanel && setDialogContent(null);
     },
-    []
+    [dataSource]
   );
 
   const handleTableConfigChange = useCallback((config: GridConfig) => {

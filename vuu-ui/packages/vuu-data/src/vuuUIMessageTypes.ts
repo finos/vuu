@@ -131,6 +131,10 @@ export interface RequestMessage {
   requestId: string;
 }
 
+export interface VuuUIMessageOutColumns extends ViewportMessageOut {
+  type: "setColumns";
+  columns: string[];
+}
 export interface VuuUIMessageOutViewRange extends ViewportMessageOut {
   type: "setViewRange";
   range: {
@@ -202,6 +206,7 @@ export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
 export type VuuUIMessageOutViewport =
   | VuuUIMessageOutAggregate
   | VuuUIMessageOutCloseTreeNode
+  | VuuUIMessageOutColumns
   | VuuUIMessageOutCreateLink
   | VuuUIMessageOutFilterQuery
   | VuuUIMessageOutDisable

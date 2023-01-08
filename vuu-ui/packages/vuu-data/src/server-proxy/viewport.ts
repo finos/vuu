@@ -54,6 +54,10 @@ interface Aggregate {
   data: VuuAggregation[];
   type: "aggregate";
 }
+interface Columns {
+  data: string[];
+  type: "columns";
+}
 interface Selection {
   data: number[];
   type: "selection";
@@ -76,6 +80,7 @@ type RemoveVisualLink = ClientToServerRemoveLink;
 type AsyncOperation =
   | Aggregate
   | ChangeViewportRange
+  | Columns
   | CreateVisualLink
   | RemoveVisualLink
   | Disable
@@ -265,6 +270,10 @@ export class Viewport {
         type: "groupBy",
         groupBy: null,
       };
+    } else if (type === "columns") {
+      console.log("columns changed");
+      this.columns = data;
+      return { clientViewportId, type, ...data };
     } else if (type === "filter") {
       this.filterSpec = { filter: data.filterQuery };
       this.filter = data.filter;
@@ -473,6 +482,14 @@ export class Viewport {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
     } as ClientToServerDisable;
+  }
+
+  columnRequest(requestId: string, columns: string[]) {
+    this.awaitOperation(requestId, {
+      type: "columns",
+      data: columns,
+    });
+    return this.createRequest({ columns });
   }
 
   filterRequest(

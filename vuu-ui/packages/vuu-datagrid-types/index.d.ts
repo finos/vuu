@@ -2,6 +2,8 @@ import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 
 export declare type GridConfig = {
   columns: ColumnDescriptor[];
+  columnDefaultWidth?: number;
+  columnFormatHeader?: "capitalize" | "uppercase";
 };
 
 export declare type TypeFormatting = {

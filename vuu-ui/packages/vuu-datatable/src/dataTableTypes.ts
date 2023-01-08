@@ -1,6 +1,5 @@
 import { DataSource, DataSourceRow } from "@finos/vuu-data";
 import { KeyedColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
-import { ColumnMap } from "@finos/vuu-utils";
 import { HTMLAttributes, MouseEvent } from "react";
 
 export type tableLayoutType = "row" | "column";
@@ -31,9 +30,9 @@ export type ValueFormatter = (value: unknown) => string;
 export type ValueFormatters = {
   [key: string]: ValueFormatter;
 };
-export interface TableImplementationProps extends Pick<TableProps, "data"> {
-  columnMap: ColumnMap;
+export interface TableImplementationProps {
   columns: KeyedColumnDescriptor[];
+  data: DataSourceRow[];
   headerHeight: number;
   onHeaderCellDragEnd?: () => void;
   onHeaderCellDragStart?: (evt: MouseEvent) => void;

@@ -28,7 +28,7 @@ import { MenuRpcResponse } from "./vuuUIMessageTypes";
 // };
 
 /*-----------------------------------------------------------------
- A RemoteDataView manages a single subscription via the ServerProxy
+ A RemoteDataSource manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
 export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
@@ -236,18 +236,18 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     return this;
   }
 
-  setColumns(columns: string[]) {
-    this.columns = columns;
-    return this;
-  }
-
   setSubscribedColumns(columns: string[]) {
-    if (
-      columns.length !== this.columns.length ||
-      !columns.every((columnName) => this.columns.includes(columnName))
-    ) {
+    if (this.viewport) {
       this.columns = columns;
-      // ???
+
+      const message = {
+        viewport: this.viewport,
+        type: "setColumns",
+        columns,
+      } as const;
+      if (this.server) {
+        this.server.send(message);
+      }
     }
   }
 
