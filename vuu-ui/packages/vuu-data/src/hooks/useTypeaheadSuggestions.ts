@@ -1,6 +1,6 @@
 import {
-  ClientToServerRpcCall,
-  TypeAheadMethod,
+  ClientToServerGetUniqueValues,
+  ClientToServerGetUniqueValuesStartingWith,
   TypeaheadParams,
 } from "@finos/vuu-protocol-types";
 import { useCallback } from "react";
@@ -9,6 +9,10 @@ import { useRpcService } from "./useRpcService";
 export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
 
 const SPECIAL_SPACE = "_";
+const TYPEAHEAD_MESSAGE_CONSTANTS = {
+  type: "RPC_CALL",
+  service: "TypeAheadRpcHandler",
+};
 
 const containSpace = (text: string) => text.indexOf(" ") !== -1;
 const replaceSpace = (text: string) => text.replace(/\s/g, SPECIAL_SPACE);
@@ -17,17 +21,22 @@ export const useTypeaheadSuggestions = () => {
   const makeRpcCall = useRpcService();
   const getTypeaheadSuggestions: SuggestionFetcher = useCallback(
     async (params: TypeaheadParams) => {
-      const method: TypeAheadMethod =
+      const rpcMessage =
         params.length === 2
-          ? "getUniqueFieldValues"
-          : "getUniqueFieldValuesStartingWith";
+          ? ({
+              method: "getUniqueFieldValues",
+              params,
+              ...TYPEAHEAD_MESSAGE_CONSTANTS,
+            } as ClientToServerGetUniqueValues)
+          : ({
+              method: "getUniqueFieldValuesStartingWith",
+              params,
+              ...TYPEAHEAD_MESSAGE_CONSTANTS,
+            } as ClientToServerGetUniqueValuesStartingWith);
 
-      const suggestions = await makeRpcCall<string[]>({
-        type: "RPC_CALL",
-        method,
-        params,
-      } as ClientToServerRpcCall);
+      const suggestions = await makeRpcCall<string[]>(rpcMessage);
 
+      // TODO replacing space with underscores like this is not being correctly handled elsewhere
       return suggestions.some(containSpace)
         ? suggestions.map(replaceSpace)
         : suggestions;

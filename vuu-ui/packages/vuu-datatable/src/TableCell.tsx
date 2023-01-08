@@ -1,10 +1,9 @@
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ColumnMap, DataRow } from "@finos/vuu-utils";
+import { DataRow } from "@finos/vuu-utils";
 import { ValueFormatter } from "./dataTableTypes";
 
 export interface TableCellProps {
   column: KeyedColumnDescriptor;
-  columnMap: ColumnMap;
   row: DataRow;
   valueFormatter?: ValueFormatter;
 }
@@ -26,12 +25,11 @@ const defaultValueFormatter = (value: unknown) =>
 
 export const TableCell = ({
   column,
-  columnMap,
   row,
   valueFormatter = defaultValueFormatter,
 }: TableCellProps) => {
   const className = getCellClassName(column);
-  const value = valueFormatter(row[columnMap[column.name]]);
+  const value = valueFormatter(row[column.key]);
   return column.pin === "left" ? (
     <td className={className} style={{ left: column.pinnedLeftOffset }}>
       {value}

@@ -3,7 +3,7 @@ import { ConnectionManager, ServerAPI } from "../connection-manager";
 
 let serverResolver: (value: string | PromiseLike<string>) => void;
 // should this be a promise ?
-let _serverUrl = new Promise<string>((resolve) => {
+const _serverUrl = new Promise<string>((resolve) => {
   serverResolver = resolve;
 });
 let _serverString: string;

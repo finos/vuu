@@ -1,3 +1,4 @@
+// TODO is this hook needed ? it is currently used only in a vuu salt story
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -19,8 +20,7 @@ export function useDataSource({
   VuuRange,
   (range: VuuRange) => void
 ] {
-  console.log("IS THIS ACTUALLY USED");
-  const [, forceUpdate] = useState(null);
+  const [, forceUpdate] = useState<object | null>(null);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
   const rafHandle = useRef(null);
@@ -77,11 +77,14 @@ export function useDataSource({
           hasUpdated.current = true;
         }
       } else if (message.type === "filter") {
+        // TODO
         const { filter, filterQuery } = message;
-        console.log(`filter message ${filterQuery}`);
+        console.log(`filter message ${filterQuery}`, {
+          filter,
+        });
       }
     },
-    [dataSource, dataWindow, setData]
+    [dataWindow, setData]
   );
 
   useEffect(
@@ -102,7 +105,7 @@ export function useDataSource({
       dataSource.setRange(from, to);
       dataWindow.setRange(from, to);
     },
-    [dataSource]
+    [dataSource, dataWindow, renderBufferSize]
   );
 
   // const refreshIfUpdated = useCallback(() => {
@@ -153,7 +156,7 @@ export function useDataSource({
 
 export class MovingWindow {
   public data: DataSourceRow[];
-  public rowCount: number = 0;
+  public rowCount = 0;
   private range: WindowRange;
 
   constructor({ from, to }: VuuRange) {
@@ -168,7 +171,7 @@ export class MovingWindow {
     this.rowCount = rowCount;
   };
 
-  add(data: any[]) {
+  add(data: DataSourceRow) {
     const [index] = data;
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;

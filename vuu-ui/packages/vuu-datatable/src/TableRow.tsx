@@ -1,5 +1,5 @@
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ColumnMap, DataRow, metadataKeys } from "@finos/vuu-utils";
+import { DataRow, metadataKeys } from "@finos/vuu-utils";
 import cx from "classnames";
 import { HTMLAttributes, memo } from "react";
 import { ValueFormatters } from "./dataTableTypes";
@@ -12,8 +12,6 @@ const classBase = "vuuDataTableRow";
 
 export interface RowProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "children" | "onClick"> {
-  // TODO roll column lookup key into column
-  columnMap: ColumnMap;
   columns: KeyedColumnDescriptor[];
   height: number;
   index: number;
@@ -22,7 +20,6 @@ export interface RowProps
 }
 
 export const TableRow = memo(function Row({
-  columnMap,
   columns,
   height,
   index,
@@ -46,7 +43,6 @@ export const TableRow = memo(function Row({
       {columns.map((column) => (
         <TableCell
           column={column}
-          columnMap={columnMap}
           key={column.name}
           row={row}
           valueFormatter={valueFormatters?.[column.name]}

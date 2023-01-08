@@ -39,22 +39,11 @@ export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
   name,
 });
 
-export const toKeyedColumn = (
-  column: string | ColumnDescriptor,
-  key: number
-): KeyedColumnDescriptor => {
-  if (typeof column === "string") {
-    return { key, name: column };
-  }
-  if (isKeyedColumn(column)) {
-    return column;
-  }
-  return { ...column, key };
-};
-
 const EMPTY_COLUMN_MAP = {} as const;
 
-export function buildColumnMap(columns?: (Column | string)[]): ColumnMap {
+export function buildColumnMap(
+  columns?: (KeyedColumnDescriptor | string)[]
+): ColumnMap {
   const start = metadataKeys.count;
   if (columns) {
     return columns.reduce((map, column, i) => {
@@ -110,10 +99,6 @@ export function projectColumns(
       return out;
     };
 }
-
-export type Meta = {
-  [key: string]: any;
-} & any[];
 
 export const metadataKeys = {
   IDX: 0,

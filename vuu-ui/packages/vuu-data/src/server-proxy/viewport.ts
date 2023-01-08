@@ -1,36 +1,39 @@
-import { KeySet } from "./keyset";
-import * as Message from "./messages";
-import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
-import { getFullRange } from "@finos/vuu-utils";
-import { bufferBreakout } from "./buffer-range";
 import {
-  ServerToClientCreateViewPortSuccess,
   ClientToServerCreateLink,
   ClientToServerCreateViewPort,
   ClientToServerDisable,
   ClientToServerEnable,
+  ClientToServerRemoveLink,
   ClientToServerSelection,
   ClientToServerViewPortRange,
-  VuuMenu,
-  VuuGroupBy,
-  VuuRow,
-  VuuTable,
+  ServerToClientCreateViewPortSuccess,
   VuuAggregation,
-  VuuSortCol,
-  VuuRange,
-  ClientToServerRemoveLink,
+  VuuColumnDataType,
   VuuFilter,
+  VuuGroupBy,
+  VuuMenu,
+  VuuRange,
+  VuuRow,
+  VuuSortCol,
+  VuuTable,
 } from "@finos/vuu-protocol-types";
+import { getFullRange } from "@finos/vuu-utils";
 import { ServerProxySubscribeMessage } from "../vuuUIMessageTypes";
+import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
+import { bufferBreakout } from "./buffer-range";
+import { KeySet } from "./keyset";
+import * as Message from "./messages";
 
 import {
-  DataSourceVisualLinksMessage,
-  DataSourceVisualLinkCreatedMessage,
-  DataSourceVisualLinkRemovedMessage,
   DataSourceRow,
   DataSourceRowPredicate,
+  DataSourceSubscribedMessage,
+  DataSourceVisualLinkCreatedMessage,
+  DataSourceVisualLinkRemovedMessage,
+  DataSourceVisualLinksMessage,
 } from "../data-source";
 import { LinkWithLabel } from "./server-proxy";
+import { Filter } from "@finos/vuu-filter-types";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
@@ -43,13 +46,17 @@ interface Enable {
 interface ChangeViewportRange {
   type: "CHANGE_VP_RANGE";
 }
-interface Filter {
-  data: { filter: Filter; filterQuery: string };
+interface ViewportFilter {
+  data: { filter: Filter | undefined; filterQuery: string };
   type: "filter";
 }
 interface Aggregate {
   data: VuuAggregation[];
   type: "aggregate";
+}
+interface Columns {
+  data: string[];
+  type: "columns";
 }
 interface Selection {
   data: number[];
@@ -73,11 +80,12 @@ type RemoveVisualLink = ClientToServerRemoveLink;
 type AsyncOperation =
   | Aggregate
   | ChangeViewportRange
+  | Columns
   | CreateVisualLink
   | RemoveVisualLink
   | Disable
   | Enable
-  | Filter
+  | ViewportFilter
   | GroupBy
   | GroupByClear
   | Selection
@@ -94,14 +102,15 @@ export class Viewport {
    * these are the rows visible to the user
    */
   private clientRange: VuuRange;
-  private columns: any[];
+  private columns: string[];
   // TODO create this in constructor so we don't have to mark is as optional
   private dataWindow?: ArrayBackedMovingWindow = undefined;
-  private filter: Filter;
+  private filter: Filter | undefined;
   private filterSpec: VuuFilter;
   private groupBy: string[];
   private hasUpdates = false;
   private holdingPen: DataSourceRow[] = [];
+  private linkedParent?: any;
   private keys: KeySet;
   private pendingLinkedParent: any;
   private pendingOperations: any = new Map<string, AsyncOperation>();
@@ -126,7 +135,7 @@ export class Viewport {
     aggregations,
     bufferSize = 50,
     columns,
-    filter = "",
+    filter,
     filterQuery = "",
     groupBy = [],
     table,
@@ -221,13 +230,17 @@ export class Viewport {
     // );
 
     return {
+      aggregations,
       type: "subscribed",
       clientViewportId: this.clientViewportId,
       columns,
       filter: this.filter,
       filterSpec: this.filterSpec,
+      groupBy,
+      range,
+      sort,
       tableMeta: this.serverTableMeta,
-    };
+    } as DataSourceSubscribedMessage;
   }
 
   awaitOperation(requestId: string, msg: AsyncOperation) {
@@ -257,8 +270,13 @@ export class Viewport {
         type: "groupBy",
         groupBy: null,
       };
+    } else if (type === "columns") {
+      console.log("columns changed");
+      this.columns = data;
+      return { clientViewportId, type, ...data };
     } else if (type === "filter") {
       this.filterSpec = { filter: data.filterQuery };
+      this.filter = data.filter;
       return { clientViewportId, type, ...data };
     } else if (type === "aggregate") {
       this.aggregations = data as VuuAggregation[];
@@ -441,7 +459,7 @@ export class Viewport {
       const records = this.dataWindow.getData();
       const { keys } = this;
       const toClient = this.isTree ? toClientRowTree : toClientRow;
-      for (let row of records) {
+      for (const row of records) {
         if (row) {
           out.push(toClient(row, keys));
         }
@@ -466,7 +484,19 @@ export class Viewport {
     } as ClientToServerDisable;
   }
 
-  filterRequest(requestId: string, filter: any, filterQuery: string) {
+  columnRequest(requestId: string, columns: string[]) {
+    this.awaitOperation(requestId, {
+      type: "columns",
+      data: columns,
+    });
+    return this.createRequest({ columns });
+  }
+
+  filterRequest(
+    requestId: string,
+    filter: Filter | undefined,
+    filterQuery: string
+  ) {
     this.awaitOperation(requestId, {
       type: "filter",
       data: { filter, filterQuery },
