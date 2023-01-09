@@ -1,5 +1,5 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid/src/grid-model";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { partition, Row } from "@finos/vuu-utils";
 import {
   AndFilter,
