@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.finos.vuu</groupId>
     <artifactId>vuu-parent</artifactId>
-    <version>0.4.4-SNAPSHOT</version>
+    <version>0.4.43-SNAPSHOT</version>
     <name>vuu-parent</name>
     <description>Vuu - A View Server in Scala and React</description>
     <url>https://github.com/finos/vuu</url>
@@ -30,7 +30,7 @@
 
     <scm>
         <connection>scm:git:https://github.com/finos/vuu.git</connection>
-        <developerConnection>scm:git:https://github.com/finos/vuu.git</developerConnection>
+        <developerConnection>scm:git:ssh://git@github.com/finos/vuu.git</developerConnection>
         <url>https://github.com/finos/vuu/tree/master</url>
         <tag>HEAD</tag>
     </scm>
