@@ -55,10 +55,13 @@ object SimulMain extends App with StrictLogging {
       .withSsl(certPath, keyPath)
       //don't leave me on in prod pls....
       .withDirectoryListings(true)
+      .withBindAddress("0.0.0.0")
       .withPort(8443),
     VuuWebSocketOptions()
       .withUri("websocket")
-      .withWsPort(8090),
+      .withWsPort(8090)
+      .withWss(certPath, keyPath)
+      .withBindAddress("0.0.0.0"),
     VuuSecurityOptions()
       .withAuthenticator(authenticator)
       .withLoginValidator(new AlwaysHappyLoginValidator),

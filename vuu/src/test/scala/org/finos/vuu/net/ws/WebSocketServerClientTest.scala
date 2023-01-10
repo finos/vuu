@@ -1,7 +1,7 @@
 package org.finos.vuu.net.ws
 
 import org.finos.vuu.client.ClientHelperFns.awaitMsgBody
-import org.finos.vuu.core.CoreServerApiHander
+import org.finos.vuu.core.{CoreServerApiHander, VuuWebSocketOptions, VuuWebSocketOptionsImpl}
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net._
@@ -45,8 +45,13 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
       
       val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
 
+      val options = VuuWebSocketOptions.apply()
+        .withWsPort(18090)
+        .withBindAddress("0.0.0.0")
+        //.withWss()
+
       //order of creation here is important
-      val server = new WebSocketServer(18090, factory)
+      val server = new WebSocketServer(options, factory)
 
       val client = new WebSocketClient("ws://localhost:8090/websocket", 18090)
       implicit val vsClient = new WebSocketViewServerClient(client, JsonVsSerializer)
