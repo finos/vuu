@@ -1,13 +1,14 @@
-export * from "./chest-of-drawers";
-export { default as Component } from "./Component";
-export * from "./common-types";
 export * from "@finos/vuu-popups/src/dialog";
-export * from "./DraggableLayout";
+export * from "./chest-of-drawers";
+export * from "./common-types";
+export { default as Component } from "./Component";
 export * from "./drag-drop";
+export * from "./DraggableLayout";
 export * from "./flexbox";
 export { Action } from "./layout-action";
 export * from "./layout-header";
 export * from "./layout-provider";
+export * from "./layout-view";
 export * from "./palette";
 export * from "./placeholder";
 export * from "./registry";
@@ -16,4 +17,4 @@ export * from "./stack";
 export * from "./tools";
 export * from "./use-persistent-state";
 export * from "./utils";
-export * from "./layout-view";
+
