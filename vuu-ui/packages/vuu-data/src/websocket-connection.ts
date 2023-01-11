@@ -99,7 +99,7 @@ const makeConnectionIn = (
 const createWebsocket = (connectionString: string): Promise<WebSocket> =>
   new Promise((resolve, reject) => {
     //TODO add timeout
-    const ws = new WebSocket("ws://" + connectionString);
+    const ws = new WebSocket("wss://" + connectionString);
     ws.onopen = () => resolve(ws);
     ws.onerror = (evt) => reject(evt);
   });
