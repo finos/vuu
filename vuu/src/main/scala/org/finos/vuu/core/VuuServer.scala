@@ -52,19 +52,19 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
 
   //order of creation here is important
-  val server = new WebSocketServer(config.wsOptions.wsPort, factory)
+  val server = new WebSocketServer(config.wsOptions, factory)
 
-  val restServices: List[RestService] = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
+  private val restServices: List[RestService] = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
 
   val httpServer: Http2Server = VuuHttp2Server(config.httpOptions, restServices)
 
-  val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
+  private val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
 
-  val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = 1)
+  private val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = 1)
   lifecycle(handlerRunner).dependsOn(joinProviderRunner)
 
-  val viewPortRunner = if(config.threading.viewportThreads == 1){
+  private val viewPortRunner = if(config.threading.viewportThreads == 1){
     new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
   }else {
       new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threading.viewportThreads}]", config.threading.viewportThreads, () =>  {
@@ -77,13 +77,14 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   lifecycle(viewPortRunner).dependsOn(server)
 
-  val groupByRunner = if(config.threading.treeThreads == 1) {
+  private val groupByRunner: LifeCycleRunner = if (config.threading.treeThreads == 1) {
     new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce())
-  }else{
-    new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner-Tree[${config.threading.treeThreads}]", config.threading.treeThreads, () =>  {
-      viewPortContainer.getViewPorts().filter(vp => vp.isEnabled && vp.hasGroupBy).map(vp => ViewPortTreeWorkItem(vp, viewPortContainer)) })
-    {
+  } else {
+    new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner-Tree[${config.threading.treeThreads}]", config.threading.treeThreads, () => {
+      viewPortContainer.getViewPorts().filter(vp => vp.isEnabled && vp.hasGroupBy).map(vp => ViewPortTreeWorkItem(vp, viewPortContainer))
+    }) {
       override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortTreeCallable(r, viewPortContainer)
+
       override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = ViewPortTreeWorkItem(r.get(), viewPortContainer)
     }
   }

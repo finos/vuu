@@ -54,7 +54,7 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
       val httpOpts = new HttpServerOptions()
 
       PathChecker.throwOnFileNotExists(options.certPath, "vuu.certPath, doesn't appear to exist")
-      PathChecker.throwOnFileNotExists(options.certPath, "vuu.keyPath, doesn't appear to exist")
+      PathChecker.throwOnFileNotExists(options.keyPath, "vuu.keyPath, doesn't appear to exist")
 
       logger.info("Loading SSL Cert from: " + new File(options.certPath).getAbsolutePath)
       logger.info("Loading SSL Key from: " + new File(options.keyPath).getAbsolutePath)
