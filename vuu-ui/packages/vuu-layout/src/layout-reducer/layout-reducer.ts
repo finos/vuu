@@ -86,7 +86,7 @@ const setChildProps = (state: ReactElement, { path, type }: MaximizeAction) => {
 const dragDrop = (
   layoutRoot: ReactElement,
   action: DragDropAction
-): ReactElement =>{
+): ReactElement => {
   console.log("drag drop");
   const {
     draggedReactElement: newComponent,
