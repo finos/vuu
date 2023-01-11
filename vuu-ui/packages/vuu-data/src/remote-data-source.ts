@@ -4,6 +4,7 @@ import {
   VuuRange,
   VuuTable,
   VuuSort,
+  VuuMenuRpcRequest,
 } from "@finos/vuu-protocol-types";
 import { EventEmitter, uuid } from "@finos/vuu-utils";
 import { Filter } from "@finos/vuu-filter-types";
@@ -15,7 +16,8 @@ import {
   SubscribeCallback,
   SubscribeProps,
 } from "./data-source";
-import { VuuUIMessageOutMenuRPC } from "./vuuUIMessageTypes";
+import { getServerUrl } from "./hooks/useServerConnection";
+import { MenuRpcResponse } from "./vuuUIMessageTypes";
 
 // const log = (message: string, ...rest: unknown[]) => {
 //   console.log(
@@ -26,7 +28,7 @@ import { VuuUIMessageOutMenuRPC } from "./vuuUIMessageTypes";
 // };
 
 /*-----------------------------------------------------------------
- A RemoteDataView manages a single subscription via the ServerProxy
+ A RemoteDataSource manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
 export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
@@ -71,7 +73,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.columns = columns;
     this.viewport = viewport;
 
-    this.url = serverUrl || configUrl;
+    this.url = serverUrl ?? configUrl ?? getServerUrl();
     this.visualLink = visualLink;
 
     this.status = "initialising";
@@ -84,8 +86,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.initialFilterQuery = filterQuery;
     this.initialAggregations = aggregations;
 
-    if (!serverUrl && !configUrl) {
-      throw Error("RemoteDataSource expects serverUrl or configUrl");
+    if (!this.url) {
+      throw Error(
+        "RemoteDataSource expects serverUrl or configUrl as argument or that serverUrl has already been set"
+      );
     }
 
     this.pendingServer = ConnectionManager.connect(this.url);
@@ -232,18 +236,18 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     return this;
   }
 
-  setColumns(columns: string[]) {
-    this.columns = columns;
-    return this;
-  }
-
   setSubscribedColumns(columns: string[]) {
-    if (
-      columns.length !== this.columns.length ||
-      !columns.every((columnName) => this.columns.includes(columnName))
-    ) {
+    if (this.viewport) {
       this.columns = columns;
-      // ???
+
+      const message = {
+        viewport: this.viewport,
+        type: "setColumns",
+        columns,
+      } as const;
+      if (this.server) {
+        this.server.send(message);
+      }
     }
   }
 
@@ -285,9 +289,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   //TODO I think we should have a clear filter for API clarity
   filter(filter: Filter | undefined, filterQuery: string) {
     if (this.viewport) {
-      // log(`filter ${filterQuery}`, {
-      //   filter,
-      // });
       const message = {
         viewport: this.viewport,
         type: "filterQuery",
@@ -397,12 +398,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  async menuRpcCall(rpcRequest: Omit<VuuUIMessageOutMenuRPC, "viewport">) {
+  async menuRpcCall(rpcRequest: Omit<VuuMenuRpcRequest, "vpId">) {
     if (this.viewport) {
-      return this.server?.rpcCall({
-        viewport: this.viewport,
+      return this.server?.rpcCall<MenuRpcResponse>({
+        vpId: this.viewport,
         ...rpcRequest,
-      });
+      } as VuuMenuRpcRequest);
     }
   }
 

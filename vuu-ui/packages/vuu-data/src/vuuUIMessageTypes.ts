@@ -1,13 +1,17 @@
-import { msgType } from "./constants";
 import {
+  ClientToServerTableList,
+  ClientToServerTableMeta,
+  MenuRpcAction,
+  TypeAheadMethod,
   VuuAggregation,
   VuuColumns,
-  VuuMenuContext,
+  VuuGroupBy,
   VuuRange,
   VuuSortCol,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { Filter } from "@finos/vuu-filter-types";
+import { WithRequestId } from "./message-utils";
 
 export type ConnectionStatus =
   | "connecting"
@@ -31,11 +35,11 @@ export interface ServerProxySubscribeMessage {
   aggregations: VuuAggregation[];
   bufferSize?: number;
   columns: VuuColumns;
-  filter: any;
-  filterQuery: any;
-  groupBy: any;
+  filter?: Filter;
+  filterQuery?: string;
+  groupBy?: VuuGroupBy;
   range: VuuRange;
-  sort: any;
+  sort?: VuuSortCol[];
   table: VuuTable;
   title?: string;
   viewport: string;
@@ -69,13 +73,6 @@ export interface VuuUIMessageInRPC {
 export const messageHasResult = (msg: object): msg is VuuUIMessageInRPC =>
   typeof (msg as VuuUIMessageInRPC).result !== "undefined";
 
-export type RpcResponse = {
-  action: {
-    type: "OPEN_DIALOG_ACTION";
-    table: VuuTable;
-  };
-};
-
 export interface VuuUIMessageInTableList {
   requestId: string;
   type: "TABLE_LIST_RESP";
@@ -88,10 +85,8 @@ export interface VuuUIMessageInTableMeta {
   table: VuuTable;
   type: "TABLE_META_RESP";
 }
-export interface VuuUIMessageInMenu {
-  action: {
-    table: VuuTable;
-  };
+export interface MenuRpcResponse {
+  action: MenuRpcAction;
   requestId: string;
   tableAlreadyOpen?: boolean;
   type: "VIEW_PORT_MENU_RESP";
@@ -101,7 +96,7 @@ export type VuuUIMessageIn =
   | VuuUIMessageInConnected
   | VuuUIMessageInWorkerReady
   | VuuUIMessageInRPC
-  | VuuUIMessageInMenu
+  | MenuRpcResponse
   | VuuUIMessageInTableList
   | VuuUIMessageInTableMeta;
 
@@ -136,6 +131,10 @@ export interface RequestMessage {
   requestId: string;
 }
 
+export interface VuuUIMessageOutColumns extends ViewportMessageOut {
+  type: "setColumns";
+  columns: string[];
+}
 export interface VuuUIMessageOutViewRange extends ViewportMessageOut {
   type: "setViewRange";
   range: {
@@ -195,26 +194,19 @@ export interface VuuUIMessageOutSuspend extends ViewportMessageOut {
 }
 
 export interface VuuUIMessageOutFilterQuery extends ViewportMessageOut {
-  filter?: Filter;
+  filter: Filter | undefined;
   filterQuery: string;
   type: "filterQuery";
 }
 export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
-  groupBy: any[];
+  groupBy: VuuGroupBy;
   type: "groupBy";
-}
-
-export interface VuuUIMessageOutMenuRPC
-  extends RequestMessage,
-    ViewportMessageOut {
-  context: VuuMenuContext;
-  rpcName: string;
-  type: "MENU_RPC_CALL";
 }
 
 export type VuuUIMessageOutViewport =
   | VuuUIMessageOutAggregate
   | VuuUIMessageOutCloseTreeNode
+  | VuuUIMessageOutColumns
   | VuuUIMessageOutCreateLink
   | VuuUIMessageOutFilterQuery
   | VuuUIMessageOutDisable
@@ -228,44 +220,22 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutSelectNone
   | VuuUIMessageOutSuspend
   | VuuUIMessageOutSort
-  | VuuUIMessageOutViewRange
-  | VuuUIMessageOutMenuRPC;
+  | VuuUIMessageOutViewRange;
 
 export const isViewporttMessage = (
   msg: object
 ): msg is VuuUIMessageOutViewport => "viewport" in msg;
 
-export interface VuuUIMessageOutRPC extends RequestMessage {
-  method: string;
-  params: unknown[];
+export interface TypeAheadRpcRequest {
+  method: TypeAheadMethod;
+  params: [VuuTable, ...string[]];
   type: "RPC_CALL";
 }
-
-export type VuuUIMessageOutRpcCall =
-  | VuuUIMessageOutRPC
-  | VuuUIMessageOutMenuRPC;
-
-export interface VuuUIMessageOutTableList extends RequestMessage {
-  type: "GET_TABLE_LIST";
-}
-
-export interface VuuUIMessageOutTableMeta extends RequestMessage {
-  type: "GET_TABLE_META";
-  table: VuuTable;
-}
-
-export type VuuUIMessageOutAsyncRequest =
-  | VuuUIMessageOutTableList
-  | VuuUIMessageOutTableMeta;
-
-export const isAsyncRequestMessage = (
-  msg: object
-): msg is VuuUIMessageOutAsyncRequest => "requestId" in msgType;
 
 export type VuuUIMessageOut =
   | VuuUIMessageOutConnect
   | VuuUIMessageOutSubscribe
   | VuuUIMessageOutUnsubscribe
-  | VuuUIMessageOutAsyncRequest
   | VuuUIMessageOutViewport
-  | VuuUIMessageOutRpcCall;
+  | WithRequestId<ClientToServerTableList>
+  | WithRequestId<ClientToServerTableMeta>;

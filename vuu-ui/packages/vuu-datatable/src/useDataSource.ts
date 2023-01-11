@@ -6,7 +6,6 @@ import {
 } from "@finos/vuu-data";
 import { VuuDataRow, VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
-import { useViewContext } from "@finos/vuu-layout";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const { RENDER_IDX } = metadataKeys;
@@ -34,7 +33,6 @@ export function useDataSource({
   onSubscribed,
   range = { from: 0, to: 0 },
 }: DataSourceHookProps) {
-  const { title } = useViewContext();
   const [, forceUpdate] = useState<unknown>(null);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);

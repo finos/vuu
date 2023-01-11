@@ -1,6 +1,5 @@
 import fs from "fs";
 import { readPackageJson } from "./utils.mjs";
-import { exec } from "child_process";
 import { execWait } from "./utils.mjs";
 
 const packageJson = readPackageJson();

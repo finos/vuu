@@ -9,7 +9,6 @@ import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
 
 import {
   ConfigChangeMessage,
-  createDataSource,
   DataSourceMenusMessage,
   DataSourceVisualLinksMessage,
   RemoteDataSource,
@@ -33,7 +32,7 @@ export interface FilteredGridProps extends FeatureProps {
 const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
   const { id, dispatch, load, purge, save, loadSession, saveSession } =
     useViewContext();
-  const config = useMemo(() => load(), [load]);
+  const config = useMemo(() => load?.(), [load]);
   const { handleRpcResponse } = useShellContext();
   const [currentFilter, setCurrentFilter] = useState<Filter>();
 
@@ -43,12 +42,18 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
   });
 
   const dataSource: RemoteDataSource = useMemo(() => {
-    let ds = loadSession("data-source");
+    let ds = loadSession?.("data-source");
     if (ds) {
       return ds;
     }
-    ds = createDataSource({ id, table: schema.table, schema, config });
-    saveSession(ds, "data-source");
+    const columns = schema.columns.map((col) => col.name);
+    ds = new RemoteDataSource({
+      viewport: id,
+      columns,
+      table: schema.table,
+      ...config,
+    });
+    saveSession?.(ds, "data-source");
     return ds;
   }, [config, id, loadSession, saveSession, schema]);
 
@@ -99,7 +104,7 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
                 </ToolbarButton>
               ),
             });
-            save(update, "visual-link");
+            save?.(update, "visual-link");
           }
           break;
 
@@ -109,7 +114,7 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
               type: "remove-toolbar-contribution",
               location: "post-title",
             });
-            purge("visual-link");
+            purge?.("visual-link");
           }
           break;
 
@@ -124,12 +129,12 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
 
   const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction } =
     useVuuMenuActions({
-      vuuMenu: loadSession("vs-context-menu"),
+      vuuMenu: loadSession?.("vs-context-menu"),
       dataSource,
       onConfigChange: handleConfigChange,
       onRpcResponse: handleRpcResponse,
-      visualLink: load("visual-link"),
-      visualLinks: loadSession("visual-links"),
+      visualLink: load?.("visual-link"),
+      visualLinks: loadSession?.("visual-links"),
     });
 
   const handleSubmitFilter = useCallback(

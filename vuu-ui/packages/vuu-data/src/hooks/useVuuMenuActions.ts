@@ -3,6 +3,7 @@ import {
   VuuMenu,
   VuuMenuContext,
   VuuMenuItem,
+  VuuMenuRpcRequest,
 } from "@finos/vuu-protocol-types";
 import { useCallback, useRef } from "react";
 import {
@@ -13,7 +14,7 @@ import {
   DataSourceVisualLinksMessage,
 } from "../data-source";
 import { LinkWithLabel } from "../server-proxy/server-proxy";
-import { RpcResponse } from "../vuuUIMessageTypes";
+import { MenuRpcResponse } from "../vuuUIMessageTypes";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
 
@@ -22,6 +23,11 @@ export type VuuContextMenuDescriptor = {
   label: string;
   options?: unknown;
 };
+
+type DataSourceVuuMenuMessage =
+  | DataSourceVisualLinkCreatedMessage
+  | DataSourceMenusMessage
+  | DataSourceVisualLinksMessage;
 
 const contextSortPriorities = {
   "selected-rows": 0,
@@ -55,6 +61,29 @@ const contextCompatibleWithLocation = (
   }
 };
 
+const getMenuType = (context: VuuMenuContext) => {
+  switch (context) {
+    case "selected-rows":
+      return "VIEW_PORT_MENUS_SELECT_RPC";
+    case "row":
+      return "VIEW_PORT_MENU_ROW_RPC";
+    case "cell":
+      return "VIEW_PORT_MENU_CELL_RPC";
+    case "grid":
+      return "VIEW_PORT_MENU_TABLE_RPC";
+    default:
+      throw Error("No RPC command for ${msgType} / ${context}");
+  }
+};
+
+const getMenuRpcRequest = ({ context, rpcName }: VuuMenuItem) => {
+  return {
+    rpcName,
+    type: getMenuType(context),
+  } as Omit<VuuMenuRpcRequest, "vpId">;
+};
+
+// Actions that inform state - state that we want to persist
 const CONFIG_ACTIONS = [
   "VIEW_PORT_MENUS_RESP",
   "VP_VISUAL_LINKS_RESP",
@@ -64,8 +93,8 @@ const CONFIG_ACTIONS = [
 
 export interface ViewServerHookResult {
   buildViewserverMenuOptions: any;
-  dispatchGridAction: any;
-  handleMenuAction: any;
+  dispatchGridAction: (action: DataSourceVuuMenuMessage) => boolean;
+  handleMenuAction: (type: string, options: unknown) => boolean;
 }
 
 export interface VuuMenuActionHookProps {
@@ -73,7 +102,7 @@ export interface VuuMenuActionHookProps {
   vuuMenu?: VuuMenu;
   dataSource: DataSource;
   onConfigChange?: ConfigChangeHandler;
-  onRpcResponse?: (response: RpcResponse) => void;
+  onRpcResponse?: (response?: MenuRpcResponse) => void;
   /** The VisualLink currently in force  */
   visualLink?: DataSourceVisualLinkCreatedMessage;
   /** All available visual links */
@@ -90,7 +119,7 @@ export const useVuuMenuActions = ({
 }: VuuMenuActionHookProps): ViewServerHookResult => {
   const contextMenu = useRef(vuuMenu);
 
-  const buildViewserverMenuOptions = useCallback(
+  const buildVuuMenuOptions = useCallback(
     (location, options) => {
       const { selectedRowCount = 0 } = options;
       const descriptors: VuuContextMenuDescriptor[] = [];
@@ -108,23 +137,21 @@ export const useVuuMenuActions = ({
       }
 
       if (contextMenu.current) {
-        contextMenu.current.menus
-          .sort(byContext)
-          .forEach(({ name, filter, rpcName, context }) => {
-            if (
-              contextCompatibleWithLocation(location, context, selectedRowCount)
-            ) {
-              descriptors.push({
-                label: name,
-                action: "MENU_RPC_CALL",
-                options: {
-                  context,
-                  filter,
-                  rpcName,
-                },
-              });
-            }
-          });
+        contextMenu.current.menus.sort(byContext).forEach((menu) => {
+          if (
+            contextCompatibleWithLocation(
+              location,
+              menu.context,
+              selectedRowCount
+            )
+          ) {
+            descriptors.push({
+              label: menu.name,
+              action: "MENU_RPC_CALL",
+              options: menu,
+            });
+          }
+        });
       }
 
       return descriptors;
@@ -133,27 +160,24 @@ export const useVuuMenuActions = ({
   );
 
   const dispatchGridAction = useCallback(
-    (
-      action:
-        | DataSourceVisualLinkCreatedMessage
-        | DataSourceMenusMessage
-        | DataSourceVisualLinksMessage
-    ) => {
+    (action: DataSourceVuuMenuMessage) => {
       if (CONFIG_ACTIONS.includes(action.type)) {
         if (action.type === "VIEW_PORT_MENUS_RESP") {
           contextMenu.current = action.menu;
         }
         return onConfigChange?.(action), true;
       }
+      return false;
     },
     [onConfigChange]
   );
 
   const handleMenuAction = useCallback(
-    (type, options) => {
+    (type: string, options: unknown) => {
       if (type === "MENU_RPC_CALL") {
-        dataSource.menuRpcCall({ type, ...options }).then((result) => {
-          onRpcResponse && onRpcResponse(result);
+        const rpcRequest = getMenuRpcRequest(options as VuuMenuItem);
+        dataSource.menuRpcCall(rpcRequest).then((rpcResponse) => {
+          onRpcResponse && onRpcResponse(rpcResponse);
         });
         return true;
       } else if (type === "link-table") {
@@ -161,15 +185,16 @@ export const useVuuMenuActions = ({
         return dataSource.createLink(options), true;
       } else {
         console.log(
-          `useViewServer handleMenuAction,  can't handle action type`
+          `useViewServer handleMenuAction,  can't handle action type ${type}`
         );
       }
+      return false;
     },
     [dataSource, onRpcResponse]
   );
 
   return {
-    buildViewserverMenuOptions,
+    buildViewserverMenuOptions: buildVuuMenuOptions,
     dispatchGridAction,
     handleMenuAction,
   };

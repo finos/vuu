@@ -4,7 +4,7 @@ import {
   DataSourceRow,
   RemoteDataSource,
   useDataSource,
-  useRpcService,
+  useTypeaheadSuggestions,
 } from "@finos/vuu-data";
 import { metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
@@ -85,7 +85,6 @@ export const DefaultList = () => {
     debugger;
   }
   const selectedRow = data2.find((row) => row[7]) ?? null;
-  const makeRpcCall = useRpcService();
 
   useEffect(() => {
     const connect = async () => {
@@ -96,15 +95,15 @@ export const DefaultList = () => {
     connect();
   }, []);
 
+  const getTypeaheadSuggestions = useTypeaheadSuggestions();
+
   const load = useCallback(async () => {
-    const data = await makeRpcCall({
-      service: "TypeAheadRpcHandler",
-      type: "RPC_CALL",
-      method: "getUniqueFieldValues",
-      params: [{ table: "instruments", module: "SIMUL" }, "description"],
-    });
+    const data = await getTypeaheadSuggestions([
+      { table: "instruments", module: "SIMUL" },
+      "description",
+    ]);
     setData(data);
-  }, [makeRpcCall]);
+  }, [getTypeaheadSuggestions]);
 
   const handleViewportScroll = useCallback(
     (firstVisibleRowIndex: number, lastVisibleRowIndex: number) => {

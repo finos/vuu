@@ -8,7 +8,6 @@ const classBase = "vuuDataTable";
 const { RENDER_IDX } = metadataKeys;
 
 export const RowBasedTable = ({
-  columnMap,
   columns,
   data,
   onHeaderCellDragStart,
@@ -44,7 +43,6 @@ export const RowBasedTable = ({
       <tbody>
         {data?.map((row, i) => (
           <TableRow
-            columnMap={columnMap}
             columns={columns}
             height={rowHeight}
             index={i}

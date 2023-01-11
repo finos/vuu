@@ -7,14 +7,14 @@
   "workspaces": [
     "packages/**",
     "sample-apps/**",
-    "showcase",
-    "salt/packages/lab"
+    "showcase"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.jsx",
     "prettier": "prettier './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "format": "prettier --write './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "build": "node ./scripts/build-all.mjs",
+    "build:packages": "yarn build --cjs && yarn type-defs",
     "build:salt": "node ./scripts/build-salt.mjs",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "view-bundle": "node ./scripts/visualize-bundle.mjs",

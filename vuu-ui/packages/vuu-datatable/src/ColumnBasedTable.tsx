@@ -9,7 +9,6 @@ const classBase = "vuuDataTable";
 const { RENDER_IDX } = metadataKeys;
 
 export const ColumnBasedTable = ({
-  columnMap,
   columns,
   data,
   headerHeight,
@@ -50,14 +49,11 @@ export const ColumnBasedTable = ({
             </tr>
             {data.map((row, j) => (
               <TableRow
-                columnMap={columnMap}
                 columns={[column]}
-                columnIndex={i}
                 height={rowHeight}
                 index={j}
                 key={row[RENDER_IDX]}
                 row={row}
-                tableLayout="column"
               />
             ))}
             <tr className="vuuTable-filler" />

@@ -10,8 +10,9 @@ import {
   useState,
 } from "react";
 import { ColumnPicker } from "../column-picker";
+import { GridSettingsPanel } from "./GridSettingsPanel";
 import { ColumnSettingsPanel } from "./ColumnSettingsPanel";
-import { useColumns } from "./useColumns";
+import { useGridSettings } from "./useGridSettings";
 
 import "./DatagridSettingsPanel.css";
 import { Stack, StackProps } from "@finos/vuu-layout";
@@ -48,12 +49,9 @@ export const DatagridSettingsPanel = ({
 }: DatagridSettingsPanelProps) => {
   console.log(`DatagridSettingsPanel render`);
 
-  const [config, setConfig] = useState<GridConfig>(gridConfig);
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
-  const { columns: chosenColumns, dispatchColumnAction } = useColumns(
-    gridConfig.columns
-  );
+  const { gridSettings, dispatchColumnAction } = useGridSettings(gridConfig);
 
   const [selectedColumnName, setSelectedColumnName] = useState<string | null>(
     null
@@ -67,15 +65,9 @@ export const DatagridSettingsPanel = ({
 
   const handleApply = useCallback(
     (evt: MouseEvent, closePanel = false) => {
-      onConfigChange?.(
-        {
-          ...config,
-          columns: chosenColumns,
-        },
-        closePanel
-      );
+      onConfigChange?.(gridSettings, closePanel);
     },
-    [chosenColumns, config, onConfigChange]
+    [gridSettings, onConfigChange]
   );
 
   const handleTabSelectionChanged = useCallback((selectedTabIndex: number) => {
@@ -90,7 +82,8 @@ export const DatagridSettingsPanel = ({
   const selectedColumn =
     selectedColumnName === null
       ? null
-      : chosenColumns.find((col) => col.name === selectedColumnName) ?? null;
+      : gridSettings.columns.find((col) => col.name === selectedColumnName) ??
+        null;
 
   const tabstripProps: StackProps["TabstripProps"] = {
     activeTabIndex: selectedTabIndex,
@@ -111,9 +104,11 @@ export const DatagridSettingsPanel = ({
         onTabSelectionChanged={handleTabSelectionChanged}
         showTabs
       >
-        <Panel className={`${classBase}-gridSettings`} title="Grid Settings">
-          <Text styleAs="h4">Grid Settings</Text>
-        </Panel>
+        <GridSettingsPanel
+          config={gridSettings}
+          dispatchColumnAction={dispatchColumnAction}
+          title="Grid Settings"
+        />
 
         <div
           className={`${classBase}-columnPanels`}
@@ -122,7 +117,7 @@ export const DatagridSettingsPanel = ({
         >
           <ColumnPicker
             availableColumns={availableColumns}
-            chosenColumns={chosenColumns}
+            chosenColumns={gridSettings.columns}
             dispatchColumnAction={dispatchColumnAction}
             onSelectionChange={handleColumnSelected}
             selectedColumn={selectedColumn}

@@ -2,7 +2,7 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Dropdown, Panel, PanelProps } from "@heswell/salt-lab";
 import cx from "classnames";
 import { Dispatch, useMemo } from "react";
-import { ColumnAction } from "../settings-panel/useColumns";
+import { ColumnAction } from "../settings-panel/useGridSettings";
 import { NumericColumnPanel } from "./NumericColumnPanel";
 import { StringColumnPanel } from "./StringColumnPanel";
 

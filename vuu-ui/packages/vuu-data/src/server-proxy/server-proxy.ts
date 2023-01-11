@@ -1,15 +1,15 @@
 import * as Message from "./messages";
 import { Viewport } from "./viewport";
-import { getRpcService } from "./rpc-services";
+import { getRpcServiceModule as getRpcServiceModule } from "./rpc-services";
 import { Connection } from "../connectionTypes";
 import {
   ServerToClientMessage,
   ClientToServerMessage,
   VuuColumnDataType,
   VuuLink,
-  VuuMenuContext,
   VuuTable,
-  ClientToServerMenuRPCType,
+  VuuRpcRequest,
+  VuuMenuRpcRequest,
 } from "@finos/vuu-protocol-types";
 import {
   isViewporttMessage as isViewportMessage,
@@ -21,12 +21,8 @@ import {
   VuuUIMessageOutAggregate,
   VuuUIMessageOutConnect,
   VuuUIMessageOutCreateLink,
-  VuuUIMessageOutDisable,
-  VuuUIMessageOutEnable,
   VuuUIMessageOutFilterQuery,
   VuuUIMessageOutGroupby,
-  VuuUIMessageOutMenuRPC,
-  VuuUIMessageOutRPC,
   VuuUIMessageOutOpenTreeNode,
   VuuUIMessageOutCloseTreeNode,
   VuuUIMessageOutSelect,
@@ -34,8 +30,14 @@ import {
   VuuUIMessageOutSubscribe,
   VuuUIMessageOutUnsubscribe,
   VuuUIMessageOutViewRange,
+  VuuUIMessageOutColumns,
 } from "../vuuUIMessageTypes";
 import { DataSourceCallbackMessage } from "../data-source";
+import {
+  isVuuMenuRpcRequest,
+  stripRequestId,
+  WithRequestId,
+} from "../message-utils";
 
 export type PostMessageToClientCallback = (
   message: VuuUIMessageIn | DataSourceCallbackMessage
@@ -58,18 +60,6 @@ export const TEST_setRequestId = (id: number) => (_requestId = id);
 const nextRequestId = () => `${_requestId++}`;
 const EMPTY_ARRAY: unknown[] = [];
 const DEFAULT_OPTIONS: MessageOptions = {};
-
-const getMenuRPCType = (context: VuuMenuContext): ClientToServerMenuRPCType => {
-  // prettier-ignore
-  switch(context){
-    case "selected-rows": return "VIEW_PORT_MENUS_SELECT_RPC";
-    case "row": return "VIEW_PORT_MENU_ROW_RPC";
-    case "cell": return "VIEW_PORT_MENU_CELL_RPC";
-    case "grid": return "VIEW_PORT_MENU_TABLE_RPC";
-    default:
-      throw Error("No RPC command for ${msgType} / ${context}");
-    }
-};
 
 function addLabelsToLinks(
   links: VuuLink[],
@@ -250,6 +240,13 @@ export class ServerProxy {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
+  private setColumns(viewport: Viewport, message: VuuUIMessageOutColumns) {
+    const requestId = nextRequestId();
+    const { columns } = message;
+    const request = viewport.columnRequest(requestId, columns);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+
   private select(viewport: Viewport, message: VuuUIMessageOutSelect) {
     const requestId = nextRequestId();
     const { selected } = message;
@@ -258,13 +255,13 @@ export class ServerProxy {
   }
 
   //TODO when do we ever checj the disabled state ?
-  private disableViewport(viewport: Viewport, message: VuuUIMessageOutDisable) {
+  private disableViewport(viewport: Viewport) {
     const requestId = nextRequestId();
     const request = viewport.disable(requestId);
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
-  private enableViewport(viewport: Viewport, message: VuuUIMessageOutEnable) {
+  private enableViewport(viewport: Viewport) {
     const requestId = nextRequestId();
     const request = viewport.enable(requestId);
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
@@ -331,51 +328,44 @@ export class ServerProxy {
     this.sendMessageToServer(request, requestId);
   }
 
-  private menuRpcCall(viewport: Viewport, message: VuuUIMessageOutMenuRPC) {
-    if (viewport.serverViewportId) {
-      const { context, rpcName } = message;
+  private menuRpcCall(message: WithRequestId<VuuMenuRpcRequest>) {
+    const viewport = this.getViewportForClient(message.vpId, false);
+    if (viewport?.serverViewportId) {
+      const [requestId, rpcRequest] =
+        stripRequestId<VuuMenuRpcRequest>(message);
       this.sendMessageToServer(
         {
-          type: getMenuRPCType(context),
-          rpcName,
+          ...rpcRequest,
           vpId: viewport.serverViewportId,
         },
-        message.requestId
+        requestId
       );
     }
   }
 
-  private rpcCall(message: VuuUIMessageOutRPC) {
-    // below duplicated - tidy up
-    const { method, requestId, type } = message;
-    const [service, module] = getRpcService(method);
-    this.sendMessageToServer(
-      {
-        type,
-        service,
-        method,
-        params: message.params /*|| [viewport.serverViewportId]*/,
-        namedParams: {},
-      },
-      requestId,
-      { module }
-    );
+  private rpcCall(message: WithRequestId<VuuRpcRequest>) {
+    const [requestId, rpcRequest] = stripRequestId<VuuRpcRequest>(message);
+    const module = getRpcServiceModule(rpcRequest.service);
+    this.sendMessageToServer(rpcRequest, requestId, { module });
   }
 
   public handleMessageFromClient(
-    message: Exclude<
-      VuuUIMessageOut,
-      | VuuUIMessageOutConnect
-      | VuuUIMessageOutSubscribe
-      | VuuUIMessageOutUnsubscribe
-    >
+    message:
+      | Exclude<
+          VuuUIMessageOut,
+          | VuuUIMessageOutConnect
+          | VuuUIMessageOutSubscribe
+          | VuuUIMessageOutUnsubscribe
+        >
+      | WithRequestId<VuuRpcRequest>
+      | WithRequestId<VuuMenuRpcRequest>
   ) {
     if (isViewportMessage(message)) {
       if (message.type === "disable") {
         // Viewport may already have been unsubscribed
         const viewport = this.getViewportForClient(message.viewport, false);
         if (viewport !== null) {
-          return this.disableViewport(viewport, message);
+          return this.disableViewport(viewport);
         } else {
           return;
         }
@@ -399,7 +389,7 @@ export class ServerProxy {
           case "resume":
             return this.resumeViewport(viewport);
           case "enable":
-            return this.enableViewport(viewport, message);
+            return this.enableViewport(viewport);
           case "openTreeNode":
             return this.openTreeNode(viewport, message);
           case "closeTreeNode":
@@ -408,11 +398,13 @@ export class ServerProxy {
             return this.createLink(viewport, message);
           case "removeLink":
             return this.removeLink(viewport);
-          case "MENU_RPC_CALL":
-            return this.menuRpcCall(viewport, message);
+          case "setColumns":
+            return this.setColumns(viewport, message);
           default:
         }
       }
+    } else if (isVuuMenuRpcRequest(message)) {
+      return this.menuRpcCall(message);
     } else {
       const { type, requestId } = message;
       switch (type) {
@@ -441,12 +433,11 @@ export class ServerProxy {
   public sendIfReady(
     message: ClientToServerMessage["body"],
     requestId: string,
-    isReady: boolean = true,
-    options?: any
+    isReady = true
   ) {
     // TODO implement the message queuing in remote data view
     if (isReady) {
-      this.sendMessageToServer(message, requestId, options);
+      this.sendMessageToServer(message, requestId);
     } else {
       // TODO need to make sure we keep the requestId
       this.queuedRequests.push(message);
@@ -552,9 +543,11 @@ export class ServerProxy {
         break;
 
       case Message.SET_SELECTION_SUCCESS:
-        const viewport = this.viewports.get(body.vpId);
-        if (viewport) {
-          viewport.completeOperation(requestId);
+        {
+          const viewport = this.viewports.get(body.vpId);
+          if (viewport) {
+            viewport.completeOperation(requestId);
+          }
         }
         break;
 
@@ -745,11 +738,11 @@ export class ServerProxy {
         }
         break;
 
-      case Message.VIEW_PORT_MENU_RESP:
+      case "VIEW_PORT_MENU_RESP":
         {
           const { action } = body;
           this.postMessageToClient({
-            type: Message.VIEW_PORT_MENU_RESP,
+            type: "VIEW_PORT_MENU_RESP",
             action,
             tableAlreadyOpen: this.isTableOpen(action.table),
             requestId,
@@ -775,7 +768,7 @@ export class ServerProxy {
         break;
 
       default:
-        console.log(`handleMessageFromServer ${(body as any).type as string}.`);
+        console.log(`handleMessageFromServer ${body["type"]}.`);
     }
   }
 
@@ -799,7 +792,7 @@ export class ServerProxy {
   isTableOpen(table?: VuuTable) {
     if (table) {
       const tableName = table.table;
-      for (let viewport of this.viewports.values()) {
+      for (const viewport of this.viewports.values()) {
         if (!viewport.suspended && viewport.table.table === tableName) {
           return true;
         }

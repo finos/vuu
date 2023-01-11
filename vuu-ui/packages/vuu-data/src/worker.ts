@@ -5,6 +5,8 @@ import {
   isConnectionStatusMessage,
   VuuUIMessageOut,
 } from "./vuuUIMessageTypes";
+import { VuuMenuRpcRequest, VuuRpcRequest } from "@finos/vuu-protocol-types";
+import { WithRequestId } from "./message-utils";
 
 let server: ServerProxy;
 
@@ -50,7 +52,11 @@ function sendMessageToClient(message: any) {
 
 const handleMessageFromClient = async ({
   data: message,
-}: MessageEvent<VuuUIMessageOut>) => {
+}: MessageEvent<
+  | VuuUIMessageOut
+  | WithRequestId<VuuRpcRequest>
+  | WithRequestId<VuuMenuRpcRequest>
+>) => {
   switch (message.type) {
     case "connect":
       await connectToServer(message.url, message.token, postMessage);
