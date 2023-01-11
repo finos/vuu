@@ -23,7 +23,7 @@ export const FlexboxLayout = function FlexboxLayout(props: FlexboxLayoutProps) {
     [dispatch, path]
   );
 
-  return <Flexbox {...props} onSplitterMoved={handleSplitterMoved} ><></><></></Flexbox>;
+  return <Flexbox {...props} onSplitterMoved={handleSplitterMoved} />;
 };
 FlexboxLayout.displayName = 'Flexbox';
 
