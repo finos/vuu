@@ -113,7 +113,7 @@ function getLeadingResizeablePos(contentMeta: ContentMeta[], idx: number) {
 
 function getTrailingResizeablePos(contentMeta: ContentMeta[], idx: number) {
   let pos = idx,
-    resizeable = false
+    resizeable = false;
   const count = contentMeta.length;
   while (pos < count && !resizeable) {
     pos = pos + 1;
