@@ -30,7 +30,7 @@ export const useViewResize = ({
       mainRef.current.style.width = mainSize.current.width + "px";
     }
     resizeHandle.current = undefined;
-  }, []);
+  }, [mainRef]);
 
   const onResize = useCallback(
     ({ height, width }) => {

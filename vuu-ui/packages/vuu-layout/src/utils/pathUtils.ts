@@ -13,7 +13,6 @@ const removeFinalPathSegment = (path: string) => {
   }
 };
 
-// TODO isn't this equivalent to containerOf ?
 export function followPathToParent(
   source: ReactElement,
   path: string
@@ -29,14 +28,16 @@ export function followPathToParent(
 
 export function findTarget(
   source: LayoutModel,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   test: (props: any) => boolean
 ): LayoutModel | undefined {
   const { children, ...props } = getProps(source);
   if (test(props)) {
     return source;
-  } else if (React.Children.count(children) > 0) {
+  }
+  if (React.Children.count(children) > 0) {
     const array = React.isValidElement(children) ? [children] : children;
-    for (let child of array) {
+    for (const child of array) {
       const target = findTarget(child, test);
       if (target) {
         return target;
@@ -51,37 +52,32 @@ export function containerOf(
 ): LayoutModel | null {
   if (target === source) {
     return null;
-  } else {
-    const { path: sourcePath, children } = getProps(source);
-
-    let { idx, finalStep } = nextStep(sourcePath, getProp(target, "path"));
-    if (finalStep) {
-      return source;
-    } else if (children === undefined || children[idx] === undefined) {
-      return null;
-    } else {
-      return containerOf(children[idx], target);
-    }
   }
+  const { path: sourcePath, children } = getProps(source);
+  const { idx, finalStep } = nextStep(sourcePath, getProp(target, "path"));
+  if (finalStep) {
+    return source;
+  }
+  if (children === undefined || children[idx] === undefined) {
+    return null;
+  }
+  return containerOf(children[idx], target);
 }
 
-// Do not use React.Children.toArray,
-// it does not preserve keys
 export const getChild = (
   children: ReactElement[],
   idx: number
 ): ReactElement | undefined => {
-  // idx may be a nu,mber or string
   if (React.isValidElement(children) && idx == 0) {
     return children;
-  } else if (Array.isArray(children)) {
+  }
+  if (Array.isArray(children)) {
     return children[idx];
   }
 };
 
-// Use a path only to identify a component
 export function followPathToComponent(component: ReactElement, path: string) {
-  var paths = path.split(".");
+  const paths = path.split(".");
   let children = [component];
 
   const getChildren = (c: ReactElement) =>
@@ -94,9 +90,8 @@ export function followPathToComponent(component: ReactElement, path: string) {
     const child = children[idx];
     if (i === paths.length - 1) {
       return child;
-    } else {
-      children = getChildren(child);
     }
+    children = getChildren(child);
   }
 }
 
@@ -109,6 +104,7 @@ export function followPath(
   path: string,
   throwIfNotFound: true
 ): ReactElement;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function followPath(source: any, path: any, throwIfNotFound = false) {
   const { "data-path": dataPath, path: sourcePath = dataPath } =
     getProps(source);
@@ -125,7 +121,7 @@ export function followPath(source: any, path: any, throwIfNotFound = false) {
   let target = source;
   const paths = route.split(".");
 
-  for (var i = 0; i < paths.length; i++) {
+  for (let i = 0; i < paths.length; i++) {
     if (React.Children.count(target.props.children) === 0) {
       const message = `element at 0.${paths
         .slice(0, i)
@@ -191,7 +187,7 @@ export function nextLeaf(root: ReactElement, path: string) {
 }
 
 export function previousLeaf(root: ReactElement, path: string) {
-  let pathIndices = path.split(".").map((idx) => parseInt(idx, 10));
+  const pathIndices = path.split(".").map((idx) => parseInt(idx, 10));
   let lastIdx = pathIndices.pop();
   let parent = followPathToParent(root, path);
   if (parent != null && typeof lastIdx === "number") {
@@ -205,16 +201,12 @@ export function previousLeaf(root: ReactElement, path: string) {
           root,
           getProp(parent, "path")
         ) as ReactElement;
-        // pathIndices = nextParent.props.path
-        //   .split(".")
-        //   .map((idx) => parseInt(idx, 10));
         if (lastIdx > 0) {
           const nextStep = parent.props.children[lastIdx - 1];
           if (isContainer(typeOf(nextStep) as string)) {
             return lastLeaf(nextStep);
-          } else {
-            return nextStep;
           }
+          return nextStep;
         }
       }
     }
@@ -226,18 +218,16 @@ function firstLeaf(layoutRoot: ReactElement): ReactElement {
   if (isContainer(typeOf(layoutRoot) as string)) {
     const { children } = layoutRoot.props || layoutRoot;
     return firstLeaf(children[0]);
-  } else {
-    return layoutRoot;
   }
+  return layoutRoot;
 }
 
 function lastLeaf(root: ReactElement): ReactElement {
   if (isContainer(typeOf(root) as string)) {
     const { children } = root.props || root;
     return lastLeaf(children[children.length - 1]);
-  } else {
-    return root;
   }
+  return root;
 }
 
 type NextStepResult = {
@@ -260,7 +250,6 @@ export function nextStep(
   }
 
   const endOfTheLine = followPathToEnd ? 0 : 1;
-  // check that pathSoFar startsWith targetPath and if not, throw
   const paths = targetPath
     .replace(pathVisited, "")
     .split(".")
@@ -271,13 +260,13 @@ export function nextStep(
 export function resetPath(
   model: ReactElement,
   path: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   additionalProps?: any
 ): ReactElement {
   if (getProp(model, "path") === path) {
     return model;
   }
   const children: ReactElement[] = [];
-  // React.Children.map rewrites keys, forEach does not
   React.Children.forEach(model.props.children, (child, i) => {
     if (!getProp(child, "path")) {
       children.push(child);

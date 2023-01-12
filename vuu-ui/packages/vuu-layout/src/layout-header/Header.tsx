@@ -5,7 +5,7 @@ import React, {
   MouseEvent,
   ReactElement,
   useRef,
-  useState,
+  useState
 } from "react";
 import { Contribution, useViewDispatch } from "../layout-view";
 
@@ -14,7 +14,7 @@ import {
   Toolbar,
   ToolbarButton,
   ToolbarField,
-  Tooltray,
+  Tooltray
 } from "@heswell/salt-lab";
 import { CloseIcon } from "@salt-ds/icons";
 
@@ -34,12 +34,10 @@ export const Header = ({
   className: classNameProp,
   contributions,
   collapsed,
-  expanded,
   closeable,
   onEditTitle,
   orientation: orientationProp = "horizontal",
   style,
-  tearOut,
   title = "Untitled",
 }: HeaderProps) => {
   const labelFieldRef = useRef<HTMLDivElement>(null);
@@ -47,15 +45,11 @@ export const Header = ({
   const [editing, setEditing] = useState<boolean>(false);
 
   const viewDispatch = useViewDispatch();
-  const handleAction = (
-    evt: MouseEvent,
-    actionId: "maximize" | "restore" | "minimize" | "tearout"
-  ) => viewDispatch?.({ type: actionId }, evt);
   const handleClose = (evt: MouseEvent) =>
     viewDispatch?.({ type: "remove" }, evt);
   const classBase = "vuuHeader";
 
-  const handleTitleMouseDown = (e: MouseEvent) => {
+  const handleTitleMouseDown = () => {
     labelFieldRef.current?.focus();
   };
 

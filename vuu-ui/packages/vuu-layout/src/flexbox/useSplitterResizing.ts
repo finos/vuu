@@ -1,27 +1,27 @@
+import { getUniqueId } from "@finos/vuu-utils";
 import React, {
   ReactElement,
   useCallback,
   useMemo,
   useRef,
-  useState,
+  useState
 } from "react";
-import { getUniqueId } from "@finos/vuu-utils";
-import { Splitter } from "./Splitter";
 import { Placeholder } from "../placeholder";
+import { Splitter } from "./Splitter";
 
 import {
   findSplitterAndPlaceholderPositions,
   gatherChildMeta,
   identifyResizeParties,
   PLACEHOLDER,
-  SPLITTER,
+  SPLITTER
 } from "./flexbox-utils";
 import {
   ContentMeta,
   FlexSize,
   SplitterFactory,
   SplitterHookProps,
-  SplitterHookResult,
+  SplitterHookResult
 } from "./flexboxTypes";
 
 const originalContentOnly = (meta: ContentMeta) =>
@@ -130,7 +130,6 @@ export const useSplitterResizing = ({
   );
 
   useMemo(() => {
-    // This will always fire when Flexbox has rendered, but nor during splitter resize
     const [content, meta] = buildContent(
       children,
       dimension,
@@ -161,7 +160,6 @@ function buildContent(
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
     if (i === 0 && splitterAndPlaceholderPositions[i] & PLACEHOLDER) {
-      //TODO need to assign an id to placeholder
       content.push(createPlaceholder(i));
       meta.push({ placeholder: true, shim: true });
     }
@@ -197,7 +195,7 @@ function resizeContent(
 
   return content.map((child, idx) => {
     const meta = contentMeta[idx];
-    let { currentSize, flexOpen, flexBasis } = meta;
+    const { currentSize, flexOpen, flexBasis } = meta;
     const hasCurrentSize = currentSize !== undefined;
     if (hasCurrentSize || flexOpen) {
       const { flexBasis: actualFlexBasis } = child.props.style || {};
@@ -230,7 +228,7 @@ function updateMeta(contentMeta: ContentMeta[], distance: number) {
   });
 
   // we want the target being reduced first, this may limit the distance we can apply
-  let target1 = distance < 0 ? resizeTargets[0] : resizeTargets[1];
+  const target1 = distance < 0 ? resizeTargets[0] : resizeTargets[1];
 
   const { currentSize = 0, minSize = 0 } = contentMeta[target1];
   if (currentSize === minSize) {

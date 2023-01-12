@@ -1,28 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback } from "react";
 
 const persistentState = new Map<string, any>();
 const sessionState = new Map<string, any>();
 
-// These is not exported by package, only available within
-// layout. Used by LayoutProvider for layout serialization.
 export const getPersistentState = (id: string) => persistentState.get(id);
 export const hasPersistentState = (id: string) => persistentState.has(id);
 export const setPersistentState = (id: string, value: any) =>
   persistentState.set(id, value);
 
 export const usePersistentState = () => {
-  //TODO create single set of methods that operate on either session or state
 
   const loadSessionState = useCallback((id, key) => {
     const state = sessionState.get(id);
     if (state) {
       if (key !== undefined && state[key] !== undefined) {
         return state[key];
-      } else if (key !== undefined) {
-        return undefined;
-      } else {
-        return state;
       }
+      if (key !== undefined) {
+        return undefined;
+      }
+      return state;
     }
   }, []);
 
@@ -63,9 +61,8 @@ export const usePersistentState = () => {
     if (state) {
       if (key !== undefined) {
         return state[key];
-      } else {
-        return state;
       }
+      return state;
     }
   }, []);
 

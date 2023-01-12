@@ -1,4 +1,3 @@
-import React from 'react';
 import { LayoutJSON } from '../layout-reducer';
 import { ComponentRegistry } from '../registry/ComponentRegistry';
 
@@ -6,7 +5,7 @@ export function componentFromLayout(layoutModel: LayoutJSON) {
 
   const { id, type, props, children: layoutChildren } = layoutModel;
   const ReactType = getComponentType(type);
-  let children =
+  const children =
     !layoutChildren || layoutChildren.length === 0
       ? null
       : layoutChildren.length === 1
@@ -20,7 +19,6 @@ export function componentFromLayout(layoutModel: LayoutJSON) {
   );
 }
 
-// support for built-in react ttpes (div etc) removed here
 function getComponentType(type: string) {
   const reactType = ComponentRegistry[type];
   if (reactType === undefined){

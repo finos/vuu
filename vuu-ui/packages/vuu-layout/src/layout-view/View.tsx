@@ -3,10 +3,10 @@ import cx from "classnames";
 import React, { ForwardedRef, forwardRef, useMemo, useRef } from "react";
 import { Header } from "../layout-header/Header";
 import { registerComponent } from "../registry/ComponentRegistry";
-import { ViewContext } from "./ViewContext";
-import { ViewProps } from "./viewTypes";
 import { useView } from "./useView";
 import { useViewResize } from "./useViewResize";
+import { ViewContext } from "./ViewContext";
+import { ViewProps } from "./viewTypes";
 
 import "./View.css";
 
@@ -17,17 +17,17 @@ const View = forwardRef(function View(
   const {
     children,
     className,
-    collapsed, // "vertical" | "horizontal" | false | undefined
+    collapsed,
     closeable,
     "data-resizeable": dataResizeable,
     dropTargets,
     expanded,
-    flexFill, // use data-flexfill instead
+    flexFill,
     id: idProp,
     header,
     orientation = "horizontal",
     path,
-    resize = "responsive", // maybe throttle or debounce ?
+    resize = "responsive",
     resizeable = dataResizeable,
     tearOut,
     style = {},
@@ -35,7 +35,6 @@ const View = forwardRef(function View(
     ...restProps
   } = props;
 
-  // A View within a managed layout will always be passed an id
   const id = useId(idProp);
   const rootRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
@@ -65,14 +64,10 @@ const View = forwardRef(function View(
   const classBase = "vuuView";
 
   const getContent = () => {
-    // We only inject restored state as props if child is a single element. Maybe we
-    // should take this further and only do it if the component has opted into this
-    // behaviour.
     if (React.isValidElement(children) && restoredState) {
       return React.cloneElement(children, restoredState);
-    } else {
-      return children;
     }
+    return children;
   };
 
   const viewContextValue = useMemo(
@@ -127,9 +122,8 @@ const View = forwardRef(function View(
             expanded={expanded}
             closeable={closeable}
             onEditTitle={onEditTitle}
-            orientation={/*collapsed || */ orientation}
+            orientation={orientation}
             tearOut={tearOut}
-            // title={`${title} v${version} #${id}`}
             title={title}
           />
         ) : null}
