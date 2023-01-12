@@ -1,21 +1,20 @@
-export enum Action {
-  ADD = 'add',
-  BLUR = 'blur',
-  BLUR_SPLITTER = 'blur-splitter',
-  DRAG_START = 'drag-start',
-  DRAG_STARTED = 'drag-started',
-  DRAG_DROP = 'drag-drop',
-  FOCUS = 'focus',
-  FOCUS_SPLITTER = 'focus-splitter',
-  INITIALIZE = 'initialize',
-  MAXIMIZE = 'maximize',
-  MINIMIZE = 'minimize',
-  REMOVE = 'remove',
-  REPLACE = 'replace',
-  RESTORE = 'restore',
-  SAVE = 'save',
-  SET_TITLE = 'set-title',
-  SPLITTER_RESIZE = 'splitter-resize',
-  SWITCH_TAB = 'switch-tab',
-  TEAR_OUT = 'tear-out'
-}
+export type Action =
+  | 'add'
+  | 'blur'
+  | 'blur-splitter'
+  | 'drag-start'
+  | 'drag-started'
+  | 'drag-drop'
+  | 'focus'
+  | 'focus-splitter'
+  | 'initialize'
+  | 'maximize'
+  | 'minimize'
+  | 'remove'
+  | 'replace'
+  | 'restore'
+  | 'save'
+  | 'set-title'
+  | 'splitter-resize'
+  | 'switch-tab'
+  | 'tear-out'
