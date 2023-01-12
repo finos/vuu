@@ -11,13 +11,13 @@ import {
 } from "@heswell/salt-lab";
 import cx from "classnames";
 
-import { TableSchema, VuuTableSchemas } from "@finos/vuu-data";
-import React, { ReactElement, useMemo, useState } from "react";
+import { TableSchema } from "@finos/vuu-data";
+import { ReactElement, useMemo, useState } from "react";
 
 const NO_FEATURES: Features = {};
 export interface AppSidePanelProps {
   features?: Features;
-  tables: VuuTableSchemas;
+  tables?: Map<string, TableSchema>;
 }
 
 const byModule = (schema1: TableSchema, schema2: TableSchema) => {
@@ -45,12 +45,13 @@ const wordify = (text: string) => {
   return `${capitalize(firstWord)} ${rest.join(" ")}`;
 };
 
+const classBase = "vuuAppSidePanel";
+
 export const AppSidePanel = ({
   features = NO_FEATURES,
   tables,
 }: AppSidePanelProps) => {
-  const classBase = "vuuAppSidePanel";
-
+  console.log(`vuuAppSidePanel ${tables}`);
   const gridFeatures = useMemo(
     () =>
       Object.entries(features).map(([featureName, { title, url, css }]) => {
@@ -75,26 +76,28 @@ export const AppSidePanel = ({
   };
 
   const paletteItems = useMemo(() => {
-    return Object.values(tables)
-      .sort(byModule)
-      .map((schema) => {
-        const { className, css, js } = gridFeatures[selectedIndex];
-        return {
-          component: (
-            <Feature
-              css={css}
-              params={{
-                className,
-                schema,
-                style: { height: "100%" },
-              }}
-              url={js}
-            />
-          ),
-          id: schema.table.table,
-          label: `${schema.table.module} ${wordify(schema.table.table)}`,
-        };
-      });
+    return tables === undefined
+      ? []
+      : Array.from(tables.values())
+          .sort(byModule)
+          .map((schema) => {
+            const { className, css, js } = gridFeatures[selectedIndex];
+            return {
+              component: (
+                <Feature
+                  css={css}
+                  params={{
+                    className,
+                    schema,
+                    style: { height: "100%" },
+                  }}
+                  url={js}
+                />
+              ),
+              id: schema.table.table,
+              label: `${schema.table.module} ${wordify(schema.table.table)}`,
+            };
+          });
   }, [gridFeatures, selectedIndex, tables]);
 
   const toggleButtons = (): ReactElement => {
@@ -108,9 +111,7 @@ export const AppSidePanel = ({
           selectedIndex={selectedIndex}
         >
           {Object.values(features).map(({ title }) => (
-            <ToggleButton ariaLabel="alert" key={title} tooltipText="Alert">
-              {title}
-            </ToggleButton>
+            <ToggleButton key={title}>{title}</ToggleButton>
           ))}
         </ToggleButtonGroup>
       );
@@ -118,9 +119,7 @@ export const AppSidePanel = ({
   };
 
   Object.keys(features).map((featureName) => (
-    <ToggleButton ariaLabel="alert" key={featureName} tooltipText="Alert">
-      Vuu Grid
-    </ToggleButton>
+    <ToggleButton key={featureName}>Vuu Grid</ToggleButton>
   ));
 
   return (

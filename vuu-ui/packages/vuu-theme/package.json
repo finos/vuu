@@ -3,10 +3,6 @@
   "version": "0.0.26",
   "license": "Apache-2.0",
   "style": "index.css",
-  "files": [
-    "index.css",
-    "/css"
-  ],
   "scripts": {
     "build": "node ../../scripts/run-build.mjs"
   }

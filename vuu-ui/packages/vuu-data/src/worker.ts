@@ -1,10 +1,12 @@
-import { connect as connectWebsocket } from "@finos/vuu-data/src/websocket-connection";
-import { ServerProxy } from "@finos/vuu-data/src/server-proxy/server-proxy";
+import { connect as connectWebsocket } from "./websocket-connection";
+import { ServerProxy } from "./server-proxy/server-proxy";
 import {
   ConnectionStatusMessage,
   isConnectionStatusMessage,
   VuuUIMessageOut,
-} from "@finos/vuu-data/src/vuuUIMessageTypes";
+} from "./vuuUIMessageTypes";
+import { VuuMenuRpcRequest, VuuRpcRequest } from "@finos/vuu-protocol-types";
+import { WithRequestId } from "./message-utils";
 
 let server: ServerProxy;
 
@@ -50,7 +52,11 @@ function sendMessageToClient(message: any) {
 
 const handleMessageFromClient = async ({
   data: message,
-}: MessageEvent<VuuUIMessageOut>) => {
+}: MessageEvent<
+  | VuuUIMessageOut
+  | WithRequestId<VuuRpcRequest>
+  | WithRequestId<VuuMenuRpcRequest>
+>) => {
   switch (message.type) {
     case "connect":
       await connectToServer(message.url, message.token, postMessage);

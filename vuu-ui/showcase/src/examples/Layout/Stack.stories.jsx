@@ -10,10 +10,7 @@ import {
 // import '@finos/theme/index.css';
 // import '@finos/vuu-layout/index.css';
 
-export default {
-  title: "Layout/Stack",
-  component: StackLayout,
-};
+let displaySequence = 1;
 
 export const FourTabsControlled = () => {
   const [active, setActive] = useState(0);
@@ -45,6 +42,42 @@ export const FourTabsControlled = () => {
     </LayoutProvider>
   );
 };
+
+FourTabsControlled.displaySequence = displaySequence++;
+
+export const VerticalTabsControlled = () => {
+  const [active, setActive] = useState(0);
+
+  const handleTabSelection = useCallback((e, tabIndex) => {
+    console.log(`setActive ${tabIndex}`);
+    setActive(tabIndex);
+  }, []);
+
+  return (
+    <LayoutProvider>
+      <StackLayout
+        TabstripProps={{ orientation: "vertical" }}
+        active={active}
+        onTabSelectionChanged={handleTabSelection}
+        showTabs
+        style={{ width: 800, height: 500 }}
+      >
+        <Component
+          title="Rebecca "
+          style={{ backgroundColor: "rebeccapurple" }}
+        />
+        <Component title="Red" style={{ backgroundColor: "red" }} />
+        <Component title="Alice" style={{ backgroundColor: "aliceblue" }} />
+        <Component
+          title="Cornflower"
+          style={{ backgroundColor: "cornflowerblue" }}
+        />
+      </StackLayout>
+    </LayoutProvider>
+  );
+};
+
+VerticalTabsControlled.displaySequence = displaySequence++;
 
 export const EnableAddTab = () => {
   // const createContent = (index) => (
@@ -83,6 +116,8 @@ export const EnableAddTab = () => {
   );
 };
 
+EnableAddTab.displaySequence = displaySequence++;
+
 export const EmptyStackAddTab = () => {
   const createContent = (index) => (
     <View
@@ -106,6 +141,8 @@ export const EmptyStackAddTab = () => {
     ></StackLayout>
   );
 };
+
+EmptyStackAddTab.displaySequence = displaySequence++;
 
 export const TabsWithinTabs = () => (
   <LayoutProvider>
@@ -149,6 +186,8 @@ export const TabsWithinTabs = () => (
     </StackLayout>
   </LayoutProvider>
 );
+
+TabsWithinTabs.displaySequence = displaySequence++;
 
 export const TabsWithFlexChildren = () => {
   const handleLayoutChange = (layout) => {
@@ -199,3 +238,5 @@ export const TabsWithFlexChildren = () => {
     </LayoutProvider>
   );
 };
+
+TabsWithFlexChildren.displaySequence = displaySequence++;

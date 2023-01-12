@@ -1,9 +1,5 @@
-import {
-  computeMenuPosition,
-  DropMenu,
-  DropTarget,
-  PopupService,
-} from "@finos/vuu-layout";
+import { computeMenuPosition, DropMenu, DropTarget } from "@finos/vuu-layout";
+import { PopupService } from "@finos/vuu-popups";
 import React, { useEffect, useRef } from "react";
 
 export default {

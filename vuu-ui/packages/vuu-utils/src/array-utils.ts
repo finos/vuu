@@ -1,12 +1,3 @@
-export function arrayOfIndices(length: number): number[] {
-  // not the neatest, but far and away the fastest way to do this ...
-  const result = Array(length);
-  for (let i = 0; i < length; i++) {
-    result[i] = i;
-  }
-  return result;
-}
-
 export type PartitionTest<T> = (value: T, index: number) => boolean;
 
 export function partition<T>(
@@ -19,4 +10,28 @@ export function partition<T>(
     (test(array[i], i) ? pass : fail).push(array[i]);
   }
   return [pass, fail];
+}
+
+// Note order of items can be different between arrays
+// If an identityProperty is not defined, item identity is used
+export function itemsChanged<T = unknown>(
+  currentItems: T[],
+  newItems: T[],
+  identityProperty?: string
+) {
+  if (currentItems.length !== newItems.length) {
+    return true;
+  }
+  if (identityProperty === undefined) {
+    return !currentItems.every((item) => newItems.includes(item));
+  } else {
+    return currentItems.some(
+      (currentItem) =>
+        newItems.findIndex(
+          (newItem) =>
+            (newItem as { [key: string]: unknown })[identityProperty] ===
+            (currentItem as { [key: string]: unknown })[identityProperty]
+        ) === -1
+    );
+  }
 }

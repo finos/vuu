@@ -1,21 +1,19 @@
+import { Flexbox } from "@finos/vuu-layout";
 import {
   ContextMenu,
   ContextMenuProvider,
-  Flexbox,
   MenuItem,
   MenuItemGroup,
   Separator,
   useContextMenu,
-} from "@finos/vuu-layout";
+} from "@finos/vuu-popups";
+
+import { Button } from "@salt-ds/core";
+
 import { ComponentAnatomy as RenderVisualiser } from "@heswell/component-anatomy";
-import React, { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
-const story = {
-  title: "UI Controls/ContextMenu",
-  component: ContextMenu,
-};
-
-export default story;
+let displaySequence = 1;
 
 const usePosition = () => {
   const ref = useRef(null);
@@ -83,16 +81,7 @@ export const DefaultContextMenu = () => {
   );
 };
 
-export const WithVisualiser = () => {
-  const [ref, position] = usePosition();
-  return (
-    <RenderVisualiser>
-      <div ref={ref}>
-        {position ? <SampleContextMenu position={position} /> : null}
-      </div>
-    </RenderVisualiser>
-  );
-};
+DefaultContextMenu.displaySequence = displaySequence++;
 
 const Id = ({ children }) => (
   <span style={{ color: "grey" }}>({children})</span>
@@ -173,6 +162,8 @@ export const AdditionalNesting = () => {
   );
 };
 
+AdditionalNesting.displaySequence = displaySequence++;
+
 export const ContextMenuPopup = () => {
   const [position, setPosition] = useState(null);
   const ref = useRef(null);
@@ -228,19 +219,62 @@ export const ContextMenuPopup = () => {
   return (
     <div
       style={{
-        height: "100vh",
+        height: "100%",
         display: "flex",
         alignItems: "center",
-        justifyContent: "flex-end",
+        justifyContent: "space-between",
       }}
     >
-      <button onClick={handleClick} ref={ref}>
+      <Button
+        onClick={handleClick}
+        ref={ref}
+        style={{ justifySelf: "flex-end" }}
+      >
         Show Context Menu
-      </button>
+      </Button>
+      <div
+        style={{
+          alignSelf: "stretch",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        }}
+      >
+        <Button
+          onClick={handleClick}
+          ref={ref}
+          style={{ justifySelf: "flex-end" }}
+        >
+          Show Context Menu
+        </Button>
+        <Button
+          onClick={handleClick}
+          ref={ref}
+          style={{ justifySelf: "flex-end" }}
+        >
+          Show Context Menu
+        </Button>
+        <Button
+          onClick={handleClick}
+          ref={ref}
+          style={{ justifySelf: "flex-end" }}
+        >
+          Show Context Menu
+        </Button>
+      </div>
+      <Button
+        onClick={handleClick}
+        ref={ref}
+        style={{ justifySelf: "flex-end" }}
+      >
+        Show Context Menu
+      </Button>
       {getContextMenu()}
     </div>
   );
 };
+
+ContextMenuPopup.displaySequence = displaySequence++;
 
 const ComponentWithMenu = ({ location, ...props }) => {
   const showContextMenu = useContextMenu();
@@ -277,9 +311,11 @@ export const SimpleContextMenuProvider = () => {
   );
 };
 
+SimpleContextMenuProvider.displaySequence = displaySequence++;
+
 export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
   const menuDescriptors = [
-    { label: "Sort", action: "sort", icon: "sort" },
+    { label: "Sort", action: "sort", icon: "sort-up" },
     { label: "Filter", action: "filter", icon: "filter" },
     { label: "Group", action: "group" },
     { label: "Left 1", action: "left1", location: "left" },
@@ -332,3 +368,5 @@ export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
     </ContextMenuProvider>
   );
 };
+ContextMenuProviderWithLocationAwareMenuBuilder.displaySequence =
+  displaySequence++;

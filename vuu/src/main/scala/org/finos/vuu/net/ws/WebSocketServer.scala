@@ -6,8 +6,13 @@ import io.netty.channel.Channel
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.logging.{LogLevel, LoggingHandler}
+import io.netty.handler.ssl.{SslContext, SslContextBuilder}
 import org.finos.vuu.net.ViewServerHandlerFactory
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
+import org.finos.vuu.core.VuuWebSocketOptions
+import org.finos.vuu.util.PathChecker
+
+import java.io.File
 
 //import io.netty.handler.ssl.SslContext;
 //import io.netty.handler.ssl.SslContextBuilder
@@ -32,7 +37,7 @@ import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
  * </ul>
  */
 
-class WebSocketServer(port: Int, factory: ViewServerHandlerFactory)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging {
+class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFactory)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging {
 
   lifecycle(this)
 
@@ -46,10 +51,22 @@ class WebSocketServer(port: Int, factory: ViewServerHandlerFactory)(implicit lif
 
   override def doStart(): Unit = {
     logger.info("Starting websocket server")
-    ch = b.bind("localhost", port).sync().channel();
+    ch = b.bind(options.bindAddress, options.wsPort).sync().channel();
     while (!isOpen()) {}
     logger.info("Websocket server open and ready")
 
+  }
+
+  private def createSslContext(): SslContext = {
+    PathChecker.throwOnFileNotExists(options.certPath, "vuu.certPath, doesn't appear to exist")
+    PathChecker.throwOnFileNotExists(options.keyPath, "vuu.keyPath, doesn't appear to exist")
+    val sslCtx = options.passPhrase match {
+      case Some(passPhrase) =>
+        SslContextBuilder.forServer(new File(options.certPath), new File(options.keyPath), passPhrase)
+      case None =>
+        SslContextBuilder.forServer(new File(options.certPath), new File(options.keyPath))
+    }
+    sslCtx.build()
   }
 
   override def doStop(): Unit = {
@@ -58,11 +75,12 @@ class WebSocketServer(port: Int, factory: ViewServerHandlerFactory)(implicit lif
   }
 
   override def doInitialize(): Unit = {
+    val sslContext = createSslContext()
 
     b.group(bossGroup, workerGroup)
       .channel(classOf[NioServerSocketChannel])
       .handler(new LoggingHandler(LogLevel.INFO))
-      .childHandler(new WebSocketServerInitializer(factory));
+      .childHandler(new WebSocketServerInitializer(factory, sslContext));
 
   }
 
@@ -71,38 +89,3 @@ class WebSocketServer(port: Int, factory: ViewServerHandlerFactory)(implicit lif
   override val lifecycleId: String = "websocketServer"
 }
 
-//object WebSocketServer extends App{
-//
-//  final val SSL = false
-//  final val PORT = 8080
-//
-//  override def main(args: Array[String]) = {
-//
-////    if (SSL) {
-////      SelfSignedCertificate ssc = new SelfSignedCertificate();
-////      sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
-////    } else {
-////      sslCtx = null;
-////    }
-//
-//    val bossGroup = new NioEventLoopGroup(1);
-//    val workerGroup = new NioEventLoopGroup();
-//    try {
-//      val b = new ServerBootstrap();
-//      b.group(bossGroup, workerGroup)
-//        .channel(classOf[NioServerSocketChannel])
-//      .handler(new LoggingHandler(LogLevel.INFO))
-//      .childHandler(new WebSocketServerInitializer());
-//
-//    val ch = b.bind(PORT).sync().channel();
-//
-//    System.out.println("Open your web browser and navigate to " +
-//      (if(SSL) "https" else "http") + "://127.0.0.1:" + PORT + '/');
-//
-//    ch.closeFuture().sync();
-//    } finally {
-//      bossGroup.shutdownGracefully();
-//      workerGroup.shutdownGracefully();
-//    }
-//  }
-//}

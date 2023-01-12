@@ -56,13 +56,23 @@ describe("ServerProxy", () => {
       const serverProxy = new ServerProxy(mockConnection, callback);
       serverProxy.subscribe(clientSubscription);
       serverProxy.handleMessageFromServer(serverSubscription);
-
+      //TODO cover tableMeta in test
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
+        aggregations: undefined,
         clientViewportId: "client-vp-1",
         columns: ["col-1", "col-2", "col-3", "col-4"],
-        filter: "",
+        filter: undefined,
         filterSpec: { filter: "" },
+        groupBy: [],
+        range: {
+          from: 0,
+          to: 10,
+        },
+        sort: {
+          sortDefs: [],
+        },
+        tableMeta: null,
         type: "subscribed",
       });
     });
@@ -393,10 +403,33 @@ describe("ServerProxy", () => {
       serverProxy.sessionId = "dsdsd";
       serverProxy.authToken = "test";
 
+      mockConnection.send.mockClear();
+      TEST_setRequestId(1);
+
       serverProxy.subscribe(clientSubscription1);
 
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(mockConnection.send).toBeCalledTimes(2);
+
+      const messageConstants = {
+        module: "CORE",
+        sessionId: "dsdsd",
+        token: "test",
+        user: "user",
+      };
+
+      expect(mockConnection.send).toHaveBeenNthCalledWith(1, {
         body: {
+          table: clientSubscription1.table,
+          type: "GET_TABLE_META",
+        },
+        requestId: "1",
+        ...messageConstants,
+      });
+
+      expect(mockConnection.send).toHaveBeenNthCalledWith(2, {
+        body: {
+          aggregations: undefined,
+          columns: undefined,
           type: "CREATE_VP",
           table: { module: "TEST", table: "test-table" },
           range: { from: 0, to: 20 },
@@ -404,11 +437,8 @@ describe("ServerProxy", () => {
           filterSpec: { filter: "" },
           groupBy: [],
         },
-        module: "CORE",
         requestId: "client-vp-1",
-        sessionId: "dsdsd",
-        token: "test",
-        user: "user",
+        ...messageConstants,
       });
 
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
@@ -1356,7 +1386,7 @@ describe("ServerProxy", () => {
       expect(mockConnection.send).toHaveBeenCalledTimes(1);
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       TEST_setRequestId(2);
-
+      // TODO test for the call to get nmetadata as well
       expect(mockConnection.send).toHaveBeenCalledWith({
         user: "user",
         body: {
@@ -1366,7 +1396,7 @@ describe("ServerProxy", () => {
           to: 36,
         },
         module: "CORE",
-        requestId: "3",
+        requestId: "4",
         sessionId: "dsdsd",
         token: "test",
       });

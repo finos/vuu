@@ -1,7 +1,7 @@
 import {
   ServerToClientMessage,
   ClientToServerMessage,
-} from "../../vuu-protocol-types";
+} from "@finos/vuu-protocol-types";
 import { Connection } from "./connectionTypes";
 
 import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
@@ -99,7 +99,7 @@ const makeConnectionIn = (
 const createWebsocket = (connectionString: string): Promise<WebSocket> =>
   new Promise((resolve, reject) => {
     //TODO add timeout
-    const ws = new WebSocket("ws://" + connectionString);
+    const ws = new WebSocket("wss://" + connectionString);
     ws.onopen = () => resolve(ws);
     ws.onerror = (evt) => reject(evt);
   });
@@ -127,9 +127,9 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   send: (msg: ClientToServerMessage) => void = sendWarn;
   status: "closed" | "ready" | "connected" | "reconnected" = "ready";
 
-  private url: string;
+  public url: string;
 
-  constructor(ws: any, url: string, callback: ConnectionCallback) {
+  constructor(ws: WebSocket, url: string, callback: ConnectionCallback) {
     this.url = url;
     this[connectionCallback] = callback;
     this[setWebsocket](ws);
@@ -197,7 +197,9 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     const queue = (_msg: ClientToServerMessage) => {
-      console.log(`TODO queue message until websocket reconnected`);
+      console.log(`TODO queue message until websocket reconnected`, {
+        _msg,
+      });
     };
 
     this.send = send;

@@ -101,13 +101,16 @@ export const updateTableRow = (
 
 // prettier-ignore
 export const createSubscription = ({
-  key = '1',
-  from = 0,
-  to = 10,
   bufferSize = 0,
+  filterSpec = { filter: ''},
+  from = 0,
+  groupBy = [],
+  key = '1',
+  to = 10,
+  sort = [],
   viewport = `client-vp-${key}`
 } = {}) => [
-  { viewport, table: {module: "TEST", table: 'test-table'}, range: { from, to }, bufferSize },
+  { bufferSize, filterSpec, groupBy, range: { from, to }, sort, table: {module: "TEST", table: 'test-table'}, viewport },
   {
     requestId: `client-vp-${key}`,
     body: {
@@ -115,10 +118,10 @@ export const createSubscription = ({
       viewPortId: `server-vp-${key}`,
       columns: ['col-1', 'col-2', 'col-3', 'col-4'],
       range: { from, to: to + bufferSize },
-      sort: { sortDefs: [] },
+      sort: {sortDefs: sort},
       table: "test-table",
-      groupBy: [],
-      filterSpec: { filter: '' }
+      groupBy,
+      filterSpec
     }
   }
 ];

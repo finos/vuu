@@ -1,10 +1,15 @@
 import { DataSource } from "@finos/vuu-data";
 import { MutableRefObject } from "react";
-import { VuuAggregation, VuuLink } from "../../../vuu-protocol-types";
+import { VuuAggregation, VuuLink } from "@finos/vuu-protocol-types";
 import { AdornmentsDescriptor } from "../grid-adornments";
 import { GridModelDispatch } from "../grid-context";
 import { GridProps } from "../gridTypes";
 import { Size } from "./useMeasuredSize";
+import {
+  ColumnType,
+  ColumnTypeDescriptor,
+  ColumnDescriptor,
+} from "@finos/vuu-datagrid-types";
 
 export interface Heading {
   collapsed?: boolean;
@@ -20,25 +25,7 @@ export interface Heading {
 
 export type Headings = Heading[][];
 
-export type TypeFormatting = {
-  align?: "left" | "right";
-  alignOnDecimals?: boolean;
-  decimals?: number;
-  zeroPad?: boolean;
-};
-
 export type GridModelStatus = "pending" | "ready";
-export type ColumnTypeSimple = "string" | "number";
-export type ColumnTypeDescriptor = {
-  formatting?: TypeFormatting;
-  name: string;
-  renderer?: {
-    associatedField?: string;
-    flashStyle?: "bg-only" | "arrow-bg" | "arrow";
-    name: string;
-  };
-};
-export type ColumnType = ColumnTypeSimple | ColumnTypeDescriptor;
 
 export const isTypeDescriptor = (
   type?: ColumnType
@@ -49,27 +36,6 @@ export const isNumericColumn = (type?: ColumnType) =>
   type === undefined
     ? false
     : type === "number" || (type as ColumnTypeDescriptor).name === "number";
-
-export interface ColumnDescriptor {
-  className?: string;
-  flex?: number;
-  heading?: [...string[]];
-  isGroup?: boolean;
-  isSystemColumn?: boolean;
-  label?: string;
-  locked?: boolean;
-  marginLeft?: number;
-  minWidth?: number;
-  moving?: boolean;
-  name: string;
-  /** used only when column is a child of GroupColumn  */
-  originalIdx?: number;
-  resizeable?: boolean;
-  resizing?: boolean;
-  sortable?: boolean;
-  type?: ColumnType;
-  width?: number;
-}
 
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   key: number;

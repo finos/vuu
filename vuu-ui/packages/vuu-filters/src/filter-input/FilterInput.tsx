@@ -1,7 +1,7 @@
-import { Filter } from "@finos/vuu-filters";
+import { Filter } from "@finos/vuu-filter-types";
+import { Button } from "@salt-ds/core";
 import { HTMLAttributes } from "react";
 import { SuggestionConsumer, useCodeMirrorEditor } from "./useCodeMirrorEditor";
-import { Button } from "@salt-ds/core";
 
 import "./FilterInput.css";
 

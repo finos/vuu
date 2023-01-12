@@ -1,13 +1,27 @@
-import React, { useMemo } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { SaltProvider } from "@salt-ds/core";
-
 import { Flexbox } from "@finos/vuu-layout";
+import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
+import { SaltProvider, Text } from "@salt-ds/core";
+import Module from "module";
+import { ReactElement, useCallback, useMemo } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Tree } from "./components";
 
 import "./App.css";
 
-const byDisplaySequence = ([, f1], [, f2]) => {
+type VuuExample = (() => ReactElement) & {
+  displaySequence?: number;
+};
+
+type VuuTuple = [string, VuuExample];
+
+interface SourceNode {
+  id: string;
+  icon: string;
+  label: string;
+  childNodes?: SourceNode[];
+}
+
+const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
   const { displaySequence: ds1 } = f1;
   const { displaySequence: ds2 } = f2;
 
@@ -22,11 +36,15 @@ const byDisplaySequence = ([, f1], [, f2]) => {
   }
 };
 
-const sourceFromImports = (stories, prefix = "", icon = "folder") =>
+const sourceFromImports = (
+  stories: Module,
+  prefix = "",
+  icon = "folder"
+): SourceNode[] =>
   Object.entries(stories)
     .filter(([path]) => path !== "default")
     .sort(byDisplaySequence)
-    .map(([label, stories]) => {
+    .map<SourceNode>(([label, stories]) => {
       const id = `${prefix}${label}`;
       if (typeof stories === "function") {
         return {
@@ -43,36 +61,64 @@ const sourceFromImports = (stories, prefix = "", icon = "folder") =>
       };
     });
 
-export const App = ({ stories }) => {
-  let navigate = useNavigate();
+export interface AppProps {
+  stories: Module;
+}
+
+export const App = ({ stories }: AppProps) => {
+  console.log({ stories: Object.entries(stories) });
+
+  const navigate = useNavigate();
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
   const handleChange = (evt, [selected]) => navigate(selected.id);
+
+  const launchStandaloneWindow = useCallback(() => {
+    window.open(`${location.href}?standalone`, "_blank");
+  }, []);
+
   return (
-    <SaltProvider>
+    <SaltProvider applyClassesTo="scope">
       <Flexbox
-        style={{ flexDirection: "row", width: "100vw", height: "100vh" }}
+        style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
-        <Tree
-          className="ShowcaseNav"
-          style={{ flex: "0 0 200px" }}
-          data-resizeable
-          defaultSelected={[pathname.slice(1)]}
-          onSelectionChange={handleChange}
-          revealSelected
-          source={source}
-        />
-        <div
-          className="Content"
-          style={{
-            flex: "1 1 auto",
-            backgroundColor: "ivory",
-            position: "relative",
-          }}
-          data-resizeable
-        >
-          <Outlet />
-        </div>
+        <Toolbar className="ShowcaseToolbar">
+          <Text styleAs="h3">Vuu Showcase</Text>
+        </Toolbar>
+        <Flexbox style={{ flexDirection: "row", flex: 1 }}>
+          <Tree
+            className="ShowcaseNav"
+            style={{ flex: "0 0 200px" }}
+            data-resizeable
+            defaultSelected={[pathname.slice(1)]}
+            onSelectionChange={handleChange}
+            revealSelected
+            source={source}
+          />
+          <Flexbox
+            className="ShowcaseContentContainer"
+            resizeable
+            style={{ flexDirection: "column", flex: "1 1 auto" }}
+          >
+            <Toolbar className="ShowcaseContentToolbar">
+              <span />
+              <ToolbarButton
+                data-align-end
+                data-icon="open-in"
+                onClick={launchStandaloneWindow}
+              />
+            </Toolbar>
+            <div
+              className="ShowcaseContent"
+              style={{
+                flex: "1 1 auto",
+                position: "relative",
+              }}
+            >
+              <Outlet />
+            </div>
+          </Flexbox>
+        </Flexbox>
       </Flexbox>
     </SaltProvider>
   );

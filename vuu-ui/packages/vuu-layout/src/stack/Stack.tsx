@@ -1,4 +1,5 @@
 import { useIdMemo as useId } from "@salt-ds/core";
+import cx from "classnames";
 import { Tab, Tabstrip, Toolbar, ToolbarField } from "@heswell/salt-lab";
 import React, {
   ForwardedRef,
@@ -11,6 +12,11 @@ import React, {
 import { StackProps } from "./stackTypes";
 
 import "./Stack.css";
+
+const classBase = "Tabs";
+
+const getDefaultTabIcon = (component: ReactElement, tabIndex: number) =>
+  undefined;
 
 const getDefaultTabLabel = (component: ReactElement, tabIndex: number) =>
   component.props?.title ?? `Tab ${tabIndex + 1}`;
@@ -33,8 +39,10 @@ export const Stack = forwardRef(function Stack(
   {
     active = 0,
     children,
+    className: classNameProp,
     enableAddTab,
     enableCloseTabs,
+    getTabIcon = getDefaultTabIcon,
     getTabLabel = getDefaultTabLabel,
     id: idProp,
     keyBoardActivation = "manual",
@@ -45,6 +53,7 @@ export const Stack = forwardRef(function Stack(
     onTabSelectionChanged,
     showTabs,
     style,
+    TabstripProps,
   }: StackProps,
   ref: ForwardedRef<HTMLDivElement>
 ) {
@@ -111,12 +120,13 @@ export const Stack = forwardRef(function Stack(
       return (
         <Tab
           ariaControls={`${rootId}-tab`}
+          data-icon={getTabIcon(child, idx)}
           draggable
-          key={childId} // Important that we key by child identifier, not using index
+          key={childId ?? idx} // Important that we key by child identifier, not using index
           id={rootId}
           label={getTabLabel(child, idx)}
           closeable={closeable}
-          editable={true}
+          editable={TabstripProps?.enableRenameTab !== false}
           // onEdit={handleTabEdit}
         />
       );
@@ -125,10 +135,18 @@ export const Stack = forwardRef(function Stack(
   const child = activeChild();
 
   return (
-    <div className="Tabs" style={style} id={id} ref={ref}>
+    <div
+      className={cx(classBase, classNameProp, {
+        [`${classBase}-horizontal`]: TabstripProps?.orientation === "vertical",
+      })}
+      style={style}
+      id={id}
+      ref={ref}
+    >
       {showTabs ? (
         <Toolbar
           className="vuuTabHeader vuuHeader"
+          orientation={TabstripProps?.orientation}
           // onMouseDown={handleMouseDown}
         >
           <ToolbarField
@@ -138,7 +156,8 @@ export const Stack = forwardRef(function Stack(
             style={{ alignSelf: "flex-end" }}
           >
             <Tabstrip
-              enableRenameTab
+              {...TabstripProps}
+              enableRenameTab={TabstripProps?.enableRenameTab !== false}
               enableAddTab={enableAddTab}
               enableCloseTab={enableCloseTabs}
               keyBoardActivation={keyBoardActivation}
@@ -147,7 +166,9 @@ export const Stack = forwardRef(function Stack(
               onCloseTab={handleTabClose}
               onExitEditMode={handleExitEditMode}
               onMouseDown={handleMouseDown}
-              activeTabIndex={active || (child === null ? -1 : 0)}
+              activeTabIndex={
+                TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
+              }
             >
               {renderTabs()}
             </Tabstrip>

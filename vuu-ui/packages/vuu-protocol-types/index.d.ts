@@ -1,9 +1,5 @@
-export declare type ColumnDataType =
-  | "int"
-  | "long"
-  | "double"
-  | "string"
-  | "char";
+// prettier-ignore
+export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char";
 export declare type VuuMenuContext = "cell" | "row" | "grid" | "selected-rows";
 export interface VuuMenuItem {
   context: VuuMenuContext;
@@ -86,12 +82,21 @@ export interface ServerToClientTableList {
   type: "TABLE_LIST_RESP";
   tables: VuuTable[];
 }
+
+export type VuuTableList = Pick<ServerToClientTableList, "tables">;
+
 export interface ServerToClientTableMeta {
   columns: VuuColumns;
-  dataTypes: ColumnDataType[];
+  dataTypes: VuuColumnDataType[];
   type: "TABLE_META_RESP";
   table: VuuTable;
 }
+
+export type VuuTableMeta = Pick<
+  ServerToClientTableMeta,
+  "columns" | "dataTypes" | "table"
+>;
+
 export interface ServerToClientMenus {
   type: "VIEW_PORT_MENUS_RESP";
   menu: VuuMenu;
@@ -304,7 +309,7 @@ export interface ClientToServerRemoveLink {
   type: "REMOVE_VISUAL_LINK";
 }
 
-export declare type RpcService = "TypeAheadRpcHandler";
+export declare type RpcService = "TypeAheadRpcHandler" | "OrderEntryRpcHandler";
 
 export declare type TypeaheadParams =
   | [VuuTable, string]
@@ -313,6 +318,7 @@ export declare type TypeaheadParams =
 export declare type TypeAheadMethod =
   | "getUniqueFieldValues"
   | "getUniqueFieldValuesStartingWith";
+
 export declare type RpcMethod = TypeAheadMethod | "addRowsFromInstruments";
 export interface ClientToServerGetUniqueValues {
   type: "RPC_CALL";
@@ -326,17 +332,45 @@ export interface ClientToServerGetUniqueValuesStartingWith {
   service: "TypeAheadRpcHandler";
   params: [VuuTable, string, string];
 }
-// add remaining Rpc calls here
 
-export declare type ClientToServerRpcCall =
+export declare type VuuRpcRequest =
   | ClientToServerGetUniqueValues
   | ClientToServerGetUniqueValuesStartingWith;
+// add remaining Rpc calls here
 
 export interface ClientToServerMenuSelectRPC {
   type: "VIEW_PORT_MENUS_SELECT_RPC";
   rpcName: string;
   vpId: string;
 }
+export interface ClientToServerMenuTableRPC {
+  type: "VIEW_PORT_MENU_TABLE_RPC";
+  rpcName: string;
+  vpId: string;
+}
+export interface ClientToServerMenuRowRPC {
+  type: "VIEW_PORT_MENU_ROW_RPC";
+  rpcName: string;
+  vpId: string;
+}
+export interface ClientToServerMenuCellRPC {
+  type: "VIEW_PORT_MENU_CELL_RPC";
+  rpcName: string;
+  vpId: string;
+}
+
+export type ClientToServerMenuRPCType =
+  | "VIEW_PORT_MENUS_SELECT_RPC"
+  | "VIEW_PORT_MENU_TABLE_RPC"
+  | "VIEW_PORT_MENU_ROW_RPC"
+  | "VIEW_PORT_MENU_CELL_RPC";
+
+export type ClientToServerMenuRPC =
+  | ClientToServerMenuSelectRPC
+  | ClientToServerMenuTableRPC
+  | ClientToServerMenuRowRPC
+  | ClientToServerMenuCellRPC;
+
 export declare type VuuRpcMessagesOut = ClientToServerMenuSelectRPC;
 export declare type ClientToServerBody =
   | ClientToServerAuth
@@ -357,8 +391,9 @@ export declare type ClientToServerBody =
   | ClientToServerCloseTreeNode
   | ClientToServerCreateLink
   | ClientToServerRemoveLink
-  | ClientToServerMenuSelectRPC
-  | ClientToServerRpcCall;
+  | ClientToServerMenuRPC
+  | VuuRpcRequest
+  | VuuMenuRpcRequest;
 export interface ClientToServerMessage<
   TBody extends ClientToServerBody = ClientToServerBody
 > {
@@ -369,3 +404,99 @@ export interface ClientToServerMessage<
   token: string;
   user: string;
 }
+
+/** Menu RPC services */
+export interface OpenDialogAction {
+  type: "OPEN_DIALOG_ACTION";
+  table: VuuTable;
+}
+export interface NoAction {
+  type: "NO_ACTION";
+}
+
+export declare type MenuRpcAction = OpenDialogAction | NoAction;
+export interface VuuAddRowsToOrdersSelectMenuRpcRequest {
+  type: "VIEW_PORT_MENU_RESP";
+  rpcName: "ADD_ROWS_TO_ORDERS";
+  vpId: string;
+}
+
+export interface VuuAddRowsToOrdersSelectMenuRpcResponse {
+  action: OpenDialogAction;
+  rpcName: "ADD_ROWS_TO_ORDERS";
+  type: "VIEW_PORT_MENUS_SELECT_RPC";
+  vpId: string;
+}
+
+export interface VuuTestTableMenuRpcRequest {
+  type: "VIEW_PORT_MENU_TABLE_RPC";
+  rpcName: "TEST_TABLE";
+  vpId: string;
+}
+
+export interface VuuTestTableMenuRpcResponse {
+  action: NoAction;
+  rpcName: "TEST_TABLE";
+  type: "VIEW_PORT_MENU_RESP";
+  vpId: string;
+}
+
+export interface VuuTestSelectMenuRpcRequest {
+  type: "VIEW_PORT_MENUS_SELECT_RPC";
+  rpcName: "TEST_SELECT";
+  vpId: string;
+}
+
+export interface VuuTestSelectMenuRpcResponse {
+  action: OpenDialogAction;
+  rpcName: "TEST_SELECT";
+  type: "VIEW_PORT_MENU_RESP";
+  vpId: string;
+}
+
+// Should really be a table option rather than select option
+export interface VuuTickSpeedSelectMenuRpcRequest {
+  type: "VIEW_PORT_MENUS_SELECT_RPC";
+  rpcName: "SET_SPEED_MED" | "SET_SPEED_SLOW" | "SET_SPEED_FAST";
+  vpId: string;
+}
+
+export interface VuuTickSpeedSelectMenuRpcResponse {
+  action: NoAction;
+  rpcName: "SET_SPEED_MED" | "SET_SPEED_SLOW" | "SET_SPEED_FAST";
+  type: "VIEW_PORT_MENU_RESP";
+  vpId: string;
+}
+
+export interface VuuTestRowMenuRpcRequest {
+  type: "VIEW_PORT_MENU_ROW_RPC";
+  rpcName: "TEST_ROW";
+  vpId: string;
+}
+
+export interface VuuTestRowMenuRpcResponse {
+  action: NoAction;
+  rpcName: "TEST_ROW";
+  type: "VIEW_PORT_MENU_RESP";
+  vpId: string;
+}
+export interface VuuTestCellMenuRpcRequest {
+  type: "VIEW_PORT_MENU_CELL_RPC";
+  rpcName: "TEST_CELL";
+  vpId: string;
+}
+
+export interface VuuTestCellMenuRpcResponse {
+  action: NoAction;
+  rpcName: "TEST_CELL";
+  type: "VIEW_PORT_MENU_RESP";
+  vpId: string;
+}
+
+export declare type VuuMenuRpcRequest =
+  | VuuAddRowsToOrdersSelectMenuRpcRequest
+  | VuuTestTableMenuRpcRequest
+  | VuuTestSelectMenuRpcRequest
+  | VuuTestRowMenuRpcRequest
+  | VuuTestCellMenuRpcRequest
+  | VuuTickSpeedSelectMenuRpcRequest;

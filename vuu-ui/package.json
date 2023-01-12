@@ -7,17 +7,17 @@
   "workspaces": [
     "packages/**",
     "sample-apps/**",
-    "showcase",
-    "salt/packages/lab"
+    "showcase"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.jsx",
     "prettier": "prettier './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "format": "prettier --write './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "build": "node ./scripts/build-all.mjs",
+    "build:packages": "yarn build --cjs && yarn type-defs",
     "build:salt": "node ./scripts/build-salt.mjs",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
-    "visualize-bundle": "esbuild-visualizer --metadata ./deployed_apps/app-vuu-example/features/feature-filtered-grid/meta.json",
+    "view-bundle": "node ./scripts/visualize-bundle.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "start:electron": "cd packages/electron && node ./node_modules/.bin/electron .",
     "showcase": "cd showcase && vite",
@@ -42,6 +42,7 @@
   "devDependencies": {
     "@heswell/component-anatomy": "0.0.5",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
+    "chalk": "^5.2.0",
     "esbuild": "0.15.15",
     "esbuild-visualizer": "^0.3.1",
     "eslint": "^8.27.0",

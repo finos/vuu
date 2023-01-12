@@ -9,7 +9,7 @@ import { SaltProvider } from "@salt-ds/core";
 
 import { AppSidePanel } from "app-vuu-example/src/app-sidepanel";
 import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
-import { useViewserver } from "@finos/vuu-data";
+import { useVuuTables } from "@finos/vuu-data";
 import { useMemo } from "react";
 
 export const DefaultAppSidePanel = () => {
@@ -39,7 +39,7 @@ export const DefaultAppSidePanel = () => {
 
 export const VuuConnectedAppSidePanel = () => {
   const error = useAutoLoginToVuuServer();
-  const { tables } = useViewserver();
+  const tables = useVuuTables();
 
   console.log({ tables });
 

@@ -9,6 +9,8 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.websocketx._
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler
 import io.netty.handler.codec.http.{DefaultHttpHeaders, HttpClientCodec, HttpObjectAggregator}
+import io.netty.handler.ssl.SslContextBuilder
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 
 //import io.netty.handler.ssl.SslContext
@@ -39,6 +41,9 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
   def awaitMessage() = handler.awaitMessage()
 
   override def doStart(): Unit = {
+
+    val sslCtx = SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE).build()
+
     handler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders, WebSocketConstants.MAX_FRAME_SIZE))
     val b: Bootstrap = new Bootstrap
     b.group(group).channel(classOf[NioSocketChannel]).handler(new ChannelInitializer[SocketChannel] {
@@ -48,6 +53,7 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
         //        if (sslCtx != null) {
         //          p.addLast(sslCtx.newHandler(ch.alloc, host, port))
         //        }
+        p.addLast("ssl-handler", sslCtx.newHandler(ch.alloc, "localhost", 8443))
         p.addLast(new HttpClientCodec, new HttpObjectAggregator(8192), WebSocketClientCompressionHandler.INSTANCE, handler)
       }
     })

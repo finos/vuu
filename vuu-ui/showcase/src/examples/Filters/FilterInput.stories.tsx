@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  Filter,
-  FilterInput,
-  FilterToolbar,
-  updateFilter,
-} from "@finos/vuu-filters";
+import { Filter } from "@finos/vuu-filter-types";
+import { FilterInput, FilterToolbar, updateFilter } from "@finos/vuu-filters";
 
 import { useSuggestionProvider } from "./useSuggestionProvider";
 import {

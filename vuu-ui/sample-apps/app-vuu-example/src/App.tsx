@@ -1,5 +1,5 @@
 import { SaltProvider } from "@salt-ds/core";
-import { RpcResponse, useViewserver, VuuTableSchemas } from "@finos/vuu-data";
+import { MenuRpcResponse, useVuuTables } from "@finos/vuu-data";
 import { Dialog, registerComponent } from "@finos/vuu-layout";
 import {
   Feature,
@@ -7,7 +7,7 @@ import {
   ShellContextProvider,
   VuuUser,
 } from "@finos/vuu-shell";
-import { ReactElement, useCallback, useRef, useState } from "react";
+import { ReactElement, useCallback, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 
@@ -15,7 +15,7 @@ import "./App.css";
 
 const { websocketUrl: serverUrl, features } = await vuuConfig;
 
-const filteredGridUrl = "./feature-filtered-grid/index.js";
+const vuuBlotterUrl = "./feature-vuu-blotter/index.js";
 
 registerComponent("Stack", Stack, "container");
 
@@ -43,34 +43,32 @@ const defaultLayout = {
 export const App = ({ user }: { user: VuuUser }) => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
 
-  // Needed because of circular ref between useViewserver and handleRpcResponse
-  const tablesRef = useRef<VuuTableSchemas>();
+  const tables = useVuuTables();
 
-  const { tables } = useViewserver();
-
-  tablesRef.current = tables;
-
-  const handleRpcResponse = useCallback((response: RpcResponse) => {
-    if (response?.action?.type === "OPEN_DIALOG_ACTION") {
-      const { table } = response.action;
-      if (tablesRef.current) {
-        const { [table.table]: schema } = tablesRef.current;
-        if (schema) {
-          // If we already have this table open in this viewport, ignore
-          setDialogContent(
-            <Feature
-              height={400}
-              params={{ schema }}
-              url={filteredGridUrl}
-              width={700}
-            />
-          );
+  const handleRpcResponse = useCallback(
+    (response?: MenuRpcResponse) => {
+      if (response?.action?.type === "OPEN_DIALOG_ACTION") {
+        const { table } = response.action;
+        if (tables) {
+          const schema = tables.get(table.table);
+          if (schema) {
+            // If we already have this table open in this viewport, ignore
+            setDialogContent(
+              <Feature
+                height={400}
+                params={{ schema }}
+                url={vuuBlotterUrl}
+                width={700}
+              />
+            );
+          }
         }
+      } else {
+        console.warn(`App, handleServiceRequest ${JSON.stringify(response)}`);
       }
-    } else {
-      console.warn(`App, handleServiceRequest ${JSON.stringify(response)}`);
-    }
-  }, []);
+    },
+    [tables]
+  );
 
   const handleClose = () => setDialogContent(undefined);
 

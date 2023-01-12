@@ -8,15 +8,15 @@ export type ViewDispatch = <Action extends ViewAction = ViewAction>(
 ) => Promise<boolean | void>;
 
 export interface ViewContextProps {
-  dispatch: ViewDispatch | null;
-  id: string;
-  load: (key?: string) => any;
-  loadSession: (key?: string) => any;
-  onConfigChange?: (config: any) => void;
+  dispatch?: ViewDispatch | null;
+  id?: string;
+  load?: (key?: string) => unknown;
+  loadSession?: (key?: string) => unknown;
+  onConfigChange?: (config: unknown) => void;
   path?: string;
-  purge: (key: string) => void;
-  save: (state: any, key: string) => void;
-  saveSession: (state: any, key: string) => void;
+  purge?: (key: string) => void;
+  save?: (state: unknown, key: string) => void;
+  saveSession?: (state: unknown, key: string) => void;
   title?: string;
 }
 

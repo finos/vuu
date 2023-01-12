@@ -1,5 +1,5 @@
 import { ConfigChangeMessage } from "@finos/vuu-data";
-import { ContextMenuProvider } from "@finos/vuu-layout";
+import { ContextMenuProvider } from "@finos/vuu-popups";
 import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import {

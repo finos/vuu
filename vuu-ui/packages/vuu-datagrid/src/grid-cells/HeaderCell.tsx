@@ -1,5 +1,5 @@
-import { useContextMenu } from "@finos/vuu-layout";
-import { Filter } from "@finos/vuu-filters";
+import { useContextMenu } from "@finos/vuu-popups";
+import { Filter } from "@finos/vuu-filter-types";
 import cx from "classnames";
 import { MouseEvent, useCallback, useRef } from "react";
 import { AggregationType } from "../constants";

@@ -1,12 +1,7 @@
-import { exec } from "child_process";
-import { execCallback } from "./utils.mjs";
+import { execWait } from "./utils.mjs";
 
 function buildPackage(packageName) {
-  exec(
-    "yarn --silent type-defs",
-    { cwd: `packages/${packageName}` },
-    execCallback
-  );
+  execWait("yarn --silent type-defs", `packages/${packageName}`);
 }
 
 const packages = [
@@ -16,6 +11,8 @@ const packages = [
   "vuu-data",
   //   'ui-controls',
   //   'vuu-datagrid',
+  "vuu-datatable",
+  // "vuu-datagrid-extras",
   //   'vuu-layout',
   //   'vuu-shell'
 ];

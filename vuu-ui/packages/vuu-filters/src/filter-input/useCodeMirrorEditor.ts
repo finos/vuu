@@ -1,24 +1,23 @@
+import {
+  autocompletion,
+  Completion,
+  startCompletion
+} from "@codemirror/autocomplete";
 import { defaultKeymap } from "@codemirror/commands";
 import { ensureSyntaxTree } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
-import { Filter } from "@finos/vuu-filters";
+import { Filter } from "@finos/vuu-filter-types";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
 import { minimalSetup } from "./codemirror-basic-setup";
 import { filterLanguageSupport } from "./filter-language-parser";
+import { walkTree } from "./filter-language-parser/walkTree";
 import { vuuHighlighting } from "./highlighting";
 import { vuuTheme } from "./theme";
-import { walkTree } from "./filter-language-parser/walkTree";
-import {
-  autocompletion,
-  Completion,
-  startCompletion,
-} from "@codemirror/autocomplete";
 import { ApplyCompletion, useAutoComplete } from "./useFilterAutoComplete";
 
 export type SuggestionType = "column" | "columnValue" | "operator";
 
-// TODO move this somewhere neutral
 export interface ISuggestionProvider {
   getSuggestions: (
     valueType: SuggestionType,
@@ -44,7 +43,7 @@ const getView = (ref: MutableRefObject<EditorView | undefined>): EditorView => {
   return ref.current;
 };
 
-const getOptionClass = (/*completion: Completion*/) => {
+const getOptionClass = () => {
   return "vuuSuggestion";
 };
 

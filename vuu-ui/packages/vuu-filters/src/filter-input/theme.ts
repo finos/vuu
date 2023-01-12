@@ -12,7 +12,7 @@ export const vuuTheme = EditorView.theme(
       padding: 0,
     },
     ".cm-line": {
-      lineHeight: "20px",
+      lineHeight: "var(--vuuFilterEditor-lineHeight)",
     },
     "&.cm-focused .cm-cursor": {
       borderLeftColor: "var(--vuuFilterEditor-cursorColor)",
@@ -42,6 +42,7 @@ export const vuuTheme = EditorView.theme(
       },
       "&.cm-tooltip-autocomplete li[aria-selected]": {
         background: "var(--vuuFilterEditor-suggestion-selectedBackground)",
+        color: "var(--vuuFilterEditor-suggestion-selectedColor)",
       },
     },
   },

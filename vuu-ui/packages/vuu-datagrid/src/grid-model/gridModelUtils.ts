@@ -4,9 +4,9 @@ import {
   VuuGroupBy,
   VuuSort,
   VuuSortCol,
-} from "../../../vuu-protocol-types";
+} from "@finos/vuu-protocol-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
-  ColumnDescriptor,
   ColumnGroupType,
   GridModelType,
   GroupColumnDescriptor,
