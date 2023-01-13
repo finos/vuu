@@ -44,7 +44,7 @@ The UI scripts all run from the vuu/vuu-ui directory.
 cd vuu-ui
 yarn
 yarn build
-yarn buid:app
+yarn build:app
 cd packages/electron
 #this should open an electron window pointing at https://localhost:8443/index.html
 yarn start
