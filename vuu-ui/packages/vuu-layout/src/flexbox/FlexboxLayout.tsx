@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { Action } from '../layout-action';
 import { useLayoutProviderDispatch } from '../layout-provider';
 import { registerComponent } from '../registry/ComponentRegistry';
 import Flexbox from './Flexbox';
@@ -14,7 +15,7 @@ export const FlexboxLayout = function FlexboxLayout(props: FlexboxLayoutProps) {
   const handleSplitterMoved = useCallback(
     (sizes) => {
       dispatch({
-        type: "splitter-resize",
+        type: Action.SPLITTER_RESIZE,
         path,
         sizes
       });
