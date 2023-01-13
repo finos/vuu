@@ -1,6 +1,6 @@
-import React, { CSSProperties, HTMLAttributes, useCallback } from "react";
-import cx from "classnames";
 import { Button, useControlled } from "@salt-ds/core";
+import cx from "classnames";
+import { CSSProperties, HTMLAttributes, useCallback } from "react";
 
 import "./Drawer.css";
 

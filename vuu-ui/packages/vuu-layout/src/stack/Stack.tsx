@@ -1,13 +1,13 @@
+import { Tab, Tabstrip, Toolbar, ToolbarField } from "@heswell/salt-lab";
 import { useIdMemo as useId } from "@salt-ds/core";
 import cx from "classnames";
-import { Tab, Tabstrip, Toolbar, ToolbarField } from "@heswell/salt-lab";
 import React, {
   ForwardedRef,
   forwardRef,
   MouseEvent,
   ReactElement,
   ReactNode,
-  useCallback,
+  useCallback
 } from "react";
 import { StackProps } from "./stackTypes";
 
@@ -15,7 +15,7 @@ import "./Stack.css";
 
 const classBase = "Tabs";
 
-const getDefaultTabIcon = (component: ReactElement, tabIndex: number) =>
+const getDefaultTabIcon = () =>
   undefined;
 
 const getDefaultTabLabel = (component: ReactElement, tabIndex: number) =>
@@ -60,34 +60,27 @@ export const Stack = forwardRef(function Stack(
   const id = useId(idProp);
 
   const handleTabSelection = (nextIdx: number) => {
-    // if uncontrolled, handle it internally
     onTabSelectionChanged?.(nextIdx);
   };
 
   const handleTabClose = (tabIndex: number) => {
-    // if uncontrolled, handle it internally
     onTabClose?.(tabIndex);
   };
 
   const handleAddTab = () => {
-    // if uncontrolled, handle it internally
     onTabAdd?.(React.Children.count(children));
   };
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    // if uncontrolled, handle it internally
     const target = e.target as HTMLElement;
     const tabElement = target.closest('[role^="tab"]') as HTMLDivElement;
     const role = tabElement?.getAttribute("role");
     if (role === "tab") {
       const tabIndex = parseInt(tabElement.dataset.idx ?? "-1");
-      if (tabIndex !== -1) {
-        onMouseDown?.(e, tabIndex);
-      } else {
+      if (tabIndex === -1) {
         throw Error("Stack: mousedown on tab with unknown index");
       }
-    } else if (role === "tablist") {
-      console.log(`Stack mousedown on tabstrip`);
+      onMouseDown?.(e, tabIndex);
     }
   };
 
@@ -106,11 +99,11 @@ export const Stack = forwardRef(function Stack(
   const activeChild = () => {
     if (React.isValidElement(children)) {
       return children;
-    } else if (Array.isArray(children)) {
-      return children[active] ?? null;
-    } else {
-      return null;
     }
+    if (Array.isArray(children)) {
+      return children[active] ?? null;
+    }
+    return null;
   };
 
   const renderTabs = () =>
@@ -122,12 +115,11 @@ export const Stack = forwardRef(function Stack(
           ariaControls={`${rootId}-tab`}
           data-icon={getTabIcon(child, idx)}
           draggable
-          key={childId ?? idx} // Important that we key by child identifier, not using index
+          key={childId ?? idx}
           id={rootId}
           label={getTabLabel(child, idx)}
           closeable={closeable}
           editable={TabstripProps?.enableRenameTab !== false}
-          // onEdit={handleTabEdit}
         />
       );
     });
@@ -147,7 +139,6 @@ export const Stack = forwardRef(function Stack(
         <Toolbar
           className="vuuTabHeader vuuHeader"
           orientation={TabstripProps?.orientation}
-          // onMouseDown={handleMouseDown}
         >
           <ToolbarField
             disableFocusRing

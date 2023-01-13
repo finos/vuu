@@ -181,8 +181,6 @@ export default class DropTargetCanvas {
             top,
             component,
           });
-        } else {
-          PopupService.movePopupTo(left, top);
         }
       } else {
         PopupService.hidePopup();

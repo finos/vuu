@@ -4,15 +4,16 @@ import {
   MutableRefObject,
   ReactElement,
   ReactNode,
-  RefObject
-} from 'react';
-import { SplitterProps } from './Splitter';
+} from "react";
+import { SplitterProps } from "./Splitter";
 
 export interface LayoutContainerProps {
   resizeable?: boolean;
 }
 
-export interface FlexboxProps extends LayoutContainerProps, HTMLAttributes<HTMLDivElement> {
+export interface FlexboxProps
+  extends LayoutContainerProps,
+    HTMLAttributes<HTMLDivElement> {
   breakPoints?: BreakPointsProp;
   children: ReactElement[];
   cols?: number;
@@ -26,6 +27,10 @@ export interface FlexboxProps extends LayoutContainerProps, HTMLAttributes<HTMLD
   splitterSize?: number;
 }
 
+export interface FlexboxLayoutProps extends FlexboxProps {
+  path: string;
+}
+
 export interface SplitterHookProps {
   children: ReactNode;
   onSplitterMoved?: (content: ContentMeta[]) => void;
@@ -34,7 +39,7 @@ export interface SplitterHookProps {
 
 export interface SplitterHookResult {
   content: ReactElement[];
-  rootRef: MutableRefObject<HTMLDivElement | undefined>;
+  rootRef: MutableRefObject<HTMLDivElement | null>;
 }
 
 export type SplitterFactory = (index: number) => ReactElement<SplitterProps>;
@@ -56,7 +61,7 @@ export type FlexSize = {
   minSize: number;
 };
 
-export type BreakPoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type BreakPoint = "xs" | "sm" | "md" | "lg" | "xl";
 export type BreakPoints = BreakPoint[];
 export type BreakPointsProp = {
   [keys in BreakPoint]?: number;

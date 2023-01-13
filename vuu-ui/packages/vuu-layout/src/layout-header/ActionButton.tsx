@@ -1,5 +1,5 @@
-import React, { HTMLAttributes, MouseEvent } from 'react';
 import classnames from 'classnames';
+import { HTMLAttributes, MouseEvent } from 'react';
 
 export interface ActionButtonProps extends Omit<HTMLAttributes<HTMLButtonElement>, 'onClick'> {
   actionId: 'maximize' | 'minimize' | 'restore' | 'tearout';

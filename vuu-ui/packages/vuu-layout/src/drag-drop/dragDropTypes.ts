@@ -1,6 +1,4 @@
-import type { ReactElement } from 'react';
 import type { rect } from '../common-types';
-import { DropTarget } from './DropTarget';
 export interface DragDropRect extends rect {
   children?: DragDropRect[];
   header?: {

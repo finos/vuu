@@ -1,12 +1,12 @@
-import { List, ListItem, ListItemProps } from "@heswell/salt-lab";
 import { uuid } from "@finos/vuu-utils";
+import { List, ListItem, ListItemProps } from "@heswell/salt-lab";
 import cx from "classnames";
 import {
   cloneElement,
   HTMLAttributes,
   memo,
   MouseEvent,
-  ReactElement,
+  ReactElement
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { View } from "../layout-view";

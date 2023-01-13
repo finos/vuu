@@ -1,4 +1,4 @@
-export const installTheme = (themeId) => {
+export const installTheme = (themeId: string) => {
   const installedThemes = getComputedStyle(document.body).getPropertyValue(
     "--installed-themes"
   );
