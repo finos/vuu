@@ -1,6 +1,9 @@
-import React, { ReactElement } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { uuid } from "@finos/vuu-utils";
-import { getManagedDimension, LayoutProps } from "./layoutUtils";
+import React, { ReactElement } from "react";
+import { rectTuple } from "../common-types";
+import { DropPos } from "../drag-drop";
+import { DropTarget } from "../drag-drop/DropTarget";
 import { getProp, getProps, nextStep, resetPath, typeOf } from "../utils";
 import {
   createPlaceHolder,
@@ -8,12 +11,10 @@ import {
   getFlexDimensions,
   getFlexOrIntrinsicStyle,
   getIntrinsicSize,
-  wrapIntrinsicSizeComponentWithFlexbox,
+  wrapIntrinsicSizeComponentWithFlexbox
 } from "./flexUtils";
-import { LayoutModel, LayoutRoot } from "./layoutTypes";
-import { DropPos } from "../drag-drop";
-import { DropTarget } from "../drag-drop/DropTarget";
-import { rectTuple } from "../common-types";
+import { LayoutModel } from "./layoutTypes";
+import { getManagedDimension, LayoutProps } from "./layoutUtils";
 
 type insertionPosition = "before" | "after";
 
@@ -39,6 +40,7 @@ export function insertIntoContainer(
 
   const existingComponentPath = getProp(targetContainer, "path");
   const { idx, finalStep } = nextStep(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     containerPath!,
     existingComponentPath,
     true
@@ -111,6 +113,7 @@ export function insertBesideChild(
         idx,
         newComponent,
         insertionPosition,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         pos!,
         clientRect,
         dropRect
@@ -155,6 +158,7 @@ function updateChildren(
       newComponent,
       insertionPosition,
       clientRect,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dropRect!
     );
   } else {
@@ -205,8 +209,6 @@ function insertIntrinsicSizedComponent(
     getIntrinsicSize(newComponent) as { height: number; width: number };
   const path = getProp(containerChildren[idx], "path");
 
-  // If we are introducing a new item into a row/column, but it is not flush against existing child, we will insert
-  // a leading placeholder ...
   const placeholderSize = getLeadingPlaceholderSize(
     flexDirection,
     insertionPosition,
@@ -323,7 +325,8 @@ function getStyledComponents(
   newComponent: ReactElement,
   targetRect: DropTarget["clientRect"]
 ): [ReactElement, ReactElement] {
-  let { id = uuid(), version = 0 } = getProps(newComponent);
+  const id = uuid()
+  let { version = 0 } = getProps(newComponent);
   version += 1;
   if (typeOf(container) === "Flexbox") {
     const [dim] = getManagedDimension(container.props.style);
@@ -354,9 +357,6 @@ function getStyledComponents(
         flex: undefined,
       },
     } = getProps(newComponent);
-    // TODO why would we strip out width, height if resizeable
-    // we might need these if in a Stack, for example
-    // const dimensions = source.props.resizeable ? {} : { width, height };
     return [
       existingComponent,
       React.cloneElement(newComponent, { id, version, style }),

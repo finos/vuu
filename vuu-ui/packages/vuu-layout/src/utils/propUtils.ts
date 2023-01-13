@@ -9,7 +9,6 @@ export const getProp = (component: LayoutModel, propName: string) => {
 
 export const getProps = (component?: LayoutModel) => component?.props || component || NO_PROPS;
 
-// Used when a container is expected to have a single child
 export const getChildProp = (container: LayoutModel) => {
   const props = getProps(container);
   if (props.children) {

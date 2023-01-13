@@ -1,10 +1,9 @@
-import React from "react";
-import { CSSProperties, ReactElement, ReactNode } from "react";
 import { uuid } from "@finos/vuu-utils";
-import { ComponentRegistry } from "../registry/ComponentRegistry";
-import { getProps, resetPath } from "../utils";
+import React, { CSSProperties, ReactElement, ReactNode } from "react";
 import { dimension, rect, rectTuple } from "../common-types";
 import { DropPos } from "../drag-drop/dragDropTypes";
+import { ComponentRegistry } from "../registry/ComponentRegistry";
+import { getProps, resetPath } from "../utils";
 const placeHolderProps = { "data-placeholder": true, "data-resizeable": true };
 
 const NO_STYLE = {};
@@ -47,7 +46,6 @@ export const getIntrinsicSize = (
 ): { height?: number; width?: number } | undefined => {
   const { style: { width = auto, height = auto } = NO_STYLE } = component.props;
 
-  // Eliminate 'auto' and percentage sizes
   const numHeight = typeof height === "number";
   const numWidth = typeof width === "number";
 
@@ -92,20 +90,18 @@ export function getFlexStyle(
   }
 }
 
-//TODO this is not comprehensive
 export function hasUnboundedFlexStyle(component: ReactElement) {
-  const { style: { flex, flexGrow, flexShrink, flexBasis } = NO_STYLE } =
-    component.props;
-  // console.log(`flex ${flex}, flexBasis ${flexBasis}, flexShrink ${flexShrink}, flexGrow ${flexGrow}`)
+  const { style: { flex, flexGrow, flexShrink, flexBasis } = NO_STYLE } = component.props;
   if (typeof flex === "number") {
     return true;
-  } else if (flexBasis === 0 && flexGrow === 1 && flexShrink === 1) {
+  } 
+  if (flexBasis === 0 && flexGrow === 1 && flexShrink === 1) {
     return true;
-  } else if (typeof flexBasis === "number") {
+  } 
+  if (typeof flexBasis === "number") {
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
 export function getFlexOrIntrinsicStyle(
@@ -125,24 +121,22 @@ export function getFlexOrIntrinsicStyle(
   if (intrinsicSize !== auto) {
     if (isPercentageSize(intrinsicSize)) {
       return {
-        // Is this right? discrad the percenbtage size ?
         flexBasis: 0,
         flexGrow: 1,
         flexShrink: 1,
         [dimension]: undefined,
         [crossDimension]: intrinsicCrossSize,
       };
-    } else {
-      return {
-        // or should we leave this as auto until user resizes ?
-        flexBasis: intrinsicSize,
-        flexGrow: 0,
-        flexShrink: 0,
-        [dimension]: intrinsicSize,
-        [crossDimension]: intrinsicCrossSize,
-      };
     }
-  } else if (pos && pos[dimension]) {
+    return {
+      flexBasis: intrinsicSize,
+      flexGrow: 0,
+      flexShrink: 0,
+      [dimension]: intrinsicSize,
+      [crossDimension]: intrinsicCrossSize,
+    };
+  }
+  if (pos && pos[dimension]) {
     return {
       ...intrinsicStyles,
       ...defaultFlexStyle,
@@ -150,13 +144,11 @@ export function getFlexOrIntrinsicStyle(
       flexGrow: 0,
       flexShrink: 0,
     };
-  } else {
-    return {
-      ...intrinsicStyles,
-      // ...defaultFlexStyle,
-      [crossDimension]: intrinsicCrossSize,
-    };
   }
+  return {
+    ...intrinsicStyles,
+    [crossDimension]: intrinsicCrossSize,
+  };
 }
 
 export function wrapIntrinsicSizeComponentWithFlexbox(
@@ -187,7 +179,6 @@ export function wrapIntrinsicSizeComponentWithFlexbox(
       );
     }
   } else {
-    // If we don't pass the rect values, we are wrapping an existing child, this is always a trailing placeholder
     endPlaceholder = true;
   }
 
@@ -221,18 +212,16 @@ export function wrapIntrinsicSizeComponentWithFlexbox(
   );
 }
 
-const getFlexValue = (flexBasis: number, flexFill: boolean) => {
+const getFlexValue = (flexBasis: number, flexFill: boolean): number | undefined => {
   if (flexFill) {
     return undefined;
-  } else if (flexBasis === 0) {
-    return 1;
-  } else {
-    return 0;
   }
+  return flexBasis === 0 ? 1 : 0
 };
 
 export function createFlexbox(
   flexDirection: flexDirection,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props: any,
   children: ReactNode,
   path: string
@@ -241,6 +230,7 @@ export function createFlexbox(
   const { flexFill, style, resizeable = true } = props;
   const { flexBasis = flexFill ? undefined : "auto" } = style;
   const flex = getFlexValue(flexBasis, flexFill);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return React.createElement<any>(
     ComponentRegistry.Flexbox,
     {
@@ -267,6 +257,7 @@ export function createPlaceHolder(
   path: string,
   size: number,
   style?: CSSProperties,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props?: any
 ) {
   const id = uuid();

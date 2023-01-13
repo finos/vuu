@@ -1,16 +1,16 @@
+import { rect, rectTuple } from "../common-types";
+import { LayoutModel } from "../layout-reducer";
+import { getProps, typeOf } from "../utils";
 import {
   BoxModel,
-  positionValues,
   getPosition,
-  Position,
-  RelativeDropPosition,
   Measurements,
+  Position,
+  positionValues,
+  RelativeDropPosition,
 } from "./BoxModel";
-import { getProps, typeOf } from "../utils";
 import { DragDropRect, DropPos, DropPosTab } from "./dragDropTypes";
-import { LayoutModel } from "../layout-reducer";
 import { DragState } from "./DragState";
-import { rect, rectTuple } from "../common-types";
 
 export const isTabstrip = (dropTarget: DropTarget) =>
   dropTarget.pos.tab &&
@@ -52,7 +52,7 @@ export interface TargetDropOutline {
 export class DropTarget {
   private active: boolean;
 
-  public box: any;
+  public box: unknown;
   public clientRect: DragDropRect;
   public component: LayoutModel;
   public dropRect: rectTuple | undefined;
@@ -118,14 +118,14 @@ export class DropTarget {
     const b = Math.round(bottom - gap);
     const tabLeft = this.targetTabPos(tab);
     const tabWidth = 60; // should really measure text
-    const tabHeight = header!.bottom - header!.top;
+    const tabHeight = (header?.bottom ?? 0) - (header?.top ?? 0);
     return { l, t, r, b, tabLeft, tabWidth, tabHeight };
   }
 
   getIntrinsicDropRect(dragState: DragState): TargetDropOutline {
     const { pos, clientRect: rect } = this;
 
-    let { x, y } = dragState;
+    const { x, y } = dragState;
 
     let height = dragState.intrinsicSize?.height ?? 0;
     let width = dragState.intrinsicSize?.height ?? 0;
@@ -233,6 +233,7 @@ export class DropTarget {
   }
 
   toArray(this: DropTarget) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let dropTarget: DropTarget | null = this;
     const dropTargets = [dropTarget];
     // eslint-disable-next-line no-cond-assign

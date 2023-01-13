@@ -1,5 +1,5 @@
-import React, { ChangeEvent, FocusEvent, HTMLAttributes, KeyboardEvent, MouseEvent, useLayoutEffect, useRef, useState } from 'react';
 import cx from 'classnames';
+import { ChangeEvent, FocusEvent, HTMLAttributes, KeyboardEvent, MouseEvent, useLayoutEffect, useRef, useState } from 'react';
 
 import './EditableLabel.css';
 

@@ -1,12 +1,6 @@
-.vuuPalette {
-}
-
 .vuuPalette-horizontal {
   align-items: center;
   display: flex;
-}
-
-.vuuPalette .vuuComponentIcon {
 }
 
 .vuuPaletteItem {

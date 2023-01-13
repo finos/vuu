@@ -27,10 +27,10 @@ let _dragEndCallback: DragEndCallback | null;
 
 let _dragStartX: number;
 let _dragStartY: number;
-let _dragContainer: ReactElement | null;
+let _dragContainer: ReactElement | undefined;
 let _dragState: DragState;
 let _dropTarget: DropTarget | null = null;
-let _validDropTargetPaths: string[] | null;
+let _validDropTargetPaths: string[] | undefined;
 let _dragInstructions: DragInstructions;
 let _measurements: Measurements;
 let _simpleDrag: boolean;
@@ -116,12 +116,12 @@ export const Draggable = {
 };
 
 function preDragMousemoveHandler(e: MouseEvent) {
-  var x = true;
-  var y = true;
+  const x = true;
+  const y = true;
 
-  let x_diff = x ? e.clientX - _dragStartX : 0;
-  let y_diff = y ? e.clientY - _dragStartY : 0;
-  let mouseMoveDistance = Math.max(Math.abs(x_diff), Math.abs(y_diff));
+  const x_diff = x ? e.clientX - _dragStartX : 0;
+  const y_diff = y ? e.clientY - _dragStartY : 0;
+  const mouseMoveDistance = Math.max(Math.abs(x_diff), Math.abs(y_diff));
 
   // when we do finally move the draggee, we are going to 'jump' by the amount of the drag threshold, should we
   // attempt to animate this ?
@@ -216,7 +216,7 @@ function dragMousemoveHandler(evt: MouseEvent) {
     _dragMoveCallback?.(newX, newY);
   }
 
-  if (_simpleDrag) {
+  if (_simpleDrag || _dragContainer === undefined) {
     return;
   }
 
@@ -224,16 +224,16 @@ function dragMousemoveHandler(evt: MouseEvent) {
     dropTarget = identifyDropTarget(
       x,
       y,
-      _dragContainer!,
+      _dragContainer,
       _measurements,
       dragState.hasIntrinsicSize(),
-      _validDropTargetPaths!
+      _validDropTargetPaths
     );
   } else {
     dropTarget = identifyDropTarget(
       dragState.dropX(),
       dragState.dropY(),
-      _dragContainer!,
+      _dragContainer,
       _measurements
     );
   }
@@ -266,7 +266,7 @@ function onDragEnd() {
     _dropTarget = null;
   } else {
     _dragEndCallback?.({
-      component: _dragContainer!,
+      component: _dragContainer,
       pos: { position: Position.Absolute } as any,
     });
   }
@@ -274,9 +274,9 @@ function onDragEnd() {
   _dragMoveCallback = null;
   _dragEndCallback = null;
 
-  _dragContainer = null;
+  _dragContainer = undefined;
   _dropTargetRenderer.clear();
-  _validDropTargetPaths = null;
+  _validDropTargetPaths = undefined;
   window.removeEventListener("mousemove", dragMousemoveHandler, false);
   window.removeEventListener("mouseup", dragMouseupHandler, false);
 }

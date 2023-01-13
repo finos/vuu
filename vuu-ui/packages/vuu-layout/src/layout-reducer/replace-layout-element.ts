@@ -1,8 +1,8 @@
 import React, { ReactElement } from 'react';
-import { getProp, getProps, nextStep } from '../utils';
 import { Action } from '../layout-action';
-import { applyLayoutProps, LayoutProps } from './layoutUtils';
+import { getProp, getProps, nextStep } from '../utils';
 import { ReplaceAction } from './layoutTypes';
+import { applyLayoutProps, LayoutProps } from './layoutUtils';
 
 export function replaceChild(model: ReactElement, { target, replacement }: ReplaceAction) {
   return _replaceChild(model, target, replacement);
@@ -17,9 +17,6 @@ export function _replaceChild(
   const resizeable = getProp(child, 'resizeable');
   const { style } = getProps(child);
   const newChild =
-    // applyLayoutProps is a bit heavy here - it supports the scenario
-    // where we drop/replace a template. Might want to make it somehow
-    // an opt-in option
     applyLayoutProps(
       React.cloneElement(replacement, {
         resizeable,
@@ -41,27 +38,27 @@ export function swapChild(
   op?: 'maximize' | 'minimize' | 'restore'
 ): ReactElement {
   if (model === child) {
-    return replacement as any;
-  } else {
-    const { idx, finalStep } = nextStep(getProp(model, 'path'), getProp(child, 'path'));
-    const children = model.props.children.slice();
-    if (finalStep) {
-      if (!op) {
-        children[idx] = replacement;
-      } else if (op === Action.MINIMIZE) {
-        children[idx] = minimize(model, children[idx]);
-      } else if (op === Action.RESTORE) {
-        children[idx] = restore(children[idx]);
-      }
-    } else {
-      children[idx] = swapChild(children[idx], child, replacement, op);
-    }
-    return React.cloneElement(model, undefined, children);
+    return replacement;
   }
+  
+  const { idx, finalStep } = nextStep(getProp(model, 'path'), getProp(child, 'path'));
+  const children = model.props.children.slice();
+  
+  if (finalStep) {
+    if (!op) {
+      children[idx] = replacement;
+    } else if (op === Action.MINIMIZE) {
+      children[idx] = minimize(model, children[idx]);
+    } else if (op === Action.RESTORE) {
+      children[idx] = restore(children[idx]);
+    }
+  } else {
+    children[idx] = swapChild(children[idx], child, replacement, op);
+  }
+  return React.cloneElement(model, undefined, children);
 }
 
 function minimize(parent: ReactElement, child: ReactElement) {
-  // Right now, parent is always going to be a FLexbox, but might not always be the case
   const { style: parentStyle } = getProps(parent);
   const { style: childStyle } = getProps(child);
 
@@ -94,13 +91,11 @@ function minimize(parent: ReactElement, child: ReactElement) {
       restoreStyle,
       style
     });
-  } else {
-    return child;
   }
+  return child;
 }
 
 function restore(child: ReactElement) {
-  // Right now, parent is always going to be a FLexbox, but might not always be the case
   const { style: childStyle, restoreStyle } = getProps(child);
 
   const { flexBasis, flexShrink, flexGrow, ...rest } = childStyle;

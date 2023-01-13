@@ -1,14 +1,11 @@
 import classnames from 'classnames';
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { registerComponent } from './registry/ComponentRegistry';
 
 import './DraggableLayout.css';
 
-// We need to add props to restrict drag behaviour to, for example, popups only
-export const DraggableLayout = function DraggableLayout(props) {
-  // We shouldn't need this but somewhere the customDispatcher/handleDragStart callback is not
-  // being updated and preserves stale ref to props.children, so DragDrop from within a nested
-  // LatoutContext (Stack or DraggableLayout) fails.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const DraggableLayout = function DraggableLayout(props: any) {
   const sourceRef = useRef();
   sourceRef.current = props;
 

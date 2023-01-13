@@ -1,8 +1,8 @@
 import React, { CSSProperties, ReactElement } from 'react';
-import { followPath, getProps } from '../utils';
-import { swapChild } from './replace-layout-element';
-import { SplitterResizeAction } from './layoutTypes';
 import { dimension } from '../common-types';
+import { followPath, getProps } from '../utils';
+import { SplitterResizeAction } from './layoutTypes';
+import { swapChild } from './replace-layout-element';
 
 export function resizeFlexChildren(
   layoutRoot: ReactElement,
@@ -29,17 +29,16 @@ function applySizesToChildren(
       style: { [dimension]: size, flexBasis: actualFlexBasis }
     } = getProps(child);
     const meta = sizes[i];
-    let { currentSize, flexBasis } = meta;
+    const { currentSize, flexBasis } = meta;
     const hasCurrentSize = currentSize !== undefined;
     const newSize = hasCurrentSize ? meta.currentSize : flexBasis;
 
     if (newSize === undefined || size === newSize || actualFlexBasis === newSize) {
       return child;
-    } else {
-      return React.cloneElement(child, {
-        style: applySizeToChild(child.props.style, dimension, newSize)
-      });
     }
+    return React.cloneElement(child, {
+      style: applySizeToChild(child.props.style, dimension, newSize)
+    });
   });
 }
 

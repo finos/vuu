@@ -1,11 +1,11 @@
 import { ReactElement } from "react";
-import { getProps, typeOf } from "../utils";
-import { isContainer } from "../registry/ComponentRegistry";
-import { LayoutModel } from "../layout-reducer";
-import { DragDropRect, DropPos, RelativePosition } from "./dragDropTypes";
 import { rect } from "../common-types";
+import { LayoutModel } from "../layout-reducer";
+import { isContainer } from "../registry/ComponentRegistry";
+import { getProps, typeOf } from "../utils";
+import { DragDropRect, DropPos, RelativePosition } from "./dragDropTypes";
 
-export var positionValues = {
+export const positionValues = {
   north: 1,
   east: 2,
   south: 4,
@@ -20,7 +20,7 @@ export const RelativeDropPosition = {
   BEFORE: "before" as RelativePosition,
 };
 
-export var Position = Object.freeze({
+export const Position = Object.freeze({
   North: _position("north"),
   East: _position("east"),
   South: _position("south"),
@@ -58,7 +58,7 @@ function _position(str: keyof typeof positionValues) {
   });
 }
 
-var NORTH = Position.North,
+const NORTH = Position.North,
   SOUTH = Position.South,
   EAST = Position.East,
   WEST = Position.West,
@@ -77,7 +77,7 @@ export class BoxModel {
     model: ReactElement,
     dropTargetPaths: string[] = []
   ): Measurements {
-    var measurements: Measurements = {};
+    const measurements: Measurements = {};
     measureRootComponent(model, measurements, dropTargetPaths);
     return measurements;
   }
@@ -188,7 +188,6 @@ export function getPosition(
   } else {
     position = getPositionWithinBox(x, y, rect, pctX, pctY);
   }
-
   return { position: position!, x, y, closeToTheEdge, tab };
 }
 
@@ -234,7 +233,7 @@ function getCenteredBox(
 function measureRootComponent(
   rootComponent: ReactElement,
   measurements: Measurements,
-  dropTargets: any[]
+  dropTargets: string[]
 ) {
   const {
     id,
@@ -429,7 +428,7 @@ function measureComponentDomElement(
   }
   // Note: height and width are not required for dropTarget identification, but
   // are used in sizing calculations on drop
-  let { top, left, right, bottom, height, width } = el.getBoundingClientRect();
+  const { top, left, right, bottom, height, width } = el.getBoundingClientRect();
   let scrolling = undefined;
   if (isContainer(type)) {
     const scrollHeight = el.scrollHeight;
@@ -467,7 +466,7 @@ function allBoxesContainingPoint(
   } = getProps(component);
 
   const type = typeOf(component) as string;
-  var rect = measurements[path];
+  const rect = measurements[path];
   if (!containsPoint(rect, x, y)) return boxes;
 
   if (dropTargets && dropTargets.length) {
@@ -496,7 +495,7 @@ function allBoxesContainingPoint(
     scrollIntoViewIfNeccesary(rect, x, y);
   }
 
-  for (var i = 0; i < children.length; i++) {
+  for (let i = 0; i < children.length; i++) {
     if (type === "Stack" && component.props.active !== i) {
       continue;
     }

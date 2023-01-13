@@ -1,13 +1,11 @@
-{
-    "extends": "../../tsconfig.json",
+  {
+    "extends": "../../tsconfig-emit-types.json",
     "compilerOptions": {
-      "declaration": true,
-      "emitDeclarationOnly": true,
-      "noEmit": false,
-      "outDir": "types"
+      "outDir": "../../dist/vuu-layout/types"
     },
     "include": [
-      "src",
+      "src"
     ]
   }
+  
   

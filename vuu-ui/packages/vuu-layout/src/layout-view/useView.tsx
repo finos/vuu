@@ -61,7 +61,7 @@ export const useView = ({
       purgeState(id, key);
       layoutDispatch({ type: "save" });
     },
-    [id, purgeState]
+    [id, layoutDispatch, purgeState]
   );
 
   const save = useCallback(

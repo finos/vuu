@@ -1,20 +1,21 @@
-import React, { ReactElement } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { uuid } from "@finos/vuu-utils";
-import { getProp, getProps, nextStep, resetPath, typeOf } from "../utils";
+import React, { ReactElement } from "react";
+import { rectTuple } from "../common-types";
+import { DropPos } from "../drag-drop/dragDropTypes";
+import { DropTarget } from "../drag-drop/DropTarget";
 import { ComponentRegistry } from "../registry/ComponentRegistry";
+import { getProp, getProps, nextStep, resetPath, typeOf } from "../utils";
 import {
   createFlexbox,
   createPlaceHolder,
   flexDirection,
   getFlexStyle,
   getIntrinsicSize,
-  wrapIntrinsicSizeComponentWithFlexbox,
+  wrapIntrinsicSizeComponentWithFlexbox
 } from "./flexUtils";
-import { applyLayoutProps, LayoutProps } from "./layoutUtils";
 import { LayoutModel } from "./layoutTypes";
-import { DropPos } from "../drag-drop/dragDropTypes";
-import { rectTuple } from "../common-types";
-import { DropTarget } from "../drag-drop/DropTarget";
+import { applyLayoutProps, LayoutProps } from "./layoutUtils";
 
 export interface LayoutSpec {
   type: "Stack" | "Flexbox";
@@ -27,11 +28,6 @@ const isHtmlElement = (component: LayoutModel) => {
   return firstLetter === firstLetter.toLowerCase();
 };
 
-// newComponent has been dropped onto an existingComponent. A wrapper container will be inserted
-// into the layout tree, wrapping the existingComponent. newComponent will be injected into the
-// new wrapper, so existingComponent and newComponent will be siblings. Putting it another way,
-// wrapper will replace existingComponent in the layout tree and it will contain existingComponent
-// and newComponent.
 export function wrap(
   container: ReactElement,
   existingComponent: any,
@@ -96,15 +92,14 @@ function updateChildren(
       clientRect,
       dropRect
     );
-  } else {
-    return wrapFlexComponent(
-      container,
-      containerChildren,
-      existingComponent,
-      newComponent,
-      pos
-    );
   }
+  return wrapFlexComponent(
+    container,
+    containerChildren,
+    existingComponent,
+    newComponent,
+    pos
+  );
 }
 
 function wrapFlexComponent(
@@ -130,9 +125,8 @@ function wrapFlexComponent(
       pos
     );
   const targetFirst = isTargetFirst(pos);
-  const active = targetFirst ? 1 : 0; // double check this
+  const active = targetFirst ? 1 : 0;
 
-  // TODO how do we decide whether children should be resizable ?
   const newComponentProps = {
     resizeable: true,
     style: newComponentStyle,
@@ -157,7 +151,7 @@ function wrapFlexComponent(
       : undefined;
 
   const id = uuid();
-  var wrapper = React.createElement(
+  const wrapper = React.createElement(
     ComponentRegistry[type],
     {
       active,
@@ -165,7 +159,6 @@ function wrapFlexComponent(
       key: id,
       path: getProp(existingComponent, "path"),
       flexFill: getProp(existingComponent, "flexFill"),
-      // TODO we should be able to configure this in setDefaultLayoutProps
       ...splitterSize,
       ...showTabs,
       style,
@@ -178,7 +171,6 @@ function wrapFlexComponent(
             `${existingComponentPath}.0`,
             existingComponentProps
           ),
-          // resetPath(newComponent, `${existingComponentPath}.1`, newComponentProps),
           applyLayoutProps(
             React.cloneElement(newComponent, newComponentProps),
             `${existingComponentPath}.1`
@@ -189,7 +181,6 @@ function wrapFlexComponent(
             React.cloneElement(newComponent, newComponentProps),
             `${existingComponentPath}.0`
           ),
-          // resetPath(newComponent, `${existingComponentPath}.0`, newComponentProps),
           resetPath(
             existingComponent,
             `${existingComponentPath}.1`,
@@ -271,7 +262,6 @@ function wrapIntrinsicSizedComponent(
   );
 }
 
-//TODO we need to respect styles on the source, full-on flex might not be appropriate
 function getWrappedFlexStyles(
   type: string,
   existingComponent: ReactElement,

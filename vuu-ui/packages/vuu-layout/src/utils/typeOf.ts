@@ -1,18 +1,21 @@
 import { ReactElement } from 'react';
 import { LayoutModel, WithType } from '../layout-reducer';
 
-//TODO this should throw if we cannot identify a type
 export function typeOf(element?: LayoutModel | WithType): string | undefined {
   if (element) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const type = element.type as any;
     if (typeof type === 'function' || typeof type === 'object') {
       const elementName = type.displayName || type.name || type.type?.name;
       if (typeof elementName === 'string') {
         return elementName;
       }
-    } else if (typeof element.type === 'string') {
+    }
+    if (typeof element.type === 'string') {
       return element.type;
-    } else if (element.constructor) {
+    }
+    if (element.constructor) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (element.constructor as any).displayName as string;
     }
     throw Error(`typeOf unable to determine type of element`);

@@ -13,7 +13,7 @@ const packages = [
   //   'vuu-datagrid',
   "vuu-datatable",
   // "vuu-datagrid-extras",
-  //   'vuu-layout',
+  "vuu-layout",
   //   'vuu-shell'
 ];
 

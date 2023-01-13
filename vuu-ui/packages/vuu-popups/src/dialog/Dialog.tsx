@@ -1,10 +1,8 @@
-import React, { HTMLAttributes, useCallback, useRef, useState } from "react";
-import cx from "classnames";
-import { Portal } from "../portal";
-import { Scrim } from "@heswell/salt-lab";
-
+import { Scrim, Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { Text } from "@salt-ds/core";
-import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
+import cx from "classnames";
+import { HTMLAttributes, useCallback, useRef, useState } from "react";
+import { Portal } from "../portal";
 
 import "./Dialog.css";
 
@@ -24,11 +22,10 @@ export const Dialog = ({
   ...props
 }: DialogProps) => {
   const root = useRef<HTMLDivElement>(null);
-  const [posX, setPosX] = useState(0);
-  const [posY, setPosY] = useState(0);
+  const [posX] = useState(0);
+  const [posY] = useState(0);
 
   const close = useCallback(() => {
-    // TODO
     onClose?.();
   }, [onClose]);
 

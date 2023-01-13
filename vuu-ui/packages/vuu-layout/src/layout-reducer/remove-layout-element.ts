@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React, { ReactElement } from 'react';
 import { createPlaceHolder } from './flexUtils';
 import { swapChild } from './replace-layout-element';
@@ -21,7 +22,6 @@ export function removeChild(layoutRoot: ReactElement, { path }: RemoveAction) {
   }
   const { children } = getProps(targetParent);
   if (children.length > 1 && allOtherChildrenArePlaceholders(children, path)) {
-    // eslint-disable-next-line no-unused-vars
     const {
       style: { flexBasis, display, flexDirection, ...style }
     } = getProps(targetParent);
@@ -31,7 +31,6 @@ export function removeChild(layoutRoot: ReactElement, { path }: RemoveAction) {
       targetParent,
       createPlaceHolder(containerPath, flexBasis, style)
     );
-    // eslint-disable-next-line no-cond-assign
     while ((targetParent = followPathToParent(newLayout, containerPath))) {
       if (getProp(targetParent, 'path') === '0') {
         break;
@@ -39,7 +38,6 @@ export function removeChild(layoutRoot: ReactElement, { path }: RemoveAction) {
       const { children } = getProps(targetParent);
       if (allOtherChildrenArePlaceholders(children)) {
         containerPath = getProp(targetParent, 'path');
-        // eslint-disable-next-line no-unused-vars
         const {
           style: { flexBasis, display, flexDirection, ...style }
         } = getProps(targetParent);
@@ -50,29 +48,23 @@ export function removeChild(layoutRoot: ReactElement, { path }: RemoveAction) {
         );
       } else if (hasAdjacentPlaceholders(children)) {
         newLayout = collapsePlaceholders(layoutRoot, targetParent as ReactElement);
-        // } else if (hasRedundantPlaceholders(children)){
-        /*
-        We may have redundany placeholders for example where we have a tower  containing a Terrace and a placeholder
-        If all the components bordering on the lower placeholder are themselves placeholders, the lower placeholder
-        is redundant
-      */
       } else {
         break;
       }
     }
     return newLayout;
-    // return removeChild(rootProps, {path: targetParent.props.path});
-    // return removeChildAndPlaceholder(rootProps, {path: targetParent.props.path});
-  } else {
-    return _removeChild(layoutRoot, target);
   }
+  return _removeChild(layoutRoot, target);
 }
 
 function _removeChild(container: ReactElement, child: ReactElement): ReactElement {
-  let { active, children: componentChildren, path, preserve } = getProps(container);
+  const props = getProps(container)
+  const { children: componentChildren, path, preserve } = props
+  let { active } = props
   const { idx, finalStep } = nextStep(path, getProp(child, 'path'));
   const type = typeOf(container) as string;
   let children = componentChildren.slice() as ReactElement[];
+  
   if (finalStep) {
     children.splice(idx, 1);
     if (active !== undefined && active >= idx) {
@@ -83,7 +75,6 @@ function _removeChild(container: ReactElement, child: ReactElement): ReactElemen
       return unwrap(container, children[0]);
     }
 
-    // Not 100% sure we should do this, unless configured to
     if (!children.some(isFlexible) && children.some(canBeMadeFlexible)) {
       children = makeFlexible(children);
     }
@@ -114,17 +105,12 @@ function unwrap(container: ReactElement, child: ReactElement) {
   } else if (type === 'Flexbox') {
     const dim = container.props.style.flexDirection === 'column' ? 'height' : 'width';
     const {
-      // eslint-disable-next-line no-unused-vars
       style: { [dim]: size, ...style }
     } = unwrappedChild.props;
-    // Need to overwrite key
     unwrappedChild = React.cloneElement(unwrappedChild, {
-      // Need to assign key
       flexFill: undefined,
       style: {
         ...style,
-        // flexFill, if present described the childs relationship to the doomed flexbox,
-        // must not be applied to new parent
         flexGrow,
         flexShrink,
         flexBasis,
@@ -136,16 +122,16 @@ function unwrap(container: ReactElement, child: ReactElement) {
   return unwrappedChild;
 }
 
-function isFlexible(element: ReactElement) {
+const isFlexible = (element: ReactElement) => {
   return element.props.style.flexGrow > 0;
 }
 
-function canBeMadeFlexible(element: ReactElement) {
+const canBeMadeFlexible = (element: ReactElement) => {
   const { width, height, flexGrow } = element.props.style;
   return flexGrow === 0 && typeof width !== 'number' && typeof height !== 'number';
 }
 
-function makeFlexible(children: ReactElement[]) {
+const makeFlexible = (children: ReactElement[]) => {
   return children.map((child) =>
     canBeMadeFlexible(child)
       ? React.cloneElement(child, {
@@ -173,7 +159,7 @@ const hasAdjacentPlaceholders = (children: ReactElement[]) => {
 };
 
 const collapsePlaceholders = (container: ReactElement, target: ReactElement) => {
-  let { children: componentChildren, path } = getProps(container);
+  const { children: componentChildren, path } = getProps(container);
   const { idx, finalStep } = nextStep(path, getProp(target, 'path'));
   let children = componentChildren.slice() as ReactElement[];
   if (finalStep) {
@@ -222,7 +208,7 @@ const _collapsePlaceHolders = (container: ReactElement) => {
 const mergePlaceholders = ([placeholder, ...placeholders]: ReactElement[]) => {
   const targetStyle = getProp(placeholder, 'style');
   let { flexBasis, flexGrow, flexShrink } = targetStyle;
-  for (let {
+  for (const {
     props: { style }
   } of placeholders) {
     flexBasis += style.flexBasis;

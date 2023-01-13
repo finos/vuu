@@ -1,16 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { uuid } from "@finos/vuu-utils";
-import { CSSProperties, ReactElement } from "react";
-import React, { cloneElement } from "react";
+import React, { cloneElement, CSSProperties, ReactElement } from "react";
 import { dimension } from "../common-types";
 import {
   ComponentRegistry,
   isContainer,
-  isLayoutComponent,
+  isLayoutComponent
 } from "../registry/ComponentRegistry";
 import {
   getPersistentState,
   hasPersistentState,
-  setPersistentState,
+  setPersistentState
 } from "../use-persistent-state";
 import { expandFlex, getProps, typeOf } from "../utils";
 import { LayoutJSON, LayoutModel, layoutType } from "./layoutTypes";
@@ -67,7 +67,6 @@ export const applyLayout = (
   props: LayoutProps,
   previousLayout?: LayoutModel
 ): LayoutModel => {
-  // This works if the root layout is itself loaded from JSON
   const [layoutProps, children] = getChildLayoutProps(
     type,
     props,
@@ -99,14 +98,11 @@ function getLayoutProps(
   } = getProps(previousLayout);
 
   const prevMatch = typeOf(previousLayout) === type && path === prevPath;
-  // TODO is there anything else we can re-use from previousType ?
   const id = prevMatch ? prevId : props.id ?? uuid();
   const active = type === "Stack" ? props.active ?? prevActive : undefined;
 
   const key = id;
-  //TODO this might be wrong if client has updated style ?
   const style = prevMatch ? prevStyle : getStyle(type, props, parentType);
-  // TODO need two  interfaces to cover these two scenarios
   return isLayoutComponent(type)
     ? { id, key, path, style, type, active }
     : { id, key, style, "data-path": path };
@@ -128,8 +124,6 @@ function getChildLayoutProps(
   );
 
   if (props.layout && !previousLayout) {
-    // reconstitute children from layout. Will always be a single child,
-    // but return as array to make subsequent processing more consistent
     return [layoutProps, [layoutFromJson(props.layout, `${path}.0`)]];
   }
 
@@ -148,34 +142,28 @@ function getLayoutChildren(
   path = "0",
   previousChildren?: ReactElement[]
 ) {
-  // Avoid React.Children.map here, it messes with the keys.
   const kids = Array.isArray(children)
     ? children
     : React.isValidElement(children)
     ? [children]
     : [];
-  return isContainer(type) /*|| isView(type)*/
-    ? kids.map((child, i) => {
-        const childType = typeOf(child) as string;
-        const previousType = typeOf(previousChildren?.[i]);
-        if (!previousType || childType === previousType) {
-          const [layoutProps, children] = getChildLayoutProps(
-            childType,
-            child.props,
-            `${path}.${i}`,
-            type,
-            previousChildren?.[i]
-          );
-          return React.cloneElement(child, layoutProps, children);
-        } else {
-          //TODO is this always correct ?
-          return previousChildren?.[i];
-        }
-      })
-    : // TODO should we check the types of children ?
-      // : previousChildren ?? children;
-      //TODO this is new - is it dangerous ?
-      children;
+  return isContainer(type) ? kids.map((child, i) => {
+      const childType = typeOf(child) as string;
+      const previousType = typeOf(previousChildren?.[i]);
+      
+      if (!previousType || childType === previousType) {
+        const [layoutProps, children] = getChildLayoutProps(
+          childType,
+          child.props,
+          `${path}.${i}`,
+          type,
+          previousChildren?.[i]
+        );
+        return React.cloneElement(child, layoutProps, children);
+      }
+      
+      return previousChildren?.[i];
+    }) : children;
 }
 
 const getStyle = (
@@ -196,7 +184,7 @@ const getStyle = (
     const { flex, ...otherStyles } = style;
     style = {
       ...otherStyles,
-      ...expandFlex(flex),
+      ...expandFlex(typeof flex === "number" ? flex : 0),
     };
   } else if (parentType === "Stack") {
     style = {
@@ -208,7 +196,6 @@ const getStyle = (
     (style.width || style.height) &&
     style.flexBasis === undefined
   ) {
-    // strictly, this should depend on flexDirection
     style = {
       ...style,
       flexBasis: "auto",
@@ -220,15 +207,10 @@ const getStyle = (
   return style;
 };
 
-//TODO we don't need id beyond view
 export function layoutFromJson(
   { id = uuid(), type, children, props, state }: LayoutJSON,
   path: string
 ): ReactElement {
-  // if (type === "DraggableLayout") {
-  //   return layoutFromJson(children[0], "0");
-  // }
-
   const componentType = type.match(/^[a-z]/) ? type : ComponentRegistry[type];
 
   if (componentType === undefined) {
@@ -243,9 +225,7 @@ export function layoutFromJson(
     componentType,
     {
       ...props,
-      id,
       key: id,
-      path,
     },
     children
       ? children.map((child, i) => layoutFromJson(child, `${path}.${i}`))
@@ -276,7 +256,7 @@ export function serializeProps(props?: LayoutProps) {
   if (props) {
     const { path, ...otherProps } = props;
     const result: { [key: string]: any } = {};
-    for (let [key, value] of Object.entries(otherProps)) {
+    for (const [key, value] of Object.entries(otherProps)) {
       result[key] = serializeValue(value);
     }
     return result;
@@ -294,7 +274,7 @@ function serializeValue(value: unknown): any {
     return value.map(serializeValue);
   } else if (typeof value === "object" && value !== null) {
     const result: { [key: string]: any } = {};
-    for (let [k, v] of Object.entries(value)) {
+    for (const [k, v] of Object.entries(value)) {
       result[k] = serializeValue(v);
     }
     return result;

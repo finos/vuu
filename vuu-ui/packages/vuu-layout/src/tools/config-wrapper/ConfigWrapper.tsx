@@ -1,48 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import { LayoutConfigurator, LayoutTreeViewer } from '..';
-import { followPathToComponent } from '../..';
+import { LayoutConfigurator, LayoutTreeViewer } from "..";
+import { followPathToComponent } from "../..";
 
-export const ConfigWrapper = ({ children }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const ConfigWrapper = ({ children }: any) => {
   const designMode = false;
-  // const [designMode, setDesignMode] = useState(false);
   const [layout, setLayout] = useState(children);
   const [selectedComponent, setSelectedComponent] = useState(children);
 
-  const handleSelection = (selectedPath) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSelection = (selectedPath: any) => {
     const targetComponent = followPathToComponent(layout, selectedPath);
     setSelectedComponent(targetComponent);
   };
 
-  const handleChange = (property, value) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleChange = (property: any, value: any) => {
     console.log(`change ${property} -> ${value}`);
 
-    // 2) replace selectedComponent and set layout
     const newComponent = React.cloneElement(selectedComponent, {
       style: {
         ...selectedComponent.props.style,
-        [property]: value
-      }
+        [property]: value,
+      },
     });
     setSelectedComponent(newComponent);
-    setLayout(React.cloneElement(layout, null, newComponent));
+    setLayout(React.cloneElement(layout, {}, newComponent));
   };
 
   return (
     <div data-design-mode={`${designMode}`}>
       {layout}
       <br />
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: "flex" }}>
         <LayoutConfigurator
           height={300}
           managedStyle={selectedComponent.props.style}
           width={300}
           onChange={handleChange}
+          style={undefined}
         />
         <LayoutTreeViewer
           layout={layout}
           onSelect={handleSelection}
-          style={{ width: 300, height: 300, backgroundColor: '#ccc' }}
+          style={{ width: 300, height: 300, backgroundColor: "#ccc" }}
         />
       </div>
       {/* <StateButton

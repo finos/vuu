@@ -1,12 +1,11 @@
-import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
-import { useResizeObserver } from './useResizeObserver';
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { useResizeObserver } from "./useResizeObserver";
 import {
   BreakPointRamp,
   breakpointRamp,
-  getBreakPoints as getDocumentBreakpoints
-} from './breakpoints';
-import { BreakPoint, BreakPointsProp } from '../flexbox/flexboxTypes';
-import { ExecFileOptionsWithStringEncoding } from 'child_process';
+  getBreakPoints as getDocumentBreakpoints,
+} from "./breakpoints";
+import { BreakPoint, BreakPointsProp } from "../flexbox/flexboxTypes";
 
 const EMPTY_ARRAY: BreakPoint[] = [];
 
@@ -18,21 +17,23 @@ export interface BreakpointsHookProps {
 // TODO how do we cater for smallerThan/greaterThan breakpoints
 export const useBreakpoints = (
   { breakPoints: breakPointsProp, smallerThan }: BreakpointsHookProps,
-  ref: RefObject<any>
+  ref: RefObject<HTMLElement>
 ) => {
-  const [breakpointMatch, setBreakpointmatch] = useState(smallerThan ? false : 'lg');
+  const [breakpointMatch, setBreakpointmatch] = useState(
+    smallerThan ? false : "lg"
+  );
   const bodyRef = useRef(document.body);
-  const breakPointsRef = useRef(
+  const breakPointsRef = useRef<BreakPointRamp[]>(
     breakPointsProp ? breakpointRamp(breakPointsProp) : getDocumentBreakpoints()
   );
 
   // TODO how do we identify the default
-  const sizeRef = useRef('lg');
+  const sizeRef = useRef("lg");
 
   const stopFromMinWidth = useCallback(
     (w) => {
       if (breakPointsRef.current) {
-        for (let [name, size] of breakPointsRef.current) {
+        for (const [name, size] of breakPointsRef.current) {
           if (w >= size) {
             return name;
           }
@@ -64,8 +65,8 @@ export const useBreakpoints = (
   // TODO need to make the dimension a config
   useResizeObserver(
     ref || bodyRef,
-    breakPointsRef.current ? ['width'] : EMPTY_ARRAY,
-    ({ width: measuredWidth }: { width: number }) => {
+    breakPointsRef.current ? ["width"] : EMPTY_ARRAY,
+    ({ width: measuredWidth }: { width?: number }) => {
       const result = matchSizeAgainstBreakpoints(measuredWidth);
       if (result !== sizeRef.current) {
         sizeRef.current = result;

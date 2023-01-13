@@ -1,5 +1,5 @@
-import React, { HTMLAttributes } from "react";
 import cx from "classnames";
+import { HTMLAttributes } from "react";
 import { registerComponent } from "../registry/ComponentRegistry";
 
 import "./Placeholder.css";
@@ -30,7 +30,6 @@ export const Placeholder = ({
       data-placeholder
       data-resizeable
     >
-      {/* <LayoutProviderVersion /> */}
     </div>
   );
 };
