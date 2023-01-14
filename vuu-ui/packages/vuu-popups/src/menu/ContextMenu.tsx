@@ -2,11 +2,9 @@ import { useIdMemo as useId } from "@salt-ds/core";
 import { useCallback, useRef } from "react";
 import { Portal } from "../portal";
 import MenuList, { MenuListProps } from "./MenuList";
-import { useItemsWithIds } from "./use-items-with-ids";
 import { getItemId, getMenuId, useCascade } from "./use-cascade";
-
-import "./ContextMenu.css";
 import { useClickAway } from "./use-click-away";
+import { useItemsWithIds } from "./use-items-with-ids";
 
 export interface ContextMenuProps extends Omit<MenuListProps, "onCloseMenu"> {
   onClose?: (menuId?: string, options?: unknown) => void;

@@ -83,9 +83,9 @@ const MenuList = ({
     el?.id && onActivate?.(el.id);
   };
 
-  const { focusVisible, highlightedIdx, listProps } = useKeyboardNavigation({
+  const { focusVisible, highlightedIndex, listProps } = useKeyboardNavigation({
     count: React.Children.count(children),
-    highlightedIdx: highlightedIdxProp,
+    highlightedIndex: highlightedIdxProp,
     onActivate: handleActivate,
     onHighlight: onHighlightMenuItem,
     onOpenMenu: handleOpenMenu,
@@ -101,9 +101,9 @@ const MenuList = ({
   }, [activatedByKeyboard, childMenuShowing]);
 
   const getActiveDescendant = () =>
-    highlightedIdx === undefined || highlightedIdx === -1
+    highlightedIndex === undefined || highlightedIndex === -1
       ? undefined
-      : mapIdxToId.get(highlightedIdx);
+      : mapIdxToId.get(highlightedIndex);
 
   return (
     <div
@@ -172,7 +172,7 @@ const MenuList = ({
             itemId,
             idx,
             child.key ?? itemId,
-            highlightedIdx,
+            highlightedIndex,
             appliedFocusVisible,
             className,
             hasSeparator

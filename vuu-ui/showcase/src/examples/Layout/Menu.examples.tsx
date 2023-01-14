@@ -27,8 +27,8 @@ let displaySequence = 1;
 const usePosition = () => {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
+    x: -1,
+    y: -1,
   });
   useLayoutEffect(() => {
     if (ref.current) {
@@ -74,19 +74,18 @@ export const DefaultContextMenu = () => {
 
   const { ref, position } = usePosition();
 
+  console.log({ position });
+
   return (
     <div
       ref={ref}
       style={{
-        alignItems: "flex-start",
-        display: "flex",
-        gap: 100,
         position: "absolute",
         top: 100,
         left: 100,
       }}
     >
-      {position ? (
+      {position.x !== -1 && position.y !== -1 ? (
         <SampleContextMenu position={position} onClose={handleClose} />
       ) : null}
     </div>
@@ -107,7 +106,7 @@ export const AdditionalNesting = () => {
       ref={ref}
       style={{ position: "absolute", top: 100, left: 100, display: "flex" }}
     >
-      {position ? (
+      {position.x !== -1 && position.y !== -1 ? (
         <ContextMenu position={position}>
           <MenuItemGroup label="Item 1 #0">
             <MenuItem>
