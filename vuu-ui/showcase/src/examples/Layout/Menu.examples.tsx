@@ -1,7 +1,11 @@
 import { Flexbox } from "@finos/vuu-layout";
 import {
   ContextMenu,
+  ContextMenuItemDescriptor,
+  ContextMenuProps,
   ContextMenuProvider,
+  MenuActionHandler,
+  MenuBuilder,
   MenuItem,
   MenuItemGroup,
   Separator,
@@ -10,14 +14,22 @@ import {
 
 import { Button } from "@salt-ds/core";
 
-import { ComponentAnatomy as RenderVisualiser } from "@heswell/component-anatomy";
-import { useLayoutEffect, useRef, useState } from "react";
+import {
+  HTMLAttributes,
+  MouseEventHandler,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 let displaySequence = 1;
 
 const usePosition = () => {
-  const ref = useRef(null);
-  const [position, setPosition] = useState(undefined);
+  const ref = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
   useLayoutEffect(() => {
     if (ref.current) {
       const { left: x, top: y } = ref.current.getBoundingClientRect();
@@ -25,10 +37,10 @@ const usePosition = () => {
     }
   }, []);
 
-  return [ref, position];
+  return { ref, position };
 };
 
-const SampleContextMenu = (props) => (
+const SampleContextMenu = (props: Partial<ContextMenuProps>) => (
   <ContextMenu {...props}>
     <MenuItemGroup label="Item 1">
       <MenuItem action="ACT 1.1">Item 1.1</MenuItem>
@@ -56,11 +68,11 @@ const SampleContextMenu = (props) => (
 );
 
 export const DefaultContextMenu = () => {
-  const handleClose = (/*action, options*/) => {
+  const handleClose: ContextMenuProps["onClose"] = (/*action, options*/) => {
     console.log(`clicked menu action`);
   };
 
-  const [ref, position] = usePosition();
+  const { ref, position } = usePosition();
 
   return (
     <div
@@ -88,7 +100,7 @@ const Id = ({ children }) => (
 );
 
 export const AdditionalNesting = () => {
-  const [ref, position] = usePosition();
+  const { ref, position } = usePosition();
 
   return (
     <div
@@ -165,7 +177,10 @@ export const AdditionalNesting = () => {
 AdditionalNesting.displaySequence = displaySequence++;
 
 export const ContextMenuPopup = () => {
-  const [position, setPosition] = useState(null);
+  const [position, setPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
   const ref = useRef(null);
   const keyboardNav = useRef(false);
 
@@ -181,19 +196,19 @@ export const ContextMenuPopup = () => {
 
   const handleClose = (/* menuId */) => {
     console.log(`closed with menuId`);
-    setPosition(null);
+    setPosition({ x: 0, y: 0 });
   };
 
   const getContextMenu = () => {
     return position ? (
       <ContextMenu
         position={position}
-        activatedWithKeyboard={keyboardNav.current}
+        activatedByKeyboard={keyboardNav.current}
         onClose={handleClose}
         withPortal
       >
         <MenuItemGroup label="Item 1">
-          <MenuItem actiopn="1.1">Item 1.1</MenuItem>
+          <MenuItem action="1.1">Item 1.1</MenuItem>
           <MenuItem>Item 1.2</MenuItem>
           <MenuItem>Item 1.3</MenuItem>
           <Separator />
@@ -276,10 +291,13 @@ export const ContextMenuPopup = () => {
 
 ContextMenuPopup.displaySequence = displaySequence++;
 
-const ComponentWithMenu = ({ location, ...props }) => {
+const ComponentWithMenu = ({
+  location,
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { location: "left" | "right" }) => {
   const showContextMenu = useContextMenu();
-  const handleContextMenu = (e) => {
-    console.log("handleContextMenu");
+  const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
+    console.log(`ComponentWithMenu<${location}> handleContextMenu`);
     showContextMenu(e, location, { type: "outer" });
   };
   return <div {...props} onContextMenu={handleContextMenu} />;
@@ -292,8 +310,9 @@ export const SimpleContextMenuProvider = () => {
     { label: "Group", action: "group" },
   ];
 
-  const handleMenuAction = (/*type, options*/) => {
+  const handleMenuAction: MenuActionHandler = (/*type, options*/) => {
     console.log(`handleContextMenu`);
+    return true;
   };
 
   const menuBuilder = () => menuDescriptors;
@@ -314,7 +333,7 @@ export const SimpleContextMenuProvider = () => {
 SimpleContextMenuProvider.displaySequence = displaySequence++;
 
 export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
-  const menuDescriptors = [
+  const menuDescriptors: ContextMenuItemDescriptor[] = [
     { label: "Sort", action: "sort", icon: "sort-up" },
     { label: "Filter", action: "filter", icon: "filter" },
     { label: "Group", action: "group" },
@@ -331,20 +350,31 @@ export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
     },
   ];
 
-  const handleMenuAction = (/* type, options */) => {
-    console.log(`handleContextMenu`);
+  const handleMenuAction: MenuActionHandler = (
+    action: string,
+    options: unknown
+  ) => {
+    console.log(`handleContextMenu ${action}`, {
+      options,
+    });
+    return true;
   };
 
-  const menuBuilder = (location, options) =>
+  const menuBuilder: MenuBuilder = (location: string) =>
     menuDescriptors.filter(
       (descriptor) =>
         descriptor.location === undefined || descriptor.location === location
     );
 
-  const localMenuBuilder = (location, options) => {
+  const localMenuBuilder: MenuBuilder = (/* location: string */) => {
+    // localMenuBuilder isn't using location, as we just return hardcoded options
     return [
-      { label: "Red 1", action: "left1", location: "left" },
-      { label: "Red 2", action: "left2", location: "left" },
+      {
+        label: "Local 1",
+        action: "local1",
+        options: { LookAtMeMa: "no-hands" },
+      },
+      { label: "Local 2", action: "local2" },
     ];
   };
 

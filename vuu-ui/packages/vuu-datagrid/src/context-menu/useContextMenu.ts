@@ -1,6 +1,7 @@
 /* eslint-disable no-sequences */
 import { DataSource } from "@finos/vuu-data";
 import { removeColumnFromFilter } from "@finos/vuu-filters";
+import { MenuActionHandler } from "@finos/vuu-popups";
 import { AggregationType } from "../constants";
 import { GridModelDispatch } from "../grid-context";
 import { GridModelType } from "../grid-model/gridModelTypes";
@@ -36,12 +37,13 @@ export const useContextMenu = ({
   dispatchGridModelAction,
 }: ContextMenuHookProps) => {
   /** return {boolean} used by caller to determine whether to forward to additional installed context menu handlers */
-  const handleContextMenuAction = (
-    type: string,
-    options: ContextMenuOptions
+  const handleContextMenuAction: MenuActionHandler = (
+    type,
+    options
   ): boolean => {
-    if (options.column) {
-      const { column } = options;
+    const gridOptions = options as ContextMenuOptions;
+    if (gridOptions.column) {
+      const { column } = gridOptions;
       // prettier-ignore
       switch(type){
         case "sort-asc": return dataSource.sort(GridModel.setSortColumn(gridModel, column, "A")), true;
@@ -51,7 +53,7 @@ export const useContextMenu = ({
         case "group": return dataSource.group(GridModel.addGroupColumn({}, column)), true;
         case "group-add": return dataSource.group(GridModel.addGroupColumn(gridModel, column)), true;
         case "column-hide": return dispatchGridModelAction({type, column}),true;
-        case "filter-remove-column": return handleRemoveColumnFromFilter(options, dataSource), true;
+        case "filter-remove-column": return handleRemoveColumnFromFilter(gridOptions, dataSource), true;
         case "remove-filters": return dataSource.filter(undefined, ""), true;
         case "agg-avg": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Average)), true;
         case "agg-high": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, High)), true;

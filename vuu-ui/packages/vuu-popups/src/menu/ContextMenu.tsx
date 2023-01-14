@@ -1,33 +1,41 @@
 import { useIdMemo as useId } from "@salt-ds/core";
 import { useCallback, useRef } from "react";
 import { Portal } from "../portal";
-import MenuList from "./MenuList";
+import MenuList, { MenuListProps } from "./MenuList";
 import { useItemsWithIds } from "./use-items-with-ids";
 import { getItemId, getMenuId, useCascade } from "./use-cascade";
 
 import "./ContextMenu.css";
 import { useClickAway } from "./use-click-away";
 
+export interface ContextMenuProps extends Omit<MenuListProps, "onCloseMenu"> {
+  onClose?: (menuId?: string, options?: unknown) => void;
+  position?: { x: number; y: number };
+  withPortal?: boolean;
+}
+
+const noop = () => undefined;
+
 export const ContextMenu = ({
-  activatedWithKeyboard = false,
+  activatedByKeyboard,
   children: childrenProp,
   className,
   id: idProp,
   onClose = () => undefined,
   position = { x: 0, y: 0 },
-  source: sourceProp,
   style,
-}) => {
+  ...menuListProps
+}: ContextMenuProps) => {
   const id = useId(idProp);
-  const closeMenuRef = useRef(null);
-  const [menus, actions] = useItemsWithIds(sourceProp, childrenProp);
-  const navigatingWithKeyboard = useRef(activatedWithKeyboard);
+  const closeMenuRef = useRef<(location?: string) => void>(noop);
+  const [menus, actions] = useItemsWithIds(childrenProp);
+  const navigatingWithKeyboard = useRef(activatedByKeyboard);
   const handleMouseEnterItem = useCallback(() => {
     navigatingWithKeyboard.current = false;
   }, []);
 
   const handleActivate = useCallback(
-    (menuId) => {
+    (menuId: string) => {
       const { action, options } = actions[menuId];
       closeMenuRef.current("root");
       onClose(action, options);
@@ -57,7 +65,7 @@ export const ContextMenu = ({
     isOpen: openMenus.length > 0,
   });
 
-  const handleOpenMenu = (id) => {
+  const handleOpenMenu = (id: string) => {
     const itemId = getItemId(id);
     const menuId = getMenuId(itemId);
     navigatingWithKeyboard.current = true;
@@ -74,7 +82,7 @@ export const ContextMenu = ({
 
   const lastMenu = openMenus.length - 1;
 
-  const getChildMenuIndex = (i) => {
+  const getChildMenuIndex = (i: number) => {
     if (i >= lastMenu) {
       return -1;
     } else {
@@ -94,6 +102,7 @@ export const ContextMenu = ({
         return (
           <Portal key={i} x={left} y={top} onRender={handleRender}>
             <MenuList
+              {...menuListProps}
               activatedByKeyboard={navigatingWithKeyboard.current}
               childMenuShowing={childMenuIndex}
               className={className}
