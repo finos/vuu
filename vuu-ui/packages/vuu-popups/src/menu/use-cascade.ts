@@ -1,10 +1,22 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  MouseEvent,
+  SyntheticEvent,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { closestListItem, listItemIndex } from "./list-dom-utils";
+import { MenuItemProps } from "./MenuList";
 // import {mousePosition} from './aim/utils';
 // import {aiming} from './aim/aim';
 
-const nudge = (menus, distance, pos) => {
+const nudge = (
+  menus: RuntimeMenuDescriptor[],
+  distance: number,
+  pos: "left" | "top"
+) => {
   return menus.map((m, i) =>
     i === menus.length - 1
       ? {
@@ -14,12 +26,17 @@ const nudge = (menus, distance, pos) => {
       : m
   );
 };
-const nudgeLeft = (menus, distance) => nudge(menus, distance, "left");
-const nudgeUp = (menus, distance) => nudge(menus, distance, "top");
+const nudgeLeft = (menus: RuntimeMenuDescriptor[], distance: number) =>
+  nudge(menus, distance, "left");
+const nudgeUp = (menus: RuntimeMenuDescriptor[], distance: number) =>
+  nudge(menus, distance, "top");
 
-const flipSides = (id, menus) => {
+const flipSides = (id: string, menus: RuntimeMenuDescriptor[]) => {
   const [parentMenu, menu] = menus.slice(-2);
   const el = document.getElementById(`${id}-${menu.id}`);
+  if (el === null) {
+    throw Error(`useCascade.flipSides element with id ${menu.id} not found`);
+  }
   const { width } = el.getBoundingClientRect();
   return menus.map((m) =>
     m === menu
@@ -31,9 +48,9 @@ const flipSides = (id, menus) => {
   );
 };
 
-const closedNode = (el) =>
-  el.ariaHasPopup === "true" && el.ariaExpanded !== "true";
-const getPosition = (el, openMenus) => {
+// const closedNode = (el: HTMLElement) =>
+//   el.ariaHasPopup === "true" && el.ariaExpanded !== "true";
+const getPosition = (el: HTMLElement, openMenus: RuntimeMenuDescriptor[]) => {
   const [{ left, top: menuTop }] = openMenus.slice(-1);
   // const {top, right, bottom, left} = el.getBoundingClientRect();
   // this will not work for MenuList within window, we need the
@@ -42,18 +59,24 @@ const getPosition = (el, openMenus) => {
   return { left: left + width, top: top + menuTop };
 };
 
-export const getItemId = (id) => {
-  let pos = id.lastIndexOf("-");
+export type RuntimeMenuDescriptor = {
+  id: string;
+  left: number;
+  top: number;
+};
+
+export const getItemId = (id: string) => {
+  const pos = id.lastIndexOf("-");
   return pos === -1 ? id : id.slice(pos + 1);
 };
 
-export const getMenuId = (id) => {
+export const getMenuId = (id: string) => {
   const itemId = getItemId(id);
   const pos = itemId.lastIndexOf(".");
   return pos > -1 ? itemId.slice(0, pos) : "root";
 };
 
-const getMenuDepth = (id) => {
+const getMenuDepth = (id: string) => {
   let count = 0,
     pos = id.indexOf(".", 0);
   while (pos !== -1) {
@@ -62,31 +85,52 @@ const getMenuDepth = (id) => {
   }
   return count;
 };
-const identifyItem = (el) => [
-  getMenuId(el.id),
-  getItemId(el.id),
-  el.ariaHasPopup === "true",
-  el.ariaExpanded === "true",
-  getMenuDepth(el.id),
-];
+
+const identifyItem = (el: HTMLElement) => ({
+  menuId: getMenuId(el.id),
+  itemId: getItemId(el.id),
+  isGroup: el.ariaHasPopup === "true",
+  isOpen: el.ariaExpanded === "true",
+  level: getMenuDepth(el.id),
+});
+
+export interface CascadeHookProps {
+  id: string;
+  onActivate: (menuId: string) => void;
+  onMouseEnterItem: (evt: MouseEvent, itemId: string) => void;
+  position: { x: number; y: number };
+}
+
+export interface CascadeHooksResult {
+  closeMenu: () => void;
+  handleRender: () => void;
+  listItemProps: Partial<MenuItemProps>;
+  openMenu: (menuId?: string, itemId?: string) => void;
+  openMenus: RuntimeMenuDescriptor[];
+}
+
+type MenuStatus = "no-popup" | "popup-open" | "pending-close" | "popup-pending";
+type MenuState = { [key: string]: MenuStatus };
 
 export const useCascade = ({
   id,
   onActivate,
   onMouseEnterItem,
   position: { x: posX, y: posY },
-}) => {
+}: CascadeHookProps): CascadeHooksResult => {
   const [, forceRefresh] = useState({});
-  const openMenus = useRef([{ id: "root", left: posX, top: posY }]);
+  const openMenus = useRef<RuntimeMenuDescriptor[]>([
+    { id: "root", left: posX, top: posY },
+  ]);
 
-  const setOpenMenus = useCallback((menus) => {
+  const setOpenMenus = useCallback((menus: RuntimeMenuDescriptor[]) => {
     openMenus.current = menus;
     forceRefresh({});
   }, []);
 
-  const menuOpenPendingTimeout = useRef(null);
-  const menuClosePendingTimeout = useRef(null);
-  const menuState = useRef({ root: "no-popup" });
+  const menuOpenPendingTimeout = useRef<number | undefined>();
+  const menuClosePendingTimeout = useRef<number | undefined>();
+  const menuState = useRef<MenuState>({ root: "no-popup" });
   const prevLevel = useRef(0);
 
   // const prevAim = useRef({mousePos: null, distance: true});
@@ -107,7 +151,7 @@ export const useCascade = ({
   );
 
   const closeMenu = useCallback(
-    (menuId) => {
+    (menuId?: string) => {
       if (menuId === "root") {
         setOpenMenus([]);
       } else {
@@ -140,7 +184,7 @@ export const useCascade = ({
       if (menuOpenPendingTimeout.current) {
         clearTimeout(menuOpenPendingTimeout.current);
       }
-      menuOpenPendingTimeout.current = setTimeout(() => {
+      menuOpenPendingTimeout.current = window.setTimeout(() => {
         console.log(`scheduleOpen timed out opening ${itemId}`);
         closeMenus(menuId, itemId);
         menuState.current[menuId] = "popup-open";
@@ -157,7 +201,7 @@ export const useCascade = ({
         `scheduleClose openMenuId ${openMenuId} menuId ${menuId} itemId ${itemId}`
       );
       menuState.current[openMenuId] = "pending-close";
-      menuClosePendingTimeout.current = setTimeout(() => {
+      menuClosePendingTimeout.current = window.setTimeout(() => {
         closeMenus(menuId, itemId);
       }, 400);
     },
@@ -184,11 +228,11 @@ export const useCascade = ({
     }
   }, [id, setOpenMenus]);
 
-  const listItemProps = useMemo(
+  const listItemProps: Partial<MenuItemProps> = useMemo(
     () => ({
-      onMouseEnter: (evt) => {
-        const listItemEl = closestListItem(evt.target);
-        const [menuId, itemId, isGroup, isOpen, level] =
+      onMouseEnter: (evt: MouseEvent) => {
+        const listItemEl = closestListItem(evt.target as HTMLElement);
+        const { menuId, itemId, isGroup, isOpen, level } =
           identifyItem(listItemEl);
         const sameLevel = prevLevel.current === level;
         const {
@@ -211,7 +255,7 @@ export const useCascade = ({
         } else if (state === "popup-pending" && !isGroup) {
           menuState.current[menuId] = "no-popup";
           clearTimeout(menuOpenPendingTimeout.current);
-          menuOpenPendingTimeout.current = null;
+          menuOpenPendingTimeout.current = undefined;
         } else if (state === "popup-pending" && isGroup) {
           clearTimeout(menuOpenPendingTimeout.current);
           scheduleOpen(menuId, itemId, listItemEl);
@@ -248,20 +292,24 @@ export const useCascade = ({
         if (state === "pending-close") {
           if (menuOpenPendingTimeout.current) {
             clearTimeout(menuOpenPendingTimeout.current);
-            menuOpenPendingTimeout.current = null;
+            menuOpenPendingTimeout.current = undefined;
           }
           clearTimeout(menuClosePendingTimeout.current);
-          menuClosePendingTimeout.current = null;
+          menuClosePendingTimeout.current = undefined;
           menuState.current[menuId] = "popup-open";
         }
 
         onMouseEnterItem(evt, itemId);
       },
 
-      onClick: (evt) => {
-        const listItemEl = closestListItem(evt.target);
+      onClick: (evt: SyntheticEvent) => {
+        const targetElement = evt.target as HTMLElement;
+        const listItemEl = closestListItem(targetElement);
         const idx = listItemIndex(listItemEl);
-        if (closedNode(listItemEl).ariaHasPopup === "true") {
+        console.log(
+          `list item click [${idx}] hasPopup ${listItemEl.ariaHasPopup}`
+        );
+        if (listItemEl.ariaHasPopup === "true") {
           if (listItemEl.ariaExpanded !== "true") {
             openMenu(idx);
           } else {
@@ -275,6 +323,7 @@ export const useCascade = ({
     [
       closeMenus,
       onActivate,
+
       onMouseEnterItem,
       openMenu,
       scheduleClose,

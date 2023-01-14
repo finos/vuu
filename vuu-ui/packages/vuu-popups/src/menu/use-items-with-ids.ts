@@ -1,22 +1,23 @@
-import React, { useCallback, useMemo } from "react";
+import React, { ReactElement, useCallback, useMemo } from "react";
 import { MenuItemGroup, Separator } from "./MenuList";
 
-export const isMenuItemGroup = (child) =>
+export const isMenuItemGroup = (child: ReactElement) =>
   child.type === MenuItemGroup || !!child.props["data-group"];
 
-export const useItemsWithIds = (sourceProp, childrenProp) => {
-  const normalizeChildren = useCallback(() => {
-    if (childrenProp === undefined) {
-      return;
-    }
+type Menus = { [key: string]: ReactElement[] };
+type Actions = { [key: string]: { action: string; options?: unknown } };
 
+export const useItemsWithIds = (
+  childrenProp: ReactElement[]
+): [Menus, Actions] => {
+  const normalizeChildren = useCallback(() => {
     const collectChildren = (
-      children,
+      children: ReactElement[],
       path = "root",
-      menus = {},
-      actions = {}
+      menus: Menus = {},
+      actions: Actions = {}
     ) => {
-      const list = (menus[path] = []);
+      const list: ReactElement[] = (menus[path] = []);
       let idx = 0;
       let hasSeparator = false;
 
@@ -29,7 +30,7 @@ export const useItemsWithIds = (sourceProp, childrenProp) => {
           const {
             props: { action, options },
           } = child;
-          const [childWithId, grandChildren] = assignId(
+          const { childWithId, grandChildren } = assignId(
             child,
             childPath,
             group,
@@ -48,28 +49,33 @@ export const useItemsWithIds = (sourceProp, childrenProp) => {
       return [menus, actions];
     };
 
-    const assignId = (child, path, group, hasSeparator = false) => {
+    const assignId = (
+      child: ReactElement,
+      path: string,
+      group: boolean,
+      hasSeparator = false
+    ) => {
       const {
         props: { children },
       } = child;
-      return [
-        React.cloneElement(child, {
+      return {
+        childWithId: React.cloneElement(child, {
           hasSeparator,
           id: `${path}`,
           key: path,
           children: group ? undefined : children,
         }),
-        group ? children : undefined,
-      ];
+        grandChildren: group ? children : undefined,
+      };
     };
 
     return collectChildren(childrenProp);
   }, [childrenProp]);
 
-  const [children, actions] = useMemo(
+  const [menus, actions] = useMemo(
     () => normalizeChildren(),
     [normalizeChildren]
   );
 
-  return [children, actions];
+  return [menus, actions] as [Menus, Actions];
 };

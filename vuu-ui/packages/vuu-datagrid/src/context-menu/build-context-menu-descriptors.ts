@@ -1,3 +1,4 @@
+import { MenuBuilder } from "@finos/vuu-popups";
 import {
   VuuAggregation,
   VuuGroupBy,
@@ -35,8 +36,10 @@ interface GridContextMenuDescriptor {
 }
 
 export const buildContextMenuDescriptors =
-  (gridModel: GridModelType) =>
-  (location: ContextMenuLocation, options: ContextMenuOptions) => {
+  (
+    gridModel: GridModelType
+  ): MenuBuilder<ContextMenuLocation, ContextMenuOptions> =>
+  (location, options) => {
     const descriptors = [];
     if (location === "header") {
       descriptors.push(...buildSortMenuItems(gridModel.sort, options));
