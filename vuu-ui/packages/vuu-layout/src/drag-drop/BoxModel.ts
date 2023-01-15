@@ -420,16 +420,22 @@ function omitDragging(component: ReactElement) {
 function measureComponentDomElement(
   component: LayoutModel
 ): [DragDropRect, HTMLElement, LayoutModel] {
-  const { id } = getProps(component);
-  const type = typeOf(component) as string;
+  const { id } = getProps(component) as { id: string };
+  if (id === undefined) {
+    throw Error("`BoxModel.measureComponentElement, component has no id");
+  }
   const el = document.getElementById(id);
   if (!el) {
-    throw Error(`No DOM for ${type} ${id}`);
+    throw Error(
+      "BoxModel.measureComponentElement,  no DOM element found for component"
+    );
   }
   // Note: height and width are not required for dropTarget identification, but
   // are used in sizing calculations on drop
-  const { top, left, right, bottom, height, width } = el.getBoundingClientRect();
+  const { top, left, right, bottom, height, width } =
+    el.getBoundingClientRect();
   let scrolling = undefined;
+  const type = typeOf(component) as string;
   if (isContainer(type)) {
     const scrollHeight = el.scrollHeight;
     if (scrollHeight > height) {

@@ -4,28 +4,30 @@
 }
 
 .vuuPaletteItem {
-  --vuu-icon-color: var(--salt-separable-primary-background);
+  --vuu-icon-color: var(--salt-separable-primary-borderColor);
   --vuu-icon-inset: calc(50% - 12px) auto auto -3px;
-  --vuu-icon-svg: var(--svg-grab-handle);
   --vuu-icon-height: 24px;
   --vuu-icon-width: 24px;
-  padding-left: 20px;
+  --list-item-text-padding: 0 0 0 calc(var(--salt-size-unit) * 3);
 }
 
-.vuuPaletteItem[data-icon]:after {
-  --height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
-  --width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
-
+.vuuPaletteItem[data-draggable]:after {
+  height: 22px;
+  width: 6px;
   content: "";
-  background-color: var(--vuu-icon-color, black);
-  height: var(--height);
-  inset: var(--vuu-icon-inset,0 auto 0 0);
-  mask: var(--vuu-icon-svg) center center/var(--width) var(--height) no-repeat;
-  -webkit-mask: var(--vuu-icon-svg) center center/var(--width) var(--height) no-repeat;
   position: absolute;
-  width: var(--width);
+
+  background-image: 
+  linear-gradient(45deg, rgb(180, 183, 190) 25%, transparent 25%),
+  linear-gradient(-45deg, rgb(180, 183, 190) 25%, transparent 25%),
+  linear-gradient(45deg, transparent 75%, rgb(180, 183, 190) 25%),
+  linear-gradient(-45deg, transparent 75%, rgb(180, 183, 190) 25%);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 0, 2px -2px, 0 2px;  
+
 }
 
 .vuuSimpleDraggableWrapper > .vuuPaletteItem {
   --vuu-icon-color: var(--salt-selectable-foreground);
+
 }

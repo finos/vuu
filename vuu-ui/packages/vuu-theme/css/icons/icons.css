@@ -43,7 +43,7 @@ span[data-icon]{
   width: var(--vuu-icon-width, var(--vuu-icon-size, 18px));
 }
 
-[data-icon]:after {
+/* [data-icon]:after {
   content: "";
   background-color: var(--vuu-icon-color, black);
   left: var(--vuu-icon-left, auto);
@@ -55,7 +55,7 @@ span[data-icon]{
   position: absolute;
   top: var(--vuu-icon-top, auto);
   width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
-}
+} */
 
 [data-icon='filter'] {
   --vuu-icon-svg: var(--svg-filter);
@@ -85,6 +85,11 @@ span[data-icon]{
 
 [data-icon='chevron-double-right'] {
   --vuu-icon-svg: var(--svg-chevron-double-right);
+}
+
+[data-icon='grab-handle'] {
+  /* --vuu-icon-svg: var(--svg-grab-handle); */
+  --vuu-icon-svg: linear-gradient(to bottom, blue, red);
 }
 
 [data-icon='settings'] {

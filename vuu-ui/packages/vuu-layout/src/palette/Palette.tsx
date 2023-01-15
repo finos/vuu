@@ -6,7 +6,7 @@ import {
   HTMLAttributes,
   memo,
   MouseEvent,
-  ReactElement
+  ReactElement,
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { View } from "../layout-view";
@@ -43,7 +43,7 @@ export const PaletteItem = memo(
     return (
       <ListItem
         className={cx("vuuPaletteItem", className)}
-        data-icon="grab-handle"
+        data-draggable
         {...props}
       />
     );
