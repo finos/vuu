@@ -5,12 +5,12 @@ import { dimension } from "../common-types";
 import {
   ComponentRegistry,
   isContainer,
-  isLayoutComponent
+  isLayoutComponent,
 } from "../registry/ComponentRegistry";
 import {
   getPersistentState,
   hasPersistentState,
-  setPersistentState
+  setPersistentState,
 } from "../use-persistent-state";
 import { expandFlex, getProps, typeOf } from "../utils";
 import { LayoutJSON, LayoutModel, layoutType } from "./layoutTypes";
@@ -147,23 +147,25 @@ function getLayoutChildren(
     : React.isValidElement(children)
     ? [children]
     : [];
-  return isContainer(type) ? kids.map((child, i) => {
-      const childType = typeOf(child) as string;
-      const previousType = typeOf(previousChildren?.[i]);
-      
-      if (!previousType || childType === previousType) {
-        const [layoutProps, children] = getChildLayoutProps(
-          childType,
-          child.props,
-          `${path}.${i}`,
-          type,
-          previousChildren?.[i]
-        );
-        return React.cloneElement(child, layoutProps, children);
-      }
-      
-      return previousChildren?.[i];
-    }) : children;
+  return isContainer(type)
+    ? kids.map((child, i) => {
+        const childType = typeOf(child) as string;
+        const previousType = typeOf(previousChildren?.[i]);
+
+        if (!previousType || childType === previousType) {
+          const [layoutProps, children] = getChildLayoutProps(
+            childType,
+            child.props,
+            `${path}.${i}`,
+            type,
+            previousChildren?.[i]
+          );
+          return React.cloneElement(child, layoutProps, children);
+        }
+
+        return previousChildren?.[i];
+      })
+    : children;
 }
 
 const getStyle = (
@@ -214,7 +216,9 @@ export function layoutFromJson(
   const componentType = type.match(/^[a-z]/) ? type : ComponentRegistry[type];
 
   if (componentType === undefined) {
-    throw Error(`Unable to create component from JSON, unknown type ${type}`);
+    throw Error(
+      `layoutUtils unable to create component from JSON, unknown type ${type}`
+    );
   }
 
   if (state) {
@@ -224,8 +228,10 @@ export function layoutFromJson(
   return React.createElement(
     componentType,
     {
+      id,
       ...props,
       key: id,
+      path,
     },
     children
       ? children.map((child, i) => layoutFromJson(child, `${path}.${i}`))
