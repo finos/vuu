@@ -90,7 +90,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
     val selectedKeys = keys.toArray.take(count)
 
-    val rows = selectedKeys.map(key => pullRowAsArray(key, columns.toList))
+    val rows = selectedKeys.map(key => pullRowAsArray(key, ViewPortColumnCreator.create(this, columns.map(_.name).toList)))
 
     val columnNames = (GroupByColumns.get(columns.length) ++ columns).map(_.name)
 
@@ -122,10 +122,10 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   }
 
   override def pullRow(key: String): RowData = {
-    pullRow(key, this.columns().toList)
+    pullRow(key, this.viewPortColumns)
   }
 
-  override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
+  override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
     val node = tree.getNode(key)
 
     if (node == null) {
@@ -145,7 +145,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
    * - if so read for any aggregates at node
    * - return row with key in key position, plus depth etc, but with no values except aggregates in.
    */
-  override def pullRow(key: String, columns: List[Column]): RowData = {
+  override def pullRow(key: String, columns: ViewPortColumns): RowData = {
     val node = tree.getNode(key)
     if (node == null)
       EmptyRowData
@@ -155,14 +155,14 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
       RowWithData(key, node.toMap(tree) ++ getOnlyTreeColumnsAsMap(key, columns, node))
   }
 
-  private def getSourceRowData(key: String, columns: List[Column]): Map[String, Any] = {
+  private def getSourceRowData(key: String, columns: ViewPortColumns): Map[String, Any] = {
     source.pullRow(key, columns) match {
       case rd: RowWithData => rd.data
       case _ => Map()
     }
   }
 
-  private def getSourceRowDataAsArray(key: String, columns: List[Column]): Array[Any] = {
+  private def getSourceRowDataAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
     source.pullRowAsArray(key, columns) match {
       case rd: Array[Any] => rd
       case _ => Array.empty
@@ -173,9 +173,9 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
     columns.map(column => column.name -> "").toMap
   }
 
-  private def getOnlyTreeColumnsAsMap(key: String, columns: List[Column], node: TreeNode): Map[String, Any] = {
+  private def getOnlyTreeColumnsAsMap(key: String, columns: ViewPortColumns, node: TreeNode): Map[String, Any] = {
 
-    columns.map(c => {
+    columns.getColumns().map(c => {
       val aggregation = node.getAggregationFor(c)
 
       val r = if (aggregation == null)
@@ -189,9 +189,9 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   }
 
 
-  private def getOnlyTreeColumns(key: String, columns: List[Column], node: TreeNode): Array[Any] = {
+  private def getOnlyTreeColumns(key: String, columns: ViewPortColumns, node: TreeNode): Array[Any] = {
     val keysByColumn = node.keysByColumn
-    columns.map(c => {
+    columns.getColumns().map(c => {
 
       val aggregation = node.getAggregationFor(c)
 

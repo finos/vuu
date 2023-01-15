@@ -54,7 +54,7 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
   }
 
   def parseToColumn(columns: ViewPortColumns, calcDef: String): Column = {
-    val (calc :: name :: dataType :: calcdsl :: _) = calcDef.split(":").toList
+    val (name :: dataType :: calcdsl :: _) = calcDef.split(":").toList
     val dt = DataType.fromString(dataType)
     val input = CharStreams.fromString(calcdsl)
     val lexer = new CalculatedColumnLexer(input)
@@ -147,8 +147,8 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
    */
 
 
-  def CalcColumn(name: String, dataTYpe: String, calcDef: String): String = {
-    "Calc:" + name + ":" + dataTYpe + ":" + calcDef
+  def CalcColumn(name: String, dataType: String, calcDef: String): String = {
+    name + ":" + dataType + ":" + calcDef
   }
 
   Feature("check calc column grammar") {

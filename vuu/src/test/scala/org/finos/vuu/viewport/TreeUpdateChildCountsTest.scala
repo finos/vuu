@@ -8,6 +8,7 @@ import org.finos.vuu.viewport.TestTimeStamp.EPOCH_DEFAULT
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -39,7 +40,7 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       ClientSessionId("A", "B"),
-      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList,
+      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList),
       SortSpec(List()),
       FilterSpec(""),
       GroupBy(orderPrices, "ric")
@@ -94,7 +95,7 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       ClientSessionId("A", "B"),
-      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList,
+      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList),
       SortSpec(List()),
       FilterSpec(""),
       GroupBy(orderPrices, "ric")

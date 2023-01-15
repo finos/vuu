@@ -2,7 +2,7 @@ package org.finos.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.AvailableViewPortVisualLink
-import org.finos.vuu.core.table.{DataType, TableContainer}
+import org.finos.vuu.core.table.{DataType, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net._
 import org.finos.vuu.provider.{ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport._
@@ -187,10 +187,10 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
           val groupBy = new GroupBy(groupByColumns, aggregations)
 
-          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, columns, sort, filter, groupBy = groupBy)
+          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, ViewPortColumnCreator.create(table, msg.columns.toList), sort, filter, groupBy = groupBy)
         }
         else
-          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, columns, sort, filter)
+          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, ViewPortColumnCreator.create(table, msg.columns.toList), sort, filter)
 
         logger.info(s"Setting columns to ${columns.map(_.name).mkString(",")} ")
 
@@ -204,7 +204,9 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   def validateColumns(table: RowSource, columns: Array[String]): Unit ={
-    val invalidColumns = columns.filter(name => ! table.asTable.getTableDef.columns.map(_.name).contains(name))
+    val invalidColumns = columns
+      .filter(!_.contains(":")) // remove calculated columns
+      .filter(name => ! table.asTable.getTableDef.columns.map(_.name).contains(name))
     if(invalidColumns.nonEmpty){
       logger.error("Invalid columns specified in viewport request:" + invalidColumns.mkString(","))
       throw new Exception("Invalid columns specified in viewport request")
@@ -234,7 +236,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
       val filter = msg.filterSpec
 
       val viewPort = if (msg.groupBy.isEmpty)
-        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, NoGroupBy)
+        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, ViewPortColumnCreator.create(table, msg.columns.toList), sort, filter, NoGroupBy)
       else {
 
         val groupByColumns = msg.groupBy.filter(table.getTableDef.columnForName(_) != null).map(table.getTableDef.columnForName(_)).toList
@@ -243,7 +245,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
         val groupBy = new GroupBy(groupByColumns, aggs)
 
-        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, columns, sort, filter, groupBy)
+        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, ViewPortColumnCreator.create(table, msg.columns.toList), sort, filter, groupBy)
       }
 
       vsMsg(CreateViewPortSuccess(viewPort.id, viewPort.table.name, msg.range, msg.columns, msg.sort, msg.groupBy, msg.filterSpec, msg.aggregations))(ctx)

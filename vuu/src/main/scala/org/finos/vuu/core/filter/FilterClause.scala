@@ -1,14 +1,14 @@
 package org.finos.vuu.core.filter
 
 import org.finos.vuu.core.index._
-import org.finos.vuu.core.table.{DataType, RowData}
+import org.finos.vuu.core.table.{DataType, RowData, ViewPortColumnCreator}
 import org.finos.vuu.viewport.RowSource
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.grammer.FilterParser
 
 trait FilterClause {
 
-  def stripQuotes(value: String) = {
+  def stripQuotes(value: String): String = {
     if(value.startsWith("\"") && value.endsWith("\"")){
       value.drop(1).dropRight(1)
     }else{
@@ -20,7 +20,7 @@ trait FilterClause {
 
   def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
 
-    val columns = source.asTable.getTableDef.columns.toList
+    val columns = ViewPortColumnCreator.create(source.asTable, source.asTable.getTableDef.columns.map(_.name).toList)
 
     val pks = primaryKeys.toArray
 
@@ -55,7 +55,7 @@ case class OrClause(and: FilterClause, ors: List[FilterClause]) extends FilterCl
 
   def filterAllByOrs(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
     val resultOrs = ors.map(or => or.filterAll(source, primaryKeys)).foldLeft(ImmutableArray.empty[String])((left, right) => left.++(right))
-    (resultOrs).distinct
+    resultOrs.distinct
   }
 
   def filterByOrs(data: RowData): Boolean = {
@@ -136,7 +136,7 @@ case class NotEqualsClause(column: String, dataType: Int, value: String) extends
 }
 
 case class GreaterThanClause(column: String, dataType: Int, value: String) extends DataAndTypeClause {
-  val asDouble = value.toDouble
+  private val asDouble = value.toDouble
 
   override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)
@@ -192,7 +192,7 @@ case class EndsClause(column: String, dataType: Int, value: String) extends Data
 
 case class LessThanClause(column: String, dataType: Int, value: String) extends DataAndTypeClause {
 
-  val asDouble = value.toDouble
+  private val asDouble = value.toDouble
 
   override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)

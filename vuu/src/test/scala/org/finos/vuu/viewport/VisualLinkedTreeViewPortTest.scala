@@ -2,6 +2,7 @@ package org.finos.vuu.viewport
 
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.combineQs
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.util.table.TableAsserts.assertVpEqWithMeta
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
@@ -16,8 +17,8 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       Given("we've created a viewport with orders in")
       val (viewPortContainer, orders, ordersProvider, prices, pricesProvider, session, outQueue, highPriorityQueue) = createDefaultOrderPricesViewPortInfra()
 
-      val vpcolumnsOrders = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orders.getTableDef.columnForName(_))
-      val vpcolumnsPrices = List("ric", "bid", "ask", "last", "open").map(prices.getTableDef.columnForName(_))
+      val vpcolumnsOrders = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
+      val vpcolumnsPrices = ViewPortColumnCreator.create(prices, List("ric", "bid", "ask", "last", "open"))
 
       createPricesRow(pricesProvider, "VOD.L", 100, 101, 100.5, 99.5, "XLON")
       createPricesRow(pricesProvider, "BT.L", 200, 201, 200.5, 199.5, "NYSE")
