@@ -268,6 +268,26 @@ class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers {
         )
       }
 
+      withCalculatedColumns(sampleRows(), tableColumns,
+        CalcColumn("absVwap", "Double", "=abs(vwapPerf)"),
+        CalcColumn("absConcat", "Double", "=concatenate(absVwap, ric)")
+        ) {
+        Table(
+          ("orderId" ,"quantity","ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"onMkt"   ,"trader"  ,"ccyCross","vwapPerf","absVwap" ,"absConcat"),
+          ("NYC-0004",null      ,"AAPL.L"  ,5L        ,null      ,99.0      ,101.5     ,false     ,"chris"   ,"GBPUSD"  ,-0.1234   ,0.1234    ,"0.1234AAPL.L"),
+          ("LDN-0001",100.0     ,"VOD.L"   ,2L        ,100.0     ,99.0      ,101.5     ,true      ,"chris"   ,"GBPUSD"  ,1.1234    ,1.1234    ,"1.1234VOD.L"),
+          ("LDN-0002",100.0     ,"BT.L"    ,1L        ,100.0     ,99.0      ,101.01    ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,1.1234    ,"1.1234BT.L"),
+          ("LDN-0003",null      ,"VOD.L"   ,3L        ,null      ,99.0      ,101.3     ,true      ,"chris"   ,"GBPUSD"  ,1.1234    ,1.1234    ,"1.1234VOD.L"),
+          ("LDN-0008",100.0     ,"BT.L"    ,5L        ,100.0     ,99.0      ,106.0     ,true      ,"chris"   ,"GBPUSD"  ,1.1234    ,1.1234    ,"1.1234BT.L"),
+          ("NYC-0002",100.0     ,"VOD.L"   ,6L        ,100.0     ,99.0      ,102.0     ,false     ,"steve"   ,"GBPUSD"  ,1.1234    ,1.1234    ,"1.1234VOD.L"),
+          ("NYC-0010",null      ,"VOD.L"   ,6L        ,null      ,99.0      ,110.0     ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,1.1234    ,"1.1234VOD.L"),
+          ("NYC-0011",null      ,"VOD/L"   ,6L        ,null      ,99.0      ,109.0     ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,1.1234    ,"1.1234VOD/L"),
+          ("NYC-0012",null      ,"VOD\\L"   ,6L        ,null      ,99.0      ,105.11    ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,1.1234    ,"1.1234VOD\\L"),
+          ("NYC-0013",null      ,"VOD\\L"   ,6L        ,null      ,99.0      ,122.0     ,true      ,"rahúl"   ,"$GBPUSD" ,1.1234    ,1.1234    ,"1.1234VOD\\L")
+        )
+      }
+
+
     }
   }
 
