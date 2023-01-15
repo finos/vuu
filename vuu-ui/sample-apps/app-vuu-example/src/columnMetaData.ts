@@ -1,12 +1,8 @@
-type ColumnConfig = {
-  aggregate?: "avg";
-  label?: string;
-  name: string;
-  type?: unknown;
-  width?: number;
-};
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 
-const columnMetaData: { [key: string]: ColumnConfig } = {
+const Average = 2;
+
+const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
   account: {
     label: "Account",
     name: "account",
@@ -29,7 +25,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
       renderer: { name: "background", flashStyle: "arrow-bg" },
       formatting: { decimals: 2, zeroPad: true },
     },
-    aggregate: "avg",
+    aggregate: Average,
   },
   askSize: {
     name: "askSize",
@@ -37,7 +33,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
     type: {
       name: "number",
     },
-    aggregate: "avg",
+    aggregate: Average,
   },
   averagePrice: {
     label: "Average Price",
@@ -45,7 +41,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
     type: {
       name: "number",
     },
-    aggregate: "avg",
+    aggregate: Average,
   },
   bbg: {
     name: "bbg",
@@ -62,7 +58,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
       renderer: { name: "background", flashStyle: "arrow-bg" },
       formatting: { decimals: 2, zeroPad: true },
     },
-    aggregate: "avg",
+    aggregate: Average,
   },
   bidSize: {
     label: "Bid Size",
@@ -70,7 +66,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
     type: {
       name: "number",
     },
-    aggregate: "avg",
+    aggregate: Average,
   },
   ccy: {
     name: "ccy",
@@ -83,7 +79,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
     type: {
       name: "number",
     },
-    aggregate: "avg",
+    aggregate: Average,
   },
 
   close: {
@@ -93,7 +89,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
       name: "number",
       formatting: { decimals: 2, zeroPad: true },
     },
-    aggregate: "avg",
+    aggregate: Average,
   },
   clOrderId: {
     label: "Child Order ID",
@@ -167,7 +163,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
       name: "number",
       formatting: { decimals: 2, zeroPad: true },
     },
-    aggregate: "avg",
+    aggregate: Average,
   },
   lastUpdate: {
     label: "Last Update",
@@ -207,7 +203,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
       name: "number",
       formatting: { decimals: 2, zeroPad: true },
     },
-    aggregate: "avg",
+    aggregate: Average,
   },
   openQty: {
     label: "Open Qty",
@@ -215,7 +211,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
     width: 80,
     type: {
       name: "number",
-      format: { decimals: 0 },
+      formatting: { decimals: 0 },
     },
   },
   orderId: {
@@ -253,7 +249,7 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
       name: "number",
       formatting: { decimals: 2, zeroPad: true },
     },
-    aggregate: "avg",
+    aggregate: Average,
   },
   priceLevel: {
     label: "Price Level",
@@ -367,7 +363,9 @@ const columnMetaData: { [key: string]: ColumnConfig } = {
   },
 };
 
-const tables: { [key: string]: any } = {
+type TableColDefs = { [key: string]: Partial<ColumnDescriptor> };
+
+const tables: { [key: string]: TableColDefs } = {
   orders: {
     filledQuantity: {
       ...columnMetaData.filledQuantity,
@@ -375,7 +373,7 @@ const tables: { [key: string]: any } = {
       type: {
         name: "number",
         renderer: { name: "progress", associatedField: "quantity" },
-        format: { decimals: 0 },
+        formatting: { decimals: 0 },
       },
     },
   },
@@ -386,12 +384,15 @@ const tables: { [key: string]: any } = {
       type: {
         name: "number",
         renderer: { name: "progress", associatedField: "quantity" },
-        format: { decimals: 0 },
+        formatting: { decimals: 0 },
       },
     },
   },
 };
 
-export const getColumnConfig = (tableName: string, columnName: string) => {
+export const getDefaultColumnConfig = (
+  tableName: string,
+  columnName: string
+) => {
   return tables[tableName]?.[columnName] ?? columnMetaData[columnName];
 };
