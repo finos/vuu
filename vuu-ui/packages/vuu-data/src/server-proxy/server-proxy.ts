@@ -59,7 +59,6 @@ let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
 const nextRequestId = () => `${_requestId++}`;
-const EMPTY_ARRAY: unknown[] = [];
 const DEFAULT_OPTIONS: MessageOptions = {};
 
 const isActiveViewport = (viewPort: Viewport) =>
@@ -245,6 +244,7 @@ export class ServerProxy {
       requestId,
       message.range
     );
+
     if (serverRequest) {
       this.sendIfReady(
         serverRequest,
@@ -675,14 +675,11 @@ export class ServerProxy {
         break;
       case Message.TABLE_ROW:
         {
-          const { timeStamp } = body;
-          const [{ ts: firstBatchTimestamp } = { ts: timeStamp }] =
-            body.rows || EMPTY_ARRAY;
           // onsole.log(`\nbatch timestamp ${time(timeStamp)} first timestamp ${time(firstBatchTimestamp)} ${body.rows.length} rows in batch`)
-          // console.log(`TABLE_ROWS  ${body.rows.length} rows
-          //   [${body.rows[0].rowIndex}] ${body.rows[0].data}
-          //   [${body.rows[body.rows.length - 1].rowIndex}] ${body.rows[0].data}
-          // `);
+
+          // 1) batch records by viewport
+          // 2) sort records by rowIndex and updateTime
+          // 3) pass entire batch to viewport
 
           for (const row of body.rows) {
             const { viewPortId, rowIndex, rowKey, updateType } = row;
@@ -708,7 +705,7 @@ export class ServerProxy {
             // onsole.log(`%c[ServerProxy] after updates, movingWindow has ${viewport.dataWindow.internalData.length} records`,'color:brown')
           }
 
-          this.processUpdates(firstBatchTimestamp);
+          this.processUpdates();
         }
         break;
 
@@ -911,10 +908,10 @@ export class ServerProxy {
     });
   }
 
-  processUpdates(timeStamp: number) {
+  processUpdates() {
     this.viewports.forEach((viewport) => {
       if (viewport.hasUpdatesToProcess) {
-        const rows = viewport.getClientRows(timeStamp);
+        const rows = viewport.getClientRows();
         const size = viewport.getNewRowCount();
         if (size !== undefined || (rows && rows.length > 0)) {
           this.postMessageToClient({

@@ -8,6 +8,7 @@ function buildPackage(packageName) {
 const packages = [
   "vuu-utils",
   "vuu-data",
+  "vuu-data-ag-grid",
   "vuu-filters",
   "vuu-popups",
   "vuu-datatable",

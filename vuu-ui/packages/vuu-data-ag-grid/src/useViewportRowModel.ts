@@ -4,7 +4,7 @@ import {
   useTypeaheadSuggestions,
 } from "@finos/vuu-data";
 import { VuuTable } from "@finos/vuu-protocol-types";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { bySortIndex, isSortedColumn, toSortDef } from "./AgGridDataUtils";
 import {
   AgGridFilter,
@@ -51,7 +51,7 @@ export const useViewportRowModel = (dataSource: DataSource) => {
   }, [dataSource]);
 
   const handleGridReady = useCallback(() => {
-    console.log("Grid Ready");
+    // console.log("Grid Ready");
   }, []);
 
   const createFilterDataProvider = useCallback((table: VuuTable) => {

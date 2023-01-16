@@ -4,7 +4,7 @@ import { bufferBreakout } from "./buffer-range";
 
 const EMPTY_ARRAY = [] as const;
 
-type RangeTuple = [boolean, readonly VuuRow[], readonly VuuRow[]];
+type RangeTuple = [boolean, readonly VuuRow[] /*, readonly VuuRow[]*/];
 
 export class ArrayBackedMovingWindow {
   private bufferSize: number;
@@ -93,7 +93,7 @@ export class ArrayBackedMovingWindow {
     const currentTo = Math.min(this.clientRange.to, this.rowCount);
 
     if (from === currentFrom && to === currentTo) {
-      return [false, EMPTY_ARRAY, EMPTY_ARRAY] as RangeTuple;
+      return [false, EMPTY_ARRAY /*, EMPTY_ARRAY*/] as RangeTuple;
     }
 
     const originalRange = this.clientRange.copy();
@@ -108,7 +108,7 @@ export class ArrayBackedMovingWindow {
     }
 
     let clientRows: readonly VuuRow[] = EMPTY_ARRAY;
-    let holdingRows: readonly VuuRow[] = EMPTY_ARRAY;
+    // let holdingRows: readonly VuuRow[] = EMPTY_ARRAY;
     const offset = this.range.from;
 
     if (this.hasAllRowsWithinRange) {
@@ -119,7 +119,7 @@ export class ArrayBackedMovingWindow {
         const end = Math.min(originalRange.from, to);
         clientRows = this.internalData.slice(from - offset, end - offset);
       }
-    } else if (this.rowsWithinRange > 0) {
+    } /* else if (this.rowsWithinRange > 0) {
       if (to > originalRange.to) {
         const start = Math.max(from, originalRange.to);
         holdingRows = this.internalData
@@ -131,7 +131,7 @@ export class ArrayBackedMovingWindow {
           .slice(Math.max(0, from - offset), end - offset)
           .filter((row) => !!row);
       }
-    }
+    }*/
 
     const serverDataRequired = bufferBreakout(
       this.range,
@@ -139,7 +139,7 @@ export class ArrayBackedMovingWindow {
       to,
       this.bufferSize
     );
-    return [serverDataRequired, clientRows, holdingRows] as RangeTuple;
+    return [serverDataRequired, clientRows /*, holdingRows*/] as RangeTuple;
   }
 
   setRange(from: number, to: number) {

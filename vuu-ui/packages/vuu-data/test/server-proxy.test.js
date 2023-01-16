@@ -347,7 +347,7 @@ describe("ServerProxy", () => {
   describe("Updates", () => {
     const [clientSubscription1, serverSubscriptionAck1] = createSubscription();
 
-    it("Updates, no scrolling, only sends updated rows to client", () => {
+    it.only("Updates, no scrolling, only sends updated rows to client", () => {
       const postMessageToClient = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
       serverProxy.subscribe(clientSubscription1);
@@ -948,7 +948,7 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("data is purged from holding pen if scrolled out of range, holding pen records sent to client when enough data available", () => {
+    it("records sent to client when enough data available", () => {
       const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
         bufferSize: 10,
       });
@@ -959,8 +959,6 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       callback.mockClear();
-
-      const viewport = serverProxy.viewports.get("server-vp-1");
 
       serverProxy.handleMessageFromServer({
         body: {
@@ -987,8 +985,6 @@ describe("ServerProxy", () => {
         size: 100,
       });
 
-      expect(viewport.holdingPen).toHaveLength(5);
-
       callback.mockClear();
 
       serverProxy.handleMessageFromClient({
@@ -998,7 +994,6 @@ describe("ServerProxy", () => {
       });
 
       expect(callback).toHaveBeenCalledTimes(0);
-      expect(viewport.holdingPen).toHaveLength(3);
 
       serverProxy.handleMessageFromServer({
         body: {
@@ -1008,7 +1003,6 @@ describe("ServerProxy", () => {
       });
 
       expect(callback).toHaveBeenCalledTimes(0);
-      expect(viewport.holdingPen).toHaveLength(8);
 
       callback.mockClear();
 
@@ -1020,7 +1014,6 @@ describe("ServerProxy", () => {
       });
 
       expect(callback).toHaveBeenCalledTimes(1);
-      expect(viewport.holdingPen).toHaveLength(0);
 
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({

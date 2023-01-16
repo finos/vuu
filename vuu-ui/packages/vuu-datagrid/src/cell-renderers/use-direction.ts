@@ -1,11 +1,11 @@
-import { useEffect, useRef } from "react";
-import { isTypeDescriptor } from "@finos/vuu-utils";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
   getMovingValueDirection,
+  isTypeDescriptor,
   isValidNumber,
   valueChangeDirection,
 } from "@finos/vuu-utils";
+import { useEffect, useRef } from "react";
 
 const INITIAL_VALUE = [undefined, undefined, undefined, undefined];
 

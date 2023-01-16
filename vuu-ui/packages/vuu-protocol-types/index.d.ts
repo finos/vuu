@@ -284,7 +284,7 @@ export interface ClientToServerCreateViewPort {
   table: VuuTable;
 }
 export interface ClientToServerChangeViewPort {
-  aggregations: any[];
+  aggregations: VuuAggregation[];
   columns: VuuColumns;
   filterSpec: VuuFilter;
   groupBy: string[];

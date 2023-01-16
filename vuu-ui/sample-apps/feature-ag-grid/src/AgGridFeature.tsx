@@ -6,7 +6,7 @@ import { useViewportRowModel } from "@finos/vuu-data-ag-grid";
 import { createColumnDefs } from "./createColumnDefs";
 
 import {
-  createDataSource,
+  DataSourceVisualLinkCreatedMessage,
   RemoteDataSource,
   TableSchema,
 } from "@finos/vuu-data";
@@ -17,27 +17,47 @@ import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.css";
 import "./AgGridFeature.css";
 import { useViewContext } from "@finos/vuu-layout";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 
 export interface FilteredGridProps extends FeatureProps {
   schema: TableSchema;
 }
 
+type BlotterConfig = {
+  columns?: KeyedColumnDescriptor[];
+  groupBy?: VuuGroupBy;
+  sort?: VuuSort;
+  "visual-link"?: DataSourceVisualLinkCreatedMessage;
+};
+
 const AgGridFeature = ({ schema }: FilteredGridProps) => {
-  const { id, dispatch, load, purge, save, loadSession, saveSession } =
-    useViewContext();
-  const config = useMemo(() => load(), [load]);
-
-  console.log({ config, schema });
-
+  const { id, load, loadSession, saveSession, title } = useViewContext();
+  const config = useMemo(() => load?.() as BlotterConfig | undefined, [load]);
   const dataSource: RemoteDataSource = useMemo(() => {
-    let ds = loadSession("data-source");
+    let ds = loadSession?.("data-source") as RemoteDataSource;
     if (ds) {
       return ds;
     }
-    ds = createDataSource({ id, table: schema.table, schema, config });
-    saveSession(ds, "data-source");
+    const columns = schema.columns.map((col) => col.name);
+    ds = new RemoteDataSource({
+      viewport: id,
+      table: schema.table,
+      ...config,
+      columns,
+      title,
+    });
+    saveSession?.(ds, "data-source");
     return ds;
-  }, [config, id, loadSession, saveSession, schema]);
+  }, [
+    config,
+    id,
+    loadSession,
+    saveSession,
+    schema.columns,
+    schema.table,
+    title,
+  ]);
 
   const { createFilterDataProvider, ...gridConfig } =
     useViewportRowModel(dataSource);
@@ -50,8 +70,6 @@ const AgGridFeature = ({ schema }: FilteredGridProps) => {
       ),
     [createFilterDataProvider, schema.table]
   );
-
-  console.log({ columnDefs, gridConfig });
 
   useEffect(() => {
     dataSource.enable();

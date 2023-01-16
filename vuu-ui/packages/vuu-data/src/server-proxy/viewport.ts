@@ -1,5 +1,6 @@
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
+  ClientToServerChangeViewPort,
   ClientToServerCreateLink,
   ClientToServerCreateViewPort,
   ClientToServerDisable,
@@ -34,7 +35,6 @@ import {
   DataSourceGroupByMessage,
   DataSourceMenusMessage,
   DataSourceRow,
-  DataSourceRowPredicate,
   DataSourceSortMessage,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
@@ -96,7 +96,6 @@ type AsyncOperation =
   | Selection
   | Sort;
 type RangeRequestTuple = [ClientToServerViewPortRange | null, DataSourceRow[]?];
-type RowSortPredicate = (row1: DataSourceRow, row2: DataSourceRow) => number;
 
 type LinkedParent = {
   colName: string;
@@ -104,7 +103,6 @@ type LinkedParent = {
   parentColName: string;
 };
 
-const byRowIndex: RowSortPredicate = ([index1], [index2]) => index1 - index2;
 export class Viewport {
   private aggregations: VuuAggregation[];
   private bufferSize: number;
@@ -120,7 +118,6 @@ export class Viewport {
   private groupBy: string[];
   private sort: VuuSort;
   private hasUpdates = false;
-  private holdingPen: DataSourceRow[] = [];
   private keys: KeySet;
   private pendingLinkedParent?: LinkDescriptorWithLabel;
   private pendingOperations: any = new Map<string, AsyncOperation>();
@@ -155,7 +152,6 @@ export class Viewport {
     viewport,
     visualLink,
   }: ServerProxySubscribeMessage) {
-    console.log(`Viewport::constructor bufferSize: ${bufferSize}`);
     this.aggregations = aggregations;
     this.bufferSize = bufferSize;
     this.clientRange = range;
@@ -256,7 +252,6 @@ export class Viewport {
     if (type === Message.CHANGE_VP_RANGE) {
       const [from, to] = params as [number, number];
       this.dataWindow?.setRange(from, to);
-      //this.hasUpdates = true; // is this right ??????????
       this.pendingRangeRequest = null;
     } else if (type === "groupBy") {
       this.isTree = data.length > 0;
@@ -333,6 +328,9 @@ export class Viewport {
     }
   }
 
+  // TODO when a range request arrives, consider the viewport to be scrolling
+  // until data arrives and we have the full range.
+  // When not scrolling, any server data is an update
   rangeRequest(requestId: string, range: VuuRange): RangeRequestTuple {
     // If we can satisfy the range request from the buffer, we will.
     // May or may not need to make a server request, depending on status of buffer
@@ -344,16 +342,8 @@ export class Viewport {
     // rows that constitute the delta ? Is this even possible ?
 
     if (this.dataWindow) {
-      const [serverDataRequired, clientRows, holdingRows] =
+      const [serverDataRequired, clientRows /*, holdingRows */] =
         this.dataWindow.setClientRange(range.from, range.to);
-
-      console.log(
-        `Viewport [${range.from}]:[${
-          range.to
-        }] requested, dataWindow has  ${this.dataWindow
-          .getCurrentDataRange()
-          .join(":")}`
-      );
 
       const serverRequest =
         serverDataRequired &&
@@ -367,7 +357,6 @@ export class Viewport {
               type,
               viewPortId: this.serverViewportId,
               ...getFullRange(range, this.bufferSize, this.dataWindow.rowCount),
-              // ...getFullRange(range, this.bufferSize),
             } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
@@ -379,21 +368,7 @@ export class Viewport {
       // always reset the keys here, even if we're not going to return rows immediately.
       this.keys.reset(this.dataWindow.clientRange);
 
-      const rowWithinRange: DataSourceRowPredicate = ([index]) =>
-        index < range.from || index >= range.to;
-      if (this.holdingPen.some(rowWithinRange)) {
-        this.holdingPen = this.holdingPen.filter(
-          ([index]) => index >= range.from && index < range.to
-        );
-      }
-
       const toClient = this.isTree ? toClientRowTree : toClientRow;
-
-      if (holdingRows.length) {
-        holdingRows.forEach((row) => {
-          this.holdingPen.push(toClient(row, this.keys));
-        });
-      }
 
       if (clientRows.length) {
         return [
@@ -553,8 +528,31 @@ export class Viewport {
         // Update will return true if row was within client range
         if (this.dataWindow.setAtIndex(rowIndex, row)) {
           this.hasUpdates = true;
+
+          // if not scrolling, store the update
         }
       }
+    }
+  }
+
+  // This is called only after new data has been received from server - data
+  // returned direcly from buffer does not use this.
+  getClientRows() {
+    if (this.hasUpdates && this.dataWindow) {
+      const records = this.dataWindow.getData();
+      const { keys } = this;
+      const toClient = this.isTree ? toClientRowTree : toClientRow;
+      let out: DataSourceRow[] | undefined = undefined;
+      // if scrolling and hasAllRowsWithinRange, turn scrolling off
+      // if not scrolling, return just the updates
+      if (this.dataWindow.hasAllRowsWithinRange) {
+        out = [];
+        for (const row of records) {
+          out.push(toClient(row, keys));
+        }
+      }
+      this.hasUpdates = false;
+      return out;
     }
   }
 
@@ -565,46 +563,11 @@ export class Viewport {
     }
   };
 
-  // This is called only after new data has been received from server - data
-  // returned direcly from buffer does not use this.
-  // If we have updates, but we don't yet have data for the full client range
-  // in our buffer, store them in the holding pen. We know the remaining rows
-  // have been requested and will arrive imminently. Soon as we receive data,
-  // contents of holding pen plus additional rows received that fill the range
-  // will be dispatched to client.
-  // If we have any rows in the holding pen, and we now have a full set of
-  // client data, make sure we empty the pen and send those rows to client,
-  // along qith the new data.
-  // TODO what if we're going backwards
-  getClientRows(timeStamp: number) {
-    if (this.hasUpdates && this.dataWindow) {
-      const records = this.dataWindow.getData();
-      const { keys } = this;
-      const toClient = this.isTree ? toClientRowTree : toClientRow;
-
-      // NOte this should probably just check that we have all client rows within range ?
-      const clientRows = this.dataWindow.hasAllRowsWithinRange
-        ? this.holdingPen.splice(0)
-        : undefined;
-
-      const out = clientRows || this.holdingPen;
-
-      for (const row of records) {
-        if (row && row.ts >= timeStamp) {
-          out.push(toClient(row, keys));
-        }
-      }
-      this.hasUpdates = false;
-
-      // this only matters where we scroll backwards and have holdingPen data
-      // should we test for that explicitly ?
-      return clientRows && clientRows.sort(byRowIndex);
-    }
-  }
-
-  createRequest(params: any) {
+  createRequest(
+    params: Partial<Omit<ClientToServerChangeViewPort, "type" | "viewPortId">>
+  ) {
     return {
-      type: Message.CHANGE_VP,
+      type: "CHANGE_VP",
       viewPortId: this.serverViewportId,
       aggregations: this.aggregations,
       columns: this.columns,

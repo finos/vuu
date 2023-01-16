@@ -58,10 +58,19 @@ export class ViewportRowModelDataSource {
     this.setAgRowData = setRowData;
   }
 
+  // Called by Ag Grid whe  user scrolls
   setViewportRange(firstRow: number, lastRow: number): void {
-    // console.log(`setViewport Range called by Ag Grid ${firstRow} - ${lastRow}`);
+    //------------
+    const d = this.dataWindow.data;
+    console.log(
+      `%csetViewport Range called by Ag Grid ${firstRow} - ${lastRow}
+      dataWindow contains ${d[0]?.[0]} - ${d[d.length - 1]?.[0]}
+      `,
+      "color:green;font-weight:bold;"
+    );
+    //-------------
     this.dataWindow.setRange(firstRow, lastRow + 1);
-    this.dataSource.setRange(firstRow, lastRow + 1);
+    this.dataSource.range = { from: firstRow, to: lastRow + 1 };
   }
 
   setRowGroups(groupBy: VuuGroupBy) {
@@ -79,8 +88,8 @@ export class ViewportRowModelDataSource {
     this.dataWindow.clear();
   }
 
-  filter(filter: Filter | undefined, filterQuery: string) {
-    this.dataSource.filter(filter, filterQuery);
+  filter(filterStruct: Filter | undefined, filter: string) {
+    this.dataSource.filter = { filterStruct, filter };
   }
 
   sort(sort: VuuSort) {
@@ -90,34 +99,46 @@ export class ViewportRowModelDataSource {
   handleMessageFromDataSource: SubscribeCallback = (message) => {
     if (message.type === "viewport-update") {
       if (message.size !== undefined) {
-        console.log(`size = ${message.size}`);
         if (message.size !== this.dataWindow.rowCount) {
-          console.log(`(which has changed, by the way)`);
           this.dataWindow.setRowCount(message.size);
           this.setAgRowCount(message.size);
         }
       }
       if (message.rows) {
         const { columnMap, reverseColumnMap } = this;
-
-        if (message.rows.some(this.dataWindow.hasRow, this.dataWindow)) {
-          for (const dataRow of message.rows) {
-            const [rowIndex] = dataRow;
-            const updates = this.dataWindow.update(dataRow, reverseColumnMap);
-            if (updates) {
-              const agRowNode = this.getAgRow(rowIndex);
-              for (let i = 0; i < updates.length; i += 2) {
-                agRowNode.setDataValue(updates[i] as string, updates[i + 1]);
-              }
-            }
-          }
-        } else {
-          const agRowData = convertToAgViewportRows(message.rows, columnMap);
-          for (const dataRow of message.rows) {
-            this.dataWindow.add(dataRow);
-          }
-          this.setAgRowData(agRowData);
+        //----------------
+        const d = this.dataWindow.data;
+        console.log(`ViewportRowModelDataSource received rows
+          ${message.rows[0][0]} - ${message.rows[message.rows.length - 1][0]}  
+          dataWindow contains ${d[0]?.[0]} - ${d[d.length - 1]?.[0]}
+        `);
+        //---------------
+        // if (message.rows.some(this.dataWindow.hasRow, this.dataWindow)) {
+        //   console.log("update path");
+        //   for (const dataRow of message.rows) {
+        //     const [rowIndex] = dataRow;
+        //     const updates = this.dataWindow.update(dataRow, reverseColumnMap);
+        //     if (updates) {
+        //       const agRowNode = this.getAgRow(rowIndex);
+        //       for (let i = 0; i < updates.length; i += 2) {
+        //         agRowNode.setDataValue(updates[i] as string, updates[i + 1]);
+        //       }
+        //     }
+        //   }
+        // } else {
+        console.log("insert path");
+        const agRowData = convertToAgViewportRows(message.rows, columnMap);
+        for (const dataRow of message.rows) {
+          this.dataWindow.add(dataRow);
         }
+        console.log(
+          `%csetAgRowData  ${message.rows[0][0]} - ${
+            message.rows[message.rows.length - 1][0]
+          }`,
+          "color: green; font-weight: bold;"
+        );
+        this.setAgRowData(agRowData);
+        // }
       }
     }
   };
