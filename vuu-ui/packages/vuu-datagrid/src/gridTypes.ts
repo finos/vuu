@@ -1,5 +1,12 @@
-import { ConfigChangeHandler, DataSource } from "@finos/vuu-data";
-import { Filter } from "@finos/vuu-filter-types";
+import {
+  ConfigChangeHandler,
+  DataSource,
+  DataSourceFilter,
+} from "@finos/vuu-data";
+import {
+  ColumnDescriptor,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid-types";
 import {
   VuuAggregation,
   VuuGroupBy,
@@ -8,11 +15,7 @@ import {
 } from "@finos/vuu-protocol-types";
 import { HTMLAttributes } from "react";
 import { AdornmentsDescriptor } from "./grid-adornments";
-import {
-  ColumnDescriptor,
-  GridModelType,
-  KeyedColumnDescriptor,
-} from "./grid-model/gridModelTypes";
+import { GridModelType } from "./grid-model/gridModelTypes";
 
 export type dragPhase = "drag-start" | "drag" | "drag-end";
 export type resizePhase = "begin" | "resize" | "end";
@@ -43,7 +46,7 @@ export interface GridProps extends HTMLAttributes<HTMLDivElement> {
   columnSizing?: "fill" | "static";
   dataSource: DataSource;
   defaultColumnWidth?: number;
-  filter?: Filter; // is thei sthe right type ?
+  filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
   /**
    * Set height for column headers. If not provided, row height will be determined

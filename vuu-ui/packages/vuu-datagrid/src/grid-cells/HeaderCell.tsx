@@ -1,6 +1,5 @@
 import { useContextMenu } from "@finos/vuu-popups";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { Filter } from "@finos/vuu-filter-types";
 import cx from "classnames";
 import { MouseEvent, useCallback, useRef } from "react";
 import { AggregationType } from "../constants";
@@ -15,6 +14,7 @@ import { SortIndicator, sortStatus } from "./sort-indicator";
 import { useCellResize } from "./useCellResize";
 
 import "./HeaderCell.css";
+import { DataSourceFilter } from "@finos/vuu-data";
 
 const classBase = "hwHeaderCell";
 const NO_AGGREGATION = { aggType: -1 };
@@ -30,7 +30,7 @@ const AggTypeLabel = {
 
 export interface HeaderCellProps
   extends Omit<GridCellProps, "columnMap" | "onDrag" | "row"> {
-  filter?: Filter;
+  filter?: DataSourceFilter;
   onDrag?: (
     phase: dragPhase,
     column: KeyedColumnDescriptor,
@@ -127,7 +127,7 @@ export const HeaderCell = function HeaderCell({
       style={{ marginLeft, width }}
       tabIndex={-1}
     >
-      <FilterIndicator column={column} filter={filter} />
+      <FilterIndicator column={column} filter={filter?.filterStruct} />
       <div className="innerHeaderCell">
         <div className="cellWrapper">{`${aggLabel} ${label}`}</div>
       </div>

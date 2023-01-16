@@ -30,12 +30,16 @@ export interface ContextMenuLeafItemDescriptor extends ContextMenuItemBase {
 }
 
 export interface ContextMenuGroupItemDescriptor extends ContextMenuItemBase {
-  children?: ContextMenuItemDescriptor[];
+  children: ContextMenuItemDescriptor[];
 }
 
 export type ContextMenuItemDescriptor =
   | ContextMenuLeafItemDescriptor
   | ContextMenuGroupItemDescriptor;
+
+export const isGroupMenuItem = (
+  menuItem: ContextMenuItemDescriptor
+): menuItem is ContextMenuGroupItemDescriptor => "children" in menuItem;
 
 export interface ContextMenuProviderProps {
   children: ReactNode;

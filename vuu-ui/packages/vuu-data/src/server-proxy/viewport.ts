@@ -9,7 +9,6 @@ import {
   ServerToClientCreateViewPortSuccess,
   VuuAggregation,
   VuuColumnDataType,
-  VuuFilter,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
@@ -25,6 +24,7 @@ import { KeySet } from "./keyset";
 import * as Message from "./messages";
 
 import {
+  DataSourceFilter,
   DataSourceRow,
   DataSourceRowPredicate,
   DataSourceSubscribedMessage,
@@ -33,7 +33,6 @@ import {
   DataSourceVisualLinksMessage,
 } from "../data-source";
 import { LinkWithLabel } from "./server-proxy";
-import { Filter } from "@finos/vuu-filter-types";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
@@ -47,7 +46,7 @@ interface ChangeViewportRange {
   type: "CHANGE_VP_RANGE";
 }
 interface ViewportFilter {
-  data: { filter: Filter | undefined; filterQuery: string };
+  data: DataSourceFilter;
   type: "filter";
 }
 interface Aggregate {
@@ -105,9 +104,9 @@ export class Viewport {
   private columns: string[];
   // TODO create this in constructor so we don't have to mark is as optional
   private dataWindow?: ArrayBackedMovingWindow = undefined;
-  private filter: Filter | undefined;
-  private filterSpec: VuuFilter;
+  private filter: DataSourceFilter;
   private groupBy: string[];
+  private sort: VuuSort;
   private hasUpdates = false;
   private holdingPen: DataSourceRow[] = [];
   private linkedParent?: any;
@@ -120,7 +119,6 @@ export class Viewport {
     columns: string[];
     dataTypes: VuuColumnDataType[];
   } | null = null;
-  private sort: VuuSort | undefined;
 
   public clientViewportId: string;
   public disabled = false;
@@ -136,7 +134,6 @@ export class Viewport {
     bufferSize = 50,
     columns,
     filter,
-    filterQuery = "",
     groupBy = [],
     table,
     range,
@@ -145,14 +142,12 @@ export class Viewport {
     viewport,
     visualLink,
   }: ServerProxySubscribeMessage) {
+    console.log(`Viewport constructor ${JSON.stringify(filter)}`);
     this.aggregations = aggregations;
     this.bufferSize = bufferSize;
     this.clientRange = range;
     this.clientViewportId = viewport;
     this.columns = columns;
-    this.filterSpec = {
-      filter: filterQuery,
-    };
     this.filter = filter;
     this.groupBy = groupBy;
     this.keys = new KeySet(range);
@@ -177,6 +172,7 @@ export class Viewport {
     //   getFullRange(this.clientRange, this.bufferSize)
     // )}
     // `);
+    const { filter } = this.filter;
     return {
       type: Message.CREATE_VP,
       table: this.table,
@@ -185,7 +181,7 @@ export class Viewport {
       columns: this.columns,
       sort: this.sort,
       groupBy: this.groupBy,
-      filterSpec: this.filterSpec,
+      filterSpec: { filter },
     } as ClientToServerCreateViewPort;
   }
 
@@ -193,17 +189,16 @@ export class Viewport {
     viewPortId,
     aggregations,
     columns,
+    filterSpec: filter,
     range,
     sort,
     groupBy,
-    filterSpec,
   }: ServerToClientCreateViewPortSuccess) {
     this.serverViewportId = viewPortId;
     this.status = "subscribed";
     this.aggregations = aggregations;
     this.columns = columns;
     this.groupBy = groupBy;
-    this.filterSpec = filterSpec;
     this.isTree = groupBy && groupBy.length > 0;
     this.dataWindow = new ArrayBackedMovingWindow(
       this.clientRange,
@@ -226,14 +221,13 @@ export class Viewport {
     //   `,
     //   "color: blue"
     // );
-
+    // TODO retrieve the filterStruct
     return {
       aggregations,
       type: "subscribed",
       clientViewportId: this.clientViewportId,
       columns,
-      filter: this.filter,
-      filterSpec: this.filterSpec,
+      filter,
       groupBy,
       range,
       sort,
@@ -265,9 +259,8 @@ export class Viewport {
       this.columns = data;
       return { clientViewportId, type, ...data };
     } else if (type === "filter") {
-      this.filterSpec = { filter: data.filterQuery };
-      this.filter = data.filter;
-      return { clientViewportId, type, ...data };
+      this.filter = data as DataSourceFilter;
+      return { clientViewportId, type, filter: data };
     } else if (type === "aggregate") {
       this.aggregations = data as VuuAggregation[];
       return {
@@ -482,16 +475,13 @@ export class Viewport {
     return this.createRequest({ columns });
   }
 
-  filterRequest(
-    requestId: string,
-    filter: Filter | undefined,
-    filterQuery: string
-  ) {
+  filterRequest(requestId: string, dataSourceFilter: DataSourceFilter) {
     this.awaitOperation(requestId, {
       type: "filter",
-      data: { filter, filterQuery },
+      data: dataSourceFilter,
     });
-    return this.createRequest({ filterSpec: { filter: filterQuery } });
+    const { filter } = dataSourceFilter;
+    return this.createRequest({ filterSpec: { filter } });
   }
 
   aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
@@ -587,7 +577,9 @@ export class Viewport {
       columns: this.columns,
       sort: this.sort,
       groupBy: this.groupBy,
-      filterSpec: this.filterSpec,
+      filterSpec: {
+        filter: this.filter.filter,
+      },
       ...params,
     };
   }

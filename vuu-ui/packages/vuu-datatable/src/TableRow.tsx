@@ -9,7 +9,7 @@ import { TableGroupCell } from "./TableGroupCell";
 
 import "./TableRow.css";
 
-const { IDX, IS_EXPANDED, IS_LEAF } = metadataKeys;
+const { IDX, IS_EXPANDED } = metadataKeys;
 const classBase = "vuuDataTableRow";
 
 export interface RowProps
@@ -17,7 +17,7 @@ export interface RowProps
   columns: KeyedColumnDescriptor[];
   height: number;
   index: number;
-  onToggleGroup: (row: DataSourceRow) => void;
+  onToggleGroup?: (row: DataSourceRow) => void;
   row: DataSourceRow;
   valueFormatters?: ValueFormatters;
 }
@@ -30,7 +30,7 @@ export const TableRow = memo(function Row({
   row,
   valueFormatters,
 }: RowProps) {
-  const { [IDX]: rowIndex, [IS_LEAF]: isLeaf, [IS_EXPANDED]: isExpanded } = row;
+  const { [IDX]: rowIndex, [IS_EXPANDED]: isExpanded } = row;
 
   const className = cx(classBase, {
     [`${classBase}-even`]: rowIndex % 2 === 0,
@@ -39,7 +39,7 @@ export const TableRow = memo(function Row({
   const offset = rowIndex - index;
 
   const handleClick = useCallback(
-    () => onToggleGroup(row),
+    () => onToggleGroup?.(row),
     [onToggleGroup, row]
   );
 
