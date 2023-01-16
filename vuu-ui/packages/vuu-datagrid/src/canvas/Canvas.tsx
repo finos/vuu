@@ -26,11 +26,8 @@ import {
   ColumnDragState,
   RowClickHandler,
 } from "../gridTypes";
-import {
-  ColumnGroupType,
-  GridModelType,
-  KeyedColumnDescriptor,
-} from "../grid-model/gridModelTypes";
+import { ColumnGroupType, GridModelType } from "../grid-model/gridModelTypes";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 const { IDX, RENDER_IDX, SELECTED } = metadataKeys;
 

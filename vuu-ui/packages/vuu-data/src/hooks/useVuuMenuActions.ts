@@ -1,3 +1,4 @@
+import { ContextMenuItemDescriptor } from "@finos/vuu-popups";
 import {
   VuuLink,
   VuuMenu,
@@ -17,12 +18,6 @@ import { LinkWithLabel } from "../server-proxy/server-proxy";
 import { MenuRpcResponse } from "../vuuUIMessageTypes";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
-
-export type VuuContextMenuDescriptor = {
-  action: string;
-  label: string;
-  options?: unknown;
-};
 
 type DataSourceVuuMenuMessage =
   | DataSourceVisualLinkCreatedMessage
@@ -122,7 +117,7 @@ export const useVuuMenuActions = ({
   const buildVuuMenuOptions = useCallback(
     (location, options) => {
       const { selectedRowCount = 0 } = options;
-      const descriptors: VuuContextMenuDescriptor[] = [];
+      const descriptors: ContextMenuItemDescriptor[] = [];
 
       if (visualLinks && !visualLink) {
         visualLinks.forEach((linkDescriptor: LinkWithLabel) => {
@@ -181,8 +176,7 @@ export const useVuuMenuActions = ({
         });
         return true;
       } else if (type === "link-table") {
-        // the createLink method only exists on dataSource
-        return dataSource.createLink(options), true;
+        return dataSource.createLink(options as LinkWithLabel), true;
       } else {
         console.log(
           `useViewServer handleMenuAction,  can't handle action type ${type}`

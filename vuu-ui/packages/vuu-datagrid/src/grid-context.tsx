@@ -1,17 +1,19 @@
-import { DataSource } from "@finos/vuu-data";
+import { DataSource, DataSourceFilter } from "@finos/vuu-data";
 import { DataRow } from "@finos/vuu-utils";
 import { Filter } from "@finos/vuu-filter-types";
 import React, { ReactNode, useContext, useMemo } from "react";
 import { VuuAggregation, VuuGroupBy, VuuSort } from "../../vuu-protocol-types";
 import { AdornmentsDescriptor } from "./grid-adornments";
 import {
-  ColumnDescriptor,
   GridModelReducerInitializerProps,
   GridModelType,
-  KeyedColumnDescriptor,
 } from "./grid-model/gridModelTypes";
 import { MeasuredSize, Size } from "./grid-model/useMeasuredSize";
 import { resizePhase } from "./gridTypes";
+import {
+  ColumnDescriptor,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid-types";
 
 export interface GridActionGroup {
   type: "group";
@@ -90,7 +92,7 @@ export interface GridModelActionHideColumn {
 }
 export interface GridModelActionGridConfig {
   type: "grid-config";
-  filter?: Filter;
+  filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
 }
@@ -101,7 +103,7 @@ export interface GridModelActionSetColumns {
 
 export interface GridModelActionFilter {
   type: "filter";
-  filter: Filter;
+  filter: DataSourceFilter;
 }
 export interface GridModelActionInitialize {
   type: "initialize";

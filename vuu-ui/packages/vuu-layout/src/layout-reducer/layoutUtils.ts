@@ -3,6 +3,7 @@ import { uuid } from "@finos/vuu-utils";
 import React, { cloneElement, CSSProperties, ReactElement } from "react";
 import { dimension } from "../common-types";
 import {
+  ComponentWithId,
   ComponentRegistry,
   isContainer,
   isLayoutComponent,
@@ -31,13 +32,12 @@ export const applyLayoutProps = (component: ReactElement, path = "0") => {
   return React.cloneElement(component, layoutProps, children);
 };
 
-export interface LayoutProps {
+export interface LayoutProps extends ComponentWithId {
   active?: number;
   "data-path"?: string;
   children?: ReactElement[];
   column?: any;
   dropTarget?: any;
-  id: string;
   key: string;
   layout?: any;
   path?: string;
