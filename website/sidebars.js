@@ -80,6 +80,7 @@ module.exports = {
           "ui/grid",
           "ui/visual_linking",
           "ui/custom_controls",
+          "ui/calculated_columns",
         ],
         link: {
           type: "doc",
