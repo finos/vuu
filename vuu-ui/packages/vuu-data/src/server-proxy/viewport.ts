@@ -142,7 +142,6 @@ export class Viewport {
     viewport,
     visualLink,
   }: ServerProxySubscribeMessage) {
-    console.log(`Viewport constructor ${JSON.stringify(filter)}`);
     this.aggregations = aggregations;
     this.bufferSize = bufferSize;
     this.clientRange = range;
