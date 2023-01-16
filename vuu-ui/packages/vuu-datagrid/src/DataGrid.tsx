@@ -120,9 +120,9 @@ export const Grid = forwardRef(function Grid(
         case "closeTreeNode":
           return dataSource.closeTreeNode(operation.key);
         case "group":
-          return dataSource.group(operation.key);
+          return (dataSource.groupBy = operation.key);
         case "sort":
-          return dataSource.sort(operation.sort);
+          return (dataSource.sort = operation.sort);
         default:
           console.log(
             `[GridBase] dataSourceOperation: unknown operation ${operation.type}`
@@ -230,6 +230,8 @@ export const Grid = forwardRef(function Grid(
   );
 
   const readyToRender = gridModel.status === "ready";
+
+  console.log(`render DataGrid with sort ${JSON.stringify(gridModel.sort)}`);
 
   return (
     // Question, how much overhead are we introducing be adding gridModel to GridContext ? Perhaps it belongs in it's own context

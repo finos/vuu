@@ -2,7 +2,7 @@ import { DataSourceRow } from "@finos/vuu-data";
 import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Column, DataTable } from "@finos/vuu-datatable";
-import { Flexbox, View, ViewContext } from "@finos/vuu-layout";
+import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import { itemsChanged } from "@finos/vuu-utils";
 import {
@@ -12,7 +12,14 @@ import {
   Toolbar,
 } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
-import { ReactElement, useCallback, useMemo, useRef, useState } from "react";
+import {
+  CSSProperties,
+  ReactElement,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { DragVisualizer } from "../../../../packages/vuu-datatable/src/DragVisualizer";
 import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 
@@ -202,10 +209,12 @@ export const VuuDataTable = () => {
     setDialogContent(null);
   }, []);
 
-  const [title, _setTitle] = useState<string | undefined>();
-  const setTitle = useCallback(() => {
-    _setTitle("randon brain fart");
-  }, []);
+  const groupByCurrency = useCallback(() => {
+    dataSource.groupBy = ["currency"];
+  }, [dataSource]);
+  const groupByCurrencyExchange = useCallback(() => {
+    dataSource.groupBy = ["currency", "exchange"];
+  }, [dataSource]);
 
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
@@ -219,19 +228,28 @@ export const VuuDataTable = () => {
         <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
         <ToggleButton tooltipText="Search">Prices</ToggleButton>
       </ToggleButtonGroup>
-      <Button onClick={setTitle}>Set Title</Button>
-      <ViewContext.Provider value={{ title }}>
-        <DataTable
-          allowConfigEditing
-          dataSource={dataSource}
-          config={tableConfig}
-          // columnSizing="fill"
-          height={600}
-          onConfigChange={handleTableConfigChange}
-          onShowConfigEditor={showConfigEditor}
-          width={700}
-        />
-      </ViewContext.Provider>
+      <Toolbar
+        className="salt-density-high"
+        style={
+          {
+            "--saltToolbar-height": "28px",
+            "--saltToolbar-alignItems": "center",
+          } as CSSProperties
+        }
+      >
+        <Button onClick={groupByCurrency}>Currency</Button>
+        <Button onClick={groupByCurrencyExchange}>Currency, Exchange</Button>
+      </Toolbar>
+      <DataTable
+        allowConfigEditing
+        dataSource={dataSource}
+        config={tableConfig}
+        // columnSizing="fill"
+        height={600}
+        onConfigChange={handleTableConfigChange}
+        onShowConfigEditor={showConfigEditor}
+        width={700}
+      />
       <Dialog
         className="vuuDialog-gridConfig"
         isOpen={dialogContent !== null}

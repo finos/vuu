@@ -88,8 +88,14 @@ export interface GridModelActionHideColumn {
   type: "column-hide";
   column: KeyedColumnDescriptor;
 }
+export interface GridModelActionGridConfig {
+  type: "grid-config";
+  filter?: Filter;
+  groupBy?: VuuGroupBy;
+  sort?: VuuSort;
+}
 export interface GridModelActionSetColumns {
-  type: "set-available-columns";
+  type: "set-columns";
   columns: ColumnDescriptor[];
 }
 
@@ -145,6 +151,7 @@ export interface GridModelActionSetAvailableColumns {
 export type GridModelAction =
   | GridModelActionAddCol
   | GridModelActionFilter
+  | GridModelActionGridConfig
   | GridModelActionGroupBy
   | GridModelActionHideColumn
   | GridModelActionInitialize

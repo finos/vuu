@@ -1,7 +1,7 @@
-import { AggType } from "@finos/vuu-protocol-types";
+import { VuuAggType } from "@finos/vuu-protocol-types";
 
 // Note: flipped because of VUU
-export const AggregationType: { [key: string]: AggType } = {
+export const AggregationType: { [key: string]: VuuAggType } = {
   Average: 2,
   Count: 3,
   Sum: 1,

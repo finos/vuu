@@ -1,7 +1,10 @@
+import {
+  GroupColumnDescriptor,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid-types";
 import { useContextMenu } from "@finos/vuu-popups";
 import cx from "classnames";
 import React, { HTMLAttributes, useCallback, useEffect, useRef } from "react";
-import { GroupColumnDescriptor, KeyedColumnDescriptor } from "../grid-model";
 import { expandStatesfromGroupState } from "../grid-model/gridModelUtils";
 import { ColResizer } from "./ColResizer";
 import { HeaderCellProps } from "./HeaderCell";

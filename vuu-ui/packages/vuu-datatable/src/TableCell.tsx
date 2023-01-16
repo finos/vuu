@@ -1,14 +1,16 @@
+import { DataSourceRow } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { DataRow } from "@finos/vuu-utils";
+import { HTMLAttributes } from "react";
 import { ValueFormatter } from "./dataTableTypes";
+import cx from "classnames";
 
-export interface TableCellProps {
+export interface TableCellProps extends HTMLAttributes<HTMLTableCellElement> {
   column: KeyedColumnDescriptor;
-  row: DataRow;
+  row: DataSourceRow;
   valueFormatter?: ValueFormatter;
 }
 
-const getCellClassName = (column: KeyedColumnDescriptor) => {
+export const getCellClassName = (column: KeyedColumnDescriptor) => {
   const alignRight = column.align === "right";
   const pinLeft = column.pin === "left";
   if (pinLeft && alignRight) {
@@ -24,11 +26,14 @@ const defaultValueFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();
 
 export const TableCell = ({
+  className: classNameProp,
   column,
   row,
   valueFormatter = defaultValueFormatter,
 }: TableCellProps) => {
-  const className = getCellClassName(column);
+  const className = cx(classNameProp, getCellClassName(column), {
+    "vuuTableCell-resizing": column.resizing,
+  });
   const value = valueFormatter(row[column.key]);
   return column.pin === "left" ? (
     <td className={className} style={{ left: column.pinnedLeftOffset }}>

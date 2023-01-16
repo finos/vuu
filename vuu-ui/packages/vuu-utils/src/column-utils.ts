@@ -1,7 +1,10 @@
 import {
   ColumnDescriptor,
+  GroupColumnDescriptor,
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
+import { VuuGroupBy } from "@finos/vuu-protocol-types";
+import { instrumentPriceColumns } from "../../../showcase/src/examples/DataGrid/columnMetaData";
 import { Row } from "./row-utils";
 
 export interface ColumnMap {
@@ -29,11 +32,18 @@ export function mapSortCriteria(
   });
 }
 
-export function isKeyedColumn(
+export const isKeyedColumn = (
   column: ColumnDescriptor
-): column is KeyedColumnDescriptor {
+): column is KeyedColumnDescriptor => {
   return typeof (column as KeyedColumnDescriptor).key === "number";
-}
+};
+
+export const isNumericColumn = ({ serverDataType }: ColumnDescriptor) =>
+  serverDataType === undefined
+    ? false
+    : serverDataType === "int" ||
+      serverDataType === "long" ||
+      serverDataType === "double";
 
 export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
   name,
@@ -116,3 +126,99 @@ export const metadataKeys = {
   FILTER_COUNT: "filter_count",
   NEXT_FILTER_IDX: "next_filter_idx",
 } as const;
+
+// This method mutates the passed columns array
+const insertColumn = (
+  columns: KeyedColumnDescriptor[],
+  column: KeyedColumnDescriptor
+) => {
+  const { originalIdx } = column;
+  if (typeof originalIdx === "number") {
+    for (let i = 0; i < columns.length; i++) {
+      const { originalIdx: colIdx = -1 } = columns[i];
+      if (colIdx > originalIdx) {
+        columns.splice(i, 0, column);
+        return columns;
+      }
+    }
+  }
+  columns.push(column);
+  return columns;
+};
+
+export const flattenColumnGroup = (
+  columns: KeyedColumnDescriptor[]
+): KeyedColumnDescriptor[] => {
+  if (columns[0]?.isGroup) {
+    const [groupColumn, ...nonGroupedColumns] = columns as [
+      GroupColumnDescriptor,
+      ...KeyedColumnDescriptor[]
+    ];
+    groupColumn.columns.forEach((groupColumn) => {
+      insertColumn(nonGroupedColumns, groupColumn);
+    });
+    return nonGroupedColumns;
+  } else {
+    return columns;
+  }
+};
+
+export function extractGroupColumn(
+  columns: KeyedColumnDescriptor[],
+  groupBy?: VuuGroupBy
+): [GroupColumnDescriptor | null, KeyedColumnDescriptor[]] {
+  if (groupBy && groupBy.length > 0) {
+    const flattenedColumns = flattenColumnGroup(columns);
+    // Note: groupedColumns will be in column order, not groupBy order
+    const [groupedColumns, rest] = flattenedColumns.reduce(
+      (result, column, i) => {
+        const [g, r] = result;
+        if (groupBy.includes(column.name)) {
+          g.push({
+            ...column,
+            originalIdx: i,
+          });
+        } else {
+          r.push(column);
+        }
+
+        return result;
+      },
+      [[], []] as [KeyedColumnDescriptor[], KeyedColumnDescriptor[]]
+    );
+    if (groupedColumns.length !== groupBy.length) {
+      throw Error(
+        `extractGroupColumn: no column definition found for all groupBy cols ${JSON.stringify(
+          groupBy
+        )} `
+      );
+    }
+    const groupCount = groupBy.length;
+    const groupCols: KeyedColumnDescriptor[] = groupBy.map((name, idx) => {
+      // Keep the cols in same order defined on groupBy
+      const column = groupedColumns.find(
+        (col) => col.name === name
+      ) as KeyedColumnDescriptor;
+      return {
+        ...column,
+        groupLevel: groupCount - idx,
+      };
+    });
+
+    const groupCol = {
+      key: -1,
+      name: "group-col",
+      heading: ["group-col"],
+      isGroup: true,
+      columns: groupCols,
+      width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
+    } as GroupColumnDescriptor;
+
+    return [groupCol, rest];
+  }
+  return [null, flattenColumnGroup(columns)];
+}
+
+export const isGroupColumn = (
+  column: KeyedColumnDescriptor
+): column is GroupColumnDescriptor => column.isGroup === true;

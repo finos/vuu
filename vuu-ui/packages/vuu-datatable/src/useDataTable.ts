@@ -1,5 +1,6 @@
 import {
   DataSource,
+  DataSourceConfigMessage,
   DataSourceRow,
   DataSourceSubscribedMessage,
 } from "@finos/vuu-data";
@@ -9,12 +10,17 @@ import {
   KeyedColumnDescriptor,
   TypeFormatting,
 } from "@finos/vuu-datagrid-types";
-import { roundDecimal } from "@finos/vuu-utils";
+import { applySort, metadataKeys, roundDecimal } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
-import { ValueFormatter, ValueFormatters } from "./dataTableTypes";
+import {
+  TableColumnResizeHandler,
+  ValueFormatter,
+  ValueFormatters,
+} from "./dataTableTypes";
 import { KeySet } from "./KeySet";
-import { useGridModel } from "./useGridModel";
+import { useTableModel } from "./useTableModel";
 import { useDataSource } from "./useDataSource";
+import { VuuSortType } from "@finos/vuu-protocol-types";
 
 export interface DataTableHookProps {
   config: GridConfig;
@@ -23,6 +29,7 @@ export interface DataTableHookProps {
   onConfigChange?: (config: GridConfig) => void;
 }
 
+const { KEY, IS_EXPANDED } = metadataKeys;
 const DEFAULT_NUMERIC_FORMAT: TypeFormatting = {};
 const defaultValueFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();
@@ -81,7 +88,7 @@ export const useDataTable = ({
     setRowCount(size);
   }, []);
 
-  const { columns, dispatchColumnAction } = useGridModel(config);
+  const { columns, dispatchColumnAction } = useTableModel(config);
 
   const onSubscribed = useCallback(
     (subscription: DataSourceSubscribedMessage) => {
@@ -113,12 +120,30 @@ export const useDataTable = ({
   }, [columns, config, onConfigChange]);
 
   useMemo(() => {
-    console.log(`config has changed re-init store`);
     dispatchColumnAction({ type: "init", config });
   }, [config, dispatchColumnAction]);
 
+  const handleConfigChangeFromDataSource = useCallback(
+    (message: DataSourceConfigMessage) => {
+      switch (message.type) {
+        case "groupBy":
+          return dispatchColumnAction({
+            type: "tableConfig",
+            groupBy: message.groupBy,
+          });
+        case "sort":
+          return dispatchColumnAction({
+            type: "tableConfig",
+            sort: message.sort,
+          });
+      }
+    },
+    [dispatchColumnAction]
+  );
+
   const { data, setRange } = useDataSource({
     dataSource,
+    onConfigChange: handleConfigChangeFromDataSource,
     onSubscribed,
     onSizeChange,
   });
@@ -138,11 +163,76 @@ export const useDataTable = ({
     [dataProp, dataSource, keys, setRange]
   );
 
+  const handleSort = useCallback(
+    (
+      column: KeyedColumnDescriptor,
+      extendSort = false,
+      sortType?: VuuSortType
+    ) => {
+      if (dataSource) {
+        dataSource.sort = applySort(
+          dataSource.sort,
+          column,
+          extendSort,
+          sortType
+        );
+      }
+    },
+    [dataSource]
+  );
+
+  const handleColumnResize: TableColumnResizeHandler = useCallback(
+    (phase, columnName, width) => {
+      const column = columns.find((column) => column.name === columnName);
+      if (column) {
+        dispatchColumnAction({
+          type: "resizeColumn",
+          phase,
+          column,
+          width,
+        });
+      } else {
+        throw Error(
+          `useDataTable.handleColumnResize, column ${columnName} not found`
+        );
+      }
+    },
+    [columns, dispatchColumnAction]
+  );
+
+  const handleToggleGroup = useCallback(
+    (row: DataSourceRow) => {
+      if (dataSource) {
+        if (row[IS_EXPANDED]) {
+          dataSource.closeTreeNode(row[KEY]);
+        } else {
+          dataSource.openTreeNode(row[KEY]);
+        }
+      }
+    },
+    [dataSource]
+  );
+
+  const handleRemoveColumnFromGroupBy = useCallback(
+    (column: KeyedColumnDescriptor) => {
+      if (dataSource && dataSource.groupBy.includes(column.name)) {
+        dataSource.groupBy = dataSource.groupBy.filter(
+          (columnName) => columnName !== column.name
+        );
+      }
+    },
+    [dataSource]
+  );
+
   return {
     valueFormatters,
     columns,
     data: dataSource ? data : visibleRows,
     dispatchColumnAction,
+    onColumnResize: handleColumnResize,
+    onRemoveColumnFromGroupBy: handleRemoveColumnFromGroupBy,
+    onSort: handleSort,
+    onToggleGroup: handleToggleGroup,
     setRangeVertical,
     rowCount,
   };

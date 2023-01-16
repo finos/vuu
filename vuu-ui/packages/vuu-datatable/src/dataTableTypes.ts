@@ -30,12 +30,23 @@ export type ValueFormatter = (value: unknown) => string;
 export type ValueFormatters = {
   [key: string]: ValueFormatter;
 };
+
+export type TableColumnResizeHandler = (
+  phase: "begin" | "resize" | "end",
+  columnName: string,
+  width?: number
+) => void;
+
 export interface TableImplementationProps {
   columns: KeyedColumnDescriptor[];
   data: DataSourceRow[];
   headerHeight: number;
+  onColumnResize?: TableColumnResizeHandler;
   onHeaderCellDragEnd?: () => void;
   onHeaderCellDragStart?: (evt: MouseEvent) => void;
+  onRemoveColumnFromGroupBy?: (column: KeyedColumnDescriptor) => void;
+  onSort: (column: KeyedColumnDescriptor, isAdditive: boolean) => void;
+  onToggleGroup: (row: DataSourceRow) => void;
   rowHeight: number;
   valueFormatters?: ValueFormatters;
 }

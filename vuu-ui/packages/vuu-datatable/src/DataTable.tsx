@@ -8,6 +8,8 @@ import { isFullSize, isMeasured, useMeasuredSize } from "./useMeasuredSize";
 import { useDataTable } from "./useDataTable";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
+import { ContextMenuProvider } from "@finos/vuu-popups";
+import { buildContextMenuDescriptors, useContextMenu } from "./context-menu";
 
 import "./DataTable.css";
 
@@ -36,11 +38,11 @@ export const DataTable = ({
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const {
     columns,
-    data,
     dispatchColumnAction,
     setRangeVertical,
     rowCount,
     valueFormatters,
+    ...tableProps
   } = useDataTable({
     config,
     data: dataProp,
@@ -57,6 +59,11 @@ export const DataTable = ({
     rowCount,
     rowHeight,
     size,
+  });
+
+  const handleContextMenuAction = useContextMenu({
+    dataSource,
+    dispatchColumnAction,
   });
 
   const handleDropColumn = useCallback(
@@ -133,44 +140,52 @@ export const DataTable = ({
   const Table = tableLayout === "column" ? ColumnBasedTable : RowBasedTable;
 
   return (
-    <div className={classBase} ref={rootRef} style={style}>
-      <div
-        className={`${classBase}-scrollContainer`}
-        onScroll={handleScrollbarScroll}
-        ref={scrollContainerRef}
-        style={scrollContainerStyle}
-      >
-        <div className={`${classBase}-scrollContent`} />
-      </div>
-      <div
-        className={`${classBase}-content`}
-        onScroll={handleRootScroll}
-        ref={scrollableRef}
-        {...props}
-      >
-        <div className={`${classBase}-scrollContent`} />
-        <div className={`${classBase}-tableContainer`} ref={tableContainerRef}>
-          <Table
-            columns={columns.filter((col, i) => i !== draggedItemIndex)}
-            data={data}
-            headerHeight={headerHeight}
-            onHeaderCellDragStart={
-              tableLayout === "row" ? handleHeaderCellDragStart : undefined
-            }
-            rowHeight={rowHeight}
-            valueFormatters={valueFormatters}
-          />
+    <ContextMenuProvider
+      menuActionHandler={handleContextMenuAction}
+      menuBuilder={buildContextMenuDescriptors(dataSource)}
+    >
+      <div className={classBase} ref={rootRef} style={style}>
+        <div
+          className={`${classBase}-scrollContainer`}
+          onScroll={handleScrollbarScroll}
+          ref={scrollContainerRef}
+          style={scrollContainerStyle}
+        >
+          <div className={`${classBase}-scrollContent`} />
         </div>
-        {draggable}
+        <div
+          className={`${classBase}-content`}
+          onScroll={handleRootScroll}
+          ref={scrollableRef}
+          {...props}
+        >
+          <div className={`${classBase}-scrollContent`} />
+          <div
+            className={`${classBase}-tableContainer`}
+            ref={tableContainerRef}
+          >
+            <Table
+              {...tableProps}
+              columns={columns.filter((col, i) => i !== draggedItemIndex)}
+              headerHeight={headerHeight}
+              onHeaderCellDragStart={
+                tableLayout === "row" ? handleHeaderCellDragStart : undefined
+              }
+              rowHeight={rowHeight}
+              valueFormatters={valueFormatters}
+            />
+          </div>
+          {draggable}
+        </div>
+        {showSettings ? (
+          <Button
+            className={`${classBase}-settings`}
+            data-icon="settings"
+            onClick={onShowSettings}
+            variant="secondary"
+          />
+        ) : null}
       </div>
-      {showSettings ? (
-        <Button
-          className={`${classBase}-settings`}
-          data-icon="settings"
-          onClick={onShowSettings}
-          variant="secondary"
-        />
-      ) : null}
-    </div>
+    </ContextMenuProvider>
   );
 };

@@ -7,7 +7,7 @@ import {
   VuuColumns,
   VuuGroupBy,
   VuuRange,
-  VuuSortCol,
+  VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { Filter } from "@finos/vuu-filter-types";
@@ -39,7 +39,7 @@ export interface ServerProxySubscribeMessage {
   filterQuery?: string;
   groupBy?: VuuGroupBy;
   range: VuuRange;
-  sort?: VuuSortCol[];
+  sort?: VuuSort;
   table: VuuTable;
   title?: string;
   viewport: string;
@@ -186,7 +186,7 @@ export interface VuuUIMessageOutSelectNone extends ViewportMessageOut {
 }
 
 export interface VuuUIMessageOutSort extends ViewportMessageOut {
-  sortDefs: VuuSortCol[];
+  sort: VuuSort;
   type: "sort";
 }
 export interface VuuUIMessageOutSuspend extends ViewportMessageOut {

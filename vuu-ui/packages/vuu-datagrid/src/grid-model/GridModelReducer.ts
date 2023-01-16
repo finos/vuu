@@ -1,5 +1,8 @@
 import { metadataKeys } from "@finos/vuu-utils";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import {
+  ColumnDescriptor,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid-types";
 import {
   ColumnGroupType,
   GridModelReducerInitializerTuple,
@@ -7,7 +10,6 @@ import {
   GroupColumnIndices,
   Headings,
   HeadingResizeState,
-  KeyedColumnDescriptor,
 } from "./gridModelTypes";
 import {
   assignKeysToColumns,
@@ -24,6 +26,7 @@ import {
   GridModelAction,
   GridModelActionAggregate,
   GridModelActionFilter,
+  GridModelActionGridConfig,
   GridModelActionGroupBy,
   GridModelActionHideColumn,
   GridModelActionInitialize,
@@ -92,8 +95,9 @@ export const gridModelReducer: GridModelReducer = (state, action) => {
     case "column-hide": return hideColumn(state, action);
     case "column-show": return showColumn(state, action);
     case "ROW_HEIGHT": return setRowHeight(state, action);
+    case "grid-config": return setGridConfig(state, action)
     default:
-       console.log(`unknown action dispatched to GridModelReducer`);
+       console.log(`unknown action dispatched to GridModelReducer ${action['type']}`);
        return state; 
   }
 };
@@ -105,6 +109,9 @@ export const initModel = ([
   size,
   custom,
 ]: GridModelReducerInitializerTuple): GridModelType => {
+  console.log(`initGridModel`, {
+    gridProps,
+  });
   const {
     aggregations = [],
     cellSelectionModel,
@@ -228,6 +235,38 @@ function initialize(
     footer: { height: state.customFooterHeight },
   };
   return initModel([props, size, custom]);
+}
+
+function setGridConfig(
+  state: GridModelType,
+  { filter, groupBy, sort }: GridModelActionGridConfig
+) {
+  console.log(`setGridConfig`, {
+    filter,
+    groupBy,
+    sort,
+  });
+
+  let result = state;
+
+  const hasFilter = filter !== undefined;
+  const hasGroupBy = groupBy && groupBy.length > 0;
+  const hasSort = sort && sort?.sortDefs.length > 0;
+  if (hasFilter || hasSort) {
+    result = {
+      ...state,
+      filter: filter ?? state.filter,
+      sort: hasSort ? sort : state.sort,
+    };
+  }
+
+  if (hasGroupBy) {
+    return groupRows(result, { type: "groupBy", groupBy });
+  } else {
+    return result;
+  }
+
+  return result;
 }
 
 function resizeGrid(

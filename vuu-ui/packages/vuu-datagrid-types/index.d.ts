@@ -1,4 +1,8 @@
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import {
+  VuuAggType,
+  VuuColumnDataType,
+  VuuSortType,
+} from "@finos/vuu-protocol-types";
 
 export declare type GridConfig = {
   columns: ColumnDescriptor[];
@@ -25,7 +29,12 @@ export declare type ColumnTypeDescriptor = {
 
 export declare type ColumnType = ColumnTypeSimple | ColumnTypeDescriptor;
 
+export type ColumnSort = VuuSortType | number;
+
+/** This is a public description of a Column, defining all the
+ * column attributes that can be defined by client. */
 export interface ColumnDescriptor {
+  aggregate?: VuuAggType;
   align?: "left" | "right";
   className?: string;
   flex?: number;
@@ -42,6 +51,8 @@ export interface ColumnDescriptor {
   type?: ColumnType;
   width?: number;
 }
+/** This is an internal description of a Column that extends the public
+ * definitin with internal state values. */
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   className?: string;
@@ -61,6 +72,23 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
   resizeable?: boolean;
   resizing?: boolean;
   sortable?: boolean;
+  sorted?: ColumnSort;
   type?: ColumnType;
-  width?: number;
+  width: number;
+}
+
+export interface GroupColumnDescriptor extends KeyedColumnDescriptor {
+  columns: KeyedColumnDescriptor[];
+}
+
+export interface Heading {
+  collapsed?: boolean;
+  key: string;
+  hidden?: boolean;
+  isHeading: true;
+  label: string;
+  name: string;
+  resizeable?: boolean;
+  resizing?: boolean;
+  width: number;
 }

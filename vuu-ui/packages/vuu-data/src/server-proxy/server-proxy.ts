@@ -223,7 +223,7 @@ export class ServerProxy {
 
   private sort(viewport: Viewport, message: VuuUIMessageOutSort) {
     const requestId = nextRequestId();
-    const request = viewport.sortRequest(requestId, message.sortDefs);
+    const request = viewport.sortRequest(requestId, message.sort);
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 

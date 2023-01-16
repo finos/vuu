@@ -1,6 +1,5 @@
-import { RefObject, useCallback, useRef } from "react";
 import { Heading, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { resizePhase } from "../gridTypes";
+import { RefObject, useCallback, useRef } from "react";
 
 export type ResizeHandler = (evt: MouseEvent, moveBy: number) => void;
 export interface CellResizeHookProps {
@@ -9,6 +8,8 @@ export interface CellResizeHookProps {
   rootRef: RefObject<HTMLDivElement>;
 }
 
+type resizePhase = "begin" | "resize" | "end";
+
 export interface CellResizeHookResult {
   isResizing: boolean;
   onDrag: (evt: MouseEvent, moveBy: number) => void;
@@ -16,7 +17,7 @@ export interface CellResizeHookResult {
   onDragEnd: (evt: MouseEvent) => void;
 }
 
-export const useCellResize = ({
+export const useTableColumnResize = ({
   column,
   onResize,
   rootRef,

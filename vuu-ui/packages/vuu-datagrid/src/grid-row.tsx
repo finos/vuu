@@ -1,13 +1,15 @@
 import { HTMLAttributes, memo, useCallback } from "react";
 import cx from "classnames";
-import { ColumnMap, DataRow, metadataKeys } from "@finos/vuu-utils";
+import {
+  ColumnMap,
+  DataRow,
+  isGroupColumn,
+  metadataKeys,
+} from "@finos/vuu-utils";
 import { GridCell, GroupCell } from "./grid-cells";
 
 import "./grid-row.css";
-import {
-  isGroupColumn,
-  KeyedColumnDescriptor,
-} from "./grid-model/gridModelTypes";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 const classBase = "vuuDataGridRow";
 

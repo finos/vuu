@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { SyntheticEvent, useContext } from "react";
 import { ViewAction } from "./viewTypes";
 
