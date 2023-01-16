@@ -1,4 +1,4 @@
-.hwSortIndicator {
+.vuuSortIndicator {
   --menu-icon-size: 18px;
   --menu-item-icon-color: black;
   display: flex;
@@ -7,13 +7,9 @@
   width: 18px;
 }
 
-.hwSortPosition {
+.vuuSortPosition {
   font-size: 10px;
   line-height: 10px;
   text-align: center;
-}
-
-.hwSortIndicator .hwIconContainer {
-  height: 12px;
 }
 

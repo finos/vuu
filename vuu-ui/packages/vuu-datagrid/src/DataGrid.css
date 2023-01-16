@@ -3,7 +3,7 @@
   --grid-row-background: inherit;
   --grid-row-height: var(--grid-row-height, 20px);
   --grid-row-line-height: 19px;
-  --grid-row-background-selected: var(--salt-palette-neutral-highlight);
+  --grid-row-background-selected: var(--salt-selectable-background-selected);
   --grid-header-cell-highlight-bg: var(--surface3);
 
   --hw-activation-indicator-thumb-bg: #2c2c2c;

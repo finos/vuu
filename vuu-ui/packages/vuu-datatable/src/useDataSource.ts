@@ -1,5 +1,7 @@
 import {
   DataSource,
+  DataSourceConfigMessage,
+  DataSourceCallbackMessage,
   DataSourceRow,
   DataSourceSubscribedMessage,
   SubscribeCallback,
@@ -19,8 +21,14 @@ export type SubscriptionDetails = {
   sort?: VuuSortCol[];
 };
 
+const isConfigMessage = (
+  message: DataSourceCallbackMessage
+): message is DataSourceConfigMessage =>
+  ["aggregate", "filter", "groupBy", "sort"].includes(message.type);
+
 export interface DataSourceHookProps {
   dataSource?: DataSource;
+  onConfigChange?: (message: DataSourceConfigMessage) => void;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
   range?: VuuRange;
@@ -29,6 +37,7 @@ export interface DataSourceHookProps {
 //TODO allow subscription details to be set before subscribe call
 export function useDataSource({
   dataSource,
+  onConfigChange,
   onSizeChange,
   onSubscribed,
   range = { from: 0, to: 0 },
@@ -80,9 +89,11 @@ export function useDataSource({
           data.current = dataWindow.data.slice().sort(byKey);
           hasUpdated.current = true;
         }
+      } else if (isConfigMessage(message)) {
+        onConfigChange?.(message);
       }
     },
-    [dataWindow, onSizeChange, onSubscribed, setData]
+    [dataWindow, onConfigChange, onSizeChange, onSubscribed, setData]
   );
 
   useEffect(

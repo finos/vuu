@@ -62,6 +62,8 @@ export const useGridModel = ({
   //TODO do we need to useCallback here - can we ever send stale props ?
   useEffectSkipFirst(() => {
     // onsole.log(`dispatchGridModel initialize`)
+    // This is not correct. We will lose modifications applies to gridModel since initial load
+    // eg sort, groupBy
     dispatchGridModel({ type: "initialize", props, size });
     if (dataSourceProp !== dataSource) {
       setDataSource(dataSourceProp);

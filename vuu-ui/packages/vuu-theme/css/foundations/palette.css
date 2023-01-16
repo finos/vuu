@@ -111,6 +111,7 @@
   --salt-palette-navigate-indicator-activeDisabled: var(--salt-color-orange-600-fade-border);
 
   /* Negative */
+  --salt-palette-negative-background: var(--salt-color-red-40);
   --salt-palette-negative-foreground: var(--salt-color-red-700);
 
   /* Neutral */

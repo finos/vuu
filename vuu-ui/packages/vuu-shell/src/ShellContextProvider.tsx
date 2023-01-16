@@ -1,7 +1,13 @@
+import { MenuRpcResponse } from "@finos/vuu-data";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { createContext, ReactElement, ReactNode, useContext } from "react";
 
 export interface ShellContextProps {
-  handleRpcResponse?: (response: unknown) => void;
+  getDefaultColumnConfig?: (
+    tableName: string,
+    columnName: string
+  ) => Partial<ColumnDescriptor>;
+  handleRpcResponse?: (response: MenuRpcResponse) => void;
 }
 
 const defaultConfig = {};
@@ -10,7 +16,7 @@ const ShellContext = createContext<ShellContextProps>(defaultConfig);
 
 export interface ShellProviderProps {
   children: ReactNode;
-  value: any;
+  value: ShellContextProps;
 }
 
 const Provider = ({

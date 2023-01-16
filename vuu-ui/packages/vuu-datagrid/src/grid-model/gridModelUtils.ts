@@ -1,6 +1,6 @@
 import { DataRow, metadataKeys } from "@finos/vuu-utils";
 import {
-  AggType,
+  VuuAggType,
   VuuGroupBy,
   VuuSort,
   VuuSortCol,
@@ -401,8 +401,6 @@ function addSortColumn(
   }
 }
 
-//TODO this should preserve multi col sort
-// Apply the supplied sortType to the column in sort
 function setSortColumn(
   gridModel: GridModelType,
   column: KeyedColumnDescriptor,
@@ -479,7 +477,7 @@ const countLeadingSystemColumns = (columns: KeyedColumnDescriptor[]) => {
 const setAggregation = (
   { aggregations }: GridModelType,
   column: KeyedColumnDescriptor,
-  aggType: AggType
+  aggType: VuuAggType
 ) => {
   return aggregations
     .filter((agg) => agg.column !== column.name)

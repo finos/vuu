@@ -89,6 +89,12 @@ export interface DataSourceSortMessage extends MessageWithClientViewportId {
   sort: VuuSort;
 }
 
+export type DataSourceConfigMessage =
+  | DataSourceAggregateMessage
+  | DataSourceFilterMessage
+  | DataSourceGroupByMessage
+  | DataSourceSortMessage;
+
 export interface DataSourceSubscribedMessage
   extends MessageWithClientViewportId,
     MessageWithClientViewportId {
@@ -123,15 +129,12 @@ export interface DataSourceVisualLinksMessage
 }
 
 export type DataSourceCallbackMessage =
-  | DataSourceAggregateMessage
+  | DataSourceConfigMessage
   | DataSourceColumnsMessage
   | DataSourceDataMessage
   | DataSourceDisabledMessage
   | DataSourceEnabledMessage
-  | DataSourceFilterMessage
-  | DataSourceGroupByMessage
   | DataSourceMenusMessage
-  | DataSourceSortMessage
   | DataSourceSubscribedMessage
   | DataSourceVisualLinkCreatedMessage
   | DataSourceVisualLinkRemovedMessage
@@ -188,7 +191,7 @@ export interface DataSourceProps {
   columns: string[];
   filter?: Filter;
   filterQuery?: string;
-  group?: VuuGroupBy;
+  groupBy?: VuuGroupBy;
   sort?: VuuSort;
   configUrl?: any;
   serverUrl?: string;
@@ -217,7 +220,7 @@ export interface DataSource extends IEventEmitter {
   columns: string[];
   createLink: ({ parentVpId, link: { fromColumn, toColumn } }: any) => void;
   filter: (filter: Filter | undefined, filterQuery: string) => void;
-  group: (groupBy: VuuGroupBy) => void;
+  groupBy: VuuGroupBy;
   menuRpcCall: (
     rpcRequest: Omit<VuuMenuRpcRequest, "vpId">
   ) => Promise<MenuRpcResponse | undefined>;
@@ -229,7 +232,7 @@ export interface DataSource extends IEventEmitter {
   setSubscribedColumns: (columns: string[]) => void;
   /** Set the title associated with this viewport in UI. This can be used as a link target */
   setTitle?: (title: string) => void;
-  sort: (sort: VuuSort) => void;
+  sort: VuuSort;
   subscribe: (
     props: SubscribeProps,
     callback: SubscribeCallback

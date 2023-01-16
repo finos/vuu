@@ -1,10 +1,10 @@
 import { useContextMenu } from "@finos/vuu-popups";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import cx from "classnames";
 import { MouseEvent, useCallback, useRef } from "react";
 import { AggregationType } from "../constants";
 import { useGridContext } from "../grid-context";
-import { KeyedColumnDescriptor } from "../grid-model";
 import { GridModel } from "../grid-model/gridModelUtils";
 import { dragPhase, resizePhase } from "../gridTypes";
 import { useDragStart } from "../use-drag";
