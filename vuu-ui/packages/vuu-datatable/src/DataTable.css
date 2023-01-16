@@ -153,3 +153,8 @@ table.vuuPinLeft {
   right: 0;
   top:0;
 }
+
+.vuuDataTable:has(.vuuTable-headerCell-resizing) * {
+  cursor: col-resize;
+}
+

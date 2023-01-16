@@ -4,10 +4,18 @@ import {
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { moveItem } from "@heswell/salt-lab";
-import { metadataKeys } from "@finos/vuu-utils";
+import {
+  extractGroupColumn,
+  flattenColumnGroup,
+  metadataKeys,
+} from "@finos/vuu-utils";
 
 import { Reducer, useReducer } from "react";
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import {
+  VuuColumnDataType,
+  VuuGroupBy,
+  VuuSort,
+} from "@finos/vuu-protocol-types";
 
 const DEFAULT_COLUMN_WIDTH = 100;
 const KEY_OFFSET = metadataKeys.count;
@@ -51,6 +59,12 @@ export interface ColumnActionMove {
   moveBy?: 1 | -1;
   moveTo?: number;
 }
+export interface ColumnActionResize {
+  type: "resizeColumn";
+  column: KeyedColumnDescriptor;
+  phase: "begin" | "resize" | "end";
+  width?: number;
+}
 
 export interface ColumnActionSetTypes {
   type: "setTypes";
@@ -67,23 +81,28 @@ export interface ColumnActionUpdateProp {
   column: KeyedColumnDescriptor;
   align?: ColumnDescriptor["align"];
   label?: ColumnDescriptor["label"];
+  resizing?: KeyedColumnDescriptor["resizing"];
   width?: ColumnDescriptor["width"];
 }
 
-export interface ColumnActionUpdateGridConfig {
-  type: "updateGridConfig";
-  formatColumnHeaders?: GridConfig["columnFormatHeader"];
+export interface ColumnActionTableConfig {
+  type: "tableConfig";
+  groupBy?: VuuGroupBy;
+  sort?: VuuSort;
 }
 
 export type GridModelAction =
   | ColumnActionInit
   | ColumnActionMove
+  | ColumnActionResize
   | ColumnActionSetTypes
   | ColumnActionUpdate
   | ColumnActionUpdateProp
-  | ColumnActionUpdateGridConfig;
+  | ColumnActionTableConfig;
 
 export type GridModelReducer = Reducer<GridModel, GridModelAction>;
+
+export type ColumnActionDispatch = (action: GridModelAction) => void;
 
 const columnReducer: GridModelReducer = (state, action) => {
   switch (action.type) {
@@ -91,17 +110,21 @@ const columnReducer: GridModelReducer = (state, action) => {
       return init(action.config);
     case "moveColumn":
       return moveColumn(state, action);
+    case "resizeColumn":
+      return resizeColumn(state, action);
     case "setTypes":
       return setTypes(state, action);
     case "updateColumnProp":
       return updateColumnProp(state, action);
+    case "tableConfig":
+      return updateTableConfig(state, action);
     default:
       console.log(`unhandled action ${action.type}`);
       return state;
   }
 };
 
-export const useGridModel = (config: GridConfig) => {
+export const useTableModel = (config: GridConfig) => {
   const [state, dispatchColumnAction] = useReducer<
     GridModelReducer,
     GridConfig
@@ -139,6 +162,7 @@ const toKeyedColumWithDefaults = (
     label,
     key: index + KEY_OFFSET,
     name,
+    originalIdx: index,
     width,
   };
 };
@@ -165,6 +189,24 @@ function moveColumn(
     };
   }
   return state;
+}
+
+function resizeColumn(
+  state: GridModel,
+  { column, phase, width }: ColumnActionResize
+) {
+  const type = "updateColumnProp";
+  const resizing = phase !== "end";
+
+  switch (phase) {
+    case "begin":
+    case "end":
+      return updateColumnProp(state, { type, column, resizing });
+    case "resize":
+      return updateColumnProp(state, { type, column, width });
+    default:
+      throw Error(`useTableModel.resizeColumn, invalid resizePhase ${phase}`);
+  }
 }
 
 function setTypes(
@@ -195,7 +237,7 @@ function setTypes(
 
 function updateColumnProp(
   state: GridModel,
-  { align, column, label, width }: ColumnActionUpdateProp
+  { align, column, label, resizing, width }: ColumnActionUpdateProp
 ) {
   let { columns } = state;
   const targetColumn = columns.find((col) => col.name === column.name);
@@ -205,6 +247,9 @@ function updateColumnProp(
     }
     if (typeof label === "string") {
       columns = replaceColumn(columns, { ...targetColumn, label });
+    }
+    if (typeof resizing === "boolean") {
+      columns = replaceColumn(columns, { ...targetColumn, resizing });
     }
     if (typeof width === "number") {
       columns = replaceColumn(columns, { ...targetColumn, width });
@@ -216,9 +261,80 @@ function updateColumnProp(
   };
 }
 
+function updateTableConfig(
+  state: GridModel,
+  { groupBy, sort }: ColumnActionTableConfig
+) {
+  const hasGroupBy = groupBy !== undefined;
+  const hasSort = sort && sort.sortDefs.length > 0;
+
+  let result = state;
+
+  if (hasGroupBy) {
+    result = {
+      ...state,
+      columns: applyGroupByToColumns(state.columns, groupBy),
+    };
+  }
+
+  if (hasSort) {
+    result = {
+      ...state,
+      columns: applySortToColumns(state.columns, sort),
+    };
+  }
+
+  return result;
+}
+
 function replaceColumn(
   state: KeyedColumnDescriptor[],
   column: KeyedColumnDescriptor
 ) {
   return state.map((col) => (col.name === column.name ? column : col));
 }
+
+const applyGroupByToColumns = (
+  columns: KeyedColumnDescriptor[],
+  groupBy: VuuGroupBy
+) => {
+  if (groupBy.length) {
+    const [groupColumn, nonGroupedColumns] = extractGroupColumn(
+      columns,
+      groupBy
+    );
+    if (groupColumn) {
+      return [groupColumn as KeyedColumnDescriptor].concat(nonGroupedColumns);
+    }
+  } else if (columns[0]?.isGroup) {
+    return flattenColumnGroup(columns);
+  }
+  return columns;
+};
+
+const applySortToColumns = (colunms: KeyedColumnDescriptor[], sort: VuuSort) =>
+  colunms.map((column) => {
+    const sorted = getSortType(column, sort);
+    if (sorted !== undefined) {
+      return {
+        ...column,
+        sorted,
+      };
+    } else if (column.sorted) {
+      return {
+        ...column,
+        sorted: undefined,
+      };
+    } else {
+      return column;
+    }
+  });
+
+const getSortType = (column: ColumnDescriptor, { sortDefs }: VuuSort) => {
+  const sortDef = sortDefs.find((sortCol) => sortCol.column === column.name);
+  if (sortDef) {
+    return sortDefs.length > 1
+      ? (sortDefs.indexOf(sortDef) + 1) * (sortDef.sortType === "A" ? 1 : -1)
+      : sortDef.sortType;
+  }
+};

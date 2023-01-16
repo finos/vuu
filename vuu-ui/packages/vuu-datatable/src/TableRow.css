@@ -14,3 +14,7 @@
     background-color: var(--row-background);
   }
   
+  .vuuDataTableRow-expanded {
+    --row-toggle-icon-transform: rotate(90deg);
+  }
+  

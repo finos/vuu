@@ -14,7 +14,7 @@ import {
   VuuMenu,
   VuuRange,
   VuuRow,
-  VuuSortCol,
+  VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { getFullRange } from "@finos/vuu-utils";
@@ -63,7 +63,7 @@ interface Selection {
   type: "selection";
 }
 interface Sort {
-  data: VuuSortCol[];
+  data: VuuSort;
   type: "sort";
 }
 interface GroupBy {
@@ -120,7 +120,7 @@ export class Viewport {
     columns: string[];
     dataTypes: VuuColumnDataType[];
   } | null = null;
-  private sort: any;
+  private sort: VuuSort | undefined;
 
   public clientViewportId: string;
   public disabled = false;
@@ -140,7 +140,7 @@ export class Viewport {
     groupBy = [],
     table,
     range,
-    sort = [],
+    sort,
     title,
     viewport,
     visualLink,
@@ -158,9 +158,7 @@ export class Viewport {
     this.keys = new KeySet(range);
     this.pendingLinkedParent = visualLink;
     this.table = table;
-    this.sort = {
-      sortDefs: sort,
-    };
+    this.sort = sort;
     this.title = title;
   }
 
@@ -259,17 +257,9 @@ export class Viewport {
       //this.hasUpdates = true; // is this right ??????????
       this.pendingRangeRequest = null;
     } else if (type === "groupBy") {
-      this.isTree = true;
+      this.isTree = data.length > 0;
       this.groupBy = data;
       return { clientViewportId, type, groupBy: data };
-    } else if (type === "groupByClear") {
-      this.isTree = false;
-      this.groupBy = [];
-      return {
-        clientViewportId,
-        type: "groupBy",
-        groupBy: null,
-      };
     } else if (type === "columns") {
       console.log("columns changed");
       this.columns = data;
@@ -286,7 +276,7 @@ export class Viewport {
         aggregations: this.aggregations,
       };
     } else if (type === "sort") {
-      this.sort = { sortDefs: data };
+      this.sort = data;
       return { clientViewportId, type, sort: this.sort };
     } else if (type === "selection") {
       // should we do this here ?
@@ -509,14 +499,13 @@ export class Viewport {
     return this.createRequest({ aggregations });
   }
 
-  sortRequest(requestId: string, sortCols: VuuSortCol[]) {
-    this.awaitOperation(requestId, { type: "sort", data: sortCols });
-    return this.createRequest({ sort: { sortDefs: sortCols } });
+  sortRequest(requestId: string, sort: VuuSort) {
+    this.awaitOperation(requestId, { type: "sort", data: sort });
+    return this.createRequest({ sort });
   }
 
   groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
-    const type = groupBy.length === 0 ? "groupByClear" : "groupBy";
-    this.awaitOperation(requestId, { type, data: groupBy });
+    this.awaitOperation(requestId, { type: "groupBy", data: groupBy });
     return this.createRequest({ groupBy });
   }
 

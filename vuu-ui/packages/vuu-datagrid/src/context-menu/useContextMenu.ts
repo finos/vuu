@@ -46,12 +46,12 @@ export const useContextMenu = ({
       const { column } = gridOptions;
       // prettier-ignore
       switch(type){
-        case "sort-asc": return dataSource.sort(GridModel.setSortColumn(gridModel, column, "A")), true;
-        case "sort-dsc": return dataSource.sort(GridModel.setSortColumn(gridModel, column, "D")), true;
-        case "sort-add-asc": return dataSource.sort(GridModel.addSortColumn(gridModel, column, "A")), true;
-        case "sort-add-dsc": return dataSource.sort(GridModel.addSortColumn(gridModel, column, "D")), true;
-        case "group": return dataSource.group(GridModel.addGroupColumn({}, column)), true;
-        case "group-add": return dataSource.group(GridModel.addGroupColumn(gridModel, column)), true;
+        case "sort-asc": return (dataSource.sort = GridModel.setSortColumn(gridModel, column, "A")), true;
+        case "sort-dsc": return (dataSource.sort = GridModel.setSortColumn(gridModel, column, "D")), true;
+        case "sort-add-asc": return (dataSource.sort = GridModel.addSortColumn(gridModel, column, "A")), true;
+        case "sort-add-dsc": return (dataSource.sort = GridModel.addSortColumn(gridModel, column, "D")), true;
+        case "group": return (dataSource.groupBy = GridModel.addGroupColumn({}, column)), true;
+        case "group-add": return (dataSource.groupBy = GridModel.addGroupColumn(gridModel, column)), true;
         case "column-hide": return dispatchGridModelAction({type, column}),true;
         case "filter-remove-column": return handleRemoveColumnFromFilter(gridOptions, dataSource), true;
         case "remove-filters": return dataSource.filter(undefined, ""), true;

@@ -1,7 +1,7 @@
+import { GroupColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { DataRow, metadataKeys } from "@finos/vuu-utils";
 import React, { useCallback } from "react";
 import { useGridContext } from "../grid-context";
-import { GroupColumnDescriptor } from "../grid-model";
 import { getGroupValueAndOffset } from "../grid-model/gridModelUtils";
 
 import "./grid-group-cell.css";

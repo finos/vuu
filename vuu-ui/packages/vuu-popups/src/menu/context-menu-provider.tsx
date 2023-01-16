@@ -18,14 +18,24 @@ export const ContextMenuContext = createContext<ContextMenuContext | null>(
   null
 );
 
-export type ContextMenuItemDescriptor = {
-  action: string;
-  children?: ContextMenuItemDescriptor[];
+export interface ContextMenuItemBase {
   icon?: string;
   label: string;
   location?: string;
+}
+
+export interface ContextMenuLeafItemDescriptor extends ContextMenuItemBase {
+  action: string;
   options?: unknown;
-};
+}
+
+export interface ContextMenuGroupItemDescriptor extends ContextMenuItemBase {
+  children?: ContextMenuItemDescriptor[];
+}
+
+export type ContextMenuItemDescriptor =
+  | ContextMenuLeafItemDescriptor
+  | ContextMenuGroupItemDescriptor;
 
 export interface ContextMenuProviderProps {
   children: ReactNode;

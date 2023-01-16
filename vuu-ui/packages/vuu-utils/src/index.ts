@@ -10,4 +10,5 @@ export * from "./nanoid";
 export * from "./round-decimal";
 export * from "./range-utils";
 export * from "./row-utils";
+export * from "./sort-utils";
 export * from "./text-utils";

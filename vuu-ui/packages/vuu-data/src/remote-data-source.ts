@@ -46,6 +46,9 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   private initialAggregations: any;
   private pendingServer: any;
   private clientCallback: any;
+
+  #groupBy: VuuGroupBy = [];
+  #sort: VuuSort = { sortDefs: [] };
   // private serverViewportId?: string;
 
   public columns: string[];
@@ -59,7 +62,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     columns,
     filter,
     filterQuery,
-    group,
+    groupBy,
     sort,
     table,
     configUrl,
@@ -80,7 +83,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.disabled = false;
     this.suspended = false;
 
-    this.initialGroup = group;
+    this.initialGroup = groupBy;
     this.initialSort = sort;
     this.initialFilter = filter;
     this.initialFilterQuery = filterQuery;
@@ -269,23 +272,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  group(groupBy: VuuGroupBy) {
-    if (this.viewport) {
-      // log(`groupBy ${JSON.stringify(groupBy)}`);
-      const message = {
-        viewport: this.viewport,
-        type: "groupBy",
-        groupBy,
-      } as const;
-
-      if (this.server) {
-        this.server.send(message);
-      } else {
-        this.initialGroup = groupBy;
-      }
-    }
-  }
-
   //TODO I think we should have a clear filter for API clarity
   filter(filter: Filter | undefined, filterQuery: string) {
     if (this.viewport) {
@@ -365,14 +351,41 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  // TODO columns cannot simply be strings
-  sort(sort: VuuSort) {
+  get sort() {
+    return this.#sort;
+  }
+
+  set sort(sort: VuuSort) {
+    // TODO should we wait until server ACK before we assign #sort ?
+    this.#sort = sort;
+    console.log(`RemoteDataSource ${JSON.stringify(sort)}`);
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
         type: "sort",
-        sortDefs: sort.sortDefs,
+        sort,
       });
+    }
+  }
+
+  get groupBy() {
+    return this.#groupBy;
+  }
+
+  set groupBy(groupBy: VuuGroupBy) {
+    this.#groupBy = groupBy;
+    if (this.viewport) {
+      const message = {
+        viewport: this.viewport,
+        type: "groupBy",
+        groupBy,
+      } as const;
+
+      if (this.server) {
+        this.server.send(message);
+      } else {
+        this.initialGroup = groupBy;
+      }
     }
   }
 

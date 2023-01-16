@@ -36,9 +36,7 @@ interface GridContextMenuDescriptor {
 }
 
 export const buildContextMenuDescriptors =
-  (
-    gridModel: GridModelType
-  ): MenuBuilder<ContextMenuLocation, ContextMenuOptions> =>
+  (gridModel: GridModelType): MenuBuilder =>
   (location, options) => {
     const descriptors = [];
     if (location === "header") {

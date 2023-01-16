@@ -10,6 +10,7 @@ import {
 import { ReactElement, useCallback, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
+import { getDefaultColumnConfig } from "./columnMetaData";
 
 import "./App.css";
 
@@ -75,7 +76,9 @@ export const App = ({ user }: { user: VuuUser }) => {
   // TODO get Context from Shell
   return (
     <SaltProvider applyClassesTo="scope" density="high" mode="light">
-      <ShellContextProvider value={{ handleRpcResponse }}>
+      <ShellContextProvider
+        value={{ getDefaultColumnConfig, handleRpcResponse }}
+      >
         <Shell
           className="App"
           defaultLayout={defaultLayout}

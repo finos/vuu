@@ -22,12 +22,14 @@ import { LinkedIcon } from "@salt-ds/icons";
 import { FeatureProps } from "@finos/vuu-shell";
 
 import "./VuuBlotter.css";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 const classBase = "vuuBlotter";
 
 const CONFIG_KEYS = ["filter", "filterQuery", "groupBy", "sort"];
 
 type BlotterConfig = {
+  columns?: KeyedColumnDescriptor[];
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
 };
@@ -187,6 +189,12 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
     [currentFilter, dataSource]
   );
 
+  const configColumns = config?.columns;
+
+  const columns = useMemo(() => {
+    return configColumns || applyDefaults(schema, getDefaultColumnConfig);
+  }, [configColumns, getDefaultColumnConfig, schema]);
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
@@ -205,9 +213,7 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
               columnSizing="fill"
               dataSource={dataSource}
               aggregations={config?.aggregations}
-              columns={
-                config?.columns || applyDefaults(schema, getDefaultColumnConfig)
-              }
+              columns={columns}
               onConfigChange={handleConfigChange}
               renderBufferSize={80}
               rowHeight={18}
