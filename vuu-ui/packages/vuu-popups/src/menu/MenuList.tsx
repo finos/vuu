@@ -1,4 +1,11 @@
-import React, { useLayoutEffect, useMemo, useRef } from "react";
+import React, {
+  FC,
+  HTMLAttributes,
+  ReactElement,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import cx from "classnames";
 import { useIdMemo as useId } from "@salt-ds/core";
 import { useKeyboardNavigation } from "./use-keyboard-navigation";
@@ -10,14 +17,39 @@ const classBase = "vuuMenuList";
 
 export const Separator = () => <li className="vuuMenuItem-divider" />;
 
+export interface MenuItemGroupProps {
+  children: ReactElement<MenuItemProps>[];
+  label: string;
+}
+
+export interface MenuItemProps extends HTMLAttributes<HTMLDivElement> {
+  action?: string;
+  idx?: number;
+  options?: unknown;
+}
+
 // Purely used as markers, props will be extracted
-export const MenuItemGroup = () => null;
+export const MenuItemGroup: FC<MenuItemGroupProps> = () => null;
 // eslint-disable-next-line no-unused-vars
-export const MenuItem = ({ children, idx, ...props }) => {
+export const MenuItem = ({ children, idx, ...props }: MenuItemProps) => {
   return <div {...props}>{children}</div>;
 };
 
-const hasIcon = (child) => child.props["data-icon"];
+const hasIcon = (child: ReactElement) => child.props["data-icon"];
+
+export interface MenuListProps extends HTMLAttributes<HTMLDivElement> {
+  activatedByKeyboard?: boolean;
+  children: ReactElement[];
+  childMenuShowing?: number;
+  highlightedIdx?: number;
+  isRoot?: boolean;
+  listItemProps?: Partial<MenuItemProps>;
+  menuId?: string;
+  onActivate?: (menuId: string) => void;
+  onCloseMenu: (idx: number) => void;
+  onOpenMenu?: (menuId: string) => void;
+  onHighlightMenuItem?: (idx: number) => void;
+}
 
 const MenuList = ({
   activatedByKeyboard,
@@ -34,45 +66,44 @@ const MenuList = ({
   onCloseMenu,
   onOpenMenu,
   ...props
-}) => {
+}: MenuListProps) => {
   const id = useId(idProp);
-  const root = useRef(null);
+  const root = useRef<HTMLDivElement>(null);
 
   // The id generation be,ongs in useIttemsWithIds
   const mapIdxToId = useMemo(() => new Map(), []);
 
-  const handleOpenMenu = (idx) => {
-    const el = root.current.querySelector(`:scope > [data-idx='${idx}']`);
-    onOpenMenu(el.id);
+  const handleOpenMenu = (idx: number) => {
+    const el = root.current?.querySelector(`:scope > [data-idx='${idx}']`);
+    el?.id && onOpenMenu?.(el.id);
   };
 
-  const handleActivate = (idx) => {
-    const el = root.current.querySelector(`:scope > [data-idx='${idx}']`);
-    onActivate(el.id);
+  const handleActivate = (idx: number) => {
+    const el = root.current?.querySelector(`:scope > [data-idx='${idx}']`);
+    el?.id && onActivate?.(el.id);
   };
 
-  const { focusVisible, highlightedIdx, listProps } = useKeyboardNavigation({
-    count: children.length,
-    highlightedIdx: highlightedIdxProp,
+  const { focusVisible, highlightedIndex, listProps } = useKeyboardNavigation({
+    count: React.Children.count(children),
+    highlightedIndex: highlightedIdxProp,
     onActivate: handleActivate,
     onHighlight: onHighlightMenuItem,
     onOpenMenu: handleOpenMenu,
     onCloseMenu,
-    id,
   });
 
   const appliedFocusVisible = childMenuShowing == -1 ? focusVisible : -1;
 
   useLayoutEffect(() => {
     if (childMenuShowing === -1 && activatedByKeyboard) {
-      root.current.focus();
+      root.current?.focus();
     }
   }, [activatedByKeyboard, childMenuShowing]);
 
   const getActiveDescendant = () =>
-    highlightedIdx === undefined || highlightedIdx === -1
+    highlightedIndex === undefined || highlightedIndex === -1
       ? undefined
-      : mapIdxToId.get(highlightedIdx);
+      : mapIdxToId.get(highlightedIndex);
 
   return (
     <div
@@ -98,7 +129,11 @@ const MenuList = ({
       role: "menuitem",
     };
 
-    const maybeIcon = (children, withIcon, iconName) =>
+    const maybeIcon = (
+      childElement: ReactElement,
+      withIcon: boolean,
+      iconName?: string
+    ) =>
       withIcon
         ? [
             <span
@@ -106,10 +141,15 @@ const MenuList = ({
               data-icon={iconName}
               key="icon"
             />,
-          ].concat(children)
-        : children;
+          ].concat(childElement)
+        : childElement;
 
-    function addClonedChild(list, child, idx, withIcon) {
+    function addClonedChild(
+      list: ReactElement[],
+      child: ReactElement,
+      idx: number,
+      withIcon: boolean
+    ) {
       const {
         children,
         className,
@@ -131,8 +171,8 @@ const MenuList = ({
             `${id}-${menuId}`,
             itemId,
             idx,
-            child.key,
-            highlightedIdx,
+            child.key ?? itemId,
+            highlightedIndex,
             appliedFocusVisible,
             className,
             hasSeparator
@@ -149,9 +189,9 @@ const MenuList = ({
       // mapIdxToId.set(idx, itemId);
     }
 
-    const listItems = [];
+    const listItems: ReactElement[] = [];
 
-    if (children && children.length > 0) {
+    if (children.length > 0) {
       const withIcon = children.some(hasIcon);
 
       children.forEach((child, idx) => {
@@ -164,14 +204,14 @@ const MenuList = ({
 };
 
 const getMenuItemProps = (
-  baseId,
-  itemId,
-  idx,
-  key,
-  highlightedIdx,
-  focusVisible,
-  className,
-  hasSeparator
+  baseId: string,
+  itemId: string,
+  idx: number,
+  key: string,
+  highlightedIdx: number,
+  focusVisible: number,
+  className: string,
+  hasSeparator: boolean
 ) => ({
   id: `${baseId}-${itemId}`,
   key: key ?? idx,

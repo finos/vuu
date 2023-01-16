@@ -9,11 +9,11 @@ const packages = [
   //   'react-utils',
   //   'vuu-theme',
   "vuu-data",
-  //   'ui-controls',
+  "vuu-popups",
   //   'vuu-datagrid',
   "vuu-datatable",
   // "vuu-datagrid-extras",
-  //   'vuu-layout',
+  "vuu-layout",
   //   'vuu-shell'
 ];
 

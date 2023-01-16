@@ -4,16 +4,11 @@ import {
   VuuTableMeta,
 } from "@finos/vuu-protocol-types";
 import { useCallback, useEffect, useState } from "react";
-// TODO remove getColumnConfig here, accept as a parameter
-import { getColumnConfig } from "./columnMetaData";
 import { useServerConnection } from "./useServerConnection";
 
 export type SchemaColumn = {
   name: string;
   serverDataType: VuuColumnDataType;
-  label?: string;
-  type?: { name: string };
-  width?: number;
 };
 
 export type TableSchema = {
@@ -28,12 +23,10 @@ const createSchemaFromTableMetadata = ({
 }: VuuTableMeta): TableSchema => {
   return {
     table,
-    columns: columns.map((col, idx) => {
-      const columnConfig = getColumnConfig(table.table, col);
-      return columnConfig
-        ? { ...columnConfig, serverDataType: dataTypes[idx] }
-        : { name: col, serverDataType: dataTypes[idx] };
-    }),
+    columns: columns.map((col, idx) => ({
+      name: col,
+      serverDataType: dataTypes[idx],
+    })),
   };
 };
 

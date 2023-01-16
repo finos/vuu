@@ -1,11 +1,10 @@
-import { useViewContext } from "@finos/vuu-layout";
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { useShellContext } from "@finos/vuu-shell";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSuggestionProvider } from "./useSuggestionProvider";
-
 import { Filter } from "@finos/vuu-filter-types";
 import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
+import { useViewContext } from "@finos/vuu-layout";
+import { ContextMenuProvider } from "@finos/vuu-popups";
+import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSuggestionProvider } from "./useSuggestionProvider";
 
 import {
   ConfigChangeMessage,
@@ -16,8 +15,9 @@ import {
   useVuuMenuActions,
 } from "@finos/vuu-data";
 import { Grid, GridProvider } from "@finos/vuu-datagrid";
-import { LinkedIcon } from "@salt-ds/icons";
+import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import { ToolbarButton } from "@heswell/salt-lab";
+import { LinkedIcon } from "@salt-ds/icons";
 
 import { FeatureProps } from "@finos/vuu-shell";
 
@@ -25,15 +25,43 @@ import "./VuuBlotter.css";
 
 const classBase = "vuuBlotter";
 
+const CONFIG_KEYS = ["filter", "filterQuery", "groupBy", "sort"];
+
+type BlotterConfig = {
+  groupBy?: VuuGroupBy;
+  sort?: VuuSort;
+};
 export interface FilteredGridProps extends FeatureProps {
   schema: TableSchema;
 }
 
+const applyDefaults = (
+  { columns, table }: TableSchema,
+  getDefaultColumnConfig?: ShellContextProps["getDefaultColumnConfig"]
+) => {
+  if (typeof getDefaultColumnConfig === "function") {
+    return columns.map((column) => {
+      const config = getDefaultColumnConfig(table.table, column.name);
+      if (config) {
+        return {
+          ...column,
+          ...config,
+        };
+      } else {
+        return column;
+      }
+    });
+  } else {
+    return columns;
+  }
+};
+
 const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
   const { id, dispatch, load, purge, save, loadSession, saveSession } =
     useViewContext();
-  const config = useMemo(() => load?.(), [load]);
-  const { handleRpcResponse } = useShellContext();
+  const config = useMemo(() => load?.() as BlotterConfig | undefined, [load]);
+  console.log({ config });
+  const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
   const [currentFilter, setCurrentFilter] = useState<Filter>();
 
   const suggestionProvider = useSuggestionProvider({
@@ -119,8 +147,10 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
           break;
 
         default:
-          for (let [key, state] of Object.entries(update)) {
-            save(state, key);
+          for (const [key, state] of Object.entries(update)) {
+            if (CONFIG_KEYS.includes(key)) {
+              save?.(state, key);
+            }
           }
       }
     },
@@ -175,13 +205,13 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
               columnSizing="fill"
               dataSource={dataSource}
               aggregations={config?.aggregations}
-              columns={config?.columns || schema.columns}
-              groupBy={config?.group}
+              columns={
+                config?.columns || applyDefaults(schema, getDefaultColumnConfig)
+              }
               onConfigChange={handleConfigChange}
               renderBufferSize={80}
               rowHeight={18}
               selectionModel="extended"
-              sort={config?.sort}
               showLineNumbers
             />
           </div>

@@ -2,7 +2,12 @@ import { rect, rectTuple } from "../common-types";
 import { LayoutModel } from "../layout-reducer";
 import { getProps, typeOf } from "../utils";
 import {
-  BoxModel, getPosition, Measurements, Position, positionValues, RelativeDropPosition
+  BoxModel,
+  getPosition,
+  Measurements,
+  Position,
+  positionValues,
+  RelativeDropPosition
 } from "./BoxModel";
 import { DragDropRect, DropPos, DropPosTab } from "./dragDropTypes";
 import { DragState } from "./DragState";

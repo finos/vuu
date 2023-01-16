@@ -43,7 +43,7 @@ export const PaletteItem = memo(
     return (
       <ListItem
         className={cx("vuuPaletteItem", className)}
-        data-icon="grab-handle"
+        data-draggable
         {...props}
       />
     );

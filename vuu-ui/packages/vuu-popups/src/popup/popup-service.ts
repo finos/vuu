@@ -1,33 +1,39 @@
 import cx from "classnames";
-import React, { createElement, useEffect, useRef } from "react";
+import React, {
+  createElement,
+  CSSProperties,
+  HTMLAttributes,
+  ReactElement,
+  useEffect,
+  useRef,
+} from "react";
 import ReactDOM from "react-dom";
 import { renderPortal } from "../portal";
 
 import "./popup-service.css";
-// TODO what !
-window.popupReact = React;
 
 let _dialogOpen = false;
-const _popups = [];
+const _popups: string[] = [];
 
-function specialKeyHandler(e) {
-  if (e.keyCode === 27 /* ESC */) {
+function specialKeyHandler(e: KeyboardEvent) {
+  if (e.key === "Esc") {
     if (_popups.length) {
       closeAllPopups();
     } else if (_dialogOpen) {
-      ReactDOM.unmountComponentAtNode(
-        document.body.querySelector(".vuuDialog")
-      );
+      const dialogRoot = document.body.querySelector(".vuuDialog");
+      if (dialogRoot) {
+        ReactDOM.unmountComponentAtNode(dialogRoot);
+      }
     }
   }
 }
 
-function outsideClickHandler(e) {
+function outsideClickHandler(e: MouseEvent) {
   if (_popups.length) {
     // onsole.log(`Popup.outsideClickHandler`);
     const popupContainers = document.body.querySelectorAll(".vuuPopup");
     for (let i = 0; i < popupContainers.length; i++) {
-      if (popupContainers[i].contains(e.target)) {
+      if (popupContainers[i].contains(e.target as HTMLElement)) {
         return;
       }
     }
@@ -60,7 +66,7 @@ function dialogClosed() {
   }
 }
 
-function popupOpened(name /*, group*/) {
+function popupOpened(name: string) {
   if (_popups.indexOf(name) === -1) {
     _popups.push(name);
     //onsole.log('PopupService, popup opened ' + name + '  popups : ' + _popups);
@@ -71,7 +77,7 @@ function popupOpened(name /*, group*/) {
   }
 }
 
-function popupClosed(name /*, group=null*/) {
+function popupClosed(name: string /*, group=null*/) {
   if (_popups.length) {
     if (name === "*") {
       _popups.length = 0;
@@ -89,7 +95,14 @@ function popupClosed(name /*, group=null*/) {
   }
 }
 
-const PopupComponent = ({ children, position, style }) => {
+const PopupComponent = ({
+  children,
+  position,
+  style,
+}: HTMLAttributes<HTMLDivElement> & {
+  position?: "above" | "below" | "";
+  style?: CSSProperties;
+}) => {
   const className = cx("hwPopup", "hwPopupContainer", position);
   return createElement("div", { className, style }, children);
 };
@@ -106,14 +119,24 @@ export class PopupService {
     top = 0,
     width = "auto",
     component,
+  }: {
+    depth?: number;
+    name?: string;
+    group?: string;
+    position?: "above" | "below" | "";
+    left?: number;
+    right?: "auto" | number;
+    top?: number;
+    component: ReactElement;
+    width?: number | "auto";
   }) {
     if (!component) {
       throw Error(`PopupService showPopup, no component supplied`);
     }
-    popupOpened(name, group);
-    let el = document.body.querySelector(".vuuPopup." + group);
+    popupOpened(name);
+    let el = document.body.querySelector(".vuuPopup." + group) as HTMLElement;
     if (el === null) {
-      el = document.createElement("div");
+      el = document.createElement("div") as HTMLElement;
       el.className = "vuuPopup " + group;
       document.body.appendChild(el);
     }
@@ -139,15 +162,16 @@ export class PopupService {
     //onsole.log('PopupService.hidePopup name=' + name + ', group=' + group)
 
     if (_popups.indexOf(name) !== -1) {
-      popupClosed(name, group);
-      ReactDOM.unmountComponentAtNode(
-        document.body.querySelector(`.vuuPopup.${group}`)
-      );
+      popupClosed(name);
+      const popupRoot = document.body.querySelector(`.vuuPopup.${group}`);
+      if (popupRoot) {
+        ReactDOM.unmountComponentAtNode(popupRoot);
+      }
     }
   }
 
-  static keepWithinThePage(el, right = "auto") {
-    const target = el.querySelector(".vuuPopupContainer > *");
+  static keepWithinThePage(el: HTMLElement, right: number | "auto" = "auto") {
+    const target = el.querySelector(".vuuPopupContainer > *") as HTMLElement;
     if (target) {
       const {
         top,
@@ -162,12 +186,12 @@ export class PopupService {
 
       const overflowH = h - (top + height);
       if (overflowH < 0) {
-        target.style.top = parseInt(top, 10) + overflowH + "px";
+        target.style.top = Math.round(top) + overflowH + "px";
       }
 
       const overflowW = w - (left + width);
       if (overflowW < 0) {
-        target.style.left = parseInt(left, 10) + overflowW + "px";
+        target.style.left = Math.round(left) + overflowW + "px";
       }
 
       if (typeof right === "number" && right !== currentRight) {
@@ -179,7 +203,7 @@ export class PopupService {
 }
 
 export class DialogService {
-  static showDialog(dialog) {
+  static showDialog(dialog: ReactElement) {
     const containerEl = ".vuuDialog";
     const onClose = dialog.props.onClose;
 
@@ -201,21 +225,35 @@ export class DialogService {
 
   static closeDialog() {
     dialogClosed();
-    ReactDOM.unmountComponentAtNode(document.body.querySelector(".vuuDialog"));
+    const dialogRoot = document.body.querySelector(".vuuDialog");
+    if (dialogRoot) {
+      ReactDOM.unmountComponentAtNode(dialogRoot);
+    }
   }
 }
 
-export const Popup = (props) => {
-  const pendingTask = useRef(null);
-  const ref = useRef(null);
+export interface PopupProps {
+  children: ReactElement;
+  close?: boolean;
+  depth: number;
+  group?: string;
+  name: string;
+  position?: "above" | "below" | "";
+  width: number;
+}
 
-  const show = (props, boundingClientRect) => {
+export const Popup = (props: PopupProps) => {
+  const pendingTask = useRef<number | undefined>();
+  const ref = useRef<HTMLElement>(null);
+
+  const show = (props: PopupProps, boundingClientRect: DOMRect) => {
     const { name, group, depth, width } = props;
-    let left, top;
+    let left: number | undefined;
+    let top: number | undefined;
 
     if (pendingTask.current) {
-      clearTimeout(pendingTask.current);
-      pendingTask.current = null;
+      window.clearTimeout(pendingTask.current);
+      pendingTask.current = undefined;
     }
 
     if (props.close === true) {
@@ -237,7 +275,7 @@ export const Popup = (props) => {
         top = targetTop;
       }
 
-      pendingTask.current = setTimeout(() => {
+      pendingTask.current = window.setTimeout(() => {
         PopupService.showPopup({
           name,
           group,
@@ -255,9 +293,10 @@ export const Popup = (props) => {
   useEffect(() => {
     if (ref.current) {
       const el = ref.current.parentElement;
-      const boundingClientRect = el.getBoundingClientRect();
-      //onsole.log(`%cPopup.componentDidMount about to call show`,'color:green');
-      show(props, boundingClientRect);
+      const boundingClientRect = el?.getBoundingClientRect();
+      if (boundingClientRect) {
+        show(props, boundingClientRect);
+      }
     }
 
     return () => {
@@ -266,15 +305,4 @@ export const Popup = (props) => {
   }, [props]);
 
   return React.createElement("div", { className: "popup-proxy", ref });
-
-  // componentWillReceiveProps(nextProps) {
-
-  //     const domNode = ReactDOM.findDOMNode(this);
-  //     if (domNode) {
-  //         const el = domNode.parentElement;
-  //         const boundingClientRect = el.getBoundingClientRect();
-  //         //onsole.log(`%cPopup.componentWillReceiveProps about to call show`,'color:green');
-  //         this.show(nextProps, boundingClientRect);
-  //     }
-  // }
 };

@@ -9,7 +9,7 @@ function scrollPosition() {
   return { scrollTop, scrollLeft };
 }
 
-export function mousePosition(event) {
+export function mousePosition(event: MouseEvent) {
   const sPos = scrollPosition();
 
   const x = document.all ? event.clientX + sPos.scrollLeft : event.pageX;

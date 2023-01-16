@@ -32,7 +32,7 @@ export const useSplitterResizing = ({
   onSplitterMoved,
   style,
 }: SplitterHookProps): SplitterHookResult => {
-  const rootRef = useRef<HTMLDivElement>();
+  const rootRef = useRef<HTMLDivElement>(null);
   const metaRef = useRef<ContentMeta[]>();
   const contentRef = useRef<ReactElement[]>();
   const assignedKeys = useRef([]);

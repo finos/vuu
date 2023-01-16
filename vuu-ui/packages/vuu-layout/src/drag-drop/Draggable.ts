@@ -27,10 +27,10 @@ let _dragEndCallback: DragEndCallback | null;
 
 let _dragStartX: number;
 let _dragStartY: number;
-let _dragContainer: ReactElement | null;
+let _dragContainer: ReactElement | undefined;
 let _dragState: DragState;
 let _dropTarget: DropTarget | null = null;
-let _validDropTargetPaths: string[] | null;
+let _validDropTargetPaths: string[] | undefined;
 let _dragInstructions: DragInstructions;
 let _measurements: Measurements;
 let _simpleDrag: boolean;
@@ -216,7 +216,7 @@ function dragMousemoveHandler(evt: MouseEvent) {
     _dragMoveCallback?.(newX, newY);
   }
 
-  if (_simpleDrag || !_dragContainer || !_validDropTargetPaths) {
+  if (_simpleDrag || _dragContainer === undefined) {
     return;
   }
 
@@ -277,9 +277,9 @@ function onDragEnd() {
   _dragMoveCallback = null;
   _dragEndCallback = null;
 
-  _dragContainer = null;
+  _dragContainer = undefined;
   _dropTargetRenderer.clear();
-  _validDropTargetPaths = null;
+  _validDropTargetPaths = undefined;
   window.removeEventListener("mousemove", dragMousemoveHandler, false);
   window.removeEventListener("mouseup", dragMouseupHandler, false);
 }
