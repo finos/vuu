@@ -75,8 +75,7 @@ export interface DataSourceColumnsMessage extends MessageWithClientViewportId {
 }
 export interface DataSourceFilterMessage extends MessageWithClientViewportId {
   type: "filter";
-  filter: Filter;
-  filterQuery: string;
+  filter: DataSourceFilter;
 }
 export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
   type: "groupBy";

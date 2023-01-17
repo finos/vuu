@@ -1,3 +1,4 @@
+import { Filter } from "@finos/vuu-filter-types";
 import {
   VuuAggType,
   VuuColumnDataType,
@@ -56,6 +57,7 @@ export interface ColumnDescriptor {
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   className?: string;
+  filter?: Filter;
   flex?: number;
   heading?: [...string[]];
   isGroup?: boolean;

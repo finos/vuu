@@ -22,6 +22,7 @@ export const FilterInput = ({
   existingFilter,
   onSubmitFilter,
   suggestionProvider,
+  ...props
 }: FilterInputProps) => {
   const { editorRef, clearInput } = useCodeMirrorEditor({
     existingFilter,
@@ -30,7 +31,7 @@ export const FilterInput = ({
   });
 
   return (
-    <div className={classBase}>
+    <div {...props} className={classBase}>
       <Button className={`${classBase}-FilterButton`} data-icon="filter" />
       <div className={`${classBase}-Editor`} ref={editorRef} />
       <Button

@@ -311,7 +311,9 @@ const collectFiltersForColumn = (
       results.push(ffc);
     }
   });
-  if (results.length === 1) {
+  if (results.length === 0) {
+    return undefined;
+  } else if (results.length === 1) {
     return results[0];
   }
   return {
