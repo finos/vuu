@@ -1,8 +1,9 @@
-import { SchemaColumn, useTypeaheadSuggestions } from "@finos/vuu-data";
+import { useTypeaheadSuggestions } from "@finos/vuu-data";
 import { ISuggestionProvider, SuggestionType } from "@finos/vuu-filters";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { useCallback, useRef } from "react";
 import { Completion } from "@codemirror/autocomplete";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 const tableColumns: Completion[] = [
   { label: "bbg" },
@@ -69,7 +70,7 @@ const getTypeaheadParams = (
 };
 
 export interface SuggestionProviderHookProps {
-  columns: SchemaColumn[];
+  columns: ColumnDescriptor[];
   table: VuuTable;
 }
 

@@ -1,9 +1,13 @@
 import { RemoteDataSource } from "@finos/vuu-data";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { useMemo } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
 import { Schema } from "./useSchemas";
 
-const configureColumns = (columns: any, columnConfig?: any) => {
+const configureColumns = (
+  columns: ColumnDescriptor[],
+  columnConfig?: { [key: string]: ColumnDescriptor }
+): ColumnDescriptor[] => {
   if (columnConfig) {
     return Object.keys(columnConfig).map((colname: string) => {
       const column = columns.find((col) => col.name === colname);

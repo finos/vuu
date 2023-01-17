@@ -131,6 +131,11 @@ export const useDataTable = ({
             type: "tableConfig",
             groupBy: message.groupBy,
           });
+        case "filter":
+          return dispatchColumnAction({
+            type: "tableConfig",
+            filter: message.filter,
+          });
         case "sort":
           return dispatchColumnAction({
             type: "tableConfig",

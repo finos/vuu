@@ -8,6 +8,7 @@ import { TableColumnResizeHandler } from "./dataTableTypes";
 
 import "./TableHeaderCell.css";
 import { useContextMenu } from "@finos/vuu-popups";
+import { FilterIndicator } from "./filter-indicator";
 
 const classBase = "vuuTable-headerCell";
 
@@ -73,6 +74,7 @@ export const TableHeaderCell = ({
       ref={rootRef}
     >
       <div className={`${classBase}-inner`}>
+        <FilterIndicator column={column} />
         <div className={`${classBase}-label`}>{column.label}</div>
         <SortIndicator sorted={column.sorted} />
         {column.resizeable !== false ? (
