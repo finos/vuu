@@ -37,3 +37,4 @@ function writePackageJSON() {
 
 createTypeDefs();
 await writePackageJSON();
+console.log(`typedefs created ${scopedPackageName}`);

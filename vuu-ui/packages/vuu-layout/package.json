@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "node ../../scripts/run-build.mjs",
-    "type-defs": "tsc --project tsconfig-emit-types.json"
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "types": "src/index.ts",
   "peerDependencies": {
