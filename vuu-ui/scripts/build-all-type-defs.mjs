@@ -1,14 +1,14 @@
 import { execWait } from "./utils.mjs";
 
 function buildPackage(packageName) {
+  console.log(`build TypeScript typedefs for ${packageName}`);
   execWait("yarn --silent type-defs", `packages/${packageName}`);
 }
 
 const packages = [
   "vuu-utils",
-  //   'react-utils',
-  //   'vuu-theme',
   "vuu-data",
+  "vuu-filters",
   "vuu-popups",
   //   'vuu-datagrid',
   "vuu-datatable",

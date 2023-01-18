@@ -78,8 +78,8 @@ export function useDataSource({
         }
       } else if (message.type === "filter") {
         // TODO
-        const { filter, filterQuery } = message;
-        console.log(`filter message ${filterQuery}`, {
+        const { filter } = message;
+        console.log("filter message", {
           filter,
         });
       }

@@ -74,10 +74,10 @@ const DEFAULT_ADD_FILTER_OPTS: AddFilterOptions = {
 };
 
 export const addFilter = (
-  existingFilter: Filter | null,
+  existingFilter: Filter | undefined,
   filter: Filter,
   { combineWith = AND }: AddFilterOptions = DEFAULT_ADD_FILTER_OPTS
-): Filter | null => {
+): Filter | undefined => {
   if (includesNoValues(filter)) {
     if (isMultiClauseFilter(filter)) {
       // TODO identify the column that is contributing the no-values filter
@@ -180,7 +180,7 @@ const replaceOrInsert = (filters: Filter[], filter: Filter) => {
   return filters.concat(filter);
 };
 
-const merge = (f1: Filter, f2: Filter): Filter | null => {
+const merge = (f1: Filter, f2: Filter): Filter | undefined => {
   if (includesNoValues(f2)) {
     return f2;
   }
@@ -343,15 +343,15 @@ export const filterIncludesColumn = (
 };
 
 const removeFilterForColumn = (
-  sourceFilter: Filter | null,
+  sourceFilter: Filter | undefined,
   column: ColumnDescriptor
-): Filter | null => {
+): Filter | undefined => {
   const colName = column.name;
   if (!sourceFilter) {
-    return null;
+    return undefined;
   }
   if (sourceFilter.column === colName) {
-    return null;
+    return undefined;
   }
   if (isAndFilter(sourceFilter) || isOrFilter(sourceFilter)) {
     const { op } = sourceFilter;
@@ -359,7 +359,7 @@ const removeFilterForColumn = (
     const otherColFilters = filters.filter((f) => f.column !== colName);
     switch (otherColFilters.length) {
       case 0:
-        return null;
+        return undefined;
       case 1:
         return otherColFilters[0];
       default:
@@ -416,11 +416,17 @@ export const updateFilter = (
         filters: filter.filters.concat(newFilter),
       };
     }
-    const existingClause = newFilter.column
-      ? extractFilterForColumn(filter, newFilter.column)
-      : undefined;
-    if (existingClause) {
-      return filter;
+    const { column: columnName } = newFilter;
+    if (columnName) {
+      const existingClause = newFilter.column
+        ? extractFilterForColumn(filter, columnName)
+        : undefined;
+      if (existingClause && columnName) {
+        // The filter already contains a clause for this column, replace
+        // with the new clause
+        const result = removeFilterForColumn(filter, { name: columnName });
+        return updateFilter(result, newFilter, "add");
+      }
     }
     return {
       op: "and",

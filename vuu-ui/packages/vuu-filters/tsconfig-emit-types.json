@@ -1,7 +1,7 @@
 {
     "extends": "../../tsconfig-emit-types.json",
     "compilerOptions": {
-      "outDir": "../../dist/vuu-popups/types"
+      "outDir": "../../dist/vuu-filters/types"
     },
     "include": [
       "src"

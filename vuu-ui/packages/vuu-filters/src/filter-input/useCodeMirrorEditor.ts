@@ -1,7 +1,7 @@
 import {
   autocompletion,
   Completion,
-  startCompletion
+  startCompletion,
 } from "@codemirror/autocomplete";
 import { defaultKeymap } from "@codemirror/commands";
 import { ensureSyntaxTree } from "@codemirror/language";
@@ -148,7 +148,6 @@ export const useCodeMirrorEditor = ({
           EditorView.updateListener.of((v) => {
             const view = getView(viewRef);
             if (v.docChanged) {
-              console.log(`>>>> ${view.state.doc.toString()}`);
               startCompletion(view);
             }
           }),
