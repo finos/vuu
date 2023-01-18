@@ -14,7 +14,7 @@ const packages = [
 async function publishPackage(packageName) {
   await execWait(
     "npm publish --registry https://registry.npmjs.org --access public",
-    `packages/${packageName}`
+    `dist/${packageName}`
   );
 }
 
