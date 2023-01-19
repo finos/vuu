@@ -21,7 +21,7 @@ import {
   VuuUIMessageOutAggregate,
   VuuUIMessageOutConnect,
   VuuUIMessageOutCreateLink,
-  VuuUIMessageOutFilterQuery,
+  VuuUIMessageOutFilter,
   VuuUIMessageOutGroupby,
   VuuUIMessageOutOpenTreeNode,
   VuuUIMessageOutCloseTreeNode,
@@ -233,10 +233,10 @@ export class ServerProxy {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
-  private filter(viewport: Viewport, message: VuuUIMessageOutFilterQuery) {
+  private filter(viewport: Viewport, message: VuuUIMessageOutFilter) {
     const requestId = nextRequestId();
-    const { filter, filterQuery } = message;
-    const request = viewport.filterRequest(requestId, filter, filterQuery);
+    const { filter } = message;
+    const request = viewport.filterRequest(requestId, filter);
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
@@ -380,7 +380,7 @@ export class ServerProxy {
             return this.sort(viewport, message);
           case "groupBy":
             return this.groupBy(viewport, message);
-          case "filterQuery":
+          case "filter":
             return this.filter(viewport, message);
           case "select":
             return this.select(viewport, message);

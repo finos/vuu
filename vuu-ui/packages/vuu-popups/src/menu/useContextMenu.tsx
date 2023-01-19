@@ -6,6 +6,7 @@ import { PopupService } from "../popup";
 import {
   ContextMenuContext,
   ContextMenuItemDescriptor,
+  isGroupMenuItem,
   MenuActionHandler,
 } from "./context-menu-provider";
 import { ContextMenu } from "./ContextMenu";
@@ -58,17 +59,19 @@ const showContextMenu = (
 ) => {
   const { clientX: left, clientY: top } = e;
   const menuItems = (menuDescriptors: ContextMenuItemDescriptor[]) => {
-    const fromDescriptor = (
-      { children, label, icon, action, options }: ContextMenuItemDescriptor,
-      i: number
-    ) =>
-      children ? (
-        <MenuItemGroup key={i} label={label}>
-          {children.map(fromDescriptor)}
+    const fromDescriptor = (menuItem: ContextMenuItemDescriptor, i: number) =>
+      isGroupMenuItem(menuItem) ? (
+        <MenuItemGroup key={i} label={menuItem.label}>
+          {menuItem.children.map(fromDescriptor)}
         </MenuItemGroup>
       ) : (
-        <MenuItem key={i} action={action} data-icon={icon} options={options}>
-          {label}
+        <MenuItem
+          key={i}
+          action={menuItem.action}
+          data-icon={menuItem.icon}
+          options={menuItem.options}
+        >
+          {menuItem.label}
         </MenuItem>
       );
 

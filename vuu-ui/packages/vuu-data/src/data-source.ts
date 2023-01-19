@@ -13,10 +13,10 @@ import {
   VuuRange,
   VuuRowDataItemType,
   VuuSort,
-  VuuSortCol,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
+import { LinkWithLabel } from "./server-proxy/server-proxy";
 
 type RowIndex = number;
 type RenderKey = number;
@@ -26,6 +26,10 @@ type Depth = number;
 type ChildCount = number;
 type RowKey = string;
 type IsSelected = 0 | 1 | 2;
+
+export interface DataSourceFilter extends VuuFilter {
+  filterStruct?: Filter;
+}
 
 export type DataSourceRow = [
   RowIndex,
@@ -71,8 +75,7 @@ export interface DataSourceColumnsMessage extends MessageWithClientViewportId {
 }
 export interface DataSourceFilterMessage extends MessageWithClientViewportId {
   type: "filter";
-  filter: Filter;
-  filterQuery: string;
+  filter: DataSourceFilter;
 }
 export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
   type: "groupBy";
@@ -100,8 +103,7 @@ export interface DataSourceSubscribedMessage
     MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
-  filter: Filter;
-  filterSpec: VuuFilter;
+  filter: DataSourceFilter;
   groupBy: VuuGroupBy;
   range: VuuRange;
   sort: VuuSort;
@@ -189,11 +191,10 @@ export interface DataSourceProps {
   table: VuuTable;
   aggregations?: VuuAggregation[];
   columns: string[];
-  filter?: Filter;
-  filterQuery?: string;
+  filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
-  configUrl?: any;
+  configUrl?: string;
   serverUrl?: string;
   viewport?: string;
   "visual-link"?: any;
@@ -205,10 +206,9 @@ export interface SubscribeProps {
   columns?: string[];
   aggregations?: VuuAggregation[];
   range?: VuuRange;
-  sort?: VuuSortCol[];
+  sort?: VuuSort;
   groupBy?: VuuGroupBy;
-  filter?: Filter;
-  filterQuery?: string;
+  filter?: DataSourceFilter;
   title?: string;
 }
 
@@ -218,8 +218,11 @@ export interface DataSource extends IEventEmitter {
   aggregate: (aggregations: VuuAggregation[]) => void;
   closeTreeNode: (key: string) => void;
   columns: string[];
-  createLink: ({ parentVpId, link: { fromColumn, toColumn } }: any) => void;
-  filter: (filter: Filter | undefined, filterQuery: string) => void;
+  createLink: ({
+    parentVpId,
+    link: { fromColumn, toColumn },
+  }: LinkWithLabel) => void;
+  filter: DataSourceFilter;
   groupBy: VuuGroupBy;
   menuRpcCall: (
     rpcRequest: Omit<VuuMenuRpcRequest, "vpId">

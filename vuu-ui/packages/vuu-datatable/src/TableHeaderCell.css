@@ -25,6 +25,10 @@
     padding: 0 0 0 3px;
   }
 
+  .vuuTable-headerCell-inner:has(.vuuFilterIndicator){
+    padding-left: 0;
+  }
+
   .vuuTable-headerCell-label {
     align-items: center;
     justify-content: var(--cell-align);

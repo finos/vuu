@@ -10,12 +10,16 @@ import {
   metadataKeys,
 } from "@finos/vuu-utils";
 
+// TOSO eliminate this dependency
+import { extractFilterForColumn } from "@finos/vuu-filters";
+
 import { Reducer, useReducer } from "react";
 import {
   VuuColumnDataType,
   VuuGroupBy,
   VuuSort,
 } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data";
 
 const DEFAULT_COLUMN_WIDTH = 100;
 const KEY_OFFSET = metadataKeys.count;
@@ -87,6 +91,7 @@ export interface ColumnActionUpdateProp {
 
 export interface ColumnActionTableConfig {
   type: "tableConfig";
+  filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
 }
@@ -263,9 +268,10 @@ function updateColumnProp(
 
 function updateTableConfig(
   state: GridModel,
-  { groupBy, sort }: ColumnActionTableConfig
+  { filter, groupBy, sort }: ColumnActionTableConfig
 ) {
   const hasGroupBy = groupBy !== undefined;
+  const hasFilter = typeof filter?.filter === "string";
   const hasSort = sort && sort.sortDefs.length > 0;
 
   let result = state;
@@ -284,6 +290,13 @@ function updateTableConfig(
     };
   }
 
+  if (hasFilter) {
+    result = {
+      ...state,
+      columns: applyFilterToColumns(state.columns, filter),
+    };
+  }
+
   return result;
 }
 
@@ -294,6 +307,7 @@ function replaceColumn(
   return state.map((col) => (col.name === column.name ? column : col));
 }
 
+//TOSDO move these functions to utils
 const applyGroupByToColumns = (
   columns: KeyedColumnDescriptor[],
   groupBy: VuuGroupBy
@@ -324,6 +338,28 @@ const applySortToColumns = (colunms: KeyedColumnDescriptor[], sort: VuuSort) =>
       return {
         ...column,
         sorted: undefined,
+      };
+    } else {
+      return column;
+    }
+  });
+
+const applyFilterToColumns = (
+  columns: KeyedColumnDescriptor[],
+  { filterStruct }: DataSourceFilter
+) =>
+  columns.map((column) => {
+    // TODO this gives us a dependency on vuu-filters
+    const filter = extractFilterForColumn(filterStruct, column.name);
+    if (filter !== undefined) {
+      return {
+        ...column,
+        filter,
+      };
+    } else if (column.filter) {
+      return {
+        ...column,
+        filter: undefined,
       };
     } else {
       return column;

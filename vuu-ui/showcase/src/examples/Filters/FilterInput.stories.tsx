@@ -97,7 +97,7 @@ export const FilterInputWithToolbar = () => {
       console.log(`setFilter ${JSON.stringify(filter)}`);
       setFilter((existingFilter) => updateFilter(existingFilter, filter, mode));
       setFilterQuery(filterQuery);
-      setFilterName(filterName);
+      setFilterName(filterName ?? "");
     },
     []
   );
@@ -114,21 +114,7 @@ export const FilterInputWithToolbar = () => {
         id="toolbar-default"
         filter={filter}
         suggestionProvider={suggestionProvider}
-      >
-        {/*
-        <ToggleButton
-          className="vuuToggleButton"
-          onToggle={handleToggleTestThree}
-          toggled={testThreeEnabled}
-        >
-          Test Three
-        </ToggleButton>
-        <Pill
-          className="vuuFilterPill"
-          label="Test Four"
-          variant="selectable"
-        ></Pill> */}
-      </FilterToolbar>
+      />
 
       <br />
       <div>{filterQuery}</div>

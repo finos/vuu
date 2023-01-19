@@ -106,9 +106,9 @@ export default async function main(customConfig) {
         ...packageRest
       } = packageJson;
       if (files) {
-        const filesToPublish = files.filter(
-          (fileName) => !GeneratedFiles.test(fileName)
-        );
+        const filesToPublish = isTypeLib
+          ? [indexDTS]
+          : files.filter((fileName) => !GeneratedFiles.test(fileName));
         if (filesToPublish.length) {
           filesToPublish.forEach((fileName) => {
             const filePath = fileName.replace(/^\//, "./");
@@ -231,7 +231,7 @@ export default async function main(customConfig) {
   await writePackageJSON({
     includeCSS: cssOut !== undefined,
     includeJS: jsOut !== undefined,
-    includeCJS: cjs,
+    includeCJS: cjs && !isTypeLib,
     includeDTS: isTypeLib,
     includeReadme: hasReadme,
   });

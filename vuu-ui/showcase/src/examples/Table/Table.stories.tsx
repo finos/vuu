@@ -5,11 +5,14 @@ import { Column, DataTable } from "@finos/vuu-datatable";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import { itemsChanged } from "@finos/vuu-utils";
+import { FilterInput } from "@finos/vuu-filters";
+
 import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
   Toolbar,
+  Tooltray,
 } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
 import {
@@ -22,6 +25,8 @@ import {
 } from "react";
 import { DragVisualizer } from "../../../../packages/vuu-datatable/src/DragVisualizer";
 import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
+import { Filter } from "@finos/vuu-filter-types";
+import { useSuggestionProvider } from "../Filters/useSuggestionProvider";
 
 let displaySequence = 1;
 
@@ -163,8 +168,20 @@ export const VuuDataTable = () => {
     tablename: tables[selectedIndex],
   });
 
+  const table = useMemo(
+    () => ({ module: "SIMUL", table: tables[selectedIndex] }),
+    [selectedIndex, tables]
+  );
+
   const configRef = useRef<GridConfig>(config);
   const [tableConfig, setTableConfig] = useState<GridConfig>(config);
+
+  console.log({ columns });
+
+  const filterSuggestionProvider = useSuggestionProvider({
+    columns,
+    table,
+  });
 
   useMemo(() => {
     setTableConfig((configRef.current = config));
@@ -216,6 +233,14 @@ export const VuuDataTable = () => {
     dataSource.groupBy = ["currency", "exchange"];
   }, [dataSource]);
 
+  const handleSubmitFilter = useCallback(
+    (filterStruct: Filter | undefined, filter: string, filterName?: string) => {
+      filterName && console.log(`named filter created '${filterName}'`);
+      dataSource.filter = { filter, filterStruct };
+    },
+    [dataSource]
+  );
+
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
   }
@@ -237,8 +262,18 @@ export const VuuDataTable = () => {
           } as CSSProperties
         }
       >
-        <Button onClick={groupByCurrency}>Currency</Button>
-        <Button onClick={groupByCurrencyExchange}>Currency, Exchange</Button>
+        <Tooltray>
+          <Button onClick={groupByCurrency}>Currency</Button>
+          <Button onClick={groupByCurrencyExchange}>Currency, Exchange</Button>
+        </Tooltray>
+        <Tooltray>
+          <FilterInput
+            existingFilter={dataSource.filter.filterStruct}
+            onSubmitFilter={handleSubmitFilter}
+            style={{ width: 300 }}
+            suggestionProvider={filterSuggestionProvider}
+          />
+        </Tooltray>
       </Toolbar>
       <DataTable
         allowConfigEditing
@@ -248,7 +283,7 @@ export const VuuDataTable = () => {
         height={600}
         onConfigChange={handleTableConfigChange}
         onShowConfigEditor={showConfigEditor}
-        width={700}
+        width={750}
       />
       <Dialog
         className="vuuDialog-gridConfig"

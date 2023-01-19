@@ -1,13 +1,19 @@
 import {
-  Filter, isMultiValueFilter, isNamedFilter, isSingleValueFilter, ISuggestionProvider2, SuggestionConsumer2
+  Filter,
+  isMultiValueFilter,
+  isNamedFilter,
+  isSingleValueFilter,
+  ISuggestionProvider,
+  SuggestionConsumer,
 } from "@finos/vuu-filters";
 import { ToggleButton, ToolbarField } from "@heswell/salt-lab";
 import { ReactElement } from "react";
 import { FilterDropdown } from "./FilterDropdown";
+import { FilterDropdownMultiSelect } from "./FilterDropdownMultiSelect";
 
 const filterToControl = (
   filter: Filter,
-  suggestionProvider: ISuggestionProvider2
+  suggestionProvider: ISuggestionProvider
 ): ReactElement | ReactElement[] => {
   if (isNamedFilter(filter)) {
     return (
@@ -41,18 +47,17 @@ const filterToControl = (
     );
   }
   if (isMultiValueFilter(filter)) {
-    const { column, values } = filter;
+    const values = filter.values.map((v) => v.toString());
     return (
       <ToolbarField
         className="vuuFilterDropdown"
-        label={column}
-        key={column}
+        label={filter.column}
+        key={filter.column}
         labelPlacement="top"
       >
-        <FilterDropdown
-          column={column}
+        <FilterDropdownMultiSelect
+          column={filter.column}
           selected={values}
-          selectionStrategy="multiple"
           source={values}
           suggestionProvider={suggestionProvider}
           style={{ width: 100 }}
@@ -65,7 +70,7 @@ const filterToControl = (
   ) as ReactElement[];
 };
 
-export interface FilterToolbarProps extends SuggestionConsumer2 {
+export interface FilterToolbarProps extends SuggestionConsumer {
   filter?: Filter;
 }
 

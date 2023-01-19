@@ -13,6 +13,7 @@ export type ConnectionCallback = (msg: ConnectionMessage) => void;
 // import { saveTestData } from './test-data-collection';
 
 const logger = console;
+const WS_PATTERN = /^ws(s)?:\/\/.+/;
 
 const connectionAttempts: {
   [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
@@ -99,7 +100,10 @@ const makeConnectionIn = (
 const createWebsocket = (connectionString: string): Promise<WebSocket> =>
   new Promise((resolve, reject) => {
     //TODO add timeout
-    const ws = new WebSocket("wss://" + connectionString);
+    const websocketUrl = WS_PATTERN.test(connectionString)
+      ? connectionString
+      : `wss://${connectionString}`;
+    const ws = new WebSocket(websocketUrl);
     ws.onopen = () => resolve(ws);
     ws.onerror = (evt) => reject(evt);
   });

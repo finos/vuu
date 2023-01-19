@@ -72,16 +72,16 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
   });
 
   const dataSource: RemoteDataSource = useMemo(() => {
-    let ds = loadSession?.("data-source");
+    let ds = loadSession?.("data-source") as RemoteDataSource;
     if (ds) {
       return ds;
     }
     const columns = schema.columns.map((col) => col.name);
     ds = new RemoteDataSource({
       viewport: id,
-      columns,
       table: schema.table,
       ...config,
+      columns,
     });
     saveSession?.(ds, "data-source");
     return ds;
@@ -179,10 +179,10 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
       if (mode === "add" && currentFilter) {
         const newFilter = updateFilter(currentFilter, filter, mode) as Filter;
         const newFilterQuery = filterAsQuery(newFilter);
-        dataSource.filter(newFilter, newFilterQuery);
+        dataSource.filter = { filter: newFilterQuery, filterStruct: newFilter };
         setCurrentFilter(newFilter);
       } else {
-        dataSource.filter(filter, filterQuery);
+        dataSource.filter = { filterStruct: filter, filter: filterQuery };
         setCurrentFilter(filter);
       }
     },

@@ -46,7 +46,7 @@ export interface TableImplementationProps {
   onHeaderCellDragStart?: (evt: MouseEvent) => void;
   onRemoveColumnFromGroupBy?: (column: KeyedColumnDescriptor) => void;
   onSort: (column: KeyedColumnDescriptor, isAdditive: boolean) => void;
-  onToggleGroup: (row: DataSourceRow) => void;
+  onToggleGroup?: (row: DataSourceRow) => void;
   rowHeight: number;
   valueFormatters?: ValueFormatters;
 }

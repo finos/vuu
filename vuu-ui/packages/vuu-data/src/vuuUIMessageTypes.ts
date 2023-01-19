@@ -10,8 +10,8 @@ import {
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { Filter } from "@finos/vuu-filter-types";
 import { WithRequestId } from "./message-utils";
+import { DataSourceFilter } from "./data-source";
 
 export type ConnectionStatus =
   | "connecting"
@@ -35,11 +35,10 @@ export interface ServerProxySubscribeMessage {
   aggregations: VuuAggregation[];
   bufferSize?: number;
   columns: VuuColumns;
-  filter?: Filter;
-  filterQuery?: string;
-  groupBy?: VuuGroupBy;
+  filter: DataSourceFilter;
+  groupBy: VuuGroupBy;
   range: VuuRange;
-  sort?: VuuSort;
+  sort: VuuSort;
   table: VuuTable;
   title?: string;
   viewport: string;
@@ -193,10 +192,9 @@ export interface VuuUIMessageOutSuspend extends ViewportMessageOut {
   type: "suspend";
 }
 
-export interface VuuUIMessageOutFilterQuery extends ViewportMessageOut {
-  filter: Filter | undefined;
-  filterQuery: string;
-  type: "filterQuery";
+export interface VuuUIMessageOutFilter extends ViewportMessageOut {
+  filter: DataSourceFilter;
+  type: "filter";
 }
 export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
   groupBy: VuuGroupBy;
@@ -208,7 +206,7 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutCloseTreeNode
   | VuuUIMessageOutColumns
   | VuuUIMessageOutCreateLink
-  | VuuUIMessageOutFilterQuery
+  | VuuUIMessageOutFilter
   | VuuUIMessageOutDisable
   | VuuUIMessageOutEnable
   | VuuUIMessageOutGroupby
