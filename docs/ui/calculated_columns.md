@@ -101,7 +101,10 @@ Inputs into functions can be:
 |          | search      | =contains("String", "Str")          | true           | Boolean                                    |                                                            |
 |          | replace     | =replace(field, "Str", "NewStr", 1) |                |                                            |                                                            |
 |          | replaceAll  | =replace(field, "Str", "NewStr")    |                |                                            |                                                            |
-|          | text        | =replace(numericField)              |                |                                            |                                                            |
+|          | text        | =text(value)                        |                |                                            |                                                            |
+|          | contains    | =contains(field, value)             | true           | Boolean                                    |                                                            |
+|          | starts      | =starts(field, value)               | true           | Boolean                                    |                                                            |
+|          | ends        | =ends(field, value)                 | true           | Boolean                                    |                                                            |
 | Math     | min         | =min(field1, field2, 1000)          |                |                                            |                                                            |
 |          | max         | =max(field1, field2, 1000)          |                |                                            |                                                            |
 |          | sum         | =max(field1, field2, 1000)          |                |                                            |                                                            |
@@ -118,6 +121,10 @@ Inputs into functions can be:
 | Logic    | if          | =if( condition, then, else )        |                |                                            |                                                            |
 |          | or          | =or( x, y )                         |                |                                            |                                                            |
 |          | and         | =and( x, y, z)                      |                |                                            |                                                            |
+ | DateTime | now         | =now()                              |                | Long - millis since epoch                  |                                                            |
+|          | day         | =day(time)                          |                | Long - millis since epoch                  |                                                            |
+|          | month       | =month(time)                        |                | Long - millis since epoch                  |                                                            |
+|          | year        | =year(time)                         |                | Long - millis since epoch                  |                                                            |
 
 
 ### Null and Error Handling

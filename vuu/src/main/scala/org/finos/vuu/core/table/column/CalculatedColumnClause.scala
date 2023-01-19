@@ -40,6 +40,13 @@ case class LiteralIntColumnClause(i: Int) extends CalculatedColumnClause {
   def calculate(data: RowData): Any = i
 }
 
+case class LiteralBooleanColumnClause(b: Boolean) extends CalculatedColumnClause {
+
+  override def dataType = ClauseDataType.BOOLEAN
+
+  def calculate(data: RowData): Any = b
+}
+
 case class LiteralDoubleColumnClause(i: Double) extends CalculatedColumnClause {
 
   override def dataType = ClauseDataType.DOUBLE
@@ -127,6 +134,12 @@ object AddClause{
   }
 }
 
+object EqualsClause{
+  def apply(leftClause: CalculatedColumnClause, rightClause: CalculatedColumnClause): CalculatedColumnClause = {
+    new EqualsClause(leftClause, rightClause)
+  }
+}
+
 case class MultiplyClause(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
   override def dataType: ClauseDataType = Clauses.findWidest(clauses)
 
@@ -151,6 +164,15 @@ case class AddClause(clauses: List[CalculatedColumnClause]) extends CalculatedCo
       case ClauseDataType.INTEGER => Calculations.mathInt(clauses, data, (a, b) => a + b, 0)
       case ClauseDataType.DOUBLE => Calculations.mathDouble(clauses, data, (a, b) => a + b, 0D)
     }
+  }
+}
+
+case class EqualsClause(left: CalculatedColumnClause, right: CalculatedColumnClause) extends CalculatedColumnClause {
+
+  override def dataType: ClauseDataType = ClauseDataType.BOOLEAN
+
+  def calculate(data: RowData): Any = {
+    left.calculate(data) == right.calculate(data)
   }
 }
 

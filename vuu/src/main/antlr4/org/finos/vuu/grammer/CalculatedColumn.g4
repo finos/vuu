@@ -30,6 +30,8 @@ TEXT : 'text';
 LEFT : 'left';
 RIGHT : 'right';
 LEN : 'len';
+IF : 'if';
+OR : 'or';
 
 expression : EQ term EOF;
 
@@ -47,12 +49,16 @@ function :
     ABS LPAREN arguments RPAREN |
     MIN LPAREN arguments RPAREN |
     MAX LPAREN arguments RPAREN |
+    OR LPAREN term  RPAREN |
     ABS LPAREN atom RPAREN |
+    STARTS LPAREN arguments RPAREN |
+    ENDS LPAREN atom RPAREN |
     LEN LPAREN atom RPAREN |
     TEXT LPAREN arguments RPAREN |
     CONCATENATE LPAREN arguments RPAREN |
     LEFT LPAREN atom ',' INT RPAREN |
     RIGHT LPAREN atom ',' INT RPAREN |
+    IF LPAREN term ',' term ',' term RPAREN |
 ;
 
 atom : ID | INT | FLOAT | STRING | TRUE | FALSE | function;

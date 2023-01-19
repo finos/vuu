@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.{Column, DataType}
-import org.finos.vuu.grammer.CalculatedColumnParser.FunctionContext
+import org.finos.vuu.grammer.CalculatedColumnParser.{FALSE, FunctionContext}
 import org.finos.vuu.grammer.FilterParser.AtomContext
 import org.finos.vuu.grammer.{CalculatedColumnBaseVisitor, CalculatedColumnLexer, CalculatedColumnParser}
 import org.finos.vuu.viewport.ViewPortColumns
@@ -28,6 +28,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
       case 3 => processOperatorTerm(ctx)
       case 5 => processBracketedOperatorTerm(ctx)
       case 7 => processBracketedOperatorTermWithOperator(ctx)
+      case 8 => processIfStatement(ctx)
     }
 
     //super.visitTerm(ctx)
@@ -49,6 +50,14 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
       case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
     }
   }
+
+  private def processIfTermClause(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
+    ctx.getChild(0) match {
+      case ctx: CalculatedColumnParser.AtomContext => visitAtom(ctx)
+      case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
+    }
+  }
+
 
   private def processOperatorTerm(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
 
@@ -79,6 +88,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
       case "+" =>  AddClause(leftClause, rightClause)
       case "-" =>  SubtractClause(leftClause, rightClause)
       case "/" =>  DivideClause(leftClause, rightClause)
+      case "=" =>  EqualsClause(leftClause, rightClause)
     }
 
   }
@@ -113,6 +123,23 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
       case "-" => SubtractClause(leftClause, rightClause)
       case "/" => DivideClause(leftClause, rightClause)
     }
+
+  }
+
+  private def processIfStatement(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
+
+    val children = CollectionHasAsScala(ctx.children).asScala.toList
+
+    val function = children(0)
+    val bracket1 = children(1)
+    val condition = children(2)
+    val comma1 = children(3)
+    val thenStatement = children(4)
+    val comma2 = children(5)
+    val elseStatement = children(6)
+    val bracket2 = children(7)
+
+    null
 
   }
 
@@ -197,6 +224,15 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
         }
 
       }
+      //this has to be an if
+      case ctx: CalculatedColumnParser.TermContext => {
+        assert(children(0).getText == "if")
+        val ifClauseTerm = visitTerm(children(2).asInstanceOf[CalculatedColumnParser.TermContext])
+        val thenClause = visitTerm(children(4).asInstanceOf[CalculatedColumnParser.TermContext])
+        val elseClause = visitTerm(children(6).asInstanceOf[CalculatedColumnParser.TermContext])
+        Functions.createIf(funcName, ifClauseTerm, thenClause, elseClause)
+
+      }
 
     }
     clause
@@ -219,6 +255,10 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
     val clause = ctx.children.get(0) match {
       case term: TerminalNode =>
         term.getSymbol.getType match {
+          case CalculatedColumnLexer.TRUE =>
+            LiteralBooleanColumnClause(true)
+          case CalculatedColumnLexer.FALSE =>
+            LiteralBooleanColumnClause(false)
           case CalculatedColumnLexer.ID =>
             processIDSymbol(term)
           case CalculatedColumnLexer.INT =>
@@ -229,7 +269,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
             LiteralDoubleColumnClause(term.getText.toDouble)
           case CalculatedColumnLexer.STRING =>
             logger.debug("VISIT: ATOM - Processing Literal string: " + term.getText)
-            LiteralStringColumnClause(term.getText)
+            LiteralStringColumnClause(term.getText.drop(1).dropRight(1))
         }
       case term: FunctionContext =>
         logger.debug("VISIT ATOM: FunctionContext: " + term.getText)
