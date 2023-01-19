@@ -9,3 +9,4 @@ export * as salt from "./salt";
 export * as VUU from "./VUU";
 export * as Shell from "./Shell";
 export * as VUU_salt from "./VUU-salt";
+export * as html from "./html";
