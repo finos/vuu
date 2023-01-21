@@ -22,6 +22,7 @@ RBRACK : ']';
 LPAREN : '(';
 RPAREN : ')';
 
+//functions
 ABS : 'abs';
 MIN : 'min';
 MAX : 'max';
@@ -32,6 +33,7 @@ RIGHT : 'right';
 LEN : 'len';
 IF : 'if';
 OR : 'or';
+AND : 'and';
 
 expression : EQ term EOF;
 
@@ -49,7 +51,8 @@ function :
     ABS LPAREN arguments RPAREN |
     MIN LPAREN arguments RPAREN |
     MAX LPAREN arguments RPAREN |
-    OR LPAREN term  RPAREN |
+    OR LPAREN term (',' term)* RPAREN |
+    AND LPAREN term (',' term)* RPAREN |
     ABS LPAREN atom RPAREN |
     STARTS LPAREN arguments RPAREN |
     ENDS LPAREN atom RPAREN |

@@ -5,12 +5,22 @@ import org.finos.vuu.core.table.RowData
 object Calculations {
 
   def coerceToDouble(clause: CalculatedColumnClause, data: RowData): Double = {
-    clause.dataType match {
-      case ClauseDataType.DOUBLE => clause.calculate(data).asInstanceOf[Double]
-      case ClauseDataType.INTEGER => clause.calculate(data).asInstanceOf[Int].toDouble
-      case ClauseDataType.BOOLEAN => clause.calculate(data).asInstanceOf[Int]
-      case ClauseDataType.LONG => clause.calculate(data).asInstanceOf[java.lang.Long].toDouble
+
+    val anyRef = clause.calculate(data)
+
+    anyRef match {
+      case null =>
+        Double.NaN
+      case _ =>
+        clause.dataType match {
+          case ClauseDataType.DOUBLE => clause.calculate(data).asInstanceOf[Double]
+          case ClauseDataType.INTEGER => clause.calculate(data).asInstanceOf[Int].toDouble
+          case ClauseDataType.BOOLEAN => clause.calculate(data).asInstanceOf[Int]
+          case ClauseDataType.LONG => clause.calculate(data).asInstanceOf[java.lang.Long].toDouble
+        }
     }
+
+
   }
   def coerceToLong(clause: CalculatedColumnClause, data: RowData): Long = {
     clause.dataType match {

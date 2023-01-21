@@ -36,7 +36,7 @@ case class LenFunction(clause: CalculatedColumnClause) extends CalculatedColumnC
 }
 
 case class StartsFunction(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
-  val (left :: right :: _) = clauses
+  val left :: right :: _ = clauses
   override def dataType: ClauseDataType = ClauseDataType.BOOLEAN
   override def calculate(data: RowData): Any = {
       TextFunction(List(left)).calculate(data).toString.startsWith(TextFunction(List(right)).calculate(data).toString)
@@ -51,6 +51,16 @@ case class OrFunction(clauses: List[CalculatedColumnClause]) extends CalculatedC
         case Some(vals) => true
         case None => false
       }
+  }
+}
+
+case class AndFunction(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
+  override def dataType: ClauseDataType = ClauseDataType.BOOLEAN
+  override def calculate(data: RowData): Any = {
+    clauses.map(_.calculate(data)).find(_ == false) match {
+      case Some(vals) => false
+      case None => true
+    }
   }
 }
 
@@ -70,11 +80,19 @@ case class TextFunction(clause: List[CalculatedColumnClause]) extends Calculated
 
   private def clauseToText(clause: CalculatedColumnClause, data: RowData): String = {
     this.dataType match {
-      case ClauseDataType.LONG => clause.calculate(data).toString
-      case ClauseDataType.INTEGER => clause.calculate(data).toString
-      case ClauseDataType.DOUBLE => clause.calculate(data).toString
-      case ClauseDataType.STRING => clause.calculate(data).toString
-      case ClauseDataType.BOOLEAN => clause.calculate(data).toString
+      case ClauseDataType.LONG => ifNotNull(clause.calculate(data), x => x.toString)
+      case ClauseDataType.INTEGER => ifNotNull(clause.calculate(data), x => x.toString)
+      case ClauseDataType.DOUBLE => ifNotNull(clause.calculate(data), x => x.toString)
+      case ClauseDataType.STRING => ifNotNull(clause.calculate(data), x => x.toString)
+      case ClauseDataType.BOOLEAN => ifNotNull(clause.calculate(data), x => x.toString)
+    }
+  }
+
+  def ifNotNull(dataPoint: Any, x: Any => String): String = {
+    if(dataPoint == null){
+      null
+    }else{
+      dataPoint.toString
     }
   }
 
@@ -141,6 +159,7 @@ object Functions {
       case "concatenate" => ConcatenateFunction(args)
       case "starts" => StartsFunction(args)
       case "or" => OrFunction(args)
+      case "and" => AndFunction(args)
     }
   }
 }
