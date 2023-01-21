@@ -1,0 +1,24 @@
+.vuuDataTable {
+    --cell-outline-width: 2px;
+}
+
+.vuuDataTable th:focus,
+.vuuDataTable td:focus {
+    outline: dotted var(--salt-color-blue-400) var(--cell-outline-width);
+    outline-offset: calc(var(--cell-outline-width) * -1);
+    /** This is to achieve a white background to outline dashes */
+    box-shadow: inset 0 0 0 var(--cell-outline-width) white;
+    border-bottom: none;
+}
+
+.vuuDataTable th:focus .vuuTable-headerCell-inner{
+    --columnResizer-color: transparent;
+    /** This is to achieve a white background to outline dashes */
+    padding-bottom: var(--cell-outline-width);
+}
+
+.vuuDataTable td:focus {
+    /** This is to achieve a white background to outline dashes */
+    border-right: none;
+    padding-bottom: 1px;
+}

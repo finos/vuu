@@ -47,7 +47,6 @@ export const useDraggableColumn = ({
   const handleHeaderCellDragStart = useCallback((evt: MouseEvent) => {
     const { clientX, clientY } = evt;
     const sourceElement = evt.target as HTMLElement;
-    console.log({ sourceElement });
     const thElement = sourceElement.closest(".vuuTable-headerCell");
     const {
       dataset: { idx = "-1" },
@@ -61,12 +60,6 @@ export const useDraggableColumn = ({
   }, []);
 
   useLayoutEffect(() => {
-    console.log(
-      `useDraggableColumn useLayoutEffect tableLayout ${tableLayout}`,
-      {
-        mousePosRef: mousePosRef.current,
-      }
-    );
     if (tableLayout === "column" && mousePosRef.current && !draggable) {
       const { clientX, clientY, idx } = mousePosRef.current;
       const target = tableContainerRef.current?.querySelector(

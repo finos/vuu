@@ -4,7 +4,6 @@ import {
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy } from "@finos/vuu-protocol-types";
-import { instrumentPriceColumns } from "../../../showcase/src/examples/DataGrid/columnMetaData";
 import { Row } from "./row-utils";
 
 export interface ColumnMap {
@@ -222,3 +221,40 @@ export function extractGroupColumn(
 export const isGroupColumn = (
   column: KeyedColumnDescriptor
 ): column is GroupColumnDescriptor => column.isGroup === true;
+
+export const isPinned = (column: ColumnDescriptor) =>
+  typeof column.pin === "string";
+
+export const sortPinnedColumns = (
+  columns: KeyedColumnDescriptor[]
+): KeyedColumnDescriptor[] => {
+  const leftPinnedColumns: KeyedColumnDescriptor[] = [];
+  const rightPinnedColumns: KeyedColumnDescriptor[] = [];
+  const restColumns: KeyedColumnDescriptor[] = [];
+  let pinnedWidthLeft = 0;
+  for (const column of columns) {
+    // prettier-ignore
+    switch(column.pin){
+      case "left": {
+        leftPinnedColumns.push({
+          ...column,
+          pinnedLeftOffset: pinnedWidthLeft
+        }); 
+        pinnedWidthLeft += column.width;
+      }
+      break;
+      // TODO right offsets
+      case "right": rightPinnedColumns.push(column); break;
+      default: restColumns.push(column)
+    }
+  }
+
+  if (leftPinnedColumns.length) {
+    leftPinnedColumns.push({
+      ...(leftPinnedColumns.pop() as KeyedColumnDescriptor),
+      endPin: true,
+    });
+  }
+
+  return leftPinnedColumns.concat(restColumns).concat(rightPinnedColumns);
+};

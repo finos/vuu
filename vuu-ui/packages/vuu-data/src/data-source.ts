@@ -235,6 +235,7 @@ export interface DataSource extends IEventEmitter {
   setSubscribedColumns: (columns: string[]) => void;
   /** Set the title associated with this viewport in UI. This can be used as a link target */
   setTitle?: (title: string) => void;
+  size: number;
   sort: VuuSort;
   subscribe: (
     props: SubscribeProps,

@@ -55,11 +55,6 @@ const getTargetSize = (
   }
 };
 
-const isScrollAttribute = {
-  scrollHeight: true,
-  scrollWidth: true,
-};
-
 // TODO should we make this create-on-demand
 const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
   for (const entry of entries) {
@@ -71,7 +66,7 @@ const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
         contentBoxSize;
       const { onResize, measurements } = observedTarget;
       let sizeChanged = false;
-      for (let [dimension, size] of Object.entries(measurements)) {
+      for (const [dimension, size] of Object.entries(measurements)) {
         const newSize = getTargetSize(
           target as HTMLElement,
           { height, width, contentHeight, contentWidth },

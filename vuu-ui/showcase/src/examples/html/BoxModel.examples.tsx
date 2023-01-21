@@ -1,3 +1,4 @@
+import { Flexbox, View } from "@finos/vuu-layout";
 import { Toolbar } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
 import { CSSProperties, HTMLAttributes, useCallback, useState } from "react";
@@ -11,6 +12,8 @@ type ContainerType =
   | "unsized"
   | "flex-row-stretch"
   | "flex-col-stretch";
+
+let displaySequence = 1;
 
 const UnSizedContainer = ({ children }: ContainerProps) => (
   <div>{children}</div>
@@ -49,7 +52,7 @@ const FlexColStretchContainer = ({ children, size }: ContainerProps) => (
     }}
   >
     {children}
-    <div style={{ background: "green", height: 100 }} />
+    <div style={{ background: "green", flexShrink: 0, height: 100 }} />
   </div>
 );
 
@@ -99,3 +102,33 @@ export const AdventuresOfA100PercentBox = () => {
     </>
   );
 };
+AdventuresOfA100PercentBox.displaySequence = displaySequence++;
+
+export const BoxInAFlexBox = () => {
+  return (
+    <Flexbox style={{ flexDirection: "column", width: 800, height: 700 }}>
+      <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
+        <View resizeable style={{ flex: 1 }}>
+          <Box />
+        </View>
+        <View resizeable style={{ flex: 1 }}>
+          <Box />
+        </View>
+      </Flexbox>
+      <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
+        <View resizeable style={{ flex: 1 }}>
+          <Box />
+        </View>
+        <View resizeable style={{ flex: 1 }}>
+          <Box />
+        </View>
+      </Flexbox>
+    </Flexbox>
+  );
+};
+BoxInAFlexBox.displaySequence = displaySequence++;
+
+export const FixedSizeBox = () => {
+  return <Box height={100} width={200} />;
+};
+FixedSizeBox.displaySequence = displaySequence++;

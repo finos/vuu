@@ -1,43 +1,36 @@
-import { HTMLAttributes, useRef } from "react";
+import { MeasuredProps, useMeasuredContainer } from "@finos/vuu-datatable";
+import { HTMLAttributes } from "react";
 import { Component } from "./Component";
-import { useMeasuredSize } from "./useMeasuredSize";
 
-interface BoxProps extends HTMLAttributes<HTMLDivElement> {
-  height?: number;
+interface BoxProps extends MeasuredProps, HTMLAttributes<HTMLDivElement> {
   maxHeight?: number;
   maxWidth?: number;
-  padding?: number;
-  width?: number;
 }
 
 export const Box = ({ height, width }: BoxProps) => {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const defaultHeight = 200;
-  const defaultWidth = 400;
-
-  const size = useMeasuredSize(
-    rootRef,
+  const {
+    containerRef: measuredRef,
+    outerSize: containerSize,
+    innerSize: contentSize,
+  } = useMeasuredContainer({
+    defaultHeight: 200,
+    defaultWidth: 400,
     height,
     width,
-    defaultHeight,
-    defaultWidth
-  );
-  console.log(`size ${JSON.stringify(size, null, 2)}`);
+  });
+  console.log(`measuredRef ${measuredRef.current}`);
 
   return (
     <div
       className="vuuBox"
-      ref={rootRef}
+      ref={measuredRef}
       style={{
         background: "red",
         border: "solid red 3px",
-        width: "100%",
-        height: "100%",
+        ...containerSize,
       }}
     >
-      {size.isMeasured ? (
-        <Component width={size.clientWidth} height={size.clientHeight} />
-      ) : null}
+      {contentSize ? <Component {...contentSize} /> : null}
     </div>
   );
 };

@@ -4,8 +4,7 @@ import {
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { metadataKeys } from "@finos/vuu-utils";
-import { getCellClassName, TableCellProps } from "./TableCell";
-import cx from "classnames";
+import { TableCellProps } from "./TableCell";
 
 import "./TableGroupCell.css";
 
@@ -38,7 +37,6 @@ export const TableGroupCell = ({
   row,
 }: // valueFormatter = defaultValueFormatter,
 TableCellProps) => {
-  const className = getCellClassName(column);
   const { columns } = column as GroupColumnDescriptor;
   // const value = valueFormatter(row[column.key]);
   const [value, offset] = getGroupValueAndOffset(columns, row);
@@ -52,7 +50,7 @@ TableCellProps) => {
     .map((n, i) => <span className="vuuTableGroupCell-spacer" key={i} />);
   return (
     <td
-      className={cx("vuuTableGroupCell", className)}
+      className={"vuuTableGroupCell vuuPinLeft"}
       onClick={isLeaf ? undefined : onClick}
       style={style}
     >

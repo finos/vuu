@@ -10,23 +10,29 @@ import {
   KeyedColumnDescriptor,
   TypeFormatting,
 } from "@finos/vuu-datagrid-types";
+import { VuuSortType } from "@finos/vuu-protocol-types";
 import { applySort, metadataKeys, roundDecimal } from "@finos/vuu-utils";
-import { useCallback, useMemo, useState } from "react";
+import { RefObject, useCallback, useMemo, useState } from "react";
 import {
   TableColumnResizeHandler,
   ValueFormatter,
   ValueFormatters,
 } from "./dataTableTypes";
 import { KeySet } from "./KeySet";
-import { useTableModel } from "./useTableModel";
 import { useDataSource } from "./useDataSource";
-import { VuuSortType } from "@finos/vuu-protocol-types";
+import { useKeyboardNavigation } from "./useKeyboardNavigation";
+import { MeasuredProps, useMeasuredContainer } from "./useMeasuredContainer";
+import { useTableModel } from "./useTableModel";
+import { useTableScroll } from "./useTableScroll";
+import { useTableViewport } from "./useTableViewport";
 
-export interface DataTableHookProps {
+export interface DataTableHookProps extends MeasuredProps {
   config: GridConfig;
   data?: DataSourceRow[];
   dataSource?: DataSource;
+  headerHeight: number;
   onConfigChange?: (config: GridConfig) => void;
+  rowHeight: number;
 }
 
 const { KEY, IS_EXPANDED } = metadataKeys;
@@ -74,7 +80,11 @@ export const useDataTable = ({
   config,
   data: dataProp,
   dataSource,
+  headerHeight,
   onConfigChange,
+  rowHeight,
+  tableContainerRef,
+  ...measuredProps
 }: DataTableHookProps) => {
   const keys = useMemo(() => new KeySet({ from: 0, to: 0 }), []);
   const [visibleRows, setVisibleRows] = useState<DataSourceRow[]>([]);
@@ -84,11 +94,21 @@ export const useDataTable = ({
     throw Error("no data source provided to DataTable");
   }
 
-  const onSizeChange = useCallback((size: number) => {
+  const containerMeasurements = useMeasuredContainer(measuredProps);
+
+  const onDataRowcountChange = useCallback((size: number) => {
     setRowCount(size);
   }, []);
 
   const { columns, dispatchColumnAction } = useTableModel(config);
+
+  const viewportMeasurements = useTableViewport({
+    columns,
+    headerHeight,
+    rowCount,
+    rowHeight,
+    size: containerMeasurements.innerSize,
+  });
 
   const onSubscribed = useCallback(
     (subscription: DataSourceSubscribedMessage) => {
@@ -150,7 +170,7 @@ export const useDataTable = ({
     dataSource,
     onConfigChange: handleConfigChangeFromDataSource,
     onSubscribed,
-    onSizeChange,
+    onSizeChange: onDataRowcountChange,
   });
 
   const setRangeVertical = useCallback(
@@ -229,8 +249,27 @@ export const useDataTable = ({
     [dataSource]
   );
 
+  // TODO will we ever want to expose scroll request to table ?
+  const { requestScroll, ...scrollProps } = useTableScroll({
+    onRangeChange: setRangeVertical,
+    rowHeight,
+    tableContainerRef,
+    viewport: viewportMeasurements,
+    viewportHeight:
+      (containerMeasurements.innerSize?.height ?? 0) - headerHeight,
+  });
+
+  const containerProps = useKeyboardNavigation({
+    columnCount: columns.length,
+    containerRef: containerMeasurements.containerRef,
+    data: dataSource ? data : visibleRows,
+    requestScroll,
+    rowCount: dataSource?.size,
+  });
+
   return {
-    valueFormatters,
+    containerMeasurements,
+    containerProps,
     columns,
     data: dataSource ? data : visibleRows,
     dispatchColumnAction,
@@ -238,7 +277,10 @@ export const useDataTable = ({
     onRemoveColumnFromGroupBy: handleRemoveColumnFromGroupBy,
     onSort: handleSort,
     onToggleGroup: handleToggleGroup,
+    scrollProps,
     setRangeVertical,
     rowCount,
+    valueFormatters,
+    viewportMeasurements,
   };
 };

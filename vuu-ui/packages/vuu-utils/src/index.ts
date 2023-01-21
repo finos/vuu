@@ -4,6 +4,7 @@ export * from "./DataWindow";
 export * from "./date-utils";
 export * from "./event-emitter";
 export * from "./getUniqueId";
+export * from "./group-utils";
 export * from "./input-utils";
 export * from "./invariant";
 export * from "./nanoid";

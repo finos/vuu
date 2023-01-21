@@ -32,6 +32,8 @@ export declare type ColumnType = ColumnTypeSimple | ColumnTypeDescriptor;
 
 export type ColumnSort = VuuSortType | number;
 
+export type PinLocation = "left" | "right" | "floating";
+
 /** This is a public description of a Column, defining all the
  * column attributes that can be defined by client. */
 export interface ColumnDescriptor {
@@ -45,7 +47,7 @@ export interface ColumnDescriptor {
   locked?: boolean;
   minWidth?: number;
   name: string;
-  pin?: "left" | "right";
+  pin?: PinLocation;
   resizeable?: boolean;
   serverDataType?: VuuColumnDataType;
   sortable?: boolean;
@@ -57,6 +59,7 @@ export interface ColumnDescriptor {
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   className?: string;
+  endPin?: true;
   filter?: Filter;
   flex?: number;
   heading?: [...string[]];
@@ -69,7 +72,6 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
   moving?: boolean;
   /** used only when column is a child of GroupColumn  */
   originalIdx?: number;
-  pin?: "left" | "right";
   pinnedLeftOffset?: number;
   resizeable?: boolean;
   resizing?: boolean;

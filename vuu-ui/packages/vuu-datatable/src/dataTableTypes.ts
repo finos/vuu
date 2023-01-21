@@ -4,14 +4,6 @@ import { HTMLAttributes, MouseEvent } from "react";
 
 export type tableLayoutType = "row" | "column";
 
-export interface Column {
-  name: string;
-  pin?: "left" | "right";
-  // TODO add this to internal extension of Column type
-  pinnedLeftOffset?: number;
-  width?: number;
-}
-
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   config: GridConfig;
   data?: DataSourceRow[];

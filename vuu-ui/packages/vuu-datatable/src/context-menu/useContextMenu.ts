@@ -6,7 +6,7 @@ import { removeColumnFromFilter } from "@finos/vuu-filters";
 import { MenuActionHandler } from "@finos/vuu-popups";
 import { VuuFilter } from "@finos/vuu-protocol-types";
 import { ColumnActionDispatch } from "../useTableModel";
-import { addSortColumn, setSortColumn } from "@finos/vuu-utils";
+import { addGroupColumn, addSortColumn, setSortColumn } from "@finos/vuu-utils";
 
 export interface ContextMenuOptions {
   column?: KeyedColumnDescriptor;
@@ -54,8 +54,8 @@ export const useContextMenu = ({
         case "sort-dsc": return (dataSource.sort = setSortColumn(dataSource.sort, column, "D")), true;
         case "sort-add-asc": return (dataSource.sort = addSortColumn(dataSource.sort, column, "A")), true;
         case "sort-add-dsc": return (dataSource.sort = addSortColumn(dataSource.sort, column, "D")), true;
-        // case "group": return (dataSource.groupBy = GridModel.addGroupColumn({}, column)), true;
-        // case "group-add": return (dataSource.groupBy = GridModel.addGroupColumn(gridModel, column)), true;
+        case "group": return (dataSource.groupBy = addGroupColumn(dataSource.groupBy, column)), true;
+        case "group-add": return (dataSource.groupBy = addGroupColumn(dataSource.groupBy, column)), true;
         // case "column-hide": return dispatchColumnAction({type, column}),true;
         case "filter-remove-column": return (dataSource.filter = removeFilterColumn(dataSource.filter, column)), true;
         case "remove-filters": return (dataSource.filter = {filter:""}), true;
@@ -64,6 +64,8 @@ export const useContextMenu = ({
         // case "agg-low": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Low)), true;
         // case "agg-count": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Count)), true;
         // case "agg-sum": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Sum)), true;
+        case "column-pin-left": return dispatchColumnAction({type: "updateColumnProp", column, pin: "left"}), true;
+        case "column-unpin": return dispatchColumnAction({type: "updateColumnProp", column, pin: undefined}), true
         default:
       }
     }
