@@ -175,6 +175,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
       case "/" => DivideClause(leftClause, rightClause)
       case "=" => EqualsClause(leftClause, rightClause)
       case ">" => GreaterThanClause(leftClause, rightClause)
+      case "<" => LessThanClause(leftClause, rightClause)
     }
 
   }

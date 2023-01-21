@@ -149,6 +149,12 @@ object GreaterThanClause{
   }
 }
 
+object LessThanClause{
+  def apply(leftClause: CalculatedColumnClause, rightClause: CalculatedColumnClause): CalculatedColumnClause = {
+    new GreaterThanClause(leftClause, rightClause)
+  }
+}
+
 case class MultiplyClause(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
   override def dataType: ClauseDataType = Clauses.findWidest(clauses)
 
@@ -199,6 +205,19 @@ case class GreaterThanClause(left: CalculatedColumnClause, right: CalculatedColu
   }
 }
 
+case class LessThanClause(left: CalculatedColumnClause, right: CalculatedColumnClause) extends CalculatedColumnClause {
+
+  override def dataType: ClauseDataType = ClauseDataType.BOOLEAN
+
+  def calculate(data: RowData): Any = {
+    left.dataType match {
+      case ClauseDataType.INTEGER => left.calculate(data).toString.toInt < right.calculate(data).toString.toInt
+      case ClauseDataType.LONG => left.calculate(data).toString.toLong < right.calculate(data).toString.toLong
+      case ClauseDataType.DOUBLE => left.calculate(data).toString.toDouble < right.calculate(data).toString.toDouble
+      case ClauseDataType.BOOLEAN => left.calculate(data).toString.toBoolean < right.calculate(data).toString.toBoolean
+    }
+  }
+}
 
 
 case class SubtractClause(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
