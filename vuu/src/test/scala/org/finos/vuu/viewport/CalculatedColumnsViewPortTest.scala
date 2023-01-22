@@ -10,9 +10,75 @@ import org.scalatest.prop.Tables.Table
 
 class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen {
 
-  Feature("Create a Viewport with calculated columns in"){
+  Feature("Create a Viewport with calc on a non-existant column") {
 
-    Given("we've created a viewport with orders in")
+    Given("we've created a viewport with orders in and a calc'd column")
+    val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+
+    val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "logicTest:String:=if(fooBar = 109, \"Yay\", \"Boo\")"))
+
+    createNOrderRows(ordersProvider, 10)(timeProvider)
+
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), viewPortColumns)
+
+    viewPortContainer.runOnce()
+
+    val combinedUpdates = combineQs(viewPort)
+
+    //this result is not ideal, need to fix, logic operators currently 'eat' the error message from the missing column
+    //it should return a compound error
+    assertVpEq(combinedUpdates) {
+      Table(
+        ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","logicTest"),
+        ("NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       ,"Boo"     ),
+        ("NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ,"Boo"     ),
+        ("NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ,"Boo"     ),
+        ("NYC-0003","chris"   ,"VOD.L"   ,1311544830L,103       ,"Boo"     ),
+        ("NYC-0004","chris"   ,"VOD.L"   ,1311544840L,104       ,"Boo"     ),
+        ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       ,"Boo"     ),
+        ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,106       ,"Boo"     ),
+        ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,107       ,"Boo"     ),
+        ("NYC-0008","chris"   ,"VOD.L"   ,1311544880L,108       ,"Boo"     ),
+        ("NYC-0009","chris"   ,"VOD.L"   ,1311544890L,109       ,"Boo"     )
+      )
+    }
+  }
+
+  Feature("Create a Viewport with logical calculated columns in") {
+
+    Given("we've created a viewport with orders in and a calc'd column")
+    val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+
+    val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "logicTest:String:=if(quantity = 109, \"Yay\", \"Boo\")"))
+
+    createNOrderRows(ordersProvider, 10)(timeProvider)
+
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), viewPortColumns)
+
+    viewPortContainer.runOnce()
+
+    val combinedUpdates = combineQs(viewPort)
+
+    assertVpEq(combinedUpdates) {
+      Table(
+        ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","logicTest"),
+        ("NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       ,"Boo"     ),
+        ("NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ,"Boo"     ),
+        ("NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ,"Boo"     ),
+        ("NYC-0003","chris"   ,"VOD.L"   ,1311544830L,103       ,"Boo"     ),
+        ("NYC-0004","chris"   ,"VOD.L"   ,1311544840L,104       ,"Boo"     ),
+        ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       ,"Boo"     ),
+        ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,106       ,"Boo"     ),
+        ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,107       ,"Boo"     ),
+        ("NYC-0008","chris"   ,"VOD.L"   ,1311544880L,108       ,"Boo"     ),
+        ("NYC-0009","chris"   ,"VOD.L"   ,1311544890L,109       ,"Yay"     )
+      )
+    }
+  }
+
+    Feature("Create a Viewport with calculated columns in"){
+
+    Given("we've created a viewport with orders in and a calc'd column")
     val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
 
     val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "quantityTimes100:Long:=quantity*100"))
