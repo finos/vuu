@@ -34,6 +34,10 @@ LEN : 'len';
 IF : 'if';
 OR : 'or';
 AND : 'and';
+CONTAINS : 'contains';
+UPPER : 'upper';
+LOWER : 'lower';
+REPLACE : 'replace';
 
 expression : EQ term EOF;
 
@@ -59,8 +63,12 @@ function :
     LEN LPAREN atom RPAREN |
     TEXT LPAREN arguments RPAREN |
     CONCATENATE LPAREN arguments RPAREN |
-    LEFT LPAREN atom ',' INT RPAREN |
-    RIGHT LPAREN atom ',' INT RPAREN |
+    LEFT LPAREN term ',' term RPAREN |
+    RIGHT LPAREN term ',' term RPAREN |
+    UPPER LPAREN term (',' term)* RPAREN |
+    LOWER LPAREN term (',' term)* RPAREN |
+    CONTAINS LPAREN term ',' term ',' term RPAREN |
+    REPLACE LPAREN term ',' term ',' term RPAREN |
     IF LPAREN term ',' term ',' term RPAREN |
 ;
 

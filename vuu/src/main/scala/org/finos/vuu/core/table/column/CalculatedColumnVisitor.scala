@@ -34,6 +34,17 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
     val children = CollectionHasAsScala(ctx.children).asScala.toList
     val funcName = children.head.getText
     val clause = children(2) match {
+      case ctx: CalculatedColumnParser.AtomContext =>
+        ctx.children.size() match {
+
+          case 1 =>
+            val argsClauseList = visitAtom(ctx)
+            Functions.create(funcName, argsClauseList)
+          case _ =>
+            val argsClauseList = visitAtom(ctx)
+            Functions.create(funcName, argsClauseList)
+        }
+
       case ctx: CalculatedColumnParser.ArgumentsContext =>
         ctx.children.size() match {
           case 1 =>
@@ -52,6 +63,8 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
             processOrAndStatement(funcName, children, ctx)
           case "and" =>
             processOrAndStatement(funcName, children, ctx)
+          case _ =>
+            processGenericTerm(funcName, children, ctx)
         }
 
 
@@ -60,6 +73,13 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
   }
 
   private def processOrAndStatement(funcName: String, children: List[ParseTree], ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
+    val terms = children.filter(pt => pt.isInstanceOf[CalculatedColumnParser.TermContext])
+      .map(_.asInstanceOf[CalculatedColumnParser.TermContext])
+      .map(visitTerm)
+    Functions.create(children.head.getText, terms)
+  }
+
+  private def processGenericTerm(funcName: String, children: List[ParseTree], ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
     val terms = children.filter(pt => pt.isInstanceOf[CalculatedColumnParser.TermContext])
       .map(_.asInstanceOf[CalculatedColumnParser.TermContext])
       .map(visitTerm)
@@ -119,6 +139,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
       case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
     }
   }
+
 
   private def processIfTermClause(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
     ctx.getChild(0) match {

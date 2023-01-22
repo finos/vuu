@@ -68,6 +68,8 @@ Basic mathematical operators are implemented as you'd expect, some examples of t
 All unquoted strings (such as bid, price, quantity etc below) are assumed to be column identifiers in the table and will be resolved.  
 
 ```
+        "=or(starts(orderId, \"NYC\"), min(120, quantity) > 122)",
+        "=if(price > 100, \"true\", \"false\")",
         "=bid",
         "=200",
         "=bid+(price*quantity)",
@@ -80,51 +82,56 @@ All unquoted strings (such as bid, price, quantity etc below) are assumed to be 
         "=bid*100.00+price-50.0*bid/price",
         "=price*quantity",
         "=(bid + ask) / 2",
+        "=min(min(i1, i3), i2)",
+        "=min(i1, i2)",
+        "=text(i1, i2)",
+        "=max(100, 200, 300)",
+        "=concatenate(max(i1, i2), text(quantity))",s
 ```
 
 In this case numeric data types returned from each clause are inferred by the widest field (i.e. boolean to int to long or double)
 
 Inputs into functions can be: 
 
-* String or numeric literals: "test1", 100, true, 100.01
+* String or numeric, or boolean literals: "test1", 100, true, 100.01
 * Field references from the table row: price 
 * Other functions: =if(search(customerName, "ABC"), true, false)
 
-| Category | Function    | Example                             | Result         | Return Type                                | Notes                                                      |
-|:---------|:------------|:------------------------------------|----------------|--------------------------------------------|:-----------------------------------------------------------|
-| Strings  | len         | =len("example")                     | 7              | Integer                                    | if used on non string field, toString will be called first |
-|          | concatenate | =concatenate("example", "-test")    | "example-test" | String - uppercase representation of field |                                                            |
-|          | upper       | =upper("example")                   |                | String - uppercase representation of field |                                                            |
-|          | lower       | =lower("example")                   |                |                                            |                                                            |
-|          | left        | =left(field, 3)                     |                |                                            |                                                            |
-|          | right       | =right(field, 3)                    |                |                                            |                                                            |
-|          | search      | =contains("String", "Str")          | true           | Boolean                                    |                                                            |
-|          | replace     | =replace(field, "Str", "NewStr", 1) |                |                                            |                                                            |
-|          | replaceAll  | =replace(field, "Str", "NewStr")    |                |                                            |                                                            |
-|          | text        | =text(value)                        |                |                                            |                                                            |
-|          | contains    | =contains(field, value)             | true           | Boolean                                    |                                                            |
-|          | starts      | =starts(field, value)               | true           | Boolean                                    |                                                            |
-|          | ends        | =ends(field, value)                 | true           | Boolean                                    |                                                            |
-| Math     | min         | =min(field1, field2, 1000)          |                |                                            |                                                            |
-|          | max         | =max(field1, field2, 1000)          |                |                                            |                                                            |
-|          | sum         | =max(field1, field2, 1000)          |                |                                            |                                                            |
-|          | round       | =round(field1, field2, 1000)        |                |                                            |                                                            |
-|          | roundup     | =round(field1, field2, 1000)        |                |                                            |                                                            |
-|          | rounddown   | =round(field1, field2, 1000)        |                |                                            |                                                            |
-|          | log10       | =round(field1, field2, 1000)        |                |                                            |                                                            |
-|          | log         | =round(field1, field2, 1000)        |                |                                            |                                                            |
-|          | ln          | =round(field1, field2, 1000)        |                |                                            |                                                            |
-|          | sqrt        | =round(field1, field2, 1000)        |                |                                            |                                                            |
-|          | sign        | =round(field1, field2, 1000)        |                |                                            |                                                            |
-|          | cos         | =round(field1, field2, 1000)        |                |                                            |                                                            |
-|          | cosign      | =round(field1, field2, 1000)        |                |                                            |                                                            |
-| Logic    | if          | =if( condition, then, else )        |                |                                            |                                                            |
-|          | or          | =or( x, y )                         |                |                                            |                                                            |
-|          | and         | =and( x, y, z)                      |                |                                            |                                                            |
- | DateTime | now         | =now()                              |                | Long - millis since epoch                  |                                                            |
-|          | day         | =day(time)                          |                | Long - millis since epoch                  |                                                            |
-|          | month       | =month(time)                        |                | Long - millis since epoch                  |                                                            |
-|          | year        | =year(time)                         |                | Long - millis since epoch                  |                                                            |
+| Category | Function    | Example                                 | Result           | Return Type                                    | Notes                                                      |
+|:---------|:------------|:----------------------------------------|------------------|------------------------------------------------|:-----------------------------------------------------------|
+| Strings  | len         | =len("example")                         | 7                | Integer                                        | if used on non string field, toString will be called first |
+|          | concatenate | =concatenate("example", "-test")        | "example-test"   | String - uppercase representation of field     |                                                            |
+|          | upper       | =upper("example")                       | "EXAMPLE"        | String - uppercase representation of field     |                                                            |
+|          | lower       | =lower("examPLE")                       | "example"        | String                                         |                                                            |
+|          | left        | =left("example", 3)                     | "exa"            | String                                         |                                                            |
+|          | right       | =right("example", 3)                    | "ple"            | String                                         |                                                            |
+|          | replace     | =replace("exampleexample", "ex", "Foo") | FooampleFooample | String                                         |                                                            |
+|          | text        | =text(12345)                            | "12345"          | String                                         |                                                            |
+|          | contains    | =contains("example", "pl")              | true             | Boolean                                        |                                                            |
+|          | starts      | =starts("example", "ex")                | true             | Boolean                                        |                                                            |
+|          | ends        | =ends("example", "ple")                 | true             | Boolean                                        |                                                            |
+| Math     | min         | =min(100, 101, 102, ...)                | 100              | Integer, Double                                |                                                            |
+|          | max         | =max(100, 101, 102, ...)                | 102              | Integer, Double                                |                                                            |
+|          | sum         | =sum(100, 101, 102)                     | 303              | Integer, Double                                |                                                            |
+| Logic    | if          | =if( 100 > 102, "this", "that")         | "that            | variable, with the return of then else clauses |                                                            |
+|          | or          | =or( 1=1, 1=2 )                         | True             | Boolean                                        |                                                            |
+|          | and         | =and( 1=2, 1=2, 1=3)                    | False            | Boolean                                        |                                                            |
+
+Functions Coming Soon...
+
+| Category | Function    | Example                                 | Result           | Return Type                                    | Notes                                                      |
+|:---------|:------------|:----------------------------------------|------------------|------------------------------------------------|:-----------------------------------------------------------|
+| Math     | round       | =round(101.01)                          | 100              | Double                                         | Equivalent to javas Math.round()                           |
+|          | log10       | =log10(100)                             |                  |                                                | <<not implemented, coming soon>>                           |
+|          | log         | =log(100)                               |                  |                                                | <<not implemented, coming soon>>                           |
+|          | sqrt        | =sqrt(24)                               |                  |                                                | <<not implemented, coming soon>>                           |
+|          | sin         | =sin(1.234)                             |                  |                                                | <<not implemented, coming soon>>                           |
+|          | cos         | =cos(1.234)                             |                  |                                                | <<not implemented, coming soon>>                           |
+|          | cosign      | =cosin(field1, field2, 1000)            |                  |                                                | <<not implemented, coming soon>>                           |
+| DateTime | day         | =day(time)                              |                  | Long - millis since epoch                      | <<not implemented, coming soon>>                           |
+|          | month       | =month(time)                            |                  | Long - millis since epoch                      | <<not implemented, coming soon>>                           |
+|          | year        | =year(time)                             |                  | Long - millis since epoch                      | <<not implemented, coming soon>>                           |
+
 
 
 ### Null and Error Handling
