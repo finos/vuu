@@ -1,7 +1,7 @@
 package org.finos.vuu.core.sort
 
 import org.finos.vuu.api.{Index, Indices, TableDef}
-import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable}
+import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, ViewPortColumnCreator}
 import org.finos.vuu.provider.TestFriendlyJoinTableProvider
 import org.finos.toolbox.collection.MapDiffUtils
 import org.finos.toolbox.jmx.MetricsProviderImpl
@@ -49,7 +49,9 @@ object FilterAndSortFixture {
 
     val result = sort.doSort(table, table.primaryKeys)
 
-    val asTable = result.toArray.map( key => ( (key, table.pullRow(key, table.columns().toList).asInstanceOf[RowWithData] ) ) ).toList
+    val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
+
+    val asTable = result.toArray.map( key => ( (key, table.pullRow(key, vpColumns).asInstanceOf[RowWithData] ) ) ).toList
 
     asTable
   }

@@ -1,7 +1,7 @@
 package org.finos.vuu.viewport
 
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.core.table.{RowWithData, ViewPortColumnCreator}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts._
@@ -35,11 +35,11 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
     val queue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    val columns = orderPrices.getTableDef.columns
+    val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       ClientSessionId("A", "B"),
-      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList,
+      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns,
       SortSpec(List()),
       FilterSpec(""),
       GroupBy(orderPrices, "trader", "ric")
@@ -160,11 +160,11 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
     val queue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    val columns = orderPrices.getTableDef.columns
+    val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       ClientSessionId("A", "B"),
-      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList,
+      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns,
       SortSpec(List()),
       FilterSpec(""),
       GroupBy(orderPrices, "trader", "ric")

@@ -2,6 +2,7 @@ package org.finos.vuu.viewport
 
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.combineQs
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
@@ -15,7 +16,7 @@ class DeleteViewPortTest extends AbstractViewPortTestCase with Matchers with Giv
 
       val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
 
-      val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orders.getTableDef.columnForName(_)).toList
+      val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))//.map(orders.getTableDef.columnForName(_)).toList
 
       createNOrderRows(ordersProvider, 10)(timeProvider)
 
@@ -25,15 +26,15 @@ class DeleteViewPortTest extends AbstractViewPortTestCase with Matchers with Giv
 
       val combinedUpdates = combineQs(viewPort)
 
-      combinedUpdates(0).size should equal(10)
+      combinedUpdates.head.size should equal(10)
 
       assertVpEq(combinedUpdates) {
         Table(
           ("orderId", "trader", "ric", "tradeTime", "quantity"),
-          ("NYC-0000", "chris", "VOD.L", 1311544800l, 100),
-          ("NYC-0001", "chris", "VOD.L", 1311544810l, 101),
-          ("NYC-0002", "chris", "VOD.L", 1311544820l, 102),
-          ("NYC-0003", "chris", "VOD.L", 1311544830l, 103)
+          ("NYC-0000", "chris", "VOD.L", 1311544800L, 100),
+          ("NYC-0001", "chris", "VOD.L", 1311544810L, 101),
+          ("NYC-0002", "chris", "VOD.L", 1311544820L, 102),
+          ("NYC-0003", "chris", "VOD.L", 1311544830L, 103)
         )
       }
 

@@ -2,6 +2,7 @@ package org.finos.vuu.viewport
 
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.combineQs
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
@@ -15,7 +16,9 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
 
       val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
 
-      val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orders.getTableDef.columnForName(_)).toList
+      val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
+
+      //val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orders.getTableDef.columnForName(_)).toList
 
       createNOrderRows(ordersProvider, 30)(timeProvider)
 

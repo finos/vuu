@@ -1,31 +1,31 @@
 package org.finos.vuu.provider.simulation
 
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.{Columns, SimpleDataTable}
+import org.finos.vuu.core.table.{Columns, SimpleDataTable, ViewPortColumnCreator}
 import org.finos.vuu.provider.TestFriendlyJoinTableProvider
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.text.AsciiUtil
-import org.finos.toolbox.time.TestFriendlyClock
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
 
-  final val TEST_TIME = 1450770869442l
+  final val TEST_TIME = 1450770869442L
 
   private def printTable(provider: SimulatedPricesProvider): Unit = {
     val columns = provider.table.getTableDef.columns
     val headers = columns.map(_.name)
     val keys    = provider.table.primaryKeys
 
-    val data = keys.toArray.map(key => provider.table.pullRowAsArray(key, columns.toList) )
+    val data = keys.toArray.map(key => provider.table.pullRowAsArray(key, ViewPortColumnCreator.create(provider.table, columns.map(_.name).toList) ))
 
     println("\n\n data")
     println(AsciiUtil.asAsciiTable(headers, data))
   }
 
-  def getDef = {
+  def getDef: TableDef = {
 
     val pricesDef = TableDef("prices", "ric",
         Columns.fromNames("ric:String", "bid:Double", "ask:Double", "bidSize: Double", "askSize:Double", "last:Double", "open:Double", "close:Double", "scenario: String"),
@@ -38,9 +38,9 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
 
     Scenario("check basic operation works"){
 
-      implicit val timeProvider = new TestFriendlyClock(TEST_TIME)
+      implicit val timeProvider: TestFriendlyClock = new TestFriendlyClock(TEST_TIME)
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
-      implicit val lifecycleContainer = new LifecycleContainer
+      implicit val lifecycleContainer: LifecycleContainer = new LifecycleContainer
 
       val joinProvider = new TestFriendlyJoinTableProvider
 

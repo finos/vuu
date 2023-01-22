@@ -35,7 +35,7 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
   private final val setOfWork = new ConcurrentSkipListSet[WorkItem[T]]()
 
   override def doStart(): Unit = {
-    logger.info("Starting up viewport runner...")
+    logger.info(s"Starting up executor runner [$name]...")
     retryExecutor = Some(new ResubmitExecutor[T](countOfThreads, countOfThreads, 1000, TimeUnit.SECONDS, workQueue){
       override def newCallable(r: FutureTask[T], t: Throwable): Callable[T] = {
         selfRef.newCallable(r)

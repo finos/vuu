@@ -1,6 +1,7 @@
 package org.finos.vuu.core.table
 
 import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.table.column.CalculatedColumnClause
 
 object DataType {
 
@@ -38,11 +39,15 @@ object Columns {
   def fromNames(names: String*): Array[Column] = {
     names.zipWithIndex.map({ case (nameAndDt, index) => {
 
-      val (name :: dataType :: _) = nameAndDt.split(":").toList
+      val splitDef = nameAndDt.split(":").toList
 
-      val dtClass = DataType.fromString(dataType)
+      splitDef.size match {
+        case 2 =>
+          val (name :: dataType :: _) = nameAndDt.split(":").toList
+          val dtClass = DataType.fromString(dataType)
+          new SimpleColumn(name, index, dtClass)
+      }
 
-      new SimpleColumn(name, index, dtClass)
     }
 
     }).toArray
@@ -129,6 +134,14 @@ class JoinColumn(name: String, index: Int, dataType: Class[_], val sourceTable: 
     } else
       false
   }
+}
+
+case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index: Int, dataType: Class[_]) extends Column{
+
+  override def getData(data: RowData): Any = clause.calculate(data)
+
+  override def getDataFullyQualified(data: RowData): Any = getData(data)
+
 }
 
 

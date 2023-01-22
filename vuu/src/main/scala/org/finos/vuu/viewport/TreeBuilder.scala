@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.{FilterSpecParser, NoFilter}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.core.sort.{AntlrBasedFilter, GenericSort, NoSort, Sort}
-import org.finos.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData}
+import org.finos.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData, ViewPortColumnCreator}
 import org.finos.vuu.net.{FilterSpec, SortSpec}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.logging.LogAtFrequency
@@ -95,13 +95,15 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
 
     var count = 0
 
+    val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
+
     sortedKeys.foreach(key => {
 
       if (logEvery.shouldLog()) logger.debug(s"Done nodes ${count}")
 
       val columns = groupBy.columns
 
-      val row = table.sourceTable.pullRow(key, table.columns().toList)
+      val row = table.sourceTable.pullRow(key, vpColumns)
 
       row match {
         case EmptyRowData =>

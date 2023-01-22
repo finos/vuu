@@ -7,6 +7,7 @@ import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -38,7 +39,7 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       ClientSessionId("A", "B"),
-      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList,
+      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList),
       SortSpec(List(
         SortDef("trader", 'A'),
         SortDef("ric", 'A')

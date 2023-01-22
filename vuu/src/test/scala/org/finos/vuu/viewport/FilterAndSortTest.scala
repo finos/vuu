@@ -10,6 +10,7 @@ import org.finos.vuu.util.table.TableAsserts
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -49,9 +50,9 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       val queue = new OutboundRowPublishQueue()
       val highPriorityQueue  = new OutboundRowPublishQueue()
 
-      val columns = orders.getTableDef.columns
+      val columns = ViewPortColumnCreator.create(orders, orders.getTableDef.columns.map(_.name).toList)
 
-      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orders, ViewPortRange(0, 5), columns.toList)
+      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orders, ViewPortRange(0, 5), columns)
 
       viewPortContainer.runOnce()
 
@@ -176,9 +177,11 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       val queue = new OutboundRowPublishQueue()
       val highPriorityQueue  = new OutboundRowPublishQueue()
 
-      val columns = orderPrices.getTableDef.columns
+      val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
-      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList)
+      //val columns = orderPrices.getTableDef.columns
+
+      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns)
 
       viewPortContainer.runOnce()
 
@@ -222,7 +225,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            EqFilter(orderIdColumn, "NYC-0001"),
+            EqFilter(orderIdColumn, columns,  "NYC-0001"),
             AlphaSort(SortDirection.Ascending, orderIdColumn)
           )
         )
@@ -254,7 +257,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            LessThanFilter(quantityColumn, 800),
+            LessThanFilter(quantityColumn, columns, 800),
             AlphaSort(SortDirection.Ascending, orderIdColumn)
           )
         )
@@ -280,7 +283,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            LessThanFilter(quantityColumn, 800),
+            LessThanFilter(quantityColumn, columns, 800),
             AlphaSort(SortDirection.Descending, orderIdColumn)
           )
         )

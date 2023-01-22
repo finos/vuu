@@ -3,7 +3,7 @@ package org.finos.vuu.core.table
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.index._
 import org.finos.vuu.provider.{JoinTableProvider, Provider}
-import org.finos.vuu.viewport.{RowProcessor, RowSource}
+import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
@@ -52,7 +52,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
     val selectedKeys = keys.toArray.take(count)
 
-    val rows = selectedKeys.map(key => pullRowAsArray(key, columns.toList))
+    val rows = selectedKeys.map(key => pullRowAsArray(key, ViewPortColumnCreator.create(this, columns.map(_.name).toList)))
 
     val columnNames = columns.map(_.name)
 
@@ -65,7 +65,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
     val selectedKeys = keys.toArray.slice(start, end) //.slice(start, end)//drop(start).take(end - start)
 
-    val rows = selectedKeys.map(key => pullRowAsArray(key, columns.toList))
+    val rows = selectedKeys.map(key => pullRowAsArray(key, ViewPortColumnCreator.create(this, columns.map(_.name).toList)))
 
     val columnNames = columns.map(_.name)
 
@@ -95,7 +95,7 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
   def this(key: String, data: java.util.Map[String, Any]) {
 
-    this(key, JavaConverters.asScala(data).toMap);
+    this(key, JavaConverters.asScala(data).toMap)
   }
 
   //override def hashCode(): Int = 37 * (key.hashCode + data.hashCode())
@@ -249,26 +249,26 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     }
   }
 
-  override def pullRow(key: String, columns: List[Column]): RowData = {
+  override def pullRow(key: String, columns: ViewPortColumns): RowData = {
     data.dataByKey(key) match {
       case null =>
         EmptyRowData
       case row =>
         //row
         //CJS Check perf of this
-        val rowData = columns.map(c => c.name -> row.get(c)).toMap
+        val rowData = columns.getColumns().map(c => c.name -> row.get(c)).toMap
         RowWithData(key, rowData)
     }
   }
 
-  override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
+  override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
     data.dataByKey(key) match {
       case EmptyRowData =>
         Array[Any]()
       case null =>
         Array[Any]()
       case row: RowWithData =>
-        columns.map(c => row.get(c)).toArray
+        columns.getColumns().map(c => row.get(c)).toArray
     }
   }
 
@@ -291,6 +291,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
   }
 
   def columns(): Array[Column] = tableDef.columns
+  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, tableDef.columns.map(_.name).toList)
 
   def updateIndices(rowkey: String, rowUpdate: RowWithData): Unit = {
     this.indices.foreach(colTup => {

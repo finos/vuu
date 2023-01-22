@@ -126,7 +126,7 @@ class WebSocketServerHandler(handler: ViewServerHandler) extends SimpleChannelIn
 
   def getWebSocketLocation(req: FullHttpRequest): String = {
     val location = req.headers().get(HOST) + WEBSOCKET_PATH;
-    return "ws://" + location;
+    return "wss://" + location;
   }
 
 }
