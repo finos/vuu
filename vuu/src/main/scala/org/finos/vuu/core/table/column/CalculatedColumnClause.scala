@@ -69,6 +69,7 @@ case class LiteralStringColumnClause(i: String) extends CalculatedColumnClause {
 }
 
 
+
 trait CalculatedColumnClause {
 
   def dataType: ClauseDataType
@@ -81,6 +82,12 @@ case class ExpressionClause(innerClause: CalculatedColumnClause) extends Calcula
   override def dataType: ClauseDataType = innerClause.dataType
 
   override def calculate(data: RowData): Any = innerClause.calculate(data)
+}
+
+case class ErrorClause(message: String) extends CalculatedColumnClause {
+  override def dataType: ClauseDataType = ClauseDataType.STRING
+
+  override def calculate(data: RowData): Any = "Error:" + message + " "
 }
 
 case class IntColumnClause(column: Column) extends CalculatedColumnClause{
@@ -163,6 +170,7 @@ case class MultiplyClause(clauses: List[CalculatedColumnClause]) extends Calcula
       case ClauseDataType.LONG => Calculations.mathLong(clauses, data, (a, b) => a * b, 0L)
       case ClauseDataType.INTEGER => Calculations.mathInt(clauses, data, (a, b) => a * b, 0)
       case ClauseDataType.DOUBLE => Calculations.mathDouble(clauses, data, (a, b) => a * b, 0D)
+      case ClauseDataType.STRING => ErrorClause("Can't multiply string by numeric:" + clauses.map(c => c.calculate(data).toString).mkString(",")).calculate(data)
     }
   }
 }

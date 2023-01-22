@@ -101,11 +101,11 @@ case class TextFunction(clause: List[CalculatedColumnClause]) extends Calculated
   }
 }
 
-object ErrorClause extends CalculatedColumnClause {
-  override def dataType: ClauseDataType = ClauseDataType.STRING
-
-  override def calculate(data: RowData): Any = "ERROR"
-}
+//object ErrorClause extends CalculatedColumnClause {
+//  override def dataType: ClauseDataType = ClauseDataType.STRING
+//
+//  override def calculate(data: RowData): Any = "ERROR"
+//}
 
 case class IfFunction(conditionClause: CalculatedColumnClause, thenClause: CalculatedColumnClause, elseClause: CalculatedColumnClause) extends CalculatedColumnClause {
 

@@ -1,8 +1,55 @@
 package org.finos.vuu.core.table.column
 
-import org.finos.vuu.core.table.RowWithData
+import com.typesafe.scalalogging.StrictLogging
+import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
+import org.finos.vuu.core.module.ModuleFactory.stringToString
+import org.finos.vuu.core.table._
+import org.finos.vuu.grammer.{CalculatedColumnLexer, CalculatedColumnParser}
+import org.finos.vuu.util.table.TableAsserts.genericLogic
+import org.finos.vuu.viewport.ViewPortColumns
+import org.scalatest.prop.{TableFor11, TableFor12, TableFor13}
 
-object CalculatedColumnFixture {
+object CalculatedColumnFixture extends StrictLogging {
+
+  def parse(s: String): Unit = {
+
+    val input = CharStreams.fromString(s)
+    val lexer = new CalculatedColumnLexer(input)
+    val tokens = new CommonTokenStream(lexer)
+    val parser = new CalculatedColumnParser(tokens)
+
+    val tree = parser.expression() // begin parsing at init rule
+
+    logger.debug("IN:" + s)
+    logger.debug("OUT" + tree.toStringTree(parser)) // print LISP-style tree
+  }
+
+  def parseToColumn(columns: ViewPortColumns, calcDef: String): Column = {
+    val name :: dataType :: calcdsl :: _ = calcDef.split(":").toList
+    val dt = DataType.fromString(dataType)
+    val input = CharStreams.fromString(calcdsl)
+    val lexer = new CalculatedColumnLexer(input)
+    val tokens = new CommonTokenStream(lexer)
+    val parser = new CalculatedColumnParser(tokens)
+    val tree = parser.expression()
+    logger.debug("Parse IN:" + calcDef)
+    logger.debug("Parse OUT" + tree.toStringTree(parser))
+    val eval = new CalculatedColumnVisitor(columns)
+    val clause = eval.visit(tree)
+    val column = CalculatedColumn(name, clause, columns.count(), dt)
+    columns.addColumn(column)
+    column
+  }
+
+  val tableColumns: List[Column] = Columns.fromNames(
+    "orderId".string(), "quantity".long(),
+    "ric".string(), "tradeTime".long(), "onMkt".boolean(),
+    "bid".double(), "ask".double(),
+    //"negpos".double(),
+    //"i1".int(), "i2".int(), "i3".int(),
+    "trader".string(), "ccyCross".string(),
+    "vwapPerf".double()
+  ).toList
 
   def sampleRows(): List[RowWithData] = {
     val rows = List(
@@ -34,6 +81,65 @@ object CalculatedColumnFixture {
       RowWithData("NYC-0013", Map("tradeTime" -> 6L, "quantity" -> null, "ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "bid" -> 99.00, "ask" -> 122.00, "vwapPerf" -> 1.1234))
     )
     rows
+  }
+
+  def generic12Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor12[_, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
+
+    val arraysOfMaps = rows.map(row => {
+      columns.getColumns().map(c => c.name -> c.getData(row)).toMap
+    }).toArray
+
+    val heading = expectation.heading
+
+    val headingAsArray = heading.productIterator.map(_.toString).toArray
+
+    val expectationAsMap = expectation.map(row => heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
+
+    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
+  }
+
+  def generic11Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor11[_, _, _, _, _, _, _, _, _, _, _]): Unit = {
+
+    val arraysOfMaps = rows.map(row => {
+      columns.getColumns().map(c => c.name -> c.getData(row)).toMap
+    }).toArray
+
+    val heading = expectation.heading
+
+    val headingAsArray = heading.productIterator.map(_.toString).toArray
+
+    val expectationAsMap = expectation.map(row => heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
+
+    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
+  }
+
+  def generic13Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor13[_, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
+
+    val arraysOfMaps = rows.map(row => {
+      columns.getColumns().map(c => c.name -> c.getData(row)).toMap
+    }).toArray
+
+    val heading = expectation.heading
+
+    val headingAsArray = heading.productIterator.map(_.toString).toArray
+
+    val expectationAsMap = expectation.map(row => heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
+
+    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
+  }
+
+  def withCalculatedColumns(rows: List[RowWithData], columns: List[Column], calcs: String*)(expectedFn: => Any): Unit = {
+
+    val vpColumns = new ViewPortColumns(columns)
+
+    calcs.foreach(parseToColumn(vpColumns, _))
+
+    expectedFn match {
+      case table: TableFor11[_, _, _, _, _, _, _, _, _, _, _] => generic11Assert(rows, vpColumns, table)
+      case table: TableFor12[_, _, _, _, _, _, _, _, _, _, _, _] => generic12Assert(rows, vpColumns, table)
+      case table: TableFor13[_, _, _, _, _, _, _, _, _, _, _, _, _] => generic13Assert(rows, vpColumns, table)
+    }
+
   }
 
 }

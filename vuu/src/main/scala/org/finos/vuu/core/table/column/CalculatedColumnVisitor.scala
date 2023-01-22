@@ -1,11 +1,9 @@
 package org.finos.vuu.core.table.column
 
 import com.typesafe.scalalogging.StrictLogging
-import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}
-import org.finos.vuu.api.TableDef
+import org.antlr.v4.runtime.tree.{ErrorNode, ParseTree, TerminalNode}
 import org.finos.vuu.core.table.{Column, DataType}
-import org.finos.vuu.grammer.CalculatedColumnParser.{FALSE, FunctionContext}
-import org.finos.vuu.grammer.FilterParser.AtomContext
+import org.finos.vuu.grammer.CalculatedColumnParser.{FunctionContext, OperatorContext}
 import org.finos.vuu.grammer.{CalculatedColumnBaseVisitor, CalculatedColumnLexer, CalculatedColumnParser}
 import org.finos.vuu.viewport.ViewPortColumns
 
@@ -28,20 +26,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
       case 3 => processOperatorTerm(ctx)
       case 5 => processBracketedOperatorTerm(ctx)
       case 7 => processBracketedOperatorTermWithOperator(ctx)
-      case 8 => processIfStatement(ctx)
     }
-
-    //super.visitTerm(ctx)
-
-    //val operator = ctx.operator()
-
-    //    operator.size() match {
-    //      //this case is for non math operators (so functions basically)
-    //      case 0 =>
-    //          println("no operator")
-    //          null
-    //      case _ => processOperatorTerm(ctx)
-    //    }
   }
 
   override def visitFunction(ctx: CalculatedColumnParser.FunctionContext): CalculatedColumnClause = {
@@ -59,28 +44,33 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
             Functions.create(funcName, argsClauseList)
         }
       //this has to be an if
-      case ctx: CalculatedColumnParser.TermContext => {
+      case ctx: CalculatedColumnParser.TermContext =>
         children.head.getText match {
           case "if" =>
-            val ifClauseTerm = visitTerm(children(2).asInstanceOf[CalculatedColumnParser.TermContext])
-            val thenClause = visitTerm(children(4).asInstanceOf[CalculatedColumnParser.TermContext])
-            val elseClause = visitTerm(children(6).asInstanceOf[CalculatedColumnParser.TermContext])
-            Functions.createIf(funcName, ifClauseTerm, thenClause, elseClause)
+            processIfStatement(funcName, children, ctx)
           case "or" =>
-            val terms = children.filter(pt => pt.isInstanceOf[CalculatedColumnParser.TermContext])
-              .map(_.asInstanceOf[CalculatedColumnParser.TermContext])
-              .map(visitTerm)
-            Functions.create(children.head.getText, terms)
+            processOrAndStatement(funcName, children, ctx)
           case "and" =>
-            val terms = children.filter(pt => pt.isInstanceOf[CalculatedColumnParser.TermContext])
-              .map(_.asInstanceOf[CalculatedColumnParser.TermContext])
-              .map(visitTerm)
-            Functions.create(children.head.getText, terms)
+            processOrAndStatement(funcName, children, ctx)
         }
-      }
+
 
     }
     clause
+  }
+
+  private def processOrAndStatement(funcName: String, children: List[ParseTree], ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
+    val terms = children.filter(pt => pt.isInstanceOf[CalculatedColumnParser.TermContext])
+      .map(_.asInstanceOf[CalculatedColumnParser.TermContext])
+      .map(visitTerm)
+    Functions.create(children.head.getText, terms)
+  }
+
+  private def processIfStatement(funcName: String, children: List[ParseTree], ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
+    val ifClauseTerm = visitTerm(children(2).asInstanceOf[CalculatedColumnParser.TermContext])
+    val thenClause = visitTerm(children(4).asInstanceOf[CalculatedColumnParser.TermContext])
+    val elseClause = visitTerm(children(6).asInstanceOf[CalculatedColumnParser.TermContext])
+    Functions.createIf(funcName, ifClauseTerm, thenClause, elseClause)
   }
 
   override def visitAtom(ctx: CalculatedColumnParser.AtomContext): CalculatedColumnClause = {
@@ -115,14 +105,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
 
   override def visitTerminal(node: TerminalNode): CalculatedColumnClause = {
     logger.debug("VISIT: TERMINAL: " + node.getText)
-    //    node.getSymbol.getType match {
-    //      case CalculatedColumnLexer.LPAREN =>
-    //        logger.info("\t\t open paretheses")
-    //
-    //      case CalculatedColumnLexer.RPAREN =>
-    //        logger.info("\t\t close paretheses")
-    //    }
-    super.visitTerminal(node)
+      super.visitTerminal(node)
   }
 
   override def visitErrorNode(node: ErrorNode): CalculatedColumnClause = {
@@ -156,18 +139,22 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
 
     logger.debug(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
 
-    val leftClause = leftChild match {
+    val leftClause = processOperatorSideTerm(leftChild)
+
+    val rightClause = processOperatorSideTerm(rightChild)
+
+    processOperatorClause(operator, leftClause, rightClause)
+  }
+
+  private def processOperatorSideTerm(child: ParseTree): CalculatedColumnClause = {
+    child match {
       case ctx: CalculatedColumnParser.AtomContext => visitAtom(ctx)
       case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
-      case node: TerminalNode => null
+      case _ => NullCalculatedColumnClause()
     }
+  }
 
-    val rightClause = rightChild match {
-      case ctx: CalculatedColumnParser.AtomContext => visitAtom(ctx)
-      case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
-      case node: TerminalNode => null
-    }
-
+  private def processOperatorClause(operator: OperatorContext, leftClause: CalculatedColumnClause, rightClause: CalculatedColumnClause): CalculatedColumnClause = {
     operator.getText match {
       case "*" => MultiplyClause(leftClause, rightClause) //MultiplyClause(List(leftClause, rightClause))
       case "+" => AddClause(leftClause, rightClause)
@@ -177,62 +164,29 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
       case ">" => GreaterThanClause(leftClause, rightClause)
       case "<" => LessThanClause(leftClause, rightClause)
     }
-
   }
 
   private def processBracketedOperatorTerm(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
 
-    //val operator = ctx.operator.get(0)
+    val operator = ctx.operator.get(0)
 
     val children = CollectionHasAsScala(ctx.children).asScala.toList
 
-    val leftChild = children(1)
-    val op = children(2)
-    val rightChild = children(3)
+    val leftChild :: op :: rightChild :: _ = children
 
     logger.debug(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
 
-    val leftClause = leftChild match {
-      case ctx: CalculatedColumnParser.AtomContext => visitAtom(ctx)
-      case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
-      case node: TerminalNode => null
-    }
+    val leftClause = processOperatorSideTerm(leftChild)
 
-    val rightClause = rightChild match {
-      case ctx: CalculatedColumnParser.AtomContext => visitAtom(ctx)
-      case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
-      case node: TerminalNode => null
-    }
+    val rightClause = processOperatorSideTerm(rightChild)
 
-    op.getText match {
-      case "*" => MultiplyClause(leftClause, rightClause) //MultiplyClause(List(leftClause, rightClause))
-      case "+" => AddClause(leftClause, rightClause)
-      case "-" => SubtractClause(leftClause, rightClause)
-      case "/" => DivideClause(leftClause, rightClause)
-    }
-
+    processOperatorClause(operator, leftClause, rightClause)
   }
 
-  private def processIfStatement(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
-
-    val children = CollectionHasAsScala(ctx.children).asScala.toList
-
-    val function = children.head
-    val bracket1 = children(1)
-    val condition = children(2)
-    val comma1 = children(3)
-    val thenStatement = children(4)
-    val comma2 = children(5)
-    val elseStatement = children(6)
-    val bracket2 = children(7)
-
-    null
-
-  }
 
   private def processBracketedOperatorTermWithOperator(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
 
-    //val operator = ctx.operator.get(0)
+    val operator = ctx.operator.get(0)
 
     val children = CollectionHasAsScala(ctx.children).asScala.toList
 
@@ -246,44 +200,15 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
 
     logger.debug(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
 
-    val leftClause = leftChild match {
-      case ctx: CalculatedColumnParser.AtomContext => visitAtom(ctx)
-      case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
-      case node: TerminalNode => null
-    }
+    val leftClause = processOperatorSideTerm(leftChild)
 
-    val rightClause = rightChild match {
-      case ctx: CalculatedColumnParser.AtomContext => visitAtom(ctx)
-      case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
-      case node: TerminalNode => null
-    }
+    val rightClause = processOperatorSideTerm(rightChild)
 
-    op.getText match {
-      case "*" => MultiplyClause(leftClause, rightClause) //MultiplyClause(List(leftClause, rightClause))
-      case "+" => AddClause(leftClause, rightClause)
-      case "-" => SubtractClause(leftClause, rightClause)
-      case "/" => DivideClause(leftClause, rightClause)
-    }
+    val leftCompoundClause = processOperatorClause(operator, leftClause, rightClause)
 
-    val leftCompoundClause = op.getText match {
-      case "*" => MultiplyClause(leftClause, rightClause) //MultiplyClause(List(leftClause, rightClause))
-      case "+" => AddClause(leftClause, rightClause)
-      case "-" => SubtractClause(leftClause, rightClause)
-      case "/" => DivideClause(leftClause, rightClause)
-    }
+    val secondRightClause = processOperatorSideTerm(secondRightChild)
 
-    val secondRightClause = secondRightChild match {
-      case ctx: CalculatedColumnParser.AtomContext => visitAtom(ctx)
-      case ctx: CalculatedColumnParser.TermContext => visitTerm(ctx)
-      case node: TerminalNode => null
-    }
-
-    operator2.getText match {
-      case "*" => MultiplyClause(leftCompoundClause, secondRightClause) //MultiplyClause(List(leftClause, rightClause))
-      case "+" => AddClause(leftCompoundClause, secondRightClause)
-      case "-" => SubtractClause(leftCompoundClause, secondRightClause)
-      case "/" => DivideClause(leftCompoundClause, secondRightClause)
-    }
+    processOperatorClause(operator2.asInstanceOf[OperatorContext], leftCompoundClause, secondRightClause)
 
   }
 
@@ -302,18 +227,18 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
   //  }
 
   private def processIDSymbol(term: TerminalNode): CalculatedColumnClause = {
-    val column = getColumn(term.getText) match {
+    getColumn(term.getText) match {
       case Some(column) => column
-      case None => throw new RuntimeException("Column not found")
+        logger.debug("VISIT ATOM: TerminalNode: " + term.getText + " " + column)
+        column.dataType match {
+          case DataType.IntegerDataType => IntColumnClause(column)
+          case DataType.LongDataType => LongColumnClause(column)
+          case DataType.DoubleDataType => DoubleColumnClause(column)
+          case DataType.StringDataType => StringColumnClause(column)
+          case DataType.BooleanDataType => BooleanColumnClause(column)
+        }
+      case None => ErrorClause("Column not found:" + term.getText)
     }
 
-    logger.debug("VISIT ATOM: TerminalNode: " + term.getText + " " + column)
-    column.dataType match {
-      case DataType.IntegerDataType => IntColumnClause(column)
-      case DataType.LongDataType => LongColumnClause(column)
-      case DataType.DoubleDataType => DoubleColumnClause(column)
-      case DataType.StringDataType => StringColumnClause(column)
-      case DataType.BooleanDataType => BooleanColumnClause(column)
-    }
   }
 }
