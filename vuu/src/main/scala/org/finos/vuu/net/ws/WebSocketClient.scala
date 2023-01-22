@@ -87,7 +87,7 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
  * as this is the default.
  */
 object WebSocketClient {
-  val URL: String = System.getProperty("url", "ws://127.0.0.1:8080/websocket")
+  val URL: String = System.getProperty("url", "wss://127.0.0.1:8080/websocket")
 
   @throws(classOf[Exception])
   def main(args: Array[String]) {
