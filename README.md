@@ -22,7 +22,7 @@ git clone https://github.com/finos/vuu.git
 #cd into the repository
 cd vuu
 #run the maven compile step
-mvn compile
+mvn install
 #cd into vuu, child in repo
 cd vuu
 #The server should now be started on your machine
