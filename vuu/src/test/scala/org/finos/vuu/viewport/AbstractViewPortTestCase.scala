@@ -168,6 +168,16 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     })
   }
 
+  def createNOrderRowsNoSleep(ordersProvider: MockProvider, n: Int)(implicit clock: Clock) = {
+    (0 to n - 1).foreach(i => {
+      val iAsString = i.toString
+      val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString
+      val quantity = 100 + i
+      ordersProvider.tick(orderId, Map("orderId" -> orderId, "trader" -> "chris", "tradeTime" -> clock.now(), "quantity" -> quantity, "ric" -> "VOD.L"))
+      //clock.sleep(10)
+    })
+  }
+
   def buildOrderRowUpdate(i : Int, quantity: Int): (String, Map[String, Any]) = {
     val iAsString = i.toString
     val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString

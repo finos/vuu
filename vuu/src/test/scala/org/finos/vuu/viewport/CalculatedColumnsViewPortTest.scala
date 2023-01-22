@@ -12,12 +12,12 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
 
   Feature("Create a Viewport with calc on a non-existant column") {
 
-    Given("we've created a viewport with orders in and a calc'd column")
+    Given("we've created a viewport with orders in and a calc'd column 2")
     val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
 
     val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "logicTest:String:=if(fooBar = 109, \"Yay\", \"Boo\")"))
 
-    createNOrderRows(ordersProvider, 10)(timeProvider)
+    createNOrderRowsNoSleep(ordersProvider, 10)(timeProvider)
 
     val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
@@ -31,15 +31,15 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
       Table(
         ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","logicTest"),
         ("NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       ,"Boo"     ),
-        ("NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ,"Boo"     ),
-        ("NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ,"Boo"     ),
-        ("NYC-0003","chris"   ,"VOD.L"   ,1311544830L,103       ,"Boo"     ),
-        ("NYC-0004","chris"   ,"VOD.L"   ,1311544840L,104       ,"Boo"     ),
-        ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       ,"Boo"     ),
-        ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,106       ,"Boo"     ),
-        ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,107       ,"Boo"     ),
-        ("NYC-0008","chris"   ,"VOD.L"   ,1311544880L,108       ,"Boo"     ),
-        ("NYC-0009","chris"   ,"VOD.L"   ,1311544890L,109       ,"Boo"     )
+        ("NYC-0001","chris"   ,"VOD.L"   ,1311544800L,101       ,"Boo"     ),
+        ("NYC-0002","chris"   ,"VOD.L"   ,1311544800L,102       ,"Boo"     ),
+        ("NYC-0003","chris"   ,"VOD.L"   ,1311544800L,103       ,"Boo"     ),
+        ("NYC-0004","chris"   ,"VOD.L"   ,1311544800L,104       ,"Boo"     ),
+        ("NYC-0005","chris"   ,"VOD.L"   ,1311544800L,105       ,"Boo"     ),
+        ("NYC-0006","chris"   ,"VOD.L"   ,1311544800L,106       ,"Boo"     ),
+        ("NYC-0007","chris"   ,"VOD.L"   ,1311544800L,107       ,"Boo"     ),
+        ("NYC-0008","chris"   ,"VOD.L"   ,1311544800L,108       ,"Boo"     ),
+        ("NYC-0009","chris"   ,"VOD.L"   ,1311544800L,109       ,"Boo"     )
       )
     }
   }
@@ -51,7 +51,7 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
 
     val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "logicTest:String:=if(quantity = 109, \"Yay\", \"Boo\")"))
 
-    createNOrderRows(ordersProvider, 10)(timeProvider)
+    createNOrderRowsNoSleep(ordersProvider, 10)(timeProvider)
 
     val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
@@ -63,15 +63,15 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
       Table(
         ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","logicTest"),
         ("NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       ,"Boo"     ),
-        ("NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ,"Boo"     ),
-        ("NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ,"Boo"     ),
-        ("NYC-0003","chris"   ,"VOD.L"   ,1311544830L,103       ,"Boo"     ),
-        ("NYC-0004","chris"   ,"VOD.L"   ,1311544840L,104       ,"Boo"     ),
-        ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       ,"Boo"     ),
-        ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,106       ,"Boo"     ),
-        ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,107       ,"Boo"     ),
-        ("NYC-0008","chris"   ,"VOD.L"   ,1311544880L,108       ,"Boo"     ),
-        ("NYC-0009","chris"   ,"VOD.L"   ,1311544890L,109       ,"Yay"     )
+        ("NYC-0001","chris"   ,"VOD.L"   ,1311544800L,101       ,"Boo"     ),
+        ("NYC-0002","chris"   ,"VOD.L"   ,1311544800L,102       ,"Boo"     ),
+        ("NYC-0003","chris"   ,"VOD.L"   ,1311544800L,103       ,"Boo"     ),
+        ("NYC-0004","chris"   ,"VOD.L"   ,1311544800L,104       ,"Boo"     ),
+        ("NYC-0005","chris"   ,"VOD.L"   ,1311544800L,105       ,"Boo"     ),
+        ("NYC-0006","chris"   ,"VOD.L"   ,1311544800L,106       ,"Boo"     ),
+        ("NYC-0007","chris"   ,"VOD.L"   ,1311544800L,107       ,"Boo"     ),
+        ("NYC-0008","chris"   ,"VOD.L"   ,1311544800L,108       ,"Boo"     ),
+        ("NYC-0009","chris"   ,"VOD.L"   ,1311544800L,109       ,"Yay"     )
       )
     }
   }
@@ -83,7 +83,7 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
 
     val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "quantityTimes100:Long:=quantity*100"))
 
-    createNOrderRows(ordersProvider, 10)(timeProvider)
+    createNOrderRowsNoSleep(ordersProvider, 10)(timeProvider)
 
     val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
@@ -95,15 +95,15 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
       Table(
         ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","quantityTimes100"),
         ("NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       ,10000     ),
-        ("NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ,10100     ),
-        ("NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ,10200     ),
-        ("NYC-0003","chris"   ,"VOD.L"   ,1311544830L,103       ,10300     ),
-        ("NYC-0004","chris"   ,"VOD.L"   ,1311544840L,104       ,10400     ),
-        ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       ,10500     ),
-        ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,106       ,10600     ),
-        ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,107       ,10700     ),
-        ("NYC-0008","chris"   ,"VOD.L"   ,1311544880L,108       ,10800     ),
-        ("NYC-0009","chris"   ,"VOD.L"   ,1311544890L,109       ,10900     )
+        ("NYC-0001","chris"   ,"VOD.L"   ,1311544800L,101       ,10100     ),
+        ("NYC-0002","chris"   ,"VOD.L"   ,1311544800L,102       ,10200     ),
+        ("NYC-0003","chris"   ,"VOD.L"   ,1311544800L,103       ,10300     ),
+        ("NYC-0004","chris"   ,"VOD.L"   ,1311544800L,104       ,10400     ),
+        ("NYC-0005","chris"   ,"VOD.L"   ,1311544800L,105       ,10500     ),
+        ("NYC-0006","chris"   ,"VOD.L"   ,1311544800L,106       ,10600     ),
+        ("NYC-0007","chris"   ,"VOD.L"   ,1311544800L,107       ,10700     ),
+        ("NYC-0008","chris"   ,"VOD.L"   ,1311544800L,108       ,10800     ),
+        ("NYC-0009","chris"   ,"VOD.L"   ,1311544800L,109       ,10900     )
       )
     }
 
@@ -120,15 +120,15 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
       Table(
         ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","textConcat"),
         ("NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       ,"NYC-0000VOD.L"),
-        ("NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ,"NYC-0001VOD.L"),
-        ("NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ,"NYC-0002VOD.L"),
-        ("NYC-0003","chris"   ,"VOD.L"   ,1311544830L,103       ,"NYC-0003VOD.L"),
-        ("NYC-0004","chris"   ,"VOD.L"   ,1311544840L,104       ,"NYC-0004VOD.L"),
-        ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       ,"NYC-0005VOD.L"),
-        ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,106       ,"NYC-0006VOD.L"),
-        ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,107       ,"NYC-0007VOD.L"),
-        ("NYC-0008","chris"   ,"VOD.L"   ,1311544880L,108       ,"NYC-0008VOD.L"),
-        ("NYC-0009","chris"   ,"VOD.L"   ,1311544890L,109       ,"NYC-0009VOD.L")
+        ("NYC-0001","chris"   ,"VOD.L"   ,1311544800L,101       ,"NYC-0001VOD.L"),
+        ("NYC-0002","chris"   ,"VOD.L"   ,1311544800L,102       ,"NYC-0002VOD.L"),
+        ("NYC-0003","chris"   ,"VOD.L"   ,1311544800L,103       ,"NYC-0003VOD.L"),
+        ("NYC-0004","chris"   ,"VOD.L"   ,1311544800L,104       ,"NYC-0004VOD.L"),
+        ("NYC-0005","chris"   ,"VOD.L"   ,1311544800L,105       ,"NYC-0005VOD.L"),
+        ("NYC-0006","chris"   ,"VOD.L"   ,1311544800L,106       ,"NYC-0006VOD.L"),
+        ("NYC-0007","chris"   ,"VOD.L"   ,1311544800L,107       ,"NYC-0007VOD.L"),
+        ("NYC-0008","chris"   ,"VOD.L"   ,1311544800L,108       ,"NYC-0008VOD.L"),
+        ("NYC-0009","chris"   ,"VOD.L"   ,1311544800L,109       ,"NYC-0009VOD.L")
       )
     }
 
