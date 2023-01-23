@@ -50,6 +50,27 @@ cd packages/electron
 yarn start
 ```
 
+## Configuring IntelliJ
+
+You may prefer to run the backend using the IntelliJ IDE, if so, you will need to follow the Client Installation above to ensure that the project has built correctly.
+
+1. Install the Scala plugin: file -> settings -> plugins
+2. Install Scala 2.13.10
+3. Set project SDK version to 11: file -> project structure -> select an SDK -> require version 11
+4. Enable 'Use plugin registry': file -> settings -> build, execution, deployment -> Maven
+5. Open Maven tab on the right and click install on vuu-parent -> lifecycle -> install
+6. In the terminal, navigate to 
+```sh
+vuu-ui/sample-apps/app-vuu-example
+```
+7. Run 
+```sh
+yarn
+yarn build
+```
+8. In IntelliJ, select 'SimulMain' config and click run
+9. If you get a 'certificate-unknown' error, set 'Allow invalid certificates for resources loaded from localhost' to 'Enabled' in your chrome settings
+
 ## Usage example
 
 ```
