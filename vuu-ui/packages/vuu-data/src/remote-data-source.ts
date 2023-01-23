@@ -1,4 +1,5 @@
 import {
+  LinkDescriptorWithLabel,
   VuuGroupBy,
   VuuAggregation,
   VuuRange,
@@ -18,7 +19,6 @@ import {
 } from "./data-source";
 import { getServerUrl } from "./hooks/useServerConnection";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
-import { LinkWithLabel } from "./server-proxy/server-proxy";
 
 // const log = (message: string, ...rest: unknown[]) => {
 //   console.log(
@@ -417,7 +417,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  createLink({ parentVpId, link: { fromColumn, toColumn } }: LinkWithLabel) {
+  createLink({
+    parentVpId,
+    link: { fromColumn, toColumn },
+  }: LinkDescriptorWithLabel) {
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,

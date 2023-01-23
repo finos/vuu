@@ -63,14 +63,28 @@ export declare type VuuAggregation = {
   column: string;
   aggType: VuuAggType;
 };
-export declare type VuuLink = {
+
+export interface VuuLink {
+  fromColumn: string;
+  toTable: string;
+  toColumn: string;
+}
+
+export declare type VuuLinkDescriptor = {
   parentVpId: string;
-  link: {
-    fromColumn: string;
-    toTable: string;
-    toColumn: string;
-  };
+  link: VuuLink;
 };
+
+/**
+ * LinkDescriptor with label is not strictly part of the Vuu Protocol
+ *
+ * The Label is added by client code, if user has assigned a custom
+ * Title to component bound to viewport.
+ */
+export type LinkDescriptorWithLabel = VuuLinkDescriptor & {
+  label?: string;
+};
+
 export declare type VuuColumns = string[];
 export declare type VuuGroupBy = string[];
 export interface ServerToClientHeartBeat {
@@ -116,7 +130,7 @@ export interface ServerToClientMenu {
 }
 export interface ServerToClientViewPortVisualLinks {
   type: "VP_VISUAL_LINKS_RESP";
-  links: VuuLink[];
+  links: VuuLinkDescriptor[];
   vpId: string;
 }
 export interface ServerToClientCreateViewPortSuccess {

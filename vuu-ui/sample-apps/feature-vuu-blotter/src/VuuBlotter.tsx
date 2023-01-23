@@ -106,20 +106,6 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
         | DataSourceVisualLinksMessage
     ) => {
       switch (update.type) {
-        case "VIEW_PORT_MENUS_RESP":
-          {
-            // We only need to save the context menu into session state
-            // not state (which gets persisted), They are loaded afresh
-            // from the server on application load.
-            saveSession?.(update.menu, "vs-context-menu");
-          }
-          break;
-        case "VP_VISUAL_LINKS_RESP":
-          {
-            // See comment above, same here.
-            saveSession?.(update.links, "visual-links");
-          }
-          break;
         case "CREATE_VISUAL_LINK_SUCCESS":
           {
             dispatch?.({
@@ -156,17 +142,15 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
           }
       }
     },
-    [dispatch, purge, removeVisualLink, save, saveSession]
+    [dispatch, purge, removeVisualLink, save]
   );
 
+  console.log(`call useVuuMenuActions`);
   const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction } =
     useVuuMenuActions({
-      vuuMenu: loadSession?.("vs-context-menu"),
       dataSource,
       onConfigChange: handleConfigChange,
       onRpcResponse: handleRpcResponse,
-      visualLink: load?.("visual-link"),
-      visualLinks: loadSession?.("visual-links"),
     });
 
   const handleSubmitFilter = useCallback(
