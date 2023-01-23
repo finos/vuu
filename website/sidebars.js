@@ -109,7 +109,7 @@ module.exports = {
       {
         type: "category",
         label: "New Features - RFC",
-        items: ["rfc/calculated_columns", "rfc/conditional_formatting"],
+        items: ["rfc/conditional_formatting"],
       },
       {
         type: "category",
