@@ -26,7 +26,7 @@ import {
 // Note: the InlinedWorker is a generated file, it must be built
 import { InlinedWorker } from "./inlined-worker";
 const workerSource = InlinedWorker.toString().replace(
-  /(?:^function\s+[^(]+\(\)\s*\{)|(?:\}$)/g,
+  /(?:^function\s+[^(]*\(\)\s*\{)|(?:\}$)/g,
   ""
 );
 const workerBlob = new Blob([workerSource], { type: "text/javascript" });
