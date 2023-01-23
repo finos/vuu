@@ -14,6 +14,7 @@
     "@salt-ds/core": "1.0.0",
     "@salt-ds/icons": "1.0.0",
     "@heswell/salt-lab": "1.0.0-alpha.0",
+    "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "classnames": "^2.2.6",
     "react": "^17.0.2",

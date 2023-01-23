@@ -1,6 +1,7 @@
 import { SaltProvider } from "@salt-ds/core";
 import { MenuRpcResponse, useVuuTables } from "@finos/vuu-data";
-import { Dialog, registerComponent } from "@finos/vuu-layout";
+import { registerComponent } from "@finos/vuu-layout";
+import { Dialog } from "@finos/vuu-popups";
 import {
   Feature,
   Shell,

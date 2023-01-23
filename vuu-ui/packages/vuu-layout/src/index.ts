@@ -1,4 +1,3 @@
-export * from "@finos/vuu-popups/src/dialog";
 export * from "./chest-of-drawers";
 export * from "./common-types";
 export { default as Component } from "./Component";
@@ -17,4 +16,3 @@ export * from "./stack";
 export * from "./tools";
 export * from "./use-persistent-state";
 export * from "./utils";
-
