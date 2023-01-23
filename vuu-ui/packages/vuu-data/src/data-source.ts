@@ -2,6 +2,7 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { IEventEmitter } from "@finos/vuu-utils";
 import {
+  LinkDescriptorWithLabel,
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
@@ -16,7 +17,6 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
-import { LinkDescriptorWithLabel } from "./server-proxy/server-proxy";
 
 type RowIndex = number;
 type RenderKey = number;
@@ -197,7 +197,7 @@ export interface DataSourceProps {
   configUrl?: string;
   serverUrl?: string;
   viewport?: string;
-  "visual-link"?: any;
+  "visual-link"?: DataSourceVisualLinkCreatedMessage;
 }
 
 export interface SubscribeProps {
@@ -232,15 +232,13 @@ export interface DataSource extends IEventEmitter {
   rowCount: number | undefined;
   select: (selected: number[]) => void;
   setRange: (from: number, to: number) => void;
-  setSubscribedColumns: (columns: string[]) => void;
-  /** Set the title associated with this viewport in UI. This can be used as a link target */
-  setTitle?: (title: string) => void;
   size: number;
   sort: VuuSort;
   subscribe: (
     props: SubscribeProps,
     callback: SubscribeCallback
   ) => Promise<void>;
+  title?: string;
   unsubscribe: () => void;
   viewport?: string;
 }

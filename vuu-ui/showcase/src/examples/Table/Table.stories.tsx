@@ -190,9 +190,7 @@ export const VuuDataTable = () => {
     (config: GridConfig, closePanel = false) => {
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
-          dataSource.setSubscribedColumns(
-            config.columns.map((col) => col.name)
-          );
+          dataSource.columns = config.columns.map((col) => col.name);
         }
         return (configRef.current = config);
       });

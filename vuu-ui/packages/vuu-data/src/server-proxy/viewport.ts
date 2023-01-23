@@ -73,15 +73,13 @@ interface GroupByClear {
   data: VuuGroupBy;
   type: "groupByClear";
 }
-type CreateVisualLink = ClientToServerCreateLink;
-type RemoveVisualLink = ClientToServerRemoveLink;
 
 type AsyncOperation =
   | Aggregate
   | ChangeViewportRange
   | Columns
-  | CreateVisualLink
-  | RemoveVisualLink
+  | ClientToServerCreateLink
+  | ClientToServerRemoveLink
   | Disable
   | Enable
   | ViewportFilter
@@ -91,6 +89,12 @@ type AsyncOperation =
   | Sort;
 type RangeRequestTuple = [ClientToServerViewPortRange | null, DataSourceRow[]?];
 type RowSortPredicate = (row1: DataSourceRow, row2: DataSourceRow) => number;
+
+type LinkedParent = {
+  colName: string;
+  parentViewportId: string;
+  parentColName: string;
+};
 
 const byRowIndex: RowSortPredicate = ([index1], [index2]) => index1 - index2;
 export class Viewport {
@@ -109,9 +113,8 @@ export class Viewport {
   private sort: VuuSort;
   private hasUpdates = false;
   private holdingPen: DataSourceRow[] = [];
-  private linkedParent?: any;
   private keys: KeySet;
-  private pendingLinkedParent: any;
+  private pendingLinkedParent?: DataSourceVisualLinkCreatedMessage;
   private pendingOperations: any = new Map<string, AsyncOperation>();
   private pendingRangeRequest: any = null;
   private rowCountChanged = false;
@@ -123,6 +126,7 @@ export class Viewport {
   public clientViewportId: string;
   public disabled = false;
   public isTree = false;
+  public linkedParent?: LinkedParent;
   public serverViewportId?: string;
   public status: "" | "subscribed" = "";
   public suspended = false;
@@ -291,8 +295,8 @@ export class Viewport {
         colName,
         parentViewportId,
         parentColName,
-      };
-      this.pendingLinkedParent = null;
+      } as LinkedParent;
+      this.pendingLinkedParent = undefined;
       return {
         type: "CREATE_VISUAL_LINK_SUCCESS",
         clientViewportId,
@@ -385,7 +389,10 @@ export class Viewport {
         clientViewportId: this.clientViewportId,
       },
       this.pendingLinkedParent,
-    ] as [DataSourceVisualLinksMessage, any];
+    ] as [
+      DataSourceVisualLinksMessage,
+      DataSourceVisualLinkCreatedMessage | undefined
+    ];
   }
 
   setMenu(menu: VuuMenu) {
@@ -407,12 +414,12 @@ export class Viewport {
     parentColumnName: string
   ) {
     const message = {
-      type: Message.CREATE_VISUAL_LINK,
+      type: "CREATE_VISUAL_LINK",
       parentVpId,
       childVpId: this.serverViewportId,
       parentColumnName,
       childColumnName: colName,
-    } as CreateVisualLink;
+    } as ClientToServerCreateLink;
     this.awaitOperation(requestId, message);
     return message as ClientToServerCreateLink;
   }
@@ -421,7 +428,7 @@ export class Viewport {
     const message = {
       type: "REMOVE_VISUAL_LINK",
       childVpId: this.serverViewportId,
-    } as RemoveVisualLink;
+    } as ClientToServerRemoveLink;
     this.awaitOperation(requestId, message);
     return message as ClientToServerRemoveLink;
   }

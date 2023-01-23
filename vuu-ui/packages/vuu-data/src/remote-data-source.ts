@@ -14,6 +14,7 @@ import {
   DataSourceCallbackMessage,
   DataSourceFilter,
   DataSourceProps,
+  DataSourceVisualLinkCreatedMessage,
   SubscribeCallback,
   SubscribeProps,
 } from "./data-source";
@@ -35,7 +36,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
   private server: ServerAPI | null = null;
   private url: string;
-  private visualLink: string;
+  private visualLink?: DataSourceVisualLinkCreatedMessage;
   private status: string;
   private disabled: boolean;
   private suspended: boolean;
@@ -52,6 +53,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   #groupBy: VuuGroupBy = [];
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
+  #title: string | undefined;
 
   public rowCount: number | undefined;
   public table: VuuTable;
@@ -248,21 +250,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     return this;
   }
 
-  setSubscribedColumns(columns: string[]) {
-    if (this.viewport) {
-      this.columns = columns;
-
-      const message = {
-        viewport: this.viewport,
-        type: "setColumns",
-        columns,
-      } as const;
-      if (this.server) {
-        this.server.send(message);
-      }
-    }
-  }
-
   setRange(from: number, to: number) {
     if (this.viewport) {
       // log(`setRange ${from} - ${to}`);
@@ -350,7 +337,17 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   set columns(columns: string[]) {
-    console.log(`set columns ${columns.join(",")}`);
+    this.#columns = columns;
+    if (this.viewport) {
+      const message = {
+        viewport: this.viewport,
+        type: "setColumns",
+        columns,
+      } as const;
+      if (this.server) {
+        this.server.send(message);
+      }
+    }
   }
 
   get sort() {
@@ -417,6 +414,15 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
+  get title() {
+    return this.#title;
+  }
+
+  set title(title: string | undefined) {
+    this.#title = title;
+    console.log("send title to server");
+  }
+
   createLink({
     parentVpId,
     link: { fromColumn, toColumn },
@@ -449,9 +455,5 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         ...rpcRequest,
       } as VuuMenuRpcRequest);
     }
-  }
-
-  setTitle(title: string) {
-    console.log(`RemoteDataSource setTitle ${title}`);
   }
 }

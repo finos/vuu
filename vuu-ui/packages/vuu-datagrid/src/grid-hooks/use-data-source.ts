@@ -3,7 +3,7 @@ import {
   DataSourceRow,
   SubscribeCallback,
 } from "@finos/vuu-data";
-import { VuuDataRow, VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
+import { VuuDataRow, VuuRange, VuuSort } from "@finos/vuu-protocol-types";
 import {
   getFullRange,
   metadataKeys,
@@ -24,7 +24,7 @@ const byKey = (row1: VuuDataRow, row2: VuuDataRow) =>
 export type SubscriptionDetails = {
   columnNames?: string[];
   range: { from: number; to: number };
-  sort?: VuuSortCol[];
+  sort?: VuuSort;
 };
 
 //TODO allow subscription details to be set before subscribe call

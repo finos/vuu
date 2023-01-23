@@ -40,6 +40,7 @@ export interface ColumnDescriptor {
   aggregate?: VuuAggType;
   align?: "left" | "right";
   className?: string;
+  expression?: string;
   flex?: number;
   heading?: [...string[]];
   isSystemColumn?: boolean;

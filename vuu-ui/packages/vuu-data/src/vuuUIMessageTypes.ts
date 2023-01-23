@@ -11,7 +11,10 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { WithRequestId } from "./message-utils";
-import { DataSourceFilter } from "./data-source";
+import {
+  DataSourceFilter,
+  DataSourceVisualLinkCreatedMessage,
+} from "./data-source";
 
 export type ConnectionStatus =
   | "connecting"
@@ -42,7 +45,7 @@ export interface ServerProxySubscribeMessage {
   table: VuuTable;
   title?: string;
   viewport: string;
-  visualLink: any;
+  visualLink?: DataSourceVisualLinkCreatedMessage;
 }
 
 // export type VuuUIMessageInConnectionStatus = {

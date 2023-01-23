@@ -29,7 +29,6 @@ export const DataTable = ({
   ...props
 }: TableProps) => {
   const id = useIdMemo(idProp);
-  // const tableContainerRef = useRef<HTMLDivElement>(null);
   const {
     columns,
     dispatchColumnAction,

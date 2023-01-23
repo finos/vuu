@@ -9,6 +9,7 @@ import { useSuggestionProvider } from "./useSuggestionProvider";
 import {
   ConfigChangeMessage,
   DataSourceMenusMessage,
+  DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinksMessage,
   RemoteDataSource,
   TableSchema,
@@ -32,6 +33,7 @@ type BlotterConfig = {
   columns?: KeyedColumnDescriptor[];
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
+  "visual-link"?: DataSourceVisualLinkCreatedMessage;
 };
 export interface FilteredGridProps extends FeatureProps {
   schema: TableSchema;

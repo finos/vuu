@@ -8,25 +8,29 @@ import {
   followPathToParent,
   getProp,
   getProps,
-  typeOf
+  typeOf,
 } from "../utils";
 import { getIntrinsicSize } from "./flexUtils";
 import {
   getInsertTabBeforeAfter,
   insertBesideChild,
-  insertIntoContainer
+  insertIntoContainer,
 } from "./insert-layout-element";
 import {
   AddAction,
-  DragDropAction, LayoutActionType, LayoutReducerAction, MaximizeAction, SetTitleAction,
-  SwitchTabAction
+  DragDropAction,
+  LayoutActionType,
+  LayoutReducerAction,
+  MaximizeAction,
+  SetTitleAction,
+  SwitchTabAction,
 } from "./layoutTypes";
 import { LayoutProps } from "./layoutUtils";
 import { removeChild } from "./remove-layout-element";
 import {
   replaceChild,
   swapChild,
-  _replaceChild
+  _replaceChild,
 } from "./replace-layout-element";
 import { resizeFlexChildren } from "./resize-flex-children";
 import { wrap } from "./wrap-layout-element";
@@ -64,15 +68,16 @@ const switchTab = (state: ReactElement, { path, nextIdx }: SwitchTabAction) => {
     active: nextIdx,
   });
   return swapChild(state, target, replacement);
-}
+};
 
 const setTitle = (state: ReactElement, { path, title }: SetTitleAction) => {
+  debugger;
   const target = followPath(state, path, true);
   const replacement = React.cloneElement(target, {
     title,
   });
   return swapChild(state, target, replacement);
-}
+};
 
 const setChildProps = (state: ReactElement, { path, type }: MaximizeAction) => {
   if (path) {
@@ -81,13 +86,12 @@ const setChildProps = (state: ReactElement, { path, type }: MaximizeAction) => {
   } else {
     return state;
   }
-}
+};
 
 const dragDrop = (
   layoutRoot: ReactElement,
   action: DragDropAction
 ): ReactElement => {
-  console.log("drag drop");
   const {
     draggedReactElement: newComponent,
     dragInstructions,
@@ -137,14 +141,14 @@ const dragDrop = (
   if (dragInstructions.DoNotRemove) {
     return newLayoutRoot;
   }
-  
+
   const finalTarget = findTarget(
     newLayoutRoot,
     (props: LayoutProps) => props.id === id && props.version === version
   ) as ReactElement;
   const finalPath = getProp(finalTarget, "path");
   return removeChild(newLayoutRoot, { path: finalPath, type: "remove" });
-}
+};
 
 const addChild = (
   layoutRoot: ReactElement,
@@ -155,7 +159,7 @@ const addChild = (
     followPath(layoutRoot, containerPath) as ReactElement,
     component
   );
-}
+};
 
 const dropLayoutIntoContainer = (
   layoutRoot: ReactElement,
@@ -173,7 +177,7 @@ const dropLayoutIntoContainer = (
   if (existingComponentPath === "0.0") {
     return wrap(layoutRoot, existingComponent, newComponent, pos);
   }
-  
+
   const targetContainer = followPathToParent(
     layoutRoot,
     existingComponentPath
@@ -208,7 +212,7 @@ const dropLayoutIntoContainer = (
   }
 
   throw Error(`no support right now for position = ${pos.position}`);
-}
+};
 
 const withTheGrain = (pos: DropPos, container: ReactElement) => {
   if (pos.position.Centre) {
@@ -220,18 +224,18 @@ const withTheGrain = (pos: DropPos, container: ReactElement) => {
     : pos.position.EastOrWest
     ? isTerrace(container)
     : false;
-}
+};
 
 const isTower = (container: ReactElement) => {
   return (
     typeOf(container) === "Flexbox" &&
     container.props.style.flexDirection === "column"
   );
-}
+};
 
 const isTerrace = (container: ReactElement) => {
   return (
     typeOf(container) === "Flexbox" &&
     container.props.style.flexDirection !== "column"
   );
-}
+};

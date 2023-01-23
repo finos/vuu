@@ -12,7 +12,7 @@ import {
 } from "@finos/vuu-datagrid-types";
 import { VuuSortType } from "@finos/vuu-protocol-types";
 import { applySort, metadataKeys, roundDecimal } from "@finos/vuu-utils";
-import { RefObject, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   TableColumnResizeHandler,
   ValueFormatter,
@@ -83,7 +83,6 @@ export const useDataTable = ({
   headerHeight,
   onConfigChange,
   rowHeight,
-  tableContainerRef,
   ...measuredProps
 }: DataTableHookProps) => {
   const keys = useMemo(() => new KeySet({ from: 0, to: 0 }), []);
@@ -253,7 +252,6 @@ export const useDataTable = ({
   const { requestScroll, ...scrollProps } = useTableScroll({
     onRangeChange: setRangeVertical,
     rowHeight,
-    tableContainerRef,
     viewport: viewportMeasurements,
     viewportHeight:
       (containerMeasurements.innerSize?.height ?? 0) - headerHeight,
