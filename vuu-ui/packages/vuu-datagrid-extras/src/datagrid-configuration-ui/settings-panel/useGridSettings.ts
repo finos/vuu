@@ -6,11 +6,21 @@ import {
 import { Reducer, useReducer } from "react";
 import { moveItem } from "@heswell/salt-lab";
 
+export type CalculatedColumnExpression = {
+  columName: string;
+  expression: string;
+};
+
 export interface ColumnActionAdd {
   type: "addColumn";
   columns?: ColumnDescriptor[];
   column?: ColumnDescriptor;
   index?: number;
+}
+export interface ColumnActionAddCalculatedColumn {
+  columnName: string;
+  expression: string;
+  type: "addCalculatedColumn";
 }
 
 export interface ColumnActionMove {
@@ -54,6 +64,7 @@ export interface ColumnActionUpdateTypeFormatting {
 
 export type ColumnAction =
   | ColumnActionAdd
+  | ColumnActionAddCalculatedColumn
   | ColumnActionUpdateGridSettings
   | ColumnActionMove
   | ColumnActionRemove
@@ -68,6 +79,8 @@ const gridSettingsReducer: GridSettingsReducer = (state, action) => {
   switch (action.type) {
     case "addColumn":
       return addColumn(state, action);
+    case "addCalculatedColumn":
+      return addCalculatedColumn(state, action);
     case "moveColumn":
       return moveColumn(state, action);
     case "removeColumn":
@@ -110,6 +123,18 @@ function addColumn(
     }
   }
   return state;
+}
+
+function addCalculatedColumn(
+  state: GridConfig,
+  { columnName, expression }: ColumnActionAddCalculatedColumn
+) {
+  const { columns: stateColumns } = state;
+  const calculatedColumn = {
+    name: columnName,
+    expression,
+  };
+  return { ...state, columns: stateColumns.concat(calculatedColumn) };
 }
 
 function removeColumn(state: GridConfig, { column }: ColumnActionRemove) {

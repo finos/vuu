@@ -1,6 +1,6 @@
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { Panel } from "@heswell/salt-lab";
-import { Button, Text } from "@salt-ds/core";
+import { Button } from "@salt-ds/core";
 import cx from "classnames";
 import {
   HTMLAttributes,
@@ -16,6 +16,7 @@ import { useGridSettings } from "./useGridSettings";
 
 import "./DatagridSettingsPanel.css";
 import { Stack, StackProps } from "@finos/vuu-layout";
+import { CalculatedColumnPanel } from "../calculated-column-panel";
 
 export interface DatagridSettingsPanelProps
   extends HTMLAttributes<HTMLDivElement> {
@@ -91,6 +92,11 @@ export const DatagridSettingsPanel = ({
     orientation: "vertical",
   };
 
+  const handleAddCalculatedColumn = useCallback(
+    () => setSelectedTabIndex(3),
+    []
+  );
+
   const panelShift = selectedTabIndex === 2 ? "right" : undefined;
 
   return (
@@ -107,19 +113,15 @@ export const DatagridSettingsPanel = ({
         <GridSettingsPanel
           config={gridSettings}
           dispatchColumnAction={dispatchColumnAction}
-          title="Grid Settings"
         />
 
-        <div
-          className={`${classBase}-columnPanels`}
-          data-align={panelShift}
-          title="Choose Columns"
-        >
+        <div className={`${classBase}-columnPanels`} data-align={panelShift}>
           <ColumnPicker
             availableColumns={availableColumns}
             chosenColumns={gridSettings.columns}
             dispatchColumnAction={dispatchColumnAction}
             onSelectionChange={handleColumnSelected}
+            onAddCalculatedColumnClick={handleAddCalculatedColumn}
             selectedColumn={selectedColumn}
           />
           {selectedColumn === null ? (
@@ -133,9 +135,7 @@ export const DatagridSettingsPanel = ({
           )}
         </div>
         <div title="Column Settings">Column Settings</div>
-        <Panel title="Define Computed Column">
-          <Text styleAs="h4">Define Computed Column</Text>
-        </Panel>
+        <CalculatedColumnPanel dispatchColumnAction={dispatchColumnAction} />
       </Stack>
       <div className={`${classBase}-buttonBar`}>
         <Button onClick={onCancel}>Cancel</Button>

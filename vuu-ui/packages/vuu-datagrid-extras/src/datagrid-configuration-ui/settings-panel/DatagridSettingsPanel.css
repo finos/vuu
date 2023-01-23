@@ -101,7 +101,7 @@ flex: 0 0 50px;
 
 .vuuDatagridSettingsPanel-buttonBar {
     align-items: center;
-    background: var(--salt-container-secondary-background);
+    border-top: solid 1px var(--salt-separable-primary-borderColor);
     display: flex;
     flex: 0 0 40px;
     gap: var(--salt-size-unit);
