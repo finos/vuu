@@ -44,7 +44,6 @@ export async function build(config) {
     sourcemap,
     splitting,
     target,
-    watch: false,
   })
     .then((result) => {
       const [seconds, nanoSeconds] = process.hrtime(start);

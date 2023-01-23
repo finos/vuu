@@ -43,7 +43,7 @@
     "@heswell/component-anatomy": "0.0.5",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "chalk": "^5.2.0",
-    "esbuild": "0.15.15",
+    "esbuild": "0.17.4",
     "esbuild-visualizer": "^0.3.1",
     "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
