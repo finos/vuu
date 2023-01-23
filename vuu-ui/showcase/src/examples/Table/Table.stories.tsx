@@ -1,7 +1,7 @@
 import { DataSourceRow } from "@finos/vuu-data";
 import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
-import { GridConfig } from "@finos/vuu-datagrid-types";
-import { Column, DataTable } from "@finos/vuu-datatable";
+import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
+import { DataTable } from "@finos/vuu-datatable";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import { itemsChanged } from "@finos/vuu-utils";
@@ -30,7 +30,7 @@ import { useSuggestionProvider } from "../Filters/useSuggestionProvider";
 
 let displaySequence = 1;
 
-const columns: Column[] = [
+const columns: ColumnDescriptor[] = [
   { name: "row number", width: 150 },
   { name: "column 1", width: 120 },
   { name: "column 2", width: 120 },
@@ -46,7 +46,7 @@ const columns: Column[] = [
 
 const pinnedColumns = columns.map((col, i) => ({
   ...col,
-  pin: i < 2 ? ("left" as const) : undefined,
+  pin: i === 0 || i === 3 ? ("left" as const) : undefined,
 }));
 
 const defaultConfig = { columns };
@@ -64,14 +64,9 @@ const pinnedConfig = { columns: pinnedColumns };
 export const DefaultTable = () => {
   return (
     <>
-      <DragVisualizer orientation="horizontal">
-        <DataTable
-          config={defaultConfig}
-          data={data}
-          height={700}
-          width={700}
-        />
-      </DragVisualizer>
+      {/* <DragVisualizer orientation="horizontal"> */}
+      <DataTable config={defaultConfig} data={data} height={700} width={700} />
+      {/* </DragVisualizer> */}
     </>
   );
 };

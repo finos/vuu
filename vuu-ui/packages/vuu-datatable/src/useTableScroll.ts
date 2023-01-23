@@ -1,5 +1,27 @@
-import { RefObject, useCallback, useLayoutEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import { Viewport } from "./dataTableTypes";
+
+export interface ScrollRequestEnd {
+  type: "scroll-end";
+  direction: "home" | "end";
+}
+
+export interface ScrollRequestPage {
+  type: "scroll-page";
+  direction: "up" | "down";
+}
+
+export interface ScrollRequestDistance {
+  type: "scroll-distance";
+  distance: number;
+}
+
+export type ScrollRequest =
+  | ScrollRequestPage
+  | ScrollRequestDistance
+  | ScrollRequestEnd;
+
+export type ScrollRequestHandler = (request: ScrollRequest) => void;
 
 const getPctScroll = (container: HTMLElement) => {
   const { scrollLeft, scrollTop } = container;
@@ -16,24 +38,22 @@ const getMaxScroll = (container: HTMLElement) => {
 
 export interface TableScrollHookProps {
   onRangeChange: (from: number, to: number) => void;
-  rootRef: RefObject<HTMLDivElement>;
   rowHeight: number;
-  scrollContainerRef: RefObject<HTMLDivElement>;
-  tableContainerRef: RefObject<HTMLDivElement>;
   viewportHeight: number;
   viewport: Viewport;
 }
 
 export const useTableScroll = ({
   onRangeChange,
-  rootRef,
   rowHeight,
-  scrollContainerRef,
-  tableContainerRef,
   viewport,
 }: TableScrollHookProps) => {
+  const scrollbarContainerRef = useRef<HTMLDivElement>(null);
+  const contentContainerRef = useRef<HTMLDivElement>(null);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  const contentContainerScrolledRef = useRef(false);
   const firstRowRef = useRef<number>(-1);
-  const rootScrolledRef = useRef(false);
   const {
     rowCount: viewportRowCount,
     maxScrollContainerScrollHorizontal: maxScrollLeft,
@@ -44,55 +64,123 @@ export const useTableScroll = ({
     (scrollLeft, scrollTop) => {
       const { current: tableContainer } = tableContainerRef;
       if (tableContainer) {
-        const firstRow = Math.floor(scrollTop / rowHeight);
-        if (firstRow !== firstRowRef.current) {
-          firstRowRef.current = firstRow;
-          onRangeChange(firstRow, firstRow + viewportRowCount);
-        }
         tableContainer.scrollLeft = scrollLeft;
         tableContainer.scrollTop = scrollTop;
       }
     },
-    [onRangeChange, rowHeight, tableContainerRef, viewportRowCount]
+    [tableContainerRef]
   );
 
-  const handleRootScroll = useCallback(() => {
-    const { current: rootContainer } = rootRef;
-    const { current: scrollContainer } = scrollContainerRef;
+  const handleTableContainerScroll = useCallback(() => {
+    const { current: tableContainer } = tableContainerRef;
+    if (tableContainer) {
+      const { scrollTop } = tableContainer;
+      // console.log(
+      //   `%cTable COntainer Scrolled to ${scrollTop}`,
+      //   "color:red;font-weight: bold;"
+      // );
+      const firstRow = Math.floor(scrollTop / rowHeight);
+      if (firstRow !== firstRowRef.current) {
+        firstRowRef.current = firstRow;
+        // console.log(
+        //   `scrollTable  onRangeChange ${firstRow} - ${
+        //     firstRow + viewportRowCount
+        //   }`
+        // );
+        onRangeChange(firstRow, firstRow + viewportRowCount);
+      }
+    }
+  }, [onRangeChange, rowHeight, viewportRowCount]);
+
+  const handleContentContainerScroll = useCallback(() => {
+    // console.log("%chandleContentContainerScroll", "color: blue");
+    const { current: rootContainer } = contentContainerRef;
+    const { current: scrollContainer } = scrollbarContainerRef;
     if (rootContainer && scrollContainer) {
       const [pctScrollLeft, pctScrollTop, scrollLeft, scrollTop] =
         getPctScroll(rootContainer);
-      rootScrolledRef.current = true;
+      contentContainerScrolledRef.current = true;
       scrollContainer.scrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
       scrollContainer.scrollTop = Math.round(pctScrollTop * maxScrollTop);
       scrollTable(scrollLeft, scrollTop);
     }
-  }, [maxScrollLeft, maxScrollTop, rootRef, scrollContainerRef, scrollTable]);
+  }, [
+    maxScrollLeft,
+    maxScrollTop,
+    contentContainerRef,
+    scrollbarContainerRef,
+    scrollTable,
+  ]);
 
-  const handleScrollbarScroll = useCallback(() => {
-    const { current: rootContainer } = rootRef;
-    const { current: scrollContainer } = scrollContainerRef;
-    const { current: rootScrolled } = rootScrolledRef;
-    if (rootScrolled) {
-      rootScrolledRef.current = false;
-    } else if (rootContainer && scrollContainer) {
-      const [pctScrollLeft, pctScrollTop] = getPctScroll(scrollContainer);
-      const [maxScrollLeft, maxScrollTop] = getMaxScroll(rootContainer);
+  const handleScrollbarContainerScroll = useCallback(() => {
+    const { current: contentContainer } = contentContainerRef;
+    const { current: scrollbarContainer } = scrollbarContainerRef;
+    const { current: contentContainerScrolled } = contentContainerScrolledRef;
+    // console.log(
+    //   `%chandleScrollbarContainerScroll, rootScrolled ? ${contentContainerScrolled}`,
+    //   "color: green"
+    // );
+    if (contentContainerScrolled) {
+      contentContainerScrolledRef.current = false;
+    } else if (contentContainer && scrollbarContainer) {
+      const [pctScrollLeft, pctScrollTop] = getPctScroll(scrollbarContainer);
+      const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
       const rootScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
       const rootScrollTop = Math.round(pctScrollTop * maxScrollTop);
-      rootContainer.scrollLeft = rootScrollLeft;
-      rootContainer.scrollTop = rootScrollTop;
+      contentContainer.scrollLeft = rootScrollLeft;
+      // console.log(
+      //   `%cset contentCOntainer scrolltop = ${rootScrollTop}`,
+      //   "color: green"
+      // );
+      contentContainer.scrollTop = rootScrollTop;
       scrollTable(rootScrollLeft, rootScrollTop);
     }
-  }, [rootRef, scrollContainerRef, scrollTable]);
+  }, [contentContainerRef, scrollbarContainerRef, scrollTable]);
+
+  const requestScroll: ScrollRequestHandler = useCallback(
+    (scrollRequest) => {
+      const { current: scrollbarContainer } = scrollbarContainerRef;
+      if (scrollbarContainer) {
+        contentContainerScrolledRef.current = false;
+        if (scrollRequest.type === "scroll-page") {
+          const { clientHeight, scrollTop } = scrollbarContainer;
+          const { direction } = scrollRequest;
+          const scrollBy = direction === "down" ? clientHeight : -clientHeight;
+          // console.log(
+          //   `page ${direction} (by ${scrollBy}), current scrollTop ${scrollTop}
+          //    set scrollbar container scrollTop to ${Math.min(
+          //      Math.max(0, scrollTop + scrollBy),
+          //      viewport.maxScrollContainerScrollVertical
+          //    )}`
+          // );
+          scrollbarContainer.scrollTop = Math.min(
+            Math.max(0, scrollTop + scrollBy),
+            viewport.maxScrollContainerScrollVertical
+          );
+        } else if (scrollRequest.type === "scroll-end") {
+          const { direction } = scrollRequest;
+          const scrollTo =
+            direction === "end" ? viewport.maxScrollContainerScrollVertical : 0;
+          scrollbarContainer.scrollTop = scrollTo;
+        }
+      }
+    },
+    [viewport.maxScrollContainerScrollVertical]
+  );
 
   // TODO this is going to scroll to top in situations where this won't be right
+  // Set the initial viewport range
   useLayoutEffect(() => {
-    scrollTable(0, 0);
-  }, [scrollTable]);
+    handleTableContainerScroll();
+  }, [handleTableContainerScroll]);
 
   return {
-    handleScrollbarScroll,
-    handleRootScroll,
+    onScrollbarContainerScroll: handleScrollbarContainerScroll,
+    onContentContainerScroll: handleContentContainerScroll,
+    onTableContainerScroll: handleTableContainerScroll,
+    requestScroll,
+    contentContainerRef,
+    scrollbarContainerRef,
+    tableContainerRef,
   };
 };

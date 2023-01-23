@@ -7,7 +7,7 @@ import {
   VuuColumns,
   VuuFilter,
   VuuGroupBy,
-  VuuLink,
+  VuuLinkDescriptor,
   VuuMenu,
   VuuMenuRpcRequest,
   VuuRange,
@@ -16,7 +16,7 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
-import { LinkWithLabel } from "./server-proxy/server-proxy";
+import { LinkDescriptorWithLabel } from "./server-proxy/server-proxy";
 
 type RowIndex = number;
 type RenderKey = number;
@@ -127,7 +127,7 @@ export interface DataSourceVisualLinkRemovedMessage
 export interface DataSourceVisualLinksMessage
   extends MessageWithClientViewportId {
   type: "VP_VISUAL_LINKS_RESP";
-  links: VuuLink[];
+  links: VuuLinkDescriptor[];
 }
 
 export type DataSourceCallbackMessage =
@@ -221,7 +221,7 @@ export interface DataSource extends IEventEmitter {
   createLink: ({
     parentVpId,
     link: { fromColumn, toColumn },
-  }: LinkWithLabel) => void;
+  }: LinkDescriptorWithLabel) => void;
   filter: DataSourceFilter;
   groupBy: VuuGroupBy;
   menuRpcCall: (
@@ -235,6 +235,7 @@ export interface DataSource extends IEventEmitter {
   setSubscribedColumns: (columns: string[]) => void;
   /** Set the title associated with this viewport in UI. This can be used as a link target */
   setTitle?: (title: string) => void;
+  size: number;
   sort: VuuSort;
   subscribe: (
     props: SubscribeProps,

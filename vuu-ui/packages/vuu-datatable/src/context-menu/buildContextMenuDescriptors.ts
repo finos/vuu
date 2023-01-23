@@ -1,8 +1,9 @@
 import { DataSource } from "@finos/vuu-data";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { KeyedColumnDescriptor, PinLocation } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { ContextMenuItemDescriptor, MenuBuilder } from "@finos/vuu-popups";
 import { isNumericColumn } from "@finos/vuu-utils";
+import { MenuDescriptor } from "@heswell/salt-lab";
 
 export type ContextMenuLocation = "header" | "filter" | "grid";
 
@@ -26,11 +27,9 @@ export const buildContextMenuDescriptors =
       descriptors.push(
         ...buildAggregationMenuItems(options as MaybeColumn, dataSource)
       );
-      descriptors.push({
-        label: "Hide Column",
-        action: "column-hide",
-        options,
-      });
+      descriptors.push(
+        ...buildColumnDisplayMenuItems(options as MaybeColumn, dataSource)
+      );
     } else if (location === "filter") {
       const { column, filter } = options as MaybeFilter & MaybeColumn;
       const colIsOnlyFilter = filter?.column === column?.name;
@@ -175,6 +174,70 @@ function buildAggregationMenuItems(
       ),
     },
   ];
+}
+
+const pinColumn = (options: unknown, pinLocation: PinLocation) =>
+  ({
+    label: `Pin ${pinLocation}`,
+    action: `column-pin-${pinLocation}`,
+    options,
+  } as ContextMenuItemDescriptor);
+
+const pinLeft = (options: unknown) => pinColumn(options, "left");
+const pinFloating = (options: unknown) => pinColumn(options, "floating");
+const pinRight = (options: unknown) => pinColumn(options, "right");
+
+function buildColumnDisplayMenuItems(
+  options: MaybeColumn,
+  // TODO make columns a prop on datasource
+  dataSource: DataSource
+): ContextMenuItemDescriptor[] {
+  const { column } = options;
+  if (column === undefined) {
+    return [];
+  }
+  const { name, label = name, pin } = column;
+
+  const menuItems: ContextMenuItemDescriptor[] = [
+    {
+      label: `Hide column`,
+      action: "column-hide",
+      options,
+    },
+  ];
+
+  if (pin === undefined) {
+    menuItems.push({
+      label: `Pin column`,
+      children: [pinLeft(options), pinFloating(options), pinRight(options)],
+    });
+  } else if (pin === "left") {
+    menuItems.push(
+      { label: "Unpin column", action: "column-unpin", options },
+      {
+        label: `Pin column`,
+        children: [pinFloating(options), pinRight(options)],
+      }
+    );
+  } else if (pin === "right") {
+    menuItems.push(
+      { label: "Unpin column", action: "column-unpin", options },
+      {
+        label: `Pin column`,
+        children: [pinLeft(options), pinFloating(options)],
+      }
+    );
+  } else if (pin === "floating") {
+    menuItems.push(
+      { label: "Unpin column", action: "column-unpin", options },
+      {
+        label: `Pin column`,
+        children: [pinLeft(options), pinRight(options)],
+      }
+    );
+  }
+
+  return menuItems;
 }
 
 function buildGroupMenuItems(

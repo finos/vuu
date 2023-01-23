@@ -1,18 +1,16 @@
 
 .vuuDataTable {
   background-color: var(--salt-container-primary-background, inherit);
-  height: var(--table-height);
   position: relative;
-  width: var(--table-width);
 }
-.vuuDataTable-content {
+.vuuDataTable-contentContainer {
   
   --table-background: var(--salt-container-primary-background, inherit);
 
   --vuuTable-contentHeight: var(--content-height, 'auto');
   --vuuTable-contentWidth: var(--content-width, 'auto');
   --vuuTableHeaderHeight: var(--header-height, 30px);
-  --vuuTable-width: calc(var(--table-height) - var(--scrollbar-size));
+  --vuuTable-height: calc(var(--table-height) - var(--scrollbar-size));
   --vuuTable-pinnedWidthLeft: var(--pinned-width-left, 0pxs);
   --vuuTable-scrollbarSize: var(--scrollbar-size, 15px);
   --vuuTable-width: calc(var(--table-width) - var(--scrollbar-size));
@@ -26,17 +24,18 @@
   width: var(--vuuTable-width);
 }
 
-.vuuDataTable-content::-webkit-scrollbar {
+.vuuDataTable-contentContainer::-webkit-scrollbar {
   display: none;
 }
 
-.vuuDataTable-scrollContainer {
+.vuuDataTable-scrollbarContainer {
+  --scroll-content-width: calc(var(--content-width) - var(--pinned-width-left));
   border-left: solid 1px var(--salt-container-primary-borderColor);
   border-top: solid 1px var(--salt-container-primary-borderColor);
   overflow: auto;
   position: absolute;
-  height: calc(var(--table-pixel-height) - var(--header-height) + 1px);
-  width: calc(var(--table-pixel-width) - var(--pinned-width-left) + 1px);
+  height: calc(var(--table-height) - var(--header-height) + 1px);
+  width: calc(var(--table-width) - var(--pinned-width-left) + 1px);
 }
 
 .vuuDataTable-scrollContainerHeader {
@@ -60,18 +59,18 @@
 .vuuDataTable-scrollContent {
   position: absolute;
   height: var(--content-height);
-  width: var(--content-width);
+  width: var(--scroll-content-width, var(--content-width));
 }
 
 .vuuDataTable-tableContainer {
   background-color: var(--table-background);
   border-bottom: solid 1px var(--salt-container-primary-borderColor);
-  height: calc(var(--table-pixel-height) - var(--scrollbar-size));
+  height: calc(var(--table-height) - var(--scrollbar-size));
   left: 0px;
   overflow: hidden;
   position: sticky;
   top: 0px;
-  width: calc(var(--table-pixel-width) - var(--scrollbar-size));
+  width: calc(var(--table-width) - var(--scrollbar-size));
   white-space: nowrap;
 
 }
@@ -127,7 +126,6 @@
 
 .vuuPinLeft {
   position: sticky;
-  left: 0;
 }
 
 .vuuAlignRight {

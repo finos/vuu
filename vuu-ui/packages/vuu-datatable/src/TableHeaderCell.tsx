@@ -60,6 +60,7 @@ export const TableHeaderCell = ({
 
   const className = cx(classBase, classNameProp, {
     vuuPinLeft: column.pin === "left",
+    vuuEndPin: column.endPin,
     [`${classBase}-resizing`]: column.resizing,
     [`${classBase}-right`]: column.align === "right",
   });

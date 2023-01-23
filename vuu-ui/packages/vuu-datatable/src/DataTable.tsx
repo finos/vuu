@@ -1,21 +1,16 @@
-import { Button } from "@salt-ds/core";
+import { ContextMenuProvider } from "@finos/vuu-popups";
+import { Button, useIdMemo } from "@salt-ds/core";
 import { CSSProperties, useCallback, useRef } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
+import { buildContextMenuDescriptors, useContextMenu } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
 import { RowBasedTable } from "./RowBasedTable";
-import { useDraggableColumn } from "./useDraggableColumn";
-import { isFullSize, isMeasured, useMeasuredSize } from "./useMeasuredSize";
 import { useDataTable } from "./useDataTable";
-import { useTableScroll } from "./useTableScroll";
-import { useTableViewport } from "./useTableViewport";
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { buildContextMenuDescriptors, useContextMenu } from "./context-menu";
+import { useDraggableColumn } from "./useDraggableColumn";
 
 import "./DataTable.css";
 
 const classBase = "vuuDataTable";
-
-const styleHidden: CSSProperties = { display: "none" };
 
 export const DataTable = ({
   config,
@@ -23,6 +18,7 @@ export const DataTable = ({
   dataSource,
   headerHeight = 25,
   height,
+  id: idProp,
   onConfigChange,
   onShowConfigEditor: onShowSettings,
   rowHeight = 20,
@@ -32,33 +28,28 @@ export const DataTable = ({
   width,
   ...props
 }: TableProps) => {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const scrollableRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const id = useIdMemo(idProp);
+  // const tableContainerRef = useRef<HTMLDivElement>(null);
   const {
     columns,
     dispatchColumnAction,
+    containerMeasurements: { containerRef, innerSize, outerSize },
+    containerProps,
     setRangeVertical,
     rowCount,
+    scrollProps,
     valueFormatters,
+    viewportMeasurements,
     ...tableProps
   } = useDataTable({
     config,
     data: dataProp,
     dataSource,
-    onConfigChange,
-  });
-
-  const size = useMeasuredSize(rootRef, height, width);
-
-  const { measurements, viewport } = useTableViewport({
-    columns,
     headerHeight,
-    rootRef: scrollableRef,
-    rowCount,
+    height,
+    onConfigChange,
     rowHeight,
-    size,
+    width,
   });
 
   const handleContextMenuAction = useContextMenu({
@@ -74,16 +65,6 @@ export const DataTable = ({
     [columns, dispatchColumnAction]
   );
 
-  const { handleRootScroll, handleScrollbarScroll } = useTableScroll({
-    onRangeChange: setRangeVertical,
-    rootRef: scrollableRef,
-    rowHeight,
-    scrollContainerRef,
-    tableContainerRef,
-    viewport,
-    viewportHeight: size.pixelHeight - headerHeight,
-  });
-
   const {
     draggable,
     draggedItemIndex,
@@ -91,51 +72,30 @@ export const DataTable = ({
     handleHeaderCellDragStart,
   } = useDraggableColumn({
     onDrop: handleDropColumn,
-    tableContainerRef,
+    tableContainerRef: scrollProps.tableContainerRef,
     tableLayout: tableLayoutProp,
   });
 
-  if (isFullSize(size) && !isMeasured(size)) {
-    return (
-      <div
-        className={`${classBase}-root`}
-        ref={rootRef}
-        style={
-          {
-            "--table-height": `100%`,
-            "--table-width": `100%`,
-          } as CSSProperties
-        }
-        {...props}
-      />
-    );
-  }
-
   const style = {
-    ...styleProp,
-    "--content-height": `${measurements.scrollContentHeight}px`,
-    "--content-width": `${viewport.scrollContentWidth}px`,
-    "--filler-height": `${viewport.fillerHeight}px`,
-    "--pinned-width-left": `${viewport.pinnedWidthLeft}px`,
+    ...outerSize,
+    "--content-height": `${viewportMeasurements.scrollContentHeight}px`,
+    "--content-width": `${viewportMeasurements.scrollContentWidth}px`,
+    "--filler-height": `${viewportMeasurements.fillerHeight}px`,
+    "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--header-height": `${headerHeight}px`,
     "--row-height": `${rowHeight}px`,
-    "--scrollbar-size": `${measurements.scrollbarSize}px`,
-    "--table-pixel-height": `${size.pixelHeight}px`,
-    "--table-pixel-width": `${size.pixelWidth}px`,
-    "--table-height": isFullSize(size) ? size.height : `${size.pixelHeight}px`,
-    "--table-width": isFullSize(size) ? size.width : `${size.pixelWidth}px`,
+    "--scrollbar-size": `${viewportMeasurements.scrollbarSize}px`,
+    "--table-height": `${innerSize?.height}px`,
+    "--table-width": `${innerSize?.width}px`,
   } as CSSProperties;
 
-  const scrollContainerStyle: CSSProperties =
-    measurements.left === -1 && measurements.top === -1
-      ? styleHidden
-      : {
-          left: viewport.pinnedWidthLeft - 1,
-          // The -1 is to align the top border, might cause innaccuracy
-          // It is compensated by a hardcoded adjustment in css
-          // top: measurements.top - 1 + headerHeight,
-          top: headerHeight - 1,
-        };
+  const scrollbarContainerStyle: CSSProperties = {
+    left: viewportMeasurements.pinnedWidthLeft - 1,
+    // The -1 is to align the top border, might cause innaccuracy
+    // It is compensated by a hardcoded adjustment in css
+    // top: measurements.top - 1 + headerHeight,
+    top: headerHeight - 1,
+  };
 
   const Table = tableLayout === "column" ? ColumnBasedTable : RowBasedTable;
 
@@ -144,40 +104,52 @@ export const DataTable = ({
       menuActionHandler={handleContextMenuAction}
       menuBuilder={buildContextMenuDescriptors(dataSource)}
     >
-      <div className={classBase} ref={rootRef} style={style}>
-        <div
-          className={`${classBase}-scrollContainer`}
-          onScroll={handleScrollbarScroll}
-          ref={scrollContainerRef}
-          style={scrollContainerStyle}
-        >
-          <div className={`${classBase}-scrollContent`} />
-        </div>
-        <div
-          className={`${classBase}-content`}
-          onScroll={handleRootScroll}
-          ref={scrollableRef}
-          {...props}
-        >
-          <div className={`${classBase}-scrollContent`} />
+      <div
+        {...containerProps}
+        className={classBase}
+        id={id}
+        ref={containerRef}
+        style={style}
+        tabIndex={-1}
+      >
+        {innerSize ? (
           <div
-            className={`${classBase}-tableContainer`}
-            ref={tableContainerRef}
+            className={`${classBase}-scrollbarContainer`}
+            onScroll={scrollProps.onScrollbarContainerScroll}
+            ref={scrollProps.scrollbarContainerRef}
+            style={scrollbarContainerStyle}
           >
-            <Table
-              {...tableProps}
-              columns={columns.filter((col, i) => i !== draggedItemIndex)}
-              headerHeight={headerHeight}
-              onHeaderCellDragStart={
-                tableLayout === "row" ? handleHeaderCellDragStart : undefined
-              }
-              rowHeight={rowHeight}
-              valueFormatters={valueFormatters}
-            />
+            <div className={`${classBase}-scrollContent`} />
           </div>
-          {draggable}
-        </div>
-        {showSettings ? (
+        ) : null}
+        {innerSize ? (
+          <div
+            className={`${classBase}-contentContainer`}
+            onScroll={scrollProps.onContentContainerScroll}
+            ref={scrollProps.contentContainerRef}
+            {...props}
+          >
+            <div className={`${classBase}-scrollContent`} />
+            <div
+              className={`${classBase}-tableContainer`}
+              onScroll={scrollProps.onTableContainerScroll}
+              ref={scrollProps.tableContainerRef}
+            >
+              <Table
+                {...tableProps}
+                columns={columns.filter((col, i) => i !== draggedItemIndex)}
+                headerHeight={headerHeight}
+                onHeaderCellDragStart={
+                  tableLayout === "row" ? handleHeaderCellDragStart : undefined
+                }
+                rowHeight={rowHeight}
+                valueFormatters={valueFormatters}
+              />
+            </div>
+            {draggable}
+          </div>
+        ) : null}
+        {showSettings && innerSize ? (
           <Button
             className={`${classBase}-settings`}
             data-icon="settings"

@@ -2,12 +2,15 @@ import {
   ColumnDescriptor,
   GridConfig,
   KeyedColumnDescriptor,
+  PinLocation,
 } from "@finos/vuu-datagrid-types";
 import { moveItem } from "@heswell/salt-lab";
 import {
   extractGroupColumn,
   flattenColumnGroup,
+  isPinned,
   metadataKeys,
+  sortPinnedColumns,
 } from "@finos/vuu-utils";
 
 // TOSO eliminate this dependency
@@ -81,11 +84,12 @@ export interface ColumnActionUpdate {
   column: ColumnDescriptor;
 }
 export interface ColumnActionUpdateProp {
-  type: "updateColumnProp";
-  column: KeyedColumnDescriptor;
   align?: ColumnDescriptor["align"];
+  column: KeyedColumnDescriptor;
   label?: ColumnDescriptor["label"];
+  pin?: PinLocation;
   resizing?: KeyedColumnDescriptor["resizing"];
+  type: "updateColumnProp";
   width?: ColumnDescriptor["width"];
 }
 
@@ -141,13 +145,17 @@ export const useTableModel = (config: GridConfig) => {
 };
 
 function init(config: GridConfig): GridModel {
-  console.log(`init, columns`, {
-    columns: config.columns,
-  });
-
-  return {
-    columns: config.columns.map(toKeyedColumWithDefaults),
-  };
+  //TODO needs to accommodate grouping
+  const columns = config.columns.map(toKeyedColumWithDefaults);
+  if (columns.some(isPinned)) {
+    return {
+      columns: sortPinnedColumns(columns),
+    };
+  } else {
+    return {
+      columns: config.columns.map(toKeyedColumWithDefaults),
+    };
+  }
 }
 
 const toKeyedColumWithDefaults = (
@@ -240,11 +248,9 @@ function setTypes(
   }
 }
 
-function updateColumnProp(
-  state: GridModel,
-  { align, column, label, resizing, width }: ColumnActionUpdateProp
-) {
+function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
   let { columns } = state;
+  const { align, column, label, pin, resizing, width } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
   if (targetColumn) {
     if (align === "left" || align === "right") {
@@ -258,6 +264,10 @@ function updateColumnProp(
     }
     if (typeof width === "number") {
       columns = replaceColumn(columns, { ...targetColumn, width });
+    }
+    if ("pin" in action) {
+      columns = replaceColumn(columns, { ...targetColumn, pin });
+      columns = sortPinnedColumns(columns);
     }
   }
   return {

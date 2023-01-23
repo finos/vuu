@@ -1,4 +1,5 @@
 import {
+  LinkDescriptorWithLabel,
   VuuGroupBy,
   VuuAggregation,
   VuuRange,
@@ -18,7 +19,6 @@ import {
 } from "./data-source";
 import { getServerUrl } from "./hooks/useServerConnection";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
-import { LinkWithLabel } from "./server-proxy/server-proxy";
 
 // const log = (message: string, ...rest: unknown[]) => {
 //   console.log(
@@ -47,11 +47,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   private pendingServer: any;
   private clientCallback: any;
 
+  #columns: string[];
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
+  #size = 0;
   #sort: VuuSort = { sortDefs: [] };
 
-  public columns: string[];
   public rowCount: number | undefined;
   public table: VuuTable;
   public viewport: string | undefined;
@@ -72,7 +73,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     super();
     this.bufferSize = bufferSize;
     this.table = table;
-    this.columns = columns;
+    this.#columns = columns;
     this.viewport = viewport;
 
     this.url = serverUrl ?? configUrl ?? getServerUrl();
@@ -108,7 +109,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     {
       viewport = this.viewport ?? uuid(),
       table = this.table,
-      columns = this.columns || [],
+      columns = this.#columns || [],
       aggregations = this.initialAggregations,
       range = this.initialRange,
       sort = this.initialSort,
@@ -145,7 +146,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.status = "subscribing";
     this.viewport = viewport;
     this.table = table;
-    this.columns = columns;
+    this.#columns = columns;
 
     this.server = await this.pendingServer;
 
@@ -182,9 +183,11 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       if (
         message.type === "viewport-update" &&
         message.size !== undefined &&
-        message.size !== this.rowCount
+        message.size !== this.#size
       ) {
+        // deprecated
         this.rowCount = message.size;
+        this.#size = message.size;
       }
       this.clientCallback(message);
     }
@@ -338,6 +341,18 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
+  get size() {
+    return this.#size;
+  }
+
+  get columns() {
+    return this.#columns;
+  }
+
+  set columns(columns: string[]) {
+    console.log(`set columns ${columns.join(",")}`);
+  }
+
   get sort() {
     return this.#sort;
   }
@@ -402,7 +417,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  createLink({ parentVpId, link: { fromColumn, toColumn } }: LinkWithLabel) {
+  createLink({
+    parentVpId,
+    link: { fromColumn, toColumn },
+  }: LinkDescriptorWithLabel) {
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,

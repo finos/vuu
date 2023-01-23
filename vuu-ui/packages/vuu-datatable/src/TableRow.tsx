@@ -45,7 +45,7 @@ export const TableRow = memo(function Row({
 
   return (
     <tr
-      data-idx={index}
+      data-idx={rowIndex}
       className={className}
       style={{
         transform: `translate3d(0px, ${offset * height}px, 0px)`,

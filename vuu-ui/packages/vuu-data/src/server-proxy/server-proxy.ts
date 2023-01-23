@@ -6,10 +6,11 @@ import {
   ServerToClientMessage,
   ClientToServerMessage,
   VuuColumnDataType,
-  VuuLink,
+  VuuLinkDescriptor,
   VuuTable,
   VuuRpcRequest,
   VuuMenuRpcRequest,
+  LinkDescriptorWithLabel,
 } from "@finos/vuu-protocol-types";
 import {
   isViewporttMessage as isViewportMessage,
@@ -43,10 +44,6 @@ export type PostMessageToClientCallback = (
   message: VuuUIMessageIn | DataSourceCallbackMessage
 ) => void;
 
-export type LinkWithLabel = VuuLink & {
-  label?: string;
-};
-
 export type MessageOptions = {
   module?: string;
 };
@@ -62,19 +59,19 @@ const EMPTY_ARRAY: unknown[] = [];
 const DEFAULT_OPTIONS: MessageOptions = {};
 
 function addLabelsToLinks(
-  links: VuuLink[],
+  links: VuuLinkDescriptor[],
   viewports: Map<string, Viewport>
-): LinkWithLabel[] {
-  return links.map<LinkWithLabel>((link) => {
-    const { parentVpId } = link;
+): LinkDescriptorWithLabel[] {
+  return links.map<LinkDescriptorWithLabel>((linkDescriptor) => {
+    const { parentVpId } = linkDescriptor;
     const viewport = viewports.get(parentVpId);
     if (viewport && viewport.title) {
       return {
-        ...link,
+        ...linkDescriptor,
         label: viewport.title,
       };
     } else {
-      return link;
+      return linkDescriptor;
     }
   });
 }
@@ -702,10 +699,17 @@ export class ServerProxy {
 
       case Message.VP_VISUAL_LINKS_RESP:
         {
-          const links = this.getActiveLinks(body.links);
+          const activeLinkDescriptors = this.getActiveLinks(body.links);
           const viewport = this.viewports.get(body.vpId);
-          if (links.length && viewport) {
-            const linksWithLabels = addLabelsToLinks(links, this.viewports);
+          console.log({
+            links: activeLinkDescriptors,
+            for: viewport?.table.table,
+          });
+          if (activeLinkDescriptors.length && viewport) {
+            const linksWithLabels = addLabelsToLinks(
+              activeLinkDescriptors,
+              this.viewports
+            );
             const [clientMessage, pendingLink] =
               viewport.setLinks(linksWithLabels);
             this.postMessageToClient(clientMessage);
@@ -801,9 +805,9 @@ export class ServerProxy {
   }
 
   // Eliminate links to suspended viewports
-  getActiveLinks(links: VuuLink[]) {
-    return links.filter((link) => {
-      const viewport = this.viewports.get(link.parentVpId);
+  getActiveLinks(linkDescriptors: VuuLinkDescriptor[]) {
+    return linkDescriptors.filter((linkDescriptor) => {
+      const viewport = this.viewports.get(linkDescriptor.parentVpId);
       return viewport && !viewport.suspended;
     });
   }

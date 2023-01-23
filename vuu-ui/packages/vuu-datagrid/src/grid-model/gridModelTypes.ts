@@ -1,6 +1,6 @@
 import { DataSource } from "@finos/vuu-data";
 import { MutableRefObject } from "react";
-import { VuuAggregation, VuuLink } from "@finos/vuu-protocol-types";
+import { VuuAggregation, VuuLinkDescriptor } from "@finos/vuu-protocol-types";
 import { AdornmentsDescriptor } from "../grid-adornments";
 import { GridModelDispatch } from "../grid-context";
 import { GridProps } from "../gridTypes";
@@ -81,7 +81,7 @@ export interface GridModelType
   totalHeaderHeight: number;
   viewportHeight: number;
   viewportRowCount: number;
-  visualLinks?: VuuLink[];
+  visualLinks?: VuuLinkDescriptor[];
 }
 
 export interface GridModelHookProps

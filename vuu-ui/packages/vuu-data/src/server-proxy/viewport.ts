@@ -6,6 +6,7 @@ import {
   ClientToServerRemoveLink,
   ClientToServerSelection,
   ClientToServerViewPortRange,
+  LinkDescriptorWithLabel,
   ServerToClientCreateViewPortSuccess,
   VuuAggregation,
   VuuColumnDataType,
@@ -32,7 +33,6 @@ import {
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
 } from "../data-source";
-import { LinkWithLabel } from "./server-proxy";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
@@ -377,7 +377,7 @@ export class Viewport {
     }
   }
 
-  setLinks(links: LinkWithLabel[]) {
+  setLinks(links: LinkDescriptorWithLabel[]) {
     return [
       {
         type: "VP_VISUAL_LINKS_RESP",

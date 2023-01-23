@@ -1,30 +1,48 @@
-import { isMeasured, Size } from "./useMeasuredSize";
-import { RefObject, useLayoutEffect, useMemo, useState } from "react";
-import { Column, TableMeasurements } from "./dataTableTypes";
+/**
+ * This hook measures and calculates the values needed to manage layout
+ * and virtualisation of the table. This includes measurements required
+ * to support pinned columns.
+ */
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { useMemo } from "react";
+import { MeasuredSize } from "./useMeasuredContainer";
 
 export interface TableViewportHookProps {
-  columns: Column[];
+  columns: KeyedColumnDescriptor[];
   headerHeight: number;
-  rootRef: RefObject<HTMLDivElement>;
   rowCount: number;
   rowHeight: number;
-  size: Size;
+  size?: MeasuredSize;
 }
 
-type ColumnMeasurements = {
+export interface ViewportMeasurements {
+  fillerHeight: number;
+  maxScrollContainerScrollHorizontal: number;
+  maxScrollContainerScrollVertical: number;
   pinnedWidthLeft: number;
-  unpinnedWidth: number;
+  rowCount: number;
+  scrollContentHeight: number;
+  scrollbarSize: number;
+  scrollContentWidth: number;
+}
+
+const UNMEASURED_VIEWPORT = {
+  fillerHeight: 0,
+  maxScrollContainerScrollHorizontal: 0,
+  maxScrollContainerScrollVertical: 0,
+  pinnedWidthLeft: 0,
+  rowCount: 0,
+  scrollContentHeight: 0,
+  scrollbarSize: 0,
+  scrollContentWidth: 0,
 };
 
-const measureColumns = (columns: Column[]): ColumnMeasurements => {
+const measurePinnedColumns = (columns: KeyedColumnDescriptor[]) => {
   let pinnedWidthLeft = 0;
   let unpinnedWidth = 0;
-  const defaultWidth = 100;
-  for (let i = 0; i < columns.length; i++) {
-    const column = columns[i];
-    const { pin, width = defaultWidth } = column;
+  for (const column of columns) {
+    const { pin, width } = column;
     if (pin === "left") {
-      column.pinnedLeftOffset = pinnedWidthLeft;
       pinnedWidthLeft += width;
     } else {
       unpinnedWidth += width;
@@ -36,70 +54,45 @@ const measureColumns = (columns: Column[]): ColumnMeasurements => {
 export const useTableViewport = ({
   columns,
   headerHeight,
-  rootRef,
   rowCount,
   rowHeight,
   size,
 }: TableViewportHookProps) => {
   const { pinnedWidthLeft, unpinnedWidth } = useMemo(
-    () => measureColumns(columns),
+    () => measurePinnedColumns(columns),
     [columns]
   );
-  const { pixelHeight: applyHeight, pixelWidth: applyWidth } = size;
-  const sizeIsMeasured = isMeasured(size);
-  const scrollbarSize = 15;
-  const contentHeight = rowCount * rowHeight;
-  const scrollContentHeight = headerHeight + contentHeight + scrollbarSize;
-  const scrollContentWidth = pinnedWidthLeft + unpinnedWidth;
 
-  const maxScrollContainerScrollHorizontal =
-    scrollContentWidth - applyWidth + pinnedWidthLeft;
-  const maxScrollContainerScrollVertical =
-    contentHeight + headerHeight - (applyHeight - headerHeight - scrollbarSize);
+  const viewportMeasurements = useMemo(() => {
+    if (size) {
+      const scrollbarSize = 15;
+      const contentHeight = rowCount * rowHeight;
+      const scrollContentWidth = pinnedWidthLeft + unpinnedWidth;
+      const maxScrollContainerScrollVertical =
+        contentHeight +
+        headerHeight -
+        ((size?.height ?? 0) - headerHeight - scrollbarSize);
+      const maxScrollContainerScrollHorizontal =
+        scrollContentWidth - size.width + pinnedWidthLeft;
 
-  const [measurements, setMeasurements] = useState<TableMeasurements>({
-    contentHeight,
-    left: -1,
-    right: -1,
-    scrollbarSize,
-    scrollContentHeight,
-    status: "unmeasured",
-    top: -1,
-  });
-
-  const [viewportRowCount, fillerHeight] = useMemo(() => {
-    const visibleRows = (size.pixelHeight - headerHeight) / rowHeight;
-    const count = Number.isInteger(visibleRows)
-      ? visibleRows + 1
-      : Math.ceil(visibleRows);
-    const fillerHeight = (rowCount - count) * rowHeight;
-    return [count, fillerHeight];
-  }, [headerHeight, size.pixelHeight, rowCount, rowHeight]);
-
-  useLayoutEffect(() => {
-    if (rootRef.current && sizeIsMeasured) {
-      const { left, right, top } = rootRef.current.getBoundingClientRect();
-      setMeasurements({
-        contentHeight,
-        left,
-        status: "measured",
-        right,
+      const visibleRows = (size.height - headerHeight) / rowHeight;
+      const count = Number.isInteger(visibleRows)
+        ? visibleRows + 1
+        : Math.ceil(visibleRows);
+      return {
+        fillerHeight: (rowCount - count) * rowHeight,
+        maxScrollContainerScrollHorizontal,
+        maxScrollContainerScrollVertical,
+        pinnedWidthLeft,
+        rowCount: count,
+        scrollContentHeight: headerHeight + contentHeight + scrollbarSize,
         scrollbarSize,
-        scrollContentHeight,
-        top,
-      });
+        scrollContentWidth,
+      };
+    } else {
+      return UNMEASURED_VIEWPORT;
     }
-  }, [contentHeight, rootRef, scrollContentHeight, sizeIsMeasured]);
+  }, [headerHeight, pinnedWidthLeft, rowCount, rowHeight, size, unpinnedWidth]);
 
-  return {
-    measurements,
-    viewport: {
-      fillerHeight,
-      maxScrollContainerScrollHorizontal,
-      maxScrollContainerScrollVertical,
-      pinnedWidthLeft,
-      rowCount: viewportRowCount,
-      scrollContentWidth,
-    },
-  };
+  return viewportMeasurements;
 };
