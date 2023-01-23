@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
-import { Dialog, Component } from "@finos/vuu-layout";
+import { Component } from "@finos/vuu-layout";
+import { Dialog } from "@finos/vuu-popups";
 
 let displaySequence = 1;
 
