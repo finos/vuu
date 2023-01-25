@@ -4,7 +4,7 @@ import {
   TypeaheadParams,
 } from "@finos/vuu-protocol-types";
 import { useCallback } from "react";
-import { useRpcService } from "./useRpcService";
+import { makeRpcCall } from "../connection-manager";
 
 export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
 
@@ -18,7 +18,6 @@ const containSpace = (text: string) => text.indexOf(" ") !== -1;
 const replaceSpace = (text: string) => text.replace(/\s/g, SPECIAL_SPACE);
 
 export const useTypeaheadSuggestions = () => {
-  const makeRpcCall = useRpcService();
   const getTypeaheadSuggestions: SuggestionFetcher = useCallback(
     async (params: TypeaheadParams) => {
       const rpcMessage =
@@ -41,7 +40,7 @@ export const useTypeaheadSuggestions = () => {
         ? suggestions.map(replaceSpace)
         : suggestions;
     },
-    [makeRpcCall]
+    []
   );
 
   return getTypeaheadSuggestions;
