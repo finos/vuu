@@ -8,7 +8,7 @@ import {
   VuuMenuRpcRequest,
 } from "@finos/vuu-protocol-types";
 import { EventEmitter, uuid } from "@finos/vuu-utils";
-import { ConnectionManager, ServerAPI } from "./connection-manager";
+import { ServerAPI } from "./connection-manager";
 import {
   DataSource,
   DataSourceCallbackMessage,
@@ -18,7 +18,7 @@ import {
   SubscribeCallback,
   SubscribeProps,
 } from "./data-source";
-import { getServerUrl } from "./hooks/useServerConnection";
+import { serverAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
 
 // const log = (message: string, ...rest: unknown[]) => {
@@ -35,7 +35,6 @@ import { MenuRpcResponse } from "./vuuUIMessageTypes";
 export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private url: string;
   private visualLink?: DataSourceVisualLinkCreatedMessage;
   private status: string;
   private disabled: boolean;
@@ -67,8 +66,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     groupBy,
     sort,
     table,
-    configUrl,
-    serverUrl,
     viewport,
     "visual-link": visualLink,
   }: DataSourceProps) {
@@ -78,7 +75,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.#columns = columns;
     this.viewport = viewport;
 
-    this.url = serverUrl ?? configUrl ?? getServerUrl();
     this.visualLink = visualLink;
 
     this.status = "initialising";
@@ -97,14 +93,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     if (sort) {
       this.initialSort = sort;
     }
-
-    if (!this.url) {
-      throw Error(
-        "RemoteDataSource expects serverUrl or configUrl as argument or that serverUrl has already been set"
-      );
-    }
-
-    this.pendingServer = ConnectionManager.connect(this.url);
   }
 
   async subscribe(
@@ -150,7 +138,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.table = table;
     this.#columns = columns;
 
-    this.server = await this.pendingServer;
+    this.server = await serverAPI;
 
     const { bufferSize } = this;
     this.server?.subscribe(

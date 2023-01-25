@@ -4,7 +4,7 @@ import {
   VuuTableMeta,
 } from "@finos/vuu-protocol-types";
 import { useCallback, useEffect, useState } from "react";
-import { useServerConnection } from "./useServerConnection";
+import { serverAPI } from "../connection-manager";
 
 export type SchemaColumn = {
   name: string;
@@ -32,7 +32,6 @@ const createSchemaFromTableMetadata = ({
 
 export const useVuuTables = () => {
   const [tables, setTables] = useState<Map<string, TableSchema> | undefined>();
-  const server = useServerConnection(undefined);
 
   const buildTables = useCallback((schemas: VuuTableMeta[]) => {
     const vuuTables = new Map<string, TableSchema>();
@@ -44,23 +43,18 @@ export const useVuuTables = () => {
 
   useEffect(() => {
     async function fetchTableMetadata() {
-      if (server) {
-        const { tables } = await server.getTableList();
-        const tableSchemas = buildTables(
-          await Promise.all(
-            tables.map((tableDescriptor) =>
-              server.getTableMeta(tableDescriptor)
-            )
-          )
-        );
-        setTables(tableSchemas);
-      }
+      const server = await serverAPI;
+      const { tables } = await server.getTableList();
+      const tableSchemas = buildTables(
+        await Promise.all(
+          tables.map((tableDescriptor) => server.getTableMeta(tableDescriptor))
+        )
+      );
+      setTables(tableSchemas);
     }
 
-    if (server) {
-      fetchTableMetadata();
-    }
-  }, [buildTables, server]);
+    fetchTableMetadata();
+  }, [buildTables]);
 
   return tables;
 };

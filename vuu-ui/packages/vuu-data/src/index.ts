@@ -1,5 +1,6 @@
 export * from "./authenticate";
-export * from "./connection-manager";
+export { connectToServer, makeRpcCall, serverAPI } from "./connection-manager";
+export type { ServerAPI } from "./connection-manager";
 export * from "./constants";
 export * from "./data-source";
 export * from "./hooks";

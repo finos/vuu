@@ -194,8 +194,6 @@ export interface DataSourceProps {
   filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
-  configUrl?: string;
-  serverUrl?: string;
   viewport?: string;
   "visual-link"?: DataSourceVisualLinkCreatedMessage;
 }
