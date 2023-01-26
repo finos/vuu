@@ -11,7 +11,7 @@ import {
   ToggleButtonGroupChangeEventHandler,
   Toolbar,
   ToolbarButton,
-  Tooltray,
+  Tooltray
 } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
 import { ReactElement, useCallback, useMemo, useRef, useState } from "react";
@@ -27,8 +27,6 @@ export default {
 
 let displaySequence = 1;
 
-// export const EmptyGrid = () => <Grid />;
-// EmptyGrid.displaySequence = displaySequence++;
 
 export const DefaultGrid = () => {
   const tables = useMemo(
@@ -101,7 +99,6 @@ export const DefaultGrid = () => {
       <Grid
         dataSource={dataSource}
         columns={columns}
-        // columnSizing="fill"
         height={600}
         selectionModel="extended"
         width={900}
@@ -166,7 +163,7 @@ export const BasicGrid = () => {
     gridRef.current?.style.setProperty("--grid-row-height", `20px`);
   };
 
-  const handleConfigChange = (config) => {
+  const handleConfigChange = (config: any) => {
     console.log(`handleConfigChange ${JSON.stringify(config, null, 2)}`);
   };
 
@@ -177,11 +174,9 @@ export const BasicGrid = () => {
   return (
     <>
       <Grid
-        // cellSelectionModel="single-cell"
         className="StoryGrid"
         dataSource={dataSource}
         columns={columns}
-        // columnSizing="fill"
         height={624}
         onConfigChange={handleConfigChange}
         ref={gridRef}
@@ -257,7 +252,6 @@ export const PersistConfig = () => {
         className="StoryGrid"
         dataSource={dataSource}
         columns={columns}
-        // columns={instrumentSchema.columns}
         columnSizing="fill"
         height={300}
         onConfigChange={handleConfigChange}
@@ -336,6 +330,7 @@ export const ColumnHeaders1Level = () => {
       lotSize: { heading: ["Lot Size", "Exchange Details"] },
     },
     tablename: "instruments",
+    schemas: {}
   });
 
   if (error) {
@@ -366,6 +361,7 @@ export const SizeSpecifiedInProps = () => {
 
   const { columns, dataSource, error } = useTestDataSource({
     tablename: "instruments",
+    schemas: {}
   });
 
   if (error) {
@@ -460,6 +456,7 @@ export const ColumnHeaders2Levels = () => {
       lotSize: { heading: ["Lot Size", "Group 4", "Exchange Details"] },
     },
     tablename: "instruments",
+    schemas: {}
   });
 
   if (error) {
@@ -489,10 +486,11 @@ export const BufferVariations = () => {
   const { columns, dataSource, error } = useTestDataSource({
     bufferSize: 10,
     tablename: "instruments",
+    schemas: {}
   });
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const handleConfigChange = (config) => {
+  const handleConfigChange = (config: any) => {
     console.log(`handleConfigChange ${JSON.stringify(config, null, 2)}`);
   };
 
@@ -527,7 +525,6 @@ export const BufferVariations = () => {
       <Grid
         dataSource={dataSource}
         columns={columns}
-        // columnSizing="fill"
         headerHeight={36}
         height={380}
         onConfigChange={handleConfigChange}
