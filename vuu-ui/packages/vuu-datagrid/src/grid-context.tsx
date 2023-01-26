@@ -1,6 +1,5 @@
 import { DataSource, DataSourceFilter } from "@finos/vuu-data";
 import { DataRow } from "@finos/vuu-utils";
-import { Filter } from "@finos/vuu-filter-types";
 import React, { ReactNode, useContext, useMemo } from "react";
 import { VuuAggregation, VuuGroupBy, VuuSort } from "../../vuu-protocol-types";
 import { AdornmentsDescriptor } from "./grid-adornments";
@@ -12,6 +11,7 @@ import { MeasuredSize, Size } from "./grid-model/useMeasuredSize";
 import { resizePhase } from "./gridTypes";
 import {
   ColumnDescriptor,
+  GridAction,
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 
@@ -56,23 +56,6 @@ export interface GridActionSort {
   type: "sort";
   sort: VuuSort;
 }
-
-// These are the actions that eventually get routed to the DataSource itself
-export type DataSourceAction =
-  | GridActionCloseTreeNode
-  | GridActionGroup
-  | GridActionOpenTreeNode
-  | GridActionSort;
-
-export type ScrollAction =
-  | GridActionScrollEndHorizontal
-  | GridActionScrollStartHorizontal;
-
-export type GridAction =
-  | DataSourceAction
-  | ScrollAction
-  | GridActionResizeCol
-  | GridActionSelection;
 
 export interface GridModelActionAddCol {
   type: "add-col";

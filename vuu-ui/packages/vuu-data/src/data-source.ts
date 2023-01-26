@@ -172,12 +172,7 @@ export type ConfigChangeMessage =
   | DataSourceVisualLinkCreatedMessage
   | DataSourceVisualLinkRemovedMessage;
 
-export type ConfigChangeHandler = (
-  msg:
-    | ConfigChangeMessage
-    | DataSourceMenusMessage
-    | DataSourceVisualLinksMessage
-) => void;
+export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
 
 export const shouldMessageBeRoutedToDataSource = (
   message: unknown
