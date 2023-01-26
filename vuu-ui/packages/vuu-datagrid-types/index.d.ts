@@ -97,3 +97,20 @@ export interface Heading {
   resizing?: boolean;
   width: number;
 }
+
+// These are the actions that eventually get routed to the DataSource itself
+export type DataSourceAction =
+  | GridActionCloseTreeNode
+  | GridActionGroup
+  | GridActionOpenTreeNode
+  | GridActionSort;
+
+export type ScrollAction =
+  | GridActionScrollEndHorizontal
+  | GridActionScrollStartHorizontal;
+
+export type GridAction =
+  | DataSourceAction
+  | ScrollAction
+  | GridActionResizeCol
+  | GridActionSelection;
