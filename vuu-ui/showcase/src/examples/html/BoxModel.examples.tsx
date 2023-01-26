@@ -57,7 +57,6 @@ const FlexColStretchContainer = ({ children, size }: ContainerProps) => (
 );
 
 const getContainer = (type: ContainerType) => {
-  // prettier-ignore
   switch(type){
     case "sized": return SizedContainer;
     case "flex-row-stretch": return FlexRowStretchContainer;
