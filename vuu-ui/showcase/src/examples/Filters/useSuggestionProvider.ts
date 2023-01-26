@@ -1,9 +1,9 @@
+import { Completion } from "@codemirror/autocomplete";
 import { useTypeaheadSuggestions } from "@finos/vuu-data";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ISuggestionProvider, SuggestionType } from "@finos/vuu-filters";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { useCallback, useRef } from "react";
-import { Completion } from "@codemirror/autocomplete";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 const tableColumns: Completion[] = [
   { label: "bbg" },
@@ -64,9 +64,8 @@ const getTypeaheadParams = (
 ): TypeaheadParams => {
   if (text !== "" && !selectedValues.includes(text.toLowerCase())) {
     return [table, column, text];
-  } else {
-    return [table, column];
   }
+  return [table, column];
 };
 
 export interface SuggestionProviderHookProps {
@@ -112,10 +111,14 @@ export const useSuggestionProvider = ({
         } else {
           console.warn(`'${columnName}' does not match any column name`);
         }
-      } else if (valueType === "column") {
+      }
+      
+      if (valueType === "column") {
         const suggestions = await tableColumns;
         return (latestSuggestionsRef.current = withApplySpace(suggestions));
-      } else if (columnName) {
+      }
+      
+      if (columnName) {
         const column = columns.find((col) => col.name === columnName);
         const prefix = Array.isArray(selection)
           ? selection.length === 0
@@ -132,11 +135,10 @@ export const useSuggestionProvider = ({
         );
         if (Array.isArray(selection) && selection?.length > 1) {
           return [doneCommand, ...latestSuggestionsRef.current];
-        } else {
-          return latestSuggestionsRef.current;
         }
+        return latestSuggestionsRef.current;
       }
-
+      
       return [];
     },
     [columns, getTypeaheadSuggestions, table]
@@ -149,7 +151,6 @@ export const useSuggestionProvider = ({
       pattern?: string
     ) => {
       const { current: latestSuggestions } = latestSuggestionsRef;
-      let maybe = false;
       const suggestions =
         latestSuggestions ||
         (await getSuggestions(valueType, columnName, pattern));
@@ -158,11 +159,11 @@ export const useSuggestionProvider = ({
           if (option.label === pattern) {
             return false;
           } else if (option.label.startsWith(pattern)) {
-            maybe = true;
+            return true;
           }
         }
       }
-      return maybe;
+      return false;
     },
     [getSuggestions]
   );
