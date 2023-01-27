@@ -1,9 +1,8 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useViewContext } from "@finos/vuu-layout";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 
-export const StatefulComponent = ({ initialState = "", style, stateKey }) => {
+export const StatefulComponent = (initialState = "", style: React.CSSProperties | undefined, stateKey: any) => {
   const { load, save } = useViewContext();
-  // TODO store state in ref in view and pas vie context.viewStates
   const storedState = useMemo(() => load(stateKey), [load, stateKey]);
   const state = useRef(storedState ?? initialState);
   const [value, setValue] = useState(state.current);
