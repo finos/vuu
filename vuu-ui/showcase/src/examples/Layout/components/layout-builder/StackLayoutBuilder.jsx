@@ -1,27 +1,18 @@
-import { SaltProvider } from "@salt-ds/core";
 import {
-  FlexboxLayout,
   Component,
-  DraggableLayout,
-  LayoutProvider,
-  PaletteSalt as Palette,
-  PaletteListItem,
-  Placeholder,
+  DraggableLayout, FlexboxLayout, LayoutProvider, PaletteListItem, PaletteSalt as Palette, Placeholder,
   StackLayout,
-  View,
+  View
 } from "@finos/vuu-layout";
 import { ListItemHeader } from "@heswell/salt-lab";
+import { SaltProvider } from "@salt-ds/core";
 import * as layout from "../layouts";
 
 import "./layout-builder.css";
 
-export const StackLayoutBuilderUitk = ({ width = 800, height = 1000 }) => {
+export const StackLayoutBuilderUitk = () => {
   const onLayoutModel = (layoutModel) => {
     console.log({ layoutModel });
-    // setState(prevState => ({
-    //     ...prevState,
-    //     managedLayoutNode: layoutModel
-    // }));
   };
 
   return (
