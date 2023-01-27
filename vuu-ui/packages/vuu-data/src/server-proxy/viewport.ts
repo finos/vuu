@@ -129,7 +129,7 @@ export class Viewport {
   public links?: LinkDescriptorWithLabel[];
   public linkedParent?: LinkedParent;
   public serverViewportId?: string;
-  public status: "" | "subscribed" = "";
+  public status: "" | "subscribing" | "resubscribing" | "subscribed" = "";
   public suspended = false;
   public table: VuuTable;
   public title: string | undefined;
@@ -177,6 +177,8 @@ export class Viewport {
     // )}
     // `);
     const { filter } = this.filter;
+    this.status =
+      this.status === "subscribed" ? "resubscribing" : "subscribing";
     return {
       type: Message.CREATE_VP,
       table: this.table,
