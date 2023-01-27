@@ -1,6 +1,6 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { Button, useIdMemo } from "@salt-ds/core";
-import { CSSProperties, useCallback, useRef } from "react";
+import { CSSProperties, useCallback } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
 import { buildContextMenuDescriptors, useContextMenu } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
