@@ -21,7 +21,7 @@ const LayoutPicker = ({ onCommit }) => {
   return <Dropdown onSelect={onCommit} values={availableValues} />;
 };
 
-const StatefulComponent = (initialState = "", style: any, stateKey: any) => {
+const StatefulComponent = (initialState = "", style: React.CSSProperties | undefined, stateKey: any) => {
   const { load, save } = useViewContext();
   const state = useRef(load(stateKey) ?? initialState);
   const [value, setValue] = useState(state.current);
