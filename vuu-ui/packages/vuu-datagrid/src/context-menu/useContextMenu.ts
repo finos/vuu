@@ -8,6 +8,7 @@ import { GridModelDispatch } from "../grid-context";
 import { GridModelType } from "../grid-model/gridModelTypes";
 import { GridModel } from "../grid-model/gridModelUtils";
 import { ContextMenuOptions } from "./contextMenuTypes";
+import { setAggregations } from "@finos/vuu-utils";
 
 const { Average, High, Low, Count, Sum } = AggregationType;
 export interface ContextMenuHookProps {
@@ -58,11 +59,11 @@ export const useContextMenu = ({
         case "column-hide": return dispatchGridModelAction({type, column}),true;
         case "filter-remove-column": return (dataSource.filter = removeFilterColumn(dataSource.filter, column)), true;
         case "remove-filters": return (dataSource.filter = {filter:""}), true;
-        case "agg-avg": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Average)), true;
-        case "agg-high": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, High)), true;
-        case "agg-low": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Low)), true;
-        case "agg-count": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Count)), true;
-        case "agg-sum": return dataSource.aggregate(GridModel.setAggregation(gridModel, column, Sum)), true;
+        case "agg-avg": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Average)), true;
+        case "agg-high": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, High)), true;
+        case "agg-low": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Low)), true;
+        case "agg-count": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Count)), true;
+        case "agg-sum": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Sum)), true;
         default:
       }
     }

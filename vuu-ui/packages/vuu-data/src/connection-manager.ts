@@ -24,6 +24,7 @@ import {
   VuuUIMessageOut,
 } from "./vuuUIMessageTypes";
 // Note: the InlinedWorker is a generated file, it must be built
+
 import { InlinedWorker } from "./inlined-worker";
 
 const workerSource = InlinedWorker.toString().replace(
@@ -44,10 +45,12 @@ const pendingWorkerNoToken: WorkerResolver[] = [];
 let resolveServer: (server: ServerAPI) => void;
 let rejectServer: (err: unknown) => void;
 
-export const serverAPI = new Promise<ServerAPI>((resolve, reject) => {
+const serverAPI = new Promise<ServerAPI>((resolve, reject) => {
   resolveServer = resolve;
   rejectServer = reject;
 });
+
+export const getServerAPI = () => serverAPI;
 
 export type PostMessageToClientCallback = (
   msg: DataSourceCallbackMessage

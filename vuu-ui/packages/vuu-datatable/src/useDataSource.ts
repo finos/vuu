@@ -123,9 +123,10 @@ export function useDataSource({
 
   const setRange = useCallback(
     (from, to) => {
-      rangeRef.current = { from, to };
-      dataSource?.setRange(from, to);
-      dataWindow.setRange(from, to);
+      if (dataSource) {
+        dataSource.range = rangeRef.current = { from, to };
+        dataWindow.setRange(from, to);
+      }
     },
     [dataSource, dataWindow]
   );

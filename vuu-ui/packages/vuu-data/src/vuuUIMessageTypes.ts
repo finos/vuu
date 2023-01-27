@@ -161,6 +161,10 @@ export interface VuuUIMessageOutCreateLink extends ViewportMessageOut {
 export interface VuuUIMessageOutRemoveLink extends ViewportMessageOut {
   type: "removeLink";
 }
+export interface VuuUIMessageOutSetTitle extends ViewportMessageOut {
+  title: string;
+  type: "setTitle";
+}
 
 export interface VuuUIMessageOutDisable extends ViewportMessageOut {
   type: "disable";
@@ -219,6 +223,7 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutSelect
   | VuuUIMessageOutSelectAll
   | VuuUIMessageOutSelectNone
+  | VuuUIMessageOutSetTitle
   | VuuUIMessageOutSuspend
   | VuuUIMessageOutSort
   | VuuUIMessageOutViewRange;

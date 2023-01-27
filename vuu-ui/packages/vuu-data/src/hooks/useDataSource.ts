@@ -101,9 +101,9 @@ export function useDataSource({
   const setRange = useCallback(
     (range) => {
       rangeRef.current = range;
-      const { from, to } = getFullRange(rangeRef.current, renderBufferSize);
-      dataSource.setRange(from, to);
-      dataWindow.setRange(from, to);
+      const fullRange = getFullRange(rangeRef.current, renderBufferSize);
+      dataSource.range = fullRange;
+      dataWindow.setRange(fullRange.from, fullRange.to);
     },
     [dataSource, dataWindow, renderBufferSize]
   );
@@ -125,7 +125,7 @@ export function useDataSource({
   useMemo(() => {
     const { from, to } = rangeRef.current;
     const fullRange = getFullRange({ from, to }, renderBufferSize);
-    dataSource.setRange(fullRange.from, fullRange.to);
+    dataSource.range = fullRange;
     dataWindow.setRange(fullRange.from, fullRange.to);
   }, [dataSource, dataWindow, renderBufferSize]);
 

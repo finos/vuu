@@ -4,7 +4,7 @@ import {
   VuuTableMeta,
 } from "@finos/vuu-protocol-types";
 import { useCallback, useEffect, useState } from "react";
-import { serverAPI } from "../connection-manager";
+import { getServerAPI } from "../connection-manager";
 
 export type SchemaColumn = {
   name: string;
@@ -43,7 +43,7 @@ export const useVuuTables = () => {
 
   useEffect(() => {
     async function fetchTableMetadata() {
-      const server = await serverAPI;
+      const server = await getServerAPI();
       const { tables } = await server.getTableList();
       const tableSchemas = buildTables(
         await Promise.all(

@@ -181,21 +181,21 @@ export const shouldMessageBeRoutedToDataSource = (
   return datasourceMessages.includes(type);
 };
 
-export interface DataSourceProps {
+export interface DataSourceConstructorProps {
   bufferSize?: number;
   table: VuuTable;
   aggregations?: VuuAggregation[];
-  columns: string[];
+  columns?: string[];
   filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
+  title?: string;
   viewport?: string;
   "visual-link"?: DataSourceVisualLinkCreatedMessage;
 }
 
 export interface SubscribeProps {
   viewport?: string;
-  table?: VuuTable;
   columns?: string[];
   aggregations?: VuuAggregation[];
   range?: VuuRange;
@@ -208,7 +208,7 @@ export interface SubscribeProps {
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 
 export interface DataSource extends IEventEmitter {
-  aggregate: (aggregations: VuuAggregation[]) => void;
+  aggregations: VuuAggregation[];
   closeTreeNode: (key: string) => void;
   columns: string[];
   createLink: ({
@@ -221,10 +221,10 @@ export interface DataSource extends IEventEmitter {
     rpcRequest: Omit<VuuMenuRpcRequest, "vpId">
   ) => Promise<MenuRpcResponse | undefined>;
   openTreeNode: (key: string) => void;
+  range: VuuRange;
   removeLink: () => void;
   rowCount: number | undefined;
   select: (selected: number[]) => void;
-  setRange: (from: number, to: number) => void;
   size: number;
   sort: VuuSort;
   subscribe: (

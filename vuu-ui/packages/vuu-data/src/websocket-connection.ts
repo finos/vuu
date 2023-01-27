@@ -9,9 +9,6 @@ import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
 export type ConnectionMessage = ServerToClientMessage | ConnectionStatusMessage;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
-// TEST_DATA_COLLECTION
-// import { saveTestData } from './test-data-collection';
-
 const logger = console;
 const WS_PATTERN = /^ws(s)?:\/\/.+/;
 

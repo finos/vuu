@@ -4,7 +4,7 @@ import {
   RefObject,
   SyntheticEvent,
   useCallback,
-  useState
+  useState,
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { DragStartAction } from "../layout-reducer";
@@ -98,7 +98,6 @@ export const useViewActionDispatcher = (
         case "remove":
           return handleRemove();
         case "mousedown":
-          console.log("2) ViewActionDispatch Hook dispatch Action mousedown");
           return handleMouseDown(evt, action.index, action.preDragActivity);
         case "add-toolbar-contribution":
           return updateContributions(action.location, action.content);

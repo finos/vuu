@@ -72,10 +72,9 @@ const applyDefaults = (
 };
 
 const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
-  const { id, dispatch, load, purge, save, loadSession, saveSession } =
+  const { id, dispatch, load, purge, save, loadSession, saveSession, title } =
     useViewContext();
   const config = useMemo(() => load?.() as BlotterConfig | undefined, [load]);
-  console.log({ config });
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
   const [currentFilter, setCurrentFilter] = useState<Filter>();
 
@@ -95,10 +94,14 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
       table: schema.table,
       ...config,
       columns,
+      title,
     });
     saveSession?.(ds, "data-source");
     return ds;
-  }, [config, id, loadSession, saveSession, schema]);
+    // Note: despite the dependency array, because we load dataStore from session
+    // after initial load, changes to the following dependencies will not cause
+    // us to create a new dataSource, which is correct.
+  }, [config, id, loadSession, saveSession, schema, title]);
 
   useEffect(() => {
     dataSource.enable();
@@ -107,17 +110,19 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
     };
   }, [dataSource]);
 
+  useEffect(() => {
+    if (title !== dataSource.title) {
+      dataSource.title = title;
+    }
+  }, [dataSource, title]);
+
   const removeVisualLink = useCallback(() => {
     dataSource.removeLink();
   }, [dataSource]);
 
   const dispatchGridAction = useCallback(
     (action: GridAction) => {
-      console.log(`dispatch GridAction`, {
-        action,
-      });
       if (isVisualLinksAction(action)) {
-        console.log(`save visual links into session state`);
         saveSession?.(action.links, "visual-links");
         return true;
       } else if (isVisualLinkCreatedAction(action)) {
@@ -179,7 +184,6 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
     [load, loadSession]
   );
 
-  console.log(`call useVuuMenuActions`);
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
     dataSource,
     menuActionConfig,
