@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // Important: This import must come before RemoteDataSource import
 import "./global-mocks";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as connectionExports from "../src/connection-manager";
 //----------------------------------------------------
 import { VuuSortCol } from "@finos/vuu-protocol-types";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { RemoteDataSource } from "../src/remote-data-source";
 
 const defaultSubscribeOptions = {
   aggregations: [],
@@ -18,12 +19,10 @@ const defaultSubscribeOptions = {
 };
 
 describe("RemoteDataSource", () => {
-  let RemoteDataSource;
   const table = { module: "SIMUL", table: "instruments" };
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    ({ RemoteDataSource } = await import("../src/remote-data-source"));
   });
 
   describe("constructor", () => {

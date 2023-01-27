@@ -16,3 +16,7 @@ vi.mock("@finos/vuu-utils", async () => {
     uuid: () => "uuid-1",
   };
 });
+
+vi.mock("./inlined-worker", async () => ({
+  InlinedWorker: () => undefined,
+}));

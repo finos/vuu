@@ -24,6 +24,7 @@ import {
   VuuUIMessageOut,
 } from "./vuuUIMessageTypes";
 // Note: the InlinedWorker is a generated file, it must be built
+
 import { InlinedWorker } from "./inlined-worker";
 
 const workerSource = InlinedWorker.toString().replace(
