@@ -126,6 +126,7 @@ export class Viewport {
   public clientViewportId: string;
   public disabled = false;
   public isTree = false;
+  public links?: LinkDescriptorWithLabel[];
   public linkedParent?: LinkedParent;
   public serverViewportId?: string;
   public status: "" | "subscribed" = "";
@@ -382,6 +383,7 @@ export class Viewport {
   }
 
   setLinks(links: LinkDescriptorWithLabel[]) {
+    this.links = links;
     return [
       {
         type: "VP_VISUAL_LINKS_RESP",

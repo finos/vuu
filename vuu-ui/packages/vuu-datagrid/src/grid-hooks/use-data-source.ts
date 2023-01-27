@@ -152,13 +152,15 @@ export function useDataSource(
 
   const setRange = useCallback(
     (from, to) => {
-      const range = getFullRange(
-        { from, to },
-        gridModel.renderBufferSize,
-        dataSource?.rowCount
-      );
-      dataSource?.setRange(range.from, range.to);
-      dataWindow.setRange(range.from, range.to);
+      if (dataSource) {
+        const range = getFullRange(
+          { from, to },
+          gridModel.renderBufferSize,
+          dataSource?.rowCount
+        );
+        dataSource.range = range;
+        dataWindow.setRange(range.from, range.to);
+      }
     },
     [dataSource, dataWindow, gridModel.renderBufferSize]
   );

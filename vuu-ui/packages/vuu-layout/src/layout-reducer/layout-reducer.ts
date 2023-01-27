@@ -71,7 +71,6 @@ const switchTab = (state: ReactElement, { path, nextIdx }: SwitchTabAction) => {
 };
 
 const setTitle = (state: ReactElement, { path, title }: SetTitleAction) => {
-  debugger;
   const target = followPath(state, path, true);
   const replacement = React.cloneElement(target, {
     title,

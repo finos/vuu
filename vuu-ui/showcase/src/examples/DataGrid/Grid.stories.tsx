@@ -515,7 +515,7 @@ export const BufferVariations = () => {
 
   const handleSetRange = useCallback(() => {
     console.log(`setRange ${from} - ${to}`);
-    dataSource.setRange(from, to);
+    dataSource.range = { from, to };
   }, [dataSource, from, to]);
 
   if (error) {

@@ -32,6 +32,7 @@ import {
   VuuUIMessageOutUnsubscribe,
   VuuUIMessageOutViewRange,
   VuuUIMessageOutColumns,
+  VuuUIMessageOutSetTitle,
 } from "../vuuUIMessageTypes";
 import { DataSourceCallbackMessage } from "../data-source";
 import {
@@ -57,6 +58,15 @@ export const TEST_setRequestId = (id: number) => (_requestId = id);
 const nextRequestId = () => `${_requestId++}`;
 const EMPTY_ARRAY: unknown[] = [];
 const DEFAULT_OPTIONS: MessageOptions = {};
+
+const addTitleToLinks = (
+  links: LinkDescriptorWithLabel[],
+  serverViewportId: string,
+  label: string
+) =>
+  links.map((link) =>
+    link.parentVpId === serverViewportId ? { ...link, label } : link
+  );
 
 function addLabelsToLinks(
   links: VuuLinkDescriptor[],
@@ -244,6 +254,13 @@ export class ServerProxy {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
+  private setTitle(viewport: Viewport, message: VuuUIMessageOutSetTitle) {
+    if (viewport) {
+      viewport.title = message.title;
+      this.updateTitleOnVisualLinks(viewport);
+    }
+  }
+
   private select(viewport: Viewport, message: VuuUIMessageOutSelect) {
     const requestId = nextRequestId();
     const { selected } = message;
@@ -325,6 +342,20 @@ export class ServerProxy {
     this.sendMessageToServer(request, requestId);
   }
 
+  private updateTitleOnVisualLinks(viewport: Viewport) {
+    const { serverViewportId, title } = viewport;
+    for (const vp of this.viewports.values()) {
+      if (vp !== viewport && vp.links && serverViewportId && title) {
+        if (vp.links?.some((link) => link.parentVpId === serverViewportId)) {
+          const [messageToClient] = vp.setLinks(
+            addTitleToLinks(vp.links, serverViewportId, title)
+          );
+          this.postMessageToClient(messageToClient);
+        }
+      }
+    }
+  }
+
   private menuRpcCall(message: WithRequestId<VuuMenuRpcRequest>) {
     const viewport = this.getViewportForClient(message.vpId, false);
     if (viewport?.serverViewportId) {
@@ -397,6 +428,8 @@ export class ServerProxy {
             return this.removeLink(viewport);
           case "setColumns":
             return this.setColumns(viewport, message);
+          case "setTitle":
+            return this.setTitle(viewport, message);
           default:
         }
       }
@@ -701,10 +734,6 @@ export class ServerProxy {
         {
           const activeLinkDescriptors = this.getActiveLinks(body.links);
           const viewport = this.viewports.get(body.vpId);
-          console.log({
-            links: activeLinkDescriptors,
-            for: viewport?.table.table,
-          });
           if (activeLinkDescriptors.length && viewport) {
             const linksWithLabels = addLabelsToLinks(
               activeLinkDescriptors,

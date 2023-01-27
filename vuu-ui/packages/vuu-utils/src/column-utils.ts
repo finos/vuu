@@ -3,7 +3,11 @@ import {
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
-import { VuuGroupBy } from "@finos/vuu-protocol-types";
+import {
+  VuuAggregation,
+  VuuAggType,
+  VuuGroupBy,
+} from "@finos/vuu-protocol-types";
 import { Row } from "./row-utils";
 
 export interface ColumnMap {
@@ -13,6 +17,14 @@ export interface ColumnMap {
 const SORT_ASC = "asc";
 
 export type SortCriteriaItem = string | [string, "asc"]; // TODO where is 'desc'?
+
+export const AggregationType: { [key: string]: VuuAggType } = {
+  Average: 2,
+  Count: 3,
+  Sum: 1,
+  High: 4,
+  Low: 5,
+};
 
 export function mapSortCriteria(
   sortCriteria: SortCriteriaItem[],
@@ -257,4 +269,14 @@ export const sortPinnedColumns = (
   }
 
   return leftPinnedColumns.concat(restColumns).concat(rightPinnedColumns);
+};
+
+export const setAggregations = (
+  aggregations: VuuAggregation[],
+  column: KeyedColumnDescriptor,
+  aggType: VuuAggType
+) => {
+  return aggregations
+    .filter((agg) => agg.column !== column.name)
+    .concat({ column: column.name, aggType });
 };
