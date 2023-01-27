@@ -9,13 +9,13 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   data?: DataSourceRow[];
   dataSource?: DataSource;
   headerHeight?: number;
-  height?: number;
+  height?: number | "100%";
   rowHeight?: number;
   onConfigChange?: (config: GridConfig) => void;
   onShowConfigEditor?: () => void;
   allowConfigEditing?: boolean;
   tableLayout?: tableLayoutType;
-  width?: number;
+  width?: number | "100%";
 }
 
 export type ValueFormatter = (value: unknown) => string;

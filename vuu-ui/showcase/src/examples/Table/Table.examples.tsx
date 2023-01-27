@@ -23,7 +23,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { DragVisualizer } from "../../../../packages/vuu-datatable/src/DragVisualizer";
+import { DragVisualizer } from "@finos/vuu-datatable/src/DragVisualizer";
 import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 import { Filter } from "@finos/vuu-filter-types";
 import { useSuggestionProvider } from "../Filters/useSuggestionProvider";
@@ -290,3 +290,35 @@ export const VuuDataTable = () => {
   );
 };
 VuuDataTable.displaySequence = displaySequence++;
+
+export const FlexLayoutVuuTables = () => {
+  const { schemas } = useSchemas();
+  const { config, dataSource } = useTestDataSource({
+    schemas,
+    tablename: "instruments",
+  });
+
+  return (
+    <Flexbox style={{ flexDirection: "column", width: 800, height: 700 }}>
+      <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
+        <View resizeable style={{ flex: 1 }}>
+          <DataTable config={config} dataSource={dataSource} />
+        </View>
+
+        <View resizeable style={{ flex: 1 }}>
+          <DataTable config={defaultConfig} data={data} />
+        </View>
+      </Flexbox>
+      <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
+        <View resizeable style={{ flex: 1 }}>
+          <DataTable config={defaultConfig} data={data} />
+        </View>
+
+        <View resizeable style={{ flex: 1 }}>
+          <DataTable config={defaultConfig} data={data} />
+        </View>
+      </Flexbox>
+    </Flexbox>
+  );
+};
+FlexLayoutVuuTables.displaySequence = displaySequence++;

@@ -13,6 +13,7 @@ import "./DataTable.css";
 const classBase = "vuuDataTable";
 
 export const DataTable = ({
+  className,
   config,
   data: dataProp,
   dataSource,
