@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useState } from "react";
+import { RefObject, useCallback, useMemo, useState } from "react";
 import { useResizeObserver, ResizeHandler } from "./useResizeObserver";
 
 const FullAndClientWidthHeight = [
@@ -24,9 +24,12 @@ export type FullSize = {
   width: "100%";
 };
 
-export type MeasuredSize = {
+export type ClientSize = {
   clientHeight: number;
   clientWidth: number;
+};
+
+export type MeasuredSize = ClientSize & {
   height: number | "100%";
   width: number | "100%";
 };
@@ -38,32 +41,25 @@ export const isFullSize = (
   size: Size | MeasuredSize | FullSize
 ): size is FullSize => size.height === "100%" && size.width === "100%";
 
+const isNumber = (val: unknown): val is number => Number.isFinite(val);
+
 export const useMeasuredSize = (
   containerRef: RefObject<HTMLDivElement>,
-  height?: number,
-  width?: number
+  height?: number | "100%",
+  width?: number | "100%"
 ): Size => {
   const [size, setSize] = useState<Size>({
-    pixelHeight: height ?? 0,
-    pixelWidth: width ?? 0,
+    pixelHeight: typeof height === "number" ? height : 0,
+    pixelWidth: typeof width === "number" ? width : 0,
     height: height ?? "100%",
     width: width ?? "100%",
   });
   const onResize: ResizeHandler = useCallback(
-    ({
-      clientWidth,
-      clientHeight,
-      height,
-      width,
-    }: {
-      clientWidth?: number;
-      clientHeight?: number;
-      height?: number;
-      width?: number;
-    }) => {
+    ({ clientWidth, clientHeight }: Partial<ClientSize>) => {
+      console.log(`setSize ${clientWidth}`);
       setSize((currentSize) =>
-        typeof clientHeight === "number" &&
-        typeof clientWidth === "number" &&
+        isNumber(clientHeight) &&
+        isNumber(clientWidth) &&
         (clientWidth !== currentSize.clientWidth ||
           clientHeight !== currentSize.clientHeight)
           ? {

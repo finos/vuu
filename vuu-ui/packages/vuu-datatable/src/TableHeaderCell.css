@@ -38,6 +38,6 @@
 
   .vuuTable-headerCell-resizing {
     --columnResizer-color: var(--salt-color-blue-500);
-    --columnResizer-height: var(--table-height);
+    --columnResizer-height: var(--table-pixel-height);
     --columnResizer-width: 2px;
   }

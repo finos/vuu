@@ -1,0 +1,38 @@
+{
+  "name": "feature-vuu-table",
+  "version": "0.0.26",
+  "description": "Vuu Table",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ../../scripts/build-feature.mjs",
+    "start": "serve -p 5002 ../../deployed_apps/app-vuu-example"
+  },
+  "private": true,
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "devDependencies": {},
+  "dependencies": {
+    "@finos/vuu-data": "0.0.26",
+    "@finos/vuu-datatable": "0.0.26",
+    "@finos/vuu-layout": "0.0.26",
+    "@finos/vuu-protocol-types": "0.0.26",
+    "@finos/vuu-shell": "0.0.26",
+    "@finos/vuu-theme": "0.0.26",
+    "@finos/vuu-utils": "0.0.26",
+    "@salt-ds/core": "1.0.0",
+    "@salt-ds/icons": "1.0.0",
+    "@heswell/salt-lab": "1.0.0-alpha.0"
+  },
+  "peerDependencies": {
+    "classnames": "^2.3.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
