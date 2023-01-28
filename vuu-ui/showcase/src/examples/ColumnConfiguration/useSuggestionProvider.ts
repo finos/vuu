@@ -1,12 +1,32 @@
+import { Completion } from "@codemirror/autocomplete";
 import { SchemaColumn, useTypeaheadSuggestions } from "@finos/vuu-data";
 import {
   ColumnExpressionSuggestionType,
   ISuggestionProvider2,
-  SuggestionType,
-} from "@finos/vuu-filters";
+} from "@finos/vuu-datagrid-extras";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { SuggestionType } from "@finos/vuu-filters";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
+import { isNumericColumn } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
-import { Completion } from "@codemirror/autocomplete";
+
+const showConcatenateInfo = () => {
+  const div = document.createElement("div");
+  div.innerHTML = `
+    <div>Concatenate</div>
+    <p>Its a function thats dead handly</p>
+  `;
+  return div;
+};
+
+const showParenthesesInfo = () => {
+  const div = document.createElement("div");
+  div.innerHTML = `
+    <div>Ass Parentheses</div>
+    <p>Use parentheses to control order of evaluation oe expression clauses</p>
+  `;
+  return div;
+};
 
 const withApplySpace = (suggestions: Completion[]): Completion[] =>
   suggestions.map((suggestion) => ({
@@ -14,21 +34,60 @@ const withApplySpace = (suggestions: Completion[]): Completion[] =>
     apply: suggestion.label + " ",
   }));
 
-const tableColumns: Completion[] = [
-  { label: "bbg", boost: 5 },
-  { label: "description", boost: 5 },
-  { label: "currency", boost: 5 },
-  { label: "exchange", boost: 5 },
-  { label: "lotSize", boost: 5 },
-  { label: "isin", boost: 5 },
-  { label: "ric", boost: 5 },
+const getColumns = (columns: ColumnDescriptor[]) => {
+  return columns.map((column) => ({
+    label: column.label ?? column.name,
+    boost: 5,
+    type: "column",
+    columnType: column.serverDataType,
+  }));
+};
+
+const parentheses: Completion = {
+  apply: "(",
+  boost: 9,
+  info: () => showParenthesesInfo(),
+  label: "(",
+};
+
+const operators = [
+  {
+    apply: "* ",
+    boost: 2,
+    label: "*",
+    type: "operator",
+  },
+  {
+    apply: "/ ",
+    boost: 2,
+    label: "/",
+    type: "operator",
+  },
+  {
+    apply: "+ ",
+    boost: 2,
+    label: "+",
+    type: "operator",
+  },
+  {
+    apply: "- ",
+    boost: 2,
+    label: "-",
+    type: "operator",
+  },
 ];
+
+const isApplicable = (column: ColumnDescriptor, suggestion: Completion) => {
+  console.log({ column });
+  return isNumericColumn(column);
+};
 
 const functions: Completion[] = [
   {
-    label: "concatenate",
     apply: "concatenate( ",
     boost: 2,
+    info: () => showConcatenateInfo(),
+    label: "concatenate",
     type: "function",
   },
   {
@@ -62,8 +121,6 @@ const functions: Completion[] = [
     type: "function",
   },
 ];
-
-const expressions = withApplySpace(tableColumns).concat(functions);
 
 const doneCommand: Completion = {
   label: "Done",
@@ -115,22 +172,34 @@ export const useSuggestionProvider = ({
       startsWith?: string,
       selection?: string[]
     ): Promise<Completion[]> => {
-      // console.log("getSuggestions, using ", {
-      //   valueType,
-      //   columnName,
-      //   startsWith,
-      //   columns,
-      //   getTypeaheadSuggestions,
-      //   table,
-      //   selection,
-      // });
+      console.log("%cgetSuggestions, using ", "color: green", {
+        valueType,
+        columnName,
+        startsWith,
+        columns,
+        getTypeaheadSuggestions,
+        table,
+        selection,
+      });
 
       if (valueType === "expression") {
+        const expressions = withApplySpace(getColumns(columns)).concat(
+          functions
+        );
+
         const suggestions = await expressions;
         return (latestSuggestionsRef.current = suggestions);
       } else if (valueType === "column") {
-        const suggestions = await tableColumns;
+        const suggestions = await getColumns(columns);
         return (latestSuggestionsRef.current = withApplySpace(suggestions));
+      } else if (valueType === "operator") {
+        const suggestions = await operators;
+        const column = columns.find((col) => col.name === columnName);
+        const relevantSuggestions = suggestions.filter((s) =>
+          isApplicable(column, s)
+        );
+        return (latestSuggestionsRef.current =
+          withApplySpace(relevantSuggestions));
       } else if (columnName) {
         const column = columns.find((col) => col.name === columnName);
         const prefix = Array.isArray(selection)

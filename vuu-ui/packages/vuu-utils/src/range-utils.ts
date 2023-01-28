@@ -30,7 +30,10 @@ export function getFullRange(
     } else if (shortfallBefore) {
       return { from: 0, to: rangeSize + bufferSize };
     } else if (shortFallAfter) {
-      return { from: Math.max(0, rowCount - (rangeSize + bufferSize)), to: rowCount };
+      return {
+        from: Math.max(0, rowCount - (rangeSize + bufferSize)),
+        to: rowCount,
+      };
     } else {
       return { from: from - buff, to: to + buff };
     }
@@ -42,9 +45,12 @@ export function resetRange({ from, to, bufferSize = 0 }: VuuRange): VuuRange {
     from: 0,
     to: to - from,
     bufferSize,
-    reset: true
+    reset: true,
   };
 }
+
+export const withinRange = (value: number, { from, to }: VuuRange) =>
+  value >= from && value < to;
 
 export class WindowRange {
   public from: number;
@@ -56,7 +62,7 @@ export class WindowRange {
   }
 
   public isWithin(index: number) {
-    return index >= this.from && index < this.to;
+    return withinRange(index, this);
   }
 
   //find the overlap of this range and a new one

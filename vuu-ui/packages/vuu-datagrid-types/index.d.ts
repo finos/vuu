@@ -20,7 +20,7 @@ export declare type TypeFormatting = {
 export declare type ColumnTypeSimple = "string" | "number";
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
-  name: string;
+  name: ColumnTypeSimple;
   renderer?: {
     associatedField?: string;
     flashStyle?: "bg-only" | "arrow-bg" | "arrow";
@@ -40,6 +40,7 @@ export interface ColumnDescriptor {
   aggregate?: VuuAggType;
   align?: "left" | "right";
   className?: string;
+  editable?: boolean;
   expression?: string;
   flex?: number;
   heading?: [...string[]];

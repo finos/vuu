@@ -26,7 +26,7 @@ export const Tab = "Tab";
 const actionKeys = new Set(["Enter", "Delete", " "]);
 const focusKeys = new Set(["Tab"]);
 const arrowLeftRightKeys = new Set(["ArrowRight", "ArrowLeft"]);
-const navigationKeys = new Set([
+const navigationKeys = new Set<NavigationKey>([
   Home,
   End,
   PageUp,
@@ -64,6 +64,13 @@ export const isCharacterKey = (evt: React.KeyboardEvent): boolean => {
   return evt.key.length === 1 && !evt.ctrlKey && !evt.metaKey && !evt.altKey;
 };
 
-export const isNavigationKey = ({ key }: React.KeyboardEvent): boolean => {
-  return navigationKeys.has(key);
+export type ArrowKey = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
+export type PageKey = "Home" | "End" | "PageUp" | "PageDown";
+export type NavigationKey = PageKey | ArrowKey;
+const PageKeys = ["Home", "End", "PageUp", "PageDown"];
+export const isPagingKey = (key: string): key is PageKey =>
+  PageKeys.includes(key);
+
+export const isNavigationKey = (key: string): key is NavigationKey => {
+  return navigationKeys.has(key as NavigationKey);
 };

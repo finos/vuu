@@ -6,7 +6,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "node ../../scripts/run-build.mjs",
-    "type-defs": "node ../../scripts/build-type-defs.mjs"
+    "type-defs": "node ../../scripts/build-type-defs.mjs",
+    "lezer-generate:column": "lezer-generator --output ./src/column-expression-input/column-language-parser/generated/column-parser.js ./src/column-expression-input/column-language-parser/grammar/column.grammar"
   },
   "devDependencies": {
     "@finos/vuu-filter-types": "0.0.26",
@@ -19,5 +20,6 @@
     "classnames": "^2.2.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
-  }
+  },
+  "type": "module"
 }

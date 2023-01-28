@@ -1,17 +1,19 @@
 import { execWait } from "./utils.mjs";
 
 const packages = [
-  "vuu-protocol-types",
-  "vuu-datagrid-types",
-  "vuu-filter-types",
-  "vuu-utils",
-  "vuu-theme",
   "vuu-data",
-  "vuu-filters",
   "vuu-datagrid",
   "vuu-datagrid-extras",
+  "vuu-datagrid-types",
+  "vuu-datatable",
+  "vuu-filters",
+  "vuu-filter-types",
   "vuu-layout",
+  "vuu-popups",
+  "vuu-protocol-types",
   "vuu-shell",
+  "vuu-theme",
+  "vuu-utils",
 ];
 
 async function publishPackage(packageName) {

@@ -9,6 +9,8 @@ import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
 import { ISuggestionProvider2 } from "./useColumnExpressionEditor";
 import { parser } from "./column-language-parser/generated/column-parser";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 
 export type ApplyCompletion = (mode?: "add" | "replace") => void;
 
@@ -22,6 +24,9 @@ const isCompleteExpression = (src: string) => {
     return false;
   }
 };
+
+const isNumeric = (column: Completion & { columnType: VuuColumnDataType }) =>
+  ["int", "double", "long"].includes(column.columnType ?? "");
 
 const applyPrefix = (completions: Completion[], prefix?: string) =>
   prefix
@@ -37,13 +42,24 @@ const applyPrefix = (completions: Completion[], prefix?: string) =>
 const getValue = (node: SyntaxNode, state: EditorState) =>
   state.doc.sliceString(node.from, node.to);
 
+const isOperator = (node?: SyntaxNode) =>
+  node && ["Times", "Divide", "Plus", "Minus"].includes(node.name);
+
 const getLastChild = (node: SyntaxNode) => {
   let { lastChild: childNode } = node;
   while (childNode) {
     if (
-      ["Column", "Equal", "CallExpression", "OpenBrace"].includes(
-        childNode.name
-      )
+      [
+        "Column",
+        "Equal",
+        "CallExpression",
+        "OpenBrace",
+        "BinaryExpression",
+        "Times",
+        "Divide",
+        "Plus",
+        "Minus",
+      ].includes(childNode.name)
     ) {
       return childNode;
     } else {
@@ -93,32 +109,59 @@ export const useColumnAutoComplete = (
         case "Function":
           break;
         case "BinaryExpression":
-          break;
-        case "ParenthesizedExpression":
-          break;
-        case "Number":
-          break;
-        case "ArgList":
           {
-            const lastArgument = getLastChild(nodeBefore);
-
-            const prefix = lastArgument?.name === "OpenBrace" ? undefined : ",";
-            let options = await suggestionProvider.getSuggestions("expression");
-            options = prefix ? applyPrefix(options, ", ") : options;
-            // TODO per function check for number of arguments expected
-            if (lastArgument?.name !== "OpenBrace") {
-              options = [
-                {
-                  apply: ") ",
-                  boost: 10,
-                  label: "Done - no more arguments",
-                } as Completion,
-              ].concat(options);
+            const lastChild = getLastChild(nodeBefore);
+            console.log(`BInaryExpression, lastChild was ${lastChild?.name}`);
+            if (lastChild?.name === "Column") {
+              const options = await suggestionProvider.getSuggestions(
+                "expression"
+              );
+              return { from: context.pos, options };
+            } else if (isOperator(lastChild)) {
+              const columns = await suggestionProvider.getSuggestions("column");
+              const options = columns.filter(isNumeric);
+              return { from: context.pos, options };
             }
-            return { from: context.pos, options };
           }
 
           break;
+        case "Number":
+          break;
+        case "OpenBrace":
+          {
+            const options = await suggestionProvider.getSuggestions(
+              "expression"
+            );
+            return { from: context.pos, options };
+          }
+          break;
+        case "ArgList": {
+          const lastArgument = getLastChild(nodeBefore);
+
+          const prefix = lastArgument?.name === "OpenBrace" ? undefined : ",";
+          let options = await suggestionProvider.getSuggestions("expression");
+          options = prefix ? applyPrefix(options, ", ") : options;
+          // TODO per function check for number of arguments expected
+          if (lastArgument?.name !== "OpenBrace") {
+            options = [
+              {
+                apply: ") ",
+                boost: 10,
+                label: "Done - no more arguments",
+              } as Completion,
+            ].concat(options);
+          }
+          return { from: context.pos, options };
+        }
+        case "Equal":
+          if (text.trim() === "=") {
+            const options = await suggestionProvider.getSuggestions(
+              "expression"
+            );
+            return { from: context.pos, options };
+          }
+          break;
+        case "ParenthesizedExpression":
         case "ColumnDefinitionExpression":
           if (context.pos === 0) {
             return { from: context.pos, options: expressionOperator };
@@ -131,7 +174,8 @@ export const useColumnAutoComplete = (
               return { from: context.pos, options };
             } else if (lastChild?.name === "Column") {
               if (maybeComplete) {
-                const options = [
+                // We come in here is the columns IS complete, too (ie has space after)
+                const options: Completion[] = [
                   {
                     apply: () => {
                       onSubmit.current();
@@ -140,9 +184,16 @@ export const useColumnAutoComplete = (
                     boost: 10,
                   },
                 ];
+                const columnName = getValue(lastChild, state);
+                const columnOptions: Completion[] =
+                  await suggestionProvider.getSuggestions(
+                    "operator",
+                    columnName
+                  );
+
                 return {
                   from: context.pos,
-                  options,
+                  options: options.concat(columnOptions),
                 };
               }
             } else if (lastChild?.name === "CallExpression") {
@@ -161,7 +212,36 @@ export const useColumnAutoComplete = (
                   options,
                 };
               }
-              console.log("what goes after a aCallExpression");
+              console.log("what goes after a a CallExpression");
+            } else if (lastChild?.name === "BinaryExpression") {
+              if (maybeComplete) {
+                let options: Completion[] = [
+                  {
+                    apply: () => {
+                      onSubmit.current();
+                    },
+                    label: "Save Expression",
+                    boost: 10,
+                  },
+                ];
+
+                const lastExpressionChild = getLastChild(lastChild);
+                console.log({ lastExpressionChild });
+                if (lastExpressionChild?.name === "Column") {
+                  const columnName = getValue(lastExpressionChild, state);
+                  const suggestions = await suggestionProvider.getSuggestions(
+                    "operator",
+                    columnName
+                  );
+                  options = options.concat(suggestions);
+                }
+
+                return {
+                  from: context.pos,
+                  options,
+                };
+              }
+              console.log("what goes after a BinaryExpression");
             }
             break;
           }

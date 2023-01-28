@@ -165,7 +165,7 @@ export const useDataTable = ({
     [dispatchColumnAction]
   );
 
-  const { data, setRange } = useDataSource({
+  const { data, range, setRange } = useDataSource({
     dataSource,
     onConfigChange: handleConfigChangeFromDataSource,
     onSubscribed,
@@ -263,6 +263,7 @@ export const useDataTable = ({
     data: dataSource ? data : visibleRows,
     requestScroll,
     rowCount: dataSource?.size,
+    viewportRange: range,
   });
 
   return {

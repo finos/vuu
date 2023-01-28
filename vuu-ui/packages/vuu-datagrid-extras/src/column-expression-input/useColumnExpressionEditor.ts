@@ -19,7 +19,10 @@ import {
   useColumnAutoComplete,
 } from "./useColumnAutoComplete";
 
-export type ColumnExpressionSuggestionType = "column" | "expression";
+export type ColumnExpressionSuggestionType =
+  | "column"
+  | "expression"
+  | "operator";
 
 // TODO move this somewhere neutral
 export interface ISuggestionProvider2 {
@@ -52,6 +55,37 @@ const getOptionClass = (/*completion: Completion*/) => {
 };
 
 const noop = () => console.log("noooop");
+
+const hasColumnType = (
+  completion: Completion
+): completion is Completion & { columnType: string } =>
+  "columnType" in completion;
+
+const getOptionContent = (completion: Completion) => {
+  if (completion.label === "(") {
+    return "parentheses";
+  } else if (completion.type === "column") {
+    if (hasColumnType(completion)) {
+      return `${completion.columnType} column`;
+    } else {
+      return "column";
+    }
+  } else {
+    return undefined;
+  }
+};
+
+const injectOptionContent = (completion: Completion, state: EditorState) => {
+  const label = getOptionContent(completion);
+  if (label) {
+    const node = document.createElement("span");
+    node.className = "steve-type";
+    node.innerHTML = label;
+    return node;
+  } else {
+    return null;
+  }
+};
 
 export interface ColumnExpressionEditorProps {
   onSubmitExpression?: (
@@ -123,6 +157,12 @@ export const useColumnExpressionEditor = ({
         extensions: [
           minimalSetup,
           autocompletion({
+            addToOptions: [
+              {
+                render: injectOptionContent,
+                position: 70,
+              },
+            ],
             override: [completionFn],
             optionClass: getOptionClass,
           }),

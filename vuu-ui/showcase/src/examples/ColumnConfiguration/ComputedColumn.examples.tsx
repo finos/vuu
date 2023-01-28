@@ -18,7 +18,10 @@ const schemaColumns = [
   { name: "description", serverDataType: "string" } as const,
   { name: "currency", serverDataType: "string" } as const,
   { name: "exchange", serverDataType: "string" } as const,
+  { name: "price", serverDataType: "double" } as const,
+  { name: "quantity", serverDataType: "int" } as const,
   { name: "lotSize", serverDataType: "int" } as const,
+  { name: "exchangeRate", serverDataType: "double" } as const,
   { name: "isin", serverDataType: "string" } as const,
   { name: "ric", serverDataType: "string" } as const,
 ];

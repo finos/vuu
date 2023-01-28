@@ -33,4 +33,13 @@
     --saltButton-width: 28px;
 }
 
+.steve-type {
+    margin: 0 4px 0 auto;
+    color: red;
 
+}
+
+.vuuSuggestion {
+    display: flex;
+    align-items: center;
+}
