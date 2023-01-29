@@ -254,6 +254,26 @@ object TableAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
+  def generic13AssertWithMeta(updates: Seq[ViewPortUpdate], expectation: TableFor13[_, _, _, _, _, _, _, _, _, _, _, _, _]) = {
+
+    val addVpuMeta = (vpu: ViewPortUpdate) => {
+      val isSel = if (vpu.vp.getSelection.contains(vpu.key.key)) 1 else 0
+      Map("sel" -> isSel)
+    }
+
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
+      .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).isInstanceOf[RowWithData])
+      .map(vpu => addVpuMeta(vpu) ++ vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
+
+    val heading = expectation.heading
+
+    val headingAsArray = heading.productIterator.map(_.toString).toArray
+
+    val expectationAsMap = expectation.map(row => heading.productIterator.zip(row.productIterator).map({ case (head, data) => (head -> data) }).toMap).toArray
+
+    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
+  }
+
 
   def generic5Assert(updates: Seq[ViewPortUpdate], expectation: TableFor5[_, _, _, _, _]) = {
 
@@ -321,6 +341,7 @@ object TableAsserts {
     val typedexpectation = expectation match {
       case exp: TableFor6[_, _, _, _, _, _] => generic6AssertWithMeta(updates, exp)
       case exp: TableFor12[_, _, _, _, _, _,_, _, _, _, _, _] => generic12AssertWithMeta(updates, exp)
+      case exp: TableFor13[_, _, _, _, _, _,_, _, _, _, _, _, _] => generic13AssertWithMeta(updates, exp)
     }
 
   }

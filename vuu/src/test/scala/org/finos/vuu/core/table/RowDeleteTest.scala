@@ -189,7 +189,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns,
-        groupBy = GroupBy(orderPrices, "trader")
+        groupBy = GroupBy(orderPrices, vpcolumns.getColumnForName( "trader").get)
         .withSum("quantity")
         .withCount("trader")
         .asClause()

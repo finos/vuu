@@ -249,7 +249,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
 
   private def processIDSymbol(term: TerminalNode): CalculatedColumnClause = {
     getColumn(term.getText) match {
-      case Some(column) => column
+      case Some(column) =>
         logger.debug("VISIT ATOM: TerminalNode: " + term.getText + " " + column)
         column.dataType match {
           case DataType.IntegerDataType => IntColumnClause(column)

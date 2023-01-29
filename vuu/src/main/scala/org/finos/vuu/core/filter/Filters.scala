@@ -5,16 +5,16 @@ import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
 
 trait Filter {
-  def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String]
+  def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns): ImmutableArray[String]
 }
 
 object NoFilter extends Filter {
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = primaryKeys
+  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns): ImmutableArray[String] = primaryKeys
 }
 
 case class LessThanFilter(column: Column, viewPortColumns: ViewPortColumns, compareValue: Double) extends Filter {
 
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns): ImmutableArray[String] = {
     val filteredKeys = primaryKeys.toArray.filter(key => {
       val row = source.pullRow(key, viewPortColumns)
       val value = row.get(column.name)
@@ -34,9 +34,9 @@ case class LessThanFilter(column: Column, viewPortColumns: ViewPortColumns, comp
 
 }
 
-case class EqFilter(column: Column, viewPortColumns: ViewPortColumns, compareValue: String) extends Filter {
+case class EqFilter(column: Column, compareValue: String) extends Filter {
 
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val filteredKeys = primaryKeys.toArray.filter(key => {
       val row = source.pullRow(key, viewPortColumns)
       val value = row.get(column.name)

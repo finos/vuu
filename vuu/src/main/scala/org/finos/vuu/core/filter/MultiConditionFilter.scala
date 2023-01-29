@@ -1,6 +1,6 @@
 package org.finos.vuu.core.filter
 
-import org.finos.vuu.viewport.RowSource
+import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
 
 
@@ -16,5 +16,5 @@ trait Condition {
 
 class MultiConditionFilter extends Filter {
 
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = ???
+  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = ???
 }
