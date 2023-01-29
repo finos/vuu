@@ -132,6 +132,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def removeViewPort(vpId: String): Any = {
+    //stop updates to viewport
+    disableViewPort(vpId)
     this.viewPorts.get(vpId) match {
       case null =>
         logger.error(s"Could not find viewport to remove $vpId")
