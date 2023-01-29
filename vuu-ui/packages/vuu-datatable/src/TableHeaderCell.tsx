@@ -59,7 +59,9 @@ export const TableHeaderCell = ({
   }, [onDragEnd]);
 
   const className = cx(classBase, classNameProp, {
+    vuuPinFloating: column.pin === "floating",
     vuuPinLeft: column.pin === "left",
+    vuuPinRight: column.pin === "right",
     vuuEndPin: column.endPin,
     [`${classBase}-resizing`]: column.resizing,
     [`${classBase}-right`]: column.align === "right",

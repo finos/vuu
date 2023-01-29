@@ -61,7 +61,7 @@ export interface ColumnDescriptor {
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   className?: string;
-  endPin?: true;
+  endPin?: true | undefined;
   filter?: Filter;
   flex?: number;
   heading?: [...string[]];
@@ -74,7 +74,7 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
   moving?: boolean;
   /** used only when column is a child of GroupColumn  */
   originalIdx?: number;
-  pinnedLeftOffset?: number;
+  pinnedOffset?: number;
   resizeable?: boolean;
   resizing?: boolean;
   sortable?: boolean;

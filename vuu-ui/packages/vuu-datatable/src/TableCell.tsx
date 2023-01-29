@@ -1,5 +1,6 @@
 import { DataSourceRow } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { getColumnPinStyle } from "@finos/vuu-utils";
 import { EditableLabel } from "@heswell/salt-lab";
 import cx from "classnames";
 import { HTMLAttributes, KeyboardEvent, useRef, useState } from "react";
@@ -23,7 +24,7 @@ export const TableCell = ({
   valueFormatter = defaultValueFormatter,
 }: TableCellProps) => {
   const labelFieldRef = useRef<HTMLDivElement>(null);
-  const { align, key, pin, editable, pinnedLeftOffset, resizing } = column;
+  const { align, key, pin, editable, pinnedOffset, resizing } = column;
   const [editing, setEditing] = useState<boolean>(false);
   const value = valueFormatter(row[key]);
   const [editableValue, setEditableValue] = useState<string>(value);
@@ -64,10 +65,12 @@ export const TableCell = ({
   const className =
     cx(classNameProp, {
       vuuAlignRight: align === "right",
+      vuuPinFloating: pin === "floating",
       vuuPinLeft: pin === "left",
+      vuuPinRight: pin === "right",
       "vuuTableCell-resizing": resizing,
     }) || undefined;
-  const pinnedStyle = pin === "left" ? { left: pinnedLeftOffset } : undefined;
+  const pinnedStyle = getColumnPinStyle(column);
   return editable ? (
     <td
       className={className}

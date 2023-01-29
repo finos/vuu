@@ -72,7 +72,9 @@ export const useContextMenu = ({
         case "agg-low": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Low)), true;
         case "agg-count": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Count)), true;
         case "agg-sum": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Sum)), true;
+        case "column-pin-floating": return dispatchColumnAction({type: "updateColumnProp", column, pin: "floating"}), true;
         case "column-pin-left": return dispatchColumnAction({type: "updateColumnProp", column, pin: "left"}), true;
+        case "column-pin-right": return dispatchColumnAction({type: "updateColumnProp", column, pin: "right"}), true;
         case "column-unpin": return dispatchColumnAction({type: "updateColumnProp", column, pin: undefined}), true
         default:
       }

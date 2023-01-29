@@ -32,7 +32,7 @@ export const ColumnBasedTable = ({
           style={
             {
               width: column.width,
-              left: column.pinnedLeftOffset,
+              left: column.pinnedOffset,
               "--vuuTableHeaderHeight": `${headerHeight}px`,
               "--row-height": `${rowHeight}px`,
             } as CSSProperties

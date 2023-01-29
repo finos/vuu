@@ -10,14 +10,34 @@ import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 
-const showConcatenateInfo = () => {
+const functionDocInfo = (
+  functionName: string,
+  params: string,
+  description: string
+) => {
   const div = document.createElement("div");
+  div.className = "vuuFunctionDoc";
   div.innerHTML = `
-    <div>Concatenate</div>
-    <p>Its a function thats dead handly</p>
+    <div class="function-name">${functionName}</div>
+    <div class="param-list">${params}</div>
+    <p>${description}</p>
   `;
   return div;
 };
+
+const showConcatenateInfo = () =>
+  functionDocInfo(
+    "concatenate",
+    "(...args: (string | number | expression)[])",
+    "Displays multiple arguments as a single string value. Arguments which are not themselves strings are first converted to strings."
+  );
+
+const showLeftInfo = () =>
+  functionDocInfo(
+    "left",
+    "(value:string, length:number)",
+    "Display only the leftmost characters of the string value argument. This may be a string column or an expression which returns a string"
+  );
 
 const showParenthesesInfo = () => {
   const div = document.createElement("div");
@@ -117,6 +137,19 @@ const functions: Completion[] = [
   {
     label: "left",
     apply: "left( ",
+    boost: 2,
+    info: () => showLeftInfo(),
+    type: "function",
+  },
+  {
+    label: "upper",
+    apply: "upper( ",
+    boost: 2,
+    type: "function",
+  },
+  {
+    label: "lower",
+    apply: "lower( ",
     boost: 2,
     type: "function",
   },

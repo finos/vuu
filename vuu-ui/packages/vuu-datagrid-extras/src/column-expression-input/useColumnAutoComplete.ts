@@ -9,7 +9,6 @@ import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
 import { ISuggestionProvider2 } from "./useColumnExpressionEditor";
 import { parser } from "./column-language-parser/generated/column-parser";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 
 export type ApplyCompletion = (mode?: "add" | "replace") => void;
@@ -67,6 +66,15 @@ const getLastChild = (node: SyntaxNode) => {
     }
   }
 };
+const getFunctionName = (argListNode: SyntaxNode, state: EditorState) => {
+  if (argListNode.name === "ArgList") {
+    const functionNode = argListNode.prevSibling;
+    if (functionNode) {
+      return getValue(functionNode, state);
+    }
+  }
+};
+
 const getColumnName = (node: SyntaxNode, state: EditorState) => {
   if (node.firstChild?.name === "Column") {
     return getValue(node.firstChild, state);
@@ -136,8 +144,8 @@ export const useColumnAutoComplete = (
           }
           break;
         case "ArgList": {
+          // const functionName = getFunctionName(nodeBefore, state);
           const lastArgument = getLastChild(nodeBefore);
-
           const prefix = lastArgument?.name === "OpenBrace" ? undefined : ",";
           let options = await suggestionProvider.getSuggestions("expression");
           options = prefix ? applyPrefix(options, ", ") : options;

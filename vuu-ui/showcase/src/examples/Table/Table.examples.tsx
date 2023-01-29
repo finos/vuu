@@ -44,9 +44,14 @@ const columns: ColumnDescriptor[] = [
   { name: "column 10", width: 120 },
 ];
 
-const pinnedColumns = columns.map((col, i) => ({
+const leftPinnedColumns = columns.map((col, i) => ({
   ...col,
   pin: i === 0 || i === 3 ? ("left" as const) : undefined,
+}));
+
+const rightPinnedColumns = columns.map((col, i) => ({
+  ...col,
+  pin: i === 4 || i === 5 ? ("right" as const) : undefined,
 }));
 
 const defaultConfig = { columns };
@@ -59,7 +64,8 @@ for (let i = 0; i < count; i++) {
     i, i, true, false, 1, 0, `row ${i + 1}`, 0, `row ${i + 1}`, "value 1", "value 2", "value 3", "value 4", "value 5", "value 6", "value 7",  "value 8", "value 9", "value 10" 
   ]);
 }
-const pinnedConfig = { columns: pinnedColumns };
+const leftPinnedConfig = { columns: leftPinnedColumns };
+const rightPinnedConfig = { columns: rightPinnedColumns };
 
 export const DefaultTable = () => {
   return (
@@ -73,13 +79,13 @@ export const DefaultTable = () => {
 
 DefaultTable.displaySequence = displaySequence++;
 
-export const PinnedColumns = () => {
+export const LeftPinnedColumns = () => {
   const [isColumnBased, setIsColumnBased] = useState<boolean>(false);
   const handleToggleLayout = useCallback(() => {
     setIsColumnBased((value) => !value);
   }, []);
   return (
-    <>
+    <div style={{ width: 900, height: 900 }}>
       <Toolbar>
         <ToggleButton toggled={isColumnBased} onToggle={handleToggleLayout}>
           {isColumnBased ? "Column based table" : "Row based table"}
@@ -87,18 +93,45 @@ export const PinnedColumns = () => {
       </Toolbar>
       <DragVisualizer orientation="horizontal">
         <DataTable
-          config={pinnedConfig}
+          config={leftPinnedConfig}
           data={data}
           height={700}
           tableLayout={isColumnBased ? "column" : "row"}
           width={700}
         />
       </DragVisualizer>
-    </>
+    </div>
   );
 };
 
-PinnedColumns.displaySequence = displaySequence++;
+LeftPinnedColumns.displaySequence = displaySequence++;
+
+export const RightPinnedColumns = () => {
+  const [isColumnBased, setIsColumnBased] = useState<boolean>(false);
+  const handleToggleLayout = useCallback(() => {
+    setIsColumnBased((value) => !value);
+  }, []);
+  return (
+    <div style={{ width: 900, height: 900 }}>
+      <Toolbar>
+        <ToggleButton toggled={isColumnBased} onToggle={handleToggleLayout}>
+          {isColumnBased ? "Column based table" : "Row based table"}
+        </ToggleButton>
+      </Toolbar>
+      <DragVisualizer orientation="horizontal">
+        <DataTable
+          config={rightPinnedConfig}
+          data={data}
+          height={700}
+          tableLayout={isColumnBased ? "column" : "row"}
+          width={700}
+        />
+      </DragVisualizer>
+    </div>
+  );
+};
+
+RightPinnedColumns.displaySequence = displaySequence++;
 
 export const BetterTableFillContainer = () => {
   return (
