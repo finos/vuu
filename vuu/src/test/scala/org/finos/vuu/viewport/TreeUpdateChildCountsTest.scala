@@ -38,12 +38,15 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
 
     val columns = orderPrices.getTableDef.columns
 
+    val vpColumns = ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList)
+
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       ClientSessionId("A", "B"),
-      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList),
+      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List()),
       FilterSpec(""),
-      GroupBy(orderPrices, "ric")
+
+      GroupBy(orderPrices, vpColumns.getColumnForName( "ric").get)
         .withCount("ric")
         .asClause()
     )
@@ -93,12 +96,14 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
 
     val columns = orderPrices.getTableDef.columns
 
+    val vpColumns = ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList)
+
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       ClientSessionId("A", "B"),
-      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList),
+      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List()),
       FilterSpec(""),
-      GroupBy(orderPrices, "ric")
+      GroupBy(orderPrices, vpColumns.getColumnForName( "ric").get)
         .withCount("ric")
         .withSum("quantity")
         .asClause()

@@ -69,7 +69,7 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       emptyQueues(viewPort)
 
       addGroupBy(session, viewPortContainer,  range, viewPort,
-              GroupBy(orderPrices,"trader", "ric")
+          GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
               .withSum("quantity")
               .withCount("trader")
               .asClause())
@@ -105,7 +105,7 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       emptyQueues(viewPort)
 
       addGroupBy(session, viewPortContainer,  range, viewPortNoGb,
-        GroupBy(orderPrices,"trader", "ric")
+        GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
           .withSum("quantity")
           .withCount("trader")
           .asClause())

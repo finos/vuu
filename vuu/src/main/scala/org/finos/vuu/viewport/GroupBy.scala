@@ -399,8 +399,8 @@ case class TrackedKeyNodeState(val tracked: Map[String, Boolean] = Map()) extend
 
 
 object GroupBy {
-  def apply(table: DataTable, columns: String*): GroupByClause = {
-    GroupByClause(table, table.columnsForNames(columns.toList))
+  def apply(table: DataTable, columns: Column*): GroupByClause = {
+    GroupByClause(table, columns.toList)
   }
 }
 

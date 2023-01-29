@@ -6,6 +6,7 @@ import org.finos.vuu.provider.TestFriendlyJoinTableProvider
 import org.finos.toolbox.collection.MapDiffUtils
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
+import org.finos.vuu.viewport.ViewPortColumns
 
 object FilterAndSortFixture {
 
@@ -47,7 +48,9 @@ object FilterAndSortFixture {
   def doSort(table: SimpleDataTable, sort: GenericSort): List[(String, RowWithData)] = {
     //val genSort = GenericSort(SortSpec(List(SortDef("quantity", 'A'), SortDef("orderId", 'D'))), table.columnsForNames("quantity", "orderId") )
 
-    val result = sort.doSort(table, table.primaryKeys)
+    val viewPortColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
+
+    val result = sort.doSort(table, table.primaryKeys, viewPortColumns)
 
     val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
 

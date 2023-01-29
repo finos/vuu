@@ -14,6 +14,7 @@ import org.finos.toolbox.collection.set.ImmutableUniqueArraySet
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.DefaultClock
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.scalatest.GivenWhenThen
 
 class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLogging with ViewPortSetup with GivenWhenThen{
@@ -54,18 +55,22 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
 
-      val treeOnce = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val vpColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.columns().map(_.name).toList)
+
+      val treeOnce = TreeBuilder.create(sessionTable, GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        vpColumns,
         None,
         None
       ).build()
 
-      val treeTwice = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val treeTwice = TreeBuilder.create(sessionTable, GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        vpColumns,
         None,
         None
       ).build()
@@ -78,10 +83,11 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 501.0, "ask" -> 502.0))
 
-      val treeThrice = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val treeThrice = TreeBuilder.create(sessionTable, GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        vpColumns,
         None,
         None
       ).build()
@@ -112,21 +118,24 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
 
+      val vpColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.columns().map(_.name).toList)
 
       Given("we create a tree")
-      val treeOnce = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val treeOnce = TreeBuilder.create(sessionTable, GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        vpColumns,
         None,
         None
       ).build()
 
       And("then recreate the same tree, with different node state")
-      val treeTwice = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val treeTwice = TreeBuilder.create(sessionTable, GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        vpColumns,
         None,
         None
       ).build()

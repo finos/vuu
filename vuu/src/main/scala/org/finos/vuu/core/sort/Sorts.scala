@@ -9,11 +9,11 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import scala.annotation.tailrec
 
 trait Sort {
-  def doSort(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String]
+  def doSort(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String]
 }
 
 object NoSort extends Sort {
-  override def doSort(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def doSort(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
     primaryKeys
   }
 }
@@ -26,13 +26,15 @@ object SortDirection {
 
 case class NumericSort(direction: SortDirection.TYPE, column: Column) extends Sort {
 
-  override def doSort(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
-    val vpColumn = ViewPortColumnCreator.create(source.asTable, List(column.name))
+  override def doSort(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
+    //val vpColumn = ViewPortColumnCreator.create(source.asTable, List(column.name))
+
+    //val vpColumn = List(vpColumns.getColumnForName(column.name).get)
 
     val sortedKeys = if (direction == SortDirection.Ascending)
-      primaryKeys.toArray.sortBy(sortOneRow(_, source, vpColumn))(Ordering[Double])
+      primaryKeys.toArray.sortBy(sortOneRow(_, source, vpColumns))(Ordering[Double])
     else
-      primaryKeys.toArray.sortBy(sortOneRow(_, source, vpColumn))(Ordering[Double].reverse)
+      primaryKeys.toArray.sortBy(sortOneRow(_, source, vpColumns))(Ordering[Double].reverse)
 
     ImmutableArray.from(sortedKeys)
   }
@@ -60,9 +62,9 @@ case class GenericSort(spec: SortSpec, columns: List[Column]) extends Sort with 
 
   //val sortFunc        =
 
-  override def doSort(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def doSort(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
 
-    val vpColumns = ViewPortColumnCreator.create(source.asTable, columns.map(_.name))
+    //val vpColumns = ViewPortColumnCreator.create(source.asTable, columns.map(_.name))
 
     val snapshot = primaryKeys.toArray.map(key => (key -> source.pullRow(key, vpColumns))).toMap
 
@@ -193,9 +195,9 @@ object SortFunctions extends StrictLogging {
 
 case class AlphaSort(direction: SortDirection.TYPE, column: Column) extends Sort {
 
-  override def doSort(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def doSort(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
 
-    val vpColumns = ViewPortColumnCreator.create(source.asTable, List(column.name))
+    //val vpColumns = ViewPortColumnCreator.create(source.asTable, List(column.name))
 
     val sortedKeys = if (direction == SortDirection.Ascending)
       primaryKeys.toArray.sortBy(sortOneRow(_, source, vpColumns))(Ordering[String])

@@ -310,7 +310,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
 
-      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None, Some(aSort)).build()
+      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
       val keys = tree.toKeys()
       sessionTable.setTree(tree, keys)
       viewPort.setKeys(keys)
@@ -363,7 +363,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
 
-      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None, Some(aSort)).build()
+      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
 
       val keys = tree.toKeys()
 
@@ -536,7 +536,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val oldNodeState = CollectionConverters.asScala(tbl.getTree.nodeState).toMap
 
         val (millis, tree) = timeIt {
-          new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree), Option(viewPort.getStructure.filtAndSort.sort)).build()
+          new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, Option(tbl.getTree), Option(viewPort.getStructure.filtAndSort.sort)).build()
         }
 
         val (millis2, keys) = timeIt {
@@ -580,7 +580,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       val filterAndSort = viewPort.filterAndSort
 
       val (millis, _) = TimeIt.timeIt {
-        val sorted = filterAndSort.filterAndSort(viewPort.table, keys)
+        val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns)
         viewPort.setKeys(sorted)
       }
 

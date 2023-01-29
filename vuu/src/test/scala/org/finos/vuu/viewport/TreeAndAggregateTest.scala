@@ -42,7 +42,7 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
         queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
-        GroupBy(orderPrices,"trader", "ric")
+        GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
           .withSum("quantity")
           .withCount("trader")
           .asClause()
@@ -183,7 +183,7 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
       queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns,
       SortSpec(List()),
       FilterSpec(""),
-      GroupBy(orderPrices, "trader", "ric")
+      GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
         .withSum("quantity")
         .withCount("trader")
         .asClause()
