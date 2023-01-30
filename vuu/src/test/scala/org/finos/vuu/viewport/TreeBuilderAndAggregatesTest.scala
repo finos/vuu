@@ -61,7 +61,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
       ).build()
 
       tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(450.0)
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal(300.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(300.0)
       tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(700.0)
     }
 
@@ -93,7 +93,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
       ).build()
 
       tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(1000.0)
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal(500.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(500.0)
       tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(1000.0)
     }
 
@@ -125,7 +125,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
       ).build()
 
       tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(100.0)
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal(100.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(100.0)
       tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(500.0)
     }
 
@@ -159,10 +159,10 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
       ).build()
 
       tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(3600.0)
-      tree.root.getAggregationFor(orderPrices.columnForName("trader")) should equal("2")
+      tree.root.getAggregationFor(orderPrices.columnForName("trader")) should equal(2)
 
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal(1500.0)
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("trader")) should equal(1)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(1500.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("trader")) should equal(1)
 
       tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(2100.0)
       tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("trader")) should equal(1)
