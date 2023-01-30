@@ -14,11 +14,7 @@ import org.finos.toolbox.time.Clock
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 import scala.jdk.CollectionConverters._
 
-trait SessionTable extends DataTable with SessionListener {
-  def sessionId: ClientSessionId
 
-  def delete(): Unit
-}
 
 class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped: KeyObserver[T], val originalKey: String) extends WrappedKeyObserver[T](wrapped) {
   override def onUpdate(update: T): Unit = {

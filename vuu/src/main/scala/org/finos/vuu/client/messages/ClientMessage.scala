@@ -37,6 +37,13 @@ object TokenId {
   }
 }
 
+object ClientOrderId {
+
+  def oneNew() = {
+    "cl-"+ UUID.randomUUID().toString
+  }
+}
+
 
 trait ClientMessage
 
