@@ -82,6 +82,8 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue)
   }
 
+
+
   def createDefaultOrderPricesViewPortInfra() = {
     implicit val lifecycle = new LifecycleContainer
 

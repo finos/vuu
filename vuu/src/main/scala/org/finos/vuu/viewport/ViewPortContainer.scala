@@ -80,7 +80,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     asMap.get(rpcName) match {
       case Some(menuItem) =>
         menuItem match {
-          case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection), session)
+          case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection, viewPort), session)
         }
       case None =>
         throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
@@ -310,7 +310,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sourceTable = viewPort.table
 
-      val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
+      val sessionTable = tableContainer.createTreeSessionTable(sourceTable, clientSession)
 
       val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
       val keys = tree.toKeys()
@@ -363,7 +363,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       //then remove it from table container
       tableContainer.removeGroupBySessionTable(groupByTable)
 
-      val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
+      val sessionTable = tableContainer.createTreeSessionTable(sourceTable, clientSession)
 
       val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
 
@@ -408,11 +408,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val filtAndSort = core.sort.UserDefinedFilterAndSort(aFilter, aSort)
 
-    val aTable = if (groupBy == NoGroupBy) {
-      table
-    } else {
-      tableContainer.createGroupBySessionTable(table, clientSession)
-    }
+    val aTable = ViewPortTableCreator.create(table, clientSession, groupBy, tableContainer)
 
     val viewPortDefFunc = getViewPortDefinition(table.name);
 

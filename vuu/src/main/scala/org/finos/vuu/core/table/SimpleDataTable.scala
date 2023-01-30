@@ -1,12 +1,13 @@
 package org.finos.vuu.core.table
 
-import org.finos.vuu.api.TableDef
+import org.finos.vuu.api.{SessionTableDef, TableDef}
 import org.finos.vuu.core.index._
 import org.finos.vuu.provider.{JoinTableProvider, Provider}
 import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
+import org.finos.vuu.net.ClientSessionId
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
@@ -189,6 +190,13 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primary
       SimpleDataTableData(data, primaryKeyValues.-(key))
     }
   }
+
+  def deleteAll(): SimpleDataTableData = {
+    data.synchronized {
+      data.clear()
+      SimpleDataTableData(data, ImmutableArray.empty)
+    }
+  }
 }
 
 
@@ -238,7 +246,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   override def primaryKeys: ImmutableArray[String] = data.primaryKeyValues
 
-  @volatile private var data = SimpleDataTableData(new ConcurrentHashMap[String, RowData](), ImmutableArray.from(new Array[String](0)))
+  @volatile protected var data = SimpleDataTableData(new ConcurrentHashMap[String, RowData](), ImmutableArray.from(new Array[String](0)))
 
   override def pullRow(key: String): RowData = {
     data.dataByKey(key) match {

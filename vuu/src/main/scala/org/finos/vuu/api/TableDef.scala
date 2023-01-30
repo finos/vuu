@@ -20,6 +20,18 @@ object Link {
   }
 }
 
+object SessionTableDef {
+  def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
+    new SessionTableDef(name, keyField, columns, joinFields, indices = Indices())
+  }
+}
+
+object JoinSessionTableDef {
+  def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
+    null//new JoinSessionTableDef(name, keyField, columns, joinFields, indices = Indices())
+  }
+}
+
 object TableDef {
 
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, joinFields: String*): TableDef = {
@@ -88,6 +100,17 @@ object PreserveIndexOnShutdown extends CleanupPolicy
 case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
+
+class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, baseTable, joinColumns, joinFields)
+
+class SessionTableDef(name: String,
+                      keyField: String,
+                      columns: Array[Column],
+                      joinFields: Seq[String],
+                      autosubscribe: Boolean = false,
+                      links: VisualLinks = VisualLinks(),
+                      indices: Indices) extends TableDef(name, keyField, columns, joinFields, autosubscribe, links, indices)
+
 
 class TableDef(val name: String,
                val keyField: String,
