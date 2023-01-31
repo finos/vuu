@@ -27,8 +27,14 @@ import {
 
 import { InlinedWorker } from "./inlined-worker";
 
+// In a dev build, this will be stripping out the function wrapper
+// function InlinedWorker(){ ..... }
+// In a prod build, "inlinedWorker" will be minified and depending
+// on the minifier used may be reduced to something like the following:
+//  function(){ ...}
+//  function _(){ ...}
 const workerSource = InlinedWorker.toString().replace(
-  /(?:^function\s+[^(]*\(\)\s*\{)|(?:\}$)/g,
+  /(?:^function(?:\s+[^(]*)?\(\)\s*\{)|(?:\}$)/g,
   ""
 );
 const workerBlob = new Blob([workerSource], { type: "text/javascript" });
