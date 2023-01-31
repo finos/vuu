@@ -67,6 +67,7 @@
 .vuuFunctionDoc .param-list {
     font-style: italic;
     color: blue;
+    white-space: pre;
 }
 
 .vuuFunctionDoc .function-type {

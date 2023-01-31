@@ -22,14 +22,14 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "concatenate",
     params: {
-      description: "(&nbsp;string, string, [string*]&nbsp;)",
+      description: "( string, string, [ string* ] )",
     },
     type: "string",
   },
 
   {
     description:
-      "Returns the leftmost &lt;number&gt; characters from &lt;string&gt;. First argument may be a string literal, string column or other string expression.",
+      "Returns the leftmost <number> characters from <string>. First argument may be a string literal, string column or other string expression.",
     example: {
       expression: "blah",
       result: "blah",
@@ -37,13 +37,13 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     name: "left",
     params: {
       count: 2,
-      description: "(&nbsp;string, number&nbsp;)",
+      description: "( string, number )",
     },
     type: "string",
   },
   {
     description:
-      "Returns the number of characters in &lt;string&gt;. Argument may be a string literal, string column or other string expression.",
+      "Returns the number of characters in <string>. Argument may be a string literal, string column or other string expression.",
     example: {
       expression: 'len("example")',
       result: "7",

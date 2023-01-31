@@ -1,19 +1,20 @@
-import { defaultKeymap } from "@codemirror/commands";
-import { ensureSyntaxTree } from "@codemirror/language";
-import { EditorState } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
-import { MutableRefObject, useEffect, useMemo, useRef } from "react";
-import { minimalSetup } from "./codemirror-basic-setup";
-import { columnExpressionLanguageSupport } from "./column-language-parser";
-import { vuuHighlighting } from "./highlighting";
-import { vuuTheme } from "./theme";
-import { walkExpressionTree } from "./column-language-parser/walkExpressionTree";
-import { Expression } from "./column-language-parser/Expression";
 import {
   autocompletion,
   Completion,
   startCompletion,
 } from "@codemirror/autocomplete";
+import { defaultKeymap } from "@codemirror/commands";
+import { ensureSyntaxTree } from "@codemirror/language";
+import { EditorState } from "@codemirror/state";
+import { EditorView, keymap } from "@codemirror/view";
+import { createEl } from "@finos/vuu-utils";
+import { MutableRefObject, useEffect, useMemo, useRef } from "react";
+import { minimalSetup } from "./codemirror-basic-setup";
+import { columnExpressionLanguageSupport } from "./column-language-parser";
+import { Expression } from "./column-language-parser/Expression";
+import { walkExpressionTree } from "./column-language-parser/walkExpressionTree";
+import { vuuHighlighting } from "./highlighting";
+import { vuuTheme } from "./theme";
 import {
   ApplyCompletion,
   useColumnAutoComplete,
@@ -66,11 +67,9 @@ const hasExpressionType = (
 
 const injectOptionContent = (completion: Completion, state: EditorState) => {
   if (hasExpressionType(completion)) {
-    const div = document.createElement("div");
-    div.className = "steve-type";
-    div.innerHTML = `
-      <span class="expression-type">${completion.expressionType}</span>
-    `;
+    const div = createEl("div", "steve-type");
+    const span = createEl("span", "expression-type", completion.expressionType);
+    div.appendChild(span);
     return div;
   } else {
     return null;

@@ -1,15 +1,13 @@
 import { Completion } from "@codemirror/autocomplete";
 import { useTypeaheadSuggestions } from "@finos/vuu-data";
-import {
-  ColumnExpressionSuggestionType,
-  IExpressionSuggestionProvider,
-} from "@finos/vuu-datagrid-extras";
+import { IExpressionSuggestionProvider } from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { SuggestionType } from "@finos/vuu-filters";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import { columnFunctionDescriptors } from "./column-function-descriptors";
+import { createEl } from "@finos/vuu-utils";
 
 const functionDocInfo = (
   functionName: string,
@@ -17,25 +15,34 @@ const functionDocInfo = (
   type: string,
   description: string
 ) => {
-  const div = document.createElement("div");
-  div.className = "vuuFunctionDoc";
-  div.innerHTML = `
-    <div class="function-heading">
-      <span class="function-name">${functionName}</span>
-      <span class="param-list">${params}</span>
-      <span class="function-type">${type}</span>
-    </div>
-    <p>${description}</p>
-  `;
+  const div = createEl("div", "vuuFunctionDoc");
+  const child1 = createEl("div", "function-heading");
+
+  const child1_1 = createEl("span", "function-name", functionName);
+  const child1_2 = createEl("span", "param-list", params);
+  const child1_3 = createEl("span", "function-type", type);
+  child1.appendChild(child1_1);
+  child1.appendChild(child1_2);
+  child1.appendChild(child1_3);
+
+  const child2 = createEl("p", undefined, description);
+
+  div.appendChild(child1);
+  div.appendChild(child2);
+
   return div;
 };
 
 const showParenthesesInfo = () => {
-  const div = document.createElement("div");
-  div.innerHTML = `
-    <div>Ass Parentheses</div>
-    <p>Use parentheses to control order of evaluation oe expression clauses</p>
-  `;
+  const div = createEl("div");
+  const child1 = createEl("div", undefined, "Add Parentheses");
+  const child2 = createEl(
+    "p",
+    undefined,
+    "Use parentheses to control order of evaluation oe expression clauses"
+  );
+  div.appendChild(child1);
+  div.appendChild(child2);
   return div;
 };
 
