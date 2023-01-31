@@ -34,9 +34,19 @@
 }
 
 .steve-type {
-    margin: 0 4px 0 auto;
-    color: red;
+    margin: 0 3px 0 auto;
+    color: var(--salt-text-secondary-foreground)
+}
 
+.expression-kind {
+    display: inline-block;
+    width: 50px;
+}
+
+.expression-type {
+    display: inline-block;
+    text-align: right;
+    width: 50px;
 }
 
 .vuuSuggestion {
@@ -45,11 +55,20 @@
 }
 
 
+.vuuFunctionDoc .function-heading {
+    display: flex;
+    gap: 3px;
+}
+
 .vuuFunctionDoc .function-name {
-    text-transform: capitalize;
+    font-style: italic;
 }
 
 .vuuFunctionDoc .param-list {
     font-style: italic;
     color: blue;
+}
+
+.vuuFunctionDoc .function-type {
+    margin-left: auto;
 }

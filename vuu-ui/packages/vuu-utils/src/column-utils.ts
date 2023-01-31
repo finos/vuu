@@ -251,6 +251,7 @@ export const sortPinnedColumns = (
       case "left": {
         leftPinnedColumns.push({
           ...column,
+          endPin: undefined,
           pinnedOffset: pinnedWidthLeft
         }); 
         pinnedWidthLeft += column.width;

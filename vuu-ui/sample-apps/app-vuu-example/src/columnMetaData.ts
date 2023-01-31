@@ -2,6 +2,41 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 const Average = 2;
 
+const ccy: Partial<ColumnDescriptor> = {
+  name: "ccy",
+  label: "CCY",
+  width: 60,
+};
+
+const filledQuantity: Partial<ColumnDescriptor> = {
+  label: "Filled Qty",
+  name: "filledQuantity",
+  minWidth: 150,
+  type: {
+    name: "number",
+    renderer: { name: "progress", associatedField: "quantity" },
+    formatting: { decimals: 0 },
+  },
+};
+
+const ric: Partial<ColumnDescriptor> = {
+  name: "ric",
+  label: "RIC",
+  type: {
+    name: "string",
+  },
+  width: 60,
+};
+
+const side: Partial<ColumnDescriptor> = {
+  label: "Side",
+  name: "side",
+  type: {
+    name: "string",
+  },
+  width: 60,
+};
+
 const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
   account: {
     label: "Account",
@@ -68,11 +103,6 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
     },
     aggregate: Average,
   },
-  ccy: {
-    name: "ccy",
-    label: "CCY",
-    width: 60,
-  },
   childCount: {
     label: "Child Count",
     name: "childCount",
@@ -125,15 +155,10 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
   filledQty: {
     label: "Filled Qty",
     name: "filledQty",
-    width: 80,
+    width: 150,
     type: {
       name: "number",
     },
-  },
-  filledQuantity: {
-    label: "Filled Qty",
-    name: "filledQuantity",
-    width: 80,
   },
   id: {
     name: "id",
@@ -266,23 +291,9 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
       name: "number",
     },
   },
-  ric: {
-    name: "ric",
-    label: "RIC",
-    type: {
-      name: "string",
-    },
-  },
   scenario: {
     label: "Scenario",
     name: "scenario",
-    type: {
-      name: "string",
-    },
-  },
-  side: {
-    label: "Side",
-    name: "side",
     type: {
       name: "string",
     },
@@ -367,26 +378,16 @@ type TableColDefs = { [key: string]: Partial<ColumnDescriptor> };
 
 const tables: { [key: string]: TableColDefs } = {
   orders: {
-    filledQuantity: {
-      ...columnMetaData.filledQuantity,
-      width: 120,
-      type: {
-        name: "number",
-        renderer: { name: "progress", associatedField: "quantity" },
-        formatting: { decimals: 0 },
-      },
-    },
+    ccy,
+    filledQuantity,
+    ric,
+    side,
   },
   ordersPrices: {
-    filledQuantity: {
-      ...columnMetaData.filledQuantity,
-      width: 120,
-      type: {
-        name: "number",
-        renderer: { name: "progress", associatedField: "quantity" },
-        formatting: { decimals: 0 },
-      },
-    },
+    ccy,
+    filledQuantity,
+    ric,
+    side,
   },
 };
 

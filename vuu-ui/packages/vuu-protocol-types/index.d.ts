@@ -102,9 +102,12 @@ export interface ServerToClientTableList {
 
 export type VuuTableList = Pick<ServerToClientTableList, "tables">;
 
-export interface ServerToClientTableMeta {
+export interface VuuTableMeta {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
+}
+
+export interface ServerToClientTableMeta extends VuuTableMeta {
   type: "TABLE_META_RESP";
   table: VuuTable;
 }

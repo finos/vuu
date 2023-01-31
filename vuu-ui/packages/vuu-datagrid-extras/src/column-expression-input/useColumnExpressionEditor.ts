@@ -25,12 +25,15 @@ export type ColumnExpressionSuggestionType =
   | "operator";
 
 // TODO move this somewhere neutral
-export interface ISuggestionProvider2 {
+export interface IExpressionSuggestionProvider {
   getSuggestions: (
     valueType: ColumnExpressionSuggestionType,
-    columnName?: string,
-    startsWith?: string,
-    selection?: string[]
+    options?: {
+      columnName?: string;
+      filterNameName?: string;
+      startsWith?: string;
+      selection?: string[];
+    }
   ) => Promise<Completion[]>;
   isPartialMatch: (
     valueType: ColumnExpressionSuggestionType,
@@ -40,7 +43,7 @@ export interface ISuggestionProvider2 {
 }
 
 export interface SuggestionConsumer2 {
-  suggestionProvider: ISuggestionProvider2;
+  suggestionProvider: IExpressionSuggestionProvider;
 }
 
 const getView = (ref: MutableRefObject<EditorView | undefined>): EditorView => {
@@ -56,32 +59,19 @@ const getOptionClass = (/*completion: Completion*/) => {
 
 const noop = () => console.log("noooop");
 
-const hasColumnType = (
+const hasExpressionType = (
   completion: Completion
-): completion is Completion & { columnType: string } =>
-  "columnType" in completion;
-
-const getOptionContent = (completion: Completion) => {
-  if (completion.label === "(") {
-    return "parentheses";
-  } else if (completion.type === "column") {
-    if (hasColumnType(completion)) {
-      return `${completion.columnType} column`;
-    } else {
-      return "column";
-    }
-  } else {
-    return undefined;
-  }
-};
+): completion is Completion & { expressionType: string } =>
+  "expressionType" in completion;
 
 const injectOptionContent = (completion: Completion, state: EditorState) => {
-  const label = getOptionContent(completion);
-  if (label) {
-    const node = document.createElement("span");
-    node.className = "steve-type";
-    node.innerHTML = label;
-    return node;
+  if (hasExpressionType(completion)) {
+    const div = document.createElement("div");
+    div.className = "steve-type";
+    div.innerHTML = `
+      <span class="expression-type">${completion.expressionType}</span>
+    `;
+    return div;
   } else {
     return null;
   }
