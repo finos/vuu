@@ -26,6 +26,7 @@ import {
 // Note: the InlinedWorker is a generated file, it must be built
 
 import { InlinedWorker } from "./inlined-worker";
+import { VuuTableMetaWithTable } from "./hooks";
 
 // In a dev build, this will be stripping out the function wrapper
 // function InlinedWorker(){ ..... }
@@ -185,7 +186,7 @@ const asyncRequest = <T = unknown>(
 
 export interface ServerAPI {
   destroy: (viewportId?: string) => void;
-  getTableMeta: (table: VuuTable) => Promise<VuuTableMeta>;
+  getTableMeta: (table: VuuTable) => Promise<VuuTableMetaWithTable>;
   getTableList: () => Promise<VuuTableList>;
   rpcCall: <T = unknown>(msg: VuuRpcRequest | VuuMenuRpcRequest) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
@@ -227,7 +228,10 @@ const connectedServerAPI: ServerAPI = {
     asyncRequest<VuuTableList>({ type: Message.GET_TABLE_LIST }),
 
   getTableMeta: async (table) =>
-    asyncRequest<VuuTableMeta>({ type: Message.GET_TABLE_META, table }),
+    asyncRequest<VuuTableMetaWithTable>({
+      type: Message.GET_TABLE_META,
+      table,
+    }),
 };
 
 class _ConnectionManager extends EventEmitter {

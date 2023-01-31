@@ -53,7 +53,6 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
     tableMeta,
     title,
     viewport,
-    "visual-link": visualLink,
   }: ArrayDataSourceConstructorProps) {
     super();
 
@@ -62,7 +61,6 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
     this.#data = data;
     this.#tableMeta = tableMeta;
     this.viewport = viewport;
-    this.visualLink = visualLink;
     if (aggregations) {
       this.#aggregations = aggregations;
     }
