@@ -25,8 +25,8 @@ class AverageAggregation(val column: Column) extends NodeAggregation {
   private var average: Double = 0D
   private var samples: Int = 0
 
-  override def toValue: String = {
-    average.toString
+  override def toValue: Any = {
+    average
   }
   override def processLeaf(row: RowData): Unit = {
     val colData = column.getData(row)
@@ -41,8 +41,8 @@ class AverageAggregation(val column: Column) extends NodeAggregation {
 class HighAggregation(val column: Column) extends NodeAggregation {
   private var value: Double = 0D
 
-  override def toValue: String = {
-    value.toString
+  override def toValue: Any = {
+    value
   }
   override def processLeaf(row: RowData): Unit = {
     val colData = column.getData(row)
@@ -55,8 +55,8 @@ class HighAggregation(val column: Column) extends NodeAggregation {
 class LowAggregation(val column: Column) extends NodeAggregation {
   private var value: Double = Integer.MAX_VALUE.toDouble
 
-  override def toValue: String = {
-    value.toString
+  override def toValue: Any = {
+    value
   }
   override def processLeaf(row: RowData): Unit = {
     val colData = column.getData(row)
@@ -69,7 +69,7 @@ class LowAggregation(val column: Column) extends NodeAggregation {
 class SumAggregation(val column: Column) extends NodeAggregation {
   private var value: Double = 0d
 
-  override def toValue: String = value.toString
+  override def toValue: Any = value
 
   override def processLeaf(row: RowData): Unit = {
     val colData = column.getData(row)
@@ -84,7 +84,7 @@ class CountAggregation(val column: Column) extends NodeAggregation {
   private val hashSet = new util.HashSet[String]()
 
   //override def column: Column = ???
-  override def toValue: String = hashSet.size().toString
+  override def toValue: Any = hashSet.size()
 
   override def processLeaf(row: RowData): Unit = {
     val colData = column.getData(row)
@@ -98,7 +98,7 @@ class CountAggregation(val column: Column) extends NodeAggregation {
 trait NodeAggregation {
   def column: Column
 
-  def toValue: String
+  def toValue: Any
 
   def processLeaf(row: RowData): Unit
 
@@ -127,7 +127,7 @@ trait TreeNode {
   def toMap(tree: Tree): Map[String, Any]
   def toArray(tree: Tree): Array[Any]
   def processRowForAggregation(row: RowData): Unit
-  def getAggregationFor(column: Column): String
+  def getAggregationFor(column: Column): Any
   def childRowsHash(): Int
 }
 
@@ -136,13 +136,13 @@ class TreeNodeImpl(val isLeaf: Boolean, val key: String, val originalKey: String
 
   import TreeNode._
 
-  lazy val aggregationsByColumn = aggregations.map(a => a.column -> a).toMap
+  private lazy val aggregationsByColumn = aggregations.map(a => a.column -> a).toMap
 
-  private var childRowHash: Int = -1;
+  private var childRowHash: Int = -1
 
   override def childRowsHash(): Int = childRowHash + aggregations.hashCode()
 
-  override def getAggregationFor(column: Column): String = {
+  override def getAggregationFor(column: Column): Any = {
     aggregationsByColumn.getOrElse(column, null) match {
       case agg: NodeAggregation => agg.toValue
       case null => null
@@ -156,7 +156,7 @@ class TreeNodeImpl(val isLeaf: Boolean, val key: String, val originalKey: String
     this
   }
 
-  def isRoot = key == ROOT_KEY
+  def isRoot: Boolean = key == ROOT_KEY
 
   override def hashCode(): Int = key.hashCode + childRowHash
 
@@ -222,11 +222,11 @@ trait Tree {
 
   def closeAll(): Unit
 
-  def open(treeKey: String) = {
+  def open(treeKey: String): TreeNodeState = {
     nodeState.put(treeKey, OpenTreeNodeState)
   }
 
-  def close(treeKey: String) = {
+  def close(treeKey: String): TreeNodeState = {
     nodeState.put(treeKey, ClosedTreeNodeState)
   }
 
@@ -271,11 +271,11 @@ case class ImmutableTreeImpl(root: TreeNode, lookup: Map[String, TreeNode], look
 
   override def nodes(): Iterable[TreeNode] = lookup.values
 
-  def openAll() = {
+  def openAll(): Unit = {
     this.lookup.values.foreach(node => if (!node.isRoot) open(node.key))
   }
 
-  def closeAll() = {
+  def closeAll(): Unit = {
     this.lookup.values.foreach(node => if (!node.isRoot) close(node.key))
   }
 
@@ -292,7 +292,7 @@ case class ImmutableTreeImpl(root: TreeNode, lookup: Map[String, TreeNode], look
 
   //override def toKeys(): ImmutableArray[String] = ???
 
-  def isOpen(latestNode: TreeNode) = {
+  def isOpen(latestNode: TreeNode): Boolean = {
 
     if (latestNode.key == TreeNode.ROOT_KEY) {
       true
@@ -311,19 +311,19 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
 
   override def nodes(): Iterable[TreeNode] = IteratorHasAsScala(lookup.values().iterator()).asScala.toList
 
-  def immutate = {
+  def immutate: ImmutableTreeImpl = {
     ImmutableTreeImpl(rootNode, MapHasAsScala(lookup).asScala.toMap[String, TreeNode], MapHasAsScala(lookupOrigKeyToTreeKey).asScala.toMap[String, TreeNode], nodeState)
   }
 
-  def openAll() = {
+  def openAll(): Unit = {
     CollectionHasAsScala(this.lookup.values()).asScala.foreach(node => if (!node.isRoot) open(node.key))
   }
 
-  def closeAll() = {
+  def closeAll(): Unit = {
     CollectionHasAsScala(this.lookup.values()).asScala.foreach(node => if (!node.isRoot) close(node.key))
   }
 
-  def root = getNode("$root")
+  def root: TreeNode = getNode("$root")
 
   private val lookup = new ConcurrentHashMap[String, TreeNode](100_000, 0.1f)
   private val lookupOrigKeyToTreeKey = new ConcurrentHashMap[String, TreeNode](100_000, 0.1f)
@@ -335,7 +335,7 @@ case class TreeImpl(private val rootNode: TreeNode, nodeState: ConcurrentHashMap
     ImmutableArray.from(keys)
   }
 
-  def isOpen(latestNode: TreeNode) = {
+  def isOpen(latestNode: TreeNode): Boolean = {
 
     if (latestNode.key == TreeNode.ROOT_KEY) {
       true

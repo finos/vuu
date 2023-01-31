@@ -60,14 +60,14 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         None
       ).build()
 
-      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("450.0")
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("300.0")
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("700.0")
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(450.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(300.0)
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(700.0)
     }
 
     Scenario("Test high"){
-      implicit val clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
+      implicit val clock: DefaultClock = new DefaultClock
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -92,14 +92,14 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         None
       ).build()
 
-      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("1000.0")
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("500.0")
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("1000.0")
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(1000.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(500.0)
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(1000.0)
     }
 
     Scenario("Test low"){
-      implicit val clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
+      implicit val clock: DefaultClock = new DefaultClock
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -124,15 +124,15 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         None
       ).build()
 
-      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("100.0")
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("100.0")
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("500.0")
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(100.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(100.0)
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(500.0)
     }
 
     Scenario("build simple groupby tree"){
 
-      implicit val clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
+      implicit val clock: DefaultClock = new DefaultClock
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -158,14 +158,14 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         None
       ).build()
 
-      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("3600.0")
-      tree.root.getAggregationFor(orderPrices.columnForName("trader")) should equal("2")
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(3600.0)
+      tree.root.getAggregationFor(orderPrices.columnForName("trader")) should equal(2)
 
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("1500.0")
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("trader")) should equal("1")
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(1500.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("trader")) should equal(1)
 
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("2100.0")
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("trader")) should equal("1")
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(2100.0)
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("trader")) should equal(1)
 
       tree.openAll()
 
