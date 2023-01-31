@@ -1,7 +1,6 @@
 .hwHeaderCell {
   --justify-text: flex-start;
   align-items: stretch;
-  background: var(--grid-header-cell-background);
   border-bottom: solid 1px var(--heading-border-color);
   border-right: 1px solid var(--heading-border-color);
   box-sizing: border-box;

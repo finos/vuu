@@ -41,7 +41,7 @@ TableCellProps) => {
   // const value = valueFormatter(row[column.key]);
   const [value, offset] = getGroupValueAndOffset(columns, row);
   const style = {
-    left: column.pin == "left" ? column.pinnedLeftOffset : undefined,
+    left: column.pin == "left" ? column.pinnedOffset : undefined,
     // paddingLeft: (offset - 1) * 20,
   };
   const isLeaf = row[IS_LEAF];

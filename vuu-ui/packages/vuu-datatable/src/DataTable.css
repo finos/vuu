@@ -124,7 +124,7 @@
   height: var(--vuuTable-rowHeight);
 }
 
-.vuuPinLeft {
+:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   position: sticky;
 }
 
@@ -132,12 +132,12 @@
   text-align: right;
 }
 
-th.vuuPinLeft {
+th:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   top:0;
   z-index: 2;
 }
 
-table.vuuPinLeft {
+table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   z-index: 10;
 }
 

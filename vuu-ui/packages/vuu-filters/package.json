@@ -8,7 +8,6 @@
   "scripts": {
     "build": "node ../../scripts/run-build.mjs",
     "lezer-generate:filter": "lezer-generator --output ./src/filter-input/filter-language-parser/generated/filter-parser.js ./src/filter-input/filter-language-parser/grammar/filter.grammar",
-    "lezer-generate:column": "lezer-generator --output ./src/column-expression-input/column-language-parser/generated/column-parser.js ./src/column-expression-input/column-language-parser/grammar/column.grammar",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
@@ -25,7 +24,7 @@
   "peerDependencies": {
     "@finos/vuu-data": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
-    "@heswell/salt-lab": "1.0.0-alpha.0",
+    "@heswell/salt-lab": "1.0.0-alpha.0-vuu.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   }

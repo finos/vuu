@@ -20,7 +20,7 @@ export declare type TypeFormatting = {
 export declare type ColumnTypeSimple = "string" | "number";
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
-  name: string;
+  name: ColumnTypeSimple;
   renderer?: {
     associatedField?: string;
     flashStyle?: "bg-only" | "arrow-bg" | "arrow";
@@ -40,6 +40,7 @@ export interface ColumnDescriptor {
   aggregate?: VuuAggType;
   align?: "left" | "right";
   className?: string;
+  editable?: boolean;
   expression?: string;
   flex?: number;
   heading?: [...string[]];
@@ -60,7 +61,7 @@ export interface ColumnDescriptor {
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   className?: string;
-  endPin?: true;
+  endPin?: true | undefined;
   filter?: Filter;
   flex?: number;
   heading?: [...string[]];
@@ -73,7 +74,7 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
   moving?: boolean;
   /** used only when column is a child of GroupColumn  */
   originalIdx?: number;
-  pinnedLeftOffset?: number;
+  pinnedOffset?: number;
   resizeable?: boolean;
   resizing?: boolean;
   sortable?: boolean;

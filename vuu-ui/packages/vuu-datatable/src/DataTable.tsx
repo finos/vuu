@@ -82,6 +82,7 @@ export const DataTable = ({
     "--content-width": `${viewportMeasurements.scrollContentWidth}px`,
     "--filler-height": `${viewportMeasurements.fillerHeight}px`,
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
+    "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
     "--header-height": `${headerHeight}px`,
     "--row-height": `${rowHeight}px`,
     "--scrollbar-size": `${viewportMeasurements.scrollbarSize}px`,

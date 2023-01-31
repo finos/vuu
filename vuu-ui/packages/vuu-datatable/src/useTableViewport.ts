@@ -20,6 +20,7 @@ export interface ViewportMeasurements {
   maxScrollContainerScrollHorizontal: number;
   maxScrollContainerScrollVertical: number;
   pinnedWidthLeft: number;
+  pinnedWidthRight: number;
   rowCount: number;
   scrollContentHeight: number;
   scrollbarSize: number;
@@ -31,6 +32,7 @@ const UNMEASURED_VIEWPORT = {
   maxScrollContainerScrollHorizontal: 0,
   maxScrollContainerScrollVertical: 0,
   pinnedWidthLeft: 0,
+  pinnedWidthRight: 0,
   rowCount: 0,
   scrollContentHeight: 0,
   scrollbarSize: 0,
@@ -39,16 +41,19 @@ const UNMEASURED_VIEWPORT = {
 
 const measurePinnedColumns = (columns: KeyedColumnDescriptor[]) => {
   let pinnedWidthLeft = 0;
+  let pinnedWidthRight = 0;
   let unpinnedWidth = 0;
   for (const column of columns) {
     const { pin, width } = column;
     if (pin === "left") {
       pinnedWidthLeft += width;
+    } else if (pin === "right") {
+      pinnedWidthRight += width;
     } else {
       unpinnedWidth += width;
     }
   }
-  return { pinnedWidthLeft, unpinnedWidth };
+  return { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth };
 };
 
 export const useTableViewport = ({
@@ -58,7 +63,7 @@ export const useTableViewport = ({
   rowHeight,
   size,
 }: TableViewportHookProps) => {
-  const { pinnedWidthLeft, unpinnedWidth } = useMemo(
+  const { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth } = useMemo(
     () => measurePinnedColumns(columns),
     [columns]
   );
@@ -67,7 +72,8 @@ export const useTableViewport = ({
     if (size) {
       const scrollbarSize = 15;
       const contentHeight = rowCount * rowHeight;
-      const scrollContentWidth = pinnedWidthLeft + unpinnedWidth;
+      const scrollContentWidth =
+        pinnedWidthLeft + unpinnedWidth + pinnedWidthRight;
       const maxScrollContainerScrollVertical =
         contentHeight +
         headerHeight -
@@ -84,6 +90,7 @@ export const useTableViewport = ({
         maxScrollContainerScrollHorizontal,
         maxScrollContainerScrollVertical,
         pinnedWidthLeft,
+        pinnedWidthRight,
         rowCount: count,
         scrollContentHeight: headerHeight + contentHeight + scrollbarSize,
         scrollbarSize,
@@ -92,7 +99,15 @@ export const useTableViewport = ({
     } else {
       return UNMEASURED_VIEWPORT;
     }
-  }, [headerHeight, pinnedWidthLeft, rowCount, rowHeight, size, unpinnedWidth]);
+  }, [
+    headerHeight,
+    pinnedWidthLeft,
+    pinnedWidthRight,
+    rowCount,
+    rowHeight,
+    size,
+    unpinnedWidth,
+  ]);
 
   return viewportMeasurements;
 };

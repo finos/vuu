@@ -338,6 +338,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   set aggregations(aggregations: VuuAggregation[]) {
+    this.#aggregations = aggregations;
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,

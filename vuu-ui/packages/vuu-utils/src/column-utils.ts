@@ -8,6 +8,7 @@ import {
   VuuAggType,
   VuuGroupBy,
 } from "@finos/vuu-protocol-types";
+import { CSSProperties } from "react";
 import { Row } from "./row-utils";
 
 export interface ColumnMap {
@@ -250,13 +251,14 @@ export const sortPinnedColumns = (
       case "left": {
         leftPinnedColumns.push({
           ...column,
-          pinnedLeftOffset: pinnedWidthLeft
+          endPin: undefined,
+          pinnedOffset: pinnedWidthLeft
         }); 
         pinnedWidthLeft += column.width;
       }
       break;
-      // TODO right offsets
-      case "right": rightPinnedColumns.push(column); break;
+    // store right pinned columns initially in reverse order      
+      case "right": rightPinnedColumns.unshift(column); break;
       default: restColumns.push(column)
     }
   }
@@ -268,8 +270,35 @@ export const sortPinnedColumns = (
     });
   }
 
-  return leftPinnedColumns.concat(restColumns).concat(rightPinnedColumns);
+  const allColumns = leftPinnedColumns.length
+    ? leftPinnedColumns.concat(restColumns)
+    : restColumns;
+
+  if (rightPinnedColumns.length) {
+    const measuredRightPinnedColumns: KeyedColumnDescriptor[] = [];
+    let pinnedWidthRight = 0;
+    let endPin: true | undefined = true;
+    for (const column of rightPinnedColumns) {
+      measuredRightPinnedColumns.unshift({
+        ...column,
+        endPin,
+        pinnedOffset: pinnedWidthRight,
+      });
+      endPin = undefined;
+      pinnedWidthRight += column.width;
+    }
+    return allColumns.concat(measuredRightPinnedColumns);
+  } else {
+    return allColumns;
+  }
 };
+
+export const getColumnPinStyle = (column: KeyedColumnDescriptor) =>
+  column.pin === "left"
+    ? ({ left: column.pinnedOffset } as CSSProperties)
+    : column.pin === "right"
+    ? ({ right: column.pinnedOffset } as CSSProperties)
+    : undefined;
 
 export const setAggregations = (
   aggregations: VuuAggregation[],

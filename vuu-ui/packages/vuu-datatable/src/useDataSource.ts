@@ -146,6 +146,7 @@ export function useDataSource({
 
   return {
     data: data.current,
+    range: rangeRef.current,
     setRange,
     dataSource,
   };

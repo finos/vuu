@@ -345,10 +345,10 @@
   resolved "https://registry.yarnpkg.com/@heswell/component-anatomy/-/component-anatomy-0.0.5.tgz#cf75e642fb7c2184794114fe62f2382d4196846a"
   integrity sha512-pwuowxKvsxPoOkAbtHFNyqdzjTj8CHDZtk7+P8jRtJJmsJTzblOMn6WNS9csFf6gU1NdvD11EcTCnFZaG8TLxg==
 
-"@heswell/salt-lab@1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@heswell/salt-lab/-/salt-lab-1.0.0-alpha.0.tgz#4673c7ee2640d60b71e01f52b47a8a8f8a9d144d"
-  integrity sha512-f/LhcuGdJnGpsshF7fddB+jOlb+DvXWBlPPUwm9zkO5RVje/Gql656kwZ87jVQpDtRvNXqRvdQJVUdW0eSLaIw==
+"@heswell/salt-lab@1.0.0-alpha.0-vuu.1":
+  version "1.0.0-alpha.0-vuu.1"
+  resolved "https://registry.yarnpkg.com/@heswell/salt-lab/-/salt-lab-1.0.0-alpha.0-vuu.1.tgz#6879bc013cb92eb78db4eee78ffd97b06fea6d0f"
+  integrity sha512-nnN8yCPrII7Mi9H7cXM+Rn49sOKBheaC7Rq0/meawO88bNtmdv5jue6ozzSCBtOZAxd6QXD5ixpNsr6mF9cecA==
   dependencies:
     "@floating-ui/react-dom-interactions" "^0.5.0"
     "@internationalized/date" "^3.0.0"
@@ -356,8 +356,8 @@
     "@salt-ds/icons" "1.0.0"
     aria-hidden "^1.1.1"
     attr-accept "^2.0.0"
-    classnames "^2.2.6"
     clipboard-copy "^4.0.1"
+    clsx "^1.2.1"
     compute-scroll-into-view "^1.0.16"
     deepmerge "^4.2.2"
     no-scroll "^2.1.1"
@@ -947,6 +947,11 @@ clone-response@^1.0.2:
   integrity sha512-ROoL94jJH2dUVML2Y/5PEDNaSHgeOdSDicUyS7izcF63G6sTc/FTjLub4b8Il9S8S0beOfYt0TaA5qvFK+w0wA==
   dependencies:
     mimic-response "^1.0.0"
+
+clsx@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/clsx/-/clsx-1.2.1.tgz#0ddc4a20a549b59c93a4116bb26f5294ca17dc12"
+  integrity sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==
 
 color-convert@^2.0.1:
   version "2.0.1"
