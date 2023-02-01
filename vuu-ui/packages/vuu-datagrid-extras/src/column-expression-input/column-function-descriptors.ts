@@ -1,4 +1,5 @@
 export type ColumnFunctionDescriptor = {
+  accepts: "string" | "number" | "any" | Array<"string" | "number">;
   description: string;
   example: {
     expression: string;
@@ -14,8 +15,9 @@ export type ColumnFunctionDescriptor = {
 
 export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
   {
+    accepts: "string",
     description:
-      "Returns multiple string values as a single joined string. Arguments may be string literal values, string columns or other string expressions. Non string arguments may alsp be included, these will be converted to strings.",
+      "Returns multiple string values as a single joined string. Arguments may be string literal values, string columns or other string expressions. Non string arguments may also be included, these will be converted to strings.",
     example: {
       expression: 'concatenate("example", "-test")',
       result: "example-test",
@@ -28,6 +30,7 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
   },
 
   {
+    accepts: ["string", "number"],
     description:
       "Returns the leftmost <number> characters from <string>. First argument may be a string literal, string column or other string expression.",
     example: {
@@ -42,6 +45,7 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     type: "string",
   },
   {
+    accepts: "string",
     description:
       "Returns the number of characters in <string>. Argument may be a string literal, string column or other string expression.",
     example: {
@@ -55,6 +59,7 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     type: "number",
   },
   {
+    accepts: "string",
     description: "Display a string values as all lowercase",
     example: {
       expression: 'lower("examPLE")',
@@ -62,11 +67,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "lower",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "string",
   },
   {
+    accepts: "string",
     description: "Display a string values as all uppercase",
     example: {
       expression: 'upper("example")',
@@ -74,11 +80,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "upper",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "string",
   },
   {
+    accepts: ["string", "number"],
     description: "blah",
     example: {
       expression: "blah",
@@ -86,11 +93,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "right",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "string",
   },
   {
+    accepts: "string",
     description: "blah",
     example: {
       expression: "blah",
@@ -98,11 +106,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "replace",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "string",
   },
   {
+    accepts: "number",
     description: "blah",
     example: {
       expression: "blah",
@@ -110,11 +119,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "text",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "string",
   },
   {
+    accepts: "string",
     description: "blah",
     example: {
       expression: "blah",
@@ -122,11 +132,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "contains",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "boolean",
   },
   {
+    accepts: "string",
     description: "blah",
     example: {
       expression: "blah",
@@ -134,11 +145,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "starts",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "boolean",
   },
   {
+    accepts: "string",
     description: "blah",
     example: {
       expression: "blah",
@@ -146,11 +158,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "ends",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "boolean",
   },
   {
+    accepts: "number",
     description: "blah",
     example: {
       expression: "blah",
@@ -158,11 +171,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "min",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "number",
   },
   {
+    accepts: "number",
     description: "blah",
     example: {
       expression: "blah",
@@ -170,11 +184,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "max",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "number",
   },
   {
+    accepts: "number",
     description: "blah",
     example: {
       expression: "blah",
@@ -182,11 +197,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "sum",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "number",
   },
   {
+    accepts: "number",
     description: "blah",
     example: {
       expression: "blah",
@@ -194,11 +210,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "round",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "number",
   },
   {
+    accepts: "any",
     description: "blah",
     example: {
       expression: "blah",
@@ -206,11 +223,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "or",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "boolean",
   },
   {
+    accepts: "any",
     description: "blah",
     example: {
       expression: "blah",
@@ -218,19 +236,21 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     name: "and",
     params: {
-      description: "(arg: string)",
+      description: "( string )",
     },
     type: "boolean",
   },
   {
-    description: "blah",
+    accepts: "any",
+    description:
+      "Return one of two possible result values, depending on the evaluation of a filter expression. If <filterExpression> resolves to true, result is <expression1>, otherwise <expression2>. ",
     example: {
       expression: "blah",
       result: "blah",
     },
     name: "if",
     params: {
-      description: "(filterExpression, resultTrue, resultFalse)",
+      description: "( filterExpression, expression1, expression 2)",
     },
     type: "variable",
   },

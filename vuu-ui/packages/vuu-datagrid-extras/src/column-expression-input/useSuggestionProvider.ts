@@ -4,10 +4,14 @@ import { IExpressionSuggestionProvider } from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { SuggestionType } from "@finos/vuu-filters";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
-import { isNumericColumn } from "@finos/vuu-utils";
+import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
-import { columnFunctionDescriptors } from "./column-function-descriptors";
+import {
+  ColumnFunctionDescriptor,
+  columnFunctionDescriptors,
+} from "./column-function-descriptors";
 import { createEl } from "@finos/vuu-utils";
+import { ColumnExpressionOperator } from "@finos/vuu-datagrid-extras";
 
 const functionDocInfo = (
   functionName: string,
@@ -52,8 +56,36 @@ const withApplySpace = (suggestions: Completion[]): Completion[] =>
     apply: suggestion.label + " ",
   }));
 
-const getColumns = (columns: ColumnDescriptor[]) => {
-  return columns.map((column) => ({
+type ColumnOptions = {
+  functionName?: string;
+  operator?: ColumnExpressionOperator;
+};
+
+const getValidColumns = (
+  columns: ColumnDescriptor[],
+  { functionName, operator }: ColumnOptions
+) => {
+  if (operator) {
+    return columns.filter(isNumericColumn);
+  } else if (functionName) {
+    const fn = columnFunctionDescriptors.find((f) => f.name === functionName);
+    if (fn) {
+      switch (fn.accepts) {
+        case "string":
+          return columns.filter(isTextColumn);
+        case "number":
+          return columns.filter(isNumericColumn);
+        default:
+          return columns;
+      }
+    }
+  }
+  return columns;
+};
+
+const getColumns = (columns: ColumnDescriptor[], options: ColumnOptions) => {
+  const validColumns = getValidColumns(columns, options);
+  return validColumns.map((column) => ({
     label: column.label ?? column.name,
     boost: 5,
     type: "column",
@@ -100,16 +132,42 @@ const isApplicable = (column: ColumnDescriptor, suggestion: Completion) => {
   return isNumericColumn(column);
 };
 
-const functionCompletions: Completion[] = columnFunctionDescriptors.map(
-  ({ name, description, params, type }) => ({
-    apply: `${name}( `,
-    boost: 2,
-    expressionType: type,
-    info: () => functionDocInfo(name, params.description, type, description),
-    label: name,
-    type: "function",
-  })
-);
+const toFunctionCompletion = ({
+  name,
+  description,
+  params,
+  type,
+}: ColumnFunctionDescriptor) => ({
+  apply: `${name}( `,
+  boost: 2,
+  expressionType: type,
+  info: () => functionDocInfo(name, params.description, type, description),
+  label: name,
+  type: "function",
+});
+
+const functions: Completion[] =
+  columnFunctionDescriptors.map(toFunctionCompletion);
+
+const getFunctions = ({ functionName }: ColumnOptions) => {
+  if (functionName) {
+    const fn = columnFunctionDescriptors.find((f) => f.name === functionName);
+    if (fn) {
+      switch (fn.accepts) {
+        case "string":
+          return columnFunctionDescriptors
+            .filter((f) => f.type === "string" || f.type === "variable")
+            .map(toFunctionCompletion);
+        case "number":
+          return columnFunctionDescriptors
+            .filter((f) => f.type === "number" || f.type === "variable")
+            .map(toFunctionCompletion);
+        default:
+      }
+    }
+  }
+  return functions;
+};
 
 const doneCommand: Completion = {
   label: "Done",
@@ -159,27 +217,27 @@ export const useSuggestionProvider = ({
   const getSuggestions: IExpressionSuggestionProvider["getSuggestions"] =
     useCallback(
       async (valueType, options = NONE): Promise<Completion[]> => {
-        const { columnName, filterName, startsWith, selection } = options;
+        const { columnName, operator, functionName, startsWith, selection } =
+          options;
 
         console.log("%cgetSuggestions, using ", "color: green", {
           valueType,
           columnName,
+          functionName,
           startsWith,
           columns,
-          getTypeaheadSuggestions,
-          table,
           selection,
         });
 
         if (valueType === "expression") {
-          const expressions = withApplySpace(getColumns(columns)).concat(
-            functionCompletions
-          );
+          const expressions = withApplySpace(
+            getColumns(columns, { functionName })
+          ).concat(getFunctions(options));
 
           const suggestions = await expressions;
           return (latestSuggestionsRef.current = suggestions);
         } else if (valueType === "column") {
-          const suggestions = await getColumns(columns);
+          const suggestions = await getColumns(columns, options);
           return (latestSuggestionsRef.current = withApplySpace(suggestions));
         } else if (valueType === "operator") {
           const suggestions = await operators;

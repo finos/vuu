@@ -57,6 +57,11 @@ export const isNumericColumn = ({ serverDataType }: ColumnDescriptor) =>
       serverDataType === "long" ||
       serverDataType === "double";
 
+export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
+  serverDataType === undefined
+    ? false
+    : serverDataType === "char" || serverDataType === "string";
+
 export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
   name,
 });

@@ -403,6 +403,11 @@ export const VuuDataTableCalculatedColumns = () => {
         expression: '=concatenate("---", exchange,"...",ccy, "---")',
         serverDataType: "string",
       },
+      {
+        name: "ExchangeIsNY",
+        expression: '=starts(exchange,"N")',
+        serverDataType: "string",
+      },
       // {
       //   name: "Text",
       //   expression: "=text(quantity)",
