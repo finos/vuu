@@ -72,9 +72,9 @@ const schemas: { [key: string]: Schema } = {
           renderer: { name: "background", flashStyle: "arrow-bg" },
           formatting: { decimals: 2, zeroPad: true },
         },
-        aggregate: "avg",
+        aggregate: 2, // avg
       },
-      { name: "askSize", type: "int" },
+      { name: "askSize", type: "number" }, // type: "int"
       {
         label: "Bid",
         name: "bid",
@@ -83,12 +83,12 @@ const schemas: { [key: string]: Schema } = {
           renderer: { name: "background", flashStyle: "arrow-bg" },
           formatting: { decimals: 2, zeroPad: true },
         },
-        aggregate: "avg",
+        aggregate: 2, // avg
       },
-      { name: "bidSize", type: "int" },
-      { name: "close", type: "double" },
-      { name: "last", type: "double" },
-      { name: "open", type: "double" },
+      { name: "bidSize", type: "number" }, // type: "int"
+      { name: "close", type: "number" }, // type: "double"
+      { name: "last", type: "number" }, // type: "double"
+      { name: "open", type: "number" }, // type: "double"
       { name: "phase", type: "string" },
       { name: "ric", type: "string" },
       { name: "scenario", type: "string" },
@@ -101,7 +101,7 @@ export type ColumnState = { [key: string]: Schema };
 
 export interface ColumnActionUpdate {
   type: "updateColumn";
-  column: KeyedColumnDescriptor;
+  column: ColumnDescriptor;
 }
 
 export type ColumnAction = ColumnActionUpdate;
