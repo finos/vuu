@@ -6,7 +6,7 @@ import {
   Palette,
   PaletteItem,
   Placeholder,
-  View,
+  View
 } from "@finos/vuu-layout";
 
 import "./DraggableLayout.stories.css";
@@ -72,7 +72,6 @@ export const StructuredPalette = () => (
     }}
   >
     <Palette
-      collapsibleHeaders
       orientation="vertical"
       style={{ width: "100%", height: "100%" }}
     >

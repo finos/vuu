@@ -1,9 +1,8 @@
-import React from "react";
 import {
   Component,
   Flexbox,
   StackLayout as Stack,
-  View,
+  View
 } from "@finos/vuu-layout";
 import { StatefulComponent } from "./components";
 
@@ -14,7 +13,7 @@ export default {
 
 export const FourTabs = () => {
   return (
-    <Stack showTabs style={{ width: 800, height: 500 }} active={0} resizeable>
+    <Stack showTabs style={{ width: 800, height: 500 }} active={0}>
       <View title="Rebecca" header>
         <Component style={{ backgroundColor: "rebeccapurple", flex: 1 }} />
       </View>
@@ -33,7 +32,7 @@ export const FourTabs = () => {
 
 export const RemovableTabs = () => {
   return (
-    <Stack showTabs style={{ width: 800, height: 500 }} active={0} resizeable>
+    <Stack showTabs style={{ width: 800, height: 500 }} active={0}>
       <View title="Rebecca" header>
         <Component style={{ backgroundColor: "rebeccapurple", flex: 1 }} />
       </View>
@@ -51,7 +50,7 @@ export const RemovableTabs = () => {
 };
 
 export const EnableAddTab = () => {
-  const createContent = (index) => (
+  const createContent = (index: number) => (
     <View
       style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
       title={`Tab ${index}`}
@@ -69,8 +68,6 @@ export const EnableAddTab = () => {
       createNewChild={createContent}
       style={{ width: 800, height: 500 }}
       active={0}
-      resizeable
-      preserve
     >
       <View title="Rebecca" header>
         <Component
@@ -86,7 +83,7 @@ export const EnableAddTab = () => {
 };
 
 export const EmptyStackAddTab = () => {
-  const createContent = (index) => (
+  const createContent = (index: number) => (
     <View
       style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
       title={`Tab ${index}`}
@@ -103,14 +100,12 @@ export const EmptyStackAddTab = () => {
       enableAddTab
       createNewChild={createContent}
       style={{ width: 800, height: 500 }}
-      resizeable
-      preserve
     ></Stack>
   );
 };
 
 export const TabsWithinTabs = () => (
-  <Stack showTabs style={{ width: 800, height: 500 }} active={0} resizeable>
+  <Stack showTabs style={{ width: 800, height: 500 }} active={0}>
     <Stack showTabs active={0} title="Substack 1">
       <View title="Rebecca" header>
         <Component style={{ backgroundColor: "rebeccapurple", flex: 1 }} />
@@ -146,7 +141,7 @@ export const TabsWithinTabs = () => (
 );
 
 export const SaveAndRestoreState = () => (
-  <Stack showTabs style={{ width: 800, height: 500 }} active={0} resizeable>
+  <Stack showTabs style={{ width: 800, height: 500 }} active={0}>
     <View style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }} title="Page 1">
       <StatefulComponent
         style={{ backgroundColor: "yellow", flex: 1 }}

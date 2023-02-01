@@ -1,14 +1,11 @@
-import React, { useCallback, useState } from "react";
 import {
   Component,
   FlexboxLayout as Flexbox,
   LayoutProvider,
   StackLayout,
-  View,
+  View
 } from "@finos/vuu-layout";
-
-// import '@finos/theme/index.css';
-// import '@finos/vuu-layout/index.css';
+import { useCallback, useState } from "react";
 
 let displaySequence = 1;
 
@@ -80,17 +77,6 @@ export const VerticalTabsControlled = () => {
 VerticalTabsControlled.displaySequence = displaySequence++;
 
 export const EnableAddTab = () => {
-  // const createContent = (index) => (
-  //   <View
-  //     style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
-  //     title={`Tab ${index}`}
-  //     header
-  //     closeable
-  //   >
-  //     <Component style={{ backgroundColor: "green", height: "100%" }} />
-  //   </View>
-  // );
-
   return (
     <LayoutProvider>
       <StackLayout
@@ -119,7 +105,7 @@ export const EnableAddTab = () => {
 EnableAddTab.displaySequence = displaySequence++;
 
 export const EmptyStackAddTab = () => {
-  const createContent = (index) => (
+  const createContent = (index: number) => (
     <View
       style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
       title={`Tab ${index}`}
@@ -136,8 +122,6 @@ export const EmptyStackAddTab = () => {
       enableAddTab
       createNewChild={createContent}
       style={{ width: 800, height: 500 }}
-      resizeable
-      preserve
     ></StackLayout>
   );
 };
@@ -150,7 +134,6 @@ export const TabsWithinTabs = () => (
       showTabs
       style={{ width: 800, height: 500 }}
       active={0}
-      resizeable
     >
       <StackLayout showTabs active={0} title="Substack 1">
         <View title="Rebecca" header>
@@ -164,7 +147,7 @@ export const TabsWithinTabs = () => (
         </View>
       </StackLayout>
 
-      <Flexbox title="Nested Substack" style={{ flexDirection: "column" }}>
+      <Flexbox title="Nested Substack" style={{ flexDirection: "column" }} path="">
         <View title="Red" header>
           <Component title="Red" style={{ backgroundColor: "red", flex: 1 }} />
         </View>
@@ -190,7 +173,7 @@ export const TabsWithinTabs = () => (
 TabsWithinTabs.displaySequence = displaySequence++;
 
 export const TabsWithFlexChildren = () => {
-  const handleLayoutChange = (layout) => {
+  const handleLayoutChange = (layout: any) => {
     console.log(JSON.stringify(layout, null, 2));
   };
 
@@ -200,10 +183,9 @@ export const TabsWithFlexChildren = () => {
         showTabs
         style={{ width: 800, height: 500 }}
         active={0}
-        resizeable
         onLayoutChange={handleLayoutChange}
       >
-        <Flexbox title="Tower" style={{ flexDirection: "column", flex: 1 }}>
+        <Flexbox title="Tower" style={{ flexDirection: "column", flex: 1 }} path="">
           <View
             title="Red"
             header
@@ -220,6 +202,7 @@ export const TabsWithFlexChildren = () => {
         <Flexbox
           title="Terrace"
           style={{ flexDirection: "row", height: "100%" }}
+          path=""
         >
           <View
             title="Red"

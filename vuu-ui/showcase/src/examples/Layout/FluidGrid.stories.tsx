@@ -1,4 +1,3 @@
-import React from "react";
 
 import { FluidGrid } from "@finos/vuu-layout";
 
@@ -13,15 +12,8 @@ const story = {
 
 export default story;
 
-// const StandardToolbar = () => (
-//   <Toolbar style={{ justifyContent: "flex-end" }} draggable showTitle>
-//   </Toolbar>
-// );
-// registerComponent("StandardToolbar", StandardToolbar);
-
 export const ResponsiveDefault = () => (
   <FluidGrid
-    responsive
     spacing={3}
     showGrid
     style={{
@@ -50,7 +42,6 @@ const breakPoints = { xs: 0, sm: 600, md: 960, lg: 1280 };
 export const WithBreakPoints = () => (
   <FluidGrid
     breakPoints={breakPoints}
-    responsive
     spacing={3}
     className="layout-grid"
     style={{
@@ -99,26 +90,12 @@ export const ResponsiveStructure = () => (
         data-sm={4}
         style={{ backgroundColor: "green", minHeight: 50 }}
       />
+      <div
+        data-xs={8}
+        data-sm={4}
+        style={{ backgroundColor: "green", minHeight: 50 }}
+      />
     </FluidGrid>
     <div data-xs={12} style={{ height: 32 }} />
-    {/* 
-    <FluidGrid data-xs={12} cols={12} style={{}}>
-      <FluidGrid data-xs={8}  cols={8} style={{minHeight: 300}}>
-        <div data-xs={8} style={{ backgroundColor: "rgba(0,0,255,.3)", minHeight: 50 }} />
-        <FluidGrid data-xs={8} cols={8} style={{}}>
-          <div data-xs={4} style={{ backgroundColor: "green", minHeight: 50 }} />
-          <div data-xs={4} style={{ backgroundColor: "blue" }} />
-        </FluidGrid>
-        <FluidGrid data-xs={8} cols={8} style={{}}>
-          <div data-xs={4} style={{ backgroundColor: "green", minHeight: 50 }} />
-          <div data-xs={4} style={{ backgroundColor: "blue" }} />
-        </FluidGrid>
-        <FluidGrid data-xs={8} cols={8} style={{}}>
-          <div data-xs={4} style={{ backgroundColor: "green", minHeight: 50 }} />
-          <div data-xs={4} style={{ backgroundColor: "blue" }} />
-        </FluidGrid>
-      </FluidGrid>
-    </FluidGrid> 
-    */}
   </FluidGrid>
 );
