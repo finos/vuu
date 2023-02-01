@@ -17,7 +17,7 @@ export declare type TypeFormatting = {
   zeroPad?: boolean;
 };
 
-export declare type ColumnTypeSimple = "string" | "number";
+export declare type ColumnTypeSimple = "string" | "number" | "boolean";
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
   name: ColumnTypeSimple;

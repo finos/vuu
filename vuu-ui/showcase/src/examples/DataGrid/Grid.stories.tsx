@@ -35,10 +35,67 @@ export const DefaultGrid = () => {
     () => ["instruments", "orders", "parentOrders", "prices"],
     []
   );
+
+  const calculatedColumns: ColumnDescriptor[] = useMemo(
+    () => [
+      {
+        name: "notional",
+        expression: "=price*quantity",
+        serverDataType: "double",
+        type: {
+          name: "number",
+          formatting: {
+            decimals: 2,
+          },
+        },
+      },
+      {
+        name: "isBuy",
+        expression: '=if(side="Sell","N","Y")',
+        serverDataType: "char",
+      },
+      {
+        name: "CcySort",
+        expression: '=if(ccy="Gbp",1,if(ccy="USD",2,3))',
+        serverDataType: "char",
+        width: 60,
+      },
+      {
+        name: "CcyLower",
+        expression: "=lower(ccy)",
+        serverDataType: "string",
+        width: 60,
+      },
+      {
+        name: "AccountUpper",
+        expression: "=upper(account)",
+        label: "ACCOUNT",
+        serverDataType: "string",
+      },
+      {
+        name: "ExchangeCcy",
+        expression: '=concatenate("---", exchange,"...",ccy, "---")',
+        serverDataType: "string",
+      },
+      {
+        name: "ExchangeIsNY",
+        expression: '=starts(exchange,"N")',
+        serverDataType: "boolean",
+      },
+      // {
+      //   name: "Text",
+      //   expression: "=text(quantity)",
+      //   serverDataType: "string",
+      // },
+    ],
+    []
+  );
+
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
   const { schemas } = useSchemas();
   const { columns, dataSource, error } = useTestDataSource({
+    calculatedColumns: selectedIndex === 2 ? calculatedColumns : undefined,
     schemas,
     tablename: tables[selectedIndex],
   });

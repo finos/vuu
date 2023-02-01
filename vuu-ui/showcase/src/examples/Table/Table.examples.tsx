@@ -406,7 +406,7 @@ export const VuuDataTableCalculatedColumns = () => {
       {
         name: "ExchangeIsNY",
         expression: '=starts(exchange,"N")',
-        serverDataType: "string",
+        serverDataType: "boolean",
       },
       // {
       //   name: "Text",
