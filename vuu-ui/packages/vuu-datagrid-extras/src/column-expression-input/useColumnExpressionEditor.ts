@@ -20,6 +20,8 @@ import {
   useColumnAutoComplete,
 } from "./useColumnAutoComplete";
 
+export type ColumnExpressionOperator = "Times" | "Divide" | "Minus" | "Plus";
+
 export type ColumnExpressionSuggestionType =
   | "column"
   | "expression"
@@ -31,7 +33,8 @@ export interface IExpressionSuggestionProvider {
     valueType: ColumnExpressionSuggestionType,
     options?: {
       columnName?: string;
-      filterNameName?: string;
+      operator?: ColumnExpressionOperator;
+      functionName?: string;
       startsWith?: string;
       selection?: string[];
     }
@@ -81,7 +84,7 @@ export interface ColumnExpressionEditorProps {
     expression: Expression | undefined,
     source: string
   ) => void;
-  suggestionProvider: ISuggestionProvider2;
+  suggestionProvider: IExpressionSuggestionProvider;
 }
 
 export const useColumnExpressionEditor = ({
