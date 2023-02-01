@@ -1,8 +1,7 @@
-// import { ComponentAnatomy } from '@heswell/component-anatomy';
 import {
   ToggleButton,
   ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
+  ToggleButtonGroupChangeEventHandler
 } from "@heswell/salt-lab";
 
 import "@heswell/component-anatomy/esm/index.css";
@@ -12,7 +11,7 @@ export const ButtonGroupWithTextOnly = () => {
   const [selectedIndex, setSelectedIndex] = useState<number>(1);
 
   const handleChange: ToggleButtonGroupChangeEventHandler = (
-    event,
+    _,
     index,
     toggled
   ) => {
@@ -22,14 +21,14 @@ export const ButtonGroupWithTextOnly = () => {
 
   return (
     <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
-      <ToggleButton ariaLabel="alert" tooltipText="Alert">
+      <ToggleButton aria-label="alert" tooltipText="Alert">
         Alert
       </ToggleButton>
-      <ToggleButton ariaLabel="home" tooltipText="Home">
+      <ToggleButton aria-label="home" tooltipText="Home">
         Home
       </ToggleButton>
       <ToggleButton tooltipText="Search">Search</ToggleButton>
-      <ToggleButton ariaLabel="print" tooltipText="Print">
+      <ToggleButton aria-label="print" tooltipText="Print">
         Print
       </ToggleButton>
     </ToggleButtonGroup>
