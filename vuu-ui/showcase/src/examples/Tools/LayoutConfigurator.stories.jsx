@@ -1,5 +1,4 @@
-import React, { useCallback, useState } from "react";
-// import { TerraceAlignment } from "../components/alignment-tools/terrace-with-alignment";
+import { useCallback, useState } from "react";
 
 import { LayoutConfigurator as VuuLayoutConfigurator } from "@finos/vuu-layout";
 
