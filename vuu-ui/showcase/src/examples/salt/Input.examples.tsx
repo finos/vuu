@@ -1,4 +1,3 @@
-import React from "react";
 import { FormField, Input } from "@heswell/salt-lab";
 
 export const WithFormField = () => {
