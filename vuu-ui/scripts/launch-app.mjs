@@ -11,7 +11,7 @@ if (!websocketUrl) {
 `);
 }
 
-const url = websocketUrl ? ` url ${websocketUrl}` : "";
+const url = websocketUrl ? ` --url ${websocketUrl}` : "";
 
 await execWait("yarn --silent build");
 await execWait(`yarn --silent build:app${url}`);
