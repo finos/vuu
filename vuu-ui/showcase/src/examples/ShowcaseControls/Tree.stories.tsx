@@ -1,8 +1,8 @@
-import React from "react";
 import { ComponentAnatomy } from "@heswell/component-anatomy";
+import { SyntheticEvent } from "react";
 
 import { Tree, useItemsWithIds } from "../../components";
-import { usa_states_cities, groupByInitialLetter } from "./List/List.data";
+import { groupByInitialLetter, usa_states_cities } from "./List/List.data";
 import { folderData } from "./Tree.data";
 
 export default {
@@ -13,7 +13,7 @@ export default {
 let displaySequence = 1;
 
 export const SimpleTree = () => {
-  const handleChange = (e, selected) => {
+  const handleChange = (e: SyntheticEvent, selected: string[]) => {
     console.log(`selected ${selected.join(",")}`);
   };
   return (
@@ -43,21 +43,6 @@ export const SimpleTree = () => {
           source={groupByInitialLetter(usa_states_cities, "groups-only")}
         />
       </div>
-      {/* <div
-        style={{
-          fontFamily: 'Roboto',
-          width: 150,
-          height: 400,
-          maxHeight: 400,
-          position: 'relative',
-          border: 'solid 1px #ccc'
-        }}
-      >
-        <Tree
-          groupSelection="single"
-          source={groupByInitialLetter(usa_states_cities, 'groups-only')}
-        />
-      </div> */}
       <input type="text" />
     </div>
   );
@@ -74,7 +59,7 @@ const iconTreeStyle = `
 `;
 
 export const SimpleTreeIcons = () => {
-  const handleChange = (e, selected) => {
+  const handleChange = (e: SyntheticEvent, selected: string[]) => {
     console.log(`selected ${selected.join(",")}`);
   };
   return (
@@ -102,7 +87,7 @@ export const SimpleTreeIcons = () => {
 };
 
 export const DragDropTreeIcons = () => {
-  const handleChange = (e, selected) => {
+  const handleChange = (e: SyntheticEvent, selected: string[]) => {
     console.log(`selected ${selected.join(",")}`);
   };
   return (
@@ -133,7 +118,7 @@ export const DragDropTreeIcons = () => {
 SimpleTreeIcons.displaySequence = displaySequence++;
 
 export const RevealSelected = () => {
-  const handleChange = (e, selected) => {
+  const handleChange = (e: SyntheticEvent, selected: string[]) => {
     console.log(`selected ${selected.join(",")}`);
   };
 
