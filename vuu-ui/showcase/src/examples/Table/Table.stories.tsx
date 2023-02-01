@@ -2,17 +2,18 @@ import { DataSourceRow } from "@finos/vuu-data";
 import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { DataTable } from "@finos/vuu-datatable";
+import { FilterInput } from "@finos/vuu-filters";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import { itemsChanged } from "@finos/vuu-utils";
-import { FilterInput } from "@finos/vuu-filters";
 
+import { Filter } from "@finos/vuu-filter-types";
 import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
   Toolbar,
-  Tooltray,
+  Tooltray
 } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
 import {
@@ -21,12 +22,11 @@ import {
   useCallback,
   useMemo,
   useRef,
-  useState,
+  useState
 } from "react";
 import { DragVisualizer } from "../../../../packages/vuu-datatable/src/DragVisualizer";
-import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
-import { Filter } from "@finos/vuu-filter-types";
 import { useSuggestionProvider } from "../Filters/useSuggestionProvider";
+import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 
 let displaySequence = 1;
 
@@ -63,11 +63,7 @@ const pinnedConfig = { columns: pinnedColumns };
 
 export const DefaultTable = () => {
   return (
-    <>
-      {/* <DragVisualizer orientation="horizontal"> */}
-      <DataTable config={defaultConfig} data={data} height={700} width={700} />
-      {/* </DragVisualizer> */}
-    </>
+    <DataTable config={defaultConfig} data={data} height={700} width={700} />
   );
 };
 
@@ -272,7 +268,6 @@ export const VuuDataTable = () => {
         allowConfigEditing
         dataSource={dataSource}
         config={tableConfig}
-        // columnSizing="fill"
         height={600}
         onConfigChange={handleTableConfigChange}
         onShowConfigEditor={showConfigEditor}
