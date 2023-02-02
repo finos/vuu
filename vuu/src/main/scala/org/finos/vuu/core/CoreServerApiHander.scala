@@ -161,7 +161,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
 
         val table = viewport.table.asTable
 
-        val columns = if (msg.columns.size == 1 && msg.columns(0) == "*") {
+        val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
           logger.info("[ChangeViewPortRequest] Wildcard specified for columns, going to return all")
           table.getTableDef.columns.toList
         }
@@ -171,6 +171,8 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
           msg.columns.map(table.getTableDef.columnForName(_)).toList
         }
 
+        val vpColumns = ViewPortColumnCreator.create(table, msg.columns.toList)
+
         val sort = msg.sort
         val filter = msg.filterSpec
         val groupBy = msg.groupBy
@@ -178,24 +180,24 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
         val newViewPort = if (!groupBy.isEmpty) {
 
           val groupByColumns = msg.groupBy
-            .filter(table.getTableDef.columnExists(_))
-            .map(table.getTableDef.columnForName(_)).toList
+            .filter(vpColumns.columnExists)
+            .map(vpColumns.getColumnForName(_).get).toList
 
           val aggregations = msg.aggregations
-            .filter(agg => table.getTableDef.columnExists(agg.column))
-            .map(agg => Aggregation(table.getTableDef.columnForName(agg.column), agg.aggType.toShort)).toList
+            .filter(agg => vpColumns.columnExists(agg.column))
+            .map(agg => Aggregation(vpColumns.getColumnForName(agg.column).get, agg.aggType.toShort)).toList
 
           val groupBy = new GroupBy(groupByColumns, aggregations)
 
-          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, ViewPortColumnCreator.create(table, msg.columns.toList), sort, filter, groupBy = groupBy)
+          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, vpColumns, sort, filter, groupBy = groupBy)
         }
         else
-          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, ViewPortColumnCreator.create(table, msg.columns.toList), sort, filter)
+          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, vpColumns, sort, filter)
 
-        logger.info(s"Setting columns to ${columns.map(_.name).mkString(",")} ")
+        //logger.info(s"Setting columns to ${columns.map(_.name).mkString(",")} ")
 
         Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user,
-          ChangeViewPortSuccess(newViewPort.id, columns.map(_.name).toArray, sort, msg.groupBy, msg.filterSpec, msg.aggregations)))
+          ChangeViewPortSuccess(newViewPort.id, viewport.getColumns.getColumns().map(_.name).toArray, sort, msg.groupBy, msg.filterSpec, msg.aggregations)))
 
       case None =>
         Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, ErrorResponse(s"Could not find vp ${msg.viewPortId} in session ${ctx.session}")))
@@ -232,20 +234,22 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
         msg.columns.map(table.getTableDef.columnForName(_)).toList
       }
 
+      val vpColumns = ViewPortColumnCreator.create(table, msg.columns.toList)
+
       val sort = msg.sort
       val filter = msg.filterSpec
 
       val viewPort = if (msg.groupBy.isEmpty)
-        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, ViewPortColumnCreator.create(table, msg.columns.toList), sort, filter, NoGroupBy)
+        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, vpColumns, sort, filter, NoGroupBy)
       else {
 
-        val groupByColumns = msg.groupBy.filter(table.getTableDef.columnForName(_) != null).map(table.getTableDef.columnForName(_)).toList
+        val groupByColumns = msg.groupBy.filter(vpColumns.getColumnForName(_).get != null).flatMap(vpColumns.getColumnForName).toList
 
-        val aggs          = msg.aggregations.map(a => Aggregation(table.columnForName(a.column), a.aggType.toShort )).toList
+        val aggs          = msg.aggregations.map(a => Aggregation(vpColumns.getColumnForName(a.column).get, a.aggType.toShort )).toList
 
         val groupBy = new GroupBy(groupByColumns, aggs)
 
-        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, ViewPortColumnCreator.create(table, msg.columns.toList), sort, filter, groupBy)
+        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, ctx.highPriorityQueue, table, msg.range, vpColumns, sort, filter, groupBy)
       }
 
       vsMsg(CreateViewPortSuccess(viewPort.id, viewPort.table.name, msg.range, msg.columns, msg.sort, msg.groupBy, msg.filterSpec, msg.aggregations))(ctx)
@@ -272,7 +276,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   override def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelectedIndices(msg.selection))) match {
       case Success(vp) =>
-        vsMsg(SetSelectionSuccess(vp.id, vp.getSelection.map(tup => tup._2).toArray))(ctx)
+        vsMsg(SetSelectionSuccess(vp.id, vp.getSelection.values.toArray))(ctx)
       case Failure(e) =>
         logger.error("Could not change VP selection:", e.getMessage)
         errorMsg("Could not change VP selection:" + e.getMessage)(ctx)

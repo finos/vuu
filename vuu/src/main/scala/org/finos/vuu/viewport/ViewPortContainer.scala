@@ -53,7 +53,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]()
 
-  def getViewPorts() = CollectionHasAsScala(viewPorts.values()).asScala.toList
+  def getViewPorts(): List[ViewPort] = CollectionHasAsScala(viewPorts.values()).asScala.toList
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
 
@@ -263,9 +263,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       None
   }
 
-  private def parseSort(sort: SortSpec, table: RowSource): Sort = {
+  private def parseSort(sort: SortSpec, vpColumns: ViewPortColumns): Sort = {
     if (sort.sortDefs.nonEmpty)
-      GenericSort(sort, table.asTable.columnsForNames(sort.sortDefs.map(sd => sd.column)))
+      GenericSort(sort, sort.sortDefs.map(sd => vpColumns.getColumnForName(sd.column).get))
     else
       NoSort
   }
@@ -292,7 +292,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       throw new Exception(s"view port not found $id")
     }
 
-    val aSort = parseSort(sort, viewPort.table)
+    val aSort = parseSort(sort, columns)
 
     val aFilter = parseFilter(filterSpec)
 
@@ -402,7 +402,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val id = createId(clientSession.user)
 
-    val aSort = parseSort(sort, table)
+    val aSort = parseSort(sort, columns)
 
     val aFilter = parseFilter(filterSpec)
 
@@ -410,7 +410,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val aTable = ViewPortTableCreator.create(table, clientSession, groupBy, tableContainer)
 
-    val viewPortDefFunc = getViewPortDefinition(table.name);
+    val viewPortDefFunc = getViewPortDefinition(table.name)
 
     val viewPortDef = if (viewPortDefFunc == null) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer)
 
@@ -561,7 +561,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
         logger.debug(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
 
-        groupByHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+        groupByHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
 
       case tbl =>
         logger.error(s"GROUP-BY: table ${tbl.name} has a groupBy but doesn't have a groupBySessionTable associated. Going to ignore build request.")
@@ -582,7 +582,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.setKeys(sorted)
       }
 
-      viewPortHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+      viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
     } else {
       viewPort.setKeys(ImmutableArray.empty[String])
     }
