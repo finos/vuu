@@ -10,6 +10,10 @@ class ViewPortColumns(sourceColumns: List[Column]){
       columns = columns ++ List(column)
     }
 
+    def columnExists(name: String): Boolean = {
+      columns.exists(_.name == name)
+    }
+
     def getColumns(): List[Column] = columns
 
     def getColumnForName(name: String): Option[Column] = {
