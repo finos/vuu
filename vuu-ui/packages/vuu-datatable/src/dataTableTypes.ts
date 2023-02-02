@@ -5,15 +5,15 @@ import { HTMLAttributes, MouseEvent } from "react";
 export type tableLayoutType = "row" | "column";
 
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
+  allowConfigEditing?: boolean;
   config: GridConfig;
-  data?: DataSourceRow[];
-  dataSource?: DataSource;
+  dataSource: DataSource;
   headerHeight?: number;
   height?: number;
-  rowHeight?: number;
   onConfigChange?: (config: GridConfig) => void;
   onShowConfigEditor?: () => void;
-  allowConfigEditing?: boolean;
+  renderBufferSize?: number;
+  rowHeight?: number;
   tableLayout?: tableLayoutType;
   width?: number;
 }

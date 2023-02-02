@@ -46,6 +46,9 @@ export const useDraggableColumn = ({
 
   const handleHeaderCellDragStart = useCallback((evt: MouseEvent) => {
     const { clientX, clientY } = evt;
+    console.log(
+      `useDraggableColumn handleHeaderCellDragStart means mouseDown fired on a column in RowBasedTable`
+    );
     const sourceElement = evt.target as HTMLElement;
     const thElement = sourceElement.closest(".vuuTable-headerCell");
     const {

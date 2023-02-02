@@ -85,13 +85,19 @@
   top: 0;
   left: 0;
 
-  background-color: #fff;
+  background: repeating-linear-gradient(
+    to bottom, 
+    var(--salt-container-secondary-background), 
+    var(--salt-container-secondary-background) 20px, 
+    var(--table-background) 20px, 
+    var(--table-background) 40px);
   border-collapse: separate;
   border-spacing: 0;
   border-left: 1px solid #ccc;
   border: none;
   font-size: var(--vuuDataTable-font-size, 10px);
   margin: 0;
+  min-height: 100%;
   table-layout: fixed;
   width: var(--vuuTable-contentWidth);
 }
@@ -154,5 +160,10 @@ table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
 
 .vuuDataTable:has(.vuuTable-headerCell-resizing) * {
   cursor: col-resize;
+}
+
+.saltDraggable-table-column {
+  background-color: var(--salt-container-primary-background);
+  overflow: hidden;
 }
 

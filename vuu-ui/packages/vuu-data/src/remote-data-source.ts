@@ -374,7 +374,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   set filter(filter: DataSourceFilter) {
     // TODO should we wait until server ACK before we assign #sort ?
     this.#filter = filter;
-    console.log(`RemoteDataSource ${JSON.stringify(filter)}`);
     if (this.viewport) {
       const message = {
         viewport: this.viewport,

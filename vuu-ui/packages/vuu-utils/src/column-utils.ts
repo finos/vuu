@@ -282,16 +282,14 @@ export const sortPinnedColumns = (
   if (rightPinnedColumns.length) {
     const measuredRightPinnedColumns: KeyedColumnDescriptor[] = [];
     let pinnedWidthRight = 0;
-    let endPin: true | undefined = true;
     for (const column of rightPinnedColumns) {
       measuredRightPinnedColumns.unshift({
         ...column,
-        endPin,
         pinnedOffset: pinnedWidthRight,
       });
-      endPin = undefined;
       pinnedWidthRight += column.width;
     }
+    measuredRightPinnedColumns[0].endPin = true;
     return allColumns.concat(measuredRightPinnedColumns);
   } else {
     return allColumns;

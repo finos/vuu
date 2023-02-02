@@ -25,12 +25,11 @@ export const RowBasedTable = ({
 }: TableImplementationProps) => {
   const handleDragStart = useCallback(
     (evt: MouseEvent) => {
-      console.log(`handkleDRagSTart`, {
+      console.log(`RowBasedDataTable handleDragStart`, {
         evt,
         onHeaderCellDragStart,
       });
-      //TODO do not fire this untila delay has elapsed
-      // onHeaderCellDragStart?.(evt);
+      onHeaderCellDragStart?.(evt);
     },
     [onHeaderCellDragStart]
   );

@@ -18,7 +18,6 @@ import {
   ValueFormatter,
   ValueFormatters,
 } from "./dataTableTypes";
-import { KeySet } from "./KeySet";
 import { useDataSource } from "./useDataSource";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import { MeasuredProps, useMeasuredContainer } from "./useMeasuredContainer";
@@ -28,10 +27,10 @@ import { useTableViewport } from "./useTableViewport";
 
 export interface DataTableHookProps extends MeasuredProps {
   config: GridConfig;
-  data?: DataSourceRow[];
-  dataSource?: DataSource;
+  dataSource: DataSource;
   headerHeight: number;
   onConfigChange?: (config: GridConfig) => void;
+  renderBufferSize?: number;
   rowHeight: number;
 }
 
@@ -78,18 +77,16 @@ const getValueFormatter = (column: KeyedColumnDescriptor): ValueFormatter => {
 
 export const useDataTable = ({
   config,
-  data: dataProp,
   dataSource,
   headerHeight,
   onConfigChange,
+  renderBufferSize = 0,
   rowHeight,
   ...measuredProps
 }: DataTableHookProps) => {
-  const keys = useMemo(() => new KeySet({ from: 0, to: 0 }), []);
-  const [visibleRows, setVisibleRows] = useState<DataSourceRow[]>([]);
-  const [rowCount, setRowCount] = useState<number>(dataProp?.length ?? 0);
+  const [rowCount, setRowCount] = useState<number>(0);
 
-  if (dataProp === undefined && dataSource === undefined) {
+  if (dataSource === undefined) {
     throw Error("no data source provided to DataTable");
   }
 
@@ -170,21 +167,16 @@ export const useDataTable = ({
     onConfigChange: handleConfigChangeFromDataSource,
     onSubscribed,
     onSizeChange: onDataRowcountChange,
+    renderBufferSize,
+    viewportRowCount: viewportMeasurements.rowCount,
   });
 
   const setRangeVertical = useCallback(
     (from: number, to: number) => {
-      if (dataSource) {
-        setRange(from, to);
-      } else {
-        keys.reset({ from, to });
-        const visibleRows = dataProp
-          ? keys.withKeys(dataProp.slice(from, to))
-          : [];
-        setVisibleRows(visibleRows);
-      }
+      // const fullRange = getFullRange({ from, to }, renderBufferSize);
+      setRange({ from, to });
     },
-    [dataProp, dataSource, keys, setRange]
+    [setRange]
   );
 
   const handleSort = useCallback(
@@ -248,7 +240,6 @@ export const useDataTable = ({
     [dataSource]
   );
 
-  // TODO will we ever want to expose scroll request to table ?
   const { requestScroll, ...scrollProps } = useTableScroll({
     onRangeChange: setRangeVertical,
     rowHeight,
@@ -260,7 +251,7 @@ export const useDataTable = ({
   const containerProps = useKeyboardNavigation({
     columnCount: columns.length,
     containerRef: containerMeasurements.containerRef,
-    data: dataSource ? data : visibleRows,
+    data,
     requestScroll,
     rowCount: dataSource?.size,
     viewportRange: range,
@@ -270,14 +261,13 @@ export const useDataTable = ({
     containerMeasurements,
     containerProps,
     columns,
-    data: dataSource ? data : visibleRows,
+    data,
     dispatchColumnAction,
     onColumnResize: handleColumnResize,
     onRemoveColumnFromGroupBy: handleRemoveColumnFromGroupBy,
     onSort: handleSort,
     onToggleGroup: handleToggleGroup,
     scrollProps,
-    setRangeVertical,
     rowCount,
     valueFormatters,
     viewportMeasurements,
