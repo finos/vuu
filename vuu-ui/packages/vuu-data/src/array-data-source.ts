@@ -1,3 +1,5 @@
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { KeySet } from "@finos/vuu-datatable/src/KeySet";
 import {
   LinkDescriptorWithLabel,
   VuuGroupBy,
@@ -6,6 +8,7 @@ import {
   VuuSort,
   VuuMenuRpcRequest,
   VuuTableMeta,
+  VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
 import { EventEmitter, uuid } from "@finos/vuu-utils";
 import {
@@ -19,15 +22,53 @@ import {
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
-  data: Array<DataSourceRow>;
-  tableMeta: VuuTableMeta;
+  columnDescriptors: ColumnDescriptor[];
+  data: VuuRowDataItemType[][];
 }
 
+const toDataSourceRow = (
+  data: VuuRowDataItemType[],
+  index: number
+): DataSourceRow => [
+  index,
+  index,
+  true,
+  false,
+  1,
+  0,
+  data[0] as string,
+  0,
+  ...data,
+];
+
+const buildTableMeta = (columns: ColumnDescriptor[]): VuuTableMeta => {
+  const meta = {
+    columns: [],
+    dataTypes: [],
+  } as VuuTableMeta;
+
+  columns.forEach((column) => {
+    meta.columns.push(column.name);
+    meta.dataTypes.push(column.serverDataType ?? "string");
+  });
+
+  return meta;
+};
+
+const toClientRow = (row: DataSourceRow, keys: KeySet) => {
+  const [rowIndex] = row;
+  const clientRow = row.slice() as DataSourceRow;
+  clientRow[1] = keys.keyFor(rowIndex);
+  return clientRow;
+};
+
 export class ArrayDataSource extends EventEmitter implements DataSource {
+  private columnDescriptors: ColumnDescriptor[];
   private status = "initialising";
   private disabled = false;
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
+  private tableMeta: VuuTableMeta;
 
   #aggregations: VuuAggregation[] = [];
   #columns: string[] = [];
@@ -37,30 +78,35 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
   #range: VuuRange = { from: 0, to: 0 };
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
-  #tableMeta: VuuTableMeta;
   #title: string | undefined;
 
   public rowCount: number | undefined;
-  public viewport: string | undefined;
+  public viewport: string;
+
+  private keys = new KeySet(this.#range);
 
   constructor({
     aggregations,
+    columnDescriptors,
     columns,
     data,
     filter,
     groupBy,
     sort,
-    tableMeta,
     title,
     viewport,
   }: ArrayDataSourceConstructorProps) {
     super();
 
-    if (!data) throw Error("ArrayDataSource constructor called without data");
+    if (!data || !columnDescriptors) {
+      throw Error("ArrayDataSource constructor called without data");
+    }
 
-    this.#data = data;
-    this.#tableMeta = tableMeta;
-    this.viewport = viewport;
+    this.columnDescriptors = columnDescriptors;
+    this.tableMeta = buildTableMeta(columnDescriptors);
+
+    this.#data = data.map<DataSourceRow>(toDataSourceRow);
+    this.viewport = viewport || uuid();
     if (aggregations) {
       this.#aggregations = aggregations;
     }
@@ -92,6 +138,8 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
     callback: SubscribeCallback
   ) {
     this.clientCallback = callback;
+
+    console.log(`subscribe range ${range?.from} ${range?.to}`);
 
     if (aggregations) {
       this.#aggregations = aggregations;
@@ -130,7 +178,13 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
       groupBy: this.#groupBy,
       range: this.#range,
       sort: this.#sort,
-      tableMeta: this.#tableMeta,
+      tableMeta: this.tableMeta,
+    });
+
+    this.clientCallback({
+      clientViewportId: this.viewport,
+      type: "viewport-update",
+      size: this.#data.length,
     });
   }
 
@@ -190,7 +244,17 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
 
   set range(range: VuuRange) {
     this.#range = range;
-    console.log(`ArrayDataSource setRange ${range.from} - ${range.to}`);
+    this.keys.reset(range);
+    requestAnimationFrame(() => {
+      this.clientCallback?.({
+        clientViewportId: this.viewport,
+        rows: this.#data
+          .slice(range.from, range.to)
+          .map((row) => toClientRow(row, this.keys)),
+        size: this.#data.length,
+        type: "viewport-update",
+      });
+    });
   }
 
   get columns() {

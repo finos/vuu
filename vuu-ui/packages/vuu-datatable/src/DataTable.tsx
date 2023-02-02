@@ -13,17 +13,17 @@ import "./DataTable.css";
 const classBase = "vuuDataTable";
 
 export const DataTable = ({
+  allowConfigEditing: showSettings = false,
   className,
   config,
-  data: dataProp,
   dataSource,
   headerHeight = 25,
   height,
   id: idProp,
   onConfigChange,
   onShowConfigEditor: onShowSettings,
+  renderBufferSize = 0,
   rowHeight = 20,
-  allowConfigEditing: showSettings = false,
   style: styleProp,
   tableLayout: tableLayoutProp = "row",
   width,
@@ -35,7 +35,6 @@ export const DataTable = ({
     dispatchColumnAction,
     containerMeasurements: { containerRef, innerSize, outerSize },
     containerProps,
-    setRangeVertical,
     rowCount,
     scrollProps,
     valueFormatters,
@@ -43,8 +42,8 @@ export const DataTable = ({
     ...tableProps
   } = useDataTable({
     config,
-    data: dataProp,
     dataSource,
+    renderBufferSize,
     headerHeight,
     height,
     onConfigChange,

@@ -169,13 +169,13 @@ export class Viewport {
   }
 
   subscribe() {
-    // console.log(`ViewPort subscribe ${this.table.table}
-    // bufferSize ${this.bufferSize}
-    // clientRange : ${this.clientRange.from} - ${this.clientRange.to}
-    // range subscribed ${JSON.stringify(
-    //   getFullRange(this.clientRange, this.bufferSize)
-    // )}
-    // `);
+    console.log(`ViewPort subscribe ${this.table.table}
+    bufferSize ${this.bufferSize}
+    clientRange : ${this.clientRange.from} - ${this.clientRange.to}
+    range subscribed ${JSON.stringify(
+      getFullRange(this.clientRange, this.bufferSize)
+    )}
+    `);
     const { filter } = this.filter;
     this.status =
       this.status === "subscribed" ? "resubscribing" : "subscribing";

@@ -222,14 +222,13 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
             // columnSizing="fill"
             config={tableConfig}
             dataSource={dataSource}
-            height="100%"
             // columns={columns}
             onConfigChange={handleTableConfigChange}
             // renderBufferSize={80}
+            renderBufferSize={80}
             rowHeight={18}
             // selectionModel="extended"
             // showLineNumbers
-            width="100%"
           />
         </div>
       </div>

@@ -4,6 +4,6 @@ body {
   height: 100%;
 }
 
-#root {
+#root.vuu-standalone {
   height: 100vh;
 }

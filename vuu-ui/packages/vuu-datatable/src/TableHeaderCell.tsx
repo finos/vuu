@@ -17,7 +17,6 @@ export interface TableHeaderCellProps
   column: KeyedColumnDescriptor;
   debugString?: string;
   onDragStart?: (evt: MouseEvent) => void;
-  onDragEnd?: () => void;
   onResize?: TableColumnResizeHandler;
 }
 
@@ -25,7 +24,6 @@ export const TableHeaderCell = ({
   column,
   className: classNameProp,
   onClick,
-  onDragEnd,
   onDragStart,
   onResize,
   ...props
@@ -38,6 +36,7 @@ export const TableHeaderCell = ({
   });
 
   const showContextMenu = useContextMenu();
+  const dragTimerRef = useRef<number | null>(null);
 
   const handleContextMenu = (e: MouseEvent<HTMLElement>) => {
     showContextMenu(e, "header", { column });
@@ -50,13 +49,19 @@ export const TableHeaderCell = ({
 
   const handleMouseDown = useCallback(
     (evt: MouseEvent) => {
-      onDragStart?.(evt);
+      dragTimerRef.current = window.setTimeout(() => {
+        onDragStart?.(evt);
+        dragTimerRef.current = null;
+      }, 250);
     },
     [onDragStart]
   );
   const handleMouseUp = useCallback(() => {
-    onDragEnd?.();
-  }, [onDragEnd]);
+    if (dragTimerRef.current !== null) {
+      window.clearTimeout(dragTimerRef.current);
+      dragTimerRef.current = null;
+    }
+  }, []);
 
   const className = cx(classBase, classNameProp, {
     vuuPinFloating: column.pin === "floating",

@@ -18,6 +18,7 @@ import "@fontsource/open-sans/800.css";
 import "@fontsource/open-sans/800-italic.css";
 
 // import * as stories from "./examples";
+import "./index.css";
 
 const pathToExample = (path: string): [string[], string] => {
   const endOfImportPath = path.lastIndexOf("/");
@@ -39,7 +40,7 @@ if (url.searchParams.has("standalone")) {
     console.log({ importPath, exampleName });
     try {
       const root = document.getElementById("root") as HTMLDivElement;
-      root.classList.add("salt-theme", "salt-density-medium");
+      root.classList.add("vuu-standalone", "salt-theme", "salt-density-medium");
       root.dataset.mode = "light";
       const targetExamples = await import(/* @vite-ignore */ importPath);
       if (exampleName in targetExamples) {

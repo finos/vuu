@@ -19,6 +19,7 @@ export const ColumnBasedTable = ({
     onHeaderCellDragEnd?.();
   }, [onHeaderCellDragEnd]);
 
+  console.log(`ColumnBasedTable render`);
   return (
     <>
       {columns.map((column, i) => (

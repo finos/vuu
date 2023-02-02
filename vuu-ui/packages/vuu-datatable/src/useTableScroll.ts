@@ -75,18 +75,9 @@ export const useTableScroll = ({
     const { current: tableContainer } = tableContainerRef;
     if (tableContainer) {
       const { scrollTop } = tableContainer;
-      // console.log(
-      //   `%cTable COntainer Scrolled to ${scrollTop}`,
-      //   "color:red;font-weight: bold;"
-      // );
       const firstRow = Math.floor(scrollTop / rowHeight);
       if (firstRow !== firstRowRef.current) {
         firstRowRef.current = firstRow;
-        // console.log(
-        //   `scrollTable  onRangeChange ${firstRow} - ${
-        //     firstRow + viewportRowCount
-        //   }`
-        // );
         onRangeChange(firstRow, firstRow + viewportRowCount);
       }
     }
@@ -170,9 +161,9 @@ export const useTableScroll = ({
 
   // TODO this is going to scroll to top in situations where this won't be right
   // Set the initial viewport range
-  useLayoutEffect(() => {
-    handleTableContainerScroll();
-  }, [handleTableContainerScroll]);
+  // useLayoutEffect(() => {
+  //   handleTableContainerScroll();
+  // }, [handleTableContainerScroll]);
 
   return {
     onScrollbarContainerScroll: handleScrollbarContainerScroll,
