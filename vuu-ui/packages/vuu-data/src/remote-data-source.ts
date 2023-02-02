@@ -245,29 +245,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   select(selected: number[]) {
+    console.log(`select [${selected.join(",")}]`);
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
         type: "select",
         selected,
-      });
-    }
-  }
-
-  selectAll() {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "selectAll",
-      });
-    }
-  }
-
-  selectNone() {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "selectNone",
       });
     }
   }

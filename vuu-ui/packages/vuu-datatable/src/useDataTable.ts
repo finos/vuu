@@ -15,6 +15,7 @@ import { applySort, metadataKeys, roundDecimal } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import {
   TableColumnResizeHandler,
+  TableSelectionModel,
   ValueFormatter,
   ValueFormatters,
 } from "./dataTableTypes";
@@ -24,6 +25,7 @@ import { MeasuredProps, useMeasuredContainer } from "./useMeasuredContainer";
 import { useTableModel } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
+import { useSelection } from "./useSelection";
 
 export interface DataTableHookProps extends MeasuredProps {
   config: GridConfig;
@@ -32,6 +34,7 @@ export interface DataTableHookProps extends MeasuredProps {
   onConfigChange?: (config: GridConfig) => void;
   renderBufferSize?: number;
   rowHeight: number;
+  selectionModel: TableSelectionModel;
 }
 
 const { KEY, IS_EXPANDED } = metadataKeys;
@@ -82,6 +85,7 @@ export const useDataTable = ({
   onConfigChange,
   renderBufferSize = 0,
   rowHeight,
+  selectionModel,
   ...measuredProps
 }: DataTableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(0);
@@ -161,6 +165,18 @@ export const useDataTable = ({
     },
     [dispatchColumnAction]
   );
+
+  const setSelected = useCallback(
+    (selected) => {
+      dataSource.select(selected);
+    },
+    [dataSource]
+  );
+
+  const handleRowClick = useSelection({
+    setSelected,
+    selectionModel,
+  });
 
   const { data, range, setRange } = useDataSource({
     dataSource,
@@ -265,6 +281,7 @@ export const useDataTable = ({
     dispatchColumnAction,
     onColumnResize: handleColumnResize,
     onRemoveColumnFromGroupBy: handleRemoveColumnFromGroupBy,
+    onRowClick: handleRowClick,
     onSort: handleSort,
     onToggleGroup: handleToggleGroup,
     scrollProps,

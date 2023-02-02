@@ -218,14 +218,6 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
     });
   }
 
-  selectAll() {
-    console.log("TODO: selectAll");
-  }
-
-  selectNone() {
-    console.log("TODO: select none");
-  }
-
   openTreeNode(key: string) {
     console.log("TODO: open tree node", { key });
   }

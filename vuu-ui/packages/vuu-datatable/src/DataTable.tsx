@@ -24,6 +24,7 @@ export const DataTable = ({
   onShowConfigEditor: onShowSettings,
   renderBufferSize = 0,
   rowHeight = 20,
+  selectionModel = "extended",
   style: styleProp,
   tableLayout: tableLayoutProp = "row",
   width,
@@ -48,6 +49,7 @@ export const DataTable = ({
     height,
     onConfigChange,
     rowHeight,
+    selectionModel,
     width,
   });
 
@@ -98,6 +100,7 @@ export const DataTable = ({
   };
 
   const Table = tableLayout === "column" ? ColumnBasedTable : RowBasedTable;
+  const isRowTable = tableLayout === "row";
 
   return (
     <ContextMenuProvider
@@ -140,7 +143,7 @@ export const DataTable = ({
                 columns={columns.filter((col, i) => i !== draggedItemIndex)}
                 headerHeight={headerHeight}
                 onHeaderCellDragStart={
-                  tableLayout === "row" ? handleHeaderCellDragStart : undefined
+                  isRowTable ? handleHeaderCellDragStart : undefined
                 }
                 rowHeight={rowHeight}
                 valueFormatters={valueFormatters}

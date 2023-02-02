@@ -18,6 +18,7 @@ export const RowBasedTable = ({
   onColumnResize,
   onHeaderCellDragStart,
   onRemoveColumnFromGroupBy,
+  onRowClick,
   onSort,
   onToggleGroup,
   rowHeight,
@@ -91,6 +92,7 @@ export const RowBasedTable = ({
             height={rowHeight}
             index={i}
             key={row[RENDER_IDX]}
+            onClick={onRowClick}
             onToggleGroup={onToggleGroup}
             row={row}
             valueFormatters={valueFormatters}

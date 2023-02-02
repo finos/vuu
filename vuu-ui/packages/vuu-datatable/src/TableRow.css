@@ -18,3 +18,11 @@
     --row-toggle-icon-transform: rotate(90deg);
   }
   
+  .vuuDataTableRow[aria-selected] {
+    background-color: var(--vuuTableRow-selected-background, var(--salt-selectable-background-selected));
+    --vuuTableCell-border-bottomColor: var(--salt-selectable-borderColor-selected);
+  }
+
+  .vuuDataTableRow:not([aria-selected]):has(+ [aria-selected]) {
+    --vuuTableCell-border-bottomColor: var(--salt-selectable-borderColor-selected);
+  }

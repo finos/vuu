@@ -4,6 +4,8 @@ import { HTMLAttributes, MouseEvent } from "react";
 
 export type tableLayoutType = "row" | "column";
 
+export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
+
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   allowConfigEditing?: boolean;
   config: GridConfig;
@@ -14,6 +16,7 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   onShowConfigEditor?: () => void;
   renderBufferSize?: number;
   rowHeight?: number;
+  selectionModel?: TableSelectionModel;
   tableLayout?: tableLayoutType;
   width?: number;
 }
@@ -37,6 +40,7 @@ export interface TableImplementationProps {
   onHeaderCellDragEnd?: () => void;
   onHeaderCellDragStart?: (evt: MouseEvent) => void;
   onRemoveColumnFromGroupBy?: (column: KeyedColumnDescriptor) => void;
+  onRowClick?: RowClickHandler;
   onSort: (column: KeyedColumnDescriptor, isAdditive: boolean) => void;
   onToggleGroup?: (row: DataSourceRow) => void;
   rowHeight: number;
@@ -63,3 +67,10 @@ export interface Viewport {
   rowCount: number;
   scrollContentWidth: number;
 }
+
+export type RowClickHandler = (
+  index: number,
+  row: DataSourceRow,
+  rangeSelect: boolean,
+  keepExistingSelection: boolean
+) => void;
