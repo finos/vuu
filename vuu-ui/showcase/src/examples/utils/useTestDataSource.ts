@@ -1,45 +1,58 @@
 import { RemoteDataSource } from "@finos/vuu-data";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { useMemo } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
 import { Schema } from "./useSchemas";
 
-const configureColumns = (columns: any, columnConfig?: any) => {
+export const toServerSpec = (column: ColumnDescriptor) =>
+  column.expression
+    ? `${column.name}:${column.serverDataType}:${column.expression}`
+    : column.name;
+
+const configureColumns = (
+  columns: ColumnDescriptor[],
+  columnConfig?: { [key: string]: ColumnDescriptor }
+): ColumnDescriptor[] => {
   if (columnConfig) {
-    return Object.keys(columnConfig).map((colname: string) => {
-      const column = columns.find((col) => col.name === colname);
-      return {
-        ...column,
-        ...columnConfig[colname],
-      };
-    });
+    return columns.map((column) => ({
+      ...column,
+      ...columnConfig[column.name],
+    }));
   } else {
     return columns;
   }
 };
 
+const NO_CONCATENATED_COLUMNS: ColumnDescriptor[] = [];
+
 export const useTestDataSource = ({
   autoLogin = true,
   bufferSize = 100,
+  calculatedColumns = NO_CONCATENATED_COLUMNS,
   columnConfig,
   schemas,
   tablename = "instruments",
 }: {
   autoLogin?: boolean;
   bufferSize?: number;
+  calculatedColumns?: ColumnDescriptor[];
   columnConfig?: any;
   schemas: { [key: string]: Schema };
   tablename?: string;
 }) => {
   const [columns, config, columnNames, table] = useMemo(() => {
     const schema = schemas[tablename];
-    const configuredColumns = configureColumns(schema.columns, columnConfig);
+    const configuredColumns = configureColumns(
+      schema.columns,
+      columnConfig
+    ).concat(calculatedColumns);
     return [
       configuredColumns,
       { columns: configuredColumns },
-      configuredColumns.map((col) => col.name),
+      configuredColumns.map(toServerSpec),
       schema.table,
     ];
-  }, [columnConfig, schemas, tablename]);
+  }, [calculatedColumns, columnConfig, schemas, tablename]);
 
   const dataSource = useMemo(() => {
     const dataConfig = {

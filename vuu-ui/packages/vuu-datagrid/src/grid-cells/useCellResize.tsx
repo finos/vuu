@@ -1,5 +1,5 @@
 import { RefObject, useCallback, useRef } from "react";
-import { Heading, KeyedColumnDescriptor } from "../grid-model";
+import { Heading, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { resizePhase } from "../gridTypes";
 
 export type ResizeHandler = (evt: MouseEvent, moveBy: number) => void;

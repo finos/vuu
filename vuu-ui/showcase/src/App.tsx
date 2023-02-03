@@ -2,9 +2,10 @@ import { Flexbox } from "@finos/vuu-layout";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { SaltProvider, Text } from "@salt-ds/core";
 import Module from "module";
-import { ReactElement, useCallback, useMemo } from "react";
+import { ReactElement, useCallback, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Tree } from "./components";
+import { ThemeMode, ThemeSwitch } from "@finos/vuu-shell";
 
 import "./App.css";
 
@@ -72,6 +73,7 @@ export const App = ({ stories }: AppProps) => {
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
   const handleChange = (evt, [selected]) => navigate(selected.id);
+  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
 
   const launchStandaloneWindow = useCallback(() => {
     window.open(`${location.href}?standalone`, "_blank");
@@ -100,8 +102,9 @@ export const App = ({ stories }: AppProps) => {
             resizeable
             style={{ flexDirection: "column", flex: "1 1 auto" }}
           >
-            <Toolbar className="ShowcaseContentToolbar">
+            <Toolbar className="ShowcaseContentToolbar salt-density-high">
               <span />
+              <ThemeSwitch onChange={setThemeMode} />
               <ToolbarButton
                 data-align-end
                 data-icon="open-in"
@@ -109,7 +112,8 @@ export const App = ({ stories }: AppProps) => {
               />
             </Toolbar>
             <div
-              className="ShowcaseContent"
+              className="ShowcaseContent salt-theme"
+              data-mode={themeMode}
               style={{
                 flex: "1 1 auto",
                 position: "relative",

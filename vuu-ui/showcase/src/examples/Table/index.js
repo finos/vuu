@@ -1,1 +1,1 @@
-export * from './Table.stories';
+export * from "./Table.examples";

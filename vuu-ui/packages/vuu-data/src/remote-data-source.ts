@@ -1,4 +1,5 @@
 import {
+  LinkDescriptorWithLabel,
   VuuGroupBy,
   VuuAggregation,
   VuuRange,
@@ -7,16 +8,16 @@ import {
   VuuMenuRpcRequest,
 } from "@finos/vuu-protocol-types";
 import { EventEmitter, uuid } from "@finos/vuu-utils";
-import { Filter } from "@finos/vuu-filter-types";
-import { ConnectionManager, ServerAPI } from "./connection-manager";
 import {
   DataSource,
   DataSourceCallbackMessage,
-  DataSourceProps,
+  DataSourceFilter,
+  DataSourceConstructorProps,
+  DataSourceVisualLinkCreatedMessage,
   SubscribeCallback,
   SubscribeProps,
 } from "./data-source";
-import { getServerUrl } from "./hooks/useServerConnection";
+import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
 
 // const log = (message: string, ...rest: unknown[]) => {
@@ -33,22 +34,21 @@ import { MenuRpcResponse } from "./vuuUIMessageTypes";
 export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private url: string;
-  private visualLink: string;
-  private status: string;
-  private disabled: boolean;
-  private suspended: boolean;
-  private initialGroup: VuuGroupBy | undefined;
-  private initialRange: VuuRange = { from: 0, to: 0 };
-  private initialSort: any;
-  private initialFilter: Filter | undefined;
-  private initialFilterQuery: string | undefined;
-  private initialAggregations: any;
-  private pendingServer: any;
-  private clientCallback: any;
-  // private serverViewportId?: string;
+  private visualLink?: DataSourceVisualLinkCreatedMessage;
+  private status = "initialising";
+  private disabled = false;
+  private suspended = false;
+  private clientCallback: SubscribeCallback | undefined;
 
-  public columns: string[];
+  #aggregations: VuuAggregation[] = [];
+  #columns: string[] = [];
+  #filter: DataSourceFilter = { filter: "" };
+  #groupBy: VuuGroupBy = [];
+  #range: VuuRange = { from: 0, to: 0 };
+  #size = 0;
+  #sort: VuuSort = { sortDefs: [] };
+  #title: string | undefined;
+
   public rowCount: number | undefined;
   public table: VuuTable;
   public viewport: string | undefined;
@@ -58,66 +58,75 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     aggregations,
     columns,
     filter,
-    filterQuery,
-    group,
+    groupBy,
     sort,
     table,
-    configUrl,
-    serverUrl,
+    title,
     viewport,
     "visual-link": visualLink,
-  }: DataSourceProps) {
+  }: DataSourceConstructorProps) {
     super();
+
+    if (!table)
+      throw Error("RemoteDataSource constructor called without table");
+
     this.bufferSize = bufferSize;
     this.table = table;
-    this.columns = columns;
     this.viewport = viewport;
-
-    this.url = serverUrl ?? configUrl ?? getServerUrl();
     this.visualLink = visualLink;
-
-    this.status = "initialising";
-    this.disabled = false;
-    this.suspended = false;
-
-    this.initialGroup = group;
-    this.initialSort = sort;
-    this.initialFilter = filter;
-    this.initialFilterQuery = filterQuery;
-    this.initialAggregations = aggregations;
-
-    if (!this.url) {
-      throw Error(
-        "RemoteDataSource expects serverUrl or configUrl as argument or that serverUrl has already been set"
-      );
+    if (aggregations) {
+      this.#aggregations = aggregations;
     }
-
-    this.pendingServer = ConnectionManager.connect(this.url);
+    if (columns) {
+      this.#columns = columns;
+    }
+    if (filter) {
+      this.#filter = filter;
+    }
+    if (groupBy) {
+      this.#groupBy = groupBy;
+    }
+    if (sort) {
+      this.#sort = sort;
+    }
+    this.#title = title;
   }
 
   async subscribe(
     {
       viewport = this.viewport ?? uuid(),
-      table = this.table,
-      columns = this.columns || [],
-      aggregations = this.initialAggregations,
-      range = this.initialRange,
-      sort = this.initialSort,
-      groupBy = this.initialGroup,
-      filter = this.initialFilter,
-      filterQuery = this.initialFilterQuery,
+      columns,
+      aggregations,
+      range,
+      sort,
+      groupBy,
+      filter,
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    if (!table) throw Error("RemoteDataSource subscribe called without table");
-
     this.clientCallback = callback;
 
     // store the range before we await the server. It's is possible the
     // range will be updated from the client before we have been able to
     // subscribe. This ensures we will subscribe with latest value.
-    this.initialGroup = groupBy;
-    this.initialRange = range;
+    if (aggregations) {
+      this.#aggregations = aggregations;
+    }
+    if (columns) {
+      this.#columns = columns;
+    }
+    if (filter) {
+      this.#filter = filter;
+    }
+    if (groupBy) {
+      this.#groupBy = groupBy;
+    }
+    if (range) {
+      this.#range = range;
+    }
+    if (sort) {
+      this.#sort = sort;
+    }
 
     if (this.status !== "initialising") {
       //TODO check if subscription details are still the same
@@ -134,24 +143,23 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
     this.status = "subscribing";
     this.viewport = viewport;
-    this.table = table;
-    this.columns = columns;
 
-    this.server = await this.pendingServer;
+    this.server = await getServerAPI();
 
     const { bufferSize } = this;
+
     this.server?.subscribe(
       {
-        aggregations,
+        aggregations: this.#aggregations,
         bufferSize,
-        columns,
-        filter,
-        filterQuery,
-        groupBy: this.initialGroup,
+        columns: this.#columns,
+        filter: this.#filter,
+        groupBy: this.#groupBy,
         viewport,
-        table,
-        range: this.initialRange,
-        sort,
+        table: this.table,
+        range: this.#range,
+        sort: this.#sort,
+        title: this.#title,
         visualLink: this.visualLink,
       },
       this.handleMessageFromServer
@@ -161,10 +169,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   handleMessageFromServer = (message: DataSourceCallbackMessage) => {
     if (message.type === "subscribed") {
       this.status = "subscribed";
-      // this.serverViewportId = message.serverViewportId;
       this.emit("subscribed", message);
-      const { clientViewportId, ...rest } = message;
-      this.clientCallback(rest);
+      this.clientCallback?.(message);
     } else if (message.type === "disabled") {
       this.status = "disabled";
     } else if (message.type === "enabled") {
@@ -173,11 +179,13 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       if (
         message.type === "viewport-update" &&
         message.size !== undefined &&
-        message.size !== this.rowCount
+        message.size !== this.#size
       ) {
+        // deprecated
         this.rowCount = message.size;
+        this.#size = message.size;
       }
-      this.clientCallback(message);
+      this.clientCallback?.(message);
     }
   };
 
@@ -236,75 +244,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     return this;
   }
 
-  setSubscribedColumns(columns: string[]) {
-    if (this.viewport) {
-      this.columns = columns;
-
-      const message = {
-        viewport: this.viewport,
-        type: "setColumns",
-        columns,
-      } as const;
-      if (this.server) {
-        this.server.send(message);
-      }
-    }
-  }
-
-  setRange(from: number, to: number) {
-    if (this.viewport) {
-      // log(`setRange ${from} - ${to}`);
-      const message = {
-        viewport: this.viewport,
-        type: "setViewRange",
-        range: { from, to },
-      } as const;
-
-      if (this.server) {
-        this.server.send(message);
-      } else {
-        console.log(`set initial range to ${from} ${to}`);
-        this.initialRange = { from, to };
-      }
-    }
-  }
-
-  group(groupBy: VuuGroupBy) {
-    if (this.viewport) {
-      // log(`groupBy ${JSON.stringify(groupBy)}`);
-      const message = {
-        viewport: this.viewport,
-        type: "groupBy",
-        groupBy,
-      } as const;
-
-      if (this.server) {
-        this.server.send(message);
-      } else {
-        this.initialGroup = groupBy;
-      }
-    }
-  }
-
-  //TODO I think we should have a clear filter for API clarity
-  filter(filter: Filter | undefined, filterQuery: string) {
-    if (this.viewport) {
-      const message = {
-        viewport: this.viewport,
-        type: "filterQuery",
-        filter,
-        filterQuery,
-      } as const;
-
-      if (this.server) {
-        this.server.send(message);
-      } else {
-        this.initialFilter = filter;
-        this.initialFilterQuery = filterQuery;
-      }
-    }
-  }
-
   select(selected: number[]) {
     if (this.viewport) {
       this.server?.send({
@@ -333,16 +272,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  aggregate(aggregations: VuuAggregation[]) {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "aggregate",
-        aggregations,
-      });
-    }
-  }
-
   openTreeNode(key: string) {
     if (this.viewport) {
       // log(`openTreeNode ${key}`);
@@ -365,18 +294,136 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  // TODO columns cannot simply be strings
-  sort(sort: VuuSort) {
+  get size() {
+    return this.#size;
+  }
+
+  get range() {
+    return this.#range;
+  }
+
+  set range(range: VuuRange) {
+    this.#range = range;
+    if (this.viewport) {
+      if (this.server) {
+        this.server.send({
+          viewport: this.viewport,
+          type: "setViewRange",
+          range,
+        });
+      }
+    }
+  }
+
+  get columns() {
+    return this.#columns;
+  }
+
+  set columns(columns: string[]) {
+    this.#columns = columns;
+    if (this.viewport) {
+      const message = {
+        viewport: this.viewport,
+        type: "setColumns",
+        columns,
+      } as const;
+      if (this.server) {
+        this.server.send(message);
+      }
+    }
+  }
+
+  get aggregations() {
+    return this.#aggregations;
+  }
+
+  set aggregations(aggregations: VuuAggregation[]) {
+    this.#aggregations = aggregations;
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
-        type: "sort",
-        sortDefs: sort.sortDefs,
+        type: "aggregate",
+        aggregations,
       });
     }
   }
 
-  createLink({ parentVpId, link: { fromColumn, toColumn } }: any) {
+  get sort() {
+    return this.#sort;
+  }
+
+  set sort(sort: VuuSort) {
+    // TODO should we wait until server ACK before we assign #sort ?
+    this.#sort = sort;
+    if (this.viewport) {
+      const message = {
+        viewport: this.viewport,
+        type: "sort",
+        sort,
+      } as const;
+      if (this.server) {
+        this.server.send(message);
+      }
+    }
+  }
+
+  get filter() {
+    return this.#filter;
+  }
+
+  set filter(filter: DataSourceFilter) {
+    // TODO should we wait until server ACK before we assign #sort ?
+    this.#filter = filter;
+    if (this.viewport) {
+      const message = {
+        viewport: this.viewport,
+        type: "filter",
+        filter,
+      } as const;
+      if (this.server) {
+        this.server.send(message);
+      }
+    }
+  }
+
+  get groupBy() {
+    return this.#groupBy;
+  }
+
+  set groupBy(groupBy: VuuGroupBy) {
+    this.#groupBy = groupBy;
+    if (this.viewport) {
+      const message = {
+        viewport: this.viewport,
+        type: "groupBy",
+        groupBy,
+      } as const;
+
+      if (this.server) {
+        this.server.send(message);
+      }
+    }
+  }
+
+  get title() {
+    return this.#title;
+  }
+
+  set title(title: string | undefined) {
+    this.#title = title;
+    if (this.viewport && title) {
+      this.server?.send({
+        type: "setTitle",
+        title,
+        viewport: this.viewport,
+      });
+    }
+  }
+
+  createLink({
+    parentVpId,
+    link: { fromColumn, toColumn },
+  }: LinkDescriptorWithLabel) {
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
@@ -405,9 +452,5 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         ...rpcRequest,
       } as VuuMenuRpcRequest);
     }
-  }
-
-  setTitle(title: string) {
-    console.log(`RemoteDataSource setTitle ${title}`);
   }
 }

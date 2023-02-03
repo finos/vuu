@@ -25,7 +25,7 @@
     --vuuFilterEditor-variableColor: blue;
 
     align-items: center;
-    border-color: var(--salt-container-borderColor-medium);
+    border-color: var(--salt-container-secondary-borderColor);
     border-style: solid none;
     border-width: 1px;
     box-sizing: border-box;

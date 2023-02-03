@@ -24,6 +24,13 @@ Conditional formatting should allow the user to specify:
 5. Decay Flash (i.e. how we handle bid/offer updates)
 6. Numeric formatting (decimal places, comma's etc..)
 
+### How should we define styling on a viewport?
+
+One way to implement the styling would be to generate a css class on the client (say "af9c") and then to define criteria where that style should be applied (ex. ric = FOO) and then
+when that criteria evaluates to true, we would put the style back in the row update message to the client. 
+
+
+
 **Questions:**
 
 1. How would we transit the formatting information?

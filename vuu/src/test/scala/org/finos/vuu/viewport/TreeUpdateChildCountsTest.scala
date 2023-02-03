@@ -8,6 +8,7 @@ import org.finos.vuu.viewport.TestTimeStamp.EPOCH_DEFAULT
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -37,12 +38,15 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
 
     val columns = orderPrices.getTableDef.columns
 
+    val vpColumns = ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList)
+
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       ClientSessionId("A", "B"),
-      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList,
+      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List()),
       FilterSpec(""),
-      GroupBy(orderPrices, "ric")
+
+      GroupBy(orderPrices, vpColumns.getColumnForName( "ric").get)
         .withCount("ric")
         .asClause()
     )
@@ -52,8 +56,8 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"1"       ,""        ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (false     ,1         ,"$root|BT.L",false     ,2         ,"BT.L"    ,""        ,""        ,"1"       ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,1         ,""        ,""        ,""        ,""        ,""        ,""        ,""        ),
+        (false     ,1         ,"$root|BT.L",false     ,2         ,"BT.L"    ,""        ,""        ,1         ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -66,8 +70,8 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
     //check child count updated
     assertVpEq(updates) {
       Table(
-        ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"1"       ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
+        ("_isOpen", "_depth", "_treeKey", "_isLeaf", "_childCount", "_caption", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
+        (false, 1, "$root|BT.L", false, 3, "BT.L", "", "", 1, "", "", "", "", "", "", "")
       )
     }
 
@@ -92,12 +96,14 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
 
     val columns = orderPrices.getTableDef.columns
 
+    val vpColumns = ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList)
+
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       ClientSessionId("A", "B"),
-      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns.toList,
+      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List()),
       FilterSpec(""),
-      GroupBy(orderPrices, "ric")
+      GroupBy(orderPrices, vpColumns.getColumnForName( "ric").get)
         .withCount("ric")
         .withSum("quantity")
         .asClause()
@@ -108,8 +114,8 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,"1"       ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        ),
-        (false     ,1         ,"$root|BT.L",false     ,2         ,"BT.L"    ,""        ,""        ,"1"       ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|VOD.L",false     ,6         ,"VOD.L"   ,""        ,""        ,1         ,""        ,2100.0    ,""        ,""        ,""        ,""        ,""        ),
+        (false     ,1         ,"$root|BT.L",false     ,2         ,"BT.L"    ,""        ,""        ,1         ,""        ,1500.0    ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -122,7 +128,7 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"1"       ,""        ,"2734.0"  ,""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,1         ,""        ,2734.0    ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -134,7 +140,7 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
         ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,"1"       ,""        ,"2735.0"  ,""        ,""        ,""        ,""        ,""        )
+        (false     ,1         ,"$root|BT.L",false     ,3         ,"BT.L"    ,""        ,""        ,1         ,""        ,2735.0    ,""        ,""        ,""        ,""        ,""        )
       )
     }
 

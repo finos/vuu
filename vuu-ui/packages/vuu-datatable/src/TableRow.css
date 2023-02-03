@@ -10,7 +10,11 @@
     background: var(--row-background);
   }
 
-  .vuuDataTableRow .vuuPinLeft {
+  .vuuDataTableRow :is(.vuuPinFloating, .vuuPinLeft, .vuuPinRight) {
     background-color: var(--row-background);
+  }
+  
+  .vuuDataTableRow-expanded {
+    --row-toggle-icon-transform: rotate(90deg);
   }
   

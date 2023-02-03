@@ -30,7 +30,7 @@ describe("ServerProxy", () => {
       const { clientViewportId, status } =
         serverProxy.viewports.get("client-vp-1");
       expect(clientViewportId).toEqual("client-vp-1");
-      expect(status).toEqual("");
+      expect(status).toEqual("subscribing");
     });
 
     it("initialises Viewport when server ACKS subscription", () => {
@@ -62,8 +62,7 @@ describe("ServerProxy", () => {
         aggregations: undefined,
         clientViewportId: "client-vp-1",
         columns: ["col-1", "col-2", "col-3", "col-4"],
-        filter: undefined,
-        filterSpec: { filter: "" },
+        filter: { filter: "" },
         groupBy: [],
         range: {
           from: 0,

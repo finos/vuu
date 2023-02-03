@@ -6,15 +6,15 @@ import {
   ClientToServerRemoveLink,
   ClientToServerSelection,
   ClientToServerViewPortRange,
+  LinkDescriptorWithLabel,
   ServerToClientCreateViewPortSuccess,
   VuuAggregation,
   VuuColumnDataType,
-  VuuFilter,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
   VuuRow,
-  VuuSortCol,
+  VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { getFullRange } from "@finos/vuu-utils";
@@ -25,6 +25,7 @@ import { KeySet } from "./keyset";
 import * as Message from "./messages";
 
 import {
+  DataSourceFilter,
   DataSourceRow,
   DataSourceRowPredicate,
   DataSourceSubscribedMessage,
@@ -32,8 +33,6 @@ import {
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
 } from "../data-source";
-import { LinkWithLabel } from "./server-proxy";
-import { Filter } from "@finos/vuu-filter-types";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
@@ -47,7 +46,7 @@ interface ChangeViewportRange {
   type: "CHANGE_VP_RANGE";
 }
 interface ViewportFilter {
-  data: { filter: Filter | undefined; filterQuery: string };
+  data: DataSourceFilter;
   type: "filter";
 }
 interface Aggregate {
@@ -63,7 +62,7 @@ interface Selection {
   type: "selection";
 }
 interface Sort {
-  data: VuuSortCol[];
+  data: VuuSort;
   type: "sort";
 }
 interface GroupBy {
@@ -74,15 +73,13 @@ interface GroupByClear {
   data: VuuGroupBy;
   type: "groupByClear";
 }
-type CreateVisualLink = ClientToServerCreateLink;
-type RemoveVisualLink = ClientToServerRemoveLink;
 
 type AsyncOperation =
   | Aggregate
   | ChangeViewportRange
   | Columns
-  | CreateVisualLink
-  | RemoveVisualLink
+  | ClientToServerCreateLink
+  | ClientToServerRemoveLink
   | Disable
   | Enable
   | ViewportFilter
@@ -92,6 +89,12 @@ type AsyncOperation =
   | Sort;
 type RangeRequestTuple = [ClientToServerViewPortRange | null, DataSourceRow[]?];
 type RowSortPredicate = (row1: DataSourceRow, row2: DataSourceRow) => number;
+
+type LinkedParent = {
+  colName: string;
+  parentViewportId: string;
+  parentColName: string;
+};
 
 const byRowIndex: RowSortPredicate = ([index1], [index2]) => index1 - index2;
 export class Viewport {
@@ -105,14 +108,13 @@ export class Viewport {
   private columns: string[];
   // TODO create this in constructor so we don't have to mark is as optional
   private dataWindow?: ArrayBackedMovingWindow = undefined;
-  private filter: Filter | undefined;
-  private filterSpec: VuuFilter;
+  private filter: DataSourceFilter;
   private groupBy: string[];
+  private sort: VuuSort;
   private hasUpdates = false;
   private holdingPen: DataSourceRow[] = [];
-  private linkedParent?: any;
   private keys: KeySet;
-  private pendingLinkedParent: any;
+  private pendingLinkedParent?: DataSourceVisualLinkCreatedMessage;
   private pendingOperations: any = new Map<string, AsyncOperation>();
   private pendingRangeRequest: any = null;
   private rowCountChanged = false;
@@ -120,13 +122,14 @@ export class Viewport {
     columns: string[];
     dataTypes: VuuColumnDataType[];
   } | null = null;
-  private sort: any;
 
   public clientViewportId: string;
   public disabled = false;
   public isTree = false;
+  public links?: LinkDescriptorWithLabel[];
+  public linkedParent?: LinkedParent;
   public serverViewportId?: string;
-  public status: "" | "subscribed" = "";
+  public status: "" | "subscribing" | "resubscribing" | "subscribed" = "";
   public suspended = false;
   public table: VuuTable;
   public title: string | undefined;
@@ -136,11 +139,10 @@ export class Viewport {
     bufferSize = 50,
     columns,
     filter,
-    filterQuery = "",
     groupBy = [],
     table,
     range,
-    sort = [],
+    sort,
     title,
     viewport,
     visualLink,
@@ -150,17 +152,12 @@ export class Viewport {
     this.clientRange = range;
     this.clientViewportId = viewport;
     this.columns = columns;
-    this.filterSpec = {
-      filter: filterQuery,
-    };
     this.filter = filter;
     this.groupBy = groupBy;
     this.keys = new KeySet(range);
     this.pendingLinkedParent = visualLink;
     this.table = table;
-    this.sort = {
-      sortDefs: sort,
-    };
+    this.sort = sort;
     this.title = title;
   }
 
@@ -172,13 +169,16 @@ export class Viewport {
   }
 
   subscribe() {
-    // console.log(`ViewPort subscribe ${this.table.table}
-    // bufferSize ${this.bufferSize}
-    // clientRange : ${this.clientRange.from} - ${this.clientRange.to}
-    // range subscribed ${JSON.stringify(
-    //   getFullRange(this.clientRange, this.bufferSize)
-    // )}
-    // `);
+    console.log(`ViewPort subscribe ${this.table.table}
+    bufferSize ${this.bufferSize}
+    clientRange : ${this.clientRange.from} - ${this.clientRange.to}
+    range subscribed ${JSON.stringify(
+      getFullRange(this.clientRange, this.bufferSize)
+    )}
+    `);
+    const { filter } = this.filter;
+    this.status =
+      this.status === "subscribed" ? "resubscribing" : "subscribing";
     return {
       type: Message.CREATE_VP,
       table: this.table,
@@ -187,7 +187,7 @@ export class Viewport {
       columns: this.columns,
       sort: this.sort,
       groupBy: this.groupBy,
-      filterSpec: this.filterSpec,
+      filterSpec: { filter },
     } as ClientToServerCreateViewPort;
   }
 
@@ -195,17 +195,16 @@ export class Viewport {
     viewPortId,
     aggregations,
     columns,
+    filterSpec: filter,
     range,
     sort,
     groupBy,
-    filterSpec,
   }: ServerToClientCreateViewPortSuccess) {
     this.serverViewportId = viewPortId;
     this.status = "subscribed";
     this.aggregations = aggregations;
     this.columns = columns;
     this.groupBy = groupBy;
-    this.filterSpec = filterSpec;
     this.isTree = groupBy && groupBy.length > 0;
     this.dataWindow = new ArrayBackedMovingWindow(
       this.clientRange,
@@ -228,14 +227,13 @@ export class Viewport {
     //   `,
     //   "color: blue"
     // );
-
+    // TODO retrieve the filterStruct
     return {
       aggregations,
       type: "subscribed",
       clientViewportId: this.clientViewportId,
       columns,
-      filter: this.filter,
-      filterSpec: this.filterSpec,
+      filter,
       groupBy,
       range,
       sort,
@@ -259,25 +257,16 @@ export class Viewport {
       //this.hasUpdates = true; // is this right ??????????
       this.pendingRangeRequest = null;
     } else if (type === "groupBy") {
-      this.isTree = true;
+      this.isTree = data.length > 0;
       this.groupBy = data;
       return { clientViewportId, type, groupBy: data };
-    } else if (type === "groupByClear") {
-      this.isTree = false;
-      this.groupBy = [];
-      return {
-        clientViewportId,
-        type: "groupBy",
-        groupBy: null,
-      };
     } else if (type === "columns") {
       console.log("columns changed");
       this.columns = data;
       return { clientViewportId, type, ...data };
     } else if (type === "filter") {
-      this.filterSpec = { filter: data.filterQuery };
-      this.filter = data.filter;
-      return { clientViewportId, type, ...data };
+      this.filter = data as DataSourceFilter;
+      return { clientViewportId, type, filter: data };
     } else if (type === "aggregate") {
       this.aggregations = data as VuuAggregation[];
       return {
@@ -286,7 +275,7 @@ export class Viewport {
         aggregations: this.aggregations,
       };
     } else if (type === "sort") {
-      this.sort = { sortDefs: data };
+      this.sort = data;
       return { clientViewportId, type, sort: this.sort };
     } else if (type === "selection") {
       // should we do this here ?
@@ -309,8 +298,8 @@ export class Viewport {
         colName,
         parentViewportId,
         parentColName,
-      };
-      this.pendingLinkedParent = null;
+      } as LinkedParent;
+      this.pendingLinkedParent = undefined;
       return {
         type: "CREATE_VISUAL_LINK_SUCCESS",
         clientViewportId,
@@ -395,7 +384,8 @@ export class Viewport {
     }
   }
 
-  setLinks(links: LinkWithLabel[]) {
+  setLinks(links: LinkDescriptorWithLabel[]) {
+    this.links = links;
     return [
       {
         type: "VP_VISUAL_LINKS_RESP",
@@ -403,7 +393,10 @@ export class Viewport {
         clientViewportId: this.clientViewportId,
       },
       this.pendingLinkedParent,
-    ] as [DataSourceVisualLinksMessage, any];
+    ] as [
+      DataSourceVisualLinksMessage,
+      DataSourceVisualLinkCreatedMessage | undefined
+    ];
   }
 
   setMenu(menu: VuuMenu) {
@@ -425,12 +418,12 @@ export class Viewport {
     parentColumnName: string
   ) {
     const message = {
-      type: Message.CREATE_VISUAL_LINK,
+      type: "CREATE_VISUAL_LINK",
       parentVpId,
       childVpId: this.serverViewportId,
       parentColumnName,
       childColumnName: colName,
-    } as CreateVisualLink;
+    } as ClientToServerCreateLink;
     this.awaitOperation(requestId, message);
     return message as ClientToServerCreateLink;
   }
@@ -439,7 +432,7 @@ export class Viewport {
     const message = {
       type: "REMOVE_VISUAL_LINK",
       childVpId: this.serverViewportId,
-    } as RemoveVisualLink;
+    } as ClientToServerRemoveLink;
     this.awaitOperation(requestId, message);
     return message as ClientToServerRemoveLink;
   }
@@ -492,16 +485,13 @@ export class Viewport {
     return this.createRequest({ columns });
   }
 
-  filterRequest(
-    requestId: string,
-    filter: Filter | undefined,
-    filterQuery: string
-  ) {
+  filterRequest(requestId: string, dataSourceFilter: DataSourceFilter) {
     this.awaitOperation(requestId, {
       type: "filter",
-      data: { filter, filterQuery },
+      data: dataSourceFilter,
     });
-    return this.createRequest({ filterSpec: { filter: filterQuery } });
+    const { filter } = dataSourceFilter;
+    return this.createRequest({ filterSpec: { filter } });
   }
 
   aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
@@ -509,14 +499,13 @@ export class Viewport {
     return this.createRequest({ aggregations });
   }
 
-  sortRequest(requestId: string, sortCols: VuuSortCol[]) {
-    this.awaitOperation(requestId, { type: "sort", data: sortCols });
-    return this.createRequest({ sort: { sortDefs: sortCols } });
+  sortRequest(requestId: string, sort: VuuSort) {
+    this.awaitOperation(requestId, { type: "sort", data: sort });
+    return this.createRequest({ sort });
   }
 
   groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
-    const type = groupBy.length === 0 ? "groupByClear" : "groupBy";
-    this.awaitOperation(requestId, { type, data: groupBy });
+    this.awaitOperation(requestId, { type: "groupBy", data: groupBy });
     return this.createRequest({ groupBy });
   }
 
@@ -598,7 +587,9 @@ export class Viewport {
       columns: this.columns,
       sort: this.sort,
       groupBy: this.groupBy,
-      filterSpec: this.filterSpec,
+      filterSpec: {
+        filter: this.filter.filter,
+      },
       ...params,
     };
   }

@@ -1,22 +1,22 @@
 package org.finos.vuu.core.filter
 
 import org.finos.vuu.core.table.Column
-import org.finos.vuu.viewport.RowSource
+import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
 
 trait Filter {
-  def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String]
+  def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns): ImmutableArray[String]
 }
 
 object NoFilter extends Filter {
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = primaryKeys
+  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns): ImmutableArray[String] = primaryKeys
 }
 
-case class LessThanFilter(column: Column, compareValue: Double) extends Filter {
+case class LessThanFilter(column: Column, viewPortColumns: ViewPortColumns, compareValue: Double) extends Filter {
 
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns): ImmutableArray[String] = {
     val filteredKeys = primaryKeys.toArray.filter(key => {
-      val row = source.pullRow(key, List(column))
+      val row = source.pullRow(key, viewPortColumns)
       val value = row.get(column.name)
 
       value match {
@@ -36,9 +36,9 @@ case class LessThanFilter(column: Column, compareValue: Double) extends Filter {
 
 case class EqFilter(column: Column, compareValue: String) extends Filter {
 
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val filteredKeys = primaryKeys.toArray.filter(key => {
-      val row = source.pullRow(key, List(column))
+      val row = source.pullRow(key, viewPortColumns)
       val value = row.get(column.name)
       (value != null && value.toString.equals(compareValue))
     })

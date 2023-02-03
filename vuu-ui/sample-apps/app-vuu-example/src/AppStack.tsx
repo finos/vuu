@@ -19,3 +19,4 @@ export const Stack = (props: StackProps) => (
     createNewChild={createPlaceholder}
   />
 );
+Stack.displayName = "Stack";

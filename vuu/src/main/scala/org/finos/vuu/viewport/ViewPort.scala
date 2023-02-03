@@ -23,7 +23,7 @@ object DefaultRange extends ViewPortRange(0, 123)
 
 case class ViewPortSelectedIndices(indices: Array[Int])
 
-case class ViewPortSelection(rowKeyIndex: Map[String, Int])
+case class ViewPortSelection(rowKeyIndex: Map[String, Int], viewPort: ViewPort)
 
 case class ViewPortVisualLink(childVp: ViewPort, parentVp: ViewPort, childColumn: Column, parentColumn: Column) {
   override def toString: String = "ViewPortVisualLink(" + childVp.id + "->" + parentVp.id + ", on " + childColumn.name + " = " + parentColumn.name + ")"
@@ -103,7 +103,7 @@ trait ViewPort {
 
   def highPriorityQ: PublishQueue[ViewPortUpdate]
 
-  def getColumns: List[Column]
+  def getColumns: ViewPortColumns
 
   def getSelection: Map[String, Int]
 
@@ -133,7 +133,7 @@ trait ViewPort {
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
-case class ViewPortStructuralFields(table: RowSource, columns: List[Column],
+case class ViewPortStructuralFields(table: RowSource, columns: ViewPortColumns,
                                     viewPortDef: ViewPortDef,
                                     filtAndSort: FilterAndSort, filterSpec: FilterSpec,
                                     groupBy: GroupBy, theTreeNodeState: TreeNodeState)
@@ -250,7 +250,7 @@ case class ViewPortImpl(id: String,
     inrangeKeys.zip(from to to).foreach({ case (key, index) => publishHighPriorityUpdate(key, index) })
   }
 
-  override def getColumns: List[Column] = structuralFields.get().columns
+  override def getColumns: ViewPortColumns = structuralFields.get().columns
 
   override def getRange: ViewPortRange = range.get()
 

@@ -1,4 +1,9 @@
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import { Filter } from "@finos/vuu-filter-types";
+import {
+  VuuAggType,
+  VuuColumnDataType,
+  VuuSortType,
+} from "@finos/vuu-protocol-types";
 
 export declare type GridConfig = {
   columns: ColumnDescriptor[];
@@ -12,10 +17,10 @@ export declare type TypeFormatting = {
   zeroPad?: boolean;
 };
 
-export declare type ColumnTypeSimple = "string" | "number";
+export declare type ColumnTypeSimple = "string" | "number" | "boolean";
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
-  name: string;
+  name: ColumnTypeSimple;
   renderer?: {
     associatedField?: string;
     flashStyle?: "bg-only" | "arrow-bg" | "arrow";
@@ -25,9 +30,18 @@ export declare type ColumnTypeDescriptor = {
 
 export declare type ColumnType = ColumnTypeSimple | ColumnTypeDescriptor;
 
+export type ColumnSort = VuuSortType | number;
+
+export type PinLocation = "left" | "right" | "floating";
+
+/** This is a public description of a Column, defining all the
+ * column attributes that can be defined by client. */
 export interface ColumnDescriptor {
+  aggregate?: VuuAggType;
   align?: "left" | "right";
   className?: string;
+  editable?: boolean;
+  expression?: string;
   flex?: number;
   heading?: [...string[]];
   isSystemColumn?: boolean;
@@ -35,16 +49,20 @@ export interface ColumnDescriptor {
   locked?: boolean;
   minWidth?: number;
   name: string;
-  pin?: "left" | "right";
+  pin?: PinLocation;
   resizeable?: boolean;
   serverDataType?: VuuColumnDataType;
   sortable?: boolean;
   type?: ColumnType;
   width?: number;
 }
+/** This is an internal description of a Column that extends the public
+ * definitin with internal state values. */
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   className?: string;
+  endPin?: true | undefined;
+  filter?: Filter;
   flex?: number;
   heading?: [...string[]];
   isGroup?: boolean;
@@ -56,11 +74,44 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
   moving?: boolean;
   /** used only when column is a child of GroupColumn  */
   originalIdx?: number;
-  pin?: "left" | "right";
-  pinnedLeftOffset?: number;
+  pinnedOffset?: number;
   resizeable?: boolean;
   resizing?: boolean;
   sortable?: boolean;
+  sorted?: ColumnSort;
   type?: ColumnType;
-  width?: number;
+  width: number;
 }
+
+export interface GroupColumnDescriptor extends KeyedColumnDescriptor {
+  columns: KeyedColumnDescriptor[];
+}
+
+export interface Heading {
+  collapsed?: boolean;
+  key: string;
+  hidden?: boolean;
+  isHeading: true;
+  label: string;
+  name: string;
+  resizeable?: boolean;
+  resizing?: boolean;
+  width: number;
+}
+
+// These are the actions that eventually get routed to the DataSource itself
+export type DataSourceAction =
+  | GridActionCloseTreeNode
+  | GridActionGroup
+  | GridActionOpenTreeNode
+  | GridActionSort;
+
+export type ScrollAction =
+  | GridActionScrollEndHorizontal
+  | GridActionScrollStartHorizontal;
+
+export type GridAction =
+  | DataSourceAction
+  | ScrollAction
+  | GridActionResizeCol
+  | GridActionSelection;

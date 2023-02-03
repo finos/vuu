@@ -82,6 +82,8 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue)
   }
 
+
+
   def createDefaultOrderPricesViewPortInfra() = {
     implicit val lifecycle = new LifecycleContainer
 
@@ -165,6 +167,16 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
       val quantity = 100 + i
       ordersProvider.tick(orderId, Map("orderId" -> orderId, "trader" -> "chris", "tradeTime" -> clock.now(), "quantity" -> quantity, "ric" -> "VOD.L"))
       clock.sleep(10)
+    })
+  }
+
+  def createNOrderRowsNoSleep(ordersProvider: MockProvider, n: Int)(implicit clock: Clock) = {
+    (0 to n - 1).foreach(i => {
+      val iAsString = i.toString
+      val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString
+      val quantity = 100 + i
+      ordersProvider.tick(orderId, Map("orderId" -> orderId, "trader" -> "chris", "tradeTime" -> clock.now(), "quantity" -> quantity, "ric" -> "VOD.L"))
+      //clock.sleep(10)
     })
   }
 

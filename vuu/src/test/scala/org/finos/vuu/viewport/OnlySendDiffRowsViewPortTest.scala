@@ -2,6 +2,7 @@ package org.finos.vuu.viewport
 
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
@@ -19,7 +20,7 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
       val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
 
-      val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orders.getTableDef.columnForName(_)).toList
+      val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))//.map(orders.getTableDef.columnForName(_)).toList
 
       createNOrderRows(ordersProvider, 10)(timeProvider)
 
@@ -29,7 +30,7 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
       val combinedUpdates = combineQs(viewPort)
 
-      combinedUpdates(0).size should equal(10)
+      combinedUpdates.head.size should equal(10)
 
       assertVpEq(combinedUpdates){
         Table(
@@ -47,8 +48,8 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
         Table(
           //don't send 2,3 as they already existed in client cache
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544840l,104       ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850l,105       )
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544840L,104       ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       )
         )
       }
 
@@ -59,7 +60,7 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
       assertVpEq(combineQs(viewPortv2)){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850l,105       )
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       )
         )
       }
 

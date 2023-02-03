@@ -1,6 +1,6 @@
 import { DataSource } from "@finos/vuu-data";
 import { MutableRefObject } from "react";
-import { VuuAggregation, VuuLink } from "@finos/vuu-protocol-types";
+import { VuuAggregation, VuuLinkDescriptor } from "@finos/vuu-protocol-types";
 import { AdornmentsDescriptor } from "../grid-adornments";
 import { GridModelDispatch } from "../grid-context";
 import { GridProps } from "../gridTypes";
@@ -8,20 +8,9 @@ import { Size } from "./useMeasuredSize";
 import {
   ColumnType,
   ColumnTypeDescriptor,
-  ColumnDescriptor,
+  Heading,
+  KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
-
-export interface Heading {
-  collapsed?: boolean;
-  key: string;
-  hidden?: boolean;
-  isHeading: true;
-  label: string;
-  name: string;
-  resizeable?: boolean;
-  resizing?: boolean;
-  width: number;
-}
 
 export type Headings = Heading[][];
 
@@ -36,19 +25,6 @@ export const isNumericColumn = (type?: ColumnType) =>
   type === undefined
     ? false
     : type === "number" || (type as ColumnTypeDescriptor).name === "number";
-
-export interface KeyedColumnDescriptor extends ColumnDescriptor {
-  key: number;
-  width: number;
-}
-
-export interface GroupColumnDescriptor extends KeyedColumnDescriptor {
-  columns: KeyedColumnDescriptor[];
-}
-
-export const isGroupColumn = (
-  column: KeyedColumnDescriptor
-): column is GroupColumnDescriptor => column.isGroup === true;
 
 export type ColumnGroupType = {
   columns: KeyedColumnDescriptor[];
@@ -105,7 +81,7 @@ export interface GridModelType
   totalHeaderHeight: number;
   viewportHeight: number;
   viewportRowCount: number;
-  visualLinks?: VuuLink[];
+  visualLinks?: VuuLinkDescriptor[];
 }
 
 export interface GridModelHookProps

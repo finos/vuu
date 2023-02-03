@@ -1,4 +1,3 @@
-import path from "path";
 import React, { SyntheticEvent, useContext } from "react";
 import { ViewAction } from "./viewTypes";
 

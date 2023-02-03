@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, PinLocation } from "@finos/vuu-datagrid-types";
 import { Stack } from "@finos/vuu-layout";
 import {
   FormField,
@@ -44,7 +44,11 @@ export const ColumnSettingsPanel = ({
   const [activeTab, setActiveTab] = useState(0);
 
   const dispatchUpdate = useCallback(
-    (values: Partial<Pick<ColumnDescriptor, "align" | "label" | "width">>) =>
+    (
+      values: Partial<
+        Pick<ColumnDescriptor, "align" | "label" | "pin" | "width">
+      >
+    ) =>
       dispatchColumnAction({
         type: "updateColumnProp",
         column,
@@ -56,6 +60,12 @@ export const ColumnSettingsPanel = ({
   const handleChangeAlign = useCallback(
     (evt: ChangeEvent<HTMLInputElement>) =>
       dispatchUpdate({ align: evt.target.value as "left" | "right" }),
+    [dispatchUpdate]
+  );
+
+  const handleChangePin = useCallback(
+    (evt: ChangeEvent<HTMLInputElement>) =>
+      dispatchUpdate({ pin: evt.target.value as PinLocation | undefined }),
     [dispatchUpdate]
   );
 
@@ -110,6 +120,22 @@ export const ColumnSettingsPanel = ({
               legend="Align"
               onChange={handleChangeAlign}
             >
+              <RadioButton label="Left" value="left" />
+              <RadioButton label="Right" value="right" />
+            </RadioButtonGroup>
+          </FormField>
+          <FormField
+            label="Pin Column"
+            labelPlacement="left"
+            ActivationIndicatorComponent={NullActivationIndicator}
+          >
+            <RadioButtonGroup
+              aria-label="Pin Column"
+              value={column.pin ?? ""}
+              legend="Pin Column"
+              onChange={handleChangePin}
+            >
+              <RadioButton label="Do not pin" value={""} />
               <RadioButton label="Left" value="left" />
               <RadioButton label="Right" value="right" />
             </RadioButtonGroup>

@@ -20,10 +20,16 @@ async function connectToServer(
     // if this was called during connect, we would get a ReferenceError, but it will
     // never be called until subscriptions have been made, so this is safe.
     //TODO do we need to listen in to the connection messages here so we can lock back in, in the event of a reconnenct ?
-    (msg) =>
-      isConnectionStatusMessage(msg)
-        ? onConnectionStatusChange(msg)
-        : server.handleMessageFromServer(msg)
+    (msg) => {
+      if (isConnectionStatusMessage(msg)) {
+        onConnectionStatusChange(msg);
+        if (msg.status === "reconnected") {
+          server.reconnect();
+        }
+      } else {
+        server.handleMessageFromServer(msg);
+      }
+    }
   );
 
   server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
@@ -33,21 +39,8 @@ async function connectToServer(
   }
 }
 
-let lastTime = 0;
-const timings = [];
-
 function sendMessageToClient(message: any) {
-  const now = Math.round(performance.now());
-  if (lastTime) {
-    timings.push(now - lastTime);
-
-    // if (timings.length % 100 === 0){
-    //   console.log(timings.join(', : '))
-    //   timings.length = 0;
-    // }
-  }
   postMessage(message);
-  lastTime = now;
 }
 
 const handleMessageFromClient = async ({
@@ -71,10 +64,6 @@ const handleMessageFromClient = async ({
     case "unsubscribe":
       server.unsubscribe(message.viewport);
       break;
-    // TEST DATA COLLECTION
-    // case 'send-websocket-data':
-    //   postMessage({ type: 'websocket-data', data: getTestMessages() });
-    //   break;
     default:
       server.handleMessageFromClient(message);
   }

@@ -4,16 +4,11 @@ import {
   VuuTableMeta,
 } from "@finos/vuu-protocol-types";
 import { useCallback, useEffect, useState } from "react";
-// TODO remove getColumnConfig here, accept as a parameter
-import { getColumnConfig } from "./columnMetaData";
-import { useServerConnection } from "./useServerConnection";
+import { getServerAPI } from "../connection-manager";
 
 export type SchemaColumn = {
   name: string;
   serverDataType: VuuColumnDataType;
-  label?: string;
-  type?: { name: string };
-  width?: number;
 };
 
 export type TableSchema = {
@@ -21,27 +16,28 @@ export type TableSchema = {
   table: VuuTable;
 };
 
+export interface VuuTableMetaWithTable extends VuuTableMeta {
+  table: VuuTable;
+}
+
 const createSchemaFromTableMetadata = ({
   columns,
   dataTypes,
   table,
-}: VuuTableMeta): TableSchema => {
+}: VuuTableMetaWithTable): TableSchema => {
   return {
     table,
-    columns: columns.map((col, idx) => {
-      const columnConfig = getColumnConfig(table.table, col);
-      return columnConfig
-        ? { ...columnConfig, serverDataType: dataTypes[idx] }
-        : { name: col, serverDataType: dataTypes[idx] };
-    }),
+    columns: columns.map((col, idx) => ({
+      name: col,
+      serverDataType: dataTypes[idx],
+    })),
   };
 };
 
 export const useVuuTables = () => {
   const [tables, setTables] = useState<Map<string, TableSchema> | undefined>();
-  const server = useServerConnection(undefined);
 
-  const buildTables = useCallback((schemas: VuuTableMeta[]) => {
+  const buildTables = useCallback((schemas: VuuTableMetaWithTable[]) => {
     const vuuTables = new Map<string, TableSchema>();
     schemas.forEach((schema) => {
       vuuTables.set(schema.table.table, createSchemaFromTableMetadata(schema));
@@ -51,23 +47,18 @@ export const useVuuTables = () => {
 
   useEffect(() => {
     async function fetchTableMetadata() {
-      if (server) {
-        const { tables } = await server.getTableList();
-        const tableSchemas = buildTables(
-          await Promise.all(
-            tables.map((tableDescriptor) =>
-              server.getTableMeta(tableDescriptor)
-            )
-          )
-        );
-        setTables(tableSchemas);
-      }
+      const server = await getServerAPI();
+      const { tables } = await server.getTableList();
+      const tableSchemas = buildTables(
+        await Promise.all(
+          tables.map((tableDescriptor) => server.getTableMeta(tableDescriptor))
+        )
+      );
+      setTables(tableSchemas);
     }
 
-    if (server) {
-      fetchTableMetadata();
-    }
-  }, [buildTables, server]);
+    fetchTableMetadata();
+  }, [buildTables]);
 
   return tables;
 };

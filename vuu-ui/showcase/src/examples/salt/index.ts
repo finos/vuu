@@ -2,7 +2,7 @@ export * as Accordion from "./Accordion.stories";
 export * as Button from "./Button.stories";
 export * as ComboBox from "./Combobox.stories";
 export * as Input from "./Input.examples";
-export * as ToggleButton from "./ToggleButton.stories";
+export * as ToggleButton from "./ToggleButton.examples";
 export * as Dropdown from "./Dropdown.stories";
 export * as EditableLabel from "./EditableLabel.stories";
 export * as FormField from "./FormField.stories";

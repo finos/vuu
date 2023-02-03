@@ -2,7 +2,7 @@ package org.finos.vuu.viewport
 
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.{Columns, TableContainer}
+import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -75,7 +75,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     val outQueue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask").map(orderPrices.getTableDef.columnForName(_))
+    val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))
 
     val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -89,7 +89,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       )
     }
 
-    val vpcolumns2 = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open").map(orderPrices.getTableDef.columnForName(_))
+    val vpcolumns2 =     ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open"))
 
     val groupByColumns = List(orderPrices.columnForName("trader"))
 
@@ -195,7 +195,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     val outQueue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask").map(orderPrices.getTableDef.columnForName(_))
+    val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))//.map(orderPrices.getTableDef.columnForName(_))
 
     val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -212,7 +212,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       )
     }
 
-    val vpcolumns2 = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open").map(orderPrices.getTableDef.columnForName(_))
+    val vpcolumns2 = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open"))//.map(orderPrices.getTableDef.columnForName(_))
 
     val groupByColumns = List(orderPrices.columnForName("trader"))
 

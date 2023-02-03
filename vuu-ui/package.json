@@ -14,8 +14,10 @@
     "prettier": "prettier './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "format": "prettier --write './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "build": "node ./scripts/build-all.mjs",
+    "build:app": "cd sample-apps/app-vuu-example && node scripts/build.mjs",
     "build:packages": "yarn build --cjs && yarn type-defs",
     "build:salt": "node ./scripts/build-salt.mjs",
+    "launch:demo": "node ./scripts/launch-app.mjs",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "view-bundle": "node ./scripts/visualize-bundle.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
@@ -23,7 +25,6 @@
     "showcase": "cd showcase && vite",
     "showcase:build": "cd packages/vuu-data && yarn build && cd ../../showcase && vite build",
     "test:vite": "vitest run",
-    "build:app": "cd sample-apps/app-vuu-example && node scripts/build.mjs",
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.mjs",
     "typecheck": "tsc --noEmit"
@@ -35,6 +36,7 @@
     "@types/react-dom": "^17.0.2",
     "@typescript-eslint/parser": "^5.41.0",
     "classnames": "^2.3.1",
+    "clsx": "^1.2.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "recoil": "^0.1.3"
@@ -43,18 +45,19 @@
     "@heswell/component-anatomy": "0.0.5",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "chalk": "^5.2.0",
-    "esbuild": "0.15.15",
-    "esbuild-visualizer": "^0.3.1",
+    "esbuild": "0.17.5",
+    "esbuild-visualizer": "^0.4.0",
     "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "open": "^8.4.0",
     "prettier": "^2.7.1",
     "tinycolor2": "1.4.2",
     "typescript": "^4.8.4",
-    "vite": "3.2.4",
-    "vitest": "0.24.5"
+    "vite": "4.0.4",
+    "vitest": "0.28.3"
   },
   "resolutions": {
     "minimatch": "3.1.2"

@@ -1,6 +1,6 @@
-import { SaltProvider } from "@salt-ds/core";
 import { MenuRpcResponse, useVuuTables } from "@finos/vuu-data";
-import { Dialog, registerComponent } from "@finos/vuu-layout";
+import { registerComponent } from "@finos/vuu-layout";
+import { Dialog } from "@finos/vuu-popups";
 import {
   Feature,
   Shell,
@@ -10,6 +10,7 @@ import {
 import { ReactElement, useCallback, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
+import { getDefaultColumnConfig } from "./columnMetaData";
 
 import "./App.css";
 
@@ -74,25 +75,23 @@ export const App = ({ user }: { user: VuuUser }) => {
 
   // TODO get Context from Shell
   return (
-    <SaltProvider applyClassesTo="scope" density="high" mode="light">
-      <ShellContextProvider value={{ handleRpcResponse }}>
-        <Shell
-          className="App"
-          defaultLayout={defaultLayout}
-          leftSidePanel={<AppSidePanel features={features} tables={tables} />}
-          serverUrl={serverUrl}
-          user={user}
+    <ShellContextProvider value={{ getDefaultColumnConfig, handleRpcResponse }}>
+      <Shell
+        className="App"
+        defaultLayout={defaultLayout}
+        leftSidePanel={<AppSidePanel features={features} tables={tables} />}
+        serverUrl={serverUrl}
+        user={user}
+      >
+        <Dialog
+          className="vuDialog"
+          isOpen={dialogContent !== undefined}
+          onClose={handleClose}
+          style={{ height: 500 }}
         >
-          <Dialog
-            className="vuDialog"
-            isOpen={dialogContent !== undefined}
-            onClose={handleClose}
-            style={{ height: 500 }}
-          >
-            {dialogContent}
-          </Dialog>
-        </Shell>
-      </ShellContextProvider>
-    </SaltProvider>
+          {dialogContent}
+        </Dialog>
+      </Shell>
+    </ShellContextProvider>
   );
 };

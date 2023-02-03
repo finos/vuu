@@ -7,11 +7,14 @@ import {
   VuuColumns,
   VuuGroupBy,
   VuuRange,
-  VuuSortCol,
+  VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { Filter } from "@finos/vuu-filter-types";
 import { WithRequestId } from "./message-utils";
+import {
+  DataSourceFilter,
+  DataSourceVisualLinkCreatedMessage,
+} from "./data-source";
 
 export type ConnectionStatus =
   | "connecting"
@@ -35,15 +38,14 @@ export interface ServerProxySubscribeMessage {
   aggregations: VuuAggregation[];
   bufferSize?: number;
   columns: VuuColumns;
-  filter?: Filter;
-  filterQuery?: string;
-  groupBy?: VuuGroupBy;
+  filter: DataSourceFilter;
+  groupBy: VuuGroupBy;
   range: VuuRange;
-  sort?: VuuSortCol[];
+  sort: VuuSort;
   table: VuuTable;
   title?: string;
   viewport: string;
-  visualLink: any;
+  visualLink?: DataSourceVisualLinkCreatedMessage;
 }
 
 // export type VuuUIMessageInConnectionStatus = {
@@ -159,6 +161,10 @@ export interface VuuUIMessageOutCreateLink extends ViewportMessageOut {
 export interface VuuUIMessageOutRemoveLink extends ViewportMessageOut {
   type: "removeLink";
 }
+export interface VuuUIMessageOutSetTitle extends ViewportMessageOut {
+  title: string;
+  type: "setTitle";
+}
 
 export interface VuuUIMessageOutDisable extends ViewportMessageOut {
   type: "disable";
@@ -186,17 +192,16 @@ export interface VuuUIMessageOutSelectNone extends ViewportMessageOut {
 }
 
 export interface VuuUIMessageOutSort extends ViewportMessageOut {
-  sortDefs: VuuSortCol[];
+  sort: VuuSort;
   type: "sort";
 }
 export interface VuuUIMessageOutSuspend extends ViewportMessageOut {
   type: "suspend";
 }
 
-export interface VuuUIMessageOutFilterQuery extends ViewportMessageOut {
-  filter: Filter | undefined;
-  filterQuery: string;
-  type: "filterQuery";
+export interface VuuUIMessageOutFilter extends ViewportMessageOut {
+  filter: DataSourceFilter;
+  type: "filter";
 }
 export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
   groupBy: VuuGroupBy;
@@ -208,7 +213,7 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutCloseTreeNode
   | VuuUIMessageOutColumns
   | VuuUIMessageOutCreateLink
-  | VuuUIMessageOutFilterQuery
+  | VuuUIMessageOutFilter
   | VuuUIMessageOutDisable
   | VuuUIMessageOutEnable
   | VuuUIMessageOutGroupby
@@ -218,6 +223,7 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutSelect
   | VuuUIMessageOutSelectAll
   | VuuUIMessageOutSelectNone
+  | VuuUIMessageOutSetTitle
   | VuuUIMessageOutSuspend
   | VuuUIMessageOutSort
   | VuuUIMessageOutViewRange;

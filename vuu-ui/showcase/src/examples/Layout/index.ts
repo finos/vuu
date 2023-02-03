@@ -4,7 +4,7 @@ export * as Dialog from "./Dialog.stories";
 export * as Flexbox from "./Flexbox.stories";
 export * as DraggableLayout from "./DraggableLayout.stories";
 export * as FluidGrid from "./FluidGrid.stories";
-export * as Menu from "./Menu.stories";
+export * as Menu from "./Menu.examples";
 export * as Palette from "./Palette.stories";
 export * as Stack from "./Stack.stories";
 export * as StackLayout from "./StackLayout.stories";

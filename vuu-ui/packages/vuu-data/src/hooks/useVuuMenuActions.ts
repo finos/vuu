@@ -1,33 +1,25 @@
+import { GridAction } from "@finos/vuu-datagrid-types";
+import { ContextMenuItemDescriptor } from "@finos/vuu-popups";
 import {
-  VuuLink,
+  LinkDescriptorWithLabel,
   VuuMenu,
   VuuMenuContext,
   VuuMenuItem,
   VuuMenuRpcRequest,
 } from "@finos/vuu-protocol-types";
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 import {
-  ConfigChangeHandler,
   DataSource,
   DataSourceMenusMessage,
   DataSourceVisualLinkCreatedMessage,
+  DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
 } from "../data-source";
-import { LinkWithLabel } from "../server-proxy/server-proxy";
 import { MenuRpcResponse } from "../vuuUIMessageTypes";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
 
-export type VuuContextMenuDescriptor = {
-  action: string;
-  label: string;
-  options?: unknown;
-};
-
-type DataSourceVuuMenuMessage =
-  | DataSourceVisualLinkCreatedMessage
-  | DataSourceMenusMessage
-  | DataSourceVisualLinksMessage;
+const NO_CONFIG: MenuActionConfig = {};
 
 const contextSortPriorities = {
   "selected-rows": 0,
@@ -41,6 +33,25 @@ const byContext = (menu1: VuuMenuItem, menu2: VuuMenuItem) => {
     contextSortPriorities[menu1.context] - contextSortPriorities[menu2.context]
   );
 };
+
+export const isVisualLinksAction = (
+  action: GridAction
+): action is DataSourceVisualLinksMessage =>
+  action.type === "VP_VISUAL_LINKS_RESP";
+
+export const isVisualLinkCreatedAction = (
+  action: GridAction
+): action is DataSourceVisualLinkCreatedMessage =>
+  action.type === "CREATE_VISUAL_LINK_SUCCESS";
+
+export const isVisualLinkRemovedAction = (
+  action: GridAction
+): action is DataSourceVisualLinkRemovedMessage =>
+  action.type === "REMOVE_VISUAL_LINK_SUCCESS";
+
+export const isViewportMenusAction = (
+  action: GridAction
+): action is DataSourceMenusMessage => action.type === "VIEW_PORT_MENUS_RESP";
 
 const contextCompatibleWithLocation = (
   location: "grid" | "header" | "filter",
@@ -83,49 +94,39 @@ const getMenuRpcRequest = ({ context, rpcName }: VuuMenuItem) => {
   } as Omit<VuuMenuRpcRequest, "vpId">;
 };
 
-// Actions that inform state - state that we want to persist
-const CONFIG_ACTIONS = [
-  "VIEW_PORT_MENUS_RESP",
-  "VP_VISUAL_LINKS_RESP",
-  "CREATE_VISUAL_LINK_SUCCESS",
-  "REMOVE_VISUAL_LINK_SUCCESS",
-];
-
 export interface ViewServerHookResult {
   buildViewserverMenuOptions: any;
-  dispatchGridAction: (action: DataSourceVuuMenuMessage) => boolean;
+  // dispatchGridAction: (action: DataSourceVuuMenuMessage) => boolean;
   handleMenuAction: (type: string, options: unknown) => boolean;
 }
 
-export interface VuuMenuActionHookProps {
-  /** The Vuu Menu returned for the current Viewport  */
+export interface MenuActionConfig {
   vuuMenu?: VuuMenu;
-  dataSource: DataSource;
-  onConfigChange?: ConfigChangeHandler;
-  onRpcResponse?: (response?: MenuRpcResponse) => void;
-  /** The VisualLink currently in force  */
   visualLink?: DataSourceVisualLinkCreatedMessage;
-  /** All available visual links */
-  visualLinks?: VuuLink[];
+  visualLinks?: LinkDescriptorWithLabel[];
+}
+
+export interface VuuMenuActionHookProps {
+  dataSource: DataSource;
+  menuActionConfig?: MenuActionConfig;
+  // onConfigChange?: ConfigChangeHandler;
+  onRpcResponse?: (response?: MenuRpcResponse) => void;
 }
 
 export const useVuuMenuActions = ({
   dataSource,
-  onConfigChange,
+  menuActionConfig = NO_CONFIG,
+  // onConfigChange,
   onRpcResponse,
-  visualLink,
-  visualLinks,
-  vuuMenu,
 }: VuuMenuActionHookProps): ViewServerHookResult => {
-  const contextMenu = useRef(vuuMenu);
-
   const buildVuuMenuOptions = useCallback(
     (location, options) => {
+      const { visualLink, visualLinks, vuuMenu } = menuActionConfig;
       const { selectedRowCount = 0 } = options;
-      const descriptors: VuuContextMenuDescriptor[] = [];
+      const descriptors: ContextMenuItemDescriptor[] = [];
 
       if (visualLinks && !visualLink) {
-        visualLinks.forEach((linkDescriptor: LinkWithLabel) => {
+        visualLinks.forEach((linkDescriptor: LinkDescriptorWithLabel) => {
           const { link, label: linkLabel } = linkDescriptor;
           const label = linkLabel ? linkLabel : link.toTable;
           descriptors.push({
@@ -136,8 +137,8 @@ export const useVuuMenuActions = ({
         });
       }
 
-      if (contextMenu.current) {
-        contextMenu.current.menus.sort(byContext).forEach((menu) => {
+      if (vuuMenu) {
+        vuuMenu.menus.sort(byContext).forEach((menu) => {
           if (
             contextCompatibleWithLocation(
               location,
@@ -156,20 +157,7 @@ export const useVuuMenuActions = ({
 
       return descriptors;
     },
-    [visualLink, visualLinks]
-  );
-
-  const dispatchGridAction = useCallback(
-    (action: DataSourceVuuMenuMessage) => {
-      if (CONFIG_ACTIONS.includes(action.type)) {
-        if (action.type === "VIEW_PORT_MENUS_RESP") {
-          contextMenu.current = action.menu;
-        }
-        return onConfigChange?.(action), true;
-      }
-      return false;
-    },
-    [onConfigChange]
+    [menuActionConfig]
   );
 
   const handleMenuAction = useCallback(
@@ -181,8 +169,7 @@ export const useVuuMenuActions = ({
         });
         return true;
       } else if (type === "link-table") {
-        // the createLink method only exists on dataSource
-        return dataSource.createLink(options), true;
+        return dataSource.createLink(options as LinkDescriptorWithLabel), true;
       } else {
         console.log(
           `useViewServer handleMenuAction,  can't handle action type ${type}`
@@ -195,7 +182,7 @@ export const useVuuMenuActions = ({
 
   return {
     buildViewserverMenuOptions: buildVuuMenuOptions,
-    dispatchGridAction,
+    // dispatchGridAction,
     handleMenuAction,
   };
 };

@@ -27,6 +27,7 @@ import { AppHeader } from "./app-header";
 
 import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
 import "./shell.css";
+import { ThemeMode } from "./theme-switch";
 
 export type VuuUser = {
   username: string;
@@ -60,7 +61,7 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
 
 export const Shell = ({
   children,
-  className,
+  className: classNameProp,
   defaultLayout = warningLayout,
   leftSidePanel,
   loginUrl,
@@ -68,6 +69,8 @@ export const Shell = ({
   user,
   ...htmlAttributes
 }: ShellProps) => {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [density] = useState<"high" | "medium" | "low" | "touch">("high");
   const paletteView = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const layoutId = useRef("latest");
@@ -83,6 +86,12 @@ export const Shell = ({
     },
     [setLayoutConfig]
   );
+
+  const handleSwitchTheme = useCallback((mode: ThemeMode) => {
+    if (rootRef.current) {
+      rootRef.current.dataset.mode = mode;
+    }
+  }, []);
 
   const handleDrawerClick = (e: MouseEvent<HTMLElement>) => {
     const target = e.target as HTMLElement;
@@ -135,12 +144,21 @@ export const Shell = ({
     return drawers;
   };
 
+  const className = cx(
+    "vuuShell",
+    classNameProp,
+    "salt-theme",
+    `salt-density-${density}`
+  );
+
   return (
     // ShellContext TBD
     <ShellContextProvider value={undefined}>
       <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
         <DraggableLayout
-          className={cx("vuuShell", className)}
+          className={className}
+          data-mode="light"
+          ref={rootRef}
           {...htmlAttributes}
         >
           <Flexbox
@@ -152,6 +170,7 @@ export const Shell = ({
               loginUrl={loginUrl}
               user={user}
               onNavigate={handleNavigate}
+              onSwitchTheme={handleSwitchTheme}
             />
             <Chest style={{ flex: 1 }}>
               {getDrawers().concat(

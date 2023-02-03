@@ -7,6 +7,7 @@ import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
@@ -15,13 +16,13 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
   def addGroupBy(session: ClientSessionId, vpContainer: ViewPortContainer, vpRange: ViewPortRange,
                  viewPort: ViewPort, groupByClause: GroupBy): ViewPort = {
-    val columns = viewPort.table.asTable.getTableDef.columns.toList
+    val columns = viewPort.getStructure.columns
     val viewport = vpContainer.change(RequestId.oneNew(), session, viewPort.id, vpRange, columns, groupBy = groupByClause)
     viewport
   }
 
   def removeGroupBy(session: ClientSessionId, vpContainer: ViewPortContainer, vpRange: ViewPortRange, viewPort: ViewPort): ViewPort= {
-    val columns = viewPort.table.asTable.getTableDef.columns.toList
+    val columns = viewPort.getStructure.columns
     val viewport = vpContainer.change(RequestId.oneNew(), session, viewPort.id, vpRange, columns, groupBy = NoGroupBy)
     viewport
   }
@@ -45,7 +46,7 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val queue = new OutboundRowPublishQueue()
       val highPriorityQueue = new OutboundRowPublishQueue()
       val session = ClientSessionId("A", "B")
-      val columns = orderPrices.getTableDef.columns.toList
+      val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
       val range = ViewPortRange(0, 20)
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, queue, highPriorityQueue, orderPrices, range, columns)
 
@@ -68,7 +69,7 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       emptyQueues(viewPort)
 
       addGroupBy(session, viewPortContainer,  range, viewPort,
-              GroupBy(orderPrices,"trader", "ric")
+          GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
               .withSum("quantity")
               .withCount("trader")
               .asClause())
@@ -78,8 +79,8 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
-          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"1"       ,""        ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        )
+          (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,1         ,""        ,""        ,1500.0    ,""        ,""        ,""        ,""        ,""        ),
+          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,1         ,""        ,""        ,2100.0    ,""        ,""        ,""        ,""        ,""        )
         )
       }
 
@@ -104,7 +105,7 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       emptyQueues(viewPort)
 
       addGroupBy(session, viewPortContainer,  range, viewPortNoGb,
-        GroupBy(orderPrices,"trader", "ric")
+        GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
           .withSum("quantity")
           .withCount("trader")
           .asClause())
@@ -114,8 +115,8 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
         Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,"1"       ,""        ,""        ,"1500.0"  ,""        ,""        ,""        ,""        ,""        ),
-          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,"1"       ,""        ,""        ,"2100.0"  ,""        ,""        ,""        ,""        ,""        )
+          (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,1         ,""        ,""        ,1500.0    ,""        ,""        ,""        ,""        ,""        ),
+          (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,1         ,""        ,""        ,2100.0    ,""        ,""        ,""        ,""        ,""        )
         )
       }
 

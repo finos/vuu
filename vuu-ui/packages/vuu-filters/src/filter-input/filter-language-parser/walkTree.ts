@@ -102,12 +102,12 @@ export const walkTree = (tree: Tree, source: string) => {
   const cursor = tree.cursor();
   next: do {
     const { name, from, to } = cursor;
-    console.log(
-      `Node ${name} [${from}:${to}] '${source.substring(
-        cursor.from,
-        cursor.to
-      )}'`
-    );
+    // console.log(
+    //   `Node ${name} [${from}:${to}] '${source.substring(
+    //     cursor.from,
+    //     cursor.to
+    //   )}'`
+    // );
 
     switch (name) {
       case "Filter":
@@ -178,12 +178,14 @@ export const walkTree = (tree: Tree, source: string) => {
         }
         break;
 
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       case "String":
         // skip the open and close quote
         cursor.next();
         cursor.next();
         cursor.next();
-      // fall thru
+      // fall thru, intentional
 
       // eslint-disable-next-line no-fallthrough
       case "Int":
@@ -212,7 +214,6 @@ export const walkTree = (tree: Tree, source: string) => {
 
       case "AsClause":
         {
-          console.log(`as clause ${source.substring(from, to)}`);
           cursor.next();
           const { name: nm1 } = cursor;
           if (nm1 === "As") {
@@ -228,7 +229,7 @@ export const walkTree = (tree: Tree, source: string) => {
         break;
 
       default:
-        console.log(`%cwhat do we do with a ${name}`, "color:red");
+      // console.log(`%cwhat do we do with a ${name}`, "color:red");
     }
   } while (cursor.next());
 

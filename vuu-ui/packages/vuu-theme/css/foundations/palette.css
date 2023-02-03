@@ -111,6 +111,7 @@
   --salt-palette-navigate-indicator-activeDisabled: var(--salt-color-orange-600-fade-border);
 
   /* Negative */
+  --salt-palette-negative-background: var(--salt-color-red-40);
   --salt-palette-negative-foreground: var(--salt-color-red-700);
 
   /* Neutral */
@@ -272,5 +273,6 @@
   --salt-palette-neutral-tertiary-separator: var(--salt-color-white-fade-separatorOpacity-tertiary);
 
   /* Positive */
+  --salt-palette-positive-background: var(--salt-color-green-30);
   --salt-palette-positive-foreground: var(--salt-color-green-300);
 }

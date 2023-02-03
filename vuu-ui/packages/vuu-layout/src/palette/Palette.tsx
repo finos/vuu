@@ -1,5 +1,5 @@
-import { List, ListItem, ListItemProps } from "@heswell/salt-lab";
 import { uuid } from "@finos/vuu-utils";
+import { List, ListItem, ListItemProps } from "@heswell/salt-lab";
 import cx from "classnames";
 import {
   cloneElement,
@@ -43,7 +43,7 @@ export const PaletteItem = memo(
     return (
       <ListItem
         className={cx("vuuPaletteItem", className)}
-        data-icon="grab-handle"
+        data-draggable
         {...props}
       />
     );

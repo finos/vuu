@@ -1,8 +1,7 @@
-import { rect } from '../common-types';
-import { Measurements, pointPositionWithinRect } from './BoxModel';
+import { pointPositionWithinRect } from './BoxModel';
 import { DragDropRect } from './dragDropTypes';
 
-var SCALE_FACTOR = 0.4;
+const SCALE_FACTOR = 0.4;
 
 export type IntrinsicSizes = {
   height?: number;
@@ -59,31 +58,31 @@ export class DragState {
     rect: DragDropRect,
     intrinsicSize?: IntrinsicSizes
   ) {
-    var { left: x, top: y } = rect;
+    const { left: x, top: y } = rect;
 
-    var { pctX, pctY } = pointPositionWithinRect(mouseX, mouseY, rect);
+    const { pctX, pctY } = pointPositionWithinRect(mouseX, mouseY, rect);
 
     // We are applying a scale factor of 0.4 to the draggee. This is purely a visual
     // effect - the actual box size remains the original size. The 'leading' values
     // represent the difference between the visual scaled down box and the actual box.
 
-    var scaleFactor = SCALE_FACTOR;
+    const scaleFactor = SCALE_FACTOR;
 
-    var leadX = pctX * rect.width;
-    var trailX = rect.width - leadX;
-    var leadY = pctY * rect.height;
-    var trailY = rect.height - leadY;
+    const leadX = pctX * rect.width;
+    const trailX = rect.width - leadX;
+    const leadY = pctY * rect.height;
+    const trailY = rect.height - leadY;
 
     // When we assign position to rect using css. positioning units are applied to the
     // unscaled shape, so we have to adjust values to take scaling into account.
-    var scaledWidth = rect.width * scaleFactor,
+    const scaledWidth = rect.width * scaleFactor,
       scaledHeight = rect.height * scaleFactor;
 
-    var scaleDiff = 1 - scaleFactor;
-    var leadXScaleDiff = leadX * scaleDiff;
-    var leadYScaleDiff = leadY * scaleDiff;
-    var trailXScaleDiff = trailX * scaleDiff;
-    var trailYScaleDiff = trailY * scaleDiff;
+    const scaleDiff = 1 - scaleFactor;
+    const leadXScaleDiff = leadX * scaleDiff;
+    const leadYScaleDiff = leadY * scaleDiff;
+    const trailXScaleDiff = trailX * scaleDiff;
+    const trailYScaleDiff = trailY * scaleDiff;
 
     this.intrinsicSize = intrinsicSize;
 
@@ -120,8 +119,6 @@ export class DragState {
         }
       }
     };
-
-    // onsole.log(`DragState: constraint ${JSON.stringify(this.constraint, null, 2)}`);
 
     this.x = {
       pos: x,
@@ -165,12 +162,12 @@ export class DragState {
    */
   //todo, diff can be calculated in here
   update(xy: 'x' | 'y', mousePos: number) {
-    var state = this[xy],
+    const state = this[xy],
       mouseConstraint = this.constraint.mouse[xy],
       posConstraint = this.constraint.pos[xy],
       previousPos = state.pos;
 
-    var diff = mousePos - state.mousePos;
+    const diff = mousePos - state.mousePos;
 
     //xy==='x' && console.log(`update: state.lo=${state.lo}, mPos=${mousePos}, mC.lo=${mouseConstraint.lo}, prevPos=${previousPos}, diff=${diff} `  );
 
@@ -210,7 +207,7 @@ export class DragState {
   }
 
   private dropXY(this: DragState, dir: 'x' | 'y') {
-    var pos = this[dir],
+    const pos = this[dir],
       rect = this.constraint.zone[dir];
     // why not do the rounding +/- 1 on the rect initially - this is all it is usef for
     return pos.lo

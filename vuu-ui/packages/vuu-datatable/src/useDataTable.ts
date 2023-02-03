@@ -1,5 +1,6 @@
 import {
   DataSource,
+  DataSourceConfigMessage,
   DataSourceRow,
   DataSourceSubscribedMessage,
 } from "@finos/vuu-data";
@@ -9,20 +10,31 @@ import {
   KeyedColumnDescriptor,
   TypeFormatting,
 } from "@finos/vuu-datagrid-types";
-import { roundDecimal } from "@finos/vuu-utils";
+import { VuuSortType } from "@finos/vuu-protocol-types";
+import { applySort, metadataKeys, roundDecimal } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
-import { ValueFormatter, ValueFormatters } from "./dataTableTypes";
-import { KeySet } from "./KeySet";
-import { useGridModel } from "./useGridModel";
+import {
+  TableColumnResizeHandler,
+  ValueFormatter,
+  ValueFormatters,
+} from "./dataTableTypes";
 import { useDataSource } from "./useDataSource";
+import { useKeyboardNavigation } from "./useKeyboardNavigation";
+import { MeasuredProps, useMeasuredContainer } from "./useMeasuredContainer";
+import { useTableModel } from "./useTableModel";
+import { useTableScroll } from "./useTableScroll";
+import { useTableViewport } from "./useTableViewport";
 
-export interface DataTableHookProps {
+export interface DataTableHookProps extends MeasuredProps {
   config: GridConfig;
-  data?: DataSourceRow[];
-  dataSource?: DataSource;
+  dataSource: DataSource;
+  headerHeight: number;
   onConfigChange?: (config: GridConfig) => void;
+  renderBufferSize?: number;
+  rowHeight: number;
 }
 
+const { KEY, IS_EXPANDED } = metadataKeys;
 const DEFAULT_NUMERIC_FORMAT: TypeFormatting = {};
 const defaultValueFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();
@@ -65,23 +77,34 @@ const getValueFormatter = (column: KeyedColumnDescriptor): ValueFormatter => {
 
 export const useDataTable = ({
   config,
-  data: dataProp,
   dataSource,
+  headerHeight,
   onConfigChange,
+  renderBufferSize = 0,
+  rowHeight,
+  ...measuredProps
 }: DataTableHookProps) => {
-  const keys = useMemo(() => new KeySet({ from: 0, to: 0 }), []);
-  const [visibleRows, setVisibleRows] = useState<DataSourceRow[]>([]);
-  const [rowCount, setRowCount] = useState<number>(dataProp?.length ?? 0);
+  const [rowCount, setRowCount] = useState<number>(0);
 
-  if (dataProp === undefined && dataSource === undefined) {
+  if (dataSource === undefined) {
     throw Error("no data source provided to DataTable");
   }
 
-  const onSizeChange = useCallback((size: number) => {
+  const containerMeasurements = useMeasuredContainer(measuredProps);
+
+  const onDataRowcountChange = useCallback((size: number) => {
     setRowCount(size);
   }, []);
 
-  const { columns, dispatchColumnAction } = useGridModel(config);
+  const { columns, dispatchColumnAction } = useTableModel(config);
+
+  const viewportMeasurements = useTableViewport({
+    columns,
+    headerHeight,
+    rowCount,
+    rowHeight,
+    size: containerMeasurements.innerSize,
+  });
 
   const onSubscribed = useCallback(
     (subscription: DataSourceSubscribedMessage) => {
@@ -113,37 +136,140 @@ export const useDataTable = ({
   }, [columns, config, onConfigChange]);
 
   useMemo(() => {
-    console.log(`config has changed re-init store`);
     dispatchColumnAction({ type: "init", config });
   }, [config, dispatchColumnAction]);
 
-  const { data, setRange } = useDataSource({
+  const handleConfigChangeFromDataSource = useCallback(
+    (message: DataSourceConfigMessage) => {
+      switch (message.type) {
+        case "groupBy":
+          return dispatchColumnAction({
+            type: "tableConfig",
+            groupBy: message.groupBy,
+          });
+        case "filter":
+          return dispatchColumnAction({
+            type: "tableConfig",
+            filter: message.filter,
+          });
+        case "sort":
+          return dispatchColumnAction({
+            type: "tableConfig",
+            sort: message.sort,
+          });
+      }
+    },
+    [dispatchColumnAction]
+  );
+
+  const { data, range, setRange } = useDataSource({
     dataSource,
+    onConfigChange: handleConfigChangeFromDataSource,
     onSubscribed,
-    onSizeChange,
+    onSizeChange: onDataRowcountChange,
+    renderBufferSize,
+    viewportRowCount: viewportMeasurements.rowCount,
   });
 
   const setRangeVertical = useCallback(
     (from: number, to: number) => {
-      if (dataSource) {
-        setRange(from, to);
-      } else {
-        keys.reset({ from, to });
-        const visibleRows = dataProp
-          ? keys.withKeys(dataProp.slice(from, to))
-          : [];
-        setVisibleRows(visibleRows);
-      }
+      // const fullRange = getFullRange({ from, to }, renderBufferSize);
+      setRange({ from, to });
     },
-    [dataProp, dataSource, keys, setRange]
+    [setRange]
   );
 
+  const handleSort = useCallback(
+    (
+      column: KeyedColumnDescriptor,
+      extendSort = false,
+      sortType?: VuuSortType
+    ) => {
+      if (dataSource) {
+        dataSource.sort = applySort(
+          dataSource.sort,
+          column,
+          extendSort,
+          sortType
+        );
+      }
+    },
+    [dataSource]
+  );
+
+  const handleColumnResize: TableColumnResizeHandler = useCallback(
+    (phase, columnName, width) => {
+      const column = columns.find((column) => column.name === columnName);
+      if (column) {
+        dispatchColumnAction({
+          type: "resizeColumn",
+          phase,
+          column,
+          width,
+        });
+      } else {
+        throw Error(
+          `useDataTable.handleColumnResize, column ${columnName} not found`
+        );
+      }
+    },
+    [columns, dispatchColumnAction]
+  );
+
+  const handleToggleGroup = useCallback(
+    (row: DataSourceRow) => {
+      if (dataSource) {
+        if (row[IS_EXPANDED]) {
+          dataSource.closeTreeNode(row[KEY]);
+        } else {
+          dataSource.openTreeNode(row[KEY]);
+        }
+      }
+    },
+    [dataSource]
+  );
+
+  const handleRemoveColumnFromGroupBy = useCallback(
+    (column: KeyedColumnDescriptor) => {
+      if (dataSource && dataSource.groupBy.includes(column.name)) {
+        dataSource.groupBy = dataSource.groupBy.filter(
+          (columnName) => columnName !== column.name
+        );
+      }
+    },
+    [dataSource]
+  );
+
+  const { requestScroll, ...scrollProps } = useTableScroll({
+    onRangeChange: setRangeVertical,
+    rowHeight,
+    viewport: viewportMeasurements,
+    viewportHeight:
+      (containerMeasurements.innerSize?.height ?? 0) - headerHeight,
+  });
+
+  const containerProps = useKeyboardNavigation({
+    columnCount: columns.length,
+    containerRef: containerMeasurements.containerRef,
+    data,
+    requestScroll,
+    rowCount: dataSource?.size,
+    viewportRange: range,
+  });
+
   return {
-    valueFormatters,
+    containerMeasurements,
+    containerProps,
     columns,
-    data: dataSource ? data : visibleRows,
+    data,
     dispatchColumnAction,
-    setRangeVertical,
+    onColumnResize: handleColumnResize,
+    onRemoveColumnFromGroupBy: handleRemoveColumnFromGroupBy,
+    onSort: handleSort,
+    onToggleGroup: handleToggleGroup,
+    scrollProps,
     rowCount,
+    valueFormatters,
+    viewportMeasurements,
   };
 };

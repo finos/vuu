@@ -115,7 +115,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val outQueue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask").map(orderPricesFx.getTableDef.columnForName(_))
+    val vpcolumns = ViewPortColumnCreator.create(orderPricesFx, List("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask"))
 
     val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPricesFx, DefaultRange, vpcolumns)
 

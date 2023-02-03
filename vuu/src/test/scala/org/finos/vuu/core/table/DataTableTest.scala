@@ -9,13 +9,13 @@ import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.{DefaultRange, ViewPortContainer}
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.DefaultClock
+import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class DataTableTest extends AnyFeatureSpec with Matchers {
 
-  implicit val timeProvider = new DefaultClock
+  implicit val timeProvider: Clock = new DefaultClock
 
   Feature("Test data table functionality"){
 
@@ -41,11 +41,11 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
 
       val provider = new MockProvider(table)
 
-      val session = new ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris")
 
-      val vpcolumns = List("ric", "bid", "ask").map(table.getTableDef.columnForName(_)).toList
+      val vpcolumns = List("ric", "bid", "ask")
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, table, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, table, DefaultRange, ViewPortColumnCreator.create(table, vpcolumns))
 
       provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
 

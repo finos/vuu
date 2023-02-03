@@ -3,7 +3,7 @@
   --grid-row-background: inherit;
   --grid-row-height: var(--grid-row-height, 20px);
   --grid-row-line-height: 19px;
-  --grid-row-background-selected: var(--salt-palette-neutral-highlight);
+  --grid-row-background-selected: var(--salt-selectable-background-selected);
   --grid-header-cell-highlight-bg: var(--surface3);
 
   --hw-activation-indicator-thumb-bg: #2c2c2c;
@@ -19,8 +19,8 @@
   --header-background: var(--grid-header-background, var(--background, white));
   --header-cell-height: 24px;
   --header-cell-highlight-bg: var(--grid-header-cell-highlight-bg);
-  --heading-border-color: var(--grid-heading-border-color, #d4d4d4);
-  --line-number-bg: #d4d4d4;
+  --heading-border-color: var(--grid-heading-border-color, var(--salt-separable-primary-borderColor));
+  --line-number-bg: var(--salt-actionable-primary-background);
   --line-number-border-color: #ccc;
   --text-color: var(--grid-text-color, var(--text2));
   --focus-visible-border-color: var(--hw-focus-visible-border-color, rgb(141, 154, 179));

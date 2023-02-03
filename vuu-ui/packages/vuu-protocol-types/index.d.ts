@@ -1,5 +1,5 @@
 // prettier-ignore
-export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char";
+export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean";
 export declare type VuuMenuContext = "cell" | "row" | "grid" | "selected-rows";
 export interface VuuMenuItem {
   context: VuuMenuContext;
@@ -15,9 +15,12 @@ export declare type VuuRange = {
   from: number;
   to: number;
 };
+
+export declare type VuuSortType = "A" | "D";
+
 export declare type VuuSortCol = {
   column: string;
-  sortType: "A" | "D";
+  sortType: VuuSortType;
 };
 export declare type VuuSort = {
   sortDefs: VuuSortCol[];
@@ -50,7 +53,7 @@ export declare type AggTypeAverage = 2;
 export declare type AggTypeCount = 3;
 export declare type AggTypeHigh = 4;
 export declare type AggTypeLow = 5;
-export declare type AggType =
+export declare type VuuAggType =
   | AggTypeSum
   | AggTypeAverage
   | AggTypeCount
@@ -58,16 +61,30 @@ export declare type AggType =
   | AggTypeLow;
 export declare type VuuAggregation = {
   column: string;
-  aggType: AggType;
+  aggType: VuuAggType;
 };
-export declare type VuuLink = {
+
+export interface VuuLink {
+  fromColumn: string;
+  toTable: string;
+  toColumn: string;
+}
+
+export declare type VuuLinkDescriptor = {
   parentVpId: string;
-  link: {
-    fromColumn: string;
-    toTable: string;
-    toColumn: string;
-  };
+  link: VuuLink;
 };
+
+/**
+ * LinkDescriptor with label is not strictly part of the Vuu Protocol
+ *
+ * The Label is added by client code, if user has assigned a custom
+ * Title to component bound to viewport.
+ */
+export type LinkDescriptorWithLabel = VuuLinkDescriptor & {
+  label?: string;
+};
+
 export declare type VuuColumns = string[];
 export declare type VuuGroupBy = string[];
 export interface ServerToClientHeartBeat {
@@ -85,11 +102,16 @@ export interface ServerToClientTableList {
 
 export type VuuTableList = Pick<ServerToClientTableList, "tables">;
 
-export interface ServerToClientTableMeta {
+export interface VuuTableMeta {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
-  type: "TABLE_META_RESP";
+}
+export interface VuuTableMetaWithTable extends VuuTableMeta {
   table: VuuTable;
+}
+
+export interface ServerToClientTableMeta extends VuuTableMetaWithTable {
+  type: "TABLE_META_RESP";
 }
 
 export type VuuTableMeta = Pick<
@@ -113,7 +135,7 @@ export interface ServerToClientMenu {
 }
 export interface ServerToClientViewPortVisualLinks {
   type: "VP_VISUAL_LINKS_RESP";
-  links: VuuLink[];
+  links: VuuLinkDescriptor[];
   vpId: string;
 }
 export interface ServerToClientCreateViewPortSuccess {

@@ -3,7 +3,7 @@ import {
   DragDropRect,
   DragEndCallback,
   Draggable,
-  DragInstructions,
+  DragInstructions
 } from "../drag-drop";
 import { DragStartAction } from "../layout-reducer";
 import { getIntrinsicSize } from "../layout-reducer/flexUtils";
@@ -20,14 +20,12 @@ interface CurrentDragAction extends Omit<DragStartAction, "evt" | "type"> {
 interface DragOperation {
   payload: ReactElement;
   originalCSS: string;
-  dragRect: any;
+  dragRect: unknown;
   dragInstructions: DragInstructions;
   dragOffsets: [number, number];
   targetPosition: { left: number; top: number };
 }
 
-// Create a temporary object for dragging, where we don not have an existing object
-// e.g dragging a non-selected tab from a Stack or an item from Palette
 const getDragElement = (
   rect: DragDropRect,
   id: string,
@@ -35,7 +33,6 @@ const getDragElement = (
 ): [HTMLElement, string, number, number] => {
   const wrapper = document.createElement("div");
   wrapper.className = "vuuSimpleDraggableWrapper";
-  // TODO caller needs to supply the salt classes
   wrapper.classList.add(
     "vuuSimpleDraggableWrapper",
     "salt-theme",
@@ -44,7 +41,6 @@ const getDragElement = (
   wrapper.dataset.dragging = "true";
 
   const div = dragElement ?? document.createElement("div");
-  // this seems wrong the id is the payload id
   div.id = id;
 
   wrapper.appendChild(div);
@@ -121,14 +117,8 @@ export const useLayoutDragDrop = (
       dragOperationRef.current = undefined;
       draggableHTMLElementRef.current = undefined;
     }
-  }, []);
+  }, [dispatch]);
 
-  /**
-   * This will be called when Draggable has established that a drag operation is
-   * underway. There may be a delay between the initial mousedown and the call to
-   * this function - while we wait for either a drag timeout to fire or a minumum
-   * mouse move threshold to be reached.
-   */
   const handleDragStart = useCallback(
     (evt: MouseEvent) => {
       if (dragActionRef.current) {
@@ -137,11 +127,8 @@ export const useLayoutDragDrop = (
           dragContainerPath,
           dragElement,
           dragRect,
-          // dropTargets,
           instructions = NO_INSTRUCTIONS,
           path,
-          // preDragActivity,
-          // resolveDragStart // see View drag
         } = dragActionRef.current;
         const { current: rootLayout } = rootLayoutRef;
         const dragPos = { x: evt.clientX, y: evt.clientY };
@@ -151,27 +138,19 @@ export const useLayoutDragDrop = (
         let originalCSS = "",
           dragCSS = "",
           dragTransform = "";
-        let dragInstructions = instructions;
 
         let dragStartLeft = -1;
         let dragStartTop = -1;
         let dragOffsets: [number, number] = NO_OFFSETS;
 
-        // TODO this has a bearing on offsets we apply to (absolutely positioned) dragged element.
-        // If we are creating the element here, offset parent will be document body.
         let element = document.getElementById(dragPayloadId);
 
         if (element === null) {
-          // This may bew the case where, for example, we drag a Tab (non selected) from a Tabstrip.
           [element, dragCSS, dragStartLeft, dragStartTop] = getDragElement(
             dragRect,
             dragPayloadId,
             dragElement
           );
-          dragInstructions = {
-            ...dragInstructions,
-            RemoveDraggableOnDragEnd: true,
-          };
         } else {
           dragOffsets = determineDragOffsets(element);
           const [offsetLeft, offsetTop] = dragOffsets;
@@ -179,16 +158,7 @@ export const useLayoutDragDrop = (
           dragStartLeft = left - offsetLeft;
           dragStartTop = top - offsetTop;
           dragCSS = `width:${width}px;height:${height}px;left:${dragStartLeft}px;top:${dragStartTop}px;z-index: 100;background-color:#ccc;opacity: 0.6;`;
-          // Important that this is set before we call initDrag
-          // this just enables position: absolute
           element.dataset.dragging = "true";
-
-          // resolveDragStart && resolveDragStart(true);
-
-          // if (preDragActivity) {
-          //   await preDragActivity();
-          // }
-
           originalCSS = element.style.cssText;
         }
 
@@ -230,7 +200,6 @@ export const useLayoutDragDrop = (
       dragActionRef.current = {
         ...options,
         dragContainerPath: "",
-        // dragContainerPath: '0.0.1.1'
       };
       Draggable.handleMousedown(evt, handleDragStart, options.instructions);
     },

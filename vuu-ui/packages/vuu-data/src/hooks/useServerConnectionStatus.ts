@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ConnectionManager } from '../connection-manager';
+import { useCallback, useEffect, useState } from "react";
+import { ConnectionManager } from "../connection-manager";
 
 export const useServerConnectionStatus = () => {
-  const [connectionStatus, setConnectionStatus] = useState('disconnected');
+  const [connectionStatus, setConnectionStatus] = useState("disconnected");
 
   const handleStatusChange = useCallback((evt, { status }) => {
     setConnectionStatus(status);
   }, []);
 
   useEffect(() => {
-    ConnectionManager.on('connection-status', handleStatusChange);
+    ConnectionManager.on("connection-status", handleStatusChange);
     return () => {
-      ConnectionManager.removeListener('connection-status', handleStatusChange);
+      ConnectionManager.removeListener("connection-status", handleStatusChange);
     };
   }, [handleStatusChange]);
 

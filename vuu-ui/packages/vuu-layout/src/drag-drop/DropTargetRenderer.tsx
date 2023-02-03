@@ -1,4 +1,4 @@
-import { PopupService } from "../../../vuu-popups/src/popup";
+import { PopupService } from "@finos/vuu-popups";
 import { RelativeDropPosition } from "./BoxModel";
 import { DragDropRect } from "./dragDropTypes";
 import { DragState } from "./DragState";
@@ -181,8 +181,6 @@ export default class DropTargetCanvas {
             top,
             component,
           });
-        } else {
-          PopupService.movePopupTo(left, top);
         }
       } else {
         PopupService.hidePopup();

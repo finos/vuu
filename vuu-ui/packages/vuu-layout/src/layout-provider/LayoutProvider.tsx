@@ -1,11 +1,11 @@
-import React, {
+import {
   MutableRefObject,
   ReactElement,
   useCallback,
   useContext,
   useEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 import {
   LayoutActionType,
@@ -14,15 +14,16 @@ import {
   layoutReducer,
   LayoutReducerAction,
   layoutToJSON,
-  processLayoutElement,
+  processLayoutElement
 } from "../layout-reducer";
 import { findTarget, getChildProp, getProps, typeOf } from "../utils";
 import {
   LayoutProviderContext,
-  LayoutProviderDispatch,
+  LayoutProviderDispatch
 } from "./LayoutProviderContext";
 import { useLayoutDragDrop } from "./useLayoutDragDrop";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const withDropTarget = (props: any) => props.dropTarget;
 const shouldSave = (action: LayoutReducerAction) =>
   [
@@ -51,7 +52,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   const state = useRef<ReactElement | undefined>(undefined);
   const childrenRef = useRef<ReactElement>(children);
 
-  const [, forceRefresh] = useState<any>(null);
+  const [, forceRefresh] = useState<unknown>(null);
 
   const serializeState = useCallback(
     (source) => {
@@ -85,19 +86,19 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   const layoutActionDispatcher: LayoutProviderDispatch = useCallback(
     (action) => {
-      // onsole.log(
-      //   `%cdispatchLayoutProviderAction ${action.type}`,
-      //   "color: blue; font-weight: bold;"
-      // );
-
-      if (action.type === "drag-start") {
-        prepareToDragLayout(action);
-      } else if (action.type === "save") {
-        serializeState(state.current);
-      } else if (state.current) {
-        dispatchLayoutAction(action);
+      switch(action.type) {
+        case "drag-start": {
+          prepareToDragLayout(action); break
+        }
+        case "save": {
+          serializeState(state.current); break
+        }
+        default: {
+          dispatchLayoutAction(action); break
+        }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [dispatchLayoutAction, serializeState]
   );
 
@@ -109,7 +110,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   useEffect(() => {
     if (layout) {
       const targetContainer = findTarget(
-        state.current as any,
+        state.current as never,
         withDropTarget
       ) as ReactElement;
       const target = getChildProp(targetContainer);

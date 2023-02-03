@@ -10,8 +10,10 @@
 expression { 
   Column | 
   Number |
+  String |
   ParenthesizedExpression |
   BinaryExpression |
+  ConditionalExpression |
   CallExpression
 }
 
@@ -22,8 +24,20 @@ BinaryExpression {
   expression !plus (Plus | Minus) expression 
 }
 
+ConditionalExpression {
+  "if" OpenBrace Condition "," expression "," expression CloseBrace 
+}
+
 CallExpression {
   Function ArgList
+}
+
+Condition {
+  expression Operator expression
+}
+
+Operator {
+  "=" | ">" | "<"
 }
 
 ArgList {
@@ -37,6 +51,7 @@ Function { identifier }
 @skip { space  }
 
 @tokens {
+  @precedence {"if", identifier}
   Equal {"="}
   OpenBrace {"("}
   CloseBrace {")"}
@@ -44,9 +59,12 @@ Function { identifier }
   Minus {"-"}
   Divide {"/"}
   Times {"*"}
-  identifier { $[a-zA-Z_]$[a-zA-Z_0-9]* }
+  identifier { $[a-zA-Z_]char* }
   Number {
     @digit @digit* ("." @digit*)? | "." @digit @digit*
   }
+  String { '"' char* '"' }
+  char { $[a-zA-Z_0-9]  }
   space { $[ \t\n\r]+ }
+
 }

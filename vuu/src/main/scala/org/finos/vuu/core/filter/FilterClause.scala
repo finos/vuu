@@ -1,14 +1,14 @@
 package org.finos.vuu.core.filter
 
 import org.finos.vuu.core.index._
-import org.finos.vuu.core.table.{DataType, RowData}
-import org.finos.vuu.viewport.RowSource
+import org.finos.vuu.core.table.{DataType, RowData, ViewPortColumnCreator}
+import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.grammer.FilterParser
 
 trait FilterClause {
 
-  def stripQuotes(value: String) = {
+  def stripQuotes(value: String): String = {
     if(value.startsWith("\"") && value.endsWith("\"")){
       value.drop(1).dropRight(1)
     }else{
@@ -18,14 +18,14 @@ trait FilterClause {
 
   def filter(data: RowData): Boolean
 
-  def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  def filterAll(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
 
-    val columns = source.asTable.getTableDef.columns.toList
+    //val columns = ViewPortColumnCreator.create(source.asTable, source.asTable.getTableDef.columns.map(_.name).toList)
 
     val pks = primaryKeys.toArray
 
     val filtered = pks.filter(key => {
-      this.filter(source.pullRow(key, columns))
+      this.filter(source.pullRow(key, vpColumns))
     })
 
     ImmutableArray.from(filtered)
@@ -49,13 +49,13 @@ trait DataAndTypeClause extends FilterClause {
 
 case class OrClause(and: FilterClause, ors: List[FilterClause]) extends FilterClause {
 
-  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
-    (and.filterAll(source, primaryKeys) ++ filterAllByOrs(source, primaryKeys)).distinct
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
+    (and.filterAll(source, primaryKeys, vpColumns) ++ filterAllByOrs(source, primaryKeys, vpColumns)).distinct
   }
 
-  def filterAllByOrs(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
-    val resultOrs = ors.map(or => or.filterAll(source, primaryKeys)).foldLeft(ImmutableArray.empty[String])((left, right) => left.++(right))
-    (resultOrs).distinct
+  def filterAllByOrs(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
+    val resultOrs = ors.map(or => or.filterAll(source, primaryKeys, vpColumns)).foldLeft(ImmutableArray.empty[String])((left, right) => left.++(right))
+    resultOrs.distinct
   }
 
   def filterByOrs(data: RowData): Boolean = {
@@ -72,8 +72,8 @@ case class OrClause(and: FilterClause, ors: List[FilterClause]) extends FilterCl
 
 case class AndClause(terms: List[FilterClause]) extends FilterClause {
 
-  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
-    terms.foldLeft(primaryKeys)((prePks, term) => term.filterAll(source, prePks))
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns ): ImmutableArray[String] = {
+    terms.foldLeft(primaryKeys)((prePks, term) => term.filterAll(source, prePks, viewPortColumns))
   }
 
   override def filter(data: RowData): Boolean = {
@@ -83,8 +83,8 @@ case class AndClause(terms: List[FilterClause]) extends FilterClause {
 }
 
 case class TermClause(column: String, dataAndTypeClause: DataAndTypeClause) extends FilterClause {
-  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
-    dataAndTypeClause.filterAll(source, primaryKeys)
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
+    dataAndTypeClause.filterAll(source, primaryKeys, viewPortColumns)
   }
 
   override def filter(data: RowData): Boolean = dataAndTypeClause.filter(data)
@@ -96,7 +96,7 @@ case class EqualsClause(column: String, dataType: Int, value: String) extends Da
 
 
 
-  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
       case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
@@ -110,9 +110,9 @@ case class EqualsClause(column: String, dataType: Int, value: String) extends Da
       case Some(ix: BooleanIndexedField) if asColumn.dataType == DataType.BooleanDataType =>
         ix.find(value.toBoolean)
       case Some(ix: IndexedField[_]) =>
-        EqualsClause.super.filterAll(source, primaryKeys)
+        EqualsClause.super.filterAll(source, primaryKeys, viewPortColumns)
       case _ =>
-        EqualsClause.super.filterAll(source, primaryKeys)
+        EqualsClause.super.filterAll(source, primaryKeys, viewPortColumns)
     }
   }
 
@@ -136,13 +136,13 @@ case class NotEqualsClause(column: String, dataType: Int, value: String) extends
 }
 
 case class GreaterThanClause(column: String, dataType: Int, value: String) extends DataAndTypeClause {
-  val asDouble = value.toDouble
+  private val asDouble = value.toDouble
 
-  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
       case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
-        GreaterThanClause.super.filterAll(source, primaryKeys)
+        GreaterThanClause.super.filterAll(source, primaryKeys, viewPortColumns)
       case Some(ix: IntIndexedField) if asColumn.dataType == DataType.IntegerDataType =>
         ix.greaterThan(value.toInt)
       case Some(ix: LongIndexedField) if asColumn.dataType == DataType.LongDataType =>
@@ -152,7 +152,7 @@ case class GreaterThanClause(column: String, dataType: Int, value: String) exten
       case Some(ix: BooleanIndexedField) if asColumn.dataType == DataType.BooleanDataType =>
         ix.greaterThan(value.toBoolean)
       case _ =>
-        GreaterThanClause.super.filterAll(source, primaryKeys)
+        GreaterThanClause.super.filterAll(source, primaryKeys, viewPortColumns)
     }
   }
 
@@ -192,13 +192,13 @@ case class EndsClause(column: String, dataType: Int, value: String) extends Data
 
 case class LessThanClause(column: String, dataType: Int, value: String) extends DataAndTypeClause {
 
-  val asDouble = value.toDouble
+  private val asDouble = value.toDouble
 
-  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
       case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
-        LessThanClause.super.filterAll(source, primaryKeys)
+        LessThanClause.super.filterAll(source, primaryKeys, viewPortColumns)
       case Some(ix: IntIndexedField) if asColumn.dataType == DataType.IntegerDataType =>
         ix.lessThan(value.toInt)
       case Some(ix: LongIndexedField) if asColumn.dataType == DataType.LongDataType =>
@@ -208,7 +208,7 @@ case class LessThanClause(column: String, dataType: Int, value: String) extends 
       case Some(ix: DoubleIndexedField) if asColumn.dataType == DataType.DoubleDataType =>
         ix.lessThan(value.toDouble)
       case _ =>
-        LessThanClause.super.filterAll(source, primaryKeys)
+        LessThanClause.super.filterAll(source, primaryKeys, viewPortColumns)
     }
   }
 
@@ -224,7 +224,7 @@ case class LessThanClause(column: String, dataType: Int, value: String) extends 
 
 case class InClause(column: String, dataType: Int, values: List[String]) extends DataAndTypeClause {
 
-  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def filterAll(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
       case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
@@ -238,7 +238,7 @@ case class InClause(column: String, dataType: Int, values: List[String]) extends
       case Some(ix: BooleanIndexedField) if asColumn.dataType == DataType.BooleanDataType =>
         ix.find(values.map(s => s.toBoolean))
       case _ =>
-        InClause.super.filterAll(source, primaryKeys)
+        InClause.super.filterAll(source, primaryKeys, viewPortColumns)
     }
   }
 

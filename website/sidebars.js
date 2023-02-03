@@ -80,7 +80,9 @@ module.exports = {
           "ui/grid",
           "ui/visual_linking",
           "ui/custom_controls",
+          "ui/calculated_columns",
         ],
+
         link: {
           type: "doc",
           id: "ui/ui",
@@ -107,7 +109,7 @@ module.exports = {
       {
         type: "category",
         label: "New Features - RFC",
-        items: ["rfc/calculated_columns", "rfc/conditional_formatting"],
+        items: ["rfc/conditional_formatting"],
       },
       {
         type: "category",

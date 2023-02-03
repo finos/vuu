@@ -2,6 +2,7 @@ package org.finos.vuu.viewport
 
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.combineQs
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.net.{SortDef, SortSpec}
 import org.finos.vuu.util.table.TableAsserts.assertVpEqWithMeta
 import org.scalatest.GivenWhenThen
@@ -17,7 +18,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       Given("we've created a viewport with orders in")
       val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
 
-      val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orders.getTableDef.columnForName(_))
+      val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
       createNOrderRows(ordersProvider, 10)(timeProvider)
 

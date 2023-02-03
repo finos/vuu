@@ -37,4 +37,9 @@
     height: 0;
 }
 
+.vuuColumnPicker-addCalculatedColumn {
+    margin-left: auto;
+    margin-right: var(--salt-size-unit);
+    width: 28px;
+}
 

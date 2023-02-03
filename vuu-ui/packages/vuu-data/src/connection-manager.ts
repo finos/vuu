@@ -24,9 +24,18 @@ import {
   VuuUIMessageOut,
 } from "./vuuUIMessageTypes";
 // Note: the InlinedWorker is a generated file, it must be built
+
 import { InlinedWorker } from "./inlined-worker";
+import { VuuTableMetaWithTable } from "./hooks";
+
+// In a dev build, this will be stripping out the function wrapper
+// function InlinedWorker(){ ..... }
+// In a prod build, "inlinedWorker" will be minified and depending
+// on the minifier used may be reduced to something like the following:
+//  function(){ ...}
+//  function _(){ ...}
 const workerSource = InlinedWorker.toString().replace(
-  /(?:^function\s+[a-zA-Z]+\(\)\s*\{)|(?:\}$)/g,
+  /(?:^function(?:\s+[^(]*)?\(\)\s*\{)|(?:\}$)/g,
   ""
 );
 const workerBlob = new Blob([workerSource], { type: "text/javascript" });
@@ -39,6 +48,16 @@ type WorkerResolver = {
 let worker: Worker;
 let pendingWorker: Promise<Worker>;
 const pendingWorkerNoToken: WorkerResolver[] = [];
+
+let resolveServer: (server: ServerAPI) => void;
+let rejectServer: (err: unknown) => void;
+
+const serverAPI = new Promise<ServerAPI>((resolve, reject) => {
+  resolveServer = resolve;
+  rejectServer = reject;
+});
+
+export const getServerAPI = () => serverAPI;
 
 export type PostMessageToClientCallback = (
   msg: DataSourceCallbackMessage
@@ -89,6 +108,7 @@ const getWorker = async (
           window.clearTimeout(timer);
           worker.postMessage({ type: "connect", url, token });
         } else if (message.type === "connected") {
+          worker.onmessage = handleMessageFromWorker;
           resolve(worker);
           for (const pendingWorkerRequest of pendingWorkerNoToken) {
             pendingWorkerRequest.resolve(worker);
@@ -166,7 +186,7 @@ const asyncRequest = <T = unknown>(
 
 export interface ServerAPI {
   destroy: (viewportId?: string) => void;
-  getTableMeta: (table: VuuTable) => Promise<VuuTableMeta>;
+  getTableMeta: (table: VuuTable) => Promise<VuuTableMetaWithTable>;
   getTableList: () => Promise<VuuTableList>;
   rpcCall: <T = unknown>(msg: VuuRpcRequest | VuuMenuRpcRequest) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
@@ -177,52 +197,51 @@ export interface ServerAPI {
   unsubscribe: (viewport: string) => void;
 }
 
+const connectedServerAPI: ServerAPI = {
+  subscribe: (message, callback) => {
+    viewports.set(message.viewport, {
+      status: "subscribing",
+      request: message,
+      postMessageToClientDataSource: callback,
+    });
+    worker.postMessage({ type: "subscribe", ...message });
+  },
+
+  unsubscribe: (viewport) => {
+    worker.postMessage({ type: "unsubscribe", viewport });
+  },
+
+  send: (message) => {
+    worker.postMessage(message);
+  },
+
+  destroy: (viewportId?: string) => {
+    if (viewportId && viewports.has(viewportId)) {
+      viewports.delete(viewportId);
+    }
+  },
+
+  rpcCall: async <T = unknown>(message: VuuRpcRequest | VuuMenuRpcRequest) =>
+    asyncRequest<T>(message),
+
+  getTableList: async () =>
+    asyncRequest<VuuTableList>({ type: Message.GET_TABLE_LIST }),
+
+  getTableMeta: async (table) =>
+    asyncRequest<VuuTableMetaWithTable>({
+      type: Message.GET_TABLE_META,
+      table,
+    }),
+};
+
 class _ConnectionManager extends EventEmitter {
   // The first request must have the token. We can change this to block others until
   // the request with token is received.
   async connect(url: string, authToken?: string): Promise<ServerAPI> {
     // By passing handleMessageFromWorker here, we can get connection status
     //messages while we wait for worker to resolve.
-
     worker = await getWorker(url, authToken, handleMessageFromWorker);
-
-    worker.onmessage = handleMessageFromWorker;
-
-    // This is a serverConnection, referred to in calling code as a 'server'
-    return {
-      subscribe: (message, callback) => {
-        viewports.set(message.viewport, {
-          status: "subscribing",
-          request: message,
-          postMessageToClientDataSource: callback,
-        });
-        worker.postMessage({ type: "subscribe", ...message });
-      },
-
-      unsubscribe: (viewport) => {
-        worker.postMessage({ type: "unsubscribe", viewport });
-      },
-
-      send: (message) => {
-        worker.postMessage(message);
-      },
-
-      destroy: (viewportId?: string) => {
-        if (viewportId && viewports.has(viewportId)) {
-          viewports.delete(viewportId);
-        }
-      },
-
-      rpcCall: async <T = unknown>(
-        message: VuuRpcRequest | VuuMenuRpcRequest
-      ) => asyncRequest<T>(message),
-
-      getTableList: async () =>
-        asyncRequest<VuuTableList>({ type: Message.GET_TABLE_LIST }),
-
-      getTableMeta: async (table) =>
-        asyncRequest<VuuTableMeta>({ type: Message.GET_TABLE_META, table }),
-    };
+    return connectedServerAPI;
   }
 
   destroy() {
@@ -232,3 +251,30 @@ class _ConnectionManager extends EventEmitter {
 }
 
 export const ConnectionManager = new _ConnectionManager();
+
+/**
+ * Open a connection to the VuuServer. This method opens the websocket connection
+ * and logs in. It can be called from whichever client code has access to the auth
+ * token (eg. the login page, or just a hardcoded login script in a sample).
+ * This will unblock any DataSources which may have already tried to subscribe to data,
+ * but lacked access to the auth token.
+ *
+ * @param serverUrl
+ * @param token
+ */
+export const connectToServer = async (serverUrl: string, token?: string) => {
+  try {
+    const serverAPI = await ConnectionManager.connect(serverUrl, token);
+    resolveServer(serverAPI);
+  } catch (err: unknown) {
+    rejectServer(err);
+  }
+};
+
+export const makeRpcCall = async <T = unknown>(rpcRequest: VuuRpcRequest) => {
+  try {
+    return (await serverAPI).rpcCall<T>(rpcRequest);
+  } catch (err) {
+    throw Error("Error accessing server api");
+  }
+};

@@ -2,18 +2,18 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { IEventEmitter } from "@finos/vuu-utils";
 import {
+  LinkDescriptorWithLabel,
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
   VuuFilter,
   VuuGroupBy,
-  VuuLink,
+  VuuLinkDescriptor,
   VuuMenu,
   VuuMenuRpcRequest,
   VuuRange,
   VuuRowDataItemType,
   VuuSort,
-  VuuSortCol,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
@@ -26,6 +26,10 @@ type Depth = number;
 type ChildCount = number;
 type RowKey = string;
 type IsSelected = 0 | 1 | 2;
+
+export interface DataSourceFilter extends VuuFilter {
+  filterStruct?: Filter;
+}
 
 export type DataSourceRow = [
   RowIndex,
@@ -71,8 +75,7 @@ export interface DataSourceColumnsMessage extends MessageWithClientViewportId {
 }
 export interface DataSourceFilterMessage extends MessageWithClientViewportId {
   type: "filter";
-  filter: Filter;
-  filterQuery: string;
+  filter: DataSourceFilter;
 }
 export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
   type: "groupBy";
@@ -89,13 +92,18 @@ export interface DataSourceSortMessage extends MessageWithClientViewportId {
   sort: VuuSort;
 }
 
+export type DataSourceConfigMessage =
+  | DataSourceAggregateMessage
+  | DataSourceFilterMessage
+  | DataSourceGroupByMessage
+  | DataSourceSortMessage;
+
 export interface DataSourceSubscribedMessage
   extends MessageWithClientViewportId,
     MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
-  filter: Filter;
-  filterSpec: VuuFilter;
+  filter: DataSourceFilter;
   groupBy: VuuGroupBy;
   range: VuuRange;
   sort: VuuSort;
@@ -119,19 +127,16 @@ export interface DataSourceVisualLinkRemovedMessage
 export interface DataSourceVisualLinksMessage
   extends MessageWithClientViewportId {
   type: "VP_VISUAL_LINKS_RESP";
-  links: VuuLink[];
+  links: VuuLinkDescriptor[];
 }
 
 export type DataSourceCallbackMessage =
-  | DataSourceAggregateMessage
+  | DataSourceConfigMessage
   | DataSourceColumnsMessage
   | DataSourceDataMessage
   | DataSourceDisabledMessage
   | DataSourceEnabledMessage
-  | DataSourceFilterMessage
-  | DataSourceGroupByMessage
   | DataSourceMenusMessage
-  | DataSourceSortMessage
   | DataSourceSubscribedMessage
   | DataSourceVisualLinkCreatedMessage
   | DataSourceVisualLinkRemovedMessage
@@ -167,12 +172,7 @@ export type ConfigChangeMessage =
   | DataSourceVisualLinkCreatedMessage
   | DataSourceVisualLinkRemovedMessage;
 
-export type ConfigChangeHandler = (
-  msg:
-    | ConfigChangeMessage
-    | DataSourceMenusMessage
-    | DataSourceVisualLinksMessage
-) => void;
+export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
 
 export const shouldMessageBeRoutedToDataSource = (
   message: unknown
@@ -181,59 +181,57 @@ export const shouldMessageBeRoutedToDataSource = (
   return datasourceMessages.includes(type);
 };
 
-export interface DataSourceProps {
+export interface DataSourceConstructorProps {
   bufferSize?: number;
   table: VuuTable;
   aggregations?: VuuAggregation[];
-  columns: string[];
-  filter?: Filter;
-  filterQuery?: string;
-  group?: VuuGroupBy;
+  columns?: string[];
+  filter?: DataSourceFilter;
+  groupBy?: VuuGroupBy;
   sort?: VuuSort;
-  configUrl?: any;
-  serverUrl?: string;
+  title?: string;
   viewport?: string;
-  "visual-link"?: any;
+  "visual-link"?: DataSourceVisualLinkCreatedMessage;
 }
 
 export interface SubscribeProps {
   viewport?: string;
-  table?: VuuTable;
   columns?: string[];
   aggregations?: VuuAggregation[];
   range?: VuuRange;
-  sort?: VuuSortCol[];
+  sort?: VuuSort;
   groupBy?: VuuGroupBy;
-  filter?: Filter;
-  filterQuery?: string;
+  filter?: DataSourceFilter;
   title?: string;
 }
 
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 
 export interface DataSource extends IEventEmitter {
-  aggregate: (aggregations: VuuAggregation[]) => void;
+  aggregations: VuuAggregation[];
   closeTreeNode: (key: string) => void;
   columns: string[];
-  createLink: ({ parentVpId, link: { fromColumn, toColumn } }: any) => void;
-  filter: (filter: Filter | undefined, filterQuery: string) => void;
-  group: (groupBy: VuuGroupBy) => void;
+  createLink: ({
+    parentVpId,
+    link: { fromColumn, toColumn },
+  }: LinkDescriptorWithLabel) => void;
+  filter: DataSourceFilter;
+  groupBy: VuuGroupBy;
   menuRpcCall: (
     rpcRequest: Omit<VuuMenuRpcRequest, "vpId">
   ) => Promise<MenuRpcResponse | undefined>;
   openTreeNode: (key: string) => void;
+  range: VuuRange;
   removeLink: () => void;
   rowCount: number | undefined;
   select: (selected: number[]) => void;
-  setRange: (from: number, to: number) => void;
-  setSubscribedColumns: (columns: string[]) => void;
-  /** Set the title associated with this viewport in UI. This can be used as a link target */
-  setTitle?: (title: string) => void;
-  sort: (sort: VuuSort) => void;
+  size: number;
+  sort: VuuSort;
   subscribe: (
     props: SubscribeProps,
     callback: SubscribeCallback
   ) => Promise<void>;
+  title?: string;
   unsubscribe: () => void;
   viewport?: string;
 }

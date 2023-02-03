@@ -12,3 +12,8 @@
   line-height: 10px;
   text-align: center;
 }
+
+.hwSortIndicator .hwIconContainer {
+  height: 12px;
+}
+

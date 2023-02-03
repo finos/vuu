@@ -120,9 +120,9 @@ export const Grid = forwardRef(function Grid(
         case "closeTreeNode":
           return dataSource.closeTreeNode(operation.key);
         case "group":
-          return dataSource.group(operation.key);
+          return (dataSource.groupBy = operation.key);
         case "sort":
-          return dataSource.sort(operation.sort);
+          return (dataSource.sort = operation.sort);
         default:
           console.log(
             `[GridBase] dataSourceOperation: unknown operation ${operation.type}`

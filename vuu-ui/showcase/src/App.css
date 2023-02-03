@@ -31,3 +31,7 @@ body {
 .ShowcaseContentContainer {
   border-left: solid 1px var(--salt-container-primary-borderColor);
 }
+
+.ShowcaseContent {
+  background-color: var(--salt-container-primary-background);
+}

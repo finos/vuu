@@ -116,7 +116,6 @@ export const useAutoComplete = (
       const tree = syntaxTree(state);
       const nodeBefore = tree.resolveInner(pos, -1);
 
-      console.log(`nodeBefore ${nodeBefore.name}`);
       switch (nodeBefore.name) {
         case "Filter":
           if (context.pos === 0) {
@@ -135,9 +134,6 @@ export const useAutoComplete = (
           const columnName = getColumnName(nodeBefore, state);
           const operator = getOperator(nodeBefore, state);
           const clauseOperator = getClauseOperator(nodeBefore, state);
-          console.log(
-            `operator = ${operator} clauseOperator ${clauseOperator}`
-          );
           if (clauseOperator === "as") {
             return {
               from: context.pos,

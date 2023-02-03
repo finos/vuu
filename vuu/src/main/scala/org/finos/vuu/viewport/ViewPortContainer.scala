@@ -53,7 +53,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]()
 
-  def getViewPorts() = CollectionHasAsScala(viewPorts.values()).asScala.toList
+  def getViewPorts(): List[ViewPort] = CollectionHasAsScala(viewPorts.values()).asScala.toList
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
 
@@ -80,7 +80,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     asMap.get(rpcName) match {
       case Some(menuItem) =>
         menuItem match {
-          case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection), session)
+          case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection, viewPort), session)
         }
       case None =>
         throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
@@ -132,6 +132,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def removeViewPort(vpId: String): Any = {
+    //stop updates to viewport
+    disableViewPort(vpId)
     this.viewPorts.get(vpId) match {
       case null =>
         logger.error(s"Could not find viewport to remove $vpId")
@@ -236,9 +238,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val rows = keys.toArray.map(key => vp.table.pullRowAsArray(key, columns))
 
         val headers = if (vp.hasGroupBy)
-          Array[String]("depth", "isOpen", "key", "isLeaf") ++ columns.map(_.name).toArray[String]
+          Array[String]("depth", "isOpen", "key", "isLeaf") ++ columns.getColumns().map(_.name).toArray[String]
         else
-          columns.map(_.name).toArray
+          columns.getColumns().map(_.name).toArray
 
         AsciiUtil.asAsciiTable(headers, rows)
     }
@@ -261,9 +263,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       None
   }
 
-  private def parseSort(sort: SortSpec, table: RowSource): Sort = {
+  private def parseSort(sort: SortSpec, vpColumns: ViewPortColumns): Sort = {
     if (sort.sortDefs.nonEmpty)
-      GenericSort(sort, table.asTable.columnsForNames(sort.sortDefs.map(sd => sd.column)))
+      GenericSort(sort, sort.sortDefs.map(sd => vpColumns.getColumnForName(sd.column).get))
     else
       NoSort
   }
@@ -282,7 +284,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def change(requestId: String, clientSession: ClientSessionId, id: String, range: ViewPortRange, columns: List[Column], sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
+  def change(requestId: String, clientSession: ClientSessionId, id: String, range: ViewPortRange, columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
 
     val viewPort = viewPorts.get(id)
 
@@ -290,7 +292,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       throw new Exception(s"view port not found $id")
     }
 
-    val aSort = parseSort(sort, viewPort.table)
+    val aSort = parseSort(sort, columns)
 
     val aFilter = parseFilter(filterSpec)
 
@@ -308,9 +310,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sourceTable = viewPort.table
 
-      val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
+      val sessionTable = tableContainer.createTreeSessionTable(sourceTable, clientSession)
 
-      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None, Some(aSort)).build()
+      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
       val keys = tree.toKeys()
       sessionTable.setTree(tree, keys)
       viewPort.setKeys(keys)
@@ -361,9 +363,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       //then remove it from table container
       tableContainer.removeGroupBySessionTable(groupByTable)
 
-      val sessionTable = tableContainer.createGroupBySessionTable(sourceTable, clientSession)
+      val sessionTable = tableContainer.createTreeSessionTable(sourceTable, clientSession)
 
-      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, None, Some(aSort)).build()
+      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
 
       val keys = tree.toKeys()
 
@@ -396,23 +398,19 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def create(requestId:String, clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], highPriorityQ: PublishQueue[ViewPortUpdate], table: RowSource,
-             range: ViewPortRange, columns: List[Column], sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
+             range: ViewPortRange, columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
 
     val id = createId(clientSession.user)
 
-    val aSort = parseSort(sort, table)
+    val aSort = parseSort(sort, columns)
 
     val aFilter = parseFilter(filterSpec)
 
     val filtAndSort = core.sort.UserDefinedFilterAndSort(aFilter, aSort)
 
-    val aTable = if (groupBy == NoGroupBy) {
-      table
-    } else {
-      tableContainer.createGroupBySessionTable(table, clientSession)
-    }
+    val aTable = ViewPortTableCreator.create(table, clientSession, groupBy, tableContainer)
 
-    val viewPortDefFunc = getViewPortDefinition(table.name);
+    val viewPortDefFunc = getViewPortDefinition(table.name)
 
     val viewPortDef = if (viewPortDefFunc == null) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer)
 
@@ -536,7 +534,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val oldNodeState = CollectionConverters.asScala(tbl.getTree.nodeState).toMap
 
         val (millis, tree) = timeIt {
-          new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, Option(tbl.getTree), Option(viewPort.getStructure.filtAndSort.sort)).build()
+          new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, Option(tbl.getTree), Option(viewPort.getStructure.filtAndSort.sort)).build()
         }
 
         val (millis2, keys) = timeIt {
@@ -563,7 +561,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
         logger.debug(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
 
-        groupByHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+        groupByHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
 
       case tbl =>
         logger.error(s"GROUP-BY: table ${tbl.name} has a groupBy but doesn't have a groupBySessionTable associated. Going to ignore build request.")
@@ -580,11 +578,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       val filterAndSort = viewPort.filterAndSort
 
       val (millis, _) = TimeIt.timeIt {
-        val sorted = filterAndSort.filterAndSort(viewPort.table, keys)
+        val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns)
         viewPort.setKeys(sorted)
       }
 
-      viewPortHistograms.computeIfAbsent(viewPort.id, (s) => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+      viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
     } else {
       viewPort.setKeys(ImmutableArray.empty[String])
     }
