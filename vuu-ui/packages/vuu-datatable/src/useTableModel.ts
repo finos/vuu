@@ -8,6 +8,7 @@ import { moveItem } from "@heswell/salt-lab";
 import {
   extractGroupColumn,
   flattenColumnGroup,
+  getTableHeadings,
   isPinned,
   metadataKeys,
   sortPinnedColumns,
@@ -57,7 +58,7 @@ const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
 
 export interface ColumnActionInit {
   type: "init";
-  config: GridConfig;
+  config: Omit<GridConfig, "headings">;
 }
 
 export interface ColumnActionMove {
@@ -133,29 +134,28 @@ const columnReducer: GridModelReducer = (state, action) => {
   }
 };
 
-export const useTableModel = (config: GridConfig) => {
+export const useTableModel = (config: Omit<GridConfig, "headings">) => {
   const [state, dispatchColumnAction] = useReducer<
     GridModelReducer,
-    GridConfig
+    Omit<GridConfig, "headings">
   >(columnReducer, config, init);
   return {
     columns: state.columns,
     dispatchColumnAction,
+    headings: state.headings,
   };
 };
 
-function init(config: GridConfig): GridModel {
+function init(config: Omit<GridConfig, "headings">): GridModel {
   //TODO needs to accommodate grouping
   const columns = config.columns.map(toKeyedColumWithDefaults);
-  if (columns.some(isPinned)) {
-    return {
-      columns: sortPinnedColumns(columns),
-    };
-  } else {
-    return {
-      columns: config.columns.map(toKeyedColumWithDefaults),
-    };
-  }
+  const maybePinnedColumns = columns.some(isPinned)
+    ? sortPinnedColumns(columns)
+    : columns;
+  return {
+    columns: maybePinnedColumns,
+    headings: getTableHeadings(maybePinnedColumns),
+  };
 }
 
 const toKeyedColumWithDefaults = (

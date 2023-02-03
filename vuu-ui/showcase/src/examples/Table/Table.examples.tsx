@@ -24,18 +24,26 @@ import {
   useState,
 } from "react";
 import { DragVisualizer } from "@finos/vuu-datatable/src/DragVisualizer";
-import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
+import {
+  ErrorDisplay,
+  toServerSpec,
+  useSchemas,
+  useTestDataSource,
+} from "../utils";
 import { Filter } from "@finos/vuu-filter-types";
 import { useSuggestionProvider } from "../Filters/useSuggestionProvider";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 
 let displaySequence = 1;
 
+const NO_CONFIG = {} as const;
 const useTableConfig = ({
+  columnConfig = NO_CONFIG,
   leftPinnedColumns = [],
   rightPinnedColumns = [],
   renderBufferSize = 0,
 }: {
+  columnConfig?: { [key: string]: Partial<ColumnDescriptor> };
   leftPinnedColumns?: number[];
   rightPinnedColumns?: number[];
   renderBufferSize?: number;
@@ -61,7 +69,10 @@ const useTableConfig = ({
       { name: "column 8", width: 120 },
       { name: "column 9", width: 120 },
       { name: "column 10", width: 120 },
-    ];
+    ].map((col) => ({
+      ...col,
+      ...columnConfig[col.name],
+    }));
 
     leftPinnedColumns.forEach((index) => (columns[index].pin = "left"));
     rightPinnedColumns.forEach((index) => (columns[index].pin = "right"));
@@ -72,7 +83,7 @@ const useTableConfig = ({
     });
 
     return { config: { columns }, dataSource, renderBufferSize };
-  }, [leftPinnedColumns, renderBufferSize, rightPinnedColumns]);
+  }, [columnConfig, leftPinnedColumns, renderBufferSize, rightPinnedColumns]);
 };
 
 export const DefaultTable = () => {
@@ -87,6 +98,33 @@ export const DefaultTable = () => {
 };
 
 DefaultTable.displaySequence = displaySequence++;
+
+export const DefaultTableMultiLevelHeadings = () => {
+  const config = useTableConfig({
+    columnConfig: {
+      "row number": { heading: ["Level 0 Heading A", "Heading 1"] },
+      "column 1": { heading: ["Level 0 Heading A", "Heading 1"] },
+      "column 2": { heading: ["Level 0 Heading A", "Heading 1"] },
+      "column 3": { heading: ["Level 0 Heading A", "Heading 1"] },
+      "column 4": { heading: ["Level 0 Heading A", "Heading 2"] },
+      "column 5": { heading: ["Level 0 Heading A", "Heading 2"] },
+      "column 6": { heading: ["Level 0 Heading A", "Heading 2"] },
+      "column 7": { heading: ["Level 0 Heading B", "Heading 3"] },
+      "column 8": { heading: ["Level 0 Heading B", "Heading 3"] },
+      "column 9": { heading: ["Level 0 Heading B", "Heading 3"] },
+      "column 10": { heading: ["Level 0 Heading B", "Heading 3"] },
+    },
+  });
+  return (
+    <>
+      {/* <DragVisualizer orientation="horizontal"> */}
+      <DataTable {...config} height={700} renderBufferSize={20} width={700} />
+      {/* </DragVisualizer> */}
+    </>
+  );
+};
+
+DefaultTableMultiLevelHeadings.displaySequence = displaySequence++;
 
 export const LeftPinnedColumns = () => {
   const [isColumnBased, setIsColumnBased] = useState<boolean>(false);
@@ -223,8 +261,9 @@ export const VuuDataTable = () => {
     [selectedIndex, tables]
   );
 
-  const configRef = useRef<GridConfig>(config);
-  const [tableConfig, setTableConfig] = useState<GridConfig>(config);
+  const configRef = useRef<Omit<GridConfig, "headings">>(config);
+  const [tableConfig, setTableConfig] =
+    useState<Omit<GridConfig, "headings">>(config);
 
   console.log({ columns });
 
@@ -254,11 +293,14 @@ export const VuuDataTable = () => {
     [dataSource]
   );
 
-  const handleTableConfigChange = useCallback((config: GridConfig) => {
-    // we want this to be used when editor is opened next, but we don;t want
-    // to trigger a re-render of our dataTable
-    configRef.current = config;
-  }, []);
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      // we want this to be used when editor is opened next, but we don;t want
+      // to trigger a re-render of our dataTable
+      configRef.current = config;
+    },
+    []
+  );
 
   const showConfigEditor = useCallback(() => {
     setDialogContent(
@@ -349,29 +391,29 @@ VuuDataTable.displaySequence = displaySequence++;
 
 export const FlexLayoutVuuTables = () => {
   const { schemas } = useSchemas();
-  const { config, dataSource } = useTestDataSource({
-    schemas,
-    tablename: "instruments",
-  });
+  const { config: conf1, dataSource: ds1 } = useTestDataSource({ schemas });
+  const { config: conf2, dataSource: ds2 } = useTestDataSource({ schemas });
+  const { config: conf3, dataSource: ds3 } = useTestDataSource({ schemas });
+  const { config: conf4, dataSource: ds4 } = useTestDataSource({ schemas });
 
   return (
     <Flexbox style={{ flexDirection: "column", width: 800, height: 700 }}>
       <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={config} dataSource={dataSource} />
+          <DataTable config={conf1} dataSource={ds1} />
         </View>
 
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={defaultConfig} data={data} />
+          <DataTable config={conf2} dataSource={ds2} />
         </View>
       </Flexbox>
       <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={defaultConfig} data={data} />
+          <DataTable config={conf3} dataSource={ds3} />
         </View>
 
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={defaultConfig} data={data} />
+          <DataTable config={conf4} dataSource={ds4} />
         </View>
       </Flexbox>
     </Flexbox>
@@ -445,8 +487,9 @@ export const VuuDataTableCalculatedColumns = () => {
 
   const table = { table: "parentOrders", module: "SIMUL" };
 
-  const configRef = useRef<GridConfig>(config);
-  const [tableConfig, setTableConfig] = useState<GridConfig>(config);
+  const configRef = useRef<Omit<GridConfig, "headings">>(config);
+  const [tableConfig, setTableConfig] =
+    useState<Omit<GridConfig, "headings">>(config);
 
   const filterSuggestionProvider = useSuggestionProvider({
     columns,
@@ -470,11 +513,14 @@ export const VuuDataTableCalculatedColumns = () => {
     [dataSource]
   );
 
-  const handleTableConfigChange = useCallback((config: GridConfig) => {
-    // we want this to be used when editor is opened next, but we don;t want
-    // to trigger a re-render of our dataTable
-    configRef.current = config;
-  }, []);
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      // we want this to be used when editor is opened next, but we don;t want
+      // to trigger a re-render of our dataTable
+      configRef.current = config;
+    },
+    []
+  );
 
   const showConfigEditor = useCallback(() => {
     setDialogContent(
@@ -555,3 +601,45 @@ export const VuuDataTableCalculatedColumns = () => {
   );
 };
 VuuDataTableCalculatedColumns.displaySequence = displaySequence++;
+
+export const ColumnHeaders1Level = () => {
+  const { schemas } = useSchemas();
+  const { config, dataSource } = useTestDataSource({
+    columnConfig: {
+      bbg: { heading: ["Instrument"] },
+      isin: { heading: ["Instrument"] },
+      ric: { heading: ["Instrument"] },
+      description: { heading: ["Instrument"] },
+      currency: { heading: ["Exchange Details"] },
+      exchange: { heading: ["Exchange Details"] },
+      lotSize: { heading: ["Exchange Details"] },
+    },
+    columnNames: [
+      "bbg",
+      "isin",
+      "ric",
+      "description",
+      "currency",
+      "exchange",
+      "lotSize",
+    ],
+    schemas,
+  });
+
+  return (
+    <>
+      <div>
+        <input defaultValue="Life is" />
+      </div>
+      <DataTable
+        config={config}
+        dataSource={dataSource}
+        height={600}
+        renderBufferSize={20}
+        style={{ margin: 10, border: "solid 1px #ccc" }}
+      />
+    </>
+  );
+};
+
+ColumnHeaders1Level.displaySequence = displaySequence++;

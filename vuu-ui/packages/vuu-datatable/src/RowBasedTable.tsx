@@ -15,6 +15,7 @@ const { RENDER_IDX } = metadataKeys;
 export const RowBasedTable = ({
   columns,
   data,
+  headings,
   onColumnResize,
   onHeaderCellDragStart,
   onRemoveColumnFromGroupBy,
@@ -57,6 +58,15 @@ export const RowBasedTable = ({
         ))}
       </colgroup>
       <thead>
+        {headings.map((colHeaders, i) => (
+          <tr className="vuuTable-heading" key={i}>
+            {colHeaders.map(({ label, span }, j) => (
+              <th colSpan={span} key={j} className="vuuTable-headingCell">
+                {label}
+              </th>
+            ))}
+          </tr>
+        ))}
         <tr>
           {columns.map((column, i) => {
             const style = getColumnPinStyle(column);

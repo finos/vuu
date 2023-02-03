@@ -21,7 +21,7 @@ import { CalculatedColumnPanel } from "../calculated-column-panel";
 export interface DatagridSettingsPanelProps
   extends HTMLAttributes<HTMLDivElement> {
   availableColumns: ColumnDescriptor[];
-  gridConfig: GridConfig;
+  gridConfig: Omit<GridConfig, "headings">;
   onCancel?: () => void;
   onConfigChange?: (config: GridConfig, closePanel?: boolean) => void;
 }

@@ -28,10 +28,10 @@ import { useTableViewport } from "./useTableViewport";
 import { useSelection } from "./useSelection";
 
 export interface DataTableHookProps extends MeasuredProps {
-  config: GridConfig;
+  config: Omit<GridConfig, "headings">;
   dataSource: DataSource;
   headerHeight: number;
-  onConfigChange?: (config: GridConfig) => void;
+  onConfigChange?: (config: Omit<GridConfig, "headings">) => void;
   renderBufferSize?: number;
   rowHeight: number;
   selectionModel: TableSelectionModel;
@@ -100,11 +100,12 @@ export const useDataTable = ({
     setRowCount(size);
   }, []);
 
-  const { columns, dispatchColumnAction } = useTableModel(config);
+  const { columns, dispatchColumnAction, headings } = useTableModel(config);
 
   const viewportMeasurements = useTableViewport({
     columns,
     headerHeight,
+    headings,
     rowCount,
     rowHeight,
     size: containerMeasurements.innerSize,
@@ -279,6 +280,7 @@ export const useDataTable = ({
     columns,
     data,
     dispatchColumnAction,
+    headings,
     onColumnResize: handleColumnResize,
     onRemoveColumnFromGroupBy: handleRemoveColumnFromGroupBy,
     onRowClick: handleRowClick,

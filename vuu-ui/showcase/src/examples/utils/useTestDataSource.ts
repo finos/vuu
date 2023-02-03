@@ -9,17 +9,36 @@ export const toServerSpec = (column: ColumnDescriptor) =>
     ? `${column.name}:${column.serverDataType}:${column.expression}`
     : column.name;
 
+const getRequestedColumns = (
+  columns: ColumnDescriptor[],
+  columnNames?: string[]
+) => {
+  if (Array.isArray(columnNames)) {
+    return columnNames.map((name) => {
+      const col = columns.find((col) => col.name === name);
+      if (!col) {
+        throw Error(`no column found '${name}'`);
+      }
+      return col;
+    });
+  } else {
+    return columns;
+  }
+};
+
 const configureColumns = (
   columns: ColumnDescriptor[],
-  columnConfig?: { [key: string]: ColumnDescriptor }
+  columnConfig?: { [key: string]: ColumnDescriptor },
+  columnNames?: string[]
 ): ColumnDescriptor[] => {
+  const requestedColumns = getRequestedColumns(columns, columnNames);
   if (columnConfig) {
-    return columns.map((column) => ({
+    return requestedColumns.map((column) => ({
       ...column,
       ...columnConfig[column.name],
     }));
   } else {
-    return columns;
+    return requestedColumns;
   }
 };
 
@@ -29,6 +48,7 @@ export const useTestDataSource = ({
   autoLogin = true,
   bufferSize = 100,
   calculatedColumns = NO_CONCATENATED_COLUMNS,
+  columnNames: columnNamesProp,
   columnConfig,
   schemas,
   tablename = "instruments",
@@ -37,6 +57,7 @@ export const useTestDataSource = ({
   bufferSize?: number;
   calculatedColumns?: ColumnDescriptor[];
   columnConfig?: any;
+  columnNames?: string[];
   schemas: { [key: string]: Schema };
   tablename?: string;
 }) => {
@@ -44,7 +65,8 @@ export const useTestDataSource = ({
     const schema = schemas[tablename];
     const configuredColumns = configureColumns(
       schema.columns,
-      columnConfig
+      columnConfig,
+      columnNamesProp
     ).concat(calculatedColumns);
     return [
       configuredColumns,

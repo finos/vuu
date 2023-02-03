@@ -461,6 +461,7 @@ BasicGridColumnFixedCols.displaySequence = displaySequence++;
 
 export const ColumnHeaders1Level = () => {
   const gridRef = useRef(null);
+  const { schemas } = useSchemas();
 
   const { columns, dataSource, error } = useTestDataSource({
     columnConfig: {
@@ -472,6 +473,16 @@ export const ColumnHeaders1Level = () => {
       exchange: { heading: ["Exchange", "Exchange Details"] },
       lotSize: { heading: ["Lot Size", "Exchange Details"] },
     },
+    columnNames: [
+      "bbg",
+      "isin",
+      "ric",
+      "description",
+      "currency",
+      "exchange",
+      "lotSize",
+    ],
+    schemas,
     tablename: "instruments",
   });
 

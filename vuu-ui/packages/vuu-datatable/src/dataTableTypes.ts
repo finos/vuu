@@ -1,5 +1,9 @@
 import { DataSource, DataSourceRow } from "@finos/vuu-data";
-import { KeyedColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
+import {
+  KeyedColumnDescriptor,
+  GridConfig,
+  TableHeadings,
+} from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent } from "react";
 
 export type tableLayoutType = "row" | "column";
@@ -8,11 +12,11 @@ export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   allowConfigEditing?: boolean;
-  config: GridConfig;
+  config: Omit<GridConfig, "headings">;
   dataSource: DataSource;
   headerHeight?: number;
   height?: number;
-  onConfigChange?: (config: GridConfig) => void;
+  onConfigChange?: (config: Omit<GridConfig, "headings">) => void;
   onShowConfigEditor?: () => void;
   renderBufferSize?: number;
   rowHeight?: number;
@@ -36,6 +40,7 @@ export interface TableImplementationProps {
   columns: KeyedColumnDescriptor[];
   data: DataSourceRow[];
   headerHeight: number;
+  headings: TableHeadings;
   onColumnResize?: TableColumnResizeHandler;
   onHeaderCellDragEnd?: () => void;
   onHeaderCellDragStart?: (evt: MouseEvent) => void;

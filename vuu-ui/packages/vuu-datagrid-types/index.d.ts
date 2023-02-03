@@ -5,10 +5,14 @@ import {
   VuuSortType,
 } from "@finos/vuu-protocol-types";
 
+export type TableHeading = { label: string; span: number };
+export type TableHeadings = TableHeading[][];
+
 export declare type GridConfig = {
   columns: ColumnDescriptor[];
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
+  headings: TableHeadings;
 };
 
 export declare type TypeFormatting = {
@@ -43,7 +47,7 @@ export interface ColumnDescriptor {
   editable?: boolean;
   expression?: string;
   flex?: number;
-  heading?: [...string[]];
+  heading?: string[];
   isSystemColumn?: boolean;
   label?: string;
   locked?: boolean;

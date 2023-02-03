@@ -2,7 +2,9 @@ import {
   ColumnDescriptor,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
+  TableHeading,
 } from "@finos/vuu-datagrid-types";
+import { TableHeadings } from "@finos/vuu-datatable";
 import {
   VuuAggregation,
   VuuAggType,
@@ -16,6 +18,7 @@ export interface ColumnMap {
 }
 
 const SORT_ASC = "asc";
+const NO_HEADINGS: TableHeadings = [];
 
 export type SortCriteriaItem = string | [string, "asc"]; // TODO where is 'desc'?
 
@@ -243,6 +246,9 @@ export const isGroupColumn = (
 export const isPinned = (column: ColumnDescriptor) =>
   typeof column.pin === "string";
 
+export const hasHeadings = (column: ColumnDescriptor) =>
+  Array.isArray(column.heading) && column.heading.length > 0;
+
 export const sortPinnedColumns = (
   columns: KeyedColumnDescriptor[]
 ): KeyedColumnDescriptor[] => {
@@ -294,6 +300,39 @@ export const sortPinnedColumns = (
   } else {
     return allColumns;
   }
+};
+
+export const getTableHeadings = (
+  columns: KeyedColumnDescriptor[]
+): TableHeadings => {
+  if (columns.some(hasHeadings)) {
+    const maxHeadingDepth = columns.reduce<number>(
+      (max, { heading }) => Math.max(max, heading?.length ?? 0),
+      0
+    );
+
+    let heading: TableHeading | undefined = undefined;
+    const tableHeadings: TableHeadings = [];
+    let tableHeadingsRow: TableHeading[];
+    for (let level = 0; level < maxHeadingDepth; level++) {
+      tableHeadingsRow = [];
+      columns.forEach(({ heading: columnHeading = NO_HEADINGS }) => {
+        const label = columnHeading[level] ?? "";
+        if (heading && heading.label === label) {
+          heading.span += 1;
+        } else {
+          heading = { label, span: 1 };
+          tableHeadingsRow.push(heading);
+        }
+      });
+      tableHeadings.push(tableHeadingsRow);
+    }
+
+    console.log({ maxHeadingDepth, tableHeadings });
+
+    return tableHeadings;
+  }
+  return NO_HEADINGS;
 };
 
 export const getColumnPinStyle = (column: KeyedColumnDescriptor) =>

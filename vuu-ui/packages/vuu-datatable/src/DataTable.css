@@ -34,7 +34,7 @@
   border-top: solid 1px var(--salt-container-primary-borderColor);
   overflow: auto;
   position: absolute;
-  height: calc(var(--table-height) - var(--header-height) + 1px);
+  height: calc(var(--table-height) - var(--total-header-height) + 1px);
   width: calc(var(--table-width) - var(--pinned-width-left) + 1px);
 }
 

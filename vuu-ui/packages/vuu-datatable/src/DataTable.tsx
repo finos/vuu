@@ -89,6 +89,7 @@ export const DataTable = ({
     "--scrollbar-size": `${viewportMeasurements.scrollbarSize}px`,
     "--table-height": `${innerSize?.height}px`,
     "--table-width": `${innerSize?.width}px`,
+    "--total-header-height": `${viewportMeasurements?.totalHeaderHeight}px`,
   } as CSSProperties;
 
   const scrollbarContainerStyle: CSSProperties = {
@@ -96,7 +97,7 @@ export const DataTable = ({
     // The -1 is to align the top border, might cause innaccuracy
     // It is compensated by a hardcoded adjustment in css
     // top: measurements.top - 1 + headerHeight,
-    top: headerHeight - 1,
+    top: viewportMeasurements?.totalHeaderHeight - 1,
   };
 
   const Table = tableLayout === "column" ? ColumnBasedTable : RowBasedTable;
