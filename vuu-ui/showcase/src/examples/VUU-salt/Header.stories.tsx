@@ -1,24 +1,24 @@
-import { CSSProperties, useState } from "react";
+import { Header } from "@finos/vuu-layout";
 import {
   Tab,
   Tabstrip,
   Toolbar,
   ToolbarButton,
   ToolbarField,
-  Tooltray,
+  Tooltray
 } from "@heswell/salt-lab";
 import { CloseIcon } from "@salt-ds/icons";
-import { Header } from "@finos/vuu-layout";
+import { CSSProperties, useState } from "react";
 
-import "@heswell/component-anatomy/esm/index.css";
 import { Flexbox } from "@finos/vuu-layout";
+import "@heswell/component-anatomy/esm/index.css";
 
 const toolbarStyle = {
   "--saltToolbar-background": "white",
 } as CSSProperties;
 
 export const DefaultHeader = () => {
-  return <Header closeable title="Default Header" />;
+  return <Header closeable title="Default Header" onEditTitle={() => {return}} />;
 };
 
 export const HeaderWithTabs = () => {
