@@ -41,6 +41,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   private disabled = false;
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
+  private onConfigChange: undefined | ((config: DataSourceConfig) => void);
 
   #aggregations: VuuAggregation[] = [];
   #columns: string[] = [];
@@ -61,6 +62,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     columns,
     filter,
     groupBy,
+    onConfigChange,
     sort,
     table,
     title,
@@ -73,6 +75,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       throw Error("RemoteDataSource constructor called without table");
 
     this.bufferSize = bufferSize;
+    this.onConfigChange = onConfigChange;
     this.table = table;
     this.viewport = viewport;
     this.visualLink = visualLink;
@@ -337,6 +340,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
+    this.onConfigChange?.(this.config as DataSourceConfig);
   }
 
   get aggregations() {
@@ -352,6 +356,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         aggregations,
       });
     }
+    this.onConfigChange?.(this.config as DataSourceConfig);
   }
 
   get sort() {
@@ -371,6 +376,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
+    this.onConfigChange?.(this.config as DataSourceConfig);
   }
 
   get filter() {
@@ -390,6 +396,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
+    this.onConfigChange?.(this.config as DataSourceConfig);
   }
 
   get groupBy() {
@@ -409,6 +416,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
+    this.onConfigChange?.(this.config as DataSourceConfig);
   }
 
   get title() {

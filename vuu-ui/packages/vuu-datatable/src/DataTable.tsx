@@ -2,7 +2,7 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { Button, useIdMemo } from "@salt-ds/core";
 import { CSSProperties, useCallback } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
-import { buildContextMenuDescriptors, useContextMenu } from "./context-menu";
+import { buildContextMenuDescriptors } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
 import { RowBasedTable } from "./RowBasedTable";
 import { useDataTable } from "./useDataTable";
@@ -33,11 +33,15 @@ export const DataTable = ({
   const id = useIdMemo(idProp);
   const {
     columns,
-    dispatchColumnAction,
     containerMeasurements: { containerRef, innerSize, outerSize },
     containerProps,
+    dispatchColumnAction,
+    draggable,
+    draggedItemIndex,
+    handleContextMenuAction,
     rowCount,
     scrollProps,
+    tableLayout,
     valueFormatters,
     viewportMeasurements,
     ...tableProps
@@ -50,32 +54,28 @@ export const DataTable = ({
     onConfigChange,
     rowHeight,
     selectionModel,
+    tableLayout: tableLayoutProp,
     width,
   });
 
-  const handleContextMenuAction = useContextMenu({
-    dataSource,
-    dispatchColumnAction,
-  });
+  // const handleDropColumn = useCallback(
+  //   (fromIndex: number, toIndex: number) => {
+  //     const column = columns[fromIndex];
+  //     dispatchColumnAction({ type: "moveColumn", column, moveTo: toIndex });
+  //   },
+  //   [columns, dispatchColumnAction]
+  // );
 
-  const handleDropColumn = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      const column = columns[fromIndex];
-      dispatchColumnAction({ type: "moveColumn", column, moveTo: toIndex });
-    },
-    [columns, dispatchColumnAction]
-  );
-
-  const {
-    draggable,
-    draggedItemIndex,
-    tableLayout,
-    handleHeaderCellDragStart,
-  } = useDraggableColumn({
-    onDrop: handleDropColumn,
-    tableContainerRef: scrollProps.tableContainerRef,
-    tableLayout: tableLayoutProp,
-  });
+  // const {
+  //   draggable,
+  //   draggedItemIndex,
+  //   tableLayout,
+  //   handleHeaderCellDragStart,
+  // } = useDraggableColumn({
+  //   onDrop: handleDropColumn,
+  //   tableContainerRef: scrollProps.tableContainerRef,
+  //   tableLayout: tableLayoutProp,
+  // });
 
   const style = {
     ...outerSize,
@@ -101,7 +101,6 @@ export const DataTable = ({
   };
 
   const Table = tableLayout === "column" ? ColumnBasedTable : RowBasedTable;
-  const isRowTable = tableLayout === "row";
 
   return (
     <ContextMenuProvider
@@ -143,9 +142,6 @@ export const DataTable = ({
                 {...tableProps}
                 columns={columns.filter((col, i) => i !== draggedItemIndex)}
                 headerHeight={headerHeight}
-                onHeaderCellDragStart={
-                  isRowTable ? handleHeaderCellDragStart : undefined
-                }
                 rowHeight={rowHeight}
                 valueFormatters={valueFormatters}
               />

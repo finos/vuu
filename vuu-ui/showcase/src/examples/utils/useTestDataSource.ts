@@ -1,4 +1,4 @@
-import { RemoteDataSource } from "@finos/vuu-data";
+import { DataSourceConstructorProps, RemoteDataSource } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
@@ -54,6 +54,7 @@ export const useTestDataSource = ({
   columnConfig,
   filter,
   groupBy,
+  onConfigChange,
   schemas,
   sort,
   tablename = "instruments",
@@ -65,6 +66,7 @@ export const useTestDataSource = ({
   columnNames?: string[];
   filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
+  onConfigChange: DataSourceConstructorProps["onConfigChange"];
   schemas: { [key: string]: Schema };
   sort?: VuuSort;
   tablename?: string;
@@ -90,12 +92,13 @@ export const useTestDataSource = ({
       columns: columnNames,
       filter,
       groupBy,
+      onConfigChange,
       sort,
       table,
       serverUrl: "127.0.0.1:8090/websocket",
     };
     return new RemoteDataSource(dataConfig);
-  }, [bufferSize, columnNames, filter, groupBy, sort, table]);
+  }, [bufferSize, columnNames, filter, groupBy, onConfigChange, sort, table]);
 
   const error = useAutoLoginToVuuServer(autoLogin);
 

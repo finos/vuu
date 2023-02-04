@@ -218,6 +218,9 @@ export class ServerProxy {
       } else {
         return null;
       }
+    } else if (this.viewports.has(clientViewportId)) {
+      // Still stored under client viewportId means it is waiting for CREATE_VP to be acked
+      return this.viewports.get(clientViewportId);
     } else if (throws) {
       throw Error(
         `Viewport server id not found for client viewport ${clientViewportId}`
@@ -428,6 +431,7 @@ export class ServerProxy {
           return;
         }
       } else {
+        console.log(`message ${message.type} from client ${message.viewport} `);
         const viewport = this.getViewportForClient(message.viewport);
         switch (message.type) {
           case "setViewRange":

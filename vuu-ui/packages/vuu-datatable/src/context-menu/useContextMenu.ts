@@ -6,7 +6,7 @@ import { removeColumnFromFilter } from "@finos/vuu-filters";
 import { MenuActionHandler } from "@finos/vuu-popups";
 import { VuuFilter } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { ColumnActionDispatch } from "../useTableModel";
+import { ColumnActionDispatch, PersistentColumnAction } from "../useTableModel";
 import {
   addGroupColumn,
   addSortColumn,
@@ -22,7 +22,7 @@ export interface ContextMenuOptions {
 }
 export interface ContextMenuHookProps {
   dataSource?: DataSource;
-  dispatchColumnAction: ColumnActionDispatch;
+  onPersistentColumnOperation: (action: PersistentColumnAction) => void;
 }
 
 const removeFilterColumn = (
@@ -47,7 +47,7 @@ const { Average, Count, High, Low, Sum } = AggregationType;
 
 export const useContextMenu = ({
   dataSource,
-  dispatchColumnAction,
+  onPersistentColumnOperation,
 }: ContextMenuHookProps) => {
   /** return {boolean} used by caller to determine whether to forward to additional installed context menu handlers */
   const handleContextMenuAction: MenuActionHandler = (
@@ -73,10 +73,10 @@ export const useContextMenu = ({
         case "agg-low": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Low)), true;
         case "agg-count": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Count)), true;
         case "agg-sum": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Sum)), true;
-        case "column-pin-floating": return dispatchColumnAction({type: "updateColumnProp", column, pin: "floating"}), true;
-        case "column-pin-left": return dispatchColumnAction({type: "updateColumnProp", column, pin: "left"}), true;
-        case "column-pin-right": return dispatchColumnAction({type: "updateColumnProp", column, pin: "right"}), true;
-        case "column-unpin": return dispatchColumnAction({type: "updateColumnProp", column, pin: undefined}), true
+        case "column-pin-floating": return onPersistentColumnOperation({type: "pinColumn", column, pin: "floating"}), true;
+        case "column-pin-left": return onPersistentColumnOperation({type: "pinColumn", column, pin: "left"}), true;
+        case "column-pin-right": return onPersistentColumnOperation({type: "pinColumn", column, pin: "right"}), true;
+        case "column-unpin": return onPersistentColumnOperation({type: "pinColumn", column, pin: undefined}), true
         default:
       }
     }

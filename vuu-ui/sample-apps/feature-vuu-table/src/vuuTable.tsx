@@ -1,18 +1,19 @@
 import {
   ConfigChangeMessage,
+  DataSourceConfig,
   DataSourceMenusMessage,
   DataSourceVisualLinksMessage,
   RemoteDataSource,
   TableSchema,
   useVuuMenuActions,
 } from "@finos/vuu-data";
-import { GridConfig, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { GridConfig } from "@finos/vuu-datagrid-types";
 import { DataTable } from "@finos/vuu-datatable";
 import { Filter } from "@finos/vuu-filter-types";
 import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { VuuGroupBy, VuuMenu, VuuSort } from "@finos/vuu-protocol-types";
+import { VuuMenu } from "@finos/vuu-protocol-types";
 import {
   FeatureProps,
   ShellContextProps,
@@ -20,7 +21,7 @@ import {
 } from "@finos/vuu-shell";
 import { ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSuggestionProvider } from "./useSuggestionProvider";
 
 import "./vuuTable.css";
@@ -29,10 +30,11 @@ const classBase = "vuuTable";
 const CONFIG_KEYS = ["filter", "filterQuery", "groupBy", "sort"];
 
 type BlotterConfig = {
-  columns?: KeyedColumnDescriptor[];
-  groupBy?: VuuGroupBy;
-  sort?: VuuSort;
+  "datasource-config"?: DataSourceConfig;
+  "table-config"?: Omit<GridConfig, "headings">;
 };
+
+const NO_CONFIG: BlotterConfig = {};
 
 export interface FilteredTableProps extends FeatureProps {
   schema: TableSchema;
@@ -62,31 +64,62 @@ const applyDefaults = (
 const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   const { id, dispatch, load, purge, save, loadSession, saveSession } =
     useViewContext();
-  const config = useMemo(() => load?.() as BlotterConfig | undefined, [load]);
-  console.log({ config });
+  const {
+    "datasource-config": dataSourceConfigFromState,
+    "table-config": tableConfigFromState,
+  } = useMemo(() => (load?.() ?? NO_CONFIG) as BlotterConfig, [load]);
+  console.log({ tableConfig: tableConfigFromState });
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
   const [currentFilter, setCurrentFilter] = useState<Filter>();
+
+  const configColumns = tableConfigFromState?.columns;
+
+  const tableConfig = useMemo(
+    () => ({
+      columns: configColumns || applyDefaults(schema, getDefaultColumnConfig),
+    }),
+    [configColumns, getDefaultColumnConfig, schema]
+  );
+
+  const tableConfigRef = useRef<Omit<GridConfig, "headings">>(tableConfig);
 
   const suggestionProvider = useSuggestionProvider({
     columns: schema.columns,
     table: schema.table,
   });
 
+  const handleDataSourceConfigChange = useCallback(
+    (config: DataSourceConfig) => save?.(config, "datasource-config"),
+    [save]
+  );
+
   const dataSource: RemoteDataSource = useMemo(() => {
     let ds = loadSession?.("data-source") as RemoteDataSource;
     if (ds) {
       return ds;
     }
-    const columns = schema.columns.map((col) => col.name);
+    const columns =
+      dataSourceConfigFromState?.columns ??
+      schema.columns.map((col) => col.name);
+
     ds = new RemoteDataSource({
+      onConfigChange: handleDataSourceConfigChange,
       viewport: id,
       table: schema.table,
-      ...config,
+      ...dataSourceConfigFromState,
       columns,
     });
     saveSession?.(ds, "data-source");
     return ds;
-  }, [config, id, loadSession, saveSession, schema]);
+  }, [
+    dataSourceConfigFromState,
+    handleDataSourceConfigChange,
+    id,
+    loadSession,
+    saveSession,
+    schema.columns,
+    schema.table,
+  ]);
 
   useEffect(() => {
     dataSource.enable();
@@ -99,12 +132,13 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
     dataSource.removeLink();
   }, [dataSource]);
 
-  const handleTableConfigChange = useCallback((config: GridConfig) => {
-    // we want this to be used when editor is opened next, but we don;t want
-    // to trigger a re-render of our dataTable
-    console.log(`config changed ${JSON.stringify(config)}`);
-    // configRef.current = config;
-  }, []);
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      save?.(config, "table-config");
+      tableConfigRef.current = config;
+    },
+    [save]
+  );
 
   const handleConfigChange = useCallback(
     (
@@ -196,15 +230,6 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
     [currentFilter, dataSource]
   );
 
-  const configColumns = config?.columns;
-
-  const tableConfig = useMemo(
-    () => ({
-      columns: configColumns || applyDefaults(schema, getDefaultColumnConfig),
-    }),
-    [configColumns, getDefaultColumnConfig, schema]
-  );
-
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
@@ -220,11 +245,10 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
           <DataTable
             {...props}
             // columnSizing="fill"
-            config={tableConfig}
+            config={tableConfigRef.current}
             dataSource={dataSource}
             // columns={columns}
             onConfigChange={handleTableConfigChange}
-            // renderBufferSize={80}
             renderBufferSize={80}
             rowHeight={18}
             // selectionModel="extended"

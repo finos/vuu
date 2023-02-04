@@ -35,3 +35,26 @@ export function itemsChanged<T = unknown>(
     );
   }
 }
+
+export const moveItem = <T = unknown>(
+  items: T[],
+  item: T,
+  moveTo: number
+): T[] => {
+  const fromIndex = items.indexOf(item);
+  if (fromIndex === moveTo) {
+    return items;
+  }
+  const newItems = items.slice();
+  if (fromIndex === -1) {
+    throw Error("moveItem, item to be moved not found");
+  }
+  newItems.splice(fromIndex, 1);
+  if (moveTo === -1) {
+    newItems.push(item);
+  } else {
+    const offset = moveTo > fromIndex ? 0 : 0;
+    newItems.splice(moveTo + offset, 0, item);
+  }
+  return newItems;
+};

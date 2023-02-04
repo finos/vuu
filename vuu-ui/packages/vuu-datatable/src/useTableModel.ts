@@ -61,6 +61,12 @@ export interface ColumnActionMove {
   moveBy?: 1 | -1;
   moveTo?: number;
 }
+
+export interface ColumnActionPin {
+  type: "pinColumn";
+  column: ColumnDescriptor;
+  pin?: PinLocation;
+}
 export interface ColumnActionResize {
   type: "resizeColumn";
   column: KeyedColumnDescriptor;
@@ -78,11 +84,11 @@ export interface ColumnActionUpdate {
   type: "updateColumn";
   column: ColumnDescriptor;
 }
+
 export interface ColumnActionUpdateProp {
   align?: ColumnDescriptor["align"];
   column: KeyedColumnDescriptor;
   label?: ColumnDescriptor["label"];
-  pin?: PinLocation;
   resizing?: KeyedColumnDescriptor["resizing"];
   type: "updateColumnProp";
   width?: ColumnDescriptor["width"];
@@ -92,9 +98,15 @@ export interface ColumnActionTableConfig extends DataSourceConfig {
   type: "tableConfig";
 }
 
+/**
+ * PersistentColumnActions are those actions that require us to persist user changes across sessions
+ */
+export type PersistentColumnAction = ColumnActionPin;
+
 export type GridModelAction =
   | ColumnActionInit
   | ColumnActionMove
+  | ColumnActionPin
   | ColumnActionResize
   | ColumnActionSetTypes
   | ColumnActionUpdate
@@ -115,6 +127,8 @@ const columnReducer: GridModelReducer = (state, action) => {
       return resizeColumn(state, action);
     case "setTypes":
       return setTypes(state, action);
+    case "pinColumn":
+      return pinColumn(state, action);
     case "updateColumnProp":
       return updateColumnProp(state, action);
     case "tableConfig":
@@ -252,9 +266,24 @@ function setTypes(
   }
 }
 
+function pinColumn(state: GridModel, action: ColumnActionPin) {
+  let { columns } = state;
+  const { column, pin } = action;
+  const targetColumn = columns.find((col) => col.name === column.name);
+  if (targetColumn) {
+    columns = replaceColumn(columns, { ...targetColumn, pin });
+    columns = sortPinnedColumns(columns);
+    return {
+      ...state,
+      columns,
+    };
+  } else {
+    return state;
+  }
+}
 function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
   let { columns } = state;
-  const { align, column, label, pin, resizing, width } = action;
+  const { align, column, label, resizing, width } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
   if (targetColumn) {
     if (align === "left" || align === "right") {
@@ -269,10 +298,6 @@ function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
     if (typeof width === "number") {
       columns = replaceColumn(columns, { ...targetColumn, width });
     }
-    if ("pin" in action) {
-      columns = replaceColumn(columns, { ...targetColumn, pin });
-      columns = sortPinnedColumns(columns);
-    }
   }
   return {
     ...state,
@@ -282,7 +307,7 @@ function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
 
 function updateTableConfig(
   state: GridModel,
-  { columns, filter, groupBy, sort }: ColumnActionTableConfig
+  { columns, filter, groupBy, sort }: DataSourceConfig
 ) {
   const hasColumns = columns && columns.length > 0;
   const hasGroupBy = groupBy !== undefined;
@@ -294,10 +319,18 @@ function updateTableConfig(
   if (hasColumns) {
     result = {
       ...state,
-      columns: columns.map((colName) => {
+      columns: columns.map((colName, index) => {
+        const key = index + KEY_OFFSET;
         const col = result.columns.find((col) => col.name === colName);
         if (col) {
-          return col;
+          if (col.key === key) {
+            return col;
+          } else {
+            return {
+              ...col,
+              key,
+            };
+          }
         }
         throw Error(`useTableModel column ${colName} not found`);
       }),

@@ -196,6 +196,7 @@ export interface DataSourceConstructorProps {
   columns?: string[];
   filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
+  onConfigChange?: (config: DataSourceConfig) => void;
   sort?: VuuSort;
   title?: string;
   viewport?: string;
