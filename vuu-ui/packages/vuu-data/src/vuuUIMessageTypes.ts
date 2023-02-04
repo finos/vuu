@@ -10,11 +10,9 @@ import {
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { WithRequestId } from "./message-utils";
-import {
-  DataSourceFilter,
-  DataSourceVisualLinkCreatedMessage,
-} from "./data-source";
+import { DataSourceVisualLinkCreatedMessage } from "./data-source";
 
 export type ConnectionStatus =
   | "connecting"

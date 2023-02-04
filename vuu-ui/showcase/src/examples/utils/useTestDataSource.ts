@@ -1,5 +1,7 @@
 import { RemoteDataSource } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { useMemo } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
 import { Schema } from "./useSchemas";
@@ -50,7 +52,10 @@ export const useTestDataSource = ({
   calculatedColumns = NO_CONCATENATED_COLUMNS,
   columnNames: columnNamesProp,
   columnConfig,
+  filter,
+  groupBy,
   schemas,
+  sort,
   tablename = "instruments",
 }: {
   autoLogin?: boolean;
@@ -58,7 +63,10 @@ export const useTestDataSource = ({
   calculatedColumns?: ColumnDescriptor[];
   columnConfig?: any;
   columnNames?: string[];
+  filter?: DataSourceFilter;
+  groupBy?: VuuGroupBy;
   schemas: { [key: string]: Schema };
+  sort?: VuuSort;
   tablename?: string;
 }) => {
   const [columns, config, columnNames, table] = useMemo(() => {
@@ -74,17 +82,20 @@ export const useTestDataSource = ({
       configuredColumns.map(toServerSpec),
       schema.table,
     ];
-  }, [calculatedColumns, columnConfig, schemas, tablename]);
+  }, [calculatedColumns, columnConfig, columnNamesProp, schemas, tablename]);
 
   const dataSource = useMemo(() => {
     const dataConfig = {
       bufferSize,
       columns: columnNames,
+      filter,
+      groupBy,
+      sort,
       table,
       serverUrl: "127.0.0.1:8090/websocket",
     };
     return new RemoteDataSource(dataConfig);
-  }, [bufferSize, columnNames, table]);
+  }, [bufferSize, columnNames, filter, groupBy, sort, table]);
 
   const error = useAutoLoginToVuuServer(autoLogin);
 

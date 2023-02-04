@@ -1,5 +1,5 @@
 import { Tree } from "@lezer/common";
-import { Filter as FilterType } from "../../filterTypes";
+import { Filter as FilterType } from "@finos/vuu-filter-types";
 
 class Filter {
   #name: string | undefined;

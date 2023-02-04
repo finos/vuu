@@ -1,12 +1,10 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { Filter } from "@finos/vuu-filter-types";
 import { IEventEmitter } from "@finos/vuu-utils";
 import {
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
-  VuuFilter,
   VuuGroupBy,
   VuuLinkDescriptor,
   VuuMenu,
@@ -16,6 +14,7 @@ import {
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
 
 type RowIndex = number;
@@ -26,10 +25,6 @@ type Depth = number;
 type ChildCount = number;
 type RowKey = string;
 type IsSelected = 0 | 1 | 2;
-
-export interface DataSourceFilter extends VuuFilter {
-  filterStruct?: Filter;
-}
 
 export type DataSourceRow = [
   RowIndex,
@@ -94,6 +89,7 @@ export interface DataSourceSortMessage extends MessageWithClientViewportId {
 
 export type DataSourceConfigMessage =
   | DataSourceAggregateMessage
+  | DataSourceColumnsMessage
   | DataSourceFilterMessage
   | DataSourceGroupByMessage
   | DataSourceSortMessage;
@@ -181,6 +177,18 @@ export const shouldMessageBeRoutedToDataSource = (
   return datasourceMessages.includes(type);
 };
 
+/**
+ * Described the configuration values that should typically be
+ * persisted across sessions.
+ */
+export interface DataSourceConfig {
+  aggregations?: VuuAggregation[];
+  columns?: string[];
+  filter?: DataSourceFilter;
+  groupBy?: VuuGroupBy;
+  sort?: VuuSort;
+}
+
 export interface DataSourceConstructorProps {
   bufferSize?: number;
   table: VuuTable;
@@ -211,6 +219,7 @@ export interface DataSource extends IEventEmitter {
   aggregations: VuuAggregation[];
   closeTreeNode: (key: string) => void;
   columns: string[];
+  readonly config: DataSourceConfig | undefined;
   createLink: ({
     parentVpId,
     link: { fromColumn, toColumn },
@@ -225,7 +234,7 @@ export interface DataSource extends IEventEmitter {
   removeLink: () => void;
   rowCount: number | undefined;
   select: (selected: number[]) => void;
-  size: number;
+  readonly size: number;
   sort: VuuSort;
   subscribe: (
     props: SubscribeProps,

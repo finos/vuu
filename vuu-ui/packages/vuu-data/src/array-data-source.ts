@@ -10,10 +10,10 @@ import {
   VuuTableMeta,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { EventEmitter, uuid } from "@finos/vuu-utils";
 import {
   DataSource,
-  DataSourceFilter,
   DataSourceConstructorProps,
   SubscribeCallback,
   SubscribeProps,
@@ -224,6 +224,10 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
 
   closeTreeNode(key: string) {
     console.log("TODO: close tree node", { key });
+  }
+
+  get config() {
+    return undefined;
   }
 
   get size() {

@@ -11,7 +11,12 @@ import {
   TypeFormatting,
 } from "@finos/vuu-datagrid-types";
 import { VuuSortType } from "@finos/vuu-protocol-types";
-import { applySort, metadataKeys, roundDecimal } from "@finos/vuu-utils";
+import {
+  applySort,
+  isResizing,
+  metadataKeys,
+  roundDecimal,
+} from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import {
   TableColumnResizeHandler,
@@ -100,7 +105,10 @@ export const useDataTable = ({
     setRowCount(size);
   }, []);
 
-  const { columns, dispatchColumnAction, headings } = useTableModel(config);
+  const { columns, dispatchColumnAction, headings } = useTableModel(
+    config,
+    dataSource.config
+  );
 
   const viewportMeasurements = useTableViewport({
     columns,
@@ -134,37 +142,49 @@ export const useDataTable = ({
   }, [columns]);
 
   useMemo(() => {
-    onConfigChange?.({
-      ...config,
-      columns,
-    });
+    if (!columns.some(isResizing)) {
+      console.log(
+        `%c config change triggered in useDataTable`,
+        "color: red; font-weight: bold;",
+        {
+          columns,
+          config,
+        }
+      );
+      onConfigChange?.({
+        ...config,
+        columns,
+      });
+    }
   }, [columns, config, onConfigChange]);
 
-  useMemo(() => {
-    dispatchColumnAction({ type: "init", config });
-  }, [config, dispatchColumnAction]);
+  // useMemo(() => {
+  //   dispatchColumnAction({ type: "init", config });
+  // }, [config, dispatchColumnAction]);
 
   const handleConfigChangeFromDataSource = useCallback(
     (message: DataSourceConfigMessage) => {
-      switch (message.type) {
+      const { type } = message;
+      switch (type) {
         case "groupBy":
-          return dispatchColumnAction({
-            type: "tableConfig",
-            groupBy: message.groupBy,
-          });
         case "filter":
-          return dispatchColumnAction({
-            type: "tableConfig",
-            filter: message.filter,
-          });
         case "sort":
+        case "columns": {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          const payload = message[type];
+          onConfigChange?.({
+            ...config,
+            [type]: payload,
+          });
           return dispatchColumnAction({
             type: "tableConfig",
-            sort: message.sort,
+            [type]: payload,
           });
+        }
       }
     },
-    [dispatchColumnAction]
+    [config, dispatchColumnAction, onConfigChange]
   );
 
   const setSelected = useCallback(

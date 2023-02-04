@@ -1,8 +1,9 @@
 import { ArrayDataSource } from "@finos/vuu-data";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
-import { DataTable } from "@finos/vuu-datatable";
-import { Flexbox, View } from "@finos/vuu-layout";
+import { DataTable, TableProps } from "@finos/vuu-datatable";
+import { Flexbox, useViewContext, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import { itemsChanged } from "@finos/vuu-utils";
 import { FilterInput } from "@finos/vuu-filters";
@@ -31,8 +32,12 @@ import {
   useTestDataSource,
 } from "../utils";
 import { Filter } from "@finos/vuu-filter-types";
-import { useSuggestionProvider } from "../Filters/useSuggestionProvider";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { useFilterSuggestionProvider } from "@finos/vuu-filters";
+import {
+  VuuGroupBy,
+  VuuRowDataItemType,
+  VuuSort,
+} from "@finos/vuu-protocol-types";
 
 let displaySequence = 1;
 
@@ -265,9 +270,7 @@ export const VuuDataTable = () => {
   const [tableConfig, setTableConfig] =
     useState<Omit<GridConfig, "headings">>(config);
 
-  console.log({ columns });
-
-  const filterSuggestionProvider = useSuggestionProvider({
+  const filterSuggestionProvider = useFilterSuggestionProvider({
     columns,
     table,
   });
@@ -295,6 +298,9 @@ export const VuuDataTable = () => {
 
   const handleTableConfigChange = useCallback(
     (config: Omit<GridConfig, "headings">) => {
+      console.log("handleTableConfigChanged", {
+        config,
+      });
       // we want this to be used when editor is opened next, but we don;t want
       // to trigger a re-render of our dataTable
       configRef.current = config;
@@ -491,7 +497,7 @@ export const VuuDataTableCalculatedColumns = () => {
   const [tableConfig, setTableConfig] =
     useState<Omit<GridConfig, "headings">>(config);
 
-  const filterSuggestionProvider = useSuggestionProvider({
+  const filterSuggestionProvider = useFilterSuggestionProvider({
     columns,
     table,
   });
@@ -643,3 +649,194 @@ export const ColumnHeaders1Level = () => {
 };
 
 ColumnHeaders1Level.displaySequence = displaySequence++;
+
+const ConfigurableDataTable = ({
+  availableColumns,
+  config: configProp,
+  dataSource,
+  ...props
+}: TableProps & { availableColumns: ColumnDescriptor[] }) => {
+  const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
+  const { save } = useViewContext();
+
+  const configRef = useRef<Omit<GridConfig, "headings">>(configProp);
+  const [tableConfig, setTableConfig] =
+    useState<Omit<GridConfig, "headings">>(configProp);
+
+  useMemo(() => {
+    setTableConfig((configRef.current = configProp));
+  }, [configProp]);
+
+  const handleSettingConfigChange = useCallback(
+    (config: GridConfig, closePanel = false) => {
+      save?.(config, "table-config");
+      setTableConfig((currentConfig) => {
+        if (itemsChanged(currentConfig.columns, config.columns, "name")) {
+          dataSource.columns = config.columns.map(toServerSpec);
+        }
+        return (configRef.current = config);
+      });
+      closePanel && setDialogContent(null);
+    },
+    [dataSource, save]
+  );
+
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      console.log(
+        `handle table config change ${Object.keys(config).join("|")}`
+      );
+      // we want this to be used when editor is opened next, but we don;t want
+      // to trigger a re-render of our dataTable
+      configRef.current = config;
+      save?.(config, "table-config");
+    },
+    [save]
+  );
+
+  const showConfigEditor = useCallback(() => {
+    setDialogContent(
+      <DatagridSettingsPanel
+        availableColumns={availableColumns}
+        gridConfig={configRef.current}
+        onConfigChange={handleSettingConfigChange}
+      />
+    );
+  }, [availableColumns, handleSettingConfigChange]);
+
+  const hideSettings = useCallback(() => {
+    setDialogContent(null);
+  }, []);
+
+  return (
+    <>
+      <DataTable
+        allowConfigEditing
+        config={tableConfig}
+        dataSource={dataSource}
+        onConfigChange={handleTableConfigChange}
+        onShowConfigEditor={showConfigEditor}
+        {...props}
+      />
+      <Dialog
+        className="vuuDialog-gridConfig"
+        isOpen={dialogContent !== null}
+        onClose={hideSettings}
+        title="Grid and Column Settings"
+      >
+        {dialogContent}
+      </Dialog>
+    </>
+  );
+};
+
+export const VuuDataTablePersistedConfig = () => {
+  const { schemas } = useSchemas();
+  const table = { table: "parentOrders", module: "SIMUL" };
+  const { columns, config, dataSource, error } = useTestDataSource({
+    schemas,
+    tablename: "parentOrders",
+  });
+
+  const groupByCurrency = useCallback(() => {
+    dataSource.groupBy = ["currency"];
+  }, [dataSource]);
+  const groupByCurrencyExchange = useCallback(() => {
+    dataSource.groupBy = ["currency", "exchange"];
+  }, [dataSource]);
+
+  const handleSubmitFilter = useCallback(
+    (filterStruct: Filter | undefined, filter: string, filterName?: string) => {
+      filterName && console.log(`named filter created '${filterName}'`);
+      dataSource.filter = { filter, filterStruct };
+    },
+    [dataSource]
+  );
+
+  const filterSuggestionProvider = useFilterSuggestionProvider({
+    columns,
+    table,
+  });
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
+  return (
+    <>
+      <Toolbar
+        className="salt-density-high"
+        style={
+          {
+            "--saltToolbar-height": "28px",
+            "--saltToolbar-alignItems": "center",
+          } as CSSProperties
+        }
+      >
+        <Tooltray>
+          <Button onClick={groupByCurrency}>Currency</Button>
+          <Button onClick={groupByCurrencyExchange}>Currency, Exchange</Button>
+        </Tooltray>
+        <Tooltray>
+          <FilterInput
+            existingFilter={dataSource.filter.filterStruct}
+            onSubmitFilter={handleSubmitFilter}
+            style={{ width: 300 }}
+            suggestionProvider={filterSuggestionProvider}
+          />
+        </Tooltray>
+      </Toolbar>
+      <View>
+        <ConfigurableDataTable
+          availableColumns={columns}
+          dataSource={dataSource}
+          config={config}
+          height={600}
+          renderBufferSize={20}
+          width={750}
+        />
+      </View>
+    </>
+  );
+};
+VuuDataTablePersistedConfig.displaySequence = displaySequence++;
+
+export const VuuTablePredefinedConfig = () => {
+  const { schemas } = useSchemas();
+  const sort: VuuSort = { sortDefs: [{ column: "lotSize", sortType: "D" }] };
+  const filter: DataSourceFilter = {
+    filter: 'currency="EUR"',
+    filterStruct: {
+      op: "=",
+      column: "currency",
+      value: "EUR",
+    },
+  };
+  const { config, dataSource } = useTestDataSource({ filter, schemas, sort });
+
+  return (
+    <Flexbox style={{ flexDirection: "column", width: 800, height: 800 }}>
+      <View resizeable style={{ flex: 1 }}>
+        <DataTable config={config} dataSource={dataSource} />
+      </View>
+      <div data-resizeable style={{ flex: 1 }} />
+    </Flexbox>
+  );
+};
+VuuTablePredefinedConfig.displaySequence = displaySequence++;
+
+export const VuuTablePredefinedGroupBy = () => {
+  const { schemas } = useSchemas();
+  const groupBy: VuuGroupBy = ["exchange", "currency"];
+  const { config, dataSource } = useTestDataSource({ groupBy, schemas });
+
+  return (
+    <Flexbox style={{ flexDirection: "column", width: 800, height: 800 }}>
+      <View resizeable style={{ flex: 1 }}>
+        <DataTable config={config} dataSource={dataSource} />
+      </View>
+      <div data-resizeable style={{ flex: 1 }} />
+    </Flexbox>
+  );
+};
+VuuTablePredefinedConfig.displaySequence = displaySequence++;

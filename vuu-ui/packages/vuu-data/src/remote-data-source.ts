@@ -7,15 +7,17 @@ import {
   VuuSort,
   VuuMenuRpcRequest,
 } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
+
 import { EventEmitter, uuid } from "@finos/vuu-utils";
 import {
   DataSource,
   DataSourceCallbackMessage,
-  DataSourceFilter,
   DataSourceConstructorProps,
   DataSourceVisualLinkCreatedMessage,
   SubscribeCallback,
   SubscribeProps,
+  DataSourceConfig,
 } from "./data-source";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
@@ -274,6 +276,27 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         type: "closeTreeNode",
         key,
       });
+    }
+  }
+
+  get config() {
+    const { aggregations, columns, filter, groupBy, sort } = this;
+    const hasAggregations = aggregations.length > 0;
+    const hasColumns = columns.length > 0;
+    const hasFilter = filter.filter !== "";
+    const hasGroupBy = groupBy.length > 0;
+    const hasSort = sort.sortDefs.length > 0;
+
+    if (hasAggregations || hasColumns || hasFilter || hasGroupBy || hasSort) {
+      const result: DataSourceConfig = {};
+      hasAggregations && (result.aggregations = aggregations);
+      hasColumns && (result.columns = columns);
+      hasFilter && (result.filter = filter);
+      hasGroupBy && (result.groupBy = groupBy);
+      hasSort && (result.sort = sort);
+      return result;
+    } else {
+      return undefined;
     }
   }
 

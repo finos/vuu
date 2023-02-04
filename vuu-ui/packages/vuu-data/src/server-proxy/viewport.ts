@@ -1,3 +1,4 @@
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   ClientToServerCreateLink,
   ClientToServerCreateViewPort,
@@ -25,7 +26,6 @@ import { KeySet } from "./keyset";
 import * as Message from "./messages";
 
 import {
-  DataSourceFilter,
   DataSourceRow,
   DataSourceRowPredicate,
   DataSourceSubscribedMessage,
@@ -261,9 +261,8 @@ export class Viewport {
       this.groupBy = data;
       return { clientViewportId, type, groupBy: data };
     } else if (type === "columns") {
-      console.log("columns changed");
       this.columns = data;
-      return { clientViewportId, type, ...data };
+      return { clientViewportId, type, columns: data };
     } else if (type === "filter") {
       this.filter = data as DataSourceFilter;
       return { clientViewportId, type, filter: data };

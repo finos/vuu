@@ -10,7 +10,6 @@ export const setPersistentState = (id: string, value: any) =>
   persistentState.set(id, value);
 
 export const usePersistentState = () => {
-
   const loadSessionState = useCallback((id, key) => {
     const state = sessionState.get(id);
     if (state) {
@@ -68,6 +67,9 @@ export const usePersistentState = () => {
 
   const saveState = useCallback(
     (id: string, key: string | undefined, data: any) => {
+      console.log(`save state ${key}
+      ${Object.keys(data).join("|")}
+      `);
       if (key === undefined) {
         persistentState.set(id, data);
       } else if (persistentState.has(id)) {

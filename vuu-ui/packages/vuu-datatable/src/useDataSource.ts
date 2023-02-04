@@ -24,7 +24,7 @@ export type SubscriptionDetails = {
 const isConfigMessage = (
   message: DataSourceCallbackMessage
 ): message is DataSourceConfigMessage =>
-  ["aggregate", "filter", "groupBy", "sort"].includes(message.type);
+  ["aggregate", "columns", "filter", "groupBy", "sort"].includes(message.type);
 
 export interface DataSourceHookProps {
   dataSource: DataSource;

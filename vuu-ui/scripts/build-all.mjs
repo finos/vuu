@@ -9,6 +9,7 @@ const buildPackage = async (packageName) =>
 
 // TODO determine the dependency graph/build order programatically
 const wave1 = [
+  "vuu-data-types",
   "vuu-datagrid-types",
   "vuu-filter-types",
   "vuu-protocol-types",

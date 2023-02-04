@@ -6,24 +6,18 @@ import {
 } from "@finos/vuu-datagrid-types";
 import { moveItem } from "@heswell/salt-lab";
 import {
-  extractGroupColumn,
-  flattenColumnGroup,
+  applyFilterToColumns,
+  applyGroupByToColumns,
+  applySortToColumns,
   getTableHeadings,
   isPinned,
   metadataKeys,
   sortPinnedColumns,
 } from "@finos/vuu-utils";
 
-// TOSO eliminate this dependency
-import { extractFilterForColumn } from "@finos/vuu-filters";
-
 import { Reducer, useReducer } from "react";
-import {
-  VuuColumnDataType,
-  VuuGroupBy,
-  VuuSort,
-} from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import { DataSourceConfig } from "@finos/vuu-data";
 
 const DEFAULT_COLUMN_WIDTH = 100;
 const KEY_OFFSET = metadataKeys.count;
@@ -94,11 +88,8 @@ export interface ColumnActionUpdateProp {
   width?: ColumnDescriptor["width"];
 }
 
-export interface ColumnActionTableConfig {
+export interface ColumnActionTableConfig extends DataSourceConfig {
   type: "tableConfig";
-  filter?: DataSourceFilter;
-  groupBy?: VuuGroupBy;
-  sort?: VuuSort;
 }
 
 export type GridModelAction =
@@ -117,7 +108,7 @@ export type ColumnActionDispatch = (action: GridModelAction) => void;
 const columnReducer: GridModelReducer = (state, action) => {
   switch (action.type) {
     case "init":
-      return init(action.config);
+      return init({ tableConfig: action.config });
     case "moveColumn":
       return moveColumn(state, action);
     case "resizeColumn":
@@ -134,11 +125,14 @@ const columnReducer: GridModelReducer = (state, action) => {
   }
 };
 
-export const useTableModel = (config: Omit<GridConfig, "headings">) => {
+export const useTableModel = (
+  tableConfig: Omit<GridConfig, "headings">,
+  dataSourceConfig?: DataSourceConfig
+) => {
   const [state, dispatchColumnAction] = useReducer<
     GridModelReducer,
-    Omit<GridConfig, "headings">
-  >(columnReducer, config, init);
+    InitialConfig
+  >(columnReducer, { tableConfig, dataSourceConfig }, init);
   return {
     columns: state.columns,
     dispatchColumnAction,
@@ -146,16 +140,29 @@ export const useTableModel = (config: Omit<GridConfig, "headings">) => {
   };
 };
 
-function init(config: Omit<GridConfig, "headings">): GridModel {
+type InitialConfig = {
+  dataSourceConfig?: DataSourceConfig;
+  tableConfig: Omit<GridConfig, "headings">;
+};
+
+function init({ dataSourceConfig, tableConfig }: InitialConfig): GridModel {
   //TODO needs to accommodate grouping
-  const columns = config.columns.map(toKeyedColumWithDefaults);
+  console.log("INIT ", {
+    dataSourceConfig,
+  });
+  const columns = tableConfig.columns.map(toKeyedColumWithDefaults);
   const maybePinnedColumns = columns.some(isPinned)
     ? sortPinnedColumns(columns)
     : columns;
-  return {
+  const state = {
     columns: maybePinnedColumns,
     headings: getTableHeadings(maybePinnedColumns),
   };
+  if (dataSourceConfig) {
+    return updateTableConfig(state, dataSourceConfig);
+  } else {
+    return state;
+  }
 }
 
 const toKeyedColumWithDefaults = (
@@ -226,9 +233,6 @@ function setTypes(
   state: GridModel,
   { columnNames, serverDataTypes }: ColumnActionSetTypes
 ) {
-  console.log(`setTypes, existing columns`, {
-    state,
-  });
   const { columns } = state;
   if (columns.some(columnWithoutDataType)) {
     const cols = columns.map((column) => {
@@ -278,32 +282,46 @@ function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
 
 function updateTableConfig(
   state: GridModel,
-  { filter, groupBy, sort }: ColumnActionTableConfig
+  { columns, filter, groupBy, sort }: ColumnActionTableConfig
 ) {
+  const hasColumns = columns && columns.length > 0;
   const hasGroupBy = groupBy !== undefined;
   const hasFilter = typeof filter?.filter === "string";
   const hasSort = sort && sort.sortDefs.length > 0;
 
   let result = state;
 
+  if (hasColumns) {
+    result = {
+      ...state,
+      columns: columns.map((colName) => {
+        const col = result.columns.find((col) => col.name === colName);
+        if (col) {
+          return col;
+        }
+        throw Error(`useTableModel column ${colName} not found`);
+      }),
+    };
+  }
+
   if (hasGroupBy) {
     result = {
       ...state,
-      columns: applyGroupByToColumns(state.columns, groupBy),
+      columns: applyGroupByToColumns(result.columns, groupBy),
     };
   }
 
   if (hasSort) {
     result = {
       ...state,
-      columns: applySortToColumns(state.columns, sort),
+      columns: applySortToColumns(result.columns, sort),
     };
   }
 
   if (hasFilter) {
     result = {
       ...state,
-      columns: applyFilterToColumns(state.columns, filter),
+      columns: applyFilterToColumns(result.columns, filter),
     };
   }
 
@@ -316,71 +334,3 @@ function replaceColumn(
 ) {
   return state.map((col) => (col.name === column.name ? column : col));
 }
-
-//TOSDO move these functions to utils
-const applyGroupByToColumns = (
-  columns: KeyedColumnDescriptor[],
-  groupBy: VuuGroupBy
-) => {
-  if (groupBy.length) {
-    const [groupColumn, nonGroupedColumns] = extractGroupColumn(
-      columns,
-      groupBy
-    );
-    if (groupColumn) {
-      return [groupColumn as KeyedColumnDescriptor].concat(nonGroupedColumns);
-    }
-  } else if (columns[0]?.isGroup) {
-    return flattenColumnGroup(columns);
-  }
-  return columns;
-};
-
-const applySortToColumns = (colunms: KeyedColumnDescriptor[], sort: VuuSort) =>
-  colunms.map((column) => {
-    const sorted = getSortType(column, sort);
-    if (sorted !== undefined) {
-      return {
-        ...column,
-        sorted,
-      };
-    } else if (column.sorted) {
-      return {
-        ...column,
-        sorted: undefined,
-      };
-    } else {
-      return column;
-    }
-  });
-
-const applyFilterToColumns = (
-  columns: KeyedColumnDescriptor[],
-  { filterStruct }: DataSourceFilter
-) =>
-  columns.map((column) => {
-    // TODO this gives us a dependency on vuu-filters
-    const filter = extractFilterForColumn(filterStruct, column.name);
-    if (filter !== undefined) {
-      return {
-        ...column,
-        filter,
-      };
-    } else if (column.filter) {
-      return {
-        ...column,
-        filter: undefined,
-      };
-    } else {
-      return column;
-    }
-  });
-
-const getSortType = (column: ColumnDescriptor, { sortDefs }: VuuSort) => {
-  const sortDef = sortDefs.find((sortCol) => sortCol.column === column.name);
-  if (sortDef) {
-    return sortDefs.length > 1
-      ? (sortDefs.indexOf(sortDef) + 1) * (sortDef.sortType === "A" ? 1 : -1)
-      : sortDef.sortType;
-  }
-};

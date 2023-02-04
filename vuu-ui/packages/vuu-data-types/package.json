@@ -1,0 +1,17 @@
+{
+  "name": "@finos/vuu-data-types",
+  "version": "0.0.26",
+  "main": "",
+  "scripts": {
+    "build": "node ../../scripts/run-build.mjs"
+  },
+  "types": "index.d.ts",
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@finos/vuu-filter-types": "0.0.26",
+    "@finos/vuu-protocol-types": "0.0.26"
+  },
+  "dependencies": {},
+  "peerDependencies": {}
+}

@@ -1,4 +1,5 @@
-//TODO these are duplicated in vuu-utils, that shoudl probably be the righful source
+//Note these are duplicated in vuu-filter, those should probably be removed.
+
 import {
   AndFilter,
   Filter,
@@ -19,10 +20,6 @@ const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "starts",
   "ends",
 ]);
-
-// convenience methods to check filter type
-export const isNamedFilter = (f?: Filter) =>
-  f !== undefined && f.name !== undefined;
 
 // ... with type constraints
 export const isSingleValueFilter = (f?: Filter): f is SingleValueFilterClause =>

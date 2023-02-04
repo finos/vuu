@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Filter } from "@finos/vuu-filter-types";
-import { FilterInput, FilterToolbar, updateFilter } from "@finos/vuu-filters";
+import {
+  FilterInput,
+  FilterToolbar,
+  updateFilter,
+  useFilterSuggestionProvider,
+} from "@finos/vuu-filters";
 
-import { useSuggestionProvider } from "./useSuggestionProvider";
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
@@ -29,7 +33,7 @@ export const DefaultFilterInput = () => {
   const [filter, setFilter] = useState<Filter>();
   const [filterQuery, setFilterQuery] = useState<string>("");
   const [filterName, setFilterName] = useState<string>("");
-  const suggestionProvider = useSuggestionProvider({
+  const suggestionProvider = useFilterSuggestionProvider({
     columns: schemaColumns,
     table,
   });
@@ -74,7 +78,7 @@ export const FilterInputWithToolbar = () => {
   const [filter, setFilter] = useState<Filter>();
   const [filterQuery, setFilterQuery] = useState<string>("");
   const [filterName, setFilterName] = useState<string>("");
-  const suggestionProvider = useSuggestionProvider({
+  const suggestionProvider = useFilterSuggestionProvider({
     columns: schemaColumns,
     table,
   });
