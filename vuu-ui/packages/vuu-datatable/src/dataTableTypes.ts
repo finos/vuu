@@ -44,6 +44,7 @@ export interface TableImplementationProps {
   onColumnResize?: TableColumnResizeHandler;
   onHeaderCellDragEnd?: () => void;
   onHeaderCellDragStart?: (evt: MouseEvent) => void;
+  onContextMenu?: (evt: MouseEvent<HTMLElement>) => void;
   onRemoveColumnFromGroupBy?: (column: KeyedColumnDescriptor) => void;
   onRowClick?: RowClickHandler;
   onSort: (column: KeyedColumnDescriptor, isAdditive: boolean) => void;

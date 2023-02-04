@@ -202,12 +202,12 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   );
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
-    vuuMenu: loadSession?.("vs-context-menu") as VuuMenu,
+    // vuuMenu: loadSession?.("vs-context-menu") as VuuMenu,
     dataSource,
-    onConfigChange: handleConfigChange,
+    // onConfigChange: handleConfigChange,
     onRpcResponse: handleRpcResponse,
-    visualLink: load?.("visual-link"),
-    visualLinks: loadSession?.("visual-links"),
+    // visualLink: load?.("visual-link"),
+    // visualLinks: loadSession?.("visual-links"),
   });
 
   const handleSubmitFilter = useCallback(

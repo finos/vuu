@@ -270,8 +270,8 @@ export const Viewport = forwardRef(function Viewport(
   }, [data, dataSource]);
 
   const showContextMenu = useContextMenu();
-  const handleContextMenu = (e: MouseEvent) => {
-    showContextMenu(e, "grid", contextMenuOptions);
+  const handleContextMenu = (evt: MouseEvent<HTMLElement>) => {
+    showContextMenu(evt, "grid", contextMenuOptions);
   };
 
   useImperativeHandle(forwardedRef, () => ({

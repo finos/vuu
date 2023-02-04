@@ -48,6 +48,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
   #range: VuuRange = { from: 0, to: 0 };
+  #selectedRowCount: number = 0;
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
   #title: string | undefined;
@@ -251,6 +252,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   select(selected: number[]) {
     console.log(`select [${selected.join(",")}]`);
+    this.#selectedRowCount = selected.length;
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
@@ -301,6 +303,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     } else {
       return undefined;
     }
+  }
+
+  get selectedRowCount() {
+    return this.#selectedRowCount;
   }
 
   get size() {

@@ -235,6 +235,7 @@ export interface DataSource extends IEventEmitter {
   removeLink: () => void;
   rowCount: number | undefined;
   select: (selected: number[]) => void;
+  readonly selectedRowsCount: number;
   readonly size: number;
   sort: VuuSort;
   subscribe: (

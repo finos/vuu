@@ -1,12 +1,11 @@
-import { ContextMenuProvider } from "@finos/vuu-popups";
+import { ContextMenuProvider, useContextMenu } from "@finos/vuu-popups";
 import { Button, useIdMemo } from "@salt-ds/core";
-import { CSSProperties, useCallback } from "react";
+import { CSSProperties, useMemo } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
 import { buildContextMenuDescriptors } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
 import { RowBasedTable } from "./RowBasedTable";
 import { useDataTable } from "./useDataTable";
-import { useDraggableColumn } from "./useDraggableColumn";
 
 import "./DataTable.css";
 
@@ -102,6 +101,18 @@ export const DataTable = ({
 
   const Table = tableLayout === "column" ? ColumnBasedTable : RowBasedTable;
 
+  const contextMenuOptions = useMemo(() => {
+    return {
+      selectedRowCount: dataSource.selectedRowsCount,
+      viewport: dataSource?.viewport,
+    };
+  }, [dataSource]);
+
+  const showContextMenu = useContextMenu();
+  const handleContextMenu = (e: MouseEvent) => {
+    showContextMenu(e, "grid", contextMenuOptions);
+  };
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleContextMenuAction}
@@ -142,6 +153,7 @@ export const DataTable = ({
                 {...tableProps}
                 columns={columns.filter((col, i) => i !== draggedItemIndex)}
                 headerHeight={headerHeight}
+                onContextMenu={handleContextMenu}
                 rowHeight={rowHeight}
                 valueFormatters={valueFormatters}
               />

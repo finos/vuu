@@ -18,6 +18,7 @@ export const RowBasedTable = ({
   headings,
   onColumnResize,
   onHeaderCellDragStart,
+  onContextMenu,
   onRemoveColumnFromGroupBy,
   onRowClick,
   onSort,
@@ -95,7 +96,7 @@ export const RowBasedTable = ({
           })}
         </tr>
       </thead>
-      <tbody>
+      <tbody onContextMenu={onContextMenu}>
         {data?.map((row, i) => (
           <TableRow
             columns={columns}
