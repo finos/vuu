@@ -6,8 +6,8 @@
   "private": true,
   "scripts": {
     "build": "vite build",
-    "preview": "vite preview",
-    "vite": "vite",
+    "preview": "node ./scripts/preview.mjs",
+    "showcase": "node ./scripts/showcase.mjs",
     "stories": "node ./scripts/parse-stories.mjs"
   },
   "keywords": [],
