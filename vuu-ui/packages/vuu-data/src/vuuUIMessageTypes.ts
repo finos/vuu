@@ -1,6 +1,7 @@
 import {
   ClientToServerTableList,
   ClientToServerTableMeta,
+  LinkDescriptorWithLabel,
   MenuRpcAction,
   TypeAheadMethod,
   VuuAggregation,
@@ -43,7 +44,7 @@ export interface ServerProxySubscribeMessage {
   table: VuuTable;
   title?: string;
   viewport: string;
-  visualLink?: DataSourceVisualLinkCreatedMessage;
+  visualLink?: LinkDescriptorWithLabel;
 }
 
 // export type VuuUIMessageInConnectionStatus = {
@@ -153,7 +154,7 @@ export interface VuuUIMessageOutCloseTreeNode extends ViewportMessageOut {
 export interface VuuUIMessageOutCreateLink extends ViewportMessageOut {
   childColumnName: string;
   parentColumnName: string;
-  parentVpId: string;
+  parentClientVpId: string;
   type: "createLink";
 }
 export interface VuuUIMessageOutRemoveLink extends ViewportMessageOut {

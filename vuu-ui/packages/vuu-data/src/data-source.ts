@@ -78,7 +78,7 @@ export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
 }
 
 export interface DataSourceMenusMessage extends MessageWithClientViewportId {
-  type: "VIEW_PORT_MENUS_RESP";
+  type: "vuu-menu";
   menu: VuuMenu;
 }
 
@@ -112,19 +112,27 @@ export interface DataSourceVisualLinkCreatedMessage
   colName: string;
   parentViewportId: string;
   parentColName: string;
-  type: "CREATE_VISUAL_LINK_SUCCESS";
+  type: "vuu-link-created";
 }
 
 export interface DataSourceVisualLinkRemovedMessage
   extends MessageWithClientViewportId {
-  type: "REMOVE_VISUAL_LINK_SUCCESS";
+  type: "vuu-link-removed";
 }
 
 export interface DataSourceVisualLinksMessage
   extends MessageWithClientViewportId {
-  type: "VP_VISUAL_LINKS_RESP";
+  type: "vuu-links";
   links: VuuLinkDescriptor[];
 }
+
+export type VuuFeatureMessage =
+  | DataSourceMenusMessage
+  | DataSourceVisualLinksMessage;
+
+export type VuuFeatureInvocationMessage =
+  | DataSourceVisualLinkCreatedMessage
+  | DataSourceVisualLinkRemovedMessage;
 
 export type DataSourceCallbackMessage =
   | DataSourceConfigMessage
@@ -146,12 +154,12 @@ const datasourceMessages = [
   "enabled",
   "filter",
   "groupBy",
-  "VIEW_PORT_MENUS_RESP",
+  "vuu-link-created",
+  "vuu-link-removed",
+  "vuu-links",
+  "vuu-menu",
   "sort",
   "subscribed",
-  "CREATE_VISUAL_LINK_SUCCESS",
-  "REMOVE_VISUAL_LINK_SUCCESS",
-  "VP_VISUAL_LINKS_RESP",
 ];
 
 export type ConfigChangeColumnsMessage = {
@@ -187,20 +195,15 @@ export interface DataSourceConfig {
   filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
+  visualLink?: LinkDescriptorWithLabel;
 }
 
-export interface DataSourceConstructorProps {
+export interface DataSourceConstructorProps extends DataSourceConfig {
   bufferSize?: number;
   table: VuuTable;
-  aggregations?: VuuAggregation[];
-  columns?: string[];
-  filter?: DataSourceFilter;
-  groupBy?: VuuGroupBy;
   onConfigChange?: (config: DataSourceConfig) => void;
-  sort?: VuuSort;
   title?: string;
   viewport?: string;
-  "visual-link"?: DataSourceVisualLinkCreatedMessage;
 }
 
 export interface SubscribeProps {
@@ -221,10 +224,8 @@ export interface DataSource extends IEventEmitter {
   closeTreeNode: (key: string) => void;
   columns: string[];
   readonly config: DataSourceConfig | undefined;
-  createLink: ({
-    parentVpId,
-    link: { fromColumn, toColumn },
-  }: LinkDescriptorWithLabel) => void;
+  enable?: () => void;
+  disable?: () => void;
   filter: DataSourceFilter;
   groupBy: VuuGroupBy;
   menuRpcCall: (
@@ -232,7 +233,6 @@ export interface DataSource extends IEventEmitter {
   ) => Promise<MenuRpcResponse | undefined>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
-  removeLink: () => void;
   rowCount: number | undefined;
   select: (selected: number[]) => void;
   readonly selectedRowsCount: number;
@@ -245,4 +245,5 @@ export interface DataSource extends IEventEmitter {
   title?: string;
   unsubscribe: () => void;
   viewport?: string;
+  visualLink?: LinkDescriptorWithLabel;
 }

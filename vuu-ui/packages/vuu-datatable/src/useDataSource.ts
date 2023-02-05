@@ -5,6 +5,10 @@ import {
   DataSourceRow,
   DataSourceSubscribedMessage,
   SubscribeCallback,
+  VuuFeatureMessage,
+  isVuuFeatureAction,
+  VuuFeatureInvocationMessage,
+  isVuuFeatureInvocation,
 } from "@finos/vuu-data";
 import { VuuDataRow, VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
@@ -29,6 +33,8 @@ const isConfigMessage = (
 export interface DataSourceHookProps {
   dataSource: DataSource;
   onConfigChange?: (message: DataSourceConfigMessage) => void;
+  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
   range?: VuuRange;
@@ -40,6 +46,8 @@ export interface DataSourceHookProps {
 export function useDataSource({
   dataSource,
   onConfigChange,
+  onFeatureEnabled,
+  onFeatureInvocation,
   onSizeChange,
   onSubscribed,
   range = { from: 0, to: 0 },
@@ -95,9 +103,23 @@ export function useDataSource({
         }
       } else if (isConfigMessage(message)) {
         onConfigChange?.(message);
+      } else if (isVuuFeatureAction(message)) {
+        onFeatureEnabled?.(message);
+      } else if (isVuuFeatureInvocation(message)) {
+        onFeatureInvocation?.(message);
+      } else {
+        console.log(`useDataSource unexpected message ${message.type}`);
       }
     },
-    [dataWindow, onConfigChange, onSizeChange, onSubscribed, setData]
+    [
+      dataWindow,
+      onConfigChange,
+      onFeatureEnabled,
+      onFeatureInvocation,
+      onSizeChange,
+      onSubscribed,
+      setData,
+    ]
   );
 
   useEffect(
@@ -154,10 +176,6 @@ export function useDataSource({
       },
       datasourceMessageHandler
     );
-
-    return () => {
-      dataSource?.unsubscribe();
-    };
   }, [dataSource, datasourceMessageHandler]);
 
   useEffect(() => {

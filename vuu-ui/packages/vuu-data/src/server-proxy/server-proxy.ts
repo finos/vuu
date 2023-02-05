@@ -34,7 +34,11 @@ import {
   VuuUIMessageOutColumns,
   VuuUIMessageOutSetTitle,
 } from "../vuuUIMessageTypes";
-import { DataSourceCallbackMessage } from "../data-source";
+import {
+  DataSourceCallbackMessage,
+  DataSourceVisualLinkCreatedMessage,
+  DataSourceVisualLinkRemovedMessage,
+} from "../data-source";
 import {
   isVuuMenuRpcRequest,
   stripRequestId,
@@ -79,13 +83,14 @@ function addLabelsToLinks(
   return links.map<LinkDescriptorWithLabel>((linkDescriptor) => {
     const { parentVpId } = linkDescriptor;
     const viewport = viewports.get(parentVpId);
-    if (viewport && viewport.title) {
+    if (viewport) {
       return {
         ...linkDescriptor,
+        parentClientVpId: viewport.clientViewportId,
         label: viewport.title,
       };
     } else {
-      return linkDescriptor;
+      throw Error("addLabelsToLinks viewport not found");
     }
   });
 }
@@ -358,15 +363,20 @@ export class ServerProxy {
   }
 
   private createLink(viewport: Viewport, message: VuuUIMessageOutCreateLink) {
-    const { parentVpId, parentColumnName, childColumnName } = message;
+    const { parentClientVpId, parentColumnName, childColumnName } = message;
     const requestId = nextRequestId();
-    const request = viewport.createLink(
-      requestId,
-      childColumnName,
-      parentVpId,
-      parentColumnName
-    );
-    this.sendMessageToServer(request, requestId);
+    const parentVpId = this.mapClientToServerViewport.get(parentClientVpId);
+    if (parentVpId) {
+      const request = viewport.createLink(
+        requestId,
+        childColumnName,
+        parentVpId,
+        parentColumnName
+      );
+      this.sendMessageToServer(request, requestId);
+    } else {
+      console.warn(`ServerProxy unable to create link, viewport not found`);
+    }
   }
 
   private removeLink(viewport: Viewport) {
@@ -431,7 +441,6 @@ export class ServerProxy {
           return;
         }
       } else {
-        console.log(`message ${message.type} from client ${message.viewport} `);
         const viewport = this.getViewportForClient(message.viewport);
         switch (message.type) {
           case "setViewRange":
@@ -712,7 +721,7 @@ export class ServerProxy {
               childColumnName,
               parentViewport.clientViewportId,
               parentColumnName
-            );
+            ) as DataSourceVisualLinkCreatedMessage;
             if (response) {
               this.postMessageToClient(response);
             }
@@ -724,7 +733,9 @@ export class ServerProxy {
         {
           const viewport = this.viewports.get(body.childVpId);
           if (viewport) {
-            const response = viewport.completeOperation(requestId);
+            const response = viewport.completeOperation(
+              requestId
+            ) as DataSourceVisualLinkRemovedMessage;
             if (response) {
               this.postMessageToClient(response);
             }
@@ -771,31 +782,39 @@ export class ServerProxy {
         }
         break;
 
-      case Message.VP_VISUAL_LINKS_RESP:
+      case "VP_VISUAL_LINKS_RESP":
         {
           const activeLinkDescriptors = this.getActiveLinks(body.links);
           const viewport = this.viewports.get(body.vpId);
           if (activeLinkDescriptors.length && viewport) {
-            const linksWithLabels = addLabelsToLinks(
+            const linkDescriptorsWithLabels = addLabelsToLinks(
               activeLinkDescriptors,
               this.viewports
             );
-            const [clientMessage, pendingLink] =
-              viewport.setLinks(linksWithLabels);
+            const [clientMessage, pendingLink] = viewport.setLinks(
+              linkDescriptorsWithLabels
+            );
             this.postMessageToClient(clientMessage);
             if (pendingLink) {
-              const { colName, parentViewportId, parentColName } = pendingLink;
+              const { link, parentClientVpId } = pendingLink;
               const requestId = nextRequestId();
               const serverViewportId =
-                this.mapClientToServerViewport.get(parentViewportId);
+                this.mapClientToServerViewport.get(parentClientVpId);
+              console.log(`ServerProxy, vp has a pending link`, {
+                pendingLink,
+              });
+
               if (serverViewportId) {
+                console.log("and we have the viewportId");
                 const message = viewport.createLink(
                   requestId,
-                  colName,
+                  link.fromColumn,
                   serverViewportId,
-                  parentColName
+                  link.toColumn
                 );
                 this.sendMessageToServer(message, requestId);
+              } else {
+                console.log("but we dont have the vp");
               }
             }
           }

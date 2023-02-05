@@ -14,6 +14,8 @@ import {
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
 } from "../data-source";
 import { MenuRpcResponse } from "../vuuUIMessageTypes";
 
@@ -36,13 +38,12 @@ const byContext = (menu1: VuuMenuItem, menu2: VuuMenuItem) => {
 
 export const isVisualLinksAction = (
   action: GridAction
-): action is DataSourceVisualLinksMessage =>
-  action.type === "VP_VISUAL_LINKS_RESP";
+): action is DataSourceVisualLinksMessage => action.type === "vuu-links";
 
 export const isVisualLinkCreatedAction = (
   action: GridAction
 ): action is DataSourceVisualLinkCreatedMessage =>
-  action.type === "CREATE_VISUAL_LINK_SUCCESS";
+  action.type === "vuu-link-created";
 
 export const isVisualLinkRemovedAction = (
   action: GridAction
@@ -51,7 +52,17 @@ export const isVisualLinkRemovedAction = (
 
 export const isViewportMenusAction = (
   action: GridAction
-): action is DataSourceMenusMessage => action.type === "VIEW_PORT_MENUS_RESP";
+): action is DataSourceMenusMessage => action.type === "vuu-menu";
+
+export const isVuuFeatureAction = (
+  action: GridAction
+): action is VuuFeatureMessage =>
+  isViewportMenusAction(action) || isVisualLinksAction(action);
+
+export const isVuuFeatureInvocation = (
+  action: GridAction
+): action is VuuFeatureInvocationMessage =>
+  action.type === "vuu-link-created" || action.type === "vuu-link-removed";
 
 const contextCompatibleWithLocation = (
   location: "grid" | "header" | "filter",
@@ -169,7 +180,10 @@ export const useVuuMenuActions = ({
         });
         return true;
       } else if (type === "link-table") {
-        return dataSource.createLink(options as LinkDescriptorWithLabel), true;
+        // return dataSource.createLink(options as LinkDescriptorWithLabel), true;
+        return (
+          (dataSource.visualLink = options as LinkDescriptorWithLabel), true
+        );
       } else {
         console.log(
           `useViewServer handleMenuAction,  can't handle action type ${type}`

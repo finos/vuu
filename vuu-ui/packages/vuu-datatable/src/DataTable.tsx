@@ -1,6 +1,6 @@
 import { ContextMenuProvider, useContextMenu } from "@finos/vuu-popups";
 import { Button, useIdMemo } from "@salt-ds/core";
-import { CSSProperties, useMemo } from "react";
+import { CSSProperties, MouseEvent, useCallback } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
 import { buildContextMenuDescriptors } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
@@ -20,6 +20,8 @@ export const DataTable = ({
   height,
   id: idProp,
   onConfigChange,
+  onFeatureEnabled,
+  onFeatureInvocation,
   onShowConfigEditor: onShowSettings,
   renderBufferSize = 0,
   rowHeight = 20,
@@ -51,6 +53,8 @@ export const DataTable = ({
     headerHeight,
     height,
     onConfigChange,
+    onFeatureEnabled,
+    onFeatureInvocation,
     rowHeight,
     selectionModel,
     tableLayout: tableLayoutProp,
@@ -101,17 +105,16 @@ export const DataTable = ({
 
   const Table = tableLayout === "column" ? ColumnBasedTable : RowBasedTable;
 
-  const contextMenuOptions = useMemo(() => {
-    return {
-      selectedRowCount: dataSource.selectedRowsCount,
-      viewport: dataSource?.viewport,
-    };
-  }, [dataSource]);
-
   const showContextMenu = useContextMenu();
-  const handleContextMenu = (e: MouseEvent) => {
-    showContextMenu(e, "grid", contextMenuOptions);
-  };
+  const handleContextMenu = useCallback(
+    (e: MouseEvent<HTMLElement>) => {
+      showContextMenu(e, "grid", {
+        selectedRowCount: dataSource.selectedRowsCount,
+        viewport: dataSource?.viewport,
+      });
+    },
+    [dataSource.selectedRowsCount, dataSource?.viewport, showContextMenu]
+  );
 
   return (
     <ContextMenuProvider

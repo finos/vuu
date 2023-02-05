@@ -14,7 +14,6 @@ import {
   DataSource,
   DataSourceCallbackMessage,
   DataSourceConstructorProps,
-  DataSourceVisualLinkCreatedMessage,
   SubscribeCallback,
   SubscribeProps,
   DataSourceConfig,
@@ -36,7 +35,6 @@ import { MenuRpcResponse } from "./vuuUIMessageTypes";
 export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private visualLink?: DataSourceVisualLinkCreatedMessage;
   private status = "initialising";
   private disabled = false;
   private suspended = false;
@@ -48,10 +46,11 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
   #range: VuuRange = { from: 0, to: 0 };
-  #selectedRowCount: number = 0;
+  #selectedRowsCount = 0;
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
   #title: string | undefined;
+  #visualLink: LinkDescriptorWithLabel | undefined;
 
   public rowCount: number | undefined;
   public table: VuuTable;
@@ -68,7 +67,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     table,
     title,
     viewport,
-    "visual-link": visualLink,
+    visualLink,
   }: DataSourceConstructorProps) {
     super();
 
@@ -79,7 +78,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.onConfigChange = onConfigChange;
     this.table = table;
     this.viewport = viewport;
-    this.visualLink = visualLink;
+
     if (aggregations) {
       this.#aggregations = aggregations;
     }
@@ -96,6 +95,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       this.#sort = sort;
     }
     this.#title = title;
+    this.#visualLink = visualLink;
   }
 
   async subscribe(
@@ -252,7 +252,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   select(selected: number[]) {
     console.log(`select [${selected.join(",")}]`);
-    this.#selectedRowCount = selected.length;
+    this.#selectedRowsCount = selected.length;
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
@@ -285,12 +285,13 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   get config() {
-    const { aggregations, columns, filter, groupBy, sort } = this;
+    const { aggregations, columns, filter, groupBy, sort, visualLink } = this;
     const hasAggregations = aggregations.length > 0;
     const hasColumns = columns.length > 0;
     const hasFilter = filter.filter !== "";
     const hasGroupBy = groupBy.length > 0;
     const hasSort = sort.sortDefs.length > 0;
+    const hasVisualLink = visualLink !== undefined;
 
     if (hasAggregations || hasColumns || hasFilter || hasGroupBy || hasSort) {
       const result: DataSourceConfig = {};
@@ -299,14 +300,15 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       hasFilter && (result.filter = filter);
       hasGroupBy && (result.groupBy = groupBy);
       hasSort && (result.sort = sort);
+      hasVisualLink && (result.visualLink = visualLink);
       return result;
     } else {
       return undefined;
     }
   }
 
-  get selectedRowCount() {
-    return this.#selectedRowCount;
+  get selectedRowsCount() {
+    return this.#selectedRowsCount;
   }
 
   get size() {
@@ -440,29 +442,40 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  createLink({
-    parentVpId,
-    link: { fromColumn, toColumn },
-  }: LinkDescriptorWithLabel) {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "createLink",
-        parentVpId: parentVpId,
-        // childVpId: this.serverViewportId,
-        parentColumnName: toColumn,
-        childColumnName: fromColumn,
-      });
-    }
+  get visualLink() {
+    return this.#visualLink;
   }
 
-  removeLink() {
-    if (this.viewport) {
-      this.server?.send({
-        type: "removeLink",
-        viewport: this.viewport,
-      });
+  set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {
+    this.#visualLink = visualLink;
+    console.log(`create visual link `, {
+      visualLink,
+    });
+
+    if (visualLink) {
+      const {
+        parentClientVpId,
+        link: { fromColumn, toColumn },
+      } = visualLink;
+
+      if (this.viewport) {
+        this.server?.send({
+          viewport: this.viewport,
+          type: "createLink",
+          parentClientVpId,
+          parentColumnName: toColumn,
+          childColumnName: fromColumn,
+        });
+      }
+    } else {
+      if (this.viewport) {
+        this.server?.send({
+          type: "removeLink",
+          viewport: this.viewport,
+        });
+      }
     }
+    this.onConfigChange?.(this.config as DataSourceConfig);
   }
 
   async menuRpcCall(rpcRequest: Omit<VuuMenuRpcRequest, "vpId">) {

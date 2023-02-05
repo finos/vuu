@@ -3,6 +3,8 @@ import {
   DataSourceConfigMessage,
   DataSourceRow,
   DataSourceSubscribedMessage,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
 } from "@finos/vuu-data";
 import {
   ColumnDescriptor,
@@ -40,6 +42,8 @@ export interface DataTableHookProps extends MeasuredProps {
   dataSource: DataSource;
   headerHeight: number;
   onConfigChange?: (config: Omit<GridConfig, "headings">) => void;
+  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   renderBufferSize?: number;
   rowHeight: number;
   selectionModel: TableSelectionModel;
@@ -92,6 +96,8 @@ export const useDataTable = ({
   dataSource,
   headerHeight,
   onConfigChange,
+  onFeatureEnabled,
+  onFeatureInvocation,
   renderBufferSize = 0,
   rowHeight,
   selectionModel,
@@ -196,6 +202,8 @@ export const useDataTable = ({
   const { data, range, setRange } = useDataSource({
     dataSource,
     onConfigChange: handleConfigChangeFromDataSource,
+    onFeatureEnabled,
+    onFeatureInvocation,
     onSubscribed,
     onSizeChange: onDataRowcountChange,
     renderBufferSize,

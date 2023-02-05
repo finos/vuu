@@ -1,4 +1,9 @@
-import { DataSource, DataSourceRow } from "@finos/vuu-data";
+import {
+  DataSource,
+  DataSourceRow,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
+} from "@finos/vuu-data";
 import {
   KeyedColumnDescriptor,
   GridConfig,
@@ -17,6 +22,17 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   headerHeight?: number;
   height?: number;
   onConfigChange?: (config: Omit<GridConfig, "headings">) => void;
+  /**
+   * Features like context menu actions and visual links are enabled by the Vuu server.
+   * This callback allows us to receive a notification when such a feature is available.
+   * The options provided must then be used to configure appropriate UI affordances.
+   */
+  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  /**
+   * When a Vuu feature e.g. context menu action, has been invoked, the Vuu server
+   * response must be handled. This callback provides that response.
+   */
+  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onShowConfigEditor?: () => void;
   renderBufferSize?: number;
   rowHeight?: number;

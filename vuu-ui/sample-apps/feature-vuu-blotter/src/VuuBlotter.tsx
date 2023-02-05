@@ -117,7 +117,7 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
   }, [dataSource, title]);
 
   const removeVisualLink = useCallback(() => {
-    dataSource.removeLink();
+    dataSource.visualLink = undefined;
   }, [dataSource]);
 
   const dispatchGridAction = useCallback(

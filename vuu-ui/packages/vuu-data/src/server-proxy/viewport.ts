@@ -26,6 +26,7 @@ import { KeySet } from "./keyset";
 import * as Message from "./messages";
 
 import {
+  DataSourceMenusMessage,
   DataSourceRow,
   DataSourceRowPredicate,
   DataSourceSubscribedMessage,
@@ -114,7 +115,7 @@ export class Viewport {
   private hasUpdates = false;
   private holdingPen: DataSourceRow[] = [];
   private keys: KeySet;
-  private pendingLinkedParent?: DataSourceVisualLinkCreatedMessage;
+  private pendingLinkedParent?: LinkDescriptorWithLabel;
   private pendingOperations: any = new Map<string, AsyncOperation>();
   private pendingRangeRequest: any = null;
   private rowCountChanged = false;
@@ -159,6 +160,9 @@ export class Viewport {
     this.table = table;
     this.sort = sort;
     this.title = title;
+    console.log(`Viewport constructor visualLink`, {
+      visualLink,
+    });
   }
 
   get hasUpdatesToProcess() {
@@ -300,7 +304,7 @@ export class Viewport {
       } as LinkedParent;
       this.pendingLinkedParent = undefined;
       return {
-        type: "CREATE_VISUAL_LINK_SUCCESS",
+        type: "vuu-link-created",
         clientViewportId,
         colName,
         parentViewportId,
@@ -309,7 +313,7 @@ export class Viewport {
     } else if (type === "REMOVE_VISUAL_LINK") {
       this.linkedParent = undefined;
       return {
-        type: "REMOVE_VISUAL_LINK_SUCCESS",
+        type: "vuu-link-removed",
         clientViewportId,
       } as DataSourceVisualLinkRemovedMessage;
     }
@@ -387,20 +391,17 @@ export class Viewport {
     this.links = links;
     return [
       {
-        type: "VP_VISUAL_LINKS_RESP",
+        type: "vuu-links",
         links,
         clientViewportId: this.clientViewportId,
       },
       this.pendingLinkedParent,
-    ] as [
-      DataSourceVisualLinksMessage,
-      DataSourceVisualLinkCreatedMessage | undefined
-    ];
+    ] as [DataSourceVisualLinksMessage, LinkDescriptorWithLabel | undefined];
   }
 
-  setMenu(menu: VuuMenu) {
+  setMenu(menu: VuuMenu): DataSourceMenusMessage {
     return {
-      type: "VIEW_PORT_MENUS_RESP" as const,
+      type: "vuu-menu",
       menu,
       clientViewportId: this.clientViewportId,
     };
