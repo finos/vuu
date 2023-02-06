@@ -33,7 +33,7 @@ const StatefulComponent = (initialState = "", style: React.CSSProperties | undef
 };
 
 
-const BuilderPalette = (props: any) => {
+const BuilderPalette = ({ props }) => {
   return (
     <Palette {...props}>
       <PaletteItem header resizeable closeable title="Blue Monday">
