@@ -65,7 +65,7 @@ const getCurrentColumn = (filters: any[], idx = 0): any | undefined => {
   return f.column;
 };
 
-const suggestedValues = (values: any[], text = '', isListItem = false) => {
+const suggestedValues = (values: string[], text = '', isListItem = false) => {
   const result = values
     .filter((value) => isListItem || value.toLowerCase().startsWith(text.toLowerCase()))
     .map((value) => ({
