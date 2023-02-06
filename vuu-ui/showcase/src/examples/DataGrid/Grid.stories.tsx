@@ -1,6 +1,6 @@
 import { Grid } from "@finos/vuu-datagrid";
 import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
-import { GridConfig } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
@@ -11,10 +11,18 @@ import {
   ToggleButtonGroupChangeEventHandler,
   Toolbar,
   ToolbarButton,
+  ToolbarField,
   Tooltray
 } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
-import { ReactElement, useCallback, useMemo, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  ReactElement,
+  useCallback,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 import { instrumentSchema } from "./columnMetaData";
 
@@ -28,15 +36,88 @@ export default {
 let displaySequence = 1;
 
 
+type GridBufferOptions = {
+  bufferSize: number;
+  renderBufferSize: number;
+};
+
 export const DefaultGrid = () => {
   const tables = useMemo(
     () => ["instruments", "orders", "parentOrders", "prices"],
     []
   );
+
+  const calculatedColumns: ColumnDescriptor[] = useMemo(
+    () => [
+      {
+        name: "notional",
+        expression: "=price*quantity",
+        serverDataType: "double",
+        type: {
+          name: "number",
+          formatting: {
+            decimals: 2,
+          },
+        },
+      },
+      {
+        name: "isBuy",
+        expression: '=if(side="Sell","N","Y")',
+        serverDataType: "char",
+      },
+      {
+        name: "CcySort",
+        expression: '=if(ccy="Gbp",1,if(ccy="USD",2,3))',
+        serverDataType: "char",
+        width: 60,
+      },
+      {
+        name: "CcyLower",
+        expression: "=lower(ccy)",
+        serverDataType: "string",
+        width: 60,
+      },
+      {
+        name: "AccountUpper",
+        expression: "=upper(account)",
+        label: "ACCOUNT",
+        serverDataType: "string",
+      },
+      {
+        name: "ExchangeCcy",
+        expression: '=concatenate("---", exchange,"...",ccy, "---")',
+        serverDataType: "string",
+      },
+      {
+        name: "ExchangeIsNY",
+        expression: '=starts(exchange,"N")',
+        serverDataType: "boolean",
+      },
+      // {
+      //   name: "Text",
+      //   expression: "=text(quantity)",
+      //   serverDataType: "string",
+      // },
+    ],
+    []
+  );
+
+  const [renderBufferSize, setRenderBufferSize] = useState<number | undefined>(
+    0
+  );
+  const [bufferSize, setBufferSize] = useState<number | undefined>(0);
+  const [gridBufferOptions, setGridBufferOptions] = useState<GridBufferOptions>(
+    {
+      bufferSize: 100,
+      renderBufferSize: 0,
+    }
+  );
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
   const { schemas } = useSchemas();
   const { columns, dataSource, error } = useTestDataSource({
+    bufferSize: gridBufferOptions.renderBufferSize,
+    calculatedColumns: selectedIndex === 2 ? calculatedColumns : undefined,
     schemas,
     tablename: tables[selectedIndex],
   });
@@ -72,6 +153,22 @@ export const DefaultGrid = () => {
     setDialogContent(null);
   }, []);
 
+  const handleRenderBufferSizeChange = useCallback((evt: ChangeEvent) => {
+    const value = parseInt((evt.target as HTMLInputElement).value || "-1");
+    if (Number.isFinite(value) && value > 0) {
+      setRenderBufferSize(value);
+    } else {
+      setBufferSize(undefined);
+    }
+  }, []);
+
+  const applyBufferSizes = useCallback(() => {
+    setGridBufferOptions({
+      bufferSize: bufferSize ?? 100,
+      renderBufferSize: renderBufferSize ?? 0,
+    });
+  }, [bufferSize, renderBufferSize]);
+
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
   }
@@ -100,12 +197,43 @@ export const DefaultGrid = () => {
         dataSource={dataSource}
         columns={columns}
         height={600}
+        key={String(gridBufferOptions.renderBufferSize)}
         selectionModel="extended"
         width={900}
+        {...gridBufferOptions}
       />
       <Dialog isOpen={dialogContent !== null} onClose={hideSettings}>
         {dialogContent}
       </Dialog>
+      <Toolbar style={{ marginTop: 12 }}>
+        <Tooltray>
+          <ToolbarField
+            label="Render Buffer Size"
+            labelPlacement="left"
+            style={{ width: 250 }}
+          >
+            <Input
+              value={String(renderBufferSize ?? "")}
+              onChange={handleRenderBufferSizeChange}
+              style={{ width: 80 }}
+              type="number"
+            />
+          </ToolbarField>
+          {/* <ToolbarField
+            label="Buffer Size"
+            labelPlacement="left"
+            style={{ width: 250 }}
+          >
+            <Input
+              value={String(bufferSize ?? "")}
+              onChange={handleBufferSizeChange}
+              style={{ width: 80 }}
+              type="number"
+            />
+          </ToolbarField> */}
+          <Button onClick={applyBufferSizes}>Apply</Button>
+        </Tooltray>
+      </Toolbar>
     </>
   );
 };
@@ -513,7 +641,7 @@ export const BufferVariations = () => {
 
   const handleSetRange = useCallback(() => {
     console.log(`setRange ${from} - ${to}`);
-    dataSource.setRange(from, to);
+    dataSource.range = { from, to };
   }, [dataSource, from, to]);
 
   if (error) {

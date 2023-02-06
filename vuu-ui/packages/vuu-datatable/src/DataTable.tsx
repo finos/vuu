@@ -1,6 +1,6 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { Button, useIdMemo } from "@salt-ds/core";
-import { CSSProperties, useCallback, useRef } from "react";
+import { CSSProperties, useCallback } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
 import { buildContextMenuDescriptors, useContextMenu } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
@@ -13,16 +13,17 @@ import "./DataTable.css";
 const classBase = "vuuDataTable";
 
 export const DataTable = ({
+  allowConfigEditing: showSettings = false,
+  className,
   config,
-  data: dataProp,
   dataSource,
   headerHeight = 25,
   height,
   id: idProp,
   onConfigChange,
   onShowConfigEditor: onShowSettings,
+  renderBufferSize = 0,
   rowHeight = 20,
-  allowConfigEditing: showSettings = false,
   style: styleProp,
   tableLayout: tableLayoutProp = "row",
   width,
@@ -34,7 +35,6 @@ export const DataTable = ({
     dispatchColumnAction,
     containerMeasurements: { containerRef, innerSize, outerSize },
     containerProps,
-    setRangeVertical,
     rowCount,
     scrollProps,
     valueFormatters,
@@ -42,8 +42,8 @@ export const DataTable = ({
     ...tableProps
   } = useDataTable({
     config,
-    data: dataProp,
     dataSource,
+    renderBufferSize,
     headerHeight,
     height,
     onConfigChange,
@@ -81,6 +81,7 @@ export const DataTable = ({
     "--content-width": `${viewportMeasurements.scrollContentWidth}px`,
     "--filler-height": `${viewportMeasurements.fillerHeight}px`,
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
+    "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
     "--header-height": `${headerHeight}px`,
     "--row-height": `${rowHeight}px`,
     "--scrollbar-size": `${viewportMeasurements.scrollbarSize}px`,

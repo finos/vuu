@@ -13,11 +13,13 @@ import { build } from "../../../scripts/esbuild.mjs";
 import fs from "fs";
 import path from "path";
 
-const entryPoints = ["index.tsx", "login.tsx"];
+const entryPoints = ["index.tsx", "login.tsx", "demo.tsx"];
 
 const outdir = "../../deployed_apps/app-vuu-example";
 let configFile = "./config/localhost.config.json";
 
+const websocketUrl = getCommandLineArg("--url", true);
+console.log(`websocket URL ${websocketUrl} type ${typeof websocketUrl}`);
 const watch = getCommandLineArg("--watch");
 const development = watch || getCommandLineArg("--dev");
 const configPath = getCommandLineArg("--config", true);
@@ -48,6 +50,9 @@ async function writeFeatureEntriesToConfigJson(featureBundles) {
   return new Promise((resolve, reject) => {
     console.log("[DEPLOY config]");
     const configJson = readJson(configFile);
+    if (websocketUrl) {
+      configJson.websocketUrl = websocketUrl;
+    }
     let { features } = configJson;
     if (features === undefined) {
       features = configJson.features = {};

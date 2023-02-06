@@ -1,69 +1,13 @@
 import { SchemaColumn, useTypeaheadSuggestions } from "@finos/vuu-data";
-import {
-  ColumnExpressionSuggestionType,
-  ISuggestionProvider2,
-  SuggestionType,
-} from "@finos/vuu-filters";
+import { ISuggestionProvider, SuggestionType } from "@finos/vuu-filters";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { useCallback, useRef } from "react";
 import { Completion } from "@codemirror/autocomplete";
 
-const withApplySpace = (suggestions: Completion[]): Completion[] =>
-  suggestions.map((suggestion) => ({
-    ...suggestion,
-    apply: suggestion.label + " ",
+const suggestColumns = (columns: SchemaColumn[]) =>
+  columns.map((column) => ({
+    label: column.name,
   }));
-
-const tableColumns: Completion[] = [
-  { label: "bbg", boost: 5 },
-  { label: "description", boost: 5 },
-  { label: "currency", boost: 5 },
-  { label: "exchange", boost: 5 },
-  { label: "lotSize", boost: 5 },
-  { label: "isin", boost: 5 },
-  { label: "ric", boost: 5 },
-];
-
-const functions: Completion[] = [
-  {
-    label: "concatenate",
-    apply: "concatenate( ",
-    boost: 2,
-    type: "function",
-  },
-  {
-    label: "max",
-    apply: "max( ",
-    boost: 2,
-    type: "function",
-  },
-  {
-    label: "min",
-    apply: "min( ",
-    boost: 2,
-    type: "function",
-  },
-  {
-    label: "text",
-    apply: "text( ",
-    boost: 2,
-    type: "function",
-  },
-  {
-    label: "right",
-    apply: "right( ",
-    boost: 2,
-    type: "function",
-  },
-  {
-    label: "left",
-    apply: "left( ",
-    boost: 2,
-    type: "function",
-  },
-];
-
-const expressions = withApplySpace(tableColumns).concat(functions);
 
 const doneCommand: Completion = {
   label: "Done",
@@ -71,6 +15,22 @@ const doneCommand: Completion = {
   type: "keyword",
   boost: 10,
 };
+const equalityOperators: Completion[] = [
+  { label: "=", boost: 10 },
+  { label: "!=", boost: 9 },
+];
+const stringOperators: Completion[] = [
+  ...equalityOperators,
+  { label: "in", boost: 6 },
+  { label: "starts", boost: 5 },
+  { label: "ends", boost: 4 },
+];
+
+const numericOperators: Completion[] = [
+  ...equalityOperators,
+  { label: ">", boost: 8 },
+  { label: "<", boost: 7 },
+];
 
 const toSuggestions = (
   values: string[],
@@ -83,6 +43,12 @@ const toSuggestions = (
     apply: `${prefix}${quote}${value}${quote} `,
   }));
 };
+
+const withApplySpace = (suggestions: Completion[]): Completion[] =>
+  suggestions.map((suggestion) => ({
+    ...suggestion,
+    apply: suggestion.label + " ",
+  }));
 
 const getTypeaheadParams = (
   table: VuuTable,
@@ -105,31 +71,33 @@ export interface SuggestionProviderHookProps {
 export const useSuggestionProvider = ({
   columns,
   table,
-}: SuggestionProviderHookProps): ISuggestionProvider2 => {
+}: SuggestionProviderHookProps): ISuggestionProvider => {
   const latestSuggestionsRef = useRef<Completion[]>();
   const getTypeaheadSuggestions = useTypeaheadSuggestions();
   const getSuggestions = useCallback(
     async (
-      valueType: ColumnExpressionSuggestionType,
+      valueType: SuggestionType,
       columnName?: string,
       startsWith?: string,
       selection?: string[]
     ): Promise<Completion[]> => {
-      // console.log("getSuggestions, using ", {
-      //   valueType,
-      //   columnName,
-      //   startsWith,
-      //   columns,
-      //   getTypeaheadSuggestions,
-      //   table,
-      //   selection,
-      // });
-
-      if (valueType === "expression") {
-        const suggestions = await expressions;
-        return (latestSuggestionsRef.current = suggestions);
+      if (valueType === "operator") {
+        const column = columns.find((col) => col.name === columnName);
+        if (column) {
+          switch (column.serverDataType) {
+            case "string":
+            case "char":
+              return withApplySpace(stringOperators);
+            case "int":
+            case "long":
+            case "double":
+              return withApplySpace(numericOperators);
+          }
+        } else {
+          console.warn(`'${columnName}' does not match any column name`);
+        }
       } else if (valueType === "column") {
-        const suggestions = await tableColumns;
+        const suggestions = await suggestColumns(columns);
         return (latestSuggestionsRef.current = withApplySpace(suggestions));
       } else if (columnName) {
         const column = columns.find((col) => col.name === columnName);

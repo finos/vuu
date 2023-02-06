@@ -3,7 +3,6 @@ import { KeyedColumnDescriptor, PinLocation } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { ContextMenuItemDescriptor, MenuBuilder } from "@finos/vuu-popups";
 import { isNumericColumn } from "@finos/vuu-utils";
-import { MenuDescriptor } from "@heswell/salt-lab";
 
 export type ContextMenuLocation = "header" | "filter" | "grid";
 

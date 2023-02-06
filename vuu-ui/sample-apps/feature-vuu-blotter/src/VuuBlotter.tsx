@@ -5,18 +5,29 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSuggestionProvider } from "./useSuggestionProvider";
+import { GridAction } from "@finos/vuu-datagrid-types";
+import {
+  isViewportMenusAction,
+  isVisualLinkCreatedAction,
+  isVisualLinkRemovedAction,
+  isVisualLinksAction,
+} from "@finos/vuu-data";
 
 import {
   ConfigChangeMessage,
-  DataSourceMenusMessage,
   DataSourceVisualLinkCreatedMessage,
-  DataSourceVisualLinksMessage,
+  MenuActionConfig,
   RemoteDataSource,
   TableSchema,
   useVuuMenuActions,
 } from "@finos/vuu-data";
 import { Grid, GridProvider } from "@finos/vuu-datagrid";
-import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
+import {
+  LinkDescriptorWithLabel,
+  VuuGroupBy,
+  VuuMenu,
+  VuuSort,
+} from "@finos/vuu-protocol-types";
 import { ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
 
@@ -61,10 +72,9 @@ const applyDefaults = (
 };
 
 const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
-  const { id, dispatch, load, purge, save, loadSession, saveSession } =
+  const { id, dispatch, load, purge, save, loadSession, saveSession, title } =
     useViewContext();
   const config = useMemo(() => load?.() as BlotterConfig | undefined, [load]);
-  console.log({ config });
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
   const [currentFilter, setCurrentFilter] = useState<Filter>();
 
@@ -84,10 +94,14 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
       table: schema.table,
       ...config,
       columns,
+      title,
     });
     saveSession?.(ds, "data-source");
     return ds;
-  }, [config, id, loadSession, saveSession, schema]);
+    // Note: despite the dependency array, because we load dataStore from session
+    // after initial load, changes to the following dependencies will not cause
+    // us to create a new dataSource, which is correct.
+  }, [config, id, loadSession, saveSession, schema, title]);
 
   useEffect(() => {
     dataSource.enable();
@@ -96,46 +110,52 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
     };
   }, [dataSource]);
 
+  useEffect(() => {
+    if (title !== dataSource.title) {
+      dataSource.title = title;
+    }
+  }, [dataSource, title]);
+
   const removeVisualLink = useCallback(() => {
     dataSource.removeLink();
   }, [dataSource]);
 
+  const dispatchGridAction = useCallback(
+    (action: GridAction) => {
+      if (isVisualLinksAction(action)) {
+        saveSession?.(action.links, "visual-links");
+        return true;
+      } else if (isVisualLinkCreatedAction(action)) {
+        dispatch?.({
+          type: "add-toolbar-contribution",
+          location: "post-title",
+          content: (
+            <ToolbarButton aria-label="remove-link" onClick={removeVisualLink}>
+              <LinkedIcon />
+            </ToolbarButton>
+          ),
+        });
+        save?.(action, "visual-link");
+        return true;
+      } else if (isVisualLinkRemovedAction(action)) {
+        dispatch?.({
+          type: "remove-toolbar-contribution",
+          location: "post-title",
+        });
+        purge?.("visual-link");
+        return true;
+      } else if (isViewportMenusAction(action)) {
+        saveSession?.(action.menu, "vs-context-menu");
+        return true;
+      }
+      return false;
+    },
+    [dispatch, purge, removeVisualLink, save, saveSession]
+  );
+
   const handleConfigChange = useCallback(
-    (
-      update:
-        | ConfigChangeMessage
-        | DataSourceMenusMessage
-        | DataSourceVisualLinksMessage
-    ) => {
+    (update: ConfigChangeMessage) => {
       switch (update.type) {
-        case "CREATE_VISUAL_LINK_SUCCESS":
-          {
-            dispatch?.({
-              type: "add-toolbar-contribution",
-              location: "post-title",
-              content: (
-                <ToolbarButton
-                  aria-label="remove-link"
-                  onClick={removeVisualLink}
-                >
-                  <LinkedIcon />
-                </ToolbarButton>
-              ),
-            });
-            save?.(update, "visual-link");
-          }
-          break;
-
-        case "REMOVE_VISUAL_LINK_SUCCESS":
-          {
-            dispatch?.({
-              type: "remove-toolbar-contribution",
-              location: "post-title",
-            });
-            purge?.("visual-link");
-          }
-          break;
-
         default:
           for (const [key, state] of Object.entries(update)) {
             if (CONFIG_KEYS.includes(key)) {
@@ -144,16 +164,31 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
           }
       }
     },
-    [dispatch, purge, removeVisualLink, save]
+    [save]
   );
 
-  console.log(`call useVuuMenuActions`);
-  const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction } =
-    useVuuMenuActions({
-      dataSource,
-      onConfigChange: handleConfigChange,
-      onRpcResponse: handleRpcResponse,
-    });
+  // It is important that these values are not assigned in advance. They
+  // are accessed at the point of construction of ContextMenu
+  const menuActionConfig: MenuActionConfig = useMemo(
+    () => ({
+      get visualLink() {
+        return load?.("visual-link") as DataSourceVisualLinkCreatedMessage;
+      },
+      get visualLinks() {
+        return loadSession?.("visual-links") as LinkDescriptorWithLabel[];
+      },
+      get vuuMenu() {
+        return loadSession?.("vs-context-menu") as VuuMenu;
+      },
+    }),
+    [load, loadSession]
+  );
+
+  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+    dataSource,
+    menuActionConfig,
+    onRpcResponse: handleRpcResponse,
+  });
 
   const handleSubmitFilter = useCallback(
     (
@@ -198,7 +233,6 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
               {...props}
               columnSizing="fill"
               dataSource={dataSource}
-              aggregations={config?.aggregations}
               columns={columns}
               onConfigChange={handleConfigChange}
               renderBufferSize={80}

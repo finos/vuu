@@ -17,10 +17,10 @@ export declare type TypeFormatting = {
   zeroPad?: boolean;
 };
 
-export declare type ColumnTypeSimple = "string" | "number";
+export declare type ColumnTypeSimple = "string" | "number" | "boolean";
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
-  name: string;
+  name: ColumnTypeSimple;
   renderer?: {
     associatedField?: string;
     flashStyle?: "bg-only" | "arrow-bg" | "arrow";
@@ -40,6 +40,7 @@ export interface ColumnDescriptor {
   aggregate?: VuuAggType;
   align?: "left" | "right";
   className?: string;
+  editable?: boolean;
   expression?: string;
   flex?: number;
   heading?: [...string[]];
@@ -60,7 +61,7 @@ export interface ColumnDescriptor {
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   className?: string;
-  endPin?: true;
+  endPin?: true | undefined;
   filter?: Filter;
   flex?: number;
   heading?: [...string[]];
@@ -73,7 +74,7 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
   moving?: boolean;
   /** used only when column is a child of GroupColumn  */
   originalIdx?: number;
-  pinnedLeftOffset?: number;
+  pinnedOffset?: number;
   resizeable?: boolean;
   resizing?: boolean;
   sortable?: boolean;
@@ -97,3 +98,20 @@ export interface Heading {
   resizing?: boolean;
   width: number;
 }
+
+// These are the actions that eventually get routed to the DataSource itself
+export type DataSourceAction =
+  | GridActionCloseTreeNode
+  | GridActionGroup
+  | GridActionOpenTreeNode
+  | GridActionSort;
+
+export type ScrollAction =
+  | GridActionScrollEndHorizontal
+  | GridActionScrollStartHorizontal;
+
+export type GridAction =
+  | DataSourceAction
+  | ScrollAction
+  | GridActionResizeCol
+  | GridActionSelection;

@@ -1,10 +1,10 @@
 package org.finos.vuu.core.filter
 
+import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.finos.vuu.core.sort.AntlrBasedFilter
 import org.finos.vuu.core.sort.FilterAndSortFixture._
 import org.finos.vuu.core.table.{RowWithData, SimpleDataTable, ViewPortColumnCreator}
 import org.finos.vuu.grammer.{FilterLexer, FilterParser}
-import org.antlr.v4.runtime.{ANTLRInputStream, CommonTokenStream}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -14,7 +14,7 @@ class FilterGrammerTest extends AnyFeatureSpec with Matchers {
 
     def parse(s: String): Unit = {
 
-      val input = new ANTLRInputStream(s)
+      val input = CharStreams.fromString(s)
       val lexer = new FilterLexer(input)
       val tokens = new CommonTokenStream(lexer)
       val parser = new FilterParser(tokens)
@@ -28,7 +28,7 @@ class FilterGrammerTest extends AnyFeatureSpec with Matchers {
 
       println("========")
 
-      val input = new ANTLRInputStream(s)
+      val input = CharStreams.fromString(s)
       val  lexer = new FilterLexer(input)
       val  tokens = new CommonTokenStream(lexer)
       val parser = new FilterParser(tokens)
@@ -44,13 +44,13 @@ class FilterGrammerTest extends AnyFeatureSpec with Matchers {
 
     def doFilter(clause: FilterClause, table: SimpleDataTable) = {
 
-      val filter = new AntlrBasedFilter(clause)
-
-      val result = filter.dofilter(table, table.primaryKeys)
-
       val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
 
-      val asTable = result.toArray.map( key => ( (key, table.pullRow(key, vpColumns).asInstanceOf[RowWithData] ) ) ).toList
+      val filter = AntlrBasedFilter(clause)
+
+      val result = filter.dofilter(table, table.primaryKeys, vpColumns)
+
+      val asTable = result.toArray.map( key =>  (key, table.pullRow(key, vpColumns).asInstanceOf[RowWithData]  ) ).toList
 
       asTable
     }

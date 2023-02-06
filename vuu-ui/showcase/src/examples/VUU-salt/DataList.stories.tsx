@@ -155,7 +155,7 @@ export const DefaultList = () => {
   }, []);
 
   const setDataSourceRange = useCallback(() => {
-    dataSource.setRange(rangeFrom, rangeTo);
+    dataSource.range = { from: rangeFrom, to: rangeTo };
   }, [dataSource, rangeFrom, rangeTo]);
 
   const scrollToPos = useCallback(() => {

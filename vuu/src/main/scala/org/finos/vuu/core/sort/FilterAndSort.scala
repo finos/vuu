@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.{Filter, FilterClause, NoFilter}
 import org.finos.vuu.core.index._
 import org.finos.vuu.core.table.{Column, DataType, ViewPortColumnCreator}
-import org.finos.vuu.viewport.{RowSource, ViewPortVisualLink}
+import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 import org.finos.toolbox.collection.array.ImmutableArray
 
 case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Filter {
@@ -55,7 +55,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     ImmutableArray.from(filtered)
   }
 
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
 
     val parentSelectionKeys = viewPortVisualLink.parentVp.getSelection
     val parentColumn = viewPortVisualLink.parentColumn
@@ -68,11 +68,11 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
 }
 
 case class TwoStepCompoundFilter(first: Filter, second: Filter) extends Filter with StrictLogging {
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
 
-    val firstStep = first.dofilter(source, primaryKeys)
+    val firstStep = first.dofilter(source, primaryKeys, vpColumns)
 
-    val secondStep = second.dofilter(source, firstStep)
+    val secondStep = second.dofilter(source, firstStep, vpColumns)
 
     secondStep
   }
@@ -80,12 +80,12 @@ case class TwoStepCompoundFilter(first: Filter, second: Filter) extends Filter w
 
 case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogging {
 
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
 
     val pks = primaryKeys.toArray
 
     logger.debug(s"starting filter with ${pks.length}")
-    val filtered = clause.filterAll(source: RowSource, primaryKeys: ImmutableArray[String])
+    val filtered = clause.filterAll(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns)
     logger.debug(s"complete filter with ${filtered.length}")
     filtered
   }
@@ -93,17 +93,17 @@ case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogg
 
 
 trait FilterAndSort {
-  def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String]
+  def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns): ImmutableArray[String]
   def filter: Filter
   def sort: Sort
 }
 
 case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAndSort with StrictLogging {
 
-  override def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns): ImmutableArray[String] = {
     try {
-      val filteredKeys = filter.dofilter(source, primaryKeys)
-      val sortedKeys = sort.doSort(source, filteredKeys)
+      val filteredKeys = filter.dofilter(source, primaryKeys, vpColumns)
+      val sortedKeys = sort.doSort(source, filteredKeys, vpColumns)
       logger.debug("sorted")
       sortedKeys
     } catch {
@@ -122,7 +122,7 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
 
 class NoFilterNoSort() extends FilterAndSort {
 
-  override def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  override def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     primaryKeys
   }
   override def filter: Filter = NoFilter

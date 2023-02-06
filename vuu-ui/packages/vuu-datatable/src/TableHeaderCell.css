@@ -41,3 +41,25 @@
     --columnResizer-height: var(--table-height);
     --columnResizer-width: 2px;
   }
+
+  .vuuTable-headerCell.vuuPinLeft.vuuEndPin:after {
+    box-shadow: 2px 0px 5px rgba(0,0,0,0.4);
+    content: "";
+    position: absolute;
+    width: 1px;
+    background-color: transparent;
+    height: var(--table-height);
+    top:0;
+    right: 0px;
+  }
+
+  .vuuTable-headerCell.vuuPinRight.vuuEndPin:after {
+    box-shadow: -2px 0px 5px rgba(0,0,0,0.3);
+    content: "";
+    position: absolute;
+    width: 1px;
+    background-color: transparent;
+    height: var(--table-height);
+    top:0;
+    left: 0px;
+  }

@@ -1,33 +1,43 @@
-import { defaultKeymap } from "@codemirror/commands";
-import { ensureSyntaxTree } from "@codemirror/language";
-import { EditorState } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
-import { MutableRefObject, useEffect, useMemo, useRef } from "react";
-import { minimalSetup } from "./codemirror-basic-setup";
-import { columnExpressionLanguageSupport } from "./column-language-parser";
-import { vuuHighlighting } from "./highlighting";
-import { vuuTheme } from "./theme";
-import { walkExpressionTree } from "./column-language-parser/walkExpressionTree";
-import { Expression } from "./column-language-parser/Expression";
 import {
   autocompletion,
   Completion,
   startCompletion,
 } from "@codemirror/autocomplete";
+import { defaultKeymap } from "@codemirror/commands";
+import { ensureSyntaxTree } from "@codemirror/language";
+import { EditorState } from "@codemirror/state";
+import { EditorView, keymap } from "@codemirror/view";
+import { createEl } from "@finos/vuu-utils";
+import { MutableRefObject, useEffect, useMemo, useRef } from "react";
+import { minimalSetup } from "./codemirror-basic-setup";
+import { columnExpressionLanguageSupport } from "./column-language-parser";
+import { Expression } from "./column-language-parser/Expression";
+import { walkExpressionTree } from "./column-language-parser/walkExpressionTree";
+import { vuuHighlighting } from "./highlighting";
+import { vuuTheme } from "./theme";
 import {
   ApplyCompletion,
   useColumnAutoComplete,
 } from "./useColumnAutoComplete";
 
-export type ColumnExpressionSuggestionType = "column" | "expression";
+export type ColumnExpressionOperator = "Times" | "Divide" | "Minus" | "Plus";
+
+export type ColumnExpressionSuggestionType =
+  | "column"
+  | "expression"
+  | "operator";
 
 // TODO move this somewhere neutral
-export interface ISuggestionProvider2 {
+export interface IExpressionSuggestionProvider {
   getSuggestions: (
     valueType: ColumnExpressionSuggestionType,
-    columnName?: string,
-    startsWith?: string,
-    selection?: string[]
+    options?: {
+      columnName?: string;
+      operator?: ColumnExpressionOperator;
+      functionName?: string;
+      startsWith?: string;
+      selection?: string[];
+    }
   ) => Promise<Completion[]>;
   isPartialMatch: (
     valueType: ColumnExpressionSuggestionType,
@@ -37,7 +47,7 @@ export interface ISuggestionProvider2 {
 }
 
 export interface SuggestionConsumer2 {
-  suggestionProvider: ISuggestionProvider2;
+  suggestionProvider: IExpressionSuggestionProvider;
 }
 
 const getView = (ref: MutableRefObject<EditorView | undefined>): EditorView => {
@@ -53,12 +63,28 @@ const getOptionClass = (/*completion: Completion*/) => {
 
 const noop = () => console.log("noooop");
 
+const hasExpressionType = (
+  completion: Completion
+): completion is Completion & { expressionType: string } =>
+  "expressionType" in completion;
+
+const injectOptionContent = (completion: Completion, state: EditorState) => {
+  if (hasExpressionType(completion)) {
+    const div = createEl("div", "steve-type");
+    const span = createEl("span", "expression-type", completion.expressionType);
+    div.appendChild(span);
+    return div;
+  } else {
+    return null;
+  }
+};
+
 export interface ColumnExpressionEditorProps {
   onSubmitExpression?: (
     expression: Expression | undefined,
     source: string
   ) => void;
-  suggestionProvider: ISuggestionProvider2;
+  suggestionProvider: IExpressionSuggestionProvider;
 }
 
 export const useColumnExpressionEditor = ({
@@ -123,6 +149,12 @@ export const useColumnExpressionEditor = ({
         extensions: [
           minimalSetup,
           autocompletion({
+            addToOptions: [
+              {
+                render: injectOptionContent,
+                position: 70,
+              },
+            ],
             override: [completionFn],
             optionClass: getOptionClass,
           }),

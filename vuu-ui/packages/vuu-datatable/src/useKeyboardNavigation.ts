@@ -1,21 +1,27 @@
 import { DataSourceRow } from "@finos/vuu-data";
+import { VuuRange } from "@finos/vuu-protocol-types";
+import { withinRange } from "@finos/vuu-utils";
 import {
   KeyboardEvent,
   MouseEvent,
   RefObject,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
 } from "react";
 import {
   ArrowDown,
+  ArrowKey,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
   End,
   Home,
   isNavigationKey,
+  isPagingKey,
+  NavigationKey,
   PageDown,
   PageUp,
 } from "./keyUtils";
@@ -28,12 +34,12 @@ const dataCellQuery = (rowIdx: number, colIdx: number) =>
   `tbody > tr[data-idx='${rowIdx}'] > td:nth-child(${colIdx + 1})`;
 
 function nextCellPos(
-  key: string,
+  key: ArrowKey,
   [rowIdx, colIdx]: CellPos,
   columnCount: number,
   rowCount: number
 ): CellPos {
-  if (key === ArrowUp || key === End) {
+  if (key === ArrowUp) {
     if (rowIdx > -1) {
       return [rowIdx - 1, colIdx];
     } else {
@@ -69,6 +75,7 @@ export interface NavigationHookProps {
   data: DataSourceRow[];
   disableHighlightOnFocus?: boolean;
   label?: string;
+  viewportRange: VuuRange;
   requestScroll?: ScrollRequestHandler;
   restoreLastFocus?: boolean;
   rowCount?: number;
@@ -82,7 +89,9 @@ export const useKeyboardNavigation = ({
   data,
   requestScroll,
   rowCount = 0,
+  viewportRange,
 }: NavigationHookProps) => {
+  const { from: viewportFirstRow, to: viewportLastRow } = viewportRange;
   const focusedCellPos = useRef<CellPos>([-1, -1]);
   const focusableCell = useRef<HTMLTableCellElement>();
   const activeCellPos = useRef<CellPos>([-1, 0]);
@@ -128,10 +137,15 @@ export const useKeyboardNavigation = ({
             activeCell.setAttribute("tabindex", "0");
           }
           activeCell.focus();
+        } else if (!withinRange(cellPos[0], viewportRange)) {
+          focusableCell.current = undefined;
+          requestScroll?.({ type: "scroll-page", direction: "up" });
         }
       }
     },
-    [containerRef, getTableCell]
+    // TODO we recreate this function whenever viewportRange changes, which will
+    // be often whilst scrolling - store range in a a ref ?
+    [containerRef, getTableCell, requestScroll, viewportRange]
   );
 
   const setActiveCell = useCallback(
@@ -145,6 +159,11 @@ export const useKeyboardNavigation = ({
     },
     [focusCell]
   );
+
+  const virtualizeActiveCell = useCallback(() => {
+    focusableCell.current?.setAttribute("tabindex", "");
+    focusableCell.current = undefined;
+  }, []);
 
   const nextPageItemIdx = useCallback(
     async (
@@ -187,19 +206,13 @@ export const useKeyboardNavigation = ({
   }, [disableHighlightOnFocus, containerRef]);
 
   const navigateChildItems = useCallback(
-    async (e: KeyboardEvent) => {
-      const [nextRowIdx, nextColIdx] =
-        e.key === PageDown ||
-        e.key === PageUp ||
-        e.key === End ||
-        e.key === Home
-          ? await nextPageItemIdx(e.key, activeCellPos.current)
-          : nextCellPos(e.key, activeCellPos.current, columnCount, rowCount);
+    async (key: NavigationKey) => {
+      const [nextRowIdx, nextColIdx] = isPagingKey(key)
+        ? await nextPageItemIdx(key, activeCellPos.current)
+        : nextCellPos(key, activeCellPos.current, columnCount, rowCount);
 
-      if (
-        nextRowIdx !== activeCellPos.current[0] ||
-        nextColIdx !== activeCellPos.current[1]
-      ) {
+      const [rowIdx, colIdx] = activeCellPos.current;
+      if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
         setActiveCell(nextRowIdx, nextColIdx, true);
       }
     },
@@ -208,10 +221,10 @@ export const useKeyboardNavigation = ({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (data.length > 0 && isNavigationKey(e)) {
+      if (data.length > 0 && isNavigationKey(e.key)) {
         e.preventDefault();
         e.stopPropagation();
-        void navigateChildItems(e);
+        void navigateChildItems(e.key);
       }
     },
     [data, navigateChildItems]
@@ -234,6 +247,18 @@ export const useKeyboardNavigation = ({
       onKeyDown: handleKeyDown,
     };
   }, [handleClick, handleFocus, handleKeyDown]);
+
+  useLayoutEffect(() => {
+    const { current: cellPos } = activeCellPos;
+    const withinViewport =
+      cellPos[0] >= viewportFirstRow && cellPos[0] <= viewportLastRow;
+
+    if (focusableCell.current && !withinViewport) {
+      virtualizeActiveCell();
+    } else if (!focusableCell.current && withinViewport) {
+      focusCell(cellPos);
+    }
+  }, [focusCell, viewportFirstRow, viewportLastRow, virtualizeActiveCell]);
 
   // First render will only render the outer container when explicit
   // sizing has not been provided. Outer container is measured and

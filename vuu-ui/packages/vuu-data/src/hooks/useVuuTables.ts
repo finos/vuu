@@ -4,7 +4,7 @@ import {
   VuuTableMeta,
 } from "@finos/vuu-protocol-types";
 import { useCallback, useEffect, useState } from "react";
-import { serverAPI } from "../connection-manager";
+import { getServerAPI } from "../connection-manager";
 
 export type SchemaColumn = {
   name: string;
@@ -16,11 +16,15 @@ export type TableSchema = {
   table: VuuTable;
 };
 
+export interface VuuTableMetaWithTable extends VuuTableMeta {
+  table: VuuTable;
+}
+
 const createSchemaFromTableMetadata = ({
   columns,
   dataTypes,
   table,
-}: VuuTableMeta): TableSchema => {
+}: VuuTableMetaWithTable): TableSchema => {
   return {
     table,
     columns: columns.map((col, idx) => ({
@@ -33,7 +37,7 @@ const createSchemaFromTableMetadata = ({
 export const useVuuTables = () => {
   const [tables, setTables] = useState<Map<string, TableSchema> | undefined>();
 
-  const buildTables = useCallback((schemas: VuuTableMeta[]) => {
+  const buildTables = useCallback((schemas: VuuTableMetaWithTable[]) => {
     const vuuTables = new Map<string, TableSchema>();
     schemas.forEach((schema) => {
       vuuTables.set(schema.table.table, createSchemaFromTableMetadata(schema));
@@ -43,7 +47,7 @@ export const useVuuTables = () => {
 
   useEffect(() => {
     async function fetchTableMetadata() {
-      const server = await serverAPI;
+      const server = await getServerAPI();
       const { tables } = await server.getTableList();
       const tableSchemas = buildTables(
         await Promise.all(

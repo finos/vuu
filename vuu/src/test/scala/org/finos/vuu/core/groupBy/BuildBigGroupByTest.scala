@@ -3,7 +3,7 @@ package org.finos.vuu.core.groupBy
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.tree.TreeSessionTable
-import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
+import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.JoinTableProviderImpl
 import org.finos.vuu.viewport.{GroupBy, TreeBuilder}
@@ -22,8 +22,8 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
     ignore("create big group by and build table"){
 
       implicit val clock: Clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
-      implicit val metrics = new MetricsProviderImpl
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
       val joinProvider   = JoinTableProviderImpl()// new EsperJoinTableProviderImpl()
 
@@ -57,7 +57,9 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val exchange = table.getTableDef.columnForName("exchange")
 
-      val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None, None)
+      val columns = ViewPortColumnCreator.create(groupByTable, groupByTable.columns().map(_.name).toList)
+
+      val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, None, None)
 
       logger.info("Starting tree build")
 
@@ -65,7 +67,7 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       logger.info(s"Complete tree build in $millis ms")
 
-      val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), None, None)
+      val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = C"), columns, None, None)
 
       val (sizeMillis, _) = timeIt{ groupByTable.size() }
 

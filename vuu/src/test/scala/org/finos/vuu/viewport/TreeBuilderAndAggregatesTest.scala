@@ -6,6 +6,7 @@ import org.finos.vuu.provider.MockProvider
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.DefaultClock
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -16,7 +17,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
   Feature("check tree building"){
 
-    def tickData(ordersProvider: MockProvider, pricesProvider: MockProvider) = {
+    def tickData(ordersProvider: MockProvider, pricesProvider: MockProvider): Unit = {
 
       ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
       ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 200, "ric" -> "VOD.L"))
@@ -33,8 +34,8 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
     }
 
     Scenario("Test average aggregate"){
-      implicit val clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
+      implicit val clock: DefaultClock = new DefaultClock
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -47,22 +48,26 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
 
-      val tree = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
+
+      val tree = TreeBuilder.create(sessionTable,
+        GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
+        columns,
         None,
         None
       ).build()
 
-      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("450.0")
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("300.0")
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("700.0")
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(450.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(300.0)
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(700.0)
     }
 
     Scenario("Test high"){
-      implicit val clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
+      implicit val clock: DefaultClock = new DefaultClock
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -75,22 +80,26 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
 
-      val tree = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
+
+      val tree = TreeBuilder.create(sessionTable,
+        GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
         .withHigh("quantity")
         .asClause(),
         FilterSpec(""),
+        columns,
         None,
         None
       ).build()
 
-      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("1000.0")
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("500.0")
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("1000.0")
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(1000.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(500.0)
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(1000.0)
     }
 
     Scenario("Test low"){
-      implicit val clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
+      implicit val clock: DefaultClock = new DefaultClock
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -103,23 +112,27 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
 
-      val tree = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
+
+      val tree = TreeBuilder.create(sessionTable,
+        GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
         .withLow("quantity")
         .asClause(),
         FilterSpec(""),
+        columns,
         None,
         None
       ).build()
 
-      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("100.0")
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("100.0")
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("500.0")
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(100.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(100.0)
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(500.0)
     }
 
     Scenario("build simple groupby tree"){
 
-      implicit val clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
+      implicit val clock: DefaultClock = new DefaultClock
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
@@ -132,23 +145,27 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B"), joinProvider)
 
-      val tree = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
+
+      val tree = TreeBuilder.create(sessionTable,
+        GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
         .withSum("quantity")
         .withCount("trader")
         .asClause(),
         FilterSpec(""),
+        columns,
         None,
         None
       ).build()
 
-      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal("3600.0")
-      tree.root.getAggregationFor(orderPrices.columnForName("trader")) should equal("2")
+      tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(3600.0)
+      tree.root.getAggregationFor(orderPrices.columnForName("trader")) should equal(2)
 
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("quantity")) should equal("1500.0")
-      tree.root.getChildren(0).getAggregationFor(orderPrices.columnForName("trader")) should equal("1")
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("quantity")) should equal(1500.0)
+      tree.root.getChildren.head.getAggregationFor(orderPrices.columnForName("trader")) should equal(1)
 
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal("2100.0")
-      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("trader")) should equal("1")
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(2100.0)
+      tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("trader")) should equal(1)
 
       tree.openAll()
 
@@ -159,11 +176,13 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       keys.toArray should equal (expected)
 
-      val tree2 = TreeBuilder.create(sessionTable, GroupBy(orderPrices, "trader", "ric")
+      val tree2 = TreeBuilder.create(sessionTable,
+        GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
         .withSum("quantity")
         .withCount("trader")
         .asClause(),
         FilterSpec(""),
+        columns,
         Some(tree),
         None).build()
 

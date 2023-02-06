@@ -126,9 +126,10 @@ export class Viewport {
   public clientViewportId: string;
   public disabled = false;
   public isTree = false;
+  public links?: LinkDescriptorWithLabel[];
   public linkedParent?: LinkedParent;
   public serverViewportId?: string;
-  public status: "" | "subscribed" = "";
+  public status: "" | "subscribing" | "resubscribing" | "subscribed" = "";
   public suspended = false;
   public table: VuuTable;
   public title: string | undefined;
@@ -168,14 +169,16 @@ export class Viewport {
   }
 
   subscribe() {
-    // console.log(`ViewPort subscribe ${this.table.table}
-    // bufferSize ${this.bufferSize}
-    // clientRange : ${this.clientRange.from} - ${this.clientRange.to}
-    // range subscribed ${JSON.stringify(
-    //   getFullRange(this.clientRange, this.bufferSize)
-    // )}
-    // `);
+    console.log(`ViewPort subscribe ${this.table.table}
+    bufferSize ${this.bufferSize}
+    clientRange : ${this.clientRange.from} - ${this.clientRange.to}
+    range subscribed ${JSON.stringify(
+      getFullRange(this.clientRange, this.bufferSize)
+    )}
+    `);
     const { filter } = this.filter;
+    this.status =
+      this.status === "subscribed" ? "resubscribing" : "subscribing";
     return {
       type: Message.CREATE_VP,
       table: this.table,
@@ -382,6 +385,7 @@ export class Viewport {
   }
 
   setLinks(links: LinkDescriptorWithLabel[]) {
+    this.links = links;
     return [
       {
         type: "VP_VISUAL_LINKS_RESP",

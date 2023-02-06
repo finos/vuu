@@ -47,6 +47,7 @@
   background-color: rgba(160, 160, 160, 0.3);
 }
 .hwGroupHeaderCell-col:hover {
+  --vuu-icon-color: white;
   --menu-item-icon-color: var(--highlight-background);
   --menu-item-icon-color: var(--highlight-color);
   --remove-icon-color: var(--highlight-color);

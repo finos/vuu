@@ -408,7 +408,12 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   override def pullRow(key: String, columns: ViewPortColumns): RowData = {
 
-    val columnsByTable = columns.getColumns().map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name)
+    val columnsByTable = columns.getColumns()
+      .filter(_.isInstanceOf[JoinColumn])
+      .map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name)
+
+    val calculatedColumns = columns.getColumns()
+      .filter(_.isInstanceOf[CalculatedColumn]).toList
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
@@ -437,7 +442,11 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         }
       })
 
-      RowWithData(key, foldedMap)
+      val joinedData = RowWithData(key, foldedMap)
+
+      val calculatedData = calculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
+
+      RowWithData(key, foldedMap ++ calculatedData)
     }
   }
 

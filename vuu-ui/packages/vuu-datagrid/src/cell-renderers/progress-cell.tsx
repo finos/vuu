@@ -21,6 +21,19 @@ const ProgressCell = React.memo(function ProgressCell({
     if (typeof value === "number" && typeof associatedValue === "number") {
       percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
       showProgress = isFinite(percentage);
+    } else {
+      // Temp workaround for bug on server that sends aggregated values as strings
+      const floatValue = parseFloat(value as string);
+      if (Number.isFinite(floatValue)) {
+        const floatOtherValue = parseFloat(associatedValue as string);
+        if (Number.isFinite(floatOtherValue)) {
+          percentage = Math.min(
+            Math.round((floatValue / floatOtherValue) * 100),
+            100
+          );
+          showProgress = isFinite(percentage);
+        }
+      }
     }
   }
 

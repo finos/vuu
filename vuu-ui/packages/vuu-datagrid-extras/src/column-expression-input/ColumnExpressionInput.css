@@ -33,4 +33,43 @@
     --saltButton-width: 28px;
 }
 
+.steve-type {
+    margin: 0 3px 0 auto;
+    color: var(--salt-text-secondary-foreground)
+}
 
+.expression-kind {
+    display: inline-block;
+    width: 50px;
+}
+
+.expression-type {
+    display: inline-block;
+    text-align: right;
+    width: 50px;
+}
+
+.vuuSuggestion {
+    display: flex;
+    align-items: center;
+}
+
+
+.vuuFunctionDoc .function-heading {
+    display: flex;
+    gap: 3px;
+}
+
+.vuuFunctionDoc .function-name {
+    font-style: italic;
+}
+
+.vuuFunctionDoc .param-list {
+    font-style: italic;
+    color: blue;
+    white-space: pre;
+}
+
+.vuuFunctionDoc .function-type {
+    margin-left: auto;
+}

@@ -32,6 +32,7 @@ import {
   VuuUIMessageOutUnsubscribe,
   VuuUIMessageOutViewRange,
   VuuUIMessageOutColumns,
+  VuuUIMessageOutSetTitle,
 } from "../vuuUIMessageTypes";
 import { DataSourceCallbackMessage } from "../data-source";
 import {
@@ -39,6 +40,7 @@ import {
   stripRequestId,
   WithRequestId,
 } from "../message-utils";
+import { partition } from "@finos/vuu-utils";
 
 export type PostMessageToClientCallback = (
   message: VuuUIMessageIn | DataSourceCallbackMessage
@@ -57,6 +59,18 @@ export const TEST_setRequestId = (id: number) => (_requestId = id);
 const nextRequestId = () => `${_requestId++}`;
 const EMPTY_ARRAY: unknown[] = [];
 const DEFAULT_OPTIONS: MessageOptions = {};
+
+const isActiveViewport = (viewPort: Viewport) =>
+  viewPort.disabled !== true && viewPort.suspended !== true;
+
+const addTitleToLinks = (
+  links: LinkDescriptorWithLabel[],
+  serverViewportId: string,
+  label: string
+) =>
+  links.map((link) =>
+    link.parentVpId === serverViewportId ? { ...link, label } : link
+  );
 
 function addLabelsToLinks(
   links: VuuLinkDescriptor[],
@@ -100,6 +114,32 @@ export class ServerProxy {
     this.postMessageToClient = callback;
     this.viewports = new Map<string, Viewport>();
     this.mapClientToServerViewport = new Map();
+  }
+
+  public async reconnect() {
+    await this.login(this.authToken);
+
+    const [activeViewports, inactiveViewports] = partition(
+      Array.from(this.viewports.values()),
+      isActiveViewport
+    );
+
+    this.viewports.clear();
+    this.mapClientToServerViewport.clear();
+
+    const reconnectViewports = (viewports: Viewport[]) => {
+      viewports.forEach((viewport) => {
+        const { clientViewportId } = viewport;
+        this.viewports.set(clientViewportId, viewport);
+        this.sendMessageToServer(viewport.subscribe(), clientViewportId);
+      });
+    };
+
+    reconnectViewports(activeViewports);
+
+    setTimeout(() => {
+      reconnectViewports(inactiveViewports);
+    }, 2000);
   }
 
   public async login(authToken?: string): Promise<string | void> {
@@ -244,6 +284,13 @@ export class ServerProxy {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
+  private setTitle(viewport: Viewport, message: VuuUIMessageOutSetTitle) {
+    if (viewport) {
+      viewport.title = message.title;
+      this.updateTitleOnVisualLinks(viewport);
+    }
+  }
+
   private select(viewport: Viewport, message: VuuUIMessageOutSelect) {
     const requestId = nextRequestId();
     const { selected } = message;
@@ -251,7 +298,7 @@ export class ServerProxy {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
-  //TODO when do we ever checj the disabled state ?
+  //TODO when do we ever check the disabled state ?
   private disableViewport(viewport: Viewport) {
     const requestId = nextRequestId();
     const request = viewport.disable(requestId);
@@ -323,6 +370,20 @@ export class ServerProxy {
     const requestId = nextRequestId();
     const request = viewport.removeLink(requestId);
     this.sendMessageToServer(request, requestId);
+  }
+
+  private updateTitleOnVisualLinks(viewport: Viewport) {
+    const { serverViewportId, title } = viewport;
+    for (const vp of this.viewports.values()) {
+      if (vp !== viewport && vp.links && serverViewportId && title) {
+        if (vp.links?.some((link) => link.parentVpId === serverViewportId)) {
+          const [messageToClient] = vp.setLinks(
+            addTitleToLinks(vp.links, serverViewportId, title)
+          );
+          this.postMessageToClient(messageToClient);
+        }
+      }
+    }
   }
 
   private menuRpcCall(message: WithRequestId<VuuMenuRpcRequest>) {
@@ -397,6 +458,8 @@ export class ServerProxy {
             return this.removeLink(viewport);
           case "setColumns":
             return this.setColumns(viewport, message);
+          case "setTitle":
+            return this.setTitle(viewport, message);
           default:
         }
       }
@@ -422,9 +485,6 @@ export class ServerProxy {
         message
       )}`
     );
-    // TEST DATA COLLECTION
-    // saveTestData(message, 'client');
-    //---------------------
   }
 
   public sendIfReady(
@@ -479,6 +539,7 @@ export class ServerProxy {
           this.sessionId = sessionId;
           // we should tear down the pending Login now
           this.pendingLogin?.resolve(sessionId);
+          this.pendingLogin = undefined;
         } else {
           throw Error(`LOGIN_SUCCESS did not provide sessionId `);
         }
@@ -492,6 +553,7 @@ export class ServerProxy {
           // we will key viewports using serverViewPortId and maintain a mapping between client
           // and server viewport ids.
           if (viewport) {
+            const { status: viewportStatus } = viewport;
             const { viewPortId: serverViewportId } = body;
 
             if (requestId !== serverViewportId) {
@@ -503,26 +565,34 @@ export class ServerProxy {
             if (response) {
               this.postMessageToClient(response);
             }
-            this.sendMessageToServer({
-              type: Message.GET_VP_VISUAL_LINKS,
-              vpId: serverViewportId,
-            });
-            this.sendMessageToServer({
-              type: Message.GET_VIEW_PORT_MENUS,
-              vpId: serverViewportId,
-            });
-
-            // Resend requests for links from other viewports already on page, they may be linkable to this viewport
-            Array.from(viewports.entries())
-              .filter(
-                ([id, { disabled }]) => id !== serverViewportId && !disabled
-              )
-              .forEach(([vpId]) => {
-                this.sendMessageToServer({
-                  type: Message.GET_VP_VISUAL_LINKS,
-                  vpId,
-                });
+            // In the case of a reconnect, we may have resubscribed a disabled viewport,
+            // reset the disabled state on server
+            if (viewport.disabled) {
+              this.disableViewport(viewport);
+            }
+            if (viewportStatus === "subscribing") {
+              // If status is "resubscribing", the following is unnecessary
+              this.sendMessageToServer({
+                type: Message.GET_VP_VISUAL_LINKS,
+                vpId: serverViewportId,
               });
+              this.sendMessageToServer({
+                type: Message.GET_VIEW_PORT_MENUS,
+                vpId: serverViewportId,
+              });
+
+              // Resend requests for links from other viewports already on page, they may be linkable to this viewport
+              Array.from(viewports.entries())
+                .filter(
+                  ([id, { disabled }]) => id !== serverViewportId && !disabled
+                )
+                .forEach(([vpId]) => {
+                  this.sendMessageToServer({
+                    type: Message.GET_VP_VISUAL_LINKS,
+                    vpId,
+                  });
+                });
+            }
           }
         }
         break;
@@ -701,10 +771,6 @@ export class ServerProxy {
         {
           const activeLinkDescriptors = this.getActiveLinks(body.links);
           const viewport = this.viewports.get(body.vpId);
-          console.log({
-            links: activeLinkDescriptors,
-            for: viewport?.table.table,
-          });
           if (activeLinkDescriptors.length && viewport) {
             const linksWithLabels = addLabelsToLinks(
               activeLinkDescriptors,

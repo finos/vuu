@@ -27,11 +27,13 @@ const isConfigMessage = (
   ["aggregate", "filter", "groupBy", "sort"].includes(message.type);
 
 export interface DataSourceHookProps {
-  dataSource?: DataSource;
+  dataSource: DataSource;
   onConfigChange?: (message: DataSourceConfigMessage) => void;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
   range?: VuuRange;
+  renderBufferSize?: number;
+  viewportRowCount: number;
 }
 
 //TODO allow subscription details to be set before subscribe call
@@ -41,6 +43,8 @@ export function useDataSource({
   onSizeChange,
   onSubscribed,
   range = { from: 0, to: 0 },
+  renderBufferSize = 0,
+  viewportRowCount,
 }: DataSourceHookProps) {
   const [, forceUpdate] = useState<unknown>(null);
   const isMounted = useRef(true);
@@ -121,13 +125,26 @@ export function useDataSource({
     rafHandle.current = requestAnimationFrame(refreshIfUpdated);
   }, [refreshIfUpdated]);
 
-  const setRange = useCallback(
-    (from, to) => {
-      rangeRef.current = { from, to };
-      dataSource?.setRange(from, to);
-      dataWindow.setRange(from, to);
+  const adjustRange = useCallback(
+    (rowCount: number) => {
+      const { from } = dataSource.range;
+      const fullRange = getFullRange(
+        { from, to: from + rowCount },
+        renderBufferSize
+      );
+      dataSource.range = rangeRef.current = fullRange;
+      dataWindow.setRange(fullRange);
     },
-    [dataSource, dataWindow]
+    [dataSource, dataWindow, renderBufferSize]
+  );
+
+  const setRange = useCallback(
+    (range: VuuRange) => {
+      const fullRange = getFullRange(range, renderBufferSize);
+      dataSource.range = rangeRef.current = fullRange;
+      dataWindow.setRange(fullRange);
+    },
+    [dataSource, dataWindow, renderBufferSize]
   );
 
   useEffect(() => {
@@ -143,8 +160,13 @@ export function useDataSource({
     };
   }, [dataSource, datasourceMessageHandler]);
 
+  useEffect(() => {
+    adjustRange(viewportRowCount);
+  }, [adjustRange, viewportRowCount]);
+
   return {
     data: data.current,
+    range: rangeRef.current,
     setRange,
     dataSource,
   };
@@ -189,7 +211,7 @@ export class MovingWindow {
     return this.range.isWithin(index);
   }
 
-  setRange(from: number, to: number) {
+  setRange({ from, to }: VuuRange) {
     if (from !== this.range.from || to !== this.range.to) {
       const [overlapFrom, overlapTo] = this.range.overlap(from, to);
       const newData = new Array(to - from);

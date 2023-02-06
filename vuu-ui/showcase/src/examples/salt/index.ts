@@ -9,6 +9,6 @@ export * as List from "./List.stories";
 export * as Progress from "./Progress.stories";
 export * as SearchInput from "./SearchInput.examples";
 export * as Tabstrip from "./Tabstrip.stories";
+export * as ToggleButton from "./ToggleButton.examples";
 export * as ToggleButton from "./ToggleButton.stories";
 export * as Toolbar from "./Toolbar.stories";
-

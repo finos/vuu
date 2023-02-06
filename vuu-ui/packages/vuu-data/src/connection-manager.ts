@@ -24,10 +24,18 @@ import {
   VuuUIMessageOut,
 } from "./vuuUIMessageTypes";
 // Note: the InlinedWorker is a generated file, it must be built
-import { InlinedWorker } from "./inlined-worker";
 
+import { InlinedWorker } from "./inlined-worker";
+import { VuuTableMetaWithTable } from "./hooks";
+
+// In a dev build, this will be stripping out the function wrapper
+// function InlinedWorker(){ ..... }
+// In a prod build, "inlinedWorker" will be minified and depending
+// on the minifier used may be reduced to something like the following:
+//  function(){ ...}
+//  function _(){ ...}
 const workerSource = InlinedWorker.toString().replace(
-  /(?:^function\s+[^(]*\(\)\s*\{)|(?:\}$)/g,
+  /(?:^function(?:\s+[^(]*)?\(\)\s*\{)|(?:\}$)/g,
   ""
 );
 const workerBlob = new Blob([workerSource], { type: "text/javascript" });
@@ -44,10 +52,12 @@ const pendingWorkerNoToken: WorkerResolver[] = [];
 let resolveServer: (server: ServerAPI) => void;
 let rejectServer: (err: unknown) => void;
 
-export const serverAPI = new Promise<ServerAPI>((resolve, reject) => {
+const serverAPI = new Promise<ServerAPI>((resolve, reject) => {
   resolveServer = resolve;
   rejectServer = reject;
 });
+
+export const getServerAPI = () => serverAPI;
 
 export type PostMessageToClientCallback = (
   msg: DataSourceCallbackMessage
@@ -176,7 +186,7 @@ const asyncRequest = <T = unknown>(
 
 export interface ServerAPI {
   destroy: (viewportId?: string) => void;
-  getTableMeta: (table: VuuTable) => Promise<VuuTableMeta>;
+  getTableMeta: (table: VuuTable) => Promise<VuuTableMetaWithTable>;
   getTableList: () => Promise<VuuTableList>;
   rpcCall: <T = unknown>(msg: VuuRpcRequest | VuuMenuRpcRequest) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
@@ -218,7 +228,10 @@ const connectedServerAPI: ServerAPI = {
     asyncRequest<VuuTableList>({ type: Message.GET_TABLE_LIST }),
 
   getTableMeta: async (table) =>
-    asyncRequest<VuuTableMeta>({ type: Message.GET_TABLE_META, table }),
+    asyncRequest<VuuTableMetaWithTable>({
+      type: Message.GET_TABLE_META,
+      table,
+    }),
 };
 
 class _ConnectionManager extends EventEmitter {

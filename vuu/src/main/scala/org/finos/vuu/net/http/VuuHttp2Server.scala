@@ -59,7 +59,6 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
       logger.info("Loading SSL Cert from: " + new File(options.certPath).getAbsolutePath)
       logger.info("Loading SSL Key from: " + new File(options.keyPath).getAbsolutePath)
 
-      PathChecker.throwOnDirectoryNotExists(options.webRoot, "webroot path does not exist:")
 
       httpOpts
         .setPemKeyCertOptions(new PemKeyCertOptions()
@@ -109,6 +108,8 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
             //.setDirectoryListing(options.allowDirectoryListings)
           )
       }else{
+        PathChecker.throwOnDirectoryNotExists(options.webRoot, "webroot path does not exist:")
+
         router.route("/public/*")
           .handler(StaticHandler.create()
             .setWebRoot(options.webRoot)

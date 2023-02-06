@@ -1,4 +1,8 @@
-import { isGroupColumn, metadataKeys } from "@finos/vuu-utils";
+import {
+  getColumnPinStyle,
+  isGroupColumn,
+  metadataKeys,
+} from "@finos/vuu-utils";
 import { MouseEvent, useCallback } from "react";
 import { TableImplementationProps } from "./dataTableTypes";
 import { TableRow } from "./TableRow";
@@ -21,12 +25,11 @@ export const RowBasedTable = ({
 }: TableImplementationProps) => {
   const handleDragStart = useCallback(
     (evt: MouseEvent) => {
-      console.log(`handkleDRagSTart`, {
+      console.log(`RowBasedDataTable handleDragStart`, {
         evt,
         onHeaderCellDragStart,
       });
-      //TODO do not fire this untila delay has elapsed
-      // onHeaderCellDragStart?.(evt);
+      onHeaderCellDragStart?.(evt);
     },
     [onHeaderCellDragStart]
   );
@@ -54,8 +57,9 @@ export const RowBasedTable = ({
       </colgroup>
       <thead>
         <tr>
-          {columns.map((column, i) =>
-            isGroupColumn(column) ? (
+          {columns.map((column, i) => {
+            const style = getColumnPinStyle(column);
+            return isGroupColumn(column) ? (
               <TableGroupHeaderCell
                 column={column}
                 data-idx={i}
@@ -64,7 +68,7 @@ export const RowBasedTable = ({
                 // onDragStart={handleDragStart}
                 onRemoveColumn={onRemoveColumnFromGroupBy}
                 onResize={onColumnResize}
-                style={{ left: column.pinnedLeftOffset }}
+                style={style}
               />
             ) : (
               <TableHeaderCell
@@ -74,10 +78,10 @@ export const RowBasedTable = ({
                 onClick={handleHeaderClick}
                 onDragStart={handleDragStart}
                 onResize={onColumnResize}
-                style={{ left: column.pinnedLeftOffset }}
+                style={style}
               />
-            )
-          )}
+            );
+          })}
         </tr>
       </thead>
       <tbody>

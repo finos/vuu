@@ -30,18 +30,20 @@ export const UserProfile = ({ layoutId, loginUrl, onNavigate, user }) => {
   };
 
   return (
-    <div className="vuuUserProfile">
-      <DropdownBase placement="bottom-end" onCancel={toggle}>
-        <Button ref={buttonRef} variant="secondary">
-          <UserSolidIcon />
-        </Button>
-        <UserPanel
-          layoutId={layoutId}
-          loginUrl={loginUrl}
-          onNavigate={handleNavigate}
-          user={user}
-        />
-      </DropdownBase>
-    </div>
+    <DropdownBase
+      className="vuuUserProfile"
+      placement="bottom-end"
+      onCancel={toggle}
+    >
+      <Button ref={buttonRef} variant="secondary">
+        <UserSolidIcon />
+      </Button>
+      <UserPanel
+        layoutId={layoutId}
+        loginUrl={loginUrl}
+        onNavigate={handleNavigate}
+        user={user}
+      />
+    </DropdownBase>
   );
 };

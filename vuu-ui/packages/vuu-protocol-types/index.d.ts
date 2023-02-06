@@ -1,5 +1,5 @@
 // prettier-ignore
-export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char";
+export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean";
 export declare type VuuMenuContext = "cell" | "row" | "grid" | "selected-rows";
 export interface VuuMenuItem {
   context: VuuMenuContext;
@@ -102,11 +102,16 @@ export interface ServerToClientTableList {
 
 export type VuuTableList = Pick<ServerToClientTableList, "tables">;
 
-export interface ServerToClientTableMeta {
+export interface VuuTableMeta {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
-  type: "TABLE_META_RESP";
+}
+export interface VuuTableMetaWithTable extends VuuTableMeta {
   table: VuuTable;
+}
+
+export interface ServerToClientTableMeta extends VuuTableMetaWithTable {
+  type: "TABLE_META_RESP";
 }
 
 export type VuuTableMeta = Pick<

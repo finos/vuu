@@ -7,7 +7,7 @@ export interface ShellContextProps {
     tableName: string,
     columnName: string
   ) => Partial<ColumnDescriptor>;
-  handleRpcResponse?: (response: MenuRpcResponse) => void;
+  handleRpcResponse?: (response?: MenuRpcResponse) => void;
 }
 
 const defaultConfig = {};

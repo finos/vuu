@@ -188,6 +188,7 @@ export default async function main(customConfig) {
       `${outdir}/esm/index.css.map`,
       path.resolve(outdir, "index.css.map")
     );
+    // copy any font files
   }
 
   createDistFolder();

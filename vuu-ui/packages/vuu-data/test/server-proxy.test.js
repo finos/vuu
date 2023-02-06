@@ -30,7 +30,7 @@ describe("ServerProxy", () => {
       const { clientViewportId, status } =
         serverProxy.viewports.get("client-vp-1");
       expect(clientViewportId).toEqual("client-vp-1");
-      expect(status).toEqual("");
+      expect(status).toEqual("subscribing");
     });
 
     it("initialises Viewport when server ACKS subscription", () => {

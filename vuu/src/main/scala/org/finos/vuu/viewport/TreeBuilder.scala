@@ -22,14 +22,14 @@ object TreeBuilder {
   //  def apply(table: GroupBySessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree])(implicit timeProvider: Clock): GroupByTreeBuilder = {
   //    new GroupByTreeBuilderImpl(table, groupBy, filter, previousTree)
   //  }
-  def create(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree], sort: Option[Sort])(implicit timeProvider: Clock): TreeBuilder = {
-    new TreeBuilderImpl(table, groupBy, filter, previousTree, sort)
+  def create(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, vpColumns: ViewPortColumns, previousTree: Option[Tree], sort: Option[Sort])(implicit timeProvider: Clock): TreeBuilder = {
+    new TreeBuilderImpl(table, groupBy, filter, vpColumns, previousTree, sort)
   }
 
 }
 
 
-class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, previousTree: Option[Tree], sort: Option[Sort])(implicit timeProvider: Clock) extends TreeBuilder with StrictLogging {
+class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, vpColumns: ViewPortColumns, previousTree: Option[Tree], sort: Option[Sort])(implicit timeProvider: Clock) extends TreeBuilder with StrictLogging {
 
   final val EMPTY_TREE_NODE_STATE = new ConcurrentHashMap[String, TreeNodeState]()
 
@@ -53,7 +53,7 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
 
       logger.debug("has filter, applying")
 
-      theFilter.dofilter(table.sourceTable, table.sourceTable.primaryKeys)
+      theFilter.dofilter(table.sourceTable, table.sourceTable.primaryKeys, vpColumns)
 
     } else
       table.sourceTable.primaryKeys
@@ -62,7 +62,7 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
   private def applySort(filteredKeys: ImmutableArray[String]): ImmutableArray[String] = {
     sort match {
       case Some(aSort) =>
-        val keys = aSort.doSort(table.sourceTable, filteredKeys)
+        val keys = aSort.doSort(table.sourceTable, filteredKeys, vpColumns)
         keys
       case None =>
         filteredKeys
@@ -95,7 +95,7 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
 
     var count = 0
 
-    val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
+    //val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
 
     sortedKeys.foreach(key => {
 
@@ -112,7 +112,7 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
         case rowWithData: RowWithData =>
 
           val last = columns.foldLeft(tree.root)((parent, column) => {
-            processBranchColumn(tree, parent.asInstanceOf[TreeNodeImpl], rowWithData.get(column.name), false, column, rowWithData)
+            processBranchColumn(tree, parent.asInstanceOf[TreeNodeImpl], column.getData(rowWithData), false, column, rowWithData)
           } match {
             case Some(node) => node
             case None => parent
@@ -122,9 +122,6 @@ class TreeBuilderImpl(table: TreeSessionTableImpl, groupBy: GroupBy, filter: Fil
 
           count += 1
       }
-
-
-
 
     })
 

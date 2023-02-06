@@ -79,8 +79,25 @@ const samples = [
   "=left(client, 3)",
 ];
 
-const str = "=bid";
+console.log("");
+
+// const str = "=bid";
+// const str = '=if(side="Buy","Y","N")';
+// const str = '=if(price>1000,"High",if(price>100,"Medium","Low"))';
+// const str = "=bid*100.00+price-50.0*bid/price";
+// const str = "=min(min(i1, i3), i2)";
+// const str = "=concatenate(max(i1, i2), text(quantity))";
+const str = "=(bid*ask)+(price-quantity)";
+
+try {
+  strictParser.parse(str);
+  console.log(`'str' is OK`);
+} catch (e) {
+  console.log(`'${str}' failed to parse`);
+}
 
 const result = parser.parse(str);
+
+console.log("");
 
 walkTree(result, str);

@@ -1,3 +1,4 @@
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { MenuBuilder } from "@finos/vuu-popups";
 import {
   VuuAggregation,
@@ -6,10 +7,7 @@ import {
   VuuSortCol,
 } from "../../../vuu-protocol-types";
 import { isNumericColumn } from "../grid-model";
-import {
-  GridModelType,
-  KeyedColumnDescriptor,
-} from "../grid-model/gridModelTypes";
+import { GridModelType } from "../grid-model/gridModelTypes";
 import { ContextMenuOptions } from "./contextMenuTypes";
 
 export type ContextMenuLocation = "header" | "filter" | "grid";
@@ -220,7 +218,7 @@ function buildGroupMenuItems(
       column: { name, label = name },
     } = options;
 
-    if (!groupBy) {
+    if (!groupBy || groupBy.length === 0) {
       menuItems.push({
         label: `Group by ${label}`,
         action: "group",

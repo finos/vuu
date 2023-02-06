@@ -10,7 +10,7 @@
     background: var(--row-background);
   }
 
-  .vuuDataTableRow .vuuPinLeft {
+  .vuuDataTableRow :is(.vuuPinFloating, .vuuPinLeft, .vuuPinRight) {
     background-color: var(--row-background);
   }
   
