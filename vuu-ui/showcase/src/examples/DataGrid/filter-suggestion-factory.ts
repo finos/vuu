@@ -1,19 +1,20 @@
+import { ColumnDescriptor } from '@finos/vuu-datagrid-types';
 import { config as schema } from '../../../public/tables/instruments/config';
 import { generateData } from '../../../public/tables/instruments/instruments';
 
 const instruments = generateData();
 
 const columnKeys = new Map();
-schema.columns.forEach((column: any, idx: number) => {
+schema.columns.forEach((column: ColumnDescriptor, idx: number) => {
   columnKeys.set(column.name, idx + 2);
 });
 
-const suggestColumnValues = async (column: any, text: string, isListItem: boolean) => {
+const suggestColumnValues = async (column: ColumnDescriptor, text: string, isListItem: boolean) => {
   const result = _suggestedColumnValues(instruments, column, text, isListItem);
   return Promise.resolve(result);
 };
 
-const _suggestedColumnValues = (rows: any[], column: any, text = '', isListItem = false) => {
+const _suggestedColumnValues = (rows: any[], column: ColumnDescriptor, text = '', isListItem = false) => {
   const key = columnKeys.get(column);
   const lcText = text.toLowerCase();
   let count = 0;
