@@ -3,7 +3,7 @@ import { WindowRange } from "@finos/vuu-utils";
 export class ArrayLike<T = string> {
   public range: WindowRange;
   public data: T[];
-  public length: number = 0;
+  public length = 0;
 
   constructor(input: T[], size: number, range: WindowRange) {
     this.range = range;
@@ -14,11 +14,14 @@ export class ArrayLike<T = string> {
       get: (target: ArrayLike<T>, prop: string | symbol): any => {
         if (prop === "length") {
           return target.length;
-        } else if (prop === "slice") {
+        }
+        if (prop === "slice") {
           return target.slice;
-        } else if (prop === "toString") {
+        }
+        if (prop === "toString") {
           return target.debug;
-        } else if (typeof prop === "string") {
+        }
+        if (typeof prop === "string") {
           const index = parseInt(prop, 10);
           if (!isNaN(index)) {
             return target.getItem(index);
@@ -30,15 +33,16 @@ export class ArrayLike<T = string> {
         if (prop === "length") {
           target.length = newVal;
           return true;
-        } else if (prop === "data") {
+        }
+        if (prop === "data") {
           target.data = newVal;
           return true;
-        } else if (prop === "range") {
+        }
+        if (prop === "range") {
           target.range = newVal;
           return true;
-        } else {
-          throw Error(`ArrayLike is immutable except for length`);
         }
+        throw Error(`ArrayLike is immutable except for length`);
       },
     };
     return new Proxy(this, handler);
@@ -60,7 +64,6 @@ export class ArrayLike<T = string> {
         out.push({ label: "???", value: "" });
       }
     }
-
     return out;
   };
 

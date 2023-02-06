@@ -1,26 +1,26 @@
-import { generateData } from '../../../public/tables/instruments/instruments';
+import { ColumnDescriptor } from '@finos/vuu-datagrid-types';
+import { Row } from '@finos/vuu-utils';
 import { config as schema } from '../../../public/tables/instruments/config';
+import { generateData } from '../../../public/tables/instruments/instruments';
 
 const instruments = generateData();
 
 const columnKeys = new Map();
-schema.columns.forEach((column, i) => {
-  columnKeys.set(column.name, i + 2);
+schema.columns.forEach((column: ColumnDescriptor, idx: number) => {
+  columnKeys.set(column.name, idx + 2);
 });
 
-const suggestColumnValues = async (column, text, isListItem) => {
+const suggestColumnValues = async (column: ColumnDescriptor, text: string, isListItem: boolean) => {
   const result = _suggestedColumnValues(instruments, column, text, isListItem);
   return Promise.resolve(result);
 };
 
-const _suggestedColumnValues = (rows, column, text = '', isListItem = false) => {
+const _suggestedColumnValues = (rows: Row[], column: ColumnDescriptor, text = '', isListItem = false) => {
   const key = columnKeys.get(column);
   const lcText = text.toLowerCase();
   let count = 0;
-  let values = new Set();
+  const values = new Set<string>();
   const result = [];
-
-  // TODO don't do this for numeric fields
 
   for (const row of rows) {
     const value = row[key];
@@ -51,37 +51,22 @@ const _suggestedColumnValues = (rows, column, text = '', isListItem = false) => 
   return result;
 };
 
-const suggestColumnNames = (columnNames, text, isListItem) => {
+const suggestColumnNames = (columnNames: string[], text: string, isListItem: boolean) => {
   return suggestedValues(columnNames, text, isListItem);
 };
 
-const getCurrentColumn = (filters, idx = 0) => {
+const getCurrentColumn = (filters: any[], idx = 0): ColumnDescriptor | undefined => {
   const f = filters[idx];
   if (!f) {
     return undefined;
-  } else {
-    if (f.op === 'or' || f.op === 'and') {
-      return getCurrentColumn(f.filters, f.filters.length - 1);
-    } else {
-      return f.column;
-    }
   }
+  if (f.op === 'or' || f.op === 'and') {
+    return getCurrentColumn(f.filters, f.filters.length - 1);
+  }
+  return f.column;
 };
 
-const filterNameSavePrompt = (text) => {
-  if (text === '') {
-    return [
-      {
-        value: 'enter name for filter clause, then press ENTER to save and apply'
-      }
-    ];
-  } else if (text.length) {
-    return [{ value: 'EOF', displayValue: `EOF` }];
-  }
-  return [];
-};
-
-const suggestedValues = (values, text = '', isListItem = false) => {
+const suggestedValues = (values: string[], text = '', isListItem = false) => {
   const result = values
     .filter((value) => isListItem || value.toLowerCase().startsWith(text.toLowerCase()))
     .map((value) => ({
@@ -95,9 +80,9 @@ const suggestedValues = (values, text = '', isListItem = false) => {
   return result;
 };
 
-const suggestNamedFilters = async (filters, text) => {
+const suggestNamedFilters = async (filters: any[], text: string) => {
   if (text.startsWith(':')) {
-    return filters.map(({ name }) => ({
+    return filters.map((name: string) => ({
       value: `:${name}`,
       displayValue: name,
       completion: name
@@ -107,11 +92,10 @@ const suggestNamedFilters = async (filters, text) => {
   }
 };
 
-// note: Returns a promise
 const filterSuggestions =
-  ({ columnNames, namedFilters = [] }) =>
-  (result, { token: tokenId, text, isListItem }) => {
-    switch (tokenId) {
+  ( columnNames: string[], namedFilters = [] ) =>
+  (result: any, token: string, text: string, isListItem: boolean ) => {
+    switch (token) {
       case 'COLUMN-NAME':
         return suggestColumnNames(columnNames, text, isListItem);
       case 'COLUMN-VALUE':
@@ -121,7 +105,7 @@ const filterSuggestions =
       case 'NAMED-FILTER':
         return suggestNamedFilters(namedFilters, text);
       default:
-        console.log(`[filter-suggestion-factory] no suggestions for ${tokenId} '${text}''`);
+        console.log(`[filter-suggestion-factory] no suggestions for ${token} '${text}''`);
         return [];
     }
   };

@@ -1,26 +1,18 @@
-import React, { useRef, useState } from "react";
-import { atom, useSetRecoilState, useRecoilValue } from "recoil";
 import {
-  Flexbox,
   Component as PlaceHolder,
-  DraggableLayout,
-  Palette,
-  PaletteItem,
-  registerComponent,
-  View,
-  useViewContext,
+  DraggableLayout, Flexbox, Palette,
+  PaletteItem, useViewContext, View
 } from "@finos/vuu-layout";
 import { Dropdown } from "@heswell/salt-lab";
-
-// import LayoutConfigurator from '../layout-configurator';
-// import {  LayoutTreeViewer } from '../layout-tree-viewer';
+import { useRef, useState } from "react";
+import { atom, useRecoilValue, useSetRecoilState } from "recoil";
 
 import "./layout-builder.css";
 
-const layouts = [];
+const layouts: any[] = [];
 
 const availableLayouts = atom({
-  key: "availableLayouts", // unique ID (with respect to other atoms/selectors)
+  key: "availableLayouts",
   default: [],
 });
 
@@ -29,20 +21,19 @@ const LayoutPicker = ({ onCommit }) => {
   return <Dropdown onSelect={onCommit} values={availableValues} />;
 };
 
-const StatefulComponent = ({ initialState = "", style, stateKey }) => {
+const StatefulComponent = (initialState = "", style: React.CSSProperties | undefined, stateKey: any) => {
   const { load, save } = useViewContext();
   const state = useRef(load(stateKey) ?? initialState);
   const [value, setValue] = useState(state.current);
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue((state.current = e.target.value));
     save(state.current, stateKey);
   };
   return <textarea style={style} onChange={handleChange} value={value} />;
 };
 
-registerComponent("StatefulComponent", StatefulComponent);
 
-const BuilderPalette = (props) => {
+const BuilderPalette = ({ props }) => {
   return (
     <Palette {...props}>
       <PaletteItem header resizeable closeable title="Blue Monday">
@@ -74,7 +65,7 @@ const BuilderPalette = (props) => {
   );
 };
 
-export const LayoutBuilder = ({ enableSave, width = 800, height = 1000 }) => {
+export const LayoutBuilder = () => {
   const [state, setState] = useState({
     layoutModel: undefined,
     managedLayoutNode: null,
@@ -87,26 +78,9 @@ export const LayoutBuilder = ({ enableSave, width = 800, height = 1000 }) => {
   const onLayoutModel = (layoutModel, id) => {
     layouts.push({ layoutModel, id });
     setAvailableValues((values) => values.concat(`${values.length}-Layout`));
-    // console.log(`%c${JSON.stringify(layoutModel, null, 2)}`, 'color:blue;font-weight: bold;');
-    //     setState(prevState => ({
-    //         ...prevState,
-    //         managedLayoutNode: layoutModel
-    //     }));
   };
 
-  // // TODO look at layout configurator
-  // const handleChange = (feature, dimension, value, layoutStyle) => {
-  // }
-
-  // const selectComponent = selectedLayoutNode => {
-  //   console.log(`select node ${selectedLayoutNode.$path} ${selectedLayoutNode.$id}`)
-  //   setState({
-  //     ...state,
-  //     selectedLayoutNode
-  //   })
-  // }
-
-  const selectLayout = (item) => {
+  const selectLayout = (item: string) => {
     const idx = parseInt(item);
     const { layoutModel, id } = layouts[idx];
     setState((state) => ({
@@ -117,17 +91,6 @@ export const LayoutBuilder = ({ enableSave, width = 800, height = 1000 }) => {
       },
     }));
   };
-
-  // const selectLayout = id => setState({
-  //   ...state,
-  //   selectedId: id
-  // })
-
-  // const layoutStyle = state.selectedLayoutNode === null
-  // ? NO_STYLES
-  // : state.selectedLayoutNode.style;
-
-  // const selectedIdx = availableValues.indexOf(state.selectedId)
 
   return (
     <DraggableLayout onLayoutChange={onLayoutModel} layout={state.layoutModel}>
@@ -156,10 +119,6 @@ export const LayoutBuilder = ({ enableSave, width = 800, height = 1000 }) => {
         <DraggableLayout
           style={{ flex: 1 }}
           dropTarget
-          // selectedNode={state.selectedLayoutNode ? {
-          //   $id: state.selectedLayoutNode.$id,
-          //   $path: state.selectedLayoutNode.$path
-          // }: null}
         >
           <View resizeable style={{ flex: 1, width: "100%", height: "100%" }}>
             <PlaceHolder style={{ flex: 1, backgroundColor: "lightgrey" }} />
@@ -169,32 +128,3 @@ export const LayoutBuilder = ({ enableSave, width = 800, height = 1000 }) => {
     </DraggableLayout>
   );
 };
-
-// function layoutSerializer(key, value){
-//   if (key === 'computedStyle' || key === 'layoutStyle' || key === 'visualStyle' || key === '$path'){
-//     return;
-//   }
-//   if (key === 'children' && value !== undefined && value.length === 1 && value[0].type === 'layout'){
-//     return undefined;
-//   }
-
-//   if (key === 'children' && this.type === 'FlexBox'){
-//     return value.filter(child => child.type !== 'Splitter');
-//   }
-
-//   return value;
-// }
-
-/*
-         {<Flexbox style={{flexDirection: 'row', height: 400}}>
-           {<LayoutTreeViewer
-             style={{width: '50%'}}
-             tree={state.managedLayoutNode}
-             onSelectNode={selectComponent}/>}
-           <LayoutConfigurator
-             style={{width: '50%'}}
-             layoutStyle={layoutStyle}
-             onChange={handleChange}/>
-         </Flexbox> }
-
-*/

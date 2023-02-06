@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { Component } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
@@ -7,7 +7,7 @@ let displaySequence = 1;
 
 export const SimpleDialog = () => {
   return (
-    <Dialog isOpen center={true}>
+    <Dialog isOpen>
       <Component
         title="Cornflower"
         style={{ backgroundColor: "cornflowerblue", height: 400, width: 300 }}

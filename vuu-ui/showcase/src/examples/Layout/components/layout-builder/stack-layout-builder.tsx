@@ -1,25 +1,19 @@
 import {
-  FlexboxLayout,
   Component,
-  DraggableLayout,
-  LayoutProvider,
+  DraggableLayout, FlexboxLayout, LayoutProvider,
   Palette,
   PaletteItem,
   Placeholder,
   StackLayout,
-  View,
+  View
 } from "@finos/vuu-layout";
 import * as layout from "../layouts";
 
 import "./layout-builder.css";
 
-export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
-  const onLayoutModel = (layoutModel) => {
+export const StackLayoutBuilder = () => {
+  const onLayoutModel = (layoutModel: any) => {
     console.log({ layoutModel });
-    // setState(prevState => ({
-    //     ...prevState,
-    //     managedLayoutNode: layoutModel
-    // }));
   };
 
   return (
@@ -43,14 +37,12 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
               dropTargets={["flex-main"]}
             >
               <Palette
-                collapsibleHeaders
                 orientation="vertical"
                 style={{ backgroundColor: "inherit" }}
               >
                 <div data-header>Pages</div>
                 <PaletteItem
                   label="Page 1"
-                  template
                   closeable
                   resizeable
                   header
@@ -59,7 +51,6 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 </PaletteItem>
                 <PaletteItem
                   label="Page 2"
-                  template
                   closeable
                   resizeable
                   header
@@ -70,19 +61,17 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 <div data-header>Flex Layouts</div>
                 <PaletteItem
                   label="Holy Grail"
-                  template
                   closeable
                   resizeable
                   header
                 >
                   {layout.holyGrail}
                 </PaletteItem>
-                <PaletteItem label="Responsive Example" template>
+                <PaletteItem label="Responsive Example">
                   {layout.responsiveExample}
                 </PaletteItem>
                 <PaletteItem
                   label="2 Rows"
-                  template
                   closeable
                   resizeable
                   header
@@ -91,7 +80,6 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 </PaletteItem>
                 <PaletteItem
                   label="3 Rows"
-                  template
                   closeable
                   resizeable
                   header
@@ -100,14 +88,13 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 </PaletteItem>
                 <PaletteItem
                   label="4 Rows"
-                  template
                   closeable
                   resizeable
                   header
                 >
                   {layout.fourRows}
                 </PaletteItem>
-                <PaletteItem label="Fluid Grid 12 rows" template>
+                <PaletteItem label="Fluid Grid 12 rows">
                   {layout.responsive_12_col}
                 </PaletteItem>
 
@@ -166,7 +153,6 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 <div data-header>Content Layouts</div>
                 <PaletteItem
                   label="3 Rows"
-                  template
                   closeable
                   resizeable
                   header
@@ -175,7 +161,6 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 </PaletteItem>
                 <PaletteItem
                   label="3 Columns"
-                  template
                   closeable
                   resizeable
                   header
@@ -187,7 +172,6 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                   label="Yellow 150"
                   closeable
                   resizeable
-                  template
                   header
                 >
                   <Component
@@ -204,7 +188,6 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                   label="Pink 250"
                   closeable
                   resizeable
-                  template
                   header
                 >
                   <Component
@@ -220,7 +203,6 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                   label="Blue 400"
                   closeable
                   resizeable
-                  template
                   header
                 >
                   <Component
@@ -245,10 +227,9 @@ export const StackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 showTabs
                 style={{ width: "100%", height: "100%" }}
                 enableCloseTabs
-                preserve
               >
-                <Placeholder title="Page 1" closeable={false} id={1} />
-                <View title="Page 2" style={{ flex: 1 }} id={2}>
+                <Placeholder title="Page 1" closeable={false} id='1' />
+                <View title="Page 2" style={{ flex: 1 }} id='2'>
                   <Component
                     style={{
                       width: "100%",

@@ -9,7 +9,7 @@ import {
   MenuItem,
   MenuItemGroup,
   Separator,
-  useContextMenu,
+  useContextMenu
 } from "@finos/vuu-popups";
 
 import { Button } from "@salt-ds/core";
@@ -19,7 +19,7 @@ import {
   MouseEventHandler,
   useLayoutEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 
 let displaySequence = 1;
@@ -68,7 +68,7 @@ const SampleContextMenu = (props: Partial<ContextMenuProps>) => (
 );
 
 export const DefaultContextMenu = () => {
-  const handleClose: ContextMenuProps["onClose"] = (/*action, options*/) => {
+  const handleClose: ContextMenuProps["onClose"] = () => {
     console.log(`clicked menu action`);
   };
 
@@ -94,7 +94,8 @@ export const DefaultContextMenu = () => {
 
 DefaultContextMenu.displaySequence = displaySequence++;
 
-const Id = ({ children }) => (
+type IdProps = { children: string | JSX.Element }
+const Id = ({ children }: IdProps ) => (
   <span style={{ color: "grey" }}>({children})</span>
 );
 
@@ -183,7 +184,7 @@ export const ContextMenuPopup = () => {
   const ref = useRef(null);
   const keyboardNav = useRef(false);
 
-  const handleClick = (evt) => {
+  const handleClick = (evt: React.MouseEvent<HTMLElement>) => {
     if (evt.pageX && evt.pageY) {
       setPosition({ x: evt.pageX, y: evt.pageY });
     } else {
@@ -193,7 +194,7 @@ export const ContextMenuPopup = () => {
     }
   };
 
-  const handleClose = (/* menuId */) => {
+  const handleClose = () => {
     console.log(`closed with menuId`);
     setPosition({ x: 0, y: 0 });
   };
@@ -309,7 +310,7 @@ export const SimpleContextMenuProvider = () => {
     { label: "Group", action: "group" },
   ];
 
-  const handleMenuAction: MenuActionHandler = (/*type, options*/) => {
+  const handleMenuAction: MenuActionHandler = () => {
     console.log(`handleContextMenu`);
     return true;
   };

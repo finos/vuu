@@ -1,7 +1,7 @@
 import { Button } from "@salt-ds/core";
 
 export const DefaultButton = () => {
-  const handleClick = (e) => {
+  const handleClick = () => {
     console.log("Button click");
   };
   return <Button onClick={handleClick}>Button</Button>;

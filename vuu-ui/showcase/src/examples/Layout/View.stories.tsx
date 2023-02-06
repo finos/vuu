@@ -1,4 +1,3 @@
-import React from "react";
 import { Component, View } from "@finos/vuu-layout";
 
 export default {

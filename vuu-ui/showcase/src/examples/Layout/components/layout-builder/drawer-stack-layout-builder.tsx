@@ -1,26 +1,23 @@
-import React from "react";
 
 import {
-  Chest,
-  Drawer,
-  FlexboxLayout as Flexbox,
-  Component,
-  DraggableLayout,
-  Palette,
+  Chest, Component,
+  DraggableLayout, Drawer,
+  FlexboxLayout as Flexbox, Palette,
   PaletteItem,
   StackLayout as Stack,
-  View,
+  View
 } from "@finos/vuu-layout";
 import * as layout from "../layouts";
 
 import "./layout-builder.css";
 
-export const DrawerStackLayoutBuilder = ({ width = 800, height = 1000 }) => {
+export const DrawerStackLayoutBuilder = () => {
   return (
     <DraggableLayout style={{ width: "100vw", height: "100vh" }}>
       <Flexbox
         className="LayoutBuilder"
         style={{ flexDirection: "column", width: "100%", height: "100%" }}
+        path=''
       >
         <div style={{ height: 60, borderBottom: "solid 1px #ccc" }} />
         <Chest style={{ flex: 1 }}>
@@ -31,17 +28,16 @@ export const DrawerStackLayoutBuilder = ({ width = 800, height = 1000 }) => {
             inline
             sizeOpen={150}
             toggleButton="end"
+            defaultOpen={false}
           >
             <View header title="View Tables">
               <Palette
-                collapsibleHeaders
                 orientation="vertical"
                 style={{ width: 150, flex: 1 }}
               >
                 <div data-header>Layouts</div>
                 <PaletteItem
                   title="Holy Grail"
-                  template
                   closeable
                   resizeable
                   header
@@ -50,7 +46,6 @@ export const DrawerStackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 </PaletteItem>
                 <PaletteItem
                   title="2 Rows"
-                  template
                   closeable
                   resizeable
                   header
@@ -59,7 +54,6 @@ export const DrawerStackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 </PaletteItem>
                 <PaletteItem
                   title="3 Rows"
-                  template
                   closeable
                   resizeable
                   header
@@ -68,7 +62,6 @@ export const DrawerStackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 </PaletteItem>
                 <PaletteItem
                   title="4 Rows"
-                  template
                   closeable
                   resizeable
                   header
@@ -77,7 +70,6 @@ export const DrawerStackLayoutBuilder = ({ width = 800, height = 1000 }) => {
                 </PaletteItem>
                 <PaletteItem
                   title="2 Columns"
-                  template
                   closeable
                   resizeable
                   header
@@ -124,7 +116,6 @@ export const DrawerStackLayoutBuilder = ({ width = 800, height = 1000 }) => {
             <Stack
               style={{ width: "100%", height: "100%" }}
               enableAddTab
-              preserve
               showTabs
             >
               <View title="Page 1" style={{ flex: 1 }} resizeable />
