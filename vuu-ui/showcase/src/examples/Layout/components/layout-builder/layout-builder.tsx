@@ -25,7 +25,7 @@ const StatefulComponent = (initialState = "", style: React.CSSProperties | undef
   const { load, save } = useViewContext();
   const state = useRef(load(stateKey) ?? initialState);
   const [value, setValue] = useState(state.current);
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue((state.current = e.target.value));
     save(state.current, stateKey);
   };
