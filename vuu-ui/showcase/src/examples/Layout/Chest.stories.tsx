@@ -16,7 +16,13 @@ export default {
   component: Chest,
 };
 
-const InlineDrawer = (inline: any, position: any, peekaboo: any) => {
+type InlineDrawerProps = {
+  inline?: boolean
+  position: "left" | "right" | "top" | "bottom"
+  peekaboo?: boolean
+}
+
+const InlineDrawer = ({inline = false, position, peekaboo = false}: InlineDrawerProps) => {
   const list = useRef(null);
   const [open, setOpen] = useState(false);
   const handleClick = (e: SyntheticEvent) => {
