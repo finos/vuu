@@ -184,7 +184,7 @@ export const ContextMenuPopup = () => {
   const ref = useRef(null);
   const keyboardNav = useRef(false);
 
-  const handleClick = (evt: any) => {
+  const handleClick = (evt: React.MouseEvent<HTMLElement>) => {
     if (evt.pageX && evt.pageY) {
       setPosition({ x: evt.pageX, y: evt.pageY });
     } else {
