@@ -22,7 +22,7 @@ export default {
 
 let displaySequence = 1;
 
-const Box = (props: any) => (
+const Box = ({ props }) => (
   <div
     style={{
       cursor: "pointer",
