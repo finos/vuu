@@ -299,7 +299,7 @@ export const BasicGrid = () => {
     gridRef.current?.style.setProperty("--grid-row-height", `20px`);
   };
 
-  const handleConfigChange = (config: any) => {
+  const handleConfigChange = (config: GridConfig) => {
     console.log(`handleConfigChange ${JSON.stringify(config, null, 2)}`);
   };
 
@@ -637,7 +637,7 @@ export const BufferVariations = () => {
   });
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const handleConfigChange = (config: any) => {
+  const handleConfigChange = (config: GridConfig) => {
     console.log(`handleConfigChange ${JSON.stringify(config, null, 2)}`);
   };
 
