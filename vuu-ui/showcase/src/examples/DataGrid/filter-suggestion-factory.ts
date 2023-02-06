@@ -54,7 +54,7 @@ const suggestColumnNames = (columnNames: string[], text: string, isListItem: boo
   return suggestedValues(columnNames, text, isListItem);
 };
 
-const getCurrentColumn = (filters: any[], idx = 0): any | undefined => {
+const getCurrentColumn = (filters: any[], idx = 0): ColumnDescriptor | undefined => {
   const f = filters[idx];
   if (!f) {
     return undefined;
