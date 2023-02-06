@@ -284,10 +284,17 @@ export const VuuDataTable = () => {
     setSelectedIndex(index);
   };
 
-  const handleConfigChange = useCallback(
+  const handleSettingsConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
+      console.log(
+        `2) Table.examples VuuDataTable handleSettingsConfigChange, call setTableConfig`,
+        {
+          config,
+        }
+      );
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
+          // side effect: update columns on dataSource
           dataSource.columns = config.columns.map((col) => col.name);
         }
         return (configRef.current = config);
@@ -299,9 +306,12 @@ export const VuuDataTable = () => {
 
   const handleTableConfigChange = useCallback(
     (config: Omit<GridConfig, "headings">) => {
-      console.log("handleTableConfigChanged", {
-        config,
-      });
+      console.log(
+        "5) Table.examples handleTableConfigChanged, this is where we would persist config",
+        {
+          config,
+        }
+      );
       // we want this to be used when editor is opened next, but we don;t want
       // to trigger a re-render of our dataTable
       configRef.current = config;
@@ -314,10 +324,10 @@ export const VuuDataTable = () => {
       <DatagridSettingsPanel
         availableColumns={columns}
         gridConfig={configRef.current}
-        onConfigChange={handleConfigChange}
+        onConfigChange={handleSettingsConfigChange}
       />
     );
-  }, [columns, handleConfigChange]);
+  }, [columns, handleSettingsConfigChange]);
 
   const hideSettings = useCallback(() => {
     setDialogContent(null);
@@ -341,6 +351,10 @@ export const VuuDataTable = () => {
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
   }
+
+  console.log(`3) Table.examples VuuTable rerender with new config`, {
+    tableConfig,
+  });
 
   return (
     <>
@@ -662,7 +676,7 @@ const ConfigurableDataTable = ({
   const { schemas } = useSchemas();
 
   const handleDataSourceConfigChange = useCallback(
-    (config: DataSourceConfig) => {
+    (config?: DataSourceConfig) => {
       console.log(
         `%chandleDataSourceConfigChange`,
         "color:green; font-weight: bold;",
@@ -692,9 +706,13 @@ const ConfigurableDataTable = ({
   // This needs to trigger a re-render of Table
   const handleSettingConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
-      console.log("handle settings config change RERENDER TABLE", {
-        config,
-      });
+      console.log(
+        "%chandle settings config change RERENDER TABLE",
+        "color: green; font-weight: bold;",
+        {
+          config,
+        }
+      );
       save?.(config, "table-config");
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {

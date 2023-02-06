@@ -66,6 +66,7 @@ export const DatagridSettingsPanel = ({
 
   const handleApply = useCallback(
     (evt: MouseEvent, closePanel = false) => {
+      console.log(`1) DataGridSettingsPanel fire onConfigChange`);
       onConfigChange?.(gridSettings, closePanel);
     },
     [gridSettings, onConfigChange]

@@ -61,25 +61,6 @@ export const DataTable = ({
     width,
   });
 
-  // const handleDropColumn = useCallback(
-  //   (fromIndex: number, toIndex: number) => {
-  //     const column = columns[fromIndex];
-  //     dispatchColumnAction({ type: "moveColumn", column, moveTo: toIndex });
-  //   },
-  //   [columns, dispatchColumnAction]
-  // );
-
-  // const {
-  //   draggable,
-  //   draggedItemIndex,
-  //   tableLayout,
-  //   handleHeaderCellDragStart,
-  // } = useDraggableColumn({
-  //   onDrop: handleDropColumn,
-  //   tableContainerRef: scrollProps.tableContainerRef,
-  //   tableLayout: tableLayoutProp,
-  // });
-
   const style = {
     ...outerSize,
     "--content-height": `${viewportMeasurements.scrollContentHeight}px`,

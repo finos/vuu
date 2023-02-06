@@ -1,8 +1,12 @@
-import { DataSourceConstructorProps, RemoteDataSource } from "@finos/vuu-data";
+import {
+  DataSource,
+  DataSourceConstructorProps,
+  RemoteDataSource,
+} from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
 import { Schema } from "./useSchemas";
 
@@ -30,7 +34,7 @@ const getRequestedColumns = (
 
 const configureColumns = (
   columns: ColumnDescriptor[],
-  columnConfig?: { [key: string]: ColumnDescriptor },
+  columnConfig?: { [key: string]: Omit<ColumnDescriptor, "name"> },
   columnNames?: string[]
 ): ColumnDescriptor[] => {
   const requestedColumns = getRequestedColumns(columns, columnNames);
@@ -62,15 +66,17 @@ export const useTestDataSource = ({
   autoLogin?: boolean;
   bufferSize?: number;
   calculatedColumns?: ColumnDescriptor[];
-  columnConfig?: any;
+  columnConfig?: { [key: string]: Omit<ColumnDescriptor, "name"> };
   columnNames?: string[];
   filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
-  onConfigChange: DataSourceConstructorProps["onConfigChange"];
+  onConfigChange?: DataSourceConstructorProps["onConfigChange"];
   schemas: { [key: string]: Schema };
   sort?: VuuSort;
   tablename?: string;
 }) => {
+  const dataSourceRef = useRef<DataSource | undefined>();
+
   const [columns, config, columnNames, table] = useMemo(() => {
     const schema = schemas[tablename];
     const configuredColumns = configureColumns(
@@ -97,7 +103,16 @@ export const useTestDataSource = ({
       table,
       serverUrl: "127.0.0.1:8090/websocket",
     };
-    return new RemoteDataSource(dataConfig);
+
+    const { current: activeDataSource } = dataSourceRef;
+    if (activeDataSource) {
+      console.log("replacing dataSource", {
+        table: (activeDataSource as RemoteDataSource)?.table,
+      });
+      activeDataSource.unsubscribe();
+    }
+
+    return (dataSourceRef.current = new RemoteDataSource(dataConfig));
   }, [bufferSize, columnNames, filter, groupBy, onConfigChange, sort, table]);
 
   const error = useAutoLoginToVuuServer(autoLogin);

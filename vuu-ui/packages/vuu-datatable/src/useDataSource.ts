@@ -14,7 +14,7 @@ import { VuuDataRow, VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const { RENDER_IDX } = metadataKeys;
+const { RENDER_IDX, SELECTED } = metadataKeys;
 
 const byKey = (row1: VuuDataRow, row2: VuuDataRow) =>
   row1[RENDER_IDX] - row2[RENDER_IDX];
@@ -215,6 +215,18 @@ export class MovingWindow {
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
       this.data[internalIndex] = data;
+
+      // assign 'pre-selected' selection state. This allows us to assign a className
+      // to a non selected row that immediately precedes a selected row. Useful for
+      // styling. This cannot be achieved any other way as document order of row
+      // elements does not necessarily reflect data order.
+      const isSelected = data[SELECTED];
+      const preSelected = this.data[internalIndex - 1]?.[SELECTED];
+      if (preSelected === 0 && isSelected) {
+        this.data[internalIndex - 1][SELECTED] = 2;
+      } else if (preSelected === 2 && !isSelected) {
+        this.data[internalIndex - 1][SELECTED] = 0;
+      }
     }
   }
 

@@ -39,10 +39,13 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   private disabled = false;
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
-  private onConfigChange: undefined | ((config: DataSourceConfig) => void);
+  private onConfigChange:
+    | undefined
+    | ((config: DataSourceConfig | undefined) => void);
 
   #aggregations: VuuAggregation[] = [];
   #columns: string[] = [];
+  #config: DataSourceConfig | undefined;
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
   #range: VuuRange = { from: 0, to: 0 };
@@ -96,6 +99,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
     this.#title = title;
     this.#visualLink = visualLink;
+
+    this.refreshConfig();
   }
 
   async subscribe(
@@ -251,7 +256,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   select(selected: number[]) {
-    console.log(`select [${selected.join(",")}]`);
     this.#selectedRowsCount = selected.length;
     if (this.viewport) {
       this.server?.send({
@@ -284,7 +288,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  get config() {
+  // Build the config structure in advance of any get requests and on every change.
+  // We do not build config on the fly in the getter as we want to avoid creating a
+  // new strucutre on each request - the object is 'stable' in React terminology.
+  private refreshConfig(): DataSourceConfig | undefined {
     const { aggregations, columns, filter, groupBy, sort, visualLink } = this;
     const hasAggregations = aggregations.length > 0;
     const hasColumns = columns.length > 0;
@@ -301,10 +308,14 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       hasGroupBy && (result.groupBy = groupBy);
       hasSort && (result.sort = sort);
       hasVisualLink && (result.visualLink = visualLink);
-      return result;
+      return (this.#config = result);
     } else {
-      return undefined;
+      return (this.#config = undefined);
     }
+  }
+
+  get config() {
+    return this.#config;
   }
 
   get selectedRowsCount() {
@@ -348,7 +359,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
-    this.onConfigChange?.(this.config as DataSourceConfig);
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   get aggregations() {
@@ -364,7 +376,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         aggregations,
       });
     }
-    this.onConfigChange?.(this.config as DataSourceConfig);
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   get sort() {
@@ -384,7 +397,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
-    this.onConfigChange?.(this.config as DataSourceConfig);
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   get filter() {
@@ -404,7 +418,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
-    this.onConfigChange?.(this.config as DataSourceConfig);
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   get groupBy() {
@@ -424,7 +439,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
-    this.onConfigChange?.(this.config as DataSourceConfig);
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   get title() {
@@ -475,7 +491,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         });
       }
     }
-    this.onConfigChange?.(this.config as DataSourceConfig);
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   async menuRpcCall(rpcRequest: Omit<VuuMenuRpcRequest, "vpId">) {

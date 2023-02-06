@@ -19,7 +19,7 @@ import {
   moveItem,
   roundDecimal,
 } from "@finos/vuu-utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   TableColumnResizeHandler,
   tableLayoutType,
@@ -106,6 +106,7 @@ export const useDataTable = ({
 }: DataTableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(0);
   const expectConfigChangeRef = useRef(false);
+  const dataSourceRef = useRef<DataSource>(dataSource);
 
   if (dataSource === undefined) {
     throw Error("no data source provided to DataTable");
@@ -316,10 +317,27 @@ export const useDataTable = ({
     tableLayout,
   });
 
+  useEffect(() => {
+    // External config has changed
+    console.log(
+      `4) useDataTable external config change detected, dispatch model action,
+      set change expected to true`
+    );
+    expectConfigChangeRef.current = true;
+    dispatchColumnAction({
+      type: "init",
+      tableConfig: config,
+      dataSourceConfig: dataSourceRef.current.config,
+    });
+  }, [config, dispatchColumnAction]);
+
   useMemo(() => {
+    console.log(`4) useDataTable change detected to config ...`, {
+      config,
+    });
     if (expectConfigChangeRef.current) {
       console.log(
-        `%c config change triggered in useDataTable`,
+        `%c expected so call onConfigChange`,
         "color: red; font-weight: bold;",
         {
           columns,
@@ -333,7 +351,7 @@ export const useDataTable = ({
 
       expectConfigChangeRef.current = false;
     } else {
-      console.log("columns changes but we were not expecting it so ignore");
+      console.log(" ...columns changes but we were not expecting it so ignore");
     }
   }, [columns, config, onConfigChange]);
 

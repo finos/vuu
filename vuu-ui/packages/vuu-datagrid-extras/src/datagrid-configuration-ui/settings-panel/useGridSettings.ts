@@ -191,11 +191,11 @@ function updateColumnProp(
 
 function updateGridSettings(
   state: GridConfig,
-  { columnFormatHeader: formatColumnHeaders }: ColumnActionUpdateGridSettings
+  { columnFormatHeader }: ColumnActionUpdateGridSettings
 ) {
   return {
     ...state,
-    formatColumnHeaders: formatColumnHeaders ?? state.columnFormatHeader,
+    columnFormatHeader: columnFormatHeader ?? state.columnFormatHeader,
   };
 }
 

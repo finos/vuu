@@ -52,7 +52,8 @@ const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
 
 export interface ColumnActionInit {
   type: "init";
-  config: Omit<GridConfig, "headings">;
+  tableConfig: Omit<GridConfig, "headings">;
+  dataSourceConfig?: DataSourceConfig;
 }
 
 export interface ColumnActionMove {
@@ -120,7 +121,8 @@ export type ColumnActionDispatch = (action: GridModelAction) => void;
 const columnReducer: GridModelReducer = (state, action) => {
   switch (action.type) {
     case "init":
-      return init({ tableConfig: action.config });
+      console.log("modeel init");
+      return init(action);
     case "moveColumn":
       return moveColumn(state, action);
     case "resizeColumn":
@@ -147,6 +149,7 @@ export const useTableModel = (
     GridModelReducer,
     InitialConfig
   >(columnReducer, { tableConfig, dataSourceConfig }, init);
+
   return {
     columns: state.columns,
     dispatchColumnAction,
@@ -160,11 +163,9 @@ type InitialConfig = {
 };
 
 function init({ dataSourceConfig, tableConfig }: InitialConfig): GridModel {
-  //TODO needs to accommodate grouping
-  console.log("INIT ", {
-    dataSourceConfig,
-  });
-  const columns = tableConfig.columns.map(toKeyedColumWithDefaults);
+  const columns = tableConfig.columns.map(
+    toKeyedColumWithDefaults(tableConfig)
+  );
   const maybePinnedColumns = columns.some(isPinned)
     ? sortPinnedColumns(columns)
     : columns;
@@ -179,27 +180,41 @@ function init({ dataSourceConfig, tableConfig }: InitialConfig): GridModel {
   }
 }
 
-const toKeyedColumWithDefaults = (
-  column: ColumnDescriptor,
-  index: number
-): KeyedColumnDescriptor => {
-  const {
-    align = getDefaultAlignment(column.serverDataType),
-    name,
-    label = name,
-    width = DEFAULT_COLUMN_WIDTH,
-    ...rest
-  } = column;
-  return {
-    ...rest,
-    align,
-    label,
-    key: index + KEY_OFFSET,
-    name,
-    originalIdx: index,
-    width,
-  };
+const getLabel = (
+  label: string,
+  columnFormatHeader?: "uppercase" | "capitalize"
+): string => {
+  if (columnFormatHeader === "uppercase") {
+    return label.toUpperCase();
+  } else if (columnFormatHeader === "capitalize") {
+    return label[0].toUpperCase() + label.slice(1).toLowerCase();
+  }
+  return label;
 };
+
+const toKeyedColumWithDefaults =
+  ({
+    columnDefaultWidth = DEFAULT_COLUMN_WIDTH,
+    columnFormatHeader,
+  }: Omit<GridConfig, "headings">) =>
+  (column: ColumnDescriptor, index: number): KeyedColumnDescriptor => {
+    const {
+      align = getDefaultAlignment(column.serverDataType),
+      name,
+      label = name,
+      width = columnDefaultWidth,
+      ...rest
+    } = column;
+    return {
+      ...rest,
+      align,
+      label: getLabel(label, columnFormatHeader),
+      key: index + KEY_OFFSET,
+      name,
+      originalIdx: index,
+      width,
+    };
+  };
 
 function moveColumn(
   state: GridModel,

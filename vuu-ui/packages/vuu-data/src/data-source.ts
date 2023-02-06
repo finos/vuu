@@ -201,7 +201,7 @@ export interface DataSourceConfig {
 export interface DataSourceConstructorProps extends DataSourceConfig {
   bufferSize?: number;
   table: VuuTable;
-  onConfigChange?: (config: DataSourceConfig) => void;
+  onConfigChange?: (config: DataSourceConfig | undefined) => void;
   title?: string;
   viewport?: string;
 }

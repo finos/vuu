@@ -76,6 +76,7 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
   #range: VuuRange = { from: 0, to: 0 };
+  #selectedRowsCount = 0;
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
   #title: string | undefined;
@@ -228,6 +229,10 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
 
   get config() {
     return undefined;
+  }
+
+  get selectedRowsCount() {
+    return this.#selectedRowsCount;
   }
 
   get size() {

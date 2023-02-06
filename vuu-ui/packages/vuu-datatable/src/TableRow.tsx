@@ -41,6 +41,7 @@ export const TableRow = memo(function Row({
   const className = cx(classBase, {
     [`${classBase}-even`]: rowIndex % 2 === 0,
     [`${classBase}-expanded`]: isExpanded,
+    [`${classBase}-preSelected`]: isSelected === 2,
   });
   const offset = rowIndex - index;
 
@@ -60,7 +61,7 @@ export const TableRow = memo(function Row({
 
   return (
     <tr
-      aria-selected={isSelected === 1 || isSelected === 2 ? true : undefined}
+      aria-selected={isSelected === 1 ? true : undefined}
       data-idx={rowIndex}
       className={className}
       onClick={handleRowClick}

@@ -17,8 +17,8 @@ import "./App.css";
 const { websocketUrl: serverUrl, features } = await vuuConfig;
 
 //TODO how do we separate this from the feature
-// const vuuBlotterUrl = "./feature-vuu-blotter/index.js";
-const vuuBlotterUrl = "./feature-vuu-table/index.js";
+const vuuBlotterUrl = "./feature-vuu-blotter/index.js";
+// const vuuBlotterUrl = "./feature-vuu-table/index.js";
 
 registerComponent("Stack", Stack, "container");
 
