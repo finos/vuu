@@ -106,7 +106,11 @@ export const useDataTable = ({
 }: DataTableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(0);
   const expectConfigChangeRef = useRef(false);
-  const dataSourceRef = useRef<DataSource>(dataSource);
+
+  // When we detect and respond to changes to config below, we need
+  // to include current dataSource config when we refresh the model.
+  const dataSourceRef = useRef<DataSource>();
+  dataSourceRef.current = dataSource;
 
   if (dataSource === undefined) {
     throw Error("no data source provided to DataTable");
@@ -321,7 +325,10 @@ export const useDataTable = ({
     // External config has changed
     console.log(
       `4) useDataTable external config change detected, dispatch model action,
-      set change expected to true`
+      set change expected to true`,
+      {
+        dataSourceConfig: dataSourceRef.current.config,
+      }
     );
     expectConfigChangeRef.current = true;
     dispatchColumnAction({

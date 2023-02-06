@@ -9,6 +9,7 @@ import {
   applyFilterToColumns,
   applyGroupByToColumns,
   applySortToColumns,
+  getColumnName,
   getTableHeadings,
   isPinned,
   metadataKeys,
@@ -335,8 +336,9 @@ function updateTableConfig(
     result = {
       ...state,
       columns: columns.map((colName, index) => {
+        const columnName = getColumnName(colName);
         const key = index + KEY_OFFSET;
-        const col = result.columns.find((col) => col.name === colName);
+        const col = result.columns.find((col) => col.name === columnName);
         if (col) {
           if (col.key === key) {
             return col;

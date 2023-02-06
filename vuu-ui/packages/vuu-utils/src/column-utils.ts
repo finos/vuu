@@ -464,3 +464,13 @@ const getSortType = (column: ColumnDescriptor, { sortDefs }: VuuSort) => {
       : sortDef.sortType;
   }
 };
+
+// Calculated columns have the formal 'name:datatype:expression'
+export const getColumnName = (name: string) => {
+  const pos = name.indexOf(":");
+  if (pos === -1) {
+    return name;
+  } else {
+    return name.slice(0, pos);
+  }
+};
