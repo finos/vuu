@@ -36,8 +36,8 @@ const Box = ({ props }) => (
 );
 
 const DraggableBox = (
-  className: any,
-  flexFill: any,
+  className: string,
+  flexFill: boolean,
   small: string,
   medium: string,
   large: string,
