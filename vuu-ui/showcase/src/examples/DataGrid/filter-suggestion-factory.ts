@@ -1,4 +1,5 @@
 import { ColumnDescriptor } from '@finos/vuu-datagrid-types';
+import { Row } from '@finos/vuu-utils';
 import { config as schema } from '../../../public/tables/instruments/config';
 import { generateData } from '../../../public/tables/instruments/instruments';
 
@@ -14,7 +15,7 @@ const suggestColumnValues = async (column: ColumnDescriptor, text: string, isLis
   return Promise.resolve(result);
 };
 
-const _suggestedColumnValues = (rows: any[], column: ColumnDescriptor, text = '', isListItem = false) => {
+const _suggestedColumnValues = (rows: Row[], column: ColumnDescriptor, text = '', isListItem = false) => {
   const key = columnKeys.get(column);
   const lcText = text.toLowerCase();
   let count = 0;
