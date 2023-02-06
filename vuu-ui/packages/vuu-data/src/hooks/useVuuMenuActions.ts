@@ -48,7 +48,7 @@ export const isVisualLinkCreatedAction = (
 export const isVisualLinkRemovedAction = (
   action: GridAction
 ): action is DataSourceVisualLinkRemovedMessage =>
-  action.type === "REMOVE_VISUAL_LINK_SUCCESS";
+  action.type === "vuu-link-removed";
 
 export const isViewportMenusAction = (
   action: GridAction

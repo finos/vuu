@@ -34,7 +34,6 @@ export const OPEN_TREE_NODE = "OPEN_TREE_NODE";
 export const OPEN_TREE_SUCCESS = "OPEN_TREE_SUCCESS";
 export const OPEN_TREE_REJECT = "OPEN_TREE_REJECT";
 export const REMOVE_VP = "REMOVE_VP";
-export const REMOVE_VP_SUCCESS = "REMOVE_VP_SUCCESS";
 export const REMOVE_VP_REJECT = "REMOVE_VP_REJECT";
 export const RPC_CALL = "RPC_CALL";
 export const RPC_RESP = "RPC_RESP";

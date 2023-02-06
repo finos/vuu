@@ -427,12 +427,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   set groupBy(groupBy: VuuGroupBy) {
-    this.#groupBy = groupBy;
+    this.#groupBy = groupBy ?? [];
     if (this.viewport) {
       const message = {
         viewport: this.viewport,
         type: "groupBy",
-        groupBy,
+        groupBy: this.#groupBy,
       } as const;
 
       if (this.server) {

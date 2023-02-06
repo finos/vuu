@@ -54,9 +54,6 @@ export type MessageOptions = {
   module?: string;
 };
 
-// TEST_DATA_COLLECTION
-// import { saveTestData } from '../../test-data-collection';
-
 let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
@@ -124,6 +121,8 @@ export class ServerProxy {
   public async reconnect() {
     await this.login(this.authToken);
 
+    // The 'active' viewports are those the user has on their open layout
+    // Reconnect these first.
     const [activeViewports, inactiveViewports] = partition(
       Array.from(this.viewports.values()),
       isActiveViewport
@@ -177,8 +176,9 @@ export class ServerProxy {
       }
       const viewport = new Viewport(message);
       this.viewports.set(message.viewport, viewport);
-      // use client side viewport as request id, so that when we process the response,
-      // with the serverside viewport we can establish a mapping between the two
+      // use client side viewport id as request id, so that when we process the response,
+      // which will provide the serverside viewport id, we can establish a mapping between
+      // the two
       this.sendIfReady(
         viewport.subscribe(),
         message.viewport,
@@ -399,6 +399,17 @@ export class ServerProxy {
     }
   }
 
+  private removeViewportFromVisualLinks(serverViewportId: string) {
+    for (const vp of this.viewports.values()) {
+      if (vp.links?.some(({ parentVpId }) => parentVpId === serverViewportId)) {
+        const [messageToClient] = vp.setLinks(
+          vp.links.filter(({ parentVpId }) => parentVpId !== serverViewportId)
+        );
+        this.postMessageToClient(messageToClient);
+      }
+    }
+  }
+
   private menuRpcCall(message: WithRequestId<VuuMenuRpcRequest>) {
     const viewport = this.getViewportForClient(message.vpId, false);
     if (viewport?.serverViewportId) {
@@ -610,14 +621,13 @@ export class ServerProxy {
         }
         break;
 
-      case Message.REMOVE_VP_SUCCESS:
+      case "REMOVE_VP_SUCCESS":
         {
-          console.log(`ACK viewport removed`);
           const viewport = this.viewports.get(body.viewPortId);
           if (viewport) {
-            // do we need a destroy method on viewport for cleanup ?
             this.mapClientToServerViewport.delete(viewport.clientViewportId);
             viewports.delete(body.viewPortId);
+            this.removeViewportFromVisualLinks(body.viewPortId);
           }
         }
         break;
@@ -800,12 +810,8 @@ export class ServerProxy {
               const requestId = nextRequestId();
               const serverViewportId =
                 this.mapClientToServerViewport.get(parentClientVpId);
-              console.log(`ServerProxy, vp has a pending link`, {
-                pendingLink,
-              });
 
               if (serverViewportId) {
-                console.log("and we have the viewportId");
                 const message = viewport.createLink(
                   requestId,
                   link.fromColumn,
@@ -813,8 +819,6 @@ export class ServerProxy {
                   link.toColumn
                 );
                 this.sendMessageToServer(message, requestId);
-              } else {
-                console.log("but we dont have the vp");
               }
             }
           }
