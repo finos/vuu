@@ -1,11 +1,11 @@
 import { Flexbox } from "@finos/vuu-layout";
+import { ThemeMode, ThemeSwitch } from "@finos/vuu-shell";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { SaltProvider, Text } from "@salt-ds/core";
 import Module from "module";
 import { ReactElement, useCallback, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Tree } from "./components";
-import { ThemeMode, ThemeSwitch } from "@finos/vuu-shell";
 
 import "./App.css";
 
@@ -28,13 +28,14 @@ const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
 
   if (ds1 === undefined && ds2 === undefined) {
     return 0;
-  } else if (ds2 === undefined) {
-    return -1;
-  } else if (ds1 === undefined) {
-    return 1;
-  } else {
-    return ds1 - ds2;
   }
+  if (ds2 === undefined) {
+    return -1;
+  }
+  if (ds1 === undefined) {
+    return 1;
+  }
+  return ds1 - ds2;
 };
 
 const sourceFromImports = (
