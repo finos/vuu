@@ -3,7 +3,7 @@ import open from "open";
 import chalk from "chalk";
 import { execWait } from "../../scripts/utils.mjs";
 
-fs.copyFileSync("./templates/index.html", "./index.html");
+fs.copyFileSync("./templates/index-preview.html", "./index.html");
 
 execWait("node ../node_modules/.bin/vite preview");
 
