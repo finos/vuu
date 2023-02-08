@@ -23,7 +23,7 @@
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "start:electron": "cd packages/electron && node ./node_modules/.bin/electron .",
     "showcase": "cd showcase && yarn showcase",
-    "showcase:build": "cd packages/vuu-data && yarn build && cd ../../showcase && vite build",
+    "showcase:build": "cd packages/vuu-data && yarn build && cd ../../showcase && yarn copy-preview && vite build",
     "showcase:preview": "cd showcase && yarn preview",
     "test:vite": "vitest run",
     "bump": "node ./scripts/version.mjs",
