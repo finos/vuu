@@ -1,19 +1,11 @@
+import { Flexbox } from "@finos/vuu-layout";
 import {
   Dropdown,
-  Toolbar,
-  Tooltray,
-  ToolbarButton,
-  ToolbarField,
+  Toolbar, ToolbarButton,
+  ToolbarField, Tooltray
 } from "@heswell/salt-lab";
-import {
-  ExportIcon,
-  ShareIcon,
-  NotificationIcon,
-  TearOutIcon,
-} from "@salt-ds/icons";
 import { Button } from "@salt-ds/core";
-import { ColumnChooserIcon, CsvIcon, PdfIcon } from "@salt-ds/icons";
-import { Flexbox } from "@finos/vuu-layout";
+import { ColumnChooserIcon, CsvIcon, ExportIcon, NotificationIcon, PdfIcon, ShareIcon, TearOutIcon } from "@salt-ds/icons";
 
 import "@heswell/component-anatomy/esm/index.css";
 import { useState } from "react";
@@ -75,7 +67,6 @@ export const TooltrayCollapseOrder = () => {
             aria-label="views tooltray"
             data-collapsible="dynamic"
             data-priority={3}
-            // overflowButtonLabel="Views"
           >
             <ToolbarField label="Views" labelPlacement="left">
               <Dropdown

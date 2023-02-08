@@ -3,7 +3,7 @@ import {
   List,
   ListItem,
   Toolbar,
-  ToolbarField,
+  ToolbarField
 } from "@heswell/salt-lab";
 import { useEffect, useMemo, useState } from "react";
 
@@ -11,7 +11,7 @@ import {
   authenticate as vuuAuthenticate,
   connectToServer,
   useTypeaheadSuggestions,
-  useVuuTables,
+  useVuuTables
 } from "@finos/vuu-data";
 
 let displaySequence = 1;

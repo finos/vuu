@@ -1,15 +1,13 @@
-import React, { useRef, useState } from "react";
+import { SyntheticEvent, useRef, useState } from "react";
 
-import { Button } from "@salt-ds/core";
-import { List, ListItem } from "@heswell/salt-lab";
 import {
-  Component,
-  Chest,
-  Drawer,
+  Chest, Component, Drawer,
   Flexbox,
   Stack,
-  View,
+  View
 } from "@finos/vuu-layout";
+import { List, ListItem } from "@heswell/salt-lab";
+import { Button } from "@salt-ds/core";
 
 import "./Chest.stories.css";
 
@@ -18,10 +16,16 @@ export default {
   component: Chest,
 };
 
-const InlineDrawer = ({ inline, position, peekaboo }) => {
+type InlineDrawerProps = {
+  inline?: boolean
+  position: "left" | "right" | "top" | "bottom"
+  peekaboo?: boolean
+}
+
+const InlineDrawer = ({inline = false, position, peekaboo = false}: InlineDrawerProps) => {
   const list = useRef(null);
   const [open, setOpen] = useState(false);
-  const handleClick = (e) => {
+  const handleClick = (e: SyntheticEvent) => {
     if (!list.current?.contains(e.target)) {
       setOpen(!open);
     }
@@ -35,6 +39,7 @@ const InlineDrawer = ({ inline, position, peekaboo }) => {
         peekaboo={peekaboo}
         position={position}
         title="Rebecca"
+        defaultOpen={false}
       >
         <List ref={list}>
           <ListItem>Item 1</ListItem>
@@ -121,20 +126,19 @@ export const LeftInlineDrawerStack = () => {
           open={open}
           position="left"
           title="Rebecca"
+          defaultOpen={false}
         ></Drawer>
         <Stack showTabs style={{ width: "100%", height: "100%" }}>
           <Component
             title="Cornflower"
             resizeable
             style={{ backgroundColor: "cornflowerblue", flex: 1 }}
-            header
             onClick={handleClick}
           />
           <Component
             title="Rebeccas"
             resizeable
             style={{ backgroundColor: "rebeccapurple", flex: 1 }}
-            header
             onClick={handleClick}
           />
         </Stack>
@@ -155,6 +159,7 @@ export const LeftInlineDrawerFlexbox = () => {
         open={open}
         position="left"
         title="Rebecca"
+        defaultOpen={false}
       >
         <div
           style={{
@@ -235,6 +240,7 @@ export const InlineDrawerFlexboxVariants = () => {
           open={open}
           position="left"
           title="Rebecca"
+          defaultOpen={false}
         >
           <div
             style={{
@@ -263,14 +269,12 @@ export const InlineDrawerFlexboxVariants = () => {
               title="Cornflower"
               resizeable
               style={{ backgroundColor: "cornflowerblue", flex: 1 }}
-              header
               onClick={handleClick}
             />
             <Component
               title="Rebeccas"
               resizeable
               style={{ backgroundColor: "rebeccapurple", flex: 1 }}
-              header
               onClick={handleClick}
             />
           </Flexbox>
@@ -296,6 +300,7 @@ export const InlineDrawerFlexboxVariants = () => {
             open={open}
             position="left"
             title="Rebecca"
+            defaultOpen={false}
           >
             <div
               style={{
@@ -311,14 +316,12 @@ export const InlineDrawerFlexboxVariants = () => {
               title="Cornflower"
               resizeable
               style={{ backgroundColor: "cornflowerblue", flex: 1 }}
-              header
               onClick={handleClick}
             />
             <Component
               title="Rebeccas"
               resizeable
               style={{ backgroundColor: "rebeccapurple", flex: 1 }}
-              header
               onClick={handleClick}
             />
           </Flexbox>
@@ -353,6 +356,7 @@ export const CustomSizeDrawer = () => {
         sizeOpen={100}
         position="left"
         peekaboo
+        defaultOpen={false}
       >
         <div
           style={{
@@ -375,13 +379,11 @@ export const CustomSizeDrawer = () => {
             title="Cornflower"
             resizeable
             style={{ backgroundColor: "cornflowerblue", flex: 1 }}
-            header
           />
           <Component
             title="Rebeccas"
             resizeable
             style={{ backgroundColor: "rebeccapurple", flex: 1 }}
-            header
           />
         </Flexbox>
         <div style={{ height: 40, backgroundColor: "#ccc" }}></div>
@@ -393,7 +395,7 @@ export const CustomSizeDrawer = () => {
 export const WithToggleButton = () => {
   return (
     <Chest style={{ width: "100vw", height: "100vh" }}>
-      <Drawer inline position="left" peekaboo toggleButton="end" />
+      <Drawer inline position="left" peekaboo toggleButton="end" defaultOpen={false} />
       <Flexbox
         style={{ width: "100%", height: "100%", flexDirection: "column" }}
       >
@@ -402,13 +404,11 @@ export const WithToggleButton = () => {
             title="Cornflower"
             resizeable
             style={{ backgroundColor: "cornflowerblue", flex: 1 }}
-            header
           />
           <Component
             title="Rebeccas"
             resizeable
             style={{ backgroundColor: "rebeccapurple", flex: 1 }}
-            header
           />
         </Flexbox>
       </Flexbox>

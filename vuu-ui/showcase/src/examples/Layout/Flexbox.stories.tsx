@@ -1,12 +1,10 @@
-import React from "react";
 
 import {
-  ConfigWrapper,
+  Component, ConfigWrapper,
   Flexbox,
   FlexboxLayout,
   Stack,
-  View,
-  Component,
+  View
 } from "@finos/vuu-layout";
 import { Brown } from "./components";
 
@@ -21,6 +19,7 @@ export const Empty = () => (
       border: "2px solid black",
       backgroundColor: "#ccc",
     }}
+    path=""
   />
 );
 
@@ -54,7 +53,7 @@ export const SingleChild = () => {
 SingleChild.displaySequence = displaySequence++;
 
 export const SimpleTower = () => {
-  const handleSplitterMoved = (sizes) => {
+  const handleSplitterMoved = (sizes: any) => {
     console.log(`splitter moved ${JSON.stringify(sizes)}`);
   };
   return (
@@ -84,6 +83,7 @@ export const SimpleTower = () => {
           border: "solid 1px lightgrey",
         }}
         onSplitterMoved={handleSplitterMoved}
+        path=""
       >
         <View resizeable style={{ flexBasis: 150, flexShrink: 0, flexGrow: 0 }}>
           <Component style={{ flex: 1, backgroundColor: "yellow" }} />
@@ -99,7 +99,7 @@ export const SimpleTower = () => {
 SimpleTower.displaySequence = displaySequence++;
 
 export const ThreeChildTower = () => {
-  const handleSplitterMoved = (sizes) => {
+  const handleSplitterMoved = (sizes: any) => {
     console.log(`splitter moved ${JSON.stringify(sizes)}`);
   };
   return (
@@ -132,6 +132,7 @@ export const ThreeChildTower = () => {
           border: "solid 1px lightgrey",
         }}
         onSplitterMoved={handleSplitterMoved}
+        path=""
       >
         <View resizeable style={{ flexBasis: 150, flexShrink: 0, flexGrow: 0 }}>
           <Component style={{ flex: 1, backgroundColor: "yellow" }} />
@@ -160,6 +161,7 @@ export const TerraceWithBorderPaddingMargin = () => (
       padding: "10px 30px",
       backgroundColor: "#ccc",
     }}
+    path=""
   >
     <Component
       title="Y Component"
@@ -189,12 +191,11 @@ export const TerraceAutoSizing = () => (
       padding: "10px 30px",
       backgroundColor: "#ccc",
     }}
+    path=""
   >
-    {/* <div style={{flexBasis: 0, flexShrink: 0, flexGrow: 0,  backgroundColor: 'rgba(0,0,0,.2)'}} data-resizeable data-placeholder data-zero-size/> */}
     <Component
       title="Y Component"
       style={{
-        // flex: 1,
         width: 200,
         boxSizing: "border-box",
         minHeight: 200,
@@ -207,14 +208,12 @@ export const TerraceAutoSizing = () => (
     <Component
       title="R Component"
       style={{
-        // flex: 1,
         width: 300,
         height: 300,
         backgroundColor: "red",
       }}
       data-resizeable
     />
-    {/* <div style={{flexBasis: 0, flexShrink: 1, flexGrow: 1, backgroundColor: 'rgba(0,0,0,.2)'}} data-resizeable data-placeholder/> */}
   </FlexboxLayout>
 );
 
@@ -223,7 +222,6 @@ TerraceAutoSizing.displaySequence = displaySequence++;
 export const TerraceWithHeader = () => (
   <FlexboxLayout
     title="Flexie"
-    header={true}
     style={{
       width: 600,
       height: 300,
@@ -233,6 +231,7 @@ export const TerraceWithHeader = () => (
       padding: "10 30",
       backgroundColor: "#ccc",
     }}
+    path=""
   >
     <Component
       title="Y Component"
@@ -249,9 +248,6 @@ export const TerraceWithHeader = () => (
   </FlexboxLayout>
 );
 TerraceWithHeader.displaySequence = displaySequence++;
-
-const handleLayoutChanged = (layout) =>
-  console.log(JSON.stringify(layout, null, 2));
 
 export const TowerWithinTerrace = () => (
   <div>
@@ -294,13 +290,14 @@ export const TowerWithinTerrace = () => (
         flexDirection: "row",
         border: "solid 1px grey",
       }}
+      path=""
     >
       <View
         title="Y Component"
         style={{ flex: 1, backgroundColor: "yellow" }}
         resizeable
       />
-      <FlexboxLayout style={{ flex: 1, flexDirection: "column" }} resizeable>
+      <FlexboxLayout style={{ flex: 1, flexDirection: "column" }} resizeable path="">
         <View
           title="B Component"
           style={{ flex: 1, backgroundColor: "red" }}
@@ -323,37 +320,31 @@ export const TowerWithinTerrace = () => (
 
 TowerWithinTerrace.displaySequence = displaySequence++;
 
-//export const TerraceWithAlignment = () => <TerraceAlignment />;
-
 export const QuadTerraceWithinTower = () => (
-  <FlexboxLayout style={{ flexDirection: "column", width: 500, height: 500 }}>
+  <FlexboxLayout style={{ flexDirection: "column", width: 500, height: 500 }} path="">
     <View header closeable title="W Component" style={{ height: 100 }}>
       <Component style={{ height: "100%", backgroundColor: "rebeccapurple" }} />
     </View>
-    <FlexboxLayout style={{ flex: 1, flexDirection: "row" }}>
+    <FlexboxLayout style={{ flex: 1, flexDirection: "row" }} path="">
       <Component
         title="W Component"
         style={{ flex: 1, backgroundColor: "red" }}
         resizeable
-        header
       />
       <Component
         title="Y Component"
         style={{ flex: 1, backgroundColor: "green" }}
         resizeable
-        header
       />
       <Component
         title="ZY Component"
         style={{ flex: 1, backgroundColor: "blue" }}
         resizeable
-        header
       />
       <Component
         title="R Component"
         style={{ flex: 1, backgroundColor: "yellow" }}
         resizeable
-        header
       />
     </FlexboxLayout>
   </FlexboxLayout>
@@ -363,8 +354,8 @@ QuadTerraceWithinTower.displaySequence = displaySequence++;
 export const DeeperNesting = () => (
   <ConfigWrapper>
     <FlexboxLayout
-      onLayoutChange={handleLayoutChanged}
       style={{ width: 800, height: 500, flexDirection: "row" }}
+      path=""
     >
       <View
         title="Y Component"
@@ -372,14 +363,16 @@ export const DeeperNesting = () => (
         header
         resizeable
       />
-      <FlexboxLayout style={{ flex: 1, flexDirection: "column" }} resizeable>
+      <FlexboxLayout style={{ flex: 1, flexDirection: "column" }} resizeable path="">
         <FlexboxLayout
           style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: "row" }}
           resizeable
+          path=""
         >
           <FlexboxLayout
             style={{ flex: 1, flexDirection: "column" }}
             resizeable
+            path=""
           >
             <View
               title="B Component"
@@ -446,33 +439,35 @@ export const ComplexNestedLayout = () => (
     column
     style={{ height: "90vh", width: "100vw" }}
     className="hw"
+    path=""
   >
-    <FlexboxLayout style={{ flex: 1 }}>
+    <FlexboxLayout style={{ flex: 1 }} path="">
       <View
         closeable
         header
         resizeable
         style={{ minWidth: 50, flexBasis: 200, flexGrow: 0, flexShrink: 0 }}
         title="View Palette"
+        path=""
       />
-      <FlexboxLayout resizeable column style={{ flex: 1 }}>
+      <FlexboxLayout resizeable column style={{ flex: 1 }} path="">
         <View
           closeable
           header
           resizeable
           style={{ flex: 1 }}
           title="Brown Bear"
+          path=""
         >
-          <Brown style={{ height: "100%" }} />
+          <Brown />
         </View>
         <View closeable header resizeable style={{ flex: 1 }} title="Red Panda">
           <Component style={{ backgroundColor: "red", height: "100%" }} />
         </View>
 
-        <FlexboxLayout resizeable style={{ flex: 1 }}>
+        <FlexboxLayout resizeable style={{ flex: 1 }} path="">
           <Stack
             enableAddTab
-            resizeable
             showTabs
             style={{ flex: 1 }}
             keyBoardActivation="manual"

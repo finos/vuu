@@ -1,4 +1,3 @@
-import React from "react";
 import { FormField, SearchInput } from "@heswell/salt-lab";
 
 export const DefaultSearch = () => {

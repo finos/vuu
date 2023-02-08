@@ -1,6 +1,6 @@
 import { computeMenuPosition, DropMenu, DropTarget } from "@finos/vuu-layout";
 import { PopupService } from "@finos/vuu-popups";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export default {
   title: "Layout/DropMenu",
@@ -32,7 +32,7 @@ const dropTarget1 = new DropTarget({
 
 export const DropMenuTwoOptionsNorth = () => {
   const rootRef = useRef<HTMLDivElement>();
-  const onHover = (target) => {
+  const onHover = (target: any) => {
     console.log(`hover`, target);
   };
 

@@ -1,4 +1,3 @@
-import React, { useCallback, useEffect, useState } from "react";
 import { Filter } from "@finos/vuu-filter-types";
 import {
   FilterInput,
@@ -6,14 +5,13 @@ import {
   updateFilter,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
 } from "@finos/vuu-data";
 import {} from "@finos/vuu-utils";
-
-// import "./ParsedInput.stories.css";
 
 let displaySequence = 1;
 
@@ -50,7 +48,9 @@ export const DefaultFilterInput = () => {
     (filter: Filter | undefined, filterQuery: string, filterName?: string) => {
       setFilter(filter);
       setFilterQuery(filterQuery);
-      setFilterName(filterName);
+      if (filterName) {
+        setFilterName(filterName);
+      }
     },
     []
   );
