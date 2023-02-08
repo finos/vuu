@@ -1,4 +1,4 @@
-import { Panel } from "@heswell/salt-lab";
+import { FormField, Input, Panel } from "@heswell/salt-lab";
 import { Button, Text } from "@salt-ds/core";
 import {
   ChangeEventHandler,
@@ -38,23 +38,22 @@ export const CalculatedColumnPanel = ({
       type: "addCalculatedColumn",
       columnName,
       expression,
+      columnType: "string",
     });
   }, [columnName, dispatchColumnAction, expression]);
 
   return (
     <Panel title="Define Computed Column">
       <Text styleAs="h4">Define Computed Column</Text>
-      <input
-        onChange={handleChangeName}
-        value={columnName}
-        style={{ width: 300 }}
-      />
-      <input
-        onChange={handleChangeExpression}
-        value={expression}
-        style={{ width: 300 }}
-      />
-      <Button onClick={handleSave}>Save</Button>
+      <FormField label="Column Name" labelPlacement="left">
+        <Input value={columnName} onChange={handleChangeName} />
+      </FormField>
+      <FormField label="Column Expression" labelPlacement="top">
+        <Input value={expression} onChange={handleChangeExpression} />
+      </FormField>
+      <div style={{ marginTop: 12 }}>
+        <Button onClick={handleSave}>Save</Button>
+      </div>
     </Panel>
   );
 };

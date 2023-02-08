@@ -14,13 +14,16 @@ export type ColumnFunctionDescriptor = {
 };
 
 export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
+  /**
+   * concatenate()
+   */
   {
     accepts: "string",
     description:
       "Returns multiple string values as a single joined string. Arguments may be string literal values, string columns or other string expressions. Non string arguments may also be included, these will be converted to strings.",
     example: {
       expression: 'concatenate("example", "-test")',
-      result: "example-test",
+      result: '"example-test"',
     },
     name: "concatenate",
     params: {
@@ -28,14 +31,34 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "string",
   },
+  /**
+   * contains()
+   */
+  {
+    accepts: ["string", "string"],
+    description:
+      "Tests a string value to determine whether it contains a given substring. Accepts two arguments: source text and target substring. Returns true if <source text> contains one or more occurrences of <target subscring>",
+    example: {
+      expression: 'contains("Royal Bank of Scotland", "bank")',
+      result: "true",
+    },
+    name: "contains",
+    params: {
+      description: "( string )",
+    },
+    type: "boolean",
+  },
 
+  /**
+   * left()
+   */
   {
     accepts: ["string", "number"],
     description:
       "Returns the leftmost <number> characters from <string>. First argument may be a string literal, string column or other string expression.",
     example: {
-      expression: "blah",
-      result: "blah",
+      expression: 'left("USD Benchmark Report", 3)',
+      result: '"USD"',
     },
     name: "left",
     params: {
@@ -44,6 +67,9 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "string",
   },
+  /**
+   * len()
+   */
   {
     accepts: "string",
     description:
@@ -58,9 +84,13 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "number",
   },
+  /**
+   * lower()
+   */
   {
     accepts: "string",
-    description: "Display a string values as all lowercase",
+    description:
+      "Convert a string value to lowercase. Argument may be a string column or other string expression.",
     example: {
       expression: 'lower("examPLE")',
       result: '"example"',
@@ -71,9 +101,13 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "string",
   },
+  /**
+   * upper()
+   */
   {
     accepts: "string",
-    description: "Display a string values as all uppercase",
+    description:
+      "Convert a string value to uppercase. Argument may be a string column or other string expression.",
     example: {
       expression: 'upper("example")',
       result: '"EXAMPLE"',
@@ -84,9 +118,13 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "string",
   },
+  /**
+   * right()
+   */
   {
     accepts: ["string", "number"],
-    description: "blah",
+    description:
+      "Returns the rightmost <number> characters from <string>. First argument may be a string literal, string column or other string expression.",
     example: {
       expression: "blah",
       result: "blah",
@@ -97,9 +135,13 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "string",
   },
+  /**
+   * replace()
+   */
   {
-    accepts: "string",
-    description: "blah",
+    accepts: ["string", "string", "string"],
+    description:
+      "Replace characters within a string. Accepts three arguments: source text, text to replace and replacement text. Returns a copy of <source text> with any occurrences of <text to replace> replaced by <replacement text>",
     example: {
       expression: "blah",
       result: "blah",
@@ -110,9 +152,12 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "string",
   },
+  /**
+   * text()
+   */
   {
     accepts: "number",
-    description: "blah",
+    description: "Converts a number to a string.",
     example: {
       expression: "blah",
       result: "blah",
@@ -123,22 +168,13 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "string",
   },
+  /**
+   * starts()
+   */
   {
     accepts: "string",
-    description: "blah",
-    example: {
-      expression: "blah",
-      result: "blah",
-    },
-    name: "contains",
-    params: {
-      description: "( string )",
-    },
-    type: "boolean",
-  },
-  {
-    accepts: "string",
-    description: "blah",
+    description:
+      "Tests a string value to determine whether it starts with a given substring. Accepts two arguments: source text and target substring. Returns true if <source text> starts with <target subscring>.",
     example: {
       expression: "blah",
       result: "blah",
@@ -149,9 +185,13 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "boolean",
   },
+  /**
+   * starts()
+   */
   {
     accepts: "string",
-    description: "blah",
+    description:
+      "Tests a string value to determine whether it ends with a given substring. Accepts two arguments: source text and target substring. Returns true if <source text> ends with <target subscring>.",
     example: {
       expression: "blah",
       result: "blah",

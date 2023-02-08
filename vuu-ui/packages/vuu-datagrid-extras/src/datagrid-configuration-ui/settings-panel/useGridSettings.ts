@@ -19,6 +19,7 @@ export interface ColumnActionAdd {
 }
 export interface ColumnActionAddCalculatedColumn {
   columnName: string;
+  columnType: "string" | "int" | "double" | "boolean";
   expression: string;
   type: "addCalculatedColumn";
 }
@@ -127,12 +128,13 @@ function addColumn(
 
 function addCalculatedColumn(
   state: GridConfig,
-  { columnName, expression }: ColumnActionAddCalculatedColumn
+  { columnName, columnType, expression }: ColumnActionAddCalculatedColumn
 ) {
   const { columns: stateColumns } = state;
   const calculatedColumn = {
     name: columnName,
     expression,
+    serverDataType: columnType,
   };
   return { ...state, columns: stateColumns.concat(calculatedColumn) };
 }

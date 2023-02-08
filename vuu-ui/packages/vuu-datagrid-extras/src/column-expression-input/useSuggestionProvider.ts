@@ -1,41 +1,19 @@
 import { Completion } from "@codemirror/autocomplete";
 import { useTypeaheadSuggestions } from "@finos/vuu-data";
-import { IExpressionSuggestionProvider } from "@finos/vuu-datagrid-extras";
+import {
+  ColumnExpressionOperator,
+  IExpressionSuggestionProvider,
+} from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { SuggestionType } from "@finos/vuu-filters";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
-import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";
+import { createEl, isNumericColumn, isTextColumn } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import {
   ColumnFunctionDescriptor,
   columnFunctionDescriptors,
 } from "./column-function-descriptors";
-import { createEl } from "@finos/vuu-utils";
-import { ColumnExpressionOperator } from "@finos/vuu-datagrid-extras";
-
-const functionDocInfo = (
-  functionName: string,
-  params: string,
-  type: string,
-  description: string
-) => {
-  const div = createEl("div", "vuuFunctionDoc");
-  const child1 = createEl("div", "function-heading");
-
-  const child1_1 = createEl("span", "function-name", functionName);
-  const child1_2 = createEl("span", "param-list", params);
-  const child1_3 = createEl("span", "function-type", type);
-  child1.appendChild(child1_1);
-  child1.appendChild(child1_2);
-  child1.appendChild(child1_3);
-
-  const child2 = createEl("p", undefined, description);
-
-  div.appendChild(child1);
-  div.appendChild(child2);
-
-  return div;
-};
+import { functionDocInfo } from "./functionDocInfo";
 
 const showParenthesesInfo = () => {
   const div = createEl("div");
@@ -132,19 +110,31 @@ const isApplicable = (column: ColumnDescriptor, suggestion: Completion) => {
   return isNumericColumn(column);
 };
 
-const toFunctionCompletion = ({
-  name,
-  description,
-  params,
-  type,
-}: ColumnFunctionDescriptor) => ({
-  apply: `${name}( `,
+const toFunctionCompletion = (
+  functionDescriptor: ColumnFunctionDescriptor
+) => ({
+  apply: `${functionDescriptor.name}( `,
   boost: 2,
-  expressionType: type,
-  info: () => functionDocInfo(name, params.description, type, description),
-  label: name,
+  expressionType: functionDescriptor.type,
+  info: () => functionDocInfo(functionDescriptor),
+  label: functionDescriptor.name,
   type: "function",
 });
+
+const getAcceptedTypes = (fn?: ColumnFunctionDescriptor) => {
+  if (fn) {
+    if (typeof fn.accepts === "string") {
+      return fn.accepts;
+    } else if (Array.isArray(fn.accepts)) {
+      if (fn.accepts.every((s) => s === "string")) {
+        return "string";
+      } else {
+        return "any";
+      }
+    }
+  }
+  return "any";
+};
 
 const functions: Completion[] =
   columnFunctionDescriptors.map(toFunctionCompletion);
@@ -152,8 +142,9 @@ const functions: Completion[] =
 const getFunctions = ({ functionName }: ColumnOptions) => {
   if (functionName) {
     const fn = columnFunctionDescriptors.find((f) => f.name === functionName);
+    const acceptedTypes = getAcceptedTypes(fn);
     if (fn) {
-      switch (fn.accepts) {
+      switch (acceptedTypes) {
         case "string":
           return columnFunctionDescriptors
             .filter((f) => f.type === "string" || f.type === "variable")
