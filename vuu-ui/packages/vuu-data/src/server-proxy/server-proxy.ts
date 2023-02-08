@@ -36,6 +36,7 @@ import {
 } from "../vuuUIMessageTypes";
 import {
   DataSourceCallbackMessage,
+  DataSourceEnabledMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
 } from "../data-source";
@@ -647,7 +648,7 @@ export class ServerProxy {
           const viewport = this.viewports.get(body.viewPortId);
           if (viewport) {
             const response = viewport.completeOperation(requestId);
-            if (response) {
+            if (response !== undefined) {
               this.postMessageToClient(response);
             }
           }
@@ -661,7 +662,7 @@ export class ServerProxy {
           if (viewport) {
             const response = viewport.completeOperation(requestId);
             if (response) {
-              this.postMessageToClient(response);
+              this.postMessageToClient(response as DataSourceEnabledMessage);
               const rows = viewport.currentData();
               this.postMessageToClient({
                 clientViewportId: viewport.clientViewportId,

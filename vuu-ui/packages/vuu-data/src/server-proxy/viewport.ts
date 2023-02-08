@@ -26,9 +26,16 @@ import { KeySet } from "./keyset";
 import * as Message from "./messages";
 
 import {
+  DataSourceAggregateMessage,
+  DataSourceColumnsMessage,
+  DataSourceDisabledMessage,
+  DataSourceEnabledMessage,
+  DataSourceFilterMessage,
+  DataSourceGroupByMessage,
   DataSourceMenusMessage,
   DataSourceRow,
   DataSourceRowPredicate,
+  DataSourceSortMessage,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
@@ -253,23 +260,39 @@ export class Viewport {
     } else if (type === "groupBy") {
       this.isTree = data.length > 0;
       this.groupBy = data;
-      return { clientViewportId, type, groupBy: data };
+      return {
+        clientViewportId,
+        type,
+        groupBy: data,
+      } as DataSourceGroupByMessage;
     } else if (type === "columns") {
       this.columns = data;
-      return { clientViewportId, type, columns: data };
+      return {
+        clientViewportId,
+        type,
+        columns: data,
+      } as DataSourceColumnsMessage;
     } else if (type === "filter") {
       this.filter = data as DataSourceFilter;
-      return { clientViewportId, type, filter: data };
+      return {
+        clientViewportId,
+        type,
+        filter: data,
+      } as DataSourceFilterMessage;
     } else if (type === "aggregate") {
       this.aggregations = data as VuuAggregation[];
       return {
         clientViewportId,
         type: "aggregate",
         aggregations: this.aggregations,
-      };
+      } as DataSourceAggregateMessage;
     } else if (type === "sort") {
       this.sort = data;
-      return { clientViewportId, type, sort: this.sort };
+      return {
+        clientViewportId,
+        type,
+        sort: this.sort,
+      } as DataSourceSortMessage;
     } else if (type === "selection") {
       // should we do this here ?
       // this.selection = data;
@@ -278,13 +301,13 @@ export class Viewport {
       return {
         type: "disabled",
         clientViewportId,
-      };
+      } as DataSourceDisabledMessage;
     } else if (type === "enable") {
       this.disabled = false;
       return {
         type: "enabled",
         clientViewportId,
-      };
+      } as DataSourceEnabledMessage;
     } else if (type === "CREATE_VISUAL_LINK") {
       const [colName, parentViewportId, parentColName] = params;
       this.linkedParent = {

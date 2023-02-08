@@ -323,19 +323,14 @@ export const useDataTable = ({
 
   useEffect(() => {
     // External config has changed
-    console.log(
-      `4) useDataTable external config change detected, dispatch model action,
-      set change expected to true`,
-      {
+    if (dataSourceRef.current) {
+      expectConfigChangeRef.current = true;
+      dispatchColumnAction({
+        type: "init",
+        tableConfig: config,
         dataSourceConfig: dataSourceRef.current.config,
-      }
-    );
-    expectConfigChangeRef.current = true;
-    dispatchColumnAction({
-      type: "init",
-      tableConfig: config,
-      dataSourceConfig: dataSourceRef.current.config,
-    });
+      });
+    }
   }, [config, dispatchColumnAction]);
 
   useMemo(() => {

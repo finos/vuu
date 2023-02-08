@@ -76,11 +76,6 @@ export const usePersistentState = () => {
 
   const saveState = useCallback(
     (id: string, key: string | undefined, data: unknown) => {
-      console.log(
-        `%csave state ${key}`,
-        "color: brown; font-weight: bold; font-size: 16px",
-        { data }
-      );
       if (key === undefined) {
         persistentState.set(id, data);
       } else if (persistentState.has(id)) {

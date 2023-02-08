@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { partition, Row } from "@finos/vuu-utils";
+import { extractFilterForColumn, partition, Row } from "@finos/vuu-utils";
 import {
   isAndFilter,
   isInFilter,
@@ -14,7 +14,6 @@ import {
   Filter,
   FilterClause,
   FilterCombinatorOp,
-  MultiClauseFilter,
 } from "@finos/vuu-filter-types";
 
 export const AND = "and";

@@ -286,12 +286,6 @@ export const VuuDataTable = () => {
 
   const handleSettingsConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
-      console.log(
-        `2) Table.examples VuuDataTable handleSettingsConfigChange, call setTableConfig`,
-        {
-          config,
-        }
-      );
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
           // side effect: update columns on dataSource
@@ -306,12 +300,6 @@ export const VuuDataTable = () => {
 
   const handleTableConfigChange = useCallback(
     (config: Omit<GridConfig, "headings">) => {
-      console.log(
-        "5) Table.examples handleTableConfigChanged, this is where we would persist config",
-        {
-          config,
-        }
-      );
       // we want this to be used when editor is opened next, but we don;t want
       // to trigger a re-render of our dataTable
       configRef.current = config;
@@ -351,10 +339,6 @@ export const VuuDataTable = () => {
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
   }
-
-  console.log(`3) Table.examples VuuTable rerender with new config`, {
-    tableConfig,
-  });
 
   return (
     <>
@@ -677,13 +661,6 @@ const ConfigurableDataTable = ({
 
   const handleDataSourceConfigChange = useCallback(
     (config?: DataSourceConfig) => {
-      console.log(
-        `%chandleDataSourceConfigChange`,
-        "color:green; font-weight: bold;",
-        {
-          config,
-        }
-      );
       save?.(config, "datasource-config");
     },
     [save]
@@ -706,13 +683,6 @@ const ConfigurableDataTable = ({
   // This needs to trigger a re-render of Table
   const handleSettingConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
-      console.log(
-        "%chandle settings config change RERENDER TABLE",
-        "color: green; font-weight: bold;",
-        {
-          config,
-        }
-      );
       save?.(config, "table-config");
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
@@ -728,14 +698,6 @@ const ConfigurableDataTable = ({
   // This does NOT need to trigger a re-render of Table
   const handleTableConfigChange = useCallback(
     (config: Omit<GridConfig, "headings">) => {
-      console.log(
-        `handle table config change DO NOT RERENDER TABLE ${Object.keys(
-          config
-        ).join("|")}`,
-        {
-          config,
-        }
-      );
       // we want this to be used when editor is opened next, but we don;t want
       // to trigger a re-render of our dataTable
       configRef.current = config;
