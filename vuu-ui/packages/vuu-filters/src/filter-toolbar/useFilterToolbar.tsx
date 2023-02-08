@@ -1,5 +1,5 @@
+import { Filter } from "@finos/vuu-filter-types";
 import {
-  Filter,
   isMultiValueFilter,
   isNamedFilter,
   isSingleValueFilter,

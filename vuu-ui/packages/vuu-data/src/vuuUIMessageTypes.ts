@@ -1,6 +1,7 @@
 import {
   ClientToServerTableList,
   ClientToServerTableMeta,
+  LinkDescriptorWithLabel,
   MenuRpcAction,
   TypeAheadMethod,
   VuuAggregation,
@@ -10,11 +11,9 @@ import {
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { WithRequestId } from "./message-utils";
-import {
-  DataSourceFilter,
-  DataSourceVisualLinkCreatedMessage,
-} from "./data-source";
+import { DataSourceVisualLinkCreatedMessage } from "./data-source";
 
 export type ConnectionStatus =
   | "connecting"
@@ -45,7 +44,7 @@ export interface ServerProxySubscribeMessage {
   table: VuuTable;
   title?: string;
   viewport: string;
-  visualLink?: DataSourceVisualLinkCreatedMessage;
+  visualLink?: LinkDescriptorWithLabel;
 }
 
 // export type VuuUIMessageInConnectionStatus = {
@@ -155,7 +154,7 @@ export interface VuuUIMessageOutCloseTreeNode extends ViewportMessageOut {
 export interface VuuUIMessageOutCreateLink extends ViewportMessageOut {
   childColumnName: string;
   parentColumnName: string;
-  parentVpId: string;
+  parentClientVpId: string;
   type: "createLink";
 }
 export interface VuuUIMessageOutRemoveLink extends ViewportMessageOut {

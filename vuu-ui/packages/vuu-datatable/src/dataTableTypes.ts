@@ -1,19 +1,42 @@
-import { DataSource, DataSourceRow } from "@finos/vuu-data";
-import { KeyedColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
+import {
+  DataSource,
+  DataSourceRow,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
+} from "@finos/vuu-data";
+import {
+  KeyedColumnDescriptor,
+  GridConfig,
+  TableHeadings,
+} from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent } from "react";
 
 export type tableLayoutType = "row" | "column";
 
+export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
+
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   allowConfigEditing?: boolean;
-  config: GridConfig;
+  config: Omit<GridConfig, "headings">;
   dataSource: DataSource;
   headerHeight?: number;
   height?: number;
-  onConfigChange?: (config: GridConfig) => void;
+  onConfigChange?: (config: Omit<GridConfig, "headings">) => void;
+  /**
+   * Features like context menu actions and visual links are enabled by the Vuu server.
+   * This callback allows us to receive a notification when such a feature is available.
+   * The options provided must then be used to configure appropriate UI affordances.
+   */
+  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  /**
+   * When a Vuu feature e.g. context menu action, has been invoked, the Vuu server
+   * response must be handled. This callback provides that response.
+   */
+  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onShowConfigEditor?: () => void;
   renderBufferSize?: number;
   rowHeight?: number;
+  selectionModel?: TableSelectionModel;
   tableLayout?: tableLayoutType;
   width?: number;
 }
@@ -33,10 +56,13 @@ export interface TableImplementationProps {
   columns: KeyedColumnDescriptor[];
   data: DataSourceRow[];
   headerHeight: number;
+  headings: TableHeadings;
   onColumnResize?: TableColumnResizeHandler;
   onHeaderCellDragEnd?: () => void;
   onHeaderCellDragStart?: (evt: MouseEvent) => void;
+  onContextMenu?: (evt: MouseEvent<HTMLElement>) => void;
   onRemoveColumnFromGroupBy?: (column: KeyedColumnDescriptor) => void;
+  onRowClick?: RowClickHandler;
   onSort: (column: KeyedColumnDescriptor, isAdditive: boolean) => void;
   onToggleGroup?: (row: DataSourceRow) => void;
   rowHeight: number;
@@ -63,3 +89,10 @@ export interface Viewport {
   rowCount: number;
   scrollContentWidth: number;
 }
+
+export type RowClickHandler = (
+  index: number,
+  row: DataSourceRow,
+  rangeSelect: boolean,
+  keepExistingSelection: boolean
+) => void;

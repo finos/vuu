@@ -15,9 +15,12 @@ const { RENDER_IDX } = metadataKeys;
 export const RowBasedTable = ({
   columns,
   data,
+  headings,
   onColumnResize,
   onHeaderCellDragStart,
+  onContextMenu,
   onRemoveColumnFromGroupBy,
+  onRowClick,
   onSort,
   onToggleGroup,
   rowHeight,
@@ -56,6 +59,15 @@ export const RowBasedTable = ({
         ))}
       </colgroup>
       <thead>
+        {headings.map((colHeaders, i) => (
+          <tr className="vuuTable-heading" key={i}>
+            {colHeaders.map(({ label, span }, j) => (
+              <th colSpan={span} key={j} className="vuuTable-headingCell">
+                {label}
+              </th>
+            ))}
+          </tr>
+        ))}
         <tr>
           {columns.map((column, i) => {
             const style = getColumnPinStyle(column);
@@ -84,13 +96,14 @@ export const RowBasedTable = ({
           })}
         </tr>
       </thead>
-      <tbody>
+      <tbody onContextMenu={onContextMenu}>
         {data?.map((row, i) => (
           <TableRow
             columns={columns}
             height={rowHeight}
             index={i}
             key={row[RENDER_IDX]}
+            onClick={onRowClick}
             onToggleGroup={onToggleGroup}
             row={row}
             valueFormatters={valueFormatters}

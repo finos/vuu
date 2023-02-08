@@ -1,18 +1,23 @@
 import {
-  ConfigChangeMessage,
-  DataSourceMenusMessage,
-  DataSourceVisualLinksMessage,
+  DataSource,
+  DataSourceConfig,
+  DataSourceVisualLinkCreatedMessage,
+  isViewportMenusAction,
+  isVisualLinksAction,
+  MenuActionConfig,
   RemoteDataSource,
   TableSchema,
   useVuuMenuActions,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
 } from "@finos/vuu-data";
-import { GridConfig, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { GridConfig } from "@finos/vuu-datagrid-types";
 import { DataTable } from "@finos/vuu-datatable";
 import { Filter } from "@finos/vuu-filter-types";
 import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { VuuGroupBy, VuuMenu, VuuSort } from "@finos/vuu-protocol-types";
+import { LinkDescriptorWithLabel, VuuMenu } from "@finos/vuu-protocol-types";
 import {
   FeatureProps,
   ShellContextProps,
@@ -20,19 +25,19 @@ import {
 } from "@finos/vuu-shell";
 import { ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSuggestionProvider } from "./useSuggestionProvider";
 
 import "./vuuTable.css";
 
 const classBase = "vuuTable";
-const CONFIG_KEYS = ["filter", "filterQuery", "groupBy", "sort"];
 
 type BlotterConfig = {
-  columns?: KeyedColumnDescriptor[];
-  groupBy?: VuuGroupBy;
-  sort?: VuuSort;
+  "datasource-config"?: DataSourceConfig;
+  "table-config"?: Omit<GridConfig, "headings">;
 };
+
+const NO_CONFIG: BlotterConfig = {};
 
 export interface FilteredTableProps extends FeatureProps {
   schema: TableSchema;
@@ -60,121 +65,152 @@ const applyDefaults = (
 };
 
 const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
-  const { id, dispatch, load, purge, save, loadSession, saveSession } =
+  const { id, dispatch, load, save, loadSession, saveSession, title } =
     useViewContext();
-  const config = useMemo(() => load?.() as BlotterConfig | undefined, [load]);
-  console.log({ config });
+  const {
+    "datasource-config": dataSourceConfigFromState,
+    "table-config": tableConfigFromState,
+  } = useMemo(() => (load?.() ?? NO_CONFIG) as BlotterConfig, [load]);
+
+  console.log({
+    dataSourceConfigFromState,
+  });
+
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
   const [currentFilter, setCurrentFilter] = useState<Filter>();
+
+  const configColumns = tableConfigFromState?.columns;
+
+  const tableConfig = useMemo(
+    () => ({
+      columns: configColumns || applyDefaults(schema, getDefaultColumnConfig),
+    }),
+    [configColumns, getDefaultColumnConfig, schema]
+  );
+
+  const tableConfigRef = useRef<Omit<GridConfig, "headings">>(tableConfig);
 
   const suggestionProvider = useSuggestionProvider({
     columns: schema.columns,
     table: schema.table,
   });
 
-  const dataSource: RemoteDataSource = useMemo(() => {
+  const handleDataSourceConfigChange = useCallback(
+    (config: DataSourceConfig) => save?.(config, "datasource-config"),
+    [save]
+  );
+
+  const dataSource: DataSource = useMemo(() => {
     let ds = loadSession?.("data-source") as RemoteDataSource;
     if (ds) {
       return ds;
     }
-    const columns = schema.columns.map((col) => col.name);
+    const columns =
+      dataSourceConfigFromState?.columns ??
+      schema.columns.map((col) => col.name);
+
     ds = new RemoteDataSource({
+      onConfigChange: handleDataSourceConfigChange,
       viewport: id,
       table: schema.table,
-      ...config,
+      ...dataSourceConfigFromState,
       columns,
+      title,
     });
     saveSession?.(ds, "data-source");
     return ds;
-  }, [config, id, loadSession, saveSession, schema]);
+  }, [
+    dataSourceConfigFromState,
+    handleDataSourceConfigChange,
+    id,
+    loadSession,
+    saveSession,
+    schema.columns,
+    schema.table,
+    title,
+  ]);
 
   useEffect(() => {
-    dataSource.enable();
+    dataSource.enable?.();
     return () => {
-      dataSource.disable();
+      // suspend activity on the dataSource when component is unmounted
+      dataSource.disable?.();
     };
   }, [dataSource]);
 
   const removeVisualLink = useCallback(() => {
-    dataSource.removeLink();
+    dataSource.visualLink = undefined;
   }, [dataSource]);
 
-  const handleTableConfigChange = useCallback((config: GridConfig) => {
-    // we want this to be used when editor is opened next, but we don;t want
-    // to trigger a re-render of our dataTable
-    console.log(`config changed ${JSON.stringify(config)}`);
-    // configRef.current = config;
-  }, []);
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      save?.(config, "table-config");
+      tableConfigRef.current = config;
+    },
+    [save]
+  );
 
-  const handleConfigChange = useCallback(
-    (
-      update:
-        | ConfigChangeMessage
-        | DataSourceMenusMessage
-        | DataSourceVisualLinksMessage
-    ) => {
-      switch (update.type) {
-        case "VIEW_PORT_MENUS_RESP":
-          {
-            // We only need to save the context menu into session state
-            // not state (which gets persisted), They are loaded afresh
-            // from the server on application load.
-            saveSession?.(update.menu, "vs-context-menu");
-          }
-          break;
-        case "VP_VISUAL_LINKS_RESP":
-          {
-            // See comment above, same here.
-            saveSession?.(update.links, "visual-links");
-          }
-          break;
-        case "CREATE_VISUAL_LINK_SUCCESS":
-          {
-            dispatch?.({
-              type: "add-toolbar-contribution",
-              location: "post-title",
-              content: (
-                <ToolbarButton
-                  aria-label="remove-link"
-                  onClick={removeVisualLink}
-                >
-                  <LinkedIcon />
-                </ToolbarButton>
-              ),
-            });
-            save?.(update, "visual-link");
-          }
-          break;
-
-        case "REMOVE_VISUAL_LINK_SUCCESS":
-          {
-            dispatch?.({
-              type: "remove-toolbar-contribution",
-              location: "post-title",
-            });
-            purge?.("visual-link");
-          }
-          break;
-
-        default:
-          for (const [key, state] of Object.entries(update)) {
-            if (CONFIG_KEYS.includes(key)) {
-              save?.(state, key);
-            }
-          }
+  const handleVuuFeatureEnabled = useCallback(
+    (message: VuuFeatureMessage) => {
+      if (isViewportMenusAction(message)) {
+        saveSession?.(message.menu, "vuu-menu");
+      } else if (isVisualLinksAction(message)) {
+        saveSession?.(message.links, "vuu-links");
       }
     },
-    [dispatch, purge, removeVisualLink, save, saveSession]
+    [saveSession]
+  );
+
+  const handleVuuFeatureInvoked = useCallback(
+    (message: VuuFeatureInvocationMessage) => {
+      if (message.type === "vuu-link-created") {
+        dispatch?.({
+          type: "add-toolbar-contribution",
+          location: "post-title",
+          content: (
+            <ToolbarButton aria-label="remove-link" onClick={removeVisualLink}>
+              <LinkedIcon />
+            </ToolbarButton>
+          ),
+        });
+      } else {
+        dispatch?.({
+          type: "remove-toolbar-contribution",
+          location: "post-title",
+        });
+      }
+    },
+    [dispatch, removeVisualLink]
+  );
+
+  // It is important that these values are not assigned in advance. They
+  // are accessed at the point of construction of ContextMenu
+  const menuActionConfig: MenuActionConfig = useMemo(
+    () => ({
+      get visualLink() {
+        return load?.("visual-link") as DataSourceVisualLinkCreatedMessage;
+      },
+      get visualLinks() {
+        return loadSession?.("vuu-links") as LinkDescriptorWithLabel[];
+      },
+      get vuuMenu() {
+        return loadSession?.("vuu-menu") as VuuMenu;
+      },
+    }),
+    [load, loadSession]
   );
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
-    vuuMenu: loadSession?.("vs-context-menu") as VuuMenu,
     dataSource,
-    onConfigChange: handleConfigChange,
+    menuActionConfig,
     onRpcResponse: handleRpcResponse,
-    visualLink: load?.("visual-link"),
-    visualLinks: loadSession?.("visual-links"),
   });
+
+  useEffect(() => {
+    if (title !== dataSource.title) {
+      dataSource.title = title;
+    }
+  }, [dataSource, title]);
 
   const handleSubmitFilter = useCallback(
     (
@@ -196,15 +232,6 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
     [currentFilter, dataSource]
   );
 
-  const configColumns = config?.columns;
-
-  const tableConfig = useMemo(
-    () => ({
-      columns: configColumns || applyDefaults(schema, getDefaultColumnConfig),
-    }),
-    [configColumns, getDefaultColumnConfig, schema]
-  );
-
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
@@ -220,11 +247,12 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
           <DataTable
             {...props}
             // columnSizing="fill"
-            config={tableConfig}
+            config={tableConfigRef.current}
             dataSource={dataSource}
             // columns={columns}
             onConfigChange={handleTableConfigChange}
-            // renderBufferSize={80}
+            onFeatureEnabled={handleVuuFeatureEnabled}
+            onFeatureInvocation={handleVuuFeatureInvoked}
             renderBufferSize={80}
             rowHeight={18}
             // selectionModel="extended"

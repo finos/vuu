@@ -2,20 +2,28 @@ import {
   ColumnDescriptor,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
+  TableHeading,
+  TableHeadings,
 } from "@finos/vuu-datagrid-types";
 import {
   VuuAggregation,
   VuuAggType,
   VuuGroupBy,
+  VuuSort,
 } from "@finos/vuu-protocol-types";
 import { CSSProperties } from "react";
 import { Row } from "./row-utils";
+
+import { DataSourceFilter } from "@finos/vuu-data-types";
+import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
+import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
 export interface ColumnMap {
   [columnName: string]: number;
 }
 
 const SORT_ASC = "asc";
+const NO_HEADINGS: TableHeadings = [];
 
 export type SortCriteriaItem = string | [string, "asc"]; // TODO where is 'desc'?
 
@@ -56,6 +64,14 @@ export const isNumericColumn = ({ serverDataType }: ColumnDescriptor) =>
     : serverDataType === "int" ||
       serverDataType === "long" ||
       serverDataType === "double";
+
+export const isPinned = (column: ColumnDescriptor) =>
+  typeof column.pin === "string";
+
+export const hasHeadings = (column: ColumnDescriptor) =>
+  Array.isArray(column.heading) && column.heading.length > 0;
+
+export const isResizing = (column: KeyedColumnDescriptor) => column.resizing;
 
 export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
   serverDataType === undefined
@@ -240,9 +256,6 @@ export const isGroupColumn = (
   column: KeyedColumnDescriptor
 ): column is GroupColumnDescriptor => column.isGroup === true;
 
-export const isPinned = (column: ColumnDescriptor) =>
-  typeof column.pin === "string";
-
 export const sortPinnedColumns = (
   columns: KeyedColumnDescriptor[]
 ): KeyedColumnDescriptor[] => {
@@ -296,6 +309,39 @@ export const sortPinnedColumns = (
   }
 };
 
+export const getTableHeadings = (
+  columns: KeyedColumnDescriptor[]
+): TableHeadings => {
+  if (columns.some(hasHeadings)) {
+    const maxHeadingDepth = columns.reduce<number>(
+      (max, { heading }) => Math.max(max, heading?.length ?? 0),
+      0
+    );
+
+    let heading: TableHeading | undefined = undefined;
+    const tableHeadings: TableHeadings = [];
+    let tableHeadingsRow: TableHeading[];
+    for (let level = 0; level < maxHeadingDepth; level++) {
+      tableHeadingsRow = [];
+      columns.forEach(({ heading: columnHeading = NO_HEADINGS }) => {
+        const label = columnHeading[level] ?? "";
+        if (heading && heading.label === label) {
+          heading.span += 1;
+        } else {
+          heading = { label, span: 1 } as TableHeading;
+          tableHeadingsRow.push(heading);
+        }
+      });
+      tableHeadings.push(tableHeadingsRow);
+    }
+
+    console.log({ maxHeadingDepth, tableHeadings });
+
+    return tableHeadings;
+  }
+  return NO_HEADINGS;
+};
+
 export const getColumnPinStyle = (column: KeyedColumnDescriptor) =>
   column.pin === "left"
     ? ({ left: column.pinnedOffset } as CSSProperties)
@@ -311,4 +357,120 @@ export const setAggregations = (
   return aggregations
     .filter((agg) => agg.column !== column.name)
     .concat({ column: column.name, aggType });
+};
+
+export const extractFilterForColumn = (
+  filter: Filter | undefined,
+  columnName: string
+) => {
+  if (isMultiClauseFilter(filter)) {
+    return collectFiltersForColumn(filter, columnName);
+  }
+  if (isFilterClause(filter)) {
+    return filter.column === columnName ? filter : undefined;
+  }
+  return undefined;
+};
+
+const collectFiltersForColumn = (
+  filter: MultiClauseFilter,
+  columnName: string
+) => {
+  const { filters, op } = filter;
+  const results: Filter[] = [];
+  filters.forEach((filter) => {
+    const ffc = extractFilterForColumn(filter, columnName);
+    if (ffc) {
+      results.push(ffc);
+    }
+  });
+  if (results.length === 0) {
+    return undefined;
+  } else if (results.length === 1) {
+    return results[0];
+  }
+  return {
+    op,
+    filters: results,
+  };
+};
+
+export const applyGroupByToColumns = (
+  columns: KeyedColumnDescriptor[],
+  groupBy: VuuGroupBy
+) => {
+  if (groupBy.length) {
+    const [groupColumn, nonGroupedColumns] = extractGroupColumn(
+      columns,
+      groupBy
+    );
+    if (groupColumn) {
+      return [groupColumn as KeyedColumnDescriptor].concat(nonGroupedColumns);
+    }
+  } else if (columns[0]?.isGroup) {
+    return flattenColumnGroup(columns);
+  }
+  return columns;
+};
+
+export const applySortToColumns = (
+  colunms: KeyedColumnDescriptor[],
+  sort: VuuSort
+) =>
+  colunms.map((column) => {
+    const sorted = getSortType(column, sort);
+    if (sorted !== undefined) {
+      return {
+        ...column,
+        sorted,
+      };
+    } else if (column.sorted) {
+      return {
+        ...column,
+        sorted: undefined,
+      };
+    } else {
+      return column;
+    }
+  });
+
+export const applyFilterToColumns = (
+  columns: KeyedColumnDescriptor[],
+  { filterStruct }: DataSourceFilter
+) =>
+  columns.map((column) => {
+    // TODO this gives us a dependency on vuu-filters
+    const filter = extractFilterForColumn(filterStruct, column.name);
+    if (filter !== undefined) {
+      return {
+        ...column,
+        filter,
+      };
+    } else if (column.filter) {
+      return {
+        ...column,
+        filter: undefined,
+      };
+    } else {
+      return column;
+    }
+  });
+
+const getSortType = (column: ColumnDescriptor, { sortDefs }: VuuSort) => {
+  const sortDef = sortDefs.find((sortCol) => sortCol.column === column.name);
+  if (sortDef) {
+    return sortDefs.length > 1
+      ? (sortDefs.indexOf(sortDef) + 1) * (sortDef.sortType === "A" ? 1 : -1)
+      : sortDef.sortType;
+  }
+};
+
+// Calculated columns have the formal 'name:datatype:expression'
+export const getColumnName = (name: string) => {
+  const pos = name.indexOf(":");
+  if (pos === -1) {
+    return name;
+  } else {
+    return name.slice(0, pos);
+  }
 };

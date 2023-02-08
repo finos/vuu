@@ -1,5 +1,4 @@
 import ReactDOM from "react-dom";
-// import { AppRoutes } from "./AppRoutes";
 
 import "@finos/vuu-theme/index.css";
 import "@heswell/component-anatomy/esm/index.css";
@@ -17,7 +16,6 @@ import "@fontsource/open-sans/700-italic.css";
 import "@fontsource/open-sans/800.css";
 import "@fontsource/open-sans/800-italic.css";
 
-// import * as stories from "./examples";
 import "./index.css";
 
 const pathToExample = (path: string): [string[], string] => {
@@ -37,7 +35,6 @@ const url = new URL(document.location.href);
 if (url.searchParams.has("standalone")) {
   const [targetPaths, exampleName] = pathToExample(url.pathname.slice(1));
   for (const importPath of targetPaths) {
-    console.log({ importPath, exampleName });
     try {
       const root = document.getElementById("root") as HTMLDivElement;
       root.classList.add("vuu-standalone", "salt-theme", "salt-density-medium");

@@ -10,10 +10,10 @@ import {
   VuuTableMeta,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { EventEmitter, uuid } from "@finos/vuu-utils";
 import {
   DataSource,
-  DataSourceFilter,
   DataSourceConstructorProps,
   SubscribeCallback,
   SubscribeProps,
@@ -76,6 +76,7 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
   #range: VuuRange = { from: 0, to: 0 };
+  #selectedRowsCount = 0;
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
   #title: string | undefined;
@@ -218,20 +219,20 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
     });
   }
 
-  selectAll() {
-    console.log("TODO: selectAll");
-  }
-
-  selectNone() {
-    console.log("TODO: select none");
-  }
-
   openTreeNode(key: string) {
     console.log("TODO: open tree node", { key });
   }
 
   closeTreeNode(key: string) {
     console.log("TODO: close tree node", { key });
+  }
+
+  get config() {
+    return undefined;
+  }
+
+  get selectedRowsCount() {
+    return this.#selectedRowsCount;
   }
 
   get size() {

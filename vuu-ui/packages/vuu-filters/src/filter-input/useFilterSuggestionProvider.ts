@@ -5,15 +5,10 @@ import { useCallback, useRef } from "react";
 import { Completion } from "@codemirror/autocomplete";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 
-const tableColumns: Completion[] = [
-  { label: "bbg" },
-  { label: "description" },
-  { label: "currency" },
-  { label: "exchange" },
-  { label: "lotSize" },
-  { label: "isin" },
-  { label: "ric" },
-];
+const suggestColumns = (columns: ColumnDescriptor[]) =>
+  columns.map((column) => ({
+    label: column.name,
+  }));
 
 const doneCommand: Completion = {
   label: "Done",
@@ -74,7 +69,7 @@ export interface SuggestionProviderHookProps {
   table: VuuTable;
 }
 
-export const useSuggestionProvider = ({
+export const useFilterSuggestionProvider = ({
   columns,
   table,
 }: SuggestionProviderHookProps): ISuggestionProvider => {
@@ -87,16 +82,6 @@ export const useSuggestionProvider = ({
       startsWith?: string,
       selection?: string[]
     ): Promise<Completion[]> => {
-      console.log("getSuggestions, using ", {
-        valueType,
-        columnName,
-        startsWith,
-        columns,
-        getTypeaheadSuggestions,
-        table,
-        selection,
-      });
-
       if (valueType === "operator") {
         const column = columns.find((col) => col.name === columnName);
         if (column) {
@@ -113,7 +98,7 @@ export const useSuggestionProvider = ({
           console.warn(`'${columnName}' does not match any column name`);
         }
       } else if (valueType === "column") {
-        const suggestions = await tableColumns;
+        const suggestions = await suggestColumns(columns);
         return (latestSuggestionsRef.current = withApplySpace(suggestions));
       } else if (columnName) {
         const column = columns.find((col) => col.name === columnName);

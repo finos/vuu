@@ -1,3 +1,31 @@
+/* We support multi level headings up to a  maximum of 4 heading levels */
+.vuuTable-heading:nth-child(2) {
+  --heading-top: calc(var(--header-height));
+}
+.vuuTable-heading:nth-child(3) {
+  --heading-top: calc(var(--header-height) * 2);
+}
+.vuuTable-heading:nth-child(3) {
+  --heading-top: calc(var(--header-height) * 3);
+}
+
+.vuuTable-headingCell {
+  background: var(--table-background);
+  border-color: var(--salt-separable-tertiary-borderColor);
+  border-style: solid solid solid none;
+  border-width: 1px;
+  color: var(--salt-text-secondary-foreground);
+  height: var(--vuuTableHeaderHeight);
+  padding: 0 !important;
+  position: sticky;
+  top: var(--heading-top, 0);
+  z-index: 1;
+}
+
+.vuuTable-heading:has(+ .vuuTable-heading) > .vuuTable-headingCell {
+  border-bottom-color: transparent;
+}
+
 .vuuTable-headerCell {
   --cell-align: 'flex-start';
   text-align: left;
@@ -8,7 +36,7 @@
     cursor: default;
     padding: 0 !important;
     position: sticky;
-    top: 0;
+    top: calc(var(--total-header-height) - var(--header-height));
     height: var(--vuuTableHeaderHeight);
     /* ensure header row sits atop everything else when scrolling down */
     z-index: 1;

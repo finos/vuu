@@ -1,6 +1,23 @@
 .vuuDataTable {
     --cell-outline-width: 2px;
+    user-select: none;
 }
+
+.vuuDataTable-table td {
+    --saltEditableLabel-height: 17px;
+    --saltInput-height: 17px;
+    --saltInput-minHeight: 17px;
+
+    border-right: 1px solid var(--vuuTableCell-border-rightColor);
+    border-bottom: 1px solid var(--vuuTableCell-border-bottomColor);
+    color: var(--salt-text-primary-foreground);
+    cursor: default;
+    height: var(--vuuTable-rowHeight);
+    line-height: calc(var(--vuuTable-rowHeight) - 1px);
+    overflow: hidden;
+    padding: 0 5px;
+}
+
 
 .vuuDataTable th:focus,
 .vuuDataTable td:focus {
@@ -27,12 +44,6 @@
     padding-bottom: 1px;
 }
 
-.vuuDataTable td {
-    --saltEditableLabel-height: 17px;
-    --saltInput-height: 17px;
-    --saltInput-minHeight: 17px;
-    overflow: hidden;
-}
 
 td[data-editable="true"] {
     --salt-text-fontSize: 10px;

@@ -21,7 +21,7 @@ import { CalculatedColumnPanel } from "../calculated-column-panel";
 export interface DatagridSettingsPanelProps
   extends HTMLAttributes<HTMLDivElement> {
   availableColumns: ColumnDescriptor[];
-  gridConfig: GridConfig;
+  gridConfig: Omit<GridConfig, "headings">;
   onCancel?: () => void;
   onConfigChange?: (config: GridConfig, closePanel?: boolean) => void;
 }
@@ -66,6 +66,7 @@ export const DatagridSettingsPanel = ({
 
   const handleApply = useCallback(
     (evt: MouseEvent, closePanel = false) => {
+      console.log(`1) DataGridSettingsPanel fire onConfigChange`);
       onConfigChange?.(gridSettings, closePanel);
     },
     [gridSettings, onConfigChange]

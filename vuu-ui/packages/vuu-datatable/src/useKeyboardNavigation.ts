@@ -33,6 +33,8 @@ const headerCellQuery = (colIdx: number) => `thead th:nth-child(${colIdx + 1})`;
 const dataCellQuery = (rowIdx: number, colIdx: number) =>
   `tbody > tr[data-idx='${rowIdx}'] > td:nth-child(${colIdx + 1})`;
 
+const NULL_CELL_POS: CellPos = [-1, -1];
+
 function nextCellPos(
   key: ArrowKey,
   [rowIdx, colIdx]: CellPos,
@@ -108,7 +110,7 @@ export const useKeyboardNavigation = ({
   );
 
   const getFocusedCell = (element: HTMLElement | Element | null) =>
-    element?.closest("th,td") as HTMLTableCellElement;
+    element?.closest("th,td") as HTMLTableCellElement | null;
 
   const getTableCellPos = (tableCell: HTMLTableCellElement): CellPos => {
     if (tableCell.tagName === "TH") {
@@ -123,7 +125,7 @@ export const useKeyboardNavigation = ({
         return [rowIdx, colIdx];
       }
     }
-    return [-1, -1];
+    return NULL_CELL_POS;
   };
 
   const focusCell = useCallback(
@@ -231,11 +233,14 @@ export const useKeyboardNavigation = ({
   );
 
   const handleClick = useCallback(
+    // Might not be a cell e.g the Settings button
     (evt: MouseEvent) => {
       const target = evt.target as HTMLElement;
-      const tableCell = getFocusedCell(target);
-      const [rowIdx, colIdx] = getTableCellPos(tableCell);
-      setActiveCell(rowIdx, colIdx);
+      const focusedCell = getFocusedCell(target);
+      if (focusedCell) {
+        const [rowIdx, colIdx] = getTableCellPos(focusedCell);
+        setActiveCell(rowIdx, colIdx);
+      }
     },
     [setActiveCell]
   );

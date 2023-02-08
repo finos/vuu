@@ -1,8 +1,5 @@
-import {
-  ConfigChangeHandler,
-  DataSource,
-  DataSourceFilter,
-} from "@finos/vuu-data";
+import { ConfigChangeHandler, DataSource } from "@finos/vuu-data";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   KeyedColumnDescriptor,

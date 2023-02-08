@@ -86,6 +86,7 @@ export const useDraggableColumn = ({
     draggable,
     draggedItemIndex,
     tableLayout,
-    handleHeaderCellDragStart,
+    onHeaderCellDragStart:
+      tableLayout === "row" ? handleHeaderCellDragStart : undefined,
   };
 };

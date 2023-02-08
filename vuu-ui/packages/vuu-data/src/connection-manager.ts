@@ -5,7 +5,6 @@ import {
   VuuRpcRequest,
   VuuTable,
   VuuTableList,
-  VuuTableMeta,
 } from "@finos/vuu-protocol-types";
 import { EventEmitter, uuid } from "@finos/vuu-utils";
 import {

@@ -1,20 +1,20 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { partition, Row } from "@finos/vuu-utils";
+import { extractFilterForColumn, partition, Row } from "@finos/vuu-utils";
 import {
-  AndFilter,
-  Filter,
-  FilterClause,
-  FilterCombinatorOp,
   isAndFilter,
-  isFilterClause,
   isInFilter,
   isMultiClauseFilter,
   isMultiValueFilter,
   isOrFilter,
   isSingleValueFilter,
-  MultiClauseFilter,
 } from "./filterTypes";
+import {
+  AndFilter,
+  Filter,
+  FilterClause,
+  FilterCombinatorOp,
+} from "@finos/vuu-filter-types";
 
 export const AND = "and";
 export const EQUALS = "=";
@@ -284,42 +284,6 @@ export const overrideColName = (filter: Filter, column: string): Filter => {
     };
   }
   return { ...filter, column };
-};
-
-export const extractFilterForColumn = (
-  filter: Filter | undefined,
-  columnName: string
-) => {
-  if (isMultiClauseFilter(filter)) {
-    return collectFiltersForColumn(filter, columnName);
-  }
-  if (isFilterClause(filter)) {
-    return filter.column === columnName ? filter : undefined;
-  }
-  return undefined;
-};
-
-const collectFiltersForColumn = (
-  filter: MultiClauseFilter,
-  columnName: string
-) => {
-  const { filters, op } = filter;
-  const results: Filter[] = [];
-  filters.forEach((filter) => {
-    const ffc = extractFilterForColumn(filter, columnName);
-    if (ffc) {
-      results.push(ffc);
-    }
-  });
-  if (results.length === 0) {
-    return undefined;
-  } else if (results.length === 1) {
-    return results[0];
-  }
-  return {
-    op,
-    filters: results,
-  };
 };
 
 export const filterIncludesColumn = (

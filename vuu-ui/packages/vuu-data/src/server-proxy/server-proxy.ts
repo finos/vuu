@@ -34,7 +34,12 @@ import {
   VuuUIMessageOutColumns,
   VuuUIMessageOutSetTitle,
 } from "../vuuUIMessageTypes";
-import { DataSourceCallbackMessage } from "../data-source";
+import {
+  DataSourceCallbackMessage,
+  DataSourceEnabledMessage,
+  DataSourceVisualLinkCreatedMessage,
+  DataSourceVisualLinkRemovedMessage,
+} from "../data-source";
 import {
   isVuuMenuRpcRequest,
   stripRequestId,
@@ -49,9 +54,6 @@ export type PostMessageToClientCallback = (
 export type MessageOptions = {
   module?: string;
 };
-
-// TEST_DATA_COLLECTION
-// import { saveTestData } from '../../test-data-collection';
 
 let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
@@ -79,13 +81,14 @@ function addLabelsToLinks(
   return links.map<LinkDescriptorWithLabel>((linkDescriptor) => {
     const { parentVpId } = linkDescriptor;
     const viewport = viewports.get(parentVpId);
-    if (viewport && viewport.title) {
+    if (viewport) {
       return {
         ...linkDescriptor,
+        parentClientVpId: viewport.clientViewportId,
         label: viewport.title,
       };
     } else {
-      return linkDescriptor;
+      throw Error("addLabelsToLinks viewport not found");
     }
   });
 }
@@ -119,6 +122,8 @@ export class ServerProxy {
   public async reconnect() {
     await this.login(this.authToken);
 
+    // The 'active' viewports are those the user has on their open layout
+    // Reconnect these first.
     const [activeViewports, inactiveViewports] = partition(
       Array.from(this.viewports.values()),
       isActiveViewport
@@ -172,8 +177,9 @@ export class ServerProxy {
       }
       const viewport = new Viewport(message);
       this.viewports.set(message.viewport, viewport);
-      // use client side viewport as request id, so that when we process the response,
-      // with the serverside viewport we can establish a mapping between the two
+      // use client side viewport id as request id, so that when we process the response,
+      // which will provide the serverside viewport id, we can establish a mapping between
+      // the two
       this.sendIfReady(
         viewport.subscribe(),
         message.viewport,
@@ -218,6 +224,9 @@ export class ServerProxy {
       } else {
         return null;
       }
+    } else if (this.viewports.has(clientViewportId)) {
+      // Still stored under client viewportId means it is waiting for CREATE_VP to be acked
+      return this.viewports.get(clientViewportId);
     } else if (throws) {
       throw Error(
         `Viewport server id not found for client viewport ${clientViewportId}`
@@ -355,15 +364,20 @@ export class ServerProxy {
   }
 
   private createLink(viewport: Viewport, message: VuuUIMessageOutCreateLink) {
-    const { parentVpId, parentColumnName, childColumnName } = message;
+    const { parentClientVpId, parentColumnName, childColumnName } = message;
     const requestId = nextRequestId();
-    const request = viewport.createLink(
-      requestId,
-      childColumnName,
-      parentVpId,
-      parentColumnName
-    );
-    this.sendMessageToServer(request, requestId);
+    const parentVpId = this.mapClientToServerViewport.get(parentClientVpId);
+    if (parentVpId) {
+      const request = viewport.createLink(
+        requestId,
+        childColumnName,
+        parentVpId,
+        parentColumnName
+      );
+      this.sendMessageToServer(request, requestId);
+    } else {
+      console.warn(`ServerProxy unable to create link, viewport not found`);
+    }
   }
 
   private removeLink(viewport: Viewport) {
@@ -382,6 +396,17 @@ export class ServerProxy {
           );
           this.postMessageToClient(messageToClient);
         }
+      }
+    }
+  }
+
+  private removeViewportFromVisualLinks(serverViewportId: string) {
+    for (const vp of this.viewports.values()) {
+      if (vp.links?.some(({ parentVpId }) => parentVpId === serverViewportId)) {
+        const [messageToClient] = vp.setLinks(
+          vp.links.filter(({ parentVpId }) => parentVpId !== serverViewportId)
+        );
+        this.postMessageToClient(messageToClient);
       }
     }
   }
@@ -597,14 +622,13 @@ export class ServerProxy {
         }
         break;
 
-      case Message.REMOVE_VP_SUCCESS:
+      case "REMOVE_VP_SUCCESS":
         {
-          console.log(`ACK viewport removed`);
           const viewport = this.viewports.get(body.viewPortId);
           if (viewport) {
-            // do we need a destroy method on viewport for cleanup ?
             this.mapClientToServerViewport.delete(viewport.clientViewportId);
             viewports.delete(body.viewPortId);
+            this.removeViewportFromVisualLinks(body.viewPortId);
           }
         }
         break;
@@ -624,7 +648,7 @@ export class ServerProxy {
           const viewport = this.viewports.get(body.viewPortId);
           if (viewport) {
             const response = viewport.completeOperation(requestId);
-            if (response) {
+            if (response !== undefined) {
               this.postMessageToClient(response);
             }
           }
@@ -638,7 +662,7 @@ export class ServerProxy {
           if (viewport) {
             const response = viewport.completeOperation(requestId);
             if (response) {
-              this.postMessageToClient(response);
+              this.postMessageToClient(response as DataSourceEnabledMessage);
               const rows = viewport.currentData();
               this.postMessageToClient({
                 clientViewportId: viewport.clientViewportId,
@@ -708,7 +732,7 @@ export class ServerProxy {
               childColumnName,
               parentViewport.clientViewportId,
               parentColumnName
-            );
+            ) as DataSourceVisualLinkCreatedMessage;
             if (response) {
               this.postMessageToClient(response);
             }
@@ -720,7 +744,9 @@ export class ServerProxy {
         {
           const viewport = this.viewports.get(body.childVpId);
           if (viewport) {
-            const response = viewport.completeOperation(requestId);
+            const response = viewport.completeOperation(
+              requestId
+            ) as DataSourceVisualLinkRemovedMessage;
             if (response) {
               this.postMessageToClient(response);
             }
@@ -767,29 +793,31 @@ export class ServerProxy {
         }
         break;
 
-      case Message.VP_VISUAL_LINKS_RESP:
+      case "VP_VISUAL_LINKS_RESP":
         {
           const activeLinkDescriptors = this.getActiveLinks(body.links);
           const viewport = this.viewports.get(body.vpId);
           if (activeLinkDescriptors.length && viewport) {
-            const linksWithLabels = addLabelsToLinks(
+            const linkDescriptorsWithLabels = addLabelsToLinks(
               activeLinkDescriptors,
               this.viewports
             );
-            const [clientMessage, pendingLink] =
-              viewport.setLinks(linksWithLabels);
+            const [clientMessage, pendingLink] = viewport.setLinks(
+              linkDescriptorsWithLabels
+            );
             this.postMessageToClient(clientMessage);
             if (pendingLink) {
-              const { colName, parentViewportId, parentColName } = pendingLink;
+              const { link, parentClientVpId } = pendingLink;
               const requestId = nextRequestId();
               const serverViewportId =
-                this.mapClientToServerViewport.get(parentViewportId);
+                this.mapClientToServerViewport.get(parentClientVpId);
+
               if (serverViewportId) {
                 const message = viewport.createLink(
                   requestId,
-                  colName,
+                  link.fromColumn,
                   serverViewportId,
-                  parentColName
+                  link.toColumn
                 );
                 this.sendMessageToServer(message, requestId);
               }

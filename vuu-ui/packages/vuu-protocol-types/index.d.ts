@@ -80,9 +80,13 @@ export declare type VuuLinkDescriptor = {
  *
  * The Label is added by client code, if user has assigned a custom
  * Title to component bound to viewport.
+ * The parentClientVpId is also added by client. This is needed as the
+ * client vpId persists across sessions, whereas the server vpId does
+ * not.
  */
 export type LinkDescriptorWithLabel = VuuLinkDescriptor & {
   label?: string;
+  parentClientVpId: string;
 };
 
 export declare type VuuColumns = string[];

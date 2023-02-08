@@ -2,6 +2,7 @@ import { execWait } from "./utils.mjs";
 
 const packages = [
   "vuu-data",
+  "vuu-data-types",
   "vuu-datagrid",
   "vuu-datagrid-extras",
   "vuu-datagrid-types",

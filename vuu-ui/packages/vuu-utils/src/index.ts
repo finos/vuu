@@ -2,6 +2,7 @@ export * from "./array-utils";
 export * from "./column-utils";
 export * from "./DataWindow";
 export * from "./date-utils";
+export * from "./filter-utils";
 export * from "./html-utils";
 export * from "./event-emitter";
 export * from "./getUniqueId";

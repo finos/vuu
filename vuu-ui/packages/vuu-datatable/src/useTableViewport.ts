@@ -3,13 +3,17 @@
  * and virtualisation of the table. This includes measurements required
  * to support pinned columns.
  */
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import {
+  KeyedColumnDescriptor,
+  TableHeadings,
+} from "@finos/vuu-datagrid-types";
 import { useMemo } from "react";
 import { MeasuredSize } from "./useMeasuredContainer";
 
 export interface TableViewportHookProps {
   columns: KeyedColumnDescriptor[];
   headerHeight: number;
+  headings: TableHeadings;
   rowCount: number;
   rowHeight: number;
   size?: MeasuredSize;
@@ -25,6 +29,7 @@ export interface ViewportMeasurements {
   scrollContentHeight: number;
   scrollbarSize: number;
   scrollContentWidth: number;
+  totalHeaderHeight: number;
 }
 
 const UNMEASURED_VIEWPORT = {
@@ -37,6 +42,7 @@ const UNMEASURED_VIEWPORT = {
   scrollContentHeight: 0,
   scrollbarSize: 0,
   scrollContentWidth: 0,
+  totalHeaderHeight: 0,
 };
 
 const measurePinnedColumns = (columns: KeyedColumnDescriptor[]) => {
@@ -59,6 +65,7 @@ const measurePinnedColumns = (columns: KeyedColumnDescriptor[]) => {
 export const useTableViewport = ({
   columns,
   headerHeight,
+  headings,
   rowCount,
   rowHeight,
   size,
@@ -70,6 +77,7 @@ export const useTableViewport = ({
 
   const viewportMeasurements = useMemo(() => {
     if (size) {
+      const headingsDepth = headings.length;
       const scrollbarSize = 15;
       const contentHeight = rowCount * rowHeight;
       const scrollContentWidth =
@@ -95,12 +103,14 @@ export const useTableViewport = ({
         scrollContentHeight: headerHeight + contentHeight + scrollbarSize,
         scrollbarSize,
         scrollContentWidth,
+        totalHeaderHeight: headerHeight * (1 + headingsDepth),
       };
     } else {
       return UNMEASURED_VIEWPORT;
     }
   }, [
     headerHeight,
+    headings.length,
     pinnedWidthLeft,
     pinnedWidthRight,
     rowCount,

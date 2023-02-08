@@ -1,12 +1,10 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { Filter } from "@finos/vuu-filter-types";
 import { IEventEmitter } from "@finos/vuu-utils";
 import {
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
-  VuuFilter,
   VuuGroupBy,
   VuuLinkDescriptor,
   VuuMenu,
@@ -16,6 +14,7 @@ import {
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
 
 type RowIndex = number;
@@ -26,10 +25,6 @@ type Depth = number;
 type ChildCount = number;
 type RowKey = string;
 type IsSelected = 0 | 1 | 2;
-
-export interface DataSourceFilter extends VuuFilter {
-  filterStruct?: Filter;
-}
 
 export type DataSourceRow = [
   RowIndex,
@@ -83,7 +78,7 @@ export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
 }
 
 export interface DataSourceMenusMessage extends MessageWithClientViewportId {
-  type: "VIEW_PORT_MENUS_RESP";
+  type: "vuu-menu";
   menu: VuuMenu;
 }
 
@@ -94,6 +89,7 @@ export interface DataSourceSortMessage extends MessageWithClientViewportId {
 
 export type DataSourceConfigMessage =
   | DataSourceAggregateMessage
+  | DataSourceColumnsMessage
   | DataSourceFilterMessage
   | DataSourceGroupByMessage
   | DataSourceSortMessage;
@@ -116,19 +112,27 @@ export interface DataSourceVisualLinkCreatedMessage
   colName: string;
   parentViewportId: string;
   parentColName: string;
-  type: "CREATE_VISUAL_LINK_SUCCESS";
+  type: "vuu-link-created";
 }
 
 export interface DataSourceVisualLinkRemovedMessage
   extends MessageWithClientViewportId {
-  type: "REMOVE_VISUAL_LINK_SUCCESS";
+  type: "vuu-link-removed";
 }
 
 export interface DataSourceVisualLinksMessage
   extends MessageWithClientViewportId {
-  type: "VP_VISUAL_LINKS_RESP";
+  type: "vuu-links";
   links: VuuLinkDescriptor[];
 }
+
+export type VuuFeatureMessage =
+  | DataSourceMenusMessage
+  | DataSourceVisualLinksMessage;
+
+export type VuuFeatureInvocationMessage =
+  | DataSourceVisualLinkCreatedMessage
+  | DataSourceVisualLinkRemovedMessage;
 
 export type DataSourceCallbackMessage =
   | DataSourceConfigMessage
@@ -150,12 +154,12 @@ const datasourceMessages = [
   "enabled",
   "filter",
   "groupBy",
-  "VIEW_PORT_MENUS_RESP",
+  "vuu-link-created",
+  "vuu-link-removed",
+  "vuu-links",
+  "vuu-menu",
   "sort",
   "subscribed",
-  "CREATE_VISUAL_LINK_SUCCESS",
-  "REMOVE_VISUAL_LINK_SUCCESS",
-  "VP_VISUAL_LINKS_RESP",
 ];
 
 export type ConfigChangeColumnsMessage = {
@@ -181,17 +185,25 @@ export const shouldMessageBeRoutedToDataSource = (
   return datasourceMessages.includes(type);
 };
 
-export interface DataSourceConstructorProps {
-  bufferSize?: number;
-  table: VuuTable;
+/**
+ * Described the configuration values that should typically be
+ * persisted across sessions.
+ */
+export interface DataSourceConfig {
   aggregations?: VuuAggregation[];
   columns?: string[];
   filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
+  visualLink?: LinkDescriptorWithLabel;
+}
+
+export interface DataSourceConstructorProps extends DataSourceConfig {
+  bufferSize?: number;
+  table: VuuTable;
+  onConfigChange?: (config: DataSourceConfig | undefined) => void;
   title?: string;
   viewport?: string;
-  "visual-link"?: DataSourceVisualLinkCreatedMessage;
 }
 
 export interface SubscribeProps {
@@ -211,10 +223,9 @@ export interface DataSource extends IEventEmitter {
   aggregations: VuuAggregation[];
   closeTreeNode: (key: string) => void;
   columns: string[];
-  createLink: ({
-    parentVpId,
-    link: { fromColumn, toColumn },
-  }: LinkDescriptorWithLabel) => void;
+  readonly config: DataSourceConfig | undefined;
+  enable?: () => void;
+  disable?: () => void;
   filter: DataSourceFilter;
   groupBy: VuuGroupBy;
   menuRpcCall: (
@@ -222,10 +233,10 @@ export interface DataSource extends IEventEmitter {
   ) => Promise<MenuRpcResponse | undefined>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
-  removeLink: () => void;
   rowCount: number | undefined;
   select: (selected: number[]) => void;
-  size: number;
+  readonly selectedRowsCount: number;
+  readonly size: number;
   sort: VuuSort;
   subscribe: (
     props: SubscribeProps,
@@ -234,4 +245,5 @@ export interface DataSource extends IEventEmitter {
   title?: string;
   unsubscribe: () => void;
   viewport?: string;
+  visualLink?: LinkDescriptorWithLabel;
 }
