@@ -82,7 +82,9 @@ class InstrumentsService(val table: DataTable, val providerContainer: ProviderCo
     new SelectionViewPortMenuItem("Test Selection", "", this.testSelect, "TEST_SELECT"),
     new CellViewPortMenuItem("Test Cell", "", this.testCell, "TEST_CELL"),
     new TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE"),
-    new RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW")
+    new RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW"),
+    new RowViewPortMenuItem("Test Row EUR", "currency=EUR", this.testRow, "TEST_ROW"),
+    new RowViewPortMenuItem("Test Row USD", "currency=USD", this.testRow, "TEST_ROW")
   )
 }
 
