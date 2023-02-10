@@ -1,3 +1,4 @@
+import { ConfigChangeHandler } from "@finos/vuu-data";
 import { Grid } from "@finos/vuu-datagrid";
 import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
@@ -27,11 +28,6 @@ import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 import { instrumentSchema } from "./columnMetaData";
 
 import "./Grid.stories.css";
-
-export default {
-  title: "Grid/Default",
-  component: Grid,
-};
 
 let displaySequence = 1;
 
@@ -161,14 +157,14 @@ export const DefaultGrid = () => {
     }
   }, []);
 
-  const handleBufferSizeChange = useCallback((evt: ChangeEvent) => {
-    const value = parseInt((evt.target as HTMLInputElement).value || "-1");
-    if (Number.isFinite(value) && value > 0) {
-      setBufferSize(value);
-    } else {
-      setBufferSize(undefined);
-    }
-  }, []);
+  // const handleBufferSizeChange = useCallback((evt: ChangeEvent) => {
+  //   const value = parseInt((evt.target as HTMLInputElement).value || "-1");
+  //   if (Number.isFinite(value) && value > 0) {
+  //     setBufferSize(value);
+  //   } else {
+  //     setBufferSize(undefined);
+  //   }
+  // }, []);
 
   const applyBufferSizes = useCallback(() => {
     setGridBufferOptions({
@@ -299,7 +295,7 @@ export const BasicGrid = () => {
     gridRef.current?.style.setProperty("--grid-row-height", `20px`);
   };
 
-  const handleConfigChange = (config: GridConfig) => {
+  const handleConfigChange: ConfigChangeHandler = (config) => {
     console.log(`handleConfigChange ${JSON.stringify(config, null, 2)}`);
   };
 
@@ -315,6 +311,8 @@ export const BasicGrid = () => {
         columns={columns}
         height={624}
         onConfigChange={handleConfigChange}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         ref={gridRef}
         renderBufferSize={50}
         rowHeight={rowHeight}
@@ -407,8 +405,6 @@ export const PersistConfig = () => {
 PersistConfig.displaySequence = displaySequence++;
 
 export const BasicGridColumnFixedCols = () => {
-  const gridRef = useRef(null);
-
   const { schemas } = useSchemas();
   const { columns, dataSource, error } = useTestDataSource({
     schemas,
@@ -442,7 +438,6 @@ export const BasicGridColumnFixedCols = () => {
         dataSource={dataSource}
         columns={fixedColumns}
         height={600}
-        ref={gridRef}
         renderBufferSize={20}
         style={{ margin: 10, border: "solid 1px #ccc" }}
       />
@@ -453,7 +448,6 @@ export const BasicGridColumnFixedCols = () => {
 BasicGridColumnFixedCols.displaySequence = displaySequence++;
 
 export const ColumnHeaders1Level = () => {
-  const gridRef = useRef(null);
   const { schemas } = useSchemas();
 
   const { columns, dataSource, error } = useTestDataSource({
@@ -493,7 +487,6 @@ export const ColumnHeaders1Level = () => {
         dataSource={dataSource}
         columns={columns}
         height={600}
-        ref={gridRef}
         renderBufferSize={20}
         style={{ margin: 10, border: "solid 1px #ccc" }}
       />
@@ -504,9 +497,9 @@ export const ColumnHeaders1Level = () => {
 ColumnHeaders1Level.displaySequence = displaySequence++;
 
 export const SizeSpecifiedInProps = () => {
-  const gridRef = useRef(null);
-
+  const { schemas } = useSchemas();
   const { columns, dataSource, error } = useTestDataSource({
+    schemas,
     tablename: "instruments",
     schemas: {},
   });
@@ -524,7 +517,6 @@ export const SizeSpecifiedInProps = () => {
         dataSource={dataSource}
         columns={columns}
         height={400}
-        ref={gridRef}
         renderBufferSize={20}
         style={{ margin: 10, border: "solid 1px #ccc" }}
         width={700}
@@ -590,8 +582,7 @@ export const GridResize = () => {
 GridResize.displaySequence = displaySequence++;
 
 export const ColumnHeaders2Levels = () => {
-  const gridRef = useRef(null);
-
+  const { schemas } = useSchemas();
   const { columns, dataSource, error } = useTestDataSource({
     columnConfig: {
       bbg: { heading: ["BBG", "Group 1", "Instrument"] },
@@ -602,6 +593,7 @@ export const ColumnHeaders2Levels = () => {
       exchange: { heading: ["Exchange", "Group 3", "Exchange Details"] },
       lotSize: { heading: ["Lot Size", "Group 4", "Exchange Details"] },
     },
+    schemas,
     tablename: "instruments",
     schemas: {},
   });
@@ -619,7 +611,6 @@ export const ColumnHeaders2Levels = () => {
         dataSource={dataSource}
         columns={columns}
         height={600}
-        ref={gridRef}
         renderBufferSize={20}
         style={{ margin: 10, border: "solid 1px #ccc" }}
       />
@@ -630,14 +621,15 @@ export const ColumnHeaders2Levels = () => {
 ColumnHeaders2Levels.displaySequence = displaySequence++;
 
 export const BufferVariations = () => {
+  const { schemas } = useSchemas();
   const { columns, dataSource, error } = useTestDataSource({
     bufferSize: 10,
+    schemas,
     tablename: "instruments",
     schemas: {},
   });
-  const gridRef = useRef<HTMLDivElement>(null);
 
-  const handleConfigChange = (config: GridConfig) => {
+  const handleConfigChange: ConfigChangeHandler = (config) => {
     console.log(`handleConfigChange ${JSON.stringify(config, null, 2)}`);
   };
 
@@ -675,7 +667,6 @@ export const BufferVariations = () => {
         headerHeight={36}
         height={380}
         onConfigChange={handleConfigChange}
-        ref={gridRef}
         renderBufferSize={0}
         rowHeight={36}
         selectionModel="single"
@@ -696,12 +687,16 @@ export const BufferVariations = () => {
           <FormField label="from" labelPlacement="left">
             <Input
               onChange={handleSetFrom}
-              value={from}
+              value={from.toString()}
               style={{ width: 50 }}
             />
           </FormField>
           <FormField label="to" labelPlacement="left">
-            <Input onChange={handleSetTo} value={to} style={{ width: 50 }} />
+            <Input
+              onChange={handleSetTo}
+              value={to.toString()}
+              style={{ width: 50 }}
+            />
           </FormField>
           <Button onClick={handleSetRange}>set range</Button>
         </Tooltray>

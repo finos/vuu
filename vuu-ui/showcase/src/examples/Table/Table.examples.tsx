@@ -1,8 +1,4 @@
-import {
-  ArrayDataSource,
-  DataSourceConfig,
-  useVuuMenuActions,
-} from "@finos/vuu-data";
+import { ArrayDataSource, DataSourceConfig } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
