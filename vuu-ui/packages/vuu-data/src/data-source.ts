@@ -1,6 +1,7 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { IEventEmitter } from "@finos/vuu-utils";
 import {
+  ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuColumnDataType,
@@ -8,7 +9,6 @@ import {
   VuuGroupBy,
   VuuLinkDescriptor,
   VuuMenu,
-  VuuMenuRpcRequest,
   VuuRange,
   VuuRowDataItemType,
   VuuSort,
@@ -229,7 +229,7 @@ export interface DataSource extends IEventEmitter {
   filter: DataSourceFilter;
   groupBy: VuuGroupBy;
   menuRpcCall: (
-    rpcRequest: Omit<VuuMenuRpcRequest, "vpId">
+    rpcRequest: Omit<ClientToServerMenuRPC, "vpId">
   ) => Promise<MenuRpcResponse | undefined>;
   openTreeNode: (key: string) => void;
   range: VuuRange;

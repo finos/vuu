@@ -428,8 +428,7 @@ export declare type ClientToServerBody =
   | ClientToServerCreateLink
   | ClientToServerRemoveLink
   | ClientToServerMenuRPC
-  | VuuRpcRequest
-  | VuuMenuRpcRequest;
+  | VuuRpcRequest;
 export interface ClientToServerMessage<
   TBody extends ClientToServerBody = ClientToServerBody
 > {
@@ -451,13 +450,3 @@ export interface NoAction {
 }
 
 export declare type MenuRpcAction = OpenDialogAction | NoAction;
-
-// Should really be a table option rather than select option
-
-export declare type VuuMenuRpcRequest =
-  | VuuAddRowsToOrdersSelectMenuRpcRequest
-  | VuuTestTableMenuRpcRequest
-  | VuuTestSelectMenuRpcRequest
-  | VuuTestRowMenuRpcRequest
-  | VuuTestCellMenuRpcRequest
-  | VuuTickSpeedSelectMenuRpcRequest;

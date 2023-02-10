@@ -6,9 +6,9 @@ import {
   VuuAggregation,
   VuuRange,
   VuuSort,
-  VuuMenuRpcRequest,
   VuuTableMeta,
   VuuRowDataItemType,
+  ClientToServerMenuRPC,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { EventEmitter, uuid } from "@finos/vuu-utils";
@@ -325,7 +325,7 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
     console.log("remove link");
   }
 
-  async menuRpcCall(rpcRequest: Omit<VuuMenuRpcRequest, "vpId">) {
+  async menuRpcCall(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">) {
     console.log("rmenuRpcCall", {
       rpcRequest,
     });

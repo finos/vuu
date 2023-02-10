@@ -5,7 +5,7 @@ import {
   VuuRange,
   VuuTable,
   VuuSort,
-  VuuMenuRpcRequest,
+  ClientToServerMenuRPC,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 
@@ -480,12 +480,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.onConfigChange?.(newConfig);
   }
 
-  async menuRpcCall(rpcRequest: Omit<VuuMenuRpcRequest, "vpId">) {
+  async menuRpcCall(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">) {
     if (this.viewport) {
       return this.server?.rpcCall<MenuRpcResponse>({
         vpId: this.viewport,
         ...rpcRequest,
-      } as VuuMenuRpcRequest);
+      } as ClientToServerMenuRPC);
     }
   }
 }

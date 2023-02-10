@@ -9,8 +9,8 @@ import {
   VuuLinkDescriptor,
   VuuTable,
   VuuRpcRequest,
-  VuuMenuRpcRequest,
   LinkDescriptorWithLabel,
+  ClientToServerMenuRPC,
 } from "@finos/vuu-protocol-types";
 import {
   isViewporttMessage as isViewportMessage,
@@ -411,11 +411,11 @@ export class ServerProxy {
     }
   }
 
-  private menuRpcCall(message: WithRequestId<VuuMenuRpcRequest>) {
+  private menuRpcCall(message: WithRequestId<ClientToServerMenuRPC>) {
     const viewport = this.getViewportForClient(message.vpId, false);
     if (viewport?.serverViewportId) {
       const [requestId, rpcRequest] =
-        stripRequestId<VuuMenuRpcRequest>(message);
+        stripRequestId<ClientToServerMenuRPC>(message);
       this.sendMessageToServer(
         {
           ...rpcRequest,
@@ -441,7 +441,7 @@ export class ServerProxy {
           | VuuUIMessageOutUnsubscribe
         >
       | WithRequestId<VuuRpcRequest>
-      | WithRequestId<VuuMenuRpcRequest>
+      | WithRequestId<ClientToServerMenuRPC>
   ) {
     if (isViewportMessage(message)) {
       if (message.type === "disable") {
