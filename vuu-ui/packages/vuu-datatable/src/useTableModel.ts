@@ -57,6 +57,10 @@ export interface ColumnActionInit {
   dataSourceConfig?: DataSourceConfig;
 }
 
+export interface ColumnActionHide {
+  type: "hideColumn";
+  column: KeyedColumnDescriptor;
+}
 export interface ColumnActionMove {
   type: "moveColumn";
   column: KeyedColumnDescriptor;
@@ -90,6 +94,7 @@ export interface ColumnActionUpdate {
 export interface ColumnActionUpdateProp {
   align?: ColumnDescriptor["align"];
   column: KeyedColumnDescriptor;
+  hidden?: ColumnDescriptor["hidden"];
   label?: ColumnDescriptor["label"];
   resizing?: KeyedColumnDescriptor["resizing"];
   type: "updateColumnProp";
@@ -103,9 +108,10 @@ export interface ColumnActionTableConfig extends DataSourceConfig {
 /**
  * PersistentColumnActions are those actions that require us to persist user changes across sessions
  */
-export type PersistentColumnAction = ColumnActionPin;
+export type PersistentColumnAction = ColumnActionPin | ColumnActionHide;
 
 export type GridModelAction =
+  | ColumnActionHide
   | ColumnActionInit
   | ColumnActionMove
   | ColumnActionPin
@@ -130,6 +136,8 @@ const columnReducer: GridModelReducer = (state, action) => {
       return resizeColumn(state, action);
     case "setTypes":
       return setTypes(state, action);
+    case "hideColumn":
+      return hideColumn(state, action);
     case "pinColumn":
       return pinColumn(state, action);
     case "updateColumnProp":
@@ -213,7 +221,7 @@ const toKeyedColumWithDefaults =
       key: index + KEY_OFFSET,
       name,
       originalIdx: index,
-      width,
+      width: width,
     };
   };
 
@@ -239,6 +247,14 @@ function moveColumn(
     };
   }
   return state;
+}
+
+function hideColumn(state: GridModel, { column }: ColumnActionHide) {
+  return updateColumnProp(state, {
+    type: "updateColumnProp",
+    column,
+    hidden: true,
+  });
 }
 
 function resizeColumn(
@@ -299,7 +315,7 @@ function pinColumn(state: GridModel, action: ColumnActionPin) {
 }
 function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
   let { columns } = state;
-  const { align, column, label, resizing, width } = action;
+  const { align, column, hidden, label, resizing, width } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
   if (targetColumn) {
     if (align === "left" || align === "right") {
@@ -310,6 +326,9 @@ function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
     }
     if (typeof resizing === "boolean") {
       columns = replaceColumn(columns, { ...targetColumn, resizing });
+    }
+    if (typeof hidden === "boolean") {
+      columns = replaceColumn(columns, { ...targetColumn, hidden });
     }
     if (typeof width === "number") {
       columns = replaceColumn(columns, { ...targetColumn, width });

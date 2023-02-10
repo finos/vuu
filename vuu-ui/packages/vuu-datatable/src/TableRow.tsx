@@ -1,6 +1,6 @@
 import { DataSourceRow } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { isGroupColumn, metadataKeys } from "@finos/vuu-utils";
+import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
 import cx from "classnames";
 import { HTMLAttributes, memo, MouseEvent, useCallback } from "react";
 import { RowClickHandler, ValueFormatters } from "./dataTableTypes";
@@ -69,7 +69,7 @@ export const TableRow = memo(function Row({
         transform: `translate3d(0px, ${offset * height}px, 0px)`,
       }}
     >
-      {columns.map((column) => {
+      {columns.filter(notHidden).map((column) => {
         const isGroup = isGroupColumn(column);
         const Cell = isGroup ? TableGroupCell : TableCell;
         return (

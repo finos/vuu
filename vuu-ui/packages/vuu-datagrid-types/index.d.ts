@@ -48,6 +48,7 @@ export interface ColumnDescriptor {
   expression?: string;
   flex?: number;
   heading?: string[];
+  hidden?: boolean;
   isSystemColumn?: boolean;
   label?: string;
   locked?: boolean;

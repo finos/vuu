@@ -50,13 +50,14 @@ const measurePinnedColumns = (columns: KeyedColumnDescriptor[]) => {
   let pinnedWidthRight = 0;
   let unpinnedWidth = 0;
   for (const column of columns) {
-    const { pin, width } = column;
+    const { hidden, pin, width } = column;
+    const visibleWidth = hidden ? 0 : width;
     if (pin === "left") {
-      pinnedWidthLeft += width;
+      pinnedWidthLeft += visibleWidth;
     } else if (pin === "right") {
-      pinnedWidthRight += width;
+      pinnedWidthRight += visibleWidth;
     } else {
-      unpinnedWidth += width;
+      unpinnedWidth += visibleWidth;
     }
   }
   return { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth };

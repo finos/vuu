@@ -42,10 +42,11 @@ export interface ColumnActionUpdate {
   column: ColumnDescriptor;
 }
 export interface ColumnActionUpdateProp {
-  type: "updateColumnProp";
-  column: ColumnDescriptor;
   align?: ColumnDescriptor["align"];
+  column: ColumnDescriptor;
+  hidden?: ColumnDescriptor["hidden"];
   label?: ColumnDescriptor["label"];
+  type: "updateColumnProp";
   width?: ColumnDescriptor["width"];
 }
 
@@ -173,11 +174,14 @@ function moveColumn(
 
 function updateColumnProp(
   state: GridConfig,
-  { align, column, label, width }: ColumnActionUpdateProp
+  { align, column, hidden, label, width }: ColumnActionUpdateProp
 ) {
   let { columns: stateColumns } = state;
   if (align === "left" || align === "right") {
     stateColumns = replaceColumn(stateColumns, { ...column, align });
+  }
+  if (typeof hidden === "boolean") {
+    stateColumns = replaceColumn(stateColumns, { ...column, hidden });
   }
   if (typeof label === "string") {
     stateColumns = replaceColumn(stateColumns, { ...column, label });

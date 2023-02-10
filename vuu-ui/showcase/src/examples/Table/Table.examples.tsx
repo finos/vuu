@@ -837,3 +837,89 @@ export const VuuTablePredefinedGroupBy = () => {
   );
 };
 VuuTablePredefinedConfig.displaySequence = displaySequence++;
+
+export const HiddenColumns = () => {
+  const columnConfig = useMemo(
+    () => ({ averagePrice: { hidden: true }, childCount: { hidden: true } }),
+    []
+  );
+  const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
+  const { schemas } = useSchemas();
+  const { columns, config, dataSource, error } = useTestDataSource({
+    columnConfig,
+    schemas,
+    tablename: "parentOrders",
+  });
+
+  const configRef = useRef<Omit<GridConfig, "headings">>(config);
+  const [tableConfig, setTableConfig] =
+    useState<Omit<GridConfig, "headings">>(config);
+
+  useMemo(() => {
+    setTableConfig((configRef.current = config));
+  }, [config]);
+
+  const handleConfigChange = useCallback(
+    (config: GridConfig, closePanel = false) => {
+      setTableConfig((currentConfig) => {
+        if (itemsChanged(currentConfig.columns, config.columns, "name")) {
+          dataSource.columns = config.columns.map(toServerSpec);
+        }
+        return (configRef.current = config);
+      });
+      closePanel && setDialogContent(null);
+    },
+    [dataSource]
+  );
+
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      // we want this to be used when editor is opened next, but we don;t want
+      // to trigger a re-render of our dataTable
+      configRef.current = config;
+    },
+    []
+  );
+
+  const showConfigEditor = useCallback(() => {
+    setDialogContent(
+      <DatagridSettingsPanel
+        availableColumns={columns}
+        gridConfig={configRef.current}
+        onConfigChange={handleConfigChange}
+      />
+    );
+  }, [columns, handleConfigChange]);
+
+  const hideSettings = useCallback(() => {
+    setDialogContent(null);
+  }, []);
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
+  return (
+    <>
+      <DataTable
+        allowConfigEditing
+        dataSource={dataSource}
+        config={tableConfig}
+        // columnSizing="fill"
+        height={600}
+        onConfigChange={handleTableConfigChange}
+        onShowConfigEditor={showConfigEditor}
+        width={750}
+      />
+      <Dialog
+        className="vuuDialog-gridConfig"
+        isOpen={dialogContent !== null}
+        onClose={hideSettings}
+        title="Grid and Column Settings"
+      >
+        {dialogContent}
+      </Dialog>
+    </>
+  );
+};
+HiddenColumns.displaySequence = displaySequence++;
