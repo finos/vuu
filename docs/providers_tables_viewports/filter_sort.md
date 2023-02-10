@@ -2,8 +2,8 @@
 
 Vuu supports either single or multifield sorting by ASC or DESC. 
 
-Vuu also has an [ANTLR grammar](https://github.com/venuu-io/vuu/tree/master/vuu/src/main/antlr4/io/venuu/vuu/grammer) which allows filtering within viewports. 
-Some exmples of what is supported in this grammar are:
+Vuu also has an [ANTLR grammar](https://github.com/venuu-io/vuu/tree/master/vuu/src/main/antlr4/io/venuu/vuu/grammar) which allows filtering within viewports. 
+Some examples of what is supported in this grammar are:
 
 ```
 

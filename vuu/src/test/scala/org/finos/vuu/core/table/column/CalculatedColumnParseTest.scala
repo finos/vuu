@@ -5,7 +5,6 @@ import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.table.column.CalculatedColumnFixture.parseToColumn
 import org.finos.vuu.core.table.{CalculatedColumn, Column, Columns, DataType, RowWithData}
-import org.finos.vuu.grammer.{CalculatedColumnLexer, CalculatedColumnParser}
 import org.finos.vuu.util.table.TableAsserts.genericLogic
 import org.finos.vuu.viewport.{ViewPortColumns, ViewPortUpdate}
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -13,6 +12,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.{TableFor11, TableFor12, TableFor13}
 import org.scalatest.prop.Tables.Table
 import CalculatedColumnFixture._
+import org.finos.vuu.grammar.{CalculatedColumnLexer, CalculatedColumnParser}
 
 class CalculatedColumnParseTest extends AnyFeatureSpec with Matchers with StrictLogging {
 

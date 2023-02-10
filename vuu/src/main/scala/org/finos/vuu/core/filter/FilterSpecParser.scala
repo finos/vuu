@@ -2,7 +2,7 @@ package org.finos.vuu.core.filter
 
 import com.typesafe.scalalogging.StrictLogging
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
-import org.finos.vuu.grammer.{FilterLexer, FilterParser}
+import org.finos.vuu.grammar.{FilterLexer, FilterParser}
 
 object FilterSpecParser extends StrictLogging {
 

@@ -226,7 +226,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
       emptyQueues(viewPort)
 
       And("call rpc service to create new session table")
-      val result = viewPortContainer.callRpcSession(viewPort.id, "CREATE_BASKET", session)
+      val result = viewPortContainer.callRpcSelection(viewPort.id, "CREATE_BASKET", session)
 
       result.getClass shouldBe (classOf[OpenDialogViewPortAction])
 
@@ -247,11 +247,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
               ("VOD.L", "clOrderId-1450770869442-1", "GBp", 1450770869442L, null, null, null, "XLON/SETS", null, null)
             )
           }
-
-
       }
-
-
     }
   }
 }

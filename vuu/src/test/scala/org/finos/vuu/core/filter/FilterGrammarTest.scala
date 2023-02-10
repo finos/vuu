@@ -4,13 +4,13 @@ import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.finos.vuu.core.sort.AntlrBasedFilter
 import org.finos.vuu.core.sort.FilterAndSortFixture._
 import org.finos.vuu.core.table.{RowWithData, SimpleDataTable, ViewPortColumnCreator}
-import org.finos.vuu.grammer.{FilterLexer, FilterParser}
+import org.finos.vuu.grammar.{FilterLexer, FilterParser}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-class FilterGrammerTest extends AnyFeatureSpec with Matchers {
+class FilterGrammarTest extends AnyFeatureSpec with Matchers {
 
-  Feature("Check the grammer - test normal filter scenarios") {
+  Feature("Check the grammar - test normal filter scenarios") {
 
     def parse(s: String): Unit = {
 
@@ -217,7 +217,7 @@ class FilterGrammerTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("ric = \"VOD/L\"") {
-      //reserved chars in teh grammar
+      //reserved chars in the grammar
       withFilter("ric = \"VOD/L\"") {
         List(
           RowWithData("NYC-0011", Map("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null))
