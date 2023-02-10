@@ -49,7 +49,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: ViewPortMenuSelectionRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcSession(msg.vpId, msg.rpcName, ctx.session)) match {
+    Try(viewPortContainer.callRpcSelection(msg.vpId, msg.rpcName, ctx.session)) match {
       case Success(action) =>
         logger.info("Processed VP Menu Selection RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
