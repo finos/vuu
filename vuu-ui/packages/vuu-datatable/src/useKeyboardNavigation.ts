@@ -31,7 +31,7 @@ export type CellPos = [number, number];
 
 const headerCellQuery = (colIdx: number) => `thead th:nth-child(${colIdx + 1})`;
 const dataCellQuery = (rowIdx: number, colIdx: number) =>
-  `tbody > tr[data-idx='${rowIdx}'] > td:nth-child(${colIdx + 1})`;
+  `tbody > tr[aria-rowindex='${rowIdx}'] > td:nth-child(${colIdx + 1})`;
 
 const NULL_CELL_POS: CellPos = [-1, -1];
 
@@ -119,7 +119,7 @@ export const useKeyboardNavigation = ({
     } else {
       const focusedRow = tableCell.closest("tr");
       if (focusedRow) {
-        const rowIdx = parseInt(focusedRow.dataset.idx ?? "-1", 10);
+        const rowIdx = parseInt(focusedRow.ariaRowIndex ?? "-1", 10);
         // TODO will get trickier when we introduce horizontal virtualisation
         const colIdx = Array.from(focusedRow.childNodes).indexOf(tableCell);
         return [rowIdx, colIdx];

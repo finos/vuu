@@ -77,15 +77,28 @@ class InstrumentsService(val table: DataTable, val providerContainer: ProviderCo
     NoAction()
   }
 
-  override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",
+  override def menuItems(): ViewPortMenu = ViewPortMenu(
+    ViewPortMenu("Block Actions (selected rows)",
+      new SelectionViewPortMenuItem("Test Selection", "", this.testSelect, "TEST_SELECT"),
+      new SelectionViewPortMenuItem("Test Selection CAD", """currency="CAD"""", this.testSelect, "TEST_SELECT_CAD"),
+      new SelectionViewPortMenuItem("Test Selection EUR", """currency="EUR"""", this.testSelect, "TEST_SELECT_EUR"),
+      new SelectionViewPortMenuItem("Test Selection USD", """currency="USD"""", this.testSelect, "TEST_SELECT_USD")
+    ),
+    ViewPortMenu("Cell Actions",
+      new CellViewPortMenuItem("Test Cell", "", this.testCell, "TEST_CELL"),
+      new CellViewPortMenuItem("Test BBG Cell", "", this.testCell, "TEST_BBG_CELL", "bbg"),
+      new CellViewPortMenuItem("Test CCY Cell", "", this.testCell, "TEST_CURRENCY_CELL", "currency")
+    ),
+    ViewPortMenu("Row Actions",
+      new RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW"),
+      new RowViewPortMenuItem("Test Row EUR", """currency="EUR"""", this.testRow, "TEST_ROW_EUR"),
+      new RowViewPortMenuItem("Test Row USD", """currency="USD"""", this.testRow, "TEST_ROW_USD"),
+      new RowViewPortMenuItem("Test Row CAD", """currency="CAD"""", this.testRow, "TEST_ROW_CAD")
+    ),
     new SelectionViewPortMenuItem("Add Rows To Orders", "", this.addRowsFromInstruments, "ADD_ROWS_TO_ORDERS"),
-    new SelectionViewPortMenuItem("Test Selection", "", this.testSelect, "TEST_SELECT"),
-    new CellViewPortMenuItem("Test Cell", "", this.testCell, "TEST_CELL"),
-    new TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE"),
-    new RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW"),
-    new RowViewPortMenuItem("Test Row EUR", "currency=EUR", this.testRow, "TEST_ROW"),
-    new RowViewPortMenuItem("Test Row USD", "currency=USD", this.testRow, "TEST_ROW")
+    new TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE")
   )
+
 }
 
 trait SimulRpcHandler {

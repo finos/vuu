@@ -24,14 +24,11 @@ export const RowBasedTable = ({
   onRowClick,
   onSort,
   onToggleGroup,
+  rowCount,
   rowHeight,
 }: TableImplementationProps) => {
   const handleDragStart = useCallback(
     (evt: MouseEvent) => {
-      console.log(`RowBasedDataTable handleDragStart`, {
-        evt,
-        onHeaderCellDragStart,
-      });
       onHeaderCellDragStart?.(evt);
     },
     [onHeaderCellDragStart]
@@ -52,7 +49,7 @@ export const RowBasedTable = ({
   );
 
   return (
-    <table className={`${classBase}-table`}>
+    <table aria-rowcount={rowCount} className={`${classBase}-table`}>
       <colgroup>
         {columns.filter(notHidden).map((column, i) => (
           <col key={i} width={`${column.width}px`} />

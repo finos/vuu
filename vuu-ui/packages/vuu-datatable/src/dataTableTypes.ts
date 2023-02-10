@@ -60,6 +60,7 @@ export interface TableImplementationProps {
   onRowClick?: RowClickHandler;
   onSort: (column: KeyedColumnDescriptor, isAdditive: boolean) => void;
   onToggleGroup?: (row: DataSourceRow) => void;
+  rowCount: number;
   rowHeight: number;
 }
 

@@ -7,23 +7,38 @@ import {
   VuuFeatureMessage,
 } from "@finos/vuu-data";
 import { GridConfig, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import { VuuSortType } from "@finos/vuu-protocol-types";
-import { applySort, metadataKeys, moveItem } from "@finos/vuu-utils";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  applySort,
+  buildColumnMap,
+  metadataKeys,
+  moveItem,
+} from "@finos/vuu-utils";
+import {
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useContextMenu } from "./context-menu";
 import {
   TableColumnResizeHandler,
   tableLayoutType,
   TableSelectionModel,
 } from "./dataTableTypes";
 import { useDataSource } from "./useDataSource";
+import { useDraggableColumn } from "./useDraggableColumn";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import { MeasuredProps, useMeasuredContainer } from "./useMeasuredContainer";
+import { useSelection } from "./useSelection";
 import { PersistentColumnAction, useTableModel } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
-import { useSelection } from "./useSelection";
-import { useContextMenu } from "./context-menu";
-import { useDraggableColumn } from "./useDraggableColumn";
+
+const NO_ROWS = [] as const;
 
 export interface DataTableHookProps extends MeasuredProps {
   config: Omit<GridConfig, "headings">;
@@ -147,7 +162,7 @@ export const useDataTable = ({
     selectionModel,
   });
 
-  const { data, range, setRange } = useDataSource({
+  const { data, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
     onConfigChange: handleConfigChangeFromDataSource,
     onFeatureEnabled,
@@ -157,6 +172,12 @@ export const useDataTable = ({
     renderBufferSize,
     viewportRowCount: viewportMeasurements.rowCount,
   });
+
+  // Keep a ref to current data. We use it to provide row for context menu actions.
+  // We don't want to introduce data as a dependency on the context menu handler, just
+  // needs to be correct at runtime when the row is right clicked.
+  const dataRef = useRef<DataSourceRow[]>();
+  dataRef.current = data;
 
   const setRangeVertical = useCallback(
     (from: number, to: number) => {
@@ -300,6 +321,36 @@ export const useDataTable = ({
     }
   }, [columns, config, onConfigChange]);
 
+  const showContextMenu = usePopupContextMenu();
+
+  const onContextMenu = useCallback(
+    (evt: MouseEvent<HTMLElement>) => {
+      const { current: currentData } = dataRef;
+      const { current: currentDataSource } = dataSourceRef;
+      const target = evt.target as HTMLElement;
+      const cellEl = target?.closest("td");
+      const rowEl = target?.closest("tr");
+
+      if (cellEl && rowEl && currentData && currentDataSource) {
+        const { columns, selectedRowsCount } = currentDataSource;
+        const columnMap = buildColumnMap(columns);
+        const rowIndex = parseInt(rowEl.ariaRowIndex ?? "-1");
+        const cellIndex = Array.from(rowEl.childNodes).indexOf(cellEl);
+        const row = currentData.find(([idx]) => idx === rowIndex);
+        const columnName = columns[cellIndex];
+
+        showContextMenu(evt, "grid", {
+          columnMap,
+          columnName,
+          row,
+          selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
+          viewport: dataSource?.viewport,
+        });
+      }
+    },
+    [dataSource?.viewport, getSelectedRows, showContextMenu]
+  );
+
   return {
     containerMeasurements,
     containerProps,
@@ -309,11 +360,11 @@ export const useDataTable = ({
     handleContextMenuAction,
     headings,
     onColumnResize: handleColumnResize,
+    onContextMenu,
     onRemoveColumnFromGroupBy: handleRemoveColumnFromGroupBy,
     onRowClick: handleRowClick,
     onSort: handleSort,
     onToggleGroup: handleToggleGroup,
-    scrollProps,
     rowCount,
     viewportMeasurements,
     ...draggableHook,

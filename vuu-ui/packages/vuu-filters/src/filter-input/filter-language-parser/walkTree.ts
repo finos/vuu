@@ -101,7 +101,7 @@ export const walkTree = (tree: Tree, source: string) => {
   const queue: unknown[] = [];
   const cursor = tree.cursor();
   next: do {
-    const { name, from, to } = cursor;
+    let { name, from, to } = cursor;
     // console.log(
     //   `Node ${name} [${from}:${to}] '${source.substring(
     //     cursor.from,
@@ -184,9 +184,9 @@ export const walkTree = (tree: Tree, source: string) => {
         // skip the open and close quote
         cursor.next();
         cursor.next();
-        cursor.next();
-      // fall thru, intentional
-
+        // cursor now points to the string content (Identifier)
+        // fall thru, intentional
+        ({ name, from, to } = cursor);
       // eslint-disable-next-line no-fallthrough
       case "Int":
         {

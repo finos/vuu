@@ -60,7 +60,7 @@ export const TableRow = memo(function Row({
   return (
     <tr
       aria-selected={isSelected === 1 ? true : undefined}
-      data-idx={rowIndex}
+      aria-rowindex={rowIndex}
       className={className}
       onClick={handleRowClick}
       style={{

@@ -169,6 +169,10 @@ export function useDataSource({
     [dataSource, dataWindow, renderBufferSize]
   );
 
+  const getSelectedRows = useCallback(() => {
+    return dataWindow.getSelectedRows();
+  }, [dataWindow]);
+
   useEffect(() => {
     dataSource?.subscribe(
       {
@@ -184,6 +188,7 @@ export function useDataSource({
 
   return {
     data: data.current,
+    getSelectedRows,
     range: rangeRef.current,
     setRange,
     dataSource,
@@ -256,5 +261,9 @@ export class MovingWindow {
       this.range.from = from;
       this.range.to = to;
     }
+  }
+
+  getSelectedRows() {
+    return this.data.filter((row) => row[SELECTED] === 1);
   }
 }

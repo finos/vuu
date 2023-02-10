@@ -6,8 +6,9 @@ import { PopupService } from "../popup";
 import {
   ContextMenuContext,
   ContextMenuItemDescriptor,
-  isGroupMenuItem,
+  isGroupMenuItemDescriptor,
   MenuActionHandler,
+  MenuBuilder,
 } from "./context-menu-provider";
 import { ContextMenu } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
@@ -15,16 +16,18 @@ import { MenuItem, MenuItemGroup } from "./MenuList";
 // augment, replace or ignore the existing menu descriptors.
 export const useContextMenu = () => {
   const ctx = useContext(ContextMenuContext);
-  // const { menuActionHandler, menuBuilders } = useContext(ContextMenuContext);
 
-  const buildMenuOptions = useCallback((menuBuilders, location, options) => {
-    let results: ContextMenuItemDescriptor[] = [];
-    for (const menuBuilder of menuBuilders) {
-      // Maybe we should leave the concatenation to the menuBuilder, then it can control menuItem order
-      results = results.concat(menuBuilder(location, options));
-    }
-    return results;
-  }, []);
+  const buildMenuOptions = useCallback(
+    (menuBuilders: MenuBuilder[], location, options) => {
+      let results: ContextMenuItemDescriptor[] = [];
+      for (const menuBuilder of menuBuilders) {
+        // Maybe we should leave the concatenation to the menuBuilder, then it can control menuItem order
+        results = results.concat(menuBuilder(location, options));
+      }
+      return results;
+    },
+    []
+  );
 
   const handleShowContextMenu = useCallback(
     (e: MouseEvent<HTMLElement>, location: string, options: unknown) => {
@@ -60,7 +63,7 @@ const showContextMenu = (
   const { clientX: left, clientY: top } = e;
   const menuItems = (menuDescriptors: ContextMenuItemDescriptor[]) => {
     const fromDescriptor = (menuItem: ContextMenuItemDescriptor, i: number) =>
-      isGroupMenuItem(menuItem) ? (
+      isGroupMenuItemDescriptor(menuItem) ? (
         <MenuItemGroup key={i} label={menuItem.label}>
           {menuItem.children.map(fromDescriptor)}
         </MenuItemGroup>
