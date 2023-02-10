@@ -2,6 +2,7 @@ import {
   getColumnPinStyle,
   isGroupColumn,
   metadataKeys,
+  notHidden,
 } from "@finos/vuu-utils";
 import { MouseEvent, useCallback } from "react";
 import { TableImplementationProps } from "./dataTableTypes";
@@ -54,7 +55,7 @@ export const RowBasedTable = ({
   return (
     <table className={`${classBase}-table`}>
       <colgroup>
-        {columns.map((column, i) => (
+        {columns.filter(notHidden).map((column, i) => (
           <col key={i} width={`${column.width}px`} />
         ))}
       </colgroup>
@@ -69,7 +70,7 @@ export const RowBasedTable = ({
           </tr>
         ))}
         <tr>
-          {columns.map((column, i) => {
+          {columns.filter(notHidden).map((column, i) => {
             const style = getColumnPinStyle(column);
             return isGroupColumn(column) ? (
               <TableGroupHeaderCell

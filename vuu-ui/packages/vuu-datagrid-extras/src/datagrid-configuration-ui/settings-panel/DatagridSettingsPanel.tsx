@@ -10,13 +10,13 @@ import {
   useState,
 } from "react";
 import { ColumnPicker } from "../column-picker";
+import { ColumnSettingsPanel } from "../column-settings-panel";
 import { GridSettingsPanel } from "./GridSettingsPanel";
-import { ColumnSettingsPanel } from "./ColumnSettingsPanel";
 import { useGridSettings } from "./useGridSettings";
 
-import "./DatagridSettingsPanel.css";
 import { Stack, StackProps } from "@finos/vuu-layout";
 import { CalculatedColumnPanel } from "../calculated-column-panel";
+import "./DatagridSettingsPanel.css";
 
 export interface DatagridSettingsPanelProps
   extends HTMLAttributes<HTMLDivElement> {

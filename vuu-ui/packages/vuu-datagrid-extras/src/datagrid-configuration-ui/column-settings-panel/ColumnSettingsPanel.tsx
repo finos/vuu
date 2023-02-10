@@ -1,6 +1,7 @@
 import { ColumnDescriptor, PinLocation } from "@finos/vuu-datagrid-types";
 import { Stack } from "@finos/vuu-layout";
 import {
+  Checkbox,
   FormField,
   Input,
   Panel,
@@ -20,7 +21,7 @@ import {
 import { ColumnTypePanel } from "../column-type-panel";
 
 import "./ColumnSettingsPanel.css";
-import { ColumnAction } from "./useGridSettings";
+import { ColumnAction } from "../settings-panel/useGridSettings";
 
 const classBase = "vuuColumnSettingsPanel";
 
@@ -46,7 +47,7 @@ export const ColumnSettingsPanel = ({
   const dispatchUpdate = useCallback(
     (
       values: Partial<
-        Pick<ColumnDescriptor, "align" | "label" | "pin" | "width">
+        Pick<ColumnDescriptor, "align" | "hidden" | "label" | "pin" | "width">
       >
     ) =>
       dispatchColumnAction({
@@ -66,6 +67,11 @@ export const ColumnSettingsPanel = ({
   const handleChangePin = useCallback(
     (evt: ChangeEvent<HTMLInputElement>) =>
       dispatchUpdate({ pin: evt.target.value as PinLocation | undefined }),
+    [dispatchUpdate]
+  );
+
+  const handleChangeHidden = useCallback(
+    (evt: ChangeEvent, value: boolean) => dispatchUpdate({ hidden: value }),
     [dispatchUpdate]
   );
 
@@ -97,6 +103,12 @@ export const ColumnSettingsPanel = ({
         TabstripProps={tabstripProps}
       >
         <Panel title="Column">
+          <FormField label="Hidden" labelPlacement="left">
+            <Checkbox
+              checked={column.hidden === true}
+              onChange={handleChangeHidden}
+            />
+          </FormField>
           <FormField label="Label" labelPlacement="left">
             <Input
               value={column.label ?? column.name}

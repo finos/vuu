@@ -1,5 +1,6 @@
 .vuuColumnSettingsPanel {
     --saltFormField-margin: 3px 0;
+    --saltFormField-label-width: 80px;
     --saltPanel-padding: var(--salt-size-unit);
     align-items: flex-start;
     border-left: solid 1px var(--salt-container-primary-borderColor);

@@ -65,6 +65,8 @@ export const isNumericColumn = ({ serverDataType }: ColumnDescriptor) =>
       serverDataType === "long" ||
       serverDataType === "double";
 
+export const notHidden = (column: ColumnDescriptor) => column.hidden !== true;
+
 export const isPinned = (column: ColumnDescriptor) =>
   typeof column.pin === "string";
 

@@ -26,9 +26,7 @@ export const buildContextMenuDescriptors =
       descriptors.push(
         ...buildAggregationMenuItems(options as MaybeColumn, dataSource)
       );
-      descriptors.push(
-        ...buildColumnDisplayMenuItems(options as MaybeColumn, dataSource)
-      );
+      descriptors.push(...buildColumnDisplayMenuItems(options as MaybeColumn));
     } else if (location === "filter") {
       const { column, filter } = options as MaybeFilter & MaybeColumn;
       const colIsOnlyFilter = filter?.column === column?.name;
@@ -187,20 +185,23 @@ const pinFloating = (options: unknown) => pinColumn(options, "floating");
 const pinRight = (options: unknown) => pinColumn(options, "right");
 
 function buildColumnDisplayMenuItems(
-  options: MaybeColumn,
-  // TODO make columns a prop on datasource
-  dataSource: DataSource
+  options: MaybeColumn
 ): ContextMenuItemDescriptor[] {
   const { column } = options;
   if (column === undefined) {
     return [];
   }
-  const { name, label = name, pin } = column;
+  const { pin } = column;
 
   const menuItems: ContextMenuItemDescriptor[] = [
     {
       label: `Hide column`,
       action: "column-hide",
+      options,
+    },
+    {
+      label: `Remove column`,
+      action: "column-remove",
       options,
     },
   ];
