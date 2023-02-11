@@ -11,6 +11,7 @@ import {
   applySortToColumns,
   getColumnName,
   getTableHeadings,
+  getValueFormatter,
   isPinned,
   metadataKeys,
   sortPinnedColumns,
@@ -221,6 +222,7 @@ const toKeyedColumWithDefaults =
       key: index + KEY_OFFSET,
       name,
       originalIdx: index,
+      valueFormatter: getValueFormatter(column),
       width: width,
     };
   };

@@ -1,3 +1,4 @@
+import { ValueFormatter } from "@finos/vuu-datatable";
 import { Filter } from "@finos/vuu-filter-types";
 import {
   VuuAggType,
@@ -85,6 +86,7 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
   sortable?: boolean;
   sorted?: ColumnSort;
   type?: ColumnType;
+  valueFormatter: ValueFormatter;
   width: number;
 }
 

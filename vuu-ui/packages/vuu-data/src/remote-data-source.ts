@@ -348,7 +348,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   set columns(columns: string[]) {
-    console.log(columns.join(","));
+    console.log(`RemoteDataSOurce ${columns.join(",")}`);
     this.#columns = columns;
     if (this.viewport) {
       const message = {

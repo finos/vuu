@@ -200,15 +200,13 @@ export const useColumnAutoComplete = (
         case "ParenthesizedExpression":
         case "ColumnDefinitionExpression":
           if (context.pos === 0) {
-            return { from: context.pos, options: expressionOperator };
+            const options = await suggestionProvider.getSuggestions(
+              "expression"
+            );
+            return { from: context.pos, options };
           } else {
             const lastChild = getLastChild(nodeBefore);
-            if (lastChild?.name === "Equal") {
-              const options = await suggestionProvider.getSuggestions(
-                "expression"
-              );
-              return { from: context.pos, options };
-            } else if (lastChild?.name === "Column") {
+            if (lastChild?.name === "Column") {
               if (maybeComplete) {
                 // We come in here is the columns IS complete, too (ie has space after)
                 const options: Completion[] = [

@@ -25,7 +25,6 @@ export const RowBasedTable = ({
   onSort,
   onToggleGroup,
   rowHeight,
-  valueFormatters,
 }: TableImplementationProps) => {
   const handleDragStart = useCallback(
     (evt: MouseEvent) => {
@@ -107,7 +106,6 @@ export const RowBasedTable = ({
             onClick={onRowClick}
             onToggleGroup={onToggleGroup}
             row={row}
-            valueFormatters={valueFormatters}
           />
         ))}
         <tr className={`${classBase}-filler`} />

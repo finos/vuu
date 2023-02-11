@@ -286,10 +286,13 @@ export const VuuDataTable = () => {
 
   const handleSettingsConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
+      console.log(`Table.examples config changed`, {
+        config,
+      });
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
           // side effect: update columns on dataSource
-          dataSource.columns = config.columns.map((col) => col.name);
+          dataSource.columns = config.columns.map(toServerSpec);
         }
         return (configRef.current = config);
       });
@@ -859,7 +862,7 @@ export const HiddenColumns = () => {
     setTableConfig((configRef.current = config));
   }, [config]);
 
-  const handleConfigChange = useCallback(
+  const handleSettingsConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
@@ -886,10 +889,10 @@ export const HiddenColumns = () => {
       <DatagridSettingsPanel
         availableColumns={columns}
         gridConfig={configRef.current}
-        onConfigChange={handleConfigChange}
+        onConfigChange={handleSettingsConfigChange}
       />
     );
-  }, [columns, handleConfigChange]);
+  }, [columns, handleSettingsConfigChange]);
 
   const hideSettings = useCallback(() => {
     setDialogContent(null);

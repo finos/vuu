@@ -4,27 +4,21 @@ import { getColumnPinStyle } from "@finos/vuu-utils";
 import { EditableLabel } from "@heswell/salt-lab";
 import cx from "classnames";
 import { HTMLAttributes, KeyboardEvent, useRef, useState } from "react";
-import { ValueFormatter } from "./dataTableTypes";
 
 import "./TableCell.css";
 
 export interface TableCellProps extends HTMLAttributes<HTMLTableCellElement> {
   column: KeyedColumnDescriptor;
   row: DataSourceRow;
-  valueFormatter?: ValueFormatter;
 }
-
-const defaultValueFormatter = (value: unknown) =>
-  value == null ? "" : typeof value === "string" ? value : value.toString();
 
 export const TableCell = ({
   className: classNameProp,
   column,
   row,
-  valueFormatter = defaultValueFormatter,
 }: TableCellProps) => {
   const labelFieldRef = useRef<HTMLDivElement>(null);
-  const { align, key, pin, editable, resizing } = column;
+  const { align, key, pin, editable, resizing, valueFormatter } = column;
   const [editing, setEditing] = useState<boolean>(false);
   const value = valueFormatter(row[key]);
   const [editableValue, setEditableValue] = useState<string>(value);
@@ -54,7 +48,6 @@ export const TableCell = ({
       setEditableValue(originalValue);
     } else if (finalValue !== originalValue) {
       setEditableValue(finalValue);
-      // onEditTitle?.(finalValue);
     }
     if (allowDeactivation === false) {
       labelFieldRef.current?.focus();

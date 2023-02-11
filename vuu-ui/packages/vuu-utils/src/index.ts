@@ -5,6 +5,7 @@ export * from "./date-utils";
 export * from "./filter-utils";
 export * from "./html-utils";
 export * from "./event-emitter";
+export * from "./formatting-utils";
 export * from "./getUniqueId";
 export * from "./group-utils";
 export * from "./input-utils";

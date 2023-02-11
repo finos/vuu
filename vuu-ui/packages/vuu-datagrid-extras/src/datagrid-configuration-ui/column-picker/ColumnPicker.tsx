@@ -3,6 +3,7 @@ import { List, Tooltip, useTooltip } from "@heswell/salt-lab";
 import { Button, Text, useIdMemo as useId } from "@salt-ds/core";
 import { Dispatch, HTMLAttributes, useCallback, useState } from "react";
 import { ColumnAction } from "../settings-panel/useGridSettings";
+import { ColumnListItem } from "./ColumnListItem";
 
 import "./ColumnPicker.css";
 
@@ -95,7 +96,7 @@ export const ColumnPicker = ({
     <div className={classBase} id={id}>
       <div className={`${classBase}-listColumn`}>
         <label htmlFor={`available-${id}`}>
-          <Text as="h4">Hidden Columns</Text>
+          <Text as="h4">Available Columns</Text>
         </label>
         <div
           className={`${classBase}-listContainer`}
@@ -130,13 +131,14 @@ export const ColumnPicker = ({
       </div>
       <div className={`${classBase}-listColumn`}>
         <label htmlFor={`selected-${id}`}>
-          <Text as="h4">Visible Columns</Text>
+          <Text as="h4">Included Columns</Text>
         </label>
         <div
           className={`${classBase}-listContainer`}
           style={{ flex: 1, overflow: "hidden" }}
         >
           <List<ColumnDescriptor>
+            ListItem={ColumnListItem}
             allowDragDrop
             borderless
             height="100%"

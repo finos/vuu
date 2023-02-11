@@ -43,7 +43,6 @@ export const DataTable = ({
     rowCount,
     scrollProps,
     tableLayout,
-    valueFormatters,
     viewportMeasurements,
     ...tableProps
   } = useDataTable({
@@ -139,7 +138,6 @@ export const DataTable = ({
                 headerHeight={headerHeight}
                 onContextMenu={handleContextMenu}
                 rowHeight={rowHeight}
-                valueFormatters={valueFormatters}
               />
             </div>
             {draggable}

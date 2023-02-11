@@ -16,15 +16,8 @@
     --vuuFilterEditor-variableColor: blue;
 
     align-items: center;
-    border: solid 1px lightgray;
     box-sizing: border-box;
-    display: flex;
     height: 30px;
-}
-
-.vuuColumnExpressionInput-Editor {
-    flex: 1 1 auto;
-    height: 100%;
 }
 
 .vuuColumnExpressionInput-FilterButton,
@@ -33,7 +26,7 @@
     --saltButton-width: 28px;
 }
 
-.steve-type {
+.expression-type-container {
     margin: 0 3px 0 auto;
     color: var(--salt-text-secondary-foreground)
 }
