@@ -16,7 +16,7 @@ const ShellContext = createContext<ShellContextProps>(defaultConfig);
 
 export interface ShellProviderProps {
   children: ReactNode;
-  value: ShellContextProps;
+  value?: ShellContextProps;
 }
 
 const Provider = ({

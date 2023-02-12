@@ -2,6 +2,7 @@ import {
   ColumnDescriptor,
   ColumnType,
   ColumnTypeDescriptor,
+  ColumnTypeSimple,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
   TableHeading,
@@ -10,6 +11,7 @@ import {
 import {
   VuuAggregation,
   VuuAggType,
+  VuuColumnDataType,
   VuuGroupBy,
   VuuSort,
 } from "@finos/vuu-protocol-types";
@@ -58,6 +60,21 @@ export const isKeyedColumn = (
   column: ColumnDescriptor
 ): column is KeyedColumnDescriptor => {
   return typeof (column as KeyedColumnDescriptor).key === "number";
+};
+
+export const fromServerDataType = (
+  serverDataType: VuuColumnDataType
+): ColumnTypeSimple => {
+  switch (serverDataType) {
+    case "double":
+    case "int":
+    case "long":
+      return "number";
+    case "boolean":
+      return "boolean";
+    default:
+      return "string";
+  }
 };
 
 export const isNumericColumn = ({ serverDataType }: ColumnDescriptor) =>

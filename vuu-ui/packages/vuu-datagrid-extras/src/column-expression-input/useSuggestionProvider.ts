@@ -2,31 +2,18 @@ import { Completion } from "@codemirror/autocomplete";
 import { useTypeaheadSuggestions } from "@finos/vuu-data";
 import {
   ColumnExpressionOperator,
+  ColumnExpressionSuggestionType,
   IExpressionSuggestionProvider,
 } from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { SuggestionType } from "@finos/vuu-filters";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
-import { createEl, isNumericColumn, isTextColumn } from "@finos/vuu-utils";
+import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import {
   ColumnFunctionDescriptor,
   columnFunctionDescriptors,
 } from "./column-function-descriptors";
 import { functionDocInfo } from "./functionDocInfo";
-
-const showParenthesesInfo = () => {
-  const div = createEl("div");
-  const child1 = createEl("div", undefined, "Add Parentheses");
-  const child2 = createEl(
-    "p",
-    undefined,
-    "Use parentheses to control order of evaluation oe expression clauses"
-  );
-  div.appendChild(child1);
-  div.appendChild(child2);
-  return div;
-};
 
 const withApplySpace = (suggestions: Completion[]): Completion[] =>
   suggestions.map((suggestion) => ({
@@ -71,13 +58,6 @@ const getColumns = (columns: ColumnDescriptor[], options: ColumnOptions) => {
   }));
 };
 
-const parentheses: Completion = {
-  apply: "(",
-  boost: 9,
-  info: () => showParenthesesInfo(),
-  label: "(",
-};
-
 const operators = [
   {
     apply: "* ",
@@ -104,11 +84,6 @@ const operators = [
     type: "operator",
   },
 ];
-
-const isApplicable = (column: ColumnDescriptor, suggestion: Completion) => {
-  console.log({ column });
-  return isNumericColumn(column);
-};
 
 const toFunctionCompletion = (
   functionDescriptor: ColumnFunctionDescriptor
@@ -208,17 +183,7 @@ export const useSuggestionProvider = ({
   const getSuggestions: IExpressionSuggestionProvider["getSuggestions"] =
     useCallback(
       async (valueType, options = NONE): Promise<Completion[]> => {
-        const { columnName, operator, functionName, startsWith, selection } =
-          options;
-
-        console.log("%cgetSuggestions, using ", "color: green", {
-          valueType,
-          columnName,
-          functionName,
-          startsWith,
-          columns,
-          selection,
-        });
+        const { columnName, functionName, startsWith, selection } = options;
 
         if (valueType === "expression") {
           const expressions = withApplySpace(
@@ -232,12 +197,7 @@ export const useSuggestionProvider = ({
           return (latestSuggestionsRef.current = withApplySpace(suggestions));
         } else if (valueType === "operator") {
           const suggestions = await operators;
-          const column = columns.find((col) => col.name === columnName);
-          const relevantSuggestions = suggestions.filter((s) =>
-            isApplicable(column, s)
-          );
-          return (latestSuggestionsRef.current =
-            withApplySpace(relevantSuggestions));
+          return (latestSuggestionsRef.current = withApplySpace(suggestions));
         } else if (columnName) {
           const column = columns.find((col) => col.name === columnName);
           const prefix = Array.isArray(selection)
@@ -267,15 +227,14 @@ export const useSuggestionProvider = ({
 
   const isPartialMatch = useCallback(
     async (
-      valueType: SuggestionType,
+      valueType: ColumnExpressionSuggestionType,
       columnName?: string,
       pattern?: string
     ) => {
       const { current: latestSuggestions } = latestSuggestionsRef;
       let maybe = false;
       const suggestions =
-        latestSuggestions ||
-        (await getSuggestions(valueType, columnName, pattern));
+        latestSuggestions || (await getSuggestions(valueType, { columnName }));
       if (pattern && suggestions) {
         for (const option of suggestions) {
           if (option.label === pattern) {

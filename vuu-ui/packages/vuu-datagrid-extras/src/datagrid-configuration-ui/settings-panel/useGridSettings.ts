@@ -5,6 +5,7 @@ import {
 } from "@finos/vuu-datagrid-types";
 import { Reducer, useReducer } from "react";
 import { moveItem } from "@heswell/salt-lab";
+import { fromServerDataType } from "@finos/vuu-utils";
 
 export type CalculatedColumnExpression = {
   columName: string;
@@ -74,7 +75,10 @@ export type ColumnAction =
   | ColumnActionUpdateProp
   | ColumnActionUpdateTypeFormatting;
 
-export type GridSettingsReducer = Reducer<GridConfig, ColumnAction>;
+export type GridSettingsReducer = Reducer<
+  Omit<GridConfig, "headings">,
+  ColumnAction
+>;
 
 const gridSettingsReducer: GridSettingsReducer = (state, action) => {
   console.log(`gridSettingsReducer ${action.type}`);
@@ -100,7 +104,7 @@ const gridSettingsReducer: GridSettingsReducer = (state, action) => {
   }
 };
 
-export const useGridSettings = (config: GridConfig) => {
+export const useGridSettings = (config: Omit<GridConfig, "headings">) => {
   const [state, dispatchColumnAction] = useReducer<GridSettingsReducer>(
     gridSettingsReducer,
     config
@@ -113,7 +117,7 @@ export const useGridSettings = (config: GridConfig) => {
 };
 
 function addColumn(
-  state: GridConfig,
+  state: Omit<GridConfig, "headings">,
   { column, columns, index = -1 }: ColumnActionAdd
 ) {
   const { columns: stateColumns } = state;
@@ -128,7 +132,7 @@ function addColumn(
 }
 
 function addCalculatedColumn(
-  state: GridConfig,
+  state: Omit<GridConfig, "headings">,
   { columnName, columnType, expression }: ColumnActionAddCalculatedColumn
 ) {
   const { columns: stateColumns } = state;
@@ -140,7 +144,10 @@ function addCalculatedColumn(
   return { ...state, columns: stateColumns.concat(calculatedColumn) };
 }
 
-function removeColumn(state: GridConfig, { column }: ColumnActionRemove) {
+function removeColumn(
+  state: Omit<GridConfig, "headings">,
+  { column }: ColumnActionRemove
+) {
   const { columns: stateColumns } = state;
   return {
     ...state,
@@ -149,7 +156,7 @@ function removeColumn(state: GridConfig, { column }: ColumnActionRemove) {
 }
 
 function moveColumn(
-  state: GridConfig,
+  state: Omit<GridConfig, "headings">,
   { column, moveBy, moveFrom, moveTo }: ColumnActionMove
 ) {
   const { columns: stateColumns } = state;
@@ -173,7 +180,7 @@ function moveColumn(
 }
 
 function updateColumnProp(
-  state: GridConfig,
+  state: Omit<GridConfig, "headings">,
   { align, column, hidden, label, width }: ColumnActionUpdateProp
 ) {
   let { columns: stateColumns } = state;
@@ -196,7 +203,7 @@ function updateColumnProp(
 }
 
 function updateGridSettings(
-  state: GridConfig,
+  state: Omit<GridConfig, "headings">,
   { columnFormatHeader }: ColumnActionUpdateGridSettings
 ) {
   return {
@@ -206,7 +213,7 @@ function updateGridSettings(
 }
 
 function updateColumnTypeFormatting(
-  state: GridConfig,
+  state: Omit<GridConfig, "headings">,
   {
     alignOnDecimals,
     column,
@@ -217,8 +224,10 @@ function updateColumnTypeFormatting(
   const { columns: stateColumns } = state;
   const targetColumn = stateColumns.find((col) => col.name === column.name);
   if (targetColumn) {
-    const { serverDataType = "string", type: columnType = serverDataType } =
-      column;
+    const {
+      serverDataType = "string",
+      type: columnType = fromServerDataType(serverDataType),
+    } = column;
     const type: ColumnTypeDescriptor =
       typeof columnType === "string"
         ? {

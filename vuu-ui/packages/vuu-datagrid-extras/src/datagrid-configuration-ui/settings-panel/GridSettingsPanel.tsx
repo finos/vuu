@@ -17,7 +17,7 @@ const classBase = "vuuGridSettingsPanel";
 const NullActivationIndicator = () => null;
 
 export interface GridSettingsPanelProps extends HTMLAttributes<HTMLDivElement> {
-  config: GridConfig;
+  config: Omit<GridConfig, "headings">;
   dispatchColumnAction: Dispatch<ColumnAction>;
 }
 export const GridSettingsPanel = ({

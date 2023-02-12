@@ -1,4 +1,4 @@
-import { connectToServer /*, useViewserver */ } from "@finos/vuu-data";
+import { connectToServer } from "@finos/vuu-data";
 import {
   HTMLAttributes,
   MouseEvent,
@@ -17,13 +17,12 @@ import {
   Chest,
   DraggableLayout,
   Drawer,
-  FlexboxLayout as Flexbox,
+  Flexbox,
   LayoutProvider,
   View,
 } from "@finos/vuu-layout";
 
 import { AppHeader } from "./app-header";
-// import { AppPalette } from "./app-palette";
 
 import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
 import "./shell.css";

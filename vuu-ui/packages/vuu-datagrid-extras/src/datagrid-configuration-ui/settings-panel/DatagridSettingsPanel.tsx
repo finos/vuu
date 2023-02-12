@@ -24,7 +24,10 @@ export interface DatagridSettingsPanelProps
   availableColumns: ColumnDescriptor[];
   gridConfig: Omit<GridConfig, "headings">;
   onCancel?: () => void;
-  onConfigChange?: (config: GridConfig, closePanel?: boolean) => void;
+  onConfigChange?: (
+    config: Omit<GridConfig, "headings">,
+    closePanel?: boolean
+  ) => void;
 }
 
 const classBase = "vuuDatagridSettingsPanel";
