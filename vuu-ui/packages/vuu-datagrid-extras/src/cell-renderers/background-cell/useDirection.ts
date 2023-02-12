@@ -16,7 +16,7 @@ type State = [string, unknown, KeyedColumnDescriptor, valueChangeDirection];
 const isValidNumber = (n: unknown): n is number =>
   typeof n === "number" && isFinite(n);
 
-export default function useDirection(
+export function useDirection(
   key: string,
   value: unknown,
   column: KeyedColumnDescriptor

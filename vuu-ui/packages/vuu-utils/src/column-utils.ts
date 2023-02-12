@@ -1,5 +1,7 @@
 import {
   ColumnDescriptor,
+  ColumnType,
+  ColumnTypeDescriptor,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
   TableHeading,
@@ -83,6 +85,11 @@ export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
 export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
   name,
 });
+
+export const isTypeDescriptor = (
+  type?: ColumnType
+): type is ColumnTypeDescriptor =>
+  typeof type !== "undefined" && typeof type !== "string";
 
 const EMPTY_COLUMN_MAP = {} as const;
 
@@ -476,3 +483,8 @@ export const getColumnName = (name: string) => {
     return name.slice(0, pos);
   }
 };
+
+export const toDataSourceColumns = (column: ColumnDescriptor) =>
+  column.expression
+    ? `${column.name}:${column.serverDataType}:${column.expression}`
+    : column.name;

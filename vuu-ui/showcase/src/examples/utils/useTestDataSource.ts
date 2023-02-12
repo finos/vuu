@@ -9,11 +9,7 @@ import { DataSourceFilter } from "@finos/vuu-data-types";
 import { useMemo, useRef } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
 import { Schema } from "./useSchemas";
-
-export const toServerSpec = (column: ColumnDescriptor) =>
-  column.expression
-    ? `${column.name}:${column.serverDataType}:${column.expression}`
-    : column.name;
+import { toDataSourceColumns } from "@finos/vuu-utils";
 
 const getRequestedColumns = (
   columns: ColumnDescriptor[],
@@ -87,7 +83,7 @@ export const useTestDataSource = ({
     return [
       configuredColumns,
       { columns: configuredColumns },
-      configuredColumns.map(toServerSpec),
+      configuredColumns.map(toDataSourceColumns),
       schema.table,
     ];
   }, [calculatedColumns, columnConfig, columnNamesProp, schemas, tablename]);

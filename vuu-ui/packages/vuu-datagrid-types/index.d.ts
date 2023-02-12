@@ -1,10 +1,12 @@
 import { ValueFormatter } from "@finos/vuu-datatable";
+import { TableCellProps } from "@finos/vuu-datatable/src/TableCell";
 import { Filter } from "@finos/vuu-filter-types";
 import {
   VuuAggType,
   VuuColumnDataType,
   VuuSortType,
 } from "@finos/vuu-protocol-types";
+import { FunctionComponent } from "react";
 
 export type TableHeading = { label: string; span: number };
 export type TableHeadings = TableHeading[][];
@@ -66,6 +68,7 @@ export interface ColumnDescriptor {
  * definitin with internal state values. */
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
+  CellRenderer?: FunctionComponent<TableCellProps>;
   className?: string;
   endPin?: true | undefined;
   filter?: Filter;

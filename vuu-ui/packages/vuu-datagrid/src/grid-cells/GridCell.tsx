@@ -1,9 +1,8 @@
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ColumnMap, DataRow } from "@finos/vuu-utils";
+import { ColumnMap, DataRow, isTypeDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
 import React, { HTMLAttributes, useContext } from "react";
 import ComponentContext from "../component-context";
-import { isTypeDescriptor } from "../grid-model/gridModelTypes";
 import { useCellFormatter } from "./useCellFormatter";
 
 import "./GridCell.css";

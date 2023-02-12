@@ -6,7 +6,7 @@ import {
   VuuSort,
   VuuSortCol,
 } from "../../../vuu-protocol-types";
-import { isNumericColumn } from "../grid-model";
+import { isNumericColumn } from "@finos/vuu-utils";
 import { GridModelType } from "../grid-model/gridModelTypes";
 import { ContextMenuOptions } from "./contextMenuTypes";
 

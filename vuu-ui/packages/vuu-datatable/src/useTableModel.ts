@@ -9,10 +9,12 @@ import {
   applyFilterToColumns,
   applyGroupByToColumns,
   applySortToColumns,
+  getCellRenderer,
   getColumnName,
   getTableHeadings,
   getValueFormatter,
   isPinned,
+  isTypeDescriptor,
   metadataKeys,
   sortPinnedColumns,
 } from "@finos/vuu-utils";
@@ -26,6 +28,12 @@ const KEY_OFFSET = metadataKeys.count;
 
 const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
   serverDataType === undefined;
+
+const getCellRendererForColumn = (column: ColumnDescriptor) => {
+  if (isTypeDescriptor(column.type)) {
+    return getCellRenderer(column.type?.renderer?.name);
+  }
+};
 
 const getDataType = (
   column: ColumnDescriptor,
@@ -218,6 +226,7 @@ const toKeyedColumWithDefaults =
     return {
       ...rest,
       align,
+      CellRenderer: getCellRendererForColumn(column),
       label: getLabel(label, columnFormatHeader),
       key: index + KEY_OFFSET,
       name,
@@ -291,6 +300,9 @@ function setTypes(
         serverDataType,
       };
     });
+
+    console.log(`setTypes ${JSON.stringify(cols, null, 2)}`);
+
     return {
       ...state,
       columns: cols,

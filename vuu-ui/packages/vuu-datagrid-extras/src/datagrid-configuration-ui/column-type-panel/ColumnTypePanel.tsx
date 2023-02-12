@@ -5,6 +5,7 @@ import { Dispatch, useMemo } from "react";
 import { ColumnAction } from "../settings-panel/useGridSettings";
 import { NumericColumnPanel } from "./NumericColumnPanel";
 import { StringColumnPanel } from "./StringColumnPanel";
+import { getRegisteredCellRenderers } from "@finos/vuu-utils";
 
 import "./ColumnTypePanel.css";
 
@@ -20,6 +21,10 @@ const doubleCellRenderers = ["Default Renderer (double)"];
 const stringCellRenderers = ["Default Renderer (string)"];
 
 const getAvailableCellRenderers = (column: ColumnDescriptor) => {
+  const customCellRenderers = getRegisteredCellRenderers(column.serverDataType);
+  const customRendererNames = customCellRenderers.map((r) => r.name);
+  console.log({ customRendererNames });
+
   switch (column.serverDataType) {
     case "char":
     case "string":
@@ -28,7 +33,7 @@ const getAvailableCellRenderers = (column: ColumnDescriptor) => {
     case "long":
       return integerCellRenderers;
     case "double":
-      return doubleCellRenderers;
+      return doubleCellRenderers.concat(customRendererNames);
     default:
       return stringCellRenderers;
   }

@@ -103,6 +103,7 @@ export const useDataTable = ({
       if (subscription.tableMeta) {
         const { columns: columnNames, dataTypes: serverDataTypes } =
           subscription.tableMeta;
+        expectConfigChangeRef.current = true;
         dispatchColumnAction({
           type: "setTypes",
           columnNames,
