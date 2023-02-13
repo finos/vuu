@@ -10,9 +10,9 @@ import org.finos.toolbox.time.Clock
 
 import scala.util.{Failure, Success, Try}
 
-class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
-                          val tableContainer: TableContainer,
-                          val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging {
+class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
+                           val tableContainer: TableContainer,
+                           val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging {
 
 
   override def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
