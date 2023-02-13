@@ -4,8 +4,16 @@ import { ArrowLeft, ArrowRight, Enter } from "./key-code";
 import { getNodeById, replaceNode } from "./hierarchical-data-utils";
 
 const NO_HANDLERS = {};
-const isToggleElement = (element) =>
+const isToggleElement = (element: HTMLElement) =>
   element && element.hasAttribute("aria-expanded");
+
+export interface CollapsibleGroupsHookProps {
+  collapsibleHeaders?: boolean;
+  highlightedIdx: number;
+  indexPositions: any;
+  setVisibleData: any;
+  source: any;
+}
 
 export const useCollapsibleGroups = ({
   collapsibleHeaders,
@@ -13,7 +21,7 @@ export const useCollapsibleGroups = ({
   indexPositions,
   setVisibleData,
   source,
-}) => {
+}: CollapsibleGroupsHookProps) => {
   const fullSource = useRef(source);
   const stateSource = useRef(fullSource.current);
 

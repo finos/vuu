@@ -141,34 +141,6 @@ export function projectUpdates(updates: number[]): number[] {
   return results;
 }
 
-export function projectColumns(
-  tableRowColumnMap: ColumnMap,
-  columns: ColumnDescriptor[]
-) {
-  const columnCount = columns.length;
-  const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, count } = metadataKeys;
-  return (startIdx: number, offset: number, selectedRows: Row[] = []) =>
-    (row: Row, i: number) => {
-      // selectedRows are indices of rows within underlying dataset (not sorted or filtered)
-      // row is the original row from this set, with original index in IDX pos, which might
-      // be overwritten with a different value below if rows are sorted/filtered
-      const baseRowIdx: any = row[IDX]; // TODO
-      const out = [];
-      for (let i = 0; i < columnCount; i++) {
-        const colIdx = tableRowColumnMap[columns[i].name];
-        out[count + i] = row[colIdx];
-      }
-
-      out[IDX] = startIdx + i + offset;
-      out[RENDER_IDX] = 0;
-      out[DEPTH] = 0;
-      out[COUNT] = 0;
-      out[KEY] = row[tableRowColumnMap.KEY];
-      out[SELECTED] = selectedRows.includes(baseRowIdx) ? 1 : 0;
-      return out;
-    };
-}
-
 export const metadataKeys = {
   IDX: 0,
   RENDER_IDX: 1,
