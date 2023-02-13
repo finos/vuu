@@ -22,6 +22,10 @@ body {
   background-color: orange !important;
 }
 
+.vuuApp {
+  background-color: green;
+}
+
 .ToolbarField > svg {
   fill: var(--spectrum-global-color-static-gray-600);
   width: 18px;

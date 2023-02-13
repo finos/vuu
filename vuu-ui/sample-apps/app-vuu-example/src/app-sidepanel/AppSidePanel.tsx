@@ -1,3 +1,4 @@
+import { TableSchema } from "@finos/vuu-data";
 import { Palette, PaletteItem } from "@finos/vuu-layout";
 import { Feature, Features } from "@finos/vuu-shell";
 import {
@@ -5,20 +6,27 @@ import {
   AccordionDetails,
   AccordionSection,
   AccordionSummary,
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
+  Dropdown,
+  SelectionChangeHandler,
 } from "@heswell/salt-lab";
 import cx from "classnames";
-
-import { TableSchema } from "@finos/vuu-data";
 import { ReactElement, useMemo, useState } from "react";
+
+import "./AppSidePanel.css";
 
 const NO_FEATURES: Features = {};
 export interface AppSidePanelProps {
   features?: Features;
   tables?: Map<string, TableSchema>;
 }
+
+type FeatureDescriptor = {
+  className: string;
+  css: string;
+  js: string;
+  name: string;
+  title: string;
+};
 
 const byModule = (schema1: TableSchema, schema2: TableSchema) => {
   const m1 = schema1.table.module.toLowerCase();
@@ -51,7 +59,6 @@ export const AppSidePanel = ({
   features = NO_FEATURES,
   tables,
 }: AppSidePanelProps) => {
-  console.log(`vuuAppSidePanel ${tables}`);
   const gridFeatures = useMemo(
     () =>
       Object.entries(features).map(([featureName, { title, url, css }]) => {
@@ -59,20 +66,21 @@ export const AppSidePanel = ({
           className: featureName,
           css,
           js: url,
+          name: featureName,
           title,
-        };
+        } as FeatureDescriptor;
       }),
     [features]
   );
 
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
-  const handleChange: ToggleButtonGroupChangeEventHandler = (
-    event,
-    index,
-    toggled
-  ) => {
-    console.log(`onChange [${index}] toggled ${toggled}`);
-    setSelectedIndex(index);
+  const [selectedFeature, setSelectedFeature] = useState<FeatureDescriptor>(
+    gridFeatures[0]
+  );
+  const handleSelectFeature: SelectionChangeHandler<string> = (event, item) => {
+    const feature = gridFeatures.find((f) => f.title === item);
+    if (feature) {
+      setSelectedFeature(feature);
+    }
   };
 
   const paletteItems = useMemo(() => {
@@ -81,7 +89,7 @@ export const AppSidePanel = ({
       : Array.from(tables.values())
           .sort(byModule)
           .map((schema) => {
-            const { className, css, js } = gridFeatures[selectedIndex];
+            const { className, css, js } = selectedFeature;
             return {
               component: (
                 <Feature
@@ -98,29 +106,24 @@ export const AppSidePanel = ({
               label: `${schema.table.module} ${wordify(schema.table.table)}`,
             };
           });
-  }, [gridFeatures, selectedIndex, tables]);
+  }, [selectedFeature, tables]);
 
-  const toggleButtons = (): ReactElement => {
-    const featureNames = Object.keys(features);
+  const featureSelection = (): ReactElement => {
+    const featureNames = gridFeatures.map((f) => f.title);
     if (featureNames.length === 1) {
-      return <div>{gridFeatures[0].title}</div>;
+      return <div>{featureNames[0]}</div>;
     } else {
       return (
-        <ToggleButtonGroup
-          onChange={handleChange}
-          selectedIndex={selectedIndex}
-        >
-          {Object.values(features).map(({ title }) => (
-            <ToggleButton key={title}>{title}</ToggleButton>
-          ))}
-        </ToggleButtonGroup>
+        <Dropdown<string>
+          className="vuuFeatureDropdown"
+          fullWidth
+          onSelectionChange={handleSelectFeature}
+          selected={selectedFeature?.title}
+          source={featureNames}
+        />
       );
     }
   };
-
-  Object.keys(features).map((featureName) => (
-    <ToggleButton key={featureName}>Vuu Grid</ToggleButton>
-  ));
 
   return (
     <div className={cx(classBase)}>
@@ -132,7 +135,7 @@ export const AppSidePanel = ({
         <AccordionSection key={"rivers-and-lakes"} id="tables">
           <AccordionSummary>Vuu Tables</AccordionSummary>
           <AccordionDetails>
-            {toggleButtons()}
+            {featureSelection()}
             <Palette
               orientation="vertical"
               style={{ width: "100%", height: "100%" }}
