@@ -1,0 +1,94 @@
+.vuuDataTable td:has(> .vuuBackgroundCell){
+  padding: 0;
+  text-align: right;
+} 
+
+.vuuBackgroundCell {
+  padding-right: var(--salt-size-unit);
+  position: relative;
+  z-index: -1;
+}
+
+.vuuBackgroundCell-flasher {
+  color: transparent;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+}
+
+.vuuBackgroundCell-flasher {
+  text-align: left;
+}
+.vuuBackgroundCell-flasher + .num {
+  padding-left: 8px;
+}
+
+.right .vuuBackgroundCell-flasher {
+  text-align: right;
+}
+.right .vuuBackgroundCell-flasher + .num {
+  padding-right: 8px;
+}
+
+.up1 > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactbgup1;
+}
+
+.up2 > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactbgup2;
+}
+
+.down1 > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactbgdown1;
+}
+
+.down2 > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactbgdown2;
+}
+
+.up1.vuuBackgroundCell-arrowOnly > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactarrowup1;
+}
+
+.up2.vuuBackgroundCell-arrowOnly > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactarrowup2;
+}
+
+.down1.vuuBackgroundCell-arrowOnly > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactarrowdown1;
+}
+
+.down2.vuuBackgroundCell-arrowOnly > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactarrowdown2;
+}
+
+.up1.vuuBackgroundCell-arrowBackground > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactbgarrowup1;
+}
+
+.up2.vuuBackgroundCell-arrowBackground > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactbgarrowup2;
+}
+
+.down1.vuuBackgroundCell-arrowBackground > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactbgarrowdown1;
+}
+
+.down2.vuuBackgroundCell-arrowBackground > .vuuBackgroundCell-flasher {
+  animation-duration: 30s;
+  animation-name: reactbgarrowdown2;
+}

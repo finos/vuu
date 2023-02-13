@@ -1,5 +1,8 @@
 import {
   ColumnDescriptor,
+  ColumnType,
+  ColumnTypeDescriptor,
+  ColumnTypeSimple,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
   TableHeading,
@@ -8,6 +11,7 @@ import {
 import {
   VuuAggregation,
   VuuAggType,
+  VuuColumnDataType,
   VuuGroupBy,
   VuuSort,
 } from "@finos/vuu-protocol-types";
@@ -58,6 +62,21 @@ export const isKeyedColumn = (
   return typeof (column as KeyedColumnDescriptor).key === "number";
 };
 
+export const fromServerDataType = (
+  serverDataType: VuuColumnDataType
+): ColumnTypeSimple => {
+  switch (serverDataType) {
+    case "double":
+    case "int":
+    case "long":
+      return "number";
+    case "boolean":
+      return "boolean";
+    default:
+      return "string";
+  }
+};
+
 export const isNumericColumn = ({ serverDataType }: ColumnDescriptor) =>
   serverDataType === undefined
     ? false
@@ -83,6 +102,11 @@ export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
 export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
   name,
 });
+
+export const isTypeDescriptor = (
+  type?: ColumnType
+): type is ColumnTypeDescriptor =>
+  typeof type !== "undefined" && typeof type !== "string";
 
 const EMPTY_COLUMN_MAP = {} as const;
 
@@ -115,34 +139,6 @@ export function projectUpdates(updates: number[]): number[] {
     results[i + 2] = updates[i + 2];
   }
   return results;
-}
-
-export function projectColumns(
-  tableRowColumnMap: ColumnMap,
-  columns: ColumnDescriptor[]
-) {
-  const columnCount = columns.length;
-  const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, count } = metadataKeys;
-  return (startIdx: number, offset: number, selectedRows: Row[] = []) =>
-    (row: Row, i: number) => {
-      // selectedRows are indices of rows within underlying dataset (not sorted or filtered)
-      // row is the original row from this set, with original index in IDX pos, which might
-      // be overwritten with a different value below if rows are sorted/filtered
-      const baseRowIdx: any = row[IDX]; // TODO
-      const out = [];
-      for (let i = 0; i < columnCount; i++) {
-        const colIdx = tableRowColumnMap[columns[i].name];
-        out[count + i] = row[colIdx];
-      }
-
-      out[IDX] = startIdx + i + offset;
-      out[RENDER_IDX] = 0;
-      out[DEPTH] = 0;
-      out[COUNT] = 0;
-      out[KEY] = row[tableRowColumnMap.KEY];
-      out[SELECTED] = selectedRows.includes(baseRowIdx) ? 1 : 0;
-      return out;
-    };
 }
 
 export const metadataKeys = {
@@ -476,3 +472,8 @@ export const getColumnName = (name: string) => {
     return name.slice(0, pos);
   }
 };
+
+export const toDataSourceColumns = (column: ColumnDescriptor) =>
+  column.expression
+    ? `${column.name}:${column.serverDataType}:${column.expression}`
+    : column.name;

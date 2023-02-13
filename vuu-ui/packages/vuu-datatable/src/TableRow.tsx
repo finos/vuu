@@ -3,7 +3,7 @@ import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
 import cx from "classnames";
 import { HTMLAttributes, memo, MouseEvent, useCallback } from "react";
-import { RowClickHandler, ValueFormatters } from "./dataTableTypes";
+import { RowClickHandler } from "./dataTableTypes";
 import { TableCell } from "./TableCell";
 import { TableGroupCell } from "./TableGroupCell";
 
@@ -20,7 +20,6 @@ export interface RowProps
   onClick?: RowClickHandler;
   onToggleGroup?: (row: DataSourceRow) => void;
   row: DataSourceRow;
-  valueFormatters?: ValueFormatters;
 }
 
 export const TableRow = memo(function Row({
@@ -30,7 +29,6 @@ export const TableRow = memo(function Row({
   onClick,
   onToggleGroup,
   row,
-  valueFormatters,
 }: RowProps) {
   const {
     [IDX]: rowIndex,
@@ -78,7 +76,6 @@ export const TableRow = memo(function Row({
             key={column.name}
             onClick={isGroup ? handleGroupCellClick : undefined}
             row={row}
-            valueFormatter={valueFormatters?.[column.name]}
           />
         );
       })}

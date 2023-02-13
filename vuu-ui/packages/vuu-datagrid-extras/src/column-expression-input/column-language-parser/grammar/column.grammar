@@ -5,7 +5,7 @@
   plus @left
 }
 
-@top ColumnDefinitionExpression { Equal expression }
+@top ColumnDefinitionExpression { expression }
 
 expression { 
   Column | 
@@ -52,7 +52,6 @@ Function { identifier }
 
 @tokens {
   @precedence {"if", identifier}
-  Equal {"="}
   OpenBrace {"("}
   CloseBrace {")"}
   Plus {"+"}

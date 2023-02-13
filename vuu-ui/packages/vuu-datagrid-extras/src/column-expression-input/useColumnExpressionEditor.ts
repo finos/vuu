@@ -46,7 +46,7 @@ export interface IExpressionSuggestionProvider {
   ) => Promise<boolean>;
 }
 
-export interface SuggestionConsumer2 {
+export interface ExpressionSuggestionConsumer {
   suggestionProvider: IExpressionSuggestionProvider;
 }
 
@@ -70,7 +70,7 @@ const hasExpressionType = (
 
 const injectOptionContent = (completion: Completion, state: EditorState) => {
   if (hasExpressionType(completion)) {
-    const div = createEl("div", "steve-type");
+    const div = createEl("div", "expression-type-container");
     const span = createEl("span", "expression-type", completion.expressionType);
     div.appendChild(span);
     return div;
@@ -80,14 +80,16 @@ const injectOptionContent = (completion: Completion, state: EditorState) => {
 };
 
 export interface ColumnExpressionEditorProps {
+  onChange?: (source: string, expression: Expression | undefined) => void;
   onSubmitExpression?: (
-    expression: Expression | undefined,
-    source: string
+    source: string,
+    expression: Expression | undefined
   ) => void;
   suggestionProvider: IExpressionSuggestionProvider;
 }
 
 export const useColumnExpressionEditor = ({
+  onChange,
   onSubmitExpression,
   suggestionProvider,
 }: ColumnExpressionEditorProps) => {
@@ -97,15 +99,15 @@ export const useColumnExpressionEditor = ({
   const completionFn = useColumnAutoComplete(suggestionProvider, onSubmit);
 
   const [createState, clearInput] = useMemo(() => {
-    const parseExpression = (): [Expression, string] | [undefined, ""] => {
+    const parseExpression = (): [string, Expression] | ["", undefined] => {
       const view = getView(viewRef);
       const source = view.state.doc.toString();
       const tree = ensureSyntaxTree(view.state, view.state.doc.length, 5000);
       if (tree) {
         const expression = walkExpressionTree(tree, source);
-        return [expression, source];
+        return [source, expression];
       } else {
-        return [undefined, ""];
+        return ["", undefined];
       }
     };
 
@@ -114,8 +116,8 @@ export const useColumnExpressionEditor = ({
     };
 
     const submitExpressionAndClearInput = () => {
-      const [expression, source] = parseExpression();
-      onSubmitExpression?.(expression, source);
+      const [source, expression] = parseExpression();
+      onSubmitExpression?.(source, expression);
       clearInput();
     };
 
@@ -166,11 +168,14 @@ export const useColumnExpressionEditor = ({
             const view = getView(viewRef);
             if (v.docChanged) {
               startCompletion(view);
+              const source = view.state.doc.toString();
+              onChange?.(source, undefined);
             }
           }),
-          EditorState.transactionFilter.of((tr) =>
-            tr.newDoc.lines > 1 ? [] : tr
-          ),
+          // Enforces single line view
+          // EditorState.transactionFilter.of((tr) =>
+          //   tr.newDoc.lines > 1 ? [] : tr
+          // ),
           vuuTheme,
           vuuHighlighting,
         ],

@@ -579,7 +579,7 @@ export class Viewport {
 
       const out = clientRows || this.holdingPen;
 
-      for (let row of records) {
+      for (const row of records) {
         if (row && row.ts >= timeStamp) {
           out.push(toClient(row, keys));
         }
@@ -611,8 +611,8 @@ export class Viewport {
 const toClientRow = (
   { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
   keys: KeySet
-) =>
-  [
+) => {
+  return [
     rowIndex,
     keys.keyFor(rowIndex),
     true,
@@ -622,6 +622,7 @@ const toClientRow = (
     rowKey,
     isSelected,
   ].concat(data) as DataSourceRow;
+};
 
 const toClientRowTree = (
   { rowIndex, rowKey, sel: isSelected, data }: VuuRow,

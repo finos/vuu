@@ -1,17 +1,18 @@
-import React from "react";
-import cx from "classnames";
-import { metadataKeys } from "@finos/vuu-utils";
-import { useCellFormatter } from "../grid-cells/useCellFormatter";
-import useDirection, { UP1, UP2, DOWN1, DOWN2 } from "./use-direction";
-
-import "./background-cell.css";
-import { GridCellProps } from "../grid-cells";
 import { ColumnType } from "@finos/vuu-datagrid-types";
+import { TableCellProps } from "@finos/vuu-datatable/src/TableCell";
+import { metadataKeys, registerComponent } from "@finos/vuu-utils";
+import cx from "classnames";
+import { DOWN1, DOWN2, UP1, UP2, useDirection } from "./useDirection";
+
+import "./BackgroundCell.css";
+import "./FlashingBackground.css";
 
 const CHAR_ARROW_UP = String.fromCharCode(11014);
 const CHAR_ARROW_DOWN = String.fromCharCode(11015);
 
 const { KEY } = metadataKeys;
+
+const classBase = "vuuBackgroundCell";
 
 // TODO these sre repeated from PriceFormatter - where shoud they live ?
 const FlashStyle = {
@@ -29,14 +30,11 @@ const getFlashStyle = (colType?: ColumnType) => {
   }
 };
 
-const BackgroundCell = React.memo(function BackgroundCell({
-  column,
-  row,
-}: GridCellProps) {
+const BackgroundCell = ({ column, row }: TableCellProps) => {
   //TODO what about click handling
-  const { key, width, type } = column;
+
+  const { key, type, valueFormatter } = column;
   const value = row[key];
-  const [format] = useCellFormatter(column);
   const flashStyle = getFlashStyle(type);
   const direction = useDirection(row[KEY], value, column);
   const arrow =
@@ -50,23 +48,20 @@ const BackgroundCell = React.memo(function BackgroundCell({
       : null;
 
   const dirClass = direction ? ` ` + direction : "";
-  const arrowClass =
-    flashStyle === FlashStyle.ArrowOnly
-      ? " arrow-only"
-      : flashStyle === FlashStyle.ArrowBackground
-      ? " arrow"
-      : "";
+
+  const className = cx(classBase, dirClass, {
+    [`${classBase}-arrowOnly`]: flashStyle === FlashStyle.ArrowOnly,
+    [`${classBase}-arrowBackground`]: flashStyle === FlashStyle.ArrowBackground,
+  });
 
   return (
-    <div
-      className={cx("vuuDataGridCell", "Background-cell", dirClass, arrowClass)}
-      style={{ marginLeft: column.marginLeft, width }}
-      tabIndex={-1}
-    >
-      <div className="flasher">{arrow}</div>
-      {format(row[column.key])}
+    <div className={className} tabIndex={-1}>
+      <div className={`${classBase}-flasher`}>{arrow}</div>
+      {valueFormatter(row[column.key])}
     </div>
   );
-});
+};
 
-export default BackgroundCell;
+registerComponent("background", BackgroundCell, "cell-renderer", {
+  serverDataType: ["long", "int", "double"],
+});

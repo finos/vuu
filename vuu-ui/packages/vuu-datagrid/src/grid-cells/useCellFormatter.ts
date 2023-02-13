@@ -1,10 +1,9 @@
-import { roundDecimal } from "@finos/vuu-utils";
+import { isTypeDescriptor, roundDecimal } from "@finos/vuu-utils";
 import {
   KeyedColumnDescriptor,
   TypeFormatting,
 } from "@finos/vuu-datagrid-types";
 import { createElement, useRef } from "react";
-import { isTypeDescriptor } from "../grid-model";
 
 const defaultFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();

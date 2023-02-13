@@ -126,7 +126,7 @@
 
 th:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   top:0;
-  z-index: 2;
+  z-index: 20;
 }
 
 table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {

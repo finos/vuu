@@ -3,11 +3,20 @@ import { DataSourceFilter } from "@finos/vuu-data-types";
 import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { DataTable, TableProps } from "@finos/vuu-datatable";
+import { FilterInput } from "@finos/vuu-filters";
 import { Flexbox, useViewContext, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
-import { itemsChanged } from "@finos/vuu-utils";
-import { FilterInput } from "@finos/vuu-filters";
+import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
 
+import { DragVisualizer } from "@finos/vuu-datatable/src/DragVisualizer";
+import { Filter } from "@finos/vuu-filter-types";
+import { useFilterSuggestionProvider } from "@finos/vuu-filters";
+import {
+  VuuGroupBy,
+  VuuRowDataItemType,
+  VuuSort,
+  VuuTable,
+} from "@finos/vuu-protocol-types";
 import {
   ToggleButton,
   ToggleButtonGroup,
@@ -24,21 +33,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { DragVisualizer } from "@finos/vuu-datatable/src/DragVisualizer";
-import {
-  ErrorDisplay,
-  toServerSpec,
-  useSchemas,
-  useTestDataSource,
-} from "../utils";
-import { Filter } from "@finos/vuu-filter-types";
-import { useFilterSuggestionProvider } from "@finos/vuu-filters";
-import {
-  VuuGroupBy,
-  VuuRowDataItemType,
-  VuuSort,
-  VuuTable,
-} from "@finos/vuu-protocol-types";
+import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 
 let displaySequence = 1;
 
@@ -247,7 +242,9 @@ FlexLayoutTables.displaySequence = displaySequence++;
 export const VuuDataTable = () => {
   const [columnConfig, tables] = useMemo(
     () => [
-      { description: { editable: true } },
+      {
+        description: { editable: true },
+      },
       ["instruments", "orders", "parentOrders", "prices"],
     ],
     []
@@ -286,10 +283,13 @@ export const VuuDataTable = () => {
 
   const handleSettingsConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
+      console.log(`Table.examples config changed`, {
+        config,
+      });
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
           // side effect: update columns on dataSource
-          dataSource.columns = config.columns.map((col) => col.name);
+          dataSource.columns = config.columns.map(toDataSourceColumns);
         }
         return (configRef.current = config);
       });
@@ -509,7 +509,7 @@ export const VuuDataTableCalculatedColumns = () => {
     (config: GridConfig, closePanel = false) => {
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
-          dataSource.columns = config.columns.map(toServerSpec);
+          dataSource.columns = config.columns.map(toDataSourceColumns);
         }
         return (configRef.current = config);
       });
@@ -686,7 +686,7 @@ const ConfigurableDataTable = ({
       save?.(config, "table-config");
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
-          dataSource.columns = config.columns.map(toServerSpec);
+          dataSource.columns = config.columns.map(toDataSourceColumns);
         }
         return (configRef.current = config);
       });
@@ -859,11 +859,11 @@ export const HiddenColumns = () => {
     setTableConfig((configRef.current = config));
   }, [config]);
 
-  const handleConfigChange = useCallback(
+  const handleSettingsConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
-          dataSource.columns = config.columns.map(toServerSpec);
+          dataSource.columns = config.columns.map(toDataSourceColumns);
         }
         return (configRef.current = config);
       });
@@ -886,10 +886,10 @@ export const HiddenColumns = () => {
       <DatagridSettingsPanel
         availableColumns={columns}
         gridConfig={configRef.current}
-        onConfigChange={handleConfigChange}
+        onConfigChange={handleSettingsConfigChange}
       />
     );
-  }, [columns, handleConfigChange]);
+  }, [columns, handleSettingsConfigChange]);
 
   const hideSettings = useCallback(() => {
     setDialogContent(null);

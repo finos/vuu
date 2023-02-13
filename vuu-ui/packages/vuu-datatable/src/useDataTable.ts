@@ -6,26 +6,14 @@ import {
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
-import {
-  ColumnDescriptor,
-  GridConfig,
-  KeyedColumnDescriptor,
-  TypeFormatting,
-} from "@finos/vuu-datagrid-types";
+import { GridConfig, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuSortType } from "@finos/vuu-protocol-types";
-import {
-  applySort,
-  metadataKeys,
-  moveItem,
-  roundDecimal,
-} from "@finos/vuu-utils";
+import { applySort, metadataKeys, moveItem } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   TableColumnResizeHandler,
   tableLayoutType,
   TableSelectionModel,
-  ValueFormatter,
-  ValueFormatters,
 } from "./dataTableTypes";
 import { useDataSource } from "./useDataSource";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
@@ -51,45 +39,6 @@ export interface DataTableHookProps extends MeasuredProps {
 }
 
 const { KEY, IS_EXPANDED } = metadataKeys;
-const DEFAULT_NUMERIC_FORMAT: TypeFormatting = {};
-const defaultValueFormatter = (value: unknown) =>
-  value == null ? "" : typeof value === "string" ? value : value.toString();
-const numericFormatter = ({ align = "right", type }: ColumnDescriptor) => {
-  if (type === undefined || typeof type === "string") {
-    return defaultValueFormatter;
-  } else {
-    const {
-      alignOnDecimals = false,
-      decimals,
-      zeroPad = false,
-    } = type.formatting ?? DEFAULT_NUMERIC_FORMAT;
-    return (value: unknown) => {
-      if (
-        typeof value === "string" &&
-        (value.startsWith("Σ") || value.startsWith("["))
-      ) {
-        return value;
-      }
-      const number =
-        typeof value === "number"
-          ? value
-          : typeof value === "string"
-          ? parseFloat(value)
-          : undefined;
-      return roundDecimal(number, align, decimals, zeroPad, alignOnDecimals);
-    };
-  }
-};
-
-const getValueFormatter = (column: KeyedColumnDescriptor): ValueFormatter => {
-  const { serverDataType } = column;
-  if (serverDataType === "string" || serverDataType === "char") {
-    return (value: unknown) => value as string;
-  } else if (serverDataType === "double") {
-    return numericFormatter(column);
-  }
-  return defaultValueFormatter;
-};
 
 export const useDataTable = ({
   config,
@@ -154,6 +103,7 @@ export const useDataTable = ({
       if (subscription.tableMeta) {
         const { columns: columnNames, dataTypes: serverDataTypes } =
           subscription.tableMeta;
+        expectConfigChangeRef.current = true;
         dispatchColumnAction({
           type: "setTypes",
           columnNames,
@@ -163,13 +113,6 @@ export const useDataTable = ({
     },
     [dispatchColumnAction]
   );
-
-  const valueFormatters = useMemo(() => {
-    return columns.reduce<ValueFormatters>(
-      (map, column) => ((map[column.name] = getValueFormatter(column)), map),
-      {}
-    );
-  }, [columns]);
 
   const handleConfigChangeFromDataSource = useCallback(
     (message: DataSourceConfigMessage) => {
@@ -372,7 +315,6 @@ export const useDataTable = ({
     onToggleGroup: handleToggleGroup,
     scrollProps,
     rowCount,
-    valueFormatters,
     viewportMeasurements,
     ...draggableHook,
   };

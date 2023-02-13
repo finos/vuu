@@ -1,35 +1,58 @@
-import React, { forwardRef, useCallback, useEffect, useState } from "react";
 import { formatDate } from "@finos/vuu-utils";
-import { logout } from "../login";
-import { getLayoutHistory } from "../get-layout-history";
-import { ExportIcon } from "@salt-ds/icons";
+import { List, ListItem, ListItemProps } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
-import { List, ListItem } from "@heswell/salt-lab";
+import { ExportIcon } from "@salt-ds/icons";
+import {
+  ForwardedRef,
+  forwardRef,
+  HTMLAttributes,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+import { getLayoutHistory, LayoutHistoryItem } from "../get-layout-history";
+import { logout } from "../login";
+import { VuuUser } from "../shell";
 
 import "./UserPanel.css";
 
-const byLastUpdate = ({ lastUpdate: l1 }, { lastUpdate: l2 }) => {
+const byLastUpdate = (
+  { lastUpdate: l1 }: LayoutHistoryItem,
+  { lastUpdate: l2 }: LayoutHistoryItem
+) => {
   return l2 === l1 ? 0 : l2 < l1 ? -1 : 1;
 };
 
-const HistoryListItem = (props) => {
+type HistoryEntry = {
+  id: string;
+  label: string;
+  lastUpdate: number;
+};
+
+const HistoryListItem = (props: ListItemProps<HistoryEntry>) => {
   return <ListItem {...props} />;
 };
 
+export interface UserPanelProps extends HTMLAttributes<HTMLDivElement> {
+  loginUrl?: string;
+  onNavigate: (id: string) => void;
+  user: VuuUser;
+  layoutId: string;
+}
+
 export const UserPanel = forwardRef(function UserPanel(
-  { loginUrl, onNavigate, user, layoutId = "latest" },
-  forwardedRef
+  { loginUrl, onNavigate, user, layoutId = "latest" }: UserPanelProps,
+  forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   useEffect(() => {
     async function getHistory() {
       const history = await getLayoutHistory(user);
-      console.log({ history });
       const sortedHistory = history
         .filter((item) => item.id !== "latest")
         .sort(byLastUpdate)
-        .map(({ id, lastUpdate }) => ({
+        .map<HistoryEntry>(({ id, lastUpdate }) => ({
           lastUpdate,
           id,
           label: `Saved at ${formatDate(new Date(lastUpdate), "kk:mm:ss")}`,
@@ -56,15 +79,14 @@ export const UserPanel = forwardRef(function UserPanel(
 
   const selected =
     history.length === 0
-      ? []
+      ? null
       : layoutId === "latest"
       ? history[0]
       : history.find((i) => i.id === layoutId);
-  console.log({ selected });
 
   return (
     <div className="vuuUserPanel" ref={forwardedRef}>
-      <List
+      <List<HistoryEntry>
         ListItem={HistoryListItem}
         className="vuuUserPanel-history"
         onSelect={handleHisorySelected}

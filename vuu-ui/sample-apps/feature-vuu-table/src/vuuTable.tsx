@@ -12,7 +12,6 @@ import {
   VuuFeatureMessage,
 } from "@finos/vuu-data";
 import { GridConfig } from "@finos/vuu-datagrid-types";
-import { DataTable } from "@finos/vuu-datatable";
 import { Filter } from "@finos/vuu-filter-types";
 import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
@@ -27,6 +26,7 @@ import { ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSuggestionProvider } from "./useSuggestionProvider";
+import { ConfigurableDataTable } from "./ConfigurableDataTable";
 
 import "./vuuTable.css";
 
@@ -244,19 +244,15 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
           suggestionProvider={suggestionProvider}
         />
         <div className={`${classBase}-gridContainer`}>
-          <DataTable
+          <ConfigurableDataTable
             {...props}
-            // columnSizing="fill"
             config={tableConfigRef.current}
             dataSource={dataSource}
-            // columns={columns}
             onConfigChange={handleTableConfigChange}
             onFeatureEnabled={handleVuuFeatureEnabled}
             onFeatureInvocation={handleVuuFeatureInvoked}
             renderBufferSize={80}
             rowHeight={18}
-            // selectionModel="extended"
-            // showLineNumbers
           />
         </div>
       </div>

@@ -16,6 +16,7 @@ import { useGridSettings } from "./useGridSettings";
 
 import { Stack, StackProps } from "@finos/vuu-layout";
 import { CalculatedColumnPanel } from "../calculated-column-panel";
+
 import "./DatagridSettingsPanel.css";
 
 export interface DatagridSettingsPanelProps
@@ -23,7 +24,10 @@ export interface DatagridSettingsPanelProps
   availableColumns: ColumnDescriptor[];
   gridConfig: Omit<GridConfig, "headings">;
   onCancel?: () => void;
-  onConfigChange?: (config: GridConfig, closePanel?: boolean) => void;
+  onConfigChange?: (
+    config: Omit<GridConfig, "headings">,
+    closePanel?: boolean
+  ) => void;
 }
 
 const classBase = "vuuDatagridSettingsPanel";
@@ -136,7 +140,11 @@ export const DatagridSettingsPanel = ({
           )}
         </div>
         <div title="Column Settings">Column Settings</div>
-        <CalculatedColumnPanel dispatchColumnAction={dispatchColumnAction} />
+        <CalculatedColumnPanel
+          columns={gridSettings.columns}
+          dispatchColumnAction={dispatchColumnAction}
+          table={{ module: "SIMUL", table: "instruments" }}
+        />
       </Stack>
       <div className={`${classBase}-buttonBar`}>
         <Button onClick={onCancel}>Cancel</Button>

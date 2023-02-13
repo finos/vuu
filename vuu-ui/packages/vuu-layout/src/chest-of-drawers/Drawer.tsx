@@ -35,7 +35,7 @@ const getStyle = (
 
 export interface DrawerProps extends HTMLAttributes<HTMLDivElement> {
   clickToOpen?: boolean;
-  defaultOpen: boolean;
+  defaultOpen?: boolean;
   inline?: boolean;
   open?: boolean;
   peekaboo?: boolean;

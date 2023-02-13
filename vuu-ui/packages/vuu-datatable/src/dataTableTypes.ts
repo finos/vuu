@@ -41,11 +41,6 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   width?: number;
 }
 
-export type ValueFormatter = (value: unknown) => string;
-export type ValueFormatters = {
-  [key: string]: ValueFormatter;
-};
-
 export type TableColumnResizeHandler = (
   phase: "begin" | "resize" | "end",
   columnName: string,
@@ -66,7 +61,6 @@ export interface TableImplementationProps {
   onSort: (column: KeyedColumnDescriptor, isAdditive: boolean) => void;
   onToggleGroup?: (row: DataSourceRow) => void;
   rowHeight: number;
-  valueFormatters?: ValueFormatters;
 }
 
 type MeasureStatus = "unmeasured" | "measured";
