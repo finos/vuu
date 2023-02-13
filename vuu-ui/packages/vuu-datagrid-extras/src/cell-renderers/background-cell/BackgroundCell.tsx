@@ -1,8 +1,15 @@
 import { ColumnType } from "@finos/vuu-datagrid-types";
 import { TableCellProps } from "@finos/vuu-datatable/src/TableCell";
-import { metadataKeys, registerComponent } from "@finos/vuu-utils";
+import {
+  DOWN1,
+  DOWN2,
+  metadataKeys,
+  registerComponent,
+  UP1,
+  UP2,
+} from "@finos/vuu-utils";
 import cx from "classnames";
-import { DOWN1, DOWN2, UP1, UP2, useDirection } from "./useDirection";
+import { useDirection } from "./useDirection";
 
 import "./BackgroundCell.css";
 import "./FlashingBackground.css";
