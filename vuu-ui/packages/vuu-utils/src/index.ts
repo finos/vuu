@@ -2,6 +2,7 @@ export * from "./array-utils";
 export * from "./column-utils";
 export * from "./component-registry";
 export * from "./DataWindow";
+export * from "./data-utils";
 export * from "./date-utils";
 export * from "./filter-utils";
 export * from "./html-utils";

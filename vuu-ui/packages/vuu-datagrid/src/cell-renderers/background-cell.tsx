@@ -1,8 +1,8 @@
 import React from "react";
 import cx from "classnames";
-import { metadataKeys } from "@finos/vuu-utils";
+import { metadataKeys, UP1, UP2, DOWN1, DOWN2 } from "@finos/vuu-utils";
 import { useCellFormatter } from "../grid-cells/useCellFormatter";
-import useDirection, { UP1, UP2, DOWN1, DOWN2 } from "./use-direction";
+import { useDirection } from "./use-direction";
 
 import "./background-cell.css";
 import { GridCellProps } from "../grid-cells";
