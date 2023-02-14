@@ -365,6 +365,7 @@ export const useDataTable = ({
     onRowClick: handleRowClick,
     onSort: handleSort,
     onToggleGroup: handleToggleGroup,
+    scrollProps,
     rowCount,
     viewportMeasurements,
     ...draggableHook,

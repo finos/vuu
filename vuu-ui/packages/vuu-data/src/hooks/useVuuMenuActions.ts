@@ -45,18 +45,18 @@ const { KEY } = metadataKeys;
 
 const NO_CONFIG: MenuActionConfig = {};
 
-const contextSortPriorities = {
-  "selected-rows": 0,
-  cell: 1,
-  row: 2,
-  grid: 3,
-};
+// const contextSortPriorities = {
+//   "selected-rows": 0,
+//   cell: 1,
+//   row: 2,
+//   grid: 3,
+// };
 
-const byContext = (menu1: VuuMenuItem, menu2: VuuMenuItem) => {
-  return (
-    contextSortPriorities[menu1.context] - contextSortPriorities[menu2.context]
-  );
-};
+// const byContext = (menu1: VuuMenuItem, menu2: VuuMenuItem) => {
+//   return (
+//     contextSortPriorities[menu1.context] - contextSortPriorities[menu2.context]
+//   );
+// };
 
 export const isVisualLinksAction = (
   action: GridAction
