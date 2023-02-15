@@ -174,7 +174,7 @@ case class StartsClause(column: String, dataType: Int, value: String) extends Da
     if (datum == null)
       false
     else
-      datum.toString.startsWith(value)
+      datum.toString.startsWith(stripQuotes(value))
   }
 }
 
@@ -186,7 +186,7 @@ case class EndsClause(column: String, dataType: Int, value: String) extends Data
     if (datum == null)
       false
     else
-      datum.toString.endsWith(value)
+      datum.toString.endsWith(stripQuotes(value))
   }
 }
 
@@ -228,7 +228,7 @@ case class InClause(column: String, dataType: Int, values: List[String]) extends
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
       case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
-        ix.find(values)
+        ix.find(values.map(s => stripQuotes(s)))
       case Some(ix: IntIndexedField) if asColumn.dataType == DataType.IntegerDataType =>
         ix.find(values.map(s => s.toInt))
       case Some(ix: LongIndexedField) if asColumn.dataType == DataType.LongDataType =>
