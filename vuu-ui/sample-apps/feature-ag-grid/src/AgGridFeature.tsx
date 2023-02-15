@@ -1,5 +1,5 @@
 // import { useViewContext } from "@finos/vuu-layout";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import "ag-grid-enterprise";
 import { AgGridReact } from "ag-grid-react";
 import { useViewportRowModel } from "@finos/vuu-data-ag-grid";
@@ -7,8 +7,11 @@ import { createColumnDefs } from "./createColumnDefs";
 
 import {
   DataSourceVisualLinkCreatedMessage,
+  isViewportMenusAction,
+  isVisualLinksAction,
   RemoteDataSource,
   TableSchema,
+  VuuFeatureMessage,
 } from "@finos/vuu-data";
 
 import { FeatureProps } from "@finos/vuu-shell";
@@ -59,8 +62,24 @@ const AgGridFeature = ({ schema }: FilteredGridProps) => {
     title,
   ]);
 
-  const { createFilterDataProvider, ...gridConfig } =
-    useViewportRowModel(dataSource);
+  const handleVuuFeatureEnabled = useCallback(
+    (message: VuuFeatureMessage) => {
+      console.log("feature enabled", {
+        message,
+      });
+      if (isViewportMenusAction(message)) {
+        saveSession?.(message.menu, "vuu-menu");
+      } else if (isVisualLinksAction(message)) {
+        saveSession?.(message.links, "vuu-links");
+      }
+    },
+    [saveSession]
+  );
+
+  const { createFilterDataProvider, ...gridConfig } = useViewportRowModel({
+    dataSource,
+    onFeatureEnabled: handleVuuFeatureEnabled,
+  });
 
   const columnDefs = useMemo(
     () =>
