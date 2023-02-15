@@ -104,7 +104,7 @@ const isSelectionMenu = (options: VuuMenuItem): options is VuuMenuItem =>
 const vuuContextCompatibleWithTableLocation = (
   uiLocation: "grid" | "header" | "filter",
   vuuContext: VuuMenuContext,
-  selectedRowCount: number
+  selectedRowCount = 0
 ) => {
   switch (uiLocation) {
     case "grid":
@@ -243,7 +243,7 @@ const menuShouldBeRenderedInThisContext = (
     !vuuContextCompatibleWithTableLocation(
       tableLocation,
       menuItem.context,
-      options.selectedRows.length
+      options.selectedRows?.length
     )
   ) {
     return false;
