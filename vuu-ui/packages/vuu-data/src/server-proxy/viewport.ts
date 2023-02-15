@@ -40,6 +40,7 @@ import {
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
+  DataUpdateMode,
 } from "../data-source";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
@@ -118,15 +119,17 @@ export class Viewport {
   private groupBy: string[];
   private sort: VuuSort;
   private hasUpdates = false;
+  private pendingUpdates: VuuRow[] = [];
   private keys: KeySet;
   private pendingLinkedParent?: LinkDescriptorWithLabel;
-  private pendingOperations: any = new Map<string, AsyncOperation>();
-  private pendingRangeRequest: any = null;
+  private pendingOperations = new Map<string, AsyncOperation>();
+  private pendingRangeRequest: ClientToServerViewPortRange | null = null;
   private rowCountChanged = false;
   private serverTableMeta: {
     columns: string[];
     dataTypes: VuuColumnDataType[];
   } | null = null;
+  private batchMode = true;
 
   public clientViewportId: string;
   public disabled = false;
@@ -247,7 +250,12 @@ export class Viewport {
   // Return a message if we need to communicate this to client UI
   completeOperation(requestId: string, ...params: unknown[]) {
     const { clientViewportId, pendingOperations } = this;
-    const { type, data } = pendingOperations.get(requestId);
+    const pendingOperation = pendingOperations.get(requestId);
+    if (!pendingOperation) {
+      console.warn(`Viewport no matching operation found to complete`);
+      return;
+    }
+    const { type, data } = pendingOperation;
     pendingOperations.delete(requestId);
     if (type === Message.CHANGE_VP_RANGE) {
       const [from, to] = params as [number, number];
@@ -331,10 +339,11 @@ export class Viewport {
   // TODO when a range request arrives, consider the viewport to be scrolling
   // until data arrives and we have the full range.
   // When not scrolling, any server data is an update
+  // Wehn scrolling, we are in batch mode
   rangeRequest(requestId: string, range: VuuRange): RangeRequestTuple {
     // If we can satisfy the range request from the buffer, we will.
     // May or may not need to make a server request, depending on status of buffer
-    const type = Message.CHANGE_VP_RANGE;
+    const type = "CHANGE_VP_RANGE";
     // If dataWindow has all data for the new range, it will return the
     // delta of rows which are in the new range but were not in the
     // previous range.
@@ -342,8 +351,10 @@ export class Viewport {
     // rows that constitute the delta ? Is this even possible ?
 
     if (this.dataWindow) {
-      const [serverDataRequired, clientRows /*, holdingRows */] =
-        this.dataWindow.setClientRange(range.from, range.to);
+      const [serverDataRequired, clientRows] = this.dataWindow.setClientRange(
+        range.from,
+        range.to
+      );
 
       const serverRequest =
         serverDataRequired &&
@@ -363,6 +374,10 @@ export class Viewport {
         // TODO check that there os not already a pending server request for more data
         this.awaitOperation(requestId, { type });
         this.pendingRangeRequest = serverRequest;
+
+        this.batchMode = true;
+      } else if (clientRows.length > 0) {
+        this.batchMode = false;
       }
 
       // always reset the keys here, even if we're not going to return rows immediately.
@@ -528,8 +543,9 @@ export class Viewport {
         // Update will return true if row was within client range
         if (this.dataWindow.setAtIndex(rowIndex, row)) {
           this.hasUpdates = true;
-
-          // if not scrolling, store the update
+          if (!this.batchMode) {
+            this.pendingUpdates.push(row);
+          }
         }
       }
     }
@@ -537,23 +553,37 @@ export class Viewport {
 
   // This is called only after new data has been received from server - data
   // returned direcly from buffer does not use this.
-  getClientRows() {
+  getClientRows(): [undefined | DataSourceRow[], DataUpdateMode] {
+    let out: DataSourceRow[] | undefined = undefined;
+    let mode: DataUpdateMode = "size-only";
+
     if (this.hasUpdates && this.dataWindow) {
-      const records = this.dataWindow.getData();
       const { keys } = this;
       const toClient = this.isTree ? toClientRowTree : toClientRow;
-      let out: DataSourceRow[] | undefined = undefined;
-      // if scrolling and hasAllRowsWithinRange, turn scrolling off
-      // if not scrolling, return just the updates
-      if (this.dataWindow.hasAllRowsWithinRange) {
+
+      if (this.pendingUpdates.length > 0) {
         out = [];
-        for (const row of records) {
+        mode = "update";
+        for (const row of this.pendingUpdates) {
           out.push(toClient(row, keys));
+        }
+        this.pendingUpdates.length = 0;
+      } else {
+        const records = this.dataWindow.getData();
+        // if scrolling and hasAllRowsWithinRange, turn scrolling off
+        // if not scrolling, return just the updates
+        if (this.dataWindow.hasAllRowsWithinRange) {
+          out = [];
+          mode = "batch";
+          for (const row of records) {
+            out.push(toClient(row, keys));
+          }
+          this.batchMode = false;
         }
       }
       this.hasUpdates = false;
-      return out;
     }
+    return [out, mode];
   }
 
   getNewRowCount = () => {

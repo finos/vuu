@@ -254,6 +254,7 @@ export class ServerProxy {
     }
     if (rows) {
       this.postMessageToClient({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: viewport.clientViewportId,
         rows,
@@ -666,6 +667,7 @@ export class ServerProxy {
               const rows = viewport.currentData();
               this.postMessageToClient({
                 clientViewportId: viewport.clientViewportId,
+                mode: "batch",
                 rows,
                 type: "viewport-update",
               });
@@ -911,11 +913,12 @@ export class ServerProxy {
   processUpdates() {
     this.viewports.forEach((viewport) => {
       if (viewport.hasUpdatesToProcess) {
-        const rows = viewport.getClientRows();
+        const [rows, mode] = viewport.getClientRows();
         const size = viewport.getNewRowCount();
         if (size !== undefined || (rows && rows.length > 0)) {
           this.postMessageToClient({
             clientViewportId: viewport.clientViewportId,
+            mode,
             rows,
             size,
             type: "viewport-update",

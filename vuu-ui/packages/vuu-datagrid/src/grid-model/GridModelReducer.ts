@@ -109,9 +109,6 @@ export const initModel = ([
   size,
   custom,
 ]: GridModelReducerInitializerTuple): GridModelType => {
-  console.log(`initGridModel`, {
-    gridProps,
-  });
   const {
     aggregations = [],
     cellSelectionModel,
@@ -241,12 +238,6 @@ function setGridConfig(
   state: GridModelType,
   { filter, groupBy, sort }: GridModelActionGridConfig
 ) {
-  console.log(`setGridConfig`, {
-    filter,
-    groupBy,
-    sort,
-  });
-
   let result = state;
 
   const hasFilter = filter !== undefined;

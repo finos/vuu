@@ -108,37 +108,39 @@ export class ViewportRowModelDataSource {
         const { columnMap, reverseColumnMap } = this;
         //----------------
         const d = this.dataWindow.data;
-        console.log(`ViewportRowModelDataSource received rows
+        console.log(`ViewportRowModelDataSource ${
+          message.rows.length
+        } received rows
           ${message.rows[0][0]} - ${message.rows[message.rows.length - 1][0]}  
           dataWindow contains ${d[0]?.[0]} - ${d[d.length - 1]?.[0]}
         `);
-        //---------------
-        // if (message.rows.some(this.dataWindow.hasRow, this.dataWindow)) {
-        //   console.log("update path");
-        //   for (const dataRow of message.rows) {
-        //     const [rowIndex] = dataRow;
-        //     const updates = this.dataWindow.update(dataRow, reverseColumnMap);
-        //     if (updates) {
-        //       const agRowNode = this.getAgRow(rowIndex);
-        //       for (let i = 0; i < updates.length; i += 2) {
-        //         agRowNode.setDataValue(updates[i] as string, updates[i + 1]);
-        //       }
-        //     }
-        //   }
-        // } else {
-        console.log("insert path");
-        const agRowData = convertToAgViewportRows(message.rows, columnMap);
-        for (const dataRow of message.rows) {
-          this.dataWindow.add(dataRow);
+        if (message.mode === "update") {
+          console.log("update path");
+          for (const dataRow of message.rows) {
+            const [rowIndex] = dataRow;
+            const updates = this.dataWindow.update(dataRow, reverseColumnMap);
+            if (updates) {
+              const agRowNode = this.getAgRow(rowIndex);
+              for (let i = 0; i < updates.length; i += 2) {
+                agRowNode.setDataValue(updates[i] as string, updates[i + 1]);
+              }
+            }
+          }
+        } else {
+          console.log("insert path");
+          const agRowData = convertToAgViewportRows(message.rows, columnMap);
+          for (const dataRow of message.rows) {
+            this.dataWindow.add(dataRow);
+          }
+          console.log(
+            `%csetAgRowData  ${message.rows[0][0]} - ${
+              message.rows[message.rows.length - 1][0]
+            }`,
+            "color: green; font-weight: bold;"
+          );
+          this.setAgRowData(agRowData);
+          // }
         }
-        console.log(
-          `%csetAgRowData  ${message.rows[0][0]} - ${
-            message.rows[message.rows.length - 1][0]
-          }`,
-          "color: green; font-weight: bold;"
-        );
-        this.setAgRowData(agRowData);
-        // }
       }
     }
   };
