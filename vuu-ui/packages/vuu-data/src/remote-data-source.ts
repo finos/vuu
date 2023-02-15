@@ -5,7 +5,7 @@ import {
   VuuRange,
   VuuTable,
   VuuSort,
-  VuuMenuRpcRequest,
+  ClientToServerMenuRPC,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 
@@ -20,14 +20,6 @@ import {
 } from "./data-source";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
-
-// const log = (message: string, ...rest: unknown[]) => {
-//   console.log(
-//     `%c[RemoteDataSource] ${message}`,
-//     "color: brown; font-weight: bold",
-//     ...rest
-//   );
-// };
 
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
@@ -143,14 +135,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       //TODO check if subscription details are still the same
       return;
     }
-
-    // console.log(
-    //   `%c[remoteDataSource] ${this.viewport} subscribe
-    //     RemoteDataSource bufferSize ${this.bufferSize}
-    //     range ${JSON.stringify(range)}
-    //     status ${this.status}`,
-    //   "color:green;font-weight: bold;"
-    // );
 
     this.status = "subscribing";
     this.viewport = viewport;
@@ -496,12 +480,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     this.onConfigChange?.(newConfig);
   }
 
-  async menuRpcCall(rpcRequest: Omit<VuuMenuRpcRequest, "vpId">) {
+  async menuRpcCall(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">) {
     if (this.viewport) {
       return this.server?.rpcCall<MenuRpcResponse>({
         vpId: this.viewport,
         ...rpcRequest,
-      } as VuuMenuRpcRequest);
+      } as ClientToServerMenuRPC);
     }
   }
 }

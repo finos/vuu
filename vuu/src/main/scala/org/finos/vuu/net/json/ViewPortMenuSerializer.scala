@@ -34,6 +34,7 @@ class ViewPortMenuSerializer extends JsonSerializer[ViewPortMenu] {
         gen.writeStringField("filter", menuItem.filter)
         gen.writeStringField("rpcName", menuItem.rpcName)
         gen.writeStringField("context", menuItem.context)
+        gen.writeStringField("field", menuItem.field)
         gen.writeEndObject()
       case menuItem: RowViewPortMenuItem =>
         gen.writeStartObject()
@@ -79,7 +80,10 @@ class ViewPortMenuDeserializer extends JsonDeserializer[ViewPortMenu] {
         case "selected-rows" => new SelectionViewPortMenuItem(name, filter, (s, r) => NoAction(), rpcName)
         case "row" => new RowViewPortMenuItem(name, filter, (s, m, r) => NoAction(), rpcName)
         case "grid" => new TableViewPortMenuItem(name, filter, (r) => NoAction(), rpcName)
-        case "cell" => new CellViewPortMenuItem(name, filter, (s1, s2, o, r) => NoAction(), rpcName)
+        case "cell" => {
+          val field = node.get("field").asText()
+          new CellViewPortMenuItem(name, filter, (s1, s2, o, r) => NoAction(), rpcName, field)
+        }
       }
     }
   }

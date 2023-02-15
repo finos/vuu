@@ -1,6 +1,6 @@
-import { ContextMenuProvider, useContextMenu } from "@finos/vuu-popups";
+import { ContextMenuProvider } from "@finos/vuu-popups";
 import { Button, useIdMemo } from "@salt-ds/core";
-import { CSSProperties, MouseEvent, useCallback } from "react";
+import { CSSProperties } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
 import { buildContextMenuDescriptors } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
@@ -40,7 +40,6 @@ export const DataTable = ({
     draggable,
     draggedItemIndex,
     handleContextMenuAction,
-    rowCount,
     scrollProps,
     tableLayout,
     viewportMeasurements,
@@ -85,17 +84,6 @@ export const DataTable = ({
 
   const Table = tableLayout === "column" ? ColumnBasedTable : RowBasedTable;
 
-  const showContextMenu = useContextMenu();
-  const handleContextMenu = useCallback(
-    (e: MouseEvent<HTMLElement>) => {
-      showContextMenu(e, "grid", {
-        selectedRowCount: dataSource.selectedRowsCount,
-        viewport: dataSource?.viewport,
-      });
-    },
-    [dataSource.selectedRowsCount, dataSource?.viewport, showContextMenu]
-  );
-
   return (
     <ContextMenuProvider
       menuActionHandler={handleContextMenuAction}
@@ -136,7 +124,6 @@ export const DataTable = ({
                 {...tableProps}
                 columns={columns.filter((col, i) => i !== draggedItemIndex)}
                 headerHeight={headerHeight}
-                onContextMenu={handleContextMenu}
                 rowHeight={rowHeight}
               />
             </div>

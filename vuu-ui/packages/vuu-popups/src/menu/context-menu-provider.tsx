@@ -37,9 +37,10 @@ export type ContextMenuItemDescriptor =
   | ContextMenuLeafItemDescriptor
   | ContextMenuGroupItemDescriptor;
 
-export const isGroupMenuItem = (
-  menuItem: ContextMenuItemDescriptor
-): menuItem is ContextMenuGroupItemDescriptor => "children" in menuItem;
+export const isGroupMenuItemDescriptor = (
+  menuItem?: ContextMenuItemDescriptor
+): menuItem is ContextMenuGroupItemDescriptor =>
+  menuItem !== undefined && "children" in menuItem;
 
 export interface ContextMenuProviderProps {
   children: ReactNode;

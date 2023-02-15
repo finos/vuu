@@ -1,4 +1,7 @@
-import { VuuMenuRpcRequest, VuuRpcRequest } from "@finos/vuu-protocol-types";
+import {
+  ClientToServerMenuRPC,
+  VuuRpcRequest,
+} from "@finos/vuu-protocol-types";
 import { VuuUIMessageOut } from "./vuuUIMessageTypes";
 
 const MENU_RPC_TYPES = [
@@ -9,8 +12,8 @@ const MENU_RPC_TYPES = [
 ];
 
 export const isVuuMenuRpcRequest = (
-  message: VuuUIMessageOut | VuuRpcRequest | VuuMenuRpcRequest
-): message is VuuMenuRpcRequest => MENU_RPC_TYPES.includes(message["type"]);
+  message: VuuUIMessageOut | VuuRpcRequest | ClientToServerMenuRPC
+): message is ClientToServerMenuRPC => MENU_RPC_TYPES.includes(message["type"]);
 
 export type WithRequestId<T> = T & { requestId: string };
 

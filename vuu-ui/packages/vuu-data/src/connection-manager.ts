@@ -1,7 +1,7 @@
 import {
+  ClientToServerMenuRPC,
   ClientToServerTableList,
   ClientToServerTableMeta,
-  VuuMenuRpcRequest,
   VuuRpcRequest,
   VuuTable,
   VuuTableList,
@@ -169,7 +169,7 @@ function handleMessageFromWorker({
 const asyncRequest = <T = unknown>(
   msg:
     | VuuRpcRequest
-    | VuuMenuRpcRequest
+    | ClientToServerMenuRPC
     | ClientToServerTableList
     | ClientToServerTableMeta
 ): Promise<T> => {
@@ -187,7 +187,9 @@ export interface ServerAPI {
   destroy: (viewportId?: string) => void;
   getTableMeta: (table: VuuTable) => Promise<VuuTableMetaWithTable>;
   getTableList: () => Promise<VuuTableList>;
-  rpcCall: <T = unknown>(msg: VuuRpcRequest | VuuMenuRpcRequest) => Promise<T>;
+  rpcCall: <T = unknown>(
+    msg: VuuRpcRequest | ClientToServerMenuRPC
+  ) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
     message: ServerProxySubscribeMessage,
@@ -220,8 +222,9 @@ const connectedServerAPI: ServerAPI = {
     }
   },
 
-  rpcCall: async <T = unknown>(message: VuuRpcRequest | VuuMenuRpcRequest) =>
-    asyncRequest<T>(message),
+  rpcCall: async <T = unknown>(
+    message: VuuRpcRequest | ClientToServerMenuRPC
+  ) => asyncRequest<T>(message),
 
   getTableList: async () =>
     asyncRequest<VuuTableList>({ type: Message.GET_TABLE_LIST }),

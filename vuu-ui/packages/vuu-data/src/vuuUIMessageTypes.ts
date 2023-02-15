@@ -1,4 +1,5 @@
 import {
+  ClientToServerMenuRPC,
   ClientToServerTableList,
   ClientToServerTableMeta,
   LinkDescriptorWithLabel,

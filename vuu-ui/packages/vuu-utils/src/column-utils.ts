@@ -13,6 +13,7 @@ import {
   VuuAggType,
   VuuColumnDataType,
   VuuGroupBy,
+  VuuRowRecord,
   VuuSort,
 } from "@finos/vuu-protocol-types";
 import { CSSProperties } from "react";
@@ -21,6 +22,7 @@ import { Row } from "./row-utils";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
+import { DataSourceRow } from "@finos/vuu-data";
 
 export interface ColumnMap {
   [columnName: string]: number;
@@ -477,3 +479,16 @@ export const toDataSourceColumns = (column: ColumnDescriptor) =>
   column.expression
     ? `${column.name}:${column.serverDataType}:${column.expression}`
     : column.name;
+
+export const getRowRecord = (
+  row: DataSourceRow,
+  columnMap: ColumnMap
+): VuuRowRecord => {
+  return Object.entries(columnMap).reduce<VuuRowRecord>(
+    (map, [colName, key]) => {
+      map[colName] = row[key];
+      return map;
+    },
+    {}
+  );
+};
