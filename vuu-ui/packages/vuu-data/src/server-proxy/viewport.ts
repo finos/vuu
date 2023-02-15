@@ -1,10 +1,12 @@
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   ClientToServerChangeViewPort,
+  ClientToServerCloseTreeNode,
   ClientToServerCreateLink,
   ClientToServerCreateViewPort,
   ClientToServerDisable,
   ClientToServerEnable,
+  ClientToServerOpenTreeNode,
   ClientToServerRemoveLink,
   ClientToServerSelection,
   ClientToServerViewPortRange,
@@ -20,7 +22,11 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { getFullRange } from "@finos/vuu-utils";
-import { ServerProxySubscribeMessage } from "../vuuUIMessageTypes";
+import {
+  ServerProxySubscribeMessage,
+  VuuUIMessageOutCloseTreeNode,
+  VuuUIMessageOutOpenTreeNode,
+} from "../vuuUIMessageTypes";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
 import { bufferBreakout } from "./buffer-range";
 import { KeySet } from "./keyset";
@@ -424,6 +430,24 @@ export class Viewport {
     this.serverTableMeta = { columns, dataTypes };
   }
 
+  openTreeNode(requestId: string, message: VuuUIMessageOutOpenTreeNode) {
+    this.batchMode = true;
+    return {
+      type: Message.OPEN_TREE_NODE,
+      vpId: this.serverViewportId,
+      treeKey: message.key,
+    } as ClientToServerOpenTreeNode;
+  }
+
+  closeTreeNode(requestId: string, message: VuuUIMessageOutCloseTreeNode) {
+    this.batchMode = true;
+    return {
+      type: Message.CLOSE_TREE_NODE,
+      vpId: this.serverViewportId,
+      treeKey: message.key,
+    } as ClientToServerCloseTreeNode;
+  }
+
   createLink(
     requestId: string,
     colName: string,
@@ -519,6 +543,7 @@ export class Viewport {
 
   groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
     this.awaitOperation(requestId, { type: "groupBy", data: groupBy });
+    this.batchMode = true;
     return this.createRequest({ groupBy });
   }
 

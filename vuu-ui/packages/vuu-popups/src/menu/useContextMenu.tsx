@@ -1,6 +1,7 @@
 // The menuBuilder will always be supplied by the code that will display the local
 // context menu. It will be passed all configured menu descriptors. It is free to
 
+import { VuuServerMenuOptions } from "@finos/vuu-data";
 import { MouseEvent, useCallback, useContext } from "react";
 import { PopupService } from "../popup";
 import {

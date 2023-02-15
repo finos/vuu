@@ -335,13 +335,10 @@ export class ServerProxy {
     message: VuuUIMessageOutOpenTreeNode
   ) {
     if (viewport.serverViewportId) {
+      const requestId = nextRequestId();
       this.sendIfReady(
-        {
-          type: Message.OPEN_TREE_NODE,
-          vpId: viewport.serverViewportId,
-          treeKey: message.key,
-        },
-        nextRequestId(),
+        viewport.openTreeNode(requestId, message),
+        requestId,
         viewport.status === "subscribed"
       );
     }
@@ -352,13 +349,10 @@ export class ServerProxy {
     message: VuuUIMessageOutCloseTreeNode
   ) {
     if (viewport.serverViewportId) {
+      const requestId = nextRequestId();
       this.sendIfReady(
-        {
-          type: Message.CLOSE_TREE_NODE,
-          vpId: viewport.serverViewportId,
-          treeKey: message.key,
-        },
-        nextRequestId(),
+        viewport.closeTreeNode(requestId, message),
+        requestId,
         viewport.status === "subscribed"
       );
     }

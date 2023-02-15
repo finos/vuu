@@ -1279,68 +1279,6 @@ describe("ServerProxy", () => {
           [39,9,true,null,null,1,"key-39",0,"key-39","name 39",1039,true],
         ],
       });
-
-      // callback.mockClear();
-      // mockConnection.send.mockClear()
-
-      // serverProxy.handleMessageFromClient({ viewport: "client-vp-1", type: "setViewRange", range: { lo: 5, hi: 15 } });
-
-      // expect(mockConnection.send).toHaveBeenCalledTimes(0);
-      // expect(callback).toHaveBeenCalledTimes(1)
-
-      // expect(callback).toHaveBeenCalledWith({
-      //   type: "viewport-updates", viewports: {
-      //     "client-vp-1": {
-      //       rows: [
-      //         [5, 5, true, null, null, 1, "key-05", 0, "key-05", "name 05", 1005, true],
-      //         [6, 6, true, null, null, 1, "key-06", 0, "key-06", "name 06", 1006, true],
-      //         [7, 7, true, null, null, 1, "key-07", 0, "key-07", "name 07", 1007, true],
-      //         [8, 8, true, null, null, 1, "key-08", 0, "key-08", "name 08", 1008, true],
-      //         [9, 9, true, null, null, 1, "key-09", 0, "key-09", "name 09", 1009, true],
-      //         [10, 1, true, null, null, 1, "key-10", 0, "key-10", "name 10", 1010, true],
-      //         [11, 0, true, null, null, 1, "key-11", 0, "key-11", "name 11", 1011, true],
-      //         [12, 4, true, null, null, 1, "key-12", 0, "key-12", "name 12", 1012, true],
-      //         [13, 3, true, null, null, 1, "key-13", 0, "key-13", "name 13", 1013, true],
-      //         [14, 2, true, null, null, 1, "key-14", 0, "key-14", "name 14", 1014, true],
-      //       ],
-      //     }
-      //   }
-      // });
-
-      // callback.mockClear();
-      // mockConnection.send.mockClear()
-      // TEST_setRequestId(1);
-
-      // serverProxy.handleMessageFromClient({ viewport: "client-vp-1", type: "setViewRange", range: { lo: 8, hi: 18 } });
-
-      // expect(mockConnection.send).toHaveBeenCalledTimes(1);
-      // expect(callback).toHaveBeenCalledTimes(1)
-
-      // expect(callback).toHaveBeenCalledWith({
-      //   type: "viewport-updates", viewports: {
-      //     "client-vp-1": {
-      //       rows: [
-      //         [8, 8, true, null, null, 1, "key-08", 0, "key-08", "name 08", 1008, true],
-      //         [9, 9, true, null, null, 1, "key-09", 0, "key-09", "name 09", 1009, true],
-      //         [10, 1, true, null, null, 1, "key-10", 0, "key-10", "name 10", 1010, true],
-      //         [11, 0, true, null, null, 1, "key-11", 0, "key-11", "name 11", 1011, true],
-      //         [12, 4, true, null, null, 1, "key-12", 0, "key-12", "name 12", 1012, true],
-      //         [13, 3, true, null, null, 1, "key-13", 0, "key-13", "name 13", 1013, true],
-      //         [14, 2, true, null, null, 1, "key-14", 0, "key-14", "name 14", 1014, true],
-      //         [15, 7, true, null, null, 1, "key-15", 0, "key-15", "name 15", 1015, true],
-      //         [16, 6, true, null, null, 1, "key-16", 0, "key-16", "name 16", 1016, true],
-      //         [17, 5, true, null, null, 1, "key-17", 0, "key-17", "name 17", 1017, true],
-      //       ],
-      //     }
-      //   }
-      // });
-
-      // expect(mockConnection.send).toHaveBeenCalledWith({
-      //   requestId: '1',
-      //   user: "user",
-      //   body: { viewPortId: "server-vp-1", type: "CHANGE_VP_RANGE", from: 3, to: 23 },
-      //   module: "CORE"
-      // })
     });
   });
 
@@ -1965,6 +1903,93 @@ describe("ServerProxy", () => {
       });
 
       expect(serverProxy.viewports.get("server-vp-1").isTree).toBe(true);
+    });
+
+    it.only("on changing group, sends grouped records as batch", () => {
+      const callback = vi.fn();
+      const serverProxy = new ServerProxy(mockConnection, callback);
+      serverProxy.sessionId = "dsdsd";
+      serverProxy.authToken = "test";
+
+      serverProxy.subscribe(clientSubscription1);
+      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+
+      serverProxy.handleMessageFromServer({
+        body: {
+          type: "TABLE_ROW",
+          rows: [
+            {
+              viewPortId: "server-vp-1",
+              vpSize: 100,
+              rowIndex: -1,
+              rowKey: "SIZE",
+              updateType: "SIZE",
+              ts: 1,
+            },
+            ...createTableRows("server-vp-1", 0, 10),
+          ],
+        },
+      });
+
+      TEST_setRequestId(1);
+      callback.mockClear();
+      mockConnection.send.mockClear();
+
+      serverProxy.handleMessageFromClient({
+        viewport: "client-vp-1",
+        type: "groupBy",
+        groupBy: ["col-4"],
+      });
+
+      expect(callback).toHaveBeenCalledTimes(0);
+      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+      expect(mockConnection.send).toHaveBeenCalledWith({
+        body: {
+          viewPortId: "server-vp-1",
+          type: "CHANGE_VP",
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: ["col-4"],
+        },
+        module: "CORE",
+        user: "user",
+        requestId: "1",
+        sessionId: "dsdsd",
+        token: "test",
+      });
+
+      serverProxy.handleMessageFromServer({
+        requestId: "1",
+        body: {
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: ["col-4"],
+        },
+      });
+
+      callback.mockClear();
+      serverProxy.handleMessageFromServer(createTableGroupRows());
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(
+        serverProxy.viewports.get("server-vp-1").dataWindow.internalData
+      ).toHaveLength(4);
+      // prettier-ignore
+      expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [0,0,false,false,1,43714,"$root|USD",0,"","USD","","","","",""],
+          [1,1,false,false,1,43941,"$root|EUR",0,"","EUR","","","","",""],
+          [2,2,false,false,1,43997,"$root|GBX",0,"","GBX","","","","",""],
+          [3,3,false,false,1,44108,"$root|CAD",0,"","CAD","","","","",""],
+        ],
+        size: 4,
+      });
     });
 
     it("ignores regular row updates after grouping is in place", () => {
