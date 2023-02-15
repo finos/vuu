@@ -13,11 +13,9 @@ import {
   VuuAggType,
   VuuColumnDataType,
   VuuGroupBy,
-  VuuRowRecord,
   VuuSort,
 } from "@finos/vuu-protocol-types";
 import { CSSProperties } from "react";
-import { Row } from "./row-utils";
 
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
@@ -79,12 +77,23 @@ export const fromServerDataType = (
   }
 };
 
-export const isNumericColumn = ({ serverDataType }: ColumnDescriptor) =>
-  serverDataType === undefined
-    ? false
-    : serverDataType === "int" ||
-      serverDataType === "long" ||
-      serverDataType === "double";
+export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
+  if (
+    serverDataType === "int" ||
+    serverDataType === "long" ||
+    serverDataType === "double"
+  ) {
+    return true;
+  }
+  if (typeof type === "string") {
+    return type === "number";
+  }
+  if (typeof type?.name === "string") {
+    return type?.name === "number";
+  }
+
+  return false;
+};
 
 export const notHidden = (column: ColumnDescriptor) => column.hidden !== true;
 
