@@ -130,14 +130,6 @@ export class ViewportRowModelDataSource {
           }
           this.setAgRowData(agRowData);
         }
-        console.log(
-          `%csetAgRowData  ${message.rows[0][0]} - ${
-            message.rows[message.rows.length - 1][0]
-          }`,
-          "color: green; font-weight: bold;"
-        );
-        this.setAgRowData(agRowData);
-        // }
       }
     } else if (isVuuFeatureAction(message)) {
       this.onFeatureEnabled?.(message);
