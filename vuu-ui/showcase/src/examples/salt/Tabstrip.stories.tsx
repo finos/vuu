@@ -1,25 +1,20 @@
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "@salt-ds/core";
 import {
   Dialog,
-  DialogActions,
-  DialogTitle,
-  DialogContent,
-  Tab,
-  TabDescriptor,
-  Tabstrip,
-  TabPanel,
+  DialogActions, DialogContent, DialogTitle, Tab,
+  TabDescriptor, TabPanel, Tabstrip
 } from "@heswell/salt-lab";
+import { Button } from "@salt-ds/core";
+import { useCallback, useMemo, useState } from "react";
 
-import "@heswell/component-anatomy/esm/index.css";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
+import "@heswell/component-anatomy/esm/index.css";
 
 export const Default = () => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
   return (
     <LayoutProvider>
-      <FlexboxLayout style={{ height: 200, width: 353 }}>
+      <FlexboxLayout style={{ height: 200, width: 353 }} path="">
         <div data-resizeable style={{ flex: 1 }}>
           <Tabstrip onActiveChange={setActiveTabIndex}>
             {tabs.map((label, i) => (
@@ -80,7 +75,6 @@ export const TheFullMonty = () => {
     undefined
   );
 
-  //TODO add confirmation dialog
   const handleAddTab = () => {
     const count = tabs.length;
     setTabs((state) => state.concat([{ label: `Tab ${state.length + 1}` }]));
@@ -94,7 +88,6 @@ export const TheFullMonty = () => {
   };
 
   const onTabDidClose = () => {
-    // This will always be true if we reach this code path, but TypeScript needs the clarification
     if (closingTabIndex !== undefined) {
       const newTabs = [...tabs];
       newTabs.splice(closingTabIndex, 1);
@@ -161,7 +154,6 @@ export const TheFullMontyNoConfirmation = () => {
     { label: "Liquidity" },
   ]);
 
-  //TODO add confirmation dialog
   const handleAddTab = () => {
     const count = tabs.length;
     setTabs((state) => state.concat([{ label: `Tab ${state.length + 1}` }]));
@@ -169,7 +161,6 @@ export const TheFullMontyNoConfirmation = () => {
   };
 
   const onTabDidClose = (closingTabIndex: number) => {
-    // This will always be true if we reach this code path, but TypeScript needs the clarification
     if (closingTabIndex !== undefined) {
       const newTabs = [...tabs];
       newTabs.splice(closingTabIndex, 1);
@@ -192,7 +183,6 @@ export const TheFullMontyNoConfirmation = () => {
     <div style={{ height: 300, width: 600 }}>
       <Tabstrip
         enableAddTab
-        enableCloseTab
         enableRenameTab
         onAddTab={handleAddTab}
         onActiveChange={handleTabSelection}
@@ -220,7 +210,7 @@ const tabLabels = [
 ];
 
 export const DraggableTabs = () => {
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [, setSelectedTab] = useState(0);
 
   const [tabs, setTabs] = useState(tabLabels);
   const handleDrop = useCallback(
@@ -230,7 +220,6 @@ export const DraggableTabs = () => {
       if (toIndex === -1) {
         setTabs(newTabs.concat(tab));
       } else {
-        // const offset = toIndex < fromIndex ? +1 : 0;
         newTabs.splice(toIndex, 0, tab);
         setTabs(newTabs);
       }
@@ -276,7 +265,6 @@ export const DraggableTabsWithOverflow = () => {
       if (toIndex === -1) {
         setTabs(newTabs.concat(tab));
       } else {
-        // const offset = toIndex < fromIndex ? +1 : 0;
         newTabs.splice(toIndex, 0, tab);
         console.log(`new tabs ${newTabs.join(",")}`);
         setTabs(newTabs);

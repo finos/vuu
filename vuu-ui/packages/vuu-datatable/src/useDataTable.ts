@@ -3,88 +3,78 @@ import {
   DataSourceConfigMessage,
   DataSourceRow,
   DataSourceSubscribedMessage,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
 } from "@finos/vuu-data";
-import {
-  ColumnDescriptor,
-  GridConfig,
-  KeyedColumnDescriptor,
-  TypeFormatting,
-} from "@finos/vuu-datagrid-types";
+import { GridConfig, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import { VuuSortType } from "@finos/vuu-protocol-types";
-import { applySort, metadataKeys, roundDecimal } from "@finos/vuu-utils";
-import { useCallback, useMemo, useState } from "react";
+import {
+  applySort,
+  buildColumnMap,
+  metadataKeys,
+  moveItem,
+} from "@finos/vuu-utils";
+import {
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useContextMenu } from "./context-menu";
 import {
   TableColumnResizeHandler,
-  ValueFormatter,
-  ValueFormatters,
+  tableLayoutType,
+  TableSelectionModel,
 } from "./dataTableTypes";
 import { useDataSource } from "./useDataSource";
+import { useDraggableColumn } from "./useDraggableColumn";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import { MeasuredProps, useMeasuredContainer } from "./useMeasuredContainer";
-import { useTableModel } from "./useTableModel";
+import { useSelection } from "./useSelection";
+import { PersistentColumnAction, useTableModel } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 
+const NO_ROWS = [] as const;
+
 export interface DataTableHookProps extends MeasuredProps {
-  config: GridConfig;
+  config: Omit<GridConfig, "headings">;
   dataSource: DataSource;
   headerHeight: number;
-  onConfigChange?: (config: GridConfig) => void;
+  onConfigChange?: (config: Omit<GridConfig, "headings">) => void;
+  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   renderBufferSize?: number;
   rowHeight: number;
+  selectionModel: TableSelectionModel;
+  tableLayout: tableLayoutType;
 }
 
 const { KEY, IS_EXPANDED } = metadataKeys;
-const DEFAULT_NUMERIC_FORMAT: TypeFormatting = {};
-const defaultValueFormatter = (value: unknown) =>
-  value == null ? "" : typeof value === "string" ? value : value.toString();
-const numericFormatter = ({ align = "right", type }: ColumnDescriptor) => {
-  if (type === undefined || typeof type === "string") {
-    return defaultValueFormatter;
-  } else {
-    const {
-      alignOnDecimals = false,
-      decimals,
-      zeroPad = false,
-    } = type.formatting ?? DEFAULT_NUMERIC_FORMAT;
-    return (value: unknown) => {
-      if (
-        typeof value === "string" &&
-        (value.startsWith("Σ") || value.startsWith("["))
-      ) {
-        return value;
-      }
-      const number =
-        typeof value === "number"
-          ? value
-          : typeof value === "string"
-          ? parseFloat(value)
-          : undefined;
-      return roundDecimal(number, align, decimals, zeroPad, alignOnDecimals);
-    };
-  }
-};
-
-const getValueFormatter = (column: KeyedColumnDescriptor): ValueFormatter => {
-  const { serverDataType } = column;
-  if (serverDataType === "string" || serverDataType === "char") {
-    return (value: unknown) => value as string;
-  } else if (serverDataType === "double") {
-    return numericFormatter(column);
-  }
-  return defaultValueFormatter;
-};
 
 export const useDataTable = ({
   config,
   dataSource,
   headerHeight,
   onConfigChange,
+  onFeatureEnabled,
+  onFeatureInvocation,
   renderBufferSize = 0,
   rowHeight,
+  selectionModel,
+  tableLayout,
   ...measuredProps
 }: DataTableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(0);
+  const expectConfigChangeRef = useRef(false);
+
+  // When we detect and respond to changes to config below, we need
+  // to include current dataSource config when we refresh the model.
+  const dataSourceRef = useRef<DataSource>();
+  dataSourceRef.current = dataSource;
 
   if (dataSource === undefined) {
     throw Error("no data source provided to DataTable");
@@ -96,11 +86,28 @@ export const useDataTable = ({
     setRowCount(size);
   }, []);
 
-  const { columns, dispatchColumnAction } = useTableModel(config);
+  const { columns, dispatchColumnAction, headings } = useTableModel(
+    config,
+    dataSource.config
+  );
+
+  const handlePersistentColumnOperation = useCallback(
+    (action: PersistentColumnAction) => {
+      expectConfigChangeRef.current = true;
+      dispatchColumnAction(action);
+    },
+    [dispatchColumnAction]
+  );
+
+  const handleContextMenuAction = useContextMenu({
+    dataSource,
+    onPersistentColumnOperation: handlePersistentColumnOperation,
+  });
 
   const viewportMeasurements = useTableViewport({
     columns,
     headerHeight,
+    headings,
     rowCount,
     rowHeight,
     size: containerMeasurements.innerSize,
@@ -111,6 +118,7 @@ export const useDataTable = ({
       if (subscription.tableMeta) {
         const { columns: columnNames, dataTypes: serverDataTypes } =
           subscription.tableMeta;
+        expectConfigChangeRef.current = true;
         dispatchColumnAction({
           type: "setTypes",
           columnNames,
@@ -121,59 +129,58 @@ export const useDataTable = ({
     [dispatchColumnAction]
   );
 
-  const valueFormatters = useMemo(() => {
-    return columns.reduce<ValueFormatters>(
-      (map, column) => ((map[column.name] = getValueFormatter(column)), map),
-      {}
-    );
-  }, [columns]);
-
-  useMemo(() => {
-    onConfigChange?.({
-      ...config,
-      columns,
-    });
-  }, [columns, config, onConfigChange]);
-
-  useMemo(() => {
-    dispatchColumnAction({ type: "init", config });
-  }, [config, dispatchColumnAction]);
-
   const handleConfigChangeFromDataSource = useCallback(
     (message: DataSourceConfigMessage) => {
-      switch (message.type) {
+      const { type } = message;
+      switch (type) {
         case "groupBy":
-          return dispatchColumnAction({
-            type: "tableConfig",
-            groupBy: message.groupBy,
-          });
         case "filter":
-          return dispatchColumnAction({
-            type: "tableConfig",
-            filter: message.filter,
-          });
         case "sort":
+        case "columns": {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          const payload = message[type];
           return dispatchColumnAction({
             type: "tableConfig",
-            sort: message.sort,
+            [type]: payload,
           });
+        }
       }
     },
     [dispatchColumnAction]
   );
 
-  const { data, range, setRange } = useDataSource({
+  const setSelected = useCallback(
+    (selected) => {
+      dataSource.select(selected);
+    },
+    [dataSource]
+  );
+
+  const handleRowClick = useSelection({
+    setSelected,
+    selectionModel,
+  });
+
+  const { data, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
     onConfigChange: handleConfigChangeFromDataSource,
+    onFeatureEnabled,
+    onFeatureInvocation,
     onSubscribed,
     onSizeChange: onDataRowcountChange,
     renderBufferSize,
     viewportRowCount: viewportMeasurements.rowCount,
   });
 
+  // Keep a ref to current data. We use it to provide row for context menu actions.
+  // We don't want to introduce data as a dependency on the context menu handler, just
+  // needs to be correct at runtime when the row is right clicked.
+  const dataRef = useRef<DataSourceRow[]>();
+  dataRef.current = data;
+
   const setRangeVertical = useCallback(
     (from: number, to: number) => {
-      // const fullRange = getFullRange({ from, to }, renderBufferSize);
       setRange({ from, to });
     },
     [setRange]
@@ -201,6 +208,9 @@ export const useDataTable = ({
     (phase, columnName, width) => {
       const column = columns.find((column) => column.name === columnName);
       if (column) {
+        if (phase === "end") {
+          expectConfigChangeRef.current = true;
+        }
         dispatchColumnAction({
           type: "resizeColumn",
           phase,
@@ -257,19 +267,107 @@ export const useDataTable = ({
     viewportRange: range,
   });
 
+  const handleDropColumn = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      const column = dataSource.columns[fromIndex];
+      const columns = moveItem(dataSource.columns, column, toIndex);
+      if (columns !== dataSource.columns) {
+        dataSource.columns = columns;
+        dispatchColumnAction({ type: "tableConfig", columns });
+      }
+    },
+    [dataSource, dispatchColumnAction]
+  );
+
+  const draggableHook = useDraggableColumn({
+    onDrop: handleDropColumn,
+    tableContainerRef: scrollProps.tableContainerRef,
+    tableLayout,
+  });
+
+  useEffect(() => {
+    // External config has changed
+    if (dataSourceRef.current) {
+      expectConfigChangeRef.current = true;
+      dispatchColumnAction({
+        type: "init",
+        tableConfig: config,
+        dataSourceConfig: dataSourceRef.current.config,
+      });
+    }
+  }, [config, dispatchColumnAction]);
+
+  useMemo(() => {
+    console.log(`4) useDataTable change detected to config ...`, {
+      config,
+    });
+    if (expectConfigChangeRef.current) {
+      console.log(
+        `%c expected so call onConfigChange`,
+        "color: red; font-weight: bold;",
+        {
+          columns,
+          config,
+        }
+      );
+      onConfigChange?.({
+        ...config,
+        columns,
+      });
+
+      expectConfigChangeRef.current = false;
+    } else {
+      console.log(" ...columns changes but we were not expecting it so ignore");
+    }
+  }, [columns, config, onConfigChange]);
+
+  const showContextMenu = usePopupContextMenu();
+
+  const onContextMenu = useCallback(
+    (evt: MouseEvent<HTMLElement>) => {
+      const { current: currentData } = dataRef;
+      const { current: currentDataSource } = dataSourceRef;
+      const target = evt.target as HTMLElement;
+      const cellEl = target?.closest("td");
+      const rowEl = target?.closest("tr");
+
+      if (cellEl && rowEl && currentData && currentDataSource) {
+        const { columns, selectedRowsCount } = currentDataSource;
+        const columnMap = buildColumnMap(columns);
+        const rowIndex = parseInt(rowEl.ariaRowIndex ?? "-1");
+        const cellIndex = Array.from(rowEl.childNodes).indexOf(cellEl);
+        const row = currentData.find(([idx]) => idx === rowIndex);
+        const columnName = columns[cellIndex];
+
+        showContextMenu(evt, "grid", {
+          columnMap,
+          columnName,
+          row,
+          selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
+          viewport: dataSource?.viewport,
+        });
+      }
+    },
+    [dataSource?.viewport, getSelectedRows, showContextMenu]
+  );
+
   return {
     containerMeasurements,
     containerProps,
     columns,
     data,
     dispatchColumnAction,
+    handleContextMenuAction,
+    headings,
     onColumnResize: handleColumnResize,
+    onContextMenu,
     onRemoveColumnFromGroupBy: handleRemoveColumnFromGroupBy,
+    onRowClick: handleRowClick,
     onSort: handleSort,
     onToggleGroup: handleToggleGroup,
     scrollProps,
     rowCount,
-    valueFormatters,
     viewportMeasurements,
+    ...draggableHook,
   };
 };

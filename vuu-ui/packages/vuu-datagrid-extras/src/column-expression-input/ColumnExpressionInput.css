@@ -16,15 +16,8 @@
     --vuuFilterEditor-variableColor: blue;
 
     align-items: center;
-    border: solid 1px lightgray;
     box-sizing: border-box;
-    display: flex;
     height: 30px;
-}
-
-.vuuColumnExpressionInput-Editor {
-    flex: 1 1 auto;
-    height: 100%;
 }
 
 .vuuColumnExpressionInput-FilterButton,
@@ -33,7 +26,7 @@
     --saltButton-width: 28px;
 }
 
-.steve-type {
+.expression-type-container {
     margin: 0 3px 0 auto;
     color: var(--salt-text-secondary-foreground)
 }
@@ -72,4 +65,21 @@
 
 .vuuFunctionDoc .function-type {
     margin-left: auto;
+}
+
+.vuuFunctionDoc .example-container {
+    background-color: var(--salt-container-secondary-background);
+    margin: 6px 0;
+    padding: 3px;
+}
+
+.vuuFunctionDoc .example-expression {
+    font-family: var(--salt-typography-fontFamily-code);
+    margin-left: 8px;
+    margin-top: 6px;
+}
+
+.vuuFunctionDoc .example-result {
+    margin-left: 8px;
+    margin-top: 6px;
 }

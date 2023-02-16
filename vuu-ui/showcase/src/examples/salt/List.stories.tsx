@@ -7,7 +7,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
-  VirtualizedList,
+  VirtualizedList
 } from "@heswell/salt-lab";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usa_states } from "./List.data";
@@ -107,7 +107,6 @@ export const DraggableListItems = () => {
   return (
     <ListVisualizer>
       <List
-        // itemHeight={50}
         aria-label="Drag Drop Listbox example"
         allowDragDrop
         onSelect={handleSelect}
@@ -139,7 +138,7 @@ export const DraggableListItemsDropIndicator = () => {
   }, []);
 
   const handleChange: ToggleButtonGroupChangeEventHandler = (
-    event,
+    _,
     index,
     toggled
   ) => {
@@ -156,7 +155,6 @@ export const DraggableListItemsDropIndicator = () => {
 
       <ListVisualizer>
         <List
-          // itemHeight={50}
           aria-label="Drag Drop Listbox example"
           allowDragDrop={dragStrategies[selectedIndex]}
           key={dragStrategies[selectedIndex]}

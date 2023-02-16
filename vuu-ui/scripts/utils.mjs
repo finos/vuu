@@ -34,6 +34,7 @@ export const formatDuration = ({ seconds, nanoSeconds }) =>
 
 export const execWait = (cmd, cwd = ".") =>
   new Promise((resolve, reject) => {
+    // const newProcess = exec(cmd, { cwd }, (err, stdout, stderr) => {
     exec(cmd, { cwd }, (err, stdout, stderr) => {
       if (err) {
         reject(err);
@@ -44,6 +45,9 @@ export const execWait = (cmd, cwd = ".") =>
       console.log(stdout);
       resolve();
     });
+    // newProcess.stdout.on("data", function (data) {
+    //   console.log(data);
+    // });
   });
 
 export function copyFolderSync(from, to) {

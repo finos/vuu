@@ -5,6 +5,7 @@ import {
 } from "@finos/vuu-datagrid-types";
 import { Reducer, useReducer } from "react";
 import { moveItem } from "@heswell/salt-lab";
+import { fromServerDataType } from "@finos/vuu-utils";
 
 export type CalculatedColumnExpression = {
   columName: string;
@@ -19,6 +20,7 @@ export interface ColumnActionAdd {
 }
 export interface ColumnActionAddCalculatedColumn {
   columnName: string;
+  columnType: "string" | "int" | "double" | "boolean";
   expression: string;
   type: "addCalculatedColumn";
 }
@@ -41,10 +43,11 @@ export interface ColumnActionUpdate {
   column: ColumnDescriptor;
 }
 export interface ColumnActionUpdateProp {
-  type: "updateColumnProp";
-  column: ColumnDescriptor;
   align?: ColumnDescriptor["align"];
+  column: ColumnDescriptor;
+  hidden?: ColumnDescriptor["hidden"];
   label?: ColumnDescriptor["label"];
+  type: "updateColumnProp";
   width?: ColumnDescriptor["width"];
 }
 
@@ -72,7 +75,10 @@ export type ColumnAction =
   | ColumnActionUpdateProp
   | ColumnActionUpdateTypeFormatting;
 
-export type GridSettingsReducer = Reducer<GridConfig, ColumnAction>;
+export type GridSettingsReducer = Reducer<
+  Omit<GridConfig, "headings">,
+  ColumnAction
+>;
 
 const gridSettingsReducer: GridSettingsReducer = (state, action) => {
   console.log(`gridSettingsReducer ${action.type}`);
@@ -98,7 +104,7 @@ const gridSettingsReducer: GridSettingsReducer = (state, action) => {
   }
 };
 
-export const useGridSettings = (config: GridConfig) => {
+export const useGridSettings = (config: Omit<GridConfig, "headings">) => {
   const [state, dispatchColumnAction] = useReducer<GridSettingsReducer>(
     gridSettingsReducer,
     config
@@ -111,7 +117,7 @@ export const useGridSettings = (config: GridConfig) => {
 };
 
 function addColumn(
-  state: GridConfig,
+  state: Omit<GridConfig, "headings">,
   { column, columns, index = -1 }: ColumnActionAdd
 ) {
   const { columns: stateColumns } = state;
@@ -126,18 +132,22 @@ function addColumn(
 }
 
 function addCalculatedColumn(
-  state: GridConfig,
-  { columnName, expression }: ColumnActionAddCalculatedColumn
+  state: Omit<GridConfig, "headings">,
+  { columnName, columnType, expression }: ColumnActionAddCalculatedColumn
 ) {
   const { columns: stateColumns } = state;
   const calculatedColumn = {
     name: columnName,
     expression,
+    serverDataType: columnType,
   };
   return { ...state, columns: stateColumns.concat(calculatedColumn) };
 }
 
-function removeColumn(state: GridConfig, { column }: ColumnActionRemove) {
+function removeColumn(
+  state: Omit<GridConfig, "headings">,
+  { column }: ColumnActionRemove
+) {
   const { columns: stateColumns } = state;
   return {
     ...state,
@@ -146,7 +156,7 @@ function removeColumn(state: GridConfig, { column }: ColumnActionRemove) {
 }
 
 function moveColumn(
-  state: GridConfig,
+  state: Omit<GridConfig, "headings">,
   { column, moveBy, moveFrom, moveTo }: ColumnActionMove
 ) {
   const { columns: stateColumns } = state;
@@ -170,12 +180,15 @@ function moveColumn(
 }
 
 function updateColumnProp(
-  state: GridConfig,
-  { align, column, label, width }: ColumnActionUpdateProp
+  state: Omit<GridConfig, "headings">,
+  { align, column, hidden, label, width }: ColumnActionUpdateProp
 ) {
   let { columns: stateColumns } = state;
   if (align === "left" || align === "right") {
     stateColumns = replaceColumn(stateColumns, { ...column, align });
+  }
+  if (typeof hidden === "boolean") {
+    stateColumns = replaceColumn(stateColumns, { ...column, hidden });
   }
   if (typeof label === "string") {
     stateColumns = replaceColumn(stateColumns, { ...column, label });
@@ -190,17 +203,17 @@ function updateColumnProp(
 }
 
 function updateGridSettings(
-  state: GridConfig,
-  { columnFormatHeader: formatColumnHeaders }: ColumnActionUpdateGridSettings
+  state: Omit<GridConfig, "headings">,
+  { columnFormatHeader }: ColumnActionUpdateGridSettings
 ) {
   return {
     ...state,
-    formatColumnHeaders: formatColumnHeaders ?? state.columnFormatHeader,
+    columnFormatHeader: columnFormatHeader ?? state.columnFormatHeader,
   };
 }
 
 function updateColumnTypeFormatting(
-  state: GridConfig,
+  state: Omit<GridConfig, "headings">,
   {
     alignOnDecimals,
     column,
@@ -211,8 +224,10 @@ function updateColumnTypeFormatting(
   const { columns: stateColumns } = state;
   const targetColumn = stateColumns.find((col) => col.name === column.name);
   if (targetColumn) {
-    const { serverDataType = "string", type: columnType = serverDataType } =
-      column;
+    const {
+      serverDataType = "string",
+      type: columnType = fromServerDataType(serverDataType),
+    } = column;
     const type: ColumnTypeDescriptor =
       typeof columnType === "string"
         ? {

@@ -6,7 +6,7 @@ import {
   VuuSort,
   VuuSortCol,
 } from "../../../vuu-protocol-types";
-import { isNumericColumn } from "../grid-model";
+import { isNumericColumn } from "@finos/vuu-utils";
 import { GridModelType } from "../grid-model/gridModelTypes";
 import { ContextMenuOptions } from "./contextMenuTypes";
 
@@ -92,7 +92,7 @@ function buildAggregationMenuItems(
   const menuOptions: GridContextMenuDescriptor[] = [];
   if (options?.column) {
     const {
-      column: { name, label = name, type },
+      column: { name, label = name },
     } = options;
 
     const menu: GridContextMenuDescriptor = {
@@ -103,7 +103,7 @@ function buildAggregationMenuItems(
       { label: "Count", action: "agg-count", options },
     ];
 
-    if (isNumericColumn(type)) {
+    if (isNumericColumn(options.column)) {
       childMenuOptions.push(
         { label: "Sum", action: "agg-sum", options },
         { label: "Avg", action: "agg-avg", options },

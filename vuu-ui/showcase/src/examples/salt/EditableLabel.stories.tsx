@@ -11,7 +11,6 @@ export const EditableLabelControlledValueUncontrolledEditing = () => {
   const handleExitEditMode = (finalValue = "") => {
     console.log(`handleExitEditMode '${value}'`);
     if (finalValue !== value) {
-      // edit was cancelled
       setValue(finalValue);
     }
   };

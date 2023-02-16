@@ -37,7 +37,6 @@ const useLayoutConfig = (user, defaultLayout) => {
       }).then((response) => {
         return response.ok ? response.json() : defaultLayout;
       });
-      // .then((data) => console.log(data));
     },
     [defaultLayout, user]
   );

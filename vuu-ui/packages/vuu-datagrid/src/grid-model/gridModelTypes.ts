@@ -5,26 +5,11 @@ import { AdornmentsDescriptor } from "../grid-adornments";
 import { GridModelDispatch } from "../grid-context";
 import { GridProps } from "../gridTypes";
 import { Size } from "./useMeasuredSize";
-import {
-  ColumnType,
-  ColumnTypeDescriptor,
-  Heading,
-  KeyedColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+import { Heading, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 export type Headings = Heading[][];
 
 export type GridModelStatus = "pending" | "ready";
-
-export const isTypeDescriptor = (
-  type?: ColumnType
-): type is ColumnTypeDescriptor =>
-  typeof type !== "undefined" && typeof type !== "string";
-
-export const isNumericColumn = (type?: ColumnType) =>
-  type === undefined
-    ? false
-    : type === "number" || (type as ColumnTypeDescriptor).name === "number";
 
 export type ColumnGroupType = {
   columns: KeyedColumnDescriptor[];

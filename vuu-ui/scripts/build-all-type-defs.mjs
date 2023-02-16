@@ -10,11 +10,10 @@ const packages = [
   "vuu-data",
   "vuu-filters",
   "vuu-popups",
-  //   'vuu-datagrid',
   "vuu-datatable",
-  // "vuu-datagrid-extras",
+  "vuu-datagrid-extras",
   "vuu-layout",
-  //   'vuu-shell'
+  "vuu-shell",
 ];
 
 packages.forEach(buildPackage);

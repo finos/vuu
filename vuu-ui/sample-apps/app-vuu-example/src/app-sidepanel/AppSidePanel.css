@@ -1,3 +1,5 @@
-.vuuAppSidePanel {
-    background-color: red;
+
+.vuuFeatureDropdown {
+    border-bottom: solid 1px var(--salt-container-primary-borderColor);
+    margin-bottom: var(--salt-space-unit);
 }

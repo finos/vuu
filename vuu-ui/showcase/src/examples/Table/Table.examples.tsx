@@ -1,12 +1,22 @@
-import { ArrayDataSource } from "@finos/vuu-data";
+import { ArrayDataSource, DataSourceConfig } from "@finos/vuu-data";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
-import { DataTable } from "@finos/vuu-datatable";
-import { Flexbox, View } from "@finos/vuu-layout";
-import { Dialog } from "@finos/vuu-popups";
-import { itemsChanged } from "@finos/vuu-utils";
+import { DataTable, TableProps } from "@finos/vuu-datatable";
 import { FilterInput } from "@finos/vuu-filters";
+import { Flexbox, useViewContext, View } from "@finos/vuu-layout";
+import { Dialog } from "@finos/vuu-popups";
+import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
 
+import { DragVisualizer } from "@finos/vuu-datatable/src/DragVisualizer";
+import { Filter } from "@finos/vuu-filter-types";
+import { useFilterSuggestionProvider } from "@finos/vuu-filters";
+import {
+  VuuGroupBy,
+  VuuRowDataItemType,
+  VuuSort,
+  VuuTable,
+} from "@finos/vuu-protocol-types";
 import {
   ToggleButton,
   ToggleButtonGroup,
@@ -23,19 +33,18 @@ import {
   useRef,
   useState,
 } from "react";
-import { DragVisualizer } from "@finos/vuu-datatable/src/DragVisualizer";
 import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
-import { Filter } from "@finos/vuu-filter-types";
-import { useSuggestionProvider } from "../Filters/useSuggestionProvider";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 
 let displaySequence = 1;
 
+const NO_CONFIG = {} as const;
 const useTableConfig = ({
+  columnConfig = NO_CONFIG,
   leftPinnedColumns = [],
   rightPinnedColumns = [],
   renderBufferSize = 0,
 }: {
+  columnConfig?: { [key: string]: Partial<ColumnDescriptor> };
   leftPinnedColumns?: number[];
   rightPinnedColumns?: number[];
   renderBufferSize?: number;
@@ -61,7 +70,10 @@ const useTableConfig = ({
       { name: "column 8", width: 120 },
       { name: "column 9", width: 120 },
       { name: "column 10", width: 120 },
-    ];
+    ].map((col) => ({
+      ...col,
+      ...columnConfig[col.name],
+    }));
 
     leftPinnedColumns.forEach((index) => (columns[index].pin = "left"));
     rightPinnedColumns.forEach((index) => (columns[index].pin = "right"));
@@ -72,7 +84,7 @@ const useTableConfig = ({
     });
 
     return { config: { columns }, dataSource, renderBufferSize };
-  }, [leftPinnedColumns, renderBufferSize, rightPinnedColumns]);
+  }, [columnConfig, leftPinnedColumns, renderBufferSize, rightPinnedColumns]);
 };
 
 export const DefaultTable = () => {
@@ -87,6 +99,33 @@ export const DefaultTable = () => {
 };
 
 DefaultTable.displaySequence = displaySequence++;
+
+export const DefaultTableMultiLevelHeadings = () => {
+  const config = useTableConfig({
+    columnConfig: {
+      "row number": { heading: ["Level 0 Heading A", "Heading 1"] },
+      "column 1": { heading: ["Level 0 Heading A", "Heading 1"] },
+      "column 2": { heading: ["Level 0 Heading A", "Heading 1"] },
+      "column 3": { heading: ["Level 0 Heading A", "Heading 1"] },
+      "column 4": { heading: ["Level 0 Heading A", "Heading 2"] },
+      "column 5": { heading: ["Level 0 Heading A", "Heading 2"] },
+      "column 6": { heading: ["Level 0 Heading A", "Heading 2"] },
+      "column 7": { heading: ["Level 0 Heading B", "Heading 3"] },
+      "column 8": { heading: ["Level 0 Heading B", "Heading 3"] },
+      "column 9": { heading: ["Level 0 Heading B", "Heading 3"] },
+      "column 10": { heading: ["Level 0 Heading B", "Heading 3"] },
+    },
+  });
+  return (
+    <>
+      {/* <DragVisualizer orientation="horizontal"> */}
+      <DataTable {...config} height={700} renderBufferSize={20} width={700} />
+      {/* </DragVisualizer> */}
+    </>
+  );
+};
+
+DefaultTableMultiLevelHeadings.displaySequence = displaySequence++;
 
 export const LeftPinnedColumns = () => {
   const [isColumnBased, setIsColumnBased] = useState<boolean>(false);
@@ -203,7 +242,9 @@ FlexLayoutTables.displaySequence = displaySequence++;
 export const VuuDataTable = () => {
   const [columnConfig, tables] = useMemo(
     () => [
-      { description: { editable: true } },
+      {
+        description: { editable: true },
+      },
       ["instruments", "orders", "parentOrders", "prices"],
     ],
     []
@@ -223,12 +264,11 @@ export const VuuDataTable = () => {
     [selectedIndex, tables]
   );
 
-  const configRef = useRef<GridConfig>(config);
-  const [tableConfig, setTableConfig] = useState<GridConfig>(config);
+  const configRef = useRef<Omit<GridConfig, "headings">>(config);
+  const [tableConfig, setTableConfig] =
+    useState<Omit<GridConfig, "headings">>(config);
 
-  console.log({ columns });
-
-  const filterSuggestionProvider = useSuggestionProvider({
+  const filterSuggestionProvider = useFilterSuggestionProvider({
     columns,
     table,
   });
@@ -241,11 +281,15 @@ export const VuuDataTable = () => {
     setSelectedIndex(index);
   };
 
-  const handleConfigChange = useCallback(
+  const handleSettingsConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
+      console.log(`Table.examples config changed`, {
+        config,
+      });
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
-          dataSource.columns = config.columns.map((col) => col.name);
+          // side effect: update columns on dataSource
+          dataSource.columns = config.columns.map(toDataSourceColumns);
         }
         return (configRef.current = config);
       });
@@ -254,21 +298,24 @@ export const VuuDataTable = () => {
     [dataSource]
   );
 
-  const handleTableConfigChange = useCallback((config: GridConfig) => {
-    // we want this to be used when editor is opened next, but we don;t want
-    // to trigger a re-render of our dataTable
-    configRef.current = config;
-  }, []);
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      // we want this to be used when editor is opened next, but we don;t want
+      // to trigger a re-render of our dataTable
+      configRef.current = config;
+    },
+    []
+  );
 
   const showConfigEditor = useCallback(() => {
     setDialogContent(
       <DatagridSettingsPanel
         availableColumns={columns}
         gridConfig={configRef.current}
-        onConfigChange={handleConfigChange}
+        onConfigChange={handleSettingsConfigChange}
       />
     );
-  }, [columns, handleConfigChange]);
+  }, [columns, handleSettingsConfigChange]);
 
   const hideSettings = useCallback(() => {
     setDialogContent(null);
@@ -349,29 +396,29 @@ VuuDataTable.displaySequence = displaySequence++;
 
 export const FlexLayoutVuuTables = () => {
   const { schemas } = useSchemas();
-  const { config, dataSource } = useTestDataSource({
-    schemas,
-    tablename: "instruments",
-  });
+  const { config: conf1, dataSource: ds1 } = useTestDataSource({ schemas });
+  const { config: conf2, dataSource: ds2 } = useTestDataSource({ schemas });
+  const { config: conf3, dataSource: ds3 } = useTestDataSource({ schemas });
+  const { config: conf4, dataSource: ds4 } = useTestDataSource({ schemas });
 
   return (
     <Flexbox style={{ flexDirection: "column", width: 800, height: 700 }}>
       <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={config} dataSource={dataSource} />
+          <DataTable config={conf1} dataSource={ds1} />
         </View>
 
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={defaultConfig} data={data} />
+          <DataTable config={conf2} dataSource={ds2} />
         </View>
       </Flexbox>
       <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={defaultConfig} data={data} />
+          <DataTable config={conf3} dataSource={ds3} />
         </View>
 
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={defaultConfig} data={data} />
+          <DataTable config={conf4} dataSource={ds4} />
         </View>
       </Flexbox>
     </Flexbox>
@@ -445,10 +492,11 @@ export const VuuDataTableCalculatedColumns = () => {
 
   const table = { table: "parentOrders", module: "SIMUL" };
 
-  const configRef = useRef<GridConfig>(config);
-  const [tableConfig, setTableConfig] = useState<GridConfig>(config);
+  const configRef = useRef<Omit<GridConfig, "headings">>(config);
+  const [tableConfig, setTableConfig] =
+    useState<Omit<GridConfig, "headings">>(config);
 
-  const filterSuggestionProvider = useSuggestionProvider({
+  const filterSuggestionProvider = useFilterSuggestionProvider({
     columns,
     table,
   });
@@ -461,7 +509,7 @@ export const VuuDataTableCalculatedColumns = () => {
     (config: GridConfig, closePanel = false) => {
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
-          dataSource.columns = config.columns.map(toServerSpec);
+          dataSource.columns = config.columns.map(toDataSourceColumns);
         }
         return (configRef.current = config);
       });
@@ -470,11 +518,14 @@ export const VuuDataTableCalculatedColumns = () => {
     [dataSource]
   );
 
-  const handleTableConfigChange = useCallback((config: GridConfig) => {
-    // we want this to be used when editor is opened next, but we don;t want
-    // to trigger a re-render of our dataTable
-    configRef.current = config;
-  }, []);
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      // we want this to be used when editor is opened next, but we don;t want
+      // to trigger a re-render of our dataTable
+      configRef.current = config;
+    },
+    []
+  );
 
   const showConfigEditor = useCallback(() => {
     setDialogContent(
@@ -555,3 +606,320 @@ export const VuuDataTableCalculatedColumns = () => {
   );
 };
 VuuDataTableCalculatedColumns.displaySequence = displaySequence++;
+
+export const ColumnHeaders1Level = () => {
+  const { schemas } = useSchemas();
+  const { config, dataSource } = useTestDataSource({
+    columnConfig: {
+      bbg: { heading: ["Instrument"] },
+      isin: { heading: ["Instrument"] },
+      ric: { heading: ["Instrument"] },
+      description: { heading: ["Instrument"] },
+      currency: { heading: ["Exchange Details"] },
+      exchange: { heading: ["Exchange Details"] },
+      lotSize: { heading: ["Exchange Details"] },
+    },
+    columnNames: [
+      "bbg",
+      "isin",
+      "ric",
+      "description",
+      "currency",
+      "exchange",
+      "lotSize",
+    ],
+    schemas,
+  });
+
+  return (
+    <>
+      <div>
+        <input defaultValue="Life is" />
+      </div>
+      <DataTable
+        config={config}
+        dataSource={dataSource}
+        height={600}
+        renderBufferSize={20}
+        style={{ margin: 10, border: "solid 1px #ccc" }}
+      />
+    </>
+  );
+};
+
+ColumnHeaders1Level.displaySequence = displaySequence++;
+
+const ConfigurableDataTable = ({
+  table,
+  ...props
+}: Omit<TableProps, "config" | "dataSource"> & {
+  table: VuuTable;
+}) => {
+  const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
+  const { save } = useViewContext();
+  const { schemas } = useSchemas();
+
+  const handleDataSourceConfigChange = useCallback(
+    (config?: DataSourceConfig) => {
+      save?.(config, "datasource-config");
+    },
+    [save]
+  );
+
+  const { columns, config, dataSource, error } = useTestDataSource({
+    onConfigChange: handleDataSourceConfigChange,
+    schemas,
+    tablename: table.table,
+  });
+
+  const configRef = useRef<Omit<GridConfig, "headings">>(config);
+  const [tableConfig, setTableConfig] =
+    useState<Omit<GridConfig, "headings">>(config);
+
+  useMemo(() => {
+    setTableConfig((configRef.current = config));
+  }, [config]);
+
+  // This needs to trigger a re-render of Table
+  const handleSettingConfigChange = useCallback(
+    (config: GridConfig, closePanel = false) => {
+      save?.(config, "table-config");
+      setTableConfig((currentConfig) => {
+        if (itemsChanged(currentConfig.columns, config.columns, "name")) {
+          dataSource.columns = config.columns.map(toDataSourceColumns);
+        }
+        return (configRef.current = config);
+      });
+      closePanel && setDialogContent(null);
+    },
+    [dataSource, save]
+  );
+
+  // This does NOT need to trigger a re-render of Table
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      // we want this to be used when editor is opened next, but we don;t want
+      // to trigger a re-render of our dataTable
+      configRef.current = config;
+      save?.(config, "table-config");
+    },
+    [save]
+  );
+
+  const handleSubmitFilter = useCallback(
+    (filterStruct: Filter | undefined, filter: string, filterName?: string) => {
+      filterName && console.log(`named filter created '${filterName}'`);
+      dataSource.filter = { filter, filterStruct };
+    },
+    [dataSource]
+  );
+
+  const showConfigEditor = useCallback(() => {
+    setDialogContent(
+      <DatagridSettingsPanel
+        availableColumns={columns}
+        gridConfig={configRef.current}
+        onConfigChange={handleSettingConfigChange}
+      />
+    );
+  }, [columns, handleSettingConfigChange]);
+
+  const hideSettings = useCallback(() => {
+    setDialogContent(null);
+  }, []);
+
+  const filterSuggestionProvider = useFilterSuggestionProvider({
+    columns,
+    table,
+  });
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
+  return (
+    <>
+      <Toolbar
+        className="salt-density-high"
+        style={
+          {
+            "--saltToolbar-height": "28px",
+            "--saltToolbar-alignItems": "center",
+          } as CSSProperties
+        }
+      >
+        <Tooltray>
+          <FilterInput
+            existingFilter={dataSource.filter.filterStruct}
+            onSubmitFilter={handleSubmitFilter}
+            style={{ width: 300 }}
+            suggestionProvider={filterSuggestionProvider}
+          />
+        </Tooltray>
+      </Toolbar>
+
+      <DataTable
+        allowConfigEditing
+        dataSource={dataSource}
+        onConfigChange={handleTableConfigChange}
+        onShowConfigEditor={showConfigEditor}
+        {...props}
+        config={tableConfig}
+      />
+      <Dialog
+        className="vuuDialog-gridConfig"
+        isOpen={dialogContent !== null}
+        onClose={hideSettings}
+        title="Grid and Column Settings"
+      >
+        {dialogContent}
+      </Dialog>
+    </>
+  );
+};
+
+export const VuuDataTablePersistedConfig = () => {
+  const table: VuuTable = useMemo(
+    () => ({ module: "SIMUL", table: "instruments" }),
+    []
+  );
+  return (
+    <>
+      <View>
+        <ConfigurableDataTable
+          height={600}
+          renderBufferSize={20}
+          table={table}
+          width={750}
+        />
+      </View>
+    </>
+  );
+};
+VuuDataTablePersistedConfig.displaySequence = displaySequence++;
+
+export const VuuTablePredefinedConfig = () => {
+  const { schemas } = useSchemas();
+  const sort: VuuSort = { sortDefs: [{ column: "lotSize", sortType: "D" }] };
+  const filter: DataSourceFilter = {
+    filter: 'currency="EUR"',
+    filterStruct: {
+      op: "=",
+      column: "currency",
+      value: "EUR",
+    },
+  };
+  const { config, dataSource } = useTestDataSource({ filter, schemas, sort });
+
+  return (
+    <Flexbox style={{ flexDirection: "column", width: 800, height: 800 }}>
+      <View resizeable style={{ flex: 1 }}>
+        <DataTable config={config} dataSource={dataSource} />
+      </View>
+      <div data-resizeable style={{ flex: 1 }} />
+    </Flexbox>
+  );
+};
+VuuTablePredefinedConfig.displaySequence = displaySequence++;
+
+export const VuuTablePredefinedGroupBy = () => {
+  const { schemas } = useSchemas();
+  const groupBy: VuuGroupBy = ["exchange", "currency"];
+  const { config, dataSource } = useTestDataSource({ groupBy, schemas });
+
+  return (
+    <Flexbox style={{ flexDirection: "column", width: 800, height: 800 }}>
+      <View resizeable style={{ flex: 1 }}>
+        <DataTable config={config} dataSource={dataSource} />
+      </View>
+      <div data-resizeable style={{ flex: 1 }} />
+    </Flexbox>
+  );
+};
+VuuTablePredefinedConfig.displaySequence = displaySequence++;
+
+export const HiddenColumns = () => {
+  const columnConfig = useMemo(
+    () => ({ averagePrice: { hidden: true }, childCount: { hidden: true } }),
+    []
+  );
+  const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
+  const { schemas } = useSchemas();
+  const { columns, config, dataSource, error } = useTestDataSource({
+    columnConfig,
+    schemas,
+    tablename: "parentOrders",
+  });
+
+  const configRef = useRef<Omit<GridConfig, "headings">>(config);
+  const [tableConfig, setTableConfig] =
+    useState<Omit<GridConfig, "headings">>(config);
+
+  useMemo(() => {
+    setTableConfig((configRef.current = config));
+  }, [config]);
+
+  const handleSettingsConfigChange = useCallback(
+    (config: GridConfig, closePanel = false) => {
+      setTableConfig((currentConfig) => {
+        if (itemsChanged(currentConfig.columns, config.columns, "name")) {
+          dataSource.columns = config.columns.map(toDataSourceColumns);
+        }
+        return (configRef.current = config);
+      });
+      closePanel && setDialogContent(null);
+    },
+    [dataSource]
+  );
+
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      // we want this to be used when editor is opened next, but we don;t want
+      // to trigger a re-render of our dataTable
+      configRef.current = config;
+    },
+    []
+  );
+
+  const showConfigEditor = useCallback(() => {
+    setDialogContent(
+      <DatagridSettingsPanel
+        availableColumns={columns}
+        gridConfig={configRef.current}
+        onConfigChange={handleSettingsConfigChange}
+      />
+    );
+  }, [columns, handleSettingsConfigChange]);
+
+  const hideSettings = useCallback(() => {
+    setDialogContent(null);
+  }, []);
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
+  return (
+    <>
+      <DataTable
+        allowConfigEditing
+        dataSource={dataSource}
+        config={tableConfig}
+        // columnSizing="fill"
+        height={600}
+        onConfigChange={handleTableConfigChange}
+        onShowConfigEditor={showConfigEditor}
+        width={750}
+      />
+      <Dialog
+        className="vuuDialog-gridConfig"
+        isOpen={dialogContent !== null}
+        onClose={hideSettings}
+        title="Grid and Column Settings"
+      >
+        {dialogContent}
+      </Dialog>
+    </>
+  );
+};
+HiddenColumns.displaySequence = displaySequence++;

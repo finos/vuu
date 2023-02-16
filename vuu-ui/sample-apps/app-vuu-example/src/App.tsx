@@ -13,10 +13,14 @@ import { Stack } from "./AppStack";
 import { getDefaultColumnConfig } from "./columnMetaData";
 
 import "./App.css";
+// Because we do not render the AppSidePanel directly, the css will not be included in bundle.
+import "./app-sidepanel/AppSidePanel.css";
 
 const { websocketUrl: serverUrl, features } = await vuuConfig;
 
+//TODO how do we separate this from the feature
 const vuuBlotterUrl = "./feature-vuu-blotter/index.js";
+// const vuuBlotterUrl = "./feature-vuu-table/index.js";
 
 registerComponent("Stack", Stack, "container");
 

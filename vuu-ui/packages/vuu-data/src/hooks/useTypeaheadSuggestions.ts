@@ -8,14 +8,14 @@ import { makeRpcCall } from "../connection-manager";
 
 export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
 
-const SPECIAL_SPACE = "_";
+// const SPECIAL_SPACE = "_";
 const TYPEAHEAD_MESSAGE_CONSTANTS = {
   type: "RPC_CALL",
   service: "TypeAheadRpcHandler",
 };
 
-const containSpace = (text: string) => text.indexOf(" ") !== -1;
-const replaceSpace = (text: string) => text.replace(/\s/g, SPECIAL_SPACE);
+// const containSpace = (text: string) => text.indexOf(" ") !== -1;
+// const replaceSpace = (text: string) => text.replace(/\s/g, SPECIAL_SPACE);
 
 export const useTypeaheadSuggestions = () => {
   const getTypeaheadSuggestions: SuggestionFetcher = useCallback(
@@ -36,9 +36,10 @@ export const useTypeaheadSuggestions = () => {
       const suggestions = await makeRpcCall<string[]>(rpcMessage);
 
       // TODO replacing space with underscores like this is not being correctly handled elsewhere
-      return suggestions.some(containSpace)
-        ? suggestions.map(replaceSpace)
-        : suggestions;
+      return suggestions;
+      // return suggestions.some(containSpace)
+      //   ? suggestions.map(replaceSpace)
+      //   : suggestions;
     },
     []
   );

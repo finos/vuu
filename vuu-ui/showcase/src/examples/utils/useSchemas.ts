@@ -6,24 +6,24 @@ export type Schema = { table: VuuTable; columns: ColumnDescriptor[] };
 const schemas: { [key: string]: Schema } = {
   instruments: {
     columns: [
-      { name: "bbg", serverDataType: "string" },
-      { name: "currency", serverDataType: "string" },
-      { name: "description", serverDataType: "string" },
-      { name: "exchange", serverDataType: "string" },
-      { name: "isin", serverDataType: "string" },
-      { name: "lotSize", serverDataType: "int" },
-      { name: "ric", serverDataType: "string" },
+      { name: "bbg" },
+      { name: "currency" },
+      { name: "description" },
+      { name: "exchange" },
+      { name: "isin" },
+      { name: "lotSize" },
+      { name: "ric" },
     ],
     table: { module: "SIMUL", table: "instruments" },
   },
   orders: {
     columns: [
-      { name: "ccy", serverDataType: "string" },
-      { name: "created", serverDataType: "long" },
+      { name: "ccy" },
+      { name: "created" },
       {
         name: "filledQuantity",
         label: "Filled Quantity %",
-        serverDataType: "int",
+
         type: {
           name: "number",
           renderer: { name: "progress", associatedField: "quantity" },
@@ -31,34 +31,34 @@ const schemas: { [key: string]: Schema } = {
         },
         width: 120,
       },
-      { name: "lastUpdate", serverDataType: "long" },
-      { name: "orderId", serverDataType: "string" },
-      { name: "quantity", serverDataType: "double" },
-      { name: "ric", serverDataType: "string" },
-      { name: "side", serverDataType: "char" },
-      { name: "trader", serverDataType: "string" },
+      { name: "lastUpdate" },
+      { name: "orderId" },
+      { name: "quantity" },
+      { name: "ric" },
+      { name: "side" },
+      { name: "trader" },
     ],
     table: { module: "SIMUL", table: "orders" },
   },
   parentOrders: {
     columns: [
-      { name: "account", serverDataType: "string" },
-      { name: "algo", serverDataType: "string" },
-      { name: "averagePrice", serverDataType: "double" },
-      { name: "ccy", serverDataType: "string" },
-      { name: "childCount", serverDataType: "int" },
-      { name: "exchange", serverDataType: "string" },
-      { name: "filledQty", serverDataType: "int" },
-      { name: "id", serverDataType: "string" },
-      { name: "idAsInt", serverDataType: "int" },
-      { name: "lastUpdate", serverDataType: "long" },
-      { name: "openQty", serverDataType: "int" },
-      { name: "price", serverDataType: "double" },
-      { name: "quantity", serverDataType: "int" },
-      { name: "ric", serverDataType: "string" },
-      { name: "side", serverDataType: "string" },
-      { name: "status", serverDataType: "string" },
-      { name: "volLimit", serverDataType: "double" },
+      { name: "account" },
+      { name: "algo" },
+      { name: "averagePrice" },
+      { name: "ccy" },
+      { name: "childCount" },
+      { name: "exchange" },
+      { name: "filledQty" },
+      { name: "id" },
+      { name: "idAsInt" },
+      { name: "lastUpdate" },
+      { name: "openQty" },
+      { name: "price" },
+      { name: "quantity" },
+      { name: "ric" },
+      { name: "side" },
+      { name: "status" },
+      { name: "volLimit" },
     ],
     table: { module: "SIMUL", table: "parentOrders" },
   },
@@ -72,9 +72,9 @@ const schemas: { [key: string]: Schema } = {
           renderer: { name: "background", flashStyle: "arrow-bg" },
           formatting: { decimals: 2, zeroPad: true },
         },
-        aggregate: "avg",
+        aggregate: 2, // avg
       },
-      { name: "askSize", type: "int" },
+      { name: "askSize", type: "number" }, // type: "int"
       {
         label: "Bid",
         name: "bid",
@@ -83,12 +83,12 @@ const schemas: { [key: string]: Schema } = {
           renderer: { name: "background", flashStyle: "arrow-bg" },
           formatting: { decimals: 2, zeroPad: true },
         },
-        aggregate: "avg",
+        aggregate: 2, // avg
       },
-      { name: "bidSize", type: "int" },
-      { name: "close", type: "double" },
-      { name: "last", type: "double" },
-      { name: "open", type: "double" },
+      { name: "bidSize", type: "number" }, // type: "int"
+      { name: "close", type: "number" }, // type: "double"
+      { name: "last", type: "number" }, // type: "double"
+      { name: "open", type: "number" }, // type: "double"
       { name: "phase", type: "string" },
       { name: "ric", type: "string" },
       { name: "scenario", type: "string" },
@@ -101,7 +101,7 @@ export type ColumnState = { [key: string]: Schema };
 
 export interface ColumnActionUpdate {
   type: "updateColumn";
-  column: KeyedColumnDescriptor;
+  column: ColumnDescriptor;
 }
 
 export type ColumnAction = ColumnActionUpdate;

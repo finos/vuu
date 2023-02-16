@@ -34,7 +34,7 @@
   border-top: solid 1px var(--salt-container-primary-borderColor);
   overflow: auto;
   position: absolute;
-  height: calc(var(--table-height) - var(--header-height) + 1px);
+  height: calc(var(--table-height) - var(--total-header-height) + 1px);
   width: calc(var(--table-width) - var(--pinned-width-left) + 1px);
 }
 
@@ -116,20 +116,6 @@
   height: var(--filler-height);
 }
 
-
-.vuuDataTable-table td {
-  border-right: 1px solid var(--vuuTableCell-border-rightColor);
-  border-bottom: 1px solid var(--vuuTableCell-border-bottomColor);
-  line-height: calc(var(--vuuTable-rowHeight) - 1px);
-  padding: 0 5px;
-}
-
-.vuuDataTable-table td {
-  color: var(--salt-text-primary-foreground);
-  cursor: default;
-  height: var(--vuuTable-rowHeight);
-}
-
 :is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   position: sticky;
 }
@@ -140,7 +126,7 @@
 
 th:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   top:0;
-  z-index: 2;
+  z-index: 20;
 }
 
 table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {

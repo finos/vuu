@@ -4,7 +4,12 @@ import "./global-mocks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as connectionExports from "../src/connection-manager";
 //----------------------------------------------------
-import { VuuSortCol } from "@finos/vuu-protocol-types";
+import {
+  LinkDescriptorWithLabel,
+  VuuLink,
+  VuuSortCol,
+  VuuSortType,
+} from "@finos/vuu-protocol-types";
 import { RemoteDataSource } from "../src/remote-data-source";
 
 const defaultSubscribeOptions = {
@@ -173,12 +178,22 @@ describe("RemoteDataSource", () => {
     it("uses options supplied at creation, if not passed with subscription", async () => {
       const serverSubscribe = vi.fn();
       const resolvedPromise = Promise.resolve({ subscribe: serverSubscribe });
-      const aggregations = [{ column: "test", aggType: 1 }];
+      const aggregations = [{ column: "test", aggType: 1 } as const];
       const columns = ["test"];
       const filter = { filter: 'ccy="EUR"' };
       const groupBy = ["test"];
-      const sort = { sortDefs: [{ column: "test", sortTyle: "A" }] };
-      const visualLink = { colName: "test" };
+      const sort = {
+        sortDefs: [{ column: "test", sortType: "A" } as const],
+      };
+      const visualLink: LinkDescriptorWithLabel = {
+        link: {
+          fromColumn: "ccy",
+          toTable: "test",
+          toColumn: "test",
+        },
+        parentClientVpId: "test",
+        parentVpId: "test",
+      };
 
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
@@ -192,7 +207,7 @@ describe("RemoteDataSource", () => {
         groupBy,
         sort,
         table,
-        "visual-link": visualLink,
+        visualLink,
       });
 
       await dataSource.subscribe({}, callback);
@@ -220,17 +235,17 @@ describe("RemoteDataSource", () => {
       const serverSubscribe = vi.fn();
       const resolvedPromise = Promise.resolve({ subscribe: serverSubscribe });
 
-      const aggregations = [{ column: "test", aggType: 1 }];
+      const aggregations = [{ column: "test", aggType: 1 } as const];
       const columns = ["test"];
       const filter = { filter: 'ccy="EUR"' };
       const groupBy = ["test"];
-      const sort = { sortDefs: [{ column: "test", sortTyle: "A" }] };
+      const sort = { sortDefs: [{ column: "test", sortType: "A" } as const] };
 
-      const aggregations2 = [{ column: "test", aggType: 1 }];
+      const aggregations2 = [{ column: "test", aggType: 1 } as const];
       const columns2 = ["test"];
       const filter2 = { filter: 'ccy="EUR"' };
       const groupBy2 = ["test"];
-      const sort2 = { sortDefs: [{ column: "test", sortTyle: "A" }] };
+      const sort2 = { sortDefs: [{ column: "test", sortType: "A" } as const] };
 
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
@@ -346,7 +361,7 @@ describe("RemoteDataSource", () => {
       const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
-      const aggregations = [{ column: "col1", aggType: 1 }];
+      const aggregations = [{ column: "col1", aggType: 1 } as const];
       dataSource.aggregations = aggregations;
 
       expect(serverSend).toHaveBeenCalledWith({

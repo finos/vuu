@@ -5,28 +5,21 @@ import {
   VuuRange,
   VuuTable,
   VuuSort,
-  VuuMenuRpcRequest,
+  ClientToServerMenuRPC,
 } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
+
 import { EventEmitter, uuid } from "@finos/vuu-utils";
 import {
   DataSource,
   DataSourceCallbackMessage,
-  DataSourceFilter,
   DataSourceConstructorProps,
-  DataSourceVisualLinkCreatedMessage,
   SubscribeCallback,
   SubscribeProps,
+  DataSourceConfig,
 } from "./data-source";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
-
-// const log = (message: string, ...rest: unknown[]) => {
-//   console.log(
-//     `%c[RemoteDataSource] ${message}`,
-//     "color: brown; font-weight: bold",
-//     ...rest
-//   );
-// };
 
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
@@ -34,20 +27,25 @@ import { MenuRpcResponse } from "./vuuUIMessageTypes";
 export class RemoteDataSource extends EventEmitter implements DataSource {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private visualLink?: DataSourceVisualLinkCreatedMessage;
   private status = "initialising";
   private disabled = false;
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
+  private onConfigChange:
+    | undefined
+    | ((config: DataSourceConfig | undefined) => void);
 
   #aggregations: VuuAggregation[] = [];
   #columns: string[] = [];
+  #config: DataSourceConfig | undefined;
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
   #range: VuuRange = { from: 0, to: 0 };
+  #selectedRowsCount = 0;
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
   #title: string | undefined;
+  #visualLink: LinkDescriptorWithLabel | undefined;
 
   public rowCount: number | undefined;
   public table: VuuTable;
@@ -59,11 +57,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     columns,
     filter,
     groupBy,
+    onConfigChange,
     sort,
     table,
     title,
     viewport,
-    "visual-link": visualLink,
+    visualLink,
   }: DataSourceConstructorProps) {
     super();
 
@@ -71,9 +70,10 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       throw Error("RemoteDataSource constructor called without table");
 
     this.bufferSize = bufferSize;
+    this.onConfigChange = onConfigChange;
     this.table = table;
     this.viewport = viewport;
-    this.visualLink = visualLink;
+
     if (aggregations) {
       this.#aggregations = aggregations;
     }
@@ -90,6 +90,9 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       this.#sort = sort;
     }
     this.#title = title;
+    this.#visualLink = visualLink;
+
+    this.refreshConfig();
   }
 
   async subscribe(
@@ -132,14 +135,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       //TODO check if subscription details are still the same
       return;
     }
-
-    // console.log(
-    //   `%c[remoteDataSource] ${this.viewport} subscribe
-    //     RemoteDataSource bufferSize ${this.bufferSize}
-    //     range ${JSON.stringify(range)}
-    //     status ${this.status}`,
-    //   "color:green;font-weight: bold;"
-    // );
 
     this.status = "subscribing";
     this.viewport = viewport;
@@ -245,29 +240,12 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   select(selected: number[]) {
+    this.#selectedRowsCount = selected.length;
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
         type: "select",
         selected,
-      });
-    }
-  }
-
-  selectAll() {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "selectAll",
-      });
-    }
-  }
-
-  selectNone() {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "selectNone",
       });
     }
   }
@@ -292,6 +270,40 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         key,
       });
     }
+  }
+
+  // Build the config structure in advance of any get requests and on every change.
+  // We do not build config on the fly in the getter as we want to avoid creating a
+  // new strucutre on each request - the object is 'stable' in React terminology.
+  private refreshConfig(): DataSourceConfig | undefined {
+    const { aggregations, columns, filter, groupBy, sort, visualLink } = this;
+    const hasAggregations = aggregations.length > 0;
+    const hasColumns = columns.length > 0;
+    const hasFilter = filter.filter !== "";
+    const hasGroupBy = groupBy.length > 0;
+    const hasSort = sort.sortDefs.length > 0;
+    const hasVisualLink = visualLink !== undefined;
+
+    if (hasAggregations || hasColumns || hasFilter || hasGroupBy || hasSort) {
+      const result: DataSourceConfig = {};
+      hasAggregations && (result.aggregations = aggregations);
+      hasColumns && (result.columns = columns);
+      hasFilter && (result.filter = filter);
+      hasGroupBy && (result.groupBy = groupBy);
+      hasSort && (result.sort = sort);
+      hasVisualLink && (result.visualLink = visualLink);
+      return (this.#config = result);
+    } else {
+      return (this.#config = undefined);
+    }
+  }
+
+  get config() {
+    return this.#config;
+  }
+
+  get selectedRowsCount() {
+    return this.#selectedRowsCount;
   }
 
   get size() {
@@ -320,6 +332,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   set columns(columns: string[]) {
+    console.log(`RemoteDataSOurce ${columns.join(",")}`);
     this.#columns = columns;
     if (this.viewport) {
       const message = {
@@ -331,6 +344,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   get aggregations() {
@@ -346,6 +361,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         aggregations,
       });
     }
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   get sort() {
@@ -365,6 +382,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   get filter() {
@@ -384,6 +403,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   get groupBy() {
@@ -391,18 +412,20 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   set groupBy(groupBy: VuuGroupBy) {
-    this.#groupBy = groupBy;
+    this.#groupBy = groupBy ?? [];
     if (this.viewport) {
       const message = {
         viewport: this.viewport,
         type: "groupBy",
-        groupBy,
+        groupBy: this.#groupBy,
       } as const;
 
       if (this.server) {
         this.server.send(message);
       }
     }
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
   get title() {
@@ -420,37 +443,49 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  createLink({
-    parentVpId,
-    link: { fromColumn, toColumn },
-  }: LinkDescriptorWithLabel) {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "createLink",
-        parentVpId: parentVpId,
-        // childVpId: this.serverViewportId,
-        parentColumnName: toColumn,
-        childColumnName: fromColumn,
-      });
-    }
+  get visualLink() {
+    return this.#visualLink;
   }
 
-  removeLink() {
-    if (this.viewport) {
-      this.server?.send({
-        type: "removeLink",
-        viewport: this.viewport,
-      });
+  set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {
+    this.#visualLink = visualLink;
+    console.log(`create visual link `, {
+      visualLink,
+    });
+
+    if (visualLink) {
+      const {
+        parentClientVpId,
+        link: { fromColumn, toColumn },
+      } = visualLink;
+
+      if (this.viewport) {
+        this.server?.send({
+          viewport: this.viewport,
+          type: "createLink",
+          parentClientVpId,
+          parentColumnName: toColumn,
+          childColumnName: fromColumn,
+        });
+      }
+    } else {
+      if (this.viewport) {
+        this.server?.send({
+          type: "removeLink",
+          viewport: this.viewport,
+        });
+      }
     }
+    const newConfig = this.refreshConfig();
+    this.onConfigChange?.(newConfig);
   }
 
-  async menuRpcCall(rpcRequest: Omit<VuuMenuRpcRequest, "vpId">) {
+  async menuRpcCall(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">) {
     if (this.viewport) {
       return this.server?.rpcCall<MenuRpcResponse>({
         vpId: this.viewport,
         ...rpcRequest,
-      } as VuuMenuRpcRequest);
+      } as ClientToServerMenuRPC);
     }
   }
 }

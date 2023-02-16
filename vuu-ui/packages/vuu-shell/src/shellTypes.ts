@@ -13,6 +13,6 @@ export type Features = {
   [key: string]: FeatureConfig;
 };
 export interface VuuConfig {
-  features?: Features;
+  features: Features;
   websocketUrl: string;
 }

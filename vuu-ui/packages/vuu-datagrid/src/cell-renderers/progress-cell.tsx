@@ -2,8 +2,8 @@ import { LinearProgress } from "@heswell/salt-lab";
 import cx from "classnames";
 import React from "react";
 
+import { isTypeDescriptor } from "@finos/vuu-utils";
 import { GridCellProps } from "../grid-cells";
-import { isTypeDescriptor } from "../grid-model";
 import "./progress-cell.css";
 
 const ProgressCell = React.memo(function ProgressCell({

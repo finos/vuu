@@ -7,7 +7,6 @@ import {
   useTypeaheadSuggestions,
 } from "@finos/vuu-data";
 import { metadataKeys, WindowRange } from "@finos/vuu-utils";
-import { Button } from "@salt-ds/core";
 import {
   CollectionProvider,
   FormField,
@@ -16,6 +15,7 @@ import {
   ScrollingAPI,
   VirtualizedList,
 } from "@heswell/salt-lab";
+import { Button } from "@salt-ds/core";
 import {
   CSSProperties,
   useCallback,
@@ -81,9 +81,6 @@ export const DefaultList = () => {
   const virtualRef = useRef<ScrollingAPI<DataSourceRow> | null>(null);
   const [data2, size, range, setRange] = useDataSource({ dataSource });
   const collectionHook = useVuuCollectionHook(data2, size, range);
-  if (data2.some((d) => d == undefined)) {
-    debugger;
-  }
   const selectedRow = data2.find((row) => row[7]) ?? null;
 
   useEffect(() => {
@@ -114,11 +111,11 @@ export const DefaultList = () => {
         setRange({ from: firstVisibleRowIndex, to: lastVisibleRowIndex + 1 });
       }
     },
-    [range]
+    [range.from, range.to, setRange]
   );
 
   const handleSelect = useCallback(
-    (evt, row) => {
+    (_, row) => {
       dataSource.select([row[0]]);
     },
     [dataSource]

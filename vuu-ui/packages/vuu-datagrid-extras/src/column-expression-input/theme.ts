@@ -3,6 +3,7 @@ import { EditorView } from "@codemirror/view";
 export const vuuTheme = EditorView.theme(
   {
     "&": {
+      border: "solid 1px var(--salt-container-primary-borderColor)",
       color: "var(--vuuFilterEditor-color)",
       backgroundColor: "var(--vuuFilterEditor-background)",
     },

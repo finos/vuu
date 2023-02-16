@@ -3,14 +3,14 @@ import {
   Flexbox,
   LayoutProvider,
   Placeholder,
-  View,
+  View
 } from "@finos/vuu-layout";
 import { SaltProvider } from "@salt-ds/core";
 
-import { AppSidePanel } from "app-vuu-example/src/app-sidepanel";
-import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
 import { useVuuTables } from "@finos/vuu-data";
+import { AppSidePanel } from "app-vuu-example/src/app-sidepanel";
 import { useMemo } from "react";
+import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
 
 export const DefaultAppSidePanel = () => {
   const tables = useMemo(() => {

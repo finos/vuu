@@ -6,7 +6,8 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/run-build.mjs"
+    "build": "node ../../scripts/run-build.mjs",
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "peerDependencies": {
     "@salt-ds/core": "1.0.0",

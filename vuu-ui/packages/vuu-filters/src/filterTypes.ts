@@ -1,18 +1,13 @@
-export type SingleValueFilterClauseOp =
-  | "="
-  | "!="
-  | ">"
-  | ">="
-  | "<="
-  | "<"
-  | "starts"
-  | "ends";
-export type MultipleValueFilterClauseOp = "in";
-export type FilterClauseOp =
-  | SingleValueFilterClauseOp
-  | MultipleValueFilterClauseOp;
-export type FilterCombinatorOp = "and" | "or";
-export type FilterOp = FilterClauseOp | FilterCombinatorOp;
+//TODO these are duplicated in vuu-utils, that shoudl probably be the righful source
+import {
+  AndFilter,
+  Filter,
+  MultiClauseFilter,
+  MultiValueFilterClause,
+  OrFilter,
+  SingleValueFilterClause,
+  SingleValueFilterClauseOp,
+} from "@finos/vuu-filter-types";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -24,38 +19,6 @@ const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "starts",
   "ends",
 ]);
-
-export interface NamedFilter {
-  name?: string;
-}
-
-export interface SingleValueFilterClause extends NamedFilter {
-  op: SingleValueFilterClauseOp;
-  column: string;
-  value: string | number;
-}
-export interface MultiValueFilterClause extends NamedFilter {
-  op: MultipleValueFilterClauseOp;
-  column: string;
-  values: string[] | number[];
-}
-
-export type FilterClause = SingleValueFilterClause | MultiValueFilterClause;
-
-export interface MultiClauseFilter extends NamedFilter {
-  column?: never;
-  op: FilterCombinatorOp;
-  filters: Filter[];
-}
-
-export interface AndFilter extends MultiClauseFilter {
-  op: "and";
-}
-export interface OrFilter extends MultiClauseFilter {
-  op: "or";
-}
-
-export type Filter = FilterClause | MultiClauseFilter;
 
 // convenience methods to check filter type
 export const isNamedFilter = (f?: Filter) =>

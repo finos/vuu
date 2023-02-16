@@ -17,7 +17,7 @@ const classBase = "vuuGridSettingsPanel";
 const NullActivationIndicator = () => null;
 
 export interface GridSettingsPanelProps extends HTMLAttributes<HTMLDivElement> {
-  config: GridConfig;
+  config: Omit<GridConfig, "headings">;
   dispatchColumnAction: Dispatch<ColumnAction>;
 }
 export const GridSettingsPanel = ({
@@ -52,6 +52,8 @@ export const GridSettingsPanel = ({
       dispatchUpdate({ columnDefaultWidth: parseInt(value.toString(), 10) }),
     [dispatchUpdate]
   );
+
+  console.log(`GridSettingsPanel ${JSON.stringify(config.columns, null, 2)}`);
 
   return (
     <div

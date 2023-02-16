@@ -22,10 +22,11 @@ export interface NamedFilter {
   name?: string;
 }
 
-export interface SingleValueFilterClause extends NamedFilter {
+export interface SingleValueFilterClause<T = string | number>
+  extends NamedFilter {
   op: SingleValueFilterClauseOp;
   column: string;
-  value: string | number;
+  value: T;
 }
 
 export interface MultiValueFilterClause extends NamedFilter {

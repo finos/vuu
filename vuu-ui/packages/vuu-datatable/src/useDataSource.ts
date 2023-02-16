@@ -5,12 +5,16 @@ import {
   DataSourceRow,
   DataSourceSubscribedMessage,
   SubscribeCallback,
+  VuuFeatureMessage,
+  isVuuFeatureAction,
+  VuuFeatureInvocationMessage,
+  isVuuFeatureInvocation,
 } from "@finos/vuu-data";
 import { VuuDataRow, VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const { RENDER_IDX } = metadataKeys;
+const { RENDER_IDX, SELECTED } = metadataKeys;
 
 const byKey = (row1: VuuDataRow, row2: VuuDataRow) =>
   row1[RENDER_IDX] - row2[RENDER_IDX];
@@ -24,11 +28,13 @@ export type SubscriptionDetails = {
 const isConfigMessage = (
   message: DataSourceCallbackMessage
 ): message is DataSourceConfigMessage =>
-  ["aggregate", "filter", "groupBy", "sort"].includes(message.type);
+  ["aggregate", "columns", "filter", "groupBy", "sort"].includes(message.type);
 
 export interface DataSourceHookProps {
   dataSource: DataSource;
   onConfigChange?: (message: DataSourceConfigMessage) => void;
+  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
   range?: VuuRange;
@@ -40,6 +46,8 @@ export interface DataSourceHookProps {
 export function useDataSource({
   dataSource,
   onConfigChange,
+  onFeatureEnabled,
+  onFeatureInvocation,
   onSizeChange,
   onSubscribed,
   range = { from: 0, to: 0 },
@@ -95,9 +103,23 @@ export function useDataSource({
         }
       } else if (isConfigMessage(message)) {
         onConfigChange?.(message);
+      } else if (isVuuFeatureAction(message)) {
+        onFeatureEnabled?.(message);
+      } else if (isVuuFeatureInvocation(message)) {
+        onFeatureInvocation?.(message);
+      } else {
+        console.log(`useDataSource unexpected message ${message.type}`);
       }
     },
-    [dataWindow, onConfigChange, onSizeChange, onSubscribed, setData]
+    [
+      dataWindow,
+      onConfigChange,
+      onFeatureEnabled,
+      onFeatureInvocation,
+      onSizeChange,
+      onSubscribed,
+      setData,
+    ]
   );
 
   useEffect(
@@ -147,6 +169,10 @@ export function useDataSource({
     [dataSource, dataWindow, renderBufferSize]
   );
 
+  const getSelectedRows = useCallback(() => {
+    return dataWindow.getSelectedRows();
+  }, [dataWindow]);
+
   useEffect(() => {
     dataSource?.subscribe(
       {
@@ -154,10 +180,6 @@ export function useDataSource({
       },
       datasourceMessageHandler
     );
-
-    return () => {
-      dataSource?.unsubscribe();
-    };
   }, [dataSource, datasourceMessageHandler]);
 
   useEffect(() => {
@@ -166,6 +188,7 @@ export function useDataSource({
 
   return {
     data: data.current,
+    getSelectedRows,
     range: rangeRef.current,
     setRange,
     dataSource,
@@ -197,6 +220,18 @@ export class MovingWindow {
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.range.from;
       this.data[internalIndex] = data;
+
+      // assign 'pre-selected' selection state. This allows us to assign a className
+      // to a non selected row that immediately precedes a selected row. Useful for
+      // styling. This cannot be achieved any other way as document order of row
+      // elements does not necessarily reflect data order.
+      const isSelected = data[SELECTED];
+      const preSelected = this.data[internalIndex - 1]?.[SELECTED];
+      if (preSelected === 0 && isSelected) {
+        this.data[internalIndex - 1][SELECTED] = 2;
+      } else if (preSelected === 2 && !isSelected) {
+        this.data[internalIndex - 1][SELECTED] = 0;
+      }
     }
   }
 
@@ -226,5 +261,9 @@ export class MovingWindow {
       this.range.from = from;
       this.range.to = to;
     }
+  }
+
+  getSelectedRows() {
+    return this.data.filter((row) => row[SELECTED] === 1);
   }
 }

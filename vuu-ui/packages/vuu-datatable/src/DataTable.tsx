@@ -1,12 +1,11 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { Button, useIdMemo } from "@salt-ds/core";
-import { CSSProperties, useCallback } from "react";
+import { CSSProperties } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
-import { buildContextMenuDescriptors, useContextMenu } from "./context-menu";
+import { buildContextMenuDescriptors } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
 import { RowBasedTable } from "./RowBasedTable";
 import { useDataTable } from "./useDataTable";
-import { useDraggableColumn } from "./useDraggableColumn";
 
 import "./DataTable.css";
 
@@ -21,9 +20,12 @@ export const DataTable = ({
   height,
   id: idProp,
   onConfigChange,
+  onFeatureEnabled,
+  onFeatureInvocation,
   onShowConfigEditor: onShowSettings,
   renderBufferSize = 0,
   rowHeight = 20,
+  selectionModel = "extended",
   style: styleProp,
   tableLayout: tableLayoutProp = "row",
   width,
@@ -32,12 +34,14 @@ export const DataTable = ({
   const id = useIdMemo(idProp);
   const {
     columns,
-    dispatchColumnAction,
     containerMeasurements: { containerRef, innerSize, outerSize },
     containerProps,
-    rowCount,
+    dispatchColumnAction,
+    draggable,
+    draggedItemIndex,
+    handleContextMenuAction,
     scrollProps,
-    valueFormatters,
+    tableLayout,
     viewportMeasurements,
     ...tableProps
   } = useDataTable({
@@ -47,32 +51,12 @@ export const DataTable = ({
     headerHeight,
     height,
     onConfigChange,
+    onFeatureEnabled,
+    onFeatureInvocation,
     rowHeight,
-    width,
-  });
-
-  const handleContextMenuAction = useContextMenu({
-    dataSource,
-    dispatchColumnAction,
-  });
-
-  const handleDropColumn = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      const column = columns[fromIndex];
-      dispatchColumnAction({ type: "moveColumn", column, moveTo: toIndex });
-    },
-    [columns, dispatchColumnAction]
-  );
-
-  const {
-    draggable,
-    draggedItemIndex,
-    tableLayout,
-    handleHeaderCellDragStart,
-  } = useDraggableColumn({
-    onDrop: handleDropColumn,
-    tableContainerRef: scrollProps.tableContainerRef,
+    selectionModel,
     tableLayout: tableLayoutProp,
+    width,
   });
 
   const style = {
@@ -87,6 +71,7 @@ export const DataTable = ({
     "--scrollbar-size": `${viewportMeasurements.scrollbarSize}px`,
     "--table-height": `${innerSize?.height}px`,
     "--table-width": `${innerSize?.width}px`,
+    "--total-header-height": `${viewportMeasurements?.totalHeaderHeight}px`,
   } as CSSProperties;
 
   const scrollbarContainerStyle: CSSProperties = {
@@ -94,7 +79,7 @@ export const DataTable = ({
     // The -1 is to align the top border, might cause innaccuracy
     // It is compensated by a hardcoded adjustment in css
     // top: measurements.top - 1 + headerHeight,
-    top: headerHeight - 1,
+    top: viewportMeasurements?.totalHeaderHeight - 1,
   };
 
   const Table = tableLayout === "column" ? ColumnBasedTable : RowBasedTable;
@@ -139,11 +124,7 @@ export const DataTable = ({
                 {...tableProps}
                 columns={columns.filter((col, i) => i !== draggedItemIndex)}
                 headerHeight={headerHeight}
-                onHeaderCellDragStart={
-                  tableLayout === "row" ? handleHeaderCellDragStart : undefined
-                }
                 rowHeight={rowHeight}
-                valueFormatters={valueFormatters}
               />
             </div>
             {draggable}

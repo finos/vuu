@@ -1,6 +1,12 @@
 import { useForkRef, useIdMemo as useId } from "@salt-ds/core";
 import cx from "classnames";
-import React, { ForwardedRef, forwardRef, useMemo, useRef } from "react";
+import React, {
+  ForwardedRef,
+  forwardRef,
+  ReactElement,
+  useMemo,
+  useRef,
+} from "react";
 import { Header } from "../layout-header/Header";
 import { registerComponent } from "../registry/ComponentRegistry";
 import { useView } from "./useView";
@@ -136,8 +142,19 @@ const View = forwardRef(function View(
 });
 View.displayName = "View";
 
-const MemoView = React.memo(View) as React.FunctionComponent<ViewProps>;
+interface ViewComponentType {
+  (
+    props: ViewProps & {
+      ref?: ForwardedRef<HTMLDivElement>;
+    }
+  ): ReactElement<ViewProps>;
+  displayName?: string;
+}
+
+const MemoView = React.memo(View) as ViewComponentType;
+
 MemoView.displayName = "View";
+
 registerComponent("View", MemoView, "view");
 
 export { MemoView as View };

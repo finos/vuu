@@ -2,6 +2,7 @@ import {
   getColumnPinStyle,
   isGroupColumn,
   metadataKeys,
+  notHidden,
 } from "@finos/vuu-utils";
 import { MouseEvent, useCallback } from "react";
 import { TableImplementationProps } from "./dataTableTypes";
@@ -15,20 +16,19 @@ const { RENDER_IDX } = metadataKeys;
 export const RowBasedTable = ({
   columns,
   data,
+  headings,
   onColumnResize,
   onHeaderCellDragStart,
+  onContextMenu,
   onRemoveColumnFromGroupBy,
+  onRowClick,
   onSort,
   onToggleGroup,
+  rowCount,
   rowHeight,
-  valueFormatters,
 }: TableImplementationProps) => {
   const handleDragStart = useCallback(
     (evt: MouseEvent) => {
-      console.log(`RowBasedDataTable handleDragStart`, {
-        evt,
-        onHeaderCellDragStart,
-      });
       onHeaderCellDragStart?.(evt);
     },
     [onHeaderCellDragStart]
@@ -49,15 +49,24 @@ export const RowBasedTable = ({
   );
 
   return (
-    <table className={`${classBase}-table`}>
+    <table aria-rowcount={rowCount} className={`${classBase}-table`}>
       <colgroup>
-        {columns.map((column, i) => (
+        {columns.filter(notHidden).map((column, i) => (
           <col key={i} width={`${column.width}px`} />
         ))}
       </colgroup>
       <thead>
+        {headings.map((colHeaders, i) => (
+          <tr className="vuuTable-heading" key={i}>
+            {colHeaders.map(({ label, span }, j) => (
+              <th colSpan={span} key={j} className="vuuTable-headingCell">
+                {label}
+              </th>
+            ))}
+          </tr>
+        ))}
         <tr>
-          {columns.map((column, i) => {
+          {columns.filter(notHidden).map((column, i) => {
             const style = getColumnPinStyle(column);
             return isGroupColumn(column) ? (
               <TableGroupHeaderCell
@@ -84,16 +93,16 @@ export const RowBasedTable = ({
           })}
         </tr>
       </thead>
-      <tbody>
+      <tbody onContextMenu={onContextMenu}>
         {data?.map((row, i) => (
           <TableRow
             columns={columns}
             height={rowHeight}
             index={i}
             key={row[RENDER_IDX]}
+            onClick={onRowClick}
             onToggleGroup={onToggleGroup}
             row={row}
-            valueFormatters={valueFormatters}
           />
         ))}
         <tr className={`${classBase}-filler`} />

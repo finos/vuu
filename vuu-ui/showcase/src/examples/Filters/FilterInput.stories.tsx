@@ -1,15 +1,17 @@
-import React, { useCallback, useEffect, useState } from "react";
 import { Filter } from "@finos/vuu-filter-types";
-import { FilterInput, FilterToolbar, updateFilter } from "@finos/vuu-filters";
+import {
+  FilterInput,
+  FilterToolbar,
+  updateFilter,
+  useFilterSuggestionProvider,
+} from "@finos/vuu-filters";
+import { useCallback, useEffect, useState } from "react";
 
-import { useSuggestionProvider } from "./useSuggestionProvider";
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
 } from "@finos/vuu-data";
 import {} from "@finos/vuu-utils";
-
-// import "./ParsedInput.stories.css";
 
 let displaySequence = 1;
 
@@ -29,7 +31,7 @@ export const DefaultFilterInput = () => {
   const [filter, setFilter] = useState<Filter>();
   const [filterQuery, setFilterQuery] = useState<string>("");
   const [filterName, setFilterName] = useState<string>("");
-  const suggestionProvider = useSuggestionProvider({
+  const suggestionProvider = useFilterSuggestionProvider({
     columns: schemaColumns,
     table,
   });
@@ -46,7 +48,9 @@ export const DefaultFilterInput = () => {
     (filter: Filter | undefined, filterQuery: string, filterName?: string) => {
       setFilter(filter);
       setFilterQuery(filterQuery);
-      setFilterName(filterName);
+      if (filterName) {
+        setFilterName(filterName);
+      }
     },
     []
   );
@@ -74,7 +78,7 @@ export const FilterInputWithToolbar = () => {
   const [filter, setFilter] = useState<Filter>();
   const [filterQuery, setFilterQuery] = useState<string>("");
   const [filterName, setFilterName] = useState<string>("");
-  const suggestionProvider = useSuggestionProvider({
+  const suggestionProvider = useFilterSuggestionProvider({
     columns: schemaColumns,
     table,
   });

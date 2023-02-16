@@ -8,12 +8,11 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
-  useMemo,
   ForwardedRef,
 } from "react";
 import { useContextMenu } from "@finos/vuu-popups";
 import { useEffectSkipFirst } from "./utils";
-import { metadataKeys } from "@finos/vuu-utils";
+import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
 import useScroll from "./use-scroll";
 import useUpdate from "./use-update";
 import { SubscriptionDetails, useDataSource } from "./grid-hooks";
@@ -25,21 +24,15 @@ import InsertIndicator from "./InsertIndicator";
 import { ViewportProps } from "./gridTypes";
 import { DataSourceRow } from "@finos/vuu-data";
 
-// Temp, until we manage selection properly
-const countSelectedRows = (data: DataSourceRow[]) => {
-  let count = 0;
-  for (const row of data) {
-    if (row && row[metadataKeys.SELECTED]) {
-      count += 1;
-    }
-  }
-  return count;
-};
-
 export interface ViewportScrollApi {
   beginHorizontalScroll: () => void;
   endHorizontalScroll: () => void;
 }
+
+// Temp, until we manage selection properly
+const getSelectedRows = (data: DataSourceRow[]) => {
+  return data.filter((d) => d[metadataKeys.SELECTED] === 1);
+};
 
 export const Viewport = forwardRef(function Viewport(
   {
@@ -184,6 +177,11 @@ export const Viewport = forwardRef(function Viewport(
     onConfigChange,
     handleSizeChange
   );
+  // Keep a ref to current data. We use it to provide row for context menu actions.
+  // We don't want to introduce data as a dependency on the context menu handler, just
+  // needs to be correct at runtime when the row is right clicked.
+  const dataRef = useRef<DataSourceRow[]>();
+  dataRef.current = data;
 
   const rowCount = dataSource?.rowCount ?? 0;
 
@@ -262,17 +260,37 @@ export const Viewport = forwardRef(function Viewport(
     scrollCallback
   );
 
-  const contextMenuOptions = useMemo(() => {
-    return {
-      selectedRowCount: countSelectedRows(data),
-      viewport: dataSource?.viewport,
-    };
-  }, [data, dataSource]);
-
   const showContextMenu = useContextMenu();
-  const handleContextMenu = (e: MouseEvent) => {
-    showContextMenu(e, "grid", contextMenuOptions);
-  };
+  const onContextMenu = useCallback(
+    (evt: MouseEvent<HTMLElement>) => {
+      const { current: currentData } = dataRef;
+
+      const target = evt.target as HTMLElement;
+      const cellEl = target?.closest(".vuuDataGridCell") as HTMLElement;
+      const rowEl = target?.closest(".vuuDataGridRow") as HTMLElement;
+
+      if (cellEl && rowEl && currentData && dataSource) {
+        const { columns, selectedRowsCount, viewport } = dataSource;
+        const columnMap = buildColumnMap(columns);
+        const rowIndex = parseInt(rowEl.dataset.idx ?? "-1");
+        const cellIndex = Array.from(rowEl.childNodes).indexOf(cellEl);
+        const row = currentData.find(([idx]) => idx === rowIndex);
+        // Hack: +1 to allow for line no
+        const columnName = dataSource.columns[cellIndex - 1];
+        console.log({ columnName });
+
+        showContextMenu(evt, "grid", {
+          columnMap,
+          columnName,
+          row,
+          selectedRows: getSelectedRows(data),
+          selectedRowsCount,
+          viewport,
+        });
+      }
+    },
+    [data, dataSource, showContextMenu]
+  );
 
   useImperativeHandle(forwardedRef, () => ({
     beginHorizontalScroll: () => {
@@ -374,7 +392,7 @@ export const Viewport = forwardRef(function Viewport(
         className="vuuDataGrid-Viewport"
         ref={viewportEl}
         style={{ height: gridModel.viewportHeight }}
-        onContextMenu={handleContextMenu}
+        onContextMenu={onContextMenu}
         onKeyDown={handleKeyDown}
         onScroll={handleVerticalScroll}
         tabIndex={-1}

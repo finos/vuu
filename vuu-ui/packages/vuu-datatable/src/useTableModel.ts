@@ -6,29 +6,34 @@ import {
 } from "@finos/vuu-datagrid-types";
 import { moveItem } from "@heswell/salt-lab";
 import {
-  extractGroupColumn,
-  flattenColumnGroup,
+  applyFilterToColumns,
+  applyGroupByToColumns,
+  applySortToColumns,
+  getCellRenderer,
+  getColumnName,
+  getTableHeadings,
+  getValueFormatter,
   isPinned,
+  isTypeDescriptor,
   metadataKeys,
   sortPinnedColumns,
 } from "@finos/vuu-utils";
 
-// TOSO eliminate this dependency
-import { extractFilterForColumn } from "@finos/vuu-filters";
-
 import { Reducer, useReducer } from "react";
-import {
-  VuuColumnDataType,
-  VuuGroupBy,
-  VuuSort,
-} from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import { DataSourceConfig } from "@finos/vuu-data";
 
 const DEFAULT_COLUMN_WIDTH = 100;
 const KEY_OFFSET = metadataKeys.count;
 
 const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
   serverDataType === undefined;
+
+const getCellRendererForColumn = (column: ColumnDescriptor) => {
+  if (isTypeDescriptor(column.type)) {
+    return getCellRenderer(column.type?.renderer?.name);
+  }
+};
 
 const getDataType = (
   column: ColumnDescriptor,
@@ -57,14 +62,25 @@ const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
 
 export interface ColumnActionInit {
   type: "init";
-  config: GridConfig;
+  tableConfig: Omit<GridConfig, "headings">;
+  dataSourceConfig?: DataSourceConfig;
 }
 
+export interface ColumnActionHide {
+  type: "hideColumn";
+  column: KeyedColumnDescriptor;
+}
 export interface ColumnActionMove {
   type: "moveColumn";
   column: KeyedColumnDescriptor;
   moveBy?: 1 | -1;
   moveTo?: number;
+}
+
+export interface ColumnActionPin {
+  type: "pinColumn";
+  column: ColumnDescriptor;
+  pin?: PinLocation;
 }
 export interface ColumnActionResize {
   type: "resizeColumn";
@@ -83,26 +99,31 @@ export interface ColumnActionUpdate {
   type: "updateColumn";
   column: ColumnDescriptor;
 }
+
 export interface ColumnActionUpdateProp {
   align?: ColumnDescriptor["align"];
   column: KeyedColumnDescriptor;
+  hidden?: ColumnDescriptor["hidden"];
   label?: ColumnDescriptor["label"];
-  pin?: PinLocation;
   resizing?: KeyedColumnDescriptor["resizing"];
   type: "updateColumnProp";
   width?: ColumnDescriptor["width"];
 }
 
-export interface ColumnActionTableConfig {
+export interface ColumnActionTableConfig extends DataSourceConfig {
   type: "tableConfig";
-  filter?: DataSourceFilter;
-  groupBy?: VuuGroupBy;
-  sort?: VuuSort;
 }
 
+/**
+ * PersistentColumnActions are those actions that require us to persist user changes across sessions
+ */
+export type PersistentColumnAction = ColumnActionPin | ColumnActionHide;
+
 export type GridModelAction =
+  | ColumnActionHide
   | ColumnActionInit
   | ColumnActionMove
+  | ColumnActionPin
   | ColumnActionResize
   | ColumnActionSetTypes
   | ColumnActionUpdate
@@ -116,13 +137,18 @@ export type ColumnActionDispatch = (action: GridModelAction) => void;
 const columnReducer: GridModelReducer = (state, action) => {
   switch (action.type) {
     case "init":
-      return init(action.config);
+      console.log("modeel init");
+      return init(action);
     case "moveColumn":
       return moveColumn(state, action);
     case "resizeColumn":
       return resizeColumn(state, action);
     case "setTypes":
       return setTypes(state, action);
+    case "hideColumn":
+      return hideColumn(state, action);
+    case "pinColumn":
+      return pinColumn(state, action);
     case "updateColumnProp":
       return updateColumnProp(state, action);
     case "tableConfig":
@@ -133,52 +159,82 @@ const columnReducer: GridModelReducer = (state, action) => {
   }
 };
 
-export const useTableModel = (config: GridConfig) => {
+export const useTableModel = (
+  tableConfig: Omit<GridConfig, "headings">,
+  dataSourceConfig?: DataSourceConfig
+) => {
   const [state, dispatchColumnAction] = useReducer<
     GridModelReducer,
-    GridConfig
-  >(columnReducer, config, init);
+    InitialConfig
+  >(columnReducer, { tableConfig, dataSourceConfig }, init);
+
   return {
     columns: state.columns,
     dispatchColumnAction,
+    headings: state.headings,
   };
 };
 
-function init(config: GridConfig): GridModel {
-  //TODO needs to accommodate grouping
-  const columns = config.columns.map(toKeyedColumWithDefaults);
-  if (columns.some(isPinned)) {
-    return {
-      columns: sortPinnedColumns(columns),
-    };
+type InitialConfig = {
+  dataSourceConfig?: DataSourceConfig;
+  tableConfig: Omit<GridConfig, "headings">;
+};
+
+function init({ dataSourceConfig, tableConfig }: InitialConfig): GridModel {
+  const columns = tableConfig.columns.map(
+    toKeyedColumWithDefaults(tableConfig)
+  );
+  const maybePinnedColumns = columns.some(isPinned)
+    ? sortPinnedColumns(columns)
+    : columns;
+  const state = {
+    columns: maybePinnedColumns,
+    headings: getTableHeadings(maybePinnedColumns),
+  };
+  if (dataSourceConfig) {
+    return updateTableConfig(state, dataSourceConfig);
   } else {
-    return {
-      columns: config.columns.map(toKeyedColumWithDefaults),
-    };
+    return state;
   }
 }
 
-const toKeyedColumWithDefaults = (
-  column: ColumnDescriptor,
-  index: number
-): KeyedColumnDescriptor => {
-  const {
-    align = getDefaultAlignment(column.serverDataType),
-    name,
-    label = name,
-    width = DEFAULT_COLUMN_WIDTH,
-    ...rest
-  } = column;
-  return {
-    ...rest,
-    align,
-    label,
-    key: index + KEY_OFFSET,
-    name,
-    originalIdx: index,
-    width,
-  };
+const getLabel = (
+  label: string,
+  columnFormatHeader?: "uppercase" | "capitalize"
+): string => {
+  if (columnFormatHeader === "uppercase") {
+    return label.toUpperCase();
+  } else if (columnFormatHeader === "capitalize") {
+    return label[0].toUpperCase() + label.slice(1).toLowerCase();
+  }
+  return label;
 };
+
+const toKeyedColumWithDefaults =
+  ({
+    columnDefaultWidth = DEFAULT_COLUMN_WIDTH,
+    columnFormatHeader,
+  }: Omit<GridConfig, "headings">) =>
+  (column: ColumnDescriptor, index: number): KeyedColumnDescriptor => {
+    const {
+      align = getDefaultAlignment(column.serverDataType),
+      name,
+      label = name,
+      width = columnDefaultWidth,
+      ...rest
+    } = column;
+    return {
+      ...rest,
+      align,
+      CellRenderer: getCellRendererForColumn(column),
+      label: getLabel(label, columnFormatHeader),
+      key: index + KEY_OFFSET,
+      name,
+      originalIdx: index,
+      valueFormatter: getValueFormatter(column),
+      width: width,
+    };
+  };
 
 function moveColumn(
   state: GridModel,
@@ -204,6 +260,14 @@ function moveColumn(
   return state;
 }
 
+function hideColumn(state: GridModel, { column }: ColumnActionHide) {
+  return updateColumnProp(state, {
+    type: "updateColumnProp",
+    column,
+    hidden: true,
+  });
+}
+
 function resizeColumn(
   state: GridModel,
   { column, phase, width }: ColumnActionResize
@@ -226,9 +290,6 @@ function setTypes(
   state: GridModel,
   { columnNames, serverDataTypes }: ColumnActionSetTypes
 ) {
-  console.log(`setTypes, existing columns`, {
-    state,
-  });
   const { columns } = state;
   if (columns.some(columnWithoutDataType)) {
     const cols = columns.map((column) => {
@@ -239,6 +300,9 @@ function setTypes(
         serverDataType,
       };
     });
+
+    console.log(`setTypes ${JSON.stringify(cols, null, 2)}`);
+
     return {
       ...state,
       columns: cols,
@@ -248,9 +312,24 @@ function setTypes(
   }
 }
 
+function pinColumn(state: GridModel, action: ColumnActionPin) {
+  let { columns } = state;
+  const { column, pin } = action;
+  const targetColumn = columns.find((col) => col.name === column.name);
+  if (targetColumn) {
+    columns = replaceColumn(columns, { ...targetColumn, pin });
+    columns = sortPinnedColumns(columns);
+    return {
+      ...state,
+      columns,
+    };
+  } else {
+    return state;
+  }
+}
 function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
   let { columns } = state;
-  const { align, column, label, pin, resizing, width } = action;
+  const { align, column, hidden, label, resizing, width } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
   if (targetColumn) {
     if (align === "left" || align === "right") {
@@ -262,12 +341,11 @@ function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
     if (typeof resizing === "boolean") {
       columns = replaceColumn(columns, { ...targetColumn, resizing });
     }
+    if (typeof hidden === "boolean") {
+      columns = replaceColumn(columns, { ...targetColumn, hidden });
+    }
     if (typeof width === "number") {
       columns = replaceColumn(columns, { ...targetColumn, width });
-    }
-    if ("pin" in action) {
-      columns = replaceColumn(columns, { ...targetColumn, pin });
-      columns = sortPinnedColumns(columns);
     }
   }
   return {
@@ -278,32 +356,55 @@ function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
 
 function updateTableConfig(
   state: GridModel,
-  { filter, groupBy, sort }: ColumnActionTableConfig
+  { columns, filter, groupBy, sort }: DataSourceConfig
 ) {
+  const hasColumns = columns && columns.length > 0;
   const hasGroupBy = groupBy !== undefined;
   const hasFilter = typeof filter?.filter === "string";
   const hasSort = sort && sort.sortDefs.length > 0;
 
   let result = state;
 
+  if (hasColumns) {
+    result = {
+      ...state,
+      columns: columns.map((colName, index) => {
+        const columnName = getColumnName(colName);
+        const key = index + KEY_OFFSET;
+        const col = result.columns.find((col) => col.name === columnName);
+        if (col) {
+          if (col.key === key) {
+            return col;
+          } else {
+            return {
+              ...col,
+              key,
+            };
+          }
+        }
+        throw Error(`useTableModel column ${colName} not found`);
+      }),
+    };
+  }
+
   if (hasGroupBy) {
     result = {
       ...state,
-      columns: applyGroupByToColumns(state.columns, groupBy),
+      columns: applyGroupByToColumns(result.columns, groupBy),
     };
   }
 
   if (hasSort) {
     result = {
       ...state,
-      columns: applySortToColumns(state.columns, sort),
+      columns: applySortToColumns(result.columns, sort),
     };
   }
 
   if (hasFilter) {
     result = {
       ...state,
-      columns: applyFilterToColumns(state.columns, filter),
+      columns: applyFilterToColumns(result.columns, filter),
     };
   }
 
@@ -316,71 +417,3 @@ function replaceColumn(
 ) {
   return state.map((col) => (col.name === column.name ? column : col));
 }
-
-//TOSDO move these functions to utils
-const applyGroupByToColumns = (
-  columns: KeyedColumnDescriptor[],
-  groupBy: VuuGroupBy
-) => {
-  if (groupBy.length) {
-    const [groupColumn, nonGroupedColumns] = extractGroupColumn(
-      columns,
-      groupBy
-    );
-    if (groupColumn) {
-      return [groupColumn as KeyedColumnDescriptor].concat(nonGroupedColumns);
-    }
-  } else if (columns[0]?.isGroup) {
-    return flattenColumnGroup(columns);
-  }
-  return columns;
-};
-
-const applySortToColumns = (colunms: KeyedColumnDescriptor[], sort: VuuSort) =>
-  colunms.map((column) => {
-    const sorted = getSortType(column, sort);
-    if (sorted !== undefined) {
-      return {
-        ...column,
-        sorted,
-      };
-    } else if (column.sorted) {
-      return {
-        ...column,
-        sorted: undefined,
-      };
-    } else {
-      return column;
-    }
-  });
-
-const applyFilterToColumns = (
-  columns: KeyedColumnDescriptor[],
-  { filterStruct }: DataSourceFilter
-) =>
-  columns.map((column) => {
-    // TODO this gives us a dependency on vuu-filters
-    const filter = extractFilterForColumn(filterStruct, column.name);
-    if (filter !== undefined) {
-      return {
-        ...column,
-        filter,
-      };
-    } else if (column.filter) {
-      return {
-        ...column,
-        filter: undefined,
-      };
-    } else {
-      return column;
-    }
-  });
-
-const getSortType = (column: ColumnDescriptor, { sortDefs }: VuuSort) => {
-  const sortDef = sortDefs.find((sortCol) => sortCol.column === column.name);
-  if (sortDef) {
-    return sortDefs.length > 1
-      ? (sortDefs.indexOf(sortDef) + 1) * (sortDef.sortType === "A" ? 1 : -1)
-      : sortDef.sortType;
-  }
-};

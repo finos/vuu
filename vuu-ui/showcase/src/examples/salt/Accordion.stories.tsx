@@ -3,7 +3,7 @@ import {
   AccordionDetails,
   AccordionSection,
   AccordionSummary,
-  Panel,
+  Panel
 } from "@heswell/salt-lab";
 
 export const DefaultAccordion = () => {
@@ -51,7 +51,7 @@ export const DefaultAccordion = () => {
               <p>Brownsea Island</p>
               <p>Canvey Island</p>
               <p>Coquet Island</p>
-              <p>Drake's Island</p>
+              <p>Drake`&quot;`s Island</p>
             </Panel>
           </AccordionDetails>
         </AccordionSection>

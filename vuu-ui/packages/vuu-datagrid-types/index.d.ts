@@ -1,14 +1,21 @@
+import { ValueFormatter } from "@finos/vuu-datatable";
+import { TableCellProps } from "@finos/vuu-datatable/src/TableCell";
 import { Filter } from "@finos/vuu-filter-types";
 import {
   VuuAggType,
   VuuColumnDataType,
   VuuSortType,
 } from "@finos/vuu-protocol-types";
+import { FunctionComponent } from "react";
+
+export type TableHeading = { label: string; span: number };
+export type TableHeadings = TableHeading[][];
 
 export declare type GridConfig = {
   columns: ColumnDescriptor[];
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
+  headings: TableHeadings;
 };
 
 export declare type TypeFormatting = {
@@ -43,7 +50,8 @@ export interface ColumnDescriptor {
   editable?: boolean;
   expression?: string;
   flex?: number;
-  heading?: [...string[]];
+  heading?: string[];
+  hidden?: boolean;
   isSystemColumn?: boolean;
   label?: string;
   locked?: boolean;
@@ -60,6 +68,7 @@ export interface ColumnDescriptor {
  * definitin with internal state values. */
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
+  CellRenderer?: FunctionComponent<TableCellProps>;
   className?: string;
   endPin?: true | undefined;
   filter?: Filter;
@@ -80,6 +89,7 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
   sortable?: boolean;
   sorted?: ColumnSort;
   type?: ColumnType;
+  valueFormatter: ValueFormatter;
   width: number;
 }
 

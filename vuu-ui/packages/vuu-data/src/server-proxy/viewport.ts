@@ -1,3 +1,4 @@
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   ClientToServerCreateLink,
   ClientToServerCreateViewPort,
@@ -25,9 +26,16 @@ import { KeySet } from "./keyset";
 import * as Message from "./messages";
 
 import {
-  DataSourceFilter,
+  DataSourceAggregateMessage,
+  DataSourceColumnsMessage,
+  DataSourceDisabledMessage,
+  DataSourceEnabledMessage,
+  DataSourceFilterMessage,
+  DataSourceGroupByMessage,
+  DataSourceMenusMessage,
   DataSourceRow,
   DataSourceRowPredicate,
+  DataSourceSortMessage,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
@@ -114,7 +122,7 @@ export class Viewport {
   private hasUpdates = false;
   private holdingPen: DataSourceRow[] = [];
   private keys: KeySet;
-  private pendingLinkedParent?: DataSourceVisualLinkCreatedMessage;
+  private pendingLinkedParent?: LinkDescriptorWithLabel;
   private pendingOperations: any = new Map<string, AsyncOperation>();
   private pendingRangeRequest: any = null;
   private rowCountChanged = false;
@@ -169,13 +177,6 @@ export class Viewport {
   }
 
   subscribe() {
-    console.log(`ViewPort subscribe ${this.table.table}
-    bufferSize ${this.bufferSize}
-    clientRange : ${this.clientRange.from} - ${this.clientRange.to}
-    range subscribed ${JSON.stringify(
-      getFullRange(this.clientRange, this.bufferSize)
-    )}
-    `);
     const { filter } = this.filter;
     this.status =
       this.status === "subscribed" ? "resubscribing" : "subscribing";
@@ -259,24 +260,39 @@ export class Viewport {
     } else if (type === "groupBy") {
       this.isTree = data.length > 0;
       this.groupBy = data;
-      return { clientViewportId, type, groupBy: data };
+      return {
+        clientViewportId,
+        type,
+        groupBy: data,
+      } as DataSourceGroupByMessage;
     } else if (type === "columns") {
-      console.log("columns changed");
       this.columns = data;
-      return { clientViewportId, type, ...data };
+      return {
+        clientViewportId,
+        type,
+        columns: data,
+      } as DataSourceColumnsMessage;
     } else if (type === "filter") {
       this.filter = data as DataSourceFilter;
-      return { clientViewportId, type, filter: data };
+      return {
+        clientViewportId,
+        type,
+        filter: data,
+      } as DataSourceFilterMessage;
     } else if (type === "aggregate") {
       this.aggregations = data as VuuAggregation[];
       return {
         clientViewportId,
         type: "aggregate",
         aggregations: this.aggregations,
-      };
+      } as DataSourceAggregateMessage;
     } else if (type === "sort") {
       this.sort = data;
-      return { clientViewportId, type, sort: this.sort };
+      return {
+        clientViewportId,
+        type,
+        sort: this.sort,
+      } as DataSourceSortMessage;
     } else if (type === "selection") {
       // should we do this here ?
       // this.selection = data;
@@ -285,13 +301,13 @@ export class Viewport {
       return {
         type: "disabled",
         clientViewportId,
-      };
+      } as DataSourceDisabledMessage;
     } else if (type === "enable") {
       this.disabled = false;
       return {
         type: "enabled",
         clientViewportId,
-      };
+      } as DataSourceEnabledMessage;
     } else if (type === "CREATE_VISUAL_LINK") {
       const [colName, parentViewportId, parentColName] = params;
       this.linkedParent = {
@@ -301,7 +317,7 @@ export class Viewport {
       } as LinkedParent;
       this.pendingLinkedParent = undefined;
       return {
-        type: "CREATE_VISUAL_LINK_SUCCESS",
+        type: "vuu-link-created",
         clientViewportId,
         colName,
         parentViewportId,
@@ -310,7 +326,7 @@ export class Viewport {
     } else if (type === "REMOVE_VISUAL_LINK") {
       this.linkedParent = undefined;
       return {
-        type: "REMOVE_VISUAL_LINK_SUCCESS",
+        type: "vuu-link-removed",
         clientViewportId,
       } as DataSourceVisualLinkRemovedMessage;
     }
@@ -388,20 +404,17 @@ export class Viewport {
     this.links = links;
     return [
       {
-        type: "VP_VISUAL_LINKS_RESP",
+        type: "vuu-links",
         links,
         clientViewportId: this.clientViewportId,
       },
       this.pendingLinkedParent,
-    ] as [
-      DataSourceVisualLinksMessage,
-      DataSourceVisualLinkCreatedMessage | undefined
-    ];
+    ] as [DataSourceVisualLinksMessage, LinkDescriptorWithLabel | undefined];
   }
 
-  setMenu(menu: VuuMenu) {
+  setMenu(menu: VuuMenu): DataSourceMenusMessage {
     return {
-      type: "VIEW_PORT_MENUS_RESP" as const,
+      type: "vuu-menu",
       menu,
       clientViewportId: this.clientViewportId,
     };
@@ -566,7 +579,7 @@ export class Viewport {
 
       const out = clientRows || this.holdingPen;
 
-      for (let row of records) {
+      for (const row of records) {
         if (row && row.ts >= timeStamp) {
           out.push(toClient(row, keys));
         }
@@ -598,8 +611,8 @@ export class Viewport {
 const toClientRow = (
   { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
   keys: KeySet
-) =>
-  [
+) => {
+  return [
     rowIndex,
     keys.keyFor(rowIndex),
     true,
@@ -609,6 +622,7 @@ const toClientRow = (
     rowKey,
     isSelected,
   ].concat(data) as DataSourceRow;
+};
 
 const toClientRowTree = (
   { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
