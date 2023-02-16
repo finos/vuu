@@ -64,8 +64,8 @@ Session tables are specific types of tables that live only during the users conn
 
 ### Tree Session Tables
 
-Tree Session tables are created dyanmically whenever there is a request to tree an underlying flat table. THe reason for this is that Tree's are a view ontop of 
-and underlying raw table. When we create a tree, we are generating a tree data structure in memory whose leaves are keys that point back to the original rows
+Tree Session tables are created dynamically whenever there is a request to tree an underlying flat table. The reason for this is that Tree's are a view ontop of 
+an underlying simple table. When we create a tree, we are generating a tree data structure in memory whose leaves are keys that point back to the original rows
 in the underlying table. When your session is closed, the server cleans up these tree tables, freeing up resources. 
 
 From a usage perspective you would typically not see these session tables, however its important o know they exist. 
@@ -74,7 +74,7 @@ From a usage perspective you would typically not see these session tables, howev
 
 Input Session tables are sinks for data where the data lives only within your session. They are defined in the same way as normal tables
 however they are treated differently in that when a viewport is created for the session table, a new instance is created and registered with the
-tableContainer.
+tableContainer. When that user session or viewport is closed, the created instance is removed. 
 
 ```scala
 //insert sample declaration, here

@@ -27,10 +27,17 @@ object SessionTableDef {
 }
 
 object JoinSessionTableDef {
-  def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
-    null//new JoinSessionTableDef(name, keyField, columns, joinFields, indices = Indices())
+  def apply(name: String, baseTable: TableDef, columns: Array[Column], joinFields: Seq[String], joins: JoinTo*): TableDef = {
+    new JoinSessionTableDef(name, baseTable, columns, joinFields, joins.toList)
   }
 }
+
+object JoinTableDef {
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*): JoinTableDef = {
+    new JoinTableDef(name, baseTable, joinColumns, joinFields, joins.toList)
+  }
+}
+
 
 object TableDef {
 
@@ -101,7 +108,7 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
-class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, baseTable, joinColumns, joinFields)
+class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: Seq[JoinTo]) extends JoinTableDef(name, baseTable, joinColumns, joinFields, joins)
 
 class SessionTableDef(name: String,
                       keyField: String,
@@ -162,7 +169,7 @@ case class JoinSpec(left: String, right: String, joinType: JoinType = InnerJoin)
 
 case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
-case class JoinTableDef(override val name: String, baseTable: TableDef, joinColumns: Array[Column], override val joinFields: Seq[String], joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices()) {
+class JoinTableDef(override val name: String, val baseTable: TableDef, val joinColumns: Array[Column], override val joinFields: Seq[String], val joins: Seq[JoinTo]) extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices()) {
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()
   lazy val rightTables = joins.map(join => join.table.name).toArray
@@ -214,8 +221,3 @@ case class JoinTableDef(override val name: String, baseTable: TableDef, joinColu
   }
 }
 
-//case class JoinTableDef(override val name: String, left: TableDef, right: TableDef, joinDef: JoinDefinition, joinColumns: Array[Column]) extends TableDef(name, joinDef.leftKeyField, joinColumns){
-//  def getJoinDefinitionColumns():Array[Column] = {
-//     Array(columnForName(left.keyField), columnForName(joinDef.rightKeyField))
-//  }
-//}

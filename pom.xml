@@ -75,6 +75,10 @@
         <vertx.version>4.3.4</vertx.version>
         <typesafe.conf.version>1.4.2</typesafe.conf.version>
         <logback.version>1.2.9</logback.version>
+        <scoverage.plugin.version>1.4.11</scoverage.plugin.version>
+        <scoverage.aggregate>true</scoverage.aggregate>
+        <project-info-reports.plugin.version>3.0.0</project-info-reports.plugin.version>
+        <scala.plugin.version>3.2.2</scala.plugin.version>
     </properties>
 
     <modules>
@@ -255,6 +259,16 @@
                         <serverId>ossrh</serverId>
                         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.scoverage</groupId>
+                    <artifactId>scoverage-maven-plugin</artifactId>
+                    <version>${scoverage.plugin.version}</version>
+                    <configuration>
+                        <scalaVersion>2.13.8</scalaVersion>
+                        <!-- other parameters -->
                     </configuration>
                 </plugin>
 

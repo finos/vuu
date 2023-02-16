@@ -1,8 +1,8 @@
 package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.{JoinTableDef, SessionTableDef, TableDef}
-import org.finos.vuu.core.tree.{TreeSessionTableImpl}
+import org.finos.vuu.api.{JoinSessionTableDef, JoinTableDef, SessionTableDef, TableDef}
+import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowSource, ViewPortTable}
@@ -108,6 +108,25 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     table
   }
 
+  def createJoinSessionTable(table: JoinSessionTableDef, session: ClientSessionId): DataTable = {
+    //this table should be a simple session table
+    val baseTable = tables.get(table.baseTable.name)
+
+    val sessionBaseTable = createSimpleSessionTable(baseTable, session);
+
+    val joinTableMap = table.joins.map(join => (join.table.name -> tables.get(join.table.name))).toMap //tables.get(table.right.name)
+    val baseTableMap = Map[String, DataTable](sessionBaseTable.name -> sessionBaseTable)
+    val sourceTables = joinTableMap ++ baseTableMap
+
+    val joinTable = new JoinSessionTable(session, table, sourceTables, joinTableProvider)
+
+    tables.put(joinTable.getTableDef.name, joinTable)
+
+    joinTableProvider.addJoinTable(joinTable)
+
+    joinTable
+  }
+
   def removeGroupBySessionTable(source: RowSource): Unit = {
     assert(tables.remove(source.name) != null)
   }
@@ -117,7 +136,6 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     val baseTable = tables.get(table.baseTable.name)
     val joinTableMap = table.joins.map(join => (join.table.name -> tables.get(join.table.name))).toMap //tables.get(table.right.name)
     val baseTableMap = Map[String, DataTable](table.baseTable.name -> baseTable)
-
 
     val sourceTables = joinTableMap ++ baseTableMap
 
