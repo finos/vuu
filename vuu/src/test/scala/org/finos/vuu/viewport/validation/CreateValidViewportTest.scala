@@ -1,7 +1,7 @@
 package org.finos.vuu.viewport.validation
 
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.CoreServerApiHander
+import org.finos.vuu.core.CoreServerApiHandler
 import org.finos.vuu.net.{ClientSessionId, CreateViewPortRequest, RequestContext, ServerApi}
 import org.finos.vuu.viewport.{AbstractViewPortTestCase, ViewPortRange, ViewPortTable}
 import org.scalatest.GivenWhenThen
@@ -16,7 +16,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       Given("we've created a viewport with orders in")
       val (viewPortContainer, _, _, prices, _, _, outQueue, highPriorityQueue) = createDefaultOrderPricesViewPortInfra()
 
-      val api = new CoreServerApiHander(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
+      val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
 
       val vpcolumnsOrders = List("orderId", "trader", "tradeTime", "quantity", "ric", "foo-bar")
 

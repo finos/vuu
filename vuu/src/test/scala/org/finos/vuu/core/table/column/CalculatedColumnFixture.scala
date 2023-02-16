@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.table._
-import org.finos.vuu.grammer.{CalculatedColumnLexer, CalculatedColumnParser}
+import org.finos.vuu.grammar.{CalculatedColumnLexer, CalculatedColumnParser}
 import org.finos.vuu.util.table.TableAsserts.genericLogic
 import org.finos.vuu.viewport.ViewPortColumns
 import org.scalatest.prop.{TableFor11, TableFor12, TableFor13}

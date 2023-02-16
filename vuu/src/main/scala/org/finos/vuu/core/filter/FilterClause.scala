@@ -4,7 +4,7 @@ import org.finos.vuu.core.index._
 import org.finos.vuu.core.table.{DataType, RowData, ViewPortColumnCreator}
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.vuu.grammer.FilterParser
+import org.finos.vuu.grammar.FilterParser
 
 trait FilterClause {
 

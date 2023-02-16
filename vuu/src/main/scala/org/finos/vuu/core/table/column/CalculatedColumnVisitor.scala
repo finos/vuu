@@ -3,8 +3,8 @@ package org.finos.vuu.core.table.column
 import com.typesafe.scalalogging.StrictLogging
 import org.antlr.v4.runtime.tree.{ErrorNode, ParseTree, TerminalNode}
 import org.finos.vuu.core.table.{Column, DataType}
-import org.finos.vuu.grammer.CalculatedColumnParser.{FunctionContext, OperatorContext}
-import org.finos.vuu.grammer.{CalculatedColumnBaseVisitor, CalculatedColumnLexer, CalculatedColumnParser}
+import org.finos.vuu.grammar.CalculatedColumnParser.{FunctionContext, OperatorContext}
+import org.finos.vuu.grammar.{CalculatedColumnBaseVisitor, CalculatedColumnLexer, CalculatedColumnParser}
 import org.finos.vuu.viewport.ViewPortColumns
 
 import scala.jdk.CollectionConverters._

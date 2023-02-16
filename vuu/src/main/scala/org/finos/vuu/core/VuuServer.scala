@@ -47,7 +47,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   config.modules.foreach(module => registerModule(module))
 
-  val serverApi = new CoreServerApiHander(viewPortContainer, tableContainer, providerContainer)
+  val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
   val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
 

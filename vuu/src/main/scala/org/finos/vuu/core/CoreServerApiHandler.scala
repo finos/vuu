@@ -10,9 +10,9 @@ import org.finos.toolbox.time.Clock
 
 import scala.util.{Failure, Success, Try}
 
-class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
-                          val tableContainer: TableContainer,
-                          val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging {
+class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
+                           val tableContainer: TableContainer,
+                           val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging {
 
 
   override def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
@@ -49,7 +49,7 @@ class CoreServerApiHander(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: ViewPortMenuSelectionRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcSession(msg.vpId, msg.rpcName, ctx.session)) match {
+    Try(viewPortContainer.callRpcSelection(msg.vpId, msg.rpcName, ctx.session)) match {
       case Success(action) =>
         logger.info("Processed VP Menu Selection RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)

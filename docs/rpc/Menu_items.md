@@ -1,8 +1,10 @@
-# Menu Items
+# RPC Calls
 
-Menu items are behaviour that we want to add to a grid at runtime without changing the Grid (or other) controls in any way.
+## Menu Items
 
-Menu items are passed down to the UI when a viewport is opened. They are defined in the table definition in the module in the following way: 
+Menu items encapsulate behaviour that we add to a grid at runtime without changing the code of the Grid (or other) controls in any way.
+
+Menu items are passed down to the UI when a viewport is opened. They are defined on the server-side, in the table definition in the module, in the following way: 
 
 ```scala
       .addTable(
@@ -71,6 +73,8 @@ the server is passed the details of which row(s) are selected.
 
 In this case, we don't do anything with the data, however you could image that this might be a delete record type interaction
 where knowing the row that we want to delete is key. 
+
+## Remote Procedure Calls
 
 The other options we have for typing the calls are:
 

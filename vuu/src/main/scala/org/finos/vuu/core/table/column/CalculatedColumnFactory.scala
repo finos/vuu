@@ -2,7 +2,7 @@ package org.finos.vuu.core.table.column
 
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.finos.vuu.core.table.{CalculatedColumn, Column, DataType}
-import org.finos.vuu.grammer.{CalculatedColumnLexer, CalculatedColumnParser}
+import org.finos.vuu.grammar.{CalculatedColumnLexer, CalculatedColumnParser}
 import org.finos.vuu.viewport.ViewPortColumns
 
 object CalculatedColumnFactory {

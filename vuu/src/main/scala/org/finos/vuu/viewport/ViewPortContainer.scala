@@ -71,7 +71,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def callRpcSession(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
+  def callRpcSelection(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
 
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef

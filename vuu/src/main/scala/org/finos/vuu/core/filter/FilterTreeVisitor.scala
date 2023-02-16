@@ -1,8 +1,8 @@
 package org.finos.vuu.core.filter
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.grammer.FilterBaseVisitor
-import org.finos.vuu.grammer.FilterParser._
+import org.finos.vuu.grammar.FilterBaseVisitor
+import org.finos.vuu.grammar.FilterParser._
 import org.antlr.v4.runtime.tree.TerminalNode
 
 import scala.jdk.CollectionConverters._
