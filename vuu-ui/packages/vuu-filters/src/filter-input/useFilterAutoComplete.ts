@@ -40,6 +40,27 @@ const getOperator = (node: SyntaxNode, state: EditorState) => {
   }
 };
 
+// Operators that are more than a single character in length may incur partial matches
+const getPartialOperator = (
+  maybeOperatorNode: SyntaxNode,
+  state: EditorState,
+  columnName?: string
+) => {
+  const value = getValue(maybeOperatorNode, state);
+  if (columnName === undefined || value === columnName) {
+    return;
+  }
+  if (
+    ["contains", "ends", "starts"].some((val) =>
+      val.startsWith(value.toLowerCase())
+    )
+  ) {
+    return value;
+  } else {
+    return undefined;
+  }
+};
+
 const getClauseOperator = (node: SyntaxNode, state: EditorState) => {
   const maybeTargetNode = node.prevSibling || node.parent;
   if (maybeTargetNode && ["As", "Or", "And"].includes(maybeTargetNode.name)) {
@@ -115,6 +136,7 @@ export const useAutoComplete = (
 
       const tree = syntaxTree(state);
       const nodeBefore = tree.resolveInner(pos, -1);
+      console.log({ nodeBeforeName: nodeBefore.name });
 
       switch (nodeBefore.name) {
         case "Filter":
@@ -130,11 +152,23 @@ export const useAutoComplete = (
             };
           }
         case "Identifier": {
-          // TODO combine these
           const columnName = getColumnName(nodeBefore, state);
+          console.log(`column ${columnName}`);
           const operator = getOperator(nodeBefore, state);
+          const partialOperator = operator
+            ? undefined
+            : getPartialOperator(nodeBefore, state, columnName);
           const clauseOperator = getClauseOperator(nodeBefore, state);
-          if (clauseOperator === "as") {
+          if (partialOperator) {
+            const options = await suggestionProvider.getSuggestions(
+              "operator",
+              {
+                columnName,
+                startsWith: partialOperator,
+              }
+            );
+            return { from: context.pos - partialOperator.length, options };
+          } else if (clauseOperator === "as") {
             return {
               from: context.pos,
               options: [
@@ -146,7 +180,7 @@ export const useAutoComplete = (
               ],
             };
           } else {
-            const identifierIsColumn = word.text === columnName;
+            const identifierIsColumn = columnName && word.text === columnName;
             const isPartialMatch = identifierIsColumn
               ? await suggestionProvider.isPartialMatch(
                   "column",
@@ -158,27 +192,33 @@ export const useAutoComplete = (
                   columnName,
                   word.text
                 );
-
+            console.log({
+              columnName,
+              identifierIsColumn,
+              isPartialMatch,
+              operator,
+            });
             if (isPartialMatch && identifierIsColumn) {
+              //offer completion of the column name
               const options = await suggestionProvider.getSuggestions("column");
-              return { from: nodeBefore?.parent?.from, options };
+              return { from: context.pos - columnName.length, options };
             } else if (columnName && !operator) {
+              // don't wait for space, offer an operator
               const options = await suggestionProvider.getSuggestions(
                 "operator",
-                columnName
+                { columnName }
               );
-              return { from: nodeBefore.from, options };
+              return { from: context.pos, options };
             } else if (isPartialMatch) {
               const options = await suggestionProvider.getSuggestions(
                 "columnValue",
-                columnName
+                { columnName, operator }
               );
               return { from: nodeBefore.from, options };
             } else {
               const options = await suggestionProvider.getSuggestions(
                 "columnValue",
-                columnName,
-                word.text
+                { columnName, startsWith: word.text, operator }
               );
               return { from: nodeBefore.from, options };
             }
@@ -191,9 +231,10 @@ export const useAutoComplete = (
             const selection = getSetValues(nodeBefore, state);
             const options = await suggestionProvider.getSuggestions(
               "columnValue",
-              columnName,
-              undefined,
-              selection
+              {
+                columnName,
+                selection,
+              }
             );
             return { from: context.pos, options };
           }
@@ -203,7 +244,7 @@ export const useAutoComplete = (
           const columnName = getColumnName(nodeBefore, state);
           const options = await suggestionProvider.getSuggestions(
             "columnValue",
-            columnName
+            { columnName }
           );
           return { from: context.pos, options };
         }
@@ -217,7 +258,7 @@ export const useAutoComplete = (
                 const columnName = getColumnName(nodeBefore, state);
                 const options = await suggestionProvider.getSuggestions(
                   "operator",
-                  columnName
+                  { columnName }
                 );
                 return { from: context.pos, options };
               }
@@ -228,7 +269,7 @@ export const useAutoComplete = (
                 const columnName = getColumnName(lastToken, state);
                 const options = await suggestionProvider.getSuggestions(
                   "columnValue",
-                  columnName
+                  { columnName, operator }
                 );
                 return { from: context.pos, options };
               }
@@ -248,10 +289,22 @@ export const useAutoComplete = (
         }
 
         case "Quote":
+          // it it an opening or closing quote
+          break;
         case "Or":
         case "And":
-        case "Eq":
           console.log(`we have a ${nodeBefore.name}`);
+          break;
+        case "Eq":
+          {
+            const columnName = getColumnName(nodeBefore, state);
+            const options = await suggestionProvider.getSuggestions(
+              "columnValue",
+              { columnName }
+            );
+            return { from: context.pos, options };
+          }
+
           break;
         case "AsClause":
           return {

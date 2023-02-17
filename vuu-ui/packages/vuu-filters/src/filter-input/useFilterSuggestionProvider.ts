@@ -1,9 +1,18 @@
 import { Completion } from "@codemirror/autocomplete";
 import { useTypeaheadSuggestions } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ISuggestionProvider, SuggestionType } from "@finos/vuu-filters";
+import {
+  getSuggestionsType,
+  ISuggestionProvider,
+  SuggestionType,
+} from "@finos/vuu-filters";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { useCallback, useRef } from "react";
+
+const NO_OPTIONS = {};
+export interface VuuCompletion extends Completion {
+  isIllustration?: boolean;
+}
 
 const suggestColumns = (columns: ColumnDescriptor[]) =>
   columns.map((column) => ({
@@ -36,20 +45,29 @@ const numericOperators: Completion[] = [
 const toSuggestions = (
   values: string[],
   quoted = false,
-  prefix = ""
-): Completion[] => {
+  prefix = "",
+  isIllustration = false
+): VuuCompletion[] => {
   const quote = quoted ? '"' : "";
   return values.map((value) => ({
+    isIllustration,
     label: value,
-    apply: `${prefix}${quote}${value}${quote} `,
+    apply: isIllustration
+      ? `${quote}${prefix}${quote}`
+      : `${prefix}${quote}${value}${quote} `,
   }));
 };
 
-const withApplySpace = (suggestions: Completion[]): Completion[] =>
-  suggestions.map((suggestion) => ({
-    ...suggestion,
-    apply: suggestion.label + " ",
-  }));
+const withApplySpace = (
+  suggestions: Completion[],
+  startsWith = ""
+): Completion[] =>
+  suggestions
+    .filter((sugg) => startsWith === "" || sugg.label.startsWith(startsWith))
+    .map((suggestion) => ({
+      ...suggestion,
+      apply: suggestion.label + " ",
+    }));
 
 const getTypeaheadParams = (
   table: VuuTable,
@@ -74,12 +92,10 @@ export const useFilterSuggestionProvider = ({
 }: SuggestionProviderHookProps): ISuggestionProvider => {
   const latestSuggestionsRef = useRef<Completion[]>();
   const getTypeaheadSuggestions = useTypeaheadSuggestions();
-  const getSuggestions = useCallback(
+  const getSuggestions: getSuggestionsType = useCallback(
     async (
       valueType: SuggestionType,
-      columnName?: string,
-      startsWith?: string,
-      selection?: string[]
+      { columnName, operator, startsWith, selection } = NO_OPTIONS
     ): Promise<Completion[]> => {
       if (valueType === "operator") {
         const column = columns.find((col) => col.name === columnName);
@@ -87,7 +103,7 @@ export const useFilterSuggestionProvider = ({
           switch (column.serverDataType) {
             case "string":
             case "char":
-              return withApplySpace(stringOperators);
+              return withApplySpace(stringOperators, startsWith);
             case "int":
             case "long":
             case "double":
@@ -110,11 +126,13 @@ export const useFilterSuggestionProvider = ({
           : "";
         const params = getTypeaheadParams(table, columnName, startsWith);
         const suggestions = await getTypeaheadSuggestions(params);
-        // prob don;t want to save the preix
+        // prob don't want to save the prefix
+        const isIllustration = operator === "starts";
         latestSuggestionsRef.current = toSuggestions(
           suggestions,
           column?.serverDataType === "string",
-          prefix
+          isIllustration ? startsWith : prefix,
+          isIllustration
         );
         if (Array.isArray(selection) && selection?.length > 1) {
           return [doneCommand, ...latestSuggestionsRef.current];
@@ -133,10 +151,12 @@ export const useFilterSuggestionProvider = ({
       columnName?: string,
       pattern?: string
     ) => {
-      const { current: latestSuggestions } = latestSuggestionsRef;
+      // const { current: latestSuggestions } = latestSuggestionsRef;
       const suggestions =
-        latestSuggestions ||
-        (await getSuggestions(valueType, columnName, pattern));
+        // latestSuggestions && latestSuggestions.length > 0
+        //   ? latestSuggestions
+        await getSuggestions(valueType, { columnName });
+
       if (pattern && suggestions) {
         for (const option of suggestions) {
           if (option.label === pattern) {

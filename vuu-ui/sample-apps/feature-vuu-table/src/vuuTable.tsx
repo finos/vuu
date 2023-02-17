@@ -13,7 +13,12 @@ import {
 } from "@finos/vuu-data";
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
-import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
+import {
+  filterAsQuery,
+  FilterInput,
+  updateFilter,
+  useFilterSuggestionProvider,
+} from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { LinkDescriptorWithLabel, VuuMenu } from "@finos/vuu-protocol-types";
@@ -25,7 +30,6 @@ import {
 import { ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSuggestionProvider } from "./useSuggestionProvider";
 import { ConfigurableDataTable } from "./ConfigurableDataTable";
 
 import "./vuuTable.css";
@@ -90,7 +94,7 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
 
   const tableConfigRef = useRef<Omit<GridConfig, "headings">>(tableConfig);
 
-  const suggestionProvider = useSuggestionProvider({
+  const suggestionProvider = useFilterSuggestionProvider({
     columns: schema.columns,
     table: schema.table,
   });

@@ -3,6 +3,7 @@ import {
   Completion,
   startCompletion,
 } from "@codemirror/autocomplete";
+import cx from "classnames";
 import { defaultKeymap } from "@codemirror/commands";
 import { ensureSyntaxTree } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
@@ -15,16 +16,24 @@ import { walkTree } from "./filter-language-parser/walkTree";
 import { vuuHighlighting } from "./highlighting";
 import { vuuTheme } from "./theme";
 import { ApplyCompletion, useAutoComplete } from "./useFilterAutoComplete";
+import { VuuCompletion } from "./useFilterSuggestionProvider";
 
 export type SuggestionType = "column" | "columnValue" | "operator";
 
+export interface SuggestionOptions {
+  columnName?: string;
+  operator?: string;
+  startsWith?: string;
+  selection?: string[];
+}
+
+export type getSuggestionsType = (
+  valueType: SuggestionType,
+  options?: SuggestionOptions
+) => Promise<Completion[]>;
+
 export interface ISuggestionProvider {
-  getSuggestions: (
-    valueType: SuggestionType,
-    columnName?: string,
-    startsWith?: string,
-    selection?: string[]
-  ) => Promise<Completion[]>;
+  getSuggestions: getSuggestionsType;
   isPartialMatch: (
     valueType: SuggestionType,
     columnName?: string,
@@ -43,8 +52,10 @@ const getView = (ref: MutableRefObject<EditorView | undefined>): EditorView => {
   return ref.current;
 };
 
-const getOptionClass = () => {
-  return "vuuSuggestion";
+const getOptionClass = (completion: VuuCompletion) => {
+  return cx("vuuSuggestion", {
+    vuuIllustration: completion.isIllustration,
+  });
 };
 
 const stripName = (filterQuery: string) => {
