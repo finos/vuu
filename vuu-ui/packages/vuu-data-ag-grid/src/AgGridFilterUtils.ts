@@ -91,10 +91,6 @@ export const agGridFilterModelToVuuFilter = (
   const filterClauses: Filter[] = [];
   Object.entries(filterModel).forEach(([column, agGridFilter]) => {
     const { filterType, filter: value, type, values } = agGridFilter;
-    console.log(`column ${column}`, {
-      filterType,
-      values,
-    });
     if (filterType === "set") {
       if (values.length === 1) {
         const filterClause: FilterClause = {
@@ -137,8 +133,6 @@ export const agGridFilterModelToVuuFilter = (
         value,
       };
       filterClauses.push(filterClause);
-    } else {
-      console.log(`filter type ${filterType}`);
     }
   });
 
