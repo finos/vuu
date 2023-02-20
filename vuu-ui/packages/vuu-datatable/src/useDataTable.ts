@@ -298,26 +298,13 @@ export const useDataTable = ({
   }, [config, dispatchColumnAction]);
 
   useMemo(() => {
-    console.log(`4) useDataTable change detected to config ...`, {
-      config,
-    });
     if (expectConfigChangeRef.current) {
-      console.log(
-        `%c expected so call onConfigChange`,
-        "color: red; font-weight: bold;",
-        {
-          columns,
-          config,
-        }
-      );
       onConfigChange?.({
         ...config,
         columns,
       });
 
       expectConfigChangeRef.current = false;
-    } else {
-      console.log(" ...columns changes but we were not expecting it so ignore");
     }
   }, [columns, config, onConfigChange]);
 

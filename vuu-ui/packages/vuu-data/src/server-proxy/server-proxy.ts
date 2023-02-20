@@ -59,7 +59,6 @@ let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
 const nextRequestId = () => `${_requestId++}`;
-const EMPTY_ARRAY: unknown[] = [];
 const DEFAULT_OPTIONS: MessageOptions = {};
 
 const isActiveViewport = (viewPort: Viewport) =>
@@ -245,6 +244,7 @@ export class ServerProxy {
       requestId,
       message.range
     );
+
     if (serverRequest) {
       this.sendIfReady(
         serverRequest,
@@ -254,6 +254,7 @@ export class ServerProxy {
     }
     if (rows) {
       this.postMessageToClient({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: viewport.clientViewportId,
         rows,
@@ -334,13 +335,10 @@ export class ServerProxy {
     message: VuuUIMessageOutOpenTreeNode
   ) {
     if (viewport.serverViewportId) {
+      const requestId = nextRequestId();
       this.sendIfReady(
-        {
-          type: Message.OPEN_TREE_NODE,
-          vpId: viewport.serverViewportId,
-          treeKey: message.key,
-        },
-        nextRequestId(),
+        viewport.openTreeNode(requestId, message),
+        requestId,
         viewport.status === "subscribed"
       );
     }
@@ -351,13 +349,10 @@ export class ServerProxy {
     message: VuuUIMessageOutCloseTreeNode
   ) {
     if (viewport.serverViewportId) {
+      const requestId = nextRequestId();
       this.sendIfReady(
-        {
-          type: Message.CLOSE_TREE_NODE,
-          vpId: viewport.serverViewportId,
-          treeKey: message.key,
-        },
-        nextRequestId(),
+        viewport.closeTreeNode(requestId, message),
+        requestId,
         viewport.status === "subscribed"
       );
     }
@@ -666,6 +661,7 @@ export class ServerProxy {
               const rows = viewport.currentData();
               this.postMessageToClient({
                 clientViewportId: viewport.clientViewportId,
+                mode: "batch",
                 rows,
                 type: "viewport-update",
               });
@@ -675,10 +671,12 @@ export class ServerProxy {
         break;
       case Message.TABLE_ROW:
         {
-          const { timeStamp } = body;
-          const [{ ts: firstBatchTimestamp } = { ts: timeStamp }] =
-            body.rows || EMPTY_ARRAY;
           // onsole.log(`\nbatch timestamp ${time(timeStamp)} first timestamp ${time(firstBatchTimestamp)} ${body.rows.length} rows in batch`)
+
+          // 1) batch records by viewport
+          // 2) sort records by rowIndex and updateTime
+          // 3) pass entire batch to viewport
+
           for (const row of body.rows) {
             const { viewPortId, rowIndex, rowKey, updateType } = row;
             const viewport = viewports.get(viewPortId);
@@ -703,7 +701,7 @@ export class ServerProxy {
             // onsole.log(`%c[ServerProxy] after updates, movingWindow has ${viewport.dataWindow.internalData.length} records`,'color:brown')
           }
 
-          this.processUpdates(firstBatchTimestamp);
+          this.processUpdates();
         }
         break;
 
@@ -906,14 +904,15 @@ export class ServerProxy {
     });
   }
 
-  processUpdates(timeStamp: number) {
+  processUpdates() {
     this.viewports.forEach((viewport) => {
       if (viewport.hasUpdatesToProcess) {
-        const rows = viewport.getClientRows(timeStamp);
+        const [rows, mode] = viewport.getClientRows();
         const size = viewport.getNewRowCount();
         if (size !== undefined || (rows && rows.length > 0)) {
           this.postMessageToClient({
             clientViewportId: viewport.clientViewportId,
+            mode,
             rows,
             size,
             type: "viewport-update",

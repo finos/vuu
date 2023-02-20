@@ -1,9 +1,12 @@
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
+  ClientToServerChangeViewPort,
+  ClientToServerCloseTreeNode,
   ClientToServerCreateLink,
   ClientToServerCreateViewPort,
   ClientToServerDisable,
   ClientToServerEnable,
+  ClientToServerOpenTreeNode,
   ClientToServerRemoveLink,
   ClientToServerSelection,
   ClientToServerViewPortRange,
@@ -19,7 +22,11 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { getFullRange } from "@finos/vuu-utils";
-import { ServerProxySubscribeMessage } from "../vuuUIMessageTypes";
+import {
+  ServerProxySubscribeMessage,
+  VuuUIMessageOutCloseTreeNode,
+  VuuUIMessageOutOpenTreeNode,
+} from "../vuuUIMessageTypes";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
 import { bufferBreakout } from "./buffer-range";
 import { KeySet } from "./keyset";
@@ -34,12 +41,12 @@ import {
   DataSourceGroupByMessage,
   DataSourceMenusMessage,
   DataSourceRow,
-  DataSourceRowPredicate,
   DataSourceSortMessage,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
+  DataUpdateMode,
 } from "../data-source";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
@@ -96,7 +103,6 @@ type AsyncOperation =
   | Selection
   | Sort;
 type RangeRequestTuple = [ClientToServerViewPortRange | null, DataSourceRow[]?];
-type RowSortPredicate = (row1: DataSourceRow, row2: DataSourceRow) => number;
 
 type LinkedParent = {
   colName: string;
@@ -104,7 +110,6 @@ type LinkedParent = {
   parentColName: string;
 };
 
-const byRowIndex: RowSortPredicate = ([index1], [index2]) => index1 - index2;
 export class Viewport {
   private aggregations: VuuAggregation[];
   private bufferSize: number;
@@ -120,16 +125,17 @@ export class Viewport {
   private groupBy: string[];
   private sort: VuuSort;
   private hasUpdates = false;
-  private holdingPen: DataSourceRow[] = [];
+  private pendingUpdates: VuuRow[] = [];
   private keys: KeySet;
   private pendingLinkedParent?: LinkDescriptorWithLabel;
-  private pendingOperations: any = new Map<string, AsyncOperation>();
-  private pendingRangeRequest: any = null;
+  private pendingOperations = new Map<string, AsyncOperation>();
+  private pendingRangeRequest: ClientToServerViewPortRange | null = null;
   private rowCountChanged = false;
   private serverTableMeta: {
     columns: string[];
     dataTypes: VuuColumnDataType[];
   } | null = null;
+  private batchMode = true;
 
   public clientViewportId: string;
   public disabled = false;
@@ -250,12 +256,16 @@ export class Viewport {
   // Return a message if we need to communicate this to client UI
   completeOperation(requestId: string, ...params: unknown[]) {
     const { clientViewportId, pendingOperations } = this;
-    const { type, data } = pendingOperations.get(requestId);
+    const pendingOperation = pendingOperations.get(requestId);
+    if (!pendingOperation) {
+      console.warn(`Viewport no matching operation found to complete`);
+      return;
+    }
+    const { type, data } = pendingOperation;
     pendingOperations.delete(requestId);
     if (type === Message.CHANGE_VP_RANGE) {
       const [from, to] = params as [number, number];
       this.dataWindow?.setRange(from, to);
-      //this.hasUpdates = true; // is this right ??????????
       this.pendingRangeRequest = null;
     } else if (type === "groupBy") {
       this.isTree = data.length > 0;
@@ -332,10 +342,14 @@ export class Viewport {
     }
   }
 
+  // TODO when a range request arrives, consider the viewport to be scrolling
+  // until data arrives and we have the full range.
+  // When not scrolling, any server data is an update
+  // Wehn scrolling, we are in batch mode
   rangeRequest(requestId: string, range: VuuRange): RangeRequestTuple {
     // If we can satisfy the range request from the buffer, we will.
     // May or may not need to make a server request, depending on status of buffer
-    const type = Message.CHANGE_VP_RANGE;
+    const type = "CHANGE_VP_RANGE";
     // If dataWindow has all data for the new range, it will return the
     // delta of rows which are in the new range but were not in the
     // previous range.
@@ -343,8 +357,11 @@ export class Viewport {
     // rows that constitute the delta ? Is this even possible ?
 
     if (this.dataWindow) {
-      const [serverDataRequired, clientRows, holdingRows] =
-        this.dataWindow.setClientRange(range.from, range.to);
+      const [serverDataRequired, clientRows] = this.dataWindow.setClientRange(
+        range.from,
+        range.to
+      );
+
       const serverRequest =
         serverDataRequired &&
         bufferBreakout(
@@ -357,33 +374,22 @@ export class Viewport {
               type,
               viewPortId: this.serverViewportId,
               ...getFullRange(range, this.bufferSize, this.dataWindow.rowCount),
-              // ...getFullRange(range, this.bufferSize),
             } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
         // TODO check that there os not already a pending server request for more data
         this.awaitOperation(requestId, { type });
         this.pendingRangeRequest = serverRequest;
+
+        this.batchMode = true;
+      } else if (clientRows.length > 0) {
+        this.batchMode = false;
       }
 
       // always reset the keys here, even if we're not going to return rows immediately.
       this.keys.reset(this.dataWindow.clientRange);
 
-      const rowWithinRange: DataSourceRowPredicate = ([index]) =>
-        index < range.from || index >= range.to;
-      if (this.holdingPen.some(rowWithinRange)) {
-        this.holdingPen = this.holdingPen.filter(
-          ([index]) => index >= range.from && index < range.to
-        );
-      }
-
       const toClient = this.isTree ? toClientRowTree : toClientRow;
-
-      if (holdingRows.length) {
-        holdingRows.forEach((row) => {
-          this.holdingPen.push(toClient(row, this.keys));
-        });
-      }
 
       if (clientRows.length) {
         return [
@@ -422,6 +428,24 @@ export class Viewport {
 
   setTableMeta(columns: string[], dataTypes: VuuColumnDataType[]) {
     this.serverTableMeta = { columns, dataTypes };
+  }
+
+  openTreeNode(requestId: string, message: VuuUIMessageOutOpenTreeNode) {
+    this.batchMode = true;
+    return {
+      type: Message.OPEN_TREE_NODE,
+      vpId: this.serverViewportId,
+      treeKey: message.key,
+    } as ClientToServerOpenTreeNode;
+  }
+
+  closeTreeNode(requestId: string, message: VuuUIMessageOutCloseTreeNode) {
+    this.batchMode = true;
+    return {
+      type: Message.CLOSE_TREE_NODE,
+      vpId: this.serverViewportId,
+      treeKey: message.key,
+    } as ClientToServerCloseTreeNode;
   }
 
   createLink(
@@ -519,6 +543,7 @@ export class Viewport {
 
   groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
     this.awaitOperation(requestId, { type: "groupBy", data: groupBy });
+    this.batchMode = true;
     return this.createRequest({ groupBy });
   }
 
@@ -543,9 +568,47 @@ export class Viewport {
         // Update will return true if row was within client range
         if (this.dataWindow.setAtIndex(rowIndex, row)) {
           this.hasUpdates = true;
+          if (!this.batchMode) {
+            this.pendingUpdates.push(row);
+          }
         }
       }
     }
+  }
+
+  // This is called only after new data has been received from server - data
+  // returned direcly from buffer does not use this.
+  getClientRows(): [undefined | DataSourceRow[], DataUpdateMode] {
+    let out: DataSourceRow[] | undefined = undefined;
+    let mode: DataUpdateMode = "size-only";
+
+    if (this.hasUpdates && this.dataWindow) {
+      const { keys } = this;
+      const toClient = this.isTree ? toClientRowTree : toClientRow;
+
+      if (this.pendingUpdates.length > 0) {
+        out = [];
+        mode = "update";
+        for (const row of this.pendingUpdates) {
+          out.push(toClient(row, keys));
+        }
+        this.pendingUpdates.length = 0;
+      } else {
+        const records = this.dataWindow.getData();
+        // if scrolling and hasAllRowsWithinRange, turn scrolling off
+        // if not scrolling, return just the updates
+        if (this.dataWindow.hasAllRowsWithinRange) {
+          out = [];
+          mode = "batch";
+          for (const row of records) {
+            out.push(toClient(row, keys));
+          }
+          this.batchMode = false;
+        }
+      }
+      this.hasUpdates = false;
+    }
+    return [out, mode];
   }
 
   getNewRowCount = () => {
@@ -555,46 +618,11 @@ export class Viewport {
     }
   };
 
-  // This is called only after new data has been received from server - data
-  // returned direcly from buffer does not use this.
-  // If we have updates, but we don't yet have data for the full client range
-  // in our buffer, store them in the holding pen. We know the remaining rows
-  // have been requested and will arrive imminently. Soon as we receive data,
-  // contents of holding pen plus additional rows received that fill the range
-  // will be dispatched to client.
-  // If we have any rows in the holding pen, and we now have a full set of
-  // client data, make sure we empty the pen and send those rows to client,
-  // along qith the new data.
-  // TODO what if we're going backwards
-  getClientRows(timeStamp: number) {
-    if (this.hasUpdates && this.dataWindow) {
-      const records = this.dataWindow.getData();
-      const { keys } = this;
-      const toClient = this.isTree ? toClientRowTree : toClientRow;
-
-      // NOte this should probably just check that we have all client rows within range ?
-      const clientRows = this.dataWindow.hasAllRowsWithinRange
-        ? this.holdingPen.splice(0)
-        : undefined;
-
-      const out = clientRows || this.holdingPen;
-
-      for (const row of records) {
-        if (row && row.ts >= timeStamp) {
-          out.push(toClient(row, keys));
-        }
-      }
-      this.hasUpdates = false;
-
-      // this only matters where we scroll backwards and have holdingPen data
-      // should we test for that explicitly ?
-      return clientRows && clientRows.sort(byRowIndex);
-    }
-  }
-
-  createRequest(params: any) {
+  createRequest(
+    params: Partial<Omit<ClientToServerChangeViewPort, "type" | "viewPortId">>
+  ) {
     return {
-      type: Message.CHANGE_VP,
+      type: "CHANGE_VP",
       viewPortId: this.serverViewportId,
       aggregations: this.aggregations,
       columns: this.columns,

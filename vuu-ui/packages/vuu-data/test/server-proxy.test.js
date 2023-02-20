@@ -13,12 +13,6 @@ import {
 const mockConnection = {
   send: vi.fn(),
 };
-// const mockConnection = {
-//   send: (message) =>
-//     console.log(
-//       `mockConnection messageToServer ${JSON.stringify(message, null, 2)}`
-//     ),
-// };
 
 describe("ServerProxy", () => {
   describe("subscription", () => {
@@ -114,6 +108,7 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith(
         {
+          mode: "batch",
           rows: [
             [0,0,true,null,null,1,'key-00', 0,'key-00', 'name 00',1000,true],
             [1,1,true,null,null,1,"key-01",0,"key-01","name 01",1001,true],
@@ -160,6 +155,7 @@ describe("ServerProxy", () => {
 
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 100,
@@ -180,6 +176,7 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith(
         {
+          mode: "batch",
           rows: [
             [0,0,true,null,null,1,'key-00', 0,'key-00', 'name 00',1000,true],
             [1,1,true,null,null,1,"key-01",0,"key-01","name 01",1001,true],
@@ -256,6 +253,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -326,6 +324,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -383,6 +382,7 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         type: "viewport-update",
+        mode: "update",
         clientViewportId: "client-vp-1",
         rows: [
           [3,3,true,null,null,1,"key-03",0,"key-03","name 03",2003, true],
@@ -464,6 +464,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -535,6 +536,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -564,6 +566,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -612,6 +615,7 @@ describe("ServerProxy", () => {
       expect(callback).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -673,6 +677,7 @@ describe("ServerProxy", () => {
       // First call will be size only
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
+        mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 100,
@@ -691,6 +696,7 @@ describe("ServerProxy", () => {
 
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -802,6 +808,7 @@ describe("ServerProxy", () => {
 
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -878,6 +885,7 @@ describe("ServerProxy", () => {
 
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -900,6 +908,7 @@ describe("ServerProxy", () => {
 
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -924,6 +933,7 @@ describe("ServerProxy", () => {
 
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -948,11 +958,12 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("data is purged from holding pen if scrolled out of range, holding pen records sent to client when enough data available", () => {
+    it("records sent to client when enough data available, client scrolls before initial rows rendered", () => {
       const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
         bufferSize: 10,
       });
 
+      // 1) subscribe for rows [0,10]
       const callback = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, callback);
       serverProxy.subscribe(clientSubscription1);
@@ -960,8 +971,7 @@ describe("ServerProxy", () => {
 
       callback.mockClear();
 
-      const viewport = serverProxy.viewports.get("server-vp-1");
-
+      // 2) server with responds with just rows [0 ... 4]
       serverProxy.handleMessageFromServer({
         body: {
           type: "TABLE_ROW",
@@ -979,18 +989,18 @@ describe("ServerProxy", () => {
         },
       });
 
-      // First call will be size only
+      // 3) Do not have entire set requested by user, so only size is initially returned
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
+        mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 100,
       });
 
-      expect(viewport.holdingPen).toHaveLength(5);
-
       callback.mockClear();
 
+      // 4) now client scrolls, before initial data sent
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
         type: "setViewRange",
@@ -998,7 +1008,6 @@ describe("ServerProxy", () => {
       });
 
       expect(callback).toHaveBeenCalledTimes(0);
-      expect(viewport.holdingPen).toHaveLength(3);
 
       serverProxy.handleMessageFromServer({
         body: {
@@ -1008,7 +1017,6 @@ describe("ServerProxy", () => {
       });
 
       expect(callback).toHaveBeenCalledTimes(0);
-      expect(viewport.holdingPen).toHaveLength(8);
 
       callback.mockClear();
 
@@ -1020,10 +1028,10 @@ describe("ServerProxy", () => {
       });
 
       expect(callback).toHaveBeenCalledTimes(1);
-      expect(viewport.holdingPen).toHaveLength(0);
 
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -1041,7 +1049,7 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("data sequence is correct when scrolling backward, data arruives from server in multiple batches, so data from holding pen is used", () => {
+    it("data sequence is correct when scrolling backward, data arrives from server in multiple batches", () => {
       const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
         bufferSize: 10,
       });
@@ -1055,7 +1063,6 @@ describe("ServerProxy", () => {
       serverProxy.subscribe(clientSubscription1);
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
-      const viewport = serverProxy.viewports.get("server-vp-1");
       // This translates into server call for rows 0..20 these are all stored in Viewport cache
       // and rows 0..10 returned to client
       serverProxy.handleMessageFromServer({
@@ -1103,7 +1110,6 @@ describe("ServerProxy", () => {
         },
       });
       expect(callback).toHaveBeenCalledTimes(1);
-      expect(viewport.holdingPen).toHaveLength(0);
 
       callback.mockClear();
 
@@ -1119,7 +1125,6 @@ describe("ServerProxy", () => {
         range: { from: 12, to: 22 },
       });
       expect(callback).toHaveBeenCalledTimes(0);
-      expect(viewport.holdingPen).toHaveLength(7);
 
       serverProxy.handleMessageFromServer({
         requestId: "1",
@@ -1141,7 +1146,6 @@ describe("ServerProxy", () => {
         },
       });
       expect(callback).toHaveBeenCalledTimes(0);
-      expect(viewport.holdingPen).toHaveLength(9);
 
       callback.mockClear();
 
@@ -1155,10 +1159,10 @@ describe("ServerProxy", () => {
         },
       });
       expect(callback).toHaveBeenCalledTimes(1);
-      expect(viewport.holdingPen).toHaveLength(0);
 
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -1227,6 +1231,7 @@ describe("ServerProxy", () => {
 
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -1258,6 +1263,7 @@ describe("ServerProxy", () => {
 
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -1273,68 +1279,6 @@ describe("ServerProxy", () => {
           [39,9,true,null,null,1,"key-39",0,"key-39","name 39",1039,true],
         ],
       });
-
-      // callback.mockClear();
-      // mockConnection.send.mockClear()
-
-      // serverProxy.handleMessageFromClient({ viewport: "client-vp-1", type: "setViewRange", range: { lo: 5, hi: 15 } });
-
-      // expect(mockConnection.send).toHaveBeenCalledTimes(0);
-      // expect(callback).toHaveBeenCalledTimes(1)
-
-      // expect(callback).toHaveBeenCalledWith({
-      //   type: "viewport-updates", viewports: {
-      //     "client-vp-1": {
-      //       rows: [
-      //         [5, 5, true, null, null, 1, "key-05", 0, "key-05", "name 05", 1005, true],
-      //         [6, 6, true, null, null, 1, "key-06", 0, "key-06", "name 06", 1006, true],
-      //         [7, 7, true, null, null, 1, "key-07", 0, "key-07", "name 07", 1007, true],
-      //         [8, 8, true, null, null, 1, "key-08", 0, "key-08", "name 08", 1008, true],
-      //         [9, 9, true, null, null, 1, "key-09", 0, "key-09", "name 09", 1009, true],
-      //         [10, 1, true, null, null, 1, "key-10", 0, "key-10", "name 10", 1010, true],
-      //         [11, 0, true, null, null, 1, "key-11", 0, "key-11", "name 11", 1011, true],
-      //         [12, 4, true, null, null, 1, "key-12", 0, "key-12", "name 12", 1012, true],
-      //         [13, 3, true, null, null, 1, "key-13", 0, "key-13", "name 13", 1013, true],
-      //         [14, 2, true, null, null, 1, "key-14", 0, "key-14", "name 14", 1014, true],
-      //       ],
-      //     }
-      //   }
-      // });
-
-      // callback.mockClear();
-      // mockConnection.send.mockClear()
-      // TEST_setRequestId(1);
-
-      // serverProxy.handleMessageFromClient({ viewport: "client-vp-1", type: "setViewRange", range: { lo: 8, hi: 18 } });
-
-      // expect(mockConnection.send).toHaveBeenCalledTimes(1);
-      // expect(callback).toHaveBeenCalledTimes(1)
-
-      // expect(callback).toHaveBeenCalledWith({
-      //   type: "viewport-updates", viewports: {
-      //     "client-vp-1": {
-      //       rows: [
-      //         [8, 8, true, null, null, 1, "key-08", 0, "key-08", "name 08", 1008, true],
-      //         [9, 9, true, null, null, 1, "key-09", 0, "key-09", "name 09", 1009, true],
-      //         [10, 1, true, null, null, 1, "key-10", 0, "key-10", "name 10", 1010, true],
-      //         [11, 0, true, null, null, 1, "key-11", 0, "key-11", "name 11", 1011, true],
-      //         [12, 4, true, null, null, 1, "key-12", 0, "key-12", "name 12", 1012, true],
-      //         [13, 3, true, null, null, 1, "key-13", 0, "key-13", "name 13", 1013, true],
-      //         [14, 2, true, null, null, 1, "key-14", 0, "key-14", "name 14", 1014, true],
-      //         [15, 7, true, null, null, 1, "key-15", 0, "key-15", "name 15", 1015, true],
-      //         [16, 6, true, null, null, 1, "key-16", 0, "key-16", "name 16", 1016, true],
-      //         [17, 5, true, null, null, 1, "key-17", 0, "key-17", "name 17", 1017, true],
-      //       ],
-      //     }
-      //   }
-      // });
-
-      // expect(mockConnection.send).toHaveBeenCalledWith({
-      //   requestId: '1',
-      //   user: "user",
-      //   body: { viewPortId: "server-vp-1", type: "CHANGE_VP_RANGE", from: 3, to: 23 },
-      //   module: "CORE"
-      // })
     });
   });
 
@@ -1563,6 +1507,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 10,
@@ -1628,6 +1573,7 @@ describe("ServerProxy", () => {
       // callbacks will be size only
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
+        mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 9,
@@ -1652,6 +1598,7 @@ describe("ServerProxy", () => {
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
         type: "viewport-update",
+        mode: "size-only",
         clientViewportId: "client-vp-1",
         size: 8,
       });
@@ -1674,6 +1621,7 @@ describe("ServerProxy", () => {
       });
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
+        mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 1,
@@ -1697,6 +1645,7 @@ describe("ServerProxy", () => {
       });
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
+        mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 0,
@@ -1722,6 +1671,7 @@ describe("ServerProxy", () => {
       expect(callback).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "update", // WRONG
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 1,
@@ -1748,39 +1698,15 @@ describe("ServerProxy", () => {
         },
       });
       expect(callback).toHaveBeenCalledTimes(1);
+      // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "update", // WRONG
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 2,
         rows: [
-          [
-            0,
-            0,
-            true,
-            null,
-            null,
-            1,
-            "key-00",
-            0,
-            "key-00",
-            "name 00",
-            1000,
-            true,
-          ],
-          [
-            1,
-            1,
-            true,
-            null,
-            null,
-            1,
-            "key-01",
-            0,
-            "key-01",
-            "name 01",
-            1001,
-            true,
-          ],
+          // [0,0,true,null,null,1,"key-00",0,"key-00","name 00",1000,true],
+          [1,1,true,null,null,1,"key-01",0,"key-01","name 01",1001,true],
         ],
       });
 
@@ -1804,12 +1730,13 @@ describe("ServerProxy", () => {
       expect(callback).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "update", // WRONG
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 6,
         rows: [
-          [0,0,true,null,null,1,"key-00",0,"key-00","name 00",1000,true],
-          [1,1,true,null,null,1,"key-01",0,"key-01","name 01",1001,true],
+          // [0,0,true,null,null,1,"key-00",0,"key-00","name 00",1000,true],
+          // [1,1,true,null,null,1,"key-01",0,"key-01","name 01",1001,true],
           [2,2,true,null,null,1,"key-02",0,"key-02","name 02",1002,true],
           [3,3,true,null,null,1,"key-03",0,"key-03","name 03",1003,true],
           [4,4,true,null,null,1,"key-04",0,"key-04","name 04",1004,true],
@@ -1978,6 +1905,93 @@ describe("ServerProxy", () => {
       expect(serverProxy.viewports.get("server-vp-1").isTree).toBe(true);
     });
 
+    it("on changing group, sends grouped records as batch", () => {
+      const callback = vi.fn();
+      const serverProxy = new ServerProxy(mockConnection, callback);
+      serverProxy.sessionId = "dsdsd";
+      serverProxy.authToken = "test";
+
+      serverProxy.subscribe(clientSubscription1);
+      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+
+      serverProxy.handleMessageFromServer({
+        body: {
+          type: "TABLE_ROW",
+          rows: [
+            {
+              viewPortId: "server-vp-1",
+              vpSize: 100,
+              rowIndex: -1,
+              rowKey: "SIZE",
+              updateType: "SIZE",
+              ts: 1,
+            },
+            ...createTableRows("server-vp-1", 0, 10),
+          ],
+        },
+      });
+
+      TEST_setRequestId(1);
+      callback.mockClear();
+      mockConnection.send.mockClear();
+
+      serverProxy.handleMessageFromClient({
+        viewport: "client-vp-1",
+        type: "groupBy",
+        groupBy: ["col-4"],
+      });
+
+      expect(callback).toHaveBeenCalledTimes(0);
+      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+      expect(mockConnection.send).toHaveBeenCalledWith({
+        body: {
+          viewPortId: "server-vp-1",
+          type: "CHANGE_VP",
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: ["col-4"],
+        },
+        module: "CORE",
+        user: "user",
+        requestId: "1",
+        sessionId: "dsdsd",
+        token: "test",
+      });
+
+      serverProxy.handleMessageFromServer({
+        requestId: "1",
+        body: {
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: ["col-4"],
+        },
+      });
+
+      callback.mockClear();
+      serverProxy.handleMessageFromServer(createTableGroupRows());
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(
+        serverProxy.viewports.get("server-vp-1").dataWindow.internalData
+      ).toHaveLength(4);
+      // prettier-ignore
+      expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [0,0,false,false,1,43714,"$root|USD",0,"","USD","","","","",""],
+          [1,1,false,false,1,43941,"$root|EUR",0,"","EUR","","","","",""],
+          [2,2,false,false,1,43997,"$root|GBX",0,"","GBX","","","","",""],
+          [3,3,false,false,1,44108,"$root|CAD",0,"","CAD","","","","",""],
+        ],
+        size: 4,
+      });
+    });
+
     it("ignores regular row updates after grouping is in place", () => {
       const callback = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, callback);
@@ -2090,6 +2104,7 @@ describe("ServerProxy", () => {
       ).toHaveLength(4);
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -2099,6 +2114,41 @@ describe("ServerProxy", () => {
           [3,3,false,false,1,44108,"$root|CAD",0,"","CAD","","","","",""],
         ],
         size: 4,
+      });
+
+      callback.mockClear();
+
+      // prettier-ignore
+      serverProxy.handleMessageFromServer({
+        body: {
+          type: "TABLE_ROW",
+          rows: [
+            {
+              viewPortId: "server-vp-1",
+              vpSize: 4,
+              rowIndex: 1,
+              rowKey: "$root|EUR",
+              updateType: "U",
+              ts: 1,
+              sel: 0,
+              data: [1,false,"$root|EUR",false,"EUR",43942,"","EUR","","","","",""],
+            },
+          ],
+        },
+      });
+
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(
+        serverProxy.viewports.get("server-vp-1").dataWindow.internalData
+      ).toHaveLength(4);
+      // prettier-ignore
+      expect(callback).toHaveBeenCalledWith({
+        mode: "update",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [1,1,false,false,1,43942,"$root|EUR",0,"","EUR","","","","",""],
+        ],
       });
     });
   });

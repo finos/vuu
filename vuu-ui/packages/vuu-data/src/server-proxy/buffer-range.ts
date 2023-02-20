@@ -1,7 +1,7 @@
 import { VuuRange } from "@finos/vuu-protocol-types";
 
 export const bufferBreakout = (
-  range: VuuRange,
+  range: VuuRange | null,
   from: number,
   to: number,
   bufferSize: number

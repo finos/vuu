@@ -15,6 +15,7 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "dependencies": {
+    "@finos/vuu-data-ag-grid": "0.0.26",
     "@finos/vuu-datagrid": "0.0.26",
     "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-layout": "0.0.26",

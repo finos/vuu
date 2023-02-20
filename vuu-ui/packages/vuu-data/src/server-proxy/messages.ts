@@ -1,6 +1,5 @@
 export const AUTH = "AUTH";
 export const AUTH_SUCCESS = "AUTH_SUCCESS";
-export const CHANGE_VP = "CHANGE_VP";
 export const CHANGE_VP_SUCCESS = "CHANGE_VP_SUCCESS";
 export const CHANGE_VP_RANGE = "CHANGE_VP_RANGE";
 export const CHANGE_VP_RANGE_SUCCESS = "CHANGE_VP_RANGE_SUCCESS";

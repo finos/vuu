@@ -195,7 +195,7 @@ export interface VuuMenuActionHookProps {
 
 type TableMenuLocation = "grid" | "header" | "filter";
 
-type VuuServerMenuOptions = {
+export type VuuServerMenuOptions = {
   columnMap: ColumnMap;
   columnName: string;
   row: DataSourceRow;

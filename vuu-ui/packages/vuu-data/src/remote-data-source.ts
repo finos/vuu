@@ -250,7 +250,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   openTreeNode(key: string) {
     if (this.viewport) {
-      // log(`openTreeNode ${key}`);
       this.server?.send({
         viewport: this.viewport,
         type: "openTreeNode",
@@ -261,7 +260,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   closeTreeNode(key: string) {
     if (this.viewport) {
-      // log(`closeTreeNode ${key}`);
       this.server?.send({
         viewport: this.viewport,
         type: "closeTreeNode",
@@ -447,9 +445,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {
     this.#visualLink = visualLink;
-    console.log(`create visual link `, {
-      visualLink,
-    });
 
     if (visualLink) {
       const {
