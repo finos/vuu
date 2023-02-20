@@ -93,7 +93,10 @@ class InstrumentsService(val table: DataTable, val providerContainer: ProviderCo
       new RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW"),
       new RowViewPortMenuItem("Test Row EUR", "currency=\"EUR\"", this.testRow, "TEST_ROW_EUR"),
       new RowViewPortMenuItem("Test Row USD", "currency=\"USD\"", this.testRow, "TEST_ROW_USD"),
-      new RowViewPortMenuItem("Test Row CAD", "currency=\"CAD\"", this.testRow, "TEST_ROW_CAD")
+      new RowViewPortMenuItem("Test Row CAD", "currency=\"CAD\"", this.testRow, "TEST_ROW_CAD"),
+      new RowViewPortMenuItem("Test Row CAD/USD", "currency in [\"CAD\",\"USD\"]", this.testRow, "TEST_ROW_CAD_USD"),
+      new RowViewPortMenuItem("Test Row XLON-LSE", "exchange = \"XLON/LSE-SETS\"", this.testRow, "TEST_ROW_XLON"),
+      new RowViewPortMenuItem("Test Row London Rics", "ric ends \".L\"", this.testRow, "TEST_ROW_LON_RICS")
     ),
     new SelectionViewPortMenuItem("Add Rows To Orders", "", this.addRowsFromInstruments, "ADD_ROWS_TO_ORDERS"),
     new TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE")

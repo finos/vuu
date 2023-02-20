@@ -1,12 +1,18 @@
-import { CompletionContext, CompletionSource } from "@codemirror/autocomplete";
-import { syntaxTree } from "@codemirror/language";
-import { EditorState } from "@codemirror/state";
+import {
+  Completion,
+  CompletionContext,
+  CompletionSource,
+  EditorState,
+  syntaxTree,
+} from "@finos/vuu-codemirror";
 import { Filter } from "@finos/vuu-filter-types";
 import { SyntaxNode } from "@lezer/common";
-import { MutableRefObject, useCallback, useMemo } from "react";
-import { ISuggestionProvider } from "./useCodeMirrorEditor";
+import { MutableRefObject, useCallback } from "react";
+import { ISuggestionProvider, SuggestionType } from "./useCodeMirrorEditor";
 
-export type ApplyCompletion = (mode?: "add" | "replace") => void;
+export type FilterSubmissionMode = "and" | "or" | "replace";
+
+export type ApplyCompletion = (mode?: FilterSubmissionMode) => void;
 
 const getValue = (node: SyntaxNode, state: EditorState) =>
   state.doc.sliceString(node.from, node.to);
@@ -40,8 +46,32 @@ const getOperator = (node: SyntaxNode, state: EditorState) => {
   }
 };
 
+// Operators that are more than a single character in length may incur partial matches
+// TODO need to check that previous token is a column
+const getPartialOperator = (
+  maybeOperatorNode: SyntaxNode,
+  state: EditorState,
+  columnName?: string
+) => {
+  const value = getValue(maybeOperatorNode, state);
+  if (columnName === undefined || value === columnName) {
+    return;
+  }
+  if (
+    ["contains", "ends", "starts"].some((val) =>
+      val.startsWith(value.toLowerCase())
+    )
+  ) {
+    return value;
+  } else {
+    return undefined;
+  }
+};
+
 const getClauseOperator = (node: SyntaxNode, state: EditorState) => {
-  const maybeTargetNode = node.prevSibling || node.parent;
+  let maybeTargetNode = node.prevSibling || node.parent || node.lastChild;
+  while (maybeTargetNode && maybeTargetNode.name === "⚠")
+    maybeTargetNode = maybeTargetNode.prevSibling;
   if (maybeTargetNode && ["As", "Or", "And"].includes(maybeTargetNode.name)) {
     return getValue(maybeTargetNode, state);
   } else {
@@ -64,45 +94,99 @@ const getSetValues = (node: SyntaxNode, state: EditorState): string[] => {
   return values;
 };
 
+const promptForFilterName = (context: CompletionContext) => ({
+  from: context.pos,
+  options: [
+    {
+      label: "enter name for this filter",
+      boost: 5,
+    },
+  ],
+});
+
+const joinSuggestions = [
+  { label: "and", apply: "and ", boost: 5 },
+  { label: "or", apply: "or ", boost: 3 },
+  { label: "as", apply: "as ", boost: 1 },
+];
+
+const makeSaveOrExtendSuggestions = (
+  onSubmit: (mode?: FilterSubmissionMode) => void,
+  existingFilter?: Filter,
+  withJoinSuggestions = true
+) => {
+  const result = existingFilter
+    ? ([
+        {
+          label: "REPLACE existing filter",
+          apply: () => onSubmit("replace"),
+          boost: 8,
+        },
+        {
+          label: "AND existing filter",
+          apply: () => onSubmit("and"),
+          boost: 7,
+        },
+        {
+          label: "OR existing filter",
+          apply: () => onSubmit("or"),
+          boost: 7,
+        },
+      ] as Completion[])
+    : ([
+        {
+          label: "Press ENTER to submit",
+          apply: () => onSubmit(),
+          boost: 6,
+        },
+      ] as Completion[]);
+
+  return withJoinSuggestions ? result.concat(joinSuggestions) : result;
+};
+
+const promptToSaveOrExtend = (
+  context: CompletionContext,
+  onSubmit: () => void,
+  existingFilter?: Filter
+) => ({
+  from: context.pos,
+  options: makeSaveOrExtendSuggestions(onSubmit, existingFilter),
+});
+
+const promptToSave = (
+  context: CompletionContext,
+  onSubmit: () => void,
+  existingFilter?: Filter
+) => ({
+  from: context.pos,
+  options: makeSaveOrExtendSuggestions(onSubmit, existingFilter, false),
+});
+
 export const useAutoComplete = (
   suggestionProvider: ISuggestionProvider,
   onSubmit: MutableRefObject<ApplyCompletion>,
   existingFilter?: Filter
 ) => {
-  const joinOperands = useMemo(() => {
-    const operands = [
-      { label: "and", apply: "and ", boost: 5 },
-      { label: "or", apply: "or ", boost: 3 },
-      { label: "as", apply: "as ", boost: 1 },
-    ];
-    const defaultResult = [
-      {
-        label: "Press ENTER to submit",
-        apply: () => onSubmit.current(),
-        boost: 6,
-      },
-      ...operands,
-    ];
-
-    const withSaveAddReplace = [
-      {
-        label: "Submit (add to existing filter)",
-        apply: () => onSubmit.current("add"),
-        boost: 7,
-      },
-      {
-        label: "Submit (replace existing filter)",
-        apply: () => onSubmit.current("replace"),
-        boost: 6,
-      },
-      ...operands,
-    ];
-
-    return {
-      default: defaultResult,
-      withSaveAddReplace,
-    };
-  }, [onSubmit]);
+  const makeSuggestions = useCallback(
+    async (
+      context: CompletionContext,
+      suggestionType: SuggestionType,
+      optionalArgs: {
+        columnName?: string;
+        operator?: string;
+        selection?: string[];
+        startsWith?: string;
+      } = {}
+    ) => {
+      const options = await suggestionProvider.getSuggestions(
+        suggestionType,
+        optionalArgs
+      );
+      const { startsWith = "" } = optionalArgs;
+      return { from: context.pos - startsWith.length, options };
+    },
+    [suggestionProvider]
+  );
 
   return useCallback(
     async (context: CompletionContext) => {
@@ -115,127 +199,113 @@ export const useAutoComplete = (
 
       const tree = syntaxTree(state);
       const nodeBefore = tree.resolveInner(pos, -1);
+      console.log({ nodeBeforeName: nodeBefore.name });
 
       switch (nodeBefore.name) {
         case "Filter":
           if (context.pos === 0) {
-            const options = await suggestionProvider.getSuggestions("column");
-            return { from: context.pos, options };
+            return makeSuggestions(context, "column");
           } else {
-            return {
-              from: context.pos,
-              options: existingFilter
-                ? joinOperands.withSaveAddReplace
-                : joinOperands.default,
-            };
-          }
-        case "Identifier": {
-          // TODO combine these
-          const columnName = getColumnName(nodeBefore, state);
-          const operator = getOperator(nodeBefore, state);
-          const clauseOperator = getClauseOperator(nodeBefore, state);
-          if (clauseOperator === "as") {
-            return {
-              from: context.pos,
-              options: [
-                {
-                  label: "press ENTER to apply filter and save",
-                  apply: () => onSubmit.current(),
-                  boost: 5,
-                },
-              ],
-            };
-          } else {
-            const identifierIsColumn = word.text === columnName;
-            const isPartialMatch = identifierIsColumn
-              ? await suggestionProvider.isPartialMatch(
-                  "column",
-                  undefined,
-                  word.text
-                )
-              : await suggestionProvider.isPartialMatch(
-                  "columnValue",
-                  columnName,
-                  word.text
-                );
-
-            if (isPartialMatch && identifierIsColumn) {
-              const options = await suggestionProvider.getSuggestions("column");
-              return { from: nodeBefore?.parent?.from, options };
-            } else if (columnName && !operator) {
-              const options = await suggestionProvider.getSuggestions(
-                "operator",
-                columnName
-              );
-              return { from: nodeBefore.from, options };
-            } else if (isPartialMatch) {
-              const options = await suggestionProvider.getSuggestions(
-                "columnValue",
-                columnName
-              );
-              return { from: nodeBefore.from, options };
+            const clauseOperator = getClauseOperator(nodeBefore, state);
+            if (clauseOperator === "as") {
+              return promptForFilterName(context);
             } else {
-              const options = await suggestionProvider.getSuggestions(
-                "columnValue",
-                columnName,
-                word.text
+              return promptToSaveOrExtend(
+                context,
+                onSubmit.current,
+                existingFilter
               );
-              return { from: nodeBefore.from, options };
             }
           }
-        }
-        case "ColumnSetExpression":
-        case "Values":
-          {
-            const columnName = getColumnName(nodeBefore, state);
-            const selection = getSetValues(nodeBefore, state);
-            const options = await suggestionProvider.getSuggestions(
-              "columnValue",
-              columnName,
-              undefined,
-              selection
-            );
-            return { from: context.pos, options };
-          }
-          break;
-        case "Comma":
-        case "LBrack": {
-          const columnName = getColumnName(nodeBefore, state);
-          const options = await suggestionProvider.getSuggestions(
-            "columnValue",
+
+        case "As":
+          return promptForFilterName(context);
+
+        case "FilterName":
+          return promptToSave(context, onSubmit.current, existingFilter);
+
+        case "Column": {
+          const columnName = getValue(nodeBefore, state);
+          const isPartialMatch = await suggestionProvider.isPartialMatch(
+            "column",
+            undefined,
             columnName
           );
-          return { from: context.pos, options };
+          if (isPartialMatch) {
+            return makeSuggestions(context, "column", {
+              startsWith: columnName,
+            });
+          } else {
+            return makeSuggestions(context, "operator", { columnName });
+          }
+        }
+
+        case "⚠": {
+          const columnName = getColumnName(nodeBefore, state);
+          const operator = getOperator(nodeBefore, state);
+          // TODO check if we're mnatching a partial jojn operator
+          const partialOperator = operator
+            ? undefined
+            : getPartialOperator(nodeBefore, state, columnName);
+
+          if (partialOperator) {
+            return makeSuggestions(context, "operator", {
+              columnName,
+              startsWith: partialOperator,
+            });
+          } else {
+            return makeSuggestions(context, "columnValue", {
+              columnName,
+              operator,
+              startsWith: word.text,
+            });
+          }
+        }
+
+        case "Identifier":
+          {
+            const clauseOperator = getClauseOperator(nodeBefore, state);
+            if (clauseOperator === "as") {
+              return {
+                from: context.pos,
+                options: [
+                  {
+                    label: "press ENTER to apply filter and save",
+                    apply: () => onSubmit.current(),
+                    boost: 5,
+                  },
+                ],
+              };
+            }
+          }
+          break;
+        case "ColumnSetExpression":
+        case "Values": {
+          const columnName = getColumnName(nodeBefore, state);
+          const selection = getSetValues(nodeBefore, state);
+          return makeSuggestions(context, "columnValue", {
+            columnName,
+            selection,
+          });
+        }
+        case "Comma":
+        case "LBrack": {
+          const columnName = getColumnName(nodeBefore, state) as string;
+          return makeSuggestions(context, "columnValue", { columnName });
         }
 
         case "ColumnValueExpression":
           {
             const lastToken = nodeBefore.lastChild?.prevSibling;
-
-            switch (lastToken?.name) {
-              case "Column": {
-                const columnName = getColumnName(nodeBefore, state);
-                const options = await suggestionProvider.getSuggestions(
-                  "operator",
-                  columnName
-                );
-                return { from: context.pos, options };
-              }
-
-              case "Operator": {
-                const operator = getValue(lastToken, state);
-                console.log({ operator });
-                const columnName = getColumnName(lastToken, state);
-                const options = await suggestionProvider.getSuggestions(
-                  "columnValue",
-                  columnName
-                );
-                return { from: context.pos, options };
-              }
-              default:
-                console.log(
-                  `what do we do with ColumnValueExpression whose lastToken = ${lastToken?.name}`
-                );
+            if (lastToken?.name === "Column") {
+              return makeSuggestions(context, "operator", {
+                columnName: getColumnName(nodeBefore, state),
+              });
+            } else if (lastToken?.name === "Operator") {
+              return makeSuggestions(context, "columnValue", {
+                columnName: getColumnName(lastToken, state),
+                operator: getValue(lastToken, state),
+              });
             }
           }
           break;
@@ -247,46 +317,20 @@ export const useAutoComplete = (
           };
         }
 
-        case "Quote":
-        case "Or":
-        case "And":
-        case "Eq":
-          console.log(`we have a ${nodeBefore.name}`);
-          break;
-        case "AsClause":
-          return {
-            from: context.pos,
-            options: [
-              {
-                label: "enter name for this filter",
-                // apply: "and ",
-                boost: 5,
-              },
-            ],
-          };
+        case "Eq": {
+          return makeSuggestions(context, "columnValue", {
+            columnName: getColumnName(nodeBefore, state),
+          });
+        }
 
         case "AndExpression":
         case "OrExpression": {
-          const options = await suggestionProvider.getSuggestions("column");
-          return { from: context.pos, options };
+          return makeSuggestions(context, "column");
         }
 
-        default: {
-          if (nodeBefore?.prevSibling?.name === "FilterClause") {
-            console.log("looks like we ight be a or|and operator");
-          }
-          console.log(
-            `what do we have here ? ${nodeBefore.type.name} child of ${parent?.name}`
-          );
-        }
+        default:
       }
     },
-    [
-      existingFilter,
-      joinOperands.default,
-      joinOperands.withSaveAddReplace,
-      onSubmit,
-      suggestionProvider,
-    ]
+    [existingFilter, makeSuggestions, onSubmit, suggestionProvider]
   ) as CompletionSource;
 };

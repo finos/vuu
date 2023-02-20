@@ -22,7 +22,7 @@ export interface NamedFilter {
   name?: string;
 }
 
-export interface SingleValueFilterClause<T = string | number>
+export interface SingleValueFilterClause<T = string | number | boolean>
   extends NamedFilter {
   op: SingleValueFilterClauseOp;
   column: string;
@@ -32,7 +32,7 @@ export interface SingleValueFilterClause<T = string | number>
 export interface MultiValueFilterClause extends NamedFilter {
   op: MultipleValueFilterClauseOp;
   column: string;
-  values: string[] | number[];
+  values: string[] | number[] | boolean[];
 }
 
 export declare type FilterClause =

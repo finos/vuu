@@ -1,17 +1,21 @@
-import { Filter } from "@finos/vuu-filter-types";
-import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
-import { useViewContext } from "@finos/vuu-layout";
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSuggestionProvider } from "./useSuggestionProvider";
-import { GridAction } from "@finos/vuu-datagrid-types";
 import {
   isViewportMenusAction,
   isVisualLinkCreatedAction,
   isVisualLinkRemovedAction,
   isVisualLinksAction,
 } from "@finos/vuu-data";
+import { GridAction } from "@finos/vuu-datagrid-types";
+import { Filter } from "@finos/vuu-filter-types";
+import {
+  addFilter,
+  filterAsQuery,
+  FilterInput,
+  useFilterSuggestionProvider,
+} from "@finos/vuu-filters";
+import { useViewContext } from "@finos/vuu-layout";
+import { ContextMenuProvider } from "@finos/vuu-popups";
+import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   ConfigChangeMessage,
@@ -33,12 +37,18 @@ import { LinkedIcon } from "@salt-ds/icons";
 
 import { FeatureProps } from "@finos/vuu-shell";
 
-import "./VuuBlotter.css";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import "./VuuBlotter.css";
 
 const classBase = "vuuBlotter";
 
 const CONFIG_KEYS = ["filter", "filterQuery", "groupBy", "sort"];
+
+type FilterState = {
+  filter: Filter | undefined;
+  filterQuery: string;
+  filterName?: string;
+};
 
 type BlotterConfig = {
   columns?: KeyedColumnDescriptor[];
@@ -76,9 +86,12 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
     useViewContext();
   const config = useMemo(() => load?.() as BlotterConfig | undefined, [load]);
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
-  const [currentFilter, setCurrentFilter] = useState<Filter>();
+  const [filterState, setFilterState] = useState<FilterState>({
+    filter: undefined,
+    filterQuery: "",
+  });
 
-  const suggestionProvider = useSuggestionProvider({
+  const suggestionProvider = useFilterSuggestionProvider({
     columns: schema.columns,
     table: schema.table,
   });
@@ -190,24 +203,43 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
     onRpcResponse: handleRpcResponse,
   });
 
+  const namedFilters = useMemo(() => new Map<string, string>(), []);
+
   const handleSubmitFilter = useCallback(
     (
-      filter: Filter | undefined,
+      newFilter: Filter | undefined,
       filterQuery: string,
-      filterName?: string,
-      mode = "add"
+      mode = "add",
+      filterName?: string
     ) => {
-      if (mode === "add" && currentFilter) {
-        const newFilter = updateFilter(currentFilter, filter, mode) as Filter;
-        const newFilterQuery = filterAsQuery(newFilter);
-        dataSource.filter = { filter: newFilterQuery, filterStruct: newFilter };
-        setCurrentFilter(newFilter);
+      let newFilterState: FilterState;
+      if (newFilter && (mode === "and" || mode === "or")) {
+        const fullFilter = addFilter(filterState.filter, newFilter, {
+          combineWith: mode,
+        }) as Filter;
+        newFilterState = {
+          filter: fullFilter,
+          filterQuery: filterAsQuery(fullFilter),
+          filterName,
+        };
       } else {
-        dataSource.filter = { filterStruct: filter, filter: filterQuery };
-        setCurrentFilter(filter);
+        newFilterState = {
+          filter: newFilter,
+          filterQuery,
+          filterName,
+        };
+      }
+
+      dataSource.filter = {
+        filter: newFilterState.filterQuery,
+        filterStruct: newFilterState.filter,
+      };
+      setFilterState(newFilterState);
+      if (filterName && newFilterState.filter) {
+        namedFilters.set(filterName, newFilterState.filterQuery);
       }
     },
-    [currentFilter, dataSource]
+    [dataSource, filterState.filter, namedFilters]
   );
 
   const configColumns = config?.columns;
@@ -223,7 +255,7 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
     >
       <div className={classBase}>
         <FilterInput
-          existingFilter={currentFilter}
+          existingFilter={filterState.filter}
           onSubmitFilter={handleSubmitFilter}
           suggestionProvider={suggestionProvider}
         />

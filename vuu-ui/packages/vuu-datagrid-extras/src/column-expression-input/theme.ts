@@ -1,4 +1,4 @@
-import { EditorView } from "@codemirror/view";
+import { EditorView } from "@finos/vuu-codemirror";
 
 export const vuuTheme = EditorView.theme(
   {

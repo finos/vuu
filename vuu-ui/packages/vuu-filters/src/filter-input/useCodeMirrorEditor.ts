@@ -1,30 +1,44 @@
 import {
   autocompletion,
   Completion,
+  defaultKeymap,
+  ensureSyntaxTree,
+  EditorState,
+  EditorView,
+  keymap,
   startCompletion,
-} from "@codemirror/autocomplete";
-import { defaultKeymap } from "@codemirror/commands";
-import { ensureSyntaxTree } from "@codemirror/language";
-import { EditorState } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
+} from "@finos/vuu-codemirror";
+import cx from "classnames";
 import { Filter } from "@finos/vuu-filter-types";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
 import { minimalSetup } from "./codemirror-basic-setup";
 import { filterLanguageSupport } from "./filter-language-parser";
-import { walkTree } from "./filter-language-parser/walkTree";
+import { walkTree } from "./filter-language-parser/FilterTreeWalker";
 import { vuuHighlighting } from "./highlighting";
 import { vuuTheme } from "./theme";
-import { ApplyCompletion, useAutoComplete } from "./useFilterAutoComplete";
+import {
+  ApplyCompletion,
+  FilterSubmissionMode,
+  useAutoComplete,
+} from "./useFilterAutoComplete";
+import { VuuCompletion } from "./useFilterSuggestionProvider";
 
 export type SuggestionType = "column" | "columnValue" | "operator";
 
+export interface SuggestionOptions {
+  columnName?: string;
+  operator?: string;
+  startsWith?: string;
+  selection?: string[];
+}
+
+export type getSuggestionsType = (
+  valueType: SuggestionType,
+  options?: SuggestionOptions
+) => Promise<Completion[]>;
+
 export interface ISuggestionProvider {
-  getSuggestions: (
-    valueType: SuggestionType,
-    columnName?: string,
-    startsWith?: string,
-    selection?: string[]
-  ) => Promise<Completion[]>;
+  getSuggestions: getSuggestionsType;
   isPartialMatch: (
     valueType: SuggestionType,
     columnName?: string,
@@ -43,8 +57,10 @@ const getView = (ref: MutableRefObject<EditorView | undefined>): EditorView => {
   return ref.current;
 };
 
-const getOptionClass = () => {
-  return "vuuSuggestion";
+const getOptionClass = (completion: VuuCompletion) => {
+  return cx("vuuSuggestion", {
+    vuuIllustration: completion.isIllustration,
+  });
 };
 
 const stripName = (filterQuery: string) => {
@@ -58,14 +74,16 @@ const stripName = (filterQuery: string) => {
 
 const noop = () => console.log("noooop");
 
+export type filterSubmissionHandler = (
+  filter: Filter | undefined,
+  filterQuery: string,
+  mode?: FilterSubmissionMode,
+  filterName?: string
+) => void;
+
 export interface CodeMirrorEditorProps {
   existingFilter?: Filter;
-  onSubmitFilter?: (
-    filter: Filter | undefined,
-    filterQuery: string,
-    filterName?: string,
-    mode?: "add" | "replace"
-  ) => void;
+  onSubmitFilter?: filterSubmissionHandler;
   suggestionProvider: ISuggestionProvider;
 }
 
@@ -91,8 +109,8 @@ export const useCodeMirrorEditor = ({
       const source = view.state.doc.toString();
       const tree = ensureSyntaxTree(view.state, view.state.doc.length, 5000);
       if (tree) {
-        const filter = walkTree(tree, source);
-        return [filter.toJson(), stripName(source), filter.name];
+        const filter = walkTree(tree, source) as Filter;
+        return [filter, stripName(source), filter.name];
       } else {
         return [undefined, "", undefined];
       }
@@ -102,9 +120,9 @@ export const useCodeMirrorEditor = ({
       getView(viewRef).setState(createState());
     };
 
-    const submitFilterAndClearInput = (mode?: "add" | "replace") => {
+    const submitFilterAndClearInput = (mode?: FilterSubmissionMode) => {
       const [filter, filterQuery, filterName] = parseFilter();
-      onSubmitFilter?.(filter, filterQuery, filterName, mode);
+      onSubmitFilter?.(filter, filterQuery, mode, filterName);
       clearInput();
     };
 
@@ -159,7 +177,7 @@ export const useCodeMirrorEditor = ({
         ],
       });
 
-    onSubmit.current = (mode?: "add" | "replace") => {
+    onSubmit.current = (mode?: FilterSubmissionMode) => {
       submitFilterAndClearInput(mode);
       // TODO refocu sthe editor
       setTimeout(() => {

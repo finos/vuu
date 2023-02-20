@@ -1,6 +1,7 @@
 import { execWait } from "./utils.mjs";
 
 const packages = [
+  "vuu-codemirror",
   "vuu-data",
   "vuu-data-types",
   "vuu-datagrid",

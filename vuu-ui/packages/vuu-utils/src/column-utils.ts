@@ -13,14 +13,15 @@ import {
   VuuAggType,
   VuuColumnDataType,
   VuuGroupBy,
+  VuuRowRecord,
   VuuSort,
 } from "@finos/vuu-protocol-types";
 import { CSSProperties } from "react";
 
+import { DataSourceRow } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
-import { DataSourceRow } from "@finos/vuu-data";
 
 export interface ColumnMap {
   [columnName: string]: number;

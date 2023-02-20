@@ -22,23 +22,29 @@ const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
 ]);
 
 // ... with type constraints
-export const isSingleValueFilter = (f?: Filter): f is SingleValueFilterClause =>
+export const isSingleValueFilter = (
+  f?: Partial<Filter>
+): f is SingleValueFilterClause =>
   f !== undefined &&
   singleValueFilterOps.has(f.op as SingleValueFilterClauseOp);
 
 export const isFilterClause = (
-  f?: Filter
+  f?: Partial<Filter>
 ): f is SingleValueFilterClause | MultiValueFilterClause =>
   f !== undefined && (isSingleValueFilter(f) || isMultiValueFilter(f));
 
-export const isMultiValueFilter = (f?: Filter): f is MultiValueFilterClause =>
-  f !== undefined && f.op === "in";
+export const isMultiValueFilter = (
+  f?: Partial<Filter>
+): f is MultiValueFilterClause => f !== undefined && f.op === "in";
 
-export const isInFilter = (f: Filter): f is MultiValueFilterClause =>
+export const isInFilter = (f: Partial<Filter>): f is MultiValueFilterClause =>
   f.op === "in";
-export const isAndFilter = (f: Filter): f is AndFilter => f.op === "and";
-export const isOrFilter = (f: Filter): f is OrFilter => f.op === "or";
+export const isAndFilter = (f: Partial<Filter>): f is AndFilter =>
+  f.op === "and";
+export const isOrFilter = (f: Partial<Filter>): f is OrFilter => f.op === "or";
 
-export function isMultiClauseFilter(f?: Filter): f is MultiClauseFilter {
+export function isMultiClauseFilter(
+  f?: Partial<Filter>
+): f is MultiClauseFilter {
   return f !== undefined && (f.op === "and" || f.op === "or");
 }

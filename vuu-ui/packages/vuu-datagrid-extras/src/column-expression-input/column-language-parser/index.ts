@@ -1,2 +1,2 @@
 export * from "./ColumnExpressionLanguage";
-export * from "./Expression";
+export * from "./ColumnExpressionTreeWalker";

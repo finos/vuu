@@ -31,9 +31,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   private disabled = false;
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
-  private onConfigChange:
-    | undefined
-    | ((config: DataSourceConfig | undefined) => void);
+  private onConfigChange: undefined | ((config: DataSourceConfig) => void);
 
   #aggregations: VuuAggregation[] = [];
   #columns: string[] = [];
@@ -345,7 +343,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       }
     }
     const newConfig = this.refreshConfig();
-    this.onConfigChange?.(newConfig);
+    newConfig && this.onConfigChange?.(newConfig);
   }
 
   get aggregations() {
@@ -362,7 +360,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       });
     }
     const newConfig = this.refreshConfig();
-    this.onConfigChange?.(newConfig);
+    newConfig && this.onConfigChange?.(newConfig);
   }
 
   get sort() {
@@ -383,7 +381,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       }
     }
     const newConfig = this.refreshConfig();
-    this.onConfigChange?.(newConfig);
+    newConfig && this.onConfigChange?.(newConfig);
   }
 
   get filter() {
@@ -404,7 +402,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       }
     }
     const newConfig = this.refreshConfig();
-    this.onConfigChange?.(newConfig);
+    newConfig && this.onConfigChange?.(newConfig);
   }
 
   get groupBy() {
@@ -425,7 +423,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       }
     }
     const newConfig = this.refreshConfig();
-    this.onConfigChange?.(newConfig);
+    newConfig && this.onConfigChange?.(newConfig);
   }
 
   get title() {
@@ -477,7 +475,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       }
     }
     const newConfig = this.refreshConfig();
-    this.onConfigChange?.(newConfig);
+    newConfig && this.onConfigChange?.(newConfig);
   }
 
   async menuRpcCall(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">) {

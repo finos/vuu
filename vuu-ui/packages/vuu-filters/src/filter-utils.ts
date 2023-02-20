@@ -104,7 +104,7 @@ export const addFilter = (
     return filter;
   }
 
-  if (sameColumn(existingFilter, filter)) {
+  if (canMerge(existingFilter, filter)) {
     return merge(existingFilter, filter);
   }
 
@@ -121,18 +121,17 @@ const includesNoValues = (filter?: Filter | null): boolean => {
   return isAndFilter(filter) && filter.filters.some((f) => includesNoValues(f));
 };
 
+const filterValue = (value: string | number | boolean) =>
+  typeof value === "string" ? `"${value}"` : value;
+
 export const filterAsQuery = (f: Filter, namedFilters = {}): string => {
   if (isMultiClauseFilter(f)) {
-    const [clause1, clause2] = f.filters;
-    return `${filterAsQuery(clause1, namedFilters)} ${f.op} ${filterAsQuery(
-      clause2,
-      namedFilters
-    )}`;
-  }
-  if (isMultiValueFilter(f)) {
+    return f.filters.map((filter) => filterAsQuery(filter)).join(` ${f.op} `);
+  } else if (isMultiValueFilter(f)) {
     return `${f.column} ${f.op} [${f.values.join(",")}]`;
+  } else {
+    return `${f.column} ${f.op} ${filterValue(f.value)}`;
   }
-  return `${f.column} ${f.op} ${f.value}`;
 };
 
 interface CommonFilter {
@@ -181,11 +180,20 @@ const merge = (f1: Filter, f2: Filter): Filter | undefined => {
         ),
       ],
     };
-  }
-  if (f1.op === STARTS_WITH && f2.op === STARTS_WITH) {
+  } else if (isInFilter(f1) && f2.op === EQUALS) {
     return {
-      op: OR,
-      filters: [f1, f2],
+      ...f1,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      values: f1.values.concat([f2.value]),
+    };
+  } else if (f1.op === EQUALS && f2.op === EQUALS) {
+    return {
+      column: f1.column,
+      op: IN,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      values: [f1.value, f2.value],
     };
   }
   return f2;
@@ -320,7 +328,10 @@ const removeFilterForColumn = (
   return sourceFilter;
 };
 
-const sameColumn = (f1: Filter, f2: Filter) => f1.column === f2.column;
+const canMerge = (f1: Filter, f2: Filter) =>
+  f1.column === f2.column &&
+  (f1.op === "=" || f1.op === "in") &&
+  (f2.op === "=" || f2.op === "in");
 
 const sameValues = <T>(arr1: T[], arr2: T[]) => {
   if (arr1 === arr2) {
@@ -338,7 +349,7 @@ export const filterEquals = (f1?: Filter, f2?: Filter, strict = false) => {
   if (!strict) {
     return true;
   }
-  if (f1 && f2 && sameColumn(f1, f2)) {
+  if (f1 && f2 && canMerge(f1, f2)) {
     return (
       f1.op === f2.op &&
       ((isSingleValueFilter(f1) &&

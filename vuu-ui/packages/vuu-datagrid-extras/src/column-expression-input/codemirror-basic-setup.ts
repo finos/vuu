@@ -1,11 +1,15 @@
-import { keymap, highlightSpecialChars, drawSelection } from "@codemirror/view";
-import { Extension } from "@codemirror/state";
 import {
+  closeBrackets,
   defaultHighlightStyle,
+  defaultKeymap,
+  drawSelection,
+  Extension,
+  highlightSpecialChars,
+  history,
+  historyKeymap,
+  keymap,
   syntaxHighlighting,
-} from "@codemirror/language";
-import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { closeBrackets } from "@codemirror/autocomplete";
+} from "@finos/vuu-codemirror";
 
 export const minimalSetup: Extension = (() => [
   highlightSpecialChars(),
@@ -15,5 +19,3 @@ export const minimalSetup: Extension = (() => [
   syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
   keymap.of([...defaultKeymap, ...historyKeymap]),
 ])();
-
-export { EditorView } from "@codemirror/view";

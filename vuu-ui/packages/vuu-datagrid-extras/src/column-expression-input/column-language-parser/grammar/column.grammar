@@ -11,6 +11,8 @@ expression {
   Column | 
   Number |
   String |
+  True |
+  False |
   ParenthesizedExpression |
   BinaryExpression |
   ConditionalExpression |
@@ -33,11 +35,11 @@ CallExpression {
 }
 
 Condition {
-  expression Operator expression
+  expression BooleanOperator expression
 }
 
-Operator {
-  "=" | ">" | "<"
+BooleanOperator {
+  "=" | ">" | "<" | ">=" | "<=" | "!="
 }
 
 ArgList {
@@ -52,17 +54,21 @@ Function { identifier }
 
 @tokens {
   @precedence {"if", identifier}
+  @precedence { True, identifier }
+  @precedence { False, identifier }
   OpenBrace {"("}
   CloseBrace {")"}
   Plus {"+"}
   Minus {"-"}
   Divide {"/"}
   Times {"*"}
+  True {"true"}
+  False {"false"}
   identifier { $[a-zA-Z_]char* }
   Number {
     @digit @digit* ("." @digit*)? | "." @digit @digit*
   }
-  String { '"' char* '"' }
+  String { "\"" ![\t\r\\\n"]* "\"" }
   char { $[a-zA-Z_0-9]  }
   space { $[ \t\n\r]+ }
 
