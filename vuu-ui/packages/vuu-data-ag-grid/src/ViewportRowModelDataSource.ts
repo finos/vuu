@@ -4,14 +4,18 @@ import {
   SubscribeCallback,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
-import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
+import { buildColumnMap, ColumnMap, metadataKeys } from "@finos/vuu-utils";
 import { AgViewportRows, convertToAgViewportRows } from "./AgGridDataUtils";
 import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { AgDataWindow } from "./AgDataWindow";
 
+const { IDX, IS_LEAF, IS_EXPANDED } = metadataKeys;
+
 type AgRow = {
+  expanded?: boolean;
   setDataValue: (field: string, value: string | number | boolean) => void;
+  setExpanded: (value: boolean) => void;
 };
 
 type IViewportDatasourceParams = {
@@ -99,12 +103,23 @@ export class ViewportRowModelDataSource {
         const { columnMap, reverseColumnMap } = this;
         if (message.mode === "update") {
           for (const dataRow of message.rows) {
-            const [rowIndex] = dataRow;
+            const {
+              [IDX]: rowIndex,
+              [IS_EXPANDED]: isExpanded,
+              [IS_LEAF]: isLeaf,
+            } = dataRow;
             const updates = this.dataWindow.update(dataRow, reverseColumnMap);
+            const agRowNode = this.getAgRow(rowIndex);
+
             if (updates) {
-              const agRowNode = this.getAgRow(rowIndex);
               for (let i = 0; i < updates.length; i += 2) {
                 agRowNode.setDataValue(updates[i] as string, updates[i + 1]);
+              }
+            }
+
+            if (!isLeaf) {
+              if (isExpanded && !agRowNode.expanded) {
+                agRowNode.setExpanded(true);
               }
             }
           }

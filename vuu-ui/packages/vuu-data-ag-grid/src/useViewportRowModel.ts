@@ -44,6 +44,7 @@ type RowGroupOpenedEvent = {
     expanded: boolean;
     groupKey: string;
   };
+  node: { expanded?: boolean };
 };
 type ColumnState = { colId: string; sortIndex: number }[];
 type SortChangedEvent = {
@@ -120,8 +121,9 @@ export const useViewportRowModel = ({
 
   const handleRowGroupOpened = useCallback(
     (evt: RowGroupOpenedEvent) => {
-      const { expanded, groupKey } = evt.data;
-      viewportDatasource.setExpanded(groupKey, expanded);
+      const { groupKey } = evt.data;
+      const { expanded = false } = evt.node;
+      viewportDatasource.setExpanded(groupKey, !expanded);
     },
     [viewportDatasource]
   );

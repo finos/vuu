@@ -16,10 +16,47 @@ type GroupCellRendererParams = {
       groupRow: boolean;
       [key: string]: string | boolean | number;
     };
+    expanded?: boolean;
     key: string | null;
     setExpanded: (expanded: boolean) => void;
   };
 };
+
+const createSpan = (className: string) => {
+  const span = document.createElement("span");
+  span.className = className;
+  return span;
+};
+
+const buildCellWrapper = () => {
+  const wrapper = createSpan("ag-cell-wrapper");
+  const groupExpanded = createSpan("ag-group-expanded ag-hidden");
+  const iconOpen = createSpan("ag-icon ag-icon-tree-open");
+  iconOpen.setAttribute("role", "presentation");
+  iconOpen.setAttribute("unselectable", "on");
+
+  groupExpanded.appendChild(iconOpen);
+  wrapper.appendChild(groupExpanded);
+
+  const groupContracted = createSpan("ag-group-contracted ag-hidden");
+  const iconClosed = createSpan("ag-icon ag-icon-tree-closed");
+  iconClosed.setAttribute("role", "presentation");
+  iconClosed.setAttribute("unselectable", "on");
+
+  groupContracted.appendChild(iconClosed);
+  wrapper.appendChild(groupContracted);
+
+  const checkbox = createSpan("ag-group-checkbox ag-invisible");
+  wrapper.appendChild(checkbox);
+
+  const groupValue = createSpan("ag-group-value");
+  wrapper.appendChild(groupValue);
+
+  return wrapper;
+};
+
+const cellWrapper = buildCellWrapper();
+
 export class GroupCellRenderer {
   private eGui: HTMLDivElement | null = null;
   private eContainer: HTMLSpanElement | null = null;
@@ -30,25 +67,12 @@ export class GroupCellRenderer {
   private params: GroupCellRendererParams | undefined;
   init(params: GroupCellRendererParams) {
     this.params = params;
-
     this.eGui = document.createElement("div");
-
-    const TEMPLATE =
-      /* html */
-      `<span class="ag-cell-wrapper">
-              <span class="ag-group-expanded ag-hidden" ref="eExpanded">
-              <span class="ag-icon ag-icon-tree-open" unselectable="on" role="presentation"></span>
-              </span>
-              <span class="ag-group-contracted ag-hidden" ref="eContracted">
-              <span class="ag-icon ag-icon-tree-closed" unselectable="on" role="presentation"></span></span>
-              <span class="ag-group-checkbox ag-invisible" ref="eCheckbox"></span>
-              <span class="ag-group-value" ref="eValue"></span>
-          </span>`;
-    this.eGui.innerHTML = TEMPLATE;
-    this.eContainer = this.eGui.querySelector("span.ag-cell-wrapper");
-    this.eValue = this.eGui.querySelector('span[ref="eValue"]');
-    this.eContracted = this.eGui.querySelector('span[ref="eContracted"]');
-    this.eExpanded = this.eGui.querySelector('span[ref="eExpanded"]');
+    this.eGui.appendChild(cellWrapper.cloneNode(true));
+    this.eContainer = this.eGui.firstChild as HTMLElement;
+    this.eValue = this.eGui.querySelector(".ag-group-value");
+    this.eContracted = this.eGui.querySelector(".ag-group-contracted");
+    this.eExpanded = this.eGui.querySelector(".ag-group-expanded");
     if (params.node.data) {
       const level = params.data.level;
       if (level) {
@@ -56,16 +80,16 @@ export class GroupCellRenderer {
       }
 
       const isChild = !params.node.data.groupRow;
-
       if (!isChild) {
         // prettier-ignore
         const col = params.columnApi
           .getRowGroupColumns()[params.data.level].getColId();
         this.params.node.key = params.node.data[col].toString();
         if (this.eValue) {
-          this.eValue.innerHTML = params.node.data[col].toString();
+          this.eValue.textContent = params.node.data[col].toString();
         }
-        const expanded = params.data.expanded;
+        const expanded = params.node.expanded;
+
         if (expanded) {
           this.setDisplayed(this.eContracted, false);
           this.setDisplayed(this.eExpanded, true);
@@ -75,20 +99,20 @@ export class GroupCellRenderer {
         }
       }
     }
-    this.eContracted?.addEventListener("click", this.onContracted.bind(this));
-    this.eExpanded?.addEventListener("click", this.onExpanded.bind(this));
+    this.eContracted?.addEventListener("click", this.onExpandNode.bind(this));
+    this.eExpanded?.addEventListener("click", this.onContractNode.bind(this));
   }
   getGui() {
     return this.eGui;
   }
 
-  onExpanded() {
+  onContractNode() {
     this.params?.node.setExpanded(false);
     this.setDisplayed(this.eContracted, true);
     this.setDisplayed(this.eExpanded, false);
   }
 
-  onContracted() {
+  onExpandNode() {
     this.params?.node.setExpanded(true);
     this.setDisplayed(this.eContracted, false);
     this.setDisplayed(this.eExpanded, true);
@@ -98,10 +122,7 @@ export class GroupCellRenderer {
     element?.classList.toggle("ag-hidden", !displayed);
   }
 
-  refresh(params: unknown) {
-    console.log(`GroupCellRenderer refresh called`, {
-      params,
-    });
+  refresh(/*params: unknown*/) {
     // throw new Error("Method not implemented.");
   }
 }
