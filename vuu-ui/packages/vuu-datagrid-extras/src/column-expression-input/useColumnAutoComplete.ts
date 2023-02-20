@@ -127,8 +127,6 @@ export const useColumnAutoComplete = (
       const text = state.doc.toString();
       const maybeComplete = isCompleteExpression(text);
 
-      console.log(`%cnodeBefore ${nodeBefore.name}`, "color: green");
-
       switch (nodeBefore.name) {
         case "CallExpression":
           break;
@@ -137,7 +135,6 @@ export const useColumnAutoComplete = (
         case "BinaryExpression":
           {
             const lastChild = getLastChild(nodeBefore);
-            console.log(`BInaryExpression, lastChild was ${lastChild?.name}`);
             if (lastChild?.name === "Column") {
               const options = await suggestionProvider.getSuggestions(
                 "expression"
@@ -247,7 +244,6 @@ export const useColumnAutoComplete = (
                   options,
                 };
               }
-              console.log("what goes after a a CallExpression");
             } else if (lastChild?.name === "BinaryExpression") {
               if (maybeComplete) {
                 let options: Completion[] = [
@@ -261,7 +257,6 @@ export const useColumnAutoComplete = (
                 ];
 
                 const lastExpressionChild = getLastChild(lastChild);
-                console.log({ lastExpressionChild });
                 if (lastExpressionChild?.name === "Column") {
                   const columnName = getValue(lastExpressionChild, state);
                   // TODO need to exclude columns already included in expression
@@ -277,7 +272,6 @@ export const useColumnAutoComplete = (
                   options,
                 };
               }
-              console.log("what goes after a BinaryExpression");
             }
             break;
           }
@@ -310,12 +304,9 @@ export const useColumnAutoComplete = (
           if (nodeBefore?.prevSibling?.name === "FilterClause") {
             console.log("looks like we ight be a or|and operator");
           }
-          console.log(
-            `what do we have here ? ${nodeBefore.type.name} child of ${parent?.name}`
-          );
         }
       }
     },
-    [expressionOperator, onSubmit, suggestionProvider]
+    [onSubmit, suggestionProvider]
   ) as CompletionSource;
 };
