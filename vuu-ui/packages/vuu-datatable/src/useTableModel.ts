@@ -137,7 +137,6 @@ export type ColumnActionDispatch = (action: GridModelAction) => void;
 const columnReducer: GridModelReducer = (state, action) => {
   switch (action.type) {
     case "init":
-      console.log("modeel init");
       return init(action);
     case "moveColumn":
       return moveColumn(state, action);
@@ -300,8 +299,6 @@ function setTypes(
         serverDataType,
       };
     });
-
-    console.log(`setTypes ${JSON.stringify(cols, null, 2)}`);
 
     return {
       ...state,

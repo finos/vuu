@@ -142,6 +142,7 @@ table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   position: absolute;
   right: 0;
   top:0;
+  width: 15px;
 }
 
 .vuuDataTable:has(.vuuTable-headerCell-resizing) * {

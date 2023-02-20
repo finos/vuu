@@ -663,6 +663,7 @@ export class ServerProxy {
                 clientViewportId: viewport.clientViewportId,
                 mode: "batch",
                 rows,
+                size: viewport.size,
                 type: "viewport-update",
               });
             }
