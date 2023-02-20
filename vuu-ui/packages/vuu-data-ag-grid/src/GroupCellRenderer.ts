@@ -75,6 +75,42 @@ type GroupCellRendererParams = {
     setExpanded: (expanded: boolean) => void;
   };
 };
+
+const createSpan = (className: string) => {
+  const span = document.createElement("span");
+  span.className = className;
+  return span;
+};
+
+const buildCellWrapper = () => {
+  const wrapper = createSpan("ag-cell-wrapper");
+  const groupExpanded = createSpan("ag-group-expanded ag-hidden");
+  const iconOpen = createSpan("ag-icon ag-icon-tree-open");
+  iconOpen.setAttribute("role", "presentation");
+  iconOpen.setAttribute("unselectable", "on");
+
+  groupExpanded.appendChild(iconOpen);
+  wrapper.appendChild(groupExpanded);
+
+  const groupContracted = createSpan("ag-group-contracted ag-hidden");
+  const iconClosed = createSpan("ag-icon ag-icon-tree-closed");
+  iconClosed.setAttribute("role", "presentation");
+  iconClosed.setAttribute("unselectable", "on");
+
+  groupContracted.appendChild(iconClosed);
+  wrapper.appendChild(groupContracted);
+
+  const checkbox = createSpan("ag-group-checkbox ag-invisible");
+  wrapper.appendChild(checkbox);
+
+  const groupValue = createSpan("ag-group-value");
+  wrapper.appendChild(groupValue);
+
+  return wrapper;
+};
+
+const cellWrapper = buildCellWrapper();
+
 export class GroupCellRenderer {
   private eGui: HTMLDivElement | null = null;
   private eContainer: HTMLSpanElement | null = null;
