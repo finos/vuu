@@ -2,7 +2,6 @@ export * as ColumnConfiguration from "./ColumnConfiguration";
 export * as DataGrid from "./DataGrid";
 export * as Filters from "./Filters";
 export * as html from "./html";
-export * as AgGrid from "./AgGrid";
 export * as Layout from "./Layout";
 export * as salt from "./salt";
 export * as Shell from "./Shell";
