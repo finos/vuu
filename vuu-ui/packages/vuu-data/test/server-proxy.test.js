@@ -1905,7 +1905,7 @@ describe("ServerProxy", () => {
       expect(serverProxy.viewports.get("server-vp-1").isTree).toBe(true);
     });
 
-    it.only("on changing group, sends grouped records as batch", () => {
+    it("on changing group, sends grouped records as batch", () => {
       const callback = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, callback);
       serverProxy.sessionId = "dsdsd";
@@ -2104,7 +2104,7 @@ describe("ServerProxy", () => {
       ).toHaveLength(4);
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
-        mode: "update",
+        mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -2114,6 +2114,41 @@ describe("ServerProxy", () => {
           [3,3,false,false,1,44108,"$root|CAD",0,"","CAD","","","","",""],
         ],
         size: 4,
+      });
+
+      callback.mockClear();
+
+      // prettier-ignore
+      serverProxy.handleMessageFromServer({
+        body: {
+          type: "TABLE_ROW",
+          rows: [
+            {
+              viewPortId: "server-vp-1",
+              vpSize: 4,
+              rowIndex: 1,
+              rowKey: "$root|EUR",
+              updateType: "U",
+              ts: 1,
+              sel: 0,
+              data: [1,false,"$root|EUR",false,"EUR",43942,"","EUR","","","","",""],
+            },
+          ],
+        },
+      });
+
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(
+        serverProxy.viewports.get("server-vp-1").dataWindow.internalData
+      ).toHaveLength(4);
+      // prettier-ignore
+      expect(callback).toHaveBeenCalledWith({
+        mode: "update",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [1,1,false,false,1,43942,"$root|EUR",0,"","EUR","","","","",""],
+        ],
       });
     });
   });
