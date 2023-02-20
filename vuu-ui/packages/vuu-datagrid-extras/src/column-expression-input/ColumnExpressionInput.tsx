@@ -24,7 +24,7 @@ export const ColumnExpressionInput = ({
   onSubmitExpression,
   suggestionProvider,
 }: ColumnExpressionInputProps) => {
-  const { editorRef, clearInput } = useColumnExpressionEditor({
+  const { editorRef } = useColumnExpressionEditor({
     onChange,
     onSubmitExpression,
     suggestionProvider,

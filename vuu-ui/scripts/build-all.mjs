@@ -14,6 +14,7 @@ const wave1 = [
   "vuu-filter-types",
   "vuu-protocol-types",
   "vuu-utils",
+  "vuu-codemirror",
   "vuu-theme",
 ];
 const wave2 = ["vuu-data", "vuu-filters", "vuu-popups"];

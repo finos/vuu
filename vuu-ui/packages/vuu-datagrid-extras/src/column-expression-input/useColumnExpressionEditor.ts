@@ -1,18 +1,21 @@
 import {
   autocompletion,
   Completion,
+  defaultKeymap,
+  EditorState,
+  EditorView,
+  ensureSyntaxTree,
+  keymap,
   startCompletion,
-} from "@codemirror/autocomplete";
-import { defaultKeymap } from "@codemirror/commands";
-import { ensureSyntaxTree } from "@codemirror/language";
-import { EditorState } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
+} from "@finos/vuu-codemirror";
 import { createEl } from "@finos/vuu-utils";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
 import { minimalSetup } from "./codemirror-basic-setup";
 import { columnExpressionLanguageSupport } from "./column-language-parser";
-import { Expression } from "./column-language-parser/Expression";
-import { walkExpressionTree } from "./column-language-parser/walkExpressionTree";
+import {
+  Expression,
+  walkTree,
+} from "./column-language-parser/ColumnExpressionTreeWalker";
 import { vuuHighlighting } from "./highlighting";
 import { vuuTheme } from "./theme";
 import {
@@ -68,7 +71,9 @@ const hasExpressionType = (
 ): completion is Completion & { expressionType: string } =>
   "expressionType" in completion;
 
-const injectOptionContent = (completion: Completion, state: EditorState) => {
+const injectOptionContent = (
+  completion: Completion /*, state: EditorState*/
+) => {
   if (hasExpressionType(completion)) {
     const div = createEl("div", "expression-type-container");
     const span = createEl("span", "expression-type", completion.expressionType);
@@ -104,7 +109,7 @@ export const useColumnExpressionEditor = ({
       const source = view.state.doc.toString();
       const tree = ensureSyntaxTree(view.state, view.state.doc.length, 5000);
       if (tree) {
-        const expression = walkExpressionTree(tree, source);
+        const expression = walkTree(tree, source) as Expression;
         return [source, expression];
       } else {
         return ["", undefined];

@@ -1,4 +1,4 @@
-import { Completion } from "@codemirror/autocomplete";
+import { Completion } from "@finos/vuu-codemirror";
 import { useTypeaheadSuggestions } from "@finos/vuu-data";
 import {
   ColumnExpressionOperator,
@@ -14,6 +14,8 @@ import {
   columnFunctionDescriptors,
 } from "./column-function-descriptors";
 import { functionDocInfo } from "./functionDocInfo";
+
+const NO_OPERATORS = [] as Completion[];
 
 const withApplySpace = (suggestions: Completion[]): Completion[] =>
   suggestions.map((suggestion) => ({
@@ -84,6 +86,14 @@ const operators = [
     type: "operator",
   },
 ];
+
+const getOperators = (column?: ColumnDescriptor) => {
+  if (column === undefined || isNumericColumn(column)) {
+    return operators;
+  } else {
+    return NO_OPERATORS;
+  }
+};
 
 const toFunctionCompletion = (
   functionDescriptor: ColumnFunctionDescriptor
@@ -174,7 +184,7 @@ export interface SuggestionProviderHookProps {
 
 const NONE = {};
 
-export const useSuggestionProvider = ({
+export const useColumnExpressionSuggestionProvider = ({
   columns,
   table,
 }: SuggestionProviderHookProps): IExpressionSuggestionProvider => {
@@ -196,7 +206,8 @@ export const useSuggestionProvider = ({
           const suggestions = await getColumns(columns, options);
           return (latestSuggestionsRef.current = withApplySpace(suggestions));
         } else if (valueType === "operator") {
-          const suggestions = await operators;
+          const column = columns.find((col) => col.name === columnName);
+          const suggestions = await getOperators(column);
           return (latestSuggestionsRef.current = withApplySpace(suggestions));
         } else if (columnName) {
           const column = columns.find((col) => col.name === columnName);

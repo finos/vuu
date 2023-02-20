@@ -1,5 +1,9 @@
-import { LanguageSupport, LRLanguage } from "@codemirror/language";
-import { styleTags, tags as tag } from "@lezer/highlight";
+import {
+  LanguageSupport,
+  LRLanguage,
+  styleTags,
+  tags as tag,
+} from "@finos/vuu-codemirror";
 import { parser } from "./generated/filter-parser";
 
 const filterLanguage = LRLanguage.define({

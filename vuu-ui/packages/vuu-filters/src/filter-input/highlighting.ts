@@ -1,5 +1,8 @@
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
-import { tags } from "@lezer/highlight";
+import {
+  HighlightStyle,
+  syntaxHighlighting,
+  tags,
+} from "@finos/vuu-codemirror";
 
 const myHighlightStyle = HighlightStyle.define([
   { tag: tags.variableName, color: "var(--vuuFilterEditor-variableColor)" },

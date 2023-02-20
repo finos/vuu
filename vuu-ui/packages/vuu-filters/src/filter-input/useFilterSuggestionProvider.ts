@@ -1,4 +1,4 @@
-import { Completion } from "@codemirror/autocomplete";
+import { Completion } from "@finos/vuu-codemirror";
 import { useTypeaheadSuggestions } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
@@ -8,16 +8,29 @@ import {
 } from "@finos/vuu-filters";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { useCallback, useRef } from "react";
+import { filterInfo } from "./filterInfo";
 
+const NO_NAMED_FILTERS = [] as Completion[];
 const NO_OPTIONS = {};
+
 export interface VuuCompletion extends Completion {
   isIllustration?: boolean;
 }
 
 const suggestColumns = (columns: ColumnDescriptor[]) =>
   columns.map((column) => ({
+    boost: 5,
     label: column.name,
   }));
+
+const suggestNamedFilters = (namedFilters?: Map<string, string>) =>
+  namedFilters
+    ? (Array.from(namedFilters.entries()).map(([filterName, filterQuery]) => ({
+        info: () => filterInfo(filterName, filterQuery),
+        label: filterName,
+        type: "filter",
+      })) as Completion[])
+    : NO_NAMED_FILTERS;
 
 const doneCommand: Completion = {
   label: "Done",
@@ -83,11 +96,13 @@ const getTypeaheadParams = (
 
 export interface SuggestionProviderHookProps {
   columns: ColumnDescriptor[];
+  namedFilters?: Map<string, string>;
   table: VuuTable;
 }
 
 export const useFilterSuggestionProvider = ({
   columns,
+  namedFilters,
   table,
 }: SuggestionProviderHookProps): ISuggestionProvider => {
   const latestSuggestionsRef = useRef<Completion[]>();
@@ -113,8 +128,12 @@ export const useFilterSuggestionProvider = ({
           console.warn(`'${columnName}' does not match any column name`);
         }
       } else if (valueType === "column") {
-        const suggestions = await suggestColumns(columns);
-        return (latestSuggestionsRef.current = withApplySpace(suggestions));
+        const columnSuggestions = await suggestColumns(columns);
+        const filterSuggestions = await suggestNamedFilters(namedFilters);
+        return (latestSuggestionsRef.current =
+          withApplySpace(columnSuggestions)).concat(
+          withApplySpace(filterSuggestions)
+        );
       }
 
       if (columnName) {
@@ -142,7 +161,7 @@ export const useFilterSuggestionProvider = ({
 
       return [];
     },
-    [columns, getTypeaheadSuggestions, table]
+    [columns, getTypeaheadSuggestions, namedFilters, table]
   );
 
   const isPartialMatch = useCallback(

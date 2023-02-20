@@ -1,39 +1,52 @@
-@top Filter { Expression }
+@precedence {
+  or @left,
+  and @left
+}
 
-Expression { OrExpression AsClause?}
+@top Filter { filterExpression }
 
-OrExpression { AndExpression (Or AndExpression)* }
+filterExpression { expression  ( As FilterName )?}
 
-AndExpression { FilterClause ( And FilterClause )* }
+expression { 
+  filterClause | 
+  booleanClause | 
+  ParenthesizedExpression 
+}
 
-AsClause { As Identifier }
+ParenthesizedExpression { "(" expression ")" }
 
-FilterClause { ColumnValueExpression | ColumnSetExpression }
+AndExpression {  expression !and And expression }
+OrExpression { expression !or Or expression }
 
-ColumnValueExpression { Column Operator Value }
+booleanClause {
+  AndExpression |
+  OrExpression 
+}
+
+filterClause { ColumnValueExpression | ColumnSetExpression }
+
+ColumnValueExpression { Column Operator value }
 
 ColumnSetExpression { Column In LBrack Values RBrack }
 
-NumericColumn { "~"+ }
+FilterName { identifier }
 
-StringColumn { "$"+ }
+Column { identifier }
 
-Column { Identifier }
+Operator { Eq | NotEq | Gt | Lt | Starts | Ends }
 
-Operator { Eq | NotEq | Gt | Lt | Contains | Starts | Ends }
+Values { value (Comma value)* }
 
-Values { Value (Comma Value)* }
+value { Number | String | True | False }
 
-Value { Identifier | Int | String }
-
-String { Quote Identifier Quote }
 
 @skip { space  }
 
 @tokens {
-  Contains { "contains" }
   Starts { "starts" }
   Ends { "ends" }
+  True { "true" }
+  False { "false" }
   And { "and" }
   Or { "or" }
   As { "as" }
@@ -42,12 +55,12 @@ String { Quote Identifier Quote }
   NotEq { "!=" }
   Gt { ">" }
   Lt { "<" }
-  Quote { "\""}
   Comma { "," }
   LBrack { "[" }
   RBrack { "]" }
-  Identifier { $[a-zA-Z_]$[a-zA-Z_0-9]* }
-  Int { std.digit+ }
-  // String { '"' (!["\\] | "\\" _)* '"' }
+  identifier { $[a-zA-Z_]$[a-zA-Z0-9_.-]* }
+  Number { @digit+ ("." @digit+)? | "." @digit+}
+  String { "\"" ![\t\r\\\n"]* "\"" }
   space { $[ \t\n\r]+ }
 }
+ 

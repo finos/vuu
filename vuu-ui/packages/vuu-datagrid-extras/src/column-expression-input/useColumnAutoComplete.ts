@@ -1,12 +1,12 @@
-import { MutableRefObject, useCallback, useMemo } from "react";
 import {
   Completion,
   CompletionContext,
   CompletionSource,
-} from "@codemirror/autocomplete";
-import { syntaxTree } from "@codemirror/language";
+  EditorState,
+  syntaxTree,
+} from "@finos/vuu-codemirror";
 import { SyntaxNode } from "@lezer/common";
-import { EditorState } from "@codemirror/state";
+import { MutableRefObject, useCallback, useMemo } from "react";
 import { parser } from "./column-language-parser/generated/column-parser";
 import {
   ColumnExpressionOperator,
@@ -126,6 +126,8 @@ export const useColumnAutoComplete = (
       const nodeBefore = tree.resolveInner(pos, -1);
       const text = state.doc.toString();
       const maybeComplete = isCompleteExpression(text);
+
+      console.log(`%cnodeBefore ${nodeBefore.name}`, "color: green");
 
       switch (nodeBefore.name) {
         case "CallExpression":

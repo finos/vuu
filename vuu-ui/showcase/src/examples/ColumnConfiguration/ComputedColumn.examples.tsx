@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ColumnExpressionInput,
-  useSuggestionProvider,
+  useColumnExpressionSuggestionProvider,
 } from "@finos/vuu-datagrid-extras";
 
 import {
@@ -38,7 +38,7 @@ const columns = [
 export const DefaultColumnExpressionInput = () => {
   const [expression, setExpression] = useState<Expression>();
   const [source, setSource] = useState<string>("");
-  const suggestionProvider = useSuggestionProvider({
+  const suggestionProvider = useColumnExpressionSuggestionProvider({
     columns,
     table,
   });
@@ -53,6 +53,7 @@ export const DefaultColumnExpressionInput = () => {
 
   const handleSubmitExpression = useCallback(
     (expression: Expression | undefined, source: string) => {
+      console.log({ expression, source });
       setExpression(expression);
       setSource(source);
     },
@@ -69,7 +70,7 @@ export const DefaultColumnExpressionInput = () => {
       <br />
       <div>{expression?.toString() ?? ""}</div>
       <br />
-      <div>{source}</div>
+      {/* <div>{source}</div> */}
       <br />
     </>
   );

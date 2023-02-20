@@ -16,6 +16,7 @@
   ],
   "devDependencies": {},
   "dependencies": {
+    "@finos/vuu-codemirror": "0.0.26",
     "@finos/vuu-data": "0.0.26",
     "@finos/vuu-datagrid": "0.0.26",
     "@finos/vuu-layout": "0.0.26",

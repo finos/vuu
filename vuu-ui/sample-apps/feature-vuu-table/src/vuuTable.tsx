@@ -14,9 +14,9 @@ import {
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import {
+  addFilter,
   filterAsQuery,
   FilterInput,
-  updateFilter,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
@@ -46,6 +46,12 @@ const NO_CONFIG: BlotterConfig = {};
 export interface FilteredTableProps extends FeatureProps {
   schema: TableSchema;
 }
+
+type FilterState = {
+  filter: Filter | undefined;
+  filterQuery: string;
+  filterName?: string;
+};
 
 const applyDefaults = (
   { columns, table }: TableSchema,
@@ -81,7 +87,10 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   });
 
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
-  const [currentFilter, setCurrentFilter] = useState<Filter>();
+  const [filterState, setFilterState] = useState<FilterState>({
+    filter: undefined,
+    filterQuery: "",
+  });
 
   const configColumns = tableConfigFromState?.columns;
 
@@ -216,24 +225,43 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
     }
   }, [dataSource, title]);
 
+  const namedFilters = useMemo(() => new Map<string, string>(), []);
+
   const handleSubmitFilter = useCallback(
     (
-      filter: Filter | undefined,
+      newFilter: Filter | undefined,
       filterQuery: string,
-      filterName?: string,
-      mode = "add"
+      mode = "add",
+      filterName?: string
     ) => {
-      if (mode === "add" && currentFilter) {
-        const newFilter = updateFilter(currentFilter, filter, mode) as Filter;
-        const newFilterQuery = filterAsQuery(newFilter);
-        dataSource.filter = { filter: newFilterQuery, filterStruct: newFilter };
-        setCurrentFilter(newFilter);
+      let newFilterState: FilterState;
+      if (newFilter && (mode === "and" || mode === "or")) {
+        const fullFilter = addFilter(filterState.filter, newFilter, {
+          combineWith: mode,
+        }) as Filter;
+        newFilterState = {
+          filter: fullFilter,
+          filterQuery: filterAsQuery(fullFilter),
+          filterName,
+        };
       } else {
-        dataSource.filter = { filterStruct: filter, filter: filterQuery };
-        setCurrentFilter(filter);
+        newFilterState = {
+          filter: newFilter,
+          filterQuery,
+          filterName,
+        };
+      }
+
+      dataSource.filter = {
+        filter: newFilterState.filterQuery,
+        filterStruct: newFilterState.filter,
+      };
+      setFilterState(newFilterState);
+      if (filterName && newFilterState.filter) {
+        namedFilters.set(filterName, newFilterState.filterQuery);
       }
     },
-    [currentFilter, dataSource]
+    [dataSource, filterState.filter, namedFilters]
   );
 
   return (
@@ -243,7 +271,7 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
     >
       <div className={classBase}>
         <FilterInput
-          existingFilter={currentFilter}
+          existingFilter={filterState.filter}
           onSubmitFilter={handleSubmitFilter}
           suggestionProvider={suggestionProvider}
         />

@@ -1,11 +1,13 @@
 import { Filter } from "@finos/vuu-filter-types";
 import {
+  addFilter,
+  filterAsQuery,
   FilterInput,
   FilterToolbar,
   updateFilter,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   authenticate as vuuAuthenticate,
@@ -28,11 +30,20 @@ const schemaColumns = [
 ];
 
 export const DefaultFilterInput = () => {
-  const [filter, setFilter] = useState<Filter>();
-  const [filterQuery, setFilterQuery] = useState<string>("");
-  const [filterName, setFilterName] = useState<string>("");
+  type FilterState = {
+    filter: Filter | undefined;
+    filterQuery: string;
+    filterName?: string;
+  };
+
+  const namedFilters = useMemo(() => new Map<string, string>(), []);
+  const [filterState, setFilterState] = useState<FilterState>({
+    filter: undefined,
+    filterQuery: "",
+  });
   const suggestionProvider = useFilterSuggestionProvider({
     columns: schemaColumns,
+    namedFilters,
     table,
   });
 
@@ -45,30 +56,52 @@ export const DefaultFilterInput = () => {
   }, []);
 
   const handleSubmitFilter = useCallback(
-    (filter: Filter | undefined, filterQuery: string, filterName?: string) => {
-      setFilter(filter);
-      setFilterQuery(filterQuery);
-      if (filterName) {
-        setFilterName(filterName);
+    (
+      newFilter: Filter | undefined,
+      filterQuery: string,
+      mode: "and" | "or" | "replace" = "replace",
+      filterName?: string
+    ) => {
+      let newFilterState: FilterState;
+      if (newFilter && mode === "and") {
+        const fullFilter = addFilter(filterState.filter, newFilter) as Filter;
+        newFilterState = {
+          filter: fullFilter,
+          filterQuery: filterAsQuery(fullFilter),
+          filterName,
+        };
+      } else {
+        newFilterState = {
+          filter: newFilter,
+          filterQuery,
+          filterName,
+        };
+      }
+
+      setFilterState(newFilterState);
+      if (filterName && newFilterState.filter) {
+        namedFilters.set(filterName, newFilterState.filterQuery);
       }
     },
-    []
+    [filterState.filter, namedFilters]
   );
 
   return (
     <>
       <FilterInput
+        existingFilter={filterState.filter}
+        namedFilters={namedFilters}
         onSubmitFilter={handleSubmitFilter}
         suggestionProvider={suggestionProvider}
       />
       <br />
       <br />
-      <div>{filterQuery}</div>
+      <div>{filterState.filterQuery}</div>
       <br />
-      <div>{filterName}</div>
+      <div>{filterState.filterName}</div>
       <br />
       <br />
-      <div>{JSON.stringify(filter)}</div>
+      <div>{JSON.stringify(filterState.filter, null, 2)}</div>
     </>
   );
 };

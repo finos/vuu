@@ -13,7 +13,7 @@ import {
 import {
   ColumnExpressionInput,
   Expression,
-  useSuggestionProvider,
+  useColumnExpressionSuggestionProvider,
 } from "../../column-expression-input";
 import { ColumnAction } from "../settings-panel/useGridSettings";
 
@@ -35,7 +35,7 @@ export const CalculatedColumnPanel = ({
   const [expression, setExpression] = useState<Expression>();
   const sourceRef = useRef<string>("");
 
-  const suggestionProvider = useSuggestionProvider({
+  const suggestionProvider = useColumnExpressionSuggestionProvider({
     columns,
     table,
   });

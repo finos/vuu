@@ -10,18 +10,8 @@
     "lezer-generate:filter": "lezer-generator --output ./src/filter-input/filter-language-parser/generated/filter-parser.js ./src/filter-input/filter-language-parser/grammar/filter.grammar",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
-  "devDependencies": {
-    "@lezer/generator": "^1.1.1"
-  },
-  "dependencies": {
-    "@codemirror/autocomplete": "^6.3.0",
-    "@codemirror/commands": "^6.1.2",
-    "@codemirror/language": "^6.1.2",
-    "@codemirror/state": "^6.1.2",
-    "@codemirror/view": "^6.4.0",
-    "@lezer/common": "^1.0.1"
-  },
   "peerDependencies": {
+    "@finos/vuu-codemirror": "0.0.26",
     "@finos/vuu-data": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "@heswell/salt-lab": "1.0.0-alpha.0-vuu.1",

@@ -1,6 +1,10 @@
-import { LanguageSupport, LRLanguage } from "@codemirror/language";
+import {
+  LanguageSupport,
+  LRLanguage,
+  styleTags,
+  tags as tag,
+} from "@finos/vuu-codemirror";
 import { parser } from "./generated/column-parser";
-import { styleTags, tags as tag } from "@lezer/highlight";
 
 const columnExpressionLanguage = LRLanguage.define({
   name: "VuuColumnExpression",

@@ -1,7 +1,11 @@
 import { Filter } from "@finos/vuu-filter-types";
 import { Button } from "@salt-ds/core";
 import { HTMLAttributes } from "react";
-import { SuggestionConsumer, useCodeMirrorEditor } from "./useCodeMirrorEditor";
+import {
+  filterSubmissionHandler,
+  SuggestionConsumer,
+  useCodeMirrorEditor,
+} from "./useCodeMirrorEditor";
 
 import "./FilterInput.css";
 
@@ -11,15 +15,13 @@ export interface FilterInputProps
   extends SuggestionConsumer,
     HTMLAttributes<HTMLDivElement> {
   existingFilter?: Filter;
-  onSubmitFilter?: (
-    filter: Filter | undefined,
-    filterQuery: string,
-    filterName?: string
-  ) => void;
+  namedFilters?: Map<string, string>;
+  onSubmitFilter?: filterSubmissionHandler;
 }
 
 export const FilterInput = ({
   existingFilter,
+  namedFilters,
   onSubmitFilter,
   suggestionProvider,
   ...props

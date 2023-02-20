@@ -38,10 +38,9 @@ export const FilterDropdown = ({
   const handleOpenChange = useCallback(
     async (isOpen) => {
       if (isOpen) {
-        const values = await suggestionProvider.getSuggestions(
-          "columnValue",
-          column
-        );
+        const values = await suggestionProvider.getSuggestions("columnValue", {
+          columnName: column,
+        });
         console.log({ values });
         setValues(values.map((suggestion) => suggestion.label));
       }
