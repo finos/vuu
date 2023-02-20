@@ -182,6 +182,10 @@ export class Viewport {
     return this.rowCountChanged || this.hasUpdates;
   }
 
+  get size() {
+    return this.dataWindow?.rowCount ?? 0;
+  }
+
   subscribe() {
     const { filter } = this.filter;
     this.status =
