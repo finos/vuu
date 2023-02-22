@@ -64,7 +64,7 @@ export const TableRow = memo(function Row({
       className={className}
       onClick={handleRowClick}
       style={{
-        transform: `translate3d(0px, ${offset * height}px, 0px)`,
+        transform: `translate(0px, ${offset * height}px)`,
       }}
     >
       {columns.filter(notHidden).map((column) => {

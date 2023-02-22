@@ -97,8 +97,20 @@ export const DefaultTable = () => {
     </>
   );
 };
-
 DefaultTable.displaySequence = displaySequence++;
+
+export const DefaultTable10Rows = () => {
+  const config = useTableConfig();
+  return (
+    <>
+      {/* <DragVisualizer orientation="horizontal"> */}
+      <DataTable {...config} height={240} renderBufferSize={20} width={700} />
+      {/* </DragVisualizer> */}
+    </>
+  );
+};
+
+DefaultTable10Rows.displaySequence = displaySequence++;
 
 export const DefaultTableMultiLevelHeadings = () => {
   const config = useTableConfig({
