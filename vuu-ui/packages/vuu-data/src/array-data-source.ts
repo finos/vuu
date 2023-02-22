@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
 import { KeySet } from "@finos/vuu-datatable/src/KeySet";
 import {
   LinkDescriptorWithLabel,
@@ -11,7 +11,7 @@ import {
   ClientToServerMenuRPC,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { EventEmitter, uuid } from "@finos/vuu-utils";
+import { EventEmitter, isSelected, metadataKeys, uuid } from "@finos/vuu-utils";
 import {
   DataSource,
   DataSourceConstructorProps,
@@ -25,6 +25,8 @@ export interface ArrayDataSourceConstructorProps
   columnDescriptors: ColumnDescriptor[];
   data: VuuRowDataItemType[][];
 }
+
+const { IDX, SELECTED } = metadataKeys;
 
 const toDataSourceRow = (
   data: VuuRowDataItemType[],
@@ -213,10 +215,28 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
     return this;
   }
 
-  select(selected: number[]) {
-    console.log("TODO: select", {
-      selected,
-    });
+  select(selected: Selection) {
+    const updatedRows: DataSourceRow[] = [];
+    for (const row of this.#data) {
+      const { [IDX]: rowIndex, [SELECTED]: sel } = row;
+      const wasSelected = sel === 1;
+      const nowSelected = isSelected(selected, rowIndex);
+      if (nowSelected !== wasSelected) {
+        const selectedRow = row.slice() as DataSourceRow;
+        selectedRow[SELECTED] = nowSelected ? 1 : 0;
+        this.#data[rowIndex] = selectedRow;
+        updatedRows.push(selectedRow);
+      }
+    }
+
+    if (updatedRows.length > 0) {
+      this.clientCallback?.({
+        clientViewportId: this.viewport,
+        mode: "update",
+        type: "viewport-update",
+        rows: updatedRows,
+      });
+    }
   }
 
   openTreeNode(key: string) {

@@ -1,65 +1,54 @@
-import { metadataKeys } from "@finos/vuu-utils";
+import {
+  Selection,
+  SelectionChangeHandler,
+  TableSelectionModel,
+} from "@finos/vuu-datagrid-types";
+import { deselectItem, metadataKeys, selectItem } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
-import { RowClickHandler, TableSelectionModel } from "./dataTableTypes";
+import { RowClickHandler } from "./dataTableTypes";
 
 const { IDX, SELECTED } = metadataKeys;
 
+const NO_SELECTION: Selection = [];
+
 export interface SelectionHookProps {
   selectionModel: TableSelectionModel;
-  setSelected: (selected: number[] | undefined) => void;
+  onSelectionChange: SelectionChangeHandler;
 }
 
 export const useSelection = ({
   selectionModel,
-  setSelected,
+  onSelectionChange,
 }: SelectionHookProps) => {
-  const singleSelect = selectionModel === "single";
-  const multiSelect =
-    selectionModel === "extended" || selectionModel === "checkbox";
-  const lastActive = useRef(-1);
-  const selected = useRef<number[]>([]);
+  selectionModel === "extended" || selectionModel === "checkbox";
+  const lastActiveRef = useRef(-1);
+  const selectedRef = useRef<Selection>(NO_SELECTION);
 
   const handleSelectionChange: RowClickHandler = useCallback(
-    (index, row, rangeSelect, keepExistingSelection) => {
+    (row, rangeSelect, keepExistingSelection) => {
       const { [IDX]: idx, [SELECTED]: isSelected } = row;
-      const { current: active } = lastActive;
-      const { current: currentSelected } = selected;
-      const inactiveRange = active === -1;
-      const actsLikeSingleSelect =
-        singleSelect ||
-        (multiSelect &&
-          !keepExistingSelection &&
-          (!rangeSelect || inactiveRange));
+      const { current: active } = lastActiveRef;
+      const { current: selected } = selectedRef;
 
-      let newSelected;
-      if (actsLikeSingleSelect && isSelected) {
-        newSelected = [];
-      } else if (actsLikeSingleSelect) {
-        newSelected = [idx];
-      } else if (!rangeSelect) {
-        if (isSelected) {
-          newSelected = currentSelected?.filter((i) => i !== idx);
-        } else {
-          newSelected = currentSelected?.concat(idx);
-        }
-      } else if (multiSelect) {
-        const [from, to] = idx > active ? [active, idx] : [idx, active];
-        newSelected = currentSelected?.slice();
-        for (let i = from; i <= to; i++) {
-          if (!currentSelected?.includes(i)) {
-            newSelected.push(i);
-          }
-        }
-      }
+      const selectOperation = isSelected ? deselectItem : selectItem;
 
-      selected.current = newSelected ?? [];
-      lastActive.current = idx;
+      const newSelected = selectOperation(
+        selectionModel,
+        selected,
+        idx,
+        rangeSelect,
+        keepExistingSelection,
+        active
+      );
 
-      if (setSelected) {
-        setSelected(newSelected);
+      selectedRef.current = newSelected;
+      lastActiveRef.current = idx;
+
+      if (onSelectionChange) {
+        onSelectionChange(newSelected);
       }
     },
-    [multiSelect, setSelected, singleSelect]
+    [onSelectionChange, selectionModel]
   );
 
   return handleSelectionChange;

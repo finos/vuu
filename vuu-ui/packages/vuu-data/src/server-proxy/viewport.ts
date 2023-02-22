@@ -1,4 +1,5 @@
 import { DataSourceFilter } from "@finos/vuu-data-types";
+import { Selection } from "@finos/vuu-datagrid-types";
 import {
   ClientToServerChangeViewPort,
   ClientToServerCloseTreeNode,
@@ -21,7 +22,7 @@ import {
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { getFullRange } from "@finos/vuu-utils";
+import { expandSelection, getFullRange } from "@finos/vuu-utils";
 import {
   ServerProxySubscribeMessage,
   VuuUIMessageOutCloseTreeNode,
@@ -31,7 +32,6 @@ import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
 import { bufferBreakout } from "./buffer-range";
 import { KeySet } from "./keyset";
 import * as Message from "./messages";
-
 import {
   DataSourceAggregateMessage,
   DataSourceColumnsMessage,
@@ -72,8 +72,8 @@ interface Columns {
   data: string[];
   type: "columns";
 }
-interface Selection {
-  data: number[];
+interface SelectionOperation {
+  data: Selection;
   type: "selection";
 }
 interface Sort {
@@ -100,7 +100,7 @@ type AsyncOperation =
   | ViewportFilter
   | GroupBy
   | GroupByClear
-  | Selection
+  | SelectionOperation
   | Sort;
 type RangeRequestTuple = [ClientToServerViewPortRange | null, DataSourceRow[]?];
 
@@ -551,14 +551,14 @@ export class Viewport {
     return this.createRequest({ groupBy });
   }
 
-  selectRequest(requestId: string, selection: number[]) {
+  selectRequest(requestId: string, selected: Selection) {
     // TODO we need to do this in the client if we are to raise selection events
     // TODO is it right to set this here or should we wait for ACK from server ?
-    this.awaitOperation(requestId, { type: "selection", data: selection });
+    this.awaitOperation(requestId, { type: "selection", data: selected });
     return {
-      type: Message.SET_SELECTION,
+      type: "SET_SELECTION",
       vpId: this.serverViewportId,
-      selection,
+      selection: expandSelection(selected),
     } as ClientToServerSelection;
   }
 

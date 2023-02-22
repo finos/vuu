@@ -23,7 +23,11 @@ console.log(`websocket URL ${websocketUrl} type ${typeof websocketUrl}`);
 const watch = getCommandLineArg("--watch");
 const development = watch || getCommandLineArg("--dev");
 const configPath = getCommandLineArg("--config", true);
-const features = getCommandLineArg("--features", true, "feature-vuu-blotter");
+const features = getCommandLineArg(
+  "--features",
+  true,
+  "feature-vuu-table,feature-vuu-blotter"
+);
 console.log({ features });
 if (configPath) {
   configFile = configPath;

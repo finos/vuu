@@ -15,6 +15,7 @@ import {
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { WithRequestId } from "./message-utils";
 import { DataSourceVisualLinkCreatedMessage } from "./data-source";
+import { Selection } from "@finos/vuu-datagrid-types";
 
 export type ConnectionStatus =
   | "connecting"
@@ -181,7 +182,7 @@ export interface VuuUIMessageOutResume extends ViewportMessageOut {
 }
 
 export interface VuuUIMessageOutSelect extends ViewportMessageOut {
-  selected: number[];
+  selected: Selection;
   type: "select";
 }
 export interface VuuUIMessageOutSelectAll extends ViewportMessageOut {

@@ -47,9 +47,9 @@ export const TableRow = memo(function Row({
     (evt: MouseEvent) => {
       const rangeSelect = evt.shiftKey;
       const keepExistingSelection = evt.ctrlKey || evt.metaKey; /* mac only */
-      onClick?.(index, row, rangeSelect, keepExistingSelection);
+      onClick?.(row, rangeSelect, keepExistingSelection);
     },
-    [index, onClick, row]
+    [onClick, row]
   );
 
   const handleGroupCellClick = useCallback(
