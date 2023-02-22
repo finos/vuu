@@ -183,6 +183,7 @@ export function useDataSource({
   }, [dataSource, datasourceMessageHandler]);
 
   useEffect(() => {
+    console.log(`adjust range with viewportRowCount ${viewportRowCount}`);
     adjustRange(viewportRowCount);
   }, [adjustRange, viewportRowCount]);
 

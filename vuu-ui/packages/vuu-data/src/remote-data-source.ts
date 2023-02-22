@@ -1,3 +1,4 @@
+import { Selection } from "@finos/vuu-datagrid-types";
 import {
   LinkDescriptorWithLabel,
   VuuGroupBy,
@@ -227,7 +228,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   enable() {
     if (this.viewport && this.disabled) {
       this.status = "enabling";
-      // should we await this ?s
+      // should we await this ?
       this.server?.send({
         viewport: this.viewport,
         type: "enable",
@@ -237,7 +238,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     return this;
   }
 
-  select(selected: number[]) {
+  select(selected: Selection) {
     this.#selectedRowsCount = selected.length;
     if (this.viewport) {
       this.server?.send({

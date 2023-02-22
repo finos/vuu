@@ -8,12 +8,12 @@ import {
   KeyedColumnDescriptor,
   GridConfig,
   TableHeadings,
+  SelectionChangeHandler,
+  TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent } from "react";
 
 export type tableLayoutType = "row" | "column";
-
-export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   allowConfigEditing?: boolean;
@@ -34,6 +34,7 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
    */
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onShowConfigEditor?: () => void;
+  onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;
   rowHeight?: number;
   selectionModel?: TableSelectionModel;
@@ -86,7 +87,6 @@ export interface Viewport {
 }
 
 export type RowClickHandler = (
-  index: number,
   row: DataSourceRow,
   rangeSelect: boolean,
   keepExistingSelection: boolean

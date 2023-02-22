@@ -8,6 +8,13 @@ import {
 } from "@finos/vuu-protocol-types";
 import { FunctionComponent } from "react";
 
+export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
+
+export type RangeTuple = [from: number, to: number];
+export type SelectionItem = number | RangeTuple;
+export type Selection = SelectionItem[];
+export type SelectionChangeHandler = (selection: Selection) => void;
+
 export type TableHeading = { label: string; span: number };
 export type TableHeadings = TableHeading[][];
 

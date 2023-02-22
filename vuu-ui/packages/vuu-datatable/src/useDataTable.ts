@@ -6,7 +6,12 @@ import {
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
-import { GridConfig, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import {
+  GridConfig,
+  KeyedColumnDescriptor,
+  SelectionChangeHandler,
+  TableSelectionModel,
+} from "@finos/vuu-datagrid-types";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
@@ -24,11 +29,7 @@ import {
   useState,
 } from "react";
 import { useContextMenu } from "./context-menu";
-import {
-  TableColumnResizeHandler,
-  tableLayoutType,
-  TableSelectionModel,
-} from "./dataTableTypes";
+import { TableColumnResizeHandler, tableLayoutType } from "./dataTableTypes";
 import { useDataSource } from "./useDataSource";
 import { useDraggableColumn } from "./useDraggableColumn";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
@@ -49,6 +50,7 @@ export interface DataTableHookProps extends MeasuredProps {
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   renderBufferSize?: number;
   rowHeight: number;
+  onSelectionChange?: SelectionChangeHandler;
   selectionModel: TableSelectionModel;
   tableLayout: tableLayoutType;
 }
@@ -62,6 +64,7 @@ export const useDataTable = ({
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
+  onSelectionChange,
   renderBufferSize = 0,
   rowHeight,
   selectionModel,
@@ -150,15 +153,16 @@ export const useDataTable = ({
     [dispatchColumnAction]
   );
 
-  const setSelected = useCallback(
+  const handleSelectionChange: SelectionChangeHandler = useCallback(
     (selected) => {
       dataSource.select(selected);
+      onSelectionChange?.(selected);
     },
-    [dataSource]
+    [dataSource, onSelectionChange]
   );
 
   const handleRowClick = useSelection({
-    setSelected,
+    onSelectionChange: handleSelectionChange,
     selectionModel,
   });
 

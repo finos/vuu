@@ -1,37 +1,40 @@
 import { SyntheticEvent, useRef, useState } from "react";
 
 import {
-  Chest, Component, Drawer,
+  Chest,
+  Component,
+  Drawer,
   Flexbox,
   Stack,
-  View
+  View,
 } from "@finos/vuu-layout";
 import { List, ListItem } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
 
 import "./Chest.stories.css";
 
-export default {
-  title: "Layout/Chest",
-  component: Chest,
-};
+let displaySequence = 1;
 
 type InlineDrawerProps = {
-  inline?: boolean
-  position: "left" | "right" | "top" | "bottom"
-  peekaboo?: boolean
-}
+  inline?: boolean;
+  position: "left" | "right" | "top" | "bottom";
+  peekaboo?: boolean;
+};
 
-const InlineDrawer = ({inline = false, position, peekaboo = false}: InlineDrawerProps) => {
-  const list = useRef(null);
+const InlineDrawer = ({
+  inline = false,
+  position,
+  peekaboo = false,
+}: InlineDrawerProps) => {
+  const list = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const handleClick = (e: SyntheticEvent) => {
-    if (!list.current?.contains(e.target)) {
+    if (!list.current?.contains(e.target as HTMLElement)) {
       setOpen(!open);
     }
   };
   return (
-    <Chest style={{ width: "100vw", height: "100vh" }}>
+    <Chest style={{ width: "100%", height: "100%" }}>
       <Drawer
         inline={inline}
         onClick={handleClick}
@@ -41,7 +44,7 @@ const InlineDrawer = ({inline = false, position, peekaboo = false}: InlineDrawer
         title="Rebecca"
         defaultOpen={false}
       >
-        <List ref={list}>
+        <List>
           <ListItem>Item 1</ListItem>
           <ListItem>Item 2</ListItem>
           <ListItem>Item 3</ListItem>
@@ -66,44 +69,56 @@ const InlineDrawer = ({inline = false, position, peekaboo = false}: InlineDrawer
 export const LeftInlineDrawerPeek = () => (
   <InlineDrawer position="left" inline peekaboo />
 );
+LeftInlineDrawerPeek.displaySequence = displaySequence++;
 
 export const RightInlineDrawerPeek = () => (
   <InlineDrawer position="right" inline peekaboo />
 );
+RightInlineDrawerPeek.displaySequence = displaySequence++;
 
 export const TopInlineDrawerPeek = () => (
   <InlineDrawer position="top" inline peekaboo />
 );
+TopInlineDrawerPeek.displaySequence = displaySequence++;
 
 export const BottomInlineDrawerPeek = () => (
   <InlineDrawer position="bottom" inline peekaboo />
 );
+BottomInlineDrawerPeek.displaySequence = displaySequence++;
 
 export const LeftOverlayDrawerPeek = () => (
   <InlineDrawer position="left" peekaboo />
 );
+LeftOverlayDrawerPeek.displaySequence = displaySequence++;
 
 export const RightOverlayDrawerPeek = () => (
   <InlineDrawer position="right" peekaboo />
 );
+RightOverlayDrawerPeek.displaySequence = displaySequence++;
 
 export const TopOverlayDrawerPeek = () => (
   <InlineDrawer position="top" peekaboo />
 );
+TopOverlayDrawerPeek.displaySequence = displaySequence++;
 
 export const BottomOverlayDrawerPeek = () => (
   <InlineDrawer position="bottom" peekaboo />
 );
+BottomOverlayDrawerPeek.displaySequence = displaySequence++;
 
 export const LeftInlineDrawer = () => <InlineDrawer position="left" inline />;
+LeftInlineDrawer.displaySequence = displaySequence++;
 
 export const RightInlineDrawer = () => <InlineDrawer position="right" inline />;
+RightInlineDrawer.displaySequence = displaySequence++;
 
 export const TopInlineDrawer = () => <InlineDrawer position="top" inline />;
+TopInlineDrawer.displaySequence = displaySequence++;
 
 export const BottomInlineDrawer = () => (
   <InlineDrawer position="bottom" inline />
 );
+BottomInlineDrawer.displaySequence = displaySequence++;
 
 export const LeftOverlayDrawer = () => <InlineDrawer position="left" />;
 
@@ -395,7 +410,13 @@ export const CustomSizeDrawer = () => {
 export const WithToggleButton = () => {
   return (
     <Chest style={{ width: "100vw", height: "100vh" }}>
-      <Drawer inline position="left" peekaboo toggleButton="end" defaultOpen={false} />
+      <Drawer
+        inline
+        position="left"
+        peekaboo
+        toggleButton="end"
+        defaultOpen={false}
+      />
       <Flexbox
         style={{ width: "100%", height: "100%", flexDirection: "column" }}
       >

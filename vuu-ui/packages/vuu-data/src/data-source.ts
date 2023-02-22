@@ -1,4 +1,7 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import {
+  ColumnDescriptor,
+  SelectionChangeHandler,
+} from "@finos/vuu-datagrid-types";
 import { IEventEmitter } from "@finos/vuu-utils";
 import {
   ClientToServerMenuRPC,
@@ -236,7 +239,7 @@ export interface DataSource extends IEventEmitter {
   openTreeNode: (key: string) => void;
   range: VuuRange;
   rowCount: number | undefined;
-  select: (selected: number[]) => void;
+  select: SelectionChangeHandler;
   readonly selectedRowsCount: number;
   readonly size: number;
   sort: VuuSort;
