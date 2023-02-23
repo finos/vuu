@@ -15,7 +15,7 @@ import {
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
 import { ColumnMap, getRowRecord, metadataKeys } from "@finos/vuu-utils";
-import { getFilterPredicate } from "@finos/vuu-utils/src/filter-evaluation-utils";
+import { getFilterPredicate } from "@finos/vuu-filters";
 import { useCallback } from "react";
 import {
   DataSource,

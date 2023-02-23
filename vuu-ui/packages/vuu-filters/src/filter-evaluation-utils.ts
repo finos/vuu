@@ -6,8 +6,8 @@ import {
   OrFilter,
   SingleValueFilterClause,
 } from "@finos/vuu-filter-types";
-import { parseFilter } from "@finos/vuu-filters/src/filter-input/filter-language-parser/FilterParser";
-import { ColumnMap } from "./column-utils";
+import { ColumnMap } from "@finos/vuu-utils";
+import { parseFilter } from "./filter-input/filter-language-parser/FilterParser";
 
 const filterPredicateMap = new Map<string, FilterPredicate>();
 
