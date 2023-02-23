@@ -89,19 +89,23 @@ interface GroupByClear {
   type: "groupByClear";
 }
 
-type AsyncOperation =
+type AsyncOperationWithData =
   | Aggregate
-  | ChangeViewportRange
   | Columns
-  | ClientToServerCreateLink
-  | ClientToServerRemoveLink
-  | Disable
-  | Enable
   | ViewportFilter
   | GroupBy
   | GroupByClear
   | SelectionOperation
   | Sort;
+
+type AsyncOperation =
+  | AsyncOperationWithData
+  | ChangeViewportRange
+  | Disable
+  | Enable
+  | ClientToServerCreateLink
+  | ClientToServerRemoveLink;
+
 type RangeRequestTuple = [ClientToServerViewPortRange | null, DataSourceRow[]?];
 
 type LinkedParent = {
@@ -265,43 +269,44 @@ export class Viewport {
       console.warn(`Viewport no matching operation found to complete`);
       return;
     }
-    const { type, data } = pendingOperation;
+    const { type } = pendingOperation;
+
     pendingOperations.delete(requestId);
-    if (type === Message.CHANGE_VP_RANGE) {
+    if (type === "CHANGE_VP_RANGE") {
       const [from, to] = params as [number, number];
       this.dataWindow?.setRange(from, to);
       this.pendingRangeRequest = null;
     } else if (type === "groupBy") {
-      this.isTree = data.length > 0;
-      this.groupBy = data;
+      this.isTree = pendingOperation.data.length > 0;
+      this.groupBy = pendingOperation.data;
       return {
         clientViewportId,
         type,
-        groupBy: data,
+        groupBy: pendingOperation.data,
       } as DataSourceGroupByMessage;
     } else if (type === "columns") {
-      this.columns = data;
+      this.columns = pendingOperation.data;
       return {
         clientViewportId,
         type,
-        columns: data,
+        columns: pendingOperation.data,
       } as DataSourceColumnsMessage;
     } else if (type === "filter") {
-      this.filter = data as DataSourceFilter;
+      this.filter = pendingOperation.data;
       return {
         clientViewportId,
         type,
-        filter: data,
+        filter: pendingOperation.data,
       } as DataSourceFilterMessage;
     } else if (type === "aggregate") {
-      this.aggregations = data as VuuAggregation[];
+      this.aggregations = pendingOperation.data;
       return {
         clientViewportId,
         type: "aggregate",
         aggregations: this.aggregations,
       } as DataSourceAggregateMessage;
     } else if (type === "sort") {
-      this.sort = data;
+      this.sort = pendingOperation.data;
       return {
         clientViewportId,
         type,
@@ -636,7 +641,7 @@ export class Viewport {
         filter: this.filter.filter,
       },
       ...params,
-    };
+    } as ClientToServerChangeViewPort;
   }
 }
 

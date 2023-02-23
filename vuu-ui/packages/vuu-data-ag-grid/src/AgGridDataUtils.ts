@@ -3,8 +3,8 @@ import { VuuSortCol } from "../../vuu-protocol-types";
 import { AgGridFilter } from "./AgGridFilterUtils";
 import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
 
-export type AgGridDataRow = Record<string, number | string | boolean>;
-export type AgGridDataSet = { [key: number]: AgGridDataRow };
+// export type AgGridDataRow = Record<string, number | string | boolean>;
+export type AgGridDataSet = { [key: number]: AgDataRow };
 
 type ColumnVO = {
   id: string;
@@ -45,8 +45,8 @@ export const convertToAgGridDataSet = (
 export const convertToAgGridDataRows = (
   rows: DataSourceRow[],
   columnMap: ColumnMap
-): AgGridDataRow[] => {
-  const result: AgGridDataRow[] = [];
+): AgDataRow[] => {
+  const result: AgDataRow[] = [];
   rows.forEach((row) => {
     result.push(toAgGridRow(row, columnMap));
   });
@@ -54,11 +54,14 @@ export const convertToAgGridDataRows = (
 };
 
 export type AgDataItem = string | number | boolean;
-export type AgDataRow = { [key: string]: AgDataItem };
+export type AgDataRow = {
+  vuuKey: string;
+  [key: string]: AgDataItem;
+};
+
 export type AgViewportRows = { [key: string]: AgDataRow };
 
 export const toAgViewportRow = (data: DataSourceRow, columnMap: ColumnMap) => {
-  const row: AgGridDataRow = {};
   const {
     [DEPTH]: depth,
     [IS_EXPANDED]: isExpanded,
@@ -66,9 +69,8 @@ export const toAgViewportRow = (data: DataSourceRow, columnMap: ColumnMap) => {
     [KEY]: key,
   } = data;
   // TODO precompute the keys once
-  for (const colName of Object.keys(columnMap)) {
-    row[colName] = data[columnMap[colName]];
-  }
+  const row: AgDataRow = toAgGridRow(data, columnMap);
+
   if (!isLeaf) {
     row.groupKey = key;
     row.groupKeys = key;
@@ -92,7 +94,8 @@ export const convertToAgViewportRows = (
 };
 
 export const toAgGridRow = (data: DataSourceRow, columnMap: ColumnMap) => {
-  const row: AgGridDataRow = {};
+  const { [KEY]: key } = data;
+  const row: AgDataRow = { vuuKey: key };
   // TODO precompute the keys once
   for (const colName of Object.keys(columnMap)) {
     row[colName] = data[columnMap[colName]];

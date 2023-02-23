@@ -4,7 +4,6 @@ import {
   SelectionItem,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { partition } from "./array-utils";
 
 const NO_SELECTION: number[] = [];
 
@@ -19,8 +18,7 @@ export const deselectItem = (
   selected: Selection,
   itemIndex: number,
   rangeSelect: boolean,
-  keepExistingSelection = false,
-  activeItemIndex = -1
+  keepExistingSelection = false
 ): Selection => {
   const singleSelect = selectionModel === "single";
   const multiSelect =
@@ -174,7 +172,7 @@ export const expandSelection = (selected: Selection): number[] => {
   return expandedSelected;
 };
 
-function splitRange([from, to]: RangeTuple, itemIndex: number) {
+function splitRange([from, to]: RangeTuple, itemIndex: number): Selection {
   if (itemIndex === from) {
     return [[from + 1, to]];
   } else if (itemIndex === to) {

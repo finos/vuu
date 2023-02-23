@@ -1,21 +1,18 @@
 import {
   DataSource,
-  DataSourceVisualLinkCreatedMessage,
+  isViewportMenusAction,
+  isVisualLinksAction,
   MenuActionConfig,
+  MenuRpcResponse,
   SuggestionFetcher,
   useTypeaheadSuggestions,
   useVuuMenuActions,
   VuuFeatureMessage,
   VuuServerMenuOptions,
 } from "@finos/vuu-data";
-import {
-  LinkDescriptorWithLabel,
-  VuuMenu,
-  VuuTable,
-} from "@finos/vuu-protocol-types";
+import { VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
 import { useCallback, useMemo, useRef } from "react";
 import { bySortIndex, isSortedColumn, toSortDef } from "./AgGridDataUtils";
-import { useViewContext } from "@finos/vuu-layout";
 
 import {
   AgGridFilter,
@@ -24,9 +21,9 @@ import {
 import { FilterDataProvider } from "./FilterDataProvider";
 import { GroupCellRenderer } from "./GroupCellRenderer";
 import { ViewportRowModelDataSource } from "./ViewportRowModelDataSource";
-import { useShellContext } from "@finos/vuu-shell";
 import { buildColumnMap } from "@finos/vuu-utils";
 import { vuuMenuToAgGridMenu } from "./agGridMenuUtils";
+import { AgData, AgDataRow } from "./AgDataWindow";
 
 type Column = {
   getId: () => string;
@@ -64,30 +61,35 @@ export const useViewportRowModel = ({
   dataSource,
   onFeatureEnabled,
 }: ViewportRowModelHookProps) => {
+  const menuRef = useRef<VuuMenu>();
   const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
     NullSuggestionFetcher
   );
   getTypeaheadSuggestionsRef.current = useTypeaheadSuggestions();
-
-  const { load, loadSession } = useViewContext();
-  const { handleRpcResponse } = useShellContext();
 
   // It is important that these values are not assigned in advance. They
   // are accessed at the point of construction of ContextMenu
   const menuActionConfig: MenuActionConfig = useMemo(
     () => ({
       get visualLink() {
-        return load?.("visual-link") as DataSourceVisualLinkCreatedMessage;
+        return undefined;
+        // return load?.("visual-link") as DataSourceVisualLinkCreatedMessage;
       },
       get visualLinks() {
-        return loadSession?.("vuu-links") as LinkDescriptorWithLabel[];
+        return undefined;
+        // return loadSession?.("vuu-links") as LinkDescriptorWithLabel[];
       },
       get vuuMenu() {
-        return loadSession?.("vuu-menu") as VuuMenu;
+        return menuRef.current;
       },
     }),
-    [load, loadSession]
+    []
   );
+  const handleRpcResponse = useCallback((response?: MenuRpcResponse) => {
+    console.log(`what are we going to do with a MenuRPCResponse`, {
+      response,
+    });
+  }, []);
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
     dataSource,
@@ -95,9 +97,25 @@ export const useViewportRowModel = ({
     onRpcResponse: handleRpcResponse,
   });
 
+  const handleVuuFeatureEnabled = useCallback(
+    (message: VuuFeatureMessage) => {
+      console.log("feature enabled", {
+        message,
+      });
+      if (isViewportMenusAction(message)) {
+        menuRef.current = message.menu;
+      } else if (isVisualLinksAction(message)) {
+        console.log("visual links received");
+        // saveSession?.(message.links, "vuu-links");
+      }
+      onFeatureEnabled?.(message);
+    },
+    [onFeatureEnabled]
+  );
+
   const viewportDatasource: ViewportRowModelDataSource = useMemo(() => {
-    return new ViewportRowModelDataSource(dataSource, onFeatureEnabled);
-  }, [dataSource, onFeatureEnabled]);
+    return new ViewportRowModelDataSource(dataSource, handleVuuFeatureEnabled);
+  }, [dataSource, handleVuuFeatureEnabled]);
 
   const handleGridReady = useCallback(() => {
     // console.log("Grid Ready");
@@ -152,11 +170,21 @@ export const useViewportRowModel = ({
     [viewportDatasource]
   );
 
-  const menuHandler = useCallback((...args) => {
-    console.log("menu action invoked", {
-      args,
-    });
-  }, []);
+  const menuHandler = useCallback(
+    (field: string, row: AgData) => (options?: { [key: string]: unknown }) => {
+      handleMenuAction("MENU_RPC_CALL", {
+        ...options,
+        row,
+        rowKey: row.vuuKey,
+      });
+      console.log("menu action invoked", {
+        options,
+        field,
+        row,
+      });
+    },
+    [handleMenuAction]
+  );
 
   const getContextMenuItems = useCallback(
     ({ column, node }) => {
@@ -178,7 +206,7 @@ export const useViewportRowModel = ({
         const menuOptions = buildViewserverMenuOptions("grid", options);
         console.log({ menuOptions });
         if (menuOptions.length > 0) {
-          return menuOptions.map(vuuMenuToAgGridMenu(menuHandler));
+          return menuOptions.map(vuuMenuToAgGridMenu(menuHandler(field, data)));
         }
       }
 
