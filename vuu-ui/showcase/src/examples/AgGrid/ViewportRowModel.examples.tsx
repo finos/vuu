@@ -1,4 +1,5 @@
 import { useViewportRowModel } from "@finos/vuu-data-ag-grid";
+import { View } from "@finos/vuu-layout";
 import {
   ToggleButton,
   ToggleButtonGroup,
@@ -9,11 +10,15 @@ import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.css";
 import "ag-grid-enterprise";
 import { AgGridReact } from "ag-grid-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { ErrorDisplay, useAutoLoginToVuuServer } from "../utils";
 import { createColumnDefs } from "./createColumnDefs";
 
-import { RemoteDataSource } from "@finos/vuu-data";
+import {
+  DataSource,
+  RemoteDataSource,
+  VuuFeatureMessage,
+} from "@finos/vuu-data";
 import "./VuuAgGrid.css";
 import "./VuuGrid.css";
 
@@ -53,14 +58,20 @@ const dataSourceConfig = [
 export const AgGridTables = () => {
   const error = useAutoLoginToVuuServer();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const dataSourceRef = useRef<DataSource>();
 
-  const dataSource = useMemo(
-    () => new RemoteDataSource(dataSourceConfig[selectedIndex]),
-    [selectedIndex]
-  );
+  const dataSource = useMemo(() => {
+    if (dataSourceRef.current) {
+      dataSourceRef.current.unsubscribe();
+    }
+    const ds = new RemoteDataSource(dataSourceConfig[selectedIndex]);
+    dataSourceRef.current = ds;
+    return ds;
+  }, [selectedIndex]);
 
-  const { createFilterDataProvider, ...gridConfig } =
-    useViewportRowModel(dataSource);
+  const { createFilterDataProvider, ...gridConfig } = useViewportRowModel({
+    dataSource,
+  });
 
   const columnDefs = useMemo(
     () =>
@@ -71,11 +82,7 @@ export const AgGridTables = () => {
     [createFilterDataProvider, selectedIndex]
   );
 
-  const handleChange: ToggleButtonGroupChangeEventHandler = (
-    event,
-    index,
-    toggled
-  ) => {
+  const handleChange: ToggleButtonGroupChangeEventHandler = (_event, index) => {
     setSelectedIndex(index);
   };
 
@@ -83,7 +90,7 @@ export const AgGridTables = () => {
     return <ErrorDisplay>{error}</ErrorDisplay>;
   }
 
-  console.log({ columnDefs });
+  console.log({ columnDefs, gridConfig });
 
   return (
     <SaltProvider density="high">
@@ -94,7 +101,7 @@ export const AgGridTables = () => {
         <ToggleButton tooltipText="Search">Prices</ToggleButton>
       </ToggleButtonGroup>
 
-      <div style={{ width: 800, height: 500 }} className="ag-theme-balham">
+      <View style={{ width: 800, height: 500 }} className="ag-theme-balham">
         <AgGridReact
           {...gridConfig}
           columnDefs={columnDefs}
@@ -102,7 +109,7 @@ export const AgGridTables = () => {
           rowGroupPanelShow="always"
           rowHeight={18}
         />
-      </div>
+      </View>
     </SaltProvider>
   );
 };
