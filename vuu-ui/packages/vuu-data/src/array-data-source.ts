@@ -1,5 +1,5 @@
 import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
-import { KeySet } from "@finos/vuu-datatable/src/KeySet";
+import { KeySet } from "./server-proxy/keyset";
 import {
   LinkDescriptorWithLabel,
   VuuGroupBy,

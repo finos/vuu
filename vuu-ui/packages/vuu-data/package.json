@@ -15,6 +15,8 @@
     "@finos/vuu-protocol-types": "0.0.26"
   },
   "peerDependencies": {
+    "@finos/vuu-filters": "0.0.26",
+    "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "react": "^17.0.2"
   }
