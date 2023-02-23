@@ -9,13 +9,18 @@ export interface AgGridMenuDescriptor {
   subMenu?: AgGridMenuDescriptor[];
 }
 
+const noop = () => undefined;
+
 export const vuuMenuToAgGridMenu =
-  (actionHandler: () => void) =>
+  (actionHandler: (options: { [key: string]: unknown }) => void) =>
   (menuOption: ContextMenuItemDescriptor): AgGridMenuDescriptor => {
+    const isGroupItem = isGroupMenuItemDescriptor(menuOption);
     return {
-      action: actionHandler,
+      action: isGroupItem
+        ? noop
+        : () => actionHandler(menuOption.options as { [key: string]: unknown }),
       name: menuOption.label,
-      subMenu: isGroupMenuItemDescriptor(menuOption)
+      subMenu: isGroupItem
         ? menuOption.children.map(vuuMenuToAgGridMenu(actionHandler))
         : undefined,
     };
