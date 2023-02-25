@@ -2,9 +2,10 @@ import { DataSourceRow } from "@finos/vuu-data";
 import {
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
+  TableCellProps,
 } from "@finos/vuu-datagrid-types";
 import { metadataKeys } from "@finos/vuu-utils";
-import { TableCellProps } from "./TableCell";
+import { useCallback } from "react";
 
 import "./TableGroupCell.css";
 
@@ -28,21 +29,16 @@ export const getGroupValueAndOffset = (
   }
 };
 
-// const defaultValueFormatter = (value: unknown) =>
-//   value == null ? "" : typeof value === "string" ? value : value.toString();
-
-export const TableGroupCell = ({
-  column,
-  onClick,
-  row,
-}: // valueFormatter = defaultValueFormatter,
-TableCellProps) => {
+export const TableGroupCell = ({ column, onClick, row }: TableCellProps) => {
   const { columns } = column as GroupColumnDescriptor;
-  // const value = valueFormatter(row[column.key]);
   const [value, offset] = getGroupValueAndOffset(columns, row);
+
+  const handleClick = useCallback(() => {
+    onClick?.(column);
+  }, [column, onClick]);
+
   const style = {
     left: column.pin == "left" ? column.pinnedOffset : undefined,
-    // paddingLeft: (offset - 1) * 20,
   };
   const isLeaf = row[IS_LEAF];
   const spacers = Array(offset)
@@ -51,7 +47,7 @@ TableCellProps) => {
   return (
     <td
       className={"vuuTableGroupCell vuuPinLeft"}
-      onClick={isLeaf ? undefined : onClick}
+      onClick={isLeaf ? undefined : handleClick}
       style={style}
     >
       {spacers}

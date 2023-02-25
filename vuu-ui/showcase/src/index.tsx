@@ -46,7 +46,7 @@ if (url.searchParams.has("standalone")) {
       }
       break;
     } catch (err) {
-      // no harm
+      console.warn(`failed to load ${importPath}`);
     }
   }
 } else {
