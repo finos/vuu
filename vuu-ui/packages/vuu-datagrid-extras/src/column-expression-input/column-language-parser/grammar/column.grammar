@@ -27,7 +27,7 @@ BinaryExpression {
 }
 
 ConditionalExpression {
-  "if" OpenBrace Condition "," expression "," expression CloseBrace 
+  If OpenBrace Condition Comma expression Comma expression CloseBrace 
 }
 
 CallExpression {
@@ -43,7 +43,7 @@ BooleanOperator {
 }
 
 ArgList {
-  OpenBrace expression ("," expression)* CloseBrace
+  OpenBrace expression (Comma expression)* CloseBrace
 }
 
 Column { identifier }
@@ -53,11 +53,13 @@ Function { identifier }
 @skip { space  }
 
 @tokens {
-  @precedence {"if", identifier}
+  @precedence {If, identifier}
   @precedence { True, identifier }
   @precedence { False, identifier }
   OpenBrace {"("}
   CloseBrace {")"}
+  Comma {","}
+  If {"if"}
   Plus {"+"}
   Minus {"-"}
   Divide {"/"}

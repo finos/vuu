@@ -3,13 +3,18 @@ import {
   CompletionContext,
   CompletionSource,
   EditorState,
+  getNamedParentNode,
+  getPreviousNode,
+  getValue,
   syntaxTree,
 } from "@finos/vuu-codemirror";
 import { SyntaxNode } from "@lezer/common";
-import { MutableRefObject, useCallback, useMemo } from "react";
+import { MutableRefObject, useCallback } from "react";
 import { parser } from "./column-language-parser/generated/column-parser";
 import {
   ColumnExpressionOperator,
+  ColumnExpressionSuggestionOptions,
+  ColumnExpressionSuggestionType,
   IExpressionSuggestionProvider,
 } from "./useColumnExpressionEditor";
 
@@ -39,29 +44,35 @@ const applyPrefix = (completions: Completion[], prefix?: string) =>
       }))
     : completions;
 
-const getValue = (node: SyntaxNode, state: EditorState) =>
-  state.doc.sliceString(node.from, node.to);
-
 const isOperator = (node?: SyntaxNode): node is SyntaxNode =>
   node === undefined
     ? false
     : ["Times", "Divide", "Plus", "Minus"].includes(node.name);
 
-const getLastChild = (node: SyntaxNode) => {
+const getLastChild = (node: SyntaxNode, context: CompletionContext) => {
   let { lastChild: childNode } = node;
+  const { pos } = context;
   while (childNode) {
+    const isBeforeCursor = childNode.from < pos;
     if (
+      isBeforeCursor &&
       [
-        "Column",
-        "Equal",
-        "CallExpression",
-        "OpenBrace",
         "BinaryExpression",
-        "ParenthesizedExpression",
-        "Times",
+        "BooleanOperator",
+        "CallExpression",
+        "CloseBrace",
+        "Column",
+        "Comma",
+        "Condition",
+        "ConditionalExpression",
         "Divide",
-        "Plus",
+        "Equal",
+        "If",
         "Minus",
+        "OpenBrace",
+        "ParenthesizedExpression",
+        "Plus",
+        "Times",
       ].includes(childNode.name)
     ) {
       if (childNode.name === "ParenthesizedExpression") {
@@ -91,27 +102,88 @@ const getFunctionName = (node: SyntaxNode, state: EditorState) => {
   }
 };
 
-const getColumnName = (node: SyntaxNode, state: EditorState) => {
-  if (node.firstChild?.name === "Column") {
-    return getValue(node.firstChild, state);
-  } else {
-    let maybeColumnNode = node.prevSibling || node.parent;
-    while (maybeColumnNode && maybeColumnNode.name !== "Column") {
-      maybeColumnNode = maybeColumnNode.prevSibling || maybeColumnNode.parent;
-    }
-    if (maybeColumnNode) {
-      return getValue(maybeColumnNode, state);
-    }
+const makeSuggestions = async (
+  context: CompletionContext,
+  suggestionProvider: IExpressionSuggestionProvider,
+  suggestionType: ColumnExpressionSuggestionType,
+  optionalArgs: ColumnExpressionSuggestionOptions = {}
+) => {
+  const options = await suggestionProvider.getSuggestions(
+    suggestionType,
+    optionalArgs
+  );
+  const { startsWith = "" } = optionalArgs;
+  return { from: context.pos - startsWith.length, options };
+};
+
+const handleConditionalExpression = (
+  node: SyntaxNode,
+  context: CompletionContext,
+  suggestionProvider: IExpressionSuggestionProvider,
+  maybeComplete?: boolean,
+  onSubmit?: () => void
+) => {
+  const lastChild = getLastChild(node, context);
+  console.log(`conditional expression last child ${lastChild?.name}`);
+  switch (lastChild?.name) {
+    case "If":
+      return makeSuggestions(context, suggestionProvider, "expression", {
+        prefix: "( ",
+      });
+    case "OpenBrace":
+      break;
+    case "Condition":
+      return makeSuggestions(context, suggestionProvider, "expression", {
+        prefix: ", ",
+      });
+    case "CloseBrace":
+      if (maybeComplete) {
+        const options: Completion[] = [
+          {
+            apply: () => {
+              onSubmit?.();
+            },
+            label: "Save Expression",
+            boost: 10,
+          },
+        ];
+        return { from: context.pos, options };
+      }
   }
+};
+
+const promptToSave = (context: CompletionContext, onSubmit: () => void) => {
+  const options: Completion[] = [
+    {
+      apply: () => {
+        onSubmit?.();
+      },
+      label: "Save Expression",
+      boost: 10,
+    },
+  ];
+  return { from: context.pos, options };
 };
 
 export const useColumnAutoComplete = (
   suggestionProvider: IExpressionSuggestionProvider,
   onSubmit: MutableRefObject<ApplyCompletion>
 ) => {
-  const expressionOperator = useMemo(() => {
-    return [{ label: "=", apply: "= " }];
-  }, []);
+  const makeSuggestions = useCallback(
+    async (
+      context: CompletionContext,
+      suggestionType: ColumnExpressionSuggestionType,
+      optionalArgs: ColumnExpressionSuggestionOptions = {}
+    ) => {
+      const options = await suggestionProvider.getSuggestions(
+        suggestionType,
+        optionalArgs
+      );
+      const { startsWith = "" } = optionalArgs;
+      return { from: context.pos - startsWith.length, options };
+    },
+    [suggestionProvider]
+  );
 
   return useCallback(
     async (context: CompletionContext) => {
@@ -127,31 +199,55 @@ export const useColumnAutoComplete = (
       const text = state.doc.toString();
       const maybeComplete = isCompleteExpression(text);
 
+      console.log({ nodeBeforeName: nodeBefore.name });
+
       switch (nodeBefore.name) {
-        case "CallExpression":
+        case "If": {
+          console.log(`conditional expression  If`);
+          return makeSuggestions(context, "expression", { prefix: "( " });
+        }
+        case "Condition":
+          {
+            const lastChild = getLastChild(nodeBefore, context);
+            if (lastChild?.name === "Column") {
+              // is this the first term ?
+              const prevChild = getPreviousNode(lastChild);
+              if (prevChild?.name !== "BooleanOperator") {
+                return makeSuggestions(context, "condition-operator", {
+                  columnName: getValue(lastChild, state),
+                });
+              }
+              console.log(
+                `Condition last child Column, prev child ${prevChild?.name}`
+              );
+            } else if (lastChild?.name === "BooleanOperator") {
+              // we need the type of the expression on the other side of the operator
+              return makeSuggestions(context, "expression");
+            }
+            console.log(`condition  last child ${lastChild?.name}`);
+          }
           break;
-        case "Function":
-          break;
+        case "ConditionalExpression":
+          return handleConditionalExpression(
+            nodeBefore,
+            context,
+            suggestionProvider
+          );
+        case "BooleanOperator":
+          // we need the type of the expression on the other side of the operator
+          return makeSuggestions(context, "expression");
+
         case "BinaryExpression":
           {
-            const lastChild = getLastChild(nodeBefore);
+            const lastChild = getLastChild(nodeBefore, context);
             if (lastChild?.name === "Column") {
-              const options = await suggestionProvider.getSuggestions(
-                "expression"
-              );
-              return { from: context.pos, options };
+              return makeSuggestions(context, "expression");
             } else if (isOperator(lastChild)) {
               const operator = lastChild.name as ColumnExpressionOperator;
-              const options = await suggestionProvider.getSuggestions(
-                "column",
-                { operator }
-              );
-              return { from: context.pos, options };
+              return makeSuggestions(context, "column", { operator });
             }
           }
 
-          break;
-        case "Number":
           break;
         case "OpenBrace":
           {
@@ -159,25 +255,22 @@ export const useColumnAutoComplete = (
             const functionName = getFunctionName(nodeBefore, state);
             // If not function, what came before - if it's an operator
             // we restrict to numerics
-            const options = await suggestionProvider.getSuggestions(
-              "expression",
-              {
-                functionName,
-              }
-            );
-            return { from: context.pos, options };
+            return makeSuggestions(context, "expression", { functionName });
           }
           break;
         case "ArgList": {
           const functionName = getFunctionName(nodeBefore, state);
-          const lastArgument = getLastChild(nodeBefore);
+          const lastArgument = getLastChild(nodeBefore, context);
           const prefix = lastArgument?.name === "OpenBrace" ? undefined : ",";
           let options = await suggestionProvider.getSuggestions("expression", {
             functionName,
           });
           options = prefix ? applyPrefix(options, ", ") : options;
           // TODO per function check for number of arguments expected
-          if (lastArgument?.name !== "OpenBrace") {
+          if (
+            lastArgument?.name !== "OpenBrace" &&
+            lastArgument?.name !== "Comma"
+          ) {
             options = [
               {
                 apply: ") ",
@@ -190,21 +283,15 @@ export const useColumnAutoComplete = (
         }
         case "Equal":
           if (text.trim() === "=") {
-            const options = await suggestionProvider.getSuggestions(
-              "expression"
-            );
-            return { from: context.pos, options };
+            return makeSuggestions(context, "expression");
           }
           break;
         case "ParenthesizedExpression":
         case "ColumnDefinitionExpression":
           if (context.pos === 0) {
-            const options = await suggestionProvider.getSuggestions(
-              "expression"
-            );
-            return { from: context.pos, options };
+            return makeSuggestions(context, "expression");
           } else {
-            const lastChild = getLastChild(nodeBefore);
+            const lastChild = getLastChild(nodeBefore, context);
             if (lastChild?.name === "Column") {
               if (maybeComplete) {
                 // We come in here is the columns IS complete, too (ie has space after)
@@ -256,10 +343,11 @@ export const useColumnAutoComplete = (
                   },
                 ];
 
-                const lastExpressionChild = getLastChild(lastChild);
+                const lastExpressionChild = getLastChild(lastChild, context);
                 if (lastExpressionChild?.name === "Column") {
                   const columnName = getValue(lastExpressionChild, state);
                   // TODO need to exclude columns already included in expression
+
                   const suggestions = await suggestionProvider.getSuggestions(
                     "operator",
                     { columnName }
@@ -272,13 +360,19 @@ export const useColumnAutoComplete = (
                   options,
                 };
               }
+            } else if (lastChild?.name === "ConditionalExpression") {
+              return handleConditionalExpression(
+                lastChild,
+                context,
+                suggestionProvider,
+                maybeComplete,
+                onSubmit.current
+              );
             }
             break;
           }
         case "Column":
           {
-            // TODO combine these
-            const columnName = getColumnName(nodeBefore, state);
             const isPartialMatch = await suggestionProvider.isPartialMatch(
               "expression",
               undefined,
@@ -286,17 +380,39 @@ export const useColumnAutoComplete = (
             );
 
             if (isPartialMatch) {
-              const options = await suggestionProvider.getSuggestions(
-                "expression"
-              );
-              return { from: nodeBefore.from, options };
+              return makeSuggestions(context, "expression", {
+                startsWith: word.text,
+              });
             }
           }
           break;
+        case "Comma":
+          {
+            const parentNode = getNamedParentNode(nodeBefore);
+            if (parentNode?.name === "ConditionalExpression") {
+              return makeSuggestions(context, "expression");
+            }
+          }
+          break;
+
         case "CloseBrace":
           {
+            const parentNode = getNamedParentNode(nodeBefore);
+            if (parentNode?.name === "ConditionalExpression") {
+              return handleConditionalExpression(
+                parentNode,
+                context,
+                suggestionProvider,
+                maybeComplete,
+                onSubmit.current
+              );
+            } else if (parentNode?.name === "ArgList") {
+              if (maybeComplete) {
+                return promptToSave(context, onSubmit.current);
+              }
+            }
             console.log(
-              "does closebrace denote an ARgList or a parenthetised expression ?"
+              `does closebrace denote an ARgList or a parenthetised expression ? ${parentNode}`
             );
           }
           break;
@@ -307,6 +423,6 @@ export const useColumnAutoComplete = (
         }
       }
     },
-    [onSubmit, suggestionProvider]
+    [makeSuggestions, onSubmit, suggestionProvider]
   ) as CompletionSource;
 };

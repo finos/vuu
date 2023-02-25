@@ -50,3 +50,5 @@ export { drawSelection, EditorView, highlightSpecialChars, keymap };
 export { styleTags, tags };
 // Lezer lr
 export { LRParser };
+
+export * from "./parser-utils";

@@ -3,6 +3,8 @@ import {
   CompletionContext,
   CompletionSource,
   EditorState,
+  getNodeByName,
+  getValue,
   syntaxTree,
 } from "@finos/vuu-codemirror";
 import { Filter } from "@finos/vuu-filter-types";
@@ -13,23 +15,6 @@ import { ISuggestionProvider, SuggestionType } from "./useCodeMirrorEditor";
 export type FilterSubmissionMode = "and" | "or" | "replace";
 
 export type ApplyCompletion = (mode?: FilterSubmissionMode) => void;
-
-const getValue = (node: SyntaxNode, state: EditorState) =>
-  state.doc.sliceString(node.from, node.to);
-
-const getColumnName = (node: SyntaxNode, state: EditorState) => {
-  if (node.firstChild?.name === "Column") {
-    return getValue(node.firstChild, state);
-  } else {
-    let maybeColumnNode = node.prevSibling || node.parent;
-    while (maybeColumnNode && maybeColumnNode.name !== "Column") {
-      maybeColumnNode = maybeColumnNode.prevSibling || maybeColumnNode.parent;
-    }
-    if (maybeColumnNode) {
-      return getValue(maybeColumnNode, state);
-    }
-  }
-};
 
 const getOperator = (node: SyntaxNode, state: EditorState) => {
   let maybeColumnNode = node.prevSibling || node.parent;
@@ -241,7 +226,7 @@ export const useAutoComplete = (
         }
 
         case "⚠": {
-          const columnName = getColumnName(nodeBefore, state);
+          const columnName = getNodeByName(nodeBefore, state);
           const operator = getOperator(nodeBefore, state);
           // TODO check if we're mnatching a partial jojn operator
           const partialOperator = operator
@@ -281,7 +266,7 @@ export const useAutoComplete = (
           break;
         case "ColumnSetExpression":
         case "Values": {
-          const columnName = getColumnName(nodeBefore, state);
+          const columnName = getNodeByName(nodeBefore, state);
           const selection = getSetValues(nodeBefore, state);
           return makeSuggestions(context, "columnValue", {
             columnName,
@@ -290,7 +275,7 @@ export const useAutoComplete = (
         }
         case "Comma":
         case "LBrack": {
-          const columnName = getColumnName(nodeBefore, state) as string;
+          const columnName = getNodeByName(nodeBefore, state) as string;
           return makeSuggestions(context, "columnValue", { columnName });
         }
 
@@ -299,11 +284,11 @@ export const useAutoComplete = (
             const lastToken = nodeBefore.lastChild?.prevSibling;
             if (lastToken?.name === "Column") {
               return makeSuggestions(context, "operator", {
-                columnName: getColumnName(nodeBefore, state),
+                columnName: getNodeByName(nodeBefore, state),
               });
             } else if (lastToken?.name === "Operator") {
               return makeSuggestions(context, "columnValue", {
-                columnName: getColumnName(lastToken, state),
+                columnName: getNodeByName(lastToken, state),
                 operator: getValue(lastToken, state),
               });
             }
@@ -319,7 +304,7 @@ export const useAutoComplete = (
 
         case "Eq": {
           return makeSuggestions(context, "columnValue", {
-            columnName: getColumnName(nodeBefore, state),
+            columnName: getNodeByName(nodeBefore, state),
           });
         }
 

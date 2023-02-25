@@ -28,19 +28,23 @@ export type ColumnExpressionOperator = "Times" | "Divide" | "Minus" | "Plus";
 export type ColumnExpressionSuggestionType =
   | "column"
   | "expression"
+  | "condition-operator"
   | "operator";
+
+export type ColumnExpressionSuggestionOptions = {
+  columnName?: string;
+  functionName?: string;
+  operator?: ColumnExpressionOperator;
+  prefix?: string;
+  startsWith?: string;
+  selection?: string[];
+};
 
 // TODO move this somewhere neutral
 export interface IExpressionSuggestionProvider {
   getSuggestions: (
     valueType: ColumnExpressionSuggestionType,
-    options?: {
-      columnName?: string;
-      operator?: ColumnExpressionOperator;
-      functionName?: string;
-      startsWith?: string;
-      selection?: string[];
-    }
+    options?: ColumnExpressionSuggestionOptions
   ) => Promise<Completion[]>;
   isPartialMatch: (
     valueType: ColumnExpressionSuggestionType,
@@ -195,7 +199,7 @@ export const useColumnExpressionEditor = ({
     };
 
     return [createState, clearInput];
-  }, [completionFn, onSubmitExpression]);
+  }, [completionFn, onChange, onSubmitExpression]);
 
   useEffect(() => {
     if (!editorRef.current) {

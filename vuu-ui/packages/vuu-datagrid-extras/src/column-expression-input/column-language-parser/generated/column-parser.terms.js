@@ -15,8 +15,10 @@ export const
   Plus = 13,
   Minus = 14,
   ConditionalExpression = 15,
-  Condition = 16,
-  BooleanOperator = 17,
-  CallExpression = 18,
-  Function = 19,
-  ArgList = 20
+  If = 16,
+  Condition = 17,
+  BooleanOperator = 18,
+  Comma = 19,
+  CallExpression = 20,
+  Function = 21,
+  ArgList = 22
