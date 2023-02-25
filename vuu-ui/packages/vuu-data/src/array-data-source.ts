@@ -1,5 +1,4 @@
 import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
-import { KeySet } from "./server-proxy/keyset";
 import {
   LinkDescriptorWithLabel,
   VuuGroupBy,
@@ -11,7 +10,13 @@ import {
   ClientToServerMenuRPC,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { EventEmitter, isSelected, metadataKeys, uuid } from "@finos/vuu-utils";
+import {
+  EventEmitter,
+  isSelected,
+  KeySet,
+  metadataKeys,
+  uuid,
+} from "@finos/vuu-utils";
 import {
   DataSource,
   DataSourceConstructorProps,

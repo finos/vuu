@@ -1,6 +1,6 @@
 import { Dropdown, DropdownProps } from "@heswell/salt-lab";
 import { useCallback, useState } from "react";
-import { ISuggestionProvider } from "../filter-input";
+import { IFilterSuggestionProvider } from "../filter-input";
 
 const isString = (s?: string | string[]): s is string => typeof s === "string";
 
@@ -22,7 +22,7 @@ const stripQuotes = <T extends string | string[]>(
 
 export interface FilterDropdownProps extends DropdownProps<string, "multiple"> {
   column: string;
-  suggestionProvider: ISuggestionProvider;
+  suggestionProvider: IFilterSuggestionProvider;
 }
 
 export const FilterDropdownMultiSelect = ({

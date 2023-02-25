@@ -1,4 +1,4 @@
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, useCallback } from "react";
 import {
   ExpressionSuggestionConsumer,
   useColumnExpressionEditor,

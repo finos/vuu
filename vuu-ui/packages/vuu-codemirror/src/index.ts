@@ -16,7 +16,7 @@ import {
   syntaxHighlighting,
   syntaxTree,
 } from "@codemirror/language";
-import { EditorState, Extension } from "@codemirror/state";
+import { AnnotationType, EditorState, Extension } from "@codemirror/state";
 import {
   drawSelection,
   EditorView,
@@ -42,7 +42,7 @@ export {
   syntaxTree,
 };
 // State
-export { EditorState };
+export { AnnotationType, EditorState };
 export type { Extension };
 // View
 export { drawSelection, EditorView, highlightSpecialChars, keymap };
@@ -50,3 +50,6 @@ export { drawSelection, EditorView, highlightSpecialChars, keymap };
 export { styleTags, tags };
 // Lezer lr
 export { LRParser };
+
+export * from "./parser-utils";
+export * from "./suggestion-utils";

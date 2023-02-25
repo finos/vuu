@@ -2,14 +2,14 @@ import {
   autocompletion,
   Completion,
   defaultKeymap,
-  ensureSyntaxTree,
   EditorState,
   EditorView,
+  ensureSyntaxTree,
   keymap,
   startCompletion,
 } from "@finos/vuu-codemirror";
-import cx from "classnames";
 import { Filter } from "@finos/vuu-filter-types";
+import cx from "classnames";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
 import { minimalSetup } from "./codemirror-basic-setup";
 import { filterLanguageSupport } from "./filter-language-parser";
@@ -33,11 +33,11 @@ export interface SuggestionOptions {
 }
 
 export type getSuggestionsType = (
-  valueType: SuggestionType,
+  suggestionType: SuggestionType,
   options?: SuggestionOptions
 ) => Promise<Completion[]>;
 
-export interface ISuggestionProvider {
+export interface IFilterSuggestionProvider {
   getSuggestions: getSuggestionsType;
   isPartialMatch: (
     valueType: SuggestionType,
@@ -47,7 +47,7 @@ export interface ISuggestionProvider {
 }
 
 export interface SuggestionConsumer {
-  suggestionProvider: ISuggestionProvider;
+  suggestionProvider: IFilterSuggestionProvider;
 }
 
 const getView = (ref: MutableRefObject<EditorView | undefined>): EditorView => {
@@ -84,7 +84,7 @@ export type filterSubmissionHandler = (
 export interface CodeMirrorEditorProps {
   existingFilter?: Filter;
   onSubmitFilter?: filterSubmissionHandler;
-  suggestionProvider: ISuggestionProvider;
+  suggestionProvider: IFilterSuggestionProvider;
 }
 
 export const useCodeMirrorEditor = ({

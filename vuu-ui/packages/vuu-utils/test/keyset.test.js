@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { KeySet } from "../src/server-proxy/keyset";
+import { KeySet } from "../src/keyset";
 
 describe("KeySet", () => {
   describe("reset", () => {

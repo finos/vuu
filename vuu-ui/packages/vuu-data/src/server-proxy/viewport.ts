@@ -22,15 +22,19 @@ import {
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { expandSelection, getFullRange, logger } from "@finos/vuu-utils";
+import {
+  expandSelection,
+  getFullRange,
+  KeySet,
+  logger,
+  RangeMonitor,
+} from "@finos/vuu-utils";
 import {
   ServerProxySubscribeMessage,
   VuuUIMessageOutCloseTreeNode,
   VuuUIMessageOutOpenTreeNode,
 } from "../vuuUIMessageTypes";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
-import { bufferBreakout } from "./buffer-range";
-import { KeySet } from "./keyset";
 import * as Message from "./messages";
 import {
   DataSourceAggregateMessage,

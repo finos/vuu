@@ -77,6 +77,7 @@ describe("ColumnExpressionParser", () => {
   it("parses conditional expressions", () => {
     expect(evaluateExpression("if(price > 100, true, false)")).toEqual(Ok);
     expect(evaluateExpression('if(side="Sell","N","Y")')).toEqual(Ok);
+    expect(evaluateExpression('if(ask < bid,"N","Y")')).toEqual(Ok);
   });
 
   it("parses nested conditional expressions", () => {

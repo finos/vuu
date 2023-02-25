@@ -1,12 +1,19 @@
-import { Completion } from "@finos/vuu-codemirror";
-import { useTypeaheadSuggestions } from "@finos/vuu-data";
+import {
+  AnnotationType,
+  Completion,
+  EditorView,
+  numericOperators,
+  stringOperators,
+  toSuggestions,
+} from "@finos/vuu-codemirror";
+import { getTypeaheadParams, useTypeaheadSuggestions } from "@finos/vuu-data";
 import {
   ColumnExpressionOperator,
   ColumnExpressionSuggestionType,
   IExpressionSuggestionProvider,
 } from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
+import { VuuTable } from "@finos/vuu-protocol-types";
 import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import {
@@ -20,12 +27,13 @@ const NO_OPERATORS = [] as Completion[];
 const withApplySpace = (suggestions: Completion[]): Completion[] =>
   suggestions.map((suggestion) => ({
     ...suggestion,
-    apply: suggestion.label + " ",
+    apply: (suggestion.apply ?? suggestion.label) + " ",
   }));
 
 type ColumnOptions = {
   functionName?: string;
   operator?: ColumnExpressionOperator;
+  prefix?: string;
 };
 
 const getValidColumns = (
@@ -52,39 +60,24 @@ const getValidColumns = (
 
 const getColumns = (columns: ColumnDescriptor[], options: ColumnOptions) => {
   const validColumns = getValidColumns(columns, options);
-  return validColumns.map((column) => ({
-    label: column.label ?? column.name,
-    boost: 5,
-    type: "column",
-    expressionType: column.serverDataType,
-  }));
+  return validColumns.map((column) => {
+    const label = column.label ?? column.name;
+    return {
+      apply: options.prefix ? `${options.prefix}${label}` : label,
+      label,
+      boost: 5,
+      type: "column",
+      expressionType: column.serverDataType,
+    };
+  });
 };
 
+// prettier-ignore
 const operators = [
-  {
-    apply: "* ",
-    boost: 2,
-    label: "*",
-    type: "operator",
-  },
-  {
-    apply: "/ ",
-    boost: 2,
-    label: "/",
-    type: "operator",
-  },
-  {
-    apply: "+ ",
-    boost: 2,
-    label: "+",
-    type: "operator",
-  },
-  {
-    apply: "- ",
-    boost: 2,
-    label: "-",
-    type: "operator",
-  },
+  { apply: "* ", boost: 2, label: "*", type: "operator" },
+  { apply: "/ ", boost: 2, label: "/", type: "operator" },
+  { apply: "+ ", boost: 2, label: "+", type: "operator" },
+  { apply: "- ", boost: 2, label: "-", type: "operator" },
 ];
 
 const getOperators = (column?: ColumnDescriptor) => {
@@ -92,6 +85,18 @@ const getOperators = (column?: ColumnDescriptor) => {
     return operators;
   } else {
     return NO_OPERATORS;
+  }
+};
+
+const getConditionOperators = (column: ColumnDescriptor) => {
+  switch (column.serverDataType) {
+    case "string":
+    case "char":
+      return withApplySpace(stringOperators /*, startsWith*/);
+    case "int":
+    case "long":
+    case "double":
+      return withApplySpace(numericOperators);
   }
 };
 
@@ -145,38 +150,6 @@ const getFunctions = ({ functionName }: ColumnOptions) => {
   return functions;
 };
 
-const doneCommand: Completion = {
-  label: "Done",
-  apply: "] ",
-  type: "keyword",
-  boost: 10,
-};
-
-const toSuggestions = (
-  values: string[],
-  quoted = false,
-  prefix = ""
-): Completion[] => {
-  const quote = quoted ? '"' : "";
-  return values.map((value) => ({
-    label: value,
-    apply: `${prefix}${quote}${value}${quote} `,
-  }));
-};
-
-const getTypeaheadParams = (
-  table: VuuTable,
-  column: string,
-  text = "",
-  selectedValues: string[] = []
-): TypeaheadParams => {
-  if (text !== "" && !selectedValues.includes(text.toLowerCase())) {
-    return [table, column, text];
-  } else {
-    return [table, column];
-  }
-};
-
 export interface SuggestionProviderHookProps {
   columns: ColumnDescriptor[];
   table: VuuTable;
@@ -188,52 +161,82 @@ export const useColumnExpressionSuggestionProvider = ({
   columns,
   table,
 }: SuggestionProviderHookProps): IExpressionSuggestionProvider => {
+  const findColumn = useCallback(
+    (name?: string) =>
+      name ? columns.find((col) => col.name === name) : undefined,
+    [columns]
+  );
+
   const latestSuggestionsRef = useRef<Completion[]>();
   const getTypeaheadSuggestions = useTypeaheadSuggestions();
+
   const getSuggestions: IExpressionSuggestionProvider["getSuggestions"] =
     useCallback(
-      async (valueType, options = NONE): Promise<Completion[]> => {
-        const { columnName, functionName, startsWith, selection } = options;
+      async (suggestionType, options = NONE): Promise<Completion[]> => {
+        const { columnName, functionName, operator, prefix } = options;
 
-        if (valueType === "expression") {
-          const expressions = withApplySpace(
-            getColumns(columns, { functionName })
-          ).concat(getFunctions(options));
-
-          const suggestions = await expressions;
-          return (latestSuggestionsRef.current = suggestions);
-        } else if (valueType === "column") {
-          const suggestions = await getColumns(columns, options);
-          return (latestSuggestionsRef.current = withApplySpace(suggestions));
-        } else if (valueType === "operator") {
-          const column = columns.find((col) => col.name === columnName);
-          const suggestions = await getOperators(column);
-          return (latestSuggestionsRef.current = withApplySpace(suggestions));
-        } else if (columnName) {
-          const column = columns.find((col) => col.name === columnName);
-          const prefix = Array.isArray(selection)
-            ? selection.length === 0
-              ? "["
-              : ","
-            : "";
-          const params = getTypeaheadParams(table, columnName, startsWith);
-          const suggestions = await getTypeaheadSuggestions(params);
-          // prob don;t want to save the preix
-          latestSuggestionsRef.current = toSuggestions(
-            suggestions,
-            column?.serverDataType === "string",
-            prefix
-          );
-          if (Array.isArray(selection) && selection?.length > 1) {
-            return [doneCommand, ...latestSuggestionsRef.current];
-          } else {
-            return latestSuggestionsRef.current;
+        switch (suggestionType) {
+          case "expression": {
+            const suggestions = await withApplySpace(
+              getColumns(columns, { functionName, prefix })
+            ).concat(getFunctions(options));
+            return (latestSuggestionsRef.current = suggestions);
           }
+          case "column": {
+            const suggestions = await getColumns(columns, options);
+            return (latestSuggestionsRef.current = withApplySpace(suggestions));
+          }
+          case "operator": {
+            const suggestions = await getOperators(findColumn(columnName));
+            return (latestSuggestionsRef.current = withApplySpace(suggestions));
+          }
+          case "condition-operator":
+            {
+              const column = findColumn(columnName);
+              if (column) {
+                const suggestions = await getConditionOperators(column);
+                if (suggestions) {
+                  return (latestSuggestionsRef.current =
+                    withApplySpace(suggestions));
+                }
+              }
+            }
+            break;
+          case "columnValue":
+            if (columnName && operator) {
+              // const column = findColumn(columnName);
+              const params = getTypeaheadParams(
+                table,
+                columnName /*, startsWith*/
+              );
+              const suggestions = await getTypeaheadSuggestions(params);
+              latestSuggestionsRef.current = toSuggestions(suggestions, {
+                suffix: "",
+              });
+
+              latestSuggestionsRef.current.forEach((suggestion) => {
+                suggestion.apply = (
+                  view: EditorView,
+                  completion: Completion,
+                  from: number
+                ) => {
+                  const annotation = new AnnotationType<Completion>();
+                  const cursorPos = from + completion.label.length + 1;
+                  view.dispatch({
+                    changes: { from, insert: completion.label },
+                    selection: { anchor: cursorPos, head: cursorPos },
+                    annotations: annotation.of(completion),
+                  });
+                };
+              });
+              return latestSuggestionsRef.current;
+            }
+            break;
         }
 
         return [];
       },
-      [columns, getTypeaheadSuggestions, table]
+      [columns, findColumn, getTypeaheadSuggestions, table]
     );
 
   const isPartialMatch = useCallback(
