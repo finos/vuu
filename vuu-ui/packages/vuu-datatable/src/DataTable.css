@@ -1,12 +1,25 @@
 
 .vuuDataTable {
-  background-color: var(--salt-container-primary-background, inherit);
+  --dataTable-background: var(--salt-container-primary-background, inherit);
+  --row-background-even: var(--dataTable-background);
+  --row-background-odd: var(--dataTable-background);
+  --table-background: var(--dataTable-background);
+  background-color: var(--dataTable-background);
   position: relative;
 }
+
+.vuuDataTable-zebra {
+  --row-background-even: var(--salt-container-secondary-background);
+  --table-background: 0 var(--header-height) repeating-linear-gradient(
+    to bottom, 
+    var(--salt-container-secondary-background), 
+    var(--salt-container-secondary-background) var(--row-height), 
+    var(--dataTable-background) var(--row-height), 
+    var(--dataTable-background) calc(var(--row-height) *2));
+}
+
 .vuuDataTable-contentContainer {
   
-  --table-background: var(--salt-container-primary-background, inherit);
-
   --vuuTable-contentHeight: var(--content-height, 'auto');
   --vuuTable-contentWidth: var(--content-width, 'auto');
   --vuuTableHeaderHeight: var(--header-height, 30px);
@@ -63,7 +76,7 @@
 }
 
 .vuuDataTable-tableContainer {
-  background-color: var(--table-background);
+  background-color: var(--dataTable-background);
   border-bottom: solid 1px var(--salt-container-primary-borderColor);
   height: calc(var(--table-height) - var(--scrollbar-size));
   left: 0px;
@@ -85,12 +98,9 @@
   top: 0;
   left: 0;
 
-  background: repeating-linear-gradient(
-    to bottom, 
-    var(--salt-container-secondary-background), 
-    var(--salt-container-secondary-background) 20px, 
-    var(--table-background) 20px, 
-    var(--table-background) 40px);
+  background: var(--table-background);
+  /* background-position: 0 25px; */
+
   border-collapse: separate;
   border-spacing: 0;
   border-left: 1px solid #ccc;
@@ -153,4 +163,5 @@ table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   background-color: var(--salt-container-primary-background);
   overflow: hidden;
 }
+
 

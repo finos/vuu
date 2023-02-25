@@ -1,0 +1,21 @@
+.vuuJsonCell-group {
+    align-items: center;
+    display: inline-flex;
+    height: var(--vuuTable-rowHeight);
+    width: 100%;
+}
+
+.vuuJsonCell-toggle {
+    --vuu-icon-color: var(--salt-text-primary-foreground);
+    --vuu-icon-height: var(--vuuTable-rowHeight);
+    --vuu-icon-width: 18px;
+    margin-left: auto;
+}
+
+.vuuJsonCell-name {
+      font-weight: var(--salt-typography-fontWeight-semiBold);  
+}
+
+.vuuJsonCell-value {
+
+}

@@ -10,7 +10,7 @@
 }
 
 .vuuTable-headingCell {
-  background: var(--table-background);
+  background: var(--dataTable-background);
   border-color: var(--salt-separable-tertiary-borderColor);
   border-style: solid solid solid none;
   border-width: 1px;
@@ -29,7 +29,7 @@
 .vuuTable-headerCell {
   --cell-align: 'flex-start';
   text-align: left;
-    background: var(--table-background);
+    background: var(--dataTable-background);
     /* border-right: var(--header-border-rightWidth, 1px) solid var(--header-border-rightColor, var(--salt-separable-tertiary-borderColor)); */
     border-bottom: 2px solid var(--salt-separable-tertiary-borderColor);
     color: var(--salt-text-secondary-foreground);

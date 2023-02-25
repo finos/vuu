@@ -70,6 +70,11 @@ export interface ColumnActionHide {
   type: "hideColumn";
   column: KeyedColumnDescriptor;
 }
+
+export interface ColumnActionShow {
+  type: "showColumn";
+  column: KeyedColumnDescriptor;
+}
 export interface ColumnActionMove {
   type: "moveColumn";
   column: KeyedColumnDescriptor;
@@ -126,6 +131,7 @@ export type GridModelAction =
   | ColumnActionPin
   | ColumnActionResize
   | ColumnActionSetTypes
+  | ColumnActionShow
   | ColumnActionUpdate
   | ColumnActionUpdateProp
   | ColumnActionTableConfig;
@@ -146,6 +152,8 @@ const columnReducer: GridModelReducer = (state, action) => {
       return setTypes(state, action);
     case "hideColumn":
       return hideColumn(state, action);
+    case "showColumn":
+      return showColumn(state, action);
     case "pinColumn":
       return pinColumn(state, action);
     case "updateColumnProp":
@@ -260,11 +268,26 @@ function moveColumn(
 }
 
 function hideColumn(state: GridModel, { column }: ColumnActionHide) {
-  return updateColumnProp(state, {
-    type: "updateColumnProp",
-    column,
-    hidden: true,
-  });
+  if (column.hidden) {
+    return state;
+  } else {
+    return updateColumnProp(state, {
+      type: "updateColumnProp",
+      column,
+      hidden: true,
+    });
+  }
+}
+function showColumn(state: GridModel, { column }: ColumnActionHide) {
+  if (column.hidden) {
+    return updateColumnProp(state, {
+      type: "updateColumnProp",
+      column,
+      hidden: false,
+    });
+  } else {
+    return state;
+  }
 }
 
 function resizeColumn(

@@ -1,6 +1,15 @@
 import { DataSourceRow } from "@finos/vuu-data";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
+import {
+  ColumnDescriptor,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid-types";
+import {
+  isGroupColumn,
+  isJsonColumn,
+  isJsonGroup,
+  metadataKeys,
+  notHidden,
+} from "@finos/vuu-utils";
 import cx from "classnames";
 import { HTMLAttributes, memo, MouseEvent, useCallback } from "react";
 import { RowClickHandler } from "./dataTableTypes";
@@ -18,7 +27,7 @@ export interface RowProps
   height: number;
   index: number;
   onClick?: RowClickHandler;
-  onToggleGroup?: (row: DataSourceRow) => void;
+  onToggleGroup?: (row: DataSourceRow, column?: ColumnDescriptor) => void;
   row: DataSourceRow;
 }
 
@@ -53,7 +62,11 @@ export const TableRow = memo(function Row({
   );
 
   const handleGroupCellClick = useCallback(
-    () => onToggleGroup?.(row),
+    (column: KeyedColumnDescriptor) => {
+      if (isGroupColumn(column) || isJsonGroup(column, row)) {
+        onToggleGroup?.(row, column);
+      }
+    },
     [onToggleGroup, row]
   );
 
@@ -69,12 +82,13 @@ export const TableRow = memo(function Row({
     >
       {columns.filter(notHidden).map((column) => {
         const isGroup = isGroupColumn(column);
+        const isJsonCell = isJsonColumn(column);
         const Cell = isGroup ? TableGroupCell : TableCell;
         return (
           <Cell
             column={column}
             key={column.name}
-            onClick={isGroup ? handleGroupCellClick : undefined}
+            onClick={isGroup || isJsonCell ? handleGroupCellClick : undefined}
             row={row}
           />
         );

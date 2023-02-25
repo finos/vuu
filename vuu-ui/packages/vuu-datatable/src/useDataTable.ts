@@ -17,6 +17,7 @@ import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
   applySort,
   buildColumnMap,
+  isJsonGroup,
   metadataKeys,
   moveItem,
 } from "@finos/vuu-utils";
@@ -231,16 +232,33 @@ export const useDataTable = ({
   );
 
   const handleToggleGroup = useCallback(
-    (row: DataSourceRow) => {
-      if (dataSource) {
-        if (row[IS_EXPANDED]) {
-          dataSource.closeTreeNode(row[KEY]);
-        } else {
-          dataSource.openTreeNode(row[KEY]);
+    (row: DataSourceRow, column: KeyedColumnDescriptor) => {
+      const isJson = isJsonGroup(column, row);
+      if (row[IS_EXPANDED]) {
+        dataSource.closeTreeNode(row[KEY]);
+        // TODO we can only do this if column is purely for expanded nodes and
+        // no other nodes are still expanded
+        // if (isJson) {
+        //   const idx = columns.indexOf(column) + 1;
+        //   const nextColumn = columns[idx];
+        //   if (nextColumn?.hidden !== true) {
+        //     dispatchColumnAction({ type: "hideColumn", column: nextColumn });
+        //   }
+        // }
+      } else {
+        dataSource.openTreeNode(row[KEY]);
+        if (isJson) {
+          // Note we need to show the next 2 cols unless ALL children are json
+          // nodex (and thus collapsed by default)
+          const idx = columns.indexOf(column) + 1;
+          const nextColumn = columns[idx];
+          if (nextColumn?.hidden) {
+            dispatchColumnAction({ type: "showColumn", column: nextColumn });
+          }
         }
       }
     },
-    [dataSource]
+    [columns, dataSource]
   );
 
   const handleRemoveColumnFromGroupBy = useCallback(
