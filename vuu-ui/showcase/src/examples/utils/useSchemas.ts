@@ -40,6 +40,28 @@ const schemas: { [key: string]: Schema } = {
     ],
     table: { module: "SIMUL", table: "orders" },
   },
+  childOrders: {
+    columns: [
+      { name: "account" },
+      { name: "averagePrice" },
+      { name: "ccy" },
+      { name: "exchange" },
+      { name: "filledQty" },
+      { name: "id" },
+      { name: "idAsInt" },
+      { name: "lastUpdate" },
+      { name: "openQty" },
+      { name: "parentOrderId" },
+      { name: "price" },
+      { name: "quantity" },
+      { name: "ric" },
+      { name: "side" },
+      { name: "status" },
+      { name: "strategy" },
+      { name: "volLimit" },
+    ],
+    table: { module: "SIMUL", table: "childOrders" },
+  },
   parentOrders: {
     columns: [
       { name: "account" },

@@ -147,6 +147,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     const callback = this[connectionCallback];
     ws.onmessage = (evt) => {
       const vuuMessageFromServer = parseMessage(evt.data);
+      console.log(`%c<<< ${vuuMessageFromServer.body.type}`, "color: brown");
       callback(vuuMessageFromServer);
     };
 
@@ -189,6 +190,8 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
       //   `%c>>>  (WebSocket) ${JSON.stringify(msg)}`,
       //   "color:blue;font-weight:bold;"
       // );
+      console.log(`%c>>> ${msg.body.type}`, "color: green; font-weight: bold;");
+
       ws.send(JSON.stringify(msg));
     };
 

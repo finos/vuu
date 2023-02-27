@@ -108,6 +108,7 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
 
 export interface GroupColumnDescriptor extends KeyedColumnDescriptor {
   columns: KeyedColumnDescriptor[];
+  groupConfirmed: boolean;
 }
 
 export interface Heading {

@@ -257,7 +257,7 @@ export const VuuDataTable = () => {
       {
         description: { editable: true },
       },
-      ["instruments", "orders", "parentOrders", "prices"],
+      ["instruments", "orders", "parentOrders", "childOrders", "prices"],
     ],
     []
   );
@@ -358,7 +358,8 @@ export const VuuDataTable = () => {
         <ToggleButton tooltipText="Alert">Instruments</ToggleButton>
         <ToggleButton tooltipText="Home">Orders</ToggleButton>
         <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
-        <ToggleButton tooltipText="Search">Prices</ToggleButton>
+        <ToggleButton tooltipText="Child Orders">Child Orders</ToggleButton>
+        <ToggleButton tooltipText="Prices">Prices</ToggleButton>
       </ToggleButtonGroup>
       <Toolbar
         className="salt-density-high"

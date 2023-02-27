@@ -109,7 +109,12 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   });
 
   const handleDataSourceConfigChange = useCallback(
-    (config: DataSourceConfig) => save?.(config, "datasource-config"),
+    (config: DataSourceConfig | undefined, confirmed: boolean) => {
+      console.log(
+        `vuuTable handleDataSourceConfigChange confirmed: ${confirmed}`
+      );
+      save?.(config, "datasource-config");
+    },
     [save]
   );
 
@@ -123,13 +128,13 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
       schema.columns.map((col) => col.name);
 
     ds = new RemoteDataSource({
-      onConfigChange: handleDataSourceConfigChange,
       viewport: id,
       table: schema.table,
       ...dataSourceConfigFromState,
       columns,
       title,
     });
+    ds.on("config", handleDataSourceConfigChange);
     saveSession?.(ds, "data-source");
     return ds;
   }, [

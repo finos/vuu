@@ -1,10 +1,5 @@
-export interface Event {}
-
-export type EventListener = (evtName: string, ...args: any[]) => void;
-
-export type EventListenerMap = {
-  [eventName: string]: EventListener[] | EventListener;
-};
+type Listener = (...args: any[]) => void;
+export type EmittedEvents = Record<string, Listener>;
 
 function isArrayOfListeners(
   listeners: EventListener | EventListener[]
@@ -18,43 +13,31 @@ function isOnlyListener(
   return !Array.isArray(listeners);
 }
 
-export interface IEventEmitter {
-  emit: (type: string, ...args: unknown[]) => void;
-}
+export class EventEmitter<Events extends EmittedEvents> {
+  #events: Map<keyof Events, Listener | Listener[]> = new Map();
 
-export class EventEmitter implements IEventEmitter {
-  private _events?: EventListenerMap;
-
-  constructor() {
-    this._events = {};
-  }
-
-  addListener(type: string, listener: EventListener) {
-    if (!this._events) {
-      this._events = {};
-    }
-
-    const listeners = this._events[type];
+  addListener<E extends keyof Events>(event: E, listener: Events[E]) {
+    const listeners = this.#events.get(event);
 
     if (!listeners) {
-      this._events[type] = listener;
+      this.#events.set(event, listener);
     } else if (isArrayOfListeners(listeners)) {
       listeners.push(listener);
     } else if (isOnlyListener(listeners)) {
-      this._events[type] = [listeners, listener];
+      this.#events.set(event, [listeners, listener]);
     }
   }
 
-  removeListener(type: string, listener: EventListener) {
-    if (!this._events || !this._events[type]) {
+  removeListener<E extends keyof Events>(event: E, listener: Events[E]) {
+    if (!this.#events.has(event)) {
       return;
     }
 
-    const listenerOrListeners = this._events[type];
+    const listenerOrListeners = this.#events.get(event);
     let position = -1;
 
     if (listenerOrListeners === listener) {
-      delete this._events[type];
+      this.#events.delete(event);
     } else if (Array.isArray(listenerOrListeners)) {
       for (let i = length; i-- > 0; ) {
         if (listenerOrListeners[i] === listener) {
@@ -69,71 +52,61 @@ export class EventEmitter implements IEventEmitter {
 
       if (listenerOrListeners.length === 1) {
         listenerOrListeners.length = 0;
-        delete this._events[type];
+        this.#events.delete(event);
       } else {
         listenerOrListeners.splice(position, 1);
       }
     }
   }
 
-  removeAllListeners(type: string) {
-    if (!this._events) {
-      return;
-    } else if (type === undefined) {
-      delete this._events;
-    } else {
-      delete this._events[type];
+  removeAllListeners<E extends keyof Events>(event?: E) {
+    if (event && this.#events.has(event)) {
+      this.#events.delete(event);
+    } else if (event === undefined) {
+      this.#events.clear();
     }
   }
 
-  emit(type: string, ...args: unknown[]) {
-    if (this._events) {
-      const handler = this._events[type];
+  emit<E extends keyof Events>(event: E, ...args: Parameters<Events[E]>) {
+    if (this.#events) {
+      const handler = this.#events.get(event);
       if (handler) {
-        invokeHandler(handler, type, args);
-      }
-      const wildcardHandler = this._events["*"];
-      if (wildcardHandler) {
-        invokeHandler(wildcardHandler, type, args);
+        this.invokeHandler(handler, args);
       }
     }
   }
 
-  once(type: string, listener: EventListener) {
-    const handler = (evtName: string, message: unknown) => {
-      this.removeListener(evtName, handler);
-      listener(evtName, message);
-    };
+  once<E extends keyof Events>(event: E, listener: Events[E]) {
+    const handler = ((...args) => {
+      this.removeListener(event, handler);
+      listener(...args);
+    }) as Events[E];
 
-    this.on(type, handler);
+    this.on(event, handler);
   }
 
-  on(type: string, listener: EventListener) {
-    return this.addListener(type, listener);
+  on<E extends keyof Events>(event: E, listener: Events[E]) {
+    this.addListener(event, listener);
   }
-}
 
-function invokeHandler(
-  handler: EventListener | EventListener[],
-  type: string,
-  args: unknown[]
-) {
-  if (isArrayOfListeners(handler)) {
-    handler.slice().forEach((listener) => invokeHandler(listener, type, args));
-  } else {
-    switch (args.length) {
-      case 0:
-        handler(type);
-        break;
-      case 1:
-        handler(type, args[0]);
-        break;
-      case 2:
-        handler(type, args[0], args[1]);
-        break;
-      // slower
-      default:
-        handler.call(null, type, ...args);
+  private invokeHandler(handler: Listener | Array<Listener>, args: unknown[]) {
+    if (isArrayOfListeners(handler)) {
+      handler.slice().forEach((listener) => this.invokeHandler(listener, args));
+    } else {
+      switch (args.length) {
+        case 0:
+          handler();
+          break;
+        case 1:
+          handler(args[0]);
+          break;
+        case 2:
+          handler(args[0], args[1]);
+          break;
+        // slower
+        default:
+          handler.call(null, ...args);
+      }
     }
   }
 }

@@ -18,6 +18,9 @@ import {
   SubscribeCallback,
   SubscribeProps,
   DataSourceConfig,
+  DataSourceEvents,
+  isDataSourceConfigMessage,
+  toDataSourceConfig,
 } from "./data-source";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
@@ -25,14 +28,16 @@ import { MenuRpcResponse } from "./vuuUIMessageTypes";
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
-export class RemoteDataSource extends EventEmitter implements DataSource {
+export class RemoteDataSource
+  extends EventEmitter<DataSourceEvents>
+  implements DataSource
+{
   private bufferSize: number;
   private server: ServerAPI | null = null;
   private status = "initialising";
   private disabled = false;
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
-  private onConfigChange: undefined | ((config: DataSourceConfig) => void);
 
   #aggregations: VuuAggregation[] = [];
   #columns: string[] = [];
@@ -56,7 +61,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     columns,
     filter,
     groupBy,
-    onConfigChange,
     sort,
     table,
     title,
@@ -69,7 +73,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       throw Error("RemoteDataSource constructor called without table");
 
     this.bufferSize = bufferSize;
-    this.onConfigChange = onConfigChange;
     this.table = table;
     this.viewport = viewport;
 
@@ -163,12 +166,13 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   handleMessageFromServer = (message: DataSourceCallbackMessage) => {
     if (message.type === "subscribed") {
       this.status = "subscribed";
-      this.emit("subscribed", message);
       this.clientCallback?.(message);
     } else if (message.type === "disabled") {
       this.status = "disabled";
     } else if (message.type === "enabled") {
       this.status = "enabled";
+    } else if (isDataSourceConfigMessage(message)) {
+      this.emit("config", toDataSourceConfig(message), true);
     } else {
       if (
         message.type === "viewport-update" &&
@@ -188,6 +192,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       this.server?.unsubscribe(this.viewport);
     }
     this.server?.destroy(this.viewport);
+    this.removeAllListeners();
   }
 
   suspend() {
@@ -342,7 +347,7 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       }
     }
     const newConfig = this.refreshConfig();
-    newConfig && this.onConfigChange?.(newConfig);
+    this.emit("config", newConfig, false);
   }
 
   get aggregations() {
@@ -358,8 +363,9 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         aggregations,
       });
     }
-    const newConfig = this.refreshConfig();
-    newConfig && this.onConfigChange?.(newConfig);
+
+    this.refreshConfig();
+    this.emit("config", { aggregations }, false);
   }
 
   get sort() {
@@ -379,8 +385,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
-    const newConfig = this.refreshConfig();
-    newConfig && this.onConfigChange?.(newConfig);
+    this.refreshConfig();
+    this.emit("config", { sort }, false);
   }
 
   get filter() {
@@ -400,8 +406,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
-    const newConfig = this.refreshConfig();
-    newConfig && this.onConfigChange?.(newConfig);
+    this.refreshConfig();
+    this.emit("config", { filter }, false);
   }
 
   get groupBy() {
@@ -421,8 +427,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         this.server.send(message);
       }
     }
-    const newConfig = this.refreshConfig();
-    newConfig && this.onConfigChange?.(newConfig);
+    this.refreshConfig();
+    this.emit("config", { groupBy }, false);
   }
 
   get title() {
@@ -470,8 +476,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
         });
       }
     }
-    const newConfig = this.refreshConfig();
-    newConfig && this.onConfigChange?.(newConfig);
+    this.refreshConfig();
+    this.emit("config", { visualLink }, false);
   }
 
   async menuRpcCall(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">) {
