@@ -10,6 +10,7 @@ import { ColumnMap } from "@finos/vuu-utils";
 import { parseFilter } from "./filter-input/filter-language-parser/FilterParser";
 
 const filterPredicateMap = new Map<string, FilterPredicate>();
+const filterReject = () => false;
 
 export const getFilterPredicate = (
   columnMap: ColumnMap,
@@ -20,10 +21,17 @@ export const getFilterPredicate = (
     return predicate;
   }
   // TODO we need to clear cache if columns change. How do we identify this :
-  const filter = parseFilter(filterQuery);
-  predicate = filterPredicate(columnMap, filter);
-  filterPredicateMap.set(filterQuery, predicate);
-  return predicate;
+  try {
+    const filter = parseFilter(filterQuery);
+    predicate = filterPredicate(columnMap, filter);
+    filterPredicateMap.set(filterQuery, predicate);
+    return predicate;
+  } catch (err) {
+    console.warn(
+      `filter-evaluation-utils, failed to parse filter "${filterQuery}"`
+    );
+    return filterReject;
+  }
 };
 
 export function filterPredicate(
