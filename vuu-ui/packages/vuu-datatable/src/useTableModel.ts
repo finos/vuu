@@ -116,6 +116,7 @@ export interface ColumnActionUpdateProp {
 }
 
 export interface ColumnActionTableConfig extends DataSourceConfig {
+  confirmed?: boolean;
   type: "tableConfig";
 }
 
@@ -199,7 +200,10 @@ function init({ dataSourceConfig, tableConfig }: InitialConfig): GridModel {
     headings: getTableHeadings(maybePinnedColumns),
   };
   if (dataSourceConfig) {
-    return updateTableConfig(state, dataSourceConfig);
+    return updateTableConfig(state, {
+      type: "tableConfig",
+      ...dataSourceConfig,
+    });
   } else {
     return state;
   }
@@ -388,12 +392,14 @@ function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
 
 function updateTableConfig(
   state: GridModel,
-  { columns, filter, groupBy, sort }: DataSourceConfig
+  { columns, confirmed, filter, groupBy, sort }: ColumnActionTableConfig
 ) {
   const hasColumns = columns && columns.length > 0;
   const hasGroupBy = groupBy !== undefined;
   const hasFilter = typeof filter?.filter === "string";
   const hasSort = sort && sort.sortDefs.length > 0;
+
+  //TODO check if just confirmed has changed
 
   let result = state;
 
@@ -422,7 +428,7 @@ function updateTableConfig(
   if (hasGroupBy) {
     result = {
       ...state,
-      columns: applyGroupByToColumns(result.columns, groupBy),
+      columns: applyGroupByToColumns(result.columns, groupBy, confirmed),
     };
   }
 

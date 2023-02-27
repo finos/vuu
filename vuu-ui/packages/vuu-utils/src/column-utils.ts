@@ -209,7 +209,8 @@ export const flattenColumnGroup = (
 
 export function extractGroupColumn(
   columns: KeyedColumnDescriptor[],
-  groupBy?: VuuGroupBy
+  groupBy?: VuuGroupBy,
+  confirmed = true
 ): [GroupColumnDescriptor | null, KeyedColumnDescriptor[]] {
   if (groupBy && groupBy.length > 0) {
     const flattenedColumns = flattenColumnGroup(columns);
@@ -255,6 +256,7 @@ export function extractGroupColumn(
       heading: ["group-col"],
       isGroup: true,
       columns: groupCols,
+      groupConfirmed: confirmed,
       width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
     } as GroupColumnDescriptor;
 
@@ -418,12 +420,14 @@ const collectFiltersForColumn = (
 
 export const applyGroupByToColumns = (
   columns: KeyedColumnDescriptor[],
-  groupBy: VuuGroupBy
+  groupBy: VuuGroupBy,
+  confirmed = true
 ) => {
   if (groupBy.length) {
     const [groupColumn, nonGroupedColumns] = extractGroupColumn(
       columns,
-      groupBy
+      groupBy,
+      confirmed
     );
     if (groupColumn) {
       return [groupColumn as KeyedColumnDescriptor].concat(nonGroupedColumns);

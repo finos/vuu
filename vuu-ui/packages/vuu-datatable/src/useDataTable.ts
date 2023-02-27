@@ -134,27 +134,6 @@ export const useDataTable = ({
     [dispatchColumnAction]
   );
 
-  const handleConfigChangeFromDataSource = useCallback(
-    (message: DataSourceConfigMessage) => {
-      const { type } = message;
-      switch (type) {
-        case "groupBy":
-        case "filter":
-        case "sort":
-        case "columns": {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          const payload = message[type];
-          return dispatchColumnAction({
-            type: "tableConfig",
-            [type]: payload,
-          });
-        }
-      }
-    },
-    [dispatchColumnAction]
-  );
-
   const handleSelectionChange: SelectionChangeHandler = useCallback(
     (selected) => {
       dataSource.select(selected);
@@ -170,7 +149,7 @@ export const useDataTable = ({
 
   const { data, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
-    onConfigChange: handleConfigChangeFromDataSource,
+    // onConfigChange: handleConfigChangeFromDataSource,
     onFeatureEnabled,
     onFeatureInvocation,
     onSubscribed,
@@ -328,6 +307,16 @@ export const useDataTable = ({
       });
     }
   }, [config, dispatchColumnAction]);
+
+  useEffect(() => {
+    dataSource.on("config", (config, confirmed) => {
+      dispatchColumnAction({
+        type: "tableConfig",
+        ...config,
+        confirmed,
+      });
+    });
+  }, [dataSource, dispatchColumnAction]);
 
   useMemo(() => {
     if (expectConfigChangeRef.current) {

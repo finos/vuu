@@ -1,11 +1,11 @@
 import {
   DataSource,
   DataSourceConfigMessage,
-  DataSourceCallbackMessage,
   DataSourceRow,
   DataSourceSubscribedMessage,
   SubscribeCallback,
   VuuFeatureMessage,
+  isDataSourceConfigMessage,
   isVuuFeatureAction,
   VuuFeatureInvocationMessage,
   isVuuFeatureInvocation,
@@ -24,11 +24,6 @@ export type SubscriptionDetails = {
   range: { from: number; to: number };
   sort?: VuuSortCol[];
 };
-
-const isConfigMessage = (
-  message: DataSourceCallbackMessage
-): message is DataSourceConfigMessage =>
-  ["aggregate", "columns", "filter", "groupBy", "sort"].includes(message.type);
 
 export interface DataSourceHookProps {
   dataSource: DataSource;
@@ -101,8 +96,6 @@ export function useDataSource({
           data.current = dataWindow.data.slice().sort(byKey);
           hasUpdated.current = true;
         }
-      } else if (isConfigMessage(message)) {
-        onConfigChange?.(message);
       } else if (isVuuFeatureAction(message)) {
         onFeatureEnabled?.(message);
       } else if (isVuuFeatureInvocation(message)) {
@@ -113,7 +106,6 @@ export function useDataSource({
     },
     [
       dataWindow,
-      onConfigChange,
       onFeatureEnabled,
       onFeatureInvocation,
       onSizeChange,
@@ -173,6 +165,12 @@ export function useDataSource({
     return dataWindow.getSelectedRows();
   }, [dataWindow]);
 
+  // Note: we do not call unsubscribe in a cleanup function here.
+  // Thats because we do not want to unsubscribe in the event that
+  // our view is unmounts due to a layout drag drop operation. In
+  // that scenario, we disable the viewport. THis is handles at the
+  // View level. Might need to revisit this - what if Table is not
+  // nested within a View ?
   useEffect(() => {
     dataSource?.subscribe(
       {
@@ -180,7 +178,7 @@ export function useDataSource({
       },
       datasourceMessageHandler
     );
-  }, [dataSource, datasourceMessageHandler]);
+  }, [dataSource, datasourceMessageHandler, onConfigChange]);
 
   useEffect(() => {
     console.log(`adjust range with viewportRowCount ${viewportRowCount}`);

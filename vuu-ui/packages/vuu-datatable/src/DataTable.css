@@ -164,4 +164,47 @@ table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   overflow: hidden;
 }
 
+.vuuDataTable-loading .vuuDataTable-table {
+  --skeleton-height: 20px;
+  --skeleton-width: calc(var(--content-width) - 8px);
+  --skeleton-left: 4px;
+  --skeleton-row-height: 16px;
+  --skeleton-size: var(--skeleton-width) var(--skeleton-height);
+  --skeleton-row: linear-gradient(
+    var(--salt-color-gray-20-fade-background) var(--skeleton-row-height),
+    transparent 0
+  );
+  --skeleton-background-image: var(--skeleton-row);
 
+  background-image: var(--skeleton-background-image);
+  background-repeat: repeat-y;
+  background-size: var(--skeleton-size);
+  background-position-x: var(--skeleton-left);
+  background-position-y: 27px;
+
+  /* animation:linearAnim 2s infinite linear */
+}
+
+.vuuDataTable-loading .vuuDataTable-table:after {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    90deg, 
+    rgba(255,255,255, 0) 0, 
+    rgba(255,255,255, .2) 20%, 
+    rgba(255,255,255, .6) 60%, 
+    rgba(255,255,255, 0)
+    );
+  content: '';
+  height: var(--table-height);
+  left: 0px;
+  position: absolute;
+  transform: translateX(-100%);
+  top: var(--header-height);
+  width: var(--content-width);
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

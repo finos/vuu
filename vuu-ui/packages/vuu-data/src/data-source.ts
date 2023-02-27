@@ -2,7 +2,7 @@ import {
   ColumnDescriptor,
   SelectionChangeHandler,
 } from "@finos/vuu-datagrid-types";
-import { IEventEmitter } from "@finos/vuu-utils";
+import { EventEmitter } from "@finos/vuu-utils";
 import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
@@ -99,6 +99,23 @@ export type DataSourceConfigMessage =
   | DataSourceGroupByMessage
   | DataSourceSortMessage;
 
+export const toDataSourceConfig = (
+  message: DataSourceConfigMessage
+): DataSourceConfig => {
+  switch (message.type) {
+    case "aggregate":
+      return { aggregations: message.aggregations };
+    case "columns":
+      return { columns: message.columns };
+    case "filter":
+      return { filter: message.filter };
+    case "groupBy":
+      return { groupBy: message.groupBy };
+    case "sort":
+      return { sort: message.sort };
+  }
+};
+
 export interface DataSourceSubscribedMessage
   extends MessageWithClientViewportId,
     MessageWithClientViewportId {
@@ -190,6 +207,11 @@ export const shouldMessageBeRoutedToDataSource = (
   return datasourceMessages.includes(type);
 };
 
+export const isDataSourceConfigMessage = (
+  message: DataSourceCallbackMessage
+): message is DataSourceConfigMessage =>
+  ["aggregate", "columns", "filter", "groupBy", "sort"].includes(message.type);
+
 /**
  * Described the configuration values that should typically be
  * persisted across sessions.
@@ -206,7 +228,6 @@ export interface DataSourceConfig {
 export interface DataSourceConstructorProps extends DataSourceConfig {
   bufferSize?: number;
   table: VuuTable;
-  onConfigChange?: (config: DataSourceConfig) => void;
   title?: string;
   viewport?: string;
 }
@@ -224,7 +245,11 @@ export interface SubscribeProps {
 
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 
-export interface DataSource extends IEventEmitter {
+export type DataSourceEvents = {
+  config: (config: DataSourceConfig | undefined, confirmed: boolean) => void;
+};
+
+export interface DataSource extends EventEmitter<DataSourceEvents> {
   aggregations: VuuAggregation[];
   closeTreeNode: (key: string) => void;
   columns: string[];

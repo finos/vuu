@@ -39,7 +39,7 @@ export interface TableGroupHeaderCellProps
 }
 
 export const TableGroupHeaderCell = ({
-  column,
+  column: groupColumn,
   className: classNameProp,
   onRemoveColumn,
   onResize,
@@ -47,16 +47,17 @@ export const TableGroupHeaderCell = ({
 }: TableGroupHeaderCellProps) => {
   const rootRef = useRef<HTMLTableCellElement>(null);
   const { isResizing, ...resizeProps } = useTableColumnResize({
-    column,
+    column: groupColumn,
     onResize,
     rootRef,
   });
   const className = cx(classBase, classNameProp, {
-    vuuPinLeft: column.pin === "left",
-    [`${classBase}-right`]: column.align === "right",
-    [`${classBase}-resizing`]: column.resizing,
+    vuuPinLeft: groupColumn.pin === "left",
+    [`${classBase}-right`]: groupColumn.align === "right",
+    [`${classBase}-resizing`]: groupColumn.resizing,
+    [`${classBase}-pending`]: groupColumn.groupConfirmed === false,
   });
-  const { columns } = column;
+  const { columns } = groupColumn;
 
   return (
     <th className={className} ref={rootRef} {...props}>
@@ -68,8 +69,7 @@ export const TableGroupHeaderCell = ({
             onRemoveColumn={onRemoveColumn}
           />
         ))}
-
-        {column.resizeable !== false ? (
+        {groupColumn.resizeable !== false ? (
           <ColumnResizer {...resizeProps} />
         ) : null}
       </div>

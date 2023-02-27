@@ -257,7 +257,7 @@ export const VuuDataTable = () => {
       {
         description: { editable: true },
       },
-      ["instruments", "orders", "parentOrders", "prices"],
+      ["instruments", "orders", "parentOrders", "childOrders", "prices"],
     ],
     []
   );
@@ -358,7 +358,8 @@ export const VuuDataTable = () => {
         <ToggleButton tooltipText="Alert">Instruments</ToggleButton>
         <ToggleButton tooltipText="Home">Orders</ToggleButton>
         <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
-        <ToggleButton tooltipText="Search">Prices</ToggleButton>
+        <ToggleButton tooltipText="Child Orders">Child Orders</ToggleButton>
+        <ToggleButton tooltipText="Prices">Prices</ToggleButton>
       </ToggleButtonGroup>
       <Toolbar
         className="salt-density-high"
@@ -393,6 +394,21 @@ export const VuuDataTable = () => {
         renderBufferSize={20}
         width={750}
       />
+      <Toolbar
+        className="vuuDataTable-footer"
+        style={
+          {
+            "--saltToolbar-height": "20px",
+            "--saltToolbar-background":
+              "var(--salt-container-primary-background)",
+            borderTop: "solid 1px var(--salt-container-primary-borderColor)",
+            color: "var(--salt-text-secondary-foreground)",
+            width: 750,
+          } as CSSProperties
+        }
+      >
+        <DataSourceStats dataSource={dataSource} />
+      </Toolbar>
       <Dialog
         className="vuuDialog-gridConfig"
         isOpen={dialogContent !== null}
