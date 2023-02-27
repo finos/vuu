@@ -309,7 +309,7 @@ export const useVuuMenuActions = ({
       const { visualLink, visualLinks, vuuMenu } = menuActionConfig;
       const descriptors: ContextMenuItemDescriptor[] = [];
 
-      if (visualLinks && !visualLink) {
+      if (tableLocation === "grid" && visualLinks && !visualLink) {
         visualLinks.forEach((linkDescriptor: LinkDescriptorWithLabel) => {
           const { link, label: linkLabel } = linkDescriptor;
           const label = linkLabel ? linkLabel : link.toTable;
