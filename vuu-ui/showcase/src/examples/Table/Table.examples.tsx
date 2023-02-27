@@ -840,7 +840,7 @@ export const VuuTablePredefinedGroupBy = () => {
   const { config, dataSource } = useTestDataSource({ groupBy, schemas });
 
   return (
-    <Flexbox style={{ flexDirection: "column", width: 800, height: 800 }}>
+    <Flexbox style={{ flexDirection: "column", height: 800 }}>
       <View resizeable style={{ flex: 1 }}>
         <DataTable config={config} dataSource={dataSource} />
       </View>
@@ -848,7 +848,7 @@ export const VuuTablePredefinedGroupBy = () => {
     </Flexbox>
   );
 };
-VuuTablePredefinedConfig.displaySequence = displaySequence++;
+VuuTablePredefinedGroupBy.displaySequence = displaySequence++;
 
 export const HiddenColumns = () => {
   const columnConfig = useMemo(

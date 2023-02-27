@@ -63,4 +63,8 @@
     clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50%);
   }
   
-  
+    .vuuTable-groupHeaderCell-resizing {
+    --columnResizer-color: var(--salt-color-blue-500);
+    --columnResizer-height: var(--table-height);
+    --columnResizer-width: 2px;
+  }
