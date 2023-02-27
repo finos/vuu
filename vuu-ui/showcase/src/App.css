@@ -26,6 +26,7 @@ body {
 .ShowcaseContentToolbar {
   --saltToolbar-background: transparent;
   border-bottom: solid 1px var(--salt-container-primary-borderColor);
+  flex: 0 0 auto;
 }
 
 .ShowcaseContentContainer {

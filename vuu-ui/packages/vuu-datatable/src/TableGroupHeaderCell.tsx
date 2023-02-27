@@ -54,11 +54,12 @@ export const TableGroupHeaderCell = ({
   const className = cx(classBase, classNameProp, {
     vuuPinLeft: column.pin === "left",
     [`${classBase}-right`]: column.align === "right",
+    [`${classBase}-resizing`]: column.resizing,
   });
   const { columns } = column;
 
   return (
-    <th className={className} {...props}>
+    <th className={className} ref={rootRef} {...props}>
       <div className={`${classBase}-inner`}>
         {columns.map((column) => (
           <ColHeader
