@@ -45,7 +45,7 @@ import {
   stripRequestId,
   WithRequestId,
 } from "../message-utils";
-import { partition } from "@finos/vuu-utils";
+import { logger, partition } from "@finos/vuu-utils";
 
 export type PostMessageToClientCallback = (
   message: VuuUIMessageIn | DataSourceCallbackMessage
@@ -167,6 +167,7 @@ export class ServerProxy {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
       if (!this.hasMetaDataFor(message.table)) {
+        logger.info('Get Meta Data Message (Client to Server): ', message);
         const requestId = nextRequestId();
         this.sendMessageToServer(
           { type: "GET_TABLE_META", table: message.table },
@@ -185,7 +186,7 @@ export class ServerProxy {
         this.sessionId !== ""
       );
     } else {
-      console.log(`ServerProxy spurious subscribe call ${message.viewport}`);
+      logger.error(`ServerProxy spurious subscribe call ${message.viewport}`);
     }
   }
 
@@ -193,6 +194,7 @@ export class ServerProxy {
     const serverViewportId =
       this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
+      logger.log('Viewport Unsubscribe Message (Client to Server): ', serverViewportId);
       this.sendMessageToServer({
         type: Message.REMOVE_VP,
         viewPortId: serverViewportId,
@@ -443,12 +445,14 @@ export class ServerProxy {
         // Viewport may already have been unsubscribed
         const viewport = this.getViewportForClient(message.viewport, false);
         if (viewport !== null) {
+          logger.log('Disable Message From Client: ', message);
           return this.disableViewport(viewport);
         } else {
           return;
         }
       } else {
         const viewport = this.getViewportForClient(message.viewport);
+        logger.log(`${message.type} Message From Client: `, message);
         switch (message.type) {
           case "setViewRange":
             return this.setViewRange(viewport, message);
@@ -489,6 +493,7 @@ export class ServerProxy {
       const { type, requestId } = message;
       switch (type) {
         case "GET_TABLE_LIST":
+          logger.log('Get Table List Message (Client to Server)', message);
           return this.sendMessageToServer({ type }, requestId);
         case "GET_TABLE_META":
           return this.sendMessageToServer(
@@ -500,7 +505,7 @@ export class ServerProxy {
         default:
       }
     }
-    console.log(
+    logger.error(
       `Vuu ServerProxy Unexpected message from client ${JSON.stringify(
         message
       )}`
@@ -583,6 +588,7 @@ export class ServerProxy {
             this.mapClientToServerViewport.set(requestId, serverViewportId);
             const response = viewport.handleSubscribed(body);
             if (response) {
+              logger.info('Subscribe Response (ServerProxy to Client): ', response)
               this.postMessageToClient(response);
             }
             // In the case of a reconnect, we may have resubscribed a disabled viewport,
@@ -644,6 +650,7 @@ export class ServerProxy {
           if (viewport) {
             const response = viewport.completeOperation(requestId);
             if (response !== undefined) {
+              logger.info('Disable Response (ServerProxy to Client): ', response);
               this.postMessageToClient(response);
             }
           }
@@ -659,6 +666,7 @@ export class ServerProxy {
             if (response) {
               this.postMessageToClient(response as DataSourceEnabledMessage);
               const rows = viewport.currentData();
+              logger.info('Enable Response (ServerProxy to Client): ', response);
               this.postMessageToClient({
                 clientViewportId: viewport.clientViewportId,
                 mode: "batch",
@@ -776,7 +784,7 @@ export class ServerProxy {
             if (viewport) {
               viewport.setTableMeta(body.columns, body.dataTypes);
             } else {
-              console.log(
+              logger.warn(
                 "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
               );
             }
@@ -861,11 +869,11 @@ export class ServerProxy {
         break;
 
       case "ERROR":
-        console.error(body.msg);
+        logger.error(body.msg);
         break;
 
       default:
-        console.log(`handleMessageFromServer ${body["type"]}.`);
+        logger.log(`handleMessageFromServer ${body["type"]}.`);
     }
   }
 

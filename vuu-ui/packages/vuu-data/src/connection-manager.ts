@@ -6,7 +6,7 @@ import {
   VuuTable,
   VuuTableList,
 } from "@finos/vuu-protocol-types";
-import { EventEmitter, uuid } from "@finos/vuu-utils";
+import { EventEmitter, logger, uuid } from "@finos/vuu-utils";
 import {
   DataSourceCallbackMessage,
   shouldMessageBeRoutedToDataSource as messageShouldBeRoutedToDataSource,
@@ -95,7 +95,7 @@ const getWorker = async (
       const worker = new Worker(workerBlobUrl);
 
       const timer: number | null = window.setTimeout(() => {
-        console.error("timed out waiting for worker to load");
+        logger.error("timed out waiting for worker to load");
       }, 1000);
 
       // This is the inial message handler only, it processes messages whilst we are
@@ -116,7 +116,7 @@ const getWorker = async (
         } else if (isConnectionStatusMessage(message)) {
           handleConnectionStatusChange(msg);
         } else {
-          console.log(`ConnectionManager: Unexpected message from the worker`);
+          logger.warn(`ConnectionManager: Unexpected message from the worker`);
         }
       };
       // TODO handle error
@@ -134,7 +134,7 @@ function handleMessageFromWorker({
     if (viewport) {
       viewport.postMessageToClientDataSource(message);
     } else {
-      console.error(
+      logger.error(
         `[ConnectionManager] ${message.type} message received, viewport not found`
       );
     }
@@ -158,7 +158,7 @@ function handleMessageFromWorker({
         resolve(rest);
       }
     } else {
-      console.log(
+      logger.warn(
         `%cConnectionManager Unexpected message from the worker`,
         "color:red;font-weight:bold;"
       );
@@ -247,7 +247,7 @@ class _ConnectionManager extends EventEmitter {
   }
 
   destroy() {
-    console.log(`MEGA DESTROY`);
+    logger.log(`MEGA DESTROY`);
     worker.terminate();
   }
 }
@@ -269,6 +269,7 @@ export const connectToServer = async (serverUrl: string, token?: string) => {
     const serverAPI = await ConnectionManager.connect(serverUrl, token);
     resolveServer(serverAPI);
   } catch (err: unknown) {
+    logger.error('Connection Error', err);
     rejectServer(err);
   }
 };

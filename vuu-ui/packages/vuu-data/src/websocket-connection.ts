@@ -2,6 +2,7 @@ import {
   ServerToClientMessage,
   ClientToServerMessage,
 } from "@finos/vuu-protocol-types";
+import { logger } from "@finos/vuu-utils";
 import { Connection } from "./connectionTypes";
 
 import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
@@ -47,7 +48,7 @@ async function makeConnection(
     const reconnecting = typeof connection !== "undefined";
     const ws = await createWebsocket(url);
 
-    console.log(
+    logger.log(
       "%c⚡ %cconnected",
       "font-size: 24px;color: green;font-weight: bold;",
       "color:green; font-size: 14px;"
@@ -104,13 +105,13 @@ const createWebsocket = (connectionString: string): Promise<WebSocket> =>
     ws.onerror = (evt) => reject(evt);
   });
 
-const closeWarn = () => {
-  console.log(`Connection cannot be closed, socket not yet opened`);
-};
+  const closeWarn = () => {
+    logger.warn(`Connection cannot be closed, socket not yet opened`);
+  };
 
-const sendWarn = (msg: ClientToServerMessage) => {
-  console.log(`Message cannot be sent, socket closed`);
-};
+  const sendWarn = (msg: ClientToServerMessage) => {
+    logger.warn(`Message cannot be sent, socket closed`, msg);
+  };
 
 const parseMessage = (message: string): ServerToClientMessage => {
   try {
@@ -147,7 +148,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     ws.onerror = () => {
-      console.log(
+      logger.error(
         `%c⚡ connection error`,
         "font-size: 24px;color: red;font-weight: bold;",
         "color:red; font-size: 14px;"
@@ -164,7 +165,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     ws.onclose = () => {
-      console.log(
+      logger.log(
         `%c⚡ connection close`,
         "font-size: 24px;color: orange;font-weight: bold;",
         "color:orange; font-size: 14px;"
@@ -197,7 +198,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     this.send = send;
 
     this.close = () => {
-      console.log("[Connection] close websocket");
+      logger.log("[Connection] close websocket");
       this.status = "closed";
       ws.close();
       this.close = closeWarn;

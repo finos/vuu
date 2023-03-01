@@ -19,3 +19,4 @@ export * from "./row-utils";
 export * from "./selection-utils";
 export * from "./sort-utils";
 export * from "./text-utils";
+export * from "./logging-utils";
