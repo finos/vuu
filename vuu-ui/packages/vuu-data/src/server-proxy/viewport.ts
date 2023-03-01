@@ -22,7 +22,7 @@ import {
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { expandSelection, getFullRange } from "@finos/vuu-utils";
+import { expandSelection, getFullRange, logger } from "@finos/vuu-utils";
 import {
   ServerProxySubscribeMessage,
   VuuUIMessageOutCloseTreeNode,
@@ -266,7 +266,7 @@ export class Viewport {
     const { clientViewportId, pendingOperations } = this;
     const pendingOperation = pendingOperations.get(requestId);
     if (!pendingOperation) {
-      console.warn(`Viewport no matching operation found to complete`);
+      logger.warn(`Viewport no matching operation found to complete`);
       return;
     }
     const { type } = pendingOperation;
