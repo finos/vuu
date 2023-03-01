@@ -8,14 +8,6 @@ import org.finos.vuu.grammar.FilterParser
 
 trait FilterClause {
 
-  def stripQuotes(value: String): String = {
-    if(value.startsWith("\"") && value.endsWith("\"")){
-      value.drop(1).dropRight(1)
-    }else{
-      value
-    }
-  }
-
   def filter(data: RowData): Boolean
 
   def filterAll(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
@@ -40,7 +32,7 @@ trait DataAndTypeClause extends FilterClause {
       case FilterParser.FLOAT => s.toDouble
       case FilterParser.FALSE => false
       case FilterParser.TRUE => true
-      case FilterParser.STRING => stripQuotes(s)
+      case FilterParser.STRING => s
       case FilterParser.ID => s
     }
   }
@@ -100,7 +92,7 @@ case class EqualsClause(column: String, dataType: Int, value: String) extends Da
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
       case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
-          ix.find(stripQuotes(value))
+          ix.find(value)
       case Some(ix: IntIndexedField) if asColumn.dataType == DataType.IntegerDataType =>
         ix.find(value.toInt)
       case Some(ix: LongIndexedField) if asColumn.dataType == DataType.LongDataType =>
@@ -174,7 +166,7 @@ case class StartsClause(column: String, dataType: Int, value: String) extends Da
     if (datum == null)
       false
     else
-      datum.toString.startsWith(stripQuotes(value))
+      datum.toString.startsWith(value)
   }
 }
 
@@ -186,7 +178,7 @@ case class EndsClause(column: String, dataType: Int, value: String) extends Data
     if (datum == null)
       false
     else
-      datum.toString.endsWith(stripQuotes(value))
+      datum.toString.endsWith(value)
   }
 }
 
@@ -228,7 +220,7 @@ case class InClause(column: String, dataType: Int, values: List[String]) extends
     val asColumn = source.asTable.columnForName(column)
     source.asTable.indexForColumn(asColumn) match {
       case Some(ix: StringIndexedField) if asColumn.dataType == DataType.StringDataType =>
-        ix.find(values.map(s => stripQuotes(s)))
+        ix.find(values.map(s => s))
       case Some(ix: IntIndexedField) if asColumn.dataType == DataType.IntegerDataType =>
         ix.find(values.map(s => s.toInt))
       case Some(ix: LongIndexedField) if asColumn.dataType == DataType.LongDataType =>
