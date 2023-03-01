@@ -61,6 +61,15 @@ export interface DataSourceDataMessage extends MessageWithClientViewportId {
   type: "viewport-update";
 }
 
+export interface DataSourceDebounceRequest extends MessageWithClientViewportId {
+  type: "debounce-begin";
+}
+
+export const isSizeOnly = (
+  message: DataSourceCallbackMessage
+): message is DataSourceDataMessage =>
+  message.type === "viewport-update" && message.mode === "size-only";
+
 export interface DataSourceDisabledMessage extends MessageWithClientViewportId {
   type: "disabled";
 }
@@ -160,6 +169,7 @@ export type DataSourceCallbackMessage =
   | DataSourceConfigMessage
   | DataSourceColumnsMessage
   | DataSourceDataMessage
+  | DataSourceDebounceRequest
   | DataSourceDisabledMessage
   | DataSourceEnabledMessage
   | DataSourceMenusMessage
@@ -172,6 +182,7 @@ const datasourceMessages = [
   "aggregate",
   "viewport-update",
   "columns",
+  "debounce-begin",
   "disabled",
   "enabled",
   "filter",
@@ -244,9 +255,13 @@ export interface SubscribeProps {
 }
 
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
+export type OptimizeStrategy = "none" | "throttle" | "debounce";
 
 export type DataSourceEvents = {
   config: (config: DataSourceConfig | undefined, confirmed: boolean) => void;
+  optimize: (optimize: OptimizeStrategy) => void;
+  range: (range: VuuRange) => void;
+  resize: (size: number) => void;
 };
 
 export interface DataSource extends EventEmitter<DataSourceEvents> {
@@ -263,7 +278,6 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   ) => Promise<MenuRpcResponse | undefined>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
-  rowCount: number | undefined;
   select: SelectionChangeHandler;
   readonly selectedRowsCount: number;
   readonly size: number;

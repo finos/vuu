@@ -517,3 +517,7 @@ export const getRowRecord = (
     {}
   );
 };
+
+export const isDataLoading = (columns: KeyedColumnDescriptor[]) => {
+  return isGroupColumn(columns[0]) && columns[0].groupConfirmed === false;
+};

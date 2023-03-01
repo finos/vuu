@@ -36,7 +36,7 @@ export interface VuuMenu {
 
 export type VuuRowDataItemType = string | number | boolean;
 
-export type VuuDataRow = [number, number, ...data: VuuRowDataItemType[]];
+export type VuuDataRow = VuuRowDataItemType[];
 
 export declare type VuuRow = {
   data: VuuDataRow;
@@ -155,6 +155,11 @@ export interface ServerToClientCreateViewPortSuccess {
   viewPortId: string;
 }
 export interface ServerToClientChangeViewPortSuccess {
+  aggregations: VuuAggregation[];
+  columns: VuuColumns;
+  filterSpec: VuuFilter;
+  groupBy: VuuGroupBy;
+  sort: VuuSort;
   type: "CHANGE_VP_SUCCESS";
   viewPortId: string;
 }

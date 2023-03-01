@@ -25,7 +25,6 @@ import {
 import {
   expandSelection,
   getFullRange,
-  KeySet,
   logger,
   RangeMonitor,
 } from "@finos/vuu-utils";
@@ -39,6 +38,7 @@ import * as Message from "./messages";
 import {
   DataSourceAggregateMessage,
   DataSourceColumnsMessage,
+  DataSourceDebounceRequest,
   DataSourceDisabledMessage,
   DataSourceEnabledMessage,
   DataSourceFilterMessage,
@@ -55,7 +55,7 @@ import {
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
-const log = logger('viewport');
+const log = logger("viewport");
 
 interface Disable {
   type: "disable";
@@ -112,13 +112,20 @@ type AsyncOperation =
   | ClientToServerCreateLink
   | ClientToServerRemoveLink;
 
-type RangeRequestTuple = [ClientToServerViewPortRange | null, DataSourceRow[]?];
+type RangeRequestTuple = [
+  ClientToServerViewPortRange | null,
+  DataSourceRow[]?,
+  DataSourceDebounceRequest?
+];
 
 type LinkedParent = {
   colName: string;
   parentViewportId: string;
   parentColName: string;
 };
+
+const isLeafUpdate = ({ rowKey, updateType }: VuuRow) =>
+  updateType === "U" && !rowKey.startsWith("$root");
 
 export class Viewport {
   private aggregations: VuuAggregation[];
@@ -140,12 +147,19 @@ export class Viewport {
   private pendingLinkedParent?: LinkDescriptorWithLabel;
   private pendingOperations = new Map<string, AsyncOperation>();
   private pendingRangeRequest: ClientToServerViewPortRange | null = null;
+  private pendingRangeRequests: (ClientToServerViewPortRange & {
+    acked?: boolean;
+    requestId: string;
+  })[] = [];
   private rowCountChanged = false;
   private serverTableMeta: {
     columns: string[];
     dataTypes: VuuColumnDataType[];
   } | null = null;
   private batchMode = true;
+  private useBatchMode = true;
+
+  private rangeMonitor = new RangeMonitor("ViewPort");
 
   public clientViewportId: string;
   public disabled = false;
@@ -232,19 +246,22 @@ export class Viewport {
       range,
       this.bufferSize
     );
-    if (log.debugEnabled) {
-      log.debug(
+
+    if (process.env.NODE_ENV === "development") {
+      console.log(
         `%cViewport subscribed
-          clientVpId: ${this.clientViewportId}
-          serverVpId: ${this.serverViewportId}
-          table: ${this.table}
-          aggregations: ${JSON.stringify(aggregations)}
-          columns: ${columns.join(",")}
-          range: ${JSON.stringify(range)}
-          sort: ${JSON.stringify(sort)}
-          groupBy: ${JSON.stringify(groupBy)}
-          filterSpec: ${JSON.stringify(filter)}
-          bufferSize: ${this.bufferSize}`
+        clientVpId: ${this.clientViewportId}
+        serverVpId: ${this.serverViewportId}
+        table: ${this.table}
+        aggregations: ${JSON.stringify(aggregations)}
+        columns: ${columns.join(",")}
+        range: ${JSON.stringify(range)}
+        sort: ${JSON.stringify(sort)}
+        groupBy: ${JSON.stringify(groupBy)}
+        filterSpec: ${JSON.stringify(filter)}
+        bufferSize: ${this.bufferSize}
+      `,
+        "color: blue"
       );
     }
     // TODO retrieve the filterStruct
@@ -275,13 +292,23 @@ export class Viewport {
       return;
     }
     const { type } = pendingOperation;
-    log.info?.(`Viewport Operation ${type}:\n${pendingOperation}`)
+    log.info?.(`Viewport Operation ${type}:\n${pendingOperation}`);
 
     pendingOperations.delete(requestId);
     if (type === "CHANGE_VP_RANGE") {
       const [from, to] = params as [number, number];
       this.dataWindow?.setRange(from, to);
       this.pendingRangeRequest = null;
+
+      for (let i = this.pendingRangeRequests.length - 1; i >= 0; i--) {
+        const pendingRangeRequest = this.pendingRangeRequests[i];
+        if (pendingRangeRequest.requestId === requestId) {
+          pendingRangeRequest.acked = true;
+          break;
+        } else {
+          console.warn("range requests sent faster than they are being ACKed");
+        }
+      }
     } else if (type === "groupBy") {
       this.isTree = pendingOperation.data.length > 0;
       this.groupBy = pendingOperation.data;
@@ -362,6 +389,9 @@ export class Viewport {
   // When not scrolling, any server data is an update
   // Wehn scrolling, we are in batch mode
   rangeRequest(requestId: string, range: VuuRange): RangeRequestTuple {
+    if (process.env.NODE_ENV === "development") {
+      this.rangeMonitor.set(range);
+    }
     // If we can satisfy the range request from the buffer, we will.
     // May or may not need to make a server request, depending on status of buffer
     const type = "CHANGE_VP_RANGE";
@@ -376,6 +406,8 @@ export class Viewport {
         range.from,
         range.to
       );
+
+      let debounceRequest: DataSourceDebounceRequest | undefined;
 
       const serverRequest =
         serverDataRequired &&
@@ -392,12 +424,36 @@ export class Viewport {
             } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
-          log.debug?.(`Viewport range server request: ${serverRequest}`)
+        log.debug?.(`Viewport range server request: ${serverRequest}`);
         // TODO check that there is not already a pending server request for more data
         this.awaitOperation(requestId, { type });
         this.pendingRangeRequest = serverRequest;
+        const pendingRequest = this.pendingRangeRequests.at(-1);
+        if (pendingRequest) {
+          if (pendingRequest.acked) {
+            // maybe at this point we check is the requests are disjoint ?
+            console.warn("Range Request before previous request is filled");
+          } else {
+            const { from, to } = pendingRequest;
+            if (this.dataWindow.outOfRange(from, to)) {
+              console.log(
+                `%cengage debounce`,
+                "background-color:red;color:white;font-weight:bold;"
+              );
+              debounceRequest = {
+                clientViewportId: this.clientViewportId,
+                type: "debounce-begin",
+              };
+            } else {
+              console.warn("Range Request before previous request is acked");
+            }
+          }
+        }
+        this.pendingRangeRequests.push({ ...serverRequest, requestId });
 
-        this.batchMode = true;
+        if (this.useBatchMode) {
+          this.batchMode = true;
+        }
       } else if (clientRows.length > 0) {
         this.batchMode = false;
       }
@@ -414,6 +470,8 @@ export class Viewport {
             return toClient(row, this.keys);
           }),
         ];
+      } else if (debounceRequest) {
+        return [serverRequest, undefined, debounceRequest];
       } else {
         return [serverRequest];
       }
@@ -447,7 +505,9 @@ export class Viewport {
   }
 
   openTreeNode(requestId: string, message: VuuUIMessageOutOpenTreeNode) {
-    this.batchMode = true;
+    if (this.useBatchMode) {
+      this.batchMode = true;
+    }
     return {
       type: Message.OPEN_TREE_NODE,
       vpId: this.serverViewportId,
@@ -456,7 +516,9 @@ export class Viewport {
   }
 
   closeTreeNode(requestId: string, message: VuuUIMessageOutCloseTreeNode) {
-    this.batchMode = true;
+    if (this.useBatchMode) {
+      this.batchMode = true;
+    }
     return {
       type: Message.CLOSE_TREE_NODE,
       vpId: this.serverViewportId,
@@ -492,7 +554,7 @@ export class Viewport {
 
   suspend() {
     this.suspended = true;
-    log.info?.("viewport suspend")
+    log.info?.("viewport suspend");
   }
 
   resume() {
@@ -520,7 +582,7 @@ export class Viewport {
 
   enable(requestId: string) {
     this.awaitOperation(requestId, { type: "enable" });
-      log.info?.(`viewport enable: ${this.serverViewportId}`)
+    log.info?.(`viewport enable: ${this.serverViewportId}`);
     return {
       type: Message.ENABLE_VP,
       viewPortId: this.serverViewportId,
@@ -529,7 +591,7 @@ export class Viewport {
 
   disable(requestId: string) {
     this.awaitOperation(requestId, { type: "disable" });
-      log.info?.(`viewport disable: ${this.serverViewportId}`)
+    log.info?.(`viewport disable: ${this.serverViewportId}`);
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
@@ -541,7 +603,7 @@ export class Viewport {
       type: "columns",
       data: columns,
     });
-    log.debug?.(`viewport column request: ${columns}`)
+    log.debug?.(`viewport column request: ${columns}`);
     return this.createRequest({ columns });
   }
 
@@ -551,26 +613,30 @@ export class Viewport {
       data: dataSourceFilter,
     });
     const { filter } = dataSourceFilter;
-    log.info?.(`viewport filter request: ${filter}`)
+    log.info?.(`viewport filter request: ${filter}`);
     return this.createRequest({ filterSpec: { filter } });
   }
 
   aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
     this.awaitOperation(requestId, { type: "aggregate", data: aggregations });
-    log.info?.(`viewport aggregate request: ${aggregations}`)
+    log.info?.(`viewport aggregate request: ${aggregations}`);
     return this.createRequest({ aggregations });
   }
 
   sortRequest(requestId: string, sort: VuuSort) {
     this.awaitOperation(requestId, { type: "sort", data: sort });
-    log.info?.(`viewport sort request: ${sort}`)
+    log.info?.(`viewport sort request: ${sort}`);
     return this.createRequest({ sort });
   }
 
   groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
     this.awaitOperation(requestId, { type: "groupBy", data: groupBy });
-    this.batchMode = true;
-    log.info?.(`viewport groupby request: ${groupBy}`)
+    if (this.useBatchMode) {
+      this.batchMode = true;
+    }
+    if (!this.isTree) {
+      // should we clear the dataWIndow ?
+    }
     return this.createRequest({ groupBy });
   }
 
@@ -578,7 +644,7 @@ export class Viewport {
     // TODO we need to do this in the client if we are to raise selection events
     // TODO is it right to set this here or should we wait for ACK from server ?
     this.awaitOperation(requestId, { type: "selection", data: selected });
-    log.info?.(`viewport select request: ${selected}`)
+    log.info?.(`viewport select request: ${selected}`);
     return {
       type: "SET_SELECTION",
       vpId: this.serverViewportId,
@@ -586,15 +652,46 @@ export class Viewport {
     } as ClientToServerSelection;
   }
 
-  handleUpdate(updateType: string, rowIndex: number, row: VuuRow) {
-    if (this.dataWindow) {
-      if (this.dataWindow.rowCount !== row.vpSize) {
-        this.dataWindow.setRowCount(row.vpSize);
-        this.rowCountChanged = true;
+  removePendingRangeRequest(firstIndex: number, lastIndex: number) {
+    for (let i = this.pendingRangeRequests.length - 1; i >= 0; i--) {
+      const { from, to } = this.pendingRangeRequests[i];
+      let isLast = true;
+      if (
+        (firstIndex >= from && firstIndex < to) ||
+        (lastIndex > from && lastIndex < to)
+      ) {
+        if (!isLast) {
+          console.warn("TABLE_ROWS are not for latest request");
+        }
+        this.pendingRangeRequests.splice(i, 1);
+        break;
+      } else {
+        isLast = false;
       }
-      if (updateType === "U") {
-        // Update will return true if row was within client range
-        if (this.dataWindow.setAtIndex(rowIndex, row)) {
+    }
+  }
+
+  updateRows(rows: VuuRow[]) {
+    const [{ rowIndex: firstRowIndex }] = rows;
+    const { rowIndex: lastRowIndex } = rows.at(-1) as VuuRow;
+
+    this.removePendingRangeRequest(firstRowIndex, lastRowIndex);
+
+    for (const row of rows) {
+      if (this.isTree && isLeafUpdate(row)) {
+        // Ignore blank rows sent after GroupBy;
+        // is it safe to bomb out here ? ie assume all rows in set will be same
+        continue;
+      } else {
+        if (row.updateType === "SIZE") {
+          if (this.dataWindow?.rowCount !== row.vpSize) {
+            this.dataWindow?.setRowCount(row.vpSize);
+          }
+          // We always forward a size change to the UI, even if the size has not actually changed.
+          // The UI will not re-render, but sometimes this is the only confirmation we have that
+          // a column has been removed from a groupBy clause.
+          this.rowCountChanged = true;
+        } else if (this.dataWindow?.setAtIndex(row)) {
           this.hasUpdates = true;
           if (!this.batchMode) {
             this.pendingUpdates.push(row);

@@ -4,7 +4,11 @@ import {
   ServerProxy,
   TEST_setRequestId,
 } from "../src/server-proxy/server-proxy";
+import { Viewport } from "../src/server-proxy/viewport";
 import {
+  COMMON_ATTRS,
+  COMMON_ROW_ATTRS,
+  COMMON_TABLE_ROW_ATTRS,
   createTableRows,
   createTableGroupRows,
   createSubscription,
@@ -13,17 +17,21 @@ import {
 
 const mockConnection = {
   send: vi.fn(),
+  status: "ready" as const,
 };
+
+const noop = () => undefined;
 
 describe("ServerProxy", () => {
   describe("subscription", () => {
     it("creates Viewport on client subscribe", () => {
       const [clientSubscription] = createSubscription();
-      const serverProxy = new ServerProxy(mockConnection);
+      const serverProxy = new ServerProxy(mockConnection, noop);
       serverProxy.subscribe(clientSubscription);
-      expect(serverProxy.viewports.size).toEqual(1);
-      const { clientViewportId, status } =
-        serverProxy.viewports.get("client-vp-1");
+      expect(serverProxy["viewports"].size).toEqual(1);
+      const { clientViewportId, status } = serverProxy["viewports"].get(
+        "client-vp-1"
+      ) as Viewport;
       expect(clientViewportId).toEqual("client-vp-1");
       expect(status).toEqual("subscribing");
     });
@@ -34,12 +42,13 @@ describe("ServerProxy", () => {
       const serverProxy = new ServerProxy(mockConnection, callback);
       serverProxy.subscribe(clientSubscription);
       serverProxy.handleMessageFromServer(serverSubscription);
-      expect(serverProxy.viewports.size).toEqual(1);
-      expect(serverProxy.mapClientToServerViewport.get("client-vp-1")).toEqual(
-        "server-vp-1"
-      );
-      const { clientViewportId, serverViewportId, status } =
-        serverProxy.viewports.get("server-vp-1");
+      expect(serverProxy["viewports"].size).toEqual(1);
+      expect(
+        serverProxy["mapClientToServerViewport"].get("client-vp-1")
+      ).toEqual("server-vp-1");
+      const { clientViewportId, serverViewportId, status } = serverProxy[
+        "viewports"
+      ].get("server-vp-1") as Viewport;
       expect(clientViewportId).toEqual("client-vp-1");
       expect(serverViewportId).toEqual("server-vp-1");
       expect(status).toEqual("subscribed");
@@ -54,7 +63,7 @@ describe("ServerProxy", () => {
       //TODO cover tableMeta in test
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
-        aggregations: undefined,
+        aggregations: [],
         clientViewportId: "client-vp-1",
         columns: ["col-1", "col-2", "col-3", "col-4"],
         filter: { filter: "" },
@@ -79,8 +88,8 @@ describe("ServerProxy", () => {
       const postMessageToClient = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
       //TODO we shouldn't be able to bypass checks like this
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       serverProxy.subscribe(clientSubscription1);
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
@@ -88,17 +97,18 @@ describe("ServerProxy", () => {
       postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          timeStamp: 1,
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
               rowKey: "SIZE",
               updateType: "SIZE",
-              ts: 1,
             },
             ...createTableRows("server-vp-1", 0, 10),
           ],
@@ -138,16 +148,18 @@ describe("ServerProxy", () => {
       postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
               rowKey: "SIZE",
               updateType: "SIZE",
-              ts: 1,
             },
             ...createTableRows("server-vp-1", 0, 5),
           ],
@@ -166,8 +178,9 @@ describe("ServerProxy", () => {
       postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: createTableRows("server-vp-1", 5, 10, 100, 2 /* ts */),
         },
       });
@@ -207,16 +220,18 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
               rowKey: "SIZE",
               updateType: "SIZE",
-              ts: 1,
             },
             ...createTableRows("server-vp-1", 0, 10),
           ],
@@ -233,6 +248,7 @@ describe("ServerProxy", () => {
       });
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         requestId: "1",
         body: {
           type: "CHANGE_VP_RANGE_SUCCESS",
@@ -245,8 +261,9 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: createTableRows("server-vp-1", 10, 12),
         },
       });
@@ -279,16 +296,18 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
-              viewPortId: "server-vp-1",
-              vpSize: 100,
+              ...COMMON_ROW_ATTRS,
+              data: [],
               rowIndex: -1,
               rowKey: "SIZE",
               updateType: "SIZE",
-              ts: 1,
+              viewPortId: "server-vp-1",
+              vpSize: 100,
             },
             ...createTableRows("server-vp-1", 0, 10),
           ],
@@ -304,6 +323,7 @@ describe("ServerProxy", () => {
         range: { from: 20, to: 30 },
       });
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         requestId: "1",
         body: {
           type: "CHANGE_VP_RANGE_SUCCESS",
@@ -316,8 +336,9 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: createTableRows("server-vp-1", 20, 30),
         },
       });
@@ -354,10 +375,13 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -373,8 +397,9 @@ describe("ServerProxy", () => {
       postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [updateTableRow("server-vp-1", 3, 2003)],
         },
       });
@@ -400,8 +425,8 @@ describe("ServerProxy", () => {
 
       const postMessageToClient = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       mockConnection.send.mockClear();
       TEST_setRequestId(1);
@@ -428,8 +453,8 @@ describe("ServerProxy", () => {
 
       expect(mockConnection.send).toHaveBeenNthCalledWith(2, {
         body: {
-          aggregations: undefined,
-          columns: undefined,
+          aggregations: [],
+          columns: ["col-1"],
           type: "CREATE_VP",
           table: { module: "TEST", table: "test-table" },
           range: { from: 0, to: 20 },
@@ -446,10 +471,13 @@ describe("ServerProxy", () => {
       postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -492,13 +520,15 @@ describe("ServerProxy", () => {
 
       const postMessageToClient = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       serverProxy.subscribe(clientSubscription1);
 
       expect(mockConnection.send).toHaveBeenCalledWith({
         body: {
+          aggregations: [],
+          columns: ["col-1"],
           type: "CREATE_VP",
           table: { module: "TEST", table: "test-table" },
           range: { from: 0, to: 21 },
@@ -518,10 +548,13 @@ describe("ServerProxy", () => {
       postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -597,10 +630,13 @@ describe("ServerProxy", () => {
       callback.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -638,8 +674,9 @@ describe("ServerProxy", () => {
 
       // This will be a buffer top-up only, so no callback
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [...createTableRows("server-vp-1", 10, 20)],
         },
       });
@@ -659,10 +696,13 @@ describe("ServerProxy", () => {
       callback.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -687,8 +727,9 @@ describe("ServerProxy", () => {
       callback.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [...createTableRows("server-vp-1", 9, 15, 100, 2)],
         },
       });
@@ -712,14 +753,15 @@ describe("ServerProxy", () => {
           [8,8,true,null,null,0,"key-08",0,"key-08","name 08",1008,true],
           [9,9,true,null,null,0,"key-09",0,"key-09","name 09",1009,true],
         ],
-      });
+    });
 
       callback.mockClear();
 
       // This will be a buffer top-up only, so no callback
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [...createTableRows("server-vp-1", 15, 20)],
         },
       });
@@ -737,17 +779,20 @@ describe("ServerProxy", () => {
 
       const callback = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       serverProxy.subscribe(clientSubscription1);
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 5000,
               rowIndex: -1,
@@ -787,6 +832,7 @@ describe("ServerProxy", () => {
       });
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         requestId: "1",
         body: {
           type: "CHANGE_VP_RANGE_SUCCESS",
@@ -799,9 +845,10 @@ describe("ServerProxy", () => {
       expect(callback).toHaveBeenCalledTimes(0);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
-          rows: createTableRows("server-vp-1", 4975, 5000),
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: createTableRows("server-vp-1", 4975, 5000, 5000),
         },
       });
 
@@ -839,7 +886,6 @@ describe("ServerProxy", () => {
           [4998,23,true,null,null,0,"key-98",0,"key-98","name 98",5998,true],
           [4999,24,true,null,null,0,"key-99",0,"key-99","name 99",5999,true],
         ],
-        size: 100,
       });
     });
 
@@ -849,17 +895,20 @@ describe("ServerProxy", () => {
       });
       const callback = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       serverProxy.subscribe(clientSubscription1);
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -974,10 +1023,13 @@ describe("ServerProxy", () => {
 
       // 2) server with responds with just rows [0 ... 4]
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -1011,8 +1063,9 @@ describe("ServerProxy", () => {
       expect(callback).toHaveBeenCalledTimes(0);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [...createTableRows("server-vp-1", 5, 10, 100, 2)],
         },
       });
@@ -1022,8 +1075,9 @@ describe("ServerProxy", () => {
       callback.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [...createTableRows("server-vp-1", 10, 15, 100, 3)],
         },
       });
@@ -1058,8 +1112,8 @@ describe("ServerProxy", () => {
       const callback = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, callback);
 
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       serverProxy.subscribe(clientSubscription1);
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
@@ -1067,10 +1121,13 @@ describe("ServerProxy", () => {
       // This translates into server call for rows 0..20 these are all stored in Viewport cache
       // and rows 0..10 returned to client
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -1095,6 +1152,7 @@ describe("ServerProxy", () => {
         range: { from: 20, to: 30 },
       });
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         requestId: "1",
         body: {
           type: "CHANGE_VP_RANGE_SUCCESS",
@@ -1105,8 +1163,9 @@ describe("ServerProxy", () => {
       });
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [...createTableRows("server-vp-1", 20, 35, 100, 2)],
         },
       });
@@ -1128,6 +1187,7 @@ describe("ServerProxy", () => {
       expect(callback).toHaveBeenCalledTimes(0);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         requestId: "1",
         body: {
           type: "CHANGE_VP_RANGE_SUCCESS",
@@ -1141,8 +1201,9 @@ describe("ServerProxy", () => {
       // the client range but we still don't have the full client range, so these are added
       // to the holding pen
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [...createTableRows("server-vp-1", 13, 15, 100, 3)],
         },
       });
@@ -1154,8 +1215,9 @@ describe("ServerProxy", () => {
       // and we have all the rows from the client range, so we can take this together with
       // the rows in holding pen and dispatch the full requested set (12..22) to client
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [...createTableRows("server-vp-1", 7, 13, 100, 4)],
         },
       });
@@ -1192,10 +1254,13 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 1000,
               rowIndex: -1,
@@ -1209,10 +1274,12 @@ describe("ServerProxy", () => {
       });
 
       expect(
-        serverProxy.viewports.get("server-vp-1").dataWindow.internalData
+        serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
+          "internalData"
+        ]
       ).toHaveLength(110);
       expect(
-        serverProxy.viewports.get("server-vp-1").dataWindow.clientRange
+        serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.clientRange
       ).toEqual({
         from: 0,
         to: 10,
@@ -1290,8 +1357,8 @@ describe("ServerProxy", () => {
       });
       const postMessageToClient = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       TEST_setRequestId(1);
 
@@ -1299,10 +1366,13 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -1381,8 +1451,8 @@ describe("ServerProxy", () => {
       });
       const callback = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       TEST_setRequestId(1);
 
@@ -1390,10 +1460,13 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -1478,7 +1551,7 @@ describe("ServerProxy", () => {
   describe("growing and shrinking rowset (Orders)", () => {
     it("initializes with rowset that does not fill client viewport", () => {
       const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        hi: 20,
+        to: 20,
         bufferSize: 100,
       });
       const postMessageToClient = vi.fn();
@@ -1489,10 +1562,13 @@ describe("ServerProxy", () => {
       postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 10,
               rowIndex: -1,
@@ -1529,7 +1605,7 @@ describe("ServerProxy", () => {
 
     it("gradually reduces, then grows viewport", () => {
       const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        hi: 20,
+        to: 20,
         bufferSize: 100,
       });
       const callback = vi.fn();
@@ -1538,10 +1614,13 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 10,
               rowIndex: -1,
@@ -1556,10 +1635,13 @@ describe("ServerProxy", () => {
       callback.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 9,
               rowIndex: -1,
@@ -1582,10 +1664,13 @@ describe("ServerProxy", () => {
 
       callback.mockClear();
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 8,
               rowIndex: -1,
@@ -1606,10 +1691,13 @@ describe("ServerProxy", () => {
 
       callback.mockClear();
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 1,
               rowIndex: -1,
@@ -1630,10 +1718,13 @@ describe("ServerProxy", () => {
 
       callback.mockClear();
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 0,
               rowIndex: -1,
@@ -1654,10 +1745,13 @@ describe("ServerProxy", () => {
 
       callback.mockClear();
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 1,
               rowIndex: -1,
@@ -1683,10 +1777,13 @@ describe("ServerProxy", () => {
 
       callback.mockClear();
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 2,
               rowIndex: -1,
@@ -1713,10 +1810,13 @@ describe("ServerProxy", () => {
 
       callback.mockClear();
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 6,
               rowIndex: -1,
@@ -1736,8 +1836,6 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-1",
         size: 6,
         rows: [
-          // [0,0,true,null,null,1,"key-00",0,"key-00","name 00",1000,true],
-          // [1,1,true,null,null,1,"key-01",0,"key-01","name 01",1001,true],
           [2,2,true,null,null,0,"key-02",0,"key-02","name 02",1002,true],
           [3,3,true,null,null,0,"key-03",0,"key-03","name 03",1003,true],
           [4,4,true,null,null,0,"key-04",0,"key-04","name 04",1004,true],
@@ -1750,21 +1848,24 @@ describe("ServerProxy", () => {
   describe("selection", () => {
     it("single select", () => {
       const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        hi: 20,
+        to: 20,
       });
       const postMessageToClient = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       serverProxy.subscribe(clientSubscription1);
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 10,
               rowIndex: -1,
@@ -1839,17 +1940,20 @@ describe("ServerProxy", () => {
     it("sets viewport isTree when groupby in place", () => {
       const callback = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       serverProxy.subscribe(clientSubscription1);
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -1877,6 +1981,7 @@ describe("ServerProxy", () => {
 
       expect(mockConnection.send).toHaveBeenCalledWith({
         body: {
+          aggregations: [],
           viewPortId: "server-vp-1",
           type: "CHANGE_VP",
           columns: ["col-1", "col-2", "col-3", "col-4"],
@@ -1892,34 +1997,39 @@ describe("ServerProxy", () => {
       });
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         requestId: "1",
         body: {
-          type: "CHANGE_VP_SUCCESS",
-          viewPortId: "server-vp-1",
+          aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
           sort: { sortDefs: [] },
           filterSpec: { filter: "" },
           groupBy: ["col-4"],
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
         },
       });
 
-      expect(serverProxy.viewports.get("server-vp-1").isTree).toBe(true);
+      expect(serverProxy["viewports"].get("server-vp-1")?.isTree).toBe(true);
     });
 
     it("on changing group, sends grouped records as batch", () => {
       const callback = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.sessionId = "dsdsd";
-      serverProxy.authToken = "test";
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
 
       serverProxy.subscribe(clientSubscription1);
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -1946,6 +2056,7 @@ describe("ServerProxy", () => {
       expect(mockConnection.send).toHaveBeenCalledTimes(1);
       expect(mockConnection.send).toHaveBeenCalledWith({
         body: {
+          aggregations: [],
           viewPortId: "server-vp-1",
           type: "CHANGE_VP",
           columns: ["col-1", "col-2", "col-3", "col-4"],
@@ -1961,14 +2072,16 @@ describe("ServerProxy", () => {
       });
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         requestId: "1",
         body: {
-          type: "CHANGE_VP_SUCCESS",
-          viewPortId: "server-vp-1",
+          aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
           sort: { sortDefs: [] },
           filterSpec: { filter: "" },
           groupBy: ["col-4"],
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
         },
       });
 
@@ -1976,7 +2089,9 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(createTableGroupRows());
       expect(callback).toHaveBeenCalledTimes(1);
       expect(
-        serverProxy.viewports.get("server-vp-1").dataWindow.internalData
+        serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
+          "internalData"
+        ]
       ).toHaveLength(4);
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
@@ -2000,10 +2115,13 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -2027,22 +2145,25 @@ describe("ServerProxy", () => {
       });
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         requestId: "1",
         body: {
-          type: "CHANGE_VP_SUCCESS",
-          viewPortId: "server-vp-1",
+          aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
           sort: { sortDefs: [] },
           filterSpec: { filter: "" },
           groupBy: ["col-4"],
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
         },
       });
 
       callback.mockClear();
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [...createTableRows("server-vp-1", 0, 10)],
         },
       });
@@ -2057,10 +2178,13 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
+              data: [],
               viewPortId: "server-vp-1",
               vpSize: 100,
               rowIndex: -1,
@@ -2084,14 +2208,16 @@ describe("ServerProxy", () => {
       });
 
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         requestId: "1",
         body: {
-          type: "CHANGE_VP_SUCCESS",
-          viewPortId: "server-vp-1",
+          aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
           sort: { sortDefs: [] },
           filterSpec: { filter: "" },
           groupBy: ["col-4"],
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
         },
       });
 
@@ -2101,7 +2227,9 @@ describe("ServerProxy", () => {
 
       expect(callback).toHaveBeenCalledTimes(1);
       expect(
-        serverProxy.viewports.get("server-vp-1").dataWindow.internalData
+        serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
+          "internalData"
+        ]
       ).toHaveLength(4);
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
@@ -2121,17 +2249,17 @@ describe("ServerProxy", () => {
 
       // prettier-ignore
       serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
         body: {
-          type: "TABLE_ROW",
+          ...COMMON_TABLE_ROW_ATTRS,
           rows: [
             {
+              ...COMMON_ROW_ATTRS,
               viewPortId: "server-vp-1",
               vpSize: 4,
               rowIndex: 1,
               rowKey: "$root|EUR",
               updateType: "U",
-              ts: 1,
-              sel: 0,
               data: [1,false,"$root|EUR",false,"EUR",43942,"","EUR","","","","",""],
             },
           ],
@@ -2140,7 +2268,9 @@ describe("ServerProxy", () => {
 
       expect(callback).toHaveBeenCalledTimes(1);
       expect(
-        serverProxy.viewports.get("server-vp-1").dataWindow.internalData
+        serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
+          "internalData"
+        ]
       ).toHaveLength(4);
       // prettier-ignore
       expect(callback).toHaveBeenCalledWith({
@@ -2150,6 +2280,199 @@ describe("ServerProxy", () => {
         rows: [
           [1,1,false,false,1,43942,"$root|EUR",0,"","EUR","","","","",""],
         ],
+      });
+    });
+  });
+
+  describe("SIZE records", () => {
+    const [clientSubscription1, serverSubscriptionAck1] = createSubscription();
+
+    it("subscribe whilst table is loading", () => {
+      const postMessageToClient = vi.fn();
+      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
+      //TODO we shouldn't be able to bypass checks like this
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
+
+      serverProxy.subscribe(clientSubscription1);
+      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+
+      console.log(JSON.stringify(clientSubscription1));
+
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            {
+              ...COMMON_ROW_ATTRS,
+              data: [],
+              viewPortId: "server-vp-1",
+              vpSize: 1,
+              rowIndex: -1,
+              rowKey: "SIZE",
+              updateType: "SIZE",
+            },
+          ],
+        },
+      });
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+              mode: "size-only",
+              type: "viewport-update",
+              clientViewportId: "client-vp-1",
+              size: 1,
+            });
+      postMessageToClient.mockClear();
+
+      // prettier-ignore
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            ...createTableRows("server-vp-1", 0,1),
+            {
+              ...COMMON_ROW_ATTRS,
+              data: [],
+              viewPortId: "server-vp-1",
+              vpSize: 293,
+              rowIndex: -1,
+              rowKey: "SIZE",
+              updateType: "SIZE",
+              ts: 1,
+            },
+            ...createTableRows("server-vp-1", 1,10),
+          ],
+        },
+      });
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "batch",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        size: 293,
+        rows: [
+          [0,0,true,null,null,0,'key-00', 0,'key-00', 'name 00',1000,true],
+          [1,1,true,null,null,0,"key-01",0,"key-01","name 01",1001,true],
+          [2,2,true,null,null,0,"key-02",0,"key-02","name 02",1002,true],
+          [3,3,true,null,null,0,"key-03",0,"key-03","name 03",1003,true],
+          [4,4,true,null,null,0,"key-04",0,"key-04","name 04",1004,true],
+          [5,5,true,null,null,0,"key-05",0,"key-05","name 05",1005,true],
+          [6,6,true,null,null,0,"key-06",0,"key-06","name 06",1006,true],
+          [7,7,true,null,null,0,"key-07",0,"key-07","name 07",1007,true],
+          [8,8,true,null,null,0,"key-08",0,"key-08","name 08",1008,true],
+          [9,9,true,null,null,0,"key-09",0,"key-09","name 09",1009,true]
+        ]
+
+      });
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            {
+              ...COMMON_ROW_ATTRS,
+              data: [],
+              viewPortId: "server-vp-1",
+              vpSize: 850,
+              rowIndex: -1,
+              rowKey: "SIZE",
+              updateType: "SIZE",
+            },
+          ],
+        },
+      });
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            {
+              ...COMMON_ROW_ATTRS,
+              data: [],
+              viewPortId: "server-vp-1",
+              vpSize: 880,
+              rowIndex: -1,
+              rowKey: "SIZE",
+              updateType: "SIZE",
+            },
+          ],
+        },
+      });
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "size-only",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        size: 880,
+      });
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            {
+              ...COMMON_ROW_ATTRS,
+              data: [],
+              viewPortId: "server-vp-1",
+              vpSize: 921,
+              rowIndex: -1,
+              rowKey: "SIZE",
+              updateType: "SIZE",
+            },
+          ],
+        },
+      });
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "size-only",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        size: 921,
+      });
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            {
+              ...COMMON_ROW_ATTRS,
+              data: [],
+              viewPortId: "server-vp-1",
+              vpSize: 948,
+              rowIndex: -1,
+              rowKey: "SIZE",
+              updateType: "SIZE",
+            },
+          ],
+        },
+      });
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "size-only",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        size: 948,
       });
     });
   });

@@ -11,7 +11,13 @@ import {
   notHidden,
 } from "@finos/vuu-utils";
 import cx from "classnames";
-import { HTMLAttributes, memo, MouseEvent, useCallback } from "react";
+import {
+  HTMLAttributes,
+  memo,
+  MouseEvent,
+  useCallback,
+  useEffect,
+} from "react";
 import { RowClickHandler } from "./dataTableTypes";
 import { TableCell } from "./TableCell";
 import { TableGroupCell } from "./TableGroupCell";

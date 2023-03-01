@@ -5,19 +5,18 @@ import {
   DataSourceSubscribedMessage,
   SubscribeCallback,
   VuuFeatureMessage,
-  isDataSourceConfigMessage,
   isVuuFeatureAction,
   VuuFeatureInvocationMessage,
   isVuuFeatureInvocation,
 } from "@finos/vuu-data";
-import { VuuDataRow, VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
+import { VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const { RENDER_IDX, SELECTED } = metadataKeys;
+const { SELECTED } = metadataKeys;
 
-const byKey = (row1: VuuDataRow, row2: VuuDataRow) =>
-  row1[RENDER_IDX] - row2[RENDER_IDX];
+// const byKey = (row1: VuuDataRow, row2: VuuDataRow) =>
+//   ((row1[RENDER_IDX] as number) - row2[RENDER_IDX]) as number;
 
 export type SubscriptionDetails = {
   columnNames?: string[];
@@ -71,7 +70,8 @@ export function useDataSource({
       }
 
       // Why bother with the slice ?
-      data.current = dataWindow.data.slice().sort(byKey);
+      // data.current = dataWindow.data.slice().sort(byKey);
+      data.current = dataWindow.data;
       //     onsole.log(`%c[useDataSource] data.current has ${data.current.length} records
       // [${data.current.map(d => d[0]).join(',')}]
       //     `, 'color:blue;')
@@ -93,7 +93,8 @@ export function useDataSource({
           setData(message.rows);
         } else if (typeof message.size === "number") {
           // TODO is this right ??????
-          data.current = dataWindow.data.slice().sort(byKey);
+          data.current = dataWindow.data;
+          // data.current = dataWindow.data.slice().sort(byKey);
           hasUpdated.current = true;
         }
       } else if (isVuuFeatureAction(message)) {
@@ -142,11 +143,12 @@ export function useDataSource({
   const adjustRange = useCallback(
     (rowCount: number) => {
       const { from } = dataSource.range;
-      const fullRange = getFullRange(
-        { from, to: from + rowCount },
-        renderBufferSize
-      );
+      const rowRange = { from, to: from + rowCount };
+      const fullRange = getFullRange(rowRange, renderBufferSize);
       dataSource.range = rangeRef.current = fullRange;
+      // seems a bit naughty to emit from outside, but the datasource doesn't
+      // know about the buffer size we add to the base range
+      dataSource.emit("range", rowRange);
       dataWindow.setRange(fullRange);
     },
     [dataSource, dataWindow, renderBufferSize]
@@ -157,6 +159,7 @@ export function useDataSource({
       const fullRange = getFullRange(range, renderBufferSize);
       dataSource.range = rangeRef.current = fullRange;
       dataWindow.setRange(fullRange);
+      dataSource.emit("range", range);
     },
     [dataSource, dataWindow, renderBufferSize]
   );

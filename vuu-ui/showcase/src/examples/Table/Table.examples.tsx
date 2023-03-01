@@ -1,6 +1,9 @@
-import { ArrayDataSource, DataSourceConfig } from "@finos/vuu-data";
+import { ArrayDataSource, DataSource, DataSourceConfig } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
+import {
+  DatagridSettingsPanel,
+  DataSourceStats,
+} from "@finos/vuu-datagrid-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { DataTable, TableProps } from "@finos/vuu-datatable";
 import { FilterInput } from "@finos/vuu-filters";
@@ -40,17 +43,18 @@ let displaySequence = 1;
 const NO_CONFIG = {} as const;
 const useTableConfig = ({
   columnConfig = NO_CONFIG,
+  count = 1000,
   leftPinnedColumns = [],
   rightPinnedColumns = [],
   renderBufferSize = 0,
 }: {
   columnConfig?: { [key: string]: Partial<ColumnDescriptor> };
+  count?: number;
   leftPinnedColumns?: number[];
   rightPinnedColumns?: number[];
   renderBufferSize?: number;
 } = {}) => {
   return useMemo(() => {
-    const count = 1000;
     const data: VuuRowDataItemType[][] = [];
     for (let i = 0; i < count; i++) {
       // prettier-ignore
@@ -84,7 +88,13 @@ const useTableConfig = ({
     });
 
     return { config: { columns }, dataSource, renderBufferSize };
-  }, [columnConfig, leftPinnedColumns, renderBufferSize, rightPinnedColumns]);
+  }, [
+    columnConfig,
+    count,
+    leftPinnedColumns,
+    renderBufferSize,
+    rightPinnedColumns,
+  ]);
 };
 
 export const DefaultTable = () => {
@@ -98,6 +108,24 @@ export const DefaultTable = () => {
   );
 };
 DefaultTable.displaySequence = displaySequence++;
+
+export const TableLoading = () => {
+  const config = useTableConfig({ count: 0 });
+  return (
+    <>
+      {/* <DragVisualizer orientation="horizontal"> */}
+      <DataTable
+        {...config}
+        height={700}
+        renderBufferSize={20}
+        width={700}
+        className="vuuDataTable-loading"
+      />
+      {/* </DragVisualizer> */}
+    </>
+  );
+};
+TableLoading.displaySequence = displaySequence++;
 
 export const DefaultTable10Rows = () => {
   const config = useTableConfig();
@@ -339,6 +367,13 @@ export const VuuDataTable = () => {
   const groupByCurrencyExchange = useCallback(() => {
     dataSource.groupBy = ["currency", "exchange"];
   }, [dataSource]);
+  const groupByCurrencyExchangeRic = useCallback(() => {
+    if (dataSource.table.table === "instruments") {
+      dataSource.groupBy = ["currency", "exchange", "ric"];
+    } else if (dataSource.table.table === "childOrders") {
+      dataSource.groupBy = ["ccy", "exchange", "ric"];
+    }
+  }, [dataSource]);
 
   const handleSubmitFilter = useCallback(
     (filterStruct: Filter | undefined, filter: string, filterName?: string) => {
@@ -373,6 +408,9 @@ export const VuuDataTable = () => {
         <Tooltray>
           <Button onClick={groupByCurrency}>Currency</Button>
           <Button onClick={groupByCurrencyExchange}>Currency, Exchange</Button>
+          <Button onClick={groupByCurrencyExchangeRic}>
+            CCY, Exchange, Ric
+          </Button>
         </Tooltray>
         <Tooltray>
           <FilterInput

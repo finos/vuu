@@ -11,6 +11,7 @@ import {
   VuuRpcRequest,
   LinkDescriptorWithLabel,
   ClientToServerMenuRPC,
+  VuuRow,
 } from "@finos/vuu-protocol-types";
 import {
   isViewporttMessage as isViewportMessage,
@@ -58,7 +59,7 @@ export type MessageOptions = {
 let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
-const log = logger('server-proxy');
+const log = logger("server-proxy");
 
 const nextRequestId = () => `${_requestId++}`;
 const DEFAULT_OPTIONS: MessageOptions = {};
@@ -93,6 +94,18 @@ function addLabelsToLinks(
     }
   });
 }
+
+const byViewportRowIdxTimestamp = (row1: VuuRow, row2: VuuRow) => {
+  if (row1.viewPortId === row2.viewPortId) {
+    if (row1.rowIndex === row2.rowIndex) {
+      return row1.ts > row2.ts ? 1 : -1;
+    } else {
+      return row1.rowIndex > row2.rowIndex ? 1 : -1;
+    }
+  } else {
+    return row1.viewPortId > row2.viewPortId ? 1 : -1;
+  }
+};
 
 interface PendingLogin {
   resolve: (value: string) => void; // TODO
@@ -188,7 +201,7 @@ export class ServerProxy {
         this.sessionId !== ""
       );
     } else {
-        log.error(`ServerProxy spurious subscribe call ${message.viewport}`);
+      log.error(`ServerProxy spurious subscribe call ${message.viewport}`);
     }
   }
 
@@ -246,12 +259,18 @@ export class ServerProxy {
   /**********************************************************************/
   private setViewRange(viewport: Viewport, message: VuuUIMessageOutViewRange) {
     const requestId = nextRequestId();
-    const [serverRequest, rows] = viewport.rangeRequest(
+    const [serverRequest, rows, debounceRequest] = viewport.rangeRequest(
       requestId,
       message.range
     );
 
     if (serverRequest) {
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `%c[ServerProxy] CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`,
+          "color: red; font-weight: bold"
+        );
+      }
       this.sendIfReady(
         serverRequest,
         requestId,
@@ -265,6 +284,8 @@ export class ServerProxy {
         clientViewportId: viewport.clientViewportId,
         rows,
       });
+    } else if (debounceRequest) {
+      this.postMessageToClient(debounceRequest);
     }
   }
 
@@ -494,7 +515,9 @@ export class ServerProxy {
       return this.menuRpcCall(message);
     } else {
       const { type, requestId } = message;
-      log.debug?.(`Message From Client: ${type}, Data: ${JSON.stringify(message)}`)
+      log.debug?.(
+        `Message From Client: ${type}, Data: ${JSON.stringify(message)}`
+      );
       switch (type) {
         case "GET_TABLE_LIST":
           return this.sendMessageToServer({ type }, requestId);
@@ -595,7 +618,11 @@ export class ServerProxy {
             if (response) {
               this.postMessageToClient(response);
               if (log.debugEnabled) {
-                log.debug(`Subscribe Response (ServerProxy to Client): ${JSON.stringify(response)}`)
+                log.debug(
+                  `Subscribe Response (ServerProxy to Client): ${JSON.stringify(
+                    response
+                  )}`
+                );
               }
             }
             // In the case of a reconnect, we may have resubscribed a disabled viewport,
@@ -659,7 +686,11 @@ export class ServerProxy {
             if (response !== undefined) {
               this.postMessageToClient(response);
               if (log.debugEnabled) {
-                log.debug(`Disable Response (ServerProxy to Client): ${JSON.stringify(response)}`);
+                log.debug(
+                  `Disable Response (ServerProxy to Client): ${JSON.stringify(
+                    response
+                  )}`
+                );
               }
             }
           }
@@ -689,7 +720,11 @@ export class ServerProxy {
                 type: "viewport-update",
               });
               if (log.debugEnabled) {
-                log.debug(`Enable Response (ServerProxy to Client): ${JSON.stringify(response)}`);
+                log.debug(
+                  `Enable Response (ServerProxy to Client): ${JSON.stringify(
+                    response
+                  )}`
+                );
               }
             }
           }
@@ -697,36 +732,48 @@ export class ServerProxy {
         break;
       case Message.TABLE_ROW:
         {
-          // onsole.log(`\nbatch timestamp ${time(timeStamp)} first timestamp ${time(firstBatchTimestamp)} ${body.rows.length} rows in batch`)
+          console.time("TABLE_ROWS");
+          if (process.env.NODE_ENV === "development") {
+            console.log(
+              `\t${body.rows.length} rows [${body.rows[0]?.rowIndex}] - [${
+                body.rows[body.rows.length - 1]?.rowIndex
+              }]`
+            );
+          }
 
-          // 1) batch records by viewport
-          // 2) sort records by rowIndex and updateTime
-          // 3) pass entire batch to viewport
+          body.rows.sort(byViewportRowIdxTimestamp);
+          const currentViewportId = "";
+          let viewport: Viewport | undefined;
+          let startIdx = 0;
 
-          for (const row of body.rows) {
-            const { viewPortId, rowIndex, rowKey, updateType } = row;
-            const viewport = viewports.get(viewPortId);
-            if (viewport) {
-              // onsole.log(`row timestamp ${time(row.ts)}`)
-              // This might miss rows if we receive rows after submitting a groupByRequest but before
-              // receiving the ACK
-              if (
-                viewport.isTree &&
-                updateType === "U" &&
-                !rowKey.startsWith("$root")
-              ) {
-                // Ignore blank rows sent after GroupBy;
-              } else {
-                viewport.handleUpdate(updateType, rowIndex, row);
+          for (
+            let i = 0, count = body.rows.length, isLast = i === count - 1;
+            i < count;
+            i++, isLast = i === count - 1
+          ) {
+            const row = body.rows[i];
+            if (row.viewPortId !== currentViewportId || isLast) {
+              const viewportId =
+                count === 1 ? row.viewPortId : currentViewportId;
+              if (viewportId !== "") {
+                if (startIdx === 0 && isLast) {
+                  viewport = viewports.get(viewportId);
+                  if (viewport) {
+                    viewport.updateRows(body.rows);
+                  } else {
+                    console.warn(
+                      `TABLE_ROW message received for non registered viewport ${viewportId}`
+                    );
+                  }
+                } else {
+                  startIdx = i;
+                }
               }
             }
-            log.warn?.(
-              `TABLE_ROW message received for non registered viewport ${viewPortId}`
-            );
-            // onsole.log(`%c[ServerProxy] after updates, movingWindow has ${viewport.dataWindow.internalData.length} records`,"color:brown")
           }
 
           this.processUpdates();
+          console.timeEnd("TABLE_ROWS");
         }
         break;
 
@@ -735,6 +782,11 @@ export class ServerProxy {
           const viewport = this.viewports.get(body.viewPortId);
           if (viewport) {
             const { from, to } = body;
+            if (process.env.NODE_ENV === "development") {
+              console.log(
+                `[ServerProxy] CHANGE_VP_RANGE_SUCCESS ${from} - ${to}`
+              );
+            }
             viewport.completeOperation(requestId, from, to);
           }
         }
@@ -888,8 +940,7 @@ export class ServerProxy {
         break;
 
       default:
-        if (log.info)
-          log.info(`handleMessageFromServer ${body["type"]}.`);
+        if (log.info) log.info(`handleMessageFromServer ${body["type"]}.`);
     }
   }
 
@@ -935,6 +986,9 @@ export class ServerProxy {
         const [rows, mode] = viewport.getClientRows();
         const size = viewport.getNewRowCount();
         if (size !== undefined || (rows && rows.length > 0)) {
+          if (process.env.NODE_ENV === "development") {
+            console.log(`send message to client ${mode}`);
+          }
           this.postMessageToClient({
             clientViewportId: viewport.clientViewportId,
             mode,
@@ -943,14 +997,12 @@ export class ServerProxy {
             type: "viewport-update",
           });
         }
-        if (
-          log.debugEnabled
-          ) {
+        if (log.debugEnabled) {
           log.debug(`
             clientVieportId: ${viewport.clientViewportId}\n
             mode: ${mode}\n
             type: viewport-update
-          `)
+          `);
         }
       }
     });

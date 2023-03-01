@@ -1,106 +1,134 @@
+import {
+  ServerToClientCreateViewPortSuccess,
+  ServerToClientMessage,
+  ServerToClientTableRows,
+  VuuRow,
+} from "@finos/vuu-protocol-types";
+import { ServerProxySubscribeMessage } from "../src";
+
+export const COMMON_ATTRS = {
+  module: "TEST",
+  requestId: "",
+  token: "",
+  user: "",
+};
+
+export const COMMON_TABLE_ROW_ATTRS = {
+  batch: "",
+  isLast: true,
+  timeStamp: 1,
+  type: "TABLE_ROW" as const,
+};
+
+export const COMMON_ROW_ATTRS = {
+  sel: 0 as const,
+  ts: 1,
+  vpVersion: "",
+};
+
 export const createTableRows = (viewPortId, from, to, vpSize = 100, ts = 1) => {
-  const results = [];
+  const results: VuuRow[] = [];
   for (let rowIndex = from; rowIndex < to; rowIndex++) {
     const key = ("0" + rowIndex).slice(-2);
     const rowKey = `key-${key}`;
     results.push({
-      viewPortId,
-      vpSize,
+      data: [rowKey, `name ${key}`, 1000 + rowIndex, true],
       rowIndex,
       rowKey,
       updateType: "U",
       sel: 0,
       ts,
-      data: [rowKey, `name ${key}`, 1000 + rowIndex, true],
+      viewPortId,
+      vpSize,
+      vpVersion: "",
     });
   }
   return results;
 };
 
-export const createTableGroupRows = (viewPortId, groupLevels) => {
-  // prettier-ignore
-  return {
+export const createTableGroupRows =
+  (): ServerToClientMessage<ServerToClientTableRows> => {
+    // prettier-ignore
+    return {
+    ...COMMON_ATTRS,
     requestId: '1',
     body: {
-      type: 'TABLE_ROW',
+      ...COMMON_TABLE_ROW_ATTRS,
       rows: [
         {
+          ...COMMON_ROW_ATTRS,
           viewPortId: 'server-vp-1',
           vpSize: 4,
           rowIndex: -1,
           rowKey: 'SIZE',
           updateType: 'SIZE',
-          ts: 1,
-          sel: 0,
           data: []
         },
         {
+          ...COMMON_ROW_ATTRS,
           viewPortId: 'server-vp-1',
           vpSize: 4,
           rowIndex: 0,
           rowKey: '$root|USD',
           updateType: 'U',
-          ts: 1,
-          sel: 0,
           data: [1, false, '$root|USD', false, 'USD', 43714, '', 'USD', '', '', '', '', '']
         },
         {
+          ...COMMON_ROW_ATTRS,
           viewPortId: 'server-vp-1',
           vpSize: 4,
           rowIndex: 1,
           rowKey: '$root|EUR',
           updateType: 'U',
-          ts: 1,
-          sel: 0,
           data: [1, false, '$root|EUR', false, 'EUR', 43941, '', 'EUR', '', '', '', '', '']
         },
         {
+          ...COMMON_ROW_ATTRS,
           viewPortId: 'server-vp-1',
           vpSize: 4,
           rowIndex: 2,
           rowKey: '$root|GBX',
           updateType: 'U',
-          ts: 1,
-          sel: 0,
           data: [1, false, '$root|GBX', false, 'GBX', 43997, '', 'GBX', '', '', '', '', '']
         },
         {
+          ...COMMON_ROW_ATTRS,
           viewPortId: 'server-vp-1',
           vpSize: 4,
           rowIndex: 3,
           rowKey: '$root|CAD',
           updateType: 'U',
-          ts: 1,
-          sel: 0,
           data: [1, false, '$root|CAD', false, 'CAD', 44108, '', 'CAD', '', '', '', '', '']
         }
       ]
     }
   };
-};
+  };
 
 export const updateTableRow = (
   viewPortId,
   rowIndex,
   updatedVal,
   { vpSize = 100, ts = 2 } = {}
-) => {
+): VuuRow => {
   const key = ("0" + rowIndex).slice(-2);
   const rowKey = `key-${key}`;
   return {
+    ...COMMON_ROW_ATTRS,
     viewPortId,
     vpSize,
     rowIndex,
     rowKey,
-    updateType: "U",
-    sel: 0,
     ts,
+    updateType: "U",
     data: [rowKey, `name ${key}`, updatedVal, true],
   };
 };
 
 // prettier-ignore
 export const createSubscription = ({
+  aggregations = [],
+  columns = ["col-1"],
   bufferSize = 0,
   filter = { filter: ''},
   from = 0,
@@ -109,19 +137,36 @@ export const createSubscription = ({
   to = 10,
   sort = {sortDefs: []},
   viewport = `client-vp-${key}`
-} = {}) => [
-  { bufferSize, filter, groupBy, range: { from, to }, sort, table: {module: "TEST", table: 'test-table'}, viewport },
+} = {}): [
+  ServerProxySubscribeMessage, 
+  ServerToClientMessage<ServerToClientCreateViewPortSuccess>
+] => [
+  { 
+    aggregations,
+    bufferSize, 
+    columns, 
+    filter, 
+    groupBy, 
+    range: { from, to }, 
+    sort, 
+    table: {module: "TEST", table: 'test-table'}, 
+    viewport 
+  },
   {
+    module: "TEST",
     requestId: `client-vp-${key}`,
     body: {
-      type: 'CREATE_VP_SUCCESS',
-      viewPortId: `server-vp-${key}`,
+      aggregations: [],
       columns: ['col-1', 'col-2', 'col-3', 'col-4'],
+      filterSpec: filter,
+      groupBy,
       range: { from, to: to + bufferSize },
       sort,
       table: "test-table",
-      groupBy,
-      filterSpec: filter
-    }
+      type: 'CREATE_VP_SUCCESS',
+      viewPortId: `server-vp-${key}`,
+    },
+    token: "",
+    user: "user"
   }
 ];

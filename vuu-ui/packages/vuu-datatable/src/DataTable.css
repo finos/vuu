@@ -18,6 +18,26 @@
     var(--dataTable-background) calc(var(--row-height) *2));
 }
 
+.vuuDataTable-loading .vuuDataTable-table {
+  --skeleton-height: 20px;
+  --skeleton-width: calc(var(--content-width) - 8px);
+  --skeleton-left: 4px;
+  --skeleton-row-height: 16px;
+  --skeleton-size: var(--skeleton-width) var(--skeleton-height);
+  --skeleton-row: linear-gradient(
+    var(--salt-color-gray-20-fade-background) var(--skeleton-row-height),
+    transparent 0
+  );
+  --skeleton-background-image: var(--skeleton-row);
+
+
+  background-image: var(--skeleton-background-image);
+  background-repeat: repeat-y;
+  background-size: var(--skeleton-size);
+  background-position-x: var(--skeleton-left);
+  background-position-y: 27px;
+}
+
 .vuuDataTable-contentContainer {
   
   --vuuTable-contentHeight: var(--content-height, 'auto');
@@ -148,11 +168,11 @@ table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
 } */
 
 .vuuDataTable-settings {
-  height: var(--header-height);
-  position: absolute;
+  --saltButton-height: var(--header-height);
+  --saltButton-width: 15px;
+  position: absolute !important;
   right: 0;
-  top:0;
-  width: 15px;
+  top: 0;
 }
 
 .vuuDataTable:has(.vuuTable-headerCell-resizing) * {

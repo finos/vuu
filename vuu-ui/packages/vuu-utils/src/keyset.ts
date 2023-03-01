@@ -6,7 +6,7 @@ export class KeySet {
   private nextKeyValue: number;
 
   constructor(range: VuuRange) {
-    this.keys = new Map();
+    this.keys = new Map<number, number>();
     this.free = [];
     this.nextKeyValue = 0;
     this.reset(range);
@@ -45,13 +45,17 @@ export class KeySet {
     const key = this.keys.get(rowIndex);
     if (key === undefined) {
       console.log(`key not found
-        keys: ${Object.entries(this.keys)
-          .map((rowIndex, keyValue) => `${rowIndex}=>${keyValue}`)
-          .join(", ")}
+        keys: ${this.toDebugString()}
         free : ${this.free.join(",")}  
       `);
       throw Error(`KeySet, no key found for rowIndex ${rowIndex}`);
     }
     return key;
+  }
+
+  public toDebugString() {
+    return Array.from(this.keys.entries())
+      .map<string>((k, v) => `${k}=>${v}`)
+      .join(",");
   }
 }

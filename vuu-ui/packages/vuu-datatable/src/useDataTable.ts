@@ -1,6 +1,5 @@
 import {
   DataSource,
-  DataSourceConfigMessage,
   DataSourceRow,
   DataSourceSubscribedMessage,
   JsonDataSource,
@@ -149,7 +148,6 @@ export const useDataTable = ({
 
   const { data, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
-    // onConfigChange: handleConfigChangeFromDataSource,
     onFeatureEnabled,
     onFeatureInvocation,
     onSubscribed,

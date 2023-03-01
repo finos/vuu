@@ -88,7 +88,6 @@ export const useTestDataSource = ({
     ];
   }, [calculatedColumns, columnConfig, columnNamesProp, schemas, tablename]);
 
-  console.log(`create datasource with columns ${columnNames.join(",")}`);
   const dataSource = useMemo(() => {
     const dataConfig = {
       bufferSize,

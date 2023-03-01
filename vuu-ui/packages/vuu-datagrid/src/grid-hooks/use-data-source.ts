@@ -151,7 +151,7 @@ export function useDataSource(
         const range = getFullRange(
           { from, to },
           gridModel.renderBufferSize,
-          dataSource?.rowCount
+          dataSource?.size
         );
         dataSource.range = range;
         dataWindow.setRange(range.from, range.to);
