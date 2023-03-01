@@ -147,7 +147,14 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     const callback = this[connectionCallback];
     ws.onmessage = (evt) => {
       const vuuMessageFromServer = parseMessage(evt.data);
-      console.log(`%c<<< ${vuuMessageFromServer.body.type}`, "color: brown");
+      if (process.env.NODE_ENV === "development") {
+        if (vuuMessageFromServer.body.type !== "HB") {
+          console.log(
+            `%c<<< ${vuuMessageFromServer.body.type}`,
+            "color: brown"
+          );
+        }
+      }
       callback(vuuMessageFromServer);
     };
 
@@ -186,12 +193,14 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     const send = (msg: ClientToServerMessage) => {
-      // console.log(
-      //   `%c>>>  (WebSocket) ${JSON.stringify(msg)}`,
-      //   "color:blue;font-weight:bold;"
-      // );
-      console.log(`%c>>> ${msg.body.type}`, "color: green; font-weight: bold;");
-
+      if (process.env.NODE_ENV === "development") {
+        if (msg.body.type !== "HB_RESP") {
+          console.log(
+            `%c>>> ${msg.body.type}`,
+            "color: green; font-weight: bold;"
+          );
+        }
+      }
       ws.send(JSON.stringify(msg));
     };
 

@@ -1,6 +1,5 @@
 .vuDialog, /* until we correctly set the className on FilteredGrid view in a dialog */
 .vuuTable {
-    background-color: ivory;
   --hwDialog-margin: 200px auto 0 auto;
   --hwParsedInput-background: white;
   --hwParsedInput-input-font-size: 12px;
@@ -11,7 +10,19 @@
   --vuuDataGrid-font-size: 10px;
   --vuuDataGridCell-border-style: none;
   --vuuDataGridRow-background-odd: var(--salt-palette-neutral-background-high);
+  background-color: ivory;
+  display: flex;
+  flex-direction: column;
 }
+
+.vuuTable .vuuFilterInput {
+  flex: 22px 0 0;
+}
+
+.vuuTable .vuuDataTable-footer {
+  flex: 22px 0 0;
+}
+
 
 .vuuTable-gridContainer {
   height: calc(100% - 22px);

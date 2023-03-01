@@ -1,6 +1,6 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { Button, useIdMemo } from "@salt-ds/core";
-import { CSSProperties } from "react";
+import { CSSProperties, useMemo } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
 import { buildContextMenuDescriptors } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
@@ -9,6 +9,7 @@ import { useDataTable } from "./useDataTable";
 import cx from "classnames";
 
 import "./DataTable.css";
+import { isDataLoading } from "@finos/vuu-utils";
 
 const classBase = "vuuDataTable";
 
@@ -90,7 +91,13 @@ export const DataTable = ({
 
   const className = cx(classBase, classNameProp, {
     [`${classBase}-zebra`]: zebraStripes,
+    [`${classBase}-loading`]: isDataLoading(columns),
   });
+
+  // TODO this is going to go
+  const nonDraggedColumns = useMemo(() => {
+    return columns.filter((col, i) => i !== draggedItemIndex);
+  }, [columns, draggedItemIndex]);
 
   return (
     <ContextMenuProvider
@@ -130,7 +137,7 @@ export const DataTable = ({
             >
               <Table
                 {...tableProps}
-                columns={columns.filter((col, i) => i !== draggedItemIndex)}
+                columns={nonDraggedColumns}
                 headerHeight={headerHeight}
                 rowHeight={rowHeight}
               />

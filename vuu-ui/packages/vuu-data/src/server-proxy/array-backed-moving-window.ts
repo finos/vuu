@@ -7,8 +7,9 @@ const EMPTY_ARRAY = [] as const;
 type RangeTuple = [boolean, readonly VuuRow[] /*, readonly VuuRow[]*/];
 
 export class ArrayBackedMovingWindow {
+  #range: WindowRange;
+
   private bufferSize: number;
-  private range: WindowRange;
   private internalData: VuuRow[];
   private rowsWithinRange: number;
 
@@ -23,11 +24,15 @@ export class ArrayBackedMovingWindow {
   ) {
     this.bufferSize = bufferSize;
     this.clientRange = new WindowRange(clientFrom, clientTo);
-    this.range = new WindowRange(from, to);
+    this.#range = new WindowRange(from, to);
     //internal data is always 0 based, we add range.from to determine an offset
     this.internalData = new Array(bufferSize);
     this.rowsWithinRange = 0;
     this.rowCount = 0;
+  }
+
+  get range() {
+    return this.#range;
   }
 
   // TODO we shpuld probably have a hasAllClientRowsWithinRange
@@ -40,6 +45,18 @@ export class ArrayBackedMovingWindow {
     );
   }
 
+  // Check to see if set of rows is outside the current viewport range, indicating
+  // that veiwport is being scrolled quickly and server is not able to keep up.
+  outOfRange(firstIndex: number, lastIndex: number) {
+    const { from, to } = this.range;
+    if (lastIndex < from) {
+      return true;
+    }
+    if (firstIndex >= to) {
+      return true;
+    }
+  }
+
   setRowCount = (rowCount: number) => {
     if (rowCount < this.internalData.length) {
       this.internalData.length = rowCount;
@@ -49,7 +66,7 @@ export class ArrayBackedMovingWindow {
       this.rowsWithinRange = 0;
       const end = Math.min(rowCount, this.clientRange.to);
       for (let i = this.clientRange.from; i < end; i++) {
-        const rowIndex = i - this.range.from;
+        const rowIndex = i - this.#range.from;
         if (this.internalData[rowIndex] !== undefined) {
           this.rowsWithinRange += 1;
         }
@@ -58,29 +75,30 @@ export class ArrayBackedMovingWindow {
     this.rowCount = rowCount;
   };
 
-  setAtIndex(index: number, data: VuuRow) {
+  setAtIndex(row: VuuRow) {
+    const { rowIndex: index } = row;
     const isWithinClientRange = this.isWithinClientRange(index);
     if (isWithinClientRange || this.isWithinRange(index)) {
-      const internalIndex = index - this.range.from;
+      const internalIndex = index - this.#range.from;
       if (!this.internalData[internalIndex] && isWithinClientRange) {
         this.rowsWithinRange += 1;
         //onsole.log(`rowsWithinRange is now ${this.rowsWithinRange} out of ${this.range.to - this.range.from}`)
       }
 
-      this.internalData[internalIndex] = data;
+      this.internalData[internalIndex] = row;
     }
     return isWithinClientRange;
   }
 
   getAtIndex(index: number): any {
-    return this.range.isWithin(index) &&
-      this.internalData[index - this.range.from] != null
-      ? this.internalData[index - this.range.from]
+    return this.#range.isWithin(index) &&
+      this.internalData[index - this.#range.from] != null
+      ? this.internalData[index - this.#range.from]
       : undefined;
   }
 
   isWithinRange(index: number): boolean {
-    return this.range.isWithin(index);
+    return this.#range.isWithin(index);
   }
 
   isWithinClientRange(index: number): boolean {
@@ -101,14 +119,14 @@ export class ArrayBackedMovingWindow {
     this.clientRange.to = to;
     this.rowsWithinRange = 0;
     for (let i = from; i < to; i++) {
-      const internalIndex = i - this.range.from;
+      const internalIndex = i - this.#range.from;
       if (this.internalData[internalIndex]) {
         this.rowsWithinRange += 1;
       }
     }
 
     let clientRows: readonly VuuRow[] = EMPTY_ARRAY;
-    const offset = this.range.from;
+    const offset = this.#range.from;
 
     if (this.hasAllRowsWithinRange) {
       if (to > originalRange.to) {
@@ -121,7 +139,7 @@ export class ArrayBackedMovingWindow {
     }
 
     const serverDataRequired = bufferBreakout(
-      this.range,
+      this.#range,
       from,
       to,
       this.bufferSize
@@ -130,7 +148,7 @@ export class ArrayBackedMovingWindow {
   }
 
   setRange(from: number, to: number) {
-    const [overlapFrom, overlapTo] = this.range.overlap(from, to);
+    const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
 
     const newData = new Array(to - from + this.bufferSize);
     this.rowsWithinRange = 0;
@@ -147,12 +165,12 @@ export class ArrayBackedMovingWindow {
     }
 
     this.internalData = newData;
-    this.range.from = from;
-    this.range.to = to;
+    this.#range.from = from;
+    this.#range.to = to;
   }
 
   getData(): any[] {
-    const { from, to } = this.range;
+    const { from, to } = this.#range;
     const { from: clientFrom, to: clientTo } = this.clientRange;
     const startOffset = Math.max(0, clientFrom - from);
     // TEMP hack, whu wouldn't we have rowCount ?

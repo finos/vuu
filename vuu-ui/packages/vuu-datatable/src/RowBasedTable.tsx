@@ -4,7 +4,7 @@ import {
   metadataKeys,
   notHidden,
 } from "@finos/vuu-utils";
-import { MouseEvent, useCallback } from "react";
+import { MouseEvent, useCallback, useMemo } from "react";
 import { TableImplementationProps } from "./dataTableTypes";
 import { TableRow } from "./TableRow";
 import { TableGroupHeaderCell } from "./TableGroupHeaderCell";
@@ -34,6 +34,10 @@ export const RowBasedTable = ({
     [onHeaderCellDragStart]
   );
 
+  const visibleColumns = useMemo(() => {
+    return columns.filter(notHidden);
+  }, [columns]);
+
   const handleHeaderClick = useCallback(
     (evt: MouseEvent) => {
       const targetElement = evt.target as HTMLElement;
@@ -51,7 +55,7 @@ export const RowBasedTable = ({
   return (
     <table aria-rowcount={rowCount} className={`${classBase}-table`}>
       <colgroup>
-        {columns.filter(notHidden).map((column, i) => (
+        {visibleColumns.map((column, i) => (
           <col key={i} width={`${column.width}px`} />
         ))}
       </colgroup>
@@ -66,7 +70,7 @@ export const RowBasedTable = ({
           </tr>
         ))}
         <tr>
-          {columns.filter(notHidden).map((column, i) => {
+          {visibleColumns.map((column, i) => {
             const style = getColumnPinStyle(column);
             return isGroupColumn(column) ? (
               <TableGroupHeaderCell

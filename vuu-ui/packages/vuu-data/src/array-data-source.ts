@@ -83,7 +83,6 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
   #sort: VuuSort = { sortDefs: [] };
   #title: string | undefined;
 
-  public rowCount: number | undefined;
   public viewport: string;
 
   private keys = new KeySet(this.#range);

@@ -27,10 +27,18 @@ import {
   ShellContextProps,
   useShellContext,
 } from "@finos/vuu-shell";
-import { ToolbarButton } from "@heswell/salt-lab";
+import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ConfigurableDataTable } from "./ConfigurableDataTable";
+import { DataSourceStats } from "@finos/vuu-datagrid-extras/src/datasource-stats";
 
 import "./vuuTable.css";
 
@@ -292,6 +300,12 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
             rowHeight={18}
           />
         </div>
+        <Toolbar
+          className="vuuDataTable-footer"
+          style={{ "--saltToolbar-height": "20px" } as CSSProperties}
+        >
+          <DataSourceStats dataSource={dataSource} />
+        </Toolbar>
       </div>
     </ContextMenuProvider>
   );

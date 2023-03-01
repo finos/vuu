@@ -52,7 +52,6 @@ export function registerComponent<
   type: ComponentType = "cell-renderer",
   options: CellRendererOptions
 ): void {
-  console.log("registre component");
   if (isCellRenderer(type, component)) {
     cellRenderersMap.set(componentName, component);
   } else if (isCellConfigPanel(type, component)) {
