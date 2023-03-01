@@ -45,9 +45,9 @@ import java.util.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
  * },
  * }
  */
-class VuuJoinTableProvider(implicit timeProvider: Clock, lifecyle: LifecycleContainer, metrics: MetricsProvider) extends JoinTableProvider with StrictLogging {
+class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends JoinTableProvider with StrictLogging {
 
-  lifecyle(this)
+  lifecycle(this)
 
   private val outboundQueue = new ArrayBlockingQueue[JoinTableUpdate](20000)
   private val joinRelations = new JoinRelations()
