@@ -141,6 +141,19 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
       }
     }
 
+    Scenario("IN clause on unindexed column") {
+      withFilter("trader in [\"steve\", \"rahúl\"]") {
+        List(
+          RowWithData("LDN-0002", Map("tradeTime" -> 1l, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD")),
+          RowWithData("NYC-0002", Map("tradeTime" -> 6l, "quantity" -> 100.0d, "ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD")),
+          RowWithData("NYC-0010", Map("tradeTime" -> 6l, "quantity" -> null, "ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD")),
+          RowWithData("NYC-0011", Map("tradeTime" -> 6l, "quantity" -> null, "ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD")),
+          RowWithData("NYC-0012", Map("tradeTime" -> 6l, "quantity" -> null, "ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD")),
+          RowWithData("NYC-0013", Map("tradeTime" -> 6l, "quantity" -> null, "ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD"))
+        )
+      }
+    }
+
     Scenario("tradeTime > 4") {
 
       withFilter("tradeTime > 4") {

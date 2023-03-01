@@ -1,7 +1,7 @@
 package org.finos.vuu.core.filter
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.grammar.FilterBaseVisitor
+import org.finos.vuu.grammar.{FilterBaseVisitor, FilterLexer}
 import org.finos.vuu.grammar.FilterParser._
 import org.antlr.v4.runtime.tree.TerminalNode
 
@@ -70,12 +70,26 @@ class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] with StrictLoggi
 
   private def parseTypeAndValue(ctx: AtomContext): (Int, String) = {
     val atomType = ctx.getChild(0).asInstanceOf[TerminalNode].getSymbol.getType
-    val text = ctx.getText
-    (atomType, text)
+    val textValue = parseValue(atomType, ctx)
+
+    (atomType, textValue)
   }
 
   private def parseTypeAndValueList(ctx: List[AtomContext]): (Int, List[String]) = {
     val atomType = ctx.head.getChild(0).asInstanceOf[TerminalNode].getSymbol.getType
-    (atomType, ctx.map(ctx => ctx.getText))
+    val textValues = ctx.map(ctx => parseValue(atomType, ctx))
+
+    (atomType, textValues)
+  }
+
+  private def parseValue(atomType: Int, ctx: AtomContext) = {
+    atomType match {
+      case FilterLexer.STRING =>
+        val rawString = ctx.getText
+        assert(rawString.startsWith("\"") && rawString.endsWith("\""))
+        rawString.stripPrefix("\"").stripSuffix("\"")
+      case _ =>
+        ctx.getText
+    }
   }
 }
