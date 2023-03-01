@@ -486,6 +486,7 @@ export class ServerProxy {
         }
       } else {
         const viewport = this.getViewportForClient(message.viewport);
+        logger.log(`${message.type} Message From Client: `, message);
         switch (message.type) {
           case "setViewRange":
             return this.setViewRange(viewport, message);
