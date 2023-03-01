@@ -452,51 +452,37 @@ export class ServerProxy {
         }
       } else {
         const viewport = this.getViewportForClient(message.viewport);
+        logger.log(`${message.type} Message From Client: `, message);
         switch (message.type) {
           case "setViewRange":
-            logger.log('Set View-Range Message From Client: ', message);
             return this.setViewRange(viewport, message);
           case "aggregate":
-            logger.log('Aggregate Message From Client: ', message);
             return this.aggregate(viewport, message);
           case "sort":
-            logger.log('Sort Message From Client: ', message);
             return this.sort(viewport, message);
           case "groupBy":
-            logger.log('GroupBy Message From Client: ', message);
             return this.groupBy(viewport, message);
           case "filter":
-            logger.log('Filter Message From Client: ', message);
             return this.filter(viewport, message);
           case "select":
-            logger.log('Select Message From Client: ', message);
             return this.select(viewport, message);
           case "suspend":
-            logger.log('Suspend Message From Client: ', message);
             return viewport.suspend();
           case "resume":
-            logger.log('Resume Message From Client: ', message);
             return this.resumeViewport(viewport);
           case "enable":
-            logger.log('Enable Message From Client: ', message);
             return this.enableViewport(viewport);
           case "openTreeNode":
-            logger.log('Open Tree Node Message From Client: ', message);
             return this.openTreeNode(viewport, message);
           case "closeTreeNode":
-            logger.log('Close Tree Node Message From Client: ', message);
             return this.closeTreeNode(viewport, message);
           case "createLink":
-            logger.log('Create Link Message From Client: ', message);
             return this.createLink(viewport, message);
           case "removeLink":
-            logger.log('Remove Link Message From Client: ', message);
             return this.removeLink(viewport);
           case "setColumns":
-            logger.log('Set Columns Message From Client: ', message);
             return this.setColumns(viewport, message);
           case "setTitle":
-            logger.log('Set Title Message From Client: ', message);
             return this.setTitle(viewport, message);
           default:
         }
