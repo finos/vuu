@@ -140,6 +140,8 @@ export default async function main(customConfig) {
 
       if (debug) {
         newPackage.version = `${version}-debug`;
+      } else {
+        newPackage.version = version;
       }
 
       fs.writeFile(
