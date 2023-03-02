@@ -16,7 +16,7 @@
     "build": "node ./scripts/build-all.mjs",
     "build:app": "cd sample-apps/app-vuu-example && node scripts/build.mjs",
     "build:packages": "yarn build --cjs && yarn type-defs",
-    "build:packages:debug": "yarn build --cjs --debug && yarn type-defs",
+    "build:packages:debug": "yarn build --cjs --debug && yarn type-defs --debug",
     "build:salt": "node ./scripts/build-salt.mjs",
     "launch:demo": "node ./scripts/launch-app.mjs",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",

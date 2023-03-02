@@ -1,8 +1,11 @@
-import { execWait } from "./utils.mjs";
+import { execWait, withArgs } from "./utils.mjs";
 
 function buildPackage(packageName) {
   console.log(`build TypeScript typedefs for ${packageName}`);
-  execWait("yarn --silent type-defs", `packages/${packageName}`);
+  execWait(
+    `yarn --silent type-defs${withArgs("debug")}`,
+    `packages/${packageName}`
+  );
 }
 
 const packages = [
