@@ -1,11 +1,10 @@
-import { execWait } from "./utils.mjs";
-
-const args = process.argv.slice(2);
-const dev = args.includes("--dev") ? " --dev" : "";
-const cjs = args.includes("--cjs") ? " --cjs" : "";
+import { execWait, withArgs } from "./utils.mjs";
 
 const buildPackage = async (packageName) =>
-  execWait(`yarn --silent build${dev}${cjs}`, `packages/${packageName}`);
+  execWait(
+    `yarn --silent build${withArgs("dev", "cjs", "debug")}`,
+    `packages/${packageName}`
+  );
 
 // TODO determine the dependency graph/build order programatically
 const wave1 = [

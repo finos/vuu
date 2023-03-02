@@ -1,4 +1,6 @@
-import { execWait } from "./utils.mjs";
+import { execWait, getCommandLineArg } from "./utils.mjs";
+
+const debug = getCommandLineArg("--debug");
 
 const packages = [
   "vuu-codemirror",
@@ -18,11 +20,14 @@ const packages = [
   "vuu-utils",
 ];
 
-async function publishPackage(packageName) {
+async function publishPackage(packageName, suffix) {
   await execWait(
     "npm publish --registry https://registry.npmjs.org --access public",
-    `dist/${packageName}`
+    `dist/${packageName}${suffix}`
   );
 }
 
-await Promise.all(packages.map((packageName) => publishPackage(packageName)));
+const packageNameSuffix = debug ? "-debug" : "";
+await Promise.all(
+  packages.map((packageName) => publishPackage(packageName, packageNameSuffix))
+);
