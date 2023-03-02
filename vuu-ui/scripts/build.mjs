@@ -55,10 +55,11 @@ export default async function main(customConfig) {
   const [, packageName] = scopedPackageName.split("/");
   const external = Object.keys(peerDependencies);
 
-  const outdir = `${DIST_PATH}/${packageName}`;
   const watch = getCommandLineArg("--watch");
-  const development = watch || getCommandLineArg("--dev");
+  const debug = getCommandLineArg("--debug");
+  const development = watch || debug || getCommandLineArg("--dev");
   const cjs = getCommandLineArg("--cjs") ? " --cjs" : "";
+  const outdir = `${DIST_PATH}/${packageName}${debug ? "-debug" : ""}`;
 
   const hasWorker = fs.existsSync(workerTS);
   const hasReadme = fs.existsSync(README);
@@ -103,6 +104,7 @@ export default async function main(customConfig) {
         // eslint-disable-next-line no-unused-vars
         scripts,
         types,
+        version,
         ...packageRest
       } = packageJson;
       if (files) {
@@ -134,6 +136,10 @@ export default async function main(customConfig) {
         if (cjs) {
           newPackage.main = "cjs/index.js";
         }
+      }
+
+      if (debug) {
+        newPackage.version = `${version}-debug`;
       }
 
       fs.writeFile(
