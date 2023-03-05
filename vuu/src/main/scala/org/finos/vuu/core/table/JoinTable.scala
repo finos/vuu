@@ -333,6 +333,12 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     })
   }
 
+  @volatile private var updateCounterInternal: Long = 0
+
+  override def updateCounter: Long = updateCounterInternal
+
+  override def incrementUpdateCounter(): Unit = updateCounterInternal +=1
+
   override def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
 
     onUpdateMeter.mark()
@@ -344,6 +350,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     sendToJoinSink(rowUpdate)
 
     notifyListeners(rowKey)
+
+    incrementUpdateCounter()
   }
 
   private def toEvent(rowData: RowData): java.util.HashMap[String, Any] = {
@@ -380,6 +388,10 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
    */
   override def pullRow(key: String): RowData = {
     pullRow(key, viewPortColumns)
+  }
+
+  override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
+    pullRow(key, columns)
   }
 
   lazy val viewPortColumns = ViewPortColumnCreator.create(this, this.tableDef.columns.map(_.name).toList)
@@ -512,6 +524,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       sendDeleteToJoinSink(rowKey, rowData)
 
     notifyListeners(rowKey, isDelete = true)
+
+    incrementUpdateCounter()
   }
 
   def sendDeleteToJoinSink(rowKey: String, rowData: RowData): Unit = {

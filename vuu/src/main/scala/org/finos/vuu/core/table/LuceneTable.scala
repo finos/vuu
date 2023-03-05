@@ -101,6 +101,12 @@ class LuceneTable(val tableDef: LuceneTableDef, val joinProvider: JoinTableProvi
 
   override def getTableDef: TableDef = tableDef
 
+  @volatile private var updateCounterInternal: Long = 0
+
+  override def updateCounter: Long = updateCounterInternal
+
+  override def incrementUpdateCounter(): Unit = updateCounterInternal += 1
+
   override def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
     luceneData.processUpdate(rowKey, rowUpdate, timeStamp)
   }
@@ -135,4 +141,5 @@ class LuceneTable(val tableDef: LuceneTableDef, val joinProvider: JoinTableProvi
     }
   }
 
+  override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = ???
 }

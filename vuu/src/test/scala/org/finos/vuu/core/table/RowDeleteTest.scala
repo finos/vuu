@@ -200,6 +200,8 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       ordersProvider.tick("NYC-0003", Map("orderId" -> "NYC-0003", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
       ordersProvider.tick("NYC-0004", Map("orderId" -> "NYC-0004", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
 
+      viewPortContainer.runOnce()
+      viewPortContainer.runGroupByOnce()
       joinProvider.runOnce()
 
       pricesProvider.getSubRequestCount.get("VOD.L") should equal(1)
@@ -208,9 +210,9 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       joinProvider.runOnce()
 
+      viewPortContainer.openNode(viewPort.id, "$root|chris")
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
-      viewPortContainer.openNode(viewPort.id, "$root|chris")
 
       val updates = combineQs(viewPort)
 
@@ -221,8 +223,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
           (0         ,2         ,"NYC-0001",false     ,"$root|chris|NYC-0001",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (0         ,2         ,"NYC-0002",false     ,"$root|chris|NYC-0002",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (0         ,2         ,"NYC-0003",false     ,"$root|chris|NYC-0003",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0004",false     ,"$root|chris|NYC-0004",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,1         ,""        ,400.0     ,""        ,""        ,""        ,""        )
+          (0         ,2         ,"NYC-0004",false     ,"$root|chris|NYC-0004",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
         )
       }
 

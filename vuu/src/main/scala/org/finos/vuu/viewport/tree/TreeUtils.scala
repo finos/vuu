@@ -1,4 +1,4 @@
-package org.finos.vuu.viewport
+package org.finos.vuu.viewport.tree
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
@@ -25,14 +25,11 @@ object TreeUtils extends StrictLogging {
     ! node.isRoot && ! node.isLeaf
   }
 
-  def diffOldVsNewBranches(oldTree: Tree, newTree: Tree, oldNodeState: Map[String, TreeNodeState]): ImmutableArray[String] = {
+  def diffOldVsNewBranches(oldTree: Tree, newTree: Tree, oldNodeState: TreeNodeStateStore): ImmutableArray[String] = {
     val arr = oldTree.nodes().filter(notLeafOrRoot).filter( oldNode => {
       newTree.getNode(oldNode.key) match {
         case newNode: TreeNode =>
-          val oldState = oldNodeState.get(oldNode.key) match {
-            case Some(nodeState) => nodeState
-            case None => null
-          }
+          val oldState = oldNodeState.get(oldNode.key)
           val newState = newTree.nodeState.get(oldNode.key)
           isDiff(oldNode, newNode, oldState, newState)
         case null =>

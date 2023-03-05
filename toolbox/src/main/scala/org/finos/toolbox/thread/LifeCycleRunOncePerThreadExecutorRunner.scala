@@ -36,7 +36,7 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
 
   override def doStart(): Unit = {
     logger.info(s"Starting up executor runner [$name]...")
-    retryExecutor = Some(new ResubmitExecutor[T](countOfThreads, countOfThreads, 1000, TimeUnit.SECONDS, workQueue){
+    retryExecutor = Some(new ResubmitExecutor[T](name, countOfThreads, countOfThreads, 1000, TimeUnit.SECONDS, workQueue){
       override def newCallable(r: FutureTask[T], t: Throwable): Callable[T] = {
         selfRef.newCallable(r)
       }
@@ -44,6 +44,9 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
         setOfWork.contains(newWorkItem(r))
       }
       override def newWorkItem(r: FutureTask[T]): WorkItem[T] = selfRef.newWorkItem(r)
+
+      override def allowsCoreThreadTimeOut(): Boolean = false
+
     })
     runInBackground()
   }

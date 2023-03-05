@@ -8,6 +8,8 @@ import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.util.PublishQueue
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.viewport.tree.TreeNodeState
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
@@ -119,17 +121,33 @@ trait ViewPort {
 
   def changeStructure(newStructuralFields: ViewPortStructuralFields): Unit
 
-  def getTreeNodeState: TreeNodeState
+  def getTreeNodeStateStore: TreeNodeState
 
   def getStructure: ViewPortStructuralFields
+
+
+  def getStructuralHashCode(): Int
+
+  def getTableUpdateCount(): Long
 
   def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String]
 
   def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int]
 
-  override def toString: String = "VP(user:" + session.user + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
+  override def toString: String = {
+    "VP(user:" + session.user + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
+  }
 
   def delete(): Unit
+
+  def keyBuildCount: Long
+
+  def setLastHashAndUpdateCount(lastHash: Int, lastUpdateCount: Long)
+
+  def getLastHash(): Int
+
+  def getLastUpdateCount(): Long
+
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
@@ -174,7 +192,7 @@ case class ViewPortImpl(id: String,
 
   override def getStructure: ViewPortStructuralFields = structuralFields.get()
 
-  override def getTreeNodeState: TreeNodeState = structuralFields.get().theTreeNodeState
+  override def getTreeNodeStateStore: TreeNodeState = structuralFields.get().theTreeNodeState
 
   private def onlyFilterOrSortChanged(newStructuralFields: ViewPortStructuralFields, current: ViewPortStructuralFields): Boolean = {
     newStructuralFields.table.asTable.name == current.table.asTable.name && newStructuralFields.groupBy == current.groupBy && newStructuralFields.columns == current.columns
@@ -272,6 +290,24 @@ case class ViewPortImpl(id: String,
   private val subscribedKeys = new ConcurrentHashMap[String, String]()
   private val rowKeyToIndex = new ConcurrentHashMap[String, Int]()
 
+
+  override def getStructuralHashCode(): Int = {
+    37 * filterAndSort.hashCode() ^ getGroupBy.hashCode() ^ getColumns.hashCode()// ^ getTreeNodeStateHash()
+  }
+
+  private def getTreeNodeStateHash(): Int = {
+    table match {
+      case session: TreeSessionTableImpl =>
+        session.getTree.nodeState.hashCode()
+      case _ =>
+        0
+    }
+  }
+
+  override def getTableUpdateCount(): Long = {
+    this.table.asTable.updateCounter
+  }
+
   override def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String] = subscribedKeys
 
   override def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int] = rowKeyToIndex
@@ -281,6 +317,10 @@ case class ViewPortImpl(id: String,
   override def delete(): Unit = {
     this.setKeys(ImmutableArray.empty[String])
   }
+
+  @volatile var keyBuildCounter: Long = 0
+
+  override def keyBuildCount: Long = keyBuildCounter
 
   override def getKeysInRange: ImmutableArray[String] = {
     val currentKeys = keys.toArray
@@ -324,6 +364,7 @@ case class ViewPortImpl(id: String,
     setKeysPre(newKeys)
     setKeysInternal(newKeys)
     setKeysPost(sendSizeUpdate, newKeys)
+    keyBuildCounter += 1
   }
 
   override def onUpdate(update: RowKeyUpdate): Unit = {
@@ -473,4 +514,16 @@ case class ViewPortImpl(id: String,
   }
 
   override def getVisualLink: Option[ViewPortVisualLink] = this.viewPortVisualLink
+
+  @volatile var lastCycleHash: Int = 0
+  @volatile var lastUpdateCounter: Long = 0
+
+  override def setLastHashAndUpdateCount(lastHash: Int, lastUpdateCount: Long): Unit = {
+    lastCycleHash = lastHash
+    lastUpdateCounter = lastUpdateCount
+  }
+
+  override def getLastHash(): Int = lastCycleHash
+
+  override def getLastUpdateCount(): Long = lastUpdateCounter
 }
