@@ -136,6 +136,7 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
       schema.columns.map((col) => col.name);
 
     ds = new RemoteDataSource({
+      bufferSize: 1000,
       viewport: id,
       table: schema.table,
       ...dataSourceConfigFromState,
@@ -296,7 +297,7 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
             onConfigChange={handleTableConfigChange}
             onFeatureEnabled={handleVuuFeatureEnabled}
             onFeatureInvocation={handleVuuFeatureInvoked}
-            renderBufferSize={80}
+            renderBufferSize={100}
             rowHeight={18}
           />
         </div>

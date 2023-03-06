@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { Viewport } from "./dataTableTypes";
 
 export interface ScrollRequestEnd {
@@ -64,8 +64,11 @@ export const useTableScroll = ({
     (scrollLeft, scrollTop) => {
       const { current: tableContainer } = tableContainerRef;
       if (tableContainer) {
-        tableContainer.scrollLeft = scrollLeft;
-        tableContainer.scrollTop = scrollTop;
+        tableContainer.scrollTo({
+          top: scrollTop,
+          left: scrollLeft,
+          behavior: "auto",
+        });
       }
     },
     [tableContainerRef]
@@ -84,7 +87,6 @@ export const useTableScroll = ({
   }, [onRangeChange, rowHeight, viewportRowCount]);
 
   const handleContentContainerScroll = useCallback(() => {
-    // console.log("%chandleContentContainerScroll", "color: blue");
     const { current: rootContainer } = contentContainerRef;
     const { current: scrollContainer } = scrollbarContainerRef;
     if (rootContainer && scrollContainer) {
@@ -107,10 +109,6 @@ export const useTableScroll = ({
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
     const { current: contentContainerScrolled } = contentContainerScrolledRef;
-    // console.log(
-    //   `%chandleScrollbarContainerScroll, rootScrolled ? ${contentContainerScrolled}`,
-    //   "color: green"
-    // );
     if (contentContainerScrolled) {
       contentContainerScrolledRef.current = false;
     } else if (contentContainer && scrollbarContainer) {
@@ -118,12 +116,11 @@ export const useTableScroll = ({
       const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
       const rootScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
       const rootScrollTop = Math.round(pctScrollTop * maxScrollTop);
-      contentContainer.scrollLeft = rootScrollLeft;
-      // console.log(
-      //   `%cset contentCOntainer scrolltop = ${rootScrollTop}`,
-      //   "color: green"
-      // );
-      contentContainer.scrollTop = rootScrollTop;
+      contentContainer.scrollTo({
+        left: rootScrollLeft,
+        top: rootScrollTop,
+        behavior: "auto",
+      });
       scrollTable(rootScrollLeft, rootScrollTop);
     }
   }, [contentContainerRef, scrollbarContainerRef, scrollTable]);
@@ -134,36 +131,32 @@ export const useTableScroll = ({
       if (scrollbarContainer) {
         contentContainerScrolledRef.current = false;
         if (scrollRequest.type === "scroll-page") {
-          const { clientHeight, scrollTop } = scrollbarContainer;
+          const { clientHeight, scrollLeft, scrollTop } = scrollbarContainer;
           const { direction } = scrollRequest;
           const scrollBy = direction === "down" ? clientHeight : -clientHeight;
-          // console.log(
-          //   `page ${direction} (by ${scrollBy}), current scrollTop ${scrollTop}
-          //    set scrollbar container scrollTop to ${Math.min(
-          //      Math.max(0, scrollTop + scrollBy),
-          //      viewport.maxScrollContainerScrollVertical
-          //    )}`
-          // );
-          scrollbarContainer.scrollTop = Math.min(
+          const newScrollTop = Math.min(
             Math.max(0, scrollTop + scrollBy),
             viewport.maxScrollContainerScrollVertical
           );
+          scrollbarContainer.scrollTo({
+            top: newScrollTop,
+            left: scrollLeft,
+            behavior: "auto",
+          });
         } else if (scrollRequest.type === "scroll-end") {
           const { direction } = scrollRequest;
           const scrollTo =
             direction === "end" ? viewport.maxScrollContainerScrollVertical : 0;
-          scrollbarContainer.scrollTop = scrollTo;
+          scrollbarContainer.scrollTo({
+            top: scrollTo,
+            left: scrollbarContainer.scrollLeft,
+            behavior: "auto",
+          });
         }
       }
     },
     [viewport.maxScrollContainerScrollVertical]
   );
-
-  // TODO this is going to scroll to top in situations where this won't be right
-  // Set the initial viewport range
-  // useLayoutEffect(() => {
-  //   handleTableContainerScroll();
-  // }, [handleTableContainerScroll]);
 
   return {
     onScrollbarContainerScroll: handleScrollbarContainerScroll,

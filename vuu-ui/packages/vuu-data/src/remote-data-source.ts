@@ -354,7 +354,6 @@ export class RemoteDataSource
   }
 
   private revertDebounce = debounce(() => {
-    console.log(`ready to revert debounce`);
     this.optimize = "throttle";
   }, 500);
 
@@ -414,7 +413,6 @@ export class RemoteDataSource
   }
 
   set columns(columns: string[]) {
-    console.log(`RemoteDataSOurce ${columns.join(",")}`);
     this.#columns = columns;
     if (this.viewport) {
       const message = {
@@ -574,10 +572,8 @@ export class RemoteDataSource
     this.configChangePending = config;
 
     if (config !== undefined) {
-      console.log("config is now set to pending");
       this.emit("config", config, false);
     } else {
-      console.log("config is now cleared");
       this.emit("config", pendingConfig, true);
     }
   }

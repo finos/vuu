@@ -1,9 +1,12 @@
+import { vi } from "vitest";
 import {
   ServerToClientCreateViewPortSuccess,
   ServerToClientMessage,
   ServerToClientTableRows,
   VuuRow,
 } from "@finos/vuu-protocol-types";
+import { ServerProxy } from "../src/server-proxy/server-proxy";
+
 import { ServerProxySubscribeMessage } from "../src";
 
 export const COMMON_ATTRS = {
@@ -26,7 +29,25 @@ export const COMMON_ROW_ATTRS = {
   vpVersion: "",
 };
 
-export const createTableRows = (viewPortId, from, to, vpSize = 100, ts = 1) => {
+export const sizeRow = (viewPortId = "server-vp-1", vpSize = 100) =>
+  ({
+    ...COMMON_ROW_ATTRS,
+    data: [],
+    viewPortId,
+    vpSize,
+    rowIndex: -1,
+    rowKey: "SIZE",
+    updateType: "SIZE",
+  } as VuuRow);
+
+export const createTableRows = (
+  viewPortId,
+  from,
+  to,
+  vpSize = 100,
+  ts = 1,
+  sel: 0 | 1 = 0
+) => {
   const results: VuuRow[] = [];
   for (let rowIndex = from; rowIndex < to; rowIndex++) {
     const key = ("0" + rowIndex).slice(-2);
@@ -36,7 +57,7 @@ export const createTableRows = (viewPortId, from, to, vpSize = 100, ts = 1) => {
       rowIndex,
       rowKey,
       updateType: "U",
-      sel: 0,
+      sel,
       ts,
       viewPortId,
       vpSize,
@@ -170,3 +191,32 @@ export const createSubscription = ({
     user: "user"
   }
 ];
+
+const mockConnection = {
+  send: vi.fn(),
+  status: "ready" as const,
+};
+
+export const createServerProxyAndSubscribeToViewport = (
+  postMessageToClient: any,
+  {
+    bufferSize = 0,
+    connection = mockConnection,
+  }: { bufferSize?: number; connection?: any } = {}
+) => {
+  const serverProxy = new ServerProxy(connection, postMessageToClient);
+  //TODO we shouldn't be able to bypass checks like this
+  serverProxy["sessionId"] = "dsdsd";
+  serverProxy["authToken"] = "test";
+
+  const [clientSubscription, serverSubscriptionAck] = createSubscription({
+    bufferSize,
+  });
+
+  serverProxy.subscribe(clientSubscription);
+  serverProxy.handleMessageFromServer(serverSubscriptionAck);
+
+  postMessageToClient.mockClear();
+
+  return serverProxy;
+};

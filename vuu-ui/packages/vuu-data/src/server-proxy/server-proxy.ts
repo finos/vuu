@@ -732,7 +732,6 @@ export class ServerProxy {
         break;
       case Message.TABLE_ROW:
         {
-          console.time("TABLE_ROWS");
           if (process.env.NODE_ENV === "development") {
             console.log(
               `\t${body.rows.length} rows [${body.rows[0]?.rowIndex}] - [${
@@ -756,24 +755,25 @@ export class ServerProxy {
               const viewportId =
                 count === 1 ? row.viewPortId : currentViewportId;
               if (viewportId !== "") {
-                if (startIdx === 0 && isLast) {
-                  viewport = viewports.get(viewportId);
-                  if (viewport) {
+                viewport = viewports.get(viewportId);
+                if (viewport) {
+                  if (startIdx === 0 && isLast) {
                     viewport.updateRows(body.rows);
                   } else {
-                    console.warn(
-                      `TABLE_ROW message received for non registered viewport ${viewportId}`
-                    );
+                    const end = isLast ? count : i;
+                    viewport.updateRows(body.rows.slice(startIdx, end));
+                    startIdx = i;
                   }
                 } else {
-                  startIdx = i;
+                  console.warn(
+                    `TABLE_ROW message received for non registered viewport ${viewportId}`
+                  );
                 }
               }
             }
           }
 
           this.processUpdates();
-          console.timeEnd("TABLE_ROWS");
         }
         break;
 
