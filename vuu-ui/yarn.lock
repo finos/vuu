@@ -306,34 +306,33 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@floating-ui/core@^0.7.3":
-  version "0.7.3"
-  resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-0.7.3.tgz#d274116678ffae87f6b60e90f88cc4083eefab86"
-  integrity sha512-buc8BXHmG9l82+OQXOFU3Kr2XQx9ys01U/Q9HMIrZ300iLc8HLMgh7dcCqgYzAzf4BkoQvDcXf5Y+CuEZ5JBYg==
+"@floating-ui/core@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.2.2.tgz#66f62cf1b7de2ed23a09c101808536e68caffaec"
+  integrity sha512-FaO9KVLFnxknZaGWGmNtjD2CVFuc0u4yeGEofoyXO2wgRA7fLtkngT6UB0vtWQWuhH3iMTZZ/Y89CMeyGfn8pA==
 
-"@floating-ui/dom@^0.5.3":
-  version "0.5.4"
-  resolved "https://registry.yarnpkg.com/@floating-ui/dom/-/dom-0.5.4.tgz#4eae73f78bcd4bd553ae2ade30e6f1f9c73fe3f1"
-  integrity sha512-419BMceRLq0RrmTSDxn8hf9R3VCJv2K9PUfugh5JyEFmdjzDo+e8U5EdR8nzKq8Yj1htzLm3b6eQEEam3/rrtg==
+"@floating-ui/dom@^1.2.1":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@floating-ui/dom/-/dom-1.2.3.tgz#8dc6fbf799fbb5c29f705b54bdd51f3ab0ee03a2"
+  integrity sha512-lK9cZUrHSJLMVAdCvDqs6Ug8gr0wmqksYiaoj/bxj2gweRQkSuhg2/V6Jswz2KiQ0RAULbqw1oQDJIMpQ5GfGA==
   dependencies:
-    "@floating-ui/core" "^0.7.3"
+    "@floating-ui/core" "^1.2.2"
 
-"@floating-ui/react-dom-interactions@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@floating-ui/react-dom-interactions/-/react-dom-interactions-0.5.0.tgz#1e99915674605a3febba78644138aba9c9402702"
-  integrity sha512-rfON7mkHjCeogd0BSXPa8GBp1TMxEytJQqGVlCouSUonJ4POqdHsqcxRnCh0yAaGVaL/nB/J1vq28V4RdoLszg==
+"@floating-ui/react-dom@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@floating-ui/react-dom/-/react-dom-1.3.0.tgz#4d35d416eb19811c2b0e9271100a6aa18c1579b3"
+  integrity sha512-htwHm67Ji5E/pROEAr7f8IKFShuiCKHwUC/UY4vC3I5jiSvGFAYnSYiZO5MlGmads+QqvUkR9ANHEguGrDv72g==
   dependencies:
-    "@floating-ui/react-dom" "^0.7.0"
+    "@floating-ui/dom" "^1.2.1"
+
+"@floating-ui/react@^0.19.0":
+  version "0.19.2"
+  resolved "https://registry.yarnpkg.com/@floating-ui/react/-/react-0.19.2.tgz#c6e4d2097ed0dca665a7c042ddf9cdecc95e9412"
+  integrity sha512-JyNk4A0Ezirq8FlXECvRtQOX/iBe5Ize0W/pLkrZjfHW9GUV7Xnq6zm6fyZuQzaHHqEnVizmvlA96e1/CkZv+w==
+  dependencies:
+    "@floating-ui/react-dom" "^1.3.0"
     aria-hidden "^1.1.3"
-    use-isomorphic-layout-effect "^1.1.1"
-
-"@floating-ui/react-dom@^0.7.0":
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/@floating-ui/react-dom/-/react-dom-0.7.2.tgz#0bf4ceccb777a140fc535c87eb5d6241c8e89864"
-  integrity sha512-1T0sJcpHgX/u4I1OzIEhlcrvkUN8ln39nz7fMoE/2HDHrPiMFoOGR7++GYyfUmIQHkkrTinaeQsO3XWubjSvGg==
-  dependencies:
-    "@floating-ui/dom" "^0.5.3"
-    use-isomorphic-layout-effect "^1.1.1"
+    tabbable "^6.0.1"
 
 "@fontsource/open-sans@^4.5.13":
   version "4.5.14"
@@ -344,28 +343,6 @@
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/@heswell/component-anatomy/-/component-anatomy-0.0.5.tgz#cf75e642fb7c2184794114fe62f2382d4196846a"
   integrity sha512-pwuowxKvsxPoOkAbtHFNyqdzjTj8CHDZtk7+P8jRtJJmsJTzblOMn6WNS9csFf6gU1NdvD11EcTCnFZaG8TLxg==
-
-"@heswell/salt-lab@1.0.0-alpha.0-vuu.1":
-  version "1.0.0-alpha.0-vuu.1"
-  resolved "https://registry.yarnpkg.com/@heswell/salt-lab/-/salt-lab-1.0.0-alpha.0-vuu.1.tgz#6879bc013cb92eb78db4eee78ffd97b06fea6d0f"
-  integrity sha512-nnN8yCPrII7Mi9H7cXM+Rn49sOKBheaC7Rq0/meawO88bNtmdv5jue6ozzSCBtOZAxd6QXD5ixpNsr6mF9cecA==
-  dependencies:
-    "@floating-ui/react-dom-interactions" "^0.5.0"
-    "@internationalized/date" "^3.0.0"
-    "@salt-ds/core" "1.0.0"
-    "@salt-ds/icons" "1.0.0"
-    aria-hidden "^1.1.1"
-    attr-accept "^2.0.0"
-    clipboard-copy "^4.0.1"
-    clsx "^1.2.1"
-    compute-scroll-into-view "^1.0.16"
-    deepmerge "^4.2.2"
-    no-scroll "^2.1.1"
-    react-color "^2.19.3"
-    react-window "^1.8.6"
-    rifm "^0.12.0"
-    tinycolor2 "^1.4.2"
-    warning "^4.0.3"
 
 "@humanwhocodes/config-array@^0.11.8":
   version "0.11.8"
@@ -462,20 +439,21 @@
   resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.3.2.tgz#58cd2bd25df2acc16c628e1b6f6150ea6c7455bc"
   integrity sha512-t54ONhl/h75X94SWsHGQ4G/ZrCEguKSRQr7DrjTciJXW0YU1QhlwYeycvK5JgkzlxmvrK7wq1NB/PLtHxoiDcA==
 
-"@salt-ds/core@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.0.0.tgz#a52fda944bf8a50f20899ac26472a704047c5c2b"
-  integrity sha512-Xng/b97Npif4hFgxBYUVKoRX+NdbLrUcWRKva1ytO3Nv9GNp5kfBuNmAq75HG1MvwCjiQ/h4aGQaFfMmqaNIyw==
+"@salt-ds/core@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.2.0.tgz#1b54598715652b6977fbc10d97b7b0cfb77bd810"
+  integrity sha512-Zr3etw3ewYwhO+fMw+BjlJxfzPPHVCd5/FrnBuVq9wyuux/w8YAZM1vb3lPF5+LrtkWkYbg9a34FGJR9+g3HWA==
   dependencies:
-    "@salt-ds/icons" "1.0.0"
-    classnames "^2.2.6"
+    "@floating-ui/react" "^0.19.0"
+    "@salt-ds/icons" "1.1.0"
+    clsx "^1.2.1"
 
-"@salt-ds/icons@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/icons/-/icons-1.0.0.tgz#ce874c4c2da375b37951376bdad1255822ae9d75"
-  integrity sha512-l/ro5ci+5BUhttJ20GJUCfIVifOvT61XgCDjgNmqaPIK3qkVGETkwsNEmiPXdiH3H7mDgMQTI/TXLlhE1O2bVQ==
+"@salt-ds/icons@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/icons/-/icons-1.1.0.tgz#3c5766e626ebc9aaff502034e1de0a3e496c2170"
+  integrity sha512-IHvVV+/x8d9ua6y1ooqLuZmckE8UidbkKE5UOKeteS+3CcmrIlMjnN/hF4kpFZtEIkgB3yfvtW1pkZaFpOs5nA==
   dependencies:
-    classnames "^2.2.6"
+    clsx "^1.2.1"
 
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
@@ -770,7 +748,7 @@ argparse@^2.0.1:
   resolved "https://registry.yarnpkg.com/argparse/-/argparse-2.0.1.tgz#246f50f3ca78a3240f6c997e8a9bd1eac49e4b38"
   integrity sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==
 
-aria-hidden@^1.1.1, aria-hidden@^1.1.3:
+aria-hidden@^1.1.3:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/aria-hidden/-/aria-hidden-1.2.2.tgz#8c4f7cc88d73ca42114106fdf6f47e68d31475b8"
   integrity sha512-6y/ogyDTk/7YAe91T3E2PR1ALVKyM2QbTio5HwM+N1Q6CMlCKhvClyIjkckBswa0f2xJhjsfzIGa1yVSe1UMVA==
@@ -926,7 +904,7 @@ check-error@^1.0.2:
   resolved "https://registry.yarnpkg.com/check-error/-/check-error-1.0.2.tgz#574d312edd88bb5dd8912e9286dd6c0aed4aac82"
   integrity sha512-BrgHpW9NURQgzoNyjfq0Wu6VFO6D7IZEmJNdtgNqpzGG8RuNFHt2jQxWlAs4HMe119chBnv+34syEZtc6IhLtA==
 
-classnames@^2.2.6, classnames@^2.3.1:
+classnames@^2.3.1:
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.2.tgz#351d813bf0137fcc6a76a16b88208d2560a0d924"
   integrity sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==
@@ -2955,6 +2933,11 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
+tabbable@^6.0.1:
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/tabbable/-/tabbable-6.1.1.tgz#40cfead5ed11be49043f04436ef924c8890186a0"
+  integrity sha512-4kl5w+nCB44EVRdO0g/UGoOp3vlwgycUVtkk/7DPyeLZUCuNFFKCFG6/t/DgHLrUPHjrZg6s5tNm+56Q2B0xyg==
+
 text-table@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
@@ -3093,11 +3076,6 @@ url-parse-lax@^3.0.0:
   integrity sha512-NjFKA0DidqPa5ciFcSrXnAltTtzz84ogy+NebPvfEgAck0+TNg4UJ4IN+fB7zRZfbgUf0syOo9MDxFkDSMuFaQ==
   dependencies:
     prepend-http "^2.0.0"
-
-use-isomorphic-layout-effect@^1.1.1:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/use-isomorphic-layout-effect/-/use-isomorphic-layout-effect-1.1.2.tgz#497cefb13d863d687b08477d9e5a164ad8c1a6fb"
-  integrity sha512-49L8yCO3iGT/ZF9QttjwLF/ZD9Iwto5LnH5LmEdk/6cFmXddqi2ulF0edxTwjj+7mqvpVVGQWvbXZdn32wRSHA==
 
 util-deprecate@~1.0.1:
   version "1.0.2"

@@ -1,6 +1,12 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { List, Tooltip, useTooltip } from "@heswell/salt-lab";
-import { Button, Text, useIdMemo as useId } from "@salt-ds/core";
+import { List } from "@heswell/salt-lab";
+import {
+  Button,
+  Text,
+  Tooltip,
+  useTooltip,
+  useIdMemo as useId,
+} from "@salt-ds/core";
 import { Dispatch, HTMLAttributes, useCallback, useState } from "react";
 import { ColumnAction } from "../settings-panel/useGridSettings";
 import { ColumnListItem } from "./ColumnListItem";

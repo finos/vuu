@@ -1,6 +1,5 @@
 import { VuuRange, VuuRow } from "@finos/vuu-protocol-types";
 import { WindowRange } from "@finos/vuu-utils";
-import { bufferBreakout } from "./buffer-range";
 
 const EMPTY_ARRAY = [] as const;
 
@@ -138,18 +137,12 @@ export class ArrayBackedMovingWindow {
       }
     }
 
-    const serverDataRequired = bufferBreakout(
-      this.#range,
-      from,
-      to,
-      this.bufferSize
-    );
+    const serverDataRequired = this.bufferBreakout(from, to);
     return [serverDataRequired, clientRows] as RangeTuple;
   }
 
   setRange(from: number, to: number) {
     const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
-
     const newData = new Array(to - from + this.bufferSize);
     this.rowsWithinRange = 0;
 
@@ -168,6 +161,20 @@ export class ArrayBackedMovingWindow {
     this.#range.from = from;
     this.#range.to = to;
   }
+
+  private bufferBreakout = (from: number, to: number): boolean => {
+    const bufferPerimeter = this.bufferSize * 0.25;
+    if (this.#range.to - to < bufferPerimeter) {
+      return true;
+    } else if (
+      this.#range.from > 0 &&
+      from - this.#range.from < bufferPerimeter
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   getData(): any[] {
     const { from, to } = this.#range;

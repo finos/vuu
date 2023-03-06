@@ -34,7 +34,6 @@ import {
   VuuUIMessageOutOpenTreeNode,
 } from "../vuuUIMessageTypes";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
-import { bufferBreakout } from "./buffer-range";
 import { KeySet } from "./keyset";
 import * as Message from "./messages";
 import {
@@ -146,7 +145,6 @@ export class Viewport {
   private keys: KeySet;
   private pendingLinkedParent?: LinkDescriptorWithLabel;
   private pendingOperations = new Map<string, AsyncOperation>();
-  private pendingRangeRequest: ClientToServerViewPortRange | null = null;
   private pendingRangeRequests: (ClientToServerViewPortRange & {
     acked?: boolean;
     requestId: string;
@@ -297,7 +295,6 @@ export class Viewport {
     if (type === "CHANGE_VP_RANGE") {
       const [from, to] = params as [number, number];
       this.dataWindow?.setRange(from, to);
-      this.pendingRangeRequest = null;
 
       for (let i = this.pendingRangeRequests.length - 1; i >= 0; i--) {
         const pendingRangeRequest = this.pendingRangeRequests[i];
@@ -386,7 +383,7 @@ export class Viewport {
   // TODO when a range request arrives, consider the viewport to be scrolling
   // until data arrives and we have the full range.
   // When not scrolling, any server data is an update
-  // Wehn scrolling, we are in batch mode
+  // When scrolling, we are in batch mode
   rangeRequest(requestId: string, range: VuuRange): RangeRequestTuple {
     if (process.env.NODE_ENV === "development") {
       this.rangeMonitor.set(range);
@@ -409,13 +406,7 @@ export class Viewport {
       let debounceRequest: DataSourceDebounceRequest | undefined;
 
       const serverRequest =
-        serverDataRequired &&
-        bufferBreakout(
-          this.pendingRangeRequest,
-          range.from,
-          range.to,
-          this.bufferSize
-        )
+        serverDataRequired && !this.rangeRequestAlreadyPending(range)
           ? ({
               type,
               viewPortId: this.serverViewportId,
@@ -425,7 +416,6 @@ export class Viewport {
       if (serverRequest) {
         // TODO check that there os not already a pending server request for more data
         this.awaitOperation(requestId, { type });
-        this.pendingRangeRequest = serverRequest;
         const pendingRequest = this.pendingRangeRequests.at(-1);
         if (pendingRequest) {
           if (pendingRequest.acked) {
@@ -538,6 +528,10 @@ export class Viewport {
       childColumnName: colName,
     } as ClientToServerCreateLink;
     this.awaitOperation(requestId, message);
+    if (this.useBatchMode) {
+      // next TABLE_ROWS we get will be triggered by selection on parent
+      this.batchMode = true;
+    }
     return message as ClientToServerCreateLink;
   }
 
@@ -639,7 +633,7 @@ export class Viewport {
     } as ClientToServerSelection;
   }
 
-  removePendingRangeRequest(firstIndex: number, lastIndex: number) {
+  private removePendingRangeRequest(firstIndex: number, lastIndex: number) {
     for (let i = this.pendingRangeRequests.length - 1; i >= 0; i--) {
       const { from, to } = this.pendingRangeRequests[i];
       let isLast = true;
@@ -657,6 +651,22 @@ export class Viewport {
       }
     }
   }
+
+  private rangeRequestAlreadyPending = (range: VuuRange) => {
+    const { bufferSize } = this;
+    const bufferThreshold = bufferSize * 0.25;
+    let { from: stillPendingFrom } = range;
+    for (const { from, to } of this.pendingRangeRequests) {
+      if (stillPendingFrom >= from && stillPendingFrom < to) {
+        if (range.to + bufferThreshold <= to) {
+          return true;
+        } else {
+          stillPendingFrom = to;
+        }
+      }
+    }
+    return false;
+  };
 
   updateRows(rows: VuuRow[]) {
     const [{ rowIndex: firstRowIndex }] = rows;

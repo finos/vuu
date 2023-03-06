@@ -1,5 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { Dropdown, Panel, PanelProps } from "@heswell/salt-lab";
+import { Dropdown } from "@heswell/salt-lab";
+import { Panel, PanelProps } from "@salt-ds/core";
 import cx from "classnames";
 import { Dispatch, useMemo } from "react";
 import { ColumnAction } from "../settings-panel/useGridSettings";

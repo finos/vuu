@@ -4,12 +4,11 @@ import {
   Checkbox,
   FormField,
   Input,
-  Panel,
   RadioButton,
   RadioButtonGroup,
   StepperInput,
 } from "@heswell/salt-lab";
-import { Text } from "@salt-ds/core";
+import { Panel, Text } from "@salt-ds/core";
 import cx from "classnames";
 import {
   ChangeEvent,
