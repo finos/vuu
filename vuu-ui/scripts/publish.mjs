@@ -5,8 +5,8 @@ const debug = getCommandLineArg("--debug");
 const packages = [
   "vuu-codemirror",
   "vuu-data",
-  "vuu-data-types",
   "vuu-data-ag-grid",
+  "vuu-data-types",
   "vuu-datagrid",
   "vuu-datagrid-extras",
   "vuu-datagrid-types",
@@ -14,6 +14,7 @@ const packages = [
   "vuu-filter-types",
   "vuu-filters",
   "vuu-layout",
+  "vuu-popups",
   "vuu-protocol-types",
   "vuu-shell",
   "vuu-theme",
