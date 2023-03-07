@@ -16,9 +16,9 @@ trait JoinTableProvider extends RunInThread with LifecycleEnabled {
   def drainQueue_ForTesting(): (Int, java.util.ArrayList[JoinTableUpdate])
 }
 
-//class EsperJoinTableProviderImpl(implicit timeProvider: Clock, lifecyle: LifecycleContainer, metrics: MetricsProvider) extends UpdateListener with StrictLogging with JoinTableProvider{
+//class EsperJoinTableProviderImpl(implicit timeProvider: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends UpdateListener with StrictLogging with JoinTableProvider{
 //
-//  lifecyle(this)
+//  lifecycle(this)
 //
 //  private val isStopping = new AtomicBoolean(false)
 //
