@@ -7,6 +7,7 @@ import {
   formatDuration,
   getCommandLineArg,
   readPackageJson,
+  updateVersionAndDependencies,
   writeMetaFile,
 } from "./utils.mjs";
 const NO_DEPENDENCIES = {};
@@ -104,7 +105,6 @@ export default async function main(customConfig) {
         // eslint-disable-next-line no-unused-vars
         scripts,
         types,
-        version,
         ...packageRest
       } = packageJson;
       if (files) {
@@ -139,9 +139,10 @@ export default async function main(customConfig) {
       }
 
       if (debug) {
-        newPackage.version = `${version}-debug`;
-      } else {
-        newPackage.version = version;
+        updateVersionAndDependencies(newPackage, {
+          pattern: /^@finos\/vuu/,
+          suffix: "-debug",
+        });
       }
 
       fs.writeFile(

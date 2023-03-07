@@ -165,3 +165,32 @@ export const withArgs = (...argNames) =>
   argNames
     .map((arg) => (args.includes("--" + arg) ? ` --${arg}` : ""))
     .join("");
+
+const addSuffix = (target, suffix, pattern) => {
+  if (typeof target === "string") {
+    return target + suffix;
+  } else if (typeof target === "object") {
+    return Object.entries(target).reduce((out, [key, value]) => {
+      if (pattern.test(key)) {
+        out[key] = value + suffix;
+      } else {
+        out[key] = value;
+      }
+      return out;
+    }, {});
+  }
+};
+
+export const updateVersionAndDependencies = (packageJson, options) => {
+  const { dependencies, devDependencies, peerDependencies, version } =
+    packageJson;
+  const { pattern, suffix } = options;
+  if (pattern && suffix) {
+    packageJson.dependencies = addSuffix(dependencies, suffix, pattern);
+    packageJson.devDependencies = addSuffix(devDependencies, suffix, pattern);
+    packageJson.peerDependencies = addSuffix(peerDependencies, suffix, pattern);
+    packageJson.version = addSuffix(version, suffix);
+  } else {
+    console.warn("updateVersionAndDependencies:mo valid opts provided");
+  }
+};
