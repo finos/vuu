@@ -6,7 +6,7 @@ import org.finos.toolbox.time.Clock
 
 object JoinTableProviderImpl {
 
-  def apply()(implicit timeProvider: Clock, lifecyle: LifecycleContainer, metrics: MetricsProvider): JoinTableProvider = {
+  def apply()(implicit timeProvider: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider): JoinTableProvider = {
     new VuuJoinTableProvider()
   }
 
