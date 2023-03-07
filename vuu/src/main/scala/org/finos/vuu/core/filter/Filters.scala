@@ -12,6 +12,7 @@ object NoFilter extends Filter {
   override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns): ImmutableArray[String] = primaryKeys
 }
 
+// unused
 case class LessThanFilter(column: Column, viewPortColumns: ViewPortColumns, compareValue: Double) extends Filter {
 
   override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns): ImmutableArray[String] = {
@@ -34,6 +35,7 @@ case class LessThanFilter(column: Column, viewPortColumns: ViewPortColumns, comp
 
 }
 
+// unused
 case class EqFilter(column: Column, compareValue: String) extends Filter {
 
   override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {

@@ -1,58 +1,40 @@
 grammar Filter;
 
-TRUE : 'true';
-FALSE : 'false';
-AND : 'and';
-OR : 'or';
-LT : '<';
-GT : '>';
-EQ : '=';
-NEQ : '!=';
-IN : 'in';
-STARTS : 'starts';
-ENDS : 'ends';
-//PATHSEP : '/';
-LBRACK : '[';
-RBRACK : ']';
-LPAREN : '(';
-RPAREN : ')';
+start          : orExpression EOF; // entrypoint
+orExpression   : andExpression ('or' andExpression)*;
+andExpression  : term ('and' term)*;
+term           : '(' orExpression ')' # subexpression
+               | ID '='      scalar   # operationEq
+               | ID '!='     scalar   # operationNeq
+               | ID '>'      NUMBER   # operationGt
+               | ID '<'      NUMBER   # operationLt
+               | ID 'starts' STRING   # operationStarts
+               | ID 'ends'   STRING   # operationEnds
+               | ID 'in'     set      # operationIn
+               ;
+set            : '[' NUMBER (',' NUMBER)* ']'
+               | '[' STRING (',' STRING)* ']'
+               | '['                      ']'
+               ;
+scalar : NUMBER | STRING | BOOLEAN;
 
-expression : or_expression EOF;
+// general parsing
+WS     : [ \t\r\n]+ -> skip;
 
-or_expression : and_expression (OR or_expression)*;
+// values
+BOOLEAN: 'true' | 'false';
+NUMBER : DIGIT+ ('.' DIGIT+)?;
+ID     : ID_FIRST ID_BODY*;
+STRING : '"' STRCHAR* '"' {
+   String s = getText();
+   assert s.startsWith("\"") && s.endsWith("\"");
+   setText(s.substring(1, s.length() - 1)); // strip quotes
+ };
 
-and_expression : term (AND term)*;
-
-term : atom ( operator atom)? | LPAREN or_expression RPAREN | atom operator LBRACK atom (',' atom)* RBRACK ;
-
-atom : ID | INT | FLOAT | STRING | TRUE | FALSE;
-
-operator : LT | GT | EQ | NEQ | IN | STARTS | ENDS;
-
-INT : '0'..'9'+;
-FLOAT : ('0'..'9')+ '.' ('0'..'9')*;
-//STRING : '"'('a'..'z'|'A'..'Z'|'0'..'9'|'.'|'-')* '"';
-STRING
-   : '"' SUPPCHAR* '"'
-   ;
-
-//this code allows us to support more exotica (unicode, but also rserved chars) in the filter box
-//TODO: CJS Add example of unicode filtering to tests
-fragment
-SUPPCHAR
-    :   ~["\\\r\n]
-    |   ESC
-    ;
-
-fragment ESC
-   : '\\' (["\\/bfnrt] | UNICODE)
-   ;
-fragment UNICODE
-   : 'u' HEX HEX HEX HEX
-   ;
-fragment HEX
-   : [0-9a-fA-F]
-   ;
-
-ID : ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'.'|'-')*;
-WS  :   [ \t\r\n]+ -> skip;
+fragment ID_FIRST  : [a-zA-Z_];
+fragment ID_BODY   : ID_FIRST | DIGIT | '.' | '-';
+fragment STRCHAR   : ESC | ~["\\\r\n];
+fragment ESC       : '\\' ( ["\\/bfnrt] | UNICODE ) ;
+fragment UNICODE   : 'u' HEX HEX HEX HEX ;
+fragment DIGIT     : [0-9];
+fragment HEX       : [0-9a-fA-F];
