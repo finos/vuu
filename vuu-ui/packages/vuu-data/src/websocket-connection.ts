@@ -10,7 +10,8 @@ import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
 export type ConnectionMessage = ServerToClientMessage | ConnectionStatusMessage;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
-const WS_PATTERN = /^ws(s)?:\/\/.+/;
+const isWebsocketUrl = (url: string) =>
+  url.startsWith("ws://") || url.startsWith("wss://");
 
 const connectionAttempts: {
   [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
@@ -97,7 +98,8 @@ const makeConnectionIn = (
 const createWebsocket = (connectionString: string): Promise<WebSocket> =>
   new Promise((resolve, reject) => {
     //TODO add timeout
-    const websocketUrl = WS_PATTERN.test(connectionString)
+    // const websocketUrl = WS_PATTERN.test(connectionString)
+    const websocketUrl = isWebsocketUrl(connectionString)
       ? connectionString
       : `wss://${connectionString}`;
     const ws = new WebSocket(websocketUrl);
@@ -105,13 +107,13 @@ const createWebsocket = (connectionString: string): Promise<WebSocket> =>
     ws.onerror = (evt) => reject(evt);
   });
 
-  const closeWarn = () => {
-    logger.warn(`Connection cannot be closed, socket not yet opened`);
-  };
+const closeWarn = () => {
+  logger.warn(`Connection cannot be closed, socket not yet opened`);
+};
 
-  const sendWarn = (msg: ClientToServerMessage) => {
-    logger.warn(`Message cannot be sent, socket closed`, msg);
-  };
+const sendWarn = (msg: ClientToServerMessage) => {
+  logger.warn(`Message cannot be sent, socket closed`, msg);
+};
 
 const parseMessage = (message: string): ServerToClientMessage => {
   try {
