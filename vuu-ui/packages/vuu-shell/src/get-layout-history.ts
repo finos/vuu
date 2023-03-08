@@ -16,7 +16,7 @@ export const getLayoutHistory = async (
     })
     .catch(() => {
       // TODO we should set a layout with a warning here
-      console.log(`error getting history`);
+      console.log("error getting history");
     });
 
   return history;

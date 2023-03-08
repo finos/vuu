@@ -63,15 +63,15 @@ const handleMessageFromClient = async ({
     // the server - handle accordingly
 
     case "subscribe":
-      logger.info('Subscribe Message From Client: ', message);
+      logger.info("Subscribe Message From Client: ", message);
       server.subscribe(message);
       break;
     case "unsubscribe":
-      logger.info('Unsubscribe Message From Client: ', message);
+      logger.info("Unsubscribe Message From Client: ", message);
       server.unsubscribe(message.viewport);
       break;
     default:
-      logger.info('Message From Client: ', message);
+      logger.info("Message From Client: ", message);
       server.handleMessageFromClient(message);
   }
 };
