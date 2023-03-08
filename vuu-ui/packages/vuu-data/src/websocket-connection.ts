@@ -12,6 +12,12 @@ export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
 const WS_PATTERN = /^ws(s)?:\/\/.+/;
 
+const loggingLevel = () => {
+  if (typeof loggingSettings !== undefined) {
+    return loggingSettings.loggingLevel;
+  }
+}
+
 const connectionAttempts: {
   [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
 } = {};
@@ -48,11 +54,13 @@ async function makeConnection(
     const reconnecting = typeof connection !== "undefined";
     const ws = await createWebsocket(url);
 
-    logger.log(
-      "%c⚡ %cconnected",
-      "font-size: 24px;color: green;font-weight: bold;",
-      "color:green; font-size: 14px;"
-    );
+    if (loggingLevel() === 'high') {
+      logger.log(
+        "%c⚡ %cconnected",
+        "font-size: 24px;color: green;font-weight: bold;",
+        "color:green; font-size: 14px;"
+      );
+    }
 
     if (connection !== undefined) {
       connection[setWebsocket](ws);
@@ -165,11 +173,13 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     ws.onclose = () => {
-      logger.log(
-        `%c⚡ connection close`,
-        "font-size: 24px;color: orange;font-weight: bold;",
-        "color:orange; font-size: 14px;"
-      );
+      if (loggingLevel() === 'high') {
+        logger.log(
+          `%c⚡ connection close`,
+          "font-size: 24px;color: orange;font-weight: bold;",
+          "color:orange; font-size: 14px;"
+        );
+      }
       callback({
         type: "connection-status",
         status: "disconnected",
@@ -190,19 +200,29 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     const queue = (_msg: ClientToServerMessage) => {
-      console.log(`TODO queue message until websocket reconnected`, {
-        _msg,
-      });
+      if (
+        loggingLevel() === 'high' ||
+        loggingLevel() === 'medium'
+        ) {
+        logger.info(`TODO queue message until websocket reconnected`, {
+          _msg,
+        });
+      }
     };
 
     this.send = send;
 
     this.close = () => {
-      logger.log("[Connection] close websocket");
       this.status = "closed";
-      ws.close();
-      this.close = closeWarn;
-      this.send = sendWarn;
+        ws.close();
+        this.close = closeWarn;
+        this.send = sendWarn;
+        if (
+          loggingLevel() === 'high' ||
+          loggingLevel() === 'medium'
+          ) {
+        logger.log("[Connection] close websocket");
+      }
     };
   }
 }

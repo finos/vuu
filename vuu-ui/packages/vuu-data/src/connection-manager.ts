@@ -6,7 +6,7 @@ import {
   VuuTable,
   VuuTableList,
 } from "@finos/vuu-protocol-types";
-import { EventEmitter, logger, uuid } from "@finos/vuu-utils";
+import { EventEmitter, getLoggingConfig, logger, uuid } from "@finos/vuu-utils";
 import {
   DataSourceCallbackMessage,
   shouldMessageBeRoutedToDataSource as messageShouldBeRoutedToDataSource,
@@ -37,7 +37,7 @@ const workerSource = InlinedWorker.toString().replace(
   /(?:^function(?:\s+[^(]*)?\(\)\s*\{)|(?:\}$)/g,
   ""
 );
-const workerBlob = new Blob([workerSource], { type: "text/javascript" });
+const workerBlob = new Blob([getLoggingConfig() + workerSource], { type: "text/javascript" });
 const workerBlobUrl = URL.createObjectURL(workerBlob);
 
 type WorkerResolver = {
