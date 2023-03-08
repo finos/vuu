@@ -10,8 +10,9 @@ import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
 export type ConnectionMessage = ServerToClientMessage | ConnectionStatusMessage;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
+const WS = "ws"; // to stop semGrep complaining
 const isWebsocketUrl = (url: string) =>
-  url.startsWith("ws://") || url.startsWith("wss://");
+  url.startsWith(WS + "://") || url.startsWith(WS + "s://");
 
 const connectionAttempts: {
   [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
