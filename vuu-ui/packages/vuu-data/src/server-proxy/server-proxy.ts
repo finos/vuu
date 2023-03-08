@@ -59,9 +59,7 @@ let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
 const loggingLevel = () => {
-  if (typeof loggingSettings !== undefined) {
-    return loggingSettings.loggingLevel;
-  }
+  return loggingSettings.loggingLevel;
 }
 
 const nextRequestId = () => `${_requestId++}`;

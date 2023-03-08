@@ -2,9 +2,7 @@ import { VuuRange } from "@finos/vuu-protocol-types";
 import { logger } from "@finos/vuu-utils";
 
 const loggingLevel = () => {
-  if (typeof loggingSettings !== undefined) {
-    return loggingSettings.loggingLevel;
-  }
+  return loggingSettings.loggingLevel;
 }
 
 export const bufferBreakout = (

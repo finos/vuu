@@ -15,9 +15,7 @@ const isWebsocketUrl = (url: string) =>
   url.startsWith(WS + "://") || url.startsWith(WS + "s://");
 
 const loggingLevel = () => {
-  if (typeof loggingSettings !== undefined) {
-    return loggingSettings.loggingLevel;
-  }
+  return loggingSettings.loggingLevel;
 }
 
 const connectionAttempts: {

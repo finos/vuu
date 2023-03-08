@@ -7,9 +7,7 @@ const EMPTY_ARRAY = [] as const;
 type RangeTuple = [boolean, readonly VuuRow[] /*, readonly VuuRow[]*/];
 
 const loggingLevel = () => {
-  if (typeof loggingSettings !== undefined) {
-    return loggingSettings.loggingLevel;
-  }
+  return loggingSettings.loggingLevel;
 }
 
 export class ArrayBackedMovingWindow {

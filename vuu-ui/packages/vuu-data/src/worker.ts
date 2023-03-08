@@ -15,9 +15,7 @@ import { logger } from "@finos/vuu-utils";
 let server: ServerProxy;
 
 const loggingLevel = () => {
-  if (typeof loggingSettings !== undefined) {
-    return loggingSettings.loggingLevel;
-  }
+  return loggingSettings.loggingLevel;
 }
 
 async function connectToServer(

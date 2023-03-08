@@ -52,9 +52,7 @@ import {
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
 const loggingLevel = () => {
-  if (typeof loggingSettings !== undefined) {
-    return loggingSettings.loggingLevel;
-  }
+  return loggingSettings.loggingLevel;
 }
 
 interface Disable {
