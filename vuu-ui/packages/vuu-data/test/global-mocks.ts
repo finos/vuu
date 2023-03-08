@@ -18,5 +18,5 @@ vi.mock("@finos/vuu-utils", async () => {
 });
 
 vi.mock("./inlined-worker", async () => ({
-  InlinedWorker: () => undefined,
+  workerSourceCode: "",
 }));
