@@ -9,7 +9,7 @@ import {
   MenuItem,
   MenuItemGroup,
   Separator,
-  useContextMenu
+  useContextMenu,
 } from "@finos/vuu-popups";
 
 import { Button } from "@salt-ds/core";
@@ -19,7 +19,7 @@ import {
   MouseEventHandler,
   useLayoutEffect,
   useRef,
-  useState
+  useState,
 } from "react";
 
 let displaySequence = 1;
@@ -94,8 +94,8 @@ export const DefaultContextMenu = () => {
 
 DefaultContextMenu.displaySequence = displaySequence++;
 
-type IdProps = { children: string | JSX.Element }
-const Id = ({ children }: IdProps ) => (
+type IdProps = { children: string | JSX.Element };
+const Id = ({ children }: IdProps) => (
   <span style={{ color: "grey" }}>({children})</span>
 );
 
@@ -195,7 +195,7 @@ export const ContextMenuPopup = () => {
   };
 
   const handleClose = () => {
-    console.log(`closed with menuId`);
+    console.log("closed with menuId");
     setPosition({ x: 0, y: 0 });
   };
 
@@ -311,7 +311,7 @@ export const SimpleContextMenuProvider = () => {
   ];
 
   const handleMenuAction: MenuActionHandler = () => {
-    console.log(`handleContextMenu`);
+    console.log("handleContextMenu");
     return true;
   };
 

@@ -22,22 +22,12 @@ import {
   VuuUIMessageInTableMeta,
   VuuUIMessageOut,
 } from "./vuuUIMessageTypes";
-// Note: the InlinedWorker is a generated file, it must be built
 
-import { InlinedWorker } from "./inlined-worker";
+// Note: inlined-worker is a generated file, it must be built
+import { workerSourceCode } from "./inlined-worker";
 import { VuuTableMetaWithTable } from "./hooks";
 
-// In a dev build, this will be stripping out the function wrapper
-// function InlinedWorker(){ ..... }
-// In a prod build, "inlinedWorker" will be minified and depending
-// on the minifier used may be reduced to something like the following:
-//  function(){ ...}
-//  function _(){ ...}
-const workerSource = InlinedWorker.toString().replace(
-  /(?:^function(?:\s+[^(]*)?\(\)\s*\{)|(?:\}$)/g,
-  ""
-);
-const workerBlob = new Blob([workerSource], { type: "text/javascript" });
+const workerBlob = new Blob([workerSourceCode], { type: "text/javascript" });
 const workerBlobUrl = URL.createObjectURL(workerBlob);
 
 type WorkerResolver = {
@@ -116,7 +106,7 @@ const getWorker = async (
         } else if (isConnectionStatusMessage(message)) {
           handleConnectionStatusChange(msg);
         } else {
-          logger.warn(`ConnectionManager: Unexpected message from the worker`);
+          logger.warn("ConnectionManager: Unexpected message from the worker");
         }
       };
       // TODO handle error
@@ -159,7 +149,7 @@ function handleMessageFromWorker({
       }
     } else {
       logger.warn(
-        `%cConnectionManager Unexpected message from the worker`,
+        "%cConnectionManager Unexpected message from the worker",
         "color:red;font-weight:bold;"
       );
     }
@@ -247,7 +237,6 @@ class _ConnectionManager extends EventEmitter {
   }
 
   destroy() {
-    logger.log(`MEGA DESTROY`);
     worker.terminate();
   }
 }
@@ -269,7 +258,7 @@ export const connectToServer = async (serverUrl: string, token?: string) => {
     const serverAPI = await ConnectionManager.connect(serverUrl, token);
     resolveServer(serverAPI);
   } catch (err: unknown) {
-    logger.error('Connection Error', err);
+    logger.error("Connection Error", err);
     rejectServer(err);
   }
 };

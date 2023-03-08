@@ -1,4 +1,5 @@
 import { build } from "./esbuild.mjs";
+import { buildWorker } from "./build-worker.mjs";
 import fs from "fs";
 import path from "path";
 import {
@@ -76,18 +77,6 @@ export default async function main(customConfig) {
     name: scopedPackageName,
     target,
   };
-
-  const inlineWorkerConfig = hasWorker
-    ? {
-        banner: { js: "export function InlinedWorker() {" },
-        entryPoints: [workerTS],
-        env: development ? "development" : "production",
-        footer: { js: "}" },
-        name: scopedPackageName,
-        outfile: `src/inlined-worker.js`,
-        sourcemap: false,
-      }
-    : undefined;
 
   function createDistFolder() {
     fs.rmSync(outdir, { recursive: true, force: true });
@@ -204,7 +193,7 @@ export default async function main(customConfig) {
 
   if (hasWorker) {
     // this has to complete first, the inline worker will be consumed ny subsequent build
-    await build(inlineWorkerConfig);
+    await buildWorker(scopedPackageName);
   }
 
   // Compose the list of async tasks we are going to run
