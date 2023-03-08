@@ -70,27 +70,26 @@ const handleMessageFromClient = async ({
       logger.info("Subscribe Message From Client: ", message);
       server.subscribe(message);
       if (
-        loggingLevel() === 'high' ||
-        loggingLevel() === 'medium'
+        loggingLevel() === "high" ||
+        loggingLevel() === "medium"
         ) {
-        logger.info('Subscribe Message From Client: ', message);
+        logger.info("Subscribe Message From Client: ", message);
       }
       break;
     case "unsubscribe":
       logger.info("Unsubscribe Message From Client: ", message);
       server.unsubscribe(message.viewport);
       if (
-        loggingLevel() === 'high' ||
-        loggingLevel() === 'medium'
+        loggingLevel() === "high" ||
+        loggingLevel() === "medium"
         ) {
-        logger.info('Unsubscribe Message From Client: ', message);
+        logger.info("Unsubscribe Message From Client: ", message);
       }
       break;
     default:
-      logger.info("Message From Client: ", message);
       server.handleMessageFromClient(message);
-      if (loggingLevel() === 'high') {
-        logger.info('Message From Client: ', message);
+      if (loggingLevel() === "high") {
+        logger.info("Message From Client: ", message);
       }
   }
 };

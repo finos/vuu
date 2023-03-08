@@ -46,8 +46,8 @@ export class ArrayBackedMovingWindow {
 
   setRowCount = (rowCount: number) => {
     if (
-      loggingLevel() === 'high' ||
-      loggingLevel() === 'medium'
+      loggingLevel() === "high" ||
+      loggingLevel() === "medium"
       ) {
       logger.log(`Rowcount: ${rowCount}`)
     }
@@ -107,8 +107,8 @@ export class ArrayBackedMovingWindow {
     }
 
     if (
-      loggingLevel() === 'high' ||
-      loggingLevel() === 'medium'
+      loggingLevel() === "high" ||
+      loggingLevel() === "medium"
       ) {
         logger.info(`Client Range is From ${from} To ${to}`);
       }
@@ -173,7 +173,7 @@ export class ArrayBackedMovingWindow {
     const { from, to } = this.range;
     const { from: clientFrom, to: clientTo } = this.clientRange;
     const startOffset = Math.max(0, clientFrom - from);
-    // TEMP hack, whu wouldn't we have rowCount ?
+    // TEMP hack, whu wouldn"t we have rowCount ?
     const endOffset = Math.min(
       to - from,
       to,

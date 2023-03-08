@@ -230,7 +230,7 @@ export class Viewport {
       range,
       this.bufferSize
     );
-    if (loggingLevel() === 'high') {
+    if (loggingLevel() === "high") {
       logger.log(
         `%cViewport subscribed
           clientVpId: ${this.clientViewportId}
@@ -277,8 +277,8 @@ export class Viewport {
     const { type } = pendingOperation;
 
     if (
-      loggingLevel() === 'high' ||
-      loggingLevel() === 'medium'
+      loggingLevel() === "high" ||
+      loggingLevel() === "medium"
       ) {
         logger.log(`Viewport Operation ${type}:\n${pendingOperation}`)
       }
@@ -398,10 +398,10 @@ export class Viewport {
             } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
-        if (loggingLevel() === 'high') {
+        if (loggingLevel() === "high") {
           logger.log(`Viewport range server request: ${serverRequest}`)
         }
-        // TODO check that there os not already a pending server request for more data
+        // TODO check that there is not already a pending server request for more data
         this.awaitOperation(requestId, { type });
         this.pendingRangeRequest = serverRequest;
 
@@ -499,14 +499,14 @@ export class Viewport {
   }
 
   suspend() {
-    if (loggingLevel() === 'high') {
-      logger.log('viewport suspend')
+    if (loggingLevel() === "high") {
+      logger.log("viewport suspend")
     }
     this.suspended = true;
   }
 
   resume() {
-    if (loggingLevel() === 'high') {
+    if (loggingLevel() === "high") {
       logger.log(`viewport resume: ${this.currentData()}`);
     }
     this.suspended = false;
@@ -530,7 +530,7 @@ export class Viewport {
 
   enable(requestId: string) {
     this.awaitOperation(requestId, { type: "enable" });
-    if (loggingLevel() === 'high') {
+    if (loggingLevel() === "high") {
       logger.log(`viewport enable: ${this.serverViewportId}`)
     }
     return {
@@ -541,7 +541,7 @@ export class Viewport {
 
   disable(requestId: string) {
     this.awaitOperation(requestId, { type: "disable" });
-    if (loggingLevel() === 'high') {
+    if (loggingLevel() === "high") {
       logger.log(`viewport disable: ${this.serverViewportId}`)
     }
     return {
@@ -555,7 +555,7 @@ export class Viewport {
       type: "columns",
       data: columns,
     });
-    if (loggingLevel() === 'high') {
+    if (loggingLevel() === "high") {
       logger.log(`viewport column request: ${columns}`)
     }
     return this.createRequest({ columns });
@@ -567,7 +567,7 @@ export class Viewport {
       data: dataSourceFilter,
     });
     const { filter } = dataSourceFilter;
-    if (loggingLevel() === 'high') {
+    if (loggingLevel() === "high") {
       logger.log(`viewport filter request: ${filter}`)
     }
     return this.createRequest({ filterSpec: { filter } });
@@ -575,7 +575,7 @@ export class Viewport {
 
   aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
     this.awaitOperation(requestId, { type: "aggregate", data: aggregations });
-    if (loggingLevel() === 'high') {
+    if (loggingLevel() === "high") {
       logger.log(`viewport aggregate request: ${aggregations}`)
     }
     return this.createRequest({ aggregations });
@@ -583,7 +583,7 @@ export class Viewport {
 
   sortRequest(requestId: string, sort: VuuSort) {
     this.awaitOperation(requestId, { type: "sort", data: sort });
-    if (loggingLevel() === 'high') {
+    if (loggingLevel() === "high") {
       logger.log(`viewport sort request: ${sort}`)
     }
     return this.createRequest({ sort });
@@ -592,7 +592,7 @@ export class Viewport {
   groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
     this.awaitOperation(requestId, { type: "groupBy", data: groupBy });
     this.batchMode = true;
-    if (loggingLevel() === 'high') {
+    if (loggingLevel() === "high") {
       logger.log(`viewport groupby request: ${groupBy}`)
     }
     return this.createRequest({ groupBy });
@@ -602,7 +602,7 @@ export class Viewport {
     // TODO we need to do this in the client if we are to raise selection events
     // TODO is it right to set this here or should we wait for ACK from server ?
     this.awaitOperation(requestId, { type: "selection", data: selected });
-    if (loggingLevel() === 'high') {
+    if (loggingLevel() === "high") {
       logger.log(`viewport select request: ${selected}`)
     }
     return {

@@ -125,7 +125,7 @@ export class ServerProxy {
   public async reconnect() {
     await this.login(this.authToken);
 
-    // The 'active' viewports are those the user has on their open layout
+    // The "active" viewports are those the user has on their open layout
     // Reconnect these first.
     const [activeViewports, inactiveViewports] = partition(
       Array.from(this.viewports.values()),
@@ -466,7 +466,7 @@ export class ServerProxy {
         }
       } else {
         const viewport = this.getViewportForClient(message.viewport);
-        if (loggingLevel() === 'high') {
+        if (loggingLevel() === "high") {
           logger.log(`${message.type} Message From Client: `, message);
         }
         switch (message.type) {
@@ -507,12 +507,11 @@ export class ServerProxy {
       return this.menuRpcCall(message);
     } else {
       const { type, requestId } = message;
-      if (loggingLevel() === 'high') {
+      if (loggingLevel() === "high") {
         logger.log(`Message From Client: ${type}, Data: ${JSON.stringify(message)}`)
       }
       switch (type) {
         case "GET_TABLE_LIST":
-          logger.log("Get Table List Message (Client to Server)", message);
           return this.sendMessageToServer({ type }, requestId);
         case "GET_TABLE_META":
           return this.sendMessageToServer(
@@ -567,7 +566,7 @@ export class ServerProxy {
   public handleMessageFromServer(message: ServerToClientMessage) {
     const { body, requestId, sessionId } = message;
 
-    // onsole.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (ServerProxy) ${message.type || JSON.stringify(message)}`,'color:white;background-color:blue;font-weight:bold;');
+    // onsole.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (ServerProxy) ${message.type || JSON.stringify(message)}`,"color:white;background-color:blue;font-weight:bold;");
 
     const { viewports } = this;
     switch (body.type) {
@@ -612,8 +611,8 @@ export class ServerProxy {
                 response
               );
               this.postMessageToClient(response);
-              if (loggingLevel() === 'high') {
-                logger.info('Subscribe Response (ServerProxy to Client): ', response)
+              if (loggingLevel() === "high") {
+                logger.info("Subscribe Response (ServerProxy to Client): ", response)
               }
             }
             // In the case of a reconnect, we may have resubscribed a disabled viewport,
@@ -680,8 +679,8 @@ export class ServerProxy {
                 response
               );
               this.postMessageToClient(response);
-              if (loggingLevel() === 'high') {
-                logger.info('Disable Response (ServerProxy to Client): ', response);
+              if (loggingLevel() === "high") {
+                logger.info("Disable Response (ServerProxy to Client): ", response);
               }
             }
           }
@@ -708,8 +707,8 @@ export class ServerProxy {
                 size: viewport.size,
                 type: "viewport-update",
               });
-              if (loggingLevel() === 'high') {
-                logger.info('Enable Response (ServerProxy to Client): ', response);
+              if (loggingLevel() === "high") {
+                logger.info("Enable Response (ServerProxy to Client): ", response);
               }
             }
           }
@@ -744,7 +743,7 @@ export class ServerProxy {
                 `TABLE_ROW message received for non registered viewport ${viewPortId}`
               );
             }
-            // onsole.log(`%c[ServerProxy] after updates, movingWindow has ${viewport.dataWindow.internalData.length} records`,'color:brown')
+            // onsole.log(`%c[ServerProxy] after updates, movingWindow has ${viewport.dataWindow.internalData.length} records`,"color:brown")
           }
 
           this.processUpdates();
@@ -965,8 +964,8 @@ export class ServerProxy {
           });
         }
         if (
-          loggingLevel() === 'high' ||
-          loggingLevel() === 'medium'
+          loggingLevel() === "high" ||
+          loggingLevel() === "medium"
           ) {
           logger.log(`
             clientVieportId: ${viewport.clientViewportId}\n

@@ -202,8 +202,8 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
 
     const queue = (_msg: ClientToServerMessage) => {
       if (
-        loggingLevel() === 'high' ||
-        loggingLevel() === 'medium'
+        loggingLevel() === "high" ||
+        loggingLevel() === "medium"
         ) {
         logger.info(`TODO queue message until websocket reconnected`, {
           _msg,
@@ -219,8 +219,8 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
         this.close = closeWarn;
         this.send = sendWarn;
         if (
-          loggingLevel() === 'high' ||
-          loggingLevel() === 'medium'
+          loggingLevel() === "high" ||
+          loggingLevel() === "medium"
           ) {
         logger.log("[Connection] close websocket");
       }
