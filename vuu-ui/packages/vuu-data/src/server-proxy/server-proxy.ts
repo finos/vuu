@@ -58,6 +58,12 @@ export type MessageOptions = {
 let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
+const loggingLevel = () => {
+  if (typeof loggingSettings !== undefined) {
+    return loggingSettings.loggingLevel;
+  }
+}
+
 const nextRequestId = () => `${_requestId++}`;
 const DEFAULT_OPTIONS: MessageOptions = {};
 
@@ -157,7 +163,7 @@ export class ServerProxy {
         this.pendingLogin = { resolve, reject };
       });
     } else if (this.authToken === "") {
-      console.warn(
+      logger.error(
         "ServerProxy login, cannot login until auth token has been obtained"
       );
     }
@@ -167,7 +173,9 @@ export class ServerProxy {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
       if (!this.hasMetaDataFor(message.table)) {
-        logger.info("Get Meta Data Message (Client to Server): ", message);
+        if (loggingLevel() === "high") {
+          logger.info("Get Meta Data Message (Client to Server): ", message);
+        }
         const requestId = nextRequestId();
         this.sendMessageToServer(
           { type: "GET_TABLE_META", table: message.table },
@@ -203,7 +211,7 @@ export class ServerProxy {
         viewPortId: serverViewportId,
       });
     } else {
-      console.error(
+      logger.error(
         `ServerProxy: failed to unsubscribe client viewport ${clientViewportId}, viewport not found`
       );
     }
@@ -376,7 +384,7 @@ export class ServerProxy {
       );
       this.sendMessageToServer(request, requestId);
     } else {
-      console.warn("ServerProxy unable to create link, viewport not found");
+      logger.error("ServerProxy unable to create link, viewport not found");
     }
   }
 
@@ -448,14 +456,21 @@ export class ServerProxy {
         // Viewport may already have been unsubscribed
         const viewport = this.getViewportForClient(message.viewport, false);
         if (viewport !== null) {
-          logger.log("Disable Message From Client: ", message);
+          if (
+            loggingLevel() === "medium" ||
+            loggingLevel() === "high"
+            ) {
+              logger.log("Disable Message From Client: ", message);
+            }
           return this.disableViewport(viewport);
         } else {
           return;
         }
       } else {
         const viewport = this.getViewportForClient(message.viewport);
-        logger.log(`${message.type} Message From Client: `, message);
+        if (loggingLevel() === 'high') {
+          logger.log(`${message.type} Message From Client: `, message);
+        }
         switch (message.type) {
           case "setViewRange":
             return this.setViewRange(viewport, message);
@@ -494,6 +509,9 @@ export class ServerProxy {
       return this.menuRpcCall(message);
     } else {
       const { type, requestId } = message;
+      if (loggingLevel() === 'high') {
+        logger.log(`Message From Client: ${type}, Data: ${JSON.stringify(message)}`)
+      }
       switch (type) {
         case "GET_TABLE_LIST":
           logger.log("Get Table List Message (Client to Server)", message);
@@ -596,6 +614,9 @@ export class ServerProxy {
                 response
               );
               this.postMessageToClient(response);
+              if (loggingLevel() === 'high') {
+                logger.info('Subscribe Response (ServerProxy to Client): ', response)
+              }
             }
             // In the case of a reconnect, we may have resubscribed a disabled viewport,
             // reset the disabled state on server
@@ -661,6 +682,9 @@ export class ServerProxy {
                 response
               );
               this.postMessageToClient(response);
+              if (loggingLevel() === 'high') {
+                logger.info('Disable Response (ServerProxy to Client): ', response);
+              }
             }
           }
         }
@@ -686,6 +710,9 @@ export class ServerProxy {
                 size: viewport.size,
                 type: "viewport-update",
               });
+              if (loggingLevel() === 'high') {
+                logger.info('Enable Response (ServerProxy to Client): ', response);
+              }
             }
           }
         }
@@ -715,7 +742,7 @@ export class ServerProxy {
                 viewport.handleUpdate(updateType, rowIndex, row);
               }
             } else {
-              console.warn(
+              logger.warn(
                 `TABLE_ROW message received for non registered viewport ${viewPortId}`
               );
             }
@@ -938,6 +965,16 @@ export class ServerProxy {
             size,
             type: "viewport-update",
           });
+        }
+        if (
+          loggingLevel() === 'high' ||
+          loggingLevel() === 'medium'
+          ) {
+          logger.log(`
+            clientVieportId: ${viewport.clientViewportId}\n
+            mode: ${mode}\n
+            type: viewport-update
+          `)
         }
       }
     });

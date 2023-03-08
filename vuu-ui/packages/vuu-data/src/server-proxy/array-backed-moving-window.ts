@@ -1,10 +1,16 @@
 import { VuuRange, VuuRow } from "@finos/vuu-protocol-types";
-import { WindowRange } from "@finos/vuu-utils";
+import { logger, WindowRange } from "@finos/vuu-utils";
 import { bufferBreakout } from "./buffer-range";
 
 const EMPTY_ARRAY = [] as const;
 
 type RangeTuple = [boolean, readonly VuuRow[] /*, readonly VuuRow[]*/];
+
+const loggingLevel = () => {
+  if (typeof loggingSettings !== undefined) {
+    return loggingSettings.loggingLevel;
+  }
+}
 
 export class ArrayBackedMovingWindow {
   private bufferSize: number;
@@ -41,6 +47,12 @@ export class ArrayBackedMovingWindow {
   }
 
   setRowCount = (rowCount: number) => {
+    if (
+      loggingLevel() === 'high' ||
+      loggingLevel() === 'medium'
+      ) {
+      logger.log(`Rowcount: ${rowCount}`)
+    }
     if (rowCount < this.internalData.length) {
       this.internalData.length = rowCount;
     }
@@ -96,6 +108,13 @@ export class ArrayBackedMovingWindow {
       return [false, EMPTY_ARRAY /*, EMPTY_ARRAY*/] as RangeTuple;
     }
 
+    if (
+      loggingLevel() === 'high' ||
+      loggingLevel() === 'medium'
+      ) {
+        logger.info(`Client Range is From ${from} To ${to}`);
+      }
+
     const originalRange = this.clientRange.copy();
     this.clientRange.from = from;
     this.clientRange.to = to;
@@ -130,6 +149,7 @@ export class ArrayBackedMovingWindow {
   }
 
   setRange(from: number, to: number) {
+
     const [overlapFrom, overlapTo] = this.range.overlap(from, to);
 
     const newData = new Array(to - from + this.bufferSize);

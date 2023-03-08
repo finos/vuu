@@ -1,3 +1,5 @@
+import { getCookieValue } from "./cookie-utils";
+
 export interface LogFn {
 	(message?: unknown, ...optionalParams: unknown[]): void;
 }
@@ -7,6 +9,10 @@ export interface AssertLogFn {
 
 export interface TableLogFn {
 	(properties?: object): void
+}
+
+type loggingSettings = {
+	loggingLevel: string;
 }
 
 export interface Logger {
@@ -40,7 +46,7 @@ export class ConsoleLogger implements Logger {
 	readonly info: LogFn;
 	readonly table: TableLogFn;
 
-	constructor(options?: { buildEnv?: string }, level?: string) {
+	constructor(options?: { buildEnv?: string }) {
 		const { buildEnv } = options || {};
 
 		if (buildEnv === 'production') {
@@ -70,7 +76,18 @@ export class ConsoleLogger implements Logger {
 		this.debug = console.debug.bind(console);
 		this.info = console.info.bind(console);
 		this.table = console.table.bind(console);
+
 	}
 }
 
+export const getLoggingConfig = () => {
+	const loggingLevel = getCookieValue("vuu-logging-level");
+	// return `${(loggingLevel)}\n`
+	return `const loggingSettings = { loggingLevel: "${loggingLevel}"};`;
+}
+
 export const logger = new ConsoleLogger({ buildEnv: process.env.NODE_ENV });
+
+declare global {
+	const loggingSettings:loggingSettings;
+}

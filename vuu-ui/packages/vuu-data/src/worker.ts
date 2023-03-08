@@ -14,6 +14,12 @@ import { logger } from "@finos/vuu-utils";
 
 let server: ServerProxy;
 
+const loggingLevel = () => {
+  if (typeof loggingSettings !== undefined) {
+    return loggingSettings.loggingLevel;
+  }
+}
+
 async function connectToServer(
   url: string,
   token: string,
@@ -65,14 +71,29 @@ const handleMessageFromClient = async ({
     case "subscribe":
       logger.info("Subscribe Message From Client: ", message);
       server.subscribe(message);
+      if (
+        loggingLevel() === 'high' ||
+        loggingLevel() === 'medium'
+        ) {
+        logger.info('Subscribe Message From Client: ', message);
+      }
       break;
     case "unsubscribe":
       logger.info("Unsubscribe Message From Client: ", message);
       server.unsubscribe(message.viewport);
+      if (
+        loggingLevel() === 'high' ||
+        loggingLevel() === 'medium'
+        ) {
+        logger.info('Unsubscribe Message From Client: ', message);
+      }
       break;
     default:
       logger.info("Message From Client: ", message);
       server.handleMessageFromClient(message);
+      if (loggingLevel() === 'high') {
+        logger.info('Message From Client: ', message);
+      }
   }
 };
 
