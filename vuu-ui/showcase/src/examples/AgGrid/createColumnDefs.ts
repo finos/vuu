@@ -1,132 +1,64 @@
-import { ColDef, SetFilterValuesFuncParams } from "ag-grid-community";
 import {
   BackgroundCellRenderer,
   FilterDataProvider,
 } from "@finos/vuu-data-ag-grid";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 
-export type ColumnOverrides = { [key: string]: Partial<ColDef> };
+type AgGridCellRenderer = typeof BackgroundCellRenderer;
+
+const groupableColumns = new Set(["ccy", "currency", "exchange", "ric"]);
+const cellRenderers: { [key: string]: AgGridCellRenderer } = {
+  ask: BackgroundCellRenderer,
+  bid: BackgroundCellRenderer,
+};
+
+const vuuSetFilters = new Set(["ccy", "currency"]);
+
+const getFilterAttributes = (
+  column: ColumnDescriptor,
+  setFilterDataProvider: FilterDataProvider
+) => {
+  switch (column.serverDataType) {
+    case "double":
+    case "int":
+      return {
+        filter: "agNumberColumnFilter",
+      };
+      break;
+    case "string":
+      if (vuuSetFilters.has(column.name)) {
+        return {
+          filter: "agSetColumnFilter",
+          filterParams: {
+            values: (params: any) => {
+              setFilterDataProvider
+                .getSetFilterData(params)
+                .then(params.success);
+            },
+          },
+        };
+      } else {
+        return {
+          filter: "agTextColumnFilter",
+          filterParams: {
+            caseSensitive: true,
+            filterOptions: ["equals", "notEqual", "startsWith", "endsWith"],
+          },
+        };
+      }
+      break;
+  }
+};
 
 export const createColumnDefs = (
   setFilterDataProvider: FilterDataProvider,
-  table = "instruments",
-  columnOverrides?: ColumnOverrides
-) => {
-  switch (table) {
-    case "instruments":
-      return [
-        {
-          field: "bbg",
-          sortable: true,
-          width: 100,
-          filter: "agTextColumnFilter",
-          ...columnOverrides?.bbg,
-        },
-        {
-          field: "currency",
-          // hide: true,
-          enableRowGroup: true,
-          sortable: true,
-          width: 120,
-          filter: "agSetColumnFilter",
-          filterParams: {
-            values: (params: SetFilterValuesFuncParams) => {
-              setFilterDataProvider
-                .getSetFilterData(params)
-                .then(params.success);
-            },
-          },
-          ...columnOverrides?.currency,
-        },
-        {
-          field: "description",
-          sortable: true,
-          filter: "agTextColumnFilter",
-          ...columnOverrides?.description,
-        },
-        {
-          enableRowGroup: true,
-          field: "exchange",
-          sortable: true,
-          filter: "agSetColumnFilter",
-          filterParams: {
-            values: (params: SetFilterValuesFuncParams) => {
-              setFilterDataProvider
-                .getSetFilterData(params)
-                .then(params.success);
-            },
-          },
-          ...columnOverrides?.exchange,
-        },
-        {
-          field: "isin",
-          sortable: true,
-          filter: true,
-          width: 120,
-          ...columnOverrides?.isin,
-        },
-        {
-          field: "lotSize",
-          sortable: true,
-          filter: "agNumberColumnFilter",
-          width: 120,
-          ...columnOverrides?.lotSize,
-        },
-        {
-          field: "ric",
-          sortable: true,
-          filter: true,
-          width: 100,
-          ...columnOverrides?.ric,
-        },
-      ];
-    case "prices":
-      return [
-        { field: "ask", cellRenderer: BackgroundCellRenderer },
-        { field: "askSize" },
-        { field: "bid", cellRenderer: BackgroundCellRenderer },
-        { field: "bidSize" },
-        { field: "close" },
-        { field: "last" },
-        { field: "open" },
-        { field: "phase" },
-        { field: "ric" },
-        { field: "scenario" },
-      ];
-    case "parentOrders":
-      return [
-        { field: "account" },
-        { field: "algo" },
-        { field: "averagePrice" },
-        { field: "ccy" },
-        { field: "childCount" },
-        { field: "exchange" },
-        { field: "filledQty" },
-        { field: "id" },
-        { field: "idAsInt" },
-        { field: "lastUpdate" },
-        { field: "openQty" },
-        { field: "price" },
-        { field: "quantity" },
-        { field: "ric" },
-        { field: "side" },
-        { field: "status" },
-        { field: "volLimit" },
-      ];
-
-    case "orders":
-      return [
-        { field: "ccy" },
-        { field: "created" },
-        { field: "filledQuantity" },
-        { field: "lastUpdate" },
-        { field: "orderId" },
-        { field: "quantity" },
-        { field: "ric" },
-        { field: "side" },
-        { field: "trader" },
-      ];
-
-    default:
-      console.log(`do not currently support table ${table}`);
-  }
-};
+  columns: ColumnDescriptor[]
+) =>
+  columns.map((column) => ({
+    cellRenderer: cellRenderers[column.name],
+    enableRowGroup: groupableColumns.has(column.name),
+    field: column.name,
+    ...getFilterAttributes(column, setFilterDataProvider),
+    sortable: true,
+    width: 100,
+  }));

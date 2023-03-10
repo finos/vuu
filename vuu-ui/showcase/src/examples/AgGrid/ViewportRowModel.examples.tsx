@@ -10,76 +10,46 @@ import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.css";
 import "ag-grid-enterprise";
 import { AgGridReact } from "ag-grid-react";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { ErrorDisplay, useAutoLoginToVuuServer } from "../utils";
+import { useMemo, useState } from "react";
+import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 import { createColumnDefs } from "./createColumnDefs";
 
-import {
-  DataSource,
-  RemoteDataSource,
-  VuuFeatureMessage,
-} from "@finos/vuu-data";
 import "./VuuAgGrid.css";
 import "./VuuGrid.css";
 
 let displaySequence = 0;
-const serverUrl = "127.0.0.1:8090/websocket";
-const module = "SIMUL";
-
-// prettier-ignore
-const dataSourceConfig = [
-  {
-  bufferSize: 100,
-  columns: [
-    "bbg", "currency", "description", "exchange", "isin", "lotSize", "ric"],
-  table: { table: "instruments", module },
-  serverUrl,
-},  {
-  bufferSize: 100,
-  columns: [
-    "ccy", "created", "filledQuantity", "lastUpdate", "orderId", "quantity", "ric", "side", "trader"],
-  table: { table: "orders", module },
-  serverUrl,
-}, {
-  bufferSize: 100,
-  columns: [
-    "account", "algo", "averagePrice", "ccy", "childCount", "exchange", "filledQty", "id", "idAsInt", "lastUpdate", "openQty", "price", "quantity", "ric", "side", "status", "volLimit"],
-  table: { table: "parentOrders", module },
-  serverUrl,
-}, {
-  bufferSize: 100,
-  columns: [
-    "ask", "askSize", "bid", "bidSize", "close", "last", "open", "phase", "ric", "scenario"],
-  table: { table: "prices", module },
-  serverUrl,
-}
-];
 
 export const AgGridTables = () => {
-  const error = useAutoLoginToVuuServer();
+  const [columnConfig, tables] = useMemo(
+    () => [
+      {
+        description: { editable: true },
+      },
+      ["instruments", "orders", "parentOrders", "childOrders", "prices"],
+    ],
+    []
+  );
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
-  const dataSourceRef = useRef<DataSource>();
 
-  const dataSource = useMemo(() => {
-    if (dataSourceRef.current) {
-      dataSourceRef.current.unsubscribe();
-    }
-    const ds = new RemoteDataSource(dataSourceConfig[selectedIndex]);
-    dataSourceRef.current = ds;
-    return ds;
-  }, [selectedIndex]);
+  const { schemas } = useSchemas();
+  const { columns, dataSource, error } = useTestDataSource({
+    columnConfig,
+    schemas,
+    tablename: tables[selectedIndex],
+  });
+
+  const table = useMemo(
+    () => ({ module: "SIMUL", table: tables[selectedIndex] }),
+    [selectedIndex, tables]
+  );
 
   const { createFilterDataProvider, ...gridConfig } = useViewportRowModel({
     dataSource,
   });
 
   const columnDefs = useMemo(
-    () =>
-      createColumnDefs(
-        createFilterDataProvider(dataSourceConfig[selectedIndex].table),
-        dataSourceConfig[selectedIndex].table.table
-      ),
-    [createFilterDataProvider, selectedIndex]
+    () => createColumnDefs(createFilterDataProvider(table), columns),
+    [createFilterDataProvider, columns, table]
   );
 
   const handleChange: ToggleButtonGroupChangeEventHandler = (_event, index) => {
@@ -90,15 +60,14 @@ export const AgGridTables = () => {
     return <ErrorDisplay>{error}</ErrorDisplay>;
   }
 
-  console.log({ columnDefs, gridConfig });
-
   return (
     <SaltProvider density="high">
       <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
         <ToggleButton tooltipText="Alert">Instruments</ToggleButton>
         <ToggleButton tooltipText="Home">Orders</ToggleButton>
         <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
-        <ToggleButton tooltipText="Search">Prices</ToggleButton>
+        <ToggleButton tooltipText="Child Orders">Child Orders</ToggleButton>
+        <ToggleButton tooltipText="Prices">Prices</ToggleButton>
       </ToggleButtonGroup>
 
       <View style={{ width: 800, height: 500 }} className="ag-theme-balham">

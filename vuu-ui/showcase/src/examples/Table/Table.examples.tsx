@@ -1,4 +1,4 @@
-import { ArrayDataSource, DataSource, DataSourceConfig } from "@finos/vuu-data";
+import { ArrayDataSource, DataSourceConfig } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   DatagridSettingsPanel,
@@ -102,7 +102,7 @@ export const DefaultTable = () => {
   return (
     <>
       {/* <DragVisualizer orientation="horizontal"> */}
-      <DataTable {...config} height={700} renderBufferSize={20} width={700} />
+      <DataTable {...config} height={700} renderBufferSize={40} width={700} />
       {/* </DragVisualizer> */}
     </>
   );

@@ -23,7 +23,7 @@ import { GroupCellRenderer } from "./GroupCellRenderer";
 import { ViewportRowModelDataSource } from "./ViewportRowModelDataSource";
 import { buildColumnMap } from "@finos/vuu-utils";
 import { vuuMenuToAgGridMenu } from "./agGridMenuUtils";
-import { AgData, AgDataRow } from "./AgDataWindow";
+import { AgData } from "./AgDataWindow";
 
 type Column = {
   getId: () => string;
@@ -138,9 +138,11 @@ export const useViewportRowModel = ({
   );
 
   const handleRowGroupOpened = useCallback(
-    (evt: RowGroupOpenedEvent) => {
-      const { groupKey } = evt.data;
-      const { expanded = false } = evt.node;
+    (evt: unknown) => {
+      const {
+        data: { groupKey },
+        node: { expanded = false },
+      } = evt as RowGroupOpenedEvent;
       viewportDatasource.setExpanded(groupKey, !expanded);
     },
     [viewportDatasource]
@@ -236,5 +238,6 @@ export const useViewportRowModel = ({
     onSortChanged: handleSortChanged,
     rowModelType: "viewport" as const,
     rowSelection: "single" as const,
+    viewportRowModelBufferSize: 25,
   };
 };
