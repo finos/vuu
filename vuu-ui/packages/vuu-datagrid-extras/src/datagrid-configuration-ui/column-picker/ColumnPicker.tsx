@@ -1,5 +1,5 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { List, Tooltip, useTooltip } from "@heswell/salt-lab";
+import { List } from "@heswell/salt-lab";
 import { Button, Text, useIdMemo as useId } from "@salt-ds/core";
 import { Dispatch, HTMLAttributes, useCallback, useState } from "react";
 import { ColumnAction } from "../settings-panel/useGridSettings";
@@ -85,12 +85,6 @@ export const ColumnPicker = ({
     },
     [dispatch]
   );
-
-  const { getTriggerProps, getTooltipProps } = useTooltip();
-
-  const addColumnTooltipProps = getTooltipProps({
-    title: "Add Calculated Column",
-  });
 
   return (
     <div className={classBase} id={id}>
@@ -188,7 +182,6 @@ export const ColumnPicker = ({
             <span data-icon="arrow-thin-down" />
           </Button>
           <Button
-            {...getTriggerProps<typeof Button>()}
             aria-label="Add calculated column"
             className={`${classBase}-addCalculatedColumn`}
             onClick={onAddCalculatedColumnClick}
@@ -196,7 +189,6 @@ export const ColumnPicker = ({
           >
             <span data-icon="add" />
           </Button>
-          <Tooltip {...addColumnTooltipProps} />
         </div>
       </div>
     </div>
