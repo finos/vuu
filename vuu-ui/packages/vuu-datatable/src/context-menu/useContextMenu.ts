@@ -65,7 +65,7 @@ export const useContextMenu = ({
         case "sort-add-dsc": return (dataSource.sort = addSortColumn(dataSource.sort, column, "D")), true;
         case "group": return (dataSource.groupBy = addGroupColumn(dataSource.groupBy, column)), true;
         case "group-add": return (dataSource.groupBy = addGroupColumn(dataSource.groupBy, column)), true;
-        case "column-hide": return onPersistentColumnOperation({type: "hideColumn", column}), true;
+        case "column-hide": return onPersistentColumnOperation({type: "hideColumns", columns: [column]}), true;
         case "column-remove": return (dataSource.columns = dataSource.columns.filter(name => name !== column.name)), true
         case "filter-remove-column": return (dataSource.filter = removeFilterColumn(dataSource.filter, column)), true;
         case "remove-filters": return (dataSource.filter = {filter:""}), true;

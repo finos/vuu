@@ -40,6 +40,7 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   selectionModel?: TableSelectionModel;
   tableLayout?: tableLayoutType;
   width?: number;
+  zebraStripes?: boolean;
 }
 
 export type TableColumnResizeHandler = (

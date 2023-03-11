@@ -50,7 +50,9 @@ export const selectItem = (
   const actsLikeSingleSelect =
     singleSelect || (multiSelect && !keepExistingSelection && !rangeSelect);
 
-  if (actsLikeSingleSelect) {
+  if (selectionModel === "none") {
+    return NO_SELECTION;
+  } else if (actsLikeSingleSelect) {
     return [itemIndex];
   } else if (rangeSelect) {
     if (selected.length === 0) {

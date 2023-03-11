@@ -136,6 +136,12 @@ span[data-icon]{
   --vuu-icon-svg: var(--svg-folder-closed);
 }
 
+[data-icon='plus-box'] {
+  --vuu-icon-svg: var(--svg-plus-box);
+}
+[data-icon='minus-box'] {
+  --vuu-icon-svg: var(--svg-minus-box);
+}
 [data-icon='settings'] {
   --vuu-icon-svg: var(--svg-settings);
 }
