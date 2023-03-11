@@ -3,8 +3,8 @@ import {
   AccordionDetails,
   AccordionSection,
   AccordionSummary,
-  Panel
 } from "@heswell/salt-lab";
+import { Panel } from "@salt-ds/core";
 
 export const DefaultAccordion = () => {
   return (

@@ -1,6 +1,5 @@
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
-import { Panel } from "@heswell/salt-lab";
-import { Button } from "@salt-ds/core";
+import { Button, Panel } from "@salt-ds/core";
 import cx from "classnames";
 import {
   HTMLAttributes,
