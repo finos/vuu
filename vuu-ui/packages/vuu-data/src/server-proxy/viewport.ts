@@ -655,7 +655,7 @@ const toClientRow = (
     true,
     null,
     null,
-    1,
+    0,
     rowKey,
     isSelected,
   ].concat(data) as DataSourceRow;

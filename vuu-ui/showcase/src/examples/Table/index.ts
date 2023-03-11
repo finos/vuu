@@ -1,2 +1,3 @@
-export * from "./Table.examples";
-export * from "./Table-extras.examples";
+export * as Table from "./Table.examples";
+export * as JsonTable from "./JsonTable.examples";
+export * as TableExtras from "./TableExtras.examples";

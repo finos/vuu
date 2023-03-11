@@ -6,6 +6,7 @@ import { buildContextMenuDescriptors } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
 import { RowBasedTable } from "./RowBasedTable";
 import { useDataTable } from "./useDataTable";
+import cx from "classnames";
 
 import "./DataTable.css";
 
@@ -13,7 +14,7 @@ const classBase = "vuuDataTable";
 
 export const DataTable = ({
   allowConfigEditing: showSettings = false,
-  className,
+  className: classNameProp,
   config,
   dataSource,
   headerHeight = 25,
@@ -30,6 +31,7 @@ export const DataTable = ({
   style: styleProp,
   tableLayout: tableLayoutProp = "row",
   width,
+  zebraStripes = false,
   ...props
 }: TableProps) => {
   const id = useIdMemo(idProp);
@@ -86,6 +88,10 @@ export const DataTable = ({
 
   const Table = tableLayout === "column" ? ColumnBasedTable : RowBasedTable;
 
+  const className = cx(classBase, classNameProp, {
+    [`${classBase}-zebra`]: zebraStripes,
+  });
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleContextMenuAction}
@@ -93,7 +99,7 @@ export const DataTable = ({
     >
       <div
         {...containerProps}
-        className={classBase}
+        className={className}
         id={id}
         ref={containerRef}
         style={style}

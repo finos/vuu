@@ -1,7 +1,7 @@
 .vuuTable-groupHeaderCell {
   --cell-align: 'flex-start';
   text-align: left;
-    background: var(--table-background);
+    background: var(--dataTable-background);
     border-right: 1px solid var(--salt-separable-tertiary-borderColor);
     border-bottom: 2px solid var(--salt-separable-tertiary-borderColor);
     color: var(--salt-text-secondary-foreground);

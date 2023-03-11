@@ -67,8 +67,13 @@ export interface ColumnActionInit {
 }
 
 export interface ColumnActionHide {
-  type: "hideColumn";
-  column: KeyedColumnDescriptor;
+  type: "hideColumns";
+  columns: KeyedColumnDescriptor[];
+}
+
+export interface ColumnActionShow {
+  type: "showColumns";
+  columns: KeyedColumnDescriptor[];
 }
 export interface ColumnActionMove {
   type: "moveColumn";
@@ -126,6 +131,7 @@ export type GridModelAction =
   | ColumnActionPin
   | ColumnActionResize
   | ColumnActionSetTypes
+  | ColumnActionShow
   | ColumnActionUpdate
   | ColumnActionUpdateProp
   | ColumnActionTableConfig;
@@ -144,8 +150,10 @@ const columnReducer: GridModelReducer = (state, action) => {
       return resizeColumn(state, action);
     case "setTypes":
       return setTypes(state, action);
-    case "hideColumn":
-      return hideColumn(state, action);
+    case "hideColumns":
+      return hideColumns(state, action);
+    case "showColumns":
+      return showColumns(state, action);
     case "pinColumn":
       return pinColumn(state, action);
     case "updateColumnProp":
@@ -259,12 +267,39 @@ function moveColumn(
   return state;
 }
 
-function hideColumn(state: GridModel, { column }: ColumnActionHide) {
-  return updateColumnProp(state, {
-    type: "updateColumnProp",
-    column,
-    hidden: true,
-  });
+function hideColumns(state: GridModel, { columns }: ColumnActionHide) {
+  if (columns.some((col) => col.hidden !== true)) {
+    return columns.reduce<GridModel>((s, c) => {
+      if (c.hidden !== true) {
+        return updateColumnProp(s, {
+          type: "updateColumnProp",
+          column: c,
+          hidden: true,
+        });
+      } else {
+        return s;
+      }
+    }, state);
+  } else {
+    return state;
+  }
+}
+function showColumns(state: GridModel, { columns }: ColumnActionShow) {
+  if (columns.some((col) => col.hidden)) {
+    return columns.reduce<GridModel>((s, c) => {
+      if (c.hidden) {
+        return updateColumnProp(s, {
+          type: "updateColumnProp",
+          column: c,
+          hidden: false,
+        });
+      } else {
+        return s;
+      }
+    }, state);
+  } else {
+    return state;
+  }
 }
 
 function resizeColumn(

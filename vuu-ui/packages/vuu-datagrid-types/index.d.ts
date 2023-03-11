@@ -1,12 +1,11 @@
 import { ValueFormatter } from "@finos/vuu-datatable";
-import { TableCellProps } from "@finos/vuu-datatable/src/TableCell";
 import { Filter } from "@finos/vuu-filter-types";
 import {
   VuuAggType,
   VuuColumnDataType,
   VuuSortType,
 } from "@finos/vuu-protocol-types";
-import { FunctionComponent } from "react";
+import { FunctionComponent, HTMLAttributes } from "react";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
@@ -17,6 +16,13 @@ export type SelectionChangeHandler = (selection: Selection) => void;
 
 export type TableHeading = { label: string; span: number };
 export type TableHeadings = TableHeading[][];
+
+export interface TableCellProps
+  extends Omit<HTMLAttributes<HTMLTableCellElement>, "onClick"> {
+  column: KeyedColumnDescriptor;
+  onClick?: (column: KeyedColumnDescriptor) => void;
+  row: DataSourceRow;
+}
 
 export declare type GridConfig = {
   columns: ColumnDescriptor[];
@@ -31,7 +37,7 @@ export declare type TypeFormatting = {
   zeroPad?: boolean;
 };
 
-export declare type ColumnTypeSimple = "string" | "number" | "boolean";
+export declare type ColumnTypeSimple = "string" | "number" | "boolean" | "json";
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
   name: ColumnTypeSimple;
