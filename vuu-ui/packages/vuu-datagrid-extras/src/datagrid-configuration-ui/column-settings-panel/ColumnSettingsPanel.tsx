@@ -4,12 +4,11 @@ import {
   Checkbox,
   FormField,
   Input,
-  Panel,
   RadioButton,
   RadioButtonGroup,
   StepperInput,
 } from "@heswell/salt-lab";
-import { Text } from "@salt-ds/core";
+import { Panel, Text } from "@salt-ds/core";
 import cx from "classnames";
 import {
   ChangeEvent,
@@ -20,8 +19,8 @@ import {
 } from "react";
 import { ColumnTypePanel } from "../column-type-panel";
 
-import "./ColumnSettingsPanel.css";
 import { ColumnAction } from "../settings-panel/useGridSettings";
+import "./ColumnSettingsPanel.css";
 
 const classBase = "vuuColumnSettingsPanel";
 
