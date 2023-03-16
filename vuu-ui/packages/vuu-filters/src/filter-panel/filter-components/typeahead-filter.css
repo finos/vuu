@@ -1,13 +1,12 @@
 .dropdown-container {
-  text-align: left;
   border: 1px solid #ccc;
-  width: 515px;
   position: absolute;
   top: 50%;
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
   z-index: 999;
   background-color: #fff;
+  width: calc(100% - 180px);
 }
 
 .dropdown-input {
@@ -24,7 +23,6 @@
   width: 100%;
   border: 1px solid #ccc;
   overflow: auto;
-  max-height: 500px;
   background-color: #fff;
   z-index: 999;
 }
