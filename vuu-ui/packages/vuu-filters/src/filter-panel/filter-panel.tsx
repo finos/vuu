@@ -2,7 +2,6 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
 import {
   Dropdown,
-  Panel,
   SelectionChangeHandler,
   ToolbarField,
 } from "@heswell/salt-lab";
@@ -71,7 +70,7 @@ export const FilterPanel = (props: {
   };
 
   return (
-    <Panel id="filter-panel" variant="secondary">
+    <fieldset id="filter-panel">
       <div className="inline-block">
         <ToolbarField
           className="column-field"
@@ -104,7 +103,7 @@ export const FilterPanel = (props: {
           </div>
         ) : null}
       </div>
-    </Panel>
+    </fieldset>
   );
 };
 

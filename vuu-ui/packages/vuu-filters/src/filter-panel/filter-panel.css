@@ -2,25 +2,13 @@
   width: 100px;
 }
 
-.column-field {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
-  z-index: 999;
-}
-
 #filter-panel {
-  display: table;
   position: relative;
-  overflow: "visible";
-  text-align: center;
   border: 1px solid #ccc;
   height: 50px;
-  padding: 1px;
   z-index: 999;
   width: 700px;
+  background-color: #eee;
 }
 
 .inline-block {
@@ -28,8 +16,7 @@
 }
 
 #filter-component {
-  width: 500px;
-  margin-left: 40px;
+  padding: 5px;
 }
 
 .clear-button {
