@@ -45,7 +45,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       joinFields = Seq()
     )
 
-    val joinProvider = JoinTableProviderImpl()// EsperJoinTableProviderImpl()
+    val joinProvider = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -161,7 +161,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       joinFields = Seq()
     )
 
-    val joinProvider = JoinTableProviderImpl()// EsperJoinTableProviderImpl()
+    val joinProvider = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 

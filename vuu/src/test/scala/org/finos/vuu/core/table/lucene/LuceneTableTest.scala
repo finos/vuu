@@ -46,7 +46,7 @@ class LuceneTableTest extends AnyFeatureSpec with Matchers with BeforeAndAfterAl
       implicit val lifeCycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl
 
-      val joinTableProvider = JoinTableProviderImpl()//EsperJoinTableProviderImpl()
+      val joinTableProvider = JoinTableProviderImpl()
 
       val tableDef = new LuceneTableDef("executions", "executionId",
         Columns.fromNames("executionId:String", "ric:String", "quantity:Int", "price:Double", "lastExchange:String"),

@@ -364,12 +364,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   def sendToJoinSink(rowData: RowData): Unit = {
-
-    //only send to Esper when esper cares
     if (joinProvider.hasJoins(this.tableDef.name)) {
-
       val event = toEvent(rowData)
-
       joinProvider.sendEvent(this.tableDef.name, event)
     }
   }
@@ -519,12 +515,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   def sendDeleteToJoinSink(rowKey: String, rowData: RowData): Unit = {
-
-    //only send to Esper when esper cares
     if (joinProvider.hasJoins(this.tableDef.name)) {
-
       val event = toDeleteEvent(rowKey, rowData)
-
       joinProvider.sendEvent(this.tableDef.name, event)
     }
   }
