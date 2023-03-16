@@ -226,7 +226,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   override def toString: String = s"SimpleDataTable($name, rows=${this.primaryKeys.length})"
 
-  private val eventIntoEsper = metrics.counter(plusName("JoinTableProviderImpl.eventIntoEsper.count"))
+  private val eventIntoJoiner = metrics.counter(plusName("JoinTableProviderImpl.eventIntoJoiner.count"))
 
   private val onUpdateMeter = metrics.meter(plusName("processUpdates.Meter"))
 
@@ -399,27 +399,17 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
   }
 
   def sendToJoinSink(rowKey: String, rowData: RowData): Unit = {
-
-    eventIntoEsper.inc()
-
-    //only send to Esper when esper cares
+    eventIntoJoiner.inc()
     if (joinProvider.hasJoins(this.tableDef.name)) {
-
       val event = toEvent(rowKey, rowData)
-
       joinProvider.sendEvent(this.tableDef.name, event)
     }
   }
 
   def sendDeleteToJoinSink(rowKey: String, rowData: RowData): Unit = {
-
-    eventIntoEsper.inc()
-
-    //only send to Esper when esper cares
+    eventIntoJoiner.inc()
     if (joinProvider.hasJoins(this.tableDef.name)) {
-
       val event = toDeleteEvent(rowKey, rowData)
-
       joinProvider.sendEvent(this.tableDef.name, event)
     }
   }

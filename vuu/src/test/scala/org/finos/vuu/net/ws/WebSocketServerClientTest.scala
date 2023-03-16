@@ -31,7 +31,7 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
       val sessionContainer = new ClientSessionContainerImpl()
 
-      val joinProvider = JoinTableProviderImpl()//EsperJoinTableProviderImpl()
+      val joinProvider = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 

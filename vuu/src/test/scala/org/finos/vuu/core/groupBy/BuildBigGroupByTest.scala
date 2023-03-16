@@ -25,7 +25,7 @@ class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLoggin
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
-      val joinProvider   = JoinTableProviderImpl()// new EsperJoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 

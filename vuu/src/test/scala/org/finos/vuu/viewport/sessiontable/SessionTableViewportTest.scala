@@ -153,7 +153,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
       columns = Columns.fromNames("clientOrderId:String", "orderId:String", "ric:String", "lastModifiedTime:Long", "quantity:Int", "price:Long", "priceType:String", "currency:String", "exchange:String")
     )
 
-    val joinProvider = JoinTableProviderImpl() // new EsperJoinTableProviderImpl()
+    val joinProvider = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 

@@ -120,7 +120,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
 
     logger.debug("[JoinTableProvider] Submitting joint table event:" + jtu)
 
-    //get the processing off the esper thread
+    //get the processing off the join thread
     outboundQueue.offer(jtu)
   }
 

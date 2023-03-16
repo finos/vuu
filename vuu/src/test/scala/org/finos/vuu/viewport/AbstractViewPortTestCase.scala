@@ -55,7 +55,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     joinFields = Seq()
     )
 
-    val joinProvider   = JoinTableProviderImpl()// new EsperJoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -116,7 +116,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
       joinFields = Seq()
     )
 
-    val joinProvider   = JoinTableProviderImpl()// new EsperJoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
