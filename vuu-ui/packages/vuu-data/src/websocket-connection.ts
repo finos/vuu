@@ -2,7 +2,7 @@ import {
   ServerToClientMessage,
   ClientToServerMessage,
 } from "@finos/vuu-protocol-types";
-import { logger } from "@finos/vuu-utils";
+import { ConsoleLogger, logger } from "@finos/vuu-utils";
 import { Connection } from "./connectionTypes";
 
 import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
@@ -15,10 +15,12 @@ const isWebsocketUrl = (url: string) =>
   url.startsWith(WS + "://") || url.startsWith(WS + "s://");
 
 const loggingLevel = () => {
-  console.log(loggingSettings);
   return loggingSettings.loggingLevel;
 }
-loggingLevel()
+loggingLevel();
+
+// const loggerTest = new ConsoleLogger({ buildEnv: process.env.NODE_ENV, level: loggingLevel() });
+// console.log(loggerTest.debugEnabled);
 
 const connectionAttempts: {
   [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
