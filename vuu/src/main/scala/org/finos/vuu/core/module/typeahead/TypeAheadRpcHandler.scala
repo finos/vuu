@@ -39,7 +39,7 @@ class TypeAheadRpcHandlerImpl(val tableContainer: TableContainer) extends RpcHan
       case dataTable: DataTable =>
         dataTable.columnForName(column) match {
           case c: Column =>
-            dataTable.primaryKeys.foldLeft(Set[String]())(addUnique(dataTable, c, _, _)).filter(_.startsWith(starts)).toArray.sorted.take(10)
+            dataTable.primaryKeys.foldLeft(Set[String]())(addUnique(dataTable, c, _, _)).filter(_.toLowerCase().startsWith(starts.toLowerCase())).toArray.sorted.take(10)
           case null =>
             logger.error(s"Column ${column} not found in table ${tableName}")
             Array()

@@ -1,0 +1,11 @@
+.range-filter-container {
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.range-input {
+  height: 30px;
+  border: 1px solid #ccc;
+}
