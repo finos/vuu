@@ -74,14 +74,16 @@ class AuthNRestService(val authenticator: Authenticator, val tokenValidator: Log
       case Success(json) =>
         val jsonUser = json.getString("username")
         val jsonPassword = json.getString("password")
-        logger.info(s"Got username ${jsonUser} and password ${jsonPassword} from JSON")
+        logger.info(s"Got credentials for ${jsonUser} from JSON")
+        logger.debug(s"Got username ${jsonUser} and password ${jsonPassword} from JSON")
         (jsonUser, jsonPassword)
 
       case Failure(exception) =>
         val fmrBody     = ctx.getBodyAsString()
         val fmrUser     = ctx.getBodyAsString.split("&").find(_.contains("user")).get.replace("user=", "")
         val fmrPassword = ctx.getBodyAsString.split("&").find(_.contains("password")).get.replace("password=", "")
-        logger.info(s"Got username ${fmrUser} and password ${fmrPassword} from html form")
+        logger.info(s"Got credentials for ${fmrUser} from html form")
+        logger.debug(s"Got username ${fmrUser} and password ${fmrPassword} from html form")
         (fmrUser, fmrPassword)
     }
 
