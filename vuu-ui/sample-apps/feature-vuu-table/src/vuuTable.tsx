@@ -90,10 +90,6 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
     "table-config": tableConfigFromState,
   } = useMemo(() => (load?.() ?? NO_CONFIG) as BlotterConfig, [load]);
 
-  console.log({
-    dataSourceConfigFromState,
-  });
-
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
   const [filterState, setFilterState] = useState<FilterState>({
     filter: undefined,

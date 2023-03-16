@@ -631,7 +631,7 @@ export class Viewport {
       this.batchMode = true;
     }
     if (!this.isTree) {
-      // should we clear the dataWIndow ?
+      this.dataWindow?.clear();
     }
     return this.createRequest({ groupBy });
   }
@@ -695,18 +695,25 @@ export class Viewport {
         // is it safe to bomb out here ? ie assume all rows in set will be same
         continue;
       } else {
-        if (row.updateType === "SIZE") {
-          if (this.dataWindow?.rowCount !== row.vpSize) {
-            this.dataWindow?.setRowCount(row.vpSize);
-          }
-          // We always forward a size change to the UI, even if the size has not actually changed.
-          // The UI will not re-render, but sometimes this is the only confirmation we have that
-          // a column has been removed from a groupBy clause.
+        // We always forward a size change to the UI, even if the size has not actually changed.
+        // The UI will not re-render, but sometimes this is the only confirmation we have that
+        // a column has been removed from a groupBy clause (which doesn't cause a size change if
+        // none of the top level group items are expanded)
+        // We can not always depend on receiving a SIZE record, sometimes the first indication we
+        // have that size has changes id the vpSize on data records.
+        if (
+          row.updateType === "SIZE" ||
+          this.dataWindow?.rowCount !== row.vpSize
+        ) {
+          this.dataWindow?.setRowCount(row.vpSize);
           this.rowCountChanged = true;
-        } else if (this.dataWindow?.setAtIndex(row)) {
-          this.hasUpdates = true;
-          if (!this.batchMode) {
-            this.pendingUpdates.push(row);
+        }
+        if (row.updateType === "U") {
+          if (this.dataWindow?.setAtIndex(row)) {
+            this.hasUpdates = true;
+            if (!this.batchMode) {
+              this.pendingUpdates.push(row);
+            }
           }
         }
       }

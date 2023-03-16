@@ -986,9 +986,6 @@ export class ServerProxy {
         const [rows, mode] = viewport.getClientRows();
         const size = viewport.getNewRowCount();
         if (size !== undefined || (rows && rows.length > 0)) {
-          if (process.env.NODE_ENV === "development") {
-            console.log(`send message to client ${mode}`);
-          }
           this.postMessageToClient({
             clientViewportId: viewport.clientViewportId,
             mode,

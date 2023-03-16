@@ -67,64 +67,73 @@ export const createTableRows = (
   return results;
 };
 
-export const createTableGroupRows =
-  (): ServerToClientMessage<ServerToClientTableRows> => {
-    // prettier-ignore
-    return {
+export const createTableGroupRows = (
+  includeSizeRow = true
+): ServerToClientMessage<ServerToClientTableRows> => {
+  // prettier-ignore
+  const message: ServerToClientMessage<ServerToClientTableRows> =  {
     ...COMMON_ATTRS,
     requestId: '1',
     body: {
       ...COMMON_TABLE_ROW_ATTRS,
-      rows: [
-        {
-          ...COMMON_ROW_ATTRS,
-          viewPortId: 'server-vp-1',
-          vpSize: 4,
-          rowIndex: -1,
-          rowKey: 'SIZE',
-          updateType: 'SIZE',
-          data: []
-        },
-        {
-          ...COMMON_ROW_ATTRS,
-          viewPortId: 'server-vp-1',
-          vpSize: 4,
-          rowIndex: 0,
-          rowKey: '$root|USD',
-          updateType: 'U',
-          data: [1, false, '$root|USD', false, 'USD', 43714, '', 'USD', '', '', '', '', '']
-        },
-        {
-          ...COMMON_ROW_ATTRS,
-          viewPortId: 'server-vp-1',
-          vpSize: 4,
-          rowIndex: 1,
-          rowKey: '$root|EUR',
-          updateType: 'U',
-          data: [1, false, '$root|EUR', false, 'EUR', 43941, '', 'EUR', '', '', '', '', '']
-        },
-        {
-          ...COMMON_ROW_ATTRS,
-          viewPortId: 'server-vp-1',
-          vpSize: 4,
-          rowIndex: 2,
-          rowKey: '$root|GBX',
-          updateType: 'U',
-          data: [1, false, '$root|GBX', false, 'GBX', 43997, '', 'GBX', '', '', '', '', '']
-        },
-        {
-          ...COMMON_ROW_ATTRS,
-          viewPortId: 'server-vp-1',
-          vpSize: 4,
-          rowIndex: 3,
-          rowKey: '$root|CAD',
-          updateType: 'U',
-          data: [1, false, '$root|CAD', false, 'CAD', 44108, '', 'CAD', '', '', '', '', '']
-        }
-      ]
+      rows: []
     }
   };
-  };
+
+  if (includeSizeRow) {
+    message.body.rows.push({
+      ...COMMON_ROW_ATTRS,
+      viewPortId: "server-vp-1",
+      vpSize: 4,
+      rowIndex: -1,
+      rowKey: "SIZE",
+      updateType: "SIZE",
+      data: [],
+    });
+  }
+
+  // prettier-ignore
+  message.body.rows.push(        
+  {
+    ...COMMON_ROW_ATTRS,
+    viewPortId: 'server-vp-1',
+    vpSize: 4,
+    rowIndex: 0,
+    rowKey: '$root|USD',
+    updateType: 'U',
+    data: [1, false, '$root|USD', false, 'USD', 43714, '', 'USD', '', '', '', '', '']
+  },
+  {
+    ...COMMON_ROW_ATTRS,
+    viewPortId: 'server-vp-1',
+    vpSize: 4,
+    rowIndex: 1,
+    rowKey: '$root|EUR',
+    updateType: 'U',
+    data: [1, false, '$root|EUR', false, 'EUR', 43941, '', 'EUR', '', '', '', '', '']
+  },
+  {
+    ...COMMON_ROW_ATTRS,
+    viewPortId: 'server-vp-1',
+    vpSize: 4,
+    rowIndex: 2,
+    rowKey: '$root|GBX',
+    updateType: 'U',
+    data: [1, false, '$root|GBX', false, 'GBX', 43997, '', 'GBX', '', '', '', '', '']
+  },
+  {
+    ...COMMON_ROW_ATTRS,
+    viewPortId: 'server-vp-1',
+    vpSize: 4,
+    rowIndex: 3,
+    rowKey: '$root|CAD',
+    updateType: 'U',
+    data: [1, false, '$root|CAD', false, 'CAD', 44108, '', 'CAD', '', '', '', '', '']
+  }
+);
+
+  return message;
+};
 
 export const updateTableRow = (
   viewPortId,

@@ -1,6 +1,6 @@
 import "./global-mocks";
 import { ServerToClientCreateViewPortSuccess } from "@finos/vuu-protocol-types";
-import { describe, expect, vi, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { ServerProxySubscribeMessage } from "../src";
 import { Viewport } from "../src/server-proxy/viewport";
 import { createSubscription, createTableRows, sizeRow } from "./test-utils";
@@ -287,6 +287,26 @@ describe("Viewport", () => {
       expect(vp["rangeRequestAlreadyPending"]({ from: 70, to: 80 })).toEqual(
         false
       );
+    });
+  });
+
+  describe("groupBy", () => {
+    it("clears dataWindow when a groupBy request is received on a non grouped viewport", () => {
+      const vp = new Viewport({
+        ...constructor_options,
+        bufferSize: 10,
+        range: { from: 0, to: 10 },
+      });
+      const [, serverSubscription] = createSubscription();
+
+      vp.handleSubscribed(serverSubscription.body);
+
+      vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]);
+
+      vp.groupByRequest("1", ["col-1"]);
+
+      expect(vp["dataWindow"]?.rowCount).toEqual(0);
+      expect(vp["dataWindow"]?.["internalData"].length).toEqual(0);
     });
   });
 });

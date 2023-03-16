@@ -120,7 +120,7 @@ describe("ServerProxy", () => {
       );
     });
 
-    it("only sends data to client once all data for client range is available", () => {
+    it("sends data to client once all data for client range is available", () => {
       const postMessageToClient = vi.fn();
       const serverProxy =
         createServerProxyAndSubscribeToViewport(postMessageToClient);
@@ -1725,7 +1725,7 @@ describe("ServerProxy", () => {
       expect(serverProxy["viewports"].get("server-vp-1")?.isTree).toBe(true);
     });
 
-    it("on changing group, sends grouped records as batch", () => {
+    it("on changing group, sends grouped records as batch, with SIZE record", () => {
       const callback = vi.fn();
       const serverProxy = new ServerProxy(mockConnection, callback);
       serverProxy["sessionId"] = "dsdsd";
@@ -1805,6 +1805,207 @@ describe("ServerProxy", () => {
           [3,3,false,false,1,44108,"$root|CAD",0,"","CAD","","","","",""],
         ],
         size: 4,
+      });
+    });
+
+    it("on changing group, sends grouped records as batch, without SIZE record", () => {
+      const callback = vi.fn();
+      const serverProxy = new ServerProxy(mockConnection, callback);
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
+
+      serverProxy.subscribe(clientSubscription1);
+      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 10)],
+        },
+      });
+
+      TEST_setRequestId(1);
+      callback.mockClear();
+      mockConnection.send.mockClear();
+
+      serverProxy.handleMessageFromClient({
+        viewport: "client-vp-1",
+        type: "groupBy",
+        groupBy: ["col-4"],
+      });
+
+      expect(callback).toHaveBeenCalledTimes(0);
+      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+      expect(mockConnection.send).toHaveBeenCalledWith({
+        body: {
+          aggregations: [],
+          viewPortId: "server-vp-1",
+          type: "CHANGE_VP",
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: ["col-4"],
+        },
+        module: "CORE",
+        user: "user",
+        requestId: "1",
+        sessionId: "dsdsd",
+        token: "test",
+      });
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        requestId: "1",
+        body: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: ["col-4"],
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
+        },
+      });
+
+      callback.mockClear();
+      serverProxy.handleMessageFromServer(createTableGroupRows(false));
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(
+        serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
+          "internalData"
+        ]
+      ).toHaveLength(4);
+      // prettier-ignore
+      expect(callback).toHaveBeenCalledWith({
+        mode: "batch",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [0,0,false,false,1,43714,"$root|USD",0,"","USD","","","","",""],
+          [1,1,false,false,1,43941,"$root|EUR",0,"","EUR","","","","",""],
+          [2,2,false,false,1,43997,"$root|GBX",0,"","GBX","","","","",""],
+          [3,3,false,false,1,44108,"$root|CAD",0,"","CAD","","","","",""],
+        ],
+        size: 4,
+      });
+    });
+
+    it("on changing group, it may receive group records in multiple batches", () => {
+      const callback = vi.fn();
+      const serverProxy = new ServerProxy(mockConnection, callback);
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
+
+      serverProxy.subscribe(clientSubscription1);
+      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 10)],
+        },
+      });
+
+      TEST_setRequestId(1);
+      callback.mockClear();
+      mockConnection.send.mockClear();
+
+      serverProxy.handleMessageFromClient({
+        viewport: "client-vp-1",
+        type: "groupBy",
+        groupBy: ["col-4"],
+      });
+
+      expect(callback).toHaveBeenCalledTimes(0);
+      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+      expect(mockConnection.send).toHaveBeenCalledWith({
+        body: {
+          aggregations: [],
+          viewPortId: "server-vp-1",
+          type: "CHANGE_VP",
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: ["col-4"],
+        },
+        module: "CORE",
+        user: "user",
+        requestId: "1",
+        sessionId: "dsdsd",
+        token: "test",
+      });
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        requestId: "1",
+        body: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: ["col-4"],
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
+        },
+      });
+
+      callback.mockClear();
+
+      const groupRows = createTableGroupRows(false);
+      const group1 = {
+        ...groupRows,
+        requestId: "2",
+
+        body: {
+          ...groupRows.body,
+          timeStamp: 1,
+          rows: groupRows.body.rows.slice(0, 2),
+        },
+      };
+      const group2 = {
+        ...groupRows,
+        requestId: "3",
+        body: {
+          ...groupRows.body,
+          timeStamp: 2,
+          rows: groupRows.body.rows.slice(2),
+        },
+      };
+
+      // Because not all the rows are available when we receive the first batch,
+      // we will see a size-only message after the first batch, followed by the
+      // actual grouped rows when we receive the second and final batch.
+      serverProxy.handleMessageFromServer(group1);
+      serverProxy.handleMessageFromServer(group2);
+
+      expect(callback).toHaveBeenCalledTimes(2);
+      expect(
+        serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
+          "internalData"
+        ]
+      ).toHaveLength(4);
+      // prettier-ignore
+
+      expect(callback).toHaveBeenNthCalledWith(1, {
+        mode: "size-only",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        size: 4,
+      })
+
+      // prettier-ignore
+      expect(callback).toHaveBeenNthCalledWith(2, {
+        mode: "batch",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [0,0,false,false,1,43714,"$root|USD",0,"","USD","","","","",""],
+          [1,1,false,false,1,43941,"$root|EUR",0,"","EUR","","","","",""],
+          [2,2,false,false,1,43997,"$root|GBX",0,"","GBX","","","","",""],
+          [3,3,false,false,1,44108,"$root|CAD",0,"","CAD","","","","",""],
+        ],
       });
     });
 
@@ -2001,7 +2202,7 @@ describe("ServerProxy", () => {
           rows: [
             ...createTableRows("server-vp-1", 0,1),
             sizeRow("server-vp-1", 293),
-            ...createTableRows("server-vp-1", 1,10),
+            ...createTableRows("server-vp-1", 1,10, 293),
           ],
         },
       });
@@ -2181,7 +2382,7 @@ describe("ServerProxy", () => {
               [8,8,true,null,null,0,"key-08",0,"key-08","name 08",1008,true],
               [9,9,true,null,null,0,"key-09",0,"key-09","name 09",1009,true]
           ],
-            size: 20,
+            size: 100,
             type: 'viewport-update',
             clientViewportId: 'client-vp-2'
           }

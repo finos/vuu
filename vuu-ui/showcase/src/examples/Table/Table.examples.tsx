@@ -1,4 +1,4 @@
-import { ArrayDataSource, DataSource, DataSourceConfig } from "@finos/vuu-data";
+import { ArrayDataSource, DataSourceConfig } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   DatagridSettingsPanel,
@@ -43,12 +43,14 @@ let displaySequence = 1;
 const NO_CONFIG = {} as const;
 const useTableConfig = ({
   columnConfig = NO_CONFIG,
+  columnCount = 10,
   count = 1000,
   leftPinnedColumns = [],
   rightPinnedColumns = [],
   renderBufferSize = 0,
 }: {
   columnConfig?: { [key: string]: Partial<ColumnDescriptor> };
+  columnCount?: number;
   count?: number;
   leftPinnedColumns?: number[];
   rightPinnedColumns?: number[];
@@ -58,26 +60,21 @@ const useTableConfig = ({
     const data: VuuRowDataItemType[][] = [];
     for (let i = 0; i < count; i++) {
       // prettier-ignore
-      data.push([
-    `row ${i + 1}`, `#${i+1}  value 1`, "value 2", "value 3", "value 4", "value 5", "value 6", "value 7",  "value 8", "value 9", "value 10" 
-  ] );
+      data.push(
+    [`row ${i + 1}`].concat(Array(columnCount).fill(true).map((v, i) => `value ${i + 1}`)) 
+    );
     }
+
     const columns: ColumnDescriptor[] = [
       { name: "row number", width: 150 },
-      { name: "column 1", width: 120 },
-      { name: "column 2", width: 120 },
-      { name: "column 3", width: 120 },
-      { name: "column 4", width: 120 },
-      { name: "column 5", width: 120 },
-      { name: "column 6", width: 120 },
-      { name: "column 7", width: 120 },
-      { name: "column 8", width: 120 },
-      { name: "column 9", width: 120 },
-      { name: "column 10", width: 120 },
-    ].map((col) => ({
-      ...col,
-      ...columnConfig[col.name],
-    }));
+    ].concat(
+      Array(columnCount)
+        .fill(true)
+        .map((base, i) => {
+          const name = `column ${i + 1}`;
+          return { name, width: 100, ...columnConfig[name] };
+        })
+    );
 
     leftPinnedColumns.forEach((index) => (columns[index].pin = "left"));
     rightPinnedColumns.forEach((index) => (columns[index].pin = "right"));
@@ -90,6 +87,7 @@ const useTableConfig = ({
     return { config: { columns }, dataSource, renderBufferSize };
   }, [
     columnConfig,
+    columnCount,
     count,
     leftPinnedColumns,
     renderBufferSize,
@@ -102,7 +100,7 @@ export const DefaultTable = () => {
   return (
     <>
       {/* <DragVisualizer orientation="horizontal"> */}
-      <DataTable {...config} height={700} renderBufferSize={20} width={700} />
+      <DataTable {...config} height={700} renderBufferSize={50} width={700} />
       {/* </DragVisualizer> */}
     </>
   );
@@ -138,7 +136,16 @@ export const DefaultTable10Rows = () => {
   );
 };
 
-DefaultTable10Rows.displaySequence = displaySequence++;
+export const DefaultTable200C0lumns = () => {
+  const config = useTableConfig({ columnCount: 200 });
+  return (
+    <>
+      <DataTable {...config} height={600} renderBufferSize={50} width={700} />
+    </>
+  );
+};
+
+DefaultTable200C0lumns.displaySequence = displaySequence++;
 
 export const DefaultTableMultiLevelHeadings = () => {
   const config = useTableConfig({

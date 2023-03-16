@@ -219,7 +219,6 @@ export const useDataTable = ({
         if (isJson) {
           const idx = columns.indexOf(column);
           const rows = (dataSource as JsonDataSource).getRowsAtDepth(idx + 1);
-          console.table(rows);
           if (!rows.some((row) => row[IS_EXPANDED] || row[IS_LEAF])) {
             dispatchColumnAction({
               type: "hideColumns",

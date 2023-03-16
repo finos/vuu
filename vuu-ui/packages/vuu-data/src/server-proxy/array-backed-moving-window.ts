@@ -184,7 +184,7 @@ export class ArrayBackedMovingWindow {
     const { from, to } = this.#range;
     const { from: clientFrom, to: clientTo } = this.clientRange;
     const startOffset = Math.max(0, clientFrom - from);
-    // TEMP hack, whu wouldn"t we have rowCount ?
+    // TEMP hack, why wouldn't we have rowCount ?
     const endOffset = Math.min(
       to - from,
       to,
@@ -193,6 +193,12 @@ export class ArrayBackedMovingWindow {
     );
     // const endOffset = Math.min(to-from, to, hi - from, this.rowCount);
     return this.internalData.slice(startOffset, endOffset);
+  }
+
+  clear() {
+    this.internalData.length = 0;
+    this.rowsWithinRange = 0;
+    this.rowCount = 0;
   }
 
   // used only for debugging

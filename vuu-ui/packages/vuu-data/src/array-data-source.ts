@@ -23,6 +23,7 @@ import {
   SubscribeCallback,
   SubscribeProps,
   DataSourceRow,
+  DataSourceEvents,
 } from "./data-source";
 
 export interface ArrayDataSourceConstructorProps
@@ -69,7 +70,10 @@ const toClientRow = (row: DataSourceRow, keys: KeySet) => {
   return clientRow;
 };
 
-export class ArrayDataSource extends EventEmitter implements DataSource {
+export class ArrayDataSource
+  extends EventEmitter<DataSourceEvents>
+  implements DataSource
+{
   private columnDescriptors: ColumnDescriptor[];
   private status = "initialising";
   private disabled = false;
