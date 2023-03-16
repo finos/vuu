@@ -6,6 +6,10 @@ import org.finos.vuu.core.table.RowData
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
 trait FilterClause {
+  def filterAll(rows: RowSource, rowKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String]
+}
+
+trait RowFilterClause extends FilterClause {
   def filter(row: RowData): Boolean
   def filterAll(rows: RowSource, rowKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = ImmutableArray.from(
     rowKeys
@@ -20,18 +24,12 @@ case class NotClause(decorated: FilterClause) extends FilterClause {
     val notMatching = rowKeys.filter(!matching.contains(_))
     ImmutableArray.from(notMatching.toArray)
   }
-
-  override def filter(row: RowData): Boolean =
-    !decorated.filter(row)
 }
 
 case class OrClause(subclauses: List[FilterClause]) extends FilterClause {
   override def filterAll(rows: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = ImmutableArray.from(
     subclauses.flatMap(_.filterAll(rows, primaryKeys, vpColumns)).distinct.toArray
   )
-
-  override def filter(row: RowData): Boolean =
-    subclauses.exists(_.filter(row))
 }
 
 case class AndClause(subclauses: List[FilterClause]) extends FilterClause {
@@ -39,12 +37,9 @@ case class AndClause(subclauses: List[FilterClause]) extends FilterClause {
     subclauses.foldLeft(primaryKeys) {
       (remainingKeys, subclause) => subclause.filterAll(source, remainingKeys, viewPortColumns)
     }
-
-  override def filter(row: RowData): Boolean =
-    subclauses.forall(_.filter(row))
 }
 
-case class StartsClause(columnName: String, prefix: String) extends FilterClause {
+case class StartsClause(columnName: String, prefix: String) extends RowFilterClause {
   override def filter(row: RowData): Boolean = {
     val datum = row.get(columnName)
     if (datum == null) return false
@@ -52,7 +47,7 @@ case class StartsClause(columnName: String, prefix: String) extends FilterClause
   }
 }
 
-case class EndsClause(columnName: String, suffix: String) extends FilterClause {
+case class EndsClause(columnName: String, suffix: String) extends RowFilterClause {
   override def filter(row: RowData): Boolean = {
     val datum = row.get(columnName)
     if (datum == null) return false
@@ -61,13 +56,6 @@ case class EndsClause(columnName: String, suffix: String) extends FilterClause {
 }
 
 case class InClause(columnName: String, values: List[String]) extends FilterClause {
-  override def filter(row: RowData): Boolean = {
-    val datum = row.get(columnName)
-    if (datum == null) return false
-
-    values.contains(datum.toString)
-  }
-
   override def filterAll(rows: RowSource, rowKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
@@ -82,13 +70,6 @@ case class InClause(columnName: String, values: List[String]) extends FilterClau
 }
 
 case class GreaterThanClause(columnName: String, value: Double) extends FilterClause {
-  override def filter(row: RowData): Boolean = {
-    val datum = row.get(columnName)
-    if (datum == null) return false
-
-    value < datum.toString.toDouble
-  }
-
   override def filterAll(rows: RowSource, rowKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
@@ -100,13 +81,6 @@ case class GreaterThanClause(columnName: String, value: Double) extends FilterCl
 }
 
 case class LessThanClause(columnName: String, value: Double) extends FilterClause {
-  override def filter(row: RowData): Boolean = {
-    val datum = row.get(columnName)
-    if (datum == null) return false
-
-    value > datum.toString.toDouble
-  }
-
   override def filterAll(rows: RowSource, rowKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
@@ -120,17 +94,6 @@ case class LessThanClause(columnName: String, value: Double) extends FilterClaus
 
 
 case class EqualsClause(columnName: String, value: String) extends FilterClause {
-  override def filter(row: RowData): Boolean = {
-    row.get(columnName) match {
-      case null       => false
-      case s: String  => s==value
-      case i: Int     => i==value.toInt
-      case f: Float   => f==value.toFloat
-      case d: Double  => d==value.toDouble
-      case b: Boolean => b==value.equalsIgnoreCase("true")
-    }
-  }
-
   override def filterAll(rows: RowSource, rowKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
