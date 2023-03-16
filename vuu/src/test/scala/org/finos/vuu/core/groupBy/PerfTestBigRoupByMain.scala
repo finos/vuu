@@ -18,7 +18,7 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
   implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
-  val joinProvider   = JoinTableProviderImpl()// new EsperJoinTableProviderImpl()
+  val joinProvider   = JoinTableProviderImpl()
 
   val tableContainer = new TableContainer(joinProvider)
 
