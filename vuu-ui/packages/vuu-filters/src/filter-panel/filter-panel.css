@@ -7,6 +7,7 @@
   border: 1px solid #ccc;
   height: 50px;
   z-index: 999;
+  width: 700px;
   background-color: #eee;
 }
 
@@ -27,4 +28,26 @@
   right: 10px;
   border: 1px solid #ccc;
   cursor: pointer;
+}
+
+.block {
+  display: block;
+}
+
+#column-selector {
+  outline: none;
+  border: none;
+  height: 28px;
+  width: 100px;
+  background-color: #eee;
+  cursor: pointer;
+}
+
+#column-selector option {
+  background-color: #fff;
+  width: 100px;
+}
+
+#column-selector option:first-child {
+  display: none;
 }

@@ -5,7 +5,7 @@ import {
   SelectionChangeHandler,
   ToolbarField,
 } from "@heswell/salt-lab";
-import { useEffect, useState } from "react";
+import { ReactEventHandler, useEffect, useState } from "react";
 import { FilterComponent } from "./filter-components/filter-selector";
 import "./filter-panel.css";
 import { IRange } from "./filter-components/range-filter";
@@ -46,9 +46,8 @@ export const FilterPanel = (props: {
     }
   };
 
-  const handleColumnSelect: SelectionChangeHandler = (event, selectedItem) => {
-    setSelectedColumnName(selectedItem);
-  };
+  const handleColumnSelect: React.ChangeEventHandler<HTMLSelectElement> = (e) =>
+    setSelectedColumnName(e.currentTarget.value);
 
   const handleClear = () => {
     setSelectedColumnName(null);
@@ -72,7 +71,20 @@ export const FilterPanel = (props: {
   return (
     <fieldset id="filter-panel">
       <div className="inline-block">
-        <ToolbarField
+        <div>
+          <label className="block">Column</label>
+          <select
+            onChange={handleColumnSelect}
+            id="column-selector"
+            className="block"
+          >
+            <option disabled selected></option>
+            {props.columns.map(({ name }, key) => (
+              <option key={key}>{name}</option>
+            ))}
+          </select>
+        </div>
+        {/* <ToolbarField
           className="column-field"
           label="Column"
           labelPlacement="top"
@@ -82,7 +94,7 @@ export const FilterPanel = (props: {
             onSelectionChange={handleColumnSelect}
             source={props.columns.map(({ name }) => name)}
           />
-        </ToolbarField>
+        </ToolbarField> */}
       </div>
       <div id="filter-component" className="inline-block">
         {selectedColumnName ? (
