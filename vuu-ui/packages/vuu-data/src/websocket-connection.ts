@@ -15,8 +15,10 @@ const isWebsocketUrl = (url: string) =>
   url.startsWith(WS + "://") || url.startsWith(WS + "s://");
 
 const loggingLevel = () => {
+  console.log(loggingSettings);
   return loggingSettings.loggingLevel;
 }
+loggingLevel()
 
 const connectionAttempts: {
   [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
@@ -55,7 +57,7 @@ async function makeConnection(
     const ws = await createWebsocket(url);
 
     if (loggingLevel() === "high") {
-      logger.log(
+      logger.info(
         "%c⚡ %cconnected",
         "font-size: 24px;color: green;font-weight: bold;",
         "color:green; font-size: 14px;"
@@ -175,7 +177,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
 
     ws.onclose = () => {
       if (loggingLevel() === "high") {
-        logger.log(
+        logger.info(
           `%c⚡ connection close`,
           "font-size: 24px;color: orange;font-weight: bold;",
           "color:orange; font-size: 14px;"
@@ -222,7 +224,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
           loggingLevel() === "high" ||
           loggingLevel() === "medium"
           ) {
-        logger.log("[Connection] close websocket");
+        logger.info("[Connection] close websocket");
       }
     };
   }

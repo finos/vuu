@@ -1,3 +1,44 @@
+// export {}
+// (function formatter() {
+// 	let bridge = null,
+// 	defaultBridge = {
+// 		getLogger: function (category) {
+// 			return {
+// 				isLevelEnabled: function (level) { return false },
+// 				log: function () {}
+// 			}
+// 		},
+// 		getImpl: function () { return this }
+// 	}
+// 	return {
+// 		getLogger: getLogger,
+// 		use: use
+// 	}
+
+// 	const getBridge = () => {
+// 		return bridge ? bridge : defaultBridge
+// 	}
+
+// 	const getLogger = (category) => {
+// 		if (!bridge) console.warn('WARN: No logging implementation has been registered for category=' + category);
+// 		return {
+// 			isErrorEnabled: isLevelEnabled.bind(null, category, 'error'),
+// 			isDebugEnabled: isLevelEnabled.bind(null, category, 'debug'),
+// 			isInfoEnabled: isLevelEnabled.bind(null, category, 'info'),
+// 			isWarnEnabled: isLevelEnabled.bind(null, category, 'warn'),
+// 			error: log.bind(null, category, 'error'),
+// 			debug: log.bind(null, category, 'debug'),
+// 			info: log.bind(null, category, 'info'),
+// 			warn: log.bind(null, category, 'warn'),
+// 		}
+// 	}
+// })
+
+
+
+
+
+
 import { getCookieValue } from "./cookie-utils";
 
 export interface LogFn {
@@ -16,72 +57,83 @@ type loggingSettings = {
 }
 
 export interface Logger {
-	log: LogFn;
 	warn: LogFn;
 	error: LogFn;
-	group: LogFn;
-	groupCollapsed: LogFn;
-	groupEnd: LogFn;
-	assert: AssertLogFn;
-	trace: LogFn;
 	debug: LogFn;
 	info: LogFn;
-	table: TableLogFn
 }
+
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export type BuildEnv = 'production' | 'development';
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const NO_OP: LogFn = () => {};
 
+// const getLogger = (category: any) => {
+// 	return {
+// 		isLevelEnabled: function (level:any) { return false},
+// 		log: function () {}
+// 	}
+// }
+
+// const isLevelEnabled = (category:unknown, level:LogLevel) => {
+// 	return getLogger(category).isLevelEnabled(level);
+// } 
+
 export class ConsoleLogger implements Logger {
-	readonly log: LogFn;
 	readonly warn: LogFn;
 	readonly error: LogFn;
-	readonly group: LogFn;
-	readonly groupCollapsed: LogFn;
-	readonly groupEnd: LogFn;
-	readonly assert: AssertLogFn;
-	readonly trace: LogFn;
 	readonly debug: LogFn;
 	readonly info: LogFn;
-	readonly table: TableLogFn;
+	readonly warnEnabled:boolean = false;
+	readonly infoEnabled: boolean = false;
+	readonly debugEnabled:boolean = false;
 
-	constructor(options?: { buildEnv?: string }) {
-		const { buildEnv } = options || {};
+	constructor(options?: { buildEnv?: string, level?:string | number }) {
+		const { buildEnv, level } = options || {};
 
 		if (buildEnv === 'production') {
-			this.log = NO_OP;
 			this.warn = NO_OP;
 			this.error = NO_OP
-			this.group = NO_OP;
-			this.groupCollapsed = NO_OP;
-			this.groupEnd = NO_OP;
-			this.assert = NO_OP;
-			this.trace = NO_OP;
-			this.debug =NO_OP;
+			this.debug = NO_OP;
 			this.info = NO_OP;
-			this.table = NO_OP;
-
 			return;
 		}
 
-		this.log = console.log.bind(console);
-		this.warn = console.warn.bind(console);
 		this.error = console.error.bind(console);
-		this.group = console.group.bind(console);
-		this.groupEnd = console.groupEnd.bind(console);
-		this.groupCollapsed = console.groupCollapsed.bind(console);
-		this.assert = console.assert.bind(console);
-		this.trace = console.trace.bind(console);
-		this.debug = console.debug.bind(console);
-		this.info = console.info.bind(console);
-		this.table = console.table.bind(console);
 
+		if (level === 'error') {
+			this.warn = NO_OP;
+			this.debug = NO_OP;
+			this.info = NO_OP;
+			return;
+		}
+
+		this.warn = console.warn.bind(console);
+
+		if (level === 'warn') {
+			this.info = NO_OP;
+			this.debug = NO_OP;
+			this.warnEnabled = true;
+			return;
+		}
+
+		this.info = console.info.bind(console);
+
+		if (level === 'info') {
+			this.infoEnabled = true;
+			this.debug = NO_OP;
+			return;
+		}
+
+		this.debug = console.debug.bind(console);
+		this.debugEnabled = true;
 	}
 }
 
 export const getLoggingConfig = () => {
 	const loggingLevel = getCookieValue("vuu-logging-level");
+	console.log(loggingLevel);
 	// return `${(loggingLevel)}\n`
 	return `const loggingSettings = { loggingLevel: "${loggingLevel}"};`;
 }
