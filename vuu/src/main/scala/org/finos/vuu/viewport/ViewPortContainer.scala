@@ -45,8 +45,8 @@ trait ViewPortContainerMBean {
 
 class ViewPortContainer(val tableContainer: TableContainer, val providerContainer: ProviderContainer)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
 
-  private val groupByhistogram = metrics.histogram("io.venuu.vuu.thread.groupby.cycleTime")
-  private val viewPorthistogram = metrics.histogram("io.venuu.vuu.thread.viewport.cycleTime")
+  private val groupByhistogram = metrics.histogram("org.finos.vuu.thread.groupby.cycleTime")
+  private val viewPorthistogram = metrics.histogram("org.finos.vuu.thread.viewport.cycleTime")
 
   val groupByHistograms = new ConcurrentHashMap[String, Histogram]()
   val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
@@ -561,7 +561,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
         logger.debug(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
 
-        groupByHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+        groupByHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("org.finos.vuu.groupBy." + s)).update(millis)
 
       case tbl =>
         logger.error(s"GROUP-BY: table ${tbl.name} has a groupBy but doesn't have a groupBySessionTable associated. Going to ignore build request.")
@@ -582,7 +582,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.setKeys(sorted)
       }
 
-      viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+      viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("org.finos.vuu.groupBy." + s)).update(millis)
     } else {
       viewPort.setKeys(ImmutableArray.empty[String])
     }
