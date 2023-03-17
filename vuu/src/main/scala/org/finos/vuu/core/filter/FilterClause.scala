@@ -55,7 +55,14 @@ case class EndsClause(columnName: String, suffix: String) extends RowFilterClaus
   }
 }
 
-case class InClause(columnName: String, values: List[String]) extends FilterClause {
+case class InClause(columnName: String, values: List[String]) extends RowFilterClause {
+  override def filter(row: RowData): Boolean = {
+    val datum = row.get(columnName)
+    if (datum == null) return false
+
+    values.contains(datum.toString)
+  }
+
   override def filterAll(rows: RowSource, rowKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
@@ -69,31 +76,59 @@ case class InClause(columnName: String, values: List[String]) extends FilterClau
   }
 }
 
-case class GreaterThanClause(columnName: String, value: Double) extends FilterClause {
+case class GreaterThanClause(columnName: String, value: Double) extends RowFilterClause {
+  override def filter(row: RowData): Boolean = {
+    val datum = row.get(columnName)
+    if (datum == null) return false
+
+    // the calling code in TreeBuilderImpl.applyFilter() returns all rows on exception
+    try { value < datum.toString.toDouble } catch { case _: NumberFormatException  => true}
+  }
+
   override def filterAll(rows: RowSource, rowKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
       case Some(ix: DoubleIndexedField) => ix.greaterThan(value)
       case Some(ix: IntIndexedField)    => ix.greaterThan(value.toInt)
       case Some(ix: LongIndexedField)   => ix.greaterThan(value.toLong)
+      case None                         => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
 
-case class LessThanClause(columnName: String, value: Double) extends FilterClause {
+case class LessThanClause(columnName: String, value: Double) extends RowFilterClause {
+  override def filter(row: RowData): Boolean = {
+    val datum = row.get(columnName)
+    if (datum == null) return false
+
+    // the calling code in TreeBuilderImpl.applyFilter() returns all rows on exception
+    try { value > datum.toString.toDouble } catch { case _: NumberFormatException  => false}
+  }
+
   override def filterAll(rows: RowSource, rowKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
       case Some(ix: DoubleIndexedField) => ix.lessThan(value)
       case Some(ix: IntIndexedField)    => ix.lessThan(value.toInt)
       case Some(ix: LongIndexedField)   => ix.lessThan(value.toInt)
-      case None => super.filterAll(rows, rowKeys, viewPortColumns)
+      case None                         => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
 
 
-case class EqualsClause(columnName: String, value: String) extends FilterClause {
+case class EqualsClause(columnName: String, value: String) extends RowFilterClause {
+  override def filter(row: RowData): Boolean = {
+    row.get(columnName) match {
+      case null => false
+      case s: String => s == value
+      case i: Int => i == value.toInt
+      case f: Float => f == value.toFloat
+      case d: Double => d == value.toDouble
+      case b: Boolean => b == value.equalsIgnoreCase("true")
+    }
+  }
+
   override def filterAll(rows: RowSource, rowKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
