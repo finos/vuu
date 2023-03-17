@@ -2,7 +2,7 @@
 
 Tables are sinks of data. At the lowest form they are wrappers around concurrent maps that offer some value add in propogating updates and deletes for through the system. 
 
-Data tables are represented by the interface io.venuu.vuu.core.table.DataTable in the source code. 
+Data tables are represented by the interface org.finos.vuu.core.table.DataTable in the source code. 
 
 ```scala
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
