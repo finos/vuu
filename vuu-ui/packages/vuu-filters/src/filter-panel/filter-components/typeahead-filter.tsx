@@ -10,9 +10,9 @@ export const TypeaheadFilter = (props: {
 }) => {
   const [tableName, columnName] = props.defaultTypeaheadParams;
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>(
-    props.existingFilters ?? []
-  );
+  const [selectedSuggestions, setSelectedSuggestions] = useState<
+    string[] | null
+  >(props.existingFilters ?? null);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [searchValue, setSearchValue] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -33,7 +33,7 @@ export const TypeaheadFilter = (props: {
       setSuggestions(response);
     });
 
-    const selected = props.existingFilters ?? [];
+    const selected = props.existingFilters ?? null;
     setSelectedSuggestions(selected);
   }, [columnName]);
 
@@ -72,7 +72,7 @@ export const TypeaheadFilter = (props: {
   }, [selectedSuggestions]);
 
   const isStartsWithFilter = () => {
-    if (selectedSuggestions[0]) {
+    if (selectedSuggestions && selectedSuggestions[0]) {
       const lastThreeCharacters = selectedSuggestions[0].substring(
         selectedSuggestions[0].length - 3,
         selectedSuggestions[0].length
@@ -107,7 +107,7 @@ export const TypeaheadFilter = (props: {
     if (isStartsWithVal(selectedValue) || startsWithFilter.current)
       return [selectedValue];
 
-    return [...selectedSuggestions, selectedValue];
+    return [...(selectedSuggestions ?? []), selectedValue];
   };
 
   const getDisplay = () => {
@@ -143,10 +143,13 @@ export const TypeaheadFilter = (props: {
     props.onFilterSubmit(filterQuery, selectedSuggestions);
   };
 
-  const removeOption = (option: string): string[] => {
-    if (selectedSuggestions)
-      return selectedSuggestions.filter((o) => o !== option);
-    return [];
+  const removeOption = (option: string): string[] | null => {
+    if (selectedSuggestions) {
+      const newSelection = selectedSuggestions.filter((o) => o !== option);
+      return newSelection.length > 0 ? newSelection : null;
+    }
+
+    return null;
   };
 
   const isSelected = (selected: string): boolean => {
@@ -164,11 +167,15 @@ export const TypeaheadFilter = (props: {
   }
 
   const isAlreadySelected = (selectedValue: string): boolean => {
-    return (
-      selectedSuggestions.findIndex(
-        (suggestion) => suggestion === selectedValue
-      ) >= 0
-    );
+    if (selectedSuggestions) {
+      return (
+        selectedSuggestions.findIndex(
+          (suggestion) => suggestion === selectedValue
+        ) >= 0
+      );
+    } else {
+      return false;
+    }
   };
 
   return (
@@ -213,7 +220,7 @@ export const TypeaheadFilter = (props: {
 };
 
 function getTypeaheadQuery(
-  filterValues: string[],
+  filterValues: string[] | null,
   column: string,
   isStartsWithFilter?: boolean
 ) {

@@ -50,6 +50,7 @@
   background-color: #fff;
   width: 100px;
   font-family: "Open Sans";
+  cursor: pointer;
 }
 
 #column-selector option:first-child {
@@ -59,4 +60,9 @@
 #column-selector-label {
   font-family: "Open Sans";
   color: #61656e;
+}
+
+.has-filter {
+  background-color: #1ea7fd !important;
+  color: #fff;
 }

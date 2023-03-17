@@ -1,11 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
-import {
-  Dropdown,
-  SelectionChangeHandler,
-  ToolbarField,
-} from "@heswell/salt-lab";
-import { ReactEventHandler, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FilterComponent } from "./filter-components/filter-selector";
 import "./filter-panel.css";
 import { IRange } from "./filter-components/range-filter";
@@ -22,7 +17,7 @@ export const FilterPanel = (props: {
     [key: string]: string;
   } | null>(null);
   const [filters, setFilters] = useState<{
-    [key: string]: string[] | IRange;
+    [key: string]: string[] | IRange | null;
   } | null>(null);
 
   useEffect(() => {
@@ -68,6 +63,14 @@ export const FilterPanel = (props: {
       setAllQueries({ ...allQueries, [selectedColumnName]: newQuery });
   };
 
+  const getColumnSelectorOption = (name: string) => {
+    return filters && filters[name] ? (
+      <option className="has-filter">{name}</option>
+    ) : (
+      <option>{name}</option>
+    );
+  };
+
   return (
     <fieldset id="filter-panel">
       <div className="inline-block">
@@ -81,22 +84,9 @@ export const FilterPanel = (props: {
             className="block"
           >
             <option disabled selected></option>
-            {props.columns.map(({ name }, key) => (
-              <option key={key}>{name}</option>
-            ))}
+            {props.columns.map(({ name }) => getColumnSelectorOption(name))}
           </select>
         </div>
-        {/* <ToolbarField
-          className="column-field"
-          label="Column"
-          labelPlacement="top"
-        >
-          <Dropdown
-            className="arrow-down-symbol"
-            // onSelectionChange={handleColumnSelect}
-            source={props.columns.map(({ name }) => name)}
-          />
-        </ToolbarField> */}
       </div>
       <div id="filter-component" className="inline-block">
         {selectedColumnName ? (
