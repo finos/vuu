@@ -1,44 +1,3 @@
-// export {}
-// (function formatter() {
-// 	let bridge = null,
-// 	defaultBridge = {
-// 		getLogger: function (category) {
-// 			return {
-// 				isLevelEnabled: function (level) { return false },
-// 				log: function () {}
-// 			}
-// 		},
-// 		getImpl: function () { return this }
-// 	}
-// 	return {
-// 		getLogger: getLogger,
-// 		use: use
-// 	}
-
-// 	const getBridge = () => {
-// 		return bridge ? bridge : defaultBridge
-// 	}
-
-// 	const getLogger = (category) => {
-// 		if (!bridge) console.warn('WARN: No logging implementation has been registered for category=' + category);
-// 		return {
-// 			isErrorEnabled: isLevelEnabled.bind(null, category, 'error'),
-// 			isDebugEnabled: isLevelEnabled.bind(null, category, 'debug'),
-// 			isInfoEnabled: isLevelEnabled.bind(null, category, 'info'),
-// 			isWarnEnabled: isLevelEnabled.bind(null, category, 'warn'),
-// 			error: log.bind(null, category, 'error'),
-// 			debug: log.bind(null, category, 'debug'),
-// 			info: log.bind(null, category, 'info'),
-// 			warn: log.bind(null, category, 'warn'),
-// 		}
-// 	}
-// })
-
-
-
-
-
-
 import { getCookieValue } from "./cookie-utils";
 
 export interface LogFn {
@@ -66,19 +25,38 @@ export interface Logger {
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export type BuildEnv = 'production' | 'development';
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const NO_OP: LogFn = () => {};
 
-// const getLogger = (category: any) => {
-// 	return {
-// 		isLevelEnabled: function (level:any) { return false},
-// 		log: function () {}
-// 	}
-// }
+const NO_OP = () => undefined;
 
-// const isLevelEnabled = (category:unknown, level:LogLevel) => {
-// 	return getLogger(category).isLevelEnabled(level);
-// } 
+export const loggerNew = (category:string, logLevel: string) => {
+	const errorEnabled = logLevel === 'error';
+	const warnEnabled = errorEnabled || logLevel === 'warn';
+	const infoEnabled = errorEnabled || warnEnabled || logLevel === 'info';
+	const debugEnabled = errorEnabled || warnEnabled || infoEnabled || logLevel === 'debug';
+
+	const info = infoEnabled ? (message:unknown) => console.info(`[${category}] ${message}`) : NO_OP;
+	const warn = warnEnabled ? (message:unknown) => console.warn(`[${category}] ${message}`) : NO_OP;
+	const debug = debugEnabled ? (message:unknown) => console.debug(`[${category}] ${message}`) : NO_OP;
+	const error = errorEnabled ? (message:unknown) => console.error(`[${category}] ${message}`) : NO_OP;
+
+	if (process.env.NODE_ENV === 'production') {
+		return {
+			errorEnabled,
+			error: errorEnabled ? (message:unknown) => console.error(`[${category}] ${message}`) : NO_OP,
+		}
+	} else {
+		return {
+			debugEnabled,
+			infoEnabled,
+			warnEnabled,
+			errorEnabled,
+			info: console.info.bind(info),
+			warn: console.warn.bind(warn),
+			debug: console.debug.bind(debug),
+			error: console.error.bind(error),
+		}
+	}
+}
 
 export class ConsoleLogger implements Logger {
 	readonly warn: LogFn;
@@ -133,8 +111,6 @@ export class ConsoleLogger implements Logger {
 
 export const getLoggingConfig = () => {
 	const loggingLevel = getCookieValue("vuu-logging-level");
-	console.log(loggingLevel);
-	// return `${(loggingLevel)}\n`
 	return `const loggingSettings = { loggingLevel: "${loggingLevel}"};`;
 }
 

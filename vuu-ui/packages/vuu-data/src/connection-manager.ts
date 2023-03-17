@@ -6,7 +6,7 @@ import {
   VuuTable,
   VuuTableList,
 } from "@finos/vuu-protocol-types";
-import { EventEmitter, logger, uuid } from "@finos/vuu-utils";
+import { EventEmitter, getLoggingConfig, logger, uuid } from "@finos/vuu-utils";
 import {
   DataSourceCallbackMessage,
   shouldMessageBeRoutedToDataSource as messageShouldBeRoutedToDataSource,
@@ -27,7 +27,7 @@ import {
 import { workerSourceCode } from "./inlined-worker";
 import { VuuTableMetaWithTable } from "./hooks";
 
-const workerBlob = new Blob([workerSourceCode], { type: "text/javascript" });
+const workerBlob = new Blob([getLoggingConfig() + workerSourceCode], { type: "text/javascript" });
 const workerBlobUrl = URL.createObjectURL(workerBlob);
 
 type WorkerResolver = {

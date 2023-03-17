@@ -2,7 +2,7 @@ import {
   ServerToClientMessage,
   ClientToServerMessage,
 } from "@finos/vuu-protocol-types";
-import { ConsoleLogger, logger } from "@finos/vuu-utils";
+import { logger } from "@finos/vuu-utils";
 import { Connection } from "./connectionTypes";
 
 import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
@@ -13,14 +13,6 @@ export type ConnectionCallback = (msg: ConnectionMessage) => void;
 const WS = "ws"; // to stop semGrep complaining
 const isWebsocketUrl = (url: string) =>
   url.startsWith(WS + "://") || url.startsWith(WS + "s://");
-
-const loggingLevel = () => {
-  return loggingSettings.loggingLevel;
-}
-loggingLevel();
-
-// const loggerTest = new ConsoleLogger({ buildEnv: process.env.NODE_ENV, level: loggingLevel() });
-// console.log(loggerTest.debugEnabled);
 
 const connectionAttempts: {
   [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
@@ -58,13 +50,11 @@ async function makeConnection(
     const reconnecting = typeof connection !== "undefined";
     const ws = await createWebsocket(url);
 
-    if (loggingLevel() === "high") {
-      logger.info(
-        "%c⚡ %cconnected",
-        "font-size: 24px;color: green;font-weight: bold;",
-        "color:green; font-size: 14px;"
-      );
-    }
+    logger.info(
+      "%c⚡ %cconnected",
+      "font-size: 24px;color: green;font-weight: bold;",
+      "color:green; font-size: 14px;"
+    );
 
     if (connection !== undefined) {
       connection[setWebsocket](ws);
@@ -178,13 +168,11 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     ws.onclose = () => {
-      if (loggingLevel() === "high") {
-        logger.info(
-          `%c⚡ connection close`,
-          "font-size: 24px;color: orange;font-weight: bold;",
-          "color:orange; font-size: 14px;"
-        );
-      }
+      logger.info(
+        `%c⚡ connection close`,
+        "font-size: 24px;color: orange;font-weight: bold;",
+        "color:orange; font-size: 14px;"
+      );
       callback({
         type: "connection-status",
         status: "disconnected",
@@ -205,14 +193,9 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     const queue = (_msg: ClientToServerMessage) => {
-      if (
-        loggingLevel() === "high" ||
-        loggingLevel() === "medium"
-        ) {
-        logger.info(`TODO queue message until websocket reconnected`, {
-          _msg,
-        });
-      }
+      logger.info(`TODO queue message until websocket reconnected`, {
+        _msg,
+      });
     };
 
     this.send = send;
@@ -222,12 +205,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
         ws.close();
         this.close = closeWarn;
         this.send = sendWarn;
-        if (
-          loggingLevel() === "high" ||
-          loggingLevel() === "medium"
-          ) {
         logger.info("[Connection] close websocket");
-      }
     };
   }
 }
