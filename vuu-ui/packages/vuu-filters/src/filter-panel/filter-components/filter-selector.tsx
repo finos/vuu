@@ -18,6 +18,8 @@ export const FilterComponent = (props: {
         onFilterSubmit={props.onFilterSubmit}
       />
     );
+  } else {
+    console.log("column type is undefined");
   }
 
   return null;
