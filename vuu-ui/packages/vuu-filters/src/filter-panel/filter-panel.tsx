@@ -72,7 +72,9 @@ export const FilterPanel = (props: {
     <fieldset id="filter-panel">
       <div className="inline-block">
         <div>
-          <label className="block">Column</label>
+          <label id="column-selector-label" className="block">
+            Column
+          </label>
           <select
             onChange={handleColumnSelect}
             id="column-selector"
@@ -91,7 +93,7 @@ export const FilterPanel = (props: {
         >
           <Dropdown
             className="arrow-down-symbol"
-            onSelectionChange={handleColumnSelect}
+            // onSelectionChange={handleColumnSelect}
             source={props.columns.map(({ name }) => name)}
           />
         </ToolbarField> */}

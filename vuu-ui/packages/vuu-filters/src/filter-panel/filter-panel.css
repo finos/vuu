@@ -8,6 +8,7 @@
   height: 50px;
   z-index: 999;
   background-color: #eee;
+  width: 700px;
 }
 
 .inline-block {
@@ -27,6 +28,7 @@
   right: 10px;
   border: 1px solid #ccc;
   cursor: pointer;
+  font-family: "Open Sans";
 }
 
 .block {
@@ -40,13 +42,21 @@
   width: 100px;
   background-color: #eee;
   cursor: pointer;
+  font-family: "Open Sans";
+  color: #161616;
 }
 
 #column-selector option {
   background-color: #fff;
   width: 100px;
+  font-family: "Open Sans";
 }
 
 #column-selector option:first-child {
   display: none;
+}
+
+#column-selector-label {
+  font-family: "Open Sans";
+  color: #61656e;
 }

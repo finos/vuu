@@ -8,7 +8,7 @@ export const FilterComponent = (props: {
   filters: string[] | IRange | null;
   onFilterSubmit: Function;
 }) => {
-  if (props.columnType !== undefined) {
+  if (props.columnType) {
     const SelectedFilter = filterComponent[props.columnType];
 
     return (
