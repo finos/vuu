@@ -22,11 +22,11 @@
         </encoder>
     </appender>
 
-    <logger name="io.venuu.vuu.net.ViewServerHandler" level="DEBUG">
+    <logger name="org.finos.vuu.net.ViewServerHandler" level="DEBUG">
         <appender-ref ref="server-inout"/>
     </logger>
 
-    <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
+    <logger name="org.finos.vuu.net.DefaultMessageHandler" level="DEBUG">
         <appender-ref ref="server-inout"/>
         <totalSizeCap>20MB</totalSizeCap>
     </logger>

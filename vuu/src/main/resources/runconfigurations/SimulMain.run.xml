@@ -8,7 +8,7 @@
     <option name="VM_PARAMETERS" value="-Dlogback.configurationFile=logback-socket.xml" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="io.venuu.vuu.*" />
+        <option name="PATTERN" value="org.finos.vuu.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
