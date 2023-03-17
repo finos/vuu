@@ -1,5 +1,5 @@
 import { FunctionComponent as FC, HTMLAttributes } from "react";
-import { TableCellProps } from "@finos/vuu-datatable/src/TableCell";
+import { TableCellProps } from "@finos/vuu-datagrid-types";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 
 export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {

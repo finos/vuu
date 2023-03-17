@@ -480,28 +480,6 @@
   resolved "https://registry.yarnpkg.com/@heswell/component-anatomy/-/component-anatomy-0.0.5.tgz#cf75e642fb7c2184794114fe62f2382d4196846a"
   integrity sha512-pwuowxKvsxPoOkAbtHFNyqdzjTj8CHDZtk7+P8jRtJJmsJTzblOMn6WNS9csFf6gU1NdvD11EcTCnFZaG8TLxg==
 
-"@heswell/salt-lab@1.0.0-alpha.2":
-  version "1.0.0-alpha.2"
-  resolved "https://registry.yarnpkg.com/@heswell/salt-lab/-/salt-lab-1.0.0-alpha.2.tgz#3dfbfba7ef536a7878c5fb5f531b4dfc5016300c"
-  integrity sha512-3kF6qN8VxuZaYK7aBGYVnzeqKbcrrRfglue3aAVuSyoUE2Ro2K97XMN5ijSoyCdwT4eUAechxvLfvnApnOERDw==
-  dependencies:
-    "@floating-ui/react" "^0.19.0"
-    "@internationalized/date" "^3.0.0"
-    "@salt-ds/core" "1.2.0"
-    "@salt-ds/icons" "1.1.0"
-    aria-hidden "^1.1.1"
-    attr-accept "^2.0.0"
-    clipboard-copy "^4.0.1"
-    clsx "^1.2.1"
-    compute-scroll-into-view "^1.0.16"
-    deepmerge "^4.2.2"
-    no-scroll "^2.1.1"
-    react-color "^2.19.3"
-    react-window "^1.8.6"
-    rifm "^0.12.0"
-    tinycolor2 "^1.4.2"
-    warning "^4.0.3"
-
 "@humanwhocodes/config-array@^0.11.8":
   version "0.11.8"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.8.tgz#03595ac2075a4dc0f191cc2131de14fbd7d410b9"

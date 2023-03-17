@@ -19,7 +19,7 @@
     "@finos/vuu-codemirror": "0.0.26",
     "@finos/vuu-data": "0.0.26",
     "@finos/vuu-datagrid-extras": "0.0.26",
-    "@finos/vuu-datatable": "0.0.26",
+    "@finos/vuu-table": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
     "@finos/vuu-protocol-types": "0.0.26",
     "@finos/vuu-shell": "0.0.26",

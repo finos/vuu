@@ -33,6 +33,6 @@
     --vuu-icon-svg: var(--svg-plus-box);
 }
 
-.vuuDataTableRow-expanded .vuuTableGroupCell-toggle[data-icon='triangle-right']{
+.vuuTableRow-expanded .vuuTableGroupCell-toggle[data-icon='triangle-right']{
     --vuu-icon-svg: var(--svg-minus-box);
 } */

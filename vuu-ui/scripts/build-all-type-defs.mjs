@@ -14,7 +14,7 @@ const packages = [
   "vuu-data-ag-grid",
   "vuu-filters",
   "vuu-popups",
-  "vuu-datatable",
+  "vuu-table",
   "vuu-datagrid-extras",
   "vuu-layout",
   "vuu-shell",

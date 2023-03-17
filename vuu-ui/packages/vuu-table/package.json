@@ -1,5 +1,5 @@
 {
-  "name": "@finos/vuu-datatable",
+  "name": "@finos/vuu-table",
   "version": "0.0.26",
   "author": "heswell",
   "main": "src/index.ts",

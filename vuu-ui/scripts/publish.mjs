@@ -10,7 +10,7 @@ const packages = [
   "vuu-datagrid",
   "vuu-datagrid-extras",
   "vuu-datagrid-types",
-  "vuu-datatable",
+  "vuu-table",
   "vuu-filter-types",
   "vuu-filters",
   "vuu-layout",

@@ -1,4 +1,4 @@
-import { ValueFormatter } from "@finos/vuu-datatable";
+import { ValueFormatter } from "@finos/vuu-table";
 import { Filter } from "@finos/vuu-filter-types";
 import {
   VuuAggType,

@@ -1,6 +1,6 @@
 import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
 import { GridConfig } from "@finos/vuu-datagrid-types";
-import { DataTable, TableProps } from "@finos/vuu-datatable";
+import { Table, TableProps } from "@finos/vuu-table";
 import { Dialog } from "@finos/vuu-popups";
 import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
 import { ReactElement, useCallback, useRef, useState } from "react";
@@ -48,7 +48,7 @@ export const ConfigurableDataTable = ({
 
   return (
     <>
-      <DataTable
+      <Table
         {...restProps}
         allowConfigEditing
         config={tableConfig}

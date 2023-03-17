@@ -8,12 +8,12 @@ import { RowBasedTable } from "./RowBasedTable";
 import { useDataTable } from "./useDataTable";
 import cx from "classnames";
 
-import "./DataTable.css";
+import "./Table.css";
 import { isDataLoading } from "@finos/vuu-utils";
 
-const classBase = "vuuDataTable";
+const classBase = "vuuTable";
 
-export const DataTable = ({
+export const Table = ({
   allowConfigEditing: showSettings = false,
   className: classNameProp,
   config,

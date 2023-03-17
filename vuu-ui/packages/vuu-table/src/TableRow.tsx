@@ -1,8 +1,5 @@
 import { DataSourceRow } from "@finos/vuu-data";
-import {
-  ColumnDescriptor,
-  KeyedColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
   isGroupColumn,
   isJsonColumn,
@@ -19,7 +16,7 @@ import { TableGroupCell } from "./TableGroupCell";
 import "./TableRow.css";
 
 const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
-const classBase = "vuuDataTableRow";
+const classBase = "vuuTableRow";
 
 export interface RowProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "children" | "onClick"> {

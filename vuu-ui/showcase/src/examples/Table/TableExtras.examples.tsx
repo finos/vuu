@@ -4,10 +4,10 @@ import {
   Selection,
   SelectionChangeHandler,
 } from "@finos/vuu-datagrid-types";
-import { DataTable, TableProps } from "@finos/vuu-datatable";
+import { Table, TableProps } from "@finos/vuu-table";
 import { Chest, Drawer } from "@finos/vuu-layout";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { List, ListItem } from "@heswell/salt-lab";
 
 let displaySequence = 1;
@@ -67,7 +67,7 @@ export const Table = (props: Partial<TableProps>) => {
   const config = useTableConfig();
   return (
     <>
-      <DataTable
+      <Table
         {...props}
         {...config}
         renderBufferSize={20}

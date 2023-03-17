@@ -10,7 +10,7 @@ import { TableRow } from "./TableRow";
 import { TableGroupHeaderCell } from "./TableGroupHeaderCell";
 import { TableHeaderCell } from "./TableHeaderCell";
 
-const classBase = "vuuDataTable";
+const classBase = "vuuTable";
 const { RENDER_IDX } = metadataKeys;
 
 export const RowBasedTable = ({

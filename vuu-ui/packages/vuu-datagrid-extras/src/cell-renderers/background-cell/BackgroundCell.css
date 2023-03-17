@@ -1,4 +1,4 @@
-.vuuDataTable td:has(> .vuuBackgroundCell){
+.vuuTable td:has(> .vuuBackgroundCell){
   padding: 0;
   text-align: right;
 } 

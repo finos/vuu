@@ -1,29 +1,29 @@
-  .vuuDataTableRow {
+  .vuuTableRow {
     background: transparent;
     /* background: var(--row-background); */
   }
 
-  .vuuDataTableRow-even {
+  .vuuTableRow-even {
     --row-background: var(--row-background-even);
   }
 
-  .vuuDataTableRow :is(.vuuPinFloating, .vuuPinLeft, .vuuPinRight) {
+  .vuuTableRow :is(.vuuPinFloating, .vuuPinLeft, .vuuPinRight) {
     background-color: var(--row-background);
   }
   
-  .vuuDataTableRow-expanded {
+  .vuuTableRow-expanded {
     --row-toggle-icon-transform: rotate(90deg);
   }
   
-  .vuuDataTableRow[aria-selected] {
+  .vuuTableRow[aria-selected] {
     background-color: var(--vuuTableRow-selected-background, var(--salt-selectable-background-selected));
     --vuuTableCell-border-bottomColor: var(--salt-selectable-borderColor-selected);
   }
 
-  /* .vuuDataTableRow:not([aria-selected]):has(+ [aria-selected]) {
+  /* .vuuTableRow:not([aria-selected]):has(+ [aria-selected]) {
     --vuuTableCell-border-bottomColor: var(--salt-selectable-borderColor-selected);
   } */
 
-  .vuuDataTableRow-preSelected {
+  .vuuTableRow-preSelected {
     --vuuTableCell-border-bottomColor: var(--salt-selectable-borderColor-selected);
   }

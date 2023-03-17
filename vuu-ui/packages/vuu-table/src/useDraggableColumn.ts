@@ -39,7 +39,7 @@ export const useDraggableColumn = ({
     draggableClassName: "table-column",
     orientation: "horizontal",
     containerRef: tableContainerRef,
-    itemQuery: ".vuuDataTable-table",
+    itemQuery: ".vuuTable-table",
     onDrop,
     onDropSettle: handleDropSettle,
   });
@@ -66,7 +66,7 @@ export const useDraggableColumn = ({
     if (tableLayout === "column" && mousePosRef.current && !draggable) {
       const { clientX, clientY, idx } = mousePosRef.current;
       const target = tableContainerRef.current?.querySelector(
-        `.vuuDataTable-table[data-idx="${idx}"]`
+        `.vuuTable-table[data-idx="${idx}"]`
       ) as HTMLElement;
       if (target) {
         const evt = {

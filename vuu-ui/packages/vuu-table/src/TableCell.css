@@ -1,9 +1,9 @@
-.vuuDataTable {
+.vuuTable {
     --cell-outline-width: 2px;
     user-select: none;
 }
 
-.vuuDataTable-table td {
+.vuuTable-table td {
     --saltEditableLabel-height: 17px;
     --saltInput-height: 17px;
     --saltInput-minHeight: 17px;
@@ -19,8 +19,8 @@
 }
 
 
-.vuuDataTable th:focus,
-.vuuDataTable td:focus {
+.vuuTable th:focus,
+.vuuTable td:focus {
     outline: var(--vuuTableCell-outline, dotted var(--salt-color-blue-400) var(--cell-outline-width));
     outline-offset: calc(var(--cell-outline-width) * -1);
     /** This is to achieve a white background to outline dashes */
@@ -28,17 +28,17 @@
     border-bottom: none;
 }
 
-.vuuDataTable th:focus .vuuTable-headerCell-inner{
+.vuuTable th:focus .vuuTable-headerCell-inner{
     /** This is to achieve a white background to outline dashes */
     padding-bottom: var(--cell-outline-width);
 }
 
-.vuuDataTable th:not(.vuuTable-headerCell-resizing):focus .vuuTable-headerCell-inner{
+.vuuTable th:not(.vuuTable-headerCell-resizing):focus .vuuTable-headerCell-inner{
     --columnResizer-color: transparent;
 }
 
 
-.vuuDataTable td:focus {
+.vuuTable td:focus {
     /** This is to achieve a white background to outline dashes */
     border-right: none;
     padding-bottom: 1px;

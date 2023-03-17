@@ -1,5 +1,5 @@
 
-.vuuDataTable {
+.vuuTable {
   --dataTable-background: var(--salt-container-primary-background, inherit);
   --row-background-even: var(--dataTable-background);
   --row-background-odd: var(--dataTable-background);
@@ -8,7 +8,7 @@
   position: relative;
 }
 
-.vuuDataTable-zebra {
+.vuuTable-zebra {
   --row-background-even: var(--salt-container-secondary-background);
   --table-background: 0 var(--header-height) repeating-linear-gradient(
     to bottom, 
@@ -18,7 +18,7 @@
     var(--dataTable-background) calc(var(--row-height) *2));
 }
 
-.vuuDataTable-loading .vuuDataTable-table {
+.vuuTable-loading .vuuTable-table {
   --skeleton-height: 20px;
   --skeleton-width: calc(var(--content-width) - 8px);
   --skeleton-left: 4px;
@@ -38,7 +38,7 @@
   background-position-y: 27px;
 }
 
-.vuuDataTable-contentContainer {
+.vuuTable-contentContainer {
   
   --vuuTable-contentHeight: var(--content-height, 'auto');
   --vuuTable-contentWidth: var(--content-width, 'auto');
@@ -57,11 +57,11 @@
   width: var(--vuuTable-width);
 }
 
-.vuuDataTable-contentContainer::-webkit-scrollbar {
+.vuuTable-contentContainer::-webkit-scrollbar {
   display: none;
 }
 
-.vuuDataTable-scrollbarContainer {
+.vuuTable-scrollbarContainer {
   --scroll-content-width: calc(var(--content-width) - var(--pinned-width-left));
   border-left: solid 1px var(--salt-container-primary-borderColor);
   border-top: solid 1px var(--salt-container-primary-borderColor);
@@ -71,7 +71,7 @@
   width: calc(var(--table-width) - var(--pinned-width-left) + 1px);
 }
 
-.vuuDataTable-scrollContainerHeader {
+.vuuTable-scrollContainerHeader {
   background: #777;
   height: var(--header-height);
   position: fixed;
@@ -79,7 +79,7 @@
   right:0;
   width: var(--vuuTable-scrollbarSize);
 }
-.vuuDataTable-scrollContainerFooter {
+.vuuTable-scrollContainerFooter {
   background-color: green;
   height: var(--vuuTable-scrollbarSize);
   position: fixed;
@@ -89,13 +89,13 @@
 
 }
 
-.vuuDataTable-scrollContent {
+.vuuTable-scrollContent {
   position: absolute;
   height: var(--content-height);
   width: var(--scroll-content-width, var(--content-width));
 }
 
-.vuuDataTable-tableContainer {
+.vuuTable-tableContainer {
   background-color: var(--dataTable-background);
   border-bottom: solid 1px var(--salt-container-primary-borderColor);
   height: calc(var(--table-height) - var(--scrollbar-size));
@@ -109,7 +109,7 @@
 }
 
 
-.vuuDataTable-table {
+.vuuTable-table {
   --vuuTable-rowHeight: var(--row-height);
   --vuuTableCell-border-bottomColor: transparent;
   --vuuTableCell-border-rightColor: var(--salt-separable-tertiary-borderColor);
@@ -125,24 +125,24 @@
   border-spacing: 0;
   border-left: 1px solid #ccc;
   border: none;
-  font-size: var(--vuuDataTable-font-size, 10px);
+  font-size: var(--vuuTable-font-size, 10px);
   margin: 0;
   min-height: 100%;
   table-layout: fixed;
   width: var(--vuuTable-contentWidth);
 }
 
-.vuuDataTable-columnBased {
+.vuuTable-columnBased {
   display: inline-table;
   height: var(--vuuTable-height);
   position: static;
 }
 
-/* .vuuDataTable-columnBased .vuuDataTable-headerCell{
+/* .vuuTable-columnBased .vuuTable-headerCell{
   background-color: darkmagenta;
 } */
 
-.vuuDataTable-filler {
+.vuuTable-filler {
   height: var(--filler-height);
 }
 
@@ -163,11 +163,11 @@ table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   z-index: 10;
 }
 
-/* .vuuDataTable-row {
+/* .vuuTable-row {
   transform: translate3d(0px, 25px, 0px);
 } */
 
-.vuuDataTable-settings {
+.vuuTable-settings {
   --saltButton-height: var(--header-height);
   --saltButton-width: 15px;
   position: absolute !important;
@@ -175,7 +175,7 @@ table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   top: 0;
 }
 
-.vuuDataTable:has(.vuuTable-headerCell-resizing) * {
+.vuuTable:has(.vuuTable-headerCell-resizing) * {
   cursor: col-resize;
 }
 
@@ -184,7 +184,7 @@ table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   overflow: hidden;
 }
 
-.vuuDataTable-loading .vuuDataTable-table {
+.vuuTable-loading .vuuTable-table {
   --skeleton-height: 20px;
   --skeleton-width: calc(var(--content-width) - 8px);
   --skeleton-left: 4px;
@@ -205,7 +205,7 @@ table:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
   /* animation:linearAnim 2s infinite linear */
 }
 
-.vuuDataTable-loading .vuuDataTable-table:after {
+.vuuTable-loading .vuuTable-table:after {
   animation: shimmer 2s infinite;
   background: linear-gradient(
     90deg, 

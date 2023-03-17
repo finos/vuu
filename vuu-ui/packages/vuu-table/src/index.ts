@@ -1,4 +1,4 @@
 export * from "./dataTableTypes";
-export * from "./DataTable";
+export * from "./Table";
 export * from "./useMeasuredContainer";
 export * from "./cell-renderers";

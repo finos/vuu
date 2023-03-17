@@ -298,7 +298,7 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
           />
         </div>
         <Toolbar
-          className="vuuDataTable-footer"
+          className="vuuTable-footer"
           style={{ "--saltToolbar-height": "20px" } as CSSProperties}
         >
           <DataSourceStats dataSource={dataSource} />

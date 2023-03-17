@@ -1,5 +1,5 @@
 import { JsonDataSource } from "@finos/vuu-data";
-import { DataTable } from "@finos/vuu-datatable";
+import { Table } from "@finos/vuu-table";
 import { JsonData } from "@finos/vuu-utils";
 import { useMemo } from "react";
 import packageJson from "../../../../package.json";
@@ -64,7 +64,7 @@ export const DefaultJsonTable = () => {
 
   return (
     <>
-      <DataTable
+      <Table
         config={tableConfig}
         dataSource={dataSource}
         height={700}
@@ -93,7 +93,7 @@ export const PackageJsonTable = () => {
 
   return (
     <>
-      <DataTable
+      <Table
         config={tableConfig}
         dataSource={dataSource}
         height={700}
