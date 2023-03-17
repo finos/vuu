@@ -521,3 +521,33 @@ export const getRowRecord = (
 export const isDataLoading = (columns: KeyedColumnDescriptor[]) => {
   return isGroupColumn(columns[0]) && columns[0].groupConfirmed === false;
 };
+
+export const getColumnsInViewport = (
+  columns: KeyedColumnDescriptor[],
+  vpStart: number,
+  vpEnd: number
+): [KeyedColumnDescriptor[], number] => {
+  const visibleColumns: KeyedColumnDescriptor[] = [];
+  let preSpan = 0;
+
+  for (let offset = 0, i = 0; i < columns.length; i++) {
+    const column = columns[i];
+    if (column.hidden) {
+      continue;
+    } else if (offset + column.width < vpStart) {
+      if (offset + column.width + columns[i + 1]?.width > vpStart) {
+        visibleColumns.push(column);
+      } else {
+        preSpan += 1;
+      }
+    } else if (offset > vpEnd) {
+      visibleColumns.push(column);
+      break;
+    } else {
+      visibleColumns.push(column);
+    }
+    offset += column.width;
+  }
+
+  return [visibleColumns, preSpan];
+};

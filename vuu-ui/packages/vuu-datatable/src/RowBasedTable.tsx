@@ -15,6 +15,7 @@ const { RENDER_IDX } = metadataKeys;
 
 export const RowBasedTable = ({
   columns,
+  columnsWithinViewport,
   data,
   headings,
   onColumnResize,
@@ -24,6 +25,7 @@ export const RowBasedTable = ({
   onRowClick,
   onSort,
   onToggleGroup,
+  virtualColSpan = 0,
   rowCount,
   rowHeight,
 }: TableImplementationProps) => {
@@ -98,11 +100,12 @@ export const RowBasedTable = ({
       <tbody onContextMenu={onContextMenu}>
         {data?.map((row, i) => (
           <TableRow
-            columns={columns}
+            columns={columnsWithinViewport}
             height={rowHeight}
             index={i}
             key={row[RENDER_IDX]}
             onClick={onRowClick}
+            virtualColSpan={virtualColSpan}
             onToggleGroup={onToggleGroup}
             row={row}
           />

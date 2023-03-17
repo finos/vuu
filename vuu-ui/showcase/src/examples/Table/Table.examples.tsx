@@ -61,7 +61,7 @@ const useTableConfig = ({
     for (let i = 0; i < count; i++) {
       // prettier-ignore
       data.push(
-    [`row ${i + 1}`].concat(Array(columnCount).fill(true).map((v, i) => `value ${i + 1}`)) 
+    [`row ${i + 1}`].concat(Array(columnCount).fill(true).map((v,j) => `value ${j+1} @ ${i + 1}`)) 
     );
     }
 

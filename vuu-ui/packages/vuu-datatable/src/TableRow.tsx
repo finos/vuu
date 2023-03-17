@@ -11,13 +11,7 @@ import {
   notHidden,
 } from "@finos/vuu-utils";
 import cx from "classnames";
-import {
-  HTMLAttributes,
-  memo,
-  MouseEvent,
-  useCallback,
-  useEffect,
-} from "react";
+import { HTMLAttributes, memo, MouseEvent, useCallback } from "react";
 import { RowClickHandler } from "./dataTableTypes";
 import { TableCell } from "./TableCell";
 import { TableGroupCell } from "./TableGroupCell";
@@ -33,8 +27,9 @@ export interface RowProps
   height: number;
   index: number;
   onClick?: RowClickHandler;
-  onToggleGroup?: (row: DataSourceRow, column?: ColumnDescriptor) => void;
+  onToggleGroup?: (row: DataSourceRow, column: KeyedColumnDescriptor) => void;
   row: DataSourceRow;
+  virtualColSpan?: number;
 }
 
 export const TableRow = memo(function Row({
@@ -43,6 +38,7 @@ export const TableRow = memo(function Row({
   index,
   onClick,
   onToggleGroup,
+  virtualColSpan = 0,
   row,
 }: RowProps) {
   const {
@@ -86,6 +82,7 @@ export const TableRow = memo(function Row({
         transform: `translate(0px, ${offset * height}px)`,
       }}
     >
+      {virtualColSpan > 0 ? <td colSpan={virtualColSpan} /> : null}
       {columns.filter(notHidden).map((column) => {
         const isGroup = isGroupColumn(column);
         const isJsonCell = isJsonColumn(column);

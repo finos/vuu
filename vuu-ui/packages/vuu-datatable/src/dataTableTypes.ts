@@ -51,6 +51,7 @@ export type TableColumnResizeHandler = (
 
 export interface TableImplementationProps {
   columns: KeyedColumnDescriptor[];
+  columnsWithinViewport: KeyedColumnDescriptor[];
   data: DataSourceRow[];
   headerHeight: number;
   headings: TableHeadings;
@@ -61,7 +62,8 @@ export interface TableImplementationProps {
   onRemoveColumnFromGroupBy?: (column: KeyedColumnDescriptor) => void;
   onRowClick?: RowClickHandler;
   onSort: (column: KeyedColumnDescriptor, isAdditive: boolean) => void;
-  onToggleGroup?: (row: DataSourceRow) => void;
+  onToggleGroup?: (row: DataSourceRow, column: KeyedColumnDescriptor) => void;
+  virtualColSpan?: number;
   rowCount: number;
   rowHeight: number;
 }

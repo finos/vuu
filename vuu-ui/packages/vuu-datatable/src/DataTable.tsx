@@ -1,6 +1,6 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { Button, useIdMemo } from "@salt-ds/core";
-import { CSSProperties, useMemo } from "react";
+import { CSSProperties } from "react";
 import { ColumnBasedTable } from "./ColumnBasedTable";
 import { buildContextMenuDescriptors } from "./context-menu";
 import { TableProps } from "./dataTableTypes";
@@ -37,7 +37,6 @@ export const DataTable = ({
 }: TableProps) => {
   const id = useIdMemo(idProp);
   const {
-    columns,
     containerMeasurements: { containerRef, innerSize, outerSize },
     containerProps,
     dispatchColumnAction,
@@ -91,13 +90,14 @@ export const DataTable = ({
 
   const className = cx(classBase, classNameProp, {
     [`${classBase}-zebra`]: zebraStripes,
-    [`${classBase}-loading`]: isDataLoading(columns),
+    [`${classBase}-loading`]: isDataLoading(tableProps.columns),
   });
 
   // TODO this is going to go
-  const nonDraggedColumns = useMemo(() => {
-    return columns.filter((col, i) => i !== draggedItemIndex);
-  }, [columns, draggedItemIndex]);
+  // const nonDraggedColumns = useMemo(() => {
+  //   return columns.filter((col, i) => i !== draggedItemIndex);
+  // }, [columns, draggedItemIndex]);
+  // console.log({ nonDraggedColumns });
 
   return (
     <ContextMenuProvider
@@ -137,7 +137,6 @@ export const DataTable = ({
             >
               <Table
                 {...tableProps}
-                columns={nonDraggedColumns}
                 headerHeight={headerHeight}
                 rowHeight={rowHeight}
               />

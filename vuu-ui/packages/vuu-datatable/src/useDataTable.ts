@@ -39,6 +39,7 @@ import { useSelection } from "./useSelection";
 import { PersistentColumnAction, useTableModel } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
+import { useVirtualViewport } from "./useVirtualViewport";
 
 const NO_ROWS = [] as const;
 
@@ -162,13 +163,6 @@ export const useDataTable = ({
   const dataRef = useRef<DataSourceRow[]>();
   dataRef.current = data;
 
-  const setRangeVertical = useCallback(
-    (from: number, to: number) => {
-      setRange({ from, to });
-    },
-    [setRange]
-  );
-
   const handleSort = useCallback(
     (
       column: KeyedColumnDescriptor,
@@ -247,20 +241,23 @@ export const useDataTable = ({
     [columns, dataSource, dispatchColumnAction]
   );
 
-  const handleRemoveColumnFromGroupBy = useCallback(
-    (column: KeyedColumnDescriptor) => {
-      if (dataSource && dataSource.groupBy.includes(column.name)) {
-        dataSource.groupBy = dataSource.groupBy.filter(
-          (columnName) => columnName !== column.name
-        );
-      }
-    },
-    [dataSource]
-  );
+  const {
+    onVerticalScroll,
+    onHorizontalScroll,
+    columnsWithinViewport,
+    virtualColSpan,
+  } = useVirtualViewport({
+    columns,
+    rowHeight,
+    setRange,
+    viewportMeasurements,
+  });
 
   const { requestScroll, ...scrollProps } = useTableScroll({
-    onRangeChange: setRangeVertical,
-    rowHeight,
+    onHorizontalScroll,
+    // onRangeChange: setRange,
+    onVerticalScroll,
+
     viewport: viewportMeasurements,
     viewportHeight:
       (containerMeasurements.innerSize?.height ?? 0) - headerHeight,
@@ -274,6 +271,17 @@ export const useDataTable = ({
     rowCount: dataSource?.size,
     viewportRange: range,
   });
+
+  const handleRemoveColumnFromGroupBy = useCallback(
+    (column: KeyedColumnDescriptor) => {
+      if (dataSource && dataSource.groupBy.includes(column.name)) {
+        dataSource.groupBy = dataSource.groupBy.filter(
+          (columnName) => columnName !== column.name
+        );
+      }
+    },
+    [dataSource]
+  );
 
   const handleDropColumn = useCallback(
     (fromIndex: number, toIndex: number) => {
@@ -360,6 +368,7 @@ export const useDataTable = ({
     containerMeasurements,
     containerProps,
     columns,
+    columnsWithinViewport,
     data,
     dispatchColumnAction,
     handleContextMenuAction,
@@ -370,6 +379,7 @@ export const useDataTable = ({
     onRowClick: handleRowClick,
     onSort: handleSort,
     onToggleGroup: handleToggleGroup,
+    virtualColSpan,
     scrollProps,
     rowCount,
     viewportMeasurements,

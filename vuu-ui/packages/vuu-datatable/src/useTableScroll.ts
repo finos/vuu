@@ -37,25 +37,24 @@ const getMaxScroll = (container: HTMLElement) => {
 };
 
 export interface TableScrollHookProps {
-  onRangeChange: (from: number, to: number) => void;
-  rowHeight: number;
+  onHorizontalScroll?: (scrollLeft: number) => void;
+  onVerticalScroll?: (scrollTop: number) => void;
   viewportHeight: number;
   viewport: Viewport;
 }
 
 export const useTableScroll = ({
-  onRangeChange,
-  rowHeight,
+  onHorizontalScroll,
+  onVerticalScroll,
   viewport,
 }: TableScrollHookProps) => {
+  const scrollPosRef = useRef({ scrollTop: 0, scrollLeft: 0 });
   const scrollbarContainerRef = useRef<HTMLDivElement>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const contentContainerScrolledRef = useRef(false);
-  const firstRowRef = useRef<number>(-1);
   const {
-    rowCount: viewportRowCount,
     maxScrollContainerScrollHorizontal: maxScrollLeft,
     maxScrollContainerScrollVertical: maxScrollTop,
   } = viewport;
@@ -77,14 +76,18 @@ export const useTableScroll = ({
   const handleTableContainerScroll = useCallback(() => {
     const { current: tableContainer } = tableContainerRef;
     if (tableContainer) {
-      const { scrollTop } = tableContainer;
-      const firstRow = Math.floor(scrollTop / rowHeight);
-      if (firstRow !== firstRowRef.current) {
-        firstRowRef.current = firstRow;
-        onRangeChange(firstRow, firstRow + viewportRowCount);
+      const { current: scrollPos } = scrollPosRef;
+      const { scrollLeft, scrollTop } = tableContainer;
+      if (scrollPos.scrollTop !== scrollTop) {
+        scrollPos.scrollTop = scrollTop;
+        onVerticalScroll?.(scrollTop);
+      }
+      if (scrollPos.scrollLeft !== scrollLeft) {
+        scrollPos.scrollLeft = scrollLeft;
+        onHorizontalScroll?.(scrollLeft);
       }
     }
-  }, [onRangeChange, rowHeight, viewportRowCount]);
+  }, [onHorizontalScroll, onVerticalScroll]);
 
   const handleContentContainerScroll = useCallback(() => {
     const { current: rootContainer } = contentContainerRef;
@@ -159,12 +162,19 @@ export const useTableScroll = ({
   );
 
   return {
-    onScrollbarContainerScroll: handleScrollbarContainerScroll,
-    onContentContainerScroll: handleContentContainerScroll,
-    onTableContainerScroll: handleTableContainerScroll,
-    requestScroll,
-    contentContainerRef,
+    /** Ref to be assigned to ScrollbarContainer */
     scrollbarContainerRef,
+    /** Scroll handler to be attached to ScrollbarContainer */
+    onScrollbarContainerScroll: handleScrollbarContainerScroll,
+    /** Ref to be assigned to ContentContainer */
+    contentContainerRef,
+    /** Scroll handler to be attached to ContentContainer */
+    onContentContainerScroll: handleContentContainerScroll,
+    /** Ref to be assigned to TableContainer */
     tableContainerRef,
+    /** Scroll handler to be attached to TableContainer */
+    onTableContainerScroll: handleTableContainerScroll,
+    /** Scroll the table  */
+    requestScroll,
   };
 };

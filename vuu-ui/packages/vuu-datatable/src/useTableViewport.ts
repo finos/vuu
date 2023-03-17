@@ -70,7 +70,7 @@ export const useTableViewport = ({
   rowCount,
   rowHeight,
   size,
-}: TableViewportHookProps) => {
+}: TableViewportHookProps): ViewportMeasurements => {
   const { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth } = useMemo(
     () => measurePinnedColumns(columns),
     [columns]
