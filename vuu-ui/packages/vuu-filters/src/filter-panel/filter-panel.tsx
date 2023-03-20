@@ -41,8 +41,8 @@ export const FilterPanel = (props: {
     return undefined;
   };
 
-  const handleColumnSelect: React.ChangeEventHandler<HTMLSelectElement> = (e) =>
-    setSelectedColumnName(e.currentTarget.value);
+  const handleColumnSelect: React.ChangeEventHandler<HTMLSelectElement> = ({currentTarget}) =>
+    setSelectedColumnName(currentTarget.value);
 
   const handleClear = () => {
     setSelectedColumnName(null);

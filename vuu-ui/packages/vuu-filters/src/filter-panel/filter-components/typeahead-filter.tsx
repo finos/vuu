@@ -94,8 +94,8 @@ export const TypeaheadFilter = (props: {
 
   const getSuggestions = useTypeaheadSuggestions();
 
-  const onSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setSearchValue(e.target.value);
+  const onSearch = ({ target }: React.ChangeEvent<HTMLInputElement>): void => {
+    setSearchValue(target.value);
   };
 
   const suggestionSelected = (value: string) => {
