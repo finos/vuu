@@ -81,8 +81,8 @@ export const TypeaheadFilter = (props: {
       if (selectedSuggestions.length === 1 && lastThreeCharacters === "...") {
         return true;
       }
-      return false;
     }
+    
     return false;
   };
 
