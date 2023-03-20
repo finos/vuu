@@ -36,9 +36,9 @@ export const FilterPanel = (props: {
       );
 
       return selectedColumn[0].serverDataType;
-    } else {
-      return undefined;
     }
+
+    return undefined;
   };
 
   const handleColumnSelect: React.ChangeEventHandler<HTMLSelectElement> = (e) =>

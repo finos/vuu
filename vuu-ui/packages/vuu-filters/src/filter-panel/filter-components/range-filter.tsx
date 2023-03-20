@@ -80,9 +80,9 @@ const getRangeQuery = (range: IRange | null, column: string): string => {
     };
 
     return queryOptions[queryType];
-  } else {
-    return "";
   }
+
+  return "";
 };
 
 export interface IRange {
