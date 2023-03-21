@@ -30,7 +30,8 @@ export type ColumnExpressionSuggestionType =
   | "columnValue"
   | "expression"
   | "condition-operator"
-  | "operator";
+  | "operator"
+  | "relational-operator";
 
 export type ColumnExpressionSuggestionOptions = {
   columnName?: string;

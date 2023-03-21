@@ -20,8 +20,8 @@ export const walkTree = (tree, source) => {
       case "Function":
         console.log(`'${source.slice(from, to)}' is a Function`);
         break;
-      case "BinaryExpression":
-        console.log(`'${source.slice(from, to)}' is a BinaryExpression`);
+      case "ArithmeticExpression":
+        console.log(`'${source.slice(from, to)}' is a ArithmeticExpression`);
         break;
       case "Times":
       case "Divide":

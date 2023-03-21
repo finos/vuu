@@ -1,6 +1,8 @@
 
 @precedence {
   call,
+  or @left,
+  and @left
   times @left,
   plus @left
 }
@@ -14,31 +16,38 @@ expression {
   True |
   False |
   ParenthesizedExpression |
-  BinaryExpression |
+  ArithmeticExpression |
   ConditionalExpression |
   CallExpression
 }
 
 ParenthesizedExpression { OpenBrace expression CloseBrace }
 
-BinaryExpression {
+ArithmeticExpression {
   expression !times (Divide | Times) expression |
   expression !plus (Plus | Minus) expression 
 }
 
 ConditionalExpression {
-  If OpenBrace Condition Comma expression Comma expression CloseBrace 
+  If OpenBrace booleanCondition Comma expression Comma expression CloseBrace 
 }
 
 CallExpression {
   Function ArgList
 }
 
-Condition {
-  expression BooleanOperator expression
+booleanCondition {
+  RelationalExpression | AndCondition | OrCondition
 }
 
-BooleanOperator {
+AndCondition {  booleanCondition !and "and" booleanCondition }
+OrCondition { booleanCondition !or "or" booleanCondition }
+
+RelationalExpression {
+  expression RelationalOperator expression
+}
+
+RelationalOperator {
   "=" | ">" | "<" | ">=" | "<=" | "!="
 }
 

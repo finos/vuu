@@ -2,6 +2,7 @@ import {
   AnnotationType,
   Completion,
   EditorView,
+  getRelationalOperators,
   numericOperators,
   stringOperators,
   toSuggestions,
@@ -73,7 +74,7 @@ const getColumns = (columns: ColumnDescriptor[], options: ColumnOptions) => {
 };
 
 // prettier-ignore
-const operators = [
+const arithmeticOperators = [
   { apply: "* ", boost: 2, label: "*", type: "operator" },
   { apply: "/ ", boost: 2, label: "/", type: "operator" },
   { apply: "+ ", boost: 2, label: "+", type: "operator" },
@@ -82,7 +83,7 @@ const operators = [
 
 const getOperators = (column?: ColumnDescriptor) => {
   if (column === undefined || isNumericColumn(column)) {
-    return operators;
+    return arithmeticOperators;
   } else {
     return NO_OPERATORS;
   }
@@ -188,6 +189,12 @@ export const useColumnExpressionSuggestionProvider = ({
           }
           case "operator": {
             const suggestions = await getOperators(findColumn(columnName));
+            return (latestSuggestionsRef.current = withApplySpace(suggestions));
+          }
+          case "relational-operator": {
+            const suggestions = await getRelationalOperators(
+              findColumn(columnName)
+            );
             return (latestSuggestionsRef.current = withApplySpace(suggestions));
           }
           case "condition-operator":

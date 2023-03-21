@@ -1,0 +1,25 @@
+{
+  "name": "@finos/vuu-datatable",
+  "version": "0.0.26",
+  "author": "heswell",
+  "main": "src/index.ts",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/run-build.mjs",
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
+  },
+  "files": [
+    "index.js",
+    "index.css",
+    "index.js.map",
+    "index.css.map",
+    "/src"
+  ],
+  "peerDependencies": {
+    "@finos/vuu-table": "0.0.26",
+    "@finos/vuu-utils": "0.0.26",
+    "classnames": "^2.2.6",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}

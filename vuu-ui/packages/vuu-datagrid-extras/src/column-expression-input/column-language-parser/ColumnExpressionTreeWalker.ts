@@ -1,32 +1,48 @@
+import { JsonData } from "@finos/vuu-utils";
 import { Tree } from "@lezer/common";
+import { RelationalExpression } from "./generated/column-parser.terms";
 type expressionType =
-  | "colExpression"
+  | "arithmeticExpression"
+  | "booleanCondition"
   | "booleanLiteralExpression"
-  | "numberLiteralExpression"
-  | "stringLiteralExpression"
   | "callExpression"
-  | "binaryExpression"
-  | "booleanExpression"
-  | "conditionalExpression";
+  | "colExpression"
+  | "conditionalExpression"
+  | "numberLiteralExpression"
+  | "relationalExpression"
+  | "stringLiteralExpression"
+  | "unknown";
 
-type binaryOp = "*" | "/" | "+" | "-";
-type booleanOp = "=" | "!=" | ">" | ">=" | "<" | "<=";
+type arithmeticOp = "*" | "/" | "+" | "-" | "unknown";
+type booleanOp = "and" | "or";
+type relationalOp = "=" | "!=" | ">" | ">=" | "<" | "<=" | "unknown";
 
 export interface Expression {
   type: expressionType;
+  expressions?: Expression[];
   value?: string | number | boolean;
+  toJSON?: () => JsonData;
 }
 
-interface BinaryExpression extends Expression {
-  expressions: [Expression, Expression];
-  op: binaryOp;
-  type: "callExpression";
+interface UnknownExpression extends Expression {
+  type: "unknown";
 }
 
-interface BooleanExpression extends Expression {
+interface ArithmeticExpression extends Expression {
   expressions: [Expression, Expression];
+  op: arithmeticOp;
+  type: "arithmeticExpression";
+}
+
+interface BooleanCondition extends Expression {
+  expressions: Expression[];
   op: booleanOp;
-  type: "booleanExpression";
+  type: "booleanCondition";
+}
+interface RelationalExpression extends Expression {
+  expressions: Expression[];
+  op: relationalOp;
+  type: "relationalExpression";
 }
 
 interface ColExpression extends Expression {
@@ -40,134 +56,481 @@ interface CallExpression extends Expression {
   type: "callExpression";
 }
 
+type ConditionExpression = RelationalExpression | BooleanCondition;
+
 interface ConditionalExpression extends Expression {
-  condition: BooleanExpression;
-  expressions: [Expression, Expression];
   type: "conditionalExpression";
+  condition: ConditionExpression;
+  truthyExpression: Expression;
+  falsyExpression: Expression;
 }
 
-const isBinaryExpression = (
-  expression: Expression
-): expression is BinaryExpression => expression.type === "binaryExpression";
+class LiteralExpressionImpl implements Expression {
+  type:
+    | "booleanLiteralExpression"
+    | "numberLiteralExpression"
+    | "stringLiteralExpression";
+  value: boolean | number | string;
+  constructor(value: boolean | number | string) {
+    this.value = value;
+    switch (typeof value) {
+      case "boolean":
+        this.type = "booleanLiteralExpression";
+        break;
+      case "number":
+        this.type = "numberLiteralExpression";
+        break;
+      default:
+        this.type = "stringLiteralExpression";
+    }
+  }
+  toJSON() {
+    return {
+      type: this.type,
+      value: this.value,
+    };
+  }
+}
+class ColumnExpressionImpl implements ColExpression {
+  type = "colExpression" as const;
+  column: string;
+  constructor(columnName: string) {
+    this.column = columnName;
+  }
+  toJSON() {
+    return {
+      type: this.type,
+      column: this.column,
+    };
+  }
+}
+class ArithmeticExpressionImpl implements ArithmeticExpression {
+  #expressions: [Expression, Expression] = [
+    { type: "unknown" },
+    { type: "unknown" },
+  ];
+  #op: arithmeticOp | "unknown";
+  type = "arithmeticExpression" as const;
+  constructor(op: arithmeticOp | "unknown" = "unknown") {
+    this.#op = op;
+  }
+  get op() {
+    return this.#op;
+  }
+  set op(op: arithmeticOp) {
+    this.#op = op;
+  }
+  get expressions() {
+    return this.#expressions;
+  }
+
+  toJSON() {
+    return {
+      type: this.type,
+      op: this.#op,
+      expressions: this.#expressions,
+    };
+  }
+}
+
+class CallExpressionImpl implements CallExpression {
+  #expressions: Expression[] = [];
+  functionName: string;
+  type = "callExpression" as const;
+  constructor(functionName: string) {
+    this.functionName = functionName;
+  }
+
+  get expressions() {
+    return this.#expressions;
+  }
+  get arguments() {
+    return this.#expressions;
+  }
+
+  toJSON() {
+    return {
+      type: this.type,
+      functionName: this.functionName,
+      arguments: this.#expressions.map((e) => e.toJSON?.()),
+    };
+  }
+}
+
+class RelationalExpressionImpl implements RelationalExpression {
+  #expressions: [Expression, Expression] = [
+    { type: "unknown" },
+    { type: "unknown" },
+  ];
+  #op: relationalOp = "unknown";
+  type = "relationalExpression" as const;
+
+  get op() {
+    return this.#op;
+  }
+  set op(op: relationalOp) {
+    this.#op = op;
+  }
+  get expressions() {
+    return this.#expressions;
+  }
+
+  toJSON() {
+    return {
+      type: this.type,
+      op: this.#op,
+      expressions: this.#expressions,
+    };
+  }
+}
+
+class BooleanConditionImp implements BooleanCondition {
+  #expressions: [Expression, Expression] = [
+    { type: "unknown" },
+    { type: "unknown" },
+  ];
+  #op: "and" | "or";
+  type = "booleanCondition" as const;
+  constructor(booleanOperator: "and" | "or") {
+    this.#op = booleanOperator;
+  }
+  get op() {
+    return this.#op;
+  }
+  get expressions() {
+    return this.#expressions;
+  }
+  toJSON() {
+    return {
+      type: this.type,
+      op: this.#op,
+      expressions: this.#expressions.map((e) => e.toJSON?.()),
+    };
+  }
+}
+
+class ConditionalExpressionImpl implements ConditionalExpression {
+  #expressions: [ConditionExpression, Expression, Expression];
+  type = "conditionalExpression" as const;
+
+  constructor(booleanOperator?: "and" | "or") {
+    this.#expressions = [
+      booleanOperator
+        ? new BooleanConditionImp(booleanOperator)
+        : new RelationalExpressionImpl(),
+      { type: "unknown" },
+      { type: "unknown" },
+    ];
+  }
+
+  get expressions() {
+    return this.#expressions;
+  }
+
+  get condition(): ConditionExpression {
+    return this.#expressions[0];
+  }
+  get truthyExpression(): Expression {
+    return this.#expressions[1];
+  }
+  set truthyExpression(expression: Expression) {
+    this.#expressions[1] = expression;
+  }
+  get falsyExpression(): Expression {
+    return this.#expressions[2];
+  }
+  set falsyExpression(expression: Expression) {
+    this.#expressions[2] = expression;
+  }
+
+  toJSON() {
+    return {
+      type: this.type,
+      condition: this.condition.toJSON?.(),
+      truthyExpression: this.truthyExpression,
+      falsyExpression: this.falsyExpression?.toJSON?.() ?? this.falsyExpression,
+    };
+  }
+}
+
+type PartialExpression =
+  | ArithmeticExpression
+  | RelationalExpression
+  | ColExpression
+  | CallExpression
+  | BooleanCondition
+  | Partial<ConditionalExpression>;
+
+const isUnknown = (e: Expression): e is UnknownExpression =>
+  e.type === "unknown";
+
+const isArithmeticExpression = (
+  expression: PotentiallyUnresolvedExpression
+): expression is ArithmeticExpression =>
+  expression.type === "arithmeticExpression";
+
 const isCallExpression = (
-  expression: Expression
+  expression: PotentiallyUnresolvedExpression
 ): expression is CallExpression => expression.type === "callExpression";
+
 const isConditionalExpression = (
-  expression: Expression
+  expression: PotentiallyUnresolvedExpression
 ): expression is ConditionalExpression =>
   expression.type === "conditionalExpression";
 
-//TODO still does not fully support deeply nested expressions
+const isCondition = (
+  expression: Expression | PartialExpression
+): expression is ConditionExpression =>
+  expression.type === "relationalExpression" ||
+  expression.type === "booleanCondition";
+
+const booleanConditionIsIncomplete = (
+  condition: ConditionExpression
+): boolean =>
+  condition.expressions.length < 2 ||
+  condition.expressions.some((e) => conditionIsIncomplete(e));
+
+const isBooleanCondition = (
+  expression: Expression
+): expression is BooleanCondition => expression.type === "booleanCondition";
+
+const isRelationalExpression = (
+  expression?: Expression
+): expression is RelationalExpression =>
+  expression?.type === "relationalExpression";
+
+const conditionIsIncomplete = (
+  condition: Expression
+): condition is ConditionExpression =>
+  (isBooleanCondition(condition) && booleanConditionIsIncomplete(condition)) ||
+  (isRelationalExpression(condition) && condition.expressions.length < 2);
+
+const firstIncompleteExpression = (
+  expression: Expression
+): Expression | undefined => {
+  if (isUnknown(expression)) {
+    return expression;
+  } else if (isRelationalExpression(expression)) {
+    const [operand1, operand2] = expression.expressions;
+    if (expressionIsIncomplete(operand1)) {
+      return firstIncompleteExpression(operand1);
+    } else if (expression.op === "unknown") {
+      return expression;
+    } else if (expressionIsIncomplete(operand2)) {
+      return firstIncompleteExpression(operand2);
+    }
+  } else if (isCondition(expression)) {
+    const { expressions = [] } = expression;
+    for (const e of expressions) {
+      if (expressionIsIncomplete(e)) {
+        return firstIncompleteExpression(e);
+      }
+    }
+  } else if (isConditionalExpression(expression)) {
+    const { condition, truthyExpression, falsyExpression } = expression;
+    if (expressionIsIncomplete(condition)) {
+      return firstIncompleteExpression(condition);
+    } else if (expressionIsIncomplete(truthyExpression)) {
+      return firstIncompleteExpression(truthyExpression);
+    } else if (expressionIsIncomplete(falsyExpression)) {
+      return firstIncompleteExpression(falsyExpression);
+    }
+  } else if (isArithmeticExpression(expression)) {
+    const { expressions = [] } = expression;
+    for (const e of expressions) {
+      if (expressionIsIncomplete(e)) {
+        return firstIncompleteExpression(e);
+      }
+    }
+  }
+};
+const replaceUnknownExpression = (
+  incompleteExpression: Expression,
+  unknownExpression: UnknownExpression,
+  expression: Expression
+): boolean => {
+  const { expressions = [] } = incompleteExpression;
+  if (expressions.includes(unknownExpression)) {
+    const pos = expressions.indexOf(unknownExpression);
+    expressions.splice(pos, 1, expression);
+    return true;
+  } else {
+    for (const e of expressions) {
+      if (replaceUnknownExpression(e, unknownExpression, expression)) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+const expressionIsIncomplete = (expression: Expression): boolean => {
+  if (isUnknown(expression)) {
+    return true;
+  } else if (isConditionalExpression(expression)) {
+    return (
+      expressionIsIncomplete(expression.condition) ||
+      expressionIsIncomplete(expression.truthyExpression) ||
+      expressionIsIncomplete(expression.falsyExpression)
+    );
+  } else if (
+    isRelationalExpression(expression) ||
+    isBooleanCondition(expression)
+  ) {
+    return (
+      expression.op === undefined ||
+      expression.expressions.some((e) => expressionIsIncomplete(e))
+    );
+  }
+  // TODO missing cases
+  return false;
+};
+
+type PotentiallyUnresolvedExpression = Expression | PartialExpression;
+
+const addExpression = (
+  expression: Expression,
+  subExpression: PartialExpression | Expression
+) => {
+  const targetExpression = firstIncompleteExpression(expression);
+  if (targetExpression) {
+    if (targetExpression.expressions) {
+      targetExpression.expressions.push(subExpression as Expression);
+    } else {
+      console.warn("don't know how to treat targetExpression");
+    }
+  } else {
+    console.error("no target expression found");
+  }
+};
+
 class ColumnExpression {
-  #expression: Expression | undefined;
+  #expression: PotentiallyUnresolvedExpression | undefined;
   #callStack: CallExpression[] = [];
 
-  setCondition() {
-    const conditionExpression: ConditionalExpression = {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      expressions: [],
-      type: "conditionalExpression",
-    };
-    this.addExpression(conditionExpression);
+  setCondition(booleanOperator?: "and" | "or") {
+    if (this.#expression === undefined) {
+      this.addExpression(new ConditionalExpressionImpl(booleanOperator));
+    } else if (isConditionalExpression(this.#expression)) {
+      if (expressionIsIncomplete(this.#expression.condition)) {
+        const condition = booleanOperator
+          ? new BooleanConditionImp(booleanOperator)
+          : new RelationalExpressionImpl();
+        this.addExpression(condition);
+      } else if (isUnknown(this.#expression.truthyExpression)) {
+        this.#expression.truthyExpression = new ConditionalExpressionImpl(
+          booleanOperator
+        );
+      } else if (expressionIsIncomplete(this.#expression.truthyExpression)) {
+        const condition = booleanOperator
+          ? new BooleanConditionImp(booleanOperator)
+          : new RelationalExpressionImpl();
+        this.addExpression(condition);
+      } else if (isUnknown(this.#expression.falsyExpression)) {
+        this.#expression.falsyExpression = new ConditionalExpressionImpl(
+          booleanOperator
+        );
+      } else if (expressionIsIncomplete(this.#expression.falsyExpression)) {
+        const condition = booleanOperator
+          ? new BooleanConditionImp(booleanOperator)
+          : new RelationalExpressionImpl();
+        this.addExpression(condition);
+      }
+    } else {
+      console.error("setCondition called unexpectedly");
+    }
   }
 
-  private addExpression(expression: Expression) {
+  addExpression(expression: Expression) {
     if (this.#callStack.length > 0) {
       const currentCallExpression = this.#callStack.at(-1);
-      currentCallExpression?.arguments.push(expression);
+      currentCallExpression?.arguments.push(expression as Expression);
     } else if (this.#expression === undefined) {
       this.#expression = expression;
-    } else if (isBinaryExpression(this.#expression)) {
-      this.#expression.expressions.push(expression);
+    } else if (isArithmeticExpression(this.#expression)) {
+      const targetExpression = firstIncompleteExpression(this.#expression);
+      if (targetExpression && isUnknown(targetExpression)) {
+        replaceUnknownExpression(
+          this.#expression,
+          targetExpression,
+          expression
+        );
+      }
     } else if (isConditionalExpression(this.#expression)) {
-      const { condition, expressions } = this.#expression;
-      if (condition === undefined) {
-        const booleanExpression: BooleanExpression = {
-          type: "booleanExpression",
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          expressions: [expression],
-        };
-        this.#expression.condition = booleanExpression;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-      } else if (condition.expressions.length === 1) {
-        condition.expressions.push(expression);
-      } else {
-        expressions.push(expression);
+      if (expressionIsIncomplete(this.#expression)) {
+        const targetExpression = firstIncompleteExpression(this.#expression);
+        if (targetExpression && isUnknown(targetExpression)) {
+          replaceUnknownExpression(
+            this.#expression,
+            targetExpression,
+            expression
+          );
+        } else if (targetExpression) {
+          addExpression(targetExpression, expression);
+        }
       }
     }
   }
 
-  setFunction(value: string) {
-    const callExpression: CallExpression = {
-      arguments: [],
-      functionName: value,
-      type: "callExpression",
-    };
+  setFunction(functionName: string) {
+    const callExpression = new CallExpressionImpl(functionName);
     this.addExpression(callExpression);
     this.#callStack.push(callExpression);
   }
 
   setColumn(columnName: string) {
-    const columnExpression: ColExpression = {
-      type: "colExpression",
-      column: columnName,
-    };
-    this.addExpression(columnExpression);
+    this.addExpression(new ColumnExpressionImpl(columnName));
   }
 
-  setOp(value: string) {
-    const op = value as binaryOp;
-    if (
-      this.#expression?.type === "colExpression" ||
-      this.#expression?.type === "numberLiteralExpression" ||
-      this.#expression?.type === "stringLiteralExpression"
-    ) {
-      this.#expression = {
-        op,
-        type: "binaryExpression",
-        expressions: [this.#expression],
-      } as unknown as BinaryExpression;
+  setArithmeticOp(value: string) {
+    const op = value as arithmeticOp;
+    const expression = this.#expression as Expression;
+    if (isArithmeticExpression(expression)) {
+      expression.op = op;
     }
+    //  else {
+    //   const targetExpression = firstIncompleteExpression(this.#expression);
+    //   if (targetExpression) {
+    //     targetExpression.op = op;
+    //   }
+    // }
   }
 
-  setBooleanOperator(value: string) {
-    const op = value as booleanOp;
+  setRelationalOperator(value: string) {
+    const op = value as relationalOp;
     if (this.#expression && isConditionalExpression(this.#expression)) {
-      this.#expression.condition.op = op;
-    }
-  }
-
-  private getTypeLiteralType(type: string | number | boolean) {
-    if (typeof type === "boolean") {
-      return "booleanLiteralExpression";
-    } else if (typeof type === "number") {
-      return "numberLiteralExpression";
-    } else {
-      return "stringLiteralExpression";
+      const targetExpression = firstIncompleteExpression(this.#expression);
+      if (isRelationalExpression(targetExpression)) {
+        targetExpression.op = op;
+      } else {
+        console.error(`no target expression found (op = ${value})`);
+      }
     }
   }
 
   setValue(value: string | number | boolean) {
-    const literalExpression: Expression = {
-      type: this.getTypeLiteralType(value),
-      value,
-    };
+    const literalExpression = new LiteralExpressionImpl(value);
     if (this.#expression === undefined) {
       this.#expression = literalExpression;
-    } else if (isBinaryExpression(this.#expression)) {
-      this.#expression.expressions.push(literalExpression);
+    } else if (isArithmeticExpression(this.#expression)) {
+      this.addExpression(literalExpression);
     } else if (isCallExpression(this.#expression)) {
       // TODO this might not be correct if call arguments include nested expression(s)
       this.#expression.arguments.push(literalExpression);
     } else if (isConditionalExpression(this.#expression)) {
-      const { condition, expressions } = this.#expression;
-      if (condition.expressions.length < 2) {
-        condition.expressions.push(literalExpression);
-      } else if (expressions.length < 2) {
-        expressions.push(literalExpression);
+      if (expressionIsIncomplete(this.#expression)) {
+        const targetExpression = firstIncompleteExpression(this.#expression);
+        if (targetExpression && isUnknown(targetExpression)) {
+          replaceUnknownExpression(
+            this.#expression,
+            targetExpression,
+            literalExpression
+          );
+        } else if (targetExpression) {
+          addExpression(targetExpression, literalExpression);
+        }
+      } else {
+        console.log("what do we do with value, in a complete expression");
       }
     }
   }
@@ -176,7 +539,7 @@ class ColumnExpression {
     this.#callStack.pop();
   }
 
-  toJSON() {
+  get expression() {
     return this.#expression;
   }
 }
@@ -186,10 +549,21 @@ export const walkTree = (tree: Tree, source: string) => {
   const cursor = tree.cursor();
   do {
     const { name, from, to } = cursor;
-
     switch (name) {
-      case "Condition":
+      case "AndCondition":
+        columnExpression.setCondition("and");
+        break;
+
+      case "OrCondition":
+        columnExpression.setCondition("or");
+        break;
+
+      case "RelationalExpression":
         columnExpression.setCondition();
+        break;
+
+      case "ArithmeticExpression":
+        columnExpression.addExpression(new ArithmeticExpressionImpl());
         break;
 
       case "Column":
@@ -212,14 +586,14 @@ export const walkTree = (tree: Tree, source: string) => {
       case "Minus":
         {
           const op = source.substring(from, to);
-          columnExpression.setOp(op);
+          columnExpression.setArithmeticOp(op);
         }
         break;
 
-      case "BooleanOperator":
+      case "RelationalOperator":
         {
           const op = source.substring(from, to);
-          columnExpression.setBooleanOperator(op);
+          columnExpression.setRelationalOperator(op);
         }
         break;
 
@@ -247,5 +621,5 @@ export const walkTree = (tree: Tree, source: string) => {
     }
   } while (cursor.next());
 
-  return columnExpression.toJSON();
+  return columnExpression.expression?.toJSON?.();
 };

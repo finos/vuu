@@ -17,7 +17,7 @@ import {
   metadataKeys,
   uuid,
 } from "@finos/vuu-utils";
-import {
+import type {
   DataSource,
   DataSourceConstructorProps,
   DataSourceEvents,

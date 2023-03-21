@@ -1,4 +1,5 @@
 import {
+  booleanJoinSuggestions,
   Completion,
   CompletionContext,
   CompletionSource,
@@ -10,13 +11,18 @@ import {
 } from "@finos/vuu-codemirror";
 import { SyntaxNode } from "@lezer/common";
 import { MutableRefObject, useCallback } from "react";
-import { isCompleteExpression } from "./column-language-parser";
+import {
+  ColumnNamedTerms,
+  isCompleteExpression,
+  isCompleteRelationalExpression,
+} from "./column-language-parser";
 import {
   ColumnExpressionOperator,
   ColumnExpressionSuggestionOptions,
   ColumnExpressionSuggestionType,
   IExpressionSuggestionProvider,
 } from "./useColumnExpressionEditor";
+import { lastNamedChild } from "./column-language-parser";
 
 export type ApplyCompletion = (mode?: "add" | "replace") => void;
 
@@ -43,27 +49,7 @@ const getLastChild = (node: SyntaxNode, context: CompletionContext) => {
   const { pos } = context;
   while (childNode) {
     const isBeforeCursor = childNode.from < pos;
-    if (
-      isBeforeCursor &&
-      [
-        "BinaryExpression",
-        "BooleanOperator",
-        "CallExpression",
-        "CloseBrace",
-        "Column",
-        "Comma",
-        "Condition",
-        "ConditionalExpression",
-        "Divide",
-        "Equal",
-        "If",
-        "Minus",
-        "OpenBrace",
-        "ParenthesizedExpression",
-        "Plus",
-        "Times",
-      ].includes(childNode.name)
-    ) {
+    if (isBeforeCursor && ColumnNamedTerms.includes(childNode.name)) {
       if (childNode.name === "ParenthesizedExpression") {
         // extract the parenthesized expression
         const expression = childNode.firstChild?.nextSibling;
@@ -91,10 +77,17 @@ const getFunctionName = (node: SyntaxNode, state: EditorState) => {
   }
 };
 
-const getOperator = (node: SyntaxNode, state: EditorState) => {
-  const prevNode = node.prevSibling;
-  if (prevNode?.name === "BooleanOperator") {
-    return getValue(prevNode, state) as ColumnExpressionOperator;
+const getRelationalOperator = (node: SyntaxNode, state: EditorState) => {
+  if (node.name === "RelationalExpression") {
+    const lastNode = lastNamedChild(node);
+    if (lastNode?.name === "RelationalOperator") {
+      return getValue(lastNode, state);
+    }
+  } else {
+    const prevNode = node.prevSibling;
+    if (prevNode?.name === "RelationalOperator") {
+      return getValue(prevNode, state) as ColumnExpressionOperator;
+    }
   }
 };
 
@@ -102,11 +95,17 @@ const getColumnName = (
   node: SyntaxNode,
   state: EditorState
 ): string | undefined => {
-  const prevNode = node.prevSibling;
-  if (prevNode?.name === "Column") {
-    return getValue(prevNode, state);
-  } else if (prevNode?.name === "BooleanOperator") {
-    return getColumnName(prevNode, state);
+  if (node.name === "RelationalExpression") {
+    if (node.firstChild?.name === "Column") {
+      return getValue(node.firstChild, state);
+    }
+  } else {
+    const prevNode = node.prevSibling;
+    if (prevNode?.name === "Column") {
+      return getValue(prevNode, state);
+    } else if (prevNode?.name === "RelationalOperator") {
+      return getColumnName(prevNode, state);
+    }
   }
 };
 
@@ -139,7 +138,7 @@ const handleConditionalExpression = (
         prefix: "( ",
       });
     case "OpenBrace":
-      break;
+      return makeSuggestions(context, suggestionProvider, "expression");
     case "Condition":
       return makeSuggestions(context, suggestionProvider, "expression", {
         prefix: ", ",
@@ -220,7 +219,7 @@ export const useColumnAutoComplete = (
             if (lastChild?.name === "Column") {
               // is this the first term ?
               const prevChild = getPreviousNode(lastChild);
-              if (prevChild?.name !== "BooleanOperator") {
+              if (prevChild?.name !== "RelationalOperator") {
                 return makeSuggestions(context, "condition-operator", {
                   columnName: getValue(lastChild, state),
                 });
@@ -228,7 +227,7 @@ export const useColumnAutoComplete = (
               console.log(
                 `Condition last child Column, prev child ${prevChild?.name}`
               );
-            } else if (lastChild?.name === "BooleanOperator") {
+            } else if (lastChild?.name === "RelationalOperator") {
               // we need the type of the expression on the other side of the operator
               return makeSuggestions(context, "expression");
             }
@@ -241,10 +240,43 @@ export const useColumnAutoComplete = (
             context,
             suggestionProvider
           );
+        case "RelationalExpression":
+          {
+            // need to check if the relational expression is complete
+            if (isCompleteRelationalExpression(nodeBefore)) {
+              return {
+                from: context.pos,
+                options: booleanJoinSuggestions.concat({
+                  label: ", <truthy expression>, <falsy expression>",
+                  apply: ", ",
+                }),
+              };
+            } else {
+              const operator = getRelationalOperator(nodeBefore, state);
+              const columnName = getColumnName(nodeBefore, state);
+              if (!operator) {
+                const options = await suggestionProvider.getSuggestions(
+                  "condition-operator",
+                  {
+                    columnName,
+                  }
+                );
+                return { from: context.pos, options };
+              } else {
+                return makeSuggestions(context, "expression");
+              }
+            }
+          }
+          break;
+
+        case "RelationalOperator":
+          // we need the type of the expression on the other side of the operator
+          return makeSuggestions(context, "expression");
+
         case "String":
           {
             // we only encounter a string as the right hand operand of a conditional expression
-            const operator = getOperator(nodeBefore, state);
+            const operator = getRelationalOperator(nodeBefore, state);
             const columnName = getColumnName(nodeBefore, state);
             // are we inside the string or immediately after it
             const { from, to } = nodeBefore;
@@ -269,11 +301,8 @@ export const useColumnAutoComplete = (
             );
           }
           break;
-        case "BooleanOperator":
-          // we need the type of the expression on the other side of the operator
-          return makeSuggestions(context, "expression");
 
-        case "BinaryExpression":
+        case "ArithmeticExpression":
           {
             const lastChild = getLastChild(nodeBefore, context);
             if (lastChild?.name === "Column") {
@@ -367,7 +396,7 @@ export const useColumnAutoComplete = (
                   options,
                 };
               }
-            } else if (lastChild?.name === "BinaryExpression") {
+            } else if (lastChild?.name === "ArithmeticExpression") {
               if (maybeComplete) {
                 let options: Completion[] = [
                   {
@@ -452,6 +481,7 @@ export const useColumnAutoComplete = (
             );
           }
           break;
+
         default: {
           if (nodeBefore?.prevSibling?.name === "FilterClause") {
             console.log("looks like we ight be a or|and operator");

@@ -1,4 +1,6 @@
 import { Completion } from "@codemirror/autocomplete";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { isNumericColumn } from "@finos/vuu-utils";
 
 export interface VuuCompletion extends Completion {
   isIllustration?: boolean;
@@ -12,6 +14,7 @@ export type CompletionOptions = {
 };
 
 const NO_OPTIONS: CompletionOptions = {};
+const NO_OPERATORS = [] as Completion[];
 
 export const toSuggestions = (
   values: string[],
@@ -35,7 +38,7 @@ export const toSuggestions = (
 
 export const asNameSuggestion = { label: "as", apply: "as ", boost: 1 };
 
-export const booleanJoinSuggestions = [
+export const booleanJoinSuggestions: Completion[] = [
   { label: "and", apply: "and ", boost: 5 },
   { label: "or", apply: "or ", boost: 3 },
 ];
@@ -57,3 +60,11 @@ export const numericOperators: Completion[] = [
   { label: ">", boost: 8, type: "operator" },
   { label: "<", boost: 7, type: "operator" },
 ];
+
+export const getRelationalOperators = (column?: ColumnDescriptor) => {
+  if (column === undefined || isNumericColumn(column)) {
+    return numericOperators;
+  } else {
+    return equalityOperators;
+  }
+};

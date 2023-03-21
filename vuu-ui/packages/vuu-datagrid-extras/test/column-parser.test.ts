@@ -80,6 +80,15 @@ describe("ColumnExpressionParser", () => {
     expect(evaluateExpression('if(ask < bid,"N","Y")')).toEqual(Ok);
   });
 
+  it("parses conditional expressions with boolean conditions", () => {
+    expect(evaluateExpression('if(ask < bid or ask = 1000,"N","Y")')).toEqual(
+      Ok
+    );
+    expect(
+      evaluateExpression('if(ask >  1000 and ask <= 2000,"N","Y")')
+    ).toEqual(Ok);
+  });
+
   it("parses nested conditional expressions", () => {
     expect(evaluateExpression('if(ccy="Gbp",1,if(ccy="USD",2,3))')).toEqual(Ok);
   });

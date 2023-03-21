@@ -5,7 +5,7 @@ import {
   useColumnExpressionSuggestionProvider,
 } from "@finos/vuu-datagrid-extras";
 
-import {} from "@finos/vuu-codemirror";
+import { JsonTable } from "@finos/vuu-datatable";
 
 import {
   authenticate as vuuAuthenticate,
@@ -78,13 +78,13 @@ export const DefaultColumnExpressionInput = () => {
         onSubmitExpression={handleSubmitExpression}
         suggestionProvider={suggestionProvider}
       />
+      <span>isValid {isValid}</span>
       <br />
       <br />
       <div>{JSON.stringify(expression)}</div>
       <br />
       {/* <div>{source}</div> */}
-      <br />
-      <span>isValid {isValid}</span>
+      <JsonTable source={expression?.toJSON?.()} height={400} />
     </>
   );
 };

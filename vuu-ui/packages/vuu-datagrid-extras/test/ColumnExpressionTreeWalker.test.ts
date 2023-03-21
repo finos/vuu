@@ -32,17 +32,18 @@ describe("Column Expression treeWalker", () => {
     });
   });
 
-  it("parses a two column binary expression", () => {
+  it("parses a two column arithmetic expression", () => {
     const str = "price * quantity";
     const result = parser.parse(str);
     const expression = walkTree(result, str);
+
     expect(expression).toEqual({
       expressions: [
         { column: "price", type: "colExpression" },
         { column: "quantity", type: "colExpression" },
       ],
       op: "*",
-      type: "binaryExpression",
+      type: "arithmeticExpression",
     });
   });
 
@@ -50,17 +51,18 @@ describe("Column Expression treeWalker", () => {
     const str = "price / 100";
     const result = parser.parse(str);
     const expression = walkTree(result, str);
+
     expect(expression).toEqual({
       expressions: [
         { column: "price", type: "colExpression" },
         { value: 100, type: "numberLiteralExpression" },
       ],
       op: "/",
-      type: "binaryExpression",
+      type: "arithmeticExpression",
     });
   });
 
-  it("parses a binary expression with a numeric literal and a column", () => {
+  it("parses am arithmetic expression with a numeric literal and a column", () => {
     const str = "100  * price";
     const result = parser.parse(str);
     const expression = walkTree(result, str);
@@ -70,7 +72,7 @@ describe("Column Expression treeWalker", () => {
         { column: "price", type: "colExpression" },
       ],
       op: "*",
-      type: "binaryExpression",
+      type: "arithmeticExpression",
     });
   });
 
@@ -78,6 +80,7 @@ describe("Column Expression treeWalker", () => {
     const str = "concatenate(currency, exchange)";
     const result = parser.parse(str);
     const expression = walkTree(result, str);
+
     expect(expression).toEqual({
       arguments: [
         { column: "currency", type: "colExpression" },
@@ -88,7 +91,7 @@ describe("Column Expression treeWalker", () => {
     });
   });
 
-  it("parses arguments of differenmt types", () => {
+  it("parses arguments of different types", () => {
     const str = "left(description, 20)";
     const result = parser.parse(str);
     const expression = walkTree(result, str);
@@ -121,20 +124,21 @@ describe("Column Expression treeWalker", () => {
     const str = "min(min(i1, i3), i2)";
     const result = parser.parse(str);
     const expression = walkTree(result, str);
+
     expect(expression).toEqual({
+      type: "callExpression",
+      functionName: "min",
       arguments: [
         {
+          type: "callExpression",
+          functionName: "min",
           arguments: [
             { column: "i1", type: "colExpression" },
             { column: "i3", type: "colExpression" },
           ],
-          functionName: "min",
-          type: "callExpression",
         },
         { column: "i2", type: "colExpression" },
       ],
-      functionName: "min",
-      type: "callExpression",
     });
   });
 
@@ -167,67 +171,219 @@ describe("Column Expression treeWalker", () => {
     });
   });
 
-  it("parses conditional expressions with literal values", () => {
-    const str = "if(price > 100, true, false)";
-    const result = parser.parse(str);
-    const expression = walkTree(result, str);
-    expect(expression).toEqual({
-      condition: {
-        op: ">",
-        expressions: [
-          {
-            column: "price",
-            type: "colExpression",
-          },
-          {
-            type: "numberLiteralExpression",
-            value: 100,
-          },
-        ],
-        type: "booleanExpression",
-      },
-      expressions: [
-        {
+  describe("conditionalExpressions", () => {
+    it("parses conditional expressions with literal values", () => {
+      const str = "if(price > 100, true, false)";
+      const result = parser.parse(str);
+      const expression = walkTree(result, str);
+
+      expect(expression).toEqual({
+        condition: {
+          type: "relationalExpression",
+          op: ">",
+          expressions: [
+            {
+              column: "price",
+              type: "colExpression",
+            },
+            {
+              type: "numberLiteralExpression",
+              value: 100,
+            },
+          ],
+        },
+        truthyExpression: {
           type: "booleanLiteralExpression",
           value: true,
         },
-        {
+        falsyExpression: {
           type: "booleanLiteralExpression",
           value: false,
         },
-      ],
-      type: "conditionalExpression",
+        type: "conditionalExpression",
+      });
     });
-  });
+    it("parses conditional expressions with column values", () => {
+      const str = "if(close > 200, close, open)";
+      const result = parser.parse(str);
+      const expression = walkTree(result, str);
 
-  it("parses conditional expressions with column values", () => {
-    const str = "if(close > 200, close, open)";
-    const result = parser.parse(str);
-    const expression = walkTree(result, str);
-
-    expect(expression).toEqual({
-      condition: {
-        type: "booleanExpression",
-        op: ">",
-        expressions: [
-          { column: "close", type: "colExpression" },
-          {
-            type: "numberLiteralExpression",
-            value: 200,
-          },
-        ],
-      },
-      expressions: [
-        {
+      expect(expression).toEqual({
+        condition: {
+          type: "relationalExpression",
+          op: ">",
+          expressions: [
+            { column: "close", type: "colExpression" },
+            {
+              type: "numberLiteralExpression",
+              value: 200,
+            },
+          ],
+        },
+        truthyExpression: {
           column: "close",
           type: "colExpression",
         },
-        {
+        falsyExpression: {
           column: "open",
           type: "colExpression",
         },
-      ],
-      type: "conditionalExpression",
+        type: "conditionalExpression",
+      });
+    });
+    it("parses conditional expressions with boolean conditions", () => {
+      const str = 'if(bid > 100 and bid <= 200, "in range", "out of range")';
+      const result = parser.parse(str);
+      const expression = walkTree(result, str);
+      expect(expression).toEqual({
+        type: "conditionalExpression",
+        condition: {
+          type: "booleanCondition",
+          op: "and",
+          expressions: [
+            {
+              type: "relationalExpression",
+              op: ">",
+              expressions: [
+                { column: "bid", type: "colExpression" },
+                {
+                  type: "numberLiteralExpression",
+                  value: 100,
+                },
+              ],
+            },
+            {
+              type: "relationalExpression",
+              op: "<=",
+              expressions: [
+                { column: "bid", type: "colExpression" },
+                {
+                  type: "numberLiteralExpression",
+                  value: 200,
+                },
+              ],
+            },
+          ],
+        },
+        truthyExpression: {
+          value: "in range",
+          type: "stringLiteralExpression",
+        },
+        falsyExpression: {
+          value: "out of range",
+          type: "stringLiteralExpression",
+        },
+      });
+    });
+
+    it("parses nested conditional expressions", () => {
+      const str = 'if(price > 100, "high", if (price > 50 , "medium", "low"))';
+      const result = parser.parse(str);
+      const expression = walkTree(result, str);
+
+      expect(expression).toEqual({
+        type: "conditionalExpression",
+        condition: {
+          type: "relationalExpression",
+          op: ">",
+          expressions: [
+            { column: "price", type: "colExpression" },
+            {
+              type: "numberLiteralExpression",
+              value: 100,
+            },
+          ],
+        },
+        truthyExpression: {
+          type: "stringLiteralExpression",
+          value: "high",
+        },
+        falsyExpression: {
+          type: "conditionalExpression",
+          condition: {
+            type: "relationalExpression",
+            op: ">",
+            expressions: [
+              { column: "price", type: "colExpression" },
+              {
+                type: "numberLiteralExpression",
+                value: 50,
+              },
+            ],
+          },
+          truthyExpression: {
+            type: "stringLiteralExpression",
+            value: "medium",
+          },
+          falsyExpression: {
+            type: "stringLiteralExpression",
+            value: "low",
+          },
+        },
+      });
+    });
+    it("parses conditional expressions with compound boolean conditions", () => {
+      const str =
+        'if(bid > 100 and bid <= 200 and bid != 150, "in range", "out of range")';
+      const result = parser.parse(str);
+      const expression = walkTree(result, str);
+
+      expect(expression).toEqual({
+        type: "conditionalExpression",
+        condition: {
+          type: "booleanCondition",
+          op: "and",
+          expressions: [
+            {
+              type: "booleanCondition",
+              op: "and",
+              expressions: [
+                {
+                  type: "relationalExpression",
+                  op: ">",
+                  expressions: [
+                    { column: "bid", type: "colExpression" },
+                    {
+                      type: "numberLiteralExpression",
+                      value: 100,
+                    },
+                  ],
+                },
+                {
+                  type: "relationalExpression",
+                  op: "<=",
+                  expressions: [
+                    { column: "bid", type: "colExpression" },
+                    {
+                      type: "numberLiteralExpression",
+                      value: 200,
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "relationalExpression",
+              op: "!=",
+              expressions: [
+                { column: "bid", type: "colExpression" },
+                {
+                  type: "numberLiteralExpression",
+                  value: 150,
+                },
+              ],
+            },
+          ],
+        },
+        truthyExpression: {
+          value: "in range",
+          type: "stringLiteralExpression",
+        },
+        falsyExpression: {
+          value: "out of range",
+          type: "stringLiteralExpression",
+        },
+      });
     });
   });
 });
