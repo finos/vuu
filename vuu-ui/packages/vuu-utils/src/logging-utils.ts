@@ -27,8 +27,9 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export type BuildEnv = 'production' | 'development';
 
 const NO_OP = () => undefined;
+const logLevel:string = loggingSettings.loggingLevel
 
-export const loggerNew = (category:string, logLevel: string) => {
+export const loggerNew = (category:string) => {
 	const errorEnabled = logLevel === 'error';
 	const warnEnabled = errorEnabled || logLevel === 'warn';
 	const infoEnabled = errorEnabled || warnEnabled || logLevel === 'info';

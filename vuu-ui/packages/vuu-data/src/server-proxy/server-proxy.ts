@@ -58,7 +58,7 @@ export type MessageOptions = {
 let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
-const log = loggerNew('server-proxy', loggingSettings.loggingLevel);
+const log = loggerNew('server-proxy');
 
 const nextRequestId = () => `${_requestId++}`;
 const DEFAULT_OPTIONS: MessageOptions = {};
@@ -199,12 +199,10 @@ export class ServerProxy {
     const serverViewportId =
       this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
-      if (log.infoEnabled) {
-        log.info(
-          `Viewport Unsubscribe Message (Client to Server):
-          ${serverViewportId}`
-        );
-      }
+      log.info?.(
+        `Viewport Unsubscribe Message (Client to Server):
+        ${serverViewportId}`
+      );
       this.sendMessageToServer({
         type: Message.REMOVE_VP,
         viewPortId: serverViewportId,
