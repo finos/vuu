@@ -1,10 +1,12 @@
 import { VuuRange, VuuRow } from "@finos/vuu-protocol-types";
-import { WindowRange } from "@finos/vuu-utils";
+import { logger, WindowRange } from "@finos/vuu-utils";
 import { bufferBreakout } from "./buffer-range";
 
 const EMPTY_ARRAY = [] as const;
 
 type RangeTuple = [boolean, readonly VuuRow[] /*, readonly VuuRow[]*/];
+
+const log = logger('array-backed-moving-window');
 
 export class ArrayBackedMovingWindow {
   private bufferSize: number;
@@ -41,6 +43,7 @@ export class ArrayBackedMovingWindow {
   }
 
   setRowCount = (rowCount: number) => {
+    log.info?.(`Rowcount: ${rowCount}`)
     if (rowCount < this.internalData.length) {
       this.internalData.length = rowCount;
     }
@@ -95,6 +98,7 @@ export class ArrayBackedMovingWindow {
     if (from === currentFrom && to === currentTo) {
       return [false, EMPTY_ARRAY /*, EMPTY_ARRAY*/] as RangeTuple;
     }
+    log.info?.(`Client Range is From ${from} To ${to}`);
 
     const originalRange = this.clientRange.copy();
     this.clientRange.from = from;
@@ -130,6 +134,7 @@ export class ArrayBackedMovingWindow {
   }
 
   setRange(from: number, to: number) {
+
     const [overlapFrom, overlapTo] = this.range.overlap(from, to);
 
     const newData = new Array(to - from + this.bufferSize);
@@ -155,7 +160,7 @@ export class ArrayBackedMovingWindow {
     const { from, to } = this.range;
     const { from: clientFrom, to: clientTo } = this.clientRange;
     const startOffset = Math.max(0, clientFrom - from);
-    // TEMP hack, whu wouldn't we have rowCount ?
+    // TEMP hack, whu wouldn"t we have rowCount ?
     const endOffset = Math.min(
       to - from,
       to,

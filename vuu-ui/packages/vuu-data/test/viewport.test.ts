@@ -1,3 +1,4 @@
+import "./global-mocks";
 import { ServerToClientCreateViewPortSuccess } from "@finos/vuu-protocol-types";
 import { describe, expect, vi, it } from "vitest";
 import { ServerProxySubscribeMessage } from "../src";

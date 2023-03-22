@@ -58,6 +58,8 @@ export type MessageOptions = {
 let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
+const log = logger('server-proxy');
+
 const nextRequestId = () => `${_requestId++}`;
 const DEFAULT_OPTIONS: MessageOptions = {};
 
@@ -121,7 +123,7 @@ export class ServerProxy {
   public async reconnect() {
     await this.login(this.authToken);
 
-    // The 'active' viewports are those the user has on their open layout
+    // The "active" viewports are those the user has on their open layout
     // Reconnect these first.
     const [activeViewports, inactiveViewports] = partition(
       Array.from(this.viewports.values()),
@@ -157,7 +159,7 @@ export class ServerProxy {
         this.pendingLogin = { resolve, reject };
       });
     } else if (this.authToken === "") {
-      console.warn(
+      log.error(
         "ServerProxy login, cannot login until auth token has been obtained"
       );
     }
@@ -167,7 +169,7 @@ export class ServerProxy {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
       if (!this.hasMetaDataFor(message.table)) {
-        logger.info("Get Meta Data Message (Client to Server): ", message);
+        log.info?.(`Get Meta Data Message (Client to Server): ${message}`);
         const requestId = nextRequestId();
         this.sendMessageToServer(
           { type: "GET_TABLE_META", table: message.table },
@@ -186,7 +188,7 @@ export class ServerProxy {
         this.sessionId !== ""
       );
     } else {
-      logger.error(`ServerProxy spurious subscribe call ${message.viewport}`);
+        log.error(`ServerProxy spurious subscribe call ${message.viewport}`);
     }
   }
 
@@ -194,19 +196,18 @@ export class ServerProxy {
     const serverViewportId =
       this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
-      logger.log(
-        "Viewport Unsubscribe Message (Client to Server): ",
-        serverViewportId
+      log.info?.(
+        `Viewport Unsubscribe Message (Client to Server):
+        ${serverViewportId}`
       );
       this.sendMessageToServer({
         type: Message.REMOVE_VP,
         viewPortId: serverViewportId,
       });
-    } else {
-      console.error(
-        `ServerProxy: failed to unsubscribe client viewport ${clientViewportId}, viewport not found`
-      );
     }
+    log.error(
+      `failed to unsubscribe client viewport ${clientViewportId}, viewport not found`
+    );
   }
 
   private getViewportForClient(clientViewportId: string): Viewport;
@@ -375,9 +376,8 @@ export class ServerProxy {
         parentColumnName
       );
       this.sendMessageToServer(request, requestId);
-    } else {
-      console.warn("ServerProxy unable to create link, viewport not found");
     }
+    log.error("ServerProxy unable to create link, viewport not found");
   }
 
   private removeLink(viewport: Viewport) {
@@ -448,14 +448,14 @@ export class ServerProxy {
         // Viewport may already have been unsubscribed
         const viewport = this.getViewportForClient(message.viewport, false);
         if (viewport !== null) {
-          logger.log("Disable Message From Client: ", message);
+          log.debug?.(`Disable Message From Client: ${message}`);
           return this.disableViewport(viewport);
         } else {
           return;
         }
       } else {
         const viewport = this.getViewportForClient(message.viewport);
-        logger.log(`${message.type} Message From Client: `, message);
+        log.debug?.(`${message.type} Message From Client: ${message}`);
         switch (message.type) {
           case "setViewRange":
             return this.setViewRange(viewport, message);
@@ -494,9 +494,9 @@ export class ServerProxy {
       return this.menuRpcCall(message);
     } else {
       const { type, requestId } = message;
+      log.debug?.(`Message From Client: ${type}, Data: ${JSON.stringify(message)}`)
       switch (type) {
         case "GET_TABLE_LIST":
-          logger.log("Get Table List Message (Client to Server)", message);
           return this.sendMessageToServer({ type }, requestId);
         case "GET_TABLE_META":
           return this.sendMessageToServer(
@@ -508,11 +508,13 @@ export class ServerProxy {
         default:
       }
     }
-    logger.error(
-      `Vuu ServerProxy Unexpected message from client ${JSON.stringify(
-        message
-      )}`
-    );
+    if (log.errorEnabled) {
+      log.error(
+        `Vuu ServerProxy Unexpected message from client ${JSON.stringify(
+          message
+        )}`
+      );
+    }
   }
 
   public sendIfReady(
@@ -551,7 +553,7 @@ export class ServerProxy {
   public handleMessageFromServer(message: ServerToClientMessage) {
     const { body, requestId, sessionId } = message;
 
-    // onsole.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (ServerProxy) ${message.type || JSON.stringify(message)}`,'color:white;background-color:blue;font-weight:bold;');
+    // onsole.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (ServerProxy) ${message.type || JSON.stringify(message)}`,"color:white;background-color:blue;font-weight:bold;");
 
     const { viewports } = this;
     switch (body.type) {
@@ -591,11 +593,10 @@ export class ServerProxy {
             this.mapClientToServerViewport.set(requestId, serverViewportId);
             const response = viewport.handleSubscribed(body);
             if (response) {
-              logger.info(
-                "Subscribe Response (ServerProxy to Client): ",
-                response
-              );
               this.postMessageToClient(response);
+              if (log.debugEnabled) {
+                log.debug(`Subscribe Response (ServerProxy to Client): ${JSON.stringify(response)}`)
+              }
             }
             // In the case of a reconnect, we may have resubscribed a disabled viewport,
             // reset the disabled state on server
@@ -656,11 +657,10 @@ export class ServerProxy {
           if (viewport) {
             const response = viewport.completeOperation(requestId);
             if (response !== undefined) {
-              logger.info(
-                "Disable Response (ServerProxy to Client): ",
-                response
-              );
               this.postMessageToClient(response);
+              if (log.debugEnabled) {
+                log.debug(`Disable Response (ServerProxy to Client): ${JSON.stringify(response)}`);
+              }
             }
           }
         }
@@ -675,10 +675,12 @@ export class ServerProxy {
             if (response) {
               this.postMessageToClient(response as DataSourceEnabledMessage);
               const rows = viewport.currentData();
-              logger.info(
-                "Enable Response (ServerProxy to Client): ",
-                response
-              );
+              if (log.debugEnabled) {
+                log.debug(
+                  `Enable Response (ServerProxy to Client):
+                  ${JSON.stringify(response)}`
+                );
+              }
               this.postMessageToClient({
                 clientViewportId: viewport.clientViewportId,
                 mode: "batch",
@@ -686,6 +688,9 @@ export class ServerProxy {
                 size: viewport.size,
                 type: "viewport-update",
               });
+              if (log.debugEnabled) {
+                log.debug(`Enable Response (ServerProxy to Client): ${JSON.stringify(response)}`);
+              }
             }
           }
         }
@@ -714,12 +719,11 @@ export class ServerProxy {
               } else {
                 viewport.handleUpdate(updateType, rowIndex, row);
               }
-            } else {
-              console.warn(
-                `TABLE_ROW message received for non registered viewport ${viewPortId}`
-              );
             }
-            // onsole.log(`%c[ServerProxy] after updates, movingWindow has ${viewport.dataWindow.internalData.length} records`,'color:brown')
+            log.warn?.(
+              `TABLE_ROW message received for non registered viewport ${viewPortId}`
+            );
+            // onsole.log(`%c[ServerProxy] after updates, movingWindow has ${viewport.dataWindow.internalData.length} records`,"color:brown")
           }
 
           this.processUpdates();
@@ -795,11 +799,10 @@ export class ServerProxy {
             const viewport = this.viewports.get(clientViewportId);
             if (viewport) {
               viewport.setTableMeta(body.columns, body.dataTypes);
-            } else {
-              logger.warn(
-                "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
-              );
             }
+            log.warn?.(
+              "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
+            );
           } else {
             this.postMessageToClient({
               type: Message.TABLE_META_RESP,
@@ -881,11 +884,12 @@ export class ServerProxy {
         break;
 
       case "ERROR":
-        logger.error(body.msg);
+        log.error(body.msg);
         break;
 
       default:
-        logger.log(`handleMessageFromServer ${body["type"]}.`);
+        if (log.info)
+          log.info(`handleMessageFromServer ${body["type"]}.`);
     }
   }
 
@@ -938,6 +942,15 @@ export class ServerProxy {
             size,
             type: "viewport-update",
           });
+        }
+        if (
+          log.debugEnabled
+          ) {
+          log.debug(`
+            clientVieportId: ${viewport.clientViewportId}\n
+            mode: ${mode}\n
+            type: viewport-update
+          `)
         }
       }
     });

@@ -1,8 +1,4 @@
-const getCookieValue = (name: string) =>
-  document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(`${name}=`))
-    ?.split("=")[1];
+import { getCookieValue } from "@finos/vuu-utils";
 
 export const getAuthDetailsFromCookies = () => {
   const username = getCookieValue("vuu-username");

@@ -1,3 +1,4 @@
+import "./global-mocks";
 import { describe, expect, vi, it } from "vitest";
 import {
   ServerProxy,
