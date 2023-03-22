@@ -1,4 +1,3 @@
-import { JsonData } from "@finos/vuu-utils";
 import { Tree } from "@lezer/common";
 import { RelationalExpression } from "./generated/column-parser.terms";
 type expressionType =
@@ -20,12 +19,26 @@ type relationalOp = "=" | "!=" | ">" | ">=" | "<" | "<=" | "unknown";
 export interface Expression {
   type: expressionType;
   expressions?: Expression[];
+  toJSON?: () => unknown;
   value?: string | number | boolean;
-  toJSON?: () => JsonData;
 }
 
 interface UnknownExpression extends Expression {
   type: "unknown";
+}
+
+interface BooleanLiteralExpression {
+  type: "booleanLiteralExpression";
+  value: boolean;
+}
+
+interface NumericLiteralExpression {
+  type: "numericLiteralExpression";
+  value: number;
+}
+interface StringLiteralExpression {
+  type: "stringLiteralExpression";
+  value: string;
 }
 
 interface ArithmeticExpression extends Expression {
@@ -65,6 +78,15 @@ interface ConditionalExpression extends Expression {
   falsyExpression: Expression;
 }
 
+export type ColumnDefinitionExpression =
+  | ArithmeticExpression
+  | BooleanLiteralExpression
+  | CallExpression
+  | ColExpression
+  | ConditionalExpression
+  | NumericLiteralExpression
+  | StringLiteralExpression;
+
 class LiteralExpressionImpl implements Expression {
   type:
     | "booleanLiteralExpression"
@@ -88,7 +110,10 @@ class LiteralExpressionImpl implements Expression {
     return {
       type: this.type,
       value: this.value,
-    };
+    } as
+      | StringLiteralExpression
+      | BooleanLiteralExpression
+      | NumericLiteralExpression;
   }
 }
 class ColumnExpressionImpl implements ColExpression {
@@ -101,7 +126,7 @@ class ColumnExpressionImpl implements ColExpression {
     return {
       type: this.type,
       column: this.column,
-    };
+    } as ColExpression;
   }
 }
 class ArithmeticExpressionImpl implements ArithmeticExpression {
@@ -153,7 +178,7 @@ class CallExpressionImpl implements CallExpression {
       type: this.type,
       functionName: this.functionName,
       arguments: this.#expressions.map((e) => e.toJSON?.()),
-    };
+    } as CallExpression;
   }
 }
 
@@ -180,7 +205,7 @@ class RelationalExpressionImpl implements RelationalExpression {
       type: this.type,
       op: this.#op,
       expressions: this.#expressions,
-    };
+    } as RelationalExpression;
   }
 }
 
@@ -386,6 +411,13 @@ const expressionIsIncomplete = (expression: Expression): boolean => {
   return false;
 };
 
+type ExpressionImpl =
+  | ArithmeticExpressionImpl
+  | CallExpressionImpl
+  | ColumnExpressionImpl
+  | ConditionalExpressionImpl
+  | LiteralExpressionImpl;
+
 type PotentiallyUnresolvedExpression = Expression | PartialExpression;
 
 const addExpression = (
@@ -405,7 +437,8 @@ const addExpression = (
 };
 
 class ColumnExpression {
-  #expression: PotentiallyUnresolvedExpression | undefined;
+  #expression: ExpressionImpl | undefined;
+
   #callStack: CallExpression[] = [];
 
   setCondition(booleanOperator?: "and" | "or") {
@@ -441,12 +474,12 @@ class ColumnExpression {
     }
   }
 
-  addExpression(expression: Expression) {
+  addExpression(expression: ExpressionImpl | Expression) {
     if (this.#callStack.length > 0) {
       const currentCallExpression = this.#callStack.at(-1);
       currentCallExpression?.arguments.push(expression as Expression);
     } else if (this.#expression === undefined) {
-      this.#expression = expression;
+      this.#expression = expression as ExpressionImpl;
     } else if (isArithmeticExpression(this.#expression)) {
       const targetExpression = firstIncompleteExpression(this.#expression);
       if (targetExpression && isUnknown(targetExpression)) {
@@ -542,6 +575,10 @@ class ColumnExpression {
   get expression() {
     return this.#expression;
   }
+
+  toJSON() {
+    return this.#expression?.toJSON() as ColumnDefinitionExpression;
+  }
 }
 
 export const walkTree = (tree: Tree, source: string) => {
@@ -621,5 +658,5 @@ export const walkTree = (tree: Tree, source: string) => {
     }
   } while (cursor.next());
 
-  return columnExpression.expression?.toJSON?.();
+  return columnExpression.toJSON();
 };

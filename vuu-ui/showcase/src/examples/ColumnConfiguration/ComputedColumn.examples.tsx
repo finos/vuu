@@ -2,8 +2,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   ColumnExpressionInput,
   ColumnExpressionInputProps,
+  Expression,
+  isCompleteExpression,
   useColumnExpressionSuggestionProvider,
-} from "@finos/vuu-datagrid-extras";
+} from "@finos/vuu-table-extras";
 
 import { JsonTable } from "@finos/vuu-datatable";
 
@@ -12,7 +14,6 @@ import {
   connectToServer,
 } from "@finos/vuu-data";
 import {} from "@finos/vuu-utils";
-import { Expression, isCompleteExpression } from "@finos/vuu-datagrid-extras";
 
 let displaySequence = 1;
 

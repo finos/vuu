@@ -1,4 +1,4 @@
-import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
+import { DatagridSettingsPanel } from "@finos/vuu-table-extras";
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import { Dialog } from "@finos/vuu-popups";

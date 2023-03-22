@@ -13,6 +13,7 @@ import {
 } from "./data-source";
 import * as Message from "./server-proxy/messages";
 import {
+  ConnectionStatusMessage,
   isConnectionStatusMessage,
   messageHasResult,
   ServerProxySubscribeMessage,
@@ -27,7 +28,9 @@ import {
 import { workerSourceCode } from "./inlined-worker";
 import { VuuTableMetaWithTable } from "./hooks";
 
-const workerBlob = new Blob([getLoggingConfig() + workerSourceCode], { type: "text/javascript" });
+const workerBlob = new Blob([getLoggingConfig() + workerSourceCode], {
+  type: "text/javascript",
+});
 const workerBlobUrl = URL.createObjectURL(workerBlob);
 
 type WorkerResolver = {
@@ -226,7 +229,11 @@ const connectedServerAPI: ServerAPI = {
     }),
 };
 
-class _ConnectionManager extends EventEmitter {
+export type ConnectionEvents = {
+  "connection-status": (message: ConnectionStatusMessage) => void;
+};
+
+class _ConnectionManager extends EventEmitter<ConnectionEvents> {
   // The first request must have the token. We can change this to block others until
   // the request with token is received.
   async connect(url: string, authToken?: string): Promise<ServerAPI> {

@@ -21,6 +21,7 @@ import {
   drawSelection,
   EditorView,
   highlightSpecialChars,
+  KeyBinding,
   keymap,
 } from "@codemirror/view";
 import { styleTags, tags } from "@lezer/highlight";
@@ -45,11 +46,12 @@ export {
 export { AnnotationType, EditorState };
 export type { Extension };
 // View
-export { drawSelection, EditorView, highlightSpecialChars, keymap };
+export { drawSelection, EditorView, highlightSpecialChars, KeyBinding, keymap };
 // Lezer tags
 export { styleTags, tags };
 // Lezer lr
 export { LRParser };
 
+export * from "./codemirror-basic-setup";
 export * from "./parser-utils";
 export * from "./suggestion-utils";

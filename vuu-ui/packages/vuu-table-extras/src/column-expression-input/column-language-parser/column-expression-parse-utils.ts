@@ -51,13 +51,10 @@ export const isCompleteRelationalExpression = (node?: SyntaxNode) => {
   if (node?.name === "RelationalExpression") {
     const { firstChild } = node;
     const lastChild = lastNamedChild(node);
-    console.log(`RelationalExpression ${firstChild?.name} ${lastChild?.name}`, {
-      firstChild,
-      lastChild,
-    });
     if (
       firstChild?.name === "Column" &&
-      RelationalOperands.includes(lastChild?.name)
+      typeof lastChild?.name === "string" &&
+      RelationalOperands.includes(lastChild.name)
     ) {
       return true;
     }

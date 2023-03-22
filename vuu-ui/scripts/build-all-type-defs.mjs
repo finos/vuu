@@ -15,7 +15,7 @@ const packages = [
   "vuu-filters",
   "vuu-popups",
   "vuu-table",
-  "vuu-datagrid-extras",
+  "vuu-table-extras",
   "vuu-layout",
   "vuu-shell",
 ];

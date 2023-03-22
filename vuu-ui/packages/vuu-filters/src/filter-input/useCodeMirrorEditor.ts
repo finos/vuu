@@ -6,12 +6,13 @@ import {
   EditorView,
   ensureSyntaxTree,
   keymap,
+  minimalSetup,
   startCompletion,
+  VuuCompletion,
 } from "@finos/vuu-codemirror";
 import { Filter } from "@finos/vuu-filter-types";
 import cx from "classnames";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
-import { minimalSetup } from "./codemirror-basic-setup";
 import { filterLanguageSupport } from "./filter-language-parser";
 import { walkTree } from "./filter-language-parser/FilterTreeWalker";
 import { vuuHighlighting } from "./highlighting";
@@ -21,7 +22,6 @@ import {
   FilterSubmissionMode,
   useAutoComplete,
 } from "./useFilterAutoComplete";
-import { VuuCompletion } from "./useFilterSuggestionProvider";
 
 export type SuggestionType = "column" | "columnValue" | "operator";
 

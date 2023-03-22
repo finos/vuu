@@ -38,7 +38,7 @@ import {
   useState,
 } from "react";
 import { ConfigurableDataTable } from "./ConfigurableDataTable";
-import { DataSourceStats } from "@finos/vuu-datagrid-extras/src/datasource-stats";
+import { DataSourceStats } from "@finos/vuu-table-extras";
 
 import "./vuuTable.css";
 

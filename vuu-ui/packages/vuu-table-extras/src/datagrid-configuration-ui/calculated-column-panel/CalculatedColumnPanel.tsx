@@ -11,8 +11,8 @@ import {
   useState,
 } from "react";
 import {
+  ColumnDefinitionExpression,
   ColumnExpressionInput,
-  Expression,
   useColumnExpressionSuggestionProvider,
 } from "../../column-expression-input";
 import { ColumnAction } from "../settings-panel/useGridSettings";
@@ -32,7 +32,7 @@ export const CalculatedColumnPanel = ({
   table,
 }: CalculatedColumnPanelProps) => {
   const [columnName, setColumnName] = useState("");
-  const [expression, setExpression] = useState<Expression>();
+  const [, setExpression] = useState<ColumnDefinitionExpression>();
   const sourceRef = useRef<string>("");
 
   const suggestionProvider = useColumnExpressionSuggestionProvider({
@@ -47,15 +47,12 @@ export const CalculatedColumnPanel = ({
     },
     []
   );
-  const handleChangeExpression = useCallback(
-    (source: string, expression?: Expression) => {
-      sourceRef.current = source;
-    },
-    []
-  );
+  const handleChangeExpression = useCallback((source: string) => {
+    sourceRef.current = source;
+  }, []);
 
   const handleSubmitExpression = useCallback(
-    (source: string, expression: Expression | undefined) => {
+    (source: string, expression: ColumnDefinitionExpression | undefined) => {
       console.log({ source });
       setExpression(expression);
     },

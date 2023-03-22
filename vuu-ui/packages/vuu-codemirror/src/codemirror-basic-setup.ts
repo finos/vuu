@@ -1,5 +1,5 @@
+import { KeyBinding } from "@codemirror/view";
 import {
-  closeBrackets,
   defaultHighlightStyle,
   defaultKeymap,
   drawSelection,
@@ -9,13 +9,17 @@ import {
   historyKeymap,
   keymap,
   syntaxHighlighting,
-} from "@finos/vuu-codemirror";
+} from "./index";
+
+const keyBindings = [
+  ...defaultKeymap,
+  ...historyKeymap,
+] as ReadonlyArray<KeyBinding>;
 
 export const minimalSetup: Extension = (() => [
   highlightSpecialChars(),
   history(),
   drawSelection(),
-  closeBrackets(),
   syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-  keymap.of([...defaultKeymap, ...historyKeymap]),
+  keymap.of(keyBindings),
 ])();

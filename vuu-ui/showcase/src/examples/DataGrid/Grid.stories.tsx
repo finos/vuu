@@ -1,6 +1,6 @@
 import { ConfigChangeHandler } from "@finos/vuu-data";
 import { Grid } from "@finos/vuu-datagrid";
-import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
+import { DatagridSettingsPanel } from "@finos/vuu-table-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";

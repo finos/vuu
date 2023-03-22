@@ -14,7 +14,6 @@ export type CompletionOptions = {
 };
 
 const NO_OPTIONS: CompletionOptions = {};
-const NO_OPERATORS = [] as Completion[];
 
 export const toSuggestions = (
   values: string[],

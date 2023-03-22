@@ -12,7 +12,7 @@ import {
   ColumnExpressionOperator,
   ColumnExpressionSuggestionType,
   IExpressionSuggestionProvider,
-} from "@finos/vuu-datagrid-extras";
+} from "@finos/vuu-table-extras";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
 import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";

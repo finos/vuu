@@ -1,5 +1,5 @@
 {
-  "name": "@finos/vuu-datagrid-extras",
+  "name": "@finos/vuu-table-extras",
   "version": "0.0.26",
   "author": "heswell",
   "main": "src/index.ts",

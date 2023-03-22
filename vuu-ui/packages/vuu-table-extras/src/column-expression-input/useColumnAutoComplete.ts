@@ -242,7 +242,6 @@ export const useColumnAutoComplete = (
           );
         case "RelationalExpression":
           {
-            // need to check if the relational expression is complete
             if (isCompleteRelationalExpression(nodeBefore)) {
               return {
                 from: context.pos,
@@ -276,11 +275,13 @@ export const useColumnAutoComplete = (
         case "String":
           {
             // we only encounter a string as the right hand operand of a conditional expression
-            const operator = getRelationalOperator(nodeBefore, state);
+            const operator = getRelationalOperator(
+              nodeBefore,
+              state
+            ) as ColumnExpressionOperator;
             const columnName = getColumnName(nodeBefore, state);
             // are we inside the string or immediately after it
             const { from, to } = nodeBefore;
-            console.log(`from ${from} to ${to} pos ${context.pos}`);
             if (to - from === 2 && context.pos === from + 1) {
               // We are in an empty string, i.e between two quotes
               if (columnName && operator) {

@@ -6,14 +6,14 @@ import {
   EditorView,
   ensureSyntaxTree,
   keymap,
+  minimalSetup,
   startCompletion,
 } from "@finos/vuu-codemirror";
 import { createEl } from "@finos/vuu-utils";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
-import { minimalSetup } from "./codemirror-basic-setup";
 import { columnExpressionLanguageSupport } from "./column-language-parser";
 import {
-  Expression,
+  ColumnDefinitionExpression,
   walkTree,
 } from "./column-language-parser/ColumnExpressionTreeWalker";
 import { vuuHighlighting } from "./highlighting";
@@ -91,10 +91,13 @@ const injectOptionContent = (
 };
 
 export interface ColumnExpressionEditorProps {
-  onChange?: (source: string, expression: Expression | undefined) => void;
+  onChange?: (
+    source: string,
+    expression: ColumnDefinitionExpression | undefined
+  ) => void;
   onSubmitExpression?: (
     source: string,
-    expression: Expression | undefined
+    expression: ColumnDefinitionExpression | undefined
   ) => void;
   suggestionProvider: IExpressionSuggestionProvider;
 }
@@ -110,12 +113,14 @@ export const useColumnExpressionEditor = ({
   const completionFn = useColumnAutoComplete(suggestionProvider, onSubmit);
 
   const [createState, clearInput] = useMemo(() => {
-    const parseExpression = (): [string, Expression] | ["", undefined] => {
+    const parseExpression = ():
+      | [string, ColumnDefinitionExpression]
+      | ["", undefined] => {
       const view = getView(viewRef);
       const source = view.state.doc.toString();
       const tree = ensureSyntaxTree(view.state, view.state.doc.length, 5000);
       if (tree) {
-        const expression = walkTree(tree, source) as Expression;
+        const expression = walkTree(tree, source);
         return [source, expression];
       } else {
         return ["", undefined];

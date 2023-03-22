@@ -3,7 +3,7 @@ import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   DatagridSettingsPanel,
   DataSourceStats,
-} from "@finos/vuu-datagrid-extras";
+} from "@finos/vuu-table-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import { FilterInput } from "@finos/vuu-filters";

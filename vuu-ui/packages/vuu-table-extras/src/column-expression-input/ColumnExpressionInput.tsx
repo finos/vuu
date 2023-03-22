@@ -1,21 +1,24 @@
-import { HTMLAttributes, useCallback } from "react";
+import { HTMLAttributes } from "react";
 import {
   ExpressionSuggestionConsumer,
   useColumnExpressionEditor,
 } from "./useColumnExpressionEditor";
 
 import "./ColumnExpressionInput.css";
-import { Expression } from "./column-language-parser";
+import { ColumnDefinitionExpression } from "./column-language-parser";
 
 const classBase = "vuuColumnExpressionInput";
 
 export interface ColumnExpressionInputProps
   extends ExpressionSuggestionConsumer,
     Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
-  onChange?: (source: string, expression: Expression | undefined) => void;
+  onChange?: (
+    source: string,
+    expression: ColumnDefinitionExpression | undefined
+  ) => void;
   onSubmitExpression?: (
     source: string,
-    expression: Expression | undefined
+    expression: ColumnDefinitionExpression | undefined
   ) => void;
 }
 
