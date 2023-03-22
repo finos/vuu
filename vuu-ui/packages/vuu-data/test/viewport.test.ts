@@ -2,6 +2,7 @@ import { ServerToClientCreateViewPortSuccess } from "@finos/vuu-protocol-types";
 import { describe, expect, vi, it } from "vitest";
 import { ServerProxySubscribeMessage } from "../src";
 import { Viewport } from "../src/server-proxy/viewport";
+import "./global-mocks";
 
 const config_options = {
   aggregations: [],

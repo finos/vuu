@@ -9,6 +9,7 @@ import {
   createSubscription,
   updateTableRow,
 } from "./test-utils";
+import "./global-mocks";
 
 const mockConnection = {
   send: vi.fn(),
