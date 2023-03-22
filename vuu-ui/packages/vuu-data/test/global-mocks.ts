@@ -7,6 +7,7 @@ const URLMock = {
 };
 vi.stubGlobal("Blob", BlobMock);
 vi.stubGlobal("URL", URLMock);
+vi.stubGlobal("loggingSettings", { loggingLevel: "error" });
 
 vi.mock("@finos/vuu-utils", async () => {
   const actual = await vi.importActual("@finos/vuu-utils");
