@@ -1,6 +1,6 @@
+import "./global-mocks";
 import { describe, expect, test } from "vitest";
 import { ArrayBackedMovingWindow } from "../src/server-proxy/array-backed-moving-window";
-import "./global-mocks";
 
 function applyUpdates(movingWindow, rows) {
   rows.forEach((row) => {

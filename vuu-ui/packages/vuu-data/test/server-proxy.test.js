@@ -1,3 +1,4 @@
+import "./global-mocks";
 import { describe, expect, vi, it } from "vitest";
 import {
   ServerProxy,
@@ -9,7 +10,6 @@ import {
   createSubscription,
   updateTableRow,
 } from "./test-utils";
-import "./global-mocks";
 
 const mockConnection = {
   send: vi.fn(),
