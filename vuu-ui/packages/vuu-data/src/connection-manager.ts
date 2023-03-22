@@ -6,7 +6,7 @@ import {
   VuuTable,
   VuuTableList,
 } from "@finos/vuu-protocol-types";
-import { EventEmitter, getLoggingConfig, logger, uuid } from "@finos/vuu-utils";
+import { EventEmitter, getLoggingConfig, uuid } from "@finos/vuu-utils";
 import {
   DataSourceCallbackMessage,
   shouldMessageBeRoutedToDataSource as messageShouldBeRoutedToDataSource,
@@ -85,7 +85,7 @@ const getWorker = async (
       const worker = new Worker(workerBlobUrl);
 
       const timer: number | null = window.setTimeout(() => {
-        logger.error("timed out waiting for worker to load");
+        console.error("timed out waiting for worker to load");
       }, 1000);
 
       // This is the inial message handler only, it processes messages whilst we are
@@ -106,7 +106,7 @@ const getWorker = async (
         } else if (isConnectionStatusMessage(message)) {
           handleConnectionStatusChange(msg);
         } else {
-          logger.warn("ConnectionManager: Unexpected message from the worker");
+          console.warn("ConnectionManager: Unexpected message from the worker");
         }
       };
       // TODO handle error
@@ -124,7 +124,7 @@ function handleMessageFromWorker({
     if (viewport) {
       viewport.postMessageToClientDataSource(message);
     } else {
-      logger.error(
+      console.error(
         `[ConnectionManager] ${message.type} message received, viewport not found`
       );
     }
@@ -148,7 +148,7 @@ function handleMessageFromWorker({
         resolve(rest);
       }
     } else {
-      logger.warn(
+      console.warn(
         "%cConnectionManager Unexpected message from the worker",
         "color:red;font-weight:bold;"
       );
@@ -258,7 +258,7 @@ export const connectToServer = async (serverUrl: string, token?: string) => {
     const serverAPI = await ConnectionManager.connect(serverUrl, token);
     resolveServer(serverAPI);
   } catch (err: unknown) {
-    logger.error("Connection Error", err);
+    console.error("Connection Error", err);
     rejectServer(err);
   }
 };

@@ -27,13 +27,13 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export type BuildEnv = 'production' | 'development';
 
 const NO_OP = () => undefined;
-const logLevel:string = loggingSettings.loggingLevel
 
-export const loggerNew = (category:string) => {
-	const errorEnabled = logLevel === 'error';
-	const warnEnabled = errorEnabled || logLevel === 'warn';
-	const infoEnabled = errorEnabled || warnEnabled || logLevel === 'info';
-	const debugEnabled = errorEnabled || warnEnabled || infoEnabled || logLevel === 'debug';
+export const logger = (category:string) => {
+	const logLevel:string = loggingSettings.loggingLevel
+	const debugEnabled = logLevel === 'debug';
+	const infoEnabled = debugEnabled || logLevel === 'info';
+	const warnEnabled = debugEnabled || infoEnabled || logLevel === 'warn';
+	const errorEnabled = debugEnabled || infoEnabled || warnEnabled || logLevel === 'error';
 
 	const info = infoEnabled ? (message:unknown) => console.info(`[${category}] ${message}`) : NO_OP;
 	const warn = warnEnabled ? (message:unknown) => console.warn(`[${category}] ${message}`) : NO_OP;
@@ -43,7 +43,7 @@ export const loggerNew = (category:string) => {
 	if (process.env.NODE_ENV === 'production') {
 		return {
 			errorEnabled,
-			error: errorEnabled ? (message:unknown) => console.error(`[${category}] ${message}`) : NO_OP,
+			error: console.error.bind(error),
 		}
 	} else {
 		return {
@@ -59,63 +59,63 @@ export const loggerNew = (category:string) => {
 	}
 }
 
-export class ConsoleLogger implements Logger {
-	readonly warn: LogFn;
-	readonly error: LogFn;
-	readonly debug: LogFn;
-	readonly info: LogFn;
-	readonly warnEnabled:boolean = false;
-	readonly infoEnabled: boolean = false;
-	readonly debugEnabled:boolean = false;
+// export class ConsoleLogger implements Logger {
+// 	readonly warn: LogFn;
+// 	readonly error: LogFn;
+// 	readonly debug: LogFn;
+// 	readonly info: LogFn;
+// 	readonly warnEnabled:boolean = false;
+// 	readonly infoEnabled: boolean = false;
+// 	readonly debugEnabled:boolean = false;
 
-	constructor(options?: { buildEnv?: string, level?:string | number }) {
-		const { buildEnv, level } = options || {};
+// 	constructor(options?: { buildEnv?: string, level?:string | number }) {
+// 		const { buildEnv, level } = options || {};
 
-		if (buildEnv === 'production') {
-			this.warn = NO_OP;
-			this.error = NO_OP
-			this.debug = NO_OP;
-			this.info = NO_OP;
-			return;
-		}
+// 		if (buildEnv === 'production') {
+// 			this.warn = NO_OP;
+// 			this.error = NO_OP
+// 			this.debug = NO_OP;
+// 			this.info = NO_OP;
+// 			return;
+// 		}
 
-		this.error = console.error.bind(console);
+// 		this.error = console.error.bind(console);
 
-		if (level === 'error') {
-			this.warn = NO_OP;
-			this.debug = NO_OP;
-			this.info = NO_OP;
-			return;
-		}
+// 		if (level === 'error') {
+// 			this.warn = NO_OP;
+// 			this.debug = NO_OP;
+// 			this.info = NO_OP;
+// 			return;
+// 		}
 
-		this.warn = console.warn.bind(console);
+// 		this.warn = console.warn.bind(console);
 
-		if (level === 'warn') {
-			this.info = NO_OP;
-			this.debug = NO_OP;
-			this.warnEnabled = true;
-			return;
-		}
+// 		if (level === 'warn') {
+// 			this.info = NO_OP;
+// 			this.debug = NO_OP;
+// 			this.warnEnabled = true;
+// 			return;
+// 		}
 
-		this.info = console.info.bind(console);
+// 		this.info = console.info.bind(console);
 
-		if (level === 'info') {
-			this.infoEnabled = true;
-			this.debug = NO_OP;
-			return;
-		}
+// 		if (level === 'info') {
+// 			this.infoEnabled = true;
+// 			this.debug = NO_OP;
+// 			return;
+// 		}
 
-		this.debug = console.debug.bind(console);
-		this.debugEnabled = true;
-	}
-}
+// 		this.debug = console.debug.bind(console);
+// 		this.debugEnabled = true;
+// 	}
+// }
 
 export const getLoggingConfig = () => {
 	const loggingLevel = getCookieValue("vuu-logging-level");
 	return `const loggingSettings = { loggingLevel: "${loggingLevel}"};`;
 }
 
-export const logger = new ConsoleLogger({ buildEnv: process.env.NODE_ENV });
+// export const logger = new ConsoleLogger({ buildEnv: process.env.NODE_ENV });
 
 declare global {
 	const loggingSettings:loggingSettings;

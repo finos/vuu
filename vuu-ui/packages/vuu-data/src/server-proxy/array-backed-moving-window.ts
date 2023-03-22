@@ -6,9 +6,7 @@ const EMPTY_ARRAY = [] as const;
 
 type RangeTuple = [boolean, readonly VuuRow[] /*, readonly VuuRow[]*/];
 
-const loggingLevel = () => {
-  return loggingSettings.loggingLevel;
-}
+const log = logger('array-backed-moving-window');
 
 export class ArrayBackedMovingWindow {
   private bufferSize: number;
@@ -45,12 +43,7 @@ export class ArrayBackedMovingWindow {
   }
 
   setRowCount = (rowCount: number) => {
-    if (
-      loggingLevel() === "high" ||
-      loggingLevel() === "medium"
-      ) {
-      logger.log(`Rowcount: ${rowCount}`)
-    }
+    log.info?.(`Rowcount: ${rowCount}`)
     if (rowCount < this.internalData.length) {
       this.internalData.length = rowCount;
     }
@@ -105,13 +98,7 @@ export class ArrayBackedMovingWindow {
     if (from === currentFrom && to === currentTo) {
       return [false, EMPTY_ARRAY /*, EMPTY_ARRAY*/] as RangeTuple;
     }
-
-    if (
-      loggingLevel() === "high" ||
-      loggingLevel() === "medium"
-      ) {
-        logger.info(`Client Range is From ${from} To ${to}`);
-      }
+    log.info?.(`Client Range is From ${from} To ${to}`);
 
     const originalRange = this.clientRange.copy();
     this.clientRange.from = from;

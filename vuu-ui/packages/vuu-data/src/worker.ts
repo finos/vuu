@@ -14,9 +14,7 @@ import { logger } from "@finos/vuu-utils";
 
 let server: ServerProxy;
 
-const loggingLevel = () => {
-  return loggingSettings.loggingLevel;
-}
+const log = logger('worker');
 
 async function connectToServer(
   url: string,
@@ -67,29 +65,19 @@ const handleMessageFromClient = async ({
     // the server - handle accordingly
 
     case "subscribe":
-      logger.info("Subscribe Message From Client: ", message);
       server.subscribe(message);
-      if (
-        loggingLevel() === "high" ||
-        loggingLevel() === "medium"
-        ) {
-        logger.info("Subscribe Message From Client: ", message);
+      if (log.infoEnabled) {
+        log.info("Subscribe Message From Client: ", message);
       }
       break;
     case "unsubscribe":
-      logger.info("Unsubscribe Message From Client: ", message);
       server.unsubscribe(message.viewport);
-      if (
-        loggingLevel() === "high" ||
-        loggingLevel() === "medium"
-        ) {
-        logger.info("Unsubscribe Message From Client: ", message);
-      }
+        log.info?.("Unsubscribe Message From Client: ", message);
       break;
     default:
       server.handleMessageFromClient(message);
-      if (loggingLevel() === "high") {
-        logger.info("Message From Client: ", message);
+      if (log.infoEnabled) {
+        log.info("Message From Client: ", message);
       }
   }
 };
