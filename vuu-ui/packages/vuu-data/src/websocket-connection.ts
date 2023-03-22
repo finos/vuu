@@ -2,7 +2,6 @@ import {
   ServerToClientMessage,
   ClientToServerMessage,
 } from "@finos/vuu-protocol-types";
-import { logger } from "@finos/vuu-utils";
 import { Connection } from "./connectionTypes";
 
 import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
@@ -50,7 +49,7 @@ async function makeConnection(
     const reconnecting = typeof connection !== "undefined";
     const ws = await createWebsocket(url);
 
-    logger.log(
+    console.info(
       "%c⚡ %cconnected",
       "font-size: 24px;color: green;font-weight: bold;",
       "color:green; font-size: 14px;"
@@ -109,11 +108,11 @@ const createWebsocket = (connectionString: string): Promise<WebSocket> =>
   });
 
 const closeWarn = () => {
-  logger.warn(`Connection cannot be closed, socket not yet opened`);
+  console.warn(`Connection cannot be closed, socket not yet opened`);
 };
 
 const sendWarn = (msg: ClientToServerMessage) => {
-  logger.warn(`Message cannot be sent, socket closed`, msg);
+  console.warn(`Message cannot be sent, socket closed`, msg);
 };
 
 const parseMessage = (message: string): ServerToClientMessage => {
@@ -151,7 +150,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     ws.onerror = () => {
-      logger.error(
+      console.error(
         `%c⚡ connection error`,
         "font-size: 24px;color: red;font-weight: bold;",
         "color:red; font-size: 14px;"
@@ -168,7 +167,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     ws.onclose = () => {
-      logger.log(
+      console.info(
         `%c⚡ connection close`,
         "font-size: 24px;color: orange;font-weight: bold;",
         "color:orange; font-size: 14px;"
@@ -193,7 +192,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     const queue = (_msg: ClientToServerMessage) => {
-      console.log(`TODO queue message until websocket reconnected`, {
+      console.info(`TODO queue message until websocket reconnected`, {
         _msg,
       });
     };
@@ -201,11 +200,11 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     this.send = send;
 
     this.close = () => {
-      logger.log("[Connection] close websocket");
       this.status = "closed";
-      ws.close();
-      this.close = closeWarn;
-      this.send = sendWarn;
+        ws.close();
+        this.close = closeWarn;
+        this.send = sendWarn;
+        console.info("[Connection] close websocket");
     };
   }
 }

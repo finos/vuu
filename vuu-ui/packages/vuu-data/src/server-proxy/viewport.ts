@@ -51,6 +51,8 @@ import {
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
+const log = logger('viewport');
+
 interface Disable {
   type: "disable";
 }
@@ -226,22 +228,21 @@ export class Viewport {
       range,
       this.bufferSize
     );
-
-    // console.log(
-    //   `%cViewport subscribed
-    //     clientVpId: ${this.clientViewportId}
-    //     serverVpId: ${this.serverViewportId}
-    //     table: ${this.table}
-    //     aggregations: ${JSON.stringify(aggregations)}
-    //     columns: ${columns.join(",")}
-    //     range: ${JSON.stringify(range)}
-    //     sort: ${JSON.stringify(sort)}
-    //     groupBy: ${JSON.stringify(groupBy)}
-    //     filterSpec: ${JSON.stringify(filterSpec)}
-    //     bufferSize: ${this.bufferSize}
-    //   `,
-    //   "color: blue"
-    // );
+    if (log.debugEnabled) {
+      log.debug(
+        `%cViewport subscribed
+          clientVpId: ${this.clientViewportId}
+          serverVpId: ${this.serverViewportId}
+          table: ${this.table}
+          aggregations: ${JSON.stringify(aggregations)}
+          columns: ${columns.join(",")}
+          range: ${JSON.stringify(range)}
+          sort: ${JSON.stringify(sort)}
+          groupBy: ${JSON.stringify(groupBy)}
+          filterSpec: ${JSON.stringify(filter)}
+          bufferSize: ${this.bufferSize}`
+      );
+    }
     // TODO retrieve the filterStruct
     return {
       aggregations,
@@ -266,10 +267,11 @@ export class Viewport {
     const { clientViewportId, pendingOperations } = this;
     const pendingOperation = pendingOperations.get(requestId);
     if (!pendingOperation) {
-      logger.warn(`Viewport no matching operation found to complete`);
+      log.error("Viewport no matching operation found to complete");
       return;
     }
     const { type } = pendingOperation;
+    log.info?.(`Viewport Operation ${type}:\n${pendingOperation}`)
 
     pendingOperations.delete(requestId);
     if (type === "CHANGE_VP_RANGE") {
@@ -386,7 +388,8 @@ export class Viewport {
             } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
-        // TODO check that there os not already a pending server request for more data
+          log.debug?.(`Viewport range server request: ${serverRequest}`)
+        // TODO check that there is not already a pending server request for more data
         this.awaitOperation(requestId, { type });
         this.pendingRangeRequest = serverRequest;
 
@@ -485,10 +488,14 @@ export class Viewport {
 
   suspend() {
     this.suspended = true;
+    log.info?.("viewport suspend")
   }
 
   resume() {
     this.suspended = false;
+    if (log.debugEnabled) {
+      log.debug?.(`viewport resume: ${this.currentData()}`);
+    }
     return this.currentData();
   }
 
@@ -509,6 +516,7 @@ export class Viewport {
 
   enable(requestId: string) {
     this.awaitOperation(requestId, { type: "enable" });
+      log.info?.(`viewport enable: ${this.serverViewportId}`)
     return {
       type: Message.ENABLE_VP,
       viewPortId: this.serverViewportId,
@@ -517,6 +525,7 @@ export class Viewport {
 
   disable(requestId: string) {
     this.awaitOperation(requestId, { type: "disable" });
+      log.info?.(`viewport disable: ${this.serverViewportId}`)
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
@@ -528,6 +537,7 @@ export class Viewport {
       type: "columns",
       data: columns,
     });
+    log.debug?.(`viewport column request: ${columns}`)
     return this.createRequest({ columns });
   }
 
@@ -537,22 +547,26 @@ export class Viewport {
       data: dataSourceFilter,
     });
     const { filter } = dataSourceFilter;
+    log.info?.(`viewport filter request: ${filter}`)
     return this.createRequest({ filterSpec: { filter } });
   }
 
   aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
     this.awaitOperation(requestId, { type: "aggregate", data: aggregations });
+    log.info?.(`viewport aggregate request: ${aggregations}`)
     return this.createRequest({ aggregations });
   }
 
   sortRequest(requestId: string, sort: VuuSort) {
     this.awaitOperation(requestId, { type: "sort", data: sort });
+    log.info?.(`viewport sort request: ${sort}`)
     return this.createRequest({ sort });
   }
 
   groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
     this.awaitOperation(requestId, { type: "groupBy", data: groupBy });
     this.batchMode = true;
+    log.info?.(`viewport groupby request: ${groupBy}`)
     return this.createRequest({ groupBy });
   }
 
@@ -560,6 +574,7 @@ export class Viewport {
     // TODO we need to do this in the client if we are to raise selection events
     // TODO is it right to set this here or should we wait for ACK from server ?
     this.awaitOperation(requestId, { type: "selection", data: selected });
+    log.info?.(`viewport select request: ${selected}`)
     return {
       type: "SET_SELECTION",
       vpId: this.serverViewportId,
