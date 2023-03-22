@@ -1,11 +1,12 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { Dropdown, Panel, PanelProps } from "@heswell/salt-lab";
+import { getRegisteredCellRenderers } from "@finos/vuu-utils";
+import { Dropdown } from "@heswell/salt-lab";
+import { Panel, PanelProps } from "@salt-ds/core";
 import cx from "classnames";
 import { Dispatch, useMemo } from "react";
 import { ColumnAction } from "../settings-panel/useGridSettings";
 import { NumericColumnPanel } from "./NumericColumnPanel";
 import { StringColumnPanel } from "./StringColumnPanel";
-import { getRegisteredCellRenderers } from "@finos/vuu-utils";
 
 import "./ColumnTypePanel.css";
 

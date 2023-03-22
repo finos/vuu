@@ -27,7 +27,7 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
-      val joinProvider   = JoinTableProviderImpl()//EsperJoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 

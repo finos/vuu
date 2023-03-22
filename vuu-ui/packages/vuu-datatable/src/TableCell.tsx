@@ -1,20 +1,15 @@
-import { DataSourceRow } from "@finos/vuu-data";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { TableCellProps } from "@finos/vuu-datagrid-types";
 import { getColumnPinStyle, metadataKeys } from "@finos/vuu-utils";
 import { EditableLabel } from "@heswell/salt-lab";
 import cx from "classnames";
-import { HTMLAttributes, KeyboardEvent, memo, useRef, useState } from "react";
+import { KeyboardEvent, memo, useCallback, useRef, useState } from "react";
 
 import "./TableCell.css";
 
 const { KEY } = metadataKeys;
-export interface TableCellProps extends HTMLAttributes<HTMLTableCellElement> {
-  column: KeyedColumnDescriptor;
-  row: DataSourceRow;
-}
 
 export const TableCell = memo(
-  ({ className: classNameProp, column, row }: TableCellProps) => {
+  ({ className: classNameProp, column, onClick, row }: TableCellProps) => {
     const labelFieldRef = useRef<HTMLDivElement>(null);
     const {
       align,
@@ -36,6 +31,10 @@ export const TableCell = memo(
         setEditing(true);
       }
     };
+
+    const handleClick = useCallback(() => {
+      onClick?.(column);
+    }, [column, onClick]);
 
     const handleEnterEditMode = () => {
       setEditing(true);
@@ -89,7 +88,7 @@ export const TableCell = memo(
         />
       </td>
     ) : (
-      <td className={className} style={pinnedStyle}>
+      <td className={className} style={pinnedStyle} onClick={handleClick}>
         {CellRenderer ? <CellRenderer column={column} row={row} /> : value}
       </td>
     );
@@ -101,6 +100,7 @@ TableCell.displayName = "TableCell";
 function cellValuesAreEqual(prev: TableCellProps, next: TableCellProps) {
   return (
     prev.column === next.column &&
+    prev.onClick === next.onClick &&
     prev.row[KEY] === next.row[KEY] &&
     prev.row[prev.column.key] === next.row[next.column.key]
   );

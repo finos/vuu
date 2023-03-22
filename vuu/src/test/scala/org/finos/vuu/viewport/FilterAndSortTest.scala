@@ -1,8 +1,8 @@
 package org.finos.vuu.viewport
 
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.filter.{EqFilter, LessThanFilter, NoFilter}
-import org.finos.vuu.core.sort.{AlphaSort, SortDirection, UserDefinedFilterAndSort}
+import org.finos.vuu.core.filter.{EqualsClause, LessThanClause, NoFilter}
+import org.finos.vuu.core.sort.{AlphaSort, AntlrBasedFilter, SortDirection, UserDefinedFilterAndSort}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.MockProvider
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -225,7 +225,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            EqFilter(orderIdColumn, "NYC-0001"),
+            AntlrBasedFilter(EqualsClause("orderId", "NYC-0001")),
             AlphaSort(SortDirection.Ascending, orderIdColumn)
           )
         )
@@ -252,12 +252,10 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         )
       }
 
-      val quantityColumn = orderPrices.getTableDef.columnForName("quantity")
-
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            LessThanFilter(quantityColumn, columns, 800),
+            AntlrBasedFilter(LessThanClause("quantity", 800)),
             AlphaSort(SortDirection.Ascending, orderIdColumn)
           )
         )
@@ -283,7 +281,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            LessThanFilter(quantityColumn, columns, 800),
+            AntlrBasedFilter(LessThanClause("quantity", 800)),
             AlphaSort(SortDirection.Descending, orderIdColumn)
           )
         )
@@ -390,7 +388,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            EqFilter(columns.getColumnForName("orderIdTrader").get, "NYC-0001chris"),
+            AntlrBasedFilter(EqualsClause("orderIdTrader", "NYC-0001chris")),
             AlphaSort(SortDirection.Ascending, orderIdColumn)
           )
         )
@@ -417,13 +415,12 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         )
       }
 
-      val quantityColumn = columns.getColumnForName("quantity").get
       val orderIdTraderColumn = columns.getColumnForName("orderIdTrader").get
 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            LessThanFilter(quantityColumn, columns, 800),
+            AntlrBasedFilter(LessThanClause("quantity", 800)),
             AlphaSort(SortDirection.Descending, orderIdTraderColumn)
           )
         )
@@ -450,7 +447,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            LessThanFilter(quantityColumn, columns, 800),
+            AntlrBasedFilter(LessThanClause("quantity", 800)),
             AlphaSort(SortDirection.Ascending, orderIdTraderColumn)
           )
         )

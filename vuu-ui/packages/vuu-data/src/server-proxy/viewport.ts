@@ -240,9 +240,7 @@ export class Viewport {
           sort: ${JSON.stringify(sort)}
           groupBy: ${JSON.stringify(groupBy)}
           filterSpec: ${JSON.stringify(filter)}
-          bufferSize: ${this.bufferSize}
-        `,
-        "color: blue"
+          bufferSize: ${this.bufferSize}`
       );
     }
     // TODO retrieve the filterStruct
@@ -672,7 +670,7 @@ const toClientRow = (
     true,
     null,
     null,
-    1,
+    0,
     rowKey,
     isSelected,
   ].concat(data) as DataSourceRow;

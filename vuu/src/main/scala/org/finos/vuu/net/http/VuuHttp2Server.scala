@@ -93,21 +93,15 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
       services.foreach(service => addRestService(router, service))
 
-      //if no webroot specified, assume we're loading from the jar..
+      var webRoot: String = null
       if(options.webRoot.isEmpty){
+        webRoot = "classpath://webroot"
         router.route("/public/*")
-          .handler(StaticHandler.create()
-            //.setWebRoot(options.webRoot)
-            //.setDirectoryListing(options.allowDirectoryListings)
-          )
-
-        // Serve the static pages
+          .handler(StaticHandler.create())
         router.route("/*")
-          .handler(StaticHandler.create()
-            //.setWebRoot(options.webRoot)
-            //.setDirectoryListing(options.allowDirectoryListings)
-          )
+          .handler(StaticHandler.create())
       }else{
+        webRoot = new File(options.webRoot).getAbsoluteFile.toString
         PathChecker.throwOnDirectoryNotExists(options.webRoot, "webroot path does not exist:")
 
         router.route("/public/*")
@@ -127,8 +121,7 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
       vertx.createHttpServer(httpOpts).requestHandler(router).listen(options.port);
 
 
-
-      logger.info(s"[HTTP2] Server Started @ ${options.port} on / with webroot ${new File(options.webRoot).getAbsoluteFile} ")
+      logger.info(s"[HTTP2] Server Started @ ${options.port} on / with webroot $webRoot ")
 
     } catch {
       case e: Exception =>

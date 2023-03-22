@@ -1,13 +1,10 @@
-.vuuDataTableRow-even {
-    --row-background: var(--salt-container-secondary-background);
-  }
-  
-  .vuuDataTableRow:not(.vuuDataTableRow-even) {
-    --row-background: var(--vuuTableRow-backgroundColor-odd, var(--table-background));
+  .vuuDataTableRow {
+    background: transparent;
+    /* background: var(--row-background); */
   }
 
-  .vuuDataTableRow {
-    background: var(--row-background);
+  .vuuDataTableRow-even {
+    --row-background: var(--row-background-even);
   }
 
   .vuuDataTableRow :is(.vuuPinFloating, .vuuPinLeft, .vuuPinRight) {

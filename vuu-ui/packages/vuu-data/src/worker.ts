@@ -67,17 +67,19 @@ const handleMessageFromClient = async ({
     case "subscribe":
       server.subscribe(message);
       if (log.infoEnabled) {
-        log.info("Subscribe Message From Client: ", message);
+        log.info(`Subscribe Message From Client: ${JSON.stringify(message)}`);
       }
       break;
     case "unsubscribe":
       server.unsubscribe(message.viewport);
-        log.info?.("Unsubscribe Message From Client: ", message);
+      if (log.infoEnabled) {
+        log.info?.(`Unsubscribe Message From Client: ${JSON.stringify(message)}`);
+      }
       break;
     default:
       server.handleMessageFromClient(message);
       if (log.infoEnabled) {
-        log.info("Message From Client: ", message);
+        log.info(`Message From Client: ${JSON.stringify(message)}`);
       }
   }
 };

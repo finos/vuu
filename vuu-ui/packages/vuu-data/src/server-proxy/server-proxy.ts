@@ -206,7 +206,7 @@ export class ServerProxy {
       });
     }
     log.error(
-      `ServerProxy: failed to unsubscribe client viewport ${clientViewportId}, viewport not found`
+      `failed to unsubscribe client viewport ${clientViewportId}, viewport not found`
     );
   }
 

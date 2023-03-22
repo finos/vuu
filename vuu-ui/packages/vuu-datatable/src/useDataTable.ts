@@ -3,6 +3,7 @@ import {
   DataSourceConfigMessage,
   DataSourceRow,
   DataSourceSubscribedMessage,
+  JsonDataSource,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
@@ -17,6 +18,7 @@ import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
   applySort,
   buildColumnMap,
+  isJsonGroup,
   metadataKeys,
   moveItem,
 } from "@finos/vuu-utils";
@@ -55,7 +57,7 @@ export interface DataTableHookProps extends MeasuredProps {
   tableLayout: tableLayoutType;
 }
 
-const { KEY, IS_EXPANDED } = metadataKeys;
+const { KEY, IS_EXPANDED, IS_LEAF } = metadataKeys;
 
 export const useDataTable = ({
   config,
@@ -231,16 +233,42 @@ export const useDataTable = ({
   );
 
   const handleToggleGroup = useCallback(
-    (row: DataSourceRow) => {
-      if (dataSource) {
-        if (row[IS_EXPANDED]) {
-          dataSource.closeTreeNode(row[KEY]);
-        } else {
-          dataSource.openTreeNode(row[KEY]);
+    (row: DataSourceRow, column: KeyedColumnDescriptor) => {
+      const isJson = isJsonGroup(column, row);
+      const key = row[KEY];
+
+      if (row[IS_EXPANDED]) {
+        (dataSource as JsonDataSource).closeTreeNode(key, true);
+        if (isJson) {
+          const idx = columns.indexOf(column);
+          const rows = (dataSource as JsonDataSource).getRowsAtDepth(idx + 1);
+          console.table(rows);
+          if (!rows.some((row) => row[IS_EXPANDED] || row[IS_LEAF])) {
+            dispatchColumnAction({
+              type: "hideColumns",
+              columns: columns.slice(idx + 2),
+            });
+          }
+        }
+      } else {
+        dataSource.openTreeNode(key);
+        if (isJson) {
+          const childRows = (dataSource as JsonDataSource).getChildRows(key);
+          const idx = columns.indexOf(column) + 1;
+          const columnsToShow = [columns[idx]];
+          if (childRows.some((row) => row[IS_LEAF])) {
+            columnsToShow.push(columns[idx + 1]);
+          }
+          if (columnsToShow.some((col) => col.hidden)) {
+            dispatchColumnAction({
+              type: "showColumns",
+              columns: columnsToShow,
+            });
+          }
         }
       }
     },
-    [dataSource]
+    [columns, dataSource, dispatchColumnAction]
   );
 
   const handleRemoveColumnFromGroupBy = useCallback(

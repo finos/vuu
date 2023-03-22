@@ -8,13 +8,13 @@ object ImmutableArray{
     new ChunkedUniqueImmutableArraySet[T](Set(), Array(), chunkSize = 5000)
   }
   def from[T](array: Array[T])(implicit c: ClassTag[T]) = {
-    empty[T].addAll(new NiaiveImmutableArray[T](array))
+    empty[T].addAll(new NaiveImmutableArray[T](array))
   }
 }
 
 object ImmutableArrays{
   def empty[T :ClassTag](i: Int): Array[ImmutableArray[T]] = {
-    (0 to (i - 1)).map( i=> new NiaiveImmutableArray[T](Array[T]())).toArray
+    (0 to (i - 1)).map( i=> new NaiveImmutableArray[T](Array[T]())).toArray
   }
 }
 

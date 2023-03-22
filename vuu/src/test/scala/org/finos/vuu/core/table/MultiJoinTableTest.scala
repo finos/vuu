@@ -57,7 +57,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
             )
         )
 
-      val joinProvider   = JoinTableProviderImpl()//new EsperJoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 

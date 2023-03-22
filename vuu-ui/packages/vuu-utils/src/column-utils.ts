@@ -12,6 +12,7 @@ import {
   VuuAggregation,
   VuuAggType,
   VuuColumnDataType,
+  VuuDataRow,
   VuuGroupBy,
   VuuRowRecord,
   VuuSort,
@@ -265,6 +266,16 @@ export function extractGroupColumn(
 export const isGroupColumn = (
   column: KeyedColumnDescriptor
 ): column is GroupColumnDescriptor => column.isGroup === true;
+
+export const isJsonAttribute = (value: unknown) =>
+  typeof value === "string" && value.endsWith("+");
+
+export const isJsonGroup = (column: KeyedColumnDescriptor, row: VuuDataRow) =>
+  (column.type as ColumnTypeDescriptor)?.name === "json" &&
+  isJsonAttribute(row[column.key]);
+
+export const isJsonColumn = (column: KeyedColumnDescriptor) =>
+  (column.type as ColumnTypeDescriptor)?.name === "json";
 
 export const sortPinnedColumns = (
   columns: KeyedColumnDescriptor[]
