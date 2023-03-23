@@ -59,7 +59,7 @@ export class ArrayBackedMovingWindow {
   }
 
   setRowCount = (rowCount: number) => {
-    log.info?.(`Rowcount: ${rowCount}`);
+    log.info?.(`setRowCount ${rowCount}`);
     if (rowCount < this.internalData.length) {
       this.internalData.length = rowCount;
     }
@@ -84,7 +84,6 @@ export class ArrayBackedMovingWindow {
       const internalIndex = index - this.#range.from;
       if (!this.internalData[internalIndex] && isWithinClientRange) {
         this.rowsWithinRange += 1;
-        //onsole.log(`rowsWithinRange is now ${this.rowsWithinRange} out of ${this.range.to - this.range.from}`)
       }
 
       this.internalData[internalIndex] = row;
@@ -109,13 +108,14 @@ export class ArrayBackedMovingWindow {
 
   // Returns [false] or [serverDataRequired, clientRows, holdingRows]
   setClientRange(from: number, to: number): RangeTuple {
+    log.debug?.(`setClientRange ${from} - ${to}`);
+
     const currentFrom = this.clientRange.from;
     const currentTo = Math.min(this.clientRange.to, this.rowCount);
 
     if (from === currentFrom && to === currentTo) {
       return [false, EMPTY_ARRAY /*, EMPTY_ARRAY*/] as RangeTuple;
     }
-    log.info?.(`Client Range is From ${from} To ${to}`);
 
     const originalRange = this.clientRange.copy();
     this.clientRange.from = from;
@@ -146,6 +146,7 @@ export class ArrayBackedMovingWindow {
   }
 
   setRange(from: number, to: number) {
+    log.debug?.(`setRange ${from} - ${to}`);
     const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
     const newData = new Array(to - from + this.bufferSize);
     this.rowsWithinRange = 0;

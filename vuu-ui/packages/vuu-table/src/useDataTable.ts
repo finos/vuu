@@ -315,6 +315,7 @@ export const useDataTable = ({
 
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
+      expectConfigChangeRef.current = true;
       dispatchColumnAction({
         type: "tableConfig",
         ...config,
@@ -329,7 +330,6 @@ export const useDataTable = ({
         ...config,
         columns,
       });
-
       expectConfigChangeRef.current = false;
     }
   }, [columns, config, onConfigChange]);
