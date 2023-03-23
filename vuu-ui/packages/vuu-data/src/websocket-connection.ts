@@ -117,7 +117,7 @@ const closeWarn = () => {
 };
 
 const sendWarn = (msg: ClientToServerMessage) => {
-  warn?.(`Message cannot be sent, socket closed`, msg);
+  warn?.(`Message cannot be sent, socket closed ${msg.body.type}`);
 };
 
 const parseMessage = (message: string): ServerToClientMessage => {
