@@ -15,11 +15,13 @@ import {
   getColumnName,
   getTableHeadings,
   getValueFormatter,
+  isFilteredColumn,
   isGroupColumn,
   isPinned,
   isTypeDescriptor,
   metadataKeys,
   sortPinnedColumns,
+  stripFilterFromColumns,
 } from "@finos/vuu-utils";
 
 import { Reducer, useReducer } from "react";
@@ -458,6 +460,11 @@ function updateTableConfig(
     result = {
       ...state,
       columns: applyFilterToColumns(result.columns, filter),
+    };
+  } else if (result.columns.some(isFilteredColumn)) {
+    result = {
+      ...state,
+      columns: stripFilterFromColumns(result.columns),
     };
   }
 

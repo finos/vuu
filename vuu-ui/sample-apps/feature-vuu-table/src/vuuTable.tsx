@@ -106,8 +106,11 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   });
 
   const handleDataSourceConfigChange = useCallback(
-    (config: DataSourceConfig | undefined, confirmed: boolean) => {
-      save?.(config, "datasource-config");
+    (config: DataSourceConfig | undefined, confirmed?: boolean) => {
+      // confirmed / unconfirmed messages are used for UI updates, not state saving
+      if (confirmed === undefined) {
+        save?.(config, "datasource-config");
+      }
     },
     [save]
   );
