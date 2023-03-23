@@ -1,5 +1,5 @@
 import { FunctionComponent as FC, HTMLAttributes } from "react";
-import { TableCellProps } from "@finos/vuu-datatable/src/TableCell";
+import { TableCellProps } from "@finos/vuu-datagrid-types";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 
 export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
@@ -52,7 +52,6 @@ export function registerComponent<
   type: ComponentType = "cell-renderer",
   options: CellRendererOptions
 ): void {
-  console.log("registre component");
   if (isCellRenderer(type, component)) {
     cellRenderersMap.set(componentName, component);
   } else if (isCellConfigPanel(type, component)) {

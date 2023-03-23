@@ -18,10 +18,10 @@ const wave1 = [
 ];
 const wave2 = ["vuu-data", "vuu-filters", "vuu-popups"];
 const wave3 = [
-  "vuu-datagrid",
   "vuu-datatable",
+  "vuu-table",
   "vuu-data-ag-grid",
-  "vuu-datagrid-extras",
+  "vuu-table-extras",
   "vuu-layout",
   "vuu-shell",
 ];

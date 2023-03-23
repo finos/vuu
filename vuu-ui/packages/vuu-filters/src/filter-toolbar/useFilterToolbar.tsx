@@ -3,7 +3,7 @@ import {
   isMultiValueFilter,
   isNamedFilter,
   isSingleValueFilter,
-  ISuggestionProvider,
+  IFilterSuggestionProvider,
   SuggestionConsumer,
 } from "@finos/vuu-filters";
 import { ToggleButton, ToolbarField } from "@heswell/salt-lab";
@@ -13,7 +13,7 @@ import { FilterDropdownMultiSelect } from "./FilterDropdownMultiSelect";
 
 const filterToControl = (
   filter: Filter,
-  suggestionProvider: ISuggestionProvider
+  suggestionProvider: IFilterSuggestionProvider
 ): ReactElement | ReactElement[] => {
   if (isNamedFilter(filter)) {
     return (

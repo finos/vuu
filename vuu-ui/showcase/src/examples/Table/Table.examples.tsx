@@ -1,14 +1,17 @@
 import { ArrayDataSource, DataSourceConfig } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
+import {
+  DatagridSettingsPanel,
+  DataSourceStats,
+} from "@finos/vuu-table-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
-import { DataTable, TableProps } from "@finos/vuu-datatable";
+import { Table, TableProps } from "@finos/vuu-table";
 import { FilterInput } from "@finos/vuu-filters";
 import { Flexbox, useViewContext, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
 
-import { DragVisualizer } from "@finos/vuu-datatable/src/DragVisualizer";
+import { DragVisualizer } from "@finos/vuu-table/src/DragVisualizer";
 import { Filter } from "@finos/vuu-filter-types";
 import { useFilterSuggestionProvider } from "@finos/vuu-filters";
 import {
@@ -40,40 +43,38 @@ let displaySequence = 1;
 const NO_CONFIG = {} as const;
 const useTableConfig = ({
   columnConfig = NO_CONFIG,
+  columnCount = 10,
+  count = 1000,
   leftPinnedColumns = [],
   rightPinnedColumns = [],
   renderBufferSize = 0,
 }: {
   columnConfig?: { [key: string]: Partial<ColumnDescriptor> };
+  columnCount?: number;
+  count?: number;
   leftPinnedColumns?: number[];
   rightPinnedColumns?: number[];
   renderBufferSize?: number;
 } = {}) => {
   return useMemo(() => {
-    const count = 1000;
     const data: VuuRowDataItemType[][] = [];
     for (let i = 0; i < count; i++) {
       // prettier-ignore
-      data.push([
-    `row ${i + 1}`, `#${i+1}  value 1`, "value 2", "value 3", "value 4", "value 5", "value 6", "value 7",  "value 8", "value 9", "value 10" 
-  ] );
+      data.push(
+    [`row ${i + 1}`].concat(Array(columnCount).fill(true).map((v,j) => `value ${j+1} @ ${i + 1}`)) 
+    );
     }
+
     const columns: ColumnDescriptor[] = [
       { name: "row number", width: 150 },
-      { name: "column 1", width: 120 },
-      { name: "column 2", width: 120 },
-      { name: "column 3", width: 120 },
-      { name: "column 4", width: 120 },
-      { name: "column 5", width: 120 },
-      { name: "column 6", width: 120 },
-      { name: "column 7", width: 120 },
-      { name: "column 8", width: 120 },
-      { name: "column 9", width: 120 },
-      { name: "column 10", width: 120 },
-    ].map((col) => ({
-      ...col,
-      ...columnConfig[col.name],
-    }));
+    ].concat(
+      Array(columnCount)
+        .fill(true)
+        .map((base, i) => {
+          const name = `column ${i + 1}`;
+          return { name, width: 100, ...columnConfig[name] };
+        })
+    );
 
     leftPinnedColumns.forEach((index) => (columns[index].pin = "left"));
     rightPinnedColumns.forEach((index) => (columns[index].pin = "right"));
@@ -84,7 +85,14 @@ const useTableConfig = ({
     });
 
     return { config: { columns }, dataSource, renderBufferSize };
-  }, [columnConfig, leftPinnedColumns, renderBufferSize, rightPinnedColumns]);
+  }, [
+    columnConfig,
+    columnCount,
+    count,
+    leftPinnedColumns,
+    renderBufferSize,
+    rightPinnedColumns,
+  ]);
 };
 
 export const DefaultTable = () => {
@@ -92,25 +100,52 @@ export const DefaultTable = () => {
   return (
     <>
       {/* <DragVisualizer orientation="horizontal"> */}
-      <DataTable {...config} height={700} renderBufferSize={20} width={700} />
+      <Table {...config} height={700} renderBufferSize={50} width={700} />
       {/* </DragVisualizer> */}
     </>
   );
 };
 DefaultTable.displaySequence = displaySequence++;
 
+export const TableLoading = () => {
+  const config = useTableConfig({ count: 0 });
+  return (
+    <>
+      {/* <DragVisualizer orientation="horizontal"> */}
+      <Table
+        {...config}
+        height={700}
+        renderBufferSize={20}
+        width={700}
+        className="vuuTable-loading"
+      />
+      {/* </DragVisualizer> */}
+    </>
+  );
+};
+TableLoading.displaySequence = displaySequence++;
+
 export const DefaultTable10Rows = () => {
   const config = useTableConfig();
   return (
     <>
       {/* <DragVisualizer orientation="horizontal"> */}
-      <DataTable {...config} height={240} renderBufferSize={20} width={700} />
+      <Table {...config} height={240} renderBufferSize={20} width={700} />
       {/* </DragVisualizer> */}
     </>
   );
 };
 
-DefaultTable10Rows.displaySequence = displaySequence++;
+export const DefaultTable200C0lumns = () => {
+  const config = useTableConfig({ columnCount: 200 });
+  return (
+    <>
+      <Table {...config} height={600} renderBufferSize={50} width={700} />
+    </>
+  );
+};
+
+DefaultTable200C0lumns.displaySequence = displaySequence++;
 
 export const DefaultTableMultiLevelHeadings = () => {
   const config = useTableConfig({
@@ -131,7 +166,7 @@ export const DefaultTableMultiLevelHeadings = () => {
   return (
     <>
       {/* <DragVisualizer orientation="horizontal"> */}
-      <DataTable {...config} height={700} renderBufferSize={20} width={700} />
+      <Table {...config} height={700} renderBufferSize={20} width={700} />
       {/* </DragVisualizer> */}
     </>
   );
@@ -157,7 +192,7 @@ export const LeftPinnedColumns = () => {
         </ToggleButton>
       </Toolbar>
       <DragVisualizer orientation="horizontal">
-        <DataTable
+        <Table
           {...config}
           height={700}
           tableLayout={isColumnBased ? "column" : "row"}
@@ -187,7 +222,7 @@ export const RightPinnedColumns = () => {
         </ToggleButton>
       </Toolbar>
       <DragVisualizer orientation="horizontal">
-        <DataTable
+        <Table
           {...config}
           height={700}
           tableLayout={isColumnBased ? "column" : "row"}
@@ -204,7 +239,7 @@ export const BetterTableFillContainer = () => {
   const config = useTableConfig();
   return (
     <div style={{ height: 700, width: 700 }}>
-      <DataTable {...config} />
+      <Table {...config} />
     </div>
   );
 };
@@ -214,7 +249,7 @@ export const BetterTableWithBorder = () => {
   const config = useTableConfig();
   return (
     <div style={{ height: 700, width: 700 }}>
-      <DataTable {...config} style={{ border: "solid 2px red" }} />
+      <Table {...config} style={{ border: "solid 2px red" }} />
     </div>
   );
 };
@@ -230,20 +265,20 @@ export const FlexLayoutTables = () => {
     <Flexbox style={{ flexDirection: "column", width: "100%", height: "100%" }}>
       <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
         <View resizeable style={{ flex: 1 }}>
-          <DataTable {...config1} />
+          <Table {...config1} />
         </View>
 
         <View resizeable style={{ flex: 1 }}>
-          <DataTable {...config2} />
+          <Table {...config2} />
         </View>
       </Flexbox>
       <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
         <View resizeable style={{ flex: 1 }}>
-          <DataTable {...config3} />
+          <Table {...config3} />
         </View>
 
         <View resizeable style={{ flex: 1 }}>
-          <DataTable {...config4} />
+          <Table {...config4} />
         </View>
       </Flexbox>
     </Flexbox>
@@ -251,13 +286,13 @@ export const FlexLayoutTables = () => {
 };
 FlexLayoutTables.displaySequence = displaySequence++;
 
-export const VuuDataTable = () => {
+export const vuuTable = () => {
   const [columnConfig, tables] = useMemo(
     () => [
       {
         description: { editable: true },
       },
-      ["instruments", "orders", "parentOrders", "prices"],
+      ["instruments", "orders", "parentOrders", "childOrders", "prices"],
     ],
     []
   );
@@ -339,6 +374,13 @@ export const VuuDataTable = () => {
   const groupByCurrencyExchange = useCallback(() => {
     dataSource.groupBy = ["currency", "exchange"];
   }, [dataSource]);
+  const groupByCurrencyExchangeRic = useCallback(() => {
+    if (dataSource.table.table === "instruments") {
+      dataSource.groupBy = ["currency", "exchange", "ric"];
+    } else if (dataSource.table.table === "childOrders") {
+      dataSource.groupBy = ["ccy", "exchange", "ric"];
+    }
+  }, [dataSource]);
 
   const handleSubmitFilter = useCallback(
     (filterStruct: Filter | undefined, filter: string, filterName?: string) => {
@@ -358,7 +400,8 @@ export const VuuDataTable = () => {
         <ToggleButton tooltipText="Alert">Instruments</ToggleButton>
         <ToggleButton tooltipText="Home">Orders</ToggleButton>
         <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
-        <ToggleButton tooltipText="Search">Prices</ToggleButton>
+        <ToggleButton tooltipText="Child Orders">Child Orders</ToggleButton>
+        <ToggleButton tooltipText="Prices">Prices</ToggleButton>
       </ToggleButtonGroup>
       <Toolbar
         className="salt-density-high"
@@ -372,6 +415,9 @@ export const VuuDataTable = () => {
         <Tooltray>
           <Button onClick={groupByCurrency}>Currency</Button>
           <Button onClick={groupByCurrencyExchange}>Currency, Exchange</Button>
+          <Button onClick={groupByCurrencyExchangeRic}>
+            CCY, Exchange, Ric
+          </Button>
         </Tooltray>
         <Tooltray>
           <FilterInput
@@ -382,7 +428,7 @@ export const VuuDataTable = () => {
           />
         </Tooltray>
       </Toolbar>
-      <DataTable
+      <Table
         allowConfigEditing
         dataSource={dataSource}
         config={tableConfig}
@@ -393,6 +439,21 @@ export const VuuDataTable = () => {
         renderBufferSize={20}
         width={750}
       />
+      <Toolbar
+        className="vuuTable-footer"
+        style={
+          {
+            "--saltToolbar-height": "20px",
+            "--saltToolbar-background":
+              "var(--salt-container-primary-background)",
+            borderTop: "solid 1px var(--salt-container-primary-borderColor)",
+            color: "var(--salt-text-secondary-foreground)",
+            width: 750,
+          } as CSSProperties
+        }
+      >
+        <DataSourceStats dataSource={dataSource} />
+      </Toolbar>
       <Dialog
         className="vuuDialog-gridConfig"
         isOpen={dialogContent !== null}
@@ -404,7 +465,7 @@ export const VuuDataTable = () => {
     </>
   );
 };
-VuuDataTable.displaySequence = displaySequence++;
+vuuTable.displaySequence = displaySequence++;
 
 export const FlexLayoutVuuTables = () => {
   const { schemas } = useSchemas();
@@ -417,20 +478,20 @@ export const FlexLayoutVuuTables = () => {
     <Flexbox style={{ flexDirection: "column", width: 800, height: 700 }}>
       <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={conf1} dataSource={ds1} />
+          <Table config={conf1} dataSource={ds1} />
         </View>
 
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={conf2} dataSource={ds2} />
+          <Table config={conf2} dataSource={ds2} />
         </View>
       </Flexbox>
       <Flexbox resizeable style={{ flexDirection: "row", flex: 1 }}>
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={conf3} dataSource={ds3} />
+          <Table config={conf3} dataSource={ds3} />
         </View>
 
         <View resizeable style={{ flex: 1 }}>
-          <DataTable config={conf4} dataSource={ds4} />
+          <Table config={conf4} dataSource={ds4} />
         </View>
       </Flexbox>
     </Flexbox>
@@ -438,7 +499,7 @@ export const FlexLayoutVuuTables = () => {
 };
 FlexLayoutVuuTables.displaySequence = displaySequence++;
 
-export const VuuDataTableCalculatedColumns = () => {
+export const vuuTableCalculatedColumns = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
   const calculatedColumns: ColumnDescriptor[] = useMemo(
     () => [
@@ -596,7 +657,7 @@ export const VuuDataTableCalculatedColumns = () => {
           />
         </Tooltray>
       </Toolbar>
-      <DataTable
+      <Table
         allowConfigEditing
         dataSource={dataSource}
         config={tableConfig}
@@ -617,7 +678,7 @@ export const VuuDataTableCalculatedColumns = () => {
     </>
   );
 };
-VuuDataTableCalculatedColumns.displaySequence = displaySequence++;
+vuuTableCalculatedColumns.displaySequence = displaySequence++;
 
 export const ColumnHeaders1Level = () => {
   const { schemas } = useSchemas();
@@ -648,7 +709,7 @@ export const ColumnHeaders1Level = () => {
       <div>
         <input defaultValue="Life is" />
       </div>
-      <DataTable
+      <Table
         config={config}
         dataSource={dataSource}
         height={600}
@@ -770,7 +831,7 @@ const ConfigurableDataTable = ({
         </Tooltray>
       </Toolbar>
 
-      <DataTable
+      <Table
         allowConfigEditing
         dataSource={dataSource}
         onConfigChange={handleTableConfigChange}
@@ -790,7 +851,7 @@ const ConfigurableDataTable = ({
   );
 };
 
-export const VuuDataTablePersistedConfig = () => {
+export const vuuTablePersistedConfig = () => {
   const table: VuuTable = useMemo(
     () => ({ module: "SIMUL", table: "instruments" }),
     []
@@ -808,7 +869,7 @@ export const VuuDataTablePersistedConfig = () => {
     </>
   );
 };
-VuuDataTablePersistedConfig.displaySequence = displaySequence++;
+vuuTablePersistedConfig.displaySequence = displaySequence++;
 
 export const VuuTablePredefinedConfig = () => {
   const { schemas } = useSchemas();
@@ -826,7 +887,7 @@ export const VuuTablePredefinedConfig = () => {
   return (
     <Flexbox style={{ flexDirection: "column", width: 800, height: 800 }}>
       <View resizeable style={{ flex: 1 }}>
-        <DataTable config={config} dataSource={dataSource} />
+        <Table config={config} dataSource={dataSource} />
       </View>
       <div data-resizeable style={{ flex: 1 }} />
     </Flexbox>
@@ -842,7 +903,7 @@ export const VuuTablePredefinedGroupBy = () => {
   return (
     <Flexbox style={{ flexDirection: "column", height: 800 }}>
       <View resizeable style={{ flex: 1 }}>
-        <DataTable config={config} dataSource={dataSource} />
+        <Table config={config} dataSource={dataSource} />
       </View>
       <div data-resizeable style={{ flex: 1 }} />
     </Flexbox>
@@ -913,7 +974,7 @@ export const HiddenColumns = () => {
 
   return (
     <>
-      <DataTable
+      <Table
         allowConfigEditing
         dataSource={dataSource}
         config={tableConfig}

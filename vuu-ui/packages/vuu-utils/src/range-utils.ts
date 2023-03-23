@@ -12,11 +12,15 @@ interface FromToRange {
 
 export function getFullRange(
   { from, to }: VuuRange,
-  bufferSize: number = 0,
+  bufferSize = 0,
   rowCount: number = Number.MAX_SAFE_INTEGER
 ): FromToRange {
   if (bufferSize === 0) {
-    return { from, to: Math.min(to, rowCount) };
+    if (rowCount < from) {
+      return { from: 0, to: 0 };
+    } else {
+      return { from, to: Math.min(to, rowCount) };
+    }
   } else if (from === 0) {
     return { from, to: Math.min(to + bufferSize, rowCount) };
   } else {

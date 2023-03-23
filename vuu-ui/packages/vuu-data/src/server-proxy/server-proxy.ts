@@ -1,39 +1,16 @@
-import * as Message from "./messages";
-import { Viewport } from "./viewport";
-import { getRpcServiceModule as getRpcServiceModule } from "./rpc-services";
-import { Connection } from "../connectionTypes";
 import {
-  ServerToClientMessage,
+  ClientToServerMenuRPC,
   ClientToServerMessage,
+  LinkDescriptorWithLabel,
+  ServerToClientMessage,
   VuuColumnDataType,
   VuuLinkDescriptor,
-  VuuTable,
+  VuuRow,
   VuuRpcRequest,
-  LinkDescriptorWithLabel,
-  ClientToServerMenuRPC,
+  VuuTable,
 } from "@finos/vuu-protocol-types";
-import {
-  isViewporttMessage as isViewportMessage,
-  ServerProxySubscribeMessage,
-  VuuUIMessageIn,
-  VuuUIMessageInTableList,
-  VuuUIMessageInTableMeta,
-  VuuUIMessageOut,
-  VuuUIMessageOutAggregate,
-  VuuUIMessageOutConnect,
-  VuuUIMessageOutCreateLink,
-  VuuUIMessageOutFilter,
-  VuuUIMessageOutGroupby,
-  VuuUIMessageOutOpenTreeNode,
-  VuuUIMessageOutCloseTreeNode,
-  VuuUIMessageOutSelect,
-  VuuUIMessageOutSort,
-  VuuUIMessageOutSubscribe,
-  VuuUIMessageOutUnsubscribe,
-  VuuUIMessageOutViewRange,
-  VuuUIMessageOutColumns,
-  VuuUIMessageOutSetTitle,
-} from "../vuuUIMessageTypes";
+import { logger, partition } from "@finos/vuu-utils";
+import { Connection } from "../connectionTypes";
 import {
   DataSourceCallbackMessage,
   DataSourceEnabledMessage,
@@ -45,7 +22,31 @@ import {
   stripRequestId,
   WithRequestId,
 } from "../message-utils";
-import { logger, partition } from "@finos/vuu-utils";
+import {
+  isViewporttMessage as isViewportMessage,
+  ServerProxySubscribeMessage,
+  VuuUIMessageIn,
+  VuuUIMessageInTableList,
+  VuuUIMessageInTableMeta,
+  VuuUIMessageOut,
+  VuuUIMessageOutAggregate,
+  VuuUIMessageOutCloseTreeNode,
+  VuuUIMessageOutColumns,
+  VuuUIMessageOutConnect,
+  VuuUIMessageOutCreateLink,
+  VuuUIMessageOutFilter,
+  VuuUIMessageOutGroupby,
+  VuuUIMessageOutOpenTreeNode,
+  VuuUIMessageOutSelect,
+  VuuUIMessageOutSetTitle,
+  VuuUIMessageOutSort,
+  VuuUIMessageOutSubscribe,
+  VuuUIMessageOutUnsubscribe,
+  VuuUIMessageOutViewRange,
+} from "../vuuUIMessageTypes";
+import * as Message from "./messages";
+import { getRpcServiceModule } from "./rpc-services";
+import { Viewport } from "./viewport";
 
 export type PostMessageToClientCallback = (
   message: VuuUIMessageIn | DataSourceCallbackMessage
@@ -58,7 +59,7 @@ export type MessageOptions = {
 let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
-const log = logger('server-proxy');
+const log = logger("server-proxy");
 
 const nextRequestId = () => `${_requestId++}`;
 const DEFAULT_OPTIONS: MessageOptions = {};
@@ -93,6 +94,18 @@ function addLabelsToLinks(
     }
   });
 }
+
+const byViewportRowIdxTimestamp = (row1: VuuRow, row2: VuuRow) => {
+  if (row1.viewPortId === row2.viewPortId) {
+    if (row1.rowIndex === row2.rowIndex) {
+      return row1.ts > row2.ts ? 1 : -1;
+    } else {
+      return row1.rowIndex > row2.rowIndex ? 1 : -1;
+    }
+  } else {
+    return row1.viewPortId > row2.viewPortId ? 1 : -1;
+  }
+};
 
 interface PendingLogin {
   resolve: (value: string) => void; // TODO
@@ -159,9 +172,7 @@ export class ServerProxy {
         this.pendingLogin = { resolve, reject };
       });
     } else if (this.authToken === "") {
-      log.error(
-        "ServerProxy login, cannot login until auth token has been obtained"
-      );
+      log.error("login, cannot login until auth token has been obtained");
     }
   }
 
@@ -188,7 +199,7 @@ export class ServerProxy {
         this.sessionId !== ""
       );
     } else {
-        log.error(`ServerProxy spurious subscribe call ${message.viewport}`);
+      log.error(`spurious subscribe call ${message.viewport}`);
     }
   }
 
@@ -197,7 +208,7 @@ export class ServerProxy {
       this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
       log.info?.(
-        `Viewport Unsubscribe Message (Client to Server):
+        `Unsubscribe Message (Client to Server):
         ${serverViewportId}`
       );
       this.sendMessageToServer({
@@ -246,12 +257,17 @@ export class ServerProxy {
   /**********************************************************************/
   private setViewRange(viewport: Viewport, message: VuuUIMessageOutViewRange) {
     const requestId = nextRequestId();
-    const [serverRequest, rows] = viewport.rangeRequest(
+    const [serverRequest, rows, debounceRequest] = viewport.rangeRequest(
       requestId,
       message.range
     );
 
     if (serverRequest) {
+      if (process.env.NODE_ENV === "development") {
+        log.info?.(
+          `CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`
+        );
+      }
       this.sendIfReady(
         serverRequest,
         requestId,
@@ -265,6 +281,8 @@ export class ServerProxy {
         clientViewportId: viewport.clientViewportId,
         rows,
       });
+    } else if (debounceRequest) {
+      this.postMessageToClient(debounceRequest);
     }
   }
 
@@ -376,8 +394,9 @@ export class ServerProxy {
         parentColumnName
       );
       this.sendMessageToServer(request, requestId);
+    } else {
+      log.error("ServerProxy unable to create link, viewport not found");
     }
-    log.error("ServerProxy unable to create link, viewport not found");
   }
 
   private removeLink(viewport: Viewport) {
@@ -494,7 +513,9 @@ export class ServerProxy {
       return this.menuRpcCall(message);
     } else {
       const { type, requestId } = message;
-      log.debug?.(`Message From Client: ${type}, Data: ${JSON.stringify(message)}`)
+      log.debug?.(
+        `Message From Client: ${type}, Data: ${JSON.stringify(message)}`
+      );
       switch (type) {
         case "GET_TABLE_LIST":
           return this.sendMessageToServer({ type }, requestId);
@@ -595,7 +616,11 @@ export class ServerProxy {
             if (response) {
               this.postMessageToClient(response);
               if (log.debugEnabled) {
-                log.debug(`Subscribe Response (ServerProxy to Client): ${JSON.stringify(response)}`)
+                log.debug(
+                  `Subscribe Response (ServerProxy to Client): ${JSON.stringify(
+                    response
+                  )}`
+                );
               }
             }
             // In the case of a reconnect, we may have resubscribed a disabled viewport,
@@ -659,7 +684,11 @@ export class ServerProxy {
             if (response !== undefined) {
               this.postMessageToClient(response);
               if (log.debugEnabled) {
-                log.debug(`Disable Response (ServerProxy to Client): ${JSON.stringify(response)}`);
+                log.debug(
+                  `Disable Response (ServerProxy to Client): ${JSON.stringify(
+                    response
+                  )}`
+                );
               }
             }
           }
@@ -689,7 +718,11 @@ export class ServerProxy {
                 type: "viewport-update",
               });
               if (log.debugEnabled) {
-                log.debug(`Enable Response (ServerProxy to Client): ${JSON.stringify(response)}`);
+                log.debug(
+                  `Enable Response (ServerProxy to Client): ${JSON.stringify(
+                    response
+                  )}`
+                );
               }
             }
           }
@@ -697,33 +730,47 @@ export class ServerProxy {
         break;
       case Message.TABLE_ROW:
         {
-          // onsole.log(`\nbatch timestamp ${time(timeStamp)} first timestamp ${time(firstBatchTimestamp)} ${body.rows.length} rows in batch`)
+          if (process.env.NODE_ENV === "development") {
+            log.debugEnabled &&
+              log.debug?.(
+                `\t${body.rows.length} rows [${body.rows[0]?.rowIndex}] - [${
+                  body.rows[body.rows.length - 1]?.rowIndex
+                }]`
+              );
+          }
 
-          // 1) batch records by viewport
-          // 2) sort records by rowIndex and updateTime
-          // 3) pass entire batch to viewport
+          body.rows.sort(byViewportRowIdxTimestamp);
+          let currentViewportId = "";
+          let viewport: Viewport | undefined;
+          let startIdx = 0;
 
-          for (const row of body.rows) {
-            const { viewPortId, rowIndex, rowKey, updateType } = row;
-            const viewport = viewports.get(viewPortId);
-            if (viewport) {
-              // onsole.log(`row timestamp ${time(row.ts)}`)
-              // This might miss rows if we receive rows after submitting a groupByRequest but before
-              // receiving the ACK
-              if (
-                viewport.isTree &&
-                updateType === "U" &&
-                !rowKey.startsWith("$root")
-              ) {
-                // Ignore blank rows sent after GroupBy;
-              } else {
-                viewport.handleUpdate(updateType, rowIndex, row);
+          for (
+            let i = 0, count = body.rows.length, isLast = i === count - 1;
+            i < count;
+            i++, isLast = i === count - 1
+          ) {
+            const row = body.rows[i];
+            if (row.viewPortId !== currentViewportId || isLast) {
+              const viewportId =
+                count === 1 ? row.viewPortId : currentViewportId;
+              if (viewportId !== "") {
+                viewport = viewports.get(viewportId);
+                if (viewport) {
+                  if (startIdx === 0 && isLast) {
+                    viewport.updateRows(body.rows);
+                  } else {
+                    const end = isLast ? count : i;
+                    viewport.updateRows(body.rows.slice(startIdx, end));
+                    startIdx = i;
+                  }
+                } else {
+                  log.warn?.(
+                    `TABLE_ROW message received for non registered viewport ${viewportId}`
+                  );
+                }
               }
+              currentViewportId = row.viewPortId;
             }
-            log.warn?.(
-              `TABLE_ROW message received for non registered viewport ${viewPortId}`
-            );
-            // onsole.log(`%c[ServerProxy] after updates, movingWindow has ${viewport.dataWindow.internalData.length} records`,"color:brown")
           }
 
           this.processUpdates();
@@ -735,6 +782,9 @@ export class ServerProxy {
           const viewport = this.viewports.get(body.viewPortId);
           if (viewport) {
             const { from, to } = body;
+            if (process.env.NODE_ENV === "development") {
+              log.info?.(`CHANGE_VP_RANGE_SUCCESS ${from} - ${to}`);
+            }
             viewport.completeOperation(requestId, from, to);
           }
         }
@@ -799,10 +849,11 @@ export class ServerProxy {
             const viewport = this.viewports.get(clientViewportId);
             if (viewport) {
               viewport.setTableMeta(body.columns, body.dataTypes);
+            } else {
+              log.warn?.(
+                "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
+              );
             }
-            log.warn?.(
-              "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
-            );
           } else {
             this.postMessageToClient({
               type: Message.TABLE_META_RESP,
@@ -888,8 +939,7 @@ export class ServerProxy {
         break;
 
       default:
-        if (log.info)
-          log.info(`handleMessageFromServer ${body["type"]}.`);
+        if (log.info) log.info(`handleMessageFromServer ${body["type"]}.`);
     }
   }
 
@@ -943,14 +993,12 @@ export class ServerProxy {
             type: "viewport-update",
           });
         }
-        if (
-          log.debugEnabled
-          ) {
+        if (log.debugEnabled) {
           log.debug(`
             clientVieportId: ${viewport.clientViewportId}\n
             mode: ${mode}\n
             type: viewport-update
-          `)
+          `);
         }
       }
     });

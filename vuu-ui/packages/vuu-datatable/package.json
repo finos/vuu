@@ -16,9 +16,7 @@
     "/src"
   ],
   "peerDependencies": {
-    "@salt-ds/core": "1.2.0",
-    "@salt-ds/icons": "1.1.0",
-    "@heswell/salt-lab": "1.0.0-alpha.2",
+    "@finos/vuu-table": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "classnames": "^2.2.6",
     "react": "^17.0.2",

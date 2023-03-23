@@ -1,15 +1,19 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ColumnExpressionInput,
+  ColumnExpressionInputProps,
+  Expression,
+  isCompleteExpression,
   useColumnExpressionSuggestionProvider,
-} from "@finos/vuu-datagrid-extras";
+} from "@finos/vuu-table-extras";
+
+import { JsonTable } from "@finos/vuu-datatable";
 
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
 } from "@finos/vuu-data";
 import {} from "@finos/vuu-utils";
-import { Expression } from "@finos/vuu-datagrid-extras";
 
 let displaySequence = 1;
 
@@ -38,6 +42,7 @@ const columns = [
 export const DefaultColumnExpressionInput = () => {
   const [expression, setExpression] = useState<Expression>();
   const [source, setSource] = useState<string>("");
+  const [isValid, setIsValid] = useState(false);
   const suggestionProvider = useColumnExpressionSuggestionProvider({
     columns,
     table,
@@ -51,11 +56,18 @@ export const DefaultColumnExpressionInput = () => {
     connect();
   }, []);
 
-  const handleSubmitExpression = useCallback(
-    (expression: Expression | undefined, source: string) => {
+  const handleSubmitExpression: ColumnExpressionInputProps["onSubmitExpression"] =
+    useCallback((source: string, expression: Expression | undefined) => {
       console.log({ expression, source });
       setExpression(expression);
       setSource(source);
+    }, []);
+
+  const handleChange: ColumnExpressionInputProps["onChange"] = useCallback(
+    (source: string, expression: Expression | undefined) => {
+      // const isValidExpression = isCompleteExpression(source);
+      // console.log(`is valid ${isValidExpression}`);
+      // setIsValid(isCompleteExpression(source));
     },
     []
   );
@@ -63,15 +75,17 @@ export const DefaultColumnExpressionInput = () => {
   return (
     <>
       <ColumnExpressionInput
+        onChange={handleChange}
         onSubmitExpression={handleSubmitExpression}
         suggestionProvider={suggestionProvider}
       />
+      <span>isValid {isValid}</span>
       <br />
       <br />
-      <div>{expression?.toString() ?? ""}</div>
+      <div>{JSON.stringify(expression)}</div>
       <br />
       {/* <div>{source}</div> */}
-      <br />
+      <JsonTable source={expression?.toJSON?.()} height={400} />
     </>
   );
 };

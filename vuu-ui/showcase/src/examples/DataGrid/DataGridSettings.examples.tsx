@@ -1,4 +1,4 @@
-import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
+import { DatagridSettingsPanel } from "@finos/vuu-table-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { useCallback, useMemo } from "react";
 import { useColumns } from "../utils/useColumns";
