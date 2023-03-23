@@ -31,8 +31,10 @@ const NO_OP = () => undefined;
 const DEFAULT_DEBUG_LEVEL: LogLevel =
   process.env.NODE_ENV === "production" ? "error" : "info";
 
+const { loggingLevel = DEFAULT_DEBUG_LEVEL } =
+  typeof loggingSettings !== "undefined" ? loggingSettings : {};
+
 export const logger = (category: string) => {
-  const { loggingLevel = DEFAULT_DEBUG_LEVEL } = loggingSettings;
   const debugEnabled = loggingLevel === "debug";
   const infoEnabled = debugEnabled || loggingLevel === "info";
   const warnEnabled = infoEnabled || loggingLevel === "warn";

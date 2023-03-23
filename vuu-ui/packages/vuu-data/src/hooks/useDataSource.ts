@@ -34,23 +34,11 @@ export function useDataSource({
 
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
-      if (updates.length > 0 && updates[updates.length - 1] == undefined) {
-        console.log(`useDataSource updates have empty data`, { updates });
-      }
-
       for (const row of updates) {
         dataWindow.add(row);
       }
       // Why bother with the slice ?
       data.current = dataWindow.data.slice();
-      if (
-        data.current.length > 0 &&
-        data.current[data.current.length - 1] == undefined
-      ) {
-        console.log(`dataWindow.data.slice() have empty data`, {
-          data: data.current,
-        });
-      }
 
       hasUpdated.current = true;
     },
@@ -59,11 +47,7 @@ export function useDataSource({
 
   const datasourceMessageHandler: SubscribeCallback = useCallback(
     (message) => {
-      if (message.type === "subscribed") {
-        if (message.filter) {
-          console.log(`there is a filter ${JSON.stringify(message.filter)}`);
-        }
-      } else if (message.type === "viewport-update") {
+      if (message.type === "viewport-update") {
         if (message.size !== undefined) {
           dataWindow.setRowCount(message.size);
         }
@@ -75,12 +59,6 @@ export function useDataSource({
           data.current = dataWindow.data.slice();
           hasUpdated.current = true;
         }
-      } else if (message.type === "filter") {
-        // TODO
-        const { filter } = message;
-        console.log("filter message", {
-          filter,
-        });
       }
     },
     [dataWindow, setData]
@@ -106,20 +84,6 @@ export function useDataSource({
     },
     [dataSource, dataWindow, renderBufferSize]
   );
-
-  // const refreshIfUpdated = useCallback(() => {
-  //   if (isMounted.current) {
-  //     if (hasUpdated.current) {
-  //       forceUpdate({});
-  //       hasUpdated.current = false;
-  //     }
-  //     rafHandle.current = requestAnimationFrame(refreshIfUpdated);
-  //   }
-  // }, [forceUpdate]);
-
-  // useEffect(() => {
-  //   rafHandle.current = requestAnimationFrame(refreshIfUpdated);
-  // }, [refreshIfUpdated]);
 
   useMemo(() => {
     const { from, to } = rangeRef.current;

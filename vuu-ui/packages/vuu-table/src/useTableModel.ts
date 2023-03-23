@@ -1,6 +1,7 @@
 import {
   ColumnDescriptor,
   GridConfig,
+  GroupColumnDescriptor,
   KeyedColumnDescriptor,
   PinLocation,
 } from "@finos/vuu-datagrid-types";
@@ -14,6 +15,7 @@ import {
   getColumnName,
   getTableHeadings,
   getValueFormatter,
+  isGroupColumn,
   isPinned,
   isTypeDescriptor,
   metadataKeys,
@@ -223,29 +225,41 @@ const getLabel = (
 };
 
 const toKeyedColumWithDefaults =
-  ({
-    columnDefaultWidth = DEFAULT_COLUMN_WIDTH,
-    columnFormatHeader,
-  }: Omit<GridConfig, "headings">) =>
-  (column: ColumnDescriptor, index: number): KeyedColumnDescriptor => {
+  (options: Omit<GridConfig, "headings">) =>
+  (
+    column: ColumnDescriptor & { key?: number },
+    index: number
+  ): KeyedColumnDescriptor => {
+    const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
+      options;
     const {
       align = getDefaultAlignment(column.serverDataType),
+      key,
       name,
       label = name,
       width = columnDefaultWidth,
       ...rest
     } = column;
-    return {
+
+    const keyedColumnWithDefaults = {
       ...rest,
       align,
       CellRenderer: getCellRendererForColumn(column),
       label: getLabel(label, columnFormatHeader),
-      key: index + KEY_OFFSET,
+      key: key ?? index + KEY_OFFSET,
       name,
       originalIdx: index,
       valueFormatter: getValueFormatter(column),
       width: width,
     };
+
+    if (isGroupColumn(keyedColumnWithDefaults)) {
+      keyedColumnWithDefaults.columns = keyedColumnWithDefaults.columns.map(
+        (col) => toKeyedColumWithDefaults(options)(col, col.key)
+      );
+    }
+
+    return keyedColumnWithDefaults;
   };
 
 function moveColumn(

@@ -56,7 +56,8 @@ import {
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
-const { debug, debugEnabled, error, info, warn } = logger("viewport");
+const { debug, debugEnabled, error, info, infoEnabled, warn } =
+  logger("viewport");
 
 interface Disable {
   type: "disable";
@@ -197,6 +198,10 @@ export class Viewport {
     this.table = table;
     this.sort = sort;
     this.title = title;
+    infoEnabled &&
+      info?.(
+        `constructor #${viewport} ${table.table} bufferSize=${bufferSize}`
+      );
   }
 
   get hasUpdatesToProcess() {
@@ -275,7 +280,7 @@ export class Viewport {
       return;
     }
     const { type } = pendingOperation;
-    info?.(`Operation ${type}:\n${pendingOperation}`);
+    info?.(`completeOperation ${type}`);
 
     pendingOperations.delete(requestId);
     if (type === "CHANGE_VP_RANGE") {
@@ -578,7 +583,7 @@ export class Viewport {
       type: "columns",
       data: columns,
     });
-    debug?.(`column request: ${columns}`);
+    debug?.(`columnRequest: ${columns}`);
     return this.createRequest({ columns });
   }
 
@@ -588,19 +593,19 @@ export class Viewport {
       data: dataSourceFilter,
     });
     const { filter } = dataSourceFilter;
-    info?.(`filter request: ${filter}`);
+    info?.(`filterRequest: ${filter}`);
     return this.createRequest({ filterSpec: { filter } });
   }
 
   aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
     this.awaitOperation(requestId, { type: "aggregate", data: aggregations });
-    info?.(`aggregate request: ${aggregations}`);
+    info?.(`aggregateRequest: ${aggregations}`);
     return this.createRequest({ aggregations });
   }
 
   sortRequest(requestId: string, sort: VuuSort) {
     this.awaitOperation(requestId, { type: "sort", data: sort });
-    info?.(`sort request: ${sort}`);
+    info?.(`sortRequest: ${JSON.stringify(sort.sortDefs)}`);
     return this.createRequest({ sort });
   }
 
@@ -619,7 +624,7 @@ export class Viewport {
     // TODO we need to do this in the client if we are to raise selection events
     // TODO is it right to set this here or should we wait for ACK from server ?
     this.awaitOperation(requestId, { type: "selection", data: selected });
-    info?.(`select request: ${selected}`);
+    info?.(`selectRequest: ${selected}`);
     return {
       type: "SET_SELECTION",
       vpId: this.serverViewportId,
@@ -636,7 +641,9 @@ export class Viewport {
         (lastIndex > from && lastIndex < to)
       ) {
         if (!isLast) {
-          console.warn("TABLE_ROWS are not for latest request");
+          console.warn(
+            "removePendingRangeRequest TABLE_ROWS are not for latest request"
+          );
         }
         this.pendingRangeRequests.splice(i, 1);
         break;
