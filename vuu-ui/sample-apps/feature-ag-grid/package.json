@@ -1,0 +1,43 @@
+{
+  "name": "feature-ag-grid",
+  "version": "0.0.26",
+  "description": "Ag Grid Table",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ../../scripts/build-feature.mjs",
+    "start": "serve -p 5002 ../../deployed_apps/app-vuu-example"
+  },
+  "private": true,
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "devDependencies": {},
+  "dependencies": {
+    "@finos/vuu-data-ag-grid": "0.0.26",
+    "@finos/vuu-data": "0.0.26",
+    "@finos/vuu-layout": "0.0.26",
+    "@finos/vuu-shell": "0.0.26",
+    "@finos/vuu-theme": "0.0.26",
+    "@finos/vuu-utils": "0.0.26",
+    "@salt-ds/core": "1.0.0",
+    "@salt-ds/icons": "1.0.0",
+    "@heswell/salt-lab": "1.0.0-alpha.0-vuu.1",
+    "ag-grid-community": "^28.2.1",
+    "ag-grid-enterprise": "^28.2.1",
+    "ag-grid-react": "^28.2.1"
+  },
+  "peerDependencies": {
+    "ag-grid-community": "^28.2.0",
+    "ag-grid-enterprise": "^28.2.0",
+    "ag-grid-react": "^28.2.0",
+    "classnames": "^2.3.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
