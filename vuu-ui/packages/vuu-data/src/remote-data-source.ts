@@ -303,8 +303,8 @@ export class RemoteDataSource
 
   // Build the config structure in advance of any get requests and on every change.
   // We do not build config on the fly in the getter as we want to avoid creating a
-  // new strucutre on each request - the object is 'stable' in React terminology.
-  private refreshConfig(): DataSourceConfig | undefined {
+  // new structure on each request - the object is 'stable' in React terminology.
+  private refreshConfig(confirmed?: boolean) {
     const { aggregations, columns, filter, groupBy, sort, visualLink } = this;
     const hasAggregations = aggregations.length > 0;
     const hasColumns = columns.length > 0;
@@ -321,10 +321,12 @@ export class RemoteDataSource
       hasGroupBy && (result.groupBy = groupBy);
       hasSort && (result.sort = sort);
       hasVisualLink && (result.visualLink = visualLink);
-      return (this.#config = result);
+      this.#config = result;
     } else {
-      return (this.#config = undefined);
+      this.#config = undefined;
     }
+
+    this.emit("config", this.#config, confirmed);
   }
 
   get config() {
@@ -424,8 +426,7 @@ export class RemoteDataSource
         this.server.send(message);
       }
     }
-    const newConfig = this.refreshConfig();
-    this.emit("config", newConfig, false);
+    this.refreshConfig();
   }
 
   get aggregations() {
@@ -441,9 +442,7 @@ export class RemoteDataSource
         aggregations,
       });
     }
-
     this.refreshConfig();
-    this.emit("config", { aggregations }, false);
   }
 
   get sort() {
@@ -464,7 +463,6 @@ export class RemoteDataSource
       }
     }
     this.refreshConfig();
-    this.emit("config", { sort }, false);
   }
 
   get filter() {
@@ -485,7 +483,6 @@ export class RemoteDataSource
       }
     }
     this.refreshConfig();
-    this.emit("config", { filter }, false);
   }
 
   get groupBy() {
@@ -564,7 +561,6 @@ export class RemoteDataSource
       }
     }
     this.refreshConfig();
-    this.emit("config", { visualLink }, false);
   }
 
   private setConfigPending(config?: DataSourceConfig) {
