@@ -247,23 +247,6 @@ export class Viewport {
       this.bufferSize
     );
 
-    if (process.env.NODE_ENV === "development") {
-      console.log(
-        `%cViewport subscribed
-        clientVpId: ${this.clientViewportId}
-        serverVpId: ${this.serverViewportId}
-        table: ${this.table}
-        aggregations: ${JSON.stringify(aggregations)}
-        columns: ${columns.join(",")}
-        range: ${JSON.stringify(range)}
-        sort: ${JSON.stringify(sort)}
-        groupBy: ${JSON.stringify(groupBy)}
-        filterSpec: ${JSON.stringify(filter)}
-        bufferSize: ${this.bufferSize}
-      `,
-        "color: blue"
-      );
-    }
     // TODO retrieve the filterStruct
     return {
       aggregations,
