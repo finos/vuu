@@ -2,24 +2,33 @@ import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { useEffect, useState } from "react";
 import "./range-filter.css";
 
-export const RangeFilter = (props: {
+type RangeFilterProps = {
   defaultTypeaheadParams: TypeaheadParams;
   existingFilters: IRange | null;
-  onFilterSubmit: Function;
-}) => {
-  const columnName = props.defaultTypeaheadParams[1];
-  const [range, setRange] = useState<IRange | null>(
-    props.existingFilters ?? null
-  );
+  onFilterSubmit: (
+    newQuery: string,
+    selectedFilters: IRange,
+    columnName: string
+  ) => void;
+};
+
+export const RangeFilter = ({
+  defaultTypeaheadParams,
+  existingFilters,
+  onFilterSubmit,
+}: RangeFilterProps) => {
+  const columnName = defaultTypeaheadParams[1];
+  const [range, setRange] = useState<IRange | null>(existingFilters ?? null);
   const [query, setQuery] = useState<string | null>(null);
 
   useEffect(() => {
     setQuery(getRangeQuery(range, columnName));
-  }, [range]);
+  }, [range, columnName]);
 
   useEffect(() => {
-    props.onFilterSubmit(query, range, columnName);
-  }, [query]);
+    if (query == null || range == null) return;
+    onFilterSubmit(query, range, columnName);
+  }, [query, columnName, range, onFilterSubmit]);
 
   const inputChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value === "" ? null : Number(e.target.value);

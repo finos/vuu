@@ -5,11 +5,17 @@ import { FilterComponent } from "./filter-components/filter-selector";
 import "./filter-panel.css";
 import { IRange } from "./filter-components/range-filter";
 
-export const FilterPanel = (props: {
+type FilterPanelProps = {
   table: VuuTable;
   columns: ColumnDescriptor[];
-  onFilterSubmit: Function;
-}) => {
+  onFilterSubmit: (filterQuery: string) => void;
+};
+
+export const FilterPanel = ({
+  table,
+  columns,
+  onFilterSubmit,
+}: FilterPanelProps) => {
   const [selectedColumnName, setSelectedColumnName] = useState<string | null>(
     null
   );
@@ -23,15 +29,15 @@ export const FilterPanel = (props: {
   useEffect(() => {
     if (allQueries) {
       const queryString = getFilterQuery(allQueries);
-      props.onFilterSubmit(queryString);
+      onFilterSubmit(queryString);
     } else {
-      props.onFilterSubmit("");
+      onFilterSubmit("");
     }
-  }, [allQueries, selectedColumnName]);
+  }, [allQueries, selectedColumnName, onFilterSubmit]);
 
   const getSelectedColumnType = () => {
     if (selectedColumnName) {
-      const selectedColumn: ColumnDescriptor[] = props.columns.filter(
+      const selectedColumn: ColumnDescriptor[] = columns.filter(
         (column) => column.name === selectedColumnName
       );
 
@@ -41,8 +47,9 @@ export const FilterPanel = (props: {
     return undefined;
   };
 
-  const handleColumnSelect: React.ChangeEventHandler<HTMLSelectElement> = ({currentTarget}) =>
-    setSelectedColumnName(currentTarget.value);
+  const handleColumnSelect: React.ChangeEventHandler<HTMLSelectElement> = ({
+    currentTarget,
+  }) => setSelectedColumnName(currentTarget.value);
 
   const handleClear = () => {
     setSelectedColumnName(null);
@@ -50,7 +57,7 @@ export const FilterPanel = (props: {
     setFilters(null);
   };
 
-  const onFilterSubmit = (
+  const localOnFilterSubmit = (
     newQuery: string,
     selectedFilters: string[] | IRange,
     columnName: string
@@ -84,7 +91,7 @@ export const FilterPanel = (props: {
             className="block"
           >
             <option disabled selected></option>
-            {props.columns.map(({ name }) => getColumnSelectorOption(name))}
+            {columns.map(({ name }) => getColumnSelectorOption(name))}
           </select>
         </div>
       </div>
@@ -93,9 +100,9 @@ export const FilterPanel = (props: {
           <div>
             <FilterComponent
               columnType={getSelectedColumnType()}
-              defaultTypeaheadParams={[props.table, selectedColumnName]}
+              defaultTypeaheadParams={[table, selectedColumnName]}
               filters={filters ? filters[selectedColumnName] : null}
-              onFilterSubmit={onFilterSubmit}
+              onFilterSubmit={localOnFilterSubmit}
             />
             <button
               className="clear-button"

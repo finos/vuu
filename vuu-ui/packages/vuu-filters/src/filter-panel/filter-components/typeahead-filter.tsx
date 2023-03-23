@@ -1,19 +1,29 @@
 import { useTypeaheadSuggestions } from "@finos/vuu-data";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import "./typeahead-filter.css";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CloseIcon, Icon } from "../icons";
 
-export const TypeaheadFilter = (props: {
+type TypeaheadFilterProps = {
   defaultTypeaheadParams: TypeaheadParams;
   existingFilters: string[] | null;
-  onFilterSubmit: Function;
-}) => {
-  const [tableName, columnName] = props.defaultTypeaheadParams;
+  onFilterSubmit: (
+    newQuery: string,
+    selectedFilters: string[],
+    columnName: string
+  ) => void;
+};
+
+export const TypeaheadFilter = ({
+  defaultTypeaheadParams,
+  existingFilters,
+  onFilterSubmit,
+}: TypeaheadFilterProps) => {
+  const [tableName, columnName] = defaultTypeaheadParams;
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedSuggestions, setSelectedSuggestions] = useState<
     string[] | null
-  >(props.existingFilters ?? null);
+  >(existingFilters ?? null);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [searchValue, setSearchValue] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -28,15 +38,17 @@ export const TypeaheadFilter = (props: {
 
   const ref = useRef<HTMLDivElement>(null);
 
+  const getSuggestions = useTypeaheadSuggestions();
+
   // get suggestions & filters on column select
   useEffect(() => {
-    getSuggestions(props.defaultTypeaheadParams).then((response) => {
+    getSuggestions(defaultTypeaheadParams).then((response) => {
       setSuggestions(response);
     });
 
-    const selected = props.existingFilters ?? null;
+    const selected = existingFilters ?? null;
     setSelectedSuggestions(selected);
-  }, [columnName]);
+  }, [columnName, existingFilters, getSuggestions, defaultTypeaheadParams]);
 
   //close dropdown when clicking outside
   useEffect(() => {
@@ -59,20 +71,9 @@ export const TypeaheadFilter = (props: {
       if (searchValue) options.unshift(`${searchValue}...`);
       setSuggestions(options);
     });
-  }, [searchValue]);
+  }, [searchValue, columnName, tableName, getSuggestions]);
 
-  // on select new, check if "starts with" filter selected and rebuild query
-  useEffect(() => {
-    startsWithFilter.current = isStartsWithFilter();
-    const filterQuery = getTypeaheadQuery(
-      selectedSuggestions,
-      columnName,
-      startsWithFilter.current
-    );
-    props.onFilterSubmit(filterQuery, selectedSuggestions, columnName);
-  }, [selectedSuggestions]);
-
-  const isStartsWithFilter = () => {
+  const isStartsWithFilter = useCallback(() => {
     if (selectedSuggestions && selectedSuggestions[0]) {
       const lastThreeCharacters = selectedSuggestions[0].substring(
         selectedSuggestions[0].length - 3,
@@ -85,14 +86,24 @@ export const TypeaheadFilter = (props: {
     }
 
     return false;
-  };
+  }, [selectedSuggestions]);
+
+  // on select new, check if "starts with" filter selected and rebuild query
+  useEffect(() => {
+    startsWithFilter.current = isStartsWithFilter();
+    const filterQuery = getTypeaheadQuery(
+      selectedSuggestions,
+      columnName,
+      startsWithFilter.current
+    );
+    if (filterQuery == null || selectedSuggestions == null) return;
+    onFilterSubmit(filterQuery, selectedSuggestions, columnName);
+  }, [columnName, isStartsWithFilter, onFilterSubmit, selectedSuggestions]);
 
   const handleDropdownToggle = (event: React.MouseEvent): void => {
     event.stopPropagation();
     setShowDropdown(!showDropdown);
   };
-
-  const getSuggestions = useTypeaheadSuggestions();
 
   const onSearch = ({ target }: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchValue(target.value);
@@ -141,7 +152,8 @@ export const TypeaheadFilter = (props: {
       columnName,
       startsWithFilter.current
     );
-    props.onFilterSubmit(filterQuery, selectedSuggestions);
+    if (filterQuery == null || selectedSuggestions == null) return;
+    onFilterSubmit(filterQuery, selectedSuggestions, columnName);
   };
 
   const removeOption = (option: string): string[] | null => {

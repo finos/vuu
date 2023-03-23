@@ -2,20 +2,30 @@ import { TypeaheadParams, VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { IRange, RangeFilter } from "./range-filter";
 import { TypeaheadFilter } from "./typeahead-filter";
 
-export const FilterComponent = (props: {
+type FilterComponentProps = {
   columnType: VuuColumnDataType | undefined;
   defaultTypeaheadParams: TypeaheadParams;
   filters: string[] | IRange | null;
-  onFilterSubmit: Function;
-}) => {
-  if (props.columnType) {
-    const SelectedFilter = filterComponent[props.columnType];
+  onFilterSubmit: (
+    newQuery: string,
+    selectedFilters: string[] | IRange,
+    columnName: string
+  ) => void;
+};
 
+export const FilterComponent = ({
+  columnType,
+  defaultTypeaheadParams,
+  filters,
+  onFilterSubmit,
+}: FilterComponentProps) => {
+  if (columnType) {
+    const SelectedFilter = filterComponent[columnType];
     return (
       <SelectedFilter
-        defaultTypeaheadParams={props.defaultTypeaheadParams}
-        existingFilters={props.filters}
-        onFilterSubmit={props.onFilterSubmit}
+        defaultTypeaheadParams={defaultTypeaheadParams}
+        existingFilters={filters}
+        onFilterSubmit={onFilterSubmit}
       />
     );
   }
