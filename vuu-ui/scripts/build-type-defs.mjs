@@ -64,6 +64,6 @@ function writePackageJSON() {
   });
 }
 
-createTypeDefs();
+await createTypeDefs();
 await writePackageJSON();
 console.log(`typedefs created ${scopedPackageName}`);
