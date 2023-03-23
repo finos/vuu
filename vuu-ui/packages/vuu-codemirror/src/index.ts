@@ -17,11 +17,11 @@ import {
   syntaxTree,
 } from "@codemirror/language";
 import { AnnotationType, EditorState, Extension } from "@codemirror/state";
+import type { KeyBinding } from "@codemirror/view";
 import {
   drawSelection,
   EditorView,
   highlightSpecialChars,
-  KeyBinding,
   keymap,
 } from "@codemirror/view";
 import { styleTags, tags } from "@lezer/highlight";
