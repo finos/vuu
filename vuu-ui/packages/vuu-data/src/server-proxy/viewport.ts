@@ -396,16 +396,22 @@ export class Viewport {
 
       let debounceRequest: DataSourceDebounceRequest | undefined;
 
+      // Don't use zero as a range cap, it's is likely a transient count reported immediately
+      // following a groupBy operation.
+      const maxRange = this.dataWindow.rowCount || undefined;
       const serverRequest =
         serverDataRequired && !this.rangeRequestAlreadyPending(range)
           ? ({
               type,
               viewPortId: this.serverViewportId,
-              ...getFullRange(range, this.bufferSize, this.dataWindow.rowCount),
+              ...getFullRange(range, this.bufferSize, maxRange),
             } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
-        debug?.(`range server request: ${serverRequest}`);
+        debugEnabled &&
+          debug?.(
+            `create CHANGE_VP_RANGE: [${serverRequest.from} - ${serverRequest.to}]`
+          );
         // TODO check that there is not already a pending server request for more data
         this.awaitOperation(requestId, { type });
         const pendingRequest = this.pendingRangeRequests.at(-1);
