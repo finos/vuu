@@ -27,10 +27,18 @@ import {
   ShellContextProps,
   useShellContext,
 } from "@finos/vuu-shell";
-import { ToolbarButton } from "@heswell/salt-lab";
+import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ConfigurableDataTable } from "./ConfigurableDataTable";
+import { DataSourceStats } from "@finos/vuu-table-extras";
 
 import "./vuuTable.css";
 
@@ -82,10 +90,6 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
     "table-config": tableConfigFromState,
   } = useMemo(() => (load?.() ?? NO_CONFIG) as BlotterConfig, [load]);
 
-  console.log({
-    dataSourceConfigFromState,
-  });
-
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
   const [filterState, setFilterState] = useState<FilterState>({
     filter: undefined,
@@ -109,7 +113,12 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   });
 
   const handleDataSourceConfigChange = useCallback(
-    (config: DataSourceConfig) => save?.(config, "datasource-config"),
+    (config: DataSourceConfig | undefined, confirmed: boolean) => {
+      console.log(
+        `vuuTable handleDataSourceConfigChange confirmed: ${confirmed}`
+      );
+      save?.(config, "datasource-config");
+    },
     [save]
   );
 
@@ -123,13 +132,14 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
       schema.columns.map((col) => col.name);
 
     ds = new RemoteDataSource({
-      onConfigChange: handleDataSourceConfigChange,
+      bufferSize: 1000,
       viewport: id,
       table: schema.table,
       ...dataSourceConfigFromState,
       columns,
       title,
     });
+    ds.on("config", handleDataSourceConfigChange);
     saveSession?.(ds, "data-source");
     return ds;
   }, [
@@ -283,10 +293,13 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
             onConfigChange={handleTableConfigChange}
             onFeatureEnabled={handleVuuFeatureEnabled}
             onFeatureInvocation={handleVuuFeatureInvoked}
-            renderBufferSize={80}
+            renderBufferSize={100}
             rowHeight={18}
           />
         </div>
+        <Toolbar className="vuuTable-footer">
+          <DataSourceStats dataSource={dataSource as RemoteDataSource} />
+        </Toolbar>
       </div>
     </ContextMenuProvider>
   );

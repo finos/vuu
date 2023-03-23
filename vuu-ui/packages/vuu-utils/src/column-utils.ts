@@ -209,7 +209,8 @@ export const flattenColumnGroup = (
 
 export function extractGroupColumn(
   columns: KeyedColumnDescriptor[],
-  groupBy?: VuuGroupBy
+  groupBy?: VuuGroupBy,
+  confirmed = true
 ): [GroupColumnDescriptor | null, KeyedColumnDescriptor[]] {
   if (groupBy && groupBy.length > 0) {
     const flattenedColumns = flattenColumnGroup(columns);
@@ -255,6 +256,7 @@ export function extractGroupColumn(
       heading: ["group-col"],
       isGroup: true,
       columns: groupCols,
+      groupConfirmed: confirmed,
       width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
     } as GroupColumnDescriptor;
 
@@ -418,12 +420,14 @@ const collectFiltersForColumn = (
 
 export const applyGroupByToColumns = (
   columns: KeyedColumnDescriptor[],
-  groupBy: VuuGroupBy
+  groupBy: VuuGroupBy,
+  confirmed = true
 ) => {
   if (groupBy.length) {
     const [groupColumn, nonGroupedColumns] = extractGroupColumn(
       columns,
-      groupBy
+      groupBy,
+      confirmed
     );
     if (groupColumn) {
       return [groupColumn as KeyedColumnDescriptor].concat(nonGroupedColumns);
@@ -496,6 +500,23 @@ export const getColumnName = (name: string) => {
   }
 };
 
+export const findColumn = (
+  columns: KeyedColumnDescriptor[],
+  columnName: string
+): KeyedColumnDescriptor | undefined => {
+  const column = columns.find((col) => col.name === columnName);
+  if (column) {
+    return column;
+  } else {
+    const groupColumn = columns.find(
+      (col) => col.isGroup
+    ) as GroupColumnDescriptor;
+    if (groupColumn) {
+      return findColumn(groupColumn.columns, columnName);
+    }
+  }
+};
+
 export const toDataSourceColumns = (column: ColumnDescriptor) =>
   column.expression
     ? `${column.name}:${column.serverDataType}:${column.expression}`
@@ -512,4 +533,38 @@ export const getRowRecord = (
     },
     {}
   );
+};
+
+export const isDataLoading = (columns: KeyedColumnDescriptor[]) => {
+  return isGroupColumn(columns[0]) && columns[0].groupConfirmed === false;
+};
+
+export const getColumnsInViewport = (
+  columns: KeyedColumnDescriptor[],
+  vpStart: number,
+  vpEnd: number
+): [KeyedColumnDescriptor[], number] => {
+  const visibleColumns: KeyedColumnDescriptor[] = [];
+  let preSpan = 0;
+
+  for (let offset = 0, i = 0; i < columns.length; i++) {
+    const column = columns[i];
+    if (column.hidden) {
+      continue;
+    } else if (offset + column.width < vpStart) {
+      if (offset + column.width + columns[i + 1]?.width > vpStart) {
+        visibleColumns.push(column);
+      } else {
+        preSpan += 1;
+      }
+    } else if (offset > vpEnd) {
+      visibleColumns.push(column);
+      break;
+    } else {
+      visibleColumns.push(column);
+    }
+    offset += column.width;
+  }
+
+  return [visibleColumns, preSpan];
 };

@@ -16,11 +16,12 @@ import {
   syntaxHighlighting,
   syntaxTree,
 } from "@codemirror/language";
-import { EditorState, Extension } from "@codemirror/state";
+import { AnnotationType, EditorState, Extension } from "@codemirror/state";
 import {
   drawSelection,
   EditorView,
   highlightSpecialChars,
+  KeyBinding,
   keymap,
 } from "@codemirror/view";
 import { styleTags, tags } from "@lezer/highlight";
@@ -42,11 +43,15 @@ export {
   syntaxTree,
 };
 // State
-export { EditorState };
+export { AnnotationType, EditorState };
 export type { Extension };
 // View
-export { drawSelection, EditorView, highlightSpecialChars, keymap };
+export { drawSelection, EditorView, highlightSpecialChars, KeyBinding, keymap };
 // Lezer tags
 export { styleTags, tags };
 // Lezer lr
 export { LRParser };
+
+export * from "./codemirror-basic-setup";
+export * from "./parser-utils";
+export * from "./suggestion-utils";

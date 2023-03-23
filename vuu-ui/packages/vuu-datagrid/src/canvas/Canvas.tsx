@@ -107,6 +107,8 @@ export const Canvas = forwardRef(function Canvas(
   }: CanvasProps,
   forwardedRef: ForwardedRef<CanvasAPI>
 ) {
+  console.log(`Canvas ${gridModel.columns.map((col) => col.name)}`);
+
   const canvasEl = useRef<HTMLDivElement>(null);
   const contentEl = useRef<HTMLDivElement>(null);
   const columnGroupHeader = useRef<ColumnGroupHeaderAPI>(null);
@@ -122,6 +124,8 @@ export const Canvas = forwardRef(function Canvas(
     CanvasReducer,
     ColumnGroupType
   >(canvasReducer, columnGroup, initCanvasReducer);
+
+  console.log(`Canvas ${columns.map((col) => col.name)}`);
 
   const columnMap = useMemo(
     () => buildColumnMap(gridModel.columnNames),

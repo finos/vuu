@@ -1,7 +1,5 @@
-import { JsonDataSource } from "@finos/vuu-data";
-import { DataTable } from "@finos/vuu-datatable";
+import { JsonTable } from "@finos/vuu-datatable";
 import { JsonData } from "@finos/vuu-utils";
-import { useMemo } from "react";
 import packageJson from "../../../../package.json";
 
 let displaySequence = 1;
@@ -50,23 +48,10 @@ const json: JsonData = {
 };
 
 export const DefaultJsonTable = () => {
-  const dataSource = useMemo(() => {
-    return new JsonDataSource({ data: json });
-  }, []);
-
-  const tableConfig = useMemo(() => {
-    return {
-      columns: dataSource.columnDescriptors,
-    };
-  }, [dataSource.columnDescriptors]);
-
-  console.log({ tableConfig });
-
   return (
     <>
-      <DataTable
-        config={tableConfig}
-        dataSource={dataSource}
+      <JsonTable
+        source={json}
         height={700}
         renderBufferSize={20}
         selectionModel="none"
@@ -79,23 +64,10 @@ export const DefaultJsonTable = () => {
 DefaultJsonTable.displaySequence = displaySequence++;
 
 export const PackageJsonTable = () => {
-  const dataSource = useMemo(() => {
-    return new JsonDataSource({ data: packageJson });
-  }, []);
-
-  const tableConfig = useMemo(() => {
-    return {
-      columns: dataSource.columnDescriptors,
-    };
-  }, [dataSource.columnDescriptors]);
-
-  console.log({ tableConfig });
-
   return (
     <>
-      <DataTable
-        config={tableConfig}
-        dataSource={dataSource}
+      <JsonTable
+        source={packageJson}
         height={700}
         renderBufferSize={20}
         selectionModel="none"

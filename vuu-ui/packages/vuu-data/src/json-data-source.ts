@@ -1,5 +1,4 @@
 import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
-import { KeySet } from "./server-proxy/keyset";
 import {
   LinkDescriptorWithLabel,
   VuuGroupBy,
@@ -14,10 +13,11 @@ import {
   isSelected,
   JsonData,
   jsonToDataSourceRows,
+  KeySet,
   metadataKeys,
   uuid,
 } from "@finos/vuu-utils";
-import {
+import type {
   DataSource,
   DataSourceConstructorProps,
   DataSourceEvents,

@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { extractFilterForColumn, partition, Row } from "@finos/vuu-utils";
+import { extractFilterForColumn, partition } from "@finos/vuu-utils";
 import {
   isAndFilter,
   isInFilter,
@@ -124,7 +124,7 @@ const includesNoValues = (filter?: Filter | null): boolean => {
 const filterValue = (value: string | number | boolean) =>
   typeof value === "string" ? `"${value}"` : value;
 
-export const filterAsQuery = (f: Filter, namedFilters = {}): string => {
+export const filterAsQuery = (f: Filter): string => {
   if (isMultiClauseFilter(f)) {
     return f.filters.map((filter) => filterAsQuery(filter)).join(` ${f.op} `);
   } else if (isMultiValueFilter(f)) {
@@ -149,8 +149,6 @@ export interface OtherFilter extends CommonFilter {
   type: FilterType;
   values?: any[];
 }
-
-export type RowFilterFn = (row: Row) => boolean;
 
 const includesAllValues = (filter?: Filter | null): boolean => {
   if (!filter) {

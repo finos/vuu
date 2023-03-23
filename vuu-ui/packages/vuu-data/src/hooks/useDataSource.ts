@@ -41,7 +41,6 @@ export function useDataSource({
       for (const row of updates) {
         dataWindow.add(row);
       }
-      console.table(dataWindow.data);
       // Why bother with the slice ?
       data.current = dataWindow.data.slice();
       if (

@@ -8,6 +8,7 @@ import {
   padRight,
   readJson,
   readPackageJson,
+  writeMetaFile,
 } from "../../../scripts/utils.mjs";
 import { build } from "../../../scripts/esbuild.mjs";
 import fs from "fs";
@@ -116,6 +117,8 @@ async function main() {
     console.error(e);
     process.exit(1);
   });
+
+  await writeMetaFile(metafile, outdir);
 
   console.log("[DEPLOY public assets]");
   const publicContent = fs.readdirSync(`./public`);

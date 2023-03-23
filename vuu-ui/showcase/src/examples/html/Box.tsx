@@ -1,4 +1,4 @@
-import { MeasuredProps, useMeasuredContainer } from "@finos/vuu-datatable";
+import { MeasuredProps, useMeasuredContainer } from "@finos/vuu-table";
 import { HTMLAttributes } from "react";
 import { Component } from "./Component";
 

@@ -5,7 +5,7 @@ import React, {
   MouseEvent,
   ReactElement,
   useRef,
-  useState
+  useState,
 } from "react";
 import { Contribution, useViewDispatch } from "../layout-view";
 
@@ -14,7 +14,7 @@ import {
   Toolbar,
   ToolbarButton,
   ToolbarField,
-  Tooltray
+  Tooltray,
 } from "@heswell/salt-lab";
 import { CloseIcon } from "@salt-ds/icons";
 
@@ -152,6 +152,7 @@ export const Header = ({
   return (
     <Toolbar
       className={className}
+      id="stevo"
       orientation={orientationProp}
       style={style}
       onMouseDown={handleMouseDown}

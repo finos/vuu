@@ -1,5 +1,4 @@
 import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
-import { KeySet } from "./server-proxy/keyset";
 import {
   LinkDescriptorWithLabel,
   VuuGroupBy,
@@ -11,13 +10,20 @@ import {
   ClientToServerMenuRPC,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { EventEmitter, isSelected, metadataKeys, uuid } from "@finos/vuu-utils";
+import {
+  EventEmitter,
+  isSelected,
+  KeySet,
+  metadataKeys,
+  uuid,
+} from "@finos/vuu-utils";
 import {
   DataSource,
   DataSourceConstructorProps,
   SubscribeCallback,
   SubscribeProps,
   DataSourceRow,
+  DataSourceEvents,
 } from "./data-source";
 
 export interface ArrayDataSourceConstructorProps
@@ -64,7 +70,10 @@ const toClientRow = (row: DataSourceRow, keys: KeySet) => {
   return clientRow;
 };
 
-export class ArrayDataSource extends EventEmitter implements DataSource {
+export class ArrayDataSource
+  extends EventEmitter<DataSourceEvents>
+  implements DataSource
+{
   private columnDescriptors: ColumnDescriptor[];
   private status = "initialising";
   private disabled = false;
@@ -83,7 +92,6 @@ export class ArrayDataSource extends EventEmitter implements DataSource {
   #sort: VuuSort = { sortDefs: [] };
   #title: string | undefined;
 
-  public rowCount: number | undefined;
   public viewport: string;
 
   private keys = new KeySet(this.#range);

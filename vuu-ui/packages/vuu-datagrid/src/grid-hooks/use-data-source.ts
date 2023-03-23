@@ -105,17 +105,12 @@ export function useDataSource(
       ) {
         dispatchGridModelAction?.(message);
         onConfigChange?.(message);
-        if (message.type === "filter") {
-          // So that an external filter can be made aware of filter changes
-          dataSource?.emit("filter", message.filter);
-        }
       } else {
         // TODO
         dispatchGridAction?.(message as any);
       }
     },
     [
-      dataSource,
       dataWindow,
       dispatchGridAction,
       dispatchGridModelAction,
@@ -156,7 +151,7 @@ export function useDataSource(
         const range = getFullRange(
           { from, to },
           gridModel.renderBufferSize,
-          dataSource?.rowCount
+          dataSource?.size
         );
         dataSource.range = range;
         dataWindow.setRange(range.from, range.to);

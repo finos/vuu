@@ -2,7 +2,7 @@ import {
   ColumnDescriptor,
   SelectionChangeHandler,
 } from "@finos/vuu-datagrid-types";
-import { IEventEmitter } from "@finos/vuu-utils";
+import { EventEmitter } from "@finos/vuu-utils";
 import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
@@ -61,6 +61,15 @@ export interface DataSourceDataMessage extends MessageWithClientViewportId {
   type: "viewport-update";
 }
 
+export interface DataSourceDebounceRequest extends MessageWithClientViewportId {
+  type: "debounce-begin";
+}
+
+export const isSizeOnly = (
+  message: DataSourceCallbackMessage
+): message is DataSourceDataMessage =>
+  message.type === "viewport-update" && message.mode === "size-only";
+
 export interface DataSourceDisabledMessage extends MessageWithClientViewportId {
   type: "disabled";
 }
@@ -98,6 +107,23 @@ export type DataSourceConfigMessage =
   | DataSourceFilterMessage
   | DataSourceGroupByMessage
   | DataSourceSortMessage;
+
+export const toDataSourceConfig = (
+  message: DataSourceConfigMessage
+): DataSourceConfig => {
+  switch (message.type) {
+    case "aggregate":
+      return { aggregations: message.aggregations };
+    case "columns":
+      return { columns: message.columns };
+    case "filter":
+      return { filter: message.filter };
+    case "groupBy":
+      return { groupBy: message.groupBy };
+    case "sort":
+      return { sort: message.sort };
+  }
+};
 
 export interface DataSourceSubscribedMessage
   extends MessageWithClientViewportId,
@@ -143,6 +169,7 @@ export type DataSourceCallbackMessage =
   | DataSourceConfigMessage
   | DataSourceColumnsMessage
   | DataSourceDataMessage
+  | DataSourceDebounceRequest
   | DataSourceDisabledMessage
   | DataSourceEnabledMessage
   | DataSourceMenusMessage
@@ -155,6 +182,7 @@ const datasourceMessages = [
   "aggregate",
   "viewport-update",
   "columns",
+  "debounce-begin",
   "disabled",
   "enabled",
   "filter",
@@ -190,6 +218,11 @@ export const shouldMessageBeRoutedToDataSource = (
   return datasourceMessages.includes(type);
 };
 
+export const isDataSourceConfigMessage = (
+  message: DataSourceCallbackMessage
+): message is DataSourceConfigMessage =>
+  ["aggregate", "columns", "filter", "groupBy", "sort"].includes(message.type);
+
 /**
  * Described the configuration values that should typically be
  * persisted across sessions.
@@ -206,7 +239,6 @@ export interface DataSourceConfig {
 export interface DataSourceConstructorProps extends DataSourceConfig {
   bufferSize?: number;
   table: VuuTable;
-  onConfigChange?: (config: DataSourceConfig) => void;
   title?: string;
   viewport?: string;
 }
@@ -223,8 +255,16 @@ export interface SubscribeProps {
 }
 
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
+export type OptimizeStrategy = "none" | "throttle" | "debounce";
 
-export interface DataSource extends IEventEmitter {
+export type DataSourceEvents = {
+  config: (config: DataSourceConfig | undefined, confirmed: boolean) => void;
+  optimize: (optimize: OptimizeStrategy) => void;
+  range: (range: VuuRange) => void;
+  resize: (size: number) => void;
+};
+
+export interface DataSource extends EventEmitter<DataSourceEvents> {
   aggregations: VuuAggregation[];
   closeTreeNode: (key: string) => void;
   columns: string[];
@@ -238,7 +278,6 @@ export interface DataSource extends IEventEmitter {
   ) => Promise<MenuRpcResponse | undefined>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
-  rowCount: number | undefined;
   select: SelectionChangeHandler;
   readonly selectedRowsCount: number;
   readonly size: number;
