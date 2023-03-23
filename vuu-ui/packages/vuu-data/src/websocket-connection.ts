@@ -3,11 +3,16 @@ import {
   ClientToServerMessage,
 } from "@finos/vuu-protocol-types";
 import { Connection } from "./connectionTypes";
+import { logger } from "@finos/vuu-utils";
 
 import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
 
 export type ConnectionMessage = ServerToClientMessage | ConnectionStatusMessage;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
+
+const { debug, debugEnabled, error, info, warn } = logger(
+  "websocket-connection"
+);
 
 const WS = "ws"; // to stop semGrep complaining
 const isWebsocketUrl = (url: string) =>
@@ -108,11 +113,11 @@ const createWebsocket = (connectionString: string): Promise<WebSocket> =>
   });
 
 const closeWarn = () => {
-  console.warn(`Connection cannot be closed, socket not yet opened`);
+  warn?.(`Connection cannot be closed, socket not yet opened`);
 };
 
 const sendWarn = (msg: ClientToServerMessage) => {
-  console.warn(`Message cannot be sent, socket closed`, msg);
+  warn?.(`Message cannot be sent, socket closed`, msg);
 };
 
 const parseMessage = (message: string): ServerToClientMessage => {
@@ -147,22 +152,15 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     ws.onmessage = (evt) => {
       const vuuMessageFromServer = parseMessage(evt.data);
       if (process.env.NODE_ENV === "development") {
-        if (vuuMessageFromServer.body.type !== "HB") {
-          console.log(
-            `%c<<< ${vuuMessageFromServer.body.type}`,
-            "color: brown"
-          );
+        if (debugEnabled && vuuMessageFromServer.body.type !== "HB") {
+          debug?.(`<<< ${vuuMessageFromServer.body.type}`);
         }
       }
       callback(vuuMessageFromServer);
     };
 
     ws.onerror = () => {
-      console.error(
-        `%c⚡ connection error`,
-        "font-size: 24px;color: red;font-weight: bold;",
-        "color:red; font-size: 14px;"
-      );
+      error(`⚡ connection error`);
       callback({
         type: "connection-status",
         status: "disconnected",
@@ -175,11 +173,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     ws.onclose = () => {
-      console.info(
-        `%c⚡ connection close`,
-        "font-size: 24px;color: orange;font-weight: bold;",
-        "color:orange; font-size: 14px;"
-      );
+      info?.(`⚡ connection close`);
       callback({
         type: "connection-status",
         status: "disconnected",
@@ -193,30 +187,25 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
 
     const send = (msg: ClientToServerMessage) => {
       if (process.env.NODE_ENV === "development") {
-        if (msg.body.type !== "HB_RESP") {
-          console.log(
-            `%c>>> ${msg.body.type}`,
-            "color: green; font-weight: bold;"
-          );
+        if (debugEnabled && msg.body.type !== "HB_RESP") {
+          debug?.(`>>> ${msg.body.type}`);
         }
       }
       ws.send(JSON.stringify(msg));
     };
 
-    const queue = (_msg: ClientToServerMessage) => {
-      console.info(`TODO queue message until websocket reconnected`, {
-        _msg,
-      });
+    const queue = (msg: ClientToServerMessage) => {
+      info?.(`TODO queue message until websocket reconnected ${msg.body.type}`);
     };
 
     this.send = send;
 
     this.close = () => {
       this.status = "closed";
-        ws.close();
-        this.close = closeWarn;
-        this.send = sendWarn;
-        console.info("[Connection] close websocket");
+      ws.close();
+      this.close = closeWarn;
+      this.send = sendWarn;
+      info?.("close websocket");
     };
   }
 }

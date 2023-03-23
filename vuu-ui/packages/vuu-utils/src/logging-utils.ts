@@ -12,7 +12,7 @@ export interface TableLogFn {
 }
 
 type loggingSettings = {
-  loggingLevel: string;
+  loggingLevel: LogLevel;
 };
 
 export interface Logger {
@@ -28,31 +28,33 @@ export type BuildEnv = "production" | "development";
 
 const NO_OP = () => undefined;
 
+const DEFAULT_DEBUG_LEVEL: LogLevel =
+  process.env.NODE_ENV === "production" ? "error" : "info";
+
 export const logger = (category: string) => {
-  const logLevel: string = loggingSettings.loggingLevel;
-  const debugEnabled = logLevel === "debug";
-  const infoEnabled = debugEnabled || logLevel === "info";
-  const warnEnabled = debugEnabled || infoEnabled || logLevel === "warn";
-  const errorEnabled =
-    debugEnabled || infoEnabled || warnEnabled || logLevel === "error";
+  const { loggingLevel = DEFAULT_DEBUG_LEVEL } = loggingSettings;
+  const debugEnabled = loggingLevel === "debug";
+  const infoEnabled = debugEnabled || loggingLevel === "info";
+  const warnEnabled = infoEnabled || loggingLevel === "warn";
+  const errorEnabled = warnEnabled || loggingLevel === "error";
 
   const info = infoEnabled
-    ? (message: unknown) => console.info(`[${category}] ${message}`)
+    ? (message: string) => console.info(`[${category}] ${message}`)
     : NO_OP;
   const warn = warnEnabled
-    ? (message: unknown) => console.warn(`[${category}] ${message}`)
+    ? (message: string) => console.warn(`[${category}] ${message}`)
     : NO_OP;
   const debug = debugEnabled
-    ? (message: unknown) => console.debug(`[${category}] ${message}`)
+    ? (message: string) => console.debug(`[${category}] ${message}`)
     : NO_OP;
   const error = errorEnabled
-    ? (message: unknown) => console.error(`[${category}] ${message}`)
+    ? (message: string) => console.error(`[${category}] ${message}`)
     : NO_OP;
 
   if (process.env.NODE_ENV === "production") {
     return {
       errorEnabled,
-      error: error,
+      error,
     };
   } else {
     return {
@@ -60,10 +62,10 @@ export const logger = (category: string) => {
       infoEnabled,
       warnEnabled,
       errorEnabled,
-      info: info,
-      warn: warn,
-      debug: debug,
-      error: error,
+      info,
+      warn,
+      debug,
+      error,
     };
   }
 };

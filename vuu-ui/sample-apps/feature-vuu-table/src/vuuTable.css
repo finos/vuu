@@ -21,6 +21,11 @@
 
 .vuuTable .vuuTable-footer {
   flex: 22px 0 0;
+  --saltToolbar-height: 20px;
+  --saltToolbar-background: var(--salt-container-primary-background);
+  border-top: solid 1px var(--salt-container-primary-borderColor);
+  color: var(--salt-text-secondary-foreground);
+
 }
 
 

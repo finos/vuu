@@ -1,40 +1,16 @@
-import * as Message from "./messages";
-import { Viewport } from "./viewport";
-import { getRpcServiceModule as getRpcServiceModule } from "./rpc-services";
-import { Connection } from "../connectionTypes";
 import {
-  ServerToClientMessage,
+  ClientToServerMenuRPC,
   ClientToServerMessage,
+  LinkDescriptorWithLabel,
+  ServerToClientMessage,
   VuuColumnDataType,
   VuuLinkDescriptor,
-  VuuTable,
-  VuuRpcRequest,
-  LinkDescriptorWithLabel,
-  ClientToServerMenuRPC,
   VuuRow,
+  VuuRpcRequest,
+  VuuTable,
 } from "@finos/vuu-protocol-types";
-import {
-  isViewporttMessage as isViewportMessage,
-  ServerProxySubscribeMessage,
-  VuuUIMessageIn,
-  VuuUIMessageInTableList,
-  VuuUIMessageInTableMeta,
-  VuuUIMessageOut,
-  VuuUIMessageOutAggregate,
-  VuuUIMessageOutConnect,
-  VuuUIMessageOutCreateLink,
-  VuuUIMessageOutFilter,
-  VuuUIMessageOutGroupby,
-  VuuUIMessageOutOpenTreeNode,
-  VuuUIMessageOutCloseTreeNode,
-  VuuUIMessageOutSelect,
-  VuuUIMessageOutSort,
-  VuuUIMessageOutSubscribe,
-  VuuUIMessageOutUnsubscribe,
-  VuuUIMessageOutViewRange,
-  VuuUIMessageOutColumns,
-  VuuUIMessageOutSetTitle,
-} from "../vuuUIMessageTypes";
+import { logger, partition } from "@finos/vuu-utils";
+import { Connection } from "../connectionTypes";
 import {
   DataSourceCallbackMessage,
   DataSourceEnabledMessage,
@@ -46,7 +22,31 @@ import {
   stripRequestId,
   WithRequestId,
 } from "../message-utils";
-import { logger, partition } from "@finos/vuu-utils";
+import {
+  isViewporttMessage as isViewportMessage,
+  ServerProxySubscribeMessage,
+  VuuUIMessageIn,
+  VuuUIMessageInTableList,
+  VuuUIMessageInTableMeta,
+  VuuUIMessageOut,
+  VuuUIMessageOutAggregate,
+  VuuUIMessageOutCloseTreeNode,
+  VuuUIMessageOutColumns,
+  VuuUIMessageOutConnect,
+  VuuUIMessageOutCreateLink,
+  VuuUIMessageOutFilter,
+  VuuUIMessageOutGroupby,
+  VuuUIMessageOutOpenTreeNode,
+  VuuUIMessageOutSelect,
+  VuuUIMessageOutSetTitle,
+  VuuUIMessageOutSort,
+  VuuUIMessageOutSubscribe,
+  VuuUIMessageOutUnsubscribe,
+  VuuUIMessageOutViewRange,
+} from "../vuuUIMessageTypes";
+import * as Message from "./messages";
+import { getRpcServiceModule } from "./rpc-services";
+import { Viewport } from "./viewport";
 
 export type PostMessageToClientCallback = (
   message: VuuUIMessageIn | DataSourceCallbackMessage
@@ -172,9 +172,7 @@ export class ServerProxy {
         this.pendingLogin = { resolve, reject };
       });
     } else if (this.authToken === "") {
-      log.error(
-        "ServerProxy login, cannot login until auth token has been obtained"
-      );
+      log.error("login, cannot login until auth token has been obtained");
     }
   }
 
@@ -201,7 +199,7 @@ export class ServerProxy {
         this.sessionId !== ""
       );
     } else {
-      log.error(`ServerProxy spurious subscribe call ${message.viewport}`);
+      log.error(`spurious subscribe call ${message.viewport}`);
     }
   }
 
@@ -210,7 +208,7 @@ export class ServerProxy {
       this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
       log.info?.(
-        `Viewport Unsubscribe Message (Client to Server):
+        `Unsubscribe Message (Client to Server):
         ${serverViewportId}`
       );
       this.sendMessageToServer({
@@ -266,9 +264,8 @@ export class ServerProxy {
 
     if (serverRequest) {
       if (process.env.NODE_ENV === "development") {
-        console.log(
-          `%c[ServerProxy] CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`,
-          "color: red; font-weight: bold"
+        log.info?.(
+          `CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`
         );
       }
       this.sendIfReady(
@@ -397,8 +394,9 @@ export class ServerProxy {
         parentColumnName
       );
       this.sendMessageToServer(request, requestId);
+    } else {
+      log.error("ServerProxy unable to create link, viewport not found");
     }
-    log.error("ServerProxy unable to create link, viewport not found");
   }
 
   private removeLink(viewport: Viewport) {
@@ -733,15 +731,16 @@ export class ServerProxy {
       case Message.TABLE_ROW:
         {
           if (process.env.NODE_ENV === "development") {
-            console.log(
-              `\t${body.rows.length} rows [${body.rows[0]?.rowIndex}] - [${
-                body.rows[body.rows.length - 1]?.rowIndex
-              }]`
-            );
+            log.debugEnabled &&
+              log.debug?.(
+                `\t${body.rows.length} rows [${body.rows[0]?.rowIndex}] - [${
+                  body.rows[body.rows.length - 1]?.rowIndex
+                }]`
+              );
           }
 
           body.rows.sort(byViewportRowIdxTimestamp);
-          const currentViewportId = "";
+          let currentViewportId = "";
           let viewport: Viewport | undefined;
           let startIdx = 0;
 
@@ -765,11 +764,12 @@ export class ServerProxy {
                     startIdx = i;
                   }
                 } else {
-                  console.warn(
+                  log.warn?.(
                     `TABLE_ROW message received for non registered viewport ${viewportId}`
                   );
                 }
               }
+              currentViewportId = row.viewPortId;
             }
           }
 
@@ -783,9 +783,7 @@ export class ServerProxy {
           if (viewport) {
             const { from, to } = body;
             if (process.env.NODE_ENV === "development") {
-              console.log(
-                `[ServerProxy] CHANGE_VP_RANGE_SUCCESS ${from} - ${to}`
-              );
+              log.info?.(`CHANGE_VP_RANGE_SUCCESS ${from} - ${to}`);
             }
             viewport.completeOperation(requestId, from, to);
           }
@@ -851,10 +849,11 @@ export class ServerProxy {
             const viewport = this.viewports.get(clientViewportId);
             if (viewport) {
               viewport.setTableMeta(body.columns, body.dataTypes);
+            } else {
+              log.warn?.(
+                "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
+              );
             }
-            log.warn?.(
-              "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
-            );
           } else {
             this.postMessageToClient({
               type: Message.TABLE_META_RESP,

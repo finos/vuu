@@ -500,6 +500,23 @@ export const getColumnName = (name: string) => {
   }
 };
 
+export const findColumn = (
+  columns: KeyedColumnDescriptor[],
+  columnName: string
+): KeyedColumnDescriptor | undefined => {
+  const column = columns.find((col) => col.name === columnName);
+  if (column) {
+    return column;
+  } else {
+    const groupColumn = columns.find(
+      (col) => col.isGroup
+    ) as GroupColumnDescriptor;
+    if (groupColumn) {
+      return findColumn(groupColumn.columns, columnName);
+    }
+  }
+};
+
 export const toDataSourceColumns = (column: ColumnDescriptor) =>
   column.expression
     ? `${column.name}:${column.serverDataType}:${column.expression}`

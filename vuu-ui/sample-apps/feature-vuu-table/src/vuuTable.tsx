@@ -297,11 +297,8 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
             rowHeight={18}
           />
         </div>
-        <Toolbar
-          className="vuuTable-footer"
-          style={{ "--saltToolbar-height": "20px" } as CSSProperties}
-        >
-          <DataSourceStats dataSource={dataSource} />
+        <Toolbar className="vuuTable-footer">
+          <DataSourceStats dataSource={dataSource as RemoteDataSource} />
         </Toolbar>
       </div>
     </ContextMenuProvider>

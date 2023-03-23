@@ -56,7 +56,7 @@ import {
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
-const log = logger("viewport");
+const { debug, debugEnabled, error, info, warn } = logger("viewport");
 
 interface Disable {
   type: "disable";
@@ -288,11 +288,11 @@ export class Viewport {
     const { clientViewportId, pendingOperations } = this;
     const pendingOperation = pendingOperations.get(requestId);
     if (!pendingOperation) {
-      log.error("Viewport no matching operation found to complete");
+      error("no matching operation found to complete");
       return;
     }
     const { type } = pendingOperation;
-    log.info?.(`Viewport Operation ${type}:\n${pendingOperation}`);
+    info?.(`Operation ${type}:\n${pendingOperation}`);
 
     pendingOperations.delete(requestId);
     if (type === "CHANGE_VP_RANGE") {
@@ -305,7 +305,7 @@ export class Viewport {
           pendingRangeRequest.acked = true;
           break;
         } else {
-          console.warn("range requests sent faster than they are being ACKed");
+          warn?.("range requests sent faster than they are being ACKed");
         }
       }
     } else if (type === "groupBy") {
@@ -388,7 +388,7 @@ export class Viewport {
   // When not scrolling, any server data is an update
   // When scrolling, we are in batch mode
   rangeRequest(requestId: string, range: VuuRange): RangeRequestTuple {
-    if (process.env.NODE_ENV === "development") {
+    if (debugEnabled) {
       this.rangeMonitor.set(range);
     }
     // If we can satisfy the range request from the buffer, we will.
@@ -417,7 +417,7 @@ export class Viewport {
             } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
-        log.debug?.(`Viewport range server request: ${serverRequest}`);
+        debug?.(`range server request: ${serverRequest}`);
         // TODO check that there is not already a pending server request for more data
         this.awaitOperation(requestId, { type });
         const pendingRequest = this.pendingRangeRequests.at(-1);
@@ -428,16 +428,12 @@ export class Viewport {
           } else {
             const { from, to } = pendingRequest;
             if (this.dataWindow.outOfRange(from, to)) {
-              console.log(
-                `%cengage debounce`,
-                "background-color:red;color:white;font-weight:bold;"
-              );
               debounceRequest = {
                 clientViewportId: this.clientViewportId,
                 type: "debounce-begin",
               };
             } else {
-              console.warn("Range Request before previous request is acked");
+              warn?.("Range Request before previous request is acked");
             }
           }
         }
@@ -550,13 +546,13 @@ export class Viewport {
 
   suspend() {
     this.suspended = true;
-    log.info?.("viewport suspend");
+    info?.("suspend");
   }
 
   resume() {
     this.suspended = false;
-    if (log.debugEnabled) {
-      log.debug?.(`viewport resume: ${this.currentData()}`);
+    if (debugEnabled) {
+      debug?.(`resume: ${this.currentData()}`);
     }
     return this.currentData();
   }
@@ -578,7 +574,7 @@ export class Viewport {
 
   enable(requestId: string) {
     this.awaitOperation(requestId, { type: "enable" });
-    log.info?.(`viewport enable: ${this.serverViewportId}`);
+    info?.(`enable: ${this.serverViewportId}`);
     return {
       type: Message.ENABLE_VP,
       viewPortId: this.serverViewportId,
@@ -587,7 +583,7 @@ export class Viewport {
 
   disable(requestId: string) {
     this.awaitOperation(requestId, { type: "disable" });
-    log.info?.(`viewport disable: ${this.serverViewportId}`);
+    info?.(`disable: ${this.serverViewportId}`);
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
@@ -599,7 +595,7 @@ export class Viewport {
       type: "columns",
       data: columns,
     });
-    log.debug?.(`viewport column request: ${columns}`);
+    debug?.(`column request: ${columns}`);
     return this.createRequest({ columns });
   }
 
@@ -609,19 +605,19 @@ export class Viewport {
       data: dataSourceFilter,
     });
     const { filter } = dataSourceFilter;
-    log.info?.(`viewport filter request: ${filter}`);
+    info?.(`filter request: ${filter}`);
     return this.createRequest({ filterSpec: { filter } });
   }
 
   aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
     this.awaitOperation(requestId, { type: "aggregate", data: aggregations });
-    log.info?.(`viewport aggregate request: ${aggregations}`);
+    info?.(`aggregate request: ${aggregations}`);
     return this.createRequest({ aggregations });
   }
 
   sortRequest(requestId: string, sort: VuuSort) {
     this.awaitOperation(requestId, { type: "sort", data: sort });
-    log.info?.(`viewport sort request: ${sort}`);
+    info?.(`sort request: ${sort}`);
     return this.createRequest({ sort });
   }
 
@@ -640,7 +636,7 @@ export class Viewport {
     // TODO we need to do this in the client if we are to raise selection events
     // TODO is it right to set this here or should we wait for ACK from server ?
     this.awaitOperation(requestId, { type: "selection", data: selected });
-    log.info?.(`viewport select request: ${selected}`);
+    info?.(`select request: ${selected}`);
     return {
       type: "SET_SELECTION",
       vpId: this.serverViewportId,

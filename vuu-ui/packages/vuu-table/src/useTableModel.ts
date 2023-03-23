@@ -9,6 +9,7 @@ import {
   applyFilterToColumns,
   applyGroupByToColumns,
   applySortToColumns,
+  findColumn,
   getCellRenderer,
   getColumnName,
   getTableHeadings,
@@ -409,7 +410,7 @@ function updateTableConfig(
       columns: columns.map((colName, index) => {
         const columnName = getColumnName(colName);
         const key = index + KEY_OFFSET;
-        const col = result.columns.find((col) => col.name === columnName);
+        const col = findColumn(result.columns, columnName);
         if (col) {
           if (col.key === key) {
             return col;
