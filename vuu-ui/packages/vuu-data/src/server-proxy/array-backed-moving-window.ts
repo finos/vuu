@@ -197,9 +197,10 @@ export class ArrayBackedMovingWindow {
   }
 
   clear() {
+    log.debug?.("clear");
     this.internalData.length = 0;
     this.rowsWithinRange = 0;
-    this.rowCount = 0;
+    this.setRowCount(0);
   }
 
   // used only for debugging
