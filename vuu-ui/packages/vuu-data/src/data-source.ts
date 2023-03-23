@@ -258,7 +258,7 @@ export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 export type OptimizeStrategy = "none" | "throttle" | "debounce";
 
 export type DataSourceEvents = {
-  config: (config: DataSourceConfig | undefined, confirmed: boolean) => void;
+  config: (config: DataSourceConfig | undefined, confirmed?: boolean) => void;
   optimize: (optimize: OptimizeStrategy) => void;
   range: (range: VuuRange) => void;
   resize: (size: number) => void;

@@ -481,6 +481,15 @@ export const applyFilterToColumns = (
     }
   });
 
+export const isFilteredColumn = (column: KeyedColumnDescriptor) =>
+  column.filter !== undefined;
+
+export const stripFilterFromColumns = (columns: KeyedColumnDescriptor[]) =>
+  columns.map((col) => {
+    const { filter, ...rest } = col;
+    return filter ? rest : col;
+  });
+
 const getSortType = (column: ColumnDescriptor, { sortDefs }: VuuSort) => {
   const sortDef = sortDefs.find((sortCol) => sortCol.column === column.name);
   if (sortDef) {
