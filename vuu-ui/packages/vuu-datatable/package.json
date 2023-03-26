@@ -8,13 +8,6 @@
     "build": "node ../../scripts/run-build.mjs",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
-  "files": [
-    "index.js",
-    "index.css",
-    "index.js.map",
-    "index.css.map",
-    "/src"
-  ],
   "peerDependencies": {
     "@finos/vuu-table": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
