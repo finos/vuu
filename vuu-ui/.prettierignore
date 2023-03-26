@@ -2,4 +2,3 @@
 generated
 node_modules
 /packages/**/public
-/storybook-static

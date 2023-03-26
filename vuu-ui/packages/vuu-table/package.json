@@ -8,13 +8,6 @@
     "build": "node ../../scripts/run-build.mjs",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
-  "files": [
-    "index.js",
-    "index.css",
-    "index.js.map",
-    "index.css.map",
-    "/src"
-  ],
   "peerDependencies": {
     "@salt-ds/core": "1.2.0",
     "@salt-ds/icons": "1.1.0",
