@@ -1,54 +1,42 @@
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
-import { useEffect, useState } from "react";
 import "./range-filter.css";
+
+export type IRange = {
+  start?: number;
+  end?: number;
+};
 
 type RangeFilterProps = {
   defaultTypeaheadParams: TypeaheadParams;
-  existingFilters: IRange | null;
-  onFilterSubmit: (
-    newQuery: string,
-    selectedFilters: IRange,
-    columnName: string
-  ) => void;
+  filterValues: IRange | undefined;
+  onFilterSubmit: (newFilter: IRange, query: string) => void;
 };
 
 export const RangeFilter = ({
   defaultTypeaheadParams,
-  existingFilters,
+  filterValues,
   onFilterSubmit,
 }: RangeFilterProps) => {
   const columnName = defaultTypeaheadParams[1];
-  const [range, setRange] = useState<IRange | null>(existingFilters ?? null);
-  const [query, setQuery] = useState<string | null>(null);
 
-  useEffect(() => {
-    setQuery(getRangeQuery(range, columnName));
-  }, [range, columnName]);
-
-  useEffect(() => {
-    if (query == null || range == null) return;
-    onFilterSubmit(query, range, columnName);
-  }, [query, columnName, range, onFilterSubmit]);
-
-  const inputChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value === "" ? null : Number(e.target.value);
-
-    if (value) {
-      setRange({
-        ...(range ?? { start: null, end: null }),
-        [e.target.name]: value,
-      });
-    } else if (rangeIsNull(e.target.name, range)) {
-      setRange(null);
-    }
+  const startChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    const newRange = {
+      start: isNaN(value) ? undefined : value,
+      end: filterValues?.end,
+    };
+    const query = getRangeQuery(columnName, newRange);
+    onFilterSubmit(newRange, query);
   };
 
-  const rangeIsNull = (modifiedValue: string, range: IRange | null) => {
-    return (
-      range &&
-      ((modifiedValue === "end" && range.start === null) ||
-        (modifiedValue === "start" && range.end === null))
-    );
+  const endChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    const newRange = {
+      start: filterValues?.start,
+      end: isNaN(value) ? undefined : value,
+    };
+    const query = getRangeQuery(columnName, newRange);
+    onFilterSubmit(newRange, query);
   };
 
   return (
@@ -56,45 +44,27 @@ export const RangeFilter = ({
       <input
         className="range-input"
         name="start"
-        onChange={inputChangeHandler}
-        value={(range && range.start) ?? ""}
+        onChange={startChangeHandler}
+        value={filterValues?.start ?? ""}
+        type="number"
       />
       {" to "}
       <input
         className="range-input"
         name="end"
-        onChange={inputChangeHandler}
-        value={(range && range.end) ?? ""}
+        onChange={endChangeHandler}
+        value={filterValues?.end ?? ""}
+        type="number"
       />
     </div>
   );
 };
 
-const getRangeQuery = (range: IRange | null, column: string): string => {
-  if (range) {
-    let queryType = "" as keyof typeof queryOptions;
+const getRangeQuery = (column: string, range: IRange) => {
+  const startQuery =
+    range.start === undefined ? undefined : `${column} > ${range.start - 1}`;
+  const endQuery =
+    range.end === undefined ? undefined : `${column} < ${range.end + 1}`;
 
-    if (range.start !== null) queryType = "start";
-    if (range.end !== null) {
-      if (queryType === "start") queryType = "both";
-      else queryType = "end";
-    }
-
-    const queryOptions = {
-      start: `${column} > ${range.start ? range.start - 1 : null}`,
-      end: `${column} < ${range.end ? range.end + 1 : null}`,
-      both: `${column} > ${
-        range.start ? range.start - 1 : null
-      } and ${column} < ${range.end ? range.end + 1 : null}`,
-    };
-
-    return queryOptions[queryType];
-  }
-
-  return "";
+  return [startQuery, endQuery].filter((x) => x !== undefined).join(" and ");
 };
-
-export interface IRange {
-  start: number | null;
-  end: number | null;
-}

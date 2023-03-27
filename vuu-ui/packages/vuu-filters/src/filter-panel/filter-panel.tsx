@@ -1,9 +1,12 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { VuuTable } from "@finos/vuu-protocol-types";
-import { useEffect, useState } from "react";
-import { FilterComponent } from "./filter-components/filter-selector";
+import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
+import { useState } from "react";
+import { IRange, RangeFilter } from "./filter-components/range-filter";
+import { TypeaheadFilter } from "./filter-components/typeahead-filter";
 import "./filter-panel.css";
-import { IRange } from "./filter-components/range-filter";
+
+type Query = { [key: string]: string };
+type Filter<T extends string[] | IRange> = { [key: string]: T | undefined };
 
 type FilterPanelProps = {
   table: VuuTable;
@@ -16,66 +19,86 @@ export const FilterPanel = ({
   columns,
   onFilterSubmit,
 }: FilterPanelProps) => {
-  const [selectedColumnName, setSelectedColumnName] = useState<string | null>(
-    null
+  const [selectedColumnName, setSelectedColumnName] = useState("");
+  const [queries, setQueries] = useState<Query>({});
+  const [rangeFilters, setRangeFilters] = useState<Filter<IRange>>({});
+  const [typeaheadFilters, setTypeaheadFilters] = useState<Filter<string[]>>(
+    {}
   );
-  const [allQueries, setAllQueries] = useState<{
-    [key: string]: string;
-  } | null>(null);
-  const [filters, setFilters] = useState<{
-    [key: string]: string[] | IRange | null;
-  } | null>(null);
-
-  useEffect(() => {
-    if (allQueries) {
-      const queryString = getFilterQuery(allQueries);
-      onFilterSubmit(queryString);
-    } else {
-      onFilterSubmit("");
-    }
-  }, [allQueries, selectedColumnName, onFilterSubmit]);
-
-  const getSelectedColumnType = () => {
-    if (selectedColumnName) {
-      const selectedColumn: ColumnDescriptor[] = columns.filter(
-        (column) => column.name === selectedColumnName
-      );
-
-      return selectedColumn[0].serverDataType;
-    }
-
-    return undefined;
-  };
-
-  const handleColumnSelect: React.ChangeEventHandler<HTMLSelectElement> = ({
-    currentTarget,
-  }) => setSelectedColumnName(currentTarget.value);
 
   const handleClear = () => {
-    setSelectedColumnName(null);
-    setAllQueries(null);
-    setFilters(null);
+    setSelectedColumnName("");
+    setQueries({});
+    setRangeFilters({});
+    setTypeaheadFilters({});
+    onFilterSubmit("");
   };
 
-  const localOnFilterSubmit = (
-    newQuery: string,
-    selectedFilters: string[] | IRange,
-    columnName: string
-  ) => {
-    setFilters((filters) => {
-      return { ...filters, [columnName]: selectedFilters };
+  const onTypeaheadFilterSubmit = (newFilter: string[], newQuery: string) => {
+    setTypeaheadFilters({
+      ...typeaheadFilters,
+      [selectedColumnName]: newFilter,
     });
-
-    if (selectedColumnName)
-      setAllQueries({ ...allQueries, [selectedColumnName]: newQuery });
+    updateQuery(newQuery);
   };
 
-  const getColumnSelectorOption = (name: string) => {
-    return filters && filters[name] ? (
-      <option className="has-filter">{name}</option>
-    ) : (
-      <option>{name}</option>
+  const onRangeFilterSubmit = (newFilter: IRange, newQuery: string) => {
+    setRangeFilters({
+      ...rangeFilters,
+      [selectedColumnName]: newFilter,
+    });
+    updateQuery(newQuery);
+  };
+
+  const updateQuery = (newQuery: string) => {
+    const newQueries = {
+      ...queries,
+      [selectedColumnName]: newQuery,
+    };
+    setQueries(newQueries);
+    onFilterSubmit(getFilterQuery(newQueries));
+  };
+
+  const selectedColumnType = columns.find(
+    (column) => column.name === selectedColumnName
+  )?.serverDataType;
+
+  const getColumnSelectorOption = (columnName: string) => {
+    const hasFilter =
+      queries[columnName] !== undefined && queries[columnName] !== "";
+    return (
+      <option className={hasFilter ? "has-filter" : undefined}>
+        {columnName}
+      </option>
     );
+  };
+
+  const getFilterComponent = () => {
+    const defaultTypeaheadParams: TypeaheadParams = [table, selectedColumnName];
+    switch (selectedColumnType) {
+      case "string":
+      case "char":
+        return (
+          <TypeaheadFilter
+            defaultTypeaheadParams={defaultTypeaheadParams}
+            filterValues={typeaheadFilters[selectedColumnName]}
+            onFilterSubmit={onTypeaheadFilterSubmit}
+          />
+        );
+      case "int":
+      case "long":
+      case "double":
+        return (
+          <RangeFilter
+            defaultTypeaheadParams={defaultTypeaheadParams}
+            filterValues={rangeFilters[selectedColumnName]}
+            onFilterSubmit={onRangeFilterSubmit}
+          />
+        );
+      default:
+        console.log("column type is not recognised");
+        return null;
+    }
   };
 
   return (
@@ -86,9 +109,10 @@ export const FilterPanel = ({
             Column
           </label>
           <select
-            onChange={handleColumnSelect}
+            onChange={(e) => setSelectedColumnName(e.target.value)}
             id="column-selector"
             className="block"
+            value={selectedColumnName}
           >
             <option disabled selected></option>
             {columns.map(({ name }) => getColumnSelectorOption(name))}
@@ -96,14 +120,9 @@ export const FilterPanel = ({
         </div>
       </div>
       <div id="filter-component" className="inline-block">
-        {selectedColumnName ? (
+        {selectedColumnName === "" ? null : (
           <div>
-            <FilterComponent
-              columnType={getSelectedColumnType()}
-              defaultTypeaheadParams={[table, selectedColumnName]}
-              filters={filters ? filters[selectedColumnName] : null}
-              onFilterSubmit={localOnFilterSubmit}
-            />
+            {getFilterComponent()}
             <button
               className="clear-button"
               type="button"
@@ -112,28 +131,13 @@ export const FilterPanel = ({
               Clear
             </button>
           </div>
-        ) : null}
+        )}
       </div>
     </fieldset>
   );
 };
 
-function getFilterQuery(
-  allQueries: {
-    [key: string]: string;
-  } | null
-) {
-  let newQuery = "";
-
-  if (allQueries) {
-    Object.values(allQueries).forEach((query) => {
-      if (query && query != "") {
-        newQuery += query + " and ";
-      }
-    });
-
-    newQuery = newQuery.slice(0, newQuery.length - 5);
-  }
-
-  return newQuery;
-}
+const getFilterQuery = (queries: Query) =>
+  Object.values(queries)
+    .filter((query) => query !== undefined && query !== "")
+    .join(" and ");
