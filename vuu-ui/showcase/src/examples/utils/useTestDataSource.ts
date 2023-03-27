@@ -88,6 +88,8 @@ export const useTestDataSource = ({
     ];
   }, [calculatedColumns, columnConfig, columnNamesProp, schemas, tablename]);
 
+  const tableRef = useRef(table);
+
   const dataSource = useMemo(() => {
     const dataConfig = {
       bufferSize,
@@ -100,15 +102,18 @@ export const useTestDataSource = ({
       serverUrl: "127.0.0.1:8090/websocket",
     };
 
+    const { current: activeTable } = tableRef;
     const { current: activeDataSource } = dataSourceRef;
-    if (activeDataSource) {
-      console.log("replacing dataSource", {
-        table: (activeDataSource as RemoteDataSource)?.table,
-      });
+
+    if (activeDataSource && activeTable !== table) {
       activeDataSource.unsubscribe();
     }
 
-    return (dataSourceRef.current = new RemoteDataSource(dataConfig));
+    if (!activeDataSource || activeTable !== table) {
+      dataSourceRef.current = new RemoteDataSource(dataConfig);
+    }
+    tableRef.current = table;
+    return dataSourceRef.current;
   }, [bufferSize, columnNames, filter, groupBy, onConfigChange, sort, table]);
 
   const error = useAutoLoginToVuuServer(autoLogin);
