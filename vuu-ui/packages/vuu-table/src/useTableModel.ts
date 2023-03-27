@@ -1,7 +1,6 @@
 import {
   ColumnDescriptor,
   GridConfig,
-  GroupColumnDescriptor,
   KeyedColumnDescriptor,
   PinLocation,
 } from "@finos/vuu-datagrid-types";
@@ -19,6 +18,7 @@ import {
   isGroupColumn,
   isPinned,
   isTypeDescriptor,
+  logger,
   metadataKeys,
   sortPinnedColumns,
   stripFilterFromColumns,
@@ -27,6 +27,8 @@ import {
 import { Reducer, useReducer } from "react";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { DataSourceConfig } from "@finos/vuu-data";
+
+const { info } = logger("useTableModel");
 
 const DEFAULT_COLUMN_WIDTH = 100;
 const KEY_OFFSET = metadataKeys.count;
@@ -147,6 +149,7 @@ export type GridModelReducer = Reducer<GridModel, GridModelAction>;
 export type ColumnActionDispatch = (action: GridModelAction) => void;
 
 const columnReducer: GridModelReducer = (state, action) => {
+  info?.(`GridModelReducer ${action.type}`);
   switch (action.type) {
     case "init":
       return init(action);
@@ -205,9 +208,10 @@ function init({ dataSourceConfig, tableConfig }: InitialConfig): GridModel {
     headings: getTableHeadings(maybePinnedColumns),
   };
   if (dataSourceConfig) {
+    const { columns, ...rest } = dataSourceConfig;
     return updateTableConfig(state, {
       type: "tableConfig",
-      ...dataSourceConfig,
+      ...rest,
     });
   } else {
     return state;

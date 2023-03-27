@@ -54,7 +54,10 @@ export const useTableColumnResize = ({
   const handleResizeEnd = useCallback(() => {
     if (onResize) {
       onResize("end", name, widthRef.current);
-      isResizing.current = false;
+      setTimeout(() => {
+        // set in a timeout to prevent the click event from firing and triggering a sort
+        isResizing.current = false;
+      }, 100);
     }
   }, [name, onResize]);
 
