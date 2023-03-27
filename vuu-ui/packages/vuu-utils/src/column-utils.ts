@@ -577,3 +577,16 @@ export const getColumnsInViewport = (
 
   return [visibleColumns, preSpan];
 };
+
+const isNotHidden = (column: KeyedColumnDescriptor) => column.hidden !== true;
+
+export const visibleColumnAtIndex = (
+  columns: KeyedColumnDescriptor[],
+  index: number
+) => {
+  if (columns.every(isNotHidden)) {
+    return columns[index];
+  } else {
+    return columns.filter(isNotHidden).at(index);
+  }
+};

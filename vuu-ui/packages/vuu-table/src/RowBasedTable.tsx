@@ -3,6 +3,7 @@ import {
   isGroupColumn,
   metadataKeys,
   notHidden,
+  visibleColumnAtIndex,
 } from "@finos/vuu-utils";
 import { MouseEvent, useCallback, useMemo } from "react";
 import { TableImplementationProps } from "./dataTableTypes";
@@ -47,7 +48,7 @@ export const RowBasedTable = ({
         ".vuuTable-headerCell"
       ) as HTMLElement;
       const colIdx = parseInt(headerCell?.dataset.idx ?? "-1");
-      const column = columns[colIdx];
+      const column = visibleColumnAtIndex(columns, colIdx);
       const isAdditive = evt.shiftKey;
       column && onSort(column, isAdditive);
     },
