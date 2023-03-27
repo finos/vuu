@@ -218,10 +218,11 @@ export class ServerProxy {
         type: Message.REMOVE_VP,
         viewPortId: serverViewportId,
       });
+    } else {
+      error(
+        `failed to unsubscribe client viewport ${clientViewportId}, viewport not found`
+      );
     }
-    error(
-      `failed to unsubscribe client viewport ${clientViewportId}, viewport not found`
-    );
   }
 
   private getViewportForClient(clientViewportId: string): Viewport;
