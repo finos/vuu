@@ -21,10 +21,12 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import {
+  Checkbox,
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
   Toolbar,
+  ToolbarField,
   Tooltray,
 } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
@@ -98,12 +100,33 @@ const useTableConfig = ({
 
 export const DefaultTable = () => {
   const config = useTableConfig();
+  const [zebraStripes, setZebraStripes] = useState(true);
+  const handleZebraChanged = useCallback((_evt, checked) => {
+    setZebraStripes(checked);
+  }, []);
   return (
-    <>
-      {/* <DragVisualizer orientation="horizontal"> */}
-      <Table {...config} height={700} renderBufferSize={50} width={700} />
-      {/* </DragVisualizer> */}
-    </>
+    <div style={{ display: "flex", gap: 12 }}>
+      <Table
+        {...config}
+        height={700}
+        renderBufferSize={50}
+        width={700}
+        zebraStripes={zebraStripes}
+      />
+      <Toolbar
+        orientation="vertical"
+        style={
+          { height: "unset", "--saltFormField-margin": "6px" } as CSSProperties
+        }
+      >
+        <ToolbarField label="Zebra Stripes">
+          <Checkbox
+            checked={zebraStripes === true}
+            onChange={handleZebraChanged}
+          />
+        </ToolbarField>
+      </Toolbar>
+    </div>
   );
 };
 DefaultTable.displaySequence = displaySequence++;
@@ -582,7 +605,10 @@ export const VuuTableCalculatedColumns = () => {
   const handleConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
       setTableConfig((currentConfig) => {
-        if (itemsChanged(currentConfig.columns, config.columns, "name")) {
+        if (
+          dataSource &&
+          itemsChanged(currentConfig.columns, config.columns, "name")
+        ) {
           dataSource.columns = config.columns.map(toDataSourceColumns);
         }
         return (configRef.current = config);
@@ -616,10 +642,15 @@ export const VuuTableCalculatedColumns = () => {
   }, []);
 
   const groupByCurrency = useCallback(() => {
-    dataSource.groupBy = ["currency"];
+    if (dataSource) {
+      dataSource.groupBy = ["currency"];
+    }
   }, [dataSource]);
+
   const groupByCurrencyExchange = useCallback(() => {
-    dataSource.groupBy = ["currency", "exchange"];
+    if (dataSource) {
+      dataSource.groupBy = ["currency", "exchange"];
+    }
   }, [dataSource]);
 
   const handleSubmitFilter = useCallback(
@@ -1049,6 +1080,7 @@ export const SwitchColumns = () => {
       {
         "datasource-config": {
           columns: parentOrdersSchema.columns.map((col) => col.name),
+          filterSpec: { filter: 'algo = "TWAP"' },
         },
         "table-config": {
           columns: parentOrdersSchema.columns,
@@ -1085,7 +1117,7 @@ export const SwitchColumns = () => {
       })
     );
     if (dataSource) {
-      dataSource.columns = namedConfiguration["datasource-config"].columns;
+      dataSource.config = namedConfiguration["datasource-config"];
     }
   }, [dataSource, namedConfiguration]);
 

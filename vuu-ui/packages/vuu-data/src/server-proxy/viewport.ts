@@ -39,6 +39,7 @@ import * as Message from "./messages";
 import {
   DataSourceAggregateMessage,
   DataSourceColumnsMessage,
+  DataSourceConfig,
   DataSourceDebounceRequest,
   DataSourceDisabledMessage,
   DataSourceEnabledMessage,
@@ -46,6 +47,7 @@ import {
   DataSourceGroupByMessage,
   DataSourceMenusMessage,
   DataSourceRow,
+  DataSourceSetConfigMessage,
   DataSourceSortMessage,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
@@ -71,6 +73,10 @@ interface ChangeViewportRange {
 interface ViewportFilter {
   data: DataSourceFilter;
   type: "filter";
+}
+interface ConfigOperation {
+  data: DataSourceConfig;
+  type: "config";
 }
 interface Aggregate {
   data: VuuAggregation[];
@@ -100,6 +106,7 @@ interface GroupByClear {
 type AsyncOperationWithData =
   | Aggregate
   | Columns
+  | ConfigOperation
   | ViewportFilter
   | GroupBy
   | GroupByClear
@@ -296,6 +303,12 @@ export class Viewport {
           warn?.("range requests sent faster than they are being ACKed");
         }
       }
+    } else if (type === "config") {
+      return {
+        clientViewportId,
+        type,
+        config: pendingOperation.data,
+      } as DataSourceSetConfigMessage;
     } else if (type === "groupBy") {
       this.isTree = pendingOperation.data.length > 0;
       this.groupBy = pendingOperation.data;
@@ -601,6 +614,14 @@ export class Viewport {
     const { filter } = dataSourceFilter;
     info?.(`filterRequest: ${filter}`);
     return this.createRequest({ filterSpec: { filter } });
+  }
+
+  setConfig(requestId: string, config: DataSourceConfig) {
+    this.awaitOperation(requestId, { type: "config", data: config });
+    debugEnabled
+      ? debug?.(`setConfig ${JSON.stringify(config)}`)
+      : info?.(`setConfig`);
+    return this.createRequest(config);
   }
 
   aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {

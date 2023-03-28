@@ -23,6 +23,7 @@ import {
   isSizeOnly,
   DataSourceDataMessage,
   OptimizeStrategy,
+  configChanged,
 } from "./data-source";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
@@ -331,6 +332,22 @@ export class RemoteDataSource
 
   get config() {
     return this.#config;
+  }
+
+  set config(config: DataSourceConfig | undefined) {
+    if (configChanged(this.#config, config)) {
+      this.#config = config;
+      if (this.viewport && this.server) {
+        if (config) {
+          this.server?.send({
+            viewport: this.viewport,
+            type: "config",
+            config,
+          });
+        }
+      }
+      this.emit("config", this.#config);
+    }
   }
 
   get optimize() {
