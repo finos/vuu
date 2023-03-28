@@ -3,41 +3,29 @@ import { useEffect, useState } from "react";
 import "./range-filter.css";
 
 export const RangeFilter = ({
-  defaultTypeaheadParams,
+  filterParams,
   existingFilters,
   onFilterSubmit,
 }: Props) => {
-  const columnName = defaultTypeaheadParams[1];
+  const filterColumn = filterParams[1];
   const [range, setRange] = useState<IRange | null>(existingFilters ?? null);
   const [query, setQuery] = useState<string | null>(null);
 
   useEffect(() => {
-    setQuery(getRangeQuery(range, columnName));
+    setQuery(buildRangeQuery(range, filterColumn));
   }, [range]);
 
   useEffect(() => {
-    onFilterSubmit(query, range, columnName);
+    onFilterSubmit(query, range, filterColumn);
   }, [query]);
 
-  const inputChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value === "" ? null : Number(e.target.value);
 
-    if (value) {
-      setRange({
-        ...(range ?? { start: null, end: null }),
-        [e.target.name]: value,
-      });
-    } else if (rangeIsNull(e.target.name, range)) {
-      setRange(null);
-    }
-  };
-
-  const rangeIsNull = (modifiedValue: string, range: IRange | null) => {
-    return (
-      range &&
-      ((modifiedValue === "end" && range.start === null) ||
-        (modifiedValue === "start" && range.end === null))
-    );
+    setRange((prevRange) => ({
+      ...prevRange,
+      [e.target.name]: value,
+    }));
   };
 
   return (
@@ -45,61 +33,48 @@ export const RangeFilter = ({
       <input
         className="range-input"
         name="start"
-        onChange={inputChangeHandler}
+        onChange={handleInputChange}
         value={range?.start ?? ""}
       />
       {" to "}
       <input
         className="range-input"
         name="end"
-        onChange={inputChangeHandler}
+        onChange={handleInputChange}
         value={(range && range.end) ?? ""}
       />
     </div>
   );
 };
 
-const getRangeQuery = (range: IRange | null, column: string): string => {
-  if (range) {
-    let queryType = "" as keyof typeof queryOptions;
-
-    switch (true) {
-      case range.start !== null && range.end !== null:
-        queryType = "both";
-        break;
-      case range.start !== null:
-        queryType = "start";
-        break;
-      case range.end !== null:
-        queryType = "end";
-        break;
-    }
-
-    const queryOptions = {
-      start: `${column} > ${range.start ? range.start - 1 : null}`,
-      end: `${column} < ${range.end ? range.end + 1 : null}`,
-      both: `${column} > ${
-        range.start ? range.start - 1 : null
-      } and ${column} < ${range.end ? range.end + 1 : null}`,
-    };
-
-    return queryOptions[queryType];
+const buildRangeQuery = (range: IRange | null, column: string): string => {
+  if (!range) {
+    return "";
   }
 
-  return "";
+  const { start, end } = range;
+
+  if (start === null && end === null) {
+    return "";
+  }
+
+  const startQuery = start && `${column} > ${start - 1}`;
+  const endQuery = end && `${column} < ${end + 1}`;
+
+  return [startQuery, endQuery].filter(Boolean).join(" and ");
 };
 
 export interface IRange {
-  start: number | null;
-  end: number | null;
+  start?: number | null;
+  end?: number | null;
 }
 
 interface Props {
-  defaultTypeaheadParams: TypeaheadParams;
+  filterParams: TypeaheadParams;
   existingFilters: IRange | null;
   onFilterSubmit: (
     query: string | null,
     range: IRange | null,
-    columnName: string
+    filterColumn: string
   ) => void;
 }

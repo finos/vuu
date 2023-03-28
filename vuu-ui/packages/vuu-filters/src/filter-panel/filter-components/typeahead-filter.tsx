@@ -5,11 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { CloseIcon, Icon } from "../Icons";
 
 export const TypeaheadFilter = (props: {
-  defaultTypeaheadParams: TypeaheadParams;
+  filterParams: TypeaheadParams;
   existingFilters: string[] | null;
   onFilterSubmit: Function;
 }) => {
-  const [tableName, columnName] = props.defaultTypeaheadParams;
+  const [tableName, columnName] = props.filterParams;
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedSuggestions, setSelectedSuggestions] = useState<
     string[] | null
@@ -30,7 +30,7 @@ export const TypeaheadFilter = (props: {
 
   // get suggestions & filters on column select
   useEffect(() => {
-    getSuggestions(props.defaultTypeaheadParams).then((response) => {
+    getSuggestions(props.filterParams).then((response) => {
       setSuggestions(response);
     });
 

@@ -13,7 +13,7 @@ export const FilterComponent = (props: {
 
     return (
       <SelectedFilter
-        defaultTypeaheadParams={props.defaultTypeaheadParams}
+        filterParams={props.defaultTypeaheadParams}
         existingFilters={props.filters}
         onFilterSubmit={props.onFilterSubmit}
       />
