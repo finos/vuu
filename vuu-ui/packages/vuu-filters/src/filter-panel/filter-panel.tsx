@@ -5,71 +5,55 @@ import { FilterComponent } from "./filter-components/filter-selector";
 import "./filter-panel.css";
 import { IRange } from "./filter-components/range-filter";
 
-export const FilterPanel = (props: {
-  table: VuuTable;
-  columns: ColumnDescriptor[];
-  onFilterSubmit: Function;
-}) => {
+export const FilterPanel = ({ table, columns, onFilterSubmit }: Props) => {
   const [selectedColumnName, setSelectedColumnName] = useState<string | null>(
     null
   );
-  const [allQueries, setAllQueries] = useState<{
-    [key: string]: string;
-  } | null>(null);
-  const [filters, setFilters] = useState<{
-    [key: string]: string[] | IRange | null;
-  } | null>(null);
+  const [filters, setFilters] = useState<Filter>({});
+  const [queries, setQueries] = useState<Query>({});
 
   useEffect(() => {
-    if (allQueries) {
-      const queryString = getFilterQuery(allQueries);
-      props.onFilterSubmit(queryString);
-    } else {
-      props.onFilterSubmit("");
-    }
-  }, [allQueries, selectedColumnName]);
+    const queryString = getQueryString(queries);
+    onFilterSubmit(queryString);
+  }, [queries]);
 
-  const getSelectedColumnType = () => {
-    if (selectedColumnName) {
-      const selectedColumn: ColumnDescriptor[] = props.columns.filter(
-        (column) => column.name === selectedColumnName
-      );
-
-      return selectedColumn[0].serverDataType;
-    }
-
-    return undefined;
-  };
-
-  const handleColumnSelect: React.ChangeEventHandler<HTMLSelectElement> = ({currentTarget}) =>
-    setSelectedColumnName(currentTarget.value);
+  const handleColumnSelect: React.ChangeEventHandler<HTMLSelectElement> = ({
+    currentTarget,
+  }) => setSelectedColumnName(currentTarget.value);
 
   const handleClear = () => {
     setSelectedColumnName(null);
-    setAllQueries(null);
-    setFilters(null);
+    setQueries({});
+    setFilters({});
   };
 
-  const onFilterSubmit = (
+  const handleFilterSubmit = (
     newQuery: string,
-    selectedFilters: string[] | IRange,
-    columnName: string
+    selectedFilters: string[] | IRange
   ) => {
-    setFilters((filters) => {
-      return { ...filters, [columnName]: selectedFilters };
-    });
-
-    if (selectedColumnName)
-      setAllQueries({ ...allQueries, [selectedColumnName]: newQuery });
+    if (selectedColumnName) {
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        [selectedColumnName]: selectedFilters,
+      }));
+      setQueries((prevQueries) => ({
+        ...prevQueries,
+        [selectedColumnName]: newQuery,
+      }));
+    }
   };
 
   const getColumnSelectorOption = (name: string) => {
-    return filters && filters[name] ? (
-      <option className="has-filter">{name}</option>
-    ) : (
-      <option>{name}</option>
+    const hasFilter = filters[name] != null;
+    return (
+      <option className={hasFilter ? "has-filter" : undefined}>{name}</option>
     );
   };
+
+  const selectedColumn = columns.find(
+    (column) => column.name === selectedColumnName
+  );
+  const columnType = selectedColumn?.serverDataType;
 
   return (
     <fieldset id="filter-panel">
@@ -84,7 +68,7 @@ export const FilterPanel = (props: {
             className="block"
           >
             <option disabled selected></option>
-            {props.columns.map(({ name }) => getColumnSelectorOption(name))}
+            {columns.map(({ name }) => getColumnSelectorOption(name))}
           </select>
         </div>
       </div>
@@ -92,10 +76,10 @@ export const FilterPanel = (props: {
         {selectedColumnName ? (
           <div>
             <FilterComponent
-              columnType={getSelectedColumnType()}
-              defaultTypeaheadParams={[props.table, selectedColumnName]}
-              filters={filters ? filters[selectedColumnName] : null}
-              onFilterSubmit={onFilterSubmit}
+              columnType={columnType}
+              defaultTypeaheadParams={[table, selectedColumnName]}
+              filters={filters[selectedColumnName]}
+              onFilterSubmit={handleFilterSubmit}
             />
             <button
               className="clear-button"
@@ -111,15 +95,11 @@ export const FilterPanel = (props: {
   );
 };
 
-function getFilterQuery(
-  allQueries: {
-    [key: string]: string;
-  } | null
-) {
+function getQueryString(queries: Query) {
   let newQuery = "";
 
-  if (allQueries) {
-    Object.values(allQueries).forEach((query) => {
+  if (queries) {
+    Object.values(queries).forEach((query) => {
       if (query && query != "") {
         newQuery += query + " and ";
       }
@@ -129,4 +109,18 @@ function getFilterQuery(
   }
 
   return newQuery;
+}
+
+interface Filter {
+  [key: string]: string[] | IRange | null;
+}
+
+interface Query {
+  [key: string]: string;
+}
+
+interface Props {
+  table: VuuTable;
+  columns: ColumnDescriptor[];
+  onFilterSubmit: (queryString: string) => void;
 }
