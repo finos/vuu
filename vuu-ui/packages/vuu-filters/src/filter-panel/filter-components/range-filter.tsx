@@ -2,15 +2,13 @@ import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { useEffect, useState } from "react";
 import "./range-filter.css";
 
-export const RangeFilter = (props: {
-  defaultTypeaheadParams: TypeaheadParams;
-  existingFilters: IRange | null;
-  onFilterSubmit: Function;
-}) => {
-  const columnName = props.defaultTypeaheadParams[1];
-  const [range, setRange] = useState<IRange | null>(
-    props.existingFilters ?? null
-  );
+export const RangeFilter = ({
+  defaultTypeaheadParams,
+  existingFilters,
+  onFilterSubmit,
+}: Props) => {
+  const columnName = defaultTypeaheadParams[1];
+  const [range, setRange] = useState<IRange | null>(existingFilters ?? null);
   const [query, setQuery] = useState<string | null>(null);
 
   useEffect(() => {
@@ -18,7 +16,7 @@ export const RangeFilter = (props: {
   }, [range]);
 
   useEffect(() => {
-    props.onFilterSubmit(query, range, columnName);
+    onFilterSubmit(query, range, columnName);
   }, [query]);
 
   const inputChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +46,7 @@ export const RangeFilter = (props: {
         className="range-input"
         name="start"
         onChange={inputChangeHandler}
-        value={(range && range.start) ?? ""}
+        value={range?.start ?? ""}
       />
       {" to "}
       <input
@@ -65,10 +63,16 @@ const getRangeQuery = (range: IRange | null, column: string): string => {
   if (range) {
     let queryType = "" as keyof typeof queryOptions;
 
-    if (range.start !== null) queryType = "start";
-    if (range.end !== null) {
-      if (queryType === "start") queryType = "both";
-      else queryType = "end";
+    switch (true) {
+      case range.start !== null && range.end !== null:
+        queryType = "both";
+        break;
+      case range.start !== null:
+        queryType = "start";
+        break;
+      case range.end !== null:
+        queryType = "end";
+        break;
     }
 
     const queryOptions = {
@@ -88,4 +92,14 @@ const getRangeQuery = (range: IRange | null, column: string): string => {
 export interface IRange {
   start: number | null;
   end: number | null;
+}
+
+interface Props {
+  defaultTypeaheadParams: TypeaheadParams;
+  existingFilters: IRange | null;
+  onFilterSubmit: (
+    query: string | null,
+    range: IRange | null,
+    columnName: string
+  ) => void;
 }
