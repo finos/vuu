@@ -13,7 +13,7 @@ export const FilterPanel = ({ table, columns, onFilterSubmit }: Props) => {
   const [queries, setQueries] = useState<Query>({});
 
   useEffect(() => {
-    const queryString = getQueryString(queries);
+    const queryString = buildQueryString(queries);
     onFilterSubmit(queryString);
   }, [queries]);
 
@@ -96,7 +96,7 @@ export const FilterPanel = ({ table, columns, onFilterSubmit }: Props) => {
   );
 };
 
-function getQueryString(queries: Query) {
+function buildQueryString(queries: Query) {
   const queryString = Object.values(queries)
     .filter((query) => query != null && query !== "")
     .join(" and ");
