@@ -4,16 +4,16 @@ import "./typeahead-filter.css";
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, Icon } from "../Icons";
 
-export const TypeaheadFilter = (props: {
-  filterParams: TypeaheadParams;
-  existingFilters: string[] | null;
-  onFilterSubmit: Function;
-}) => {
-  const [tableName, columnName] = props.filterParams;
+export const TypeaheadFilter = ({
+  filterParams,
+  existingFilters,
+  onFilterSubmit,
+}: Props) => {
+  const [tableName, columnName] = filterParams;
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedSuggestions, setSelectedSuggestions] = useState<
     string[] | null
-  >(props.existingFilters ?? null);
+  >(existingFilters ?? null);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [searchValue, setSearchValue] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -30,11 +30,11 @@ export const TypeaheadFilter = (props: {
 
   // get suggestions & filters on column select
   useEffect(() => {
-    getSuggestions(props.filterParams).then((response) => {
+    getSuggestions(filterParams).then((response) => {
       setSuggestions(response);
     });
 
-    const selected = props.existingFilters ?? null;
+    const selected = existingFilters ?? null;
     setSelectedSuggestions(selected);
   }, [columnName]);
 
@@ -69,7 +69,7 @@ export const TypeaheadFilter = (props: {
       columnName,
       startsWithFilter.current
     );
-    props.onFilterSubmit(filterQuery, selectedSuggestions, columnName);
+    onFilterSubmit(filterQuery, selectedSuggestions, columnName);
   }, [selectedSuggestions]);
 
   const isStartsWithFilter = () => {
@@ -141,7 +141,7 @@ export const TypeaheadFilter = (props: {
       columnName,
       startsWithFilter.current
     );
-    props.onFilterSubmit(filterQuery, selectedSuggestions);
+    onFilterSubmit(filterQuery, selectedSuggestions);
   };
 
   const removeOption = (option: string): string[] | null => {
@@ -224,15 +224,20 @@ function getTypeaheadQuery(
   column: string,
   isStartsWithFilter?: boolean
 ) {
-  if (filterValues && filterValues.length > 0) {
-    if (isStartsWithFilter) {
-      const startsWith = filterValues[0].substring(
-        0,
-        filterValues[0].length - 3
-      );
-      return `${column} starts ${startsWith}`; // multiple starts with filters not currently supported
-    }
-
-    return `${column} in ${JSON.stringify(filterValues)}`;
+  if (!filterValues || filterValues.length === 0) {
+    return;
   }
+
+  if (isStartsWithFilter) {
+    const startsWith = filterValues[0].slice(0, -3);
+    return `${column} starts ${startsWith}`;
+  }
+
+  return `${column} in ${JSON.stringify(filterValues)}`;
+}
+
+interface Props {
+  filterParams: TypeaheadParams;
+  existingFilters: string[] | null;
+  onFilterSubmit: Function;
 }

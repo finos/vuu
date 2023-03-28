@@ -63,11 +63,12 @@ export const FilterPanel = ({ table, columns, onFilterSubmit }: Props) => {
             Column
           </label>
           <select
+            defaultValue={""}
             onChange={handleColumnSelect}
             id="column-selector"
             className="block"
           >
-            <option disabled selected></option>
+            <option disabled></option>
             {columns.map(({ name }) => getColumnSelectorOption(name))}
           </select>
         </div>
