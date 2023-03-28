@@ -39,19 +39,19 @@ export const TypeaheadFilter = ({
   }, [columnName]);
 
   //close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: any): void => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
+  const handleClickOutside = (event: any): void => {
+    if (ref.current && !ref.current.contains(event.target as Node)) {
+      setShowDropdown(false);
+    }
+  };
 
+  useEffect(() => {
     window.addEventListener("click", handleClickOutside);
 
     return () => {
       window.removeEventListener("click", handleClickOutside);
     };
-  });
+  }, [handleClickOutside]);
 
   // get suggestions while typing
   useEffect(() => {
@@ -73,18 +73,10 @@ export const TypeaheadFilter = ({
   }, [selectedSuggestions]);
 
   const isStartsWithFilter = () => {
-    if (selectedSuggestions && selectedSuggestions[0]) {
-      const lastThreeCharacters = selectedSuggestions[0].substring(
-        selectedSuggestions[0].length - 3,
-        selectedSuggestions[0].length
-      );
+    const lastSuggestion = selectedSuggestions?.[0];
+    const lastThreeCharacters = lastSuggestion?.slice(-3);
 
-      if (selectedSuggestions.length === 1 && lastThreeCharacters === "...") {
-        return true;
-      }
-    }
-
-    return false;
+    return selectedSuggestions?.length === 1 && lastThreeCharacters === "...";
   };
 
   const handleDropdownToggle = (event: React.MouseEvent): void => {
@@ -111,6 +103,35 @@ export const TypeaheadFilter = ({
     return [...(selectedSuggestions ?? []), selectedValue];
   };
 
+  const onTagRemove = (e: React.MouseEvent, suggestion: string): void => {
+    e.stopPropagation();
+    const newSelection = removeOption(suggestion);
+    setSelectedSuggestions(newSelection);
+    const filterQuery = getTypeaheadQuery(
+      newSelection,
+      columnName,
+      startsWithFilter.current
+    );
+    onFilterSubmit(filterQuery, selectedSuggestions);
+  };
+
+  const removeOption = (option: string): string[] | null => {
+    if (!selectedSuggestions) return null;
+    const newSelection = selectedSuggestions.filter((o) => o !== option);
+    return newSelection.length > 0 ? newSelection : null;
+  };
+
+  const isSelected = (selected: string): boolean => {
+    return selectedSuggestions?.includes(selected) ?? false;
+  };
+
+  function isStartsWithVal(selectedVal: string) {
+    return selectedVal === searchValue + "...";
+  }
+
+  const isAlreadySelected = (selectedValue: string): boolean =>
+    !!selectedSuggestions?.includes(selectedValue);
+
   const getDisplay = () => {
     if (!selectedSuggestions || selectedSuggestions.length === 0)
       return "Filter";
@@ -130,46 +151,6 @@ export const TypeaheadFilter = ({
         ))}
       </div>
     );
-  };
-
-  const onTagRemove = (e: React.MouseEvent, suggestion: string): void => {
-    e.stopPropagation();
-    const newSelection = removeOption(suggestion);
-    setSelectedSuggestions(newSelection);
-    const filterQuery = getTypeaheadQuery(
-      newSelection,
-      columnName,
-      startsWithFilter.current
-    );
-    onFilterSubmit(filterQuery, selectedSuggestions);
-  };
-
-  const removeOption = (option: string): string[] | null => {
-    if (selectedSuggestions) {
-      const newSelection = selectedSuggestions.filter((o) => o !== option);
-      return newSelection.length > 0 ? newSelection : null;
-    }
-
-    return null;
-  };
-
-  const isSelected = (selected: string): boolean => {
-    return selectedSuggestions?.includes(selected) ?? false;
-  };
-
-  function isStartsWithVal(selectedVal: string) {
-    return selectedVal === searchValue + "...";
-  }
-
-  const isAlreadySelected = (selectedValue: string): boolean => {
-    if (selectedSuggestions)
-      return (
-        selectedSuggestions.findIndex(
-          (suggestion) => suggestion === selectedValue
-        ) >= 0
-      );
-
-    return false;
   };
 
   return (
