@@ -16,8 +16,10 @@ export const TypeaheadFilter = ({
   >(existingFilters ?? null);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [searchValue, setSearchValue] = useState("");
+
   const searchRef = useRef<HTMLInputElement>(null);
   const startsWithFilter = useRef<boolean>(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSearchValue("");
@@ -25,8 +27,6 @@ export const TypeaheadFilter = ({
       searchRef.current.focus();
     }
   }, [showDropdown]);
-
-  const ref = useRef<HTMLDivElement>(null);
 
   // get suggestions & filters on column select
   useEffect(() => {
@@ -39,19 +39,19 @@ export const TypeaheadFilter = ({
   }, [columnName]);
 
   //close dropdown when clicking outside
-  const handleClickOutside = (event: any): void => {
-    if (ref.current && !ref.current.contains(event.target as Node)) {
-      setShowDropdown(false);
-    }
-  };
-
   useEffect(() => {
+    const handleClickOutside = (event: any): void => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
     window.addEventListener("click", handleClickOutside);
 
     return () => {
       window.removeEventListener("click", handleClickOutside);
     };
-  }, [handleClickOutside]);
+  });
 
   // get suggestions while typing
   useEffect(() => {
