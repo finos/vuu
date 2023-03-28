@@ -96,19 +96,10 @@ export const FilterPanel = ({ table, columns, onFilterSubmit }: Props) => {
 };
 
 function getQueryString(queries: Query) {
-  let newQuery = "";
-
-  if (queries) {
-    Object.values(queries).forEach((query) => {
-      if (query && query != "") {
-        newQuery += query + " and ";
-      }
-    });
-
-    newQuery = newQuery.slice(0, newQuery.length - 5);
-  }
-
-  return newQuery;
+  const queryString = Object.values(queries)
+    .filter((query) => query != null && query !== "")
+    .join(" and ");
+  return queryString;
 }
 
 interface Filter {
