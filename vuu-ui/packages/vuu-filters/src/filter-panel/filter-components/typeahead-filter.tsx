@@ -154,13 +154,7 @@ export const TypeaheadFilter = ({
   };
 
   const isSelected = (selected: string): boolean => {
-    if (selectedSuggestions)
-      return (
-        selectedSuggestions.filter((suggestion) => suggestion === selected)
-          .length > 0
-      );
-
-    return false;
+    return selectedSuggestions?.includes(selected) ?? false;
   };
 
   function isStartsWithVal(selectedVal: string) {
