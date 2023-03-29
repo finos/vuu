@@ -32,6 +32,7 @@ import {
   VuuUIMessageOutAggregate,
   VuuUIMessageOutCloseTreeNode,
   VuuUIMessageOutColumns,
+  VuuUIMessageOutConfig,
   VuuUIMessageOutConnect,
   VuuUIMessageOutCreateLink,
   VuuUIMessageOutFilter,
@@ -290,6 +291,12 @@ export class ServerProxy {
     }
   }
 
+  private setConfig(viewport: Viewport, message: VuuUIMessageOutConfig) {
+    const requestId = nextRequestId();
+    const request = viewport.setConfig(requestId, message.config);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+
   private aggregate(viewport: Viewport, message: VuuUIMessageOutAggregate) {
     const requestId = nextRequestId();
     const request = viewport.aggregateRequest(requestId, message.aggregations);
@@ -482,6 +489,8 @@ export class ServerProxy {
         switch (message.type) {
           case "setViewRange":
             return this.setViewRange(viewport, message);
+          case "config":
+            return this.setConfig(viewport, message);
           case "aggregate":
             return this.aggregate(viewport, message);
           case "sort":

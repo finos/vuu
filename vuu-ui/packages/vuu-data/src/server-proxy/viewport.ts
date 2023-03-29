@@ -39,6 +39,7 @@ import * as Message from "./messages";
 import {
   DataSourceAggregateMessage,
   DataSourceColumnsMessage,
+  DataSourceConfig,
   DataSourceDebounceRequest,
   DataSourceDisabledMessage,
   DataSourceEnabledMessage,
@@ -46,12 +47,14 @@ import {
   DataSourceGroupByMessage,
   DataSourceMenusMessage,
   DataSourceRow,
+  DataSourceSetConfigMessage,
   DataSourceSortMessage,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
   DataUpdateMode,
+  hasGroupBy,
 } from "../data-source";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
@@ -71,6 +74,10 @@ interface ChangeViewportRange {
 interface ViewportFilter {
   data: DataSourceFilter;
   type: "filter";
+}
+interface ConfigOperation {
+  data: DataSourceConfig;
+  type: "config";
 }
 interface Aggregate {
   data: VuuAggregation[];
@@ -100,6 +107,7 @@ interface GroupByClear {
 type AsyncOperationWithData =
   | Aggregate
   | Columns
+  | ConfigOperation
   | ViewportFilter
   | GroupBy
   | GroupByClear
@@ -296,9 +304,26 @@ export class Viewport {
           warn?.("range requests sent faster than they are being ACKed");
         }
       }
+    } else if (type === "config") {
+      if (hasGroupBy(pendingOperation.data)) {
+        this.isTree = true;
+        this.groupBy = pendingOperation.data.groupBy;
+      } else if (this.isTree) {
+        this.isTree = false;
+        this.groupBy = [];
+      }
+
+      debug?.(`config change confirmed, isTree : ${this.isTree}`);
+
+      return {
+        clientViewportId,
+        type,
+        config: pendingOperation.data,
+      } as DataSourceSetConfigMessage;
     } else if (type === "groupBy") {
       this.isTree = pendingOperation.data.length > 0;
       this.groupBy = pendingOperation.data;
+      debug?.(`groupBy change confirmed, isTree : ${this.isTree}`);
       return {
         clientViewportId,
         type,
@@ -603,6 +628,31 @@ export class Viewport {
     return this.createRequest({ filterSpec: { filter } });
   }
 
+  setConfig(requestId: string, config: DataSourceConfig) {
+    this.awaitOperation(requestId, { type: "config", data: config });
+
+    const { filter, ...remainingConfig } = config;
+
+    debugEnabled
+      ? debug?.(`setConfig ${JSON.stringify(config)}`)
+      : info?.(`setConfig`);
+
+    return this.createRequest(
+      {
+        ...remainingConfig,
+        filterSpec:
+          typeof filter?.filter === "string"
+            ? {
+                filter: filter.filter,
+              }
+            : {
+                filter: "",
+              },
+      },
+      true
+    );
+  }
+
   aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
     this.awaitOperation(requestId, { type: "aggregate", data: aggregations });
     info?.(`aggregateRequest: ${aggregations}`);
@@ -755,20 +805,29 @@ export class Viewport {
   };
 
   createRequest(
-    params: Partial<Omit<ClientToServerChangeViewPort, "type" | "viewPortId">>
+    params: Partial<Omit<ClientToServerChangeViewPort, "type" | "viewPortId">>,
+    overWrite = false
   ) {
-    return {
-      type: "CHANGE_VP",
-      viewPortId: this.serverViewportId,
-      aggregations: this.aggregations,
-      columns: this.columns,
-      sort: this.sort,
-      groupBy: this.groupBy,
-      filterSpec: {
-        filter: this.filter.filter,
-      },
-      ...params,
-    } as ClientToServerChangeViewPort;
+    if (overWrite) {
+      return {
+        type: "CHANGE_VP",
+        viewPortId: this.serverViewportId,
+        ...params,
+      } as ClientToServerChangeViewPort;
+    } else {
+      return {
+        type: "CHANGE_VP",
+        viewPortId: this.serverViewportId,
+        aggregations: this.aggregations,
+        columns: this.columns,
+        sort: this.sort,
+        groupBy: this.groupBy,
+        filterSpec: {
+          filter: this.filter.filter,
+        },
+        ...params,
+      } as ClientToServerChangeViewPort;
+    }
   }
 }
 

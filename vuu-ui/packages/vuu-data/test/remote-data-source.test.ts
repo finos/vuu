@@ -4,13 +4,9 @@ import "./global-mocks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as connectionExports from "../src/connection-manager";
 //----------------------------------------------------
-import {
-  LinkDescriptorWithLabel,
-  VuuLink,
-  VuuSortCol,
-  VuuSortType,
-} from "@finos/vuu-protocol-types";
+import { LinkDescriptorWithLabel, VuuSortCol } from "@finos/vuu-protocol-types";
 import { RemoteDataSource } from "../src/remote-data-source";
+import { DataSourceConfig } from "../src";
 
 const defaultSubscribeOptions = {
   aggregations: [],
@@ -424,6 +420,92 @@ describe("RemoteDataSource", () => {
         groupBy,
         viewport: "vp1",
       });
+    });
+
+    it("calls server when config set, if config has changed", async () => {
+      const serverSend = vi.fn();
+      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
+        // @ts-ignore
+        () => Promise.resolve({ send: serverSend, subscribe: callback })
+      );
+      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      await dataSource.subscribe({}, callback);
+
+      let config: DataSourceConfig = {
+        sort: { sortDefs: [{ column: "col1", sortType: "A" }] },
+      };
+
+      dataSource.config = config;
+
+      expect(serverSend).toHaveBeenCalledWith({
+        type: "config",
+        config,
+        viewport: "vp1",
+      });
+
+      config = {
+        columns: ["col1", "col2", "col3"],
+      };
+
+      dataSource.config = config;
+
+      expect(serverSend).toHaveBeenCalledWith({
+        type: "config",
+        config,
+        viewport: "vp1",
+      });
+    });
+
+    it("parses filterStruct, if filterQuery only is provided", async () => {
+      const serverSend = vi.fn();
+      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
+        // @ts-ignore
+        () => Promise.resolve({ send: serverSend, subscribe: callback })
+      );
+      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      await dataSource.subscribe({}, callback);
+
+      const config: DataSourceConfig = {
+        filter: { filter: 'ccy = "EUR"' },
+      };
+
+      dataSource.config = config;
+
+      expect(serverSend).toHaveBeenCalledWith({
+        type: "config",
+        config: {
+          filter: {
+            filter: 'ccy = "EUR"',
+            filterStruct: {
+              column: "ccy",
+              op: "=",
+              value: "EUR",
+            },
+          },
+        },
+        viewport: "vp1",
+      });
+    });
+
+    it("does not call server when config set, if config has not changed", async () => {
+      const serverSend = vi.fn();
+      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
+        // @ts-ignore
+        () => Promise.resolve({ send: serverSend, subscribe: callback })
+      );
+      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      await dataSource.subscribe({}, callback);
+
+      const config: DataSourceConfig = {
+        sort: { sortDefs: [{ column: "col1", sortType: "A" }] },
+      };
+
+      dataSource.config = config;
+      serverSend.mockClear();
+
+      dataSource.config = config;
+
+      expect(serverSend).toHaveBeenCalledTimes(0);
     });
   });
 });
