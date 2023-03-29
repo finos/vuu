@@ -37,15 +37,18 @@ export declare type TypeFormatting = {
   zeroPad?: boolean;
 };
 
+export type ColumnTypeRenderer = {
+  associatedField?: string;
+  flashStyle?: "bg-only" | "arrow-bg" | "arrow";
+  map?: { [key: string]: string };
+  name: string;
+};
+
 export declare type ColumnTypeSimple = "string" | "number" | "boolean" | "json";
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
   name: ColumnTypeSimple;
-  renderer?: {
-    associatedField?: string;
-    flashStyle?: "bg-only" | "arrow-bg" | "arrow";
-    name: string;
-  };
+  renderer?: ColumnTypeRenderer;
 };
 
 export declare type ColumnType = ColumnTypeSimple | ColumnTypeDescriptor;

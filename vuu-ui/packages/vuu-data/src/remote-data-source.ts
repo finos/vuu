@@ -24,6 +24,7 @@ import {
   DataSourceDataMessage,
   OptimizeStrategy,
   configChanged,
+  withConfigDefaults,
 } from "./data-source";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
@@ -337,28 +338,31 @@ export class RemoteDataSource
 
   set config(config: DataSourceConfig | undefined) {
     if (configChanged(this.#config, config)) {
-      if (config?.filter && config?.filter.filterStruct === undefined) {
-        this.#config = {
-          ...config,
-          filter: {
-            filter: config.filter.filter,
-            filterStruct: parseFilter(config.filter.filter),
-          },
-        };
-      } else {
-        this.#config = config;
-      }
+      if (config) {
+        const newConfig: DataSourceConfig =
+          config?.filter && config?.filter.filterStruct === undefined
+            ? {
+                ...config,
+                filter: {
+                  filter: config.filter.filter,
+                  filterStruct: parseFilter(config.filter.filter),
+                },
+              }
+            : config;
 
-      if (this.#config && this.viewport && this.server) {
-        if (config) {
-          this.server?.send({
-            viewport: this.viewport,
-            type: "config",
-            config: this.#config,
-          });
+        this.#config = withConfigDefaults(newConfig);
+
+        if (this.#config && this.viewport && this.server) {
+          if (config) {
+            this.server?.send({
+              viewport: this.viewport,
+              type: "config",
+              config: this.#config,
+            });
+          }
         }
+        this.emit("config", this.#config);
       }
-      this.emit("config", this.#config);
     }
   }
 
