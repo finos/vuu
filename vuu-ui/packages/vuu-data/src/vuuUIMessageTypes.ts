@@ -14,7 +14,10 @@ import {
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { WithRequestId } from "./message-utils";
-import { DataSourceVisualLinkCreatedMessage } from "./data-source";
+import {
+  DataSourceConfig,
+  DataSourceVisualLinkCreatedMessage,
+} from "./data-source";
 import { Selection } from "@finos/vuu-datagrid-types";
 
 export type ConnectionStatus =
@@ -209,10 +212,16 @@ export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
   type: "groupBy";
 }
 
+export interface VuuUIMessageOutConfig extends ViewportMessageOut {
+  config: DataSourceConfig;
+  type: "config";
+}
+
 export type VuuUIMessageOutViewport =
   | VuuUIMessageOutAggregate
   | VuuUIMessageOutCloseTreeNode
   | VuuUIMessageOutColumns
+  | VuuUIMessageOutConfig
   | VuuUIMessageOutCreateLink
   | VuuUIMessageOutFilter
   | VuuUIMessageOutDisable
