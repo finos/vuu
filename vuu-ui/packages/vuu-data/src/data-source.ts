@@ -93,7 +93,7 @@ export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
 export interface DataSourceSetConfigMessage
   extends MessageWithClientViewportId {
   type: "config";
-  config: DataSourceConfig;
+  config: WithFullConfig;
 }
 
 export interface DataSourceMenusMessage extends MessageWithClientViewportId {
@@ -148,12 +148,29 @@ type DataConfigPredicate = (
   newConfig: DataSourceConfig
 ) => boolean;
 
+const equivalentFilter: DataConfigPredicate = (
+  { filter: f1 },
+  { filter: f2 }
+) =>
+  (f1 === undefined && f2?.filter === "") ||
+  (f2 === undefined && f1?.filter === "");
+
 export const filterChanged: DataConfigPredicate = (c1, c2) => {
-  return c1.filter?.filter !== c2.filter?.filter;
+  if (equivalentFilter(c1, c2)) {
+    return false;
+  } else {
+    return c1.filter?.filter !== c2.filter?.filter;
+  }
 };
 
-const sortChanged: DataConfigPredicate = ({ sort: s1 }, { sort: s2 }) => {
-  if (exactlyTheSame(s1, s2)) {
+const equivalentSort: DataConfigPredicate = ({ sort: s1 }, { sort: s2 }) =>
+  (s1 === undefined && s2?.sortDefs.length === 0) ||
+  (s2 === undefined && s1?.sortDefs.length === 0);
+
+const sortChanged: DataConfigPredicate = (config, newConfig) => {
+  const { sort: s1 } = config;
+  const { sort: s2 } = newConfig;
+  if (exactlyTheSame(s1, s2) || equivalentSort(config, newConfig)) {
     return false;
   } else if (s1 === undefined || s2 === undefined) {
     return true;
@@ -171,11 +188,17 @@ export const hasGroupBy = (config?: DataSourceConfig): config is WithGroupBy =>
   config.groupBy !== undefined &&
   config.groupBy.length > 0;
 
-const groupByChanged: DataConfigPredicate = (
-  { groupBy: g1 },
-  { groupBy: g2 }
-) => {
-  if (exactlyTheSame(g1, g2)) {
+const equivalentGroupBy: DataConfigPredicate = (
+  { groupBy: val1 },
+  { groupBy: val2 }
+) =>
+  (val1 === undefined && val2?.length === 0) ||
+  (val2 === undefined && val1?.length === 0);
+
+const groupByChanged: DataConfigPredicate = (config, newConfig) => {
+  const { groupBy: g1 } = config;
+  const { groupBy: g2 } = newConfig;
+  if (exactlyTheSame(g1, g2) || equivalentGroupBy(config, newConfig)) {
     return false;
   } else if (g1 === undefined || g2 === undefined) {
     return true;
@@ -184,11 +207,19 @@ const groupByChanged: DataConfigPredicate = (
   }
   return g1.some((column, i) => column !== g2?.[i]);
 };
-const columnsChanged: DataConfigPredicate = (
+
+const equivalentColumns: DataConfigPredicate = (
   { columns: cols1 },
   { columns: cols2 }
-) => {
-  if (exactlyTheSame(cols1, cols2)) {
+) =>
+  (cols1 === undefined && cols2?.length === 0) ||
+  (cols2 === undefined && cols1?.length === 0);
+
+const columnsChanged: DataConfigPredicate = (config, newConfig) => {
+  const { columns: cols1 } = config;
+  const { columns: cols2 } = newConfig;
+
+  if (exactlyTheSame(cols1, cols2) || equivalentColumns(config, newConfig)) {
     return false;
   } else if (cols1 === undefined || cols2 === undefined) {
     return true;
@@ -197,11 +228,18 @@ const columnsChanged: DataConfigPredicate = (
   }
   return cols1.some((column, i) => column !== cols2?.[i]);
 };
-const aggregationsChanged: DataConfigPredicate = (
+
+const equivalentAggregations: DataConfigPredicate = (
   { aggregations: agg1 },
   { aggregations: agg2 }
-) => {
-  if (exactlyTheSame(agg1, agg2)) {
+) =>
+  (agg1 === undefined && agg2?.length === 0) ||
+  (agg2 === undefined && agg1?.length === 0);
+
+const aggregationsChanged: DataConfigPredicate = (config, newConfig) => {
+  const { aggregations: agg1 } = config;
+  const { aggregations: agg2 } = newConfig;
+  if (exactlyTheSame(agg1, agg2) || equivalentAggregations(config, newConfig)) {
     return false;
   } else if (agg1 === undefined || agg2 === undefined) {
     return true;
@@ -345,12 +383,47 @@ export const isDataSourceConfigMessage = (
  * Described the configuration values that should typically be
  * persisted across sessions.
  */
-export interface DataSourceConfig {
-  aggregations?: VuuAggregation[];
-  columns?: string[];
-  filter?: DataSourceFilter;
-  groupBy?: VuuGroupBy;
-  sort?: VuuSort;
+export interface WithFullConfig {
+  aggregations: VuuAggregation[];
+  columns: string[];
+  filter: DataSourceFilter;
+  groupBy: VuuGroupBy;
+  sort: VuuSort;
+}
+
+export const withConfigDefaults = (
+  config: DataSourceConfig
+): WithFullConfig & { visualLink?: LinkDescriptorWithLabel } => {
+  if (
+    config.aggregations &&
+    config.columns &&
+    config.filter &&
+    config.groupBy &&
+    config.sort
+  ) {
+    return config as WithFullConfig;
+  } else {
+    const {
+      aggregations = [],
+      columns = [],
+      filter = { filter: "" },
+      groupBy = [],
+      sort = { sortDefs: [] },
+      visualLink,
+    } = config;
+
+    return {
+      aggregations,
+      columns,
+      filter,
+      groupBy,
+      sort,
+      visualLink,
+    };
+  }
+};
+
+export interface DataSourceConfig extends Partial<WithFullConfig> {
   visualLink?: LinkDescriptorWithLabel;
 }
 

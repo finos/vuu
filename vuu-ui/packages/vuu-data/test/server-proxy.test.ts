@@ -2607,4 +2607,78 @@ describe("ServerProxy", () => {
       });
     });
   });
+
+  describe("config", () => {
+    const [clientSubscription1, serverSubscriptionAck1] = createSubscription();
+
+    it("sets viewport isTree when config includes groupby", () => {
+      const callback = vi.fn();
+      const serverProxy = new ServerProxy(mockConnection, callback);
+      serverProxy["sessionId"] = "dsdsd";
+      serverProxy["authToken"] = "test";
+
+      serverProxy.subscribe(clientSubscription1);
+      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 10)],
+        },
+      });
+
+      TEST_setRequestId(1);
+      callback.mockClear();
+      mockConnection.send.mockClear();
+
+      serverProxy.handleMessageFromClient({
+        viewport: "client-vp-1",
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filter: { filter: "" },
+          groupBy: ["col-4"],
+          sort: { sortDefs: [] },
+        },
+      });
+
+      expect(callback).toHaveBeenCalledTimes(0);
+      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+
+      expect(mockConnection.send).toHaveBeenCalledWith({
+        body: {
+          aggregations: [],
+          viewPortId: "server-vp-1",
+          type: "CHANGE_VP",
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: ["col-4"],
+        },
+        module: "CORE",
+        user: "user",
+        requestId: "1",
+        sessionId: "dsdsd",
+        token: "test",
+      });
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        requestId: "1",
+        body: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: ["col-4"],
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
+        },
+      });
+
+      expect(serverProxy["viewports"].get("server-vp-1")?.isTree).toBe(true);
+    });
+  });
 });
