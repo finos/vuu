@@ -4,11 +4,7 @@ import {
   DatagridSettingsPanel,
   DataSourceStats,
 } from "@finos/vuu-table-extras";
-import {
-  ColumnDescriptor,
-  GridConfig,
-  KeyedColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import { FilterInput } from "@finos/vuu-filters";
 import { Flexbox, useViewContext, View } from "@finos/vuu-layout";

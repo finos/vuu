@@ -439,7 +439,13 @@ describe("RemoteDataSource", () => {
 
       expect(serverSend).toHaveBeenCalledWith({
         type: "config",
-        config,
+        config: {
+          aggregations: [],
+          columns: [],
+          filter: { filter: "" },
+          groupBy: [],
+          sort: { sortDefs: [{ column: "col1", sortType: "A" }] },
+        },
         viewport: "vp1",
       });
 
@@ -451,7 +457,13 @@ describe("RemoteDataSource", () => {
 
       expect(serverSend).toHaveBeenCalledWith({
         type: "config",
-        config,
+        config: {
+          aggregations: [],
+          columns: ["col1", "col2", "col3"],
+          filter: { filter: "" },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
         viewport: "vp1",
       });
     });
@@ -474,6 +486,8 @@ describe("RemoteDataSource", () => {
       expect(serverSend).toHaveBeenCalledWith({
         type: "config",
         config: {
+          aggregations: [],
+          columns: [],
           filter: {
             filter: 'ccy = "EUR"',
             filterStruct: {
@@ -482,6 +496,8 @@ describe("RemoteDataSource", () => {
               value: "EUR",
             },
           },
+          groupBy: [],
+          sort: { sortDefs: [] },
         },
         viewport: "vp1",
       });
