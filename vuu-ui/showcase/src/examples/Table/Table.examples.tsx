@@ -4,7 +4,11 @@ import {
   DatagridSettingsPanel,
   DataSourceStats,
 } from "@finos/vuu-table-extras";
-import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
+import {
+  ColumnDescriptor,
+  GridConfig,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import { FilterInput } from "@finos/vuu-filters";
 import { Flexbox, useViewContext, View } from "@finos/vuu-layout";
@@ -1040,12 +1044,17 @@ export const toColumnDescriptor =
     }
   };
 
+type SavedConfig = Array<{
+  "datasource-config": DataSourceConfig;
+  "table-config": { columns: ColumnDescriptor[] };
+}>;
+
 export const SwitchColumns = () => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const { schemas } = useSchemas();
   const { parentOrders: parentOrdersSchema } = schemas;
 
-  const namedConfigurations = useMemo(() => {
+  const namedConfigurations = useMemo<SavedConfig>(() => {
     // prettier-ignore
     const whpColumns = ["account", "algo", "ccy", "exchange", "ric"]
     // prettier-ignore
@@ -1064,6 +1073,7 @@ export const SwitchColumns = () => {
       {
         "datasource-config": {
           columns: wovColumns,
+          groupBy: ["account"],
         },
         "table-config": {
           columns: wovColumns.map(toColumnDescriptor(parentOrdersSchema)),
@@ -1080,7 +1090,7 @@ export const SwitchColumns = () => {
       {
         "datasource-config": {
           columns: parentOrdersSchema.columns.map((col) => col.name),
-          filterSpec: { filter: 'algo = "TWAP"' },
+          filter: { filter: 'algo = "TWAP"' },
         },
         "table-config": {
           columns: parentOrdersSchema.columns,

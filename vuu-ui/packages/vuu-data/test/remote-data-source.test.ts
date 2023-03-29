@@ -444,7 +444,7 @@ describe("RemoteDataSource", () => {
       });
 
       config = {
-        filter: { filter: 'ccy = "EUR"' },
+        columns: ["col1", "col2", "col3"],
       };
 
       dataSource.config = config;
@@ -454,9 +454,18 @@ describe("RemoteDataSource", () => {
         config,
         viewport: "vp1",
       });
+    });
 
-      config = {
-        columns: ["col1", "col2", "col3"],
+    it("parses filterStruct, if filterQuery only is provided", async () => {
+      const serverSend = vi.fn();
+      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
+        // @ts-ignore
+        () => Promise.resolve({ send: serverSend, subscribe: callback })
+      );
+      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      await dataSource.subscribe({}, callback);
+
+      const config: DataSourceConfig = {
         filter: { filter: 'ccy = "EUR"' },
       };
 
@@ -464,7 +473,16 @@ describe("RemoteDataSource", () => {
 
       expect(serverSend).toHaveBeenCalledWith({
         type: "config",
-        config,
+        config: {
+          filter: {
+            filter: 'ccy = "EUR"',
+            filterStruct: {
+              column: "ccy",
+              op: "=",
+              value: "EUR",
+            },
+          },
+        },
         viewport: "vp1",
       });
     });

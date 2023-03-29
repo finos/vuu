@@ -27,6 +27,7 @@ import {
 } from "./data-source";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
+import { parseFilter } from "@finos/vuu-filters";
 
 type RangeRequest = (range: VuuRange) => void;
 
@@ -336,13 +337,24 @@ export class RemoteDataSource
 
   set config(config: DataSourceConfig | undefined) {
     if (configChanged(this.#config, config)) {
-      this.#config = config;
-      if (this.viewport && this.server) {
+      if (config?.filter && config?.filter.filterStruct === undefined) {
+        this.#config = {
+          ...config,
+          filter: {
+            filter: config.filter.filter,
+            filterStruct: parseFilter(config.filter.filter),
+          },
+        };
+      } else {
+        this.#config = config;
+      }
+
+      if (this.#config && this.viewport && this.server) {
         if (config) {
           this.server?.send({
             viewport: this.viewport,
             type: "config",
-            config,
+            config: this.#config,
           });
         }
       }

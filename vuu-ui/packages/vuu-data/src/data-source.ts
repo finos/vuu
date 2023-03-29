@@ -148,7 +148,7 @@ type DataConfigPredicate = (
   newConfig: DataSourceConfig
 ) => boolean;
 
-const filterChanged: DataConfigPredicate = (c1, c2) => {
+export const filterChanged: DataConfigPredicate = (c1, c2) => {
   return c1.filter?.filter !== c2.filter?.filter;
 };
 
@@ -165,6 +165,12 @@ const sortChanged: DataConfigPredicate = ({ sort: s1 }, { sort: s2 }) => {
       column !== s2.sortDefs[i].column || sortType !== s2.sortDefs[i].sortType
   );
 };
+
+export const hasGroupBy = (config?: DataSourceConfig): config is WithGroupBy =>
+  config !== undefined &&
+  config.groupBy !== undefined &&
+  config.groupBy.length > 0;
+
 const groupByChanged: DataConfigPredicate = (
   { groupBy: g1 },
   { groupBy: g2 }
@@ -346,6 +352,10 @@ export interface DataSourceConfig {
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
   visualLink?: LinkDescriptorWithLabel;
+}
+
+export interface WithGroupBy extends DataSourceConfig {
+  groupBy: VuuGroupBy;
 }
 
 export interface DataSourceConstructorProps extends DataSourceConfig {
