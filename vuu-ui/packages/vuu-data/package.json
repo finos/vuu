@@ -14,10 +14,12 @@
     "@finos/vuu-filter-types": "0.0.26",
     "@finos/vuu-protocol-types": "0.0.26"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
-    "@finos/vuu-utils": "0.0.26",
+    "@finos/vuu-utils": "0.0.26"
+  },
+  "peerDependencies": {
     "react": "^17.0.2"
   }
 }
