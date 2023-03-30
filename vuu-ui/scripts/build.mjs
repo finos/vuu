@@ -51,11 +51,21 @@ export default async function main(customConfig) {
   const packageJson = readPackageJson();
   const { distPath: DIST_PATH, licencePath: LICENCE_PATH, target } = config;
 
-  const { name: scopedPackageName, peerDependencies = NO_DEPENDENCIES } =
-    packageJson;
+  const {
+    name: scopedPackageName,
+    dependencies = NO_DEPENDENCIES,
+    peerDependencies = NO_DEPENDENCIES,
+  } = packageJson;
 
   const [, packageName] = scopedPackageName.split("/");
   const external = Object.keys(peerDependencies);
+  const externalVuu = Object.keys(dependencies).filter(
+    (name) =>
+      name.match(/^@[^/]+\/vuu-/) ||
+      name.match(/^@salt-ds/) ||
+      name.match(/^@heswell/) ||
+      name.match(/^@lezer/)
+  );
 
   const watch = getCommandLineArg("--watch");
   const debug = getCommandLineArg("--debug");
@@ -72,7 +82,7 @@ export default async function main(customConfig) {
   const buildConfig = {
     entryPoints: [isTypeScript ? indexTS : isJavaScript ? indexJS : indexCSS],
     env: development ? "development" : "production",
-    external,
+    external: external.concat(externalVuu),
     outdir: `${outdir}/esm`,
     name: scopedPackageName,
     target,
