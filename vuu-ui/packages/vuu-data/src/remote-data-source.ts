@@ -24,7 +24,9 @@ import {
   DataSourceDataMessage,
   OptimizeStrategy,
   configChanged,
+  vanillaConfig,
   withConfigDefaults,
+  WithFullConfig,
 } from "./data-source";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
@@ -48,18 +50,13 @@ export class RemoteDataSource
   private configChangePending: DataSourceConfig | undefined;
   private rangeRequest: RangeRequest;
 
-  #aggregations: VuuAggregation[] = [];
-  #columns: string[] = [];
-  #config: DataSourceConfig | undefined;
-  #filter: DataSourceFilter = { filter: "" };
+  #config: WithFullConfig = vanillaConfig;
   #groupBy: VuuGroupBy = [];
   #optimize: OptimizeStrategy = "throttle";
   #range: VuuRange = { from: 0, to: 0 };
   #selectedRowsCount = 0;
   #size = 0;
-  #sort: VuuSort = { sortDefs: [] };
   #title: string | undefined;
-  #visualLink: LinkDescriptorWithLabel | undefined;
 
   public table: VuuTable;
   public viewport: string | undefined;
@@ -85,27 +82,17 @@ export class RemoteDataSource
     this.table = table;
     this.viewport = viewport;
 
-    if (aggregations) {
-      this.#aggregations = aggregations;
-    }
-    if (columns) {
-      this.#columns = columns;
-    }
-    if (filter) {
-      this.#filter = filter;
-    }
-    if (groupBy) {
-      this.#groupBy = groupBy;
-    }
-    if (sort) {
-      this.#sort = sort;
-    }
+    this.#config = {
+      ...this.#config,
+      aggregations: aggregations || this.#config.aggregations,
+      columns: columns || this.#config.columns,
+      filter: filter || this.#config.filter,
+      groupBy: groupBy || this.#config.groupBy,
+      sort: sort || this.#config.sort,
+      visualLink: visualLink || this.#config.visualLink,
+    };
+
     this.#title = title;
-    this.#visualLink = visualLink;
-
-    this.refreshConfig();
-
-    // this.rangeRequest = this.rawRangeRequest;
     this.rangeRequest = this.throttleRangeRequest;
   }
 
@@ -123,26 +110,22 @@ export class RemoteDataSource
   ) {
     this.clientCallback = callback;
 
+    if (aggregations || columns || filter || groupBy || sort) {
+      this.#config = {
+        ...this.#config,
+        aggregations: aggregations || this.#config.aggregations,
+        columns: columns || this.#config.columns,
+        filter: filter || this.#config.filter,
+        groupBy: groupBy || this.#config.groupBy,
+        sort: sort || this.#config.sort,
+      };
+    }
+
     // store the range before we await the server. It's is possible the
     // range will be updated from the client before we have been able to
     // subscribe. This ensures we will subscribe with latest value.
-    if (aggregations) {
-      this.#aggregations = aggregations;
-    }
-    if (columns) {
-      this.#columns = columns;
-    }
-    if (filter) {
-      this.#filter = filter;
-    }
-    if (groupBy) {
-      this.#groupBy = groupBy;
-    }
     if (range) {
       this.#range = range;
-    }
-    if (sort) {
-      this.#sort = sort;
     }
 
     if (this.status !== "initialising") {
@@ -159,17 +142,12 @@ export class RemoteDataSource
 
     this.server?.subscribe(
       {
-        aggregations: this.#aggregations,
+        ...this.#config,
         bufferSize,
-        columns: this.#columns,
-        filter: this.#filter,
-        groupBy: this.#groupBy,
         viewport,
         table: this.table,
         range: this.#range,
-        sort: this.#sort,
         title: this.#title,
-        visualLink: this.visualLink,
       },
       this.handleMessageFromServer
     );
@@ -304,68 +282,6 @@ export class RemoteDataSource
     }
   }
 
-  // Build the config structure in advance of any get requests and on every change.
-  // We do not build config on the fly in the getter as we want to avoid creating a
-  // new structure on each request - the object is 'stable' in React terminology.
-  private refreshConfig(confirmed?: boolean) {
-    const { aggregations, columns, filter, groupBy, sort, visualLink } = this;
-    const hasAggregations = aggregations.length > 0;
-    const hasColumns = columns.length > 0;
-    const hasFilter = filter.filter !== "";
-    const hasGroupBy = groupBy.length > 0;
-    const hasSort = sort.sortDefs.length > 0;
-    const hasVisualLink = visualLink !== undefined;
-
-    if (hasAggregations || hasColumns || hasFilter || hasGroupBy || hasSort) {
-      const result: DataSourceConfig = {};
-      hasAggregations && (result.aggregations = aggregations);
-      hasColumns && (result.columns = columns);
-      hasFilter && (result.filter = filter);
-      hasGroupBy && (result.groupBy = groupBy);
-      hasSort && (result.sort = sort);
-      hasVisualLink && (result.visualLink = visualLink);
-      this.#config = result;
-    } else {
-      this.#config = undefined;
-    }
-
-    this.emit("config", this.#config, confirmed);
-  }
-
-  get config() {
-    return this.#config;
-  }
-
-  set config(config: DataSourceConfig | undefined) {
-    if (configChanged(this.#config, config)) {
-      if (config) {
-        const newConfig: DataSourceConfig =
-          config?.filter && config?.filter.filterStruct === undefined
-            ? {
-                ...config,
-                filter: {
-                  filter: config.filter.filter,
-                  filterStruct: parseFilter(config.filter.filter),
-                },
-              }
-            : config;
-
-        this.#config = withConfigDefaults(newConfig);
-
-        if (this.#config && this.viewport && this.server) {
-          if (config) {
-            this.server?.send({
-              viewport: this.viewport,
-              type: "config",
-              config: this.#config,
-            });
-          }
-        }
-        this.emit("config", this.#config);
-      }
-    }
-  }
-
   get optimize() {
     return this.#optimize;
   }
@@ -443,12 +359,50 @@ export class RemoteDataSource
     }
   }, 100);
 
+  get config() {
+    return this.#config;
+  }
+
+  set config(config: DataSourceConfig | undefined) {
+    if (configChanged(this.#config, config)) {
+      if (config) {
+        const newConfig: DataSourceConfig =
+          config?.filter?.filter && config?.filter.filterStruct === undefined
+            ? {
+                ...config,
+                filter: {
+                  filter: config.filter.filter,
+                  filterStruct: parseFilter(config.filter.filter),
+                },
+              }
+            : config;
+
+        this.#config = withConfigDefaults(newConfig);
+
+        if (this.#config && this.viewport && this.server) {
+          if (config) {
+            this.server?.send({
+              viewport: this.viewport,
+              type: "config",
+              config: this.#config,
+            });
+          }
+        }
+        this.emit("config", this.#config);
+      }
+    }
+  }
+
+  //TODO replace all these individual server calls with calls to setConfig
   get columns() {
-    return this.#columns;
+    return this.#config.columns;
   }
 
   set columns(columns: string[]) {
-    this.#columns = columns;
+    this.#config = {
+      ...this.#config,
+      columns,
+    };
     if (this.viewport) {
       const message = {
         viewport: this.viewport,
@@ -459,15 +413,18 @@ export class RemoteDataSource
         this.server.send(message);
       }
     }
-    this.refreshConfig();
+    this.emit("config", this.#config);
   }
 
   get aggregations() {
-    return this.#aggregations;
+    return this.#config.aggregations;
   }
 
   set aggregations(aggregations: VuuAggregation[]) {
-    this.#aggregations = aggregations;
+    this.#config = {
+      ...this.#config,
+      aggregations,
+    };
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
@@ -475,16 +432,19 @@ export class RemoteDataSource
         aggregations,
       });
     }
-    this.refreshConfig();
+    this.emit("config", this.#config);
   }
 
   get sort() {
-    return this.#sort;
+    return this.#config.sort;
   }
 
   set sort(sort: VuuSort) {
     // TODO should we wait until server ACK before we assign #sort ?
-    this.#sort = sort;
+    this.#config = {
+      ...this.#config,
+      sort,
+    };
     if (this.viewport) {
       const message = {
         viewport: this.viewport,
@@ -495,16 +455,19 @@ export class RemoteDataSource
         this.server.send(message);
       }
     }
-    this.refreshConfig();
+    this.emit("config", this.#config);
   }
 
   get filter() {
-    return this.#filter;
+    return this.#config.filter;
   }
 
   set filter(filter: DataSourceFilter) {
     // TODO should we wait until server ACK before we assign #sort ?
-    this.#filter = filter;
+    this.#config = {
+      ...this.#config,
+      filter,
+    };
     if (this.viewport) {
       const message = {
         viewport: this.viewport,
@@ -515,21 +478,24 @@ export class RemoteDataSource
         this.server.send(message);
       }
     }
-    this.refreshConfig();
+    this.emit("config", this.#config);
   }
 
   get groupBy() {
-    return this.#groupBy;
+    return this.#config.groupBy;
   }
 
   set groupBy(groupBy: VuuGroupBy) {
     const wasGrouped = this.#groupBy.length > 0;
-    this.#groupBy = groupBy ?? [];
+    this.#config = {
+      ...this.#config,
+      groupBy,
+    };
     if (this.viewport) {
       const message = {
         viewport: this.viewport,
         type: "groupBy",
-        groupBy: this.#groupBy,
+        groupBy: this.#config.groupBy,
       } as const;
 
       if (this.server) {
@@ -544,7 +510,7 @@ export class RemoteDataSource
         rows: [],
       });
     }
-    this.refreshConfig();
+    this.emit("config", this.#config);
     this.setConfigPending({ groupBy });
   }
 
@@ -564,11 +530,14 @@ export class RemoteDataSource
   }
 
   get visualLink() {
-    return this.#visualLink;
+    return this.#config.visualLink;
   }
 
   set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {
-    this.#visualLink = visualLink;
+    this.#config = {
+      ...this.#config,
+      visualLink,
+    };
 
     if (visualLink) {
       const {
@@ -593,7 +562,7 @@ export class RemoteDataSource
         });
       }
     }
-    this.refreshConfig();
+    this.emit("config", this.#config);
   }
 
   private setConfigPending(config?: DataSourceConfig) {
