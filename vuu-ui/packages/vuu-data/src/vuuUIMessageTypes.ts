@@ -1,5 +1,4 @@
 import {
-  ClientToServerMenuRPC,
   ClientToServerTableList,
   ClientToServerTableMeta,
   LinkDescriptorWithLabel,
@@ -14,10 +13,7 @@ import {
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { WithRequestId } from "./message-utils";
-import {
-  DataSourceConfig,
-  DataSourceVisualLinkCreatedMessage,
-} from "./data-source";
+import { WithFullConfig } from "./data-source";
 import { Selection } from "@finos/vuu-datagrid-types";
 
 export type ConnectionStatus =
@@ -213,7 +209,7 @@ export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
 }
 
 export interface VuuUIMessageOutConfig extends ViewportMessageOut {
-  config: DataSourceConfig;
+  config: WithFullConfig;
   type: "config";
 }
 

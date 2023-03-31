@@ -634,7 +634,7 @@ export class Viewport {
     return this.createRequest({ filterSpec: { filter } });
   }
 
-  setConfig(requestId: string, config: DataSourceConfig) {
+  setConfig(requestId: string, config: WithFullConfig) {
     this.awaitOperation(requestId, { type: "config", data: config });
 
     const { filter, ...remainingConfig } = config;
