@@ -55,6 +55,7 @@ import {
   DataSourceVisualLinksMessage,
   DataUpdateMode,
   hasGroupBy,
+  WithFullConfig,
 } from "../data-source";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
@@ -76,7 +77,7 @@ interface ViewportFilter {
   type: "filter";
 }
 interface ConfigOperation {
-  data: DataSourceConfig;
+  data: WithFullConfig;
   type: "config";
 }
 interface Aggregate {
@@ -305,12 +306,17 @@ export class Viewport {
         }
       }
     } else if (type === "config") {
-      if (hasGroupBy(pendingOperation.data)) {
+      const { aggregations, columns, filter, groupBy, sort } =
+        pendingOperation.data;
+      this.aggregations = aggregations;
+      this.columns = columns;
+      this.filter = filter;
+      this.groupBy = groupBy;
+      this.sort = sort;
+      if (groupBy.length > 0) {
         this.isTree = true;
-        this.groupBy = pendingOperation.data.groupBy;
       } else if (this.isTree) {
         this.isTree = false;
-        this.groupBy = [];
       }
 
       debug?.(`config change confirmed, isTree : ${this.isTree}`);

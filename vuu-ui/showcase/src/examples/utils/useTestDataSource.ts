@@ -113,6 +113,11 @@ export const useTestDataSource = ({
       dataSourceRef.current = new RemoteDataSource(dataConfig);
     }
     tableRef.current = table;
+
+    if (dataSourceRef.current === undefined) {
+      throw Error("no dataSource configuration specified");
+    }
+
     return dataSourceRef.current;
   }, [bufferSize, columnNames, filter, groupBy, onConfigChange, sort, table]);
 
