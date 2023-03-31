@@ -9,6 +9,7 @@ import {
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
+  VuuFilter,
   VuuGroupBy,
   VuuLinkDescriptor,
   VuuMenu,
@@ -384,12 +385,24 @@ export const isDataSourceConfigMessage = (
  * persisted across sessions.
  */
 export interface WithFullConfig {
-  aggregations: VuuAggregation[];
-  columns: string[];
-  filter: DataSourceFilter;
-  groupBy: VuuGroupBy;
-  sort: VuuSort;
+  readonly aggregations: VuuAggregation[];
+  readonly columns: string[];
+  readonly filter: DataSourceFilter;
+  readonly groupBy: VuuGroupBy;
+  readonly sort: VuuSort;
+  readonly visualLink?: LinkDescriptorWithLabel;
 }
+
+export const NoFilter: VuuFilter = { filter: "" };
+export const NoSort: VuuSort = { sortDefs: [] };
+
+export const vanillaConfig: WithFullConfig = {
+  aggregations: [],
+  columns: [],
+  filter: NoFilter,
+  groupBy: [],
+  sort: NoSort,
+};
 
 export const withConfigDefaults = (
   config: DataSourceConfig

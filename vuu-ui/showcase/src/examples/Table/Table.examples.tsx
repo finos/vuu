@@ -1046,53 +1046,56 @@ type SavedConfig = Array<{
 }>;
 
 export const SwitchColumns = () => {
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [selectedIndex, _setSelectedIndex] = useState<number>(0);
+  const selectedIndexRef = useRef(0);
+  const setSelectedIndex = useCallback((value: number) => {
+    _setSelectedIndex((selectedIndexRef.current = value));
+  }, []);
+
   const { schemas } = useSchemas();
   const { parentOrders: parentOrdersSchema } = schemas;
 
-  const namedConfigurations = useMemo<SavedConfig>(() => {
+  const [namedConfigurations, setConfig] = useMemo<[SavedConfig, any]>(() => {
     // prettier-ignore
     const whpColumns = ["account", "algo", "ccy", "exchange", "ric"]
     // prettier-ignore
     const wovColumns = ["account", "side", "price", "averagePrice", "quantity", "filledQty"];
     // prettier-ignore
     const apColumns = ["account", "status", "volLimit"];
-    return [
-      {
-        "datasource-config": {
-          columns: whpColumns,
-        },
-        "table-config": {
-          columns: whpColumns.map(toColumnDescriptor(parentOrdersSchema)),
-        },
+    // prettier-ignore
+    const config: SavedConfig =[
+      { "datasource-config": {columns: whpColumns},
+        "table-config": { columns: whpColumns.map(toColumnDescriptor(parentOrdersSchema)) },
       },
       {
-        "datasource-config": {
-          columns: wovColumns,
-          groupBy: ["account"],
-        },
-        "table-config": {
-          columns: wovColumns.map(toColumnDescriptor(parentOrdersSchema)),
-        },
+        "datasource-config": { columns: wovColumns, groupBy: ["account"]},
+        "table-config": { columns: wovColumns.map(toColumnDescriptor(parentOrdersSchema)) },
       },
       {
-        "datasource-config": {
-          columns: apColumns,
-        },
-        "table-config": {
-          columns: apColumns.map(toColumnDescriptor(parentOrdersSchema)),
-        },
+        "datasource-config": { columns: apColumns },
+        "table-config": { columns: apColumns.map(toColumnDescriptor(parentOrdersSchema))},
       },
       {
-        "datasource-config": {
+        "datasource-config": { 
           columns: parentOrdersSchema.columns.map((col) => col.name),
           filter: { filter: 'algo = "TWAP"' },
         },
-        "table-config": {
-          columns: parentOrdersSchema.columns,
-        },
+        "table-config": { columns: parentOrdersSchema.columns },
       },
     ];
+
+    const setConfig = (dataSourceConfig: DataSourceConfig) => {
+      console.log(
+        `set [${selectedIndexRef.current}] to ${JSON.stringify(
+          dataSourceConfig,
+          null,
+          2
+        )}`
+      );
+      config[selectedIndexRef.current]["datasource-config"] = dataSourceConfig;
+    };
+
+    return [config, setConfig];
   }, [parentOrdersSchema]);
 
   const namedConfiguration = namedConfigurations[selectedIndex];
@@ -1114,9 +1117,6 @@ export const SwitchColumns = () => {
   }, [config]);
 
   useEffect(() => {
-    console.log(`named configuration has changed`, {
-      namedConfiguration,
-    });
     setTableConfig(
       (configRef.current = {
         columns: namedConfiguration["table-config"].columns,
@@ -1141,6 +1141,12 @@ export const SwitchColumns = () => {
     },
     [dataSource]
   );
+
+  useMemo(() => {
+    dataSource.on("config", (config) => {
+      setConfig(config);
+    });
+  }, [dataSource, setConfig]);
 
   const handleTableConfigChange = useCallback(
     (config: Omit<GridConfig, "headings">) => {
