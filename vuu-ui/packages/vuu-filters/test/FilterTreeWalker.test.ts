@@ -100,16 +100,15 @@ describe("Filter treeWalker", () => {
       op: "or",
     });
   });
-});
-
-it("parses a named filter", () => {
-  const str = "price > 100.00 as HighPrice";
-  const result = parser.parse(str);
-  const filter = walkTree(result, str);
-  expect(filter).toEqual({
-    column: "price",
-    name: "HighPrice",
-    op: ">",
-    value: 100.0,
+  it("parses a named filter", () => {
+    const str = "price > 100.00 as HighPrice";
+    const result = parser.parse(str);
+    const filter = walkTree(result, str);
+    expect(filter).toEqual({
+      column: "price",
+      name: "HighPrice",
+      op: ">",
+      value: 100.0,
+    });
   });
 });
