@@ -1,5 +1,6 @@
 import { KeyBinding } from "@codemirror/view";
 import {
+  closeBrackets,
   defaultHighlightStyle,
   defaultKeymap,
   drawSelection,
@@ -20,6 +21,7 @@ export const minimalSetup: Extension = (() => [
   highlightSpecialChars(),
   history(),
   drawSelection(),
+  closeBrackets(),
   syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
   keymap.of(keyBindings),
 ])();

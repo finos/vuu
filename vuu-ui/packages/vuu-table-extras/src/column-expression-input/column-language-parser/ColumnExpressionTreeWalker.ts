@@ -7,7 +7,7 @@ type expressionType =
   | "callExpression"
   | "colExpression"
   | "conditionalExpression"
-  | "numberLiteralExpression"
+  | "numericLiteralExpression"
   | "relationalExpression"
   | "stringLiteralExpression"
   | "unknown";

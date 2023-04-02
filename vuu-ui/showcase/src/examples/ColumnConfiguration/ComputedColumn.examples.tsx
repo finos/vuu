@@ -82,10 +82,8 @@ export const DefaultColumnExpressionInput = () => {
       <span>isValid {isValid}</span>
       <br />
       <br />
-      <div>{JSON.stringify(expression)}</div>
-      <br />
       {/* <div>{source}</div> */}
-      <JsonTable source={expression?.toJSON?.()} height={400} />
+      <JsonTable source={expression} height={400} />
     </>
   );
 };
