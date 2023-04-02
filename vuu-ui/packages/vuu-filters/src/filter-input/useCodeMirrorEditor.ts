@@ -22,23 +22,33 @@ import {
   FilterSubmissionMode,
   useAutoComplete,
 } from "./useFilterAutoComplete";
+import { FilterSaveOptions } from "./useFilterSuggestionProvider";
 
-export type SuggestionType = "column" | "columnValue" | "operator";
+export type SuggestionType =
+  | "column"
+  | "columnValue"
+  | "operator"
+  | "save"
+  | "name";
 
-export interface SuggestionOptions {
+export interface FilterSuggestionOptions {
+  quoted?: boolean;
   columnName?: string;
+  existingFilter?: Filter;
+  filterName?: string;
+  onSubmit?: () => void;
   operator?: string;
   startsWith?: string;
   selection?: string[];
 }
 
-export type getSuggestionsType = (
+export type getFilterSuggestionsType = (
   suggestionType: SuggestionType,
-  options?: SuggestionOptions
+  options?: FilterSuggestionOptions
 ) => Promise<Completion[]>;
 
 export interface IFilterSuggestionProvider {
-  getSuggestions: getSuggestionsType;
+  getSuggestions: getFilterSuggestionsType;
   isPartialMatch: (
     valueType: SuggestionType,
     columnName?: string,
@@ -84,6 +94,7 @@ export type filterSubmissionHandler = (
 export interface CodeMirrorEditorProps {
   existingFilter?: Filter;
   onSubmitFilter?: filterSubmissionHandler;
+  saveOptions?: FilterSaveOptions;
   suggestionProvider: IFilterSuggestionProvider;
 }
 

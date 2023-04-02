@@ -102,4 +102,11 @@ describe("FilterParser", () => {
     expect(evaluateFilter("price = 199.05")).toEqual(Ok);
     expect(evaluateFilter("price = .05")).toEqual(Ok);
   });
+
+  it("parses named filters", () => {
+    expect(evaluateFilter('currency = "EUR" as euros')).toEqual(Ok);
+    expect(
+      evaluateFilter('currency = "EUR" and price > 100 as pricey_euros')
+    ).toEqual(Ok);
+  });
 });
