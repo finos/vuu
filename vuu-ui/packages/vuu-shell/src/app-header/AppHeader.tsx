@@ -6,7 +6,7 @@ import cx from "classnames";
 
 import "./AppHeader.css";
 import { Density } from "@salt-ds/core";
-import { DensitySwitch } from "../density-provider";
+import { DensitySwitch } from "../density-switch";
 
 const classBase = "vuuAppHeader";
 export interface AppHeaderProps extends HTMLAttributes<HTMLDivElement> {
