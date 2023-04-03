@@ -50,7 +50,9 @@ export declare type ColumnTypeSimple =
   | "number"
   | "boolean"
   | "json"
-  | "date";
+  | "date"
+  | "time";
+
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
   name: ColumnTypeSimple;
