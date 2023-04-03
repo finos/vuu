@@ -34,6 +34,7 @@ export declare type GridConfig = {
 export declare type TypeFormatting = {
   alignOnDecimals?: boolean;
   decimals?: number;
+  pattern?: string;
   zeroPad?: boolean;
 };
 
@@ -44,7 +45,12 @@ export type ColumnTypeRenderer = {
   name: string;
 };
 
-export declare type ColumnTypeSimple = "string" | "number" | "boolean" | "json";
+export declare type ColumnTypeSimple =
+  | "string"
+  | "number"
+  | "boolean"
+  | "json"
+  | "date";
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
   name: ColumnTypeSimple;
