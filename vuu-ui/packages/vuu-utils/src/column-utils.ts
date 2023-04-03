@@ -97,6 +97,13 @@ export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
   return false;
 };
 
+export const isDateColumn = ({ type }: ColumnDescriptor) =>
+  (isTypeDescriptor(type) ? type.name : type) === "date";
+export const isTimeColumn = ({ type }: ColumnDescriptor) =>
+  (isTypeDescriptor(type) ? type.name : type) === "time";
+export const isDateTimeColumn = (column: ColumnDescriptor) =>
+  isDateColumn(column) || isTimeColumn(column);
+
 export const notHidden = (column: ColumnDescriptor) => column.hidden !== true;
 
 export const isPinned = (column: ColumnDescriptor) =>
