@@ -8,7 +8,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Tree } from "./components";
 
 import "./App.css";
-import { DensitySwitch } from "@finos/vuu-shell/src/density-provider";
+import { DensitySwitch } from "@finos/vuu-shell/src/density-switch";
 
 type VuuExample = (() => ReactElement) & {
   displaySequence?: number;
@@ -105,7 +105,7 @@ export const App = ({ stories }: AppProps) => {
             resizeable
             style={{ flexDirection: "column", flex: "1 1 auto" }}
           >
-            <Toolbar className={`ShowcaseContentToolbar salt-density-${density}`}>
+            <Toolbar className="ShowcaseContentToolbar salt-density-high">
               <DensitySwitch onDensityChange={setDensity} />
               <span />
               <ThemeSwitch onChange={setThemeMode} />
