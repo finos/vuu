@@ -2,8 +2,8 @@ import {
   ServerToClientMessage,
   ClientToServerMessage,
 } from "@finos/vuu-protocol-types";
-import { Connection } from "./connectionTypes";
 import { logger } from "@finos/vuu-utils";
+import { Connection } from "./connectionTypes";
 
 import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
 
