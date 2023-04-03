@@ -1,5 +1,7 @@
 import { ColumnDescriptor, TypeFormatting } from "@finos/vuu-datagrid-types";
 import { roundDecimal } from "./round-decimal";
+import { isTypeDescriptor } from "./column-utils";
+import { DatePattern, formatDate, isValidDatePattern } from "./date-utils";
 
 export type ValueFormatter = (value: unknown) => string;
 export type ValueFormatters = {
@@ -10,6 +12,22 @@ const DEFAULT_NUMERIC_FORMAT: TypeFormatting = {};
 
 export const defaultValueFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();
+
+export const dateFormatter = ({ type }: ColumnDescriptor) => {
+  let pattern: DatePattern = "dd.mm.yyyy";
+  if (isTypeDescriptor(type) && type.formatting) {
+    if (isValidDatePattern(type.formatting.pattern)) {
+      pattern = type.formatting.pattern;
+    }
+  }
+  return (value: unknown) => {
+    if (typeof value === "number" && value !== 0) {
+      return formatDate(new Date(value), pattern);
+    } else {
+      return "";
+    }
+  };
+};
 
 export const numericFormatter = ({
   align = "right",
@@ -42,7 +60,14 @@ export const numericFormatter = ({
 };
 
 export const getValueFormatter = (column: ColumnDescriptor): ValueFormatter => {
-  const { serverDataType } = column;
+  const { serverDataType, type } = column;
+  if (type) {
+    const typeName = type?.name ?? type;
+    if (typeName === "date") {
+      return dateFormatter(column);
+    }
+  }
+
   if (serverDataType === "string" || serverDataType === "char") {
     return (value: unknown) => value as string;
   } else if (serverDataType === "double") {

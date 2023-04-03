@@ -19,7 +19,7 @@ const schemas: { [key: string]: Schema } = {
   orders: {
     columns: [
       { name: "ccy" },
-      { name: "created" },
+      { name: "created", type: "date" },
       {
         name: "filledQuantity",
         label: "Filled Quantity %",
@@ -31,7 +31,7 @@ const schemas: { [key: string]: Schema } = {
         },
         width: 120,
       },
-      { name: "lastUpdate" },
+      { name: "lastUpdate", type: "date" },
       { name: "orderId" },
       { name: "quantity" },
       { name: "ric" },
@@ -49,7 +49,7 @@ const schemas: { [key: string]: Schema } = {
       { name: "filledQty", serverDataType: "double" },
       { name: "id", serverDataType: "string" },
       { name: "idAsInt", serverDataType: "int" },
-      { name: "lastUpdate", serverDataType: "long" },
+      { name: "lastUpdate", serverDataType: "long", type: "date" },
       { name: "openQty", serverDataType: "double" },
       { name: "parentOrderId" },
       { name: "price", serverDataType: "double" },
@@ -73,7 +73,7 @@ const schemas: { [key: string]: Schema } = {
       { name: "filledQty" },
       { name: "id" },
       { name: "idAsInt" },
-      { name: "lastUpdate" },
+      { name: "lastUpdate", type: "date" },
       { name: "openQty" },
       { name: "price" },
       { name: "quantity" },
