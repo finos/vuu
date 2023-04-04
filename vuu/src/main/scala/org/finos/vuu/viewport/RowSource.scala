@@ -43,6 +43,12 @@ trait RowSource extends KeyedObservable[RowKeyUpdate] {
 
   def pullRow(key: String, columns: ViewPortColumns): RowData
 
+  /**
+   * Note the below call should only be used for testing. It filters the contents of maps by the expected viewPortColumns.
+   * In practice we never need to do this at runtime.
+   */
+  def pullRowFiltered(key: String, columns: ViewPortColumns): RowData
+
   def pullRow(key: String): RowData
 
   //def pullRowWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): RowData

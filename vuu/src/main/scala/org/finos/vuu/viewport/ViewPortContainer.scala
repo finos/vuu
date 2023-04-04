@@ -18,6 +18,7 @@ import org.finos.toolbox.jmx.{JmxAble, MetricsProvider}
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.thread.RunInThread
 import org.finos.toolbox.time.{Clock, TimeIt}
+import org.finos.vuu.viewport.tree.{ClosedTreeNodeState, EmptyTree, TreeBuilder, TreeBuilderImpl, TreeNodeStateStore, TreeUtils}
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
@@ -41,6 +42,7 @@ trait ViewPortContainerMBean {
   def openGroupByKey(vpId: String, treeKey: String): String
 
   def closeGroupByKey(vpId: String, treeKey: String): String
+
 }
 
 class ViewPortContainer(val tableContainer: TableContainer, val providerContainer: ProviderContainer)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
@@ -52,8 +54,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
 
   val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]()
+  val treeNodeStatesByVp = new ConcurrentHashMap[String, TreeNodeStateStore]()
 
   def getViewPorts(): List[ViewPort] = CollectionHasAsScala(viewPorts.values()).asScala.toList
+
+  def getTreeNodeStateByVp(vpId: String): TreeNodeStateStore = {
+    treeNodeStatesByVp.get(vpId)
+  }
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
 
@@ -312,12 +319,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createTreeSessionTable(sourceTable, clientSession)
 
-      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
-      val keys = tree.toKeys()
-      sessionTable.setTree(tree, keys)
+      val keys = ImmutableArray.empty[String]; //tree.toKeys()
       viewPort.setKeys(keys)
+      sessionTable.setTree(EmptyTree, keys)
 
-      logger.info("[VP] complete setKeys() " + keys.length)
+      //logger.info("[VP] complete setKeys() " + keys.length)
 
       viewport.ViewPortStructuralFields(table = sessionTable,
         columns = columns,
@@ -325,10 +331,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         filtAndSort = filtAndSort,
         filterSpec = filterSpec,
         groupBy = groupBy,
-        viewPort.getTreeNodeState
+        viewPort.getTreeNodeStateStore
       )
-
-
 
       //we are groupBy but we want to revert to no groupBy
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
@@ -340,16 +344,18 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       //then remove it from table container
       tableContainer.removeGroupBySessionTable(groupByTable)
 
+      viewPort.setKeys(ImmutableArray.empty[String])
+
       viewport.ViewPortStructuralFields(table = sourceTable,
         columns = columns,
         viewPort.getStructure.viewPortDef,
         filtAndSort = filtAndSort,
         filterSpec = filterSpec,
         groupBy = groupBy,
-        viewPort.getTreeNodeState
+        viewPort.getTreeNodeStateStore
       )
 
-    }else if(viewPort.getGroupBy != NoGroupBy && groupBy != NoGroupBy && viewPort.getGroupBy.columns != groupBy.columns){
+    } else if (viewPort.getGroupBy != NoGroupBy && groupBy != NoGroupBy && viewPort.getGroupBy.columns != groupBy.columns) {
 
       logger.info("[VP] was tree'd, now tree'd also but differently, building...")
 
@@ -365,11 +371,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createTreeSessionTable(sourceTable, clientSession)
 
-      val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
+      //val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
 
-      val keys = tree.toKeys()
+      val keys = ImmutableArray.empty[String]
 
-      sessionTable.setTree(tree, keys)
+      viewPort.setKeys(keys)
+      sessionTable.setTree(EmptyTree, keys)
 
       logger.info("[VP] complete setKeys() " + keys.length + "new group by table:" + sessionTable.name)
 
@@ -379,7 +386,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         filtAndSort = filtAndSort,
         filterSpec = filterSpec,
         groupBy = groupBy,
-        viewPort.getTreeNodeState
+        viewPort.getTreeNodeStateStore
       )
 
       viewPort.setKeys(keys)
@@ -388,7 +395,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     } else {
 
-      viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, viewPortDef = viewPort.getStructure.viewPortDef, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeState)
+      viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, viewPortDef = viewPort.getStructure.viewPortDef, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeStateStore)
     }
 
     viewPort.setRequestId(requestId)
@@ -397,7 +404,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPort
   }
 
-  def create(requestId:String, clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], highPriorityQ: PublishQueue[ViewPortUpdate], table: RowSource,
+  def create(requestId: String, clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], highPriorityQ: PublishQueue[ViewPortUpdate], table: RowSource,
              range: ViewPortRange, columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
 
     val id = createId(clientSession.user)
@@ -443,24 +450,22 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     logger.info(s"Had request to change vp $viewPortId node state $treeKey")
 
     val viewPort = viewPorts.get(viewPortId)
+    val treeNodeStateStore = treeNodeStatesByVp.getOrDefault(viewPortId, TreeNodeStateStore(Map()))
 
-    viewPort.table match {
-      case gbsTable: TreeSessionTableImpl =>
-        gbsTable.openTreeKey(treeKey)
-        viewPort.setKeysAndNotify(treeKey, gbsTable.getTree.toKeys())
-      case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
-    }
+    val newStateStore = treeNodeStateStore.open(treeKey)
+
+    treeNodeStatesByVp.put(viewPortId, newStateStore)
   }
 
   def closeNode(viewPortId: String, treeKey: String): Unit = {
-    val viewPort = viewPorts.get(viewPortId)
+    logger.info(s"Had request to change vp $viewPortId node state $treeKey")
 
-    viewPort.table match {
-      case gbsTable: TreeSessionTableImpl =>
-        gbsTable.closeTreeKey(treeKey)
-        viewPort.setKeysAndNotify(treeKey, gbsTable.getTree.toKeys())
-      case other => logger.info(s"Cannnot open node in non group by table ${other.name}")
-    }
+    val viewPort = viewPorts.get(viewPortId)
+    val treeNodeStateStore = treeNodeStatesByVp.getOrDefault(viewPortId, TreeNodeStateStore(Map()))
+
+    val newStateStore = treeNodeStateStore.close(treeKey)
+
+    treeNodeStatesByVp.put(viewPortId, newStateStore)
   }
 
   def changeSelection(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], vpId: String, selection: ViewPortSelectedIndices): ViewPort = {
@@ -521,68 +526,180 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     groupByhistogram.update(millis)
   }
 
-  def refreshOneTreeViewPort(viewPort: ViewPort): Unit = {
+  //for trees there are two steps, 1 should we update the tree, and secondly, should we recalculate the keys
+  def shouldRebuildTree(viewPort: ViewPort, currentStructureHash: Int, currentUpdateCount: Long): Boolean = {
 
     val table = viewPort.table.asTable
 
-    logger.debug("Building tree for groupBy")
-
-    table match {
+    val shouldRebuild = table match {
       case tbl: TreeSessionTableImpl =>
+        val oldTree = Option(tbl.getTree)
 
-        val oldTree      = tbl.getTree
-        val oldNodeState = CollectionConverters.asScala(tbl.getTree.nodeState).toMap
-
-        val (millis, tree) = timeIt {
-          new TreeBuilderImpl(tbl, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, Option(tbl.getTree), Option(viewPort.getStructure.filtAndSort.sort)).build()
+        val (previousTreeBuildUpdateCount, previousHashcode, previousNodeStateHashCode) = oldTree match {
+          case Some(tree) =>
+            (tree.updateCounter, viewPort.getLastHash(), tree.nodeState.hashCode())
+          case None =>
+            (-1, -3, -4)
         }
 
-        val (millis2, keys) = timeIt {
-          //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
-          tree.toKeys()
+        val tableUpdateCounter = table.asTable match {
+          case treeTable: TreeSessionTableImpl =>
+            treeTable.sourceTable.updateCounter
+          case _ =>
+            -2
         }
 
-        val (millis3, _) = timeIt {
-          //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
-          tbl.setTree(tree, keys)
+        //FIXME: Chris - there is a further optimization to be done here, where we check if the visual link selection has changed
+        //but I have not done it yet
+        //this code will force a rebuild if visual linking is setup
+        val hasVisualLink = viewPort.getVisualLink match {
+          case Some(link) => true
+          case None => false
         }
 
-        val (millis4, _) = timeIt {
-          //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
-          viewPort.setKeys(keys)
+        val shouldRebuild = previousTreeBuildUpdateCount != tableUpdateCounter || previousHashcode != currentStructureHash || hasVisualLink
+
+        if (!shouldRebuild) {
+          logger.debug(s"[TREE] Should rebuild tree $shouldRebuild, prevUpdateCounter=$previousTreeBuildUpdateCount updateCounter=$tableUpdateCounter, previousHashcode=$previousHashcode paramsHashcode=$currentStructureHash")
         }
 
-        val (millis5, _) = timeIt {
-
-          val branchKeys = TreeUtils.diffOldVsNewBranches(oldTree, tree, oldNodeState)
-
-          viewPort.updateSpecificKeys(branchKeys)
-        }
-
-        logger.debug(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
-
-        groupByHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("org.finos.vuu.groupBy." + s)).update(millis)
-
-      case tbl =>
-        logger.error(s"GROUP-BY: table ${tbl.name} has a groupBy but doesn't have a groupBySessionTable associated. Going to ignore build request.")
+        shouldRebuild
     }
 
+    val lastStructureHash = viewPort.getLastHash()
+    val lastUpdateCount = viewPort.getLastUpdateCount()
+
+    (shouldRebuild || currentStructureHash != lastStructureHash || currentUpdateCount != lastUpdateCount)
+  }
+
+  def shouldRecalcKeys(latestNodeState: TreeNodeStateStore, previousNodeState: TreeNodeStateStore): Boolean = {
+    latestNodeState.hashCode() != previousNodeState.hashCode()
+  }
+
+  def refreshOneTreeViewPort(viewPort: ViewPort): Unit = {
+
+    logger.debug("Building tree for groupBy")
+
+    val table = viewPort.table.asTable
+
+      table match {
+
+        case tbl: TreeSessionTableImpl =>
+
+          val currentStructureHash = viewPort.getStructuralHashCode()
+          val currentUpdateCount = viewPort.getTableUpdateCount()
+          val latestNodeState = treeNodeStatesByVp.getOrDefault(viewPort.id, TreeNodeStateStore(Map()))
+
+          val rebuildTree = shouldRebuildTree(viewPort, currentStructureHash, currentUpdateCount)
+
+          val (millis, tree) = rebuildTree match {
+            case true => timeIt {
+              TreeBuilder.create(tbl, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, Option(tbl.getTree), Option(viewPort.getStructure.filtAndSort.sort)).build()
+            }
+            case false => timeIt{
+              tbl.getTree.applyNewNodeState(latestNodeState)
+            }
+          }
+
+          val oldTree = tbl.getTree
+          val previousNodeState = tbl.getTree.nodeState
+          val recalcKeys  =  shouldRecalcKeys(latestNodeState, previousNodeState)
+
+          val (millis2, keys) = (rebuildTree || recalcKeys) match {
+            case true => timeIt {
+              //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
+              tree.toKeys()
+            }
+            case false => timeIt {
+              //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
+              viewPort.getKeys
+            }
+          }
+
+//          val (millis2, keys) = timeIt {
+//            //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
+//            tree.toKeys()
+//          }
+
+          val (millis3, _) = (recalcKeys || rebuildTree) match {
+            case true =>
+              timeIt {
+                //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
+                tbl.setTree(tree, keys)
+              }
+            case false => {
+              timeIt{
+                logger.debug("Didn't do anything so not rebuilding keys")
+              }
+            }
+          }
+
+          val (millis4, _) = (recalcKeys || rebuildTree) match {
+            case true => timeIt {
+              //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
+              viewPort.setKeys(keys)
+            }
+            case false =>
+              timeIt {
+                logger.debug("Didn't set keys")
+              }
+          }
+
+          val (millis5, _) = timeIt {
+
+            val branchKeys = TreeUtils.diffOldVsNewBranches(oldTree, tree, previousNodeState)
+
+            viewPort.updateSpecificKeys(branchKeys)
+          }
+
+          logger.debug(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
+
+          groupByHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("org.finos.vuu.groupBy." + s)).update(millis)
+
+          viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
+
+        case tbl =>
+          logger.error(s"GROUP-BY: table ${tbl.name} has a groupBy but doesn't have a groupBySessionTable associated. Going to ignore build request.")
+      }
+  }
+
+  def shouldCalculateKeys(viewPort: ViewPort, currentStructureHash: Int, currentUpdateCount: Long): Boolean = {
+
+    val lastStructureHash = viewPort.getLastHash()
+    val lastUpdateCount = viewPort.getLastUpdateCount()
+
+    val hasVisualLink = viewPort.getVisualLink match {
+      case Some(link) => true
+      case None => false
+    }
+
+    (currentStructureHash != lastStructureHash || currentUpdateCount != lastUpdateCount || hasVisualLink)
   }
 
 
   def refreshOneViewPort(viewPort: ViewPort): Unit = {
 
     if (viewPort.isEnabled) {
-      val keys = viewPort.table.primaryKeys
 
-      val filterAndSort = viewPort.filterAndSort
+      val currentStructureHash = viewPort.getStructuralHashCode()
+      val currentUpdateCount = viewPort.getTableUpdateCount()
 
-      val (millis, _) = TimeIt.timeIt {
-        val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns)
-        viewPort.setKeys(sorted)
+      if (shouldCalculateKeys(viewPort, currentStructureHash, currentUpdateCount)) {
+
+        val keys = viewPort.table.primaryKeys
+
+        val filterAndSort = viewPort.filterAndSort
+
+        val (millis, _) = TimeIt.timeIt {
+          val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns)
+          viewPort.setKeys(sorted)
+        }
+
+        viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
+
+        viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
       }
 
-      viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("org.finos.vuu.groupBy." + s)).update(millis)
     } else {
       viewPort.setKeys(ImmutableArray.empty[String])
     }

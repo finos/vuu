@@ -7,10 +7,11 @@ import org.finos.vuu.core.tree.TreeSessionTable
 import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.JoinTableProviderImpl
-import org.finos.vuu.viewport.{GroupBy, TreeBuilder}
+import org.finos.vuu.viewport.GroupBy
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.viewport.tree.{TreeBuilder, TreeNodeStateStore}
 
 object PerfTestBigRoupByMain extends App with StrictLogging {
 
@@ -52,7 +53,7 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
 
   val columns = ViewPortColumnCreator.create(groupByTable, table.columns().map(_.name).toList)
 
-  val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, None, None)
+  val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None)
 
   for(a <- 0 until 5000){
     logger.info("Starting tree build")

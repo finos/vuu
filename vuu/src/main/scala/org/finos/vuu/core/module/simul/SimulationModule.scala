@@ -13,6 +13,7 @@ import org.finos.vuu.provider.{Provider, ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport._
 import org.finos.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.simul.service.ParentOrdersService
 
 class PricesService(val table: DataTable, val provider: Provider) extends RpcHandler with StrictLogging {
 
@@ -214,7 +215,11 @@ object SimulationModule extends DefaultModule {
           ),
           joinFields = "id", "ric"
         ),
-        (table, vs) => new ParentOrdersProvider(table, ordersModel)
+        (table, vs) => new ParentOrdersProvider(table, ordersModel),
+        (table, provider, providerContainer) => ViewPortDef(
+          columns = table.getTableDef.columns,
+          service = new ParentOrdersService(table, provider)
+        )
       )
       .addTable(
         TableDef(

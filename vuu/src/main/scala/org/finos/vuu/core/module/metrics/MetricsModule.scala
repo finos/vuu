@@ -28,7 +28,7 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsViewports",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "table".string(), "mean".double(), "max".double(), "75Perc".double(), "99Perc".double(), "99_9Perc".double()),
+          columns = Columns.fromNames("id".string(), "table".string(), "structureHash".int(), "updateCount".long(), "keyBuildCount".long(), "mean".double(), "max".double(), "75Perc".double(), "99Perc".double(), "99_9Perc".double()),
           indices = Indices(),
           joinFields = "id"
         ),

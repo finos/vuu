@@ -25,7 +25,7 @@ class ResubmitExecutorTest extends AnyFeatureSpec{
 
       implicit val clock = new TestFriendlyClock(1407109860000L)
 
-      val executor = new ResubmitExecutor[TestCounter](3, 3, 1000, TimeUnit.SECONDS, new LinkedBlockingQueue[Runnable]()){
+      val executor = new ResubmitExecutor[TestCounter]("treeSubmitExec", 3, 3, 1000, TimeUnit.SECONDS, new LinkedBlockingQueue[Runnable]()){
 
         override def shouldResubmit(r: FutureTask[TestCounter], t: Throwable): Boolean = {
           r.get().counter.get() < 10

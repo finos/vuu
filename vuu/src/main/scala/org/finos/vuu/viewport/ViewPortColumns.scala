@@ -1,6 +1,6 @@
 package org.finos.vuu.viewport
 
-import org.finos.vuu.core.table.Column
+import org.finos.vuu.core.table.{CalculatedColumn, Column, RowData, RowWithData}
 
 class ViewPortColumns(sourceColumns: List[Column]){
 
@@ -21,4 +21,21 @@ class ViewPortColumns(sourceColumns: List[Column]){
     }
 
     def count(): Int = columns.size
+
+    private lazy val hasCalculatedColumn = columns.exists(c => c.isInstanceOf[CalculatedColumn])
+
+    def pullRow(key: String, row: RowData): RowData = {
+
+      if(!hasCalculatedColumn){
+          row
+      }else{
+        val rowData = this.getColumns().map(c => c.name -> row.get(c)).toMap
+        RowWithData(key, rowData)
+      }
+    }
+
+  def pullRowAlwaysFilter(key: String, row: RowData): RowData = {
+      val rowData = this.getColumns().map(c => c.name -> row.get(c)).toMap
+      RowWithData(key, rowData)
+  }
 }

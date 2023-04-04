@@ -7,9 +7,12 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.DefaultClock
 import org.finos.vuu.core.table.ViewPortColumnCreator
+import org.finos.vuu.viewport.tree.{TreeBuilder, TreeNodeStateStore}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+
+import scala.collection.convert.ImplicitConversions.`list asScalaBuffer`
 
 class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
@@ -50,12 +53,15 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 
+      val nodeState = TreeNodeStateStore(Map())
+
       val tree = TreeBuilder.create(sessionTable,
         GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
         columns,
+        nodeState,
         None,
         None
       ).build()
@@ -82,12 +88,15 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 
+      val nodeState = TreeNodeStateStore(Map())
+
       val tree = TreeBuilder.create(sessionTable,
         GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
         .withHigh("quantity")
         .asClause(),
         FilterSpec(""),
         columns,
+        nodeState,
         None,
         None
       ).build()
@@ -114,12 +123,15 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 
+      val nodeState = TreeNodeStateStore(Map())
+
       val tree = TreeBuilder.create(sessionTable,
         GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
         .withLow("quantity")
         .asClause(),
         FilterSpec(""),
         columns,
+        nodeState,
         None,
         None
       ).build()
@@ -147,6 +159,8 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 
+      val nodeState = TreeNodeStateStore(Map())
+
       val tree = TreeBuilder.create(sessionTable,
         GroupBy(orderPrices, columns.getColumnForName("trader").get, columns.getColumnForName("ric").get)
         .withSum("quantity")
@@ -154,6 +168,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         .asClause(),
         FilterSpec(""),
         columns,
+        nodeState,
         None,
         None
       ).build()
@@ -167,9 +182,12 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
       tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("quantity")) should equal(2100.0)
       tree.root.getChildren(1).getAggregationFor(orderPrices.columnForName("trader")) should equal(1)
 
-      tree.openAll()
+      //CJS FIXME
+      val updatedState = tree.nodeState.openAll(tree)
 
-      val keys = tree.toKeys()
+      val newTree = tree.applyNewNodeState(updatedState)
+
+      val keys = newTree.toKeys()
 
       //Array("root", "$chris", "$VOD.L", "$NYC-0001", "$NYC-0002", "$NYC-0003", "$NYC-0004", "$NYC-0005", "$NYC-0006", "$steve", "$BT.L", "$NYC-0007", "$NYC-0008")
       val expected = Array("$root|chris", "$root|chris|VOD.L", "$root|chris|VOD.L|NYC-0001", "$root|chris|VOD.L|NYC-0002", "$root|chris|VOD.L|NYC-0003", "$root|chris|VOD.L|NYC-0004", "$root|chris|VOD.L|NYC-0005", "$root|steve", "$root|steve|VOD.L", "$root|steve|VOD.L|NYC-0006", "$root|steve|BT.L", "$root|steve|BT.L|NYC-0007", "$root|steve|BT.L|NYC-0008")
@@ -183,19 +201,20 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         .asClause(),
         FilterSpec(""),
         columns,
+        nodeState,
         Some(tree),
         None).build()
 
-      tree2.closeAll()
-      tree2.open("$root|chris")
-      tree2.open("$root|chris|VOD.L")
+      val tree2Ns = tree2.nodeState.closeAll(tree2).open("$root|chris").open("$root|chris|VOD.L")
+
+      val tree3 = tree2.applyNewNodeState(tree2Ns)
 
       //Array("$root", "$root/chris", "$root/chris/VOD.L", "$root/chris/VOD.L/NYC-0001", "$root/chris/VOD.L/NYC-0002", "$root/chris/VOD.L/NYC-0003", "$root/chris/VOD.L/NYC-0004", "$root/chris/VOD.L/NYC-0005", "$root/steve")
-      val expected2 = Array("$root|chris", "$root|chris|VOD.L", "$root|chris|VOD.L|NYC-0001", "$root|chris|VOD.L|NYC-0002", "$root|chris|VOD.L|NYC-0003", "$root|chris|VOD.L|NYC-0004", "$root|chris|VOD.L|NYC-0005", "$root|steve")
+      val expected3 = Array("$root|chris", "$root|chris|VOD.L", "$root|chris|VOD.L|NYC-0001", "$root|chris|VOD.L|NYC-0002", "$root|chris|VOD.L|NYC-0003", "$root|chris|VOD.L|NYC-0004", "$root|chris|VOD.L|NYC-0005", "$root|steve")
 
-      val keys2 = tree2.toKeys()
+      val keys3 = tree3.toKeys()
 
-      keys2.toArray should equal(expected2)
+      keys3.toArray should equal(expected3)
     }
   }
 
