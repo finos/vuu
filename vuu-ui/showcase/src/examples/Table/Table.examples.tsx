@@ -315,6 +315,20 @@ export const VuuDataTable = () => {
     () => [
       {
         description: { editable: true },
+        currency: {
+          label: "Currency",
+          type: {
+            name: "string" as const,
+            renderer: {
+              map: {
+                CAD: "Canadian $",
+                EUR: "Euros",
+                GBX: "Pounds",
+                USD: "Dollars",
+              },
+            },
+          },
+        },
       },
       ["instruments", "orders", "parentOrders", "childOrders", "prices"],
     ],

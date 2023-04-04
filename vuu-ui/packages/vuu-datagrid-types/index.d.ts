@@ -38,12 +38,16 @@ export declare type TypeFormatting = {
   zeroPad?: boolean;
 };
 
-export type ColumnTypeRenderer = {
+export type ColumnTypeValueMap = { [key: string]: string };
+
+export interface ColumnTypeRenderer {
   associatedField?: string;
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
-  map?: { [key: string]: string };
   name: string;
-};
+}
+export interface MappedValueTypeRenderer {
+  map: ColumnTypeValueMap;
+}
 
 export declare type ColumnTypeSimple =
   | "string"
@@ -56,7 +60,7 @@ export declare type ColumnTypeSimple =
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
   name: ColumnTypeSimple;
-  renderer?: ColumnTypeRenderer;
+  renderer?: ColumnTypeRenderer | MappedValueTypeRenderer;
 };
 
 export declare type ColumnType = ColumnTypeSimple | ColumnTypeDescriptor;

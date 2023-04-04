@@ -24,8 +24,9 @@ export const getGroupValueAndOffset = (
     return ["$root", 0];
   } else {
     // offset 1 for now to allow for $root
-    const column = columns[depth - 1];
-    return [row[column.key], depth - 1];
+    const { key, valueFormatter } = columns[depth - 1];
+    const value = valueFormatter(row[key]);
+    return [value, depth - 1];
   }
 };
 

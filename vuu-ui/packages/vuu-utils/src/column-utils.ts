@@ -5,6 +5,7 @@ import {
   ColumnTypeSimple,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
+  MappedValueTypeRenderer,
   TableHeading,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
@@ -129,6 +130,12 @@ export const isTypeDescriptor = (
   typeof type !== "undefined" && typeof type !== "string";
 
 const EMPTY_COLUMN_MAP = {} as const;
+
+export const isMappedValueTypeRenderer = (
+  renderer?: unknown
+): renderer is MappedValueTypeRenderer =>
+  renderer !== undefined &&
+  typeof (renderer as MappedValueTypeRenderer)?.map !== "undefined";
 
 export function buildColumnMap(
   columns?: (KeyedColumnDescriptor | string)[]

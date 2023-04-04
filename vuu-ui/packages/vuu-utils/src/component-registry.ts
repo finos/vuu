@@ -1,5 +1,9 @@
 import { FunctionComponent as FC, HTMLAttributes } from "react";
-import { TableCellProps } from "@finos/vuu-datagrid-types";
+import {
+  ColumnTypeRenderer,
+  MappedValueTypeRenderer,
+  TableCellProps,
+} from "@finos/vuu-datagrid-types";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 
 export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
@@ -79,9 +83,11 @@ export const getRegisteredCellRenderers = (
   }
 };
 
-export function getCellRenderer(name?: string) {
-  if (name) {
-    return cellRenderersMap.get(name);
+export function getCellRenderer(
+  renderer?: ColumnTypeRenderer | MappedValueTypeRenderer
+) {
+  if (renderer && "name" in renderer) {
+    return cellRenderersMap.get(renderer.name);
   }
 }
 

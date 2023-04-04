@@ -38,7 +38,7 @@ const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
 
 const getCellRendererForColumn = (column: ColumnDescriptor) => {
   if (isTypeDescriptor(column.type)) {
-    return getCellRenderer(column.type?.renderer?.name);
+    return getCellRenderer(column.type?.renderer);
   }
 };
 

@@ -8,7 +8,7 @@ describe("Column Expression treeWalker", () => {
     const result = parser.parse(str);
     const expression = walkTree(result, str);
     expect(expression).toEqual({
-      type: "numberLiteralExpression",
+      type: "numericLiteralExpression",
       value: 100,
     });
   });
@@ -55,7 +55,7 @@ describe("Column Expression treeWalker", () => {
     expect(expression).toEqual({
       expressions: [
         { column: "price", type: "colExpression" },
-        { value: 100, type: "numberLiteralExpression" },
+        { value: 100, type: "numericLiteralExpression" },
       ],
       op: "/",
       type: "arithmeticExpression",
@@ -68,7 +68,7 @@ describe("Column Expression treeWalker", () => {
     const expression = walkTree(result, str);
     expect(expression).toEqual({
       expressions: [
-        { value: 100, type: "numberLiteralExpression" },
+        { value: 100, type: "numericLiteralExpression" },
         { column: "price", type: "colExpression" },
       ],
       op: "*",
@@ -98,7 +98,7 @@ describe("Column Expression treeWalker", () => {
     expect(expression).toEqual({
       arguments: [
         { column: "description", type: "colExpression" },
-        { value: 20, type: "numberLiteralExpression" },
+        { value: 20, type: "numericLiteralExpression" },
       ],
       functionName: "left",
       type: "callExpression",
@@ -113,7 +113,7 @@ describe("Column Expression treeWalker", () => {
       arguments: [
         { column: "open", type: "colExpression" },
         { column: "close", type: "colExpression" },
-        { value: 1000, type: "numberLiteralExpression" },
+        { value: 1000, type: "numericLiteralExpression" },
       ],
       functionName: "max",
       type: "callExpression",
@@ -187,7 +187,7 @@ describe("Column Expression treeWalker", () => {
               type: "colExpression",
             },
             {
-              type: "numberLiteralExpression",
+              type: "numericLiteralExpression",
               value: 100,
             },
           ],
@@ -215,7 +215,7 @@ describe("Column Expression treeWalker", () => {
           expressions: [
             { column: "close", type: "colExpression" },
             {
-              type: "numberLiteralExpression",
+              type: "numericLiteralExpression",
               value: 200,
             },
           ],
@@ -247,7 +247,7 @@ describe("Column Expression treeWalker", () => {
               expressions: [
                 { column: "bid", type: "colExpression" },
                 {
-                  type: "numberLiteralExpression",
+                  type: "numericLiteralExpression",
                   value: 100,
                 },
               ],
@@ -258,7 +258,7 @@ describe("Column Expression treeWalker", () => {
               expressions: [
                 { column: "bid", type: "colExpression" },
                 {
-                  type: "numberLiteralExpression",
+                  type: "numericLiteralExpression",
                   value: 200,
                 },
               ],
@@ -289,7 +289,7 @@ describe("Column Expression treeWalker", () => {
           expressions: [
             { column: "price", type: "colExpression" },
             {
-              type: "numberLiteralExpression",
+              type: "numericLiteralExpression",
               value: 100,
             },
           ],
@@ -306,7 +306,7 @@ describe("Column Expression treeWalker", () => {
             expressions: [
               { column: "price", type: "colExpression" },
               {
-                type: "numberLiteralExpression",
+                type: "numericLiteralExpression",
                 value: 50,
               },
             ],
@@ -344,7 +344,7 @@ describe("Column Expression treeWalker", () => {
                   expressions: [
                     { column: "bid", type: "colExpression" },
                     {
-                      type: "numberLiteralExpression",
+                      type: "numericLiteralExpression",
                       value: 100,
                     },
                   ],
@@ -355,7 +355,7 @@ describe("Column Expression treeWalker", () => {
                   expressions: [
                     { column: "bid", type: "colExpression" },
                     {
-                      type: "numberLiteralExpression",
+                      type: "numericLiteralExpression",
                       value: 200,
                     },
                   ],
@@ -368,7 +368,7 @@ describe("Column Expression treeWalker", () => {
               expressions: [
                 { column: "bid", type: "colExpression" },
                 {
-                  type: "numberLiteralExpression",
+                  type: "numericLiteralExpression",
                   value: 150,
                 },
               ],
