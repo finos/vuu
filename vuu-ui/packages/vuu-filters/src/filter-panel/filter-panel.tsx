@@ -17,7 +17,7 @@ type FilterWrapper = { [key: string]: Filter | undefined };
 type FilterPanelProps = {
   table: VuuTable;
   columns: ColumnDescriptor[];
-  onFilterSubmit: (filterQuery: string) => void;
+  onFilterSubmit: (filterQuery: string, filter?: Filter) => void;
 };
 
 export const FilterPanel = ({
@@ -45,9 +45,7 @@ export const FilterPanel = ({
       ...typeaheadValues,
       [selectedColumnName]: newValues,
     });
-    const newFilters = { ...filters, [selectedColumnName]: newFilter };
-    setFilters(newFilters);
-    onFilterSubmit(getFilterQuery(newFilters));
+    updateFilters(newFilter);
   };
 
   const onRangeFilterSubmit = (newValues: IRange, newFilter?: Filter) => {
@@ -55,9 +53,15 @@ export const FilterPanel = ({
       ...rangeValues,
       [selectedColumnName]: newValues,
     });
+    updateFilters(newFilter);
+  };
+
+  const updateFilters = (newFilter?: Filter) => {
     const newFilters = { ...filters, [selectedColumnName]: newFilter };
     setFilters(newFilters);
-    onFilterSubmit(getFilterQuery(newFilters));
+    const filter = getCombinedFilter(newFilters);
+    const query = filter === undefined ? "" : filterAsQuery(filter);
+    onFilterSubmit(query, filter);
   };
 
   const selectedColumnType = columns.find(
@@ -148,9 +152,3 @@ const getCombinedFilter = (myFilters: FilterWrapper) =>
     if (filter === undefined) return prev;
     return addFilter(prev, filter, { combineWith: "and" });
   }, undefined);
-
-const getFilterQuery = (myFilters: FilterWrapper) => {
-  const filter = getCombinedFilter(myFilters);
-  if (filter === undefined) return "";
-  return filterAsQuery(filter);
-};
