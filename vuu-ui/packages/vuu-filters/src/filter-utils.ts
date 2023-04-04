@@ -281,7 +281,7 @@ export const overrideColName = (filter: Filter, column: string): Filter => {
 
 export const filterIncludesColumn = (
   filter: Filter,
-  column: KeyedColumnDescriptor
+  column: ColumnDescriptor
 ): boolean => {
   if (!filter) {
     return false;
