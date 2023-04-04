@@ -12,6 +12,7 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { IFilterSuggestionProvider, SuggestionType } from "@finos/vuu-filters";
 import { VuuTable } from "@finos/vuu-protocol-types";
+// import { isMappedValueTypeRenderer, isTypeDescriptor } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import { filterInfo } from "./filterInfo";
 import { ApplyCompletion } from "./useFilterAutoComplete";
@@ -150,7 +151,6 @@ export const useFilterSuggestionProvider = ({
 }: SuggestionProviderHookProps): IFilterSuggestionProvider => {
   const latestSuggestionsRef = useRef<Completion[]>();
   const getTypeaheadSuggestions = useTypeaheadSuggestions();
-
   const getSuggestions: IFilterSuggestionProvider["getSuggestions"] =
     useCallback(
       async (suggestionType, options = NONE): Promise<Completion[]> => {
@@ -196,6 +196,11 @@ export const useFilterSuggestionProvider = ({
             {
               if (columnName) {
                 const column = columns.find((col) => col.name === columnName);
+                if (!column) {
+                  throw Error(
+                    `useFilterSUggestionProvider no column ${columnName}`
+                  );
+                }
                 const prefix = Array.isArray(selection)
                   ? selection.length === 0
                     ? "["
@@ -207,6 +212,15 @@ export const useFilterSuggestionProvider = ({
                   startsWith
                 );
                 const suggestions = await getTypeaheadSuggestions(params);
+                // const { type } = column;
+                // if (
+                //   isTypeDescriptor(type) &&
+                //   isMappedValueTypeRenderer(type?.renderer)
+                // ) {
+                //   const { map } = type.renderer;
+                //   suggestions = suggestions.map((value) => map[value] ?? value);
+                // }
+
                 // prob don't want to save the prefix
                 const isIllustration = operator === "starts";
                 latestSuggestionsRef.current = toSuggestions(suggestions, {
