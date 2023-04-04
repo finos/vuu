@@ -1,12 +1,18 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Filter } from "@finos/vuu-filter-types";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { useState } from "react";
+import {
+  addFilter,
+  filterAsQuery,
+  filterIncludesColumn,
+} from "../filter-utils";
 import { IRange, RangeFilter } from "./filter-components/range-filter";
 import { TypeaheadFilter } from "./filter-components/typeahead-filter";
 import "./filter-panel.css";
 
-type Query = { [key: string]: string };
-type Filter<T extends string[] | IRange> = { [key: string]: T | undefined };
+type ValueMap<T extends string[] | IRange> = { [key: string]: T | undefined };
+type FilterWrapper = { [key: string]: Filter | undefined };
 
 type FilterPanelProps = {
   table: VuuTable;
@@ -20,43 +26,38 @@ export const FilterPanel = ({
   onFilterSubmit,
 }: FilterPanelProps) => {
   const [selectedColumnName, setSelectedColumnName] = useState("");
-  const [queries, setQueries] = useState<Query>({});
-  const [rangeFilters, setRangeFilters] = useState<Filter<IRange>>({});
-  const [typeaheadFilters, setTypeaheadFilters] = useState<Filter<string[]>>(
+  const [filters, setFilters] = useState<FilterWrapper>({});
+  const [rangeValues, setRangeValues] = useState<ValueMap<IRange>>({});
+  const [typeaheadValues, setTypeaheadValues] = useState<ValueMap<string[]>>(
     {}
   );
 
   const handleClear = () => {
     setSelectedColumnName("");
-    setQueries({});
-    setRangeFilters({});
-    setTypeaheadFilters({});
+    setRangeValues({});
+    setTypeaheadValues({});
+    setFilters({});
     onFilterSubmit("");
   };
 
-  const onTypeaheadFilterSubmit = (newFilter: string[], newQuery: string) => {
-    setTypeaheadFilters({
-      ...typeaheadFilters,
-      [selectedColumnName]: newFilter,
+  const onTypeaheadFilterSubmit = (newValues: string[], newFilter?: Filter) => {
+    setTypeaheadValues({
+      ...typeaheadValues,
+      [selectedColumnName]: newValues,
     });
-    updateQuery(newQuery);
+    const newFilters = { ...filters, [selectedColumnName]: newFilter };
+    setFilters(newFilters);
+    onFilterSubmit(getFilterQuery(newFilters));
   };
 
-  const onRangeFilterSubmit = (newFilter: IRange, newQuery: string) => {
-    setRangeFilters({
-      ...rangeFilters,
-      [selectedColumnName]: newFilter,
+  const onRangeFilterSubmit = (newValues: IRange, newFilter?: Filter) => {
+    setRangeValues({
+      ...rangeValues,
+      [selectedColumnName]: newValues,
     });
-    updateQuery(newQuery);
-  };
-
-  const updateQuery = (newQuery: string) => {
-    const newQueries = {
-      ...queries,
-      [selectedColumnName]: newQuery,
-    };
-    setQueries(newQueries);
-    onFilterSubmit(getFilterQuery(newQueries));
+    const newFilters = { ...filters, [selectedColumnName]: newFilter };
+    setFilters(newFilters);
+    onFilterSubmit(getFilterQuery(newFilters));
   };
 
   const selectedColumnType = columns.find(
@@ -64,10 +65,15 @@ export const FilterPanel = ({
   )?.serverDataType;
 
   const getColumnSelectorOption = (columnName: string) => {
+    const combinedFilter = getCombinedFilter(filters);
+    const column = columns.find((c) => c.name === columnName);
     const hasFilter =
-      queries[columnName] !== undefined && queries[columnName] !== "";
+      combinedFilter !== undefined &&
+      column !== undefined &&
+      filterIncludesColumn(combinedFilter, column);
+
     return (
-      <option className={hasFilter ? "has-filter" : undefined}>
+      <option key={columnName} className={hasFilter ? "has-filter" : undefined}>
         {columnName}
       </option>
     );
@@ -81,7 +87,7 @@ export const FilterPanel = ({
         return (
           <TypeaheadFilter
             defaultTypeaheadParams={defaultTypeaheadParams}
-            filterValues={typeaheadFilters[selectedColumnName]}
+            filterValues={typeaheadValues[selectedColumnName]}
             onFilterSubmit={onTypeaheadFilterSubmit}
           />
         );
@@ -91,7 +97,7 @@ export const FilterPanel = ({
         return (
           <RangeFilter
             defaultTypeaheadParams={defaultTypeaheadParams}
-            filterValues={rangeFilters[selectedColumnName]}
+            filterValues={rangeValues[selectedColumnName]}
             onFilterSubmit={onRangeFilterSubmit}
           />
         );
@@ -114,7 +120,7 @@ export const FilterPanel = ({
             className="block"
             value={selectedColumnName}
           >
-            <option disabled selected></option>
+            <option disabled></option>
             {columns.map(({ name }) => getColumnSelectorOption(name))}
           </select>
         </div>
@@ -137,7 +143,14 @@ export const FilterPanel = ({
   );
 };
 
-const getFilterQuery = (queries: Query) =>
-  Object.values(queries)
-    .filter((query) => query !== undefined && query !== "")
-    .join(" and ");
+const getCombinedFilter = (myFilters: FilterWrapper) =>
+  Object.values(myFilters).reduce((prev, filter) => {
+    if (filter === undefined) return prev;
+    return addFilter(prev, filter, { combineWith: "and" });
+  }, undefined);
+
+const getFilterQuery = (myFilters: FilterWrapper) => {
+  const filter = getCombinedFilter(myFilters);
+  if (filter === undefined) return "";
+  return filterAsQuery(filter);
+};

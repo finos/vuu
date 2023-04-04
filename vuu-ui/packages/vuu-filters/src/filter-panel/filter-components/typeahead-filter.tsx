@@ -3,10 +3,11 @@ import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import "./typeahead-filter.css";
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, DropdownOpenIcon } from "../icons";
+import { Filter } from "@finos/vuu-filter-types";
 
 export type TypeaheadFilterProps = {
   defaultTypeaheadParams: TypeaheadParams;
-  onFilterSubmit: (newFilter: string[], query: string) => void;
+  onFilterSubmit: (newValues: string[], filter?: Filter) => void;
   filterValues?: string[];
 };
 
@@ -83,12 +84,8 @@ export const TypeaheadFilter = ({
       e.stopPropagation();
       const isStartsWithFilter = /\.\.\.$/.test(tagValue); // Does the value end in elipsis
       const newSelection = getUpdatedSelection(tagValue, isStartsWithFilter);
-      const query = getTypeaheadQuery(
-        newSelection,
-        columnName,
-        isStartsWithFilter
-      );
-      onFilterSubmit(newSelection, query);
+      const filter = getFilter(columnName, newSelection);
+      onFilterSubmit(newSelection, filter);
     };
 
   const isSelected = (selected: string) => filterValues.includes(selected);
@@ -146,19 +143,28 @@ export const TypeaheadFilter = ({
   );
 };
 
-const getTypeaheadQuery = (
-  filterValues: string[],
+const getFilter = (
   column: string,
+  filterValues: string[],
   isStartsWithFilter?: boolean
-) => {
+): Filter | undefined => {
   if (filterValues.length === 0) {
-    return "";
+    return undefined;
   }
 
   if (isStartsWithFilter) {
+    // multiple starts with filters not currently supported
     const startsWith = filterValues[0].substring(0, filterValues[0].length - 3);
-    return `${column} starts "${startsWith}"`; // multiple starts with filters not currently supported
+    return {
+      column,
+      op: "starts",
+      value: `"${startsWith}"`,
+    };
   }
 
-  return `${column} in ${JSON.stringify(filterValues)}`;
+  return {
+    column,
+    op: "in",
+    values: filterValues.map(value => `"${value}"`),
+  };
 };

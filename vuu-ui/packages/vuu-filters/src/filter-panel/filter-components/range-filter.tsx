@@ -1,4 +1,6 @@
+import { Filter } from "@finos/vuu-filter-types";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
+import { addFilter } from "../../filter-utils";
 import "./range-filter.css";
 
 export type IRange = {
@@ -9,7 +11,7 @@ export type IRange = {
 type RangeFilterProps = {
   defaultTypeaheadParams: TypeaheadParams;
   filterValues: IRange | undefined;
-  onFilterSubmit: (newFilter: IRange, query: string) => void;
+  onFilterSubmit: (newValues: IRange, filter?: Filter) => void;
 };
 
 export const RangeFilter = ({
@@ -25,8 +27,8 @@ export const RangeFilter = ({
       start: isNaN(value) ? undefined : value,
       end: filterValues?.end,
     };
-    const query = getRangeQuery(columnName, newRange);
-    onFilterSubmit(newRange, query);
+    const filter = getFilter(columnName, newRange);
+    onFilterSubmit(newRange, filter);
   };
 
   const endChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,8 +37,8 @@ export const RangeFilter = ({
       start: filterValues?.start,
       end: isNaN(value) ? undefined : value,
     };
-    const query = getRangeQuery(columnName, newRange);
-    onFilterSubmit(newRange, query);
+    const filter = getFilter(columnName, newRange);
+    onFilterSubmit(newRange, filter);
   };
 
   return (
@@ -60,11 +62,27 @@ export const RangeFilter = ({
   );
 };
 
-const getRangeQuery = (column: string, range: IRange) => {
-  const startQuery =
-    range.start === undefined ? undefined : `${column} > ${range.start - 1}`;
-  const endQuery =
-    range.end === undefined ? undefined : `${column} < ${range.end + 1}`;
-
-  return [startQuery, endQuery].filter((x) => x !== undefined).join(" and ");
+const getFilter = (column: string, range: IRange) => {
+  const startFilter = getStartFilter(column, range.start);
+  const endFilter = getEndFilter(column, range.end);
+  if (endFilter === undefined) return startFilter;
+  return addFilter(startFilter, endFilter, { combineWith: "and" });
 };
+
+const getStartFilter = (column: string, value?: number): Filter | undefined =>
+  value === undefined
+    ? undefined
+    : {
+        column,
+        op: ">",
+        value: value - 1,
+      };
+
+const getEndFilter = (column: string, value?: number): Filter | undefined =>
+  value === undefined
+    ? undefined
+    : {
+        column,
+        op: "<",
+        value: value + 1,
+      };
