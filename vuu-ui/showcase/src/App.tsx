@@ -1,13 +1,14 @@
 import { Flexbox } from "@finos/vuu-layout";
 import { ThemeMode, ThemeSwitch } from "@finos/vuu-shell";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
-import { SaltProvider, Text } from "@salt-ds/core";
+import { Density, SaltProvider, Text } from "@salt-ds/core";
 import Module from "module";
 import { ReactElement, useCallback, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Tree } from "./components";
 
 import "./App.css";
+import { DensitySwitch } from "@finos/vuu-shell/src/density-switch";
 
 type VuuExample = (() => ReactElement) & {
   displaySequence?: number;
@@ -75,6 +76,7 @@ export const App = ({ stories }: AppProps) => {
   const { pathname } = useLocation();
   const handleChange = (evt, [selected]) => navigate(selected.id);
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
+  const [density, setDensity] = useState<Density>("medium");
 
   const launchStandaloneWindow = useCallback(() => {
     window.open(`${location.href}?standalone`, "_blank");
@@ -104,6 +106,7 @@ export const App = ({ stories }: AppProps) => {
             style={{ flexDirection: "column", flex: "1 1 auto" }}
           >
             <Toolbar className="ShowcaseContentToolbar salt-density-high">
+              <DensitySwitch onDensityChange={setDensity} />
               <span />
               <ThemeSwitch onChange={setThemeMode} />
               <ToolbarButton
@@ -113,7 +116,7 @@ export const App = ({ stories }: AppProps) => {
               />
             </Toolbar>
             <div
-              className="ShowcaseContent salt-theme"
+              className={`ShowcaseContent salt-theme salt-density-${density}`}
               data-mode={themeMode}
               style={{
                 flex: "1 1 auto",
