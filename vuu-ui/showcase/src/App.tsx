@@ -84,7 +84,10 @@ export const App = ({ stories }: AppProps) => {
 
   return (
     <SaltProvider applyClassesTo="scope">
-    <ThemeProvider >
+    <ThemeProvider
+      applyClassesTo="scope"
+      
+    >
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
