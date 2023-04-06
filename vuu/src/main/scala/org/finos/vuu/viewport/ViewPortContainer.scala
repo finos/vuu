@@ -319,7 +319,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       val sessionTable = tableContainer.createTreeSessionTable(sourceTable, clientSession)
 
-      val keys = ImmutableArray.empty[String]; //tree.toKeys()
+      val keys = ImmutableArray.empty[String](); //tree.toKeys()
       viewPort.setKeys(keys)
       sessionTable.setTree(EmptyTree, keys)
 
@@ -344,7 +344,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       //then remove it from table container
       tableContainer.removeGroupBySessionTable(groupByTable)
 
-      viewPort.setKeys(ImmutableArray.empty[String])
+      viewPort.setKeys(ImmutableArray.empty[String]())
 
       viewport.ViewPortStructuralFields(table = sourceTable,
         columns = columns,
@@ -362,7 +362,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       val groupByTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl]
       val sourceTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl].sourceTable
 
-      groupByTable.setTree(EmptyTree, ImmutableArray.empty)
+      groupByTable.setTree(EmptyTree, ImmutableArray.empty())
 
       //delete all observers and references
       groupByTable.delete()
@@ -373,7 +373,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       //val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
 
-      val keys = ImmutableArray.empty[String]
+      val keys = ImmutableArray.empty[String]()
 
       viewPort.setKeys(keys)
       sessionTable.setTree(EmptyTree, keys)
@@ -701,7 +701,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       }
 
     } else {
-      viewPort.setKeys(ImmutableArray.empty[String])
+      viewPort.setKeys(ImmutableArray.empty[String]())
     }
   }
 

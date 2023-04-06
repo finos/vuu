@@ -13,7 +13,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
                                         childColumn: Column, source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
 
     if (parentSelectionKeys.isEmpty) {
-      ImmutableArray.empty[String]
+      ImmutableArray.empty[String]()
     } else {
       source.asTable.indexForColumn(childColumn) match {
         case Some(index: StringIndexedField) if childColumn.dataType == DataType.StringDataType =>
@@ -82,9 +82,9 @@ case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogg
 
   override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
 
-    val pks = primaryKeys.toArray
+    //val pks = primaryKeys.toArray
 
-    logger.debug(s"starting filter with ${pks.length}")
+    logger.debug(s"starting filter with ${primaryKeys.length}")
     val filtered = clause.filterAll(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns)
     logger.debug(s"complete filter with ${filtered.length}")
     filtered

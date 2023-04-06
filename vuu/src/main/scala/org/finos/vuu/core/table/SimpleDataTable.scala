@@ -157,7 +157,10 @@ object EmptyRowData extends RowData {
 }
 
 
-case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primaryKeyValues: ImmutableArray[String]) {
+case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData],
+                               primaryKeyValues: ImmutableArray[String]) {
+
+  val a = ""
 
   def dataByKey(key: String): RowData = data.get(key)
 
@@ -198,7 +201,7 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primary
   def deleteAll(): SimpleDataTableData = {
     data.synchronized {
       data.clear()
-      SimpleDataTableData(data, ImmutableArray.empty)
+      SimpleDataTableData(data, ImmutableArray.empty())
     }
   }
 }
@@ -250,7 +253,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   override def primaryKeys: ImmutableArray[String] = data.primaryKeyValues
 
-  @volatile protected var data = SimpleDataTableData(new ConcurrentHashMap[String, RowData](), ImmutableArray.from(new Array[String](0)))
+  @volatile protected var data = SimpleDataTableData(new ConcurrentHashMap[String, RowData](), ImmutableArray.empty(chunkSize = tableDef.chunkSize))
 
   @volatile private var updateCounterInternal: Long = 0
   override def updateCounter: Long = updateCounterInternal

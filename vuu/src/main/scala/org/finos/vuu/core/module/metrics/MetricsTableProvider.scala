@@ -27,11 +27,17 @@ class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(imp
 
   override val lifecycleId: String = "metricsTableProvider"
 
+  private var lastTableNames: List[String] = List()
+
   def runOnce(): Unit = {
 
     try {
 
       val tables = tableContainer.getTables()
+
+      val tableNames = tables.map(_.table).toList
+
+      val toDelete = lastTableNames.filter(t => !tableNames.contains(t))
 
       tables.foreach(tableDef => {
 
@@ -40,11 +46,14 @@ class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(imp
 
         val meter = metrics.meter(tableDef.table + ".processUpdates.Meter")
 
-        val upMap = Map("table" -> (tableDef.module + "-" + tableDef.table), "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
+        val upMap = Map("table" -> tableDef.table, "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
 
         table.processUpdate(tableDef.table, RowWithData(tableDef.table, upMap), clock.now())
-
       })
+
+      toDelete.foreach(table.processDelete)
+
+      lastTableNames = tableNames
 
     } catch {
       case e: Exception =>

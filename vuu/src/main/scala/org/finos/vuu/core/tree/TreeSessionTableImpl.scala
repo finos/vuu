@@ -49,7 +49,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   private val wrappedObservers: ConcurrentMap[String, WrappedKeyObserver[RowKeyUpdate]] = new ConcurrentHashMap[String, WrappedKeyObserver[RowKeyUpdate]]()
 
   @volatile
-  private var keys = ImmutableArray.empty[String]
+  private var keys = ImmutableArray.empty[String]()
 
   @volatile
   private var tree: Tree = EmptyTree

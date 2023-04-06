@@ -315,7 +315,7 @@ case class ViewPortImpl(id: String,
   override def getKeys: ImmutableArray[String] = keys
 
   override def delete(): Unit = {
-    this.setKeys(ImmutableArray.empty[String])
+    this.setKeys(ImmutableArray.empty[String]())
   }
 
   @volatile var keyBuildCounter: Long = 0

@@ -18,7 +18,7 @@ trait ImmutableUniqueArraySet[T] extends ImmutableArray[T] {
   def contains(element: T): Boolean
 }
 
-class ChunkedUniqueImmutableArraySet[T :ClassTag](private val uniqueCheck: Set[T], private val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 1000) extends ImmutableArray[T] with Iterable[T] {
+class ChunkedUniqueImmutableArraySet[T :ClassTag](private val uniqueCheck: Set[T], private val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 10_000) extends ImmutableArray[T] with Iterable[T] {
 
 
   override def remove(element: T): ImmutableArray[T] = this.-(element)

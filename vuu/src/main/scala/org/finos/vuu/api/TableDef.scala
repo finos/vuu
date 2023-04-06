@@ -118,7 +118,8 @@ class TableDef(val name: String,
                val joinFields: Seq[String],
                val autosubscribe: Boolean = false,
                val links: VisualLinks = VisualLinks(),
-               val indices: Indices) {
+               val indices: Indices,
+               val rowHint: Int = -1) {
 
   private var module: ViewServerModule = null;
 
@@ -138,11 +139,23 @@ class TableDef(val name: String,
 
   def fullyQuallifiedColumnName(column: String): String = s"$name.$column"
 
-  def setModule(module: ViewServerModule) = {
+  def setModule(module: ViewServerModule): Unit = {
     this.module = module
   }
 
   def getModule(): ViewServerModule = this.module
+
+  def withRowHint(count: Int): TableDef = new TableDef(name, keyField, columns, joinFields, autosubscribe, links, indices, count)
+
+  def chunkSize: Int = {
+      if(rowHint <= 200_000)
+        1000
+      else if (rowHint <= 500_000)
+        2000
+      else
+         10_000
+  }
+
 }
 
 class LuceneTableDef(name: String, keyField: String, columns: Array[Column], joinFields: Seq[String],

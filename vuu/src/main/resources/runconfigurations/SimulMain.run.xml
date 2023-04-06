@@ -4,8 +4,7 @@
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="org.finos.vuu.SimulMain" />
     <module name="vuu" />
-    <option name="PROGRAM_PARAMETERS" value="-Xmx20G -Xlog:gc*=debug:file=target/gc.log" />
-    <option name="VM_PARAMETERS" value="-Dlogback.configurationFile=logback-socket.xml" />
+    <option name="VM_PARAMETERS" value="-Dlogback.configurationFile=logback.xml -Xmx20G -Xlog:gc*:verbose_gc.log:time" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="org.finos.vuu.*" />

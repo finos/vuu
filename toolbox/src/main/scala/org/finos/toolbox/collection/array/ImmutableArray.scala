@@ -4,11 +4,11 @@ import org.finos.toolbox.collection.set.ChunkedUniqueImmutableArraySet
 import scala.reflect.ClassTag
 
 object ImmutableArray{
-  def empty[T](implicit c: ClassTag[T]): ImmutableArray[T] = {
-    new ChunkedUniqueImmutableArraySet[T](Set(), Array(), chunkSize = 5000)
+  def empty[T](chunkSize: Int = 1000)(implicit c: ClassTag[T]): ImmutableArray[T] = {
+    new ChunkedUniqueImmutableArraySet[T](Set(), Array(), chunkSize = chunkSize)
   }
   def from[T](array: Array[T])(implicit c: ClassTag[T]) = {
-    empty[T].addAll(new NaiveImmutableArray[T](array))
+    empty[T]().addAll(new NaiveImmutableArray[T](array))
   }
 }
 

@@ -239,7 +239,7 @@ object SimulationModule extends DefaultModule {
             Index("ccy"),
           ),
           joinFields = "id", "ric"
-        ),
+        ).withRowHint(2_000_000),
         (table, vs) => new ChildOrdersProvider(table, ordersModel)
       )
       .addTable(

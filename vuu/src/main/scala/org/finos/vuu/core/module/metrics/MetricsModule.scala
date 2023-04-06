@@ -7,7 +7,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 
-object MetricsModule extends DefaultModule {
+object  MetricsModule extends DefaultModule {
 
   final val NAME = "METRICS"
 

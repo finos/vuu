@@ -4,17 +4,17 @@ import scala.reflect.ClassTag
 import scala.util.control.Breaks
 
 object ChunkedImmutableArray{
-  def empty[T :ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
+  def empty[T :ClassTag](chunkSize: Int = 10_000): ImmutableArray[T] = {
     new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize)
   }
 
-  def from[T :ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
+  def from[T :ClassTag](chunkSize: Int = 10_000): ImmutableArray[T] = {
     new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize)
   }
 
 }
 
-class ChunkedImmutableArray[T :ClassTag](private val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 1000) extends ImmutableArray[T] with Iterable[T]{
+class ChunkedImmutableArray[T :ClassTag](private val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 10_000) extends ImmutableArray[T] with Iterable[T]{
 
   override def remove(element: T): ImmutableArray[T] = this.-(element)
 

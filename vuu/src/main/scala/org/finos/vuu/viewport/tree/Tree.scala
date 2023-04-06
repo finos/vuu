@@ -30,7 +30,7 @@ object EmptyTree extends Tree {
 
   override def hasChild(parent: TreeNode, child: TreeNode): Boolean = false
 
-  override def toKeys(): ImmutableArray[String] = ImmutableArray.empty[String]
+  override def toKeys(): ImmutableArray[String] = ImmutableArray.empty[String]()
 
   override def isOpen(latestNode: TreeNode): Boolean = false
 }
@@ -90,6 +90,30 @@ trait Tree {
       Array(node.key) ++ latestNode.getChildren.flatMap(child => processNode(child))
     }
   }
+
+  //TODO CJS
+  protected def processNodeFast(node: TreeNode, keys: Array[String], index: Int): Unit = {
+
+    val latestNode = getNode(node.key)
+
+    if (latestNode.getChildren.isEmpty) {
+      if (node.isRoot)
+        Array() //don't include root node
+      else if (!isOpen(latestNode))
+        Array(node.key)
+      else
+        Array(node.key) //++ latestNode.childKeys.toArray
+    }
+    else if (!node.isRoot && !isOpen(latestNode))
+      Array(node.key)
+    else if (node.isRoot) {
+      Array() ++ latestNode.getChildren.flatMap(child => processNode(child))
+    }
+    else {
+      Array(node.key) ++ latestNode.getChildren.flatMap(child => processNode(child))
+    }
+  }
+
 }
 
 //case class ImmutableTreeImpl(root: TreeNode, lookup: Map[String, TreeNode], lookupOrigKeyToTreeKey: Map[String, TreeNode], nodeState: ConcurrentHashMap[String, TreeNodeState]) extends StrictLogging with Tree {
@@ -167,6 +191,10 @@ class TreeImpl(private val rootNode: TreeNode, val nodeState: TreeNodeStateStore
     val keys = processNode(getNode("$root"))
     ImmutableArray.from(keys)
   }
+
+//  def toKeysFast(): ImmutableArray[String] = {
+//    val keys = processNodeFast(getNode("$root"), )
+//  }
 
   def isOpen(latestNode: TreeNode): Boolean = {
 
