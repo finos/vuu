@@ -1,5 +1,5 @@
 import { Flexbox } from "@finos/vuu-layout";
-import { ThemeMode, ThemeSwitch } from "@finos/vuu-shell";
+import { ThemeMode, ThemeProvider, ThemeSwitch } from "@finos/vuu-shell";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { Density, SaltProvider, Text } from "@salt-ds/core";
 import Module from "module";
@@ -84,6 +84,7 @@ export const App = ({ stories }: AppProps) => {
 
   return (
     <SaltProvider applyClassesTo="scope">
+    <ThemeProvider >
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
@@ -128,6 +129,7 @@ export const App = ({ stories }: AppProps) => {
           </Flexbox>
         </Flexbox>
       </Flexbox>
+    </ThemeProvider>
     </SaltProvider>
   );
 };
