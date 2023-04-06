@@ -1,9 +1,9 @@
-import { Filter } from "@finos/vuu-filter-types";
-import { FilterPanel } from "@finos/vuu-filters/src/filter-panel/filter-panel";
 import { useCallback } from "react";
+import { Filter } from "@finos/vuu-filter-types";
+import { ColumnFilter } from "@finos/vuu-filters";
 import { useSchemas, useTestDataSource } from "../utils";
 
-export const DefaultFilterPanel = () => {
+export const DefaultColumnFilter = () => {
   const { schemas } = useSchemas();
   const { columns, dataSource } = useTestDataSource({
     schemas,
@@ -19,8 +19,9 @@ export const DefaultFilterPanel = () => {
   );
 
   return (
-    <FilterPanel
-      table={dataSource.table}
+    <ColumnFilter
+      style={{ width: 700 }}
+      table={schemas.instruments.table}
       columns={columns}
       onFilterSubmit={handleFilterSubmit}
     />
