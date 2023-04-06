@@ -19,6 +19,10 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   @volatile private var provider: Provider = null
 
+  def updateCounter: Long
+
+  def incrementUpdateCounter(): Unit
+
   def indexForColumn(column: Column): Option[IndexedField[_]]
 
   def setProvider(aProvider: Provider): Unit = provider = aProvider
@@ -248,6 +252,11 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   @volatile protected var data = SimpleDataTableData(new ConcurrentHashMap[String, RowData](), ImmutableArray.from(new Array[String](0)))
 
+  @volatile private var updateCounterInternal: Long = 0
+  override def updateCounter: Long = updateCounterInternal
+
+  override def incrementUpdateCounter(): Unit = updateCounterInternal += 1
+
   override def pullRow(key: String): RowData = {
     data.dataByKey(key) match {
       case null =>
@@ -264,8 +273,18 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
       case row =>
         //row
         //CJS Check perf of this
-        val rowData = columns.getColumns().map(c => c.name -> row.get(c)).toMap
-        RowWithData(key, rowData)
+        columns.pullRow(key, row)
+    }
+  }
+
+  override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
+    data.dataByKey(key) match {
+      case null =>
+        EmptyRowData
+      case row =>
+        //row
+        //CJS Check perf of this
+        columns.pullRowAlwaysFilter(key, row)
     }
   }
 
@@ -294,14 +313,14 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   }
 
-  protected def sendColumnToProcessor(key: String, column: Column, value: Any, rowProcessor: RowProcessor): Unit = {
+   private def sendColumnToProcessor(key: String, column: Column, value: Any, rowProcessor: RowProcessor): Unit = {
     rowProcessor.processColumn(column, value)
   }
 
   def columns(): Array[Column] = tableDef.columns
   lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, tableDef.columns.map(_.name).toList)
 
-  def updateIndices(rowkey: String, rowUpdate: RowWithData): Unit = {
+  private def updateIndices(rowkey: String, rowUpdate: RowWithData): Unit = {
     this.indices.foreach(colTup => {
       val column = colTup._1
       val index = colTup._2
@@ -325,7 +344,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     })
   }
 
-  def removeFromIndices(rowkey: String, rowDeleted: RowWithData): Unit = {
+  private def removeFromIndices(rowkey: String, rowDeleted: RowWithData): Unit = {
     this.indices.foreach(colTup => {
       val column = colTup._1
       val index = colTup._2
@@ -425,6 +444,8 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     sendToJoinSink(rowKey, rowData)
 
     notifyListeners(rowKey)
+
+    incrementUpdateCounter()
   }
 
   def processDelete(rowKey: String): Unit = {
@@ -441,6 +462,8 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
       sendDeleteToJoinSink(rowKey, rowData)
 
     notifyListeners(rowKey, isDelete = true)
+
+    incrementUpdateCounter()
   }
 
 }

@@ -1,4 +1,4 @@
-import { Completion } from "@codemirror/autocomplete";
+import { AnnotationType, Completion, EditorView } from "@finos/vuu-codemirror";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 
@@ -7,6 +7,7 @@ export interface VuuCompletion extends Completion {
 }
 
 export type CompletionOptions = {
+  moveCursorToEnd?: boolean;
   prefix?: string;
   quoted?: boolean;
   suffix?: string;
@@ -15,11 +16,28 @@ export type CompletionOptions = {
 
 const NO_OPTIONS: CompletionOptions = {};
 
+const applyWithCursorMove =
+  () => (view: EditorView, completion: Completion, from: number) => {
+    const annotation = new AnnotationType<Completion>();
+    view.dispatch(
+      {
+        changes: { from, insert: completion.label },
+        annotations: annotation.of(completion),
+      },
+      {
+        changes: { from: from + 1, insert: " " },
+        selection: { anchor: from + 2, head: from + 2 },
+        annotations: annotation.of(completion),
+      }
+    );
+  };
+
 export const toSuggestions = (
   values: string[],
   options = NO_OPTIONS
 ): VuuCompletion[] => {
   const {
+    moveCursorToEnd = false,
     prefix = "",
     quoted = false,
     suffix = " ",
@@ -29,7 +47,9 @@ export const toSuggestions = (
   return values.map((value) => ({
     isIllustration,
     label: value,
-    apply: isIllustration
+    apply: moveCursorToEnd
+      ? applyWithCursorMove()
+      : isIllustration
       ? `${quote}${prefix}${quote}`
       : `${prefix}${quote}${value}${quote}${suffix}`,
   }));
@@ -66,4 +86,9 @@ export const getRelationalOperators = (column?: ColumnDescriptor) => {
   } else {
     return equalityOperators;
   }
+};
+
+export const getNamePrompt = (entity?: string) => {
+  const label = entity ? `enter name for this ${entity}` : "enter name";
+  return [{ label, boost: 5 }];
 };

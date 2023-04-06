@@ -8,40 +8,6 @@ import org.scalatest.prop._
 
 object TableAsserts {
 
-//  def assertVpEq(updates: Seq[ViewPortUpdate])(expectation:TableFor13[_, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
-//
-//    val arraysOfMaps = updates.map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.columns).asInstanceOf[RowWithData].data).toArray
-//
-//    val heading = expectation.heading
-//
-//    val expectationAsMap = expectation.map(row => heading.productIterator.zip(row.productIterator).map({ case (head, data) => (head -> data) }).toMap).toArray
-//
-//    val actualAsMap = Map("diff" -> arraysOfMaps)
-//    val expectAsMap = Map("diff" -> expectationAsMap)
-//
-//    val diff = MapDiffUtils.diff(actualAsMap, expectAsMap)
-//
-//    if (diff.hasDiff) {
-//      printTable(actualAsMap, heading, "diff")
-//
-//      val headers = Array("exp key", "exp val", "exp datatype", "act key", "act val", "act datatype")
-//
-//      val leftNotRight = diff.leftNotRight.map(kpv => Array[Any]("", "", "", kpv.path, kpv.value, kpv.theType)).toArray
-//      val rightNotLeft = diff.rightNotLeft.map(kpv => Array[Any](kpv.path, kpv.value, kpv.theType, "", "", "")).toArray
-//      val bothButDiff = diff.bothButDiff.map(tup => {
-//        val left = tup._1
-//        val right = tup._2
-//
-//        Array[Any](left.path, left.value, left.theType, right.path, right.value, right.theType)
-//      }).toArray[Array[Any]]
-//
-//      val data = leftNotRight ++ rightNotLeft ++ bothButDiff
-//
-//      println(AsciiUtil.asAsciiTable(headers, data))
-//
-//    }
-//  }
-
   def genericLogic(heading: Array[String], arraysOfMaps: Array[Map[String, Any]], expectationAsMap: Array[Map[Any, Any]]) = {
 
     val actualAsMap = Map("diff" -> arraysOfMaps)
@@ -74,7 +40,7 @@ object TableAsserts {
 
    def generic13Assert(updates: Seq[ViewPortUpdate], expectation: TableFor13[_, _, _, _, _, _, _, _, _, _, _, _, _]) = {
 
-     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
+     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
 
      val heading = expectation.heading
 
@@ -88,7 +54,7 @@ object TableAsserts {
 
   def generic12Assert(updates: Seq[ViewPortUpdate], expectation: TableFor12[_, _, _, _, _, _, _, _, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -102,7 +68,7 @@ object TableAsserts {
 
   def generic14Assert(updates: Seq[ViewPortUpdate], expectation: TableFor14[_, _, _, _, _, _, _, _, _, _, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -116,7 +82,7 @@ object TableAsserts {
 
   def generic15Assert(updates: Seq[ViewPortUpdate], expectation: TableFor15[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -130,7 +96,7 @@ object TableAsserts {
 
   def generic16Assert(updates: Seq[ViewPortUpdate], expectation: TableFor16[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -144,7 +110,10 @@ object TableAsserts {
 
   def generic17Assert(updates: Seq[ViewPortUpdate], expectation: TableFor17[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
+                              .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns) != EmptyRowData)
+                              .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns))
+                              .map(_.asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -160,7 +129,7 @@ object TableAsserts {
 
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
       .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns) != EmptyRowData)
-      .map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
+      .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -190,7 +159,9 @@ object TableAsserts {
 
   def generic7Assert(updates: Seq[ViewPortUpdate], expectation: TableFor7[_, _, _, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
+                              .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns))
+                              .filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -236,13 +207,33 @@ object TableAsserts {
 
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
                               .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).isInstanceOf[RowWithData])
-                              .map( vpu =>   addVpuMeta(vpu) ++ vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data ).toArray
+                              .map( vpu =>   addVpuMeta(vpu) ++ vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data ).toArray
 
     val heading = expectation.heading
 
     val headingAsArray = heading.productIterator.map(_.toString).toArray
 
     val expectationAsMap = expectation.map( row => heading.productIterator.zip(row.productIterator).map({case(head, data) => (head -> data)}).toMap).toArray
+
+    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
+  }
+
+  def generic5AssertWithMeta(updates: Seq[ViewPortUpdate], expectation: TableFor5[_, _, _, _, _]) = {
+
+    val addVpuMeta = (vpu: ViewPortUpdate) => {
+      val isSel = if (vpu.vp.getSelection.contains(vpu.key.key)) 1 else 0
+      Map("sel" -> isSel)
+    }
+
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
+      .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).isInstanceOf[RowWithData])
+      .map(vpu => addVpuMeta(vpu) ++ vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
+
+    val heading = expectation.heading
+
+    val headingAsArray = heading.productIterator.map(_.toString).toArray
+
+    val expectationAsMap = expectation.map(row => heading.productIterator.zip(row.productIterator).map({ case (head, data) => (head -> data) }).toMap).toArray
 
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
@@ -256,7 +247,7 @@ object TableAsserts {
 
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
       .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).isInstanceOf[RowWithData])
-      .map( vpu =>   addVpuMeta(vpu) ++ vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data ).toArray
+      .map( vpu =>   addVpuMeta(vpu) ++ vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data ).toArray
 
     val heading = expectation.heading
 
@@ -276,7 +267,7 @@ object TableAsserts {
 
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
       .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).isInstanceOf[RowWithData])
-      .map(vpu => addVpuMeta(vpu) ++ vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
+      .map(vpu => addVpuMeta(vpu) ++ vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -290,7 +281,7 @@ object TableAsserts {
 
   def generic5Assert(updates: Seq[ViewPortUpdate], expectation: TableFor5[_, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -303,7 +294,7 @@ object TableAsserts {
 
   def generic3Assert(updates: Seq[ViewPortUpdate], expectation: TableFor3[_, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns)).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -316,7 +307,7 @@ object TableAsserts {
 
   def generic9Assert(updates: Seq[ViewPortUpdate], expectation: TableFor9[_, _, _, _, _, _, _, _, _]) = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRowFiltered (vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -353,6 +344,7 @@ object TableAsserts {
 
     //val expectation = block()
     val typedexpectation = expectation match {
+      case exp: TableFor5[_, _, _, _, _] => generic5AssertWithMeta(updates, exp)
       case exp: TableFor6[_, _, _, _, _, _] => generic6AssertWithMeta(updates, exp)
       case exp: TableFor12[_, _, _, _, _, _,_, _, _, _, _, _] => generic12AssertWithMeta(updates, exp)
       case exp: TableFor13[_, _, _, _, _, _,_, _, _, _, _, _, _] => generic13AssertWithMeta(updates, exp)

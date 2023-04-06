@@ -39,6 +39,7 @@ import * as Message from "./messages";
 import {
   DataSourceAggregateMessage,
   DataSourceColumnsMessage,
+  DataSourceConfig,
   DataSourceDebounceRequest,
   DataSourceDisabledMessage,
   DataSourceEnabledMessage,
@@ -46,17 +47,21 @@ import {
   DataSourceGroupByMessage,
   DataSourceMenusMessage,
   DataSourceRow,
+  DataSourceSetConfigMessage,
   DataSourceSortMessage,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
   DataUpdateMode,
+  hasGroupBy,
+  WithFullConfig,
 } from "../data-source";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
-const { debug, debugEnabled, error, info, warn } = logger("viewport");
+const { debug, debugEnabled, error, info, infoEnabled, warn } =
+  logger("viewport");
 
 interface Disable {
   type: "disable";
@@ -70,6 +75,10 @@ interface ChangeViewportRange {
 interface ViewportFilter {
   data: DataSourceFilter;
   type: "filter";
+}
+interface ConfigOperation {
+  data: WithFullConfig;
+  type: "config";
 }
 interface Aggregate {
   data: VuuAggregation[];
@@ -99,6 +108,7 @@ interface GroupByClear {
 type AsyncOperationWithData =
   | Aggregate
   | Columns
+  | ConfigOperation
   | ViewportFilter
   | GroupBy
   | GroupByClear
@@ -197,6 +207,10 @@ export class Viewport {
     this.table = table;
     this.sort = sort;
     this.title = title;
+    infoEnabled &&
+      info?.(
+        `constructor #${viewport} ${table.table} bufferSize=${bufferSize}`
+      );
   }
 
   get hasUpdatesToProcess() {
@@ -275,7 +289,7 @@ export class Viewport {
       return;
     }
     const { type } = pendingOperation;
-    info?.(`Operation ${type}:\n${pendingOperation}`);
+    info?.(`completeOperation ${type}`);
 
     pendingOperations.delete(requestId);
     if (type === "CHANGE_VP_RANGE") {
@@ -291,9 +305,31 @@ export class Viewport {
           warn?.("range requests sent faster than they are being ACKed");
         }
       }
+    } else if (type === "config") {
+      const { aggregations, columns, filter, groupBy, sort } =
+        pendingOperation.data;
+      this.aggregations = aggregations;
+      this.columns = columns;
+      this.filter = filter;
+      this.groupBy = groupBy;
+      this.sort = sort;
+      if (groupBy.length > 0) {
+        this.isTree = true;
+      } else if (this.isTree) {
+        this.isTree = false;
+      }
+
+      debug?.(`config change confirmed, isTree : ${this.isTree}`);
+
+      return {
+        clientViewportId,
+        type,
+        config: pendingOperation.data,
+      } as DataSourceSetConfigMessage;
     } else if (type === "groupBy") {
       this.isTree = pendingOperation.data.length > 0;
       this.groupBy = pendingOperation.data;
+      debug?.(`groupBy change confirmed, isTree : ${this.isTree}`);
       return {
         clientViewportId,
         type,
@@ -391,16 +427,22 @@ export class Viewport {
 
       let debounceRequest: DataSourceDebounceRequest | undefined;
 
+      // Don't use zero as a range cap, it's is likely a transient count reported immediately
+      // following a groupBy operation.
+      const maxRange = this.dataWindow.rowCount || undefined;
       const serverRequest =
         serverDataRequired && !this.rangeRequestAlreadyPending(range)
           ? ({
               type,
               viewPortId: this.serverViewportId,
-              ...getFullRange(range, this.bufferSize, this.dataWindow.rowCount),
+              ...getFullRange(range, this.bufferSize, maxRange),
             } as ClientToServerViewPortRange)
           : null;
       if (serverRequest) {
-        debug?.(`range server request: ${serverRequest}`);
+        debugEnabled &&
+          debug?.(
+            `create CHANGE_VP_RANGE: [${serverRequest.from} - ${serverRequest.to}]`
+          );
         // TODO check that there is not already a pending server request for more data
         this.awaitOperation(requestId, { type });
         const pendingRequest = this.pendingRangeRequests.at(-1);
@@ -578,7 +620,7 @@ export class Viewport {
       type: "columns",
       data: columns,
     });
-    debug?.(`column request: ${columns}`);
+    debug?.(`columnRequest: ${columns}`);
     return this.createRequest({ columns });
   }
 
@@ -588,19 +630,44 @@ export class Viewport {
       data: dataSourceFilter,
     });
     const { filter } = dataSourceFilter;
-    info?.(`filter request: ${filter}`);
+    info?.(`filterRequest: ${filter}`);
     return this.createRequest({ filterSpec: { filter } });
+  }
+
+  setConfig(requestId: string, config: WithFullConfig) {
+    this.awaitOperation(requestId, { type: "config", data: config });
+
+    const { filter, ...remainingConfig } = config;
+
+    debugEnabled
+      ? debug?.(`setConfig ${JSON.stringify(config)}`)
+      : info?.(`setConfig`);
+
+    return this.createRequest(
+      {
+        ...remainingConfig,
+        filterSpec:
+          typeof filter?.filter === "string"
+            ? {
+                filter: filter.filter,
+              }
+            : {
+                filter: "",
+              },
+      },
+      true
+    );
   }
 
   aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
     this.awaitOperation(requestId, { type: "aggregate", data: aggregations });
-    info?.(`aggregate request: ${aggregations}`);
+    info?.(`aggregateRequest: ${aggregations}`);
     return this.createRequest({ aggregations });
   }
 
   sortRequest(requestId: string, sort: VuuSort) {
     this.awaitOperation(requestId, { type: "sort", data: sort });
-    info?.(`sort request: ${sort}`);
+    info?.(`sortRequest: ${JSON.stringify(sort.sortDefs)}`);
     return this.createRequest({ sort });
   }
 
@@ -619,7 +686,7 @@ export class Viewport {
     // TODO we need to do this in the client if we are to raise selection events
     // TODO is it right to set this here or should we wait for ACK from server ?
     this.awaitOperation(requestId, { type: "selection", data: selected });
-    info?.(`select request: ${selected}`);
+    info?.(`selectRequest: ${selected}`);
     return {
       type: "SET_SELECTION",
       vpId: this.serverViewportId,
@@ -636,7 +703,9 @@ export class Viewport {
         (lastIndex > from && lastIndex < to)
       ) {
         if (!isLast) {
-          console.warn("TABLE_ROWS are not for latest request");
+          console.warn(
+            "removePendingRangeRequest TABLE_ROWS are not for latest request"
+          );
         }
         this.pendingRangeRequests.splice(i, 1);
         break;
@@ -742,20 +811,29 @@ export class Viewport {
   };
 
   createRequest(
-    params: Partial<Omit<ClientToServerChangeViewPort, "type" | "viewPortId">>
+    params: Partial<Omit<ClientToServerChangeViewPort, "type" | "viewPortId">>,
+    overWrite = false
   ) {
-    return {
-      type: "CHANGE_VP",
-      viewPortId: this.serverViewportId,
-      aggregations: this.aggregations,
-      columns: this.columns,
-      sort: this.sort,
-      groupBy: this.groupBy,
-      filterSpec: {
-        filter: this.filter.filter,
-      },
-      ...params,
-    } as ClientToServerChangeViewPort;
+    if (overWrite) {
+      return {
+        type: "CHANGE_VP",
+        viewPortId: this.serverViewportId,
+        ...params,
+      } as ClientToServerChangeViewPort;
+    } else {
+      return {
+        type: "CHANGE_VP",
+        viewPortId: this.serverViewportId,
+        aggregations: this.aggregations,
+        columns: this.columns,
+        sort: this.sort,
+        groupBy: this.groupBy,
+        filterSpec: {
+          filter: this.filter.filter,
+        },
+        ...params,
+      } as ClientToServerChangeViewPort;
+    }
   }
 }
 

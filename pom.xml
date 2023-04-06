@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.finos.vuu</groupId>
     <artifactId>vuu-parent</artifactId>
-    <version>0.4.52-SNAPSHOT</version>
+    <version>0.4.62-SNAPSHOT</version>
     <name>vuu-parent</name>
     <description>Vuu - A View Server in Scala and React</description>
     <url>https://github.com/finos/vuu</url>
@@ -146,7 +146,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
-            <version>1.7.32</version>
+            <version>1.7.36</version>
         </dependency>
 
         <dependency>

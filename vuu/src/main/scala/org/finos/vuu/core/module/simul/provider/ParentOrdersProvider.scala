@@ -6,7 +6,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
 
-class ParentOrdersProvider(val table: DataTable, model: ParentChildOrdersModel)(implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
+class ParentOrdersProvider(val table: DataTable, val model: ParentChildOrdersModel)(implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
 
   private final val runner = new LifeCycleRunner("parentChildModelRunner", () => model.runOnce(), minCycleTime = 10)
 

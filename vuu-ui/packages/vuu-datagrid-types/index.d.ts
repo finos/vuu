@@ -34,18 +34,33 @@ export declare type GridConfig = {
 export declare type TypeFormatting = {
   alignOnDecimals?: boolean;
   decimals?: number;
+  pattern?: string;
   zeroPad?: boolean;
 };
 
-export declare type ColumnTypeSimple = "string" | "number" | "boolean" | "json";
+export type ColumnTypeValueMap = { [key: string]: string };
+
+export interface ColumnTypeRenderer {
+  associatedField?: string;
+  flashStyle?: "bg-only" | "arrow-bg" | "arrow";
+  name: string;
+}
+export interface MappedValueTypeRenderer {
+  map: ColumnTypeValueMap;
+}
+
+export declare type ColumnTypeSimple =
+  | "string"
+  | "number"
+  | "boolean"
+  | "json"
+  | "date"
+  | "time";
+
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
   name: ColumnTypeSimple;
-  renderer?: {
-    associatedField?: string;
-    flashStyle?: "bg-only" | "arrow-bg" | "arrow";
-    name: string;
-  };
+  renderer?: ColumnTypeRenderer | MappedValueTypeRenderer;
 };
 
 export declare type ColumnType = ColumnTypeSimple | ColumnTypeDescriptor;

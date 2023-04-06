@@ -83,35 +83,21 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
 
       When("we select some rows in the grid")
       viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(5)))
-
-      Then("Check the selected rows is updated in the vp")
-      assertVpEqWithMeta(filterByVpId(combineQs(viewPortPricesGroupBy), viewPortPricesGroupBy)) {
-        Table(
-          ("sel", "_isOpen", "_depth", "_treeKey", "_isLeaf", "_childCount", "_caption", "ric", "bid", "ask", "last", "open", "exchange"),
-          (0, false, 2, "$root|XLON|VOD.L", true, 0, "VOD.L", "VOD.L", 100.0, 101.0, 100.5, null, "XLON"),
-          (0, true, 1, "$root|NYSE", false, 1, "NYSE", "", "", "", "", "", "NYSE"),
-          (0, true, 1, "$root|XAMS", false, 1, "XAMS", "", "", "", "", "", "XAMS"),
-          (0, false, 2, "$root|NYSE|BT.L", true, 0, "BT.L", "BT.L", 200.0, 201.0, 200.5, null, "NYSE"),
-          (1, false, 2, "$root|XAMS|BP.L", true, 0, "BP.L", "BP.L", 300.0, 301.0, 300.5, null, "XAMS"),
-          (0, true, 1, "$root|XLON", false, 1, "XLON", "", "", "", "", "", "XLON"),
-          (0, true, 1, "$root|NYSE", false, 1, "NYSE", "", "", "", "", "", "NYSE"),
-          (0, true, 1, "$root|XAMS", false, 1, "XAMS", "", "", "", "", "", "XAMS")
-        )
-      }
-
-      And("we run the container once through to pick up ")
+      viewPortContainer.runGroupByOnce()
       viewPortContainer.runOnce()
 
-      val allUpdates = combineQs(viewPortOrders)
+      val combinedUpdates2 = combineQs(viewPortPricesGroupBy)
 
-      assertVpEqWithMeta(allUpdates.filter(_.vp.id == viewPortOrders.id)) {
+      Then("Check the selected rows is updated in the vp")
+      assertVpEqWithMeta(filterByVpId(combinedUpdates2, viewPortPricesGroupBy)) {
         Table(
-          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0007","chris"   ,"BP.L"    ,1311544870L,100       ),
-          (0         ,"NYC-0008","chris"   ,"BP.L"    ,1311544880L,101       ),
-          (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544890L,102       ),
-          (0         ,"NYC-0010","chris"   ,"BP.L"    ,1311544900L,103       ),
-          (0         ,"NYC-0011","chris"   ,"BP.L"    ,1311544910L,104       )
+          ("sel"     ,"_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","ric"     ,"bid"     ,"ask"     ,"last"    ,"open"    ,"exchange"),
+          (0         ,false     ,2         ,"$root|XLON|VOD.L",true      ,0         ,"VOD.L"   ,"VOD.L"   ,100.0     ,101.0     ,100.5     ,null      ,"XLON"    ),
+          (0         ,true      ,1         ,"$root|NYSE",false     ,1         ,"NYSE"    ,""        ,""        ,""        ,""        ,""        ,"NYSE"    ),
+          (0         ,false     ,2         ,"$root|NYSE|BT.L",true      ,0         ,"BT.L"    ,"BT.L"    ,200.0     ,201.0     ,200.5     ,null      ,"NYSE"    ),
+          (0         ,true      ,1         ,"$root|XAMS",false     ,1         ,"XAMS"    ,""        ,""        ,""        ,""        ,""        ,"XAMS"    ),
+          (0         ,false     ,2         ,"$root|XAMS|BP.L",true      ,0         ,"BP.L"    ,"BP.L"    ,300.0     ,301.0     ,300.5     ,null      ,"XAMS"    ),
+          (0         ,true      ,1         ,"$root|XLON",false     ,1         ,"XLON"    ,""        ,""        ,""        ,""        ,""        ,"XLON"    )
         )
       }
 

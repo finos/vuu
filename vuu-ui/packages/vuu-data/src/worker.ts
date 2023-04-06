@@ -14,7 +14,7 @@ import { logger } from "@finos/vuu-utils";
 
 let server: ServerProxy;
 
-const log = logger('worker');
+const { info, infoEnabled } = logger("worker");
 
 async function connectToServer(
   url: string,
@@ -65,22 +65,16 @@ const handleMessageFromClient = async ({
     // the server - handle accordingly
 
     case "subscribe":
+      infoEnabled && info(`client subscribe: ${JSON.stringify(message)}`);
       server.subscribe(message);
-      if (log.infoEnabled) {
-        log.info(`Subscribe Message From Client: ${JSON.stringify(message)}`);
-      }
       break;
     case "unsubscribe":
+      infoEnabled && info(`client unsubscribe: ${JSON.stringify(message)}`);
       server.unsubscribe(message.viewport);
-      if (log.infoEnabled) {
-        log.info?.(`Unsubscribe Message From Client: ${JSON.stringify(message)}`);
-      }
       break;
     default:
+      infoEnabled && info(`client message: ${JSON.stringify(message)}`);
       server.handleMessageFromClient(message);
-      if (log.infoEnabled) {
-        log.info(`Message From Client: ${JSON.stringify(message)}`);
-      }
   }
 };
 

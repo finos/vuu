@@ -1,21 +1,20 @@
 package org.finos.vuu.core.groupBy
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.tree.TreeSessionTableImpl
-import org.finos.vuu.net.{ClientSessionId, FilterSpec}
-import org.finos.vuu.provider.MockProvider
-import org.finos.vuu.viewport.{GroupBy, OpenTreeNodeState, TreeBuilder, ViewPortSetup}
-import org.joda.time.{DateTime, DateTimeZone}
-import org.scalatest.featurespec.AnyFeatureSpec
-import org.scalatest.matchers.should.Matchers
-import org.finos.vuu.viewport.TreeUtils._
-import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.toolbox.collection.set.ImmutableUniqueArraySet
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.DefaultClock
 import org.finos.vuu.core.table.ViewPortColumnCreator
+import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.net.{ClientSessionId, FilterSpec}
+import org.finos.vuu.provider.MockProvider
+import org.finos.vuu.viewport.tree.TreeUtils._
+import org.finos.vuu.viewport.tree.{OpenTreeNodeState, TreeBuilder, TreeNodeStateStore}
+import org.finos.vuu.viewport.{GroupBy, ViewPortSetup}
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 
 class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLogging with ViewPortSetup with GivenWhenThen{
 
@@ -57,11 +56,14 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val vpColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.columns().map(_.name).toList)
 
+      val nodeState = TreeNodeStateStore(Map())
+
       val treeOnce = TreeBuilder.create(sessionTable, GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
         vpColumns,
+        nodeState,
         None,
         None
       ).build()
@@ -71,11 +73,12 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         .asClause(),
         FilterSpec(""),
         vpColumns,
+        nodeState,
         None,
         None
       ).build()
 
-      val diffsOnceAndTwice = diffOldVsNewBranches(treeOnce, treeTwice, Map())
+      val diffsOnceAndTwice = diffOldVsNewBranches(treeOnce, treeTwice, TreeNodeStateStore(Map()))
 
       treeOnce.root.childRowsHash() shouldEqual(treeTwice.root.childRowsHash())
 
@@ -88,16 +91,17 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         .asClause(),
         FilterSpec(""),
         vpColumns,
+        nodeState,
         None,
         None
       ).build()
 
-      val diffsTwiceAndThrice = diffOldVsNewBranches(treeTwice, treeThrice, Map())
+      val diffsTwiceAndThrice = diffOldVsNewBranches(treeTwice, treeThrice, TreeNodeStateStore(Map()))
 
       //we discard the root updates, as we never send the root node to the UI, so only the two branch nodes below are updated
       diffsTwiceAndThrice.size shouldEqual(2)
 
-      diffsTwiceAndThrice.toArray shouldEqual Array("$root|steve", "$root|steve|BT.L")
+      diffsTwiceAndThrice.toSet shouldEqual Set("$root|steve", "$root|steve|BT.L")
 
       treeOnce.root.childRowsHash() should not equal treeThrice.root.childRowsHash()
     }
@@ -120,12 +124,15 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val vpColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.columns().map(_.name).toList)
 
+      val nodeState = TreeNodeStateStore(Map())
+
       Given("we create a tree")
       val treeOnce = TreeBuilder.create(sessionTable, GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
         .withAverage("quantity")
         .asClause(),
         FilterSpec(""),
         vpColumns,
+        nodeState,
         None,
         None
       ).build()
@@ -136,15 +143,15 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         .asClause(),
         FilterSpec(""),
         vpColumns,
+        nodeState,
         None,
         None
       ).build()
 
       Then("Check we get a diff, oldstate was open")
-      val diffsOnceAndTwice = diffOldVsNewBranches(treeOnce, treeTwice, Map("$root|steve" -> OpenTreeNodeState))
+      val diffsOnceAndTwice = diffOldVsNewBranches(treeOnce, treeTwice, nodeState.open("$root|steve"))
 
       diffsOnceAndTwice.size should be(1)
-
     }
 
   }

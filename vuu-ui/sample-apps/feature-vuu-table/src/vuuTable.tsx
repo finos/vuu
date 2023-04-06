@@ -29,14 +29,7 @@ import {
 } from "@finos/vuu-shell";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
-import {
-  CSSProperties,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConfigurableDataTable } from "./ConfigurableDataTable";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 
@@ -113,11 +106,19 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   });
 
   const handleDataSourceConfigChange = useCallback(
-    (config: DataSourceConfig | undefined, confirmed: boolean) => {
-      console.log(
-        `vuuTable handleDataSourceConfigChange confirmed: ${confirmed}`
-      );
-      save?.(config, "datasource-config");
+    (config: DataSourceConfig | undefined, confirmed?: boolean) => {
+      // confirmed / unconfirmed messages are used for UI updates, not state saving
+      if (confirmed === undefined) {
+        save?.(config, "datasource-config");
+      }
+    },
+    [save]
+  );
+
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      save?.(config, "table-config");
+      tableConfigRef.current = config;
     },
     [save]
   );
@@ -132,7 +133,7 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
       schema.columns.map((col) => col.name);
 
     ds = new RemoteDataSource({
-      bufferSize: 1000,
+      bufferSize: 200,
       viewport: id,
       table: schema.table,
       ...dataSourceConfigFromState,
@@ -164,14 +165,6 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   const removeVisualLink = useCallback(() => {
     dataSource.visualLink = undefined;
   }, [dataSource]);
-
-  const handleTableConfigChange = useCallback(
-    (config: Omit<GridConfig, "headings">) => {
-      save?.(config, "table-config");
-      tableConfigRef.current = config;
-    },
-    [save]
-  );
 
   const handleVuuFeatureEnabled = useCallback(
     (message: VuuFeatureMessage) => {

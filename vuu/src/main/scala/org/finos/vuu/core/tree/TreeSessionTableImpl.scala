@@ -10,6 +10,7 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.viewport.tree.{EmptyTree, Tree, TreeNode, TreeNodeState}
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 import scala.jdk.CollectionConverters._
@@ -75,6 +76,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   override def processUpdate(rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {
     logger.debug(s"ChrisChris>> GroupBySession processUpdate $rowKey $rowData")
     super.processUpdate(rowKey, rowData, timeStamp)
+    incrementUpdateCounter()
   }
 
   override def processDelete(rowKey: String): Unit = super.processDelete(rowKey)
@@ -151,8 +153,26 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
       RowWithData(key, node.toMap(tree) ++ getOnlyTreeColumnsAsMap(key, columns, node))
   }
 
+
+  override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
+    val node = tree.getNode(key)
+    if (node == null)
+      EmptyRowData
+    else if (node.isLeaf)
+      RowWithData(key, node.toMap(tree) ++ getSourceRowDataFiltered(node.originalKey, columns))
+    else
+      RowWithData(key, node.toMap(tree) ++ getOnlyTreeColumnsAsMap(key, columns, node))
+  }
+
   private def getSourceRowData(key: String, columns: ViewPortColumns): Map[String, Any] = {
     source.pullRow(key, columns) match {
+      case rd: RowWithData => rd.data
+      case _ => Map()
+    }
+  }
+
+  private def getSourceRowDataFiltered(key: String, columns: ViewPortColumns): Map[String, Any] = {
+    source.pullRowFiltered(key, columns) match {
       case rd: RowWithData => rd.data
       case _ => Map()
     }
@@ -218,15 +238,15 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   def getTree: Tree = this.tree
 
   //def getNodeState = this.tree.getNodeState()
-  def openTreeKey(treeKey: String) = {
-    this.tree.open(treeKey)
-    //this.notifyListeners(treeKey, false)
-  }
-
-  def closeTreeKey(treeKey: String) = {
-    this.tree.close(treeKey)
-    //this.notifyListeners(treeKey, false)
-  }
+//  def openTreeKey(treeKey: String): TreeNodeState = {
+//    this.tree.open(treeKey)
+//    //this.notifyListeners(treeKey, false)
+//  }
+//
+//  def closeTreeKey(treeKey: String): TreeNodeState = {
+//    this.tree.close(treeKey)
+//    //this.notifyListeners(treeKey, false)
+//  }
 
   def mapKeyToTreeKey(rowUpdate: RowKeyUpdate): RowKeyUpdate = {
 
@@ -259,6 +279,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
         val wappedObserver = new WrappedUpdateHandlingKeyObserver[RowKeyUpdate](mapKeyToTreeKey, observer, originalKey)
 
         wrappedObservers.put(key, wappedObserver)
+
         sourceTable.addKeyObserver(originalKey, wappedObserver)
       }
       else {

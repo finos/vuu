@@ -1,4 +1,7 @@
 import { VuuRange } from "@finos/vuu-protocol-types";
+import { logger } from "./logging-utils";
+
+const { debug, debugEnabled } = logger("range-monitor");
 
 export class RangeMonitor {
   public range: VuuRange = { from: 0, to: 0 };
@@ -15,11 +18,12 @@ export class RangeMonitor {
     this.range.to = to;
     this.timestamp = performance.now();
     if (timestamp) {
-      console.log(
-        `RangeMonitor<${this.source}> [${from}-${to}], ${(
-          this.timestamp - timestamp
-        ).toFixed(0)} ms elapsed`
-      );
+      debugEnabled &&
+        debug(
+          `<${this.source}> [${from}-${to}], ${(
+            this.timestamp - timestamp
+          ).toFixed(0)} ms elapsed`
+        );
     } else {
       return 0;
     }

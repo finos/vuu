@@ -3,17 +3,23 @@ import {
   addFilter,
   filterAsQuery,
   FilterInput,
+  FilterSaveOptions,
   FilterToolbar,
   updateFilter,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { JsonTable } from "@finos/vuu-datatable";
 
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
 } from "@finos/vuu-data";
 import {} from "@finos/vuu-utils";
+import {
+  ApplyCompletion,
+  FilterSubmissionMode,
+} from "@finos/vuu-filters/src/filter-input/useFilterAutoComplete";
 
 let displaySequence = 1;
 
@@ -101,11 +107,98 @@ export const DefaultFilterInput = () => {
       <div>{filterState.filterName}</div>
       <br />
       <br />
-      <div>{JSON.stringify(filterState.filter, null, 2)}</div>
+      <JsonTable source={filterState.filter} height={400} />
     </>
   );
 };
 DefaultFilterInput.displaySequence = displaySequence++;
+
+export const FilterInputTabs = () => {
+  type FilterState = {
+    filter: Filter | undefined;
+    filterQuery: string;
+    filterName?: string;
+  };
+
+  // prettier-ignore
+  const saveOptions = useMemo<FilterSaveOptions>(
+    () => ({ allowReplace: true, allowSaveAsTab: true,}), []
+  );
+
+  const namedFilters = useMemo(() => new Map<string, string>(), []);
+  const [filterState, setFilterState] = useState<FilterState>({
+    filter: undefined,
+    filterQuery: "",
+  });
+  const suggestionProvider = useFilterSuggestionProvider({
+    columns: schemaColumns,
+    namedFilters,
+    saveOptions,
+    table,
+  });
+
+  useEffect(() => {
+    const connect = async () => {
+      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
+      connectToServer("127.0.0.1:8090/websocket", authToken);
+    };
+    connect();
+  }, []);
+
+  const handleSubmitFilter = useCallback(
+    (
+      newFilter: Filter | undefined,
+      filterQuery: string,
+      mode: FilterSubmissionMode = "replace",
+      filterName?: string
+    ) => {
+      if (mode === "tab") {
+        alert("create a new tab");
+      } else {
+        let newFilterState: FilterState;
+        if (newFilter && mode === "and") {
+          const fullFilter = addFilter(filterState.filter, newFilter) as Filter;
+          newFilterState = {
+            filter: fullFilter,
+            filterQuery: filterAsQuery(fullFilter),
+            filterName,
+          };
+        } else {
+          newFilterState = {
+            filter: newFilter,
+            filterQuery,
+            filterName,
+          };
+        }
+        setFilterState(newFilterState);
+        if (filterName && newFilterState.filter) {
+          namedFilters.set(filterName, newFilterState.filterQuery);
+        }
+      }
+    },
+    [filterState.filter, namedFilters]
+  );
+
+  return (
+    <>
+      <FilterInput
+        existingFilter={filterState.filter}
+        namedFilters={namedFilters}
+        onSubmitFilter={handleSubmitFilter}
+        suggestionProvider={suggestionProvider}
+      />
+      <br />
+      <br />
+      <div>{filterState.filterQuery}</div>
+      <br />
+      <div>{filterState.filterName}</div>
+      <br />
+      <br />
+      <JsonTable source={filterState.filter} height={400} />
+    </>
+  );
+};
+FilterInputTabs.displaySequence = displaySequence++;
 
 export const FilterInputWithToolbar = () => {
   const [filter, setFilter] = useState<Filter>();
@@ -159,7 +252,6 @@ export const FilterInputWithToolbar = () => {
       <div>{filterName}</div>
       <br />
       <br />
-      <div>{JSON.stringify(filter)}</div>
     </>
   );
 };

@@ -46,7 +46,7 @@ trait DelayQueueAction extends Delayed {
   }
 }
 
-case class InsertParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
+case class InsertParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock, childCount : Int = -1) extends DelayQueueAction
 
 case class AmendParent(parentOrder: ParentOrder, override val timeToRun: Long, override val clock: Clock) extends DelayQueueAction
 
@@ -182,16 +182,13 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
 
   def processOneAction(action: DelayQueueAction) = {
     action match {
-      case InsertParent(parent, _, _) =>
+      case InsertParent(parent, _, _, childCount) =>
         notifyOnParentInsert(parent)
         activeOrders.put(parent.id, parent)
         val timeToAmend = randomNumbers.seededRand(1000, 10000)
         val timeToCancel = randomNumbers.seededRand(10000, 120000)
-        //queue.offer(AmendParent(parent, clock.now() + timeToAmend, clock))
-        //queue.offer(CancelParent(parent, clock.now() + timeToCancel, clock))
-
         var timeToCreateChild = randomNumbers.seededRand(1000, 3000)
-        val childrenToCreate = randomNumbers.seededRand(100, 250)
+        val childrenToCreate = if(childCount > 0 ) childCount else randomNumbers.seededRand(100, 250)
 
         (0 to childrenToCreate - 1).foreach(i => {
           queue.offer(InsertChild(createChild(parent), parent, clock.now() + timeToCreateChild, clock))
@@ -315,6 +312,11 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
     randomIncrementPrice(child).copy(status = "AMND")
   }
 
+  def createParentOrders(count: Int): Unit = {
+    parentOrderCount += count
+    (0 to count - 1).foreach(i => queue.offer(InsertParent(createParent(), clock.now() + randomNumbers.seededRand(100, 200), clock, 10)))
+  }
+
   def createParents(): Unit = {
     val ordersToCreate = if (cycleNumber % 10 == 0) {
       randomNumbers.seededRand(1, 5)
@@ -325,22 +327,6 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
     parentOrderCount += ordersToCreate
 
     (0 to ordersToCreate - 1).foreach(i => queue.offer(InsertParent(createParent(), clock.now() + randomNumbers.seededRand(100, 200), clock)))
-  }
-
-  def createChildOrders(parentOrder: ParentOrder): Unit = {
-
-  }
-
-  def amendChildOrders(parentOrder: ParentOrder): Unit = {
-
-  }
-
-  def deleteCompleteParentAndChildOrders(): Unit = {
-
-  }
-
-  def cancelParentAndChildOrders(): Unit = {
-
   }
 
 }

@@ -21,10 +21,12 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import {
+  Checkbox,
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
   Toolbar,
+  ToolbarField,
   Tooltray,
 } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
@@ -32,11 +34,12 @@ import {
   CSSProperties,
   ReactElement,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
+import { ErrorDisplay, Schema, useSchemas, useTestDataSource } from "../utils";
 
 let displaySequence = 1;
 
@@ -97,12 +100,33 @@ const useTableConfig = ({
 
 export const DefaultTable = () => {
   const config = useTableConfig();
+  const [zebraStripes, setZebraStripes] = useState(true);
+  const handleZebraChanged = useCallback((_evt, checked) => {
+    setZebraStripes(checked);
+  }, []);
   return (
-    <>
-      {/* <DragVisualizer orientation="horizontal"> */}
-      <Table {...config} height={700} renderBufferSize={50} width={700} />
-      {/* </DragVisualizer> */}
-    </>
+    <div style={{ display: "flex", gap: 12 }}>
+      <Table
+        {...config}
+        height={700}
+        renderBufferSize={50}
+        width={700}
+        zebraStripes={zebraStripes}
+      />
+      <Toolbar
+        orientation="vertical"
+        style={
+          { height: "unset", "--saltFormField-margin": "6px" } as CSSProperties
+        }
+      >
+        <ToolbarField label="Zebra Stripes">
+          <Checkbox
+            checked={zebraStripes === true}
+            onChange={handleZebraChanged}
+          />
+        </ToolbarField>
+      </Toolbar>
+    </div>
   );
 };
 DefaultTable.displaySequence = displaySequence++;
@@ -286,11 +310,25 @@ export const FlexLayoutTables = () => {
 };
 FlexLayoutTables.displaySequence = displaySequence++;
 
-export const vuuTable = () => {
+export const VuuDataTable = () => {
   const [columnConfig, tables] = useMemo(
     () => [
       {
         description: { editable: true },
+        currency: {
+          label: "Currency",
+          type: {
+            name: "string" as const,
+            renderer: {
+              map: {
+                CAD: "Canadian $",
+                EUR: "Euros",
+                GBX: "Pounds",
+                USD: "Dollars",
+              },
+            },
+          },
+        },
       },
       ["instruments", "orders", "parentOrders", "childOrders", "prices"],
     ],
@@ -465,7 +503,7 @@ export const vuuTable = () => {
     </>
   );
 };
-vuuTable.displaySequence = displaySequence++;
+VuuDataTable.displaySequence = displaySequence++;
 
 export const FlexLayoutVuuTables = () => {
   const { schemas } = useSchemas();
@@ -499,7 +537,7 @@ export const FlexLayoutVuuTables = () => {
 };
 FlexLayoutVuuTables.displaySequence = displaySequence++;
 
-export const vuuTableCalculatedColumns = () => {
+export const VuuTableCalculatedColumns = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
   const calculatedColumns: ColumnDescriptor[] = useMemo(
     () => [
@@ -581,7 +619,10 @@ export const vuuTableCalculatedColumns = () => {
   const handleConfigChange = useCallback(
     (config: GridConfig, closePanel = false) => {
       setTableConfig((currentConfig) => {
-        if (itemsChanged(currentConfig.columns, config.columns, "name")) {
+        if (
+          dataSource &&
+          itemsChanged(currentConfig.columns, config.columns, "name")
+        ) {
           dataSource.columns = config.columns.map(toDataSourceColumns);
         }
         return (configRef.current = config);
@@ -615,10 +656,15 @@ export const vuuTableCalculatedColumns = () => {
   }, []);
 
   const groupByCurrency = useCallback(() => {
-    dataSource.groupBy = ["currency"];
+    if (dataSource) {
+      dataSource.groupBy = ["currency"];
+    }
   }, [dataSource]);
+
   const groupByCurrencyExchange = useCallback(() => {
-    dataSource.groupBy = ["currency", "exchange"];
+    if (dataSource) {
+      dataSource.groupBy = ["currency", "exchange"];
+    }
   }, [dataSource]);
 
   const handleSubmitFilter = useCallback(
@@ -678,7 +724,7 @@ export const vuuTableCalculatedColumns = () => {
     </>
   );
 };
-vuuTableCalculatedColumns.displaySequence = displaySequence++;
+VuuTableCalculatedColumns.displaySequence = displaySequence++;
 
 export const ColumnHeaders1Level = () => {
   const { schemas } = useSchemas();
@@ -996,3 +1042,185 @@ export const HiddenColumns = () => {
   );
 };
 HiddenColumns.displaySequence = displaySequence++;
+
+export const toColumnDescriptor =
+  (schema: Schema) =>
+  (columnName: string): ColumnDescriptor => {
+    const column = schema.columns.find(({ name }) => name === columnName);
+    if (column) {
+      return column;
+    } else {
+      throw Error(`No column '${columnName}' in schema`);
+    }
+  };
+
+type SavedConfig = Array<{
+  "datasource-config": DataSourceConfig;
+  "table-config": { columns: ColumnDescriptor[] };
+}>;
+
+export const SwitchColumns = () => {
+  const [selectedIndex, _setSelectedIndex] = useState<number>(0);
+  const selectedIndexRef = useRef(0);
+  const setSelectedIndex = useCallback((value: number) => {
+    _setSelectedIndex((selectedIndexRef.current = value));
+  }, []);
+
+  const { schemas } = useSchemas();
+  const { parentOrders: parentOrdersSchema } = schemas;
+
+  const [namedConfigurations, setConfig] = useMemo<[SavedConfig, any]>(() => {
+    // prettier-ignore
+    const whpColumns = ["account", "algo", "ccy", "exchange", "ric"]
+    // prettier-ignore
+    const wovColumns = ["account", "side", "price", "averagePrice", "quantity", "filledQty"];
+    // prettier-ignore
+    const apColumns = ["account", "status", "volLimit"];
+    // prettier-ignore
+    const config: SavedConfig =[
+      { "datasource-config": {columns: whpColumns},
+        "table-config": { columns: whpColumns.map(toColumnDescriptor(parentOrdersSchema)) },
+      },
+      {
+        "datasource-config": { columns: wovColumns, groupBy: ["account"]},
+        "table-config": { columns: wovColumns.map(toColumnDescriptor(parentOrdersSchema)) },
+      },
+      {
+        "datasource-config": { columns: apColumns },
+        "table-config": { columns: apColumns.map(toColumnDescriptor(parentOrdersSchema))},
+      },
+      {
+        "datasource-config": { 
+          columns: parentOrdersSchema.columns.map((col) => col.name),
+          filter: { filter: 'algo = "TWAP"' },
+        },
+        "table-config": { columns: parentOrdersSchema.columns },
+      },
+    ];
+
+    const setConfig = (dataSourceConfig: DataSourceConfig) => {
+      console.log(
+        `set [${selectedIndexRef.current}] to ${JSON.stringify(
+          dataSourceConfig,
+          null,
+          2
+        )}`
+      );
+      config[selectedIndexRef.current]["datasource-config"] = dataSourceConfig;
+    };
+
+    return [config, setConfig];
+  }, [parentOrdersSchema]);
+
+  const namedConfiguration = namedConfigurations[selectedIndex];
+  const config = namedConfiguration["table-config"];
+
+  const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
+  const { columns, dataSource, error } = useTestDataSource({
+    columnNames: namedConfiguration["datasource-config"].columns,
+    schemas,
+    tablename: "parentOrders",
+  });
+
+  const configRef = useRef<Omit<GridConfig, "headings">>(config);
+  const [tableConfig, setTableConfig] =
+    useState<Omit<GridConfig, "headings">>(config);
+
+  useMemo(() => {
+    setTableConfig((configRef.current = config));
+  }, [config]);
+
+  useEffect(() => {
+    setTableConfig(
+      (configRef.current = {
+        columns: namedConfiguration["table-config"].columns,
+      })
+    );
+    if (dataSource) {
+      dataSource.config = namedConfiguration["datasource-config"];
+    }
+  }, [dataSource, namedConfiguration]);
+
+  const handleSettingsConfigChange = useCallback(
+    (config: GridConfig, closePanel = false) => {
+      setTableConfig((currentConfig) => {
+        if (itemsChanged(currentConfig.columns, config.columns, "name")) {
+          if (dataSource) {
+            dataSource.columns = config.columns.map(toDataSourceColumns);
+          }
+        }
+        return (configRef.current = config);
+      });
+      closePanel && setDialogContent(null);
+    },
+    [dataSource]
+  );
+
+  useMemo(() => {
+    dataSource.on("config", (config) => {
+      setConfig(config);
+    });
+  }, [dataSource, setConfig]);
+
+  const handleTableConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      // we want this to be used when editor is opened next, but we don;t want
+      // to trigger a re-render of our dataTable
+      configRef.current = config;
+    },
+    []
+  );
+
+  const showConfigEditor = useCallback(() => {
+    setDialogContent(
+      <DatagridSettingsPanel
+        availableColumns={columns}
+        gridConfig={configRef.current}
+        onConfigChange={handleSettingsConfigChange}
+      />
+    );
+  }, [columns, handleSettingsConfigChange]);
+
+  const hideSettings = useCallback(() => {
+    setDialogContent(null);
+  }, []);
+
+  const handleChange: ToggleButtonGroupChangeEventHandler = (_event, index) => {
+    setSelectedIndex(index);
+  };
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
+  return (
+    <>
+      <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
+        <ToggleButton tooltipText="Alert">Set 1</ToggleButton>
+        <ToggleButton tooltipText="Home">Set 2</ToggleButton>
+        <ToggleButton tooltipText="Print">Set 3</ToggleButton>
+        <ToggleButton tooltipText="Child Orders">All Columns</ToggleButton>
+      </ToggleButtonGroup>
+
+      <Table
+        allowConfigEditing
+        dataSource={dataSource}
+        config={tableConfig}
+        // columnSizing="fill"
+        height={600}
+        onConfigChange={handleTableConfigChange}
+        onShowConfigEditor={showConfigEditor}
+        width={750}
+      />
+      <Dialog
+        className="vuuDialog-gridConfig"
+        isOpen={dialogContent !== null}
+        onClose={hideSettings}
+        title="Grid and Column Settings"
+      >
+        {dialogContent}
+      </Dialog>
+    </>
+  );
+};
+SwitchColumns.displaySequence = displaySequence++;

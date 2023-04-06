@@ -5,6 +5,7 @@ import {
   ColumnTypeSimple,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
+  MappedValueTypeRenderer,
   TableHeading,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
@@ -97,6 +98,13 @@ export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
   return false;
 };
 
+export const isDateColumn = ({ type }: ColumnDescriptor) =>
+  (isTypeDescriptor(type) ? type.name : type) === "date";
+export const isTimeColumn = ({ type }: ColumnDescriptor) =>
+  (isTypeDescriptor(type) ? type.name : type) === "time";
+export const isDateTimeColumn = (column: ColumnDescriptor) =>
+  isDateColumn(column) || isTimeColumn(column);
+
 export const notHidden = (column: ColumnDescriptor) => column.hidden !== true;
 
 export const isPinned = (column: ColumnDescriptor) =>
@@ -122,6 +130,12 @@ export const isTypeDescriptor = (
   typeof type !== "undefined" && typeof type !== "string";
 
 const EMPTY_COLUMN_MAP = {} as const;
+
+export const isMappedValueTypeRenderer = (
+  renderer?: unknown
+): renderer is MappedValueTypeRenderer =>
+  renderer !== undefined &&
+  typeof (renderer as MappedValueTypeRenderer)?.map !== "undefined";
 
 export function buildColumnMap(
   columns?: (KeyedColumnDescriptor | string)[]
@@ -481,6 +495,15 @@ export const applyFilterToColumns = (
     }
   });
 
+export const isFilteredColumn = (column: KeyedColumnDescriptor) =>
+  column.filter !== undefined;
+
+export const stripFilterFromColumns = (columns: KeyedColumnDescriptor[]) =>
+  columns.map((col) => {
+    const { filter, ...rest } = col;
+    return filter ? rest : col;
+  });
+
 const getSortType = (column: ColumnDescriptor, { sortDefs }: VuuSort) => {
   const sortDef = sortDefs.find((sortCol) => sortCol.column === column.name);
   if (sortDef) {
@@ -567,4 +590,17 @@ export const getColumnsInViewport = (
   }
 
   return [visibleColumns, preSpan];
+};
+
+const isNotHidden = (column: KeyedColumnDescriptor) => column.hidden !== true;
+
+export const visibleColumnAtIndex = (
+  columns: KeyedColumnDescriptor[],
+  index: number
+) => {
+  if (columns.every(isNotHidden)) {
+    return columns[index];
+  } else {
+    return columns.filter(isNotHidden).at(index);
+  }
 };

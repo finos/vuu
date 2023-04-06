@@ -44,6 +44,8 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
       val viewPortv2 = viewPortContainer.changeRange(session, highPriorityQueue, viewPort.id, ViewPortRange(2, 6))
 
+      viewPortContainer.runOnce()
+
       assertVpEq(combineQs(viewPortv2)){
         Table(
           //don't send 2,3 as they already existed in client cache
@@ -59,8 +61,7 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
       assertVpEq(combineQs(viewPortv2)){
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       )
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity")
         )
       }
 

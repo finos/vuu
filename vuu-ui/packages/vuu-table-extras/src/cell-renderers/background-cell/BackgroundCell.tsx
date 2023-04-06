@@ -32,7 +32,7 @@ const getFlashStyle = (colType?: ColumnType) => {
     return FlashStyle.BackgroundOnly;
   } else if (colType) {
     const { renderer } = colType;
-    return (renderer && renderer.flashStyle) || FlashStyle.BackgroundOnly;
+    return (renderer && "flashStyle" in renderer) || FlashStyle.BackgroundOnly;
   }
 };
 

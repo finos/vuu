@@ -7,7 +7,7 @@ type expressionType =
   | "callExpression"
   | "colExpression"
   | "conditionalExpression"
-  | "numberLiteralExpression"
+  | "numericLiteralExpression"
   | "relationalExpression"
   | "stringLiteralExpression"
   | "unknown";
@@ -90,7 +90,7 @@ export type ColumnDefinitionExpression =
 class LiteralExpressionImpl implements Expression {
   type:
     | "booleanLiteralExpression"
-    | "numberLiteralExpression"
+    | "numericLiteralExpression"
     | "stringLiteralExpression";
   value: boolean | number | string;
   constructor(value: boolean | number | string) {
@@ -100,7 +100,7 @@ class LiteralExpressionImpl implements Expression {
         this.type = "booleanLiteralExpression";
         break;
       case "number":
-        this.type = "numberLiteralExpression";
+        this.type = "numericLiteralExpression";
         break;
       default:
         this.type = "stringLiteralExpression";

@@ -1,7 +1,4 @@
 import {
-  asNameSuggestion,
-  booleanJoinSuggestions,
-  Completion,
   CompletionContext,
   CompletionSource,
   EditorState,
@@ -17,7 +14,7 @@ import {
   SuggestionType,
 } from "./useCodeMirrorEditor";
 
-export type FilterSubmissionMode = "and" | "or" | "replace";
+export type FilterSubmissionMode = "and" | "or" | "replace" | "tab";
 
 export type ApplyCompletion = (mode?: FilterSubmissionMode) => void;
 
@@ -69,6 +66,31 @@ const getClauseOperator = (node: SyntaxNode, state: EditorState) => {
   }
 };
 
+const getFilterName = (node: SyntaxNode, state: EditorState) => {
+  if (node.name === "FilterName") {
+    return getValue(node, state);
+  } else {
+    let maybeTargetNode = node.prevSibling || node.parent || node.lastChild;
+    while (maybeTargetNode && maybeTargetNode.name !== "FilterName")
+      maybeTargetNode = maybeTargetNode.prevSibling;
+    if (maybeTargetNode && maybeTargetNode.name === "FilterName") {
+      return getValue(node, state);
+    }
+  }
+};
+
+const getColumnName = (
+  node: SyntaxNode,
+  state: EditorState
+): string | undefined => {
+  const prevNode = node.prevSibling;
+  if (prevNode?.name === "Column") {
+    return getValue(prevNode, state);
+  } else if (prevNode?.name === "Operator") {
+    return getColumnName(prevNode, state);
+  }
+};
+
 const getSetValues = (node: SyntaxNode, state: EditorState): string[] => {
   let maybeTargetNode = node.lastChild;
   const values: string[] = [];
@@ -83,70 +105,28 @@ const getSetValues = (node: SyntaxNode, state: EditorState): string[] => {
   }
   return values;
 };
-
-const promptForFilterName = (context: CompletionContext) => ({
-  from: context.pos,
-  options: [
-    {
-      label: "enter name for this filter",
-      boost: 5,
-    },
-  ],
-});
-
-const makeSaveOrExtendSuggestions = (
-  onSubmit: (mode?: FilterSubmissionMode) => void,
-  existingFilter?: Filter,
-  withJoinSuggestions = true
-) => {
-  const result = existingFilter
-    ? ([
-        {
-          label: "REPLACE existing filter",
-          apply: () => onSubmit("replace"),
-          boost: 8,
-        },
-        {
-          label: "AND existing filter",
-          apply: () => onSubmit("and"),
-          boost: 7,
-        },
-        {
-          label: "OR existing filter",
-          apply: () => onSubmit("or"),
-          boost: 7,
-        },
-      ] as Completion[])
-    : ([
-        {
-          label: "Press ENTER to submit",
-          apply: () => onSubmit(),
-          boost: 6,
-        },
-      ] as Completion[]);
-
-  return withJoinSuggestions
-    ? result.concat(booleanJoinSuggestions).concat(asNameSuggestion)
-    : result;
+export const FilterlNamedTerms: readonly string[] = [
+  "Filter",
+  "ParenthesizedExpression",
+  "AndExpression",
+  "OrExpression",
+  "ColumnValueExpression",
+  "ColumnSetExpression",
+  "FilterName",
+  "Column",
+  "Operator",
+  "Values",
+  "Number",
+  "String",
+];
+export const lastNamedChild = (node: SyntaxNode): SyntaxNode | null => {
+  let { lastChild } = node;
+  while (lastChild && !FilterlNamedTerms.includes(lastChild.name)) {
+    lastChild = lastChild.prevSibling;
+    console.log(lastChild?.name);
+  }
+  return lastChild;
 };
-
-const promptToSaveOrExtend = (
-  context: CompletionContext,
-  onSubmit: () => void,
-  existingFilter?: Filter
-) => ({
-  from: context.pos,
-  options: makeSaveOrExtendSuggestions(onSubmit, existingFilter),
-});
-
-const promptToSave = (
-  context: CompletionContext,
-  onSubmit: () => void,
-  existingFilter?: Filter
-) => ({
-  from: context.pos,
-  options: makeSaveOrExtendSuggestions(onSubmit, existingFilter, false),
-});
 
 export const useAutoComplete = (
   suggestionProvider: IFilterSuggestionProvider,
@@ -159,16 +139,20 @@ export const useAutoComplete = (
       suggestionType: SuggestionType,
       optionalArgs: {
         columnName?: string;
+        existingFilter?: Filter;
+        filterName?: string;
         operator?: string;
+        quoted?: boolean;
+        onSubmit?: () => void;
         selection?: string[];
         startsWith?: string;
       } = {}
     ) => {
+      const { startsWith = "" } = optionalArgs;
       const options = await suggestionProvider.getSuggestions(
         suggestionType,
         optionalArgs
       );
-      const { startsWith = "" } = optionalArgs;
       return { from: context.pos - startsWith.length, options };
     },
     [suggestionProvider]
@@ -194,21 +178,51 @@ export const useAutoComplete = (
           } else {
             const clauseOperator = getClauseOperator(nodeBefore, state);
             if (clauseOperator === "as") {
-              return promptForFilterName(context);
+              return makeSuggestions(context, "name");
             } else {
-              return promptToSaveOrExtend(
-                context,
-                onSubmit.current,
-                existingFilter
-              );
+              const filterName = getFilterName(nodeBefore, state);
+              return makeSuggestions(context, "save", {
+                onSubmit: onSubmit.current,
+                existingFilter,
+                filterName,
+              });
             }
           }
 
+        case "String":
+          {
+            // we only encounter a string as the right hand operand of a conditional expression
+            const operator = getOperator(nodeBefore, state);
+            const columnName = getColumnName(nodeBefore, state);
+            // are we inside the string or immediately after it
+            const { from, to } = nodeBefore;
+            if (to - from === 2 && context.pos === from + 1) {
+              // We are in an empty string, i.e between two quotes
+              if (columnName && operator) {
+                return makeSuggestions(context, "columnValue", {
+                  columnName,
+                  operator,
+                  quoted: true,
+                  startsWith: word.text,
+                });
+              }
+            } else {
+              console.log(
+                `we have a string, column is ${columnName} ${from} ${to}`
+              );
+            }
+          }
+          break;
+
         case "As":
-          return promptForFilterName(context);
+          return makeSuggestions(context, "name");
 
         case "FilterName":
-          return promptToSave(context, onSubmit.current, existingFilter);
+          return makeSuggestions(context, "save", {
+            onSubmit: onSubmit.current,
+            existingFilter,
+            filterName: getFilterName(nodeBefore, state),
+          });
 
         case "Column": {
           const columnName = getValue(nodeBefore, state);

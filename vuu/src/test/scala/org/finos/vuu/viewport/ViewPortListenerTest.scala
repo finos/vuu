@@ -100,16 +100,16 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
       assertVpEq(combinedUpdates4){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850l,1005      ),
-          ("NYC-0006","chris"   ,"VOD.L"   ,1311544860l,1006      ),
-          ("NYC-0007","chris"   ,"VOD.L"   ,1311544870l,1007      ),
-          ("NYC-0008","chris"   ,"VOD.L"   ,1311544880l,1008      ),
-          ("NYC-0009","chris"   ,"VOD.L"   ,1311544890l,1009      ),
-          ("NYC-0010","chris"   ,"VOD.L"   ,1311544900l,1010      ),
-          ("NYC-0011","chris"   ,"VOD.L"   ,1311544910l,1011      ),
-          ("NYC-0012","chris"   ,"VOD.L"   ,1311544920l,1012      ),
-          ("NYC-0013","chris"   ,"VOD.L"   ,1311544930l,1013      ),
-          ("NYC-0014","chris"   ,"VOD.L"   ,1311544940l,1014      )
+          ("NYC-0014","chris"   ,"VOD.L"   ,1311544940L,1014      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,1005      ),
+          ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,1006      ),
+          ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,1007      ),
+          ("NYC-0008","chris"   ,"VOD.L"   ,1311544880L,1008      ),
+          ("NYC-0009","chris"   ,"VOD.L"   ,1311544890L,1009      ),
+          ("NYC-0010","chris"   ,"VOD.L"   ,1311544900L,1010      ),
+          ("NYC-0011","chris"   ,"VOD.L"   ,1311544910L,1011      ),
+          ("NYC-0012","chris"   ,"VOD.L"   ,1311544920L,1012      ),
+          ("NYC-0013","chris"   ,"VOD.L"   ,1311544930L,1013      )
         )
       }
 

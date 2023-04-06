@@ -14,15 +14,21 @@ import {
   getColumnName,
   getTableHeadings,
   getValueFormatter,
+  isFilteredColumn,
+  isGroupColumn,
   isPinned,
   isTypeDescriptor,
+  logger,
   metadataKeys,
   sortPinnedColumns,
+  stripFilterFromColumns,
 } from "@finos/vuu-utils";
 
 import { Reducer, useReducer } from "react";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { DataSourceConfig } from "@finos/vuu-data";
+
+const { info } = logger("useTableModel");
 
 const DEFAULT_COLUMN_WIDTH = 100;
 const KEY_OFFSET = metadataKeys.count;
@@ -32,7 +38,7 @@ const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
 
 const getCellRendererForColumn = (column: ColumnDescriptor) => {
   if (isTypeDescriptor(column.type)) {
-    return getCellRenderer(column.type?.renderer?.name);
+    return getCellRenderer(column.type?.renderer);
   }
 };
 
@@ -143,6 +149,7 @@ export type GridModelReducer = Reducer<GridModel, GridModelAction>;
 export type ColumnActionDispatch = (action: GridModelAction) => void;
 
 const columnReducer: GridModelReducer = (state, action) => {
+  info?.(`GridModelReducer ${action.type}`);
   switch (action.type) {
     case "init":
       return init(action);
@@ -201,9 +208,10 @@ function init({ dataSourceConfig, tableConfig }: InitialConfig): GridModel {
     headings: getTableHeadings(maybePinnedColumns),
   };
   if (dataSourceConfig) {
+    const { columns, ...rest } = dataSourceConfig;
     return updateTableConfig(state, {
       type: "tableConfig",
-      ...dataSourceConfig,
+      ...rest,
     });
   } else {
     return state;
@@ -223,29 +231,41 @@ const getLabel = (
 };
 
 const toKeyedColumWithDefaults =
-  ({
-    columnDefaultWidth = DEFAULT_COLUMN_WIDTH,
-    columnFormatHeader,
-  }: Omit<GridConfig, "headings">) =>
-  (column: ColumnDescriptor, index: number): KeyedColumnDescriptor => {
+  (options: Omit<GridConfig, "headings">) =>
+  (
+    column: ColumnDescriptor & { key?: number },
+    index: number
+  ): KeyedColumnDescriptor => {
+    const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
+      options;
     const {
       align = getDefaultAlignment(column.serverDataType),
+      key,
       name,
       label = name,
       width = columnDefaultWidth,
       ...rest
     } = column;
-    return {
+
+    const keyedColumnWithDefaults = {
       ...rest,
       align,
       CellRenderer: getCellRendererForColumn(column),
       label: getLabel(label, columnFormatHeader),
-      key: index + KEY_OFFSET,
+      key: key ?? index + KEY_OFFSET,
       name,
       originalIdx: index,
       valueFormatter: getValueFormatter(column),
       width: width,
     };
+
+    if (isGroupColumn(keyedColumnWithDefaults)) {
+      keyedColumnWithDefaults.columns = keyedColumnWithDefaults.columns.map(
+        (col) => toKeyedColumWithDefaults(options)(col, col.key)
+      );
+    }
+
+    return keyedColumnWithDefaults;
   };
 
 function moveColumn(
@@ -444,6 +464,11 @@ function updateTableConfig(
     result = {
       ...state,
       columns: applyFilterToColumns(result.columns, filter),
+    };
+  } else if (result.columns.some(isFilteredColumn)) {
+    result = {
+      ...state,
+      columns: stripFilterFromColumns(result.columns),
     };
   }
 
