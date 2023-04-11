@@ -44,6 +44,12 @@ export type AgGridNotEqualFilter = {
   filterType: "number" | "text";
   type: "notEqual";
 };
+export type AgGridRangeFilter = {
+  filter: number;
+  filterTo: number;
+  filterType: "number";
+  type: "inRange";
+};
 export type AgGridStartsWithFilter = {
   filter: string;
   filterType: "text";
@@ -57,7 +63,11 @@ export type AgGridFilter =
   | AgGridLessThanFilter
   | AgGridSetFilter
   | AgGridGreaterThanOrEqualFilter
-  | AgGridLessThanOrEqualFilter;
+  | AgGridLessThanOrEqualFilter
+  | AgGridRangeFilter;
+
+const isRangeFilter = (filter: AgGridFilter): filter is AgGridRangeFilter =>
+  (filter as AgGridRangeFilter)?.type === "inRange";
 
 const agToSingleValueVuuFilterType = (
   type: string
@@ -127,12 +137,29 @@ export const agGridFilterModelToVuuFilter = (
       filterClauses.push(filterClause);
     } else if (filterType === "text" || filterType === "number") {
       const { type } = agGridFilter;
-      const filterClause: FilterClause = {
-        op: agToSingleValueVuuFilterType(type),
-        column,
-        value,
-      };
-      filterClauses.push(filterClause);
+      if (isRangeFilter(agGridFilter)) {
+        const filterClause: Filter = {
+          op: "and",
+          filters: [
+            {
+              op: "or",
+              filters: [
+                { column, op: ">", value: agGridFilter.filter },
+                { column, op: "=", value: agGridFilter.filter },
+              ],
+            },
+            { column, op: "<", value: agGridFilter.filterTo },
+          ],
+        };
+        filterClauses.push(filterClause);
+      } else {
+        const filterClause: FilterClause = {
+          op: agToSingleValueVuuFilterType(type),
+          column,
+          value,
+        };
+        filterClauses.push(filterClause);
+      }
     }
   });
 

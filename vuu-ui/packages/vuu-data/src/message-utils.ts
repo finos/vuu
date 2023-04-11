@@ -1,5 +1,6 @@
 import {
   ClientToServerMenuRPC,
+  VuuRow,
   VuuRpcRequest,
 } from "@finos/vuu-protocol-types";
 import { VuuUIMessageOut } from "./vuuUIMessageTypes";
@@ -21,3 +22,18 @@ export const stripRequestId = <T>({
   requestId,
   ...rest
 }: WithRequestId<T>): [string, T] => [requestId, rest as T];
+
+export const getFirstAndLastRows = (
+  rows: VuuRow[]
+): [VuuRow, VuuRow] | [VuuRow] => {
+  let firstRow = rows.at(0) as VuuRow;
+  if (firstRow.updateType === "SIZE") {
+    if (rows.length === 1) {
+      return rows as [VuuRow];
+    } else {
+      firstRow = rows.at(1) as VuuRow;
+    }
+  }
+  const lastRow = rows.at(-1) as VuuRow;
+  return [firstRow, lastRow];
+};

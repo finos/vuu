@@ -39,7 +39,6 @@ import * as Message from "./messages";
 import {
   DataSourceAggregateMessage,
   DataSourceColumnsMessage,
-  DataSourceConfig,
   DataSourceDebounceRequest,
   DataSourceDisabledMessage,
   DataSourceEnabledMessage,
@@ -54,9 +53,9 @@ import {
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
   DataUpdateMode,
-  hasGroupBy,
   WithFullConfig,
 } from "../data-source";
+import { getFirstAndLastRows } from "../message-utils";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
@@ -168,6 +167,8 @@ export class Viewport {
   } | null = null;
   private batchMode = true;
   private useBatchMode = true;
+
+  private ignorePostFilterRepeats = false;
 
   private rangeMonitor = new RangeMonitor("ViewPort");
 
@@ -629,6 +630,12 @@ export class Viewport {
       type: "filter",
       data: dataSourceFilter,
     });
+
+    this.ignorePostFilterRepeats = true;
+
+    if (this.useBatchMode) {
+      this.batchMode = true;
+    }
     const { filter } = dataSourceFilter;
     info?.(`filterRequest: ${filter}`);
     return this.createRequest({ filterSpec: { filter } });
@@ -732,10 +739,20 @@ export class Viewport {
   };
 
   updateRows(rows: VuuRow[]) {
-    const [{ rowIndex: firstRowIndex }] = rows;
-    const { rowIndex: lastRowIndex } = rows.at(-1) as VuuRow;
+    const [firstRow, lastRow] = getFirstAndLastRows(rows);
+    if (firstRow && lastRow) {
+      this.removePendingRangeRequest(firstRow.rowIndex, lastRow.rowIndex);
+    }
 
-    this.removePendingRangeRequest(firstRowIndex, lastRowIndex);
+    if (this.ignorePostFilterRepeats) {
+      if (firstRow.vpSize === this.dataWindow?.rowCount) {
+        debug?.(`ignore data, rows are post filter repeats`);
+        this.ignorePostFilterRepeats = false;
+        return;
+      } else {
+        this.ignorePostFilterRepeats = false;
+      }
+    }
 
     for (const row of rows) {
       if (this.isTree && isLeafUpdate(row)) {
