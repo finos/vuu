@@ -5,12 +5,12 @@ import org.finos.vuu.core.table.column.CalculatedColumnClause
 
 object DataType {
 
-  val StringDataType = classOf[String]
-  val BooleanDataType = classOf[Boolean]
-  val IntegerDataType = classOf[Int]
-  val LongDataType = classOf[Long]
-  val DoubleDataType = classOf[Double]
-  val NoDataType = classOf[AnyRef]
+  val StringDataType: Class[String] = classOf[String]
+  val BooleanDataType: Class[Boolean] = classOf[Boolean]
+  val IntegerDataType: Class[Int] = classOf[Int]
+  val LongDataType: Class[Long] = classOf[Long]
+  val DoubleDataType: Class[Double] = classOf[Double]
+  val NoDataType: Class[AnyRef] = classOf[AnyRef]
 
   def fromString(s: String): Class[_] = {
     s.trim.toLowerCase match {
@@ -37,21 +37,21 @@ object DataType {
 
 object Columns {
   def fromNames(names: String*): Array[Column] = {
-    names.zipWithIndex.map({ case (nameAndDt, index) => {
+    fromNames(names.toArray)
+  }
 
-      val splitDef = nameAndDt.split(":").toList
+  def fromNames(names: Array[String]): Array[Column] = names.zipWithIndex.map({ case (nameAndDt, index) =>
 
-      splitDef.size match {
-        case 2 =>
-          val (name :: dataType :: _) = nameAndDt.split(":").toList
-          val dtClass = DataType.fromString(dataType)
-          new SimpleColumn(name, index, dtClass)
-      }
+    val splitDef = nameAndDt.split(":").toList
 
+    splitDef.size match {
+      case 2 =>
+        val name :: dataType :: _ = nameAndDt.split(":").toList
+        val dtClass = DataType.fromString(dataType)
+        SimpleColumn(name, index, dtClass)
     }
 
-    }).toArray
-  }
+  }).toArray
 
   def from(table: TableDef, names: Seq[String]): Array[Column] = {
     table.columns.filter(c => names.contains(c.name)).map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
@@ -62,11 +62,11 @@ object Columns {
   }
 
   def aliased(table: TableDef, aliases: (String, String)*): Array[Column] = {
-    val aliased = aliases.map(tuple => (tuple._1 -> tuple._2)).toMap
+    val aliased = aliases.map(tuple => tuple._1 -> tuple._2).toMap
     table.columns.filter(c => aliased.contains(c.name)) map (c => new AliasedJoinColumn(aliased.get(c.name).get, c.index, c.dataType, table, c).asInstanceOf[Column])
   }
 
-  def calculated(name: String, definition: String): Array[Column] = ???
+  //def calculated(name: String, definition: String): Array[Column] = ???
 
   def allFromExcept(table: TableDef, excludeColumns: String*): Array[Column] = {
 
@@ -103,7 +103,7 @@ object NoColumn extends Column {
   override def getDataFullyQualified(data: RowData): Any = None
 }
 
-case class SimpleColumn(val name: String, val index: Int, val dataType: Class[_]) extends Column {
+case class SimpleColumn(name: String, index: Int, dataType: Class[_]) extends Column {
   override def getData(data: RowData): Any = {
     data.get(name)
   }
@@ -128,11 +128,11 @@ class JoinColumn(name: String, index: Int, dataType: Class[_], val sourceTable: 
   override def getData(data: RowData): Any = data.get(name)
 
   override def equals(obj: scala.Any): Boolean = {
-    if (obj.isInstanceOf[JoinColumn]) {
-      val other = obj.asInstanceOf[JoinColumn]
-      other.sourceColumn.name == this.sourceColumn.name && other.sourceTable.name == this.sourceTable.name
-    } else
-      false
+    obj match {
+      case other: JoinColumn =>
+        other.sourceColumn.name == this.sourceColumn.name && other.sourceTable.name == this.sourceTable.name
+      case _ => false
+    }
   }
 }
 
