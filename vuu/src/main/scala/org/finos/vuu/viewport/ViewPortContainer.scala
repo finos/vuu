@@ -69,6 +69,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]()
   val treeNodeStatesByVp = new ConcurrentHashMap[String, TreeNodeStateStore]()
 
+  val totalTreeWorkHistogram = metrics.meter(toJmxName("viewport.work.tree"))
+  val totalFlatWorkHistogram = metrics.meter(toJmxName("viewport.work.flat"))
+
   def getViewPorts(): List[ViewPort] = CollectionHasAsScala(viewPorts.values()).asScala.toList
 
   def getTreeNodeStateByVp(vpId: String): TreeNodeStateStore = {
@@ -589,6 +592,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def refreshOneTreeViewPort(viewPort: ViewPort): Unit = {
+    val (millis, _) = timeIt{
+      refreshOneTreeViewPortInternal(viewPort)
+    }
+    totalTreeWorkHistogram.mark(millis)
+  }
+
+  def refreshOneTreeViewPortInternal(viewPort: ViewPort): Unit = {
 
     logger.debug("Building tree for groupBy")
 
@@ -694,8 +704,14 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     currentStructureHash != lastStructureHash || currentUpdateCount != lastUpdateCount || hasVisualLink
   }
 
-
   def refreshOneViewPort(viewPort: ViewPort): Unit = {
+    val (millis, _) = timeIt{
+      refreshOneViewPortInternal(viewPort)
+    }
+    totalFlatWorkHistogram.mark(millis)
+  }
+
+  def refreshOneViewPortInternal(viewPort: ViewPort): Unit = {
 
     if (viewPort.isEnabled) {
 
