@@ -226,6 +226,7 @@ export const useViewportRowModel = ({
     createFilterDataProvider,
     viewportDatasource,
     defaultColDef: {
+      resizable: true,
       sortable: true,
     },
     getContextMenuItems,
