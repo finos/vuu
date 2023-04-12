@@ -1,17 +1,17 @@
 package org.finos.vuu.core.groupBy
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.{Index, Indices, TableDef}
-import org.finos.vuu.core.tree.TreeSessionTable
-import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer, ViewPortColumnCreator}
-import org.finos.vuu.net.{ClientSessionId, FilterSpec}
-import org.finos.vuu.provider.JoinTableProviderImpl
-import org.finos.vuu.viewport.GroupBy
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.viewport.tree.{TreeBuilder, TreeNodeStateStore}
+import org.finos.vuu.api.{Index, Indices, TableDef}
+import org.finos.vuu.core.table._
+import org.finos.vuu.core.tree.TreeSessionTable
+import org.finos.vuu.net.{ClientSessionId, FilterSpec}
+import org.finos.vuu.provider.JoinTableProviderImpl
+import org.finos.vuu.viewport.GroupBy
+import org.finos.vuu.viewport.tree.{BuildEntireTree, TreeBuilder, TreeNodeStateStore}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -75,27 +75,27 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 
     val columns = ViewPortColumnCreator.create(groupByTable, groupByTable.columns().map(_.name).toList)
 
-    val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None)
+    val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None))
 
     logger.info("[PERF] Starting tree build")
 
     val (millis, tree) = timeIt {
-      builder.build()
+      builder.buildEntireTree()
     }
 
     logger.info(s"[PERF] Complete tree build in $millis ms")
 
-    val builder3 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), Some(tree), None)
+    val builder3 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), Some(tree), None, buildAction = BuildEntireTree(groupByTable, None))
 
     logger.info("[PERF] Starting tree build 3")
 
     val (millis3, tree3) = timeIt {
-      builder3.build()
+      builder3.buildEntireTree()
     }
 
     logger.info(s"[PERF] Complete tree build in $millis3 ms")
 
-    val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = \"A\""), columns, TreeNodeStateStore(Map()), Some(tree3), None)
+    val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = \"A\""), columns, TreeNodeStateStore(Map()), Some(tree3), None, buildAction = BuildEntireTree(groupByTable, None))
 
     val (sizeMillis, _) = timeIt {
       groupByTable.size()
@@ -106,7 +106,7 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
     logger.info("[PERF] Starting tree build")
 
     val (millis2, tree2) = timeIt {
-      builder2.build()
+      builder2.buildEntireTree()
     }
 
     logger.info(s"[PERF] Complete tree build 2 in $millis2 ms done")
@@ -116,8 +116,6 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 }
 
 class BuildBigGroupByTest extends AnyFeatureSpec with Matchers with StrictLogging {
-
-  import org.finos.toolbox.time.TimeIt._
 
   Feature("check big groupby's") {
 
