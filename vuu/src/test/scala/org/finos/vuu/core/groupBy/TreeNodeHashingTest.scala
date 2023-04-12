@@ -9,7 +9,7 @@ import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.MockProvider
 import org.finos.vuu.viewport.tree.TreeUtils._
-import org.finos.vuu.viewport.tree.{OpenTreeNodeState, TreeBuilder, TreeNodeStateStore}
+import org.finos.vuu.viewport.tree.{BuildEntireTree, TreeBuilder, TreeNodeStateStore}
 import org.finos.vuu.viewport.{GroupBy, ViewPortSetup}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
@@ -65,8 +65,9 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         vpColumns,
         nodeState,
         None,
-        None
-      ).build()
+        None,
+        buildAction = BuildEntireTree(sessionTable, None)
+      ).buildEntireTree()
 
       val treeTwice = TreeBuilder.create(sessionTable, GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
         .withAverage("quantity")
@@ -75,8 +76,9 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         vpColumns,
         nodeState,
         None,
-        None
-      ).build()
+        None,
+        buildAction = BuildEntireTree(sessionTable, None)
+      ).buildEntireTree()
 
       val diffsOnceAndTwice = diffOldVsNewBranches(treeOnce, treeTwice, TreeNodeStateStore(Map()))
 
@@ -93,8 +95,9 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         vpColumns,
         nodeState,
         None,
-        None
-      ).build()
+        None,
+        buildAction = BuildEntireTree(sessionTable, None)
+      ).buildEntireTree()
 
       val diffsTwiceAndThrice = diffOldVsNewBranches(treeTwice, treeThrice, TreeNodeStateStore(Map()))
 
@@ -134,8 +137,9 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         vpColumns,
         nodeState,
         None,
-        None
-      ).build()
+        None,
+        buildAction = BuildEntireTree(sessionTable, None)
+      ).buildEntireTree()
 
       And("then recreate the same tree, with different node state")
       val treeTwice = TreeBuilder.create(sessionTable, GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
@@ -145,8 +149,9 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         vpColumns,
         nodeState,
         None,
-        None
-      ).build()
+        None,
+        buildAction = BuildEntireTree(sessionTable, None)
+      ).buildEntireTree()
 
       Then("Check we get a diff, oldstate was open")
       val diffsOnceAndTwice = diffOldVsNewBranches(treeOnce, treeTwice, nodeState.open("$root|steve"))
