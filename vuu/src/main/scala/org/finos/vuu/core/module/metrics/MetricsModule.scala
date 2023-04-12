@@ -10,6 +10,11 @@ import org.finos.vuu.core.module.metrics.MetricsSchema.MetricsTree.all_columns
 
 object MetricsSchema{
 
+  final object ViewPortParallelism{
+    final val work_ms_in_1m = "work_ms_in_1m"
+    final val work_par_ratio = "work_par_ratio"
+  }
+
   final object MetricsTree{
     val id: String = "id"
     val table: String = "table"
@@ -112,6 +117,16 @@ object MetricsModule extends DefaultModule {
           joinFields = "mem-type"
         ),
         (table, vs) => new MetricsJVMProvider(table, vs.viewPortContainer)
+      )
+      .addTable(
+        TableDef(
+          name = "metricsViewPortWork",
+          keyField = "type",
+          columns = Columns.fromNames("type".string(), "work_ms_in_1m".double(), "work_par_ratio".double()),
+          indices = Indices(),
+          joinFields = "type"
+        ),
+        (table, vs) => new MetricsViewPortParallelismProvider(table, vs.viewPortContainer)
       )
       .asModule()
   }
