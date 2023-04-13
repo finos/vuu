@@ -4,8 +4,10 @@ import React, {
   ReactNode,
   useContext,
   ReactElement,
+  useCallback,
 } from "react";
 import cx from "classnames";
+import { SelectionChangeHandler } from "@heswell/salt-lab";
 
 export const DEFAULT_DENSITY:Density = "medium";
 export const DEFAULT_THEME:Theme = "salt-theme";
@@ -18,14 +20,18 @@ type TargetElement = "root" | "scope" | "child";
 
 export interface ThemeContextProps {
   density?: Density;
+  setDensity?: React.Dispatch<React.SetStateAction<Density>>;
   theme?: Theme;
   themeMode?: ThemeMode;
+  setThemeMode?: React.Dispatch<React.SetStateAction<ThemeMode>>;
 }
 
 export const ThemeContext = createContext<ThemeContextProps>({
-  density: "medium",
-  theme: "salt-theme",
-  themeMode: "light"
+  // density: "medium",
+  // theme: "salt-theme",
+  // themeMode: "light",
+  // onThemeChange: () => undefined,
+  // onDensityChange: () => undefined
 });
 
 const createThemedChildren = (
@@ -60,25 +66,28 @@ interface ThemeProviderProps {
   applyClassesTo?: TargetElement;
 }
 
-export const ThemeProvider = ({
-  children,
-  density: densityProp,
-  theme: themeProp,
-  themeMode: themeModeProp
-}: ThemeProviderProps) => {
-  const { theme: inheritedTheme, density: inheritedDensity, themeMode: inheritedThemeMode } =
-    useContext(ThemeContext);
+export const ThemeProvider = (
+  // children,
+  // density: densityProp,
+  // theme: themeProp,
+  // themeMode: themeModeProp
+) => {
+  // const { theme: inheritedTheme, density: inheritedDensity, themeMode: inheritedThemeMode} =
+  //   useContext(ThemeContext);
 
-  const density = densityProp ?? inheritedDensity ?? DEFAULT_DENSITY;
-  const theme = themeProp ?? inheritedTheme ?? DEFAULT_THEME;
-  const themeMode = themeModeProp ?? inheritedThemeMode ?? DEFAULT_THEME_MODE;
+  // console.log(densityProp, themeProp, themeModeProp);
 
-  const themedChildren = createThemedChildren(children, theme, density);
+  // const density = densityProp ?? inheritedDensity ?? DEFAULT_DENSITY;
+  // const theme = themeProp ?? inheritedTheme ?? DEFAULT_THEME;
+  // const themeMode = themeModeProp ?? inheritedThemeMode ?? DEFAULT_THEME_MODE;
+
+  // const themedChildren = createThemedChildren(children, theme, density);
 
   return (
     <ThemeContext.Provider
-      value={{ density, theme }}
-      data-mode={themeMode}
+      value={{ density, themeMode,   }}
+      // data-mode={themeMode}
+      // handleChange={handleChange}
     >
       {themedChildren}
     </ThemeContext.Provider>

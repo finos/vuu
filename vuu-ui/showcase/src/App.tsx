@@ -75,17 +75,17 @@ export const App = ({ stories }: AppProps) => {
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
   const handleChange = (evt, [selected]) => navigate(selected.id);
-  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
-  const [density, setDensity] = useState<Density>("medium");
+  // const [themeMode, setThemeMode] = useState<ThemeMode>("light");
+  // const [density, setDensity] = useState<Density>("medium");
 
   const launchStandaloneWindow = useCallback(() => {
     window.open(`${location.href}?standalone`, "_blank");
   }, []);
 
   return (
-    <SaltProvider applyClassesTo="scope">
+    // <SaltProvider applyClassesTo="scope">
     <ThemeProvider
-      applyClassesTo="scope"
+      applyClassesTo="child"
       
     >
       <Flexbox
@@ -133,6 +133,6 @@ export const App = ({ stories }: AppProps) => {
         </Flexbox>
       </Flexbox>
     </ThemeProvider>
-    </SaltProvider>
+    // {/* </SaltProvider> */}
   );
 };
