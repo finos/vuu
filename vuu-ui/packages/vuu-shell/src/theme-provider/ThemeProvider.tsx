@@ -5,6 +5,7 @@ import React, {
   useContext,
   ReactElement,
   useCallback,
+  useState,
 } from "react";
 import cx from "classnames";
 import { SelectionChangeHandler } from "@heswell/salt-lab";
@@ -72,6 +73,8 @@ export const ThemeProvider = (
   // theme: themeProp,
   // themeMode: themeModeProp
 ) => {
+  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
+  const [density, setDensity] = useState<Density>("medium");
   // const { theme: inheritedTheme, density: inheritedDensity, themeMode: inheritedThemeMode} =
   //   useContext(ThemeContext);
 
