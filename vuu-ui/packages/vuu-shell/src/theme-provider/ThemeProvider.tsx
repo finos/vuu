@@ -2,13 +2,10 @@ import React, {
   createContext,
   HTMLAttributes,
   ReactNode,
-  useContext,
   ReactElement,
-  useCallback,
   useState,
 } from "react";
 import cx from "classnames";
-import { SelectionChangeHandler } from "@heswell/salt-lab";
 
 export const DEFAULT_DENSITY:Density = "medium";
 export const DEFAULT_THEME:Theme = "salt-theme";
@@ -21,34 +18,36 @@ type TargetElement = "root" | "scope" | "child";
 
 export interface ThemeContextProps {
   density?: Density;
-  setDensity?: React.Dispatch<React.SetStateAction<Density>>;
+  setDensity: React.Dispatch<React.SetStateAction<Density>>;
   theme?: Theme;
   themeMode?: ThemeMode;
-  setThemeMode?: React.Dispatch<React.SetStateAction<ThemeMode>>;
+  setThemeMode: React.Dispatch<React.SetStateAction<ThemeMode>>;
 }
 
 export const ThemeContext = createContext<ThemeContextProps>({
-  // density: "medium",
+  // density: "high",
   // theme: "salt-theme",
   // themeMode: "light",
   // onThemeChange: () => undefined,
   // onDensityChange: () => undefined
+  setDensity: () => undefined,
+  setThemeMode: () => undefined
 });
 
 const createThemedChildren = (
   children: ReactNode,
   theme: Theme,
   density: Density,
-  // themeMode: ThemeMode
 ) => {
+  console.log(children);
   if (React.isValidElement<HTMLAttributes<HTMLElement>>(children)) {
     return React.cloneElement(children, {
       className: cx(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         children.props?.className,
         theme,
-        `salt-density-${density}`
-      )
+        `salt-density-${density}`,
+      ),
     });
   } else {
     console.warn(
@@ -60,39 +59,43 @@ const createThemedChildren = (
 };
 
 interface ThemeProviderProps {
-  children: ReactElement;
+  children?: ReactElement;
   density?: Density;
-  theme?: Theme;
+  // setDensity?: React.Dispatch<React.SetStateAction<Density>>;
+  // theme?: Theme;
   themeMode?: ThemeMode;
+  // setThemeMode?: React.Dispatch<React.SetStateAction<ThemeMode>>;
   applyClassesTo?: TargetElement;
 }
 
-export const ThemeProvider = (
-  // children,
+export const ThemeProvider = ({
+  children,
   // density: densityProp,
   // theme: themeProp,
   // themeMode: themeModeProp
-) => {
+}: ThemeProviderProps) => {
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
   const [density, setDensity] = useState<Density>("medium");
   // const { theme: inheritedTheme, density: inheritedDensity, themeMode: inheritedThemeMode} =
   //   useContext(ThemeContext);
-
+  
   // console.log(densityProp, themeProp, themeModeProp);
 
   // const density = densityProp ?? inheritedDensity ?? DEFAULT_DENSITY;
   // const theme = themeProp ?? inheritedTheme ?? DEFAULT_THEME;
   // const themeMode = themeModeProp ?? inheritedThemeMode ?? DEFAULT_THEME_MODE;
 
-  // const themedChildren = createThemedChildren(children, theme, density);
+  const themedChildren = createThemedChildren(children, "salt-theme", density);
 
   return (
-    <ThemeContext.Provider
-      value={{ density, themeMode,   }}
-      // data-mode={themeMode}
-      // handleChange={handleChange}
-    >
-      {themedChildren}
-    </ThemeContext.Provider>
+    <div className={`salt-theme salt-density-${density}`} data-mode={themeMode}>
+      <ThemeContext.Provider
+        value={{ density, themeMode, setThemeMode, setDensity }}
+        // data-mode={themeMode}
+        // handleChange={handleChange}
+      >
+        {themedChildren}
+      </ThemeContext.Provider>
+    </div>
   );
 };

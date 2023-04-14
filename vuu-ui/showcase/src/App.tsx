@@ -1,9 +1,9 @@
 import { Flexbox } from "@finos/vuu-layout";
-import { ThemeMode, ThemeProvider, ThemeSwitch } from "@finos/vuu-shell";
+import { ThemeContext, ThemeProvider, ThemeSwitch } from "@finos/vuu-shell";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
-import { Density, SaltProvider, Text } from "@salt-ds/core";
+import { SaltProvider, Text } from "@salt-ds/core";
 import Module from "module";
-import { ReactElement, useCallback, useMemo, useState } from "react";
+import { ReactElement, useCallback, useContext, useMemo } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Tree } from "./components";
 
@@ -70,6 +70,8 @@ export interface AppProps {
 
 export const App = ({ stories }: AppProps) => {
   console.log({ stories: Object.entries(stories) });
+  const { density, themeMode } = useContext(ThemeContext)
+  console.log(density, themeMode);
 
   const navigate = useNavigate();
   const source = useMemo(() => sourceFromImports(stories), [stories]);
@@ -86,7 +88,6 @@ export const App = ({ stories }: AppProps) => {
     // <SaltProvider applyClassesTo="scope">
     <ThemeProvider
       applyClassesTo="child"
-      
     >
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
@@ -110,9 +111,9 @@ export const App = ({ stories }: AppProps) => {
             style={{ flexDirection: "column", flex: "1 1 auto" }}
           >
             <Toolbar className="ShowcaseContentToolbar salt-density-high">
-              <DensitySwitch onDensityChange={setDensity} />
+              <DensitySwitch />
               <span />
-              <ThemeSwitch onChange={setThemeMode} />
+              <ThemeSwitch />
               <ToolbarButton
                 data-align-end
                 data-icon="open-in"
@@ -120,8 +121,8 @@ export const App = ({ stories }: AppProps) => {
               />
             </Toolbar>
             <div
-              className={`ShowcaseContent salt-theme salt-density-${density}`}
-              data-mode={themeMode}
+              className={`ShowcaseContent salt-theme `}
+              data-mode
               style={{
                 flex: "1 1 auto",
                 position: "relative",
@@ -133,6 +134,6 @@ export const App = ({ stories }: AppProps) => {
         </Flexbox>
       </Flexbox>
     </ThemeProvider>
-    // {/* </SaltProvider> */}
+    // </SaltProvider>
   );
 };
