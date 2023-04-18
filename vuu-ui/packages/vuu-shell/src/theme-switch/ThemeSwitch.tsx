@@ -15,7 +15,6 @@ export interface ThemeSwitchProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   defaultMode?: ThemeMode;
   mode?: ThemeMode;
-  // onChange: (mode: ThemeMode) => void;
 }
 
 const modes: ThemeMode[] = ["light", "dark"];
@@ -24,7 +23,6 @@ export const ThemeSwitch = ({
   className: classNameProp,
   defaultMode: defaultModeProp,
   mode: modeProp,
-  // onChange,
   ...htmlAttributes
 }: ThemeSwitchProps) => {
   const { setThemeMode } = useContext(ThemeContext)
