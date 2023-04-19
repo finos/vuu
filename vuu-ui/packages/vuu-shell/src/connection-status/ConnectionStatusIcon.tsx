@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import '../index.css';
+import './ConnectionStatusIcon.css';
 
 type connectionStatus = 'connected' | 'reconnected' | 'connecting' | 'disconnected';
 

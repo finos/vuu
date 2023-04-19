@@ -1,0 +1,68 @@
+.vuuStatus-container {
+	display: flex;
+}
+
+.vuuStatus-text {
+	align-self: center;
+}
+
+
+.vuuStatus {
+	--vuu-icon-height: 18px;
+	--vuu-icon-padding: var(--vuuStatus-padding, 6px);
+	--vuu-icon-width: var(--vuuStatus-width, auto);
+	--vuu-icon-min-width: var(--vuuStatus-min-width, 20px);
+	align-items: center;
+	display: inline-flex;
+	height: var(--vuu-icon-height);
+	justify-content: center;
+	min-width: var(--vuu-icon-min-width);
+	padding: 0 var(--vuu-icon-padding);
+	width: var(--vuu-icon-width);
+	position: relative;
+}
+
+.vuuStatus[data-icon]::after {
+	inset: 0 0 0 0;
+	content: '';
+	box-shadow: 0 0 0 0 black;
+	position: absolute;
+	mask: var(--vuu-icon-svg) center center/20px 20px no-repeat;
+	-webkit-mask: var(--vuu-icon-svg) center center/20px 20px no-repeat;
+}
+
+.vuuActiveStatus::after {
+	--vuu-icon-svg: var(--svg-active-status);
+	background-color: rgb(0, 255, 0);
+}
+
+.vuuConnectingStatus::after {
+	--vuu-icon-svg: var(--svg-connecting-status);
+	background-color: orange;
+	transform: scale(1);
+	animation: infinite pulse 1s;
+}
+
+.vuuDisconnectedStatus::after {
+	--vuu-icon-svg: var(--svg-disconnected-status);
+	background-color: red;
+	transform: scale(1);
+	animation: infinite pulse 0.5s;
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+	}
+
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+	}
+
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+	}
+}
