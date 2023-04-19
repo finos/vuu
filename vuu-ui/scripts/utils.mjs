@@ -105,21 +105,18 @@ export const assertFolderExists = (folderName, exitIfFalse) => {
   return true;
 };
 
-export const writeMetaFile = async (meta, outdir) =>
+export const writeJsonFileFile = async (json, path) =>
   new Promise((resolve, reject) => {
-    console.log(`write bundle metafile`);
-    fs.writeFile(
-      `${outdir}/meta.json`,
-      JSON.stringify(meta, null, 2),
-      (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
+    fs.writeFile(path, JSON.stringify(json, null, 2), (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
       }
-    );
+    });
   });
+export const writeMetaFile = async (meta, outdir) =>
+  writeJsonFileFile(meta, `${outdir}/meta.json`);
 
 export const padRight = (str, length) => {
   return (str + Array(length).fill(" ").join("")).slice(0, length);
