@@ -45,16 +45,32 @@ trait ViewPortContainerMBean {
 
 }
 
+object ViewPortContainerMetrics {
+
+}
+
 class ViewPortContainer(val tableContainer: TableContainer, val providerContainer: ProviderContainer)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
 
-  private val groupByhistogram = metrics.histogram("org.finos.vuu.thread.groupby.cycleTime")
-  private val viewPorthistogram = metrics.histogram("org.finos.vuu.thread.viewport.cycleTime")
+  import org.finos.vuu.core.VuuServerMetrics._
 
-  val groupByHistograms = new ConcurrentHashMap[String, Histogram]()
+  private val groupByhistogram = metrics.histogram(toJmxName("thread.tree.cycleTime"))
+  private val viewPorthistogram = metrics.histogram(toJmxName("thread.viewport.cycleTime"))
+
   val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
+
+  val treeToKeysHistograms = new ConcurrentHashMap[String, Histogram]()
+  val treeSetKeysHistograms = new ConcurrentHashMap[String, Histogram]()
+  val treeSetTreeHistograms = new ConcurrentHashMap[String, Histogram]()
+  val treeDiffBranchesHistograms = new ConcurrentHashMap[String, Histogram]()
+  val treeBuildHistograms = new ConcurrentHashMap[String, Histogram]()
+
+  val filterSortHistograms = new ConcurrentHashMap[String, Histogram]()
 
   val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]()
   val treeNodeStatesByVp = new ConcurrentHashMap[String, TreeNodeStateStore]()
+
+  val totalTreeWorkHistogram = metrics.meter(toJmxName("viewport.work.tree"))
+  val totalFlatWorkHistogram = metrics.meter(toJmxName("viewport.work.flat"))
 
   def getViewPorts(): List[ViewPort] = CollectionHasAsScala(viewPorts.values()).asScala.toList
 
@@ -523,7 +539,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => vp.hasGroupBy && vp.isEnabled).foreach(vp => refreshOneTreeViewPort(vp))
     }
 
-    groupByhistogram.update(millis)
   }
 
   //for trees there are two steps, 1 should we update the tree, and secondly, should we recalculate the keys
@@ -569,7 +584,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val lastStructureHash = viewPort.getLastHash()
     val lastUpdateCount = viewPort.getLastUpdateCount()
 
-    (shouldRebuild || currentStructureHash != lastStructureHash || currentUpdateCount != lastUpdateCount)
+    shouldRebuild || currentStructureHash != lastStructureHash || currentUpdateCount != lastUpdateCount
   }
 
   def shouldRecalcKeys(latestNodeState: TreeNodeStateStore, previousNodeState: TreeNodeStateStore): Boolean = {
@@ -577,6 +592,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def refreshOneTreeViewPort(viewPort: ViewPort): Unit = {
+    val (millis, _) = timeIt{
+      refreshOneTreeViewPortInternal(viewPort)
+    }
+    totalTreeWorkHistogram.mark(millis)
+  }
+
+  def refreshOneTreeViewPortInternal(viewPort: ViewPort): Unit = {
 
     logger.debug("Building tree for groupBy")
 
@@ -593,9 +615,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           val rebuildTree = shouldRebuildTree(viewPort, currentStructureHash, currentUpdateCount)
 
           val (millis, tree) = rebuildTree match {
-            case true => timeIt {
-              TreeBuilder.create(tbl, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, Option(tbl.getTree), Option(viewPort.getStructure.filtAndSort.sort)).build()
-            }
+            case true =>
+              val (millisBuild, tree) = timeIt {
+                TreeBuilder.create(tbl, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, Option(tbl.getTree), Option(viewPort.getStructure.filtAndSort.sort)).build()
+              }
+              treeBuildHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram(toJmxName("tree.build." + s))).update(millisBuild)
+              (millisBuild, tree)
             case false => timeIt{
               tbl.getTree.applyNewNodeState(latestNodeState)
             }
@@ -605,44 +630,47 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           val previousNodeState = tbl.getTree.nodeState
           val recalcKeys  =  shouldRecalcKeys(latestNodeState, previousNodeState)
 
-          val (millis2, keys) = (rebuildTree || recalcKeys) match {
-            case true => timeIt {
-              //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
-              tree.toKeys()
-            }
+          val (millis2, keys) = rebuildTree || recalcKeys match {
+            case true =>
+              val (millisToKeys, keys) = timeIt {
+                //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
+                tree.toKeys()
+              }
+              treeToKeysHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram(toJmxName("tree.keys." + s))).update(millisToKeys)
+              (millisToKeys, keys)
             case false => timeIt {
               //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
               viewPort.getKeys
             }
           }
 
-//          val (millis2, keys) = timeIt {
-//            //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
-//            tree.toKeys()
-//          }
-
-          val (millis3, _) = (recalcKeys || rebuildTree) match {
+          val (millis3, _) = recalcKeys || rebuildTree match {
             case true =>
-              timeIt {
+              val (millisSetTree, _) = timeIt {
                 //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
                 tbl.setTree(tree, keys)
               }
-            case false => {
+              treeSetTreeHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram(toJmxName("tree.settree." + s))).update(millisSetTree)
+              (millisSetTree, null)
+            case false =>
               timeIt{
                 logger.debug("Didn't do anything so not rebuilding keys")
               }
-            }
           }
 
           val (millis4, _) = (recalcKeys || rebuildTree) match {
-            case true => timeIt {
+            case true =>
+              val (setKeysMillis, _ ) = timeIt {
               //CJS Always set tree first, otherwise it is null when trying to retrieve treekey to key mapping.
-              viewPort.setKeys(keys)
-            }
+                viewPort.setKeys(keys)
+              }
+              treeSetKeysHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram(toJmxName("tree.setkeys." + s))).update(setKeysMillis)
+              (setKeysMillis, null)
             case false =>
-              timeIt {
+              val (setKeysMillis, _) = timeIt {
                 logger.debug("Didn't set keys")
               }
+              (setKeysMillis, null)
           }
 
           val (millis5, _) = timeIt {
@@ -652,9 +680,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
             viewPort.updateSpecificKeys(branchKeys)
           }
 
-          logger.debug(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
+          treeDiffBranchesHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram(toJmxName("tree.branchdiff." + s))).update(millis5)
 
-          groupByHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("org.finos.vuu.groupBy." + s)).update(millis)
+          logger.debug(s"Tree Build: ${tbl.name}-${tbl.linkableName} build: $millis tree.toKeys: $millis2  setTree: $millis3 setKeys: $millis4")
 
           viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
 
@@ -673,11 +701,17 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       case None => false
     }
 
-    (currentStructureHash != lastStructureHash || currentUpdateCount != lastUpdateCount || hasVisualLink)
+    currentStructureHash != lastStructureHash || currentUpdateCount != lastUpdateCount || hasVisualLink
   }
 
-
   def refreshOneViewPort(viewPort: ViewPort): Unit = {
+    val (millis, _) = timeIt{
+      refreshOneViewPortInternal(viewPort)
+    }
+    totalFlatWorkHistogram.mark(millis)
+  }
+
+  def refreshOneViewPortInternal(viewPort: ViewPort): Unit = {
 
     if (viewPort.isEnabled) {
 
@@ -695,8 +729,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           viewPort.setKeys(sorted)
         }
 
-        viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram("io.venuu.vuu.groupBy." + s)).update(millis)
-
+        viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram(toJmxName("vp.flat.cycle." + s))).update(millis)
         viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
       }
 
