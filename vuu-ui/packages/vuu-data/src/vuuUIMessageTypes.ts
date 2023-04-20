@@ -34,6 +34,16 @@ export const isConnectionStatusMessage = (
 ): msg is ConnectionStatusMessage =>
   (msg as ConnectionStatusMessage).type === "connection-status";
 
+export interface ConnectionQualityMetrics {
+  type: "connection-metrics";
+  messagesLength: number;
+}
+
+export const isConnectionQualityMetrics = (
+  msg: object
+): msg is ConnectionQualityMetrics =>
+  (msg as ConnectionQualityMetrics).type === "connection-metrics"
+
 export interface ServerProxySubscribeMessage {
   aggregations: VuuAggregation[];
   bufferSize?: number;
