@@ -4,6 +4,11 @@
   "author": "heswell <steve@heswell.com>",
   "license": "Apache-2.0",
   "private": true,
+  "main": "./lib/index.js",
+  "bin": {
+    "vuu": "./lib/index.js"
+  },
+  "type": "module",
   "workspaces": [
     "packages/**",
     "sample-apps/**",
@@ -49,7 +54,6 @@
     "@lezer/common": "^1.0.2",
     "@lezer/generator": "^1.2.2",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
-    "chalk": "^5.2.0",
     "esbuild": "0.17.11",
     "esbuild-visualizer": "^0.4.0",
     "eslint": "8.36.0",
