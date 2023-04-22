@@ -45,7 +45,6 @@ export const useTypeaheadSuggestions = () => {
               params,
               ...TYPEAHEAD_MESSAGE_CONSTANTS,
             } as ClientToServerGetUniqueValuesStartingWith);
-
       const suggestions = await makeRpcCall<string[]>(rpcMessage);
 
       // TODO replacing space with underscores like this is not being correctly handled elsewhere
