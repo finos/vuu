@@ -1,4 +1,5 @@
 export * from "./connection-status";
+export * from "./density-switch";
 export * from "./feature";
 export * from "./login";
 export * from "./shell";

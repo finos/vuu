@@ -6,23 +6,23 @@ import React, {
   useState,
   isValidElement,
   cloneElement,
+  useContext,
 } from "react";
 import cx from "classnames";
 
 export const DEFAULT_DENSITY:Density = "medium";
-export const DEFAULT_THEME:Theme = "salt-theme";
+export const DEFAULT_THEME = "salt-theme";
 export const DEFAULT_THEME_MODE:ThemeMode = "light";
 
 export type Density = "high" | "medium" | "low" | "touch";
-export type Theme = "salt-theme";
 export type ThemeMode = "light" | "dark";
 export type TargetElement = "root" | "scope" | "child";
 
 export interface ThemeContextProps {
-  density?: Density;
+  density: Density;
   setDensity: React.Dispatch<React.SetStateAction<Density>>;
-  theme?: Theme;
-  themeMode?: ThemeMode;
+  theme?: string;
+  themeMode: ThemeMode;
   setThemeMode: React.Dispatch<React.SetStateAction<ThemeMode>>;
 }
 
@@ -36,7 +36,7 @@ export const ThemeContext = createContext<ThemeContextProps>({
 
 const createThemedChildren = (
   children: ReactNode,
-  theme: Theme,
+  theme: string,
   themeMode: ThemeMode,
   density: Density,
 ) => {
@@ -62,9 +62,9 @@ const createThemedChildren = (
 };
 
 interface ThemeProviderProps {
-  children?: ReactElement;
+  children: ReactElement;
   density?: Density;
-  // theme?: Theme;
+  theme?: string;
   themeMode?: ThemeMode;
   applyClassesTo?: TargetElement;
 }
@@ -75,8 +75,10 @@ export const ThemeProvider = ({
   themeMode: themeModeProp,
   density: densityProp
 }: ThemeProviderProps) => {
-  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
-  const [density, setDensity] = useState<Density>("high");
+  const { density: initialDensity, themeMode: initialThemeMode } =
+    useContext(ThemeContext);
+  const [themeMode, setThemeMode] = useState<ThemeMode>(initialThemeMode);
+  const [density, setDensity] = useState<Density>(initialDensity);
 
   const currentDensity = densityProp ?? density ?? DEFAULT_DENSITY;
   const currentThemeMode = themeModeProp ?? themeMode ?? DEFAULT_THEME_MODE;
@@ -84,7 +86,7 @@ export const ThemeProvider = ({
 
   return (
     <ThemeContext.Provider
-      value={{ density, themeMode, setThemeMode, setDensity }}
+      value={{themeMode: initialThemeMode, density: initialDensity, setThemeMode, setDensity }}
     >
       {themedChildren}
     </ThemeContext.Provider>

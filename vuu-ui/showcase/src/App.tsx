@@ -1,5 +1,5 @@
 import { Flexbox } from "@finos/vuu-layout";
-import { ThemeProvider, ThemeSwitch } from "@finos/vuu-shell";
+import { DensitySwitch, ThemeProvider, ThemeSwitch } from "@finos/vuu-shell";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { Text } from "@salt-ds/core";
 import Module from "module";
@@ -8,7 +8,6 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Tree } from "./components";
 
 import "./App.css";
-import { DensitySwitch } from "@finos/vuu-shell/src/density-switch";
 
 type VuuExample = (() => ReactElement) & {
   displaySequence?: number;
@@ -110,7 +109,7 @@ export const App = ({ stories }: AppProps) => {
               style={{ flexDirection: "column", flex: "1 1 auto" }}
             >
               <Toolbar
-                className="ShowcaseContentToolbar salt-theme salt-density-high" 
+                className="ShowcaseContentToolbar salt-theme salt-density-high"
                 data-mode="light"
               >
                 <DensitySwitch />

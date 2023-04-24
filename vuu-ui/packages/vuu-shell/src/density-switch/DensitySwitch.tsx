@@ -1,4 +1,4 @@
-import { Dropdown, SelectionChangeHandler } from "@heswell/salt-lab";
+import { Dropdown } from "@heswell/salt-lab";
 import { Density } from "@salt-ds/core";
 import { HTMLAttributes, useCallback, useContext } from "react";
 import cx from "classnames";
@@ -20,7 +20,7 @@ export const DensitySwitch = ({
   defaultDensity=DEFAULT_DENSITY,
 }:DensitySwitchProps) => {
   const { setDensity } = useContext(ThemeContext)
-  const handleSelectionChange:SelectionChangeHandler | string = useCallback((_event, selectedItem) => {
+  const handleSelectionChange = useCallback((_event, selectedItem) => {
     setDensity(selectedItem);
   }, [setDensity])
 
