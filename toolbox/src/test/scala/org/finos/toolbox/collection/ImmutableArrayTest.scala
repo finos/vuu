@@ -34,12 +34,12 @@ class ImmutableArrayTest extends AnyFeatureSpec with Matchers {
 
     Scenario("build very big immutable array and then remove an item"){
 
-      val numbers = (0 to 100000).toArray
+      val numbers = (0 to 100000).map(_.toString).toArray
 
-      val immute = ImmutableArray.from[Int](numbers)
+      val immute = ImmutableArray.from[String](numbers)
 
       val (millis, _ ) = TimeIt.timeIt{
-        (0 to 1000).foreach( i => immute.-(i))
+        (0 to 1000).foreach( i => immute.-(i.toString))
       }
 
       println(s"$millis to remove 1000 items")

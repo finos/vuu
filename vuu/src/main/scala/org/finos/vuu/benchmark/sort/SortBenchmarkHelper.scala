@@ -1,10 +1,10 @@
-package org.finos.vuu.benchmark
+package org.finos.vuu.benchmark.sort
 
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
-import org.finos.vuu.core.table.{Columns, DataTable, RowWithData, SimpleDataTable, TableContainer}
+import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
 import org.finos.vuu.provider.JoinTableProviderImpl
 
 object SortBenchmarkHelper {
