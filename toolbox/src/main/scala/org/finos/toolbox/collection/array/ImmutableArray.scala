@@ -7,7 +7,7 @@ object ImmutableArray{
   def empty[T](implicit c: ClassTag[T]): ImmutableArray[T] = {
     new ChunkedUniqueImmutableArraySet[T](Set(), Array(), chunkSize = 5000)
   }
-  def from[T](array: Array[T])(implicit c: ClassTag[T]) = {
+  def from[T](array: Array[T])(implicit c: ClassTag[T]): ImmutableArray[T] = {
     empty[T].addAll(new NaiveImmutableArray[T](array))
   }
 }

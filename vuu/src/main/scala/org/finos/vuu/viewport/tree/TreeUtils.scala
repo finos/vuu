@@ -10,6 +10,9 @@ object TreeUtils extends StrictLogging {
     if(oldNode.childRowsHash() != newNode.childRowsHash()
     || (NotNull(newState) && (newState != oldState))
     || (NotNull(oldState) && (newState != oldState))
+    //this is a hack to allow the optimization of the tree build,
+    //the first time the tree is built, the child size will be 0, subsequent builds it will be correct
+    || oldNode.getChildren.size() != newNode.getChildren.size()
     ){
       true
     }else{

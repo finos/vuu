@@ -287,7 +287,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   private def parseSort(sort: SortSpec, vpColumns: ViewPortColumns): Sort = {
     if (sort.sortDefs.nonEmpty)
-      GenericSort(sort, sort.sortDefs.map(sd => vpColumns.getColumnForName(sd.column).get))
+      SortImpl(sort, sort.sortDefs.map(sd => vpColumns.getColumnForName(sd.column).get))
     else
       NoSort
   }
@@ -614,7 +614,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       case action: BuildEntireTree =>
         val oldTree = action.table.getTree
         val tree = timeItThen[Tree](
-          {TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action).buildEntireTree()},
+          {
+            TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action).buildEntireTree()},
           (millis, tree) => { updateHistogram(viewPort, treeBuildHistograms, "tree.build.", millis)}
         )
         val keys = timeItThen[ImmutableArray[String]](

@@ -5,7 +5,11 @@ import org.finos.vuu.core.table.{Column, DataType, RowData, ViewPortColumnCreato
 import org.finos.vuu.net.SortSpec
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.toolbox.time.Clock
+import org.finos.toolbox.time.TimeIt.timeIt
 
+import java.util
+import java.util.Comparator
 import scala.annotation.tailrec
 
 trait Sort {
@@ -51,7 +55,7 @@ case class NumericSort(direction: SortDirection.TYPE, column: Column) extends So
   }
 }
 
-case class GenericSort(spec: SortSpec, columns: List[Column]) extends Sort with StrictLogging {
+case class GenericSort2(spec: SortSpec, columns: List[Column])(implicit clock: Clock) extends Sort with StrictLogging {
 
   val sortColumns = spec.sortDefs.map(sdef => sdef.column)
 
@@ -66,15 +70,67 @@ case class GenericSort(spec: SortSpec, columns: List[Column]) extends Sort with 
 
     //val vpColumns = ViewPortColumnCreator.create(source.asTable, columns.map(_.name))
 
-    val snapshot = primaryKeys.toArray.map(key => (key -> source.pullRow(key, vpColumns))).toMap
+    logger.debug("Starting map")
+
+    val (millisToArray, snapshot) = timeIt {
+      primaryKeys.toArray.map(key => source.pullRow(key, vpColumns))
+    }
+
+    logger.debug("Starting sort")
+
+    val (millisSort, _ ) = timeIt {
+
+      util.Arrays.sort(snapshot, new Comparator[RowData] {
+        override def compare(o1: RowData, o2: RowData): Int = {
+            SortCompares.compare(o1, o2, columns, sortDirections, 0)
+        }
+      })
+    }
+
+    logger.debug("Starting build imm arr")
+
+    val (millisImmArray, immutableArray) = timeIt {
+      ImmutableArray.from(snapshot.map(_.key()))
+    }
+
+    logger.info(s"[SORT]: DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
+
+    immutableArray
+  }
+}
+
+case class GenericSort(spec: SortSpec, columns: List[Column])(implicit clock: Clock) extends Sort with StrictLogging {
+
+  val sortColumns = spec.sortDefs.map(sdef => sdef.column)
+
+  val sortDirections = spec.sortDefs.map(sdef => sdef.sortType)
+
+  val sortFn = SortFunctions.sortByFields(columns, sortDirections, _: Map[String, RowData], _: String, _: String)
+
+
+  //val sortFunc        =
+
+  override def doSort(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
+
+    //val vpColumns = ViewPortColumnCreator.create(source.asTable, columns.map(_.name))
+
+    val (millisToArray, snapshot) = timeIt {
+      primaryKeys.toArray.map(key => (key -> source.pullRow(key, vpColumns))).toMap
+    }
 
     val curried = sortFn(snapshot, _: String, _: String)
 
-    logger.debug(s"sorting ${primaryKeys.length} keys")
+    val (millisSort, sortedArray) = timeIt {
+      primaryKeys.toArray.sortWith(curried)
+    }
 
-    val sortedArray = primaryKeys.toArray.sortWith(curried)
+    val (millisImmArray, immutableArray) = timeIt {
+      ImmutableArray.from(sortedArray)
+    }
 
-    ImmutableArray.from(sortedArray)
+    logger.info(s"[SORT]: DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
+
+    immutableArray
   }
 
 }
@@ -143,11 +199,11 @@ object SortFunctions extends StrictLogging {
   }
 
   protected def stringSort(a: Any, b: Any, direction: Char): Boolean = {
-    if(a == null && b == null){
+    if (a == null && b == null) {
       false
-    } else if(a == null && b != null){
+    } else if (a == null && b != null) {
       true
-    }else if(a != null && b == null){
+    } else if (a != null && b == null) {
       false
     } else if (direction == 'A')
       a.asInstanceOf[String] > b.asInstanceOf[String]
