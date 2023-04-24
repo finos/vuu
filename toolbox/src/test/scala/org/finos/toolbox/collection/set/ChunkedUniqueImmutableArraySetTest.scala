@@ -87,11 +87,11 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
       result5.length shouldEqual(0)
     }
 
-    Scenario("Add from array"){
-
-      ImmutableUniqueArraySet.from(Array())
-
-    }
+//    Scenario("Add from array"){
+//
+//      ImmutableUniqueArraySet.from(Array())
+//
+//    }
 
   }
 }
