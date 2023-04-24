@@ -116,7 +116,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
         )
       }
 
-      val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns2, filterSpec = FilterSpec("ric = VOD.L") )
+      val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns2, filterSpec = FilterSpec("ric = \"VOD.L\"") )
 
       viewPortContainer.runOnce()
 

@@ -9,22 +9,23 @@
 
     <properties>
         <lucene.version>8.11.0</lucene.version>
+        <uberjar.name>benchmarks</uberjar.name>
     </properties>
 
-    <artifactId>vuu</artifactId>
-    <name>vuu</name>
-    <description>vuu</description>
-    <inceptionYear>2015</inceptionYear>
+    <artifactId>benchmark</artifactId>
+    <name>benchmark</name>
+    <description>benchmark</description>
+    <inceptionYear>2023</inceptionYear>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.finos.vuu</groupId>
-            <artifactId>toolbox</artifactId>
+            <artifactId>vuu</artifactId>
             <version>0.4.65-SNAPSHOT</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <version>${lucene.version}</version>
@@ -34,7 +35,7 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
             <version>${lucene.version}</version>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -73,7 +74,7 @@
         </dependency>
 
 
-        <dependency>
+        <!--dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging_2.13</artifactId>
             <version>${scala.logging}</version>
@@ -185,7 +186,7 @@
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
             <version>${typesafe.conf.version}</version>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
@@ -196,7 +197,6 @@
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-generator-annprocess</artifactId>
             <version>${jmh.version}</version>
-                <!--scope>provided</scope-->
         </dependency>
 
     </dependencies>
@@ -300,6 +300,13 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <release>${maven.compiler.target}</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.openjdk.jmh</groupId>
+                            <artifactId>jmh-generator-annprocess</artifactId>
+                            <version>${jmh.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -347,6 +354,43 @@
                             <sources>
                                 <source>target/generated-sources/antlr4</source>
                             </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${uberjar.name}</finalName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.openjdk.jmh.Main</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <!--
+                                        Shading signed JARs will fail without this.
+                                        http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar
+                                    -->
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
@@ -409,23 +453,8 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <version>${antlr.version}</version>
-                <configuration>
-                    <visitor>true</visitor>
-                    <listener>false</listener>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>antlr4</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
+
+            <!--plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <version>3.1.0</version>
@@ -449,7 +478,7 @@
                         <argument>org.finos.vuu.SimulMain</argument>
                     </arguments>
                 </configuration>
-            </plugin>
+            </plugin-->
         </plugins>
     </build>
     <reporting>

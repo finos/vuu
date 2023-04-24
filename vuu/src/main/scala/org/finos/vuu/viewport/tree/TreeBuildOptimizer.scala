@@ -76,6 +76,7 @@ object TreeBuildOptimizer extends StrictLogging {
         val rebuildTree = shouldRebuildTree(viewPort, currentStructureHash, currentUpdateCount)
         val recalcKeys  = shouldRecalcKeys(latestNodeState, table.getTree.nodeState)
 
+        //get the previously built tree...
         table.getTree match {
           //if we have no aggregations initially we don't have to build the whole tree
           case EmptyTree if viewPort.getGroupBy.aggregations.isEmpty =>
@@ -86,6 +87,8 @@ object TreeBuildOptimizer extends StrictLogging {
           case tree: TreeImpl =>
             tree.buildAction match {
               case Some(action:FastBuildBranchesOfTree) =>
+                BuildEntireTree(table, Some(tree))
+              case Some(action: OnlyRecalculateTreeKeys) if rebuildTree =>
                 BuildEntireTree(table, Some(tree))
               case Some(action:BuildEntireTree) if rebuildTree =>
                 BuildEntireTree(table, Some(tree))

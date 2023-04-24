@@ -56,7 +56,7 @@ object FilterAndSortFixture {
        |""".stripMargin
   }
 
-  def doSort(table: SimpleDataTable, sort: GenericSort): List[(String, RowWithData)] = {
+  def doSort(table: SimpleDataTable, sort: Sort): List[(String, RowWithData)] = {
     val viewPortColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
     val result = sort.doSort(table, table.primaryKeys, viewPortColumns)
     val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)

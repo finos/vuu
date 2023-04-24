@@ -75,12 +75,14 @@
         <vertx.version>4.4.1</vertx.version>
         <typesafe.conf.version>1.4.2</typesafe.conf.version>
         <logback.version>1.2.9</logback.version>
+        <jmh.version>1.36</jmh.version>
     </properties>
 
     <modules>
         <module>toolbox</module>
         <module>vuu</module>
         <module>vuu-ui</module>
+        <module>benchmark</module>
     </modules>
 
     <dependencies>
