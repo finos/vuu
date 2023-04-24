@@ -26,6 +26,12 @@ export const TreePerformance = () => {
   const [operationStatus, setOperationStatus] = useState("");
   const [responseTime, setResponseTime] = useState(0);
 
+  const dataResolver = useRef<(value: unknown) => void | undefined>();
+  const dataReceived = () =>
+    new Promise((resolve) => {
+      dataResolver.current = resolve;
+    });
+
   const treeDataResolver = useRef<(value: unknown) => void | undefined>();
   const treeDataReceived = () =>
     new Promise((resolve) => {
@@ -75,11 +81,16 @@ export const TreePerformance = () => {
             if (isTreeResponse(message)) {
               if (typeof treeDataResolver.current === "function") {
                 treeDataResolver.current(undefined);
+                treeDataResolver.current = undefined;
               }
             } else if (isClearTreeResponse(message)) {
               if (typeof treeDataResolver.current === "function") {
                 treeDataResolver.current(undefined);
+                treeDataResolver.current = undefined;
               }
+            } else if (typeof dataResolver.current === "function") {
+              dataResolver.current(undefined);
+              dataResolver.current = undefined;
             }
           }
           break;
@@ -126,12 +137,33 @@ export const TreePerformance = () => {
     [dataSourceChild]
   );
 
+  const handleSort = useCallback(
+    async (column: string) => {
+      const startTime = performance.now();
+      dataSourceChild.sort = { sortDefs: [{ column, sortType: "A" }] };
+      setOperation(`sort on ${column}`);
+      setOperationStatus("in flight");
+      await dataReceived();
+      const endTime = performance.now();
+      setOperationStatus(`took ${((endTime - startTime) / 1000).toFixed(2)} s`);
+    },
+    [dataSourceChild]
+  );
+
   const disableButtons = operationStatus === "in flight";
   return (
-    <div style={{ width: 900, height: 900, background: "yellow" }}>
-      <Toolbar className="vuuPerfExamplesToolbar">
+    <div
+      style={{ display: "flex", width: 900, height: 900, background: "yellow" }}
+    >
+      <Toolbar className="vuuPerfExamplesToolbar" orientation="vertical">
         <Button disabled={disableButtons} onClick={handleAddRows}>
           Add 1 Million rows
+        </Button>
+        <Button disabled={disableButtons} onClick={() => handleSort("ccy")}>
+          Sort CCY
+        </Button>
+        <Button disabled={disableButtons} onClick={() => handleSort("price")}>
+          Sort Price
         </Button>
         <Button
           disabled={disableButtons}
@@ -155,11 +187,12 @@ export const TreePerformance = () => {
           Clear GroupBy
         </Button>
       </Toolbar>
-      <div>Parent Orders: {parentOrderCount}</div>
-      <div>Child Orders: {childOrderCount}</div>
-      <br />
-      <div>
-        {operation} {operationStatus}
+      <div style={{ padding: 12 }}>
+        <div>Parent Orders: {parentOrderCount}</div>
+        <div>Child Orders: {childOrderCount}</div>
+        <div>
+          {operation} {operationStatus}
+        </div>
       </div>
     </div>
   );
