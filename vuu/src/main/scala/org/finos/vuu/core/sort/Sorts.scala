@@ -93,15 +93,15 @@ case class GenericSort2(spec: SortSpec, columns: List[Column])(implicit clock: C
 
       val snapshotKeys = new Array[String](snapshot.length)
 
-      (0 until snapshot.length).foreach {i =>
+      snapshot.indices.foreach { i =>
         snapshotKeys(i) = snapshot(i).key()
       }
 
       ImmutableArray.fromArray(snapshotKeys)
-//      ImmutableArray.fromArray(snapshot.map(_.key()))
+      //ImmutableArray.fromArray(snapshot.map(_.key()))
     }
 
-    logger.info(s"[SORT]: Table Size: ${primaryKeys.length} DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
+    logger.debug(s"[SORT]: Table Size: ${primaryKeys.length} DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
 
     immutableArray
   }
