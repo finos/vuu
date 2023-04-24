@@ -21,6 +21,7 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: Run Microbenchmarks
+      - name: Install Modules
         run: mvn -B install --file pom.xml
-             mvn exec:exec -pl benchmark
+      - name: Run Microbenchmarks
+        run: mvn exec:exec -pl benchmark
