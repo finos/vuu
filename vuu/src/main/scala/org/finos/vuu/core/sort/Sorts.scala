@@ -90,10 +90,18 @@ case class GenericSort2(spec: SortSpec, columns: List[Column])(implicit clock: C
     logger.debug("Starting build imm arr")
 
     val (millisImmArray, immutableArray) = timeIt {
-      ImmutableArray.from(snapshot.map(_.key()))
+
+      val snapshotKeys = new Array[String](snapshot.length)
+
+      (0 until snapshot.length).foreach {i =>
+        snapshotKeys(i) = snapshot(i).key()
+      }
+
+      ImmutableArray.fromArray(snapshotKeys)
+//      ImmutableArray.fromArray(snapshot.map(_.key()))
     }
 
-    logger.info(s"[SORT]: DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
+    logger.info(s"[SORT]: Table Size: ${primaryKeys.length} DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
 
     immutableArray
   }

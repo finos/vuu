@@ -4,22 +4,36 @@ import org.finos.toolbox.collection.set.ChunkedUniqueImmutableArraySet
 import scala.reflect.ClassTag
 
 object ImmutableArray{
-  def empty[T](implicit c: ClassTag[T]): ImmutableArray[T] = {
+  def empty[T <: Object](implicit c: ClassTag[T]): ImmutableArray[T] = {
     new ChunkedUniqueImmutableArraySet[T](Set(), Array(), chunkSize = 5000)
   }
-  def from[T](array: Array[T])(implicit c: ClassTag[T]): ImmutableArray[T] = {
+  def from[T <: Object](array: Array[T])(implicit c: ClassTag[T]): ImmutableArray[T] = {
     empty[T].addAll(new NaiveImmutableArray[T](array))
+  }
+
+  def fromArray[T <: Object](array: Array[T])(implicit c: ClassTag[T]): ImmutableArray[T] = {
+    new ChunkedUniqueImmutableArraySet[T](Set(), Array(), chunkSize = chunkSize(array.length)).fromArray(array)
+  }
+
+  private def chunkSize(hint: Int): Int = {
+    if(hint < 100_000){
+        5000
+    }else if(hint < 9000_000){
+        50_000
+    }else{
+        100_000
+    }
   }
 }
 
 object ImmutableArrays{
-  def empty[T :ClassTag](i: Int): Array[ImmutableArray[T]] = {
-    (0 to (i - 1)).map( i=> new NaiveImmutableArray[T](Array[T]())).toArray
+  def empty[T <: Object :ClassTag](i: Int): Array[ImmutableArray[T]] = {
+    (0 to (i - 1)).map( i=> new NaiveImmutableArray(Array[T]())).toArray
   }
 }
 
 trait ImmutableArray[T] extends Iterable[T] {
-  //
+
   def +(element: T) : ImmutableArray[T]
 
   def -(element: T): ImmutableArray[T]
@@ -27,6 +41,7 @@ trait ImmutableArray[T] extends Iterable[T] {
 
   def ++(arr: ImmutableArray[T]) : ImmutableArray[T]
   def addAll(arr: ImmutableArray[T]) : ImmutableArray[T]
+  def fromArray(arr: Array[T]): ImmutableArray[T]
 
   def getIndex(index: Int): T
 

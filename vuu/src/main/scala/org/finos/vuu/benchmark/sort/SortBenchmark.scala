@@ -1,8 +1,8 @@
-package org.finos.vuu.benchmark
+package org.finos.vuu.benchmark.sort
 
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.core.sort.{GenericSort, GenericSort2}
+import org.finos.vuu.core.sort.GenericSort2
 import org.finos.vuu.core.table.{SimpleDataTable, ViewPortColumnCreator}
 import org.finos.vuu.net.{SortDef, SortSpec}
 import org.openjdk.jmh.annotations._
@@ -20,8 +20,8 @@ class SortBenchmark {
   var table: SimpleDataTable = null
 
   @Setup(Level.Invocation)
-  def setup(): Unit = {
-    table = createBigTable(2_000_000)
+  def setup(size: Int): Unit = {
+    table = createBigTable(size)
   }
 
   def doSort(table: SimpleDataTable, sort: GenericSort2): ImmutableArray[String] = {
@@ -56,7 +56,7 @@ class SortBenchmark {
 object SortRun {
   def main(args: Array[String]): Unit = {
     val benchmark = new SortBenchmark()
-    benchmark.setup()
+    benchmark.setup(1_000_000)
     benchmark.sortLargeTable()
   }
 }
