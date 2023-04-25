@@ -2,41 +2,50 @@ import React, {
   createContext,
   HTMLAttributes,
   ReactNode,
-  useContext,
   ReactElement,
+  isValidElement,
+  cloneElement,
+  useContext,
 } from "react";
 import cx from "classnames";
 
-export const DEFAULT_DENSITY = "medium";
+export const DEFAULT_DENSITY:Density = "medium";
 export const DEFAULT_THEME = "salt-theme";
+export const DEFAULT_THEME_MODE:ThemeMode = "light";
 
 export type Density = "high" | "medium" | "low" | "touch";
+export type ThemeMode = "light" | "dark";
+export type TargetElement = "root" | "scope" | "child";
 
 export interface ThemeContextProps {
-  density?: Density;
-  themes?: string[];
-  theme?: string;
+  density: Density;
+  theme: string;
+  themeMode: ThemeMode;
 }
 
 export const ThemeContext = createContext<ThemeContextProps>({
-  density: undefined,
-  themes: ["salt-theme"],
+  density: "high",
   theme: "salt-theme",
+  themeMode: "light",
 });
 
 const createThemedChildren = (
   children: ReactNode,
   theme: string,
-  density: Density
+  themeMode: ThemeMode,
+  density: Density,
 ) => {
-  if (React.isValidElement<HTMLAttributes<HTMLElement>>(children)) {
-    return React.cloneElement(children, {
+  if (isValidElement<HTMLAttributes<HTMLElement>>(children)) {
+    return cloneElement(children, {
       className: cx(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         children.props?.className,
         theme,
-        `salt-density-${density}`
+        `salt-density-${density}`,
       ),
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      "data-mode": themeMode
     });
   } else {
     console.warn(
@@ -51,24 +60,31 @@ interface ThemeProviderProps {
   children: ReactElement;
   density?: Density;
   theme?: string;
-  applyClassesToChild?: true;
+  themeMode?: ThemeMode;
+  applyClassesTo?: TargetElement;
 }
 
 export const ThemeProvider = ({
   children,
-  density: densityProp,
   theme: themeProp,
+  themeMode: themeModeProp,
+  density: densityProp
 }: ThemeProviderProps) => {
-  const { theme: inheritedTheme, density: inheritedDensity } =
-    useContext(ThemeContext);
+  const {
+    density: inheritedDensity,
+    themeMode: inheritedThemeMode,
+    theme: inheritedTheme
+  } = useContext(ThemeContext);
 
   const density = densityProp ?? inheritedDensity ?? DEFAULT_DENSITY;
+  const themeMode = themeModeProp ?? inheritedThemeMode ?? DEFAULT_THEME_MODE;
   const theme = themeProp ?? inheritedTheme ?? DEFAULT_THEME;
-
-  const themedChildren = createThemedChildren(children, theme, density);
+  const themedChildren = createThemedChildren(children, theme, themeMode, density);
 
   return (
-    <ThemeContext.Provider value={{ density, theme }}>
+    <ThemeContext.Provider
+      value={{ themeMode, density, theme }}
+    >
       {themedChildren}
     </ThemeContext.Provider>
   );

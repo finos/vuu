@@ -8,16 +8,14 @@ import { useControlled } from "@salt-ds/core";
 import { HTMLAttributes, useCallback } from "react";
 
 import "./ThemeSwitch.css";
+import { ThemeMode } from "../theme-provider";
 
 const classBase = "vuuThemeSwitch";
-
-export type ThemeMode = "light" | "dark";
-
 export interface ThemeSwitchProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   defaultMode?: ThemeMode;
   mode?: ThemeMode;
-  onChange: (mode: ThemeMode) => void;
+  onThemeModeChange: (mode: ThemeMode) => void;
 }
 
 const modes: ThemeMode[] = ["light", "dark"];
@@ -26,7 +24,7 @@ export const ThemeSwitch = ({
   className: classNameProp,
   defaultMode: defaultModeProp,
   mode: modeProp,
-  onChange,
+  onThemeModeChange,
   ...htmlAttributes
 }: ThemeSwitchProps) => {
   const [mode, setMode] = useControlled<ThemeMode>({
@@ -43,9 +41,9 @@ export const ThemeSwitch = ({
       (_evt, index) => {
         const mode = modes[index];
         setMode(mode);
-        onChange(mode);
+        onThemeModeChange(mode);
       },
-      [onChange, setMode]
+      [onThemeModeChange, setMode]
     );
   const className = cx(classBase, classNameProp);
   return (

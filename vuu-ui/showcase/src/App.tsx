@@ -1,14 +1,13 @@
 import { Flexbox } from "@finos/vuu-layout";
-import { ThemeMode, ThemeSwitch } from "@finos/vuu-shell";
+import { Density, DensitySwitch, ThemeMode, ThemeProvider, ThemeSwitch } from "@finos/vuu-shell";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
-import { Density, SaltProvider, Text } from "@salt-ds/core";
+import { Text } from "@salt-ds/core";
 import Module from "module";
 import { ReactElement, useCallback, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Tree } from "./components";
 
 import "./App.css";
-import { DensitySwitch } from "@finos/vuu-shell/src/density-switch";
 
 type VuuExample = (() => ReactElement) & {
   displaySequence?: number;
@@ -70,20 +69,23 @@ export interface AppProps {
 
 export const App = ({ stories }: AppProps) => {
   console.log({ stories: Object.entries(stories) });
-
   const navigate = useNavigate();
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
   const handleChange = (evt, [selected]) => navigate(selected.id);
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
-  const [density, setDensity] = useState<Density>("medium");
+  const [density, setDensity] = useState<Density>("high");
 
   const launchStandaloneWindow = useCallback(() => {
     window.open(`${location.href}?standalone`, "_blank");
   }, []);
 
   return (
-    <SaltProvider applyClassesTo="scope">
+    <ThemeProvider
+      density="high"
+      themeMode="light"
+      applyClassesTo="child"
+    >
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
@@ -100,34 +102,42 @@ export const App = ({ stories }: AppProps) => {
             revealSelected
             source={source}
           />
-          <Flexbox
-            className="ShowcaseContentContainer"
-            resizeable
-            style={{ flexDirection: "column", flex: "1 1 auto" }}
+          <ThemeProvider
+            applyClassesTo="child"
+            density={density}
+            themeMode={themeMode}
+            theme="salt-theme"
           >
-            <Toolbar className="ShowcaseContentToolbar salt-density-high">
-              <DensitySwitch onDensityChange={setDensity} />
-              <span />
-              <ThemeSwitch onChange={setThemeMode} />
-              <ToolbarButton
-                data-align-end
-                data-icon="open-in"
-                onClick={launchStandaloneWindow}
-              />
-            </Toolbar>
-            <div
-              className={`ShowcaseContent salt-theme salt-density-${density}`}
-              data-mode={themeMode}
-              style={{
-                flex: "1 1 auto",
-                position: "relative",
-              }}
+            <Flexbox
+              className="ShowcaseContentContainer"
+              resizeable
+              style={{ flexDirection: "column", flex: "1 1 auto" }}
             >
-              <Outlet />
-            </div>
-          </Flexbox>
+              <Toolbar
+                className="ShowcaseContentToolbar salt-theme salt-density-high"
+                data-mode="light"
+              >
+                <DensitySwitch onDensityChange={setDensity} />
+                <ThemeSwitch onThemeModeChange={setThemeMode} />
+                <ToolbarButton
+                  data-align-end
+                  data-icon="open-in"
+                  onClick={launchStandaloneWindow}
+                />
+              </Toolbar>
+              <div
+                className={`ShowcaseContent`}
+                style={{
+                  flex: "1 1 auto",
+                  position: "relative",
+                }}
+              >
+                <Outlet />
+              </div>
+            </Flexbox>
+          </ThemeProvider>
         </Flexbox>
       </Flexbox>
-    </SaltProvider>
+    </ThemeProvider>
   );
 };

@@ -5,7 +5,7 @@ import {
   useState,
 } from "react";
 import cx from "classnames";
-import { ThemeMode, ThemeSwitch } from "@finos/vuu-shell";
+import { ThemeMode, ThemeProvider, ThemeSwitch } from "@finos/vuu-shell";
 
 import "./ThemedPanel.css";
 import { useContextMenu } from "@finos/vuu-popups";
@@ -20,7 +20,7 @@ export interface ThemedPanelProps extends HTMLAttributes<HTMLDivElement> {
 export const ThemedPanel = ({ children, className }: ThemedPanelProps) => {
   const showContextMenu = useContextMenu();
 
-  const [mode, setMode] = useState<string | undefined>(undefined);
+  const [mode, setMode] = useState<ThemeMode | undefined>(undefined);
 
   const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
     console.log(`ComponentWithMenu<${location}> handleContextMenu`);
@@ -38,16 +38,18 @@ export const ThemedPanel = ({ children, className }: ThemedPanelProps) => {
   return (
     <div className={cx(classBase, className)}>
       <div className={`${classBase}-toolbar`}>
-        <ThemeSwitch onChange={switchTheme} />
+        <ThemeSwitch onThemeModeChange={switchTheme} />
         <Button onClick={clearTheme}>clear theme</Button>
       </div>
-      <div className={`${classBase}-content salt-theme`} data-mode={mode}>
-        <div
-          className={`${classBase}-content-menu`}
-          onContextMenu={handleContextMenu}
-        />
-        <div className={`${classBase}-content-main`}>{children}</div>
-      </div>
+      <ThemeProvider themeMode={mode}>
+        <div className={`${classBase}-content`}>
+          <div
+            className={`${classBase}-content-menu`}
+            onContextMenu={handleContextMenu}
+          />
+          <div className={`${classBase}-content-main`}>{children}</div>
+        </div>
+      </ThemeProvider>
     </div>
   );
 };
