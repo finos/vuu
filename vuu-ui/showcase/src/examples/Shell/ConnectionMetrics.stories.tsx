@@ -16,7 +16,7 @@ export const ConnectionMetrics = () => {
 			return message
 	}, [])
 
-	dataSource.subscribe({columns: pricesTableColumns}, dataSourceHandler)
+	dataSource.subscribe({columns: pricesTableColumns, range: {from: 0, to: 10}}, dataSourceHandler)
 	if (error) return <ErrorDisplay>{error}</ErrorDisplay>
 
 	return <div>Connection Speed: {messagesPerSecond} msgs/s</div>
