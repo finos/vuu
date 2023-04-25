@@ -137,7 +137,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   status: "closed" | "ready" | "connected" | "reconnected" = "ready";
 
   public url: string;
-  public messages: ServerToClientMessage[] = [];
+  public messagesCount = 0;
 
   constructor(ws: WebSocket, url: string, callback: ConnectionCallback) {
     this.url = url;
@@ -153,7 +153,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     const callback = this[connectionCallback];
     ws.onmessage = (evt) => {
       const vuuMessageFromServer = parseMessage(evt.data);
-      this.messages.push(evt.data);
+      this.messagesCount += 1;
       if (process.env.NODE_ENV === "development") {
         if (debugEnabled && vuuMessageFromServer.body.type !== "HB") {
           debug?.(`<<< ${vuuMessageFromServer.body.type}`);
@@ -163,8 +163,8 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
 
     setInterval(() => {
-      callback({ type: "connection-metrics", messagesLength: this.messages.length });
-      this.messages = [];
+      callback({ type: "connection-metrics", messagesLength: this.messagesCount });
+      this.messagesCount = 0;
     }, 1000)
 
     ws.onerror = () => {
