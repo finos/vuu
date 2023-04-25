@@ -3,7 +3,6 @@ import React, {
   HTMLAttributes,
   ReactNode,
   ReactElement,
-  useState,
   isValidElement,
   cloneElement,
   useContext,
@@ -20,18 +19,14 @@ export type TargetElement = "root" | "scope" | "child";
 
 export interface ThemeContextProps {
   density: Density;
-  setDensity: React.Dispatch<React.SetStateAction<Density>>;
-  theme?: string;
+  theme: string;
   themeMode: ThemeMode;
-  setThemeMode: React.Dispatch<React.SetStateAction<ThemeMode>>;
 }
 
 export const ThemeContext = createContext<ThemeContextProps>({
   density: "high",
   theme: "salt-theme",
   themeMode: "light",
-  setDensity: () => undefined,
-  setThemeMode: () => undefined
 });
 
 const createThemedChildren = (
@@ -71,22 +66,24 @@ interface ThemeProviderProps {
 
 export const ThemeProvider = ({
   children,
-  // theme: themeProp,
+  theme: themeProp,
   themeMode: themeModeProp,
   density: densityProp
 }: ThemeProviderProps) => {
-  const { density: initialDensity, themeMode: initialThemeMode } =
-    useContext(ThemeContext);
-  const [themeMode, setThemeMode] = useState<ThemeMode>(initialThemeMode);
-  const [density, setDensity] = useState<Density>(initialDensity);
+  const {
+    density: inheritedDensity,
+    themeMode: inheritedThemeMode,
+    theme: inheritedTheme
+  } = useContext(ThemeContext);
 
-  const currentDensity = densityProp ?? density ?? DEFAULT_DENSITY;
-  const currentThemeMode = themeModeProp ?? themeMode ?? DEFAULT_THEME_MODE;
-  const themedChildren = createThemedChildren(children, "salt-theme", currentThemeMode, currentDensity);
+  const density = densityProp ?? inheritedDensity ?? DEFAULT_DENSITY;
+  const themeMode = themeModeProp ?? inheritedThemeMode ?? DEFAULT_THEME_MODE;
+  const theme = themeProp ?? inheritedTheme ?? DEFAULT_THEME;
+  const themedChildren = createThemedChildren(children, theme, themeMode, density);
 
   return (
     <ThemeContext.Provider
-      value={{themeMode: initialThemeMode, density: initialDensity, setThemeMode, setDensity }}
+      value={{ themeMode, density, theme }}
     >
       {themedChildren}
     </ThemeContext.Provider>

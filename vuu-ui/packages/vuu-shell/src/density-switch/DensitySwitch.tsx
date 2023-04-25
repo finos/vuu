@@ -1,8 +1,7 @@
 import { Dropdown } from "@heswell/salt-lab";
 import { Density } from "@salt-ds/core";
-import { HTMLAttributes, useCallback, useContext } from "react";
+import { HTMLAttributes, useCallback } from "react";
 import cx from "classnames";
-import { ThemeContext } from "../theme-provider";
 
 const classBase = "vuuDensitySwitch";
 
@@ -13,16 +12,17 @@ export interface DensitySwitchProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   defaultDensity?: Density;
   density?: Density;
+  onDensityChange: (density: Density) => void;
 }
 
 export const DensitySwitch = ({
   className: classNameProp,
   defaultDensity=DEFAULT_DENSITY,
+  onDensityChange,
 }:DensitySwitchProps) => {
-  const { setDensity } = useContext(ThemeContext)
   const handleSelectionChange = useCallback((_event, selectedItem) => {
-    setDensity(selectedItem);
-  }, [setDensity])
+    onDensityChange(selectedItem);
+  }, [onDensityChange])
 
   const className = cx(classBase, classNameProp);
 

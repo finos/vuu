@@ -18,7 +18,7 @@ export const DefaultThemeSwitch = () => {
         width: "fit-content",
       }}
     >
-      <ThemeSwitch mode={mode} onChange={handleChange} />
+      <ThemeSwitch mode={mode} onThemeModeChange={handleChange} />
     </div>
   );
 };
