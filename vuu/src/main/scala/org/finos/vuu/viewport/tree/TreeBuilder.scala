@@ -114,10 +114,10 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
 
 
   override def buildEntireTree(): Tree = {
-    buildInternal(false)
+    buildInternal()
   }
 
-  private def buildInternal(onlyBranches: Boolean): Tree = {
+  private def buildInternal(): Tree = {
     logger.debug("In tree build()")
     logger.debug("Applying Filter()")
 
@@ -133,54 +133,64 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
 
     val paramsHashCode = calculateParamsHash()
 
-    val (rebuildTree, updateCounter) = shouldRebuildTree(paramsHashCode, previousNodeState, latestNodeState)
+    val (_, updateCounter) = shouldRebuildTree(paramsHashCode, previousNodeState, latestNodeState)
 
-    if (!rebuildTree) {
-      previousTree.get
-    } else {
-
-      //root is always open
-      val tree = new TreeImpl(new TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy)), latestNodeState, groupBy, updateCounter, paramsHashCode, buildAction = Some(buildAction))
-
-      var count = 0
-
-      sortedKeys.foreach(key => {
-
-        if (logEvery.shouldLog()) logger.debug(s"Done nodes ${count}")
-
-        val columns = groupBy.columns
-
-        val row = table.sourceTable.pullRow(key, vpColumns)
-
-        row match {
-          case EmptyRowData =>
-            logger.debug(s"Empty row daya for key = $key")
-
-          case rowWithData: RowWithData =>
-
-            val last = columns.foldLeft(tree.root)((parent, column) => {
-              processBranchColumn(tree, parent.asInstanceOf[TreeNodeImpl], column.getData(rowWithData), false, column, rowWithData)
-            } match {
-              case Some(node) => node
-              case None => parent
-            })
-
-            if (!onlyBranches) {
-              processBranchColumn(tree, last.asInstanceOf[TreeNodeImpl], key, true, null, rowWithData)
-            } else {
-              //logger.info("In build count = 0, only building minial tree")
-            }
-            count += 1
-        }
-      })
-      logger.debug("complete building tree")
-
-      tree
+    buildAction match {
+      case FastBuildBranchesOfTree(table, oldTreeOption) =>
+        logger.info("[TREE] Fast Building Branches: " + table.name + "@" + table.sourceTable.name)
+        buildEntireTree(sortedKeys, onlyBranches = true, latestNodeState, updateCounter, paramsHashCode)
+      case BuildEntireTree(table, oldTreeOption) =>
+        logger.info("[TREE] Building Entire Tree: " + table.name + "@" + table.sourceTable.name)
+        buildEntireTree(sortedKeys, onlyBranches = false, latestNodeState, updateCounter, paramsHashCode)
+      case OnlyRecalculateTreeKeys(table, oldTreeOption) =>
+        logger.info("[TREE] Only recalcing keys: " + table.name + "@" + table.sourceTable.name)
+        oldTreeOption.get
     }
   }
 
+  private def buildEntireTree(sortedKeys: ImmutableArray[String], onlyBranches: Boolean, latestNodeState: TreeNodeStateStore, updateCounter: Long, paramsHashCode: Int): Tree = {
+
+    val tree = new TreeImpl(new TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy)), latestNodeState, groupBy, updateCounter, paramsHashCode, buildAction = Some(buildAction))
+
+    var count = 0
+
+    sortedKeys.foreach(key => {
+
+      if (logEvery.shouldLog()) logger.debug(s"Done nodes ${count}")
+
+      val columns = groupBy.columns
+
+      val row = table.sourceTable.pullRow(key, vpColumns)
+
+      row match {
+        case EmptyRowData =>
+          logger.debug(s"Empty row daya for key = $key")
+
+        case rowWithData: RowWithData =>
+
+          val last = columns.foldLeft(tree.root)((parent, column) => {
+            processBranchColumn(tree, parent.asInstanceOf[TreeNodeImpl], column.getData(rowWithData), false, column, rowWithData)
+          } match {
+            case Some(node) => node
+            case None => parent
+          })
+
+          if (!onlyBranches) {
+            processBranchColumn(tree, last.asInstanceOf[TreeNodeImpl], key, true, null, rowWithData)
+          } else {
+            //logger.info("In build count = 0, only building minial tree")
+          }
+          count += 1
+      }
+    })
+    logger.debug("complete building tree")
+
+    tree
+  }
+
+
   override def buildOnlyBranches(): Tree = {
-    buildInternal(true)
+    buildInternal()
   }
 
   private def processBranchColumn(tree: TreeImpl, parent: TreeNodeImpl, data: Any, isLeaf: Boolean, column: Column, row: RowData): Option[TreeNode] = {
