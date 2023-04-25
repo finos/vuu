@@ -2,6 +2,7 @@ import { connect as connectWebsocket } from "./websocket-connection";
 import { ServerProxy } from "./server-proxy/server-proxy";
 import {
   ConnectionStatusMessage,
+  isConnectionQualityMetrics,
   isConnectionStatusMessage,
   VuuUIMessageOut,
 } from "./vuuUIMessageTypes";
@@ -27,7 +28,9 @@ async function connectToServer(
     // never be called until subscriptions have been made, so this is safe.
     //TODO do we need to listen in to the connection messages here so we can lock back in, in the event of a reconnenct ?
     (msg) => {
-      if (isConnectionStatusMessage(msg)) {
+      if (isConnectionQualityMetrics(msg))
+        postMessage({ type: "connection-metrics", messages: msg });
+      else if (isConnectionStatusMessage(msg)) {
         onConnectionStatusChange(msg);
         if (msg.status === "reconnected") {
           server.reconnect();

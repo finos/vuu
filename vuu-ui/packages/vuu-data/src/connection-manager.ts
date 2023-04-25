@@ -14,6 +14,7 @@ import {
 import * as Message from "./server-proxy/messages";
 import {
   ConnectionStatusMessage,
+  isConnectionQualityMetrics,
   isConnectionStatusMessage,
   messageHasResult,
   ServerProxySubscribeMessage,
@@ -27,6 +28,7 @@ import {
 // Note: inlined-worker is a generated file, it must be built
 import { workerSourceCode } from "./inlined-worker";
 import { VuuTableMetaWithTable } from "./hooks";
+import { ConnectionQualityMetrics } from "./vuuUIMessageTypes";
 
 const workerBlob = new Blob([getLoggingConfig() + workerSourceCode], {
   type: "text/javascript",
@@ -120,9 +122,11 @@ const getWorker = async (
 function handleMessageFromWorker({
   data: message,
 }: MessageEvent<VuuUIMessageIn | DataSourceCallbackMessage>) {
-  if (isConnectionStatusMessage(message)) {
+  if (isConnectionQualityMetrics(message))
+    ConnectionManager.emit("connection-metrics", message);
+  else if (isConnectionStatusMessage(message))
     ConnectionManager.emit("connection-status", message);
-  } else if (messageShouldBeRoutedToDataSource(message)) {
+  else if (messageShouldBeRoutedToDataSource(message)) {
     const viewport = viewports.get(message.clientViewportId);
     if (viewport) {
       viewport.postMessageToClientDataSource(message);
@@ -231,6 +235,7 @@ const connectedServerAPI: ServerAPI = {
 
 export type ConnectionEvents = {
   "connection-status": (message: ConnectionStatusMessage) => void;
+  "connection-metrics": (message: ConnectionQualityMetrics) => void;
 };
 
 class _ConnectionManager extends EventEmitter<ConnectionEvents> {
