@@ -1,0 +1,28 @@
+
+.vuuThemedPanel {
+    display: flex;
+    flex-direction: column;
+    height: 100%
+}
+
+.vuuThemedPanel-toolbar {
+    align-items: center;
+    background-color: antiquewhite;
+    display: flex;
+    flex: 32px 0 0;
+
+}
+
+.vuuThemedPanel-content {
+    display: flex;
+    flex: auto 1 1;
+}
+.vuuThemedPanel-content-menu {
+    background-color: var(--salt-container-secondary-background);
+    flex: auto 1 1;
+}
+.vuuThemedPanel-content-main {
+    background-color: var(--salt-container-primary-background);
+    flex: auto 1 1;
+}
+
