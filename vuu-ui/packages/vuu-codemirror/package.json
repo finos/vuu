@@ -10,18 +10,14 @@
     "lezer-generate:column": "lezer-generator --output ./src/column-expression-input/column-language-parser/generated/column-parser.js ./src/column-expression-input/column-language-parser/grammar/column.grammar"
   },
   "dependencies": {
-    "@codemirror/autocomplete": "6.4.2",
-    "@codemirror/commands": "6.2.1",
-    "@codemirror/language": "6.6.0",
-    "@codemirror/state": "6.2.0",
-    "@codemirror/view": "6.9.3",
+    "@codemirror/autocomplete": "^6.4.2",
+    "@codemirror/commands": "^6.2.1",
+    "@codemirror/language": "^6.6.0",
+    "@codemirror/state": "^6.2.0",
+    "@codemirror/view": "^6.9.3",
     "@lezer/common": "^1.0.2",
-    "@lezer/highlight": "1.1.3",
-    "@lezer/lr": "1.3.3"
-  },
-  "resolutions": {
-    "@codemirror/language": "6.6.0",
-    "@codemirror/state": "6.2.0"
+    "@lezer/highlight": "^1.1.3",
+    "@lezer/lr": "^1.3.3"
   },
   "type": "module"
 }
