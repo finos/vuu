@@ -12,8 +12,8 @@ jobs:
         with:
           node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
-      - run: cd ./vuu-ui && yarn
-      - run: cd ./vuu-ui && yarn build
-      - run: cd ./vuu-ui && yarn pub
+      - run: cd ./vuu-ui && npm install
+      - run: cd ./vuu-ui && npm run build
+      - run: cd ./vuu-ui && npm run pub
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
