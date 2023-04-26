@@ -42,13 +42,12 @@ The UI scripts all run from the vuu/vuu-ui directory.
 ```sh
 #from top-level vuu repo (not vuu child directory in repo)
 cd vuu-ui
-yarn
-yarn build
-yarn build:app
-cd packages/electron
-#this should open an electron window pointing at https://localhost:8443/index.html
-yarn start
+npm install
+npm run build
+npm run build:app
 ```
+
+You can now open the demo app in your browser at https://127.0.0.1:8443/index.html
 
 ## Configuring IntelliJ
 
@@ -59,15 +58,19 @@ You may prefer to run the backend using the IntelliJ IDE, if so, you will need t
 3. Set project SDK version to 11: file -> project structure -> select an SDK -> require version 11
 4. Enable 'Use plugin registry': file -> settings -> build, execution, deployment -> Maven
 5. Open Maven tab on the right and click install on vuu-parent -> lifecycle -> install
-6. In the terminal, navigate to 
+6. In the terminal, navigate to
+
 ```sh
 vuu-ui/sample-apps/app-vuu-example
 ```
-7. Run 
+
+7. Run
+
 ```sh
-yarn
-yarn build
+npm install
+npm run build
 ```
+
 8. In IntelliJ, select 'SimulMain' config and click run
 9. If you get a 'certificate-unknown' error, set 'Allow invalid certificates for resources loaded from localhost' to 'Enabled' in your chrome settings
 

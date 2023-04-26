@@ -13,17 +13,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16"
-      # Enable node module caching only when yarn.lock is available
-      - name: Cache node modules
+      - name: Cache dependencies
         uses: actions/cache@v2
         with:
-          path: node_modules
-          key: yarn-deps-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            yarn-deps-${{ hashFiles('yarn.lock') }}
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-
       - name: Install dependencies
-        run: cd ./vuu-ui && yarn
-      - run: cd ./vuu-ui && yarn test:vite
+        run: cd ./vuu-ui && npm install
+      - run: cd ./vuu-ui && npm run test:vite
 
   # ensure the vuu example and showcase still build
   vuu-and-showcase-build:
@@ -36,8 +34,8 @@ jobs:
         with:
           node-version: "16"
       - name: Install dependencies
-        run: cd ./vuu-ui && yarn
+        run: cd ./vuu-ui && npm install
       - name: Build showcase
-        run: cd ./vuu-ui && yarn showcase:build
+        run: cd ./vuu-ui && npm run showcase:build
       - name: Build Vuu app
-        run: cd ./vuu-ui && yarn build:app
+        run: cd ./vuu-ui && npm run build:app
