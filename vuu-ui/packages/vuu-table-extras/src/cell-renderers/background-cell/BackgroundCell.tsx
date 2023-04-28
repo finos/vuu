@@ -1,7 +1,12 @@
-import { ColumnType, TableCellProps } from "@finos/vuu-datagrid-types";
+import {
+  ColumnType,
+  ColumnTypeRenderer,
+  TableCellProps,
+} from "@finos/vuu-datagrid-types";
 import {
   DOWN1,
   DOWN2,
+  isTypeDescriptor,
   metadataKeys,
   registerComponent,
   UP1,
@@ -28,12 +33,12 @@ const FlashStyle = {
 };
 
 const getFlashStyle = (colType?: ColumnType) => {
-  if (typeof colType === "string") {
-    return FlashStyle.BackgroundOnly;
-  } else if (colType) {
-    const { renderer } = colType;
-    return (renderer && "flashStyle" in renderer) || FlashStyle.BackgroundOnly;
+  if (isTypeDescriptor(colType) && colType.renderer) {
+    if ("flashStyle" in colType.renderer) {
+      return colType.renderer["flashStyle"];
+    }
   }
+  return FlashStyle.BackgroundOnly;
 };
 
 const BackgroundCell = ({ column, row }: TableCellProps) => {
