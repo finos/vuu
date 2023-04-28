@@ -16,7 +16,7 @@ export const ConfigurableDataTable = ({
     useState<Omit<GridConfig, "headings">>(config);
 
   const handleSettingsConfigChange = useCallback(
-    (config: GridConfig, closePanel = false) => {
+    (config: Omit<GridConfig, "headings">, closePanel = false) => {
       console.log(`Table.examples config changed`, {
         config,
       });
