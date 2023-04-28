@@ -1,5 +1,11 @@
 import { Flexbox } from "@finos/vuu-layout";
-import { Density, DensitySwitch, ThemeMode, ThemeProvider, ThemeSwitch } from "@finos/vuu-shell";
+import {
+  Density,
+  DensitySwitch,
+  ThemeMode,
+  ThemeProvider,
+  ThemeSwitch,
+} from "@finos/vuu-shell";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { Text } from "@salt-ds/core";
 import Module from "module";
@@ -72,7 +78,7 @@ export const App = ({ stories }: AppProps) => {
   const navigate = useNavigate();
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
-  const handleChange = (evt, [selected]) => navigate(selected.id);
+  const handleChange = (_evt: unknown, [selected]) => navigate(selected.id);
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
   const [density, setDensity] = useState<Density>("high");
 
@@ -81,11 +87,7 @@ export const App = ({ stories }: AppProps) => {
   }, []);
 
   return (
-    <ThemeProvider
-      density="high"
-      themeMode="light"
-      applyClassesTo="child"
-    >
+    <ThemeProvider density="high" themeMode="light" applyClassesTo="child">
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
@@ -118,7 +120,7 @@ export const App = ({ stories }: AppProps) => {
                 data-mode="light"
               >
                 <DensitySwitch onDensityChange={setDensity} />
-                <ThemeSwitch onThemeModeChange={setThemeMode} />
+                <ThemeSwitch onChange={setThemeMode} />
                 <ToolbarButton
                   data-align-end
                   data-icon="open-in"
