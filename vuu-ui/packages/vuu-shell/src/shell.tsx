@@ -1,4 +1,5 @@
 import { connectToServer } from "@finos/vuu-data";
+import cx from "classnames";
 import {
   HTMLAttributes,
   MouseEvent,
@@ -9,10 +10,8 @@ import {
   useRef,
   useState,
 } from "react";
-import useLayoutConfig from "./use-layout-config";
 import { ShellContextProvider } from "./ShellContextProvider";
-import cx from "classnames";
-
+import useLayoutConfig from "./use-layout-config";
 import {
   Chest,
   DraggableLayout,
@@ -21,13 +20,11 @@ import {
   LayoutProvider,
   View,
 } from "@finos/vuu-layout";
-
-import { AppHeader } from "./app-header";
-
 import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
+import { AppHeader } from "./app-header";
+import { ThemeMode } from "./theme-provider";
+
 import "./shell.css";
-import { ThemeMode } from "./theme-switch";
-import { Density } from "@salt-ds/core";
 
 export type VuuUser = {
   username: string;
@@ -70,7 +67,6 @@ export const Shell = ({
   ...htmlAttributes
 }: ShellProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [density, setDensity] = useState<Density>("medium");
   const paletteView = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const layoutId = useRef("latest");
@@ -92,10 +88,6 @@ export const Shell = ({
       rootRef.current.dataset.mode = mode;
     }
   }, []);
-
-  const handleDensitySwitch = useCallback((density: Density) => {
-    setDensity(density);
-  }, [setDensity])
 
   const handleDrawerClick = (e: MouseEvent<HTMLElement>) => {
     const target = e.target as HTMLElement;
@@ -152,7 +144,7 @@ export const Shell = ({
     "vuuShell",
     classNameProp,
     "salt-theme",
-    `salt-density-${density}`
+    "salt-density-high"
   );
 
   return (
@@ -175,7 +167,6 @@ export const Shell = ({
               user={user}
               onNavigate={handleNavigate}
               onSwitchTheme={handleSwitchTheme}
-              onDensitySwitch={handleDensitySwitch}
             />
             <Chest style={{ flex: 1 }}>
               {getDrawers().concat(

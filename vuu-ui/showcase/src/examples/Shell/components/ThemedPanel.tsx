@@ -38,7 +38,7 @@ export const ThemedPanel = ({ children, className }: ThemedPanelProps) => {
   return (
     <div className={cx(classBase, className)}>
       <div className={`${classBase}-toolbar`}>
-        <ThemeSwitch onThemeModeChange={switchTheme} />
+        <ThemeSwitch onChange={switchTheme} />
         <Button onClick={clearTheme}>clear theme</Button>
       </div>
       <ThemeProvider themeMode={mode}>
