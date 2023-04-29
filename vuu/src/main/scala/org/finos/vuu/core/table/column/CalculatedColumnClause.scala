@@ -245,6 +245,7 @@ case class DivideClause(clauses: List[CalculatedColumnClause]) extends Calculate
 
   def calculate(data: RowData): Any = {
     this.dataType match {
+      case ClauseDataType.NULL => Double.NaN
       case ClauseDataType.LONG => Calculations.mathLong(clauses, data, (a, b) => a / b, 0L)
       case ClauseDataType.INTEGER => Calculations.mathInt(clauses, data, (a, b) => a / b, 0)
       case ClauseDataType.DOUBLE => Calculations.mathDouble(clauses, data, (a, b) => a / b, 0)
