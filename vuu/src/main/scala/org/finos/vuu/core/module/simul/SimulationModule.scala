@@ -13,6 +13,7 @@ import org.finos.vuu.provider.{Provider, ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport._
 import org.finos.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.auths.OrderPermissionChecker
 import org.finos.vuu.core.module.simul.service.ParentOrdersService
 
 class PricesService(val table: DataTable, val provider: Provider) extends RpcHandler with StrictLogging {
@@ -220,6 +221,27 @@ object SimulationModule extends DefaultModule {
           columns = table.getTableDef.columns,
           service = new ParentOrdersService(table, provider)
         )
+      )
+      .addTable(
+        TableDef(
+          name = "permissionedOrders",
+          keyField = "id",
+          Columns.fromNames("id".string(), "idAsInt".int(), "ric".string(), "childCount".int(), "price".double(),
+            "quantity".int(), "side".string(), "account".string(), "exchange".string(),
+            "ccy".string(), "algo".string(), "volLimit".double(), "filledQty".int(), "openQty".int(),
+            "averagePrice".double(), "status".string(), "lastUpdate".long(), "owner".string(), "mask".int()),
+          VisualLinks(),
+          indices = Indices(
+            Index("ric")
+          ),
+          joinFields = "id", "ric", "owner"
+        )
+          .withPermissions(new OrderPermissionChecker()),
+        (table, vs) => new PermissionedOrdersProvider(table, ordersModel)
+//        (table, provider, providerContainer) => ViewPortDef(
+//          columns = table.getTableDef.columns,
+//          service = new ParentOrdersService(table, provider)
+//        )
       )
       .addTable(
         TableDef(
