@@ -1,11 +1,13 @@
-
 import {
-  Chest, Component,
-  DraggableLayout, Drawer,
-  FlexboxLayout as Flexbox, Palette,
+  DockLayout,
+  Component,
+  DraggableLayout,
+  Drawer,
+  FlexboxLayout as Flexbox,
+  Palette,
   PaletteItem,
   StackLayout as Stack,
-  View
+  View,
 } from "@finos/vuu-layout";
 import * as layout from "../layouts";
 
@@ -17,10 +19,10 @@ export const DrawerStackLayoutBuilder = () => {
       <Flexbox
         className="LayoutBuilder"
         style={{ flexDirection: "column", width: "100%", height: "100%" }}
-        path=''
+        path=""
       >
         <div style={{ height: 60, borderBottom: "solid 1px #ccc" }} />
-        <Chest style={{ flex: 1 }}>
+        <DockLayout style={{ flex: 1 }}>
           <Drawer
             clickToOpen
             peekaboo
@@ -31,49 +33,21 @@ export const DrawerStackLayoutBuilder = () => {
             defaultOpen={false}
           >
             <View header title="View Tables">
-              <Palette
-                orientation="vertical"
-                style={{ width: 150, flex: 1 }}
-              >
+              <Palette orientation="vertical" style={{ width: 150, flex: 1 }}>
                 <div data-header>Layouts</div>
-                <PaletteItem
-                  title="Holy Grail"
-                  closeable
-                  resizeable
-                  header
-                >
+                <PaletteItem title="Holy Grail" closeable resizeable header>
                   {layout.holyGrail}
                 </PaletteItem>
-                <PaletteItem
-                  title="2 Rows"
-                  closeable
-                  resizeable
-                  header
-                >
+                <PaletteItem title="2 Rows" closeable resizeable header>
                   {layout.twoRows}
                 </PaletteItem>
-                <PaletteItem
-                  title="3 Rows"
-                  closeable
-                  resizeable
-                  header
-                >
+                <PaletteItem title="3 Rows" closeable resizeable header>
                   {layout.threeRows}
                 </PaletteItem>
-                <PaletteItem
-                  title="4 Rows"
-                  closeable
-                  resizeable
-                  header
-                >
+                <PaletteItem title="4 Rows" closeable resizeable header>
                   {layout.fourRows}
                 </PaletteItem>
-                <PaletteItem
-                  title="2 Columns"
-                  closeable
-                  resizeable
-                  header
-                >
+                <PaletteItem title="2 Columns" closeable resizeable header>
                   {layout.twoColumns}
                 </PaletteItem>
                 <div data-header>Tables</div>
@@ -121,7 +95,7 @@ export const DrawerStackLayoutBuilder = () => {
               <View title="Page 1" style={{ flex: 1 }} resizeable />
             </Stack>
           </DraggableLayout>
-        </Chest>
+        </DockLayout>
       </Flexbox>
     </DraggableLayout>
   );

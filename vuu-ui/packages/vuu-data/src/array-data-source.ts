@@ -15,6 +15,7 @@ import {
   isSelected,
   KeySet,
   metadataKeys,
+  rangeNewItems,
   uuid,
 } from "@finos/vuu-utils";
 import {
@@ -80,6 +81,7 @@ export class ArrayDataSource
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
   private tableMeta: VuuTableMeta;
+  private lastRangeServed: VuuRange = { from: 0, to: 0 };
 
   #aggregations: VuuAggregation[] = [];
   #columns: string[] = [];
@@ -99,7 +101,6 @@ export class ArrayDataSource
   constructor({
     aggregations,
     columnDescriptors,
-    columns,
     data,
     filter,
     groupBy,
@@ -110,19 +111,19 @@ export class ArrayDataSource
     super();
 
     if (!data || !columnDescriptors) {
-      throw Error("ArrayDataSource constructor called without data");
+      throw Error(
+        "ArrayDataSource constructor called without data or without columnDescriptors"
+      );
     }
 
     this.columnDescriptors = columnDescriptors;
+    this.#columns = columnDescriptors.map((column) => column.name);
     this.tableMeta = buildTableMeta(columnDescriptors);
 
     this.#data = data.map<DataSourceRow>(toDataSourceRow);
     this.viewport = viewport || uuid();
     if (aggregations) {
       this.#aggregations = aggregations;
-    }
-    if (columns) {
-      this.#columns = columns;
     }
     if (filter) {
       this.#filter = filter;
@@ -149,8 +150,6 @@ export class ArrayDataSource
     callback: SubscribeCallback
   ) {
     this.clientCallback = callback;
-
-    console.log(`subscribe range ${range?.from} ${range?.to}`);
 
     if (aggregations) {
       this.#aggregations = aggregations;
@@ -275,14 +274,16 @@ export class ArrayDataSource
     this.#range = range;
     this.keys.reset(range);
     requestAnimationFrame(() => {
+      const rangeDelta = rangeNewItems(this.lastRangeServed, this.#range);
       this.clientCallback?.({
         clientViewportId: this.viewport,
         rows: this.#data
-          .slice(range.from, range.to)
+          .slice(rangeDelta.from, rangeDelta.to)
           .map((row) => toClientRow(row, this.keys)),
         size: this.#data.length,
         type: "viewport-update",
       });
+      this.lastRangeServed = this.#range;
     });
   }
 
