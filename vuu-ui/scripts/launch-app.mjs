@@ -6,15 +6,15 @@ const websocketUrl = getCommandLineArg("--url", true);
 if (!websocketUrl) {
   console.log(`No url supplied for websocket, default will be wss://127.0.0.1:8090/websocket
 
-> yarn launch:app --url=wss://vuu.server.domain:8090/websocket
+> npm run launch:app --url=wss://vuu.server.domain:8090/websocket
 
 `);
 }
 
 const url = websocketUrl ? ` --url ${websocketUrl}` : "";
 
-await execWait("yarn --silent build");
-await execWait(`yarn --silent build:app${url}`);
+await execWait("npm run --silent build");
+await execWait(`npm run --silent build:app${url}`);
 
 execWait(`npx serve -p 3010 ./deployed_apps/app-vuu-example`);
 
