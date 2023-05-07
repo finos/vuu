@@ -28,7 +28,6 @@ const getComponent = (module: Module, paths: string[]) => {
   while (paths.length > 0) {
     const key = paths.shift() as string;
     if (key in importedEntity) {
-      // nosemgrep
       const entity = importedEntity[key];
       if (isModule(entity)) {
         importedEntity = importedEntity[key] as Module;
