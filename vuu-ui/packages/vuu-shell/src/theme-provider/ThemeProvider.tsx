@@ -9,9 +9,9 @@ import React, {
 } from "react";
 import cx from "classnames";
 
-export const DEFAULT_DENSITY:Density = "medium";
+export const DEFAULT_DENSITY: Density = "medium";
 export const DEFAULT_THEME = "salt-theme";
-export const DEFAULT_THEME_MODE:ThemeMode = "light";
+export const DEFAULT_THEME_MODE: ThemeMode = "light";
 
 export type Density = "high" | "medium" | "low" | "touch";
 export type ThemeMode = "light" | "dark";
@@ -33,7 +33,7 @@ const createThemedChildren = (
   children: ReactNode,
   theme: string,
   themeMode: ThemeMode,
-  density: Density,
+  density: Density
 ) => {
   if (isValidElement<HTMLAttributes<HTMLElement>>(children)) {
     return cloneElement(children, {
@@ -41,11 +41,11 @@ const createThemedChildren = (
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         children.props?.className,
         theme,
-        `salt-density-${density}`,
+        `salt-density-${density}`
       ),
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      "data-mode": themeMode
+      "data-mode": themeMode,
     });
   } else {
     console.warn(
@@ -68,24 +68,29 @@ export const ThemeProvider = ({
   children,
   theme: themeProp,
   themeMode: themeModeProp,
-  density: densityProp
+  density: densityProp,
 }: ThemeProviderProps) => {
   const {
     density: inheritedDensity,
     themeMode: inheritedThemeMode,
-    theme: inheritedTheme
+    theme: inheritedTheme,
   } = useContext(ThemeContext);
 
   const density = densityProp ?? inheritedDensity ?? DEFAULT_DENSITY;
   const themeMode = themeModeProp ?? inheritedThemeMode ?? DEFAULT_THEME_MODE;
   const theme = themeProp ?? inheritedTheme ?? DEFAULT_THEME;
-  const themedChildren = createThemedChildren(children, theme, themeMode, density);
+  const themedChildren = createThemedChildren(
+    children,
+    theme,
+    themeMode,
+    density
+  );
 
   return (
-    <ThemeContext.Provider
-      value={{ themeMode, density, theme }}
-    >
+    <ThemeContext.Provider value={{ themeMode, density, theme }}>
       {themedChildren}
     </ThemeContext.Provider>
   );
 };
+
+ThemeProvider.displayName = "ThemeProvider";

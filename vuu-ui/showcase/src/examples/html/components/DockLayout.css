@@ -1,0 +1,38 @@
+.DockLayout {
+    display: grid;
+    grid-template-areas: 
+    "head head head" 
+    "left content right"  
+    "foot foot foot";
+    overflow: hidden;
+    transition: 300ms;
+}
+
+[data-dock="content"]{
+    grid-area: content;    
+}
+[data-dock="top"]{
+    grid-area: head;    
+}
+[data-dock="bottom"]{
+    grid-area: foot;    
+}
+[data-dock="right"]{
+    grid-area: right;    
+}
+[data-dock="left"]{
+    grid-area: left;    
+}
+
+.DockLayout-contentPanel {
+    overflow: hidden;
+}
+
+.DockLayout-contentPanel-inner {
+    display: grid;
+    grid-template-areas: "content";
+    grid-template-columns: auto;
+    grid-template-rows: auto;
+    height: 100%;
+    width: 100%;
+}

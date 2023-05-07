@@ -3,7 +3,7 @@
     "Grid": "./src/examples/DataGrid/Grid.stories.jsx"
   },
   "Layout": {
-    "Chest": "./src/examples/Layout/Chest.stories.jsx",
+    "DockLayout": "./src/examples/Layout/DockLayout.stories.jsx",
     "Dialog": "./src/examples/Layout/Dialog.stories.jsx",
     "DraggableLayout": "./src/examples/Layout/DraggableLayout.stories.jsx",
     "DropMenu": "./src/examples/Layout/DropMenu.stories.jsx",

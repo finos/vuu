@@ -56,6 +56,29 @@ export function resetRange({ from, to, bufferSize = 0 }: VuuRange): VuuRange {
 export const withinRange = (value: number, { from, to }: VuuRange) =>
   value >= from && value < to;
 
+// export const rangeOverlap = (
+//   { from: from1, to: to1 }: VuuRange,
+//   { from: from2, to: to2 }: VuuRange
+// ): VuuRange => {
+//   return from2 >= to1 || to2 < from1
+//     ? { from: 0, to: 0 }
+//     : { from: Math.max(from2, from1), to: Math.min(to2, to1) };
+// };
+
+export const rangeNewItems = (
+  { from: from1, to: to1 }: VuuRange,
+  newRange: VuuRange
+): VuuRange => {
+  const { from: from2, to: to2 } = newRange;
+  const noOverlap = from2 >= to1 || to2 <= from1;
+  const newFullySubsumesOld = from2 < from1 && to2 > to1;
+  return noOverlap || newFullySubsumesOld
+    ? newRange
+    : to2 > to1
+    ? { from: to1, to: to2 }
+    : { from: from2, to: from1 };
+};
+
 export class WindowRange {
   public from: number;
   public to: number;
