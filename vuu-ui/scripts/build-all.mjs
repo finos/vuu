@@ -2,7 +2,7 @@ import { execWait, withArgs } from "./utils.mjs";
 
 const buildPackage = async (packageName) =>
   execWait(
-    `yarn --silent build${withArgs("dev", "cjs", "debug")}`,
+    `npm run --silent build${withArgs("dev", "cjs", "debug")}`,
     `packages/${packageName}`
   );
 

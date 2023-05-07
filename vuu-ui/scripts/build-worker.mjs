@@ -17,9 +17,10 @@ export const buildWorker = async (packageName, filePath) => {
   const watch = getCommandLineArg("--watch");
   const debug = getCommandLineArg("--debug");
   const development = watch || debug || getCommandLineArg("--dev");
+
   const env = development ? "development" : "production";
   const config = getConfig(packageName, env, filePath);
-  const { result, duration } = await build(config);
+  const { result } = await build(config);
   const [outputSource] = result.outputFiles;
   const escapedSource = outputSource.text.replaceAll(
     /[`$]/g,
