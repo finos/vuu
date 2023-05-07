@@ -94,6 +94,7 @@ export class RemoteDataSource
 
     this.#title = title;
     this.rangeRequest = this.throttleRangeRequest;
+    // this.rangeRequest = this.rawRangeRequest;
   }
 
   async subscribe(
@@ -185,7 +186,13 @@ export class RemoteDataSource
         this.setConfigPending();
       }
       if (isSizeOnly(message)) {
-        this.throttleSizeCallback(message);
+        if (message.size > 100) {
+          // this prevents excessive rebuilding of the table because of size changes,
+          // when a table is still in initial loading stage
+          this.throttleSizeCallback(message);
+        } else {
+          this.clientCallback?.(message);
+        }
       } else {
         this.clientCallback?.(message);
         if (this.optimize === "debounce") {
@@ -306,7 +313,7 @@ export class RemoteDataSource
 
   private revertDebounce = debounce(() => {
     this.optimize = "throttle";
-  }, 500);
+  }, 100);
 
   get selectedRowsCount() {
     return this.#selectedRowsCount;
@@ -357,7 +364,7 @@ export class RemoteDataSource
         range,
       });
     }
-  }, 100);
+  }, 80);
 
   get config() {
     return this.#config;
