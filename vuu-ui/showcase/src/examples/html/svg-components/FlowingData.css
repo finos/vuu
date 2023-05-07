@@ -1,0 +1,7 @@
+.arrow-path-1 {
+    stroke-linecap: round;
+    stroke: rgba(255, 255, 255, 0.65);
+    stroke-dasharray: 0px 15px;
+    stroke-dashoffset: 3;
+    stroke-width: 8px;
+  }
