@@ -16,6 +16,7 @@ import {
   DataSourceEnabledMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
+  isSizeOnly,
 } from "../data-source";
 import {
   isVuuMenuRpcRequest,
@@ -343,7 +344,6 @@ export class ServerProxy {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
-  //TODO when do we ever check the disabled state ?
   private disableViewport(viewport: Viewport) {
     const requestId = nextRequestId();
     const request = viewport.disable(requestId);
@@ -351,9 +351,11 @@ export class ServerProxy {
   }
 
   private enableViewport(viewport: Viewport) {
-    const requestId = nextRequestId();
-    const request = viewport.enable(requestId);
-    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+    if (viewport.disabled) {
+      const requestId = nextRequestId();
+      const request = viewport.enable(requestId);
+      this.sendIfReady(request, requestId, viewport.status === "subscribed");
+    }
   }
 
   private resumeViewport(viewport: Viewport) {
@@ -710,22 +712,27 @@ export class ServerProxy {
               const rows = viewport.currentData();
               debugEnabled &&
                 debug(
-                  `Enable Response (ServerProxy to Client):
-                  ${JSON.stringify(response)}`
-                );
-              this.postMessageToClient({
-                clientViewportId: viewport.clientViewportId,
-                mode: "batch",
-                rows,
-                size: viewport.size,
-                type: "viewport-update",
-              });
-              debugEnabled &&
-                debug(
-                  `Enable Response (ServerProxy to Client): ${JSON.stringify(
+                  `Enable Response (ServerProxy to Client):  ${JSON.stringify(
                     response
                   )}`
                 );
+
+              if (viewport.size === 0) {
+                debugEnabled &&
+                  debug(`Viewport Enabled but size 0, resend  to server`);
+              } else {
+                this.postMessageToClient({
+                  clientViewportId: viewport.clientViewportId,
+                  mode: "batch",
+                  rows,
+                  size: viewport.size,
+                  type: "viewport-update",
+                });
+                debugEnabled &&
+                  debug(
+                    `Enable Response (ServerProxy to Client): send size ${viewport.size} ${rows.length} rows from cache`
+                  );
+              }
             }
           }
         }
@@ -744,9 +751,15 @@ export class ServerProxy {
                 debug("handleMessageFromServer TABLE_ROW 0 rows");
               } else if (firstRow?.rowIndex === -1) {
                 if (body.rows.length === 1) {
-                  debug(
-                    `handleMessageFromServer TABLE_ROW SIZE ${firstRow.vpSize}`
-                  );
+                  if (firstRow.updateType === "SIZE") {
+                    debug(
+                      `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`
+                    );
+                  } else {
+                    debug(
+                      `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ${firstRow.vpSize} rowIdx ${firstRow.rowIndex}`
+                    );
+                  }
                 } else {
                   debug(
                     `handleMessageFromServer TABLE_ROW ${

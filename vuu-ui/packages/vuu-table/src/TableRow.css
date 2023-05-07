@@ -1,13 +1,17 @@
   .vuuTableRow {
-    background: transparent;
-    /* background: var(--row-background); */
+    --row-background: var(--table-background);
+    position: absolute;
+    top:0;
   }
 
   .vuuTableRow-even {
     --row-background: var(--row-background-even);
   }
 
-  .vuuTableRow :is(.vuuPinFloating, .vuuPinLeft, .vuuPinRight) {
+  /* .vuuTableRow :is(.vuuPinFloating, .vuuPinLeft, .vuuPinRight) {
+    background-color: var(--row-background);
+  } */
+  .vuuTableRow {
     background-color: var(--row-background);
   }
   

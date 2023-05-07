@@ -15,31 +15,28 @@
   border-style: solid solid solid none;
   border-width: 1px;
   color: var(--salt-text-secondary-foreground);
+  display: inline-block;
   height: var(--vuuTableHeaderHeight);
   padding: 0 !important;
-  position: sticky;
-  top: var(--heading-top, 0);
-  z-index: 1;
 }
 
 .vuuTable-heading:has(+ .vuuTable-heading) > .vuuTable-headingCell {
   border-bottom-color: transparent;
 }
 
-.vuuTable-headerCell {
+[role="columnHeader"] {
+  --vuuTableCell-border-bottomColor: var(--salt-separable-tertiary-borderColor);
   --cell-align: 'flex-start';
+  display: inline-block;
   text-align: left;
     background: var(--dataTable-background);
-    /* border-right: var(--header-border-rightWidth, 1px) solid var(--header-border-rightColor, var(--salt-separable-tertiary-borderColor)); */
-    border-bottom: 2px solid var(--salt-separable-tertiary-borderColor);
+    border-right: 1px solid var(--vuuTableCell-border-rightColor);
+    border-bottom: 1px solid var(--vuuTableCell-border-bottomColor);
     color: var(--salt-text-secondary-foreground);
     cursor: default;
-    padding: 0 !important;
-    position: sticky;
-    top: calc(var(--total-header-height) - var(--header-height));
     height: var(--vuuTableHeaderHeight);
-    /* ensure header row sits atop everything else when scrolling down */
-    z-index: 1;
+    padding: 0 !important;
+    vertical-align: top;
   }
 
   .vuuTable-headerCell-right {
@@ -70,7 +67,7 @@
     --columnResizer-width: 2px;
   }
 
-  .vuuTable-headerCell.vuuPinLeft.vuuEndPin:after {
+  [role='headerCell'].vuuPinLeft.vuuEndPin:after {
     box-shadow: 2px 0px 5px rgba(0,0,0,0.4);
     content: "";
     position: absolute;
@@ -81,7 +78,7 @@
     right: 0px;
   }
 
-  .vuuTable-headerCell.vuuPinRight.vuuEndPin:after {
+  [role='headerCell'].vuuPinRight.vuuEndPin:after {
     box-shadow: -2px 0px 5px rgba(0,0,0,0.3);
     content: "";
     position: absolute;
@@ -90,4 +87,14 @@
     height: var(--table-height);
     top:0;
     left: 0px;
+  }
+
+  [role='headerCell']:is(.vuuPinLeft, .vuuPinRight, .vuuPinFloating) {
+    top:0;
+    z-index: 20;
+  }
+  
+  .saltDraggable-vuuTable-headerCell {
+    --dataTable-background: ivory;
+    --vuuTableHeaderHeight: 25px;
   }

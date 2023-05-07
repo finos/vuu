@@ -72,9 +72,12 @@ export function useDataSource({
       // Why bother with the slice ?
       // data.current = dataWindow.data.slice().sort(byKey);
       data.current = dataWindow.data;
-      //     onsole.log(`%c[useDataSource] data.current has ${data.current.length} records
-      // [${data.current.map(d => d[0]).join(',')}]
-      //     `, 'color:blue;')
+      // console.log(
+      //   `%c[useDataSource] data.current has ${data.current.length} records
+      // [${data.current.map((d) => d[0]).join(",")}]
+      //     `,
+      //   "color:blue;"
+      // );
       hasUpdated.current = true;
     },
     [dataWindow]

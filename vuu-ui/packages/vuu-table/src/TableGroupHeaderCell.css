@@ -5,24 +5,19 @@
 
 .vuuTable-groupHeaderCell {
   --cell-align: 'flex-start';
-  text-align: left;
+    text-align: left;
     background: var(--dataTable-background);
-    border-right: 1px solid var(--salt-separable-tertiary-borderColor);
-    border-bottom: 2px solid var(--salt-separable-tertiary-borderColor);
-    color: var(--salt-text-secondary-foreground);
     cursor: default;
-    padding: 0 !important;
-    position: sticky;
-    top: 0;
     height: var(--vuuTableHeaderHeight);
     /* ensure header row sits atop everything else when scrolling down */
-    z-index: 1;
   }
 
 
   .vuuTable-groupHeaderCell-inner {
+    align-items: center;
     display: flex;
     height: 100%;
+    padding-left: 1px;
   }
 
   .vuuTable-groupHeaderCell-label {
@@ -36,7 +31,7 @@
     background-color: inherit;
     display: inline-flex;
     flex: 0 1 auto;
-    height: calc(var(--vuuTableHeaderHeight) - 4px);
+    height: calc(var(--vuuTableHeaderHeight) - 2px);
     justify-content: space-between;
     padding-right: 8px;
     position: relative;

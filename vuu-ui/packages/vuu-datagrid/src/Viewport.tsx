@@ -183,7 +183,7 @@ export const Viewport = forwardRef(function Viewport(
   const dataRef = useRef<DataSourceRow[]>();
   dataRef.current = data;
 
-  const rowCount = dataSource?.rowCount ?? 0;
+  const rowCount = dataSource?.size ?? 0;
 
   const previousRange = useRef({ from: 0, to: 0 });
   const setRange = useCallback(

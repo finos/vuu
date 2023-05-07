@@ -366,12 +366,12 @@ export const getTableHeadings = (
     let tableHeadingsRow: TableHeading[];
     for (let level = 0; level < maxHeadingDepth; level++) {
       tableHeadingsRow = [];
-      columns.forEach(({ heading: columnHeading = NO_HEADINGS }) => {
+      columns.forEach(({ heading: columnHeading = NO_HEADINGS, width }) => {
         const label = columnHeading[level] ?? "";
         if (heading && heading.label === label) {
-          heading.span += 1;
+          heading.width += width;
         } else {
-          heading = { label, span: 1 } as TableHeading;
+          heading = { label, width } as TableHeading;
           tableHeadingsRow.push(heading);
         }
       });
@@ -385,12 +385,16 @@ export const getTableHeadings = (
   return NO_HEADINGS;
 };
 
-export const getColumnPinStyle = (column: KeyedColumnDescriptor) =>
-  column.pin === "left"
-    ? ({ left: column.pinnedOffset } as CSSProperties)
-    : column.pin === "right"
-    ? ({ right: column.pinnedOffset } as CSSProperties)
-    : undefined;
+export const getColumnStyle = ({
+  pin,
+  pinnedOffset,
+  width,
+}: KeyedColumnDescriptor) =>
+  pin === "left"
+    ? ({ left: pinnedOffset, width } as CSSProperties)
+    : pin === "right"
+    ? ({ right: pinnedOffset, width } as CSSProperties)
+    : { width };
 
 export const setAggregations = (
   aggregations: VuuAggregation[],
@@ -578,13 +582,16 @@ export const getColumnsInViewport = (
 
   for (let offset = 0, i = 0; i < columns.length; i++) {
     const column = columns[i];
+    // TODO we need to measure the pinned columns first
     if (column.hidden) {
       continue;
     } else if (offset + column.width < vpStart) {
-      if (offset + column.width + columns[i + 1]?.width > vpStart) {
+      if (column.pin === "left") {
+        visibleColumns.push(column);
+      } else if (offset + column.width + columns[i + 1]?.width > vpStart) {
         visibleColumns.push(column);
       } else {
-        preSpan += 1;
+        preSpan += column.width;
       }
     } else if (offset > vpEnd) {
       visibleColumns.push(column);
