@@ -2,11 +2,14 @@ import { useRef } from "react";
 import { useScroll } from "./useScroll";
 import { HTMLTableProps } from "../tableTypes";
 
-import "./TableElementWithSizers.css";
+import "./DivElementWithSizers.css";
 
-export const TableElementWithSizers = ({
+const classBase = "DivElementWithSizers";
+
+export const DivElementWithSizers = ({
   Row,
   bufferCount = 5,
+  columns,
   contentHeight,
   data,
   dataRowCount = data.length,
@@ -33,9 +36,9 @@ export const TableElementWithSizers = ({
   });
 
   return (
-    <div id="scroller" onScroll={handleScroll}>
+    <div className={classBase} onScroll={handleScroll}>
       <div
-        className="scroll-content"
+        className={`${classBase}-scroll-content`}
         style={{
           position: "absolute",
           width: 1600,
@@ -43,44 +46,50 @@ export const TableElementWithSizers = ({
         }}
       />
 
-      <div id="chartWrapper" ref={tableRef}>
-        <table id="chart">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Age</th>
-              <th>Job</th>
-              <th>Color</th>
-              <th>URL</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="sizer-row" key="sizer-start">
-              <td
+      <div className={`${classBase}-wrapper`} ref={tableRef}>
+        <div className={`${classBase}-table`}>
+          <div className={`${classBase}-col-headings`}>
+            <div className={`${classBase}-col-headers`} role="row">
+              {columns.map((column) => (
+                <div
+                  className={`${classBase}-col-header`}
+                  key={column}
+                  role="cell"
+                  style={{ width: 145 }}
+                >
+                  {column}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div
+            className={`${classBase}-body`}
+            style={{ height: contentHeight }}
+          >
+            <div className="sizer-row" key="sizer-start">
+              <div
                 className="sizer-cell"
-                colSpan={5}
                 ref={spacerStartRef}
                 style={{ height: 0 }}
               />
-            </tr>
+            </div>
             {data.slice(firstRowIndex, lastRowIndex).map((data, i) => (
               <Row
-                className="TableElementWithSizersRow"
+                className="DivElementWithSizersRow"
                 index={firstRowIndex + i}
                 key={data[0]}
                 data={data}
               />
             ))}
-            <tr className="sizer-row" key="sizer-end">
-              <td
+            <div className="sizer-row" key="sizer-end">
+              <div
                 className="sizer-cell"
-                colSpan={5}
                 ref={spacerEndRef}
                 style={{ height: offscreenContentHeight }}
               />
-            </tr>
-          </tbody>
-        </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
