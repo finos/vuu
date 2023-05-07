@@ -1,0 +1,7 @@
+.animation-path {
+    stroke-linecap: round;
+    stroke: cornflowerblue;
+    /* stroke-dasharray: 3px 3px; */
+    stroke-dashoffset: 3;
+    stroke-width: 2px;
+  }
