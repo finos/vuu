@@ -62,13 +62,19 @@ export interface DataSourceDataMessage extends MessageWithClientViewportId {
   type: "viewport-update";
 }
 
+export interface DataSourceDataSizeMessage extends MessageWithClientViewportId {
+  mode: "size-only";
+  size: number;
+  type: "viewport-update";
+}
+
 export interface DataSourceDebounceRequest extends MessageWithClientViewportId {
   type: "debounce-begin";
 }
 
 export const isSizeOnly = (
   message: DataSourceCallbackMessage
-): message is DataSourceDataMessage =>
+): message is DataSourceDataSizeMessage =>
   message.type === "viewport-update" && message.mode === "size-only";
 
 export interface DataSourceDisabledMessage extends MessageWithClientViewportId {
