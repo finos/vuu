@@ -1,0 +1,39 @@
+.vuuProgressCell {
+   align-items: center;
+   display: flex;
+}
+
+.vuuProgressCell-track {
+    display: inline-block;
+    flex: auto 1 1;
+    height: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.vuuProgressCell-bg {
+    background-color: var(--salt-measured-background);
+    display: inline-block;
+    height: 2px;
+    left: 0;
+    position: absolute;
+    top: 1px;
+    width: 100%;
+}
+
+
+.vuuProgressCell-bar {
+    background-color: var(--salt-measured-fill);
+    display: inline-block;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top:0;
+    transform: translateX(var(--progress-bar-pct, -100%));
+    width: 100%;
+}
+
+.vuuProgressCell-text {
+    flex: 35px 0 0;
+    text-align: right;
+}
