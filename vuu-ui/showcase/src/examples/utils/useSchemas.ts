@@ -1,6 +1,14 @@
+import { TableSchema } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
 import { Reducer, useReducer } from "react";
+
+export type VuuTableName =
+  | "instruments"
+  | "orders"
+  | "childOrders"
+  | "parentOrders"
+  | "prices";
 
 export type Schema = { table: VuuTable; columns: ColumnDescriptor[] };
 const schemas: { [key: string]: Schema } = {
@@ -22,11 +30,11 @@ const schemas: { [key: string]: Schema } = {
       { name: "created", type: "date" },
       {
         name: "filledQuantity",
-        label: "Filled Quantity %",
+        label: "Fill Progress",
 
         type: {
           name: "number",
-          renderer: { name: "progress", associatedField: "quantity" },
+          renderer: { name: "vuu.progress", associatedField: "quantity" },
           formatting: { decimals: 0 },
         },
         width: 120,
@@ -37,6 +45,11 @@ const schemas: { [key: string]: Schema } = {
       { name: "ric" },
       { name: "side" },
       { name: "trader" },
+      // {
+      //   name: "filledQtyPct",
+      //   expression: "=if(quantity=0, 0, min(1, filledQuantity / quantity))",
+      //   serverDataType: "double",
+      // },
     ],
     table: { module: "SIMUL", table: "orders" },
   },
@@ -145,5 +158,24 @@ export const useSchemas = () => {
   return {
     schemas: state,
     dispatch,
+  };
+};
+
+export const useSchema = (tableName: VuuTableName) => {
+  const { schemas } = useSchemas();
+  if (schemas[tableName]) {
+    return schemas[tableName];
+  }
+  throw Error(`useSchema no schema for table ${tableName}`);
+};
+
+export const useTableSchema = (tableName: VuuTableName): TableSchema => {
+  const { table, columns } = useSchema(tableName);
+  return {
+    table,
+    columns: columns.map(({ name, serverDataType = "string" }) => ({
+      name,
+      serverDataType,
+    })),
   };
 };
