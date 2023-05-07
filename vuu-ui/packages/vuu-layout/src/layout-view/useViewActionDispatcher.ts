@@ -12,9 +12,11 @@ import { usePersistentState } from "../use-persistent-state";
 import { ViewDispatch } from "./ViewContext";
 import { ViewAction } from "./viewTypes";
 
+export type ContributionLocation = "post-title" | "pre-title";
+
 export type Contribution = {
   index?: number;
-  location?: string;
+  location?: ContributionLocation;
   content: ReactElement;
 };
 
@@ -32,7 +34,7 @@ export const useViewActionDispatcher = (
   );
   const dispatchLayoutAction = useLayoutProviderDispatch();
   const updateContributions = useCallback(
-    (location: string, content: ReactElement) => {
+    (location: ContributionLocation, content: ReactElement) => {
       const updatedContributions = contributions.concat([
         { location, content },
       ]);

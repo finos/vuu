@@ -68,3 +68,9 @@ export interface OrFilter extends MultiClauseFilter {
   }
  */
 export declare type Filter = FilterClause | MultiClauseFilter;
+
+export declare type FilterState = {
+  filter: Filter | undefined;
+  filterQuery: string;
+  filterName?: string;
+};

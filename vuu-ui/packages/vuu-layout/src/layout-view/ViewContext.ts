@@ -16,6 +16,7 @@ export interface ViewContextProps {
   purge?: (key: string) => void;
   save?: (state: unknown, key: string) => void;
   saveSession?: (state: unknown, key: string) => void;
+  setComponentProps: (props: { [key: string]: unknown }) => void;
   title?: string;
 }
 

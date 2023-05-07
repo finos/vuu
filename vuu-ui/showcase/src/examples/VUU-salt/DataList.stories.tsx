@@ -24,7 +24,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { ArrayLike } from "./ArrayLike";
+import { ArrayLike } from "../utils/ArrayLike";
 
 const { IDX, KEY } = metadataKeys;
 
