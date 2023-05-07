@@ -5,7 +5,9 @@ function buildPackage(packageName) {
   execWait(
     `yarn --silent type-defs${withArgs("debug")}`,
     `packages/${packageName}`
-  );
+  ).catch(() => {
+    console.error(`Error processing ${packageName}`);
+  });
 }
 
 const packages = [
