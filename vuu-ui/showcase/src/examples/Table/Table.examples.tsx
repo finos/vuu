@@ -1,25 +1,25 @@
-import { ArrayDataSource, DataSourceConfig } from "@finos/vuu-data";
+import {
+  DataSource,
+  DataSourceConfig,
+  RemoteDataSource,
+} from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
+import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
+import { FilterInput } from "@finos/vuu-filters";
+import { Flexbox, useViewContext, View } from "@finos/vuu-layout";
+import { Dialog } from "@finos/vuu-popups";
+import { Table, TableProps } from "@finos/vuu-table";
 import {
   DatagridSettingsPanel,
   DataSourceStats,
 } from "@finos/vuu-table-extras";
-import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
-import { Table, TableProps } from "@finos/vuu-table";
-import { FilterInput } from "@finos/vuu-filters";
-import { Flexbox, useViewContext, View } from "@finos/vuu-layout";
-import { Dialog } from "@finos/vuu-popups";
 import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
+import { useTableConfig } from "../utils/useTableConfig";
 
-import { DragVisualizer } from "@finos/vuu-table/src/DragVisualizer";
 import { Filter } from "@finos/vuu-filter-types";
 import { useFilterSuggestionProvider } from "@finos/vuu-filters";
-import {
-  VuuGroupBy,
-  VuuRowDataItemType,
-  VuuSort,
-  VuuTable,
-} from "@finos/vuu-protocol-types";
+import { VuuGroupBy, VuuSort, VuuTable } from "@finos/vuu-protocol-types";
+import { DragVisualizer } from "@finos/vuu-table/src/DragVisualizer";
 import {
   Checkbox,
   ToggleButton,
@@ -43,63 +43,8 @@ import { ErrorDisplay, Schema, useSchemas, useTestDataSource } from "../utils";
 
 let displaySequence = 1;
 
-const NO_CONFIG = {} as const;
-const useTableConfig = ({
-  columnConfig = NO_CONFIG,
-  columnCount = 10,
-  count = 1000,
-  leftPinnedColumns = [],
-  rightPinnedColumns = [],
-  renderBufferSize = 0,
-}: {
-  columnConfig?: { [key: string]: Partial<ColumnDescriptor> };
-  columnCount?: number;
-  count?: number;
-  leftPinnedColumns?: number[];
-  rightPinnedColumns?: number[];
-  renderBufferSize?: number;
-} = {}) => {
-  return useMemo(() => {
-    const data: VuuRowDataItemType[][] = [];
-    for (let i = 0; i < count; i++) {
-      // prettier-ignore
-      data.push(
-    [`row ${i + 1}`].concat(Array(columnCount).fill(true).map((v,j) => `value ${j+1} @ ${i + 1}`)) 
-    );
-    }
-
-    const columns: ColumnDescriptor[] = [
-      { name: "row number", width: 150 },
-    ].concat(
-      Array(columnCount)
-        .fill(true)
-        .map((base, i) => {
-          const name = `column ${i + 1}`;
-          return { name, width: 100, ...columnConfig[name] };
-        })
-    );
-
-    leftPinnedColumns.forEach((index) => (columns[index].pin = "left"));
-    rightPinnedColumns.forEach((index) => (columns[index].pin = "right"));
-
-    const dataSource = new ArrayDataSource({
-      columnDescriptors: columns,
-      data,
-    });
-
-    return { config: { columns }, dataSource, renderBufferSize };
-  }, [
-    columnConfig,
-    columnCount,
-    count,
-    leftPinnedColumns,
-    renderBufferSize,
-    rightPinnedColumns,
-  ]);
-};
-
 export const DefaultTable = () => {
-  const config = useTableConfig();
+  const config = useTableConfig({ count: 1_000 });
   const [zebraStripes, setZebraStripes] = useState(true);
   const handleZebraChanged = useCallback((_evt, checked) => {
     setZebraStripes(checked);
@@ -108,8 +53,9 @@ export const DefaultTable = () => {
     <div style={{ display: "flex", gap: 12 }}>
       <Table
         {...config}
-        height={700}
-        renderBufferSize={50}
+        height={440}
+        renderBufferSize={100}
+        rowHeight={20}
         width={700}
         zebraStripes={zebraStripes}
       />
@@ -135,7 +81,6 @@ export const TableLoading = () => {
   const config = useTableConfig({ count: 0 });
   return (
     <>
-      {/* <DragVisualizer orientation="horizontal"> */}
       <Table
         {...config}
         height={700}
@@ -143,22 +88,67 @@ export const TableLoading = () => {
         width={700}
         className="vuuTable-loading"
       />
-      {/* </DragVisualizer> */}
     </>
   );
 };
 TableLoading.displaySequence = displaySequence++;
 
+export const SmallTable = () => {
+  const config = useTableConfig({ columnCount: 10, count: 1000 });
+  return (
+    <>
+      <Table
+        {...config}
+        headerHeight={30}
+        height={645}
+        renderBufferSize={20}
+        rowHeight={30}
+        width={715}
+      />
+    </>
+  );
+};
+SmallTable.displaySequence = displaySequence++;
+
+export const WideTableLowRowcount = () => {
+  const config = useTableConfig({ columnCount: 20, count: 10 });
+  return (
+    <>
+      <Table {...config} height={500} renderBufferSize={20} width={700} />
+    </>
+  );
+};
+WideTableLowRowcount.displaySequence = displaySequence++;
+
 export const DefaultTable10Rows = () => {
   const config = useTableConfig();
   return (
     <>
-      {/* <DragVisualizer orientation="horizontal"> */}
       <Table {...config} height={240} renderBufferSize={20} width={700} />
-      {/* </DragVisualizer> */}
     </>
   );
 };
+DefaultTable10Rows.displaySequence = displaySequence++;
+
+export const DefaultTable1millionRows = () => {
+  const config = useTableConfig({ count: 1_000_000 });
+  return (
+    <>
+      <Table {...config} height={440} renderBufferSize={20} width={700} />
+    </>
+  );
+};
+DefaultTable1millionRows.displaySequence = displaySequence++;
+
+export const DefaultTable2millionRows = () => {
+  const config = useTableConfig({ count: 2_000_000 });
+  return (
+    <>
+      <Table {...config} height={440} renderBufferSize={20} width={700} />
+    </>
+  );
+};
+DefaultTable2millionRows.displaySequence = displaySequence++;
 
 export const DefaultTable200C0lumns = () => {
   const config = useTableConfig({ columnCount: 200 });
@@ -171,7 +161,49 @@ export const DefaultTable200C0lumns = () => {
 
 DefaultTable200C0lumns.displaySequence = displaySequence++;
 
-export const DefaultTableMultiLevelHeadings = () => {
+export const ColumnHeaders1Level = () => {
+  const { schemas } = useSchemas();
+  const { config, dataSource } = useTestDataSource({
+    columnConfig: {
+      bbg: { heading: ["Instrument"] },
+      isin: { heading: ["Instrument"] },
+      ric: { heading: ["Instrument"] },
+      description: { heading: ["Instrument"] },
+      currency: { heading: ["Exchange Details"] },
+      exchange: { heading: ["Exchange Details"] },
+      lotSize: { heading: ["Exchange Details"] },
+    },
+    columnNames: [
+      "bbg",
+      "isin",
+      "ric",
+      "description",
+      "currency",
+      "exchange",
+      "lotSize",
+    ],
+    schemas,
+  });
+
+  return (
+    <>
+      <div>
+        <input defaultValue="Life is" />
+      </div>
+      <Table
+        config={config}
+        dataSource={dataSource}
+        height={700}
+        renderBufferSize={20}
+        style={{ margin: 10, border: "solid 1px #ccc" }}
+      />
+    </>
+  );
+};
+
+ColumnHeaders1Level.displaySequence = displaySequence++;
+
+export const ColumnHeadingsMultiLevel = () => {
   const config = useTableConfig({
     columnConfig: {
       "row number": { heading: ["Level 0 Heading A", "Heading 1"] },
@@ -196,7 +228,7 @@ export const DefaultTableMultiLevelHeadings = () => {
   );
 };
 
-DefaultTableMultiLevelHeadings.displaySequence = displaySequence++;
+ColumnHeadingsMultiLevel.displaySequence = displaySequence++;
 
 export const LeftPinnedColumns = () => {
   const [isColumnBased, setIsColumnBased] = useState<boolean>(false);
@@ -216,12 +248,7 @@ export const LeftPinnedColumns = () => {
         </ToggleButton>
       </Toolbar>
       <DragVisualizer orientation="horizontal">
-        <Table
-          {...config}
-          height={700}
-          tableLayout={isColumnBased ? "column" : "row"}
-          width={700}
-        />
+        <Table {...config} height={700} width={700} />
       </DragVisualizer>
     </div>
   );
@@ -246,12 +273,7 @@ export const RightPinnedColumns = () => {
         </ToggleButton>
       </Toolbar>
       <DragVisualizer orientation="horizontal">
-        <Table
-          {...config}
-          height={700}
-          tableLayout={isColumnBased ? "column" : "row"}
-          width={700}
-        />
+        <Table {...config} height={700} width={700} />
       </DragVisualizer>
     </div>
   );
@@ -367,7 +389,7 @@ export const VuuDataTable = () => {
   };
 
   const handleSettingsConfigChange = useCallback(
-    (config: GridConfig, closePanel = false) => {
+    (config: Omit<GridConfig, "headings">, closePanel = false) => {
       console.log(`Table.examples config changed`, {
         config,
       });
@@ -406,18 +428,19 @@ export const VuuDataTable = () => {
     setDialogContent(null);
   }, []);
 
+  const getCcyCol = (dataSource: DataSource) =>
+    (dataSource as RemoteDataSource).table.table === "instruments"
+      ? "currency"
+      : "ccy";
+
   const groupByCurrency = useCallback(() => {
-    dataSource.groupBy = ["currency"];
+    dataSource.groupBy = [getCcyCol(dataSource)];
   }, [dataSource]);
   const groupByCurrencyExchange = useCallback(() => {
-    dataSource.groupBy = ["currency", "exchange"];
+    dataSource.groupBy = [getCcyCol(dataSource), "exchange"];
   }, [dataSource]);
   const groupByCurrencyExchangeRic = useCallback(() => {
-    if (dataSource.table.table === "instruments") {
-      dataSource.groupBy = ["currency", "exchange", "ric"];
-    } else if (dataSource.table.table === "childOrders") {
-      dataSource.groupBy = ["ccy", "exchange", "ric"];
-    }
+    dataSource.groupBy = [getCcyCol(dataSource), "exchange", "ric"];
   }, [dataSource]);
 
   const handleSubmitFilter = useCallback(
@@ -471,7 +494,7 @@ export const VuuDataTable = () => {
         dataSource={dataSource}
         config={tableConfig}
         // columnSizing="fill"
-        height={600}
+        height={700}
         onConfigChange={handleTableConfigChange}
         onShowConfigEditor={showConfigEditor}
         renderBufferSize={20}
@@ -617,7 +640,7 @@ export const VuuTableCalculatedColumns = () => {
   }, [config]);
 
   const handleConfigChange = useCallback(
-    (config: GridConfig, closePanel = false) => {
+    (config: Omit<GridConfig, "headings">, closePanel = false) => {
       setTableConfig((currentConfig) => {
         if (
           dataSource &&
@@ -726,48 +749,6 @@ export const VuuTableCalculatedColumns = () => {
 };
 VuuTableCalculatedColumns.displaySequence = displaySequence++;
 
-export const ColumnHeaders1Level = () => {
-  const { schemas } = useSchemas();
-  const { config, dataSource } = useTestDataSource({
-    columnConfig: {
-      bbg: { heading: ["Instrument"] },
-      isin: { heading: ["Instrument"] },
-      ric: { heading: ["Instrument"] },
-      description: { heading: ["Instrument"] },
-      currency: { heading: ["Exchange Details"] },
-      exchange: { heading: ["Exchange Details"] },
-      lotSize: { heading: ["Exchange Details"] },
-    },
-    columnNames: [
-      "bbg",
-      "isin",
-      "ric",
-      "description",
-      "currency",
-      "exchange",
-      "lotSize",
-    ],
-    schemas,
-  });
-
-  return (
-    <>
-      <div>
-        <input defaultValue="Life is" />
-      </div>
-      <Table
-        config={config}
-        dataSource={dataSource}
-        height={600}
-        renderBufferSize={20}
-        style={{ margin: 10, border: "solid 1px #ccc" }}
-      />
-    </>
-  );
-};
-
-ColumnHeaders1Level.displaySequence = displaySequence++;
-
 const ConfigurableDataTable = ({
   table,
   ...props
@@ -801,7 +782,7 @@ const ConfigurableDataTable = ({
 
   // This needs to trigger a re-render of Table
   const handleSettingConfigChange = useCallback(
-    (config: GridConfig, closePanel = false) => {
+    (config: Omit<GridConfig, "headings">, closePanel = false) => {
       save?.(config, "table-config");
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
@@ -897,7 +878,7 @@ const ConfigurableDataTable = ({
   );
 };
 
-export const vuuTablePersistedConfig = () => {
+export const VuuTablePersistedConfig = () => {
   const table: VuuTable = useMemo(
     () => ({ module: "SIMUL", table: "instruments" }),
     []
@@ -915,7 +896,7 @@ export const vuuTablePersistedConfig = () => {
     </>
   );
 };
-vuuTablePersistedConfig.displaySequence = displaySequence++;
+VuuTablePersistedConfig.displaySequence = displaySequence++;
 
 export const VuuTablePredefinedConfig = () => {
   const { schemas } = useSchemas();
@@ -979,7 +960,7 @@ export const HiddenColumns = () => {
   }, [config]);
 
   const handleSettingsConfigChange = useCallback(
-    (config: GridConfig, closePanel = false) => {
+    (config: Omit<GridConfig, "headings">, closePanel = false) => {
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
           dataSource.columns = config.columns.map(toDataSourceColumns);
@@ -1142,7 +1123,7 @@ export const SwitchColumns = () => {
   }, [dataSource, namedConfiguration]);
 
   const handleSettingsConfigChange = useCallback(
-    (config: GridConfig, closePanel = false) => {
+    (config: Omit<GridConfig, "headings">, closePanel = false) => {
       setTableConfig((currentConfig) => {
         if (itemsChanged(currentConfig.columns, config.columns, "name")) {
           if (dataSource) {
