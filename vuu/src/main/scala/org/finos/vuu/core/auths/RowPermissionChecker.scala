@@ -1,7 +1,7 @@
 package org.finos.vuu.core.auths
 
-import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.core.table.RowData
 
 trait RowPermissionChecker {
-  def canSeeRow(row: RowWithData): Boolean
+  def canSeeRow(row: RowData): Boolean
 }

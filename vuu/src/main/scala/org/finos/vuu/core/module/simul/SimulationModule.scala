@@ -235,13 +235,8 @@ object SimulationModule extends DefaultModule {
             Index("ric")
           ),
           joinFields = "id", "ric", "owner"
-        )
-          .withPermissions(new OrderPermissionChecker()),
-        (table, vs) => new PermissionedOrdersProvider(table, ordersModel)
-//        (table, provider, providerContainer) => ViewPortDef(
-//          columns = table.getTableDef.columns,
-//          service = new ParentOrdersService(table, provider)
-//        )
+        ).withPermissions((vp, _) => new OrderPermissionChecker(vp)),
+        (table, _) => new PermissionedOrdersProvider(table, ordersModel)
       )
       .addTable(
         TableDef(

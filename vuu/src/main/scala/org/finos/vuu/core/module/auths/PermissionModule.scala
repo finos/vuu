@@ -7,18 +7,10 @@ import org.finos.vuu.core.module.auths.provider.PermissionsProvider
 import org.finos.vuu.core.module.auths.service.PermissionsRpcService
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.Columns
-import org.finos.vuu.provider.simulation.SimulatedBigInstrumentsProvider
 
 object PermissionModule extends DefaultModule{
 
   private final val NAME = "AUTHS"
-
-  object ColumnNames{
-    final val User = "user"
-    final val Bitmask = "bitmask"
-    final val BitmaskAsString = "bitmaskAsString"
-    final val BitmaskAsRoles = "bitmaskAsRoles"
-  }
 
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
 
@@ -40,6 +32,13 @@ object PermissionModule extends DefaultModule{
       )
     ).asModule()
 
+  }
+
+  object ColumnNames{
+    final val User = "user"
+    final val Bitmask = "bitmask"
+    final val BitmaskAsString = "bitmaskAsString"
+    final val BitmaskAsRoles = "bitmaskAsRoles"
   }
 
 }

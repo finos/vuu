@@ -1,8 +1,11 @@
 package org.finos.vuu.api
 
+import org.finos.vuu.core.VuuServer
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.core.table._
+import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.viewport.ViewPort
 
 object Fields {
   val All: List[String] = List("*")
@@ -68,7 +71,7 @@ object GroupByColumns {
 
   private def newColumnStr(name: String, index: Int) = SimpleColumn(name, index, DataType.fromString("string"))
 
-  def get(origColumnSize: Int) =
+  def get(origColumnSize: Int): Array[SimpleColumn] =
     Array(
       newColumn("_depth", origColumnSize),
       newBoolean("_isOpen", origColumnSize + 1),
@@ -122,8 +125,21 @@ class TableDef(val name: String,
                val indices: Indices) {
 
   private var module: ViewServerModule = null;
+  private var permissionFunc: (ViewPort, TableContainer) => RowPermissionChecker = null
 
-  def withPermissions(checker: RowPermissionChecker): TableDef = ???
+  def withPermissions(func: (ViewPort, TableContainer) => RowPermissionChecker): TableDef = {
+    permissionFunc = func
+    this
+  }
+
+  def permissionChecker(viewPort: ViewPort, tableContainer: TableContainer): Option[RowPermissionChecker] = {
+    if(permissionFunc != null){
+      Some(permissionFunc(viewPort, tableContainer))
+    }else{
+      None
+    }
+  }
+
 
   def deleteColumnName() = s"$name._isDeleted"
 
