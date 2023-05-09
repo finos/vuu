@@ -6,11 +6,12 @@
 
 .heroBanner {
   padding: 4rem 0;
-  text-align: center;
+  text-align: left;
   position: relative;
   overflow: hidden;
   background-repeat: no-repeat;
   background-size: cover;
+  background-color: rebeccapurple;
 }
 
 @media screen and (max-width: 966px) {
@@ -26,7 +27,7 @@
 }
 
 .getStarted {
-  margin: 0em .5em 0em .5em;
+  margin: 0em 0.5em 0em 0.5em;
 }
 
 .features {
@@ -36,37 +37,37 @@
   width: 100%;
 }
 
-.featuresCTA{
+.featuresCTA {
   text-align: center;
 }
 
-.featuresCTA ul{
+.featuresCTA ul {
   display: inline-block;
   padding: 0 20% 0 20%;
   list-style: none;
   margin-bottom: 5px;
 }
 
-.featuresCTA li::before{
-  content: "\2022";
+.featuresCTA li::before {
+  /* content: "\2022"; */
   display: inline-block;
   width: 2em;
   margin-left: -2em;
   color: var(--ifm-link-color);
 }
 
-.featureCTA{
+.featureCTA {
   text-align: center;
 }
 
-.featureCTA ul{
+.featureCTA ul {
   display: inline-block;
   padding: 0 10% 0 10%;
   list-style: none;
   margin-bottom: 5px;
 }
 
-.featureCTA li::before{
+.featureCTA li::before {
   content: "\2022";
   display: inline-block;
   width: 2em;
@@ -90,7 +91,7 @@
   width: 150px;
 }
 
-.row--center h2{
+.row--center h2 {
   color: #ffffff;
   font-size: 16px;
   text-align: center;
@@ -103,7 +104,11 @@
 }
 
 .members {
-  background-image: linear-gradient(to bottom, rgba(163,215,212,0.2), rgba(25,182,204,0.2));
+  /* background-image: linear-gradient(
+    to bottom,
+    rgba(163, 215, 212, 0.2),
+    rgba(25, 182, 204, 0.2)
+  ); */
   background-repeat: no-repeat;
   background-size: cover;
   padding: 74px 0;

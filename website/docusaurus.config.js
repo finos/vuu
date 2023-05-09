@@ -12,7 +12,7 @@ module.exports = {
   tagline: `FINOS ${projectName}`,
   url: "https://vuu.finos.org",
   baseUrl: "/",
-  favicon: "img/favicon/favicon-finos.ico",
+  favicon: "img/favicon/vuu-logo-favicon.png",
   projectName: `FINOS ${projectName}`,
   organizationName: "FINOS",
   customFields: {
@@ -24,18 +24,27 @@ module.exports = {
   ],
   themeConfig: {
     navbar: {
-      title: `FINOS ${projectName}`,
+      // title: `FINOS ${projectName}`,
       logo: {
         alt: "FINOS Logo",
-        src: "img/favicon/favicon-finos.ico",
+        src: "img/favicon/vuu-logo.png",
       },
       items: [
-        { to: "docs/introduction/intro", label: "Docs", position: "right" },
-        { to: "docs/roadmap", label: "Roadmap", position: "right" },
-        { to: "docs/team", label: "Team", position: "right" },
         {
-          href: "https://github.com/finos/vuu",
-          label: "GitHub",
+          to: "/",
+          label: "HOME",
+          position: "right",
+        },
+
+        {
+          to: "docs/introduction/intro",
+          label: "DOCUMENTATION",
+          position: "right",
+        },
+        { to: "docs/roadmap", label: "ROADMAP", position: "right" },
+        {
+          to: "https://github.com/finos/vuu",
+          label: "GITHUB",
           position: "right",
         },
       ],
@@ -44,7 +53,7 @@ module.exports = {
       copyright: `Copyright © ${new Date().getFullYear()} ${projectName} - ${copyrightOwner}`,
       logo: {
         alt: "FINOS Logo",
-        src: "img/favicon/favicon-finos.ico",
+        src: "img/finos/vuu-text.png",
         href: "https://finos.org",
       },
       links: [
