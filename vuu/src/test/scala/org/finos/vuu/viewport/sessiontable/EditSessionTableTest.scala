@@ -8,7 +8,7 @@ import org.finos.vuu.core.table.{RowWithData, TableContainer, ViewPortColumnCrea
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport.{AbstractViewPortTestCase, CloseDialogViewPortAction, DefaultRange, NoAction, OpenDialogViewPortAction, RenderComponent, SelectionViewPortMenuItem, ViewPort, ViewPortAction, ViewPortEditAction, ViewPortEditCellAction, ViewPortEditFailure, ViewPortEditRowAction, ViewPortEditSuccess, ViewPortFormSubmitAction, ViewPortMenu, ViewPortSelectedIndices, ViewPortSelection, ViewPortTable}
+import org.finos.vuu.viewport.{AbstractViewPortTestCase, CloseDialogViewPortAction, DefaultRange, NoAction, OpenDialogViewPortAction, RenderComponent, SelectionViewPortMenuItem, ViewPort, ViewPortAction, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortDeleteRowAction, ViewPortEditAction, ViewPortEditCellAction, ViewPortEditFailure, ViewPortEditRowAction, ViewPortEditSuccess, ViewPortFormCloseAction, ViewPortFormSubmitAction, ViewPortMenu, ViewPortSelectedIndices, ViewPortSelection, ViewPortTable}
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
@@ -79,9 +79,17 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       }
     }
 
+    private def onFormClose(vp: ViewPort, session: ClientSessionId): ViewPortAction = {
+      CloseDialogViewPortAction(vp.id)
+    }
+
     override def editCellAction(): ViewPortEditCellAction = ViewPortEditCellAction("", this.onEditCell)
     override def editRowAction(): ViewPortEditRowAction = ViewPortEditRowAction("", this.onEditRow)
     override def onFormSubmit(): ViewPortFormSubmitAction = ViewPortFormSubmitAction("", this.onFormSubmit)
+    override def deleteRowAction(): ViewPortDeleteRowAction = ViewPortDeleteRowAction("", (x,y,z) => ViewPortEditSuccess())
+    override def deleteCellAction(): ViewPortDeleteCellAction = ViewPortDeleteCellAction("", (a,b,c,d) => ViewPortEditSuccess())
+    override def addRowAction(): ViewPortAddRowAction = ViewPortAddRowAction("", (a,b,c,d) => ViewPortEditSuccess())
+    override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", this.onFormClose)
   }
 
   Feature("Test full flow through editable session table") {
@@ -99,8 +107,8 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       viewPortContainer.addViewPortDefinition(fixSequence.getTableDef.name, createViewPortDefFunc(tableContainer, new FixSequenceNumberResetService(), clock))
 
       And("we've ticked in some data")
-      processProvider.tick("proc-1", Map("id" -> "proc-1", "name" -> "My Process 1", "uptime" -> 5000l, "status" -> "running"))
-      processProvider.tick("proc-2", Map("id" -> "proc-2", "name" -> "My Process 2", "uptime" -> 5000l, "status" -> "running"))
+      processProvider.tick("proc-1", Map("id" -> "proc-1", "name" -> "My Process 1", "uptime" -> 5000L, "status" -> "running"))
+      processProvider.tick("proc-2", Map("id" -> "proc-2", "name" -> "My Process 2", "uptime" -> 5000L, "status" -> "running"))
 
       Then("we create a viewport...")
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, process, DefaultRange, vpcolumns)
