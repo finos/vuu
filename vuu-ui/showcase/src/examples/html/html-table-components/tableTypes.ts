@@ -10,8 +10,10 @@ export interface HTMLTableProps extends HTMLAttributes<HTMLDivElement> {
   data: unknown[] | ArrayProxy<unknown>;
   dataRowCount: number;
   headerHeight?: number;
+  height?: number;
   onScroll: UIEventHandler<HTMLDivElement>;
   rowHeight?: number;
   viewportHeight: number;
   visibleRowCount?: number;
+  width?: number;
 }

@@ -31,6 +31,18 @@ describe("KeySet", () => {
       expect(keySet.free).toEqual([]);
     });
 
+    it("re-initialises a keyset, reducing size to zero, then resets to non zero value", () => {
+      const keySet = new KeySet({ from: 0, to: 10 });
+      keySet.reset({ from: 0, to: 0 });
+      expect(keySet.keys.size).toEqual(0);
+      expect([...keySet.keys.keys()]).toEqual([]);
+      expect(keySet.free).toEqual([]);
+      keySet.reset({ from: 0, to: 10 });
+      expect(keySet.keys.size).toEqual(10);
+      expect([...keySet.keys.keys()]).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+      expect([...keySet.keys.values()]).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    });
+
     it("re-initialises a keyset, forwards, with overlap", () => {
       const keySet = new KeySet({ from: 0, to: 10 });
       keySet.reset({ from: 2, to: 12 });
@@ -66,5 +78,22 @@ describe("KeySet", () => {
       expect([...keySet.keys.keys()]).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
       expect([...keySet.keys.values()]).toEqual([9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
     });
+  });
+
+  it("handles erratic resets without ever producing a duplicate key", () => {
+    const keySet = new KeySet({ from: 0, to: 0 });
+    keySet.reset({ from: 0, to: 0 });
+    keySet.reset({ from: 0, to: 30 });
+    keySet.reset({ from: 0, to: 21 });
+    keySet.reset({ from: 0, to: 30 });
+    keySet.reset({ from: 1, to: 22 });
+    keySet.reset({ from: 0, to: 30 });
+    expect(keySet.keys.size).toEqual(30);
+    console.log([...keySet.keys.keys()]);
+    expect([...keySet.keys.keys()]).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+      21, 22, 23, 24, 25, 26, 27, 28, 29,
+    ]);
+    expect(keySet.free).toEqual([]);
   });
 });

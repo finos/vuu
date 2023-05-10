@@ -1,46 +1,54 @@
+import { TableProps } from "@finos/vuu-table";
 import { useMemo, useRef } from "react";
-import { useScroll } from "./useScroll";
-import { HTMLTableProps } from "../tableTypes";
+import { Row } from "../Row";
+import { useTable } from "./useTable";
 
 import "./DivElementWithTranslate.css";
 
 const classBase = "DivElementWithTranslate";
 
 export const DivElementWithTranslate = ({
-  Row,
-  bufferCount = 5,
-  columns,
-  contentHeight,
-  data,
-  dataRowCount = data.length,
+  config,
+  dataSource,
   headerHeight = 30,
+  height,
+  renderBufferSize = 5,
   rowHeight = 30,
-  visibleRowCount = 20,
-}: HTMLTableProps) => {
+  width,
+}: TableProps) => {
   const tableRef = useRef<HTMLDivElement>(null);
-  const { handleScroll, firstRowIndex, lastRowIndex } = useScroll({
-    bufferCount,
-    dataRowCount,
+  const {
+    columnMap,
+    columns,
+    containerMeasurements: { containerRef, innerSize, outerSize },
+    data,
+    handleScroll,
+    firstRowIndex,
+    viewportMeasurements,
+  } = useTable({
+    config,
+    dataSource,
+    headerHeight,
+    renderBufferSize,
     rowHeight,
-    table: tableRef,
-    visibleRowCount,
+    tableRef,
   });
 
   const bodyStyle = useMemo(
     () => ({
-      height: contentHeight,
+      height: viewportMeasurements.contentHeight,
     }),
-    [contentHeight]
+    [viewportMeasurements.contentHeight]
   );
 
   return (
-    <div className={classBase} onScroll={handleScroll}>
+    <div className={classBase} onScroll={handleScroll} ref={containerRef}>
       <div
         className={`${classBase}-scroll-content`}
         style={{
           position: "absolute",
           width: 1600,
-          height: contentHeight + headerHeight,
+          height: viewportMeasurements.contentHeight + headerHeight,
         }}
       />
 
@@ -48,23 +56,24 @@ export const DivElementWithTranslate = ({
         <div className={`${classBase}-table`}>
           <div className={`${classBase}-col-headings`}>
             <div className={`${classBase}-col-headers`} role="row">
-              {columns.map((column) => (
+              {columns.map((col) => (
                 <div
                   className={`${classBase}-col-header`}
-                  key={column}
+                  key={col.name}
                   role="cell"
                   style={{ width: 145 }}
                 >
-                  {column}
+                  {col.name}
                 </div>
               ))}
             </div>
           </div>
           <div className={`${classBase}-body`} style={bodyStyle}>
-            {data.slice(firstRowIndex, lastRowIndex).map((data, i) => (
+            {data.map((data, i) => (
               <Row
                 className="DivElementWithTranslateRow"
-                index={firstRowIndex + i}
+                columnMap={columnMap}
+                columns={columns}
                 key={data[0]}
                 data={data}
                 offset={30 * (firstRowIndex + i + 1)}

@@ -1,11 +1,11 @@
-import { RefObject, useCallback, useRef, useState } from "react";
+import { RefObject, useCallback, useMemo, useRef, useState } from "react";
+import { KeySet } from "@finos/vuu-utils";
 
 export interface ScrollHookProps {
   bufferCount: number;
   dataRowCount: number;
   rowHeight: number;
   table: RefObject<HTMLDivElement>;
-  viewportHeight: number;
   visibleRowCount: number;
 }
 
@@ -14,42 +14,20 @@ export const useScroll = ({
   dataRowCount,
   rowHeight,
   table,
-  viewportHeight,
   visibleRowCount,
 }: ScrollHookProps) => {
-  const spacerStartRef = useRef<HTMLDivElement>(null);
-  const spacerEndRef = useRef<HTMLDivElement>(null);
   const scrollTopRef = useRef(0);
   const [firstRowIndex, setFirstRowIndex] = useState(0);
-
   const renderedRowsCount = visibleRowCount + 2 * bufferCount;
-  const renderedRowsHeight = renderedRowsCount * rowHeight;
   const bufferHeight = bufferCount * rowHeight;
-  const totalContentHeight = rowHeight * dataRowCount;
-  const offscreenContentHeight = totalContentHeight - renderedRowsHeight;
-  const maxScrollPos = totalContentHeight - viewportHeight;
+  const lastRowIndex = firstRowIndex + renderedRowsCount;
 
-  const getSpacerStart = useCallback(
-    (scrollPos) => {
-      if (scrollPos === 0) {
-        return 0;
-      } else if (scrollPos < bufferHeight) {
-        return 0;
-      } else if (scrollPos >= maxScrollPos) {
-        return offscreenContentHeight;
-      } else if (scrollPos > maxScrollPos - bufferHeight) {
-        return offscreenContentHeight;
-      } else {
-        return scrollPos - bufferHeight;
-      }
-    },
-    [bufferHeight, maxScrollPos, offscreenContentHeight]
-  );
+  const keys = useMemo(() => new KeySet({ from: 0, to: 0 }), []);
+  keys.reset({ from: firstRowIndex, to: lastRowIndex });
 
   const handleScroll = useCallback(
     (e) => {
       const { scrollLeft, scrollTop } = e.target;
-      const spacerStart = getSpacerStart(scrollTop);
       const scrolledBy = scrollTop - scrollTopRef.current;
       const isForwards = scrolledBy > 0;
 
@@ -59,13 +37,6 @@ export const useScroll = ({
       ) {
         scrollTopRef.current =
           Math.floor(scrollTop / bufferHeight) * bufferHeight;
-
-        if (spacerStartRef.current && spacerEndRef.current) {
-          spacerStartRef.current.style.height = `${spacerStart}px`;
-          spacerEndRef.current.style.height = `${
-            offscreenContentHeight - spacerStart
-          }px`;
-        }
 
         const firstRowIndex = Math.max(
           0,
@@ -84,12 +55,6 @@ export const useScroll = ({
           scrollTopRef.current -= bufferHeight;
         }
 
-        if (spacerStartRef.current && spacerEndRef.current) {
-          spacerStartRef.current.style.height = `${spacerStart}px`;
-          spacerEndRef.current.style.height = `${
-            offscreenContentHeight - spacerStart
-          }px`;
-        }
         const firstRowIndex = Math.max(
           0,
           Math.floor(scrollTopRef.current / rowHeight) - bufferCount
@@ -110,22 +75,16 @@ export const useScroll = ({
       bufferCount,
       bufferHeight,
       dataRowCount,
-      getSpacerStart,
-      offscreenContentHeight,
       renderedRowsCount,
       rowHeight,
       table,
     ]
   );
 
-  const lastRowIndex = firstRowIndex + renderedRowsCount;
-
   return {
     firstRowIndex,
     handleScroll,
+    keys,
     lastRowIndex,
-    offscreenContentHeight,
-    spacerEndRef,
-    spacerStartRef,
   };
 };

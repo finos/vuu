@@ -1,16 +1,16 @@
 import { TableProps } from "@finos/vuu-table";
-import { useMemo, useRef } from "react";
+import { CSSProperties, useMemo, useRef } from "react";
 import { Row } from "../Row";
 import { useTable } from "./useTable";
 import { metadataKeys } from "@finos/vuu-utils";
 
-import "./DivElementKeyedWithTranslate.css";
+import "./DivElementKeyedWithTranslateInlineScrollbarsCssVariables.css";
 
-const classBase = "DivElementKeyedWithTranslate";
+const classBase = "DivElementKeyedWithTranslateInlineScrollbarsCssVariables";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 
-export const DivElementKeyedWithTranslate = ({
+export const DivElementKeyedWithTranslateInlineScrollbarsCssVariables = ({
   config,
   dataSource,
   headerHeight = 30,
@@ -25,8 +25,7 @@ export const DivElementKeyedWithTranslate = ({
     columns,
     containerMeasurements: { containerRef, innerSize, outerSize },
     data,
-    handleScroll,
-    firstRowIndex,
+    scrollProps,
     viewportMeasurements,
   } = useTable({
     config,
@@ -37,25 +36,35 @@ export const DivElementKeyedWithTranslate = ({
     tableRef,
   });
 
-  const bodyStyle = useMemo(
-    () => ({
-      height: viewportMeasurements.contentHeight,
-    }),
-    [viewportMeasurements.contentHeight]
-  );
+  console.log({ viewportMeasurements });
+
+  const style = {
+    "--content-height": `${viewportMeasurements.contentHeight}px`,
+    "--horizontal-scrollbar-height": "15px",
+    "--content-width": "1100px",
+    "--pinned-width-left": "0px",
+    "--pinned-width-right": "0px",
+    "--header-height": "30px",
+    "--row-height": "30px",
+    "--table-height": "645px",
+    "--table-width": "715px",
+    "--total-header-height": "30px",
+    "--vertical-scrollbar-width": "15px",
+    "--viewport-body-height": "615px",
+  } as CSSProperties;
 
   return (
-    <div className={classBase} onScroll={handleScroll}>
+    <div className={classBase} style={style}>
       <div
-        className={`${classBase}-scroll-content`}
-        style={{
-          position: "absolute",
-          width: 1600,
-          height: viewportMeasurements.contentHeight + headerHeight,
-        }}
-      />
-
-      <div className={`${classBase}-wrapper`} ref={tableRef}>
+        className={`${classBase}-scrollbarContainer`}
+        ref={scrollProps.scrollbarContainerRef}
+      >
+        <div className={`${classBase}-scrollbarContent`} />
+      </div>
+      <div
+        className={`${classBase}-contentContainer`}
+        ref={scrollProps.contentContainerRef}
+      >
         <div className={`${classBase}-table`}>
           <div className={`${classBase}-col-headings`}>
             <div className={`${classBase}-col-headers`} role="row">
@@ -64,22 +73,22 @@ export const DivElementKeyedWithTranslate = ({
                   className={`${classBase}-col-header`}
                   key={col.name}
                   role="cell"
-                  style={{ width: 145 }}
+                  style={{ width: 100 }}
                 >
                   {col.name}
                 </div>
               ))}
             </div>
           </div>
-          <div className={`${classBase}-body`} style={bodyStyle}>
+          <div className={`${classBase}-body`}>
             {data.map((data) => (
               <Row
-                className="DivElementKeyedWithTranslateRow"
+                className="DivElementKeyedWithTranslateInlineScrollbarsCssVariablesRow"
                 columnMap={columnMap}
                 columns={columns}
                 key={data[RENDER_IDX]}
                 data={data}
-                offset={rowHeight * data[IDX] + rowHeight}
+                offset={rowHeight * data[IDX] + headerHeight}
               />
             ))}
           </div>

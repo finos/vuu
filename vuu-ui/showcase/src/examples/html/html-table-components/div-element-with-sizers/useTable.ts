@@ -1,14 +1,11 @@
 import { DataSource } from "@finos/vuu-data";
 import { GridConfig, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { RefObject, useCallback, useMemo, useState } from "react";
+import { RefObject, useMemo, useState } from "react";
 import { useDataSource } from "./useDataSource";
 import { useMeasuredContainer } from "./useMeasuredContainer";
 import { useScroll } from "./useScroll";
 import { useTableViewport } from "./useTableViewport";
 import { buildColumnMap } from "@finos/vuu-utils";
-import { useTableScroll } from "./useTableScroll-deprecated";
-import { useVirtualViewport } from "./useVirtualViewport-deprecated";
-import { actualRowPositioning } from "@finos/vuu-utils";
 
 export const useTable = ({
   config,
@@ -25,7 +22,6 @@ export const useTable = ({
   rowHeight?: number;
   tableRef: RefObject<HTMLDivElement>;
 }) => {
-  const [getRowOffset, getRowAtPosition] = actualRowPositioning(30);
   const [rowCount, setRowCount] = useState<number>(0);
   const containerMeasurements = useMeasuredContainer();
   const columnMap = useMemo(
@@ -47,12 +43,6 @@ export const useTable = ({
 
   const { data, setRange } = useDataSource({
     dataSource,
-    range: { from: 0, to: viewportMeasurements.visibleRowCount + 1 },
-  });
-
-  const { onVerticalScroll } = useVirtualViewport({
-    getRowAtPosition,
-    setRange,
   });
 
   const {
@@ -71,19 +61,7 @@ export const useTable = ({
     visibleRowCount: viewportMeasurements.visibleRowCount,
   });
 
-  // dataSource.range = { from: firstRowIndex, to: lastRowIndex };
-
-  const handleVerticalScroll = useCallback(
-    (scrollTop: number) => {
-      onVerticalScroll(scrollTop);
-    },
-    [onVerticalScroll]
-  );
-
-  const { requestScroll, ...scrollProps } = useTableScroll({
-    onVerticalScroll: handleVerticalScroll,
-    viewportHeight: 645 - 30,
-  });
+  dataSource.range = { from: firstRowIndex, to: lastRowIndex };
 
   return {
     columnMap,
@@ -94,7 +72,6 @@ export const useTable = ({
     firstRowIndex,
     lastRowIndex,
     offscreenContentHeight,
-    scrollProps,
     spacerEndRef,
     spacerStartRef,
     viewportMeasurements,

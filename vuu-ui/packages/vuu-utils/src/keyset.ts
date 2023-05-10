@@ -39,6 +39,10 @@ export class KeySet {
         this.keys.set(rowIndex, nextKeyValue);
       }
     }
+
+    if (this.nextKeyValue > this.keys.size) {
+      this.nextKeyValue = this.keys.size;
+    }
   }
 
   public keyFor(rowIndex: number): number {
