@@ -94,8 +94,8 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
     (viewPortContainer, instruments, instrumentsProvider, session, outQueue, highPriorityQueue)
   }
 
-  def createViewPortDef(): (DataTable, Provider, ProviderContainer) => ViewPortDef = {
-    val func = (t: DataTable, provider: Provider, pc: ProviderContainer) => ViewPortDef(t.getTableDef.columns, createRpcHandler(provider.asInstanceOf[MockProvider]))
+  def createViewPortDef(): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
+    val func = (t: DataTable, provider: Provider, pc: ProviderContainer, tableContainer: TableContainer) => ViewPortDef(t.getTableDef.columns, createRpcHandler(provider.asInstanceOf[MockProvider]))
     func
   }
 
@@ -134,10 +134,10 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
       Try(vpContainer.callRpcSelection(viewPort.id, "FOO_BAR", session)) match {
         case Success(_) =>
-          assert(false, "I should never get here, it should be an exception")
+          assert(condition = false, "I should never get here, it should be an exception")
         case Failure(e) =>
           println("Failed call, as expected:[" + e.getMessage + "]")
-          assert(true, "this is all good")
+          assert(condition = true, "this is all good")
       }
     }
   }

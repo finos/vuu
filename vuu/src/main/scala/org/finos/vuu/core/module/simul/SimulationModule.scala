@@ -167,7 +167,7 @@ object SimulationModule extends DefaultModule {
           joinFields = "ric"
         ),
         (table, vs) => new SimulatedBigInstrumentsProvider(table),
-        (table, provider, providerContainer) => ViewPortDef(
+        (table, provider, providerContainer, _) => ViewPortDef(
           columns = table.getTableDef.columns,
           service = new InstrumentsService(table, providerContainer)
         )
@@ -181,7 +181,7 @@ object SimulationModule extends DefaultModule {
           joinFields = "ric"
         ),
         (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800),
-        (table, provider, providerContainer) => ViewPortDef(
+        (table, provider, providerContainer, _) => ViewPortDef(
           columns = table.getTableDef.columns,
           service = new PricesService(table, provider)
         )
@@ -217,7 +217,7 @@ object SimulationModule extends DefaultModule {
           joinFields = "id", "ric"
         ),
         (table, vs) => new ParentOrdersProvider(table, ordersModel),
-        (table, provider, providerContainer) => ViewPortDef(
+        (table, provider, providerContainer, _) => ViewPortDef(
           columns = table.getTableDef.columns,
           service = new ParentOrdersService(table, provider)
         )

@@ -24,7 +24,7 @@ import org.scalatest.prop.Tables.Table
 
 trait AbstractSessionTestCase {
 
-  def createViewServerModule(theName: String) = {
+  def createViewServerModule(theName: String): ViewServerModule = {
     new ViewServerModule {
       override def name: String = theName
       override def tableDefs: List[TableDef] = ???
@@ -33,7 +33,7 @@ trait AbstractSessionTestCase {
       override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = ???
       override def staticFileResources(): List[StaticServedResource] = ???
       override def restServicesUnrealized: List[VuuServer => RestService] = ???
-      override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer) => ViewPortDef] = ???
+      override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef] = ???
     }
   }
 
@@ -41,7 +41,7 @@ trait AbstractSessionTestCase {
   var counter: Int = 0
 
   def setupEditableSessionTableInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue, OutboundRowPublishQueue, DataTable, TableContainer) = {
-    implicit val lifecycle = new LifecycleContainer
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
     val module = createViewServerModule("TEST")
 
@@ -86,8 +86,8 @@ trait AbstractSessionTestCase {
 
   }
 
-  def createViewPortDefFunc(tableContainer: TableContainer, rpcHandler: RpcHandler,  clock: Clock): (DataTable, Provider, ProviderContainer) => ViewPortDef = {
-    val func = (t: DataTable, provider: Provider, pc: ProviderContainer) => ViewPortDef(t.getTableDef.columns, rpcHandler)
+  def createViewPortDefFunc(tableContainer: TableContainer, rpcHandler: RpcHandler,  clock: Clock): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
+    val func = (t: DataTable, provider: Provider, pc: ProviderContainer, table: TableContainer) => ViewPortDef(t.getTableDef.columns, rpcHandler)
     func
   }
 

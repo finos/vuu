@@ -65,7 +65,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   val filterSortHistograms = new ConcurrentHashMap[String, Histogram]()
 
-  private val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]()
+  private val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef]()
 
   private val treeNodeStatesByVp = new ConcurrentHashMap[String, TreeNodeStateStore]()
 
@@ -238,11 +238,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def addViewPortDefinition(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer) => ViewPortDef): Unit = {
+  def addViewPortDefinition(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): Unit = {
     viewPortDefinitions.put(table, vpDefFunc)
   }
 
-  private def getViewPortDefinition(table: DataTable): (DataTable, Provider, ProviderContainer) => ViewPortDef = {
+  private def getViewPortDefinition(table: DataTable): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
     table match {
       case session: SessionTable =>
         viewPortDefinitions.get(table.getTableDef.name)
@@ -540,7 +540,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val viewPortDefFunc = getViewPortDefinition(table.asTable)
 
-    val viewPortDef = if (viewPortDefFunc == null) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer)
+    val viewPortDef = if (viewPortDefFunc == null) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer, tableContainer)
 
     val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, groupBy, ClosedTreeNodeState, None)
 
