@@ -86,7 +86,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
   Feature("Test full flow through editable session table") {
 
-    Scenario("") {
+    Scenario("Create a session table based on a user action and populate it with callbacks") {
 
       val (viewPortContainer, process, processProvider, session, outQueue, highPriorityQueue, fixSequence, tableContainer) = setupEditableSessionTableInfra()
 
