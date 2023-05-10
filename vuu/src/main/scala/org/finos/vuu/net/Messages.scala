@@ -28,7 +28,7 @@ trait ViewServerMessage {
 }
 
 object VsMsg {
-  def apply(requestId: String, sessionId: String, token: String, user: String, body: MessageBody, module: String = "CORE") = {
+  def apply(requestId: String, sessionId: String, token: String, user: String, body: MessageBody, module: String = "CORE"): JsonViewServerMessage = {
     JsonViewServerMessage(requestId, sessionId, token, user, body, module)
   }
 }
@@ -133,14 +133,14 @@ case class ViewPortMenuRpcResponse(vpId: String, rpcName: String, action: ViewPo
 
 case class ViewPortMenuRpcReject(vpId: String, rpcName: String, error: String) extends MessageBody
 
-case class ViewPortEditRowRpcCall(vpId: String, rpcName: String, rowKey: String, data: Map[String, Object]) extends MessageBody
-case class ViewPortEditCellRpcCall(vpId: String, rpcName: String, rowKey: String, field: String, value: Object) extends MessageBody
-case class ViewPortEditSubmitFormRpcCall(vpId: String, rpcName: String, rowKey: String, field: String, value: Object) extends MessageBody
+case class ViewPortEditRowRpcCall(vpId: String, rowKey: String, data: Map[String, Object]) extends MessageBody
+case class ViewPortEditCellRpcCall(vpId: String, rowKey: String, field: String, value: Object) extends MessageBody
+case class ViewPortEditSubmitFormRpcCall(vpId: String, rowKey: String, field: String, value: Object) extends MessageBody
 
-case class ViewPortEditCloseFormRpcCall(vpId: String, rpcName: String, field: String, value: Object) extends MessageBody
-case class ViewPortAddRowRpcCall(vpId: String, rpcName: String, data: Map[String, Any]) extends MessageBody
-case class ViewPortDeleteCellRpcCall(vpId: String, rpcName: String, rowKey: String, field: String) extends MessageBody{}
-case class ViewPortDeleteRowRpcCall(vpId: String, rpcName: String, rowKey: String) extends MessageBody
+case class ViewPortEditCloseFormRpcCall(vpId: String, field: String, value: Object) extends MessageBody
+case class ViewPortAddRowRpcCall(vpId: String, data: Map[String, Any]) extends MessageBody
+case class ViewPortDeleteCellRpcCall(vpId: String, rowKey: String, field: String) extends MessageBody{}
+case class ViewPortDeleteRowRpcCall(vpId: String, rowKey: String) extends MessageBody
 
 
 case class ViewPortEditRpcResponse(vpId: String, rpcName: String, action: ViewPortAction) extends MessageBody

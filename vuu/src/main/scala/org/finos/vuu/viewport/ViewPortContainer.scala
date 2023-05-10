@@ -72,7 +72,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   val totalTreeWorkHistogram: Meter = metrics.meter(toJmxName("viewport.work.tree"))
   val totalFlatWorkHistogram: Meter = metrics.meter(toJmxName("viewport.work.flat"))
 
-  def getViewPorts(): List[ViewPort] = CollectionHasAsScala(viewPorts.values()).asScala.toList
+  def getViewPorts: List[ViewPort] = CollectionHasAsScala(viewPorts.values()).asScala.toList
 
   def getTreeNodeStateByVp(vpId: String): TreeNodeStateStore = {
     treeNodeStatesByVp.get(vpId)
@@ -118,7 +118,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def callRpcEditDeleteRow(vpId: String, rpcName: String, key: String, session: ClientSessionId): ViewPortAction = {
+  def callRpcEditDeleteRow(vpId: String, key: String, session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
@@ -130,7 +130,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def callRpcAddRow(vpId: String, rpcName: String, data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
+  def callRpcAddRow(vpId: String, data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
@@ -142,7 +142,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def callRpcEditFormSubmit(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
+  def callRpcEditFormSubmit(vpId: String, session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
