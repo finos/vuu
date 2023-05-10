@@ -128,6 +128,19 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
+  def callRpcFormSubmit(vpId: String, session: ClientSessionId): ViewPortAction = {
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val service = viewPortDef.service
+
+    service match {
+      case serv: EditRpcHandler => serv.onFormSubmit().func(viewPort, session)
+      case _ =>
+        throw new Exception(s"Service is not editable rpc")
+    }
+  }
+
+
   def callRpcSelection(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
 
     val viewPort = this.getViewPortById(vpId)

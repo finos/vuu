@@ -154,6 +154,10 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
           ("proc-1"  ,100001L   )
         )
       }
+
+      val actionClose = viewPortContainer.callRpcFormSubmit(sessionViewPort.id, session)
+
+      actionClose.getClass should equal(classOf[CloseDialogViewPortAction])
     }
   }
 }
