@@ -1,0 +1,6 @@
+
+.DockToolbar .Responsive-inner {
+    align-items: stretch;;
+    gap: 3px;
+    padding: 0 3px !important;
+}

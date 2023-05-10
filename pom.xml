@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.finos.vuu</groupId>
     <artifactId>vuu-parent</artifactId>
-    <version>0.4.65-SNAPSHOT</version>
+    <version>0.5.01-SNAPSHOT</version>
     <name>vuu-parent</name>
     <description>Vuu - A View Server in Scala and React</description>
     <url>https://github.com/finos/vuu</url>
@@ -75,12 +75,14 @@
         <vertx.version>4.4.1</vertx.version>
         <typesafe.conf.version>1.4.2</typesafe.conf.version>
         <logback.version>1.2.9</logback.version>
+        <jmh.version>1.36</jmh.version>
     </properties>
 
     <modules>
         <module>toolbox</module>
         <module>vuu</module>
         <module>vuu-ui</module>
+        <module>benchmark</module>
     </modules>
 
     <dependencies>

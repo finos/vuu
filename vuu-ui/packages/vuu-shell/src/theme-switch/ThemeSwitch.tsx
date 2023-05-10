@@ -8,11 +8,9 @@ import { useControlled } from "@salt-ds/core";
 import { HTMLAttributes, useCallback } from "react";
 
 import "./ThemeSwitch.css";
+import { ThemeMode } from "../theme-provider";
 
 const classBase = "vuuThemeSwitch";
-
-export type ThemeMode = "light" | "dark";
-
 export interface ThemeSwitchProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   defaultMode?: ThemeMode;

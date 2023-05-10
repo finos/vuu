@@ -221,6 +221,7 @@ object Functions {
 
   def create(name: String, args: List[CalculatedColumnClause]): CalculatedColumnClause = {
     name.toLowerCase match {
+      case "abs" => AbsFunction(args.head)
       case "sum" => SumFunction(args)
       case "min" => MinFunction(args)
       case "max" => MaxFunction(args)

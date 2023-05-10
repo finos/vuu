@@ -5,9 +5,10 @@ import {
 import { Connection } from "./connectionTypes";
 import { logger } from "@finos/vuu-utils";
 
-import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
+import { ConnectionQualityMetrics, ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
 
-export type ConnectionMessage = ServerToClientMessage | ConnectionStatusMessage;
+export type ConnectionMessage =
+  ServerToClientMessage | ConnectionStatusMessage | ConnectionQualityMetrics;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
 const { debug, debugEnabled, error, info, warn } = logger(
@@ -136,6 +137,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   status: "closed" | "ready" | "connected" | "reconnected" = "ready";
 
   public url: string;
+  public messagesCount = 0;
 
   constructor(ws: WebSocket, url: string, callback: ConnectionCallback) {
     this.url = url;
@@ -151,6 +153,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     const callback = this[connectionCallback];
     ws.onmessage = (evt) => {
       const vuuMessageFromServer = parseMessage(evt.data);
+      this.messagesCount += 1;
       if (process.env.NODE_ENV === "development") {
         if (debugEnabled && vuuMessageFromServer.body.type !== "HB") {
           debug?.(`<<< ${vuuMessageFromServer.body.type}`);
@@ -158,6 +161,11 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
       }
       callback(vuuMessageFromServer);
     };
+
+    setInterval(() => {
+      callback({ type: "connection-metrics", messagesLength: this.messagesCount });
+      this.messagesCount = 0;
+    }, 1000)
 
     ws.onerror = () => {
       error(`⚡ connection error`);

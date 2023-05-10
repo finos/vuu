@@ -2,28 +2,57 @@ package org.finos.toolbox.collection.set
 
 import org.finos.toolbox.collection.array.ImmutableArray
 
+import java.util
 import scala.reflect.ClassTag
 import scala.util.control.Breaks
 
 object ImmutableUniqueArraySet{
-  def empty[T :ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
+  def empty[T <: Object :ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
     new ChunkedUniqueImmutableArraySet[T](Set(), Array(), chunkSize = chunkSize)
   }
-  def from[T](array: Array[T], chunkSize: Int = 1000)(implicit c: ClassTag[T]) = {
-    ImmutableUniqueArraySet.empty[T]().++(ImmutableArray.from(array))
+  def from[T <: Object](array: Array[T], chunkSize: Int = 1000)(implicit c: ClassTag[T]) = {
+    val newChunks = new Array[Array[T]](1)
+    newChunks(0) = new Array[T](chunkSize)
+    val immutable = new ChunkedUniqueImmutableArraySet(Set[T](), newChunks, chunkSize = chunkSize)
+    immutable.fromArray(array)
   }
+
 }
 
 trait ImmutableUniqueArraySet[T] extends ImmutableArray[T] {
   def contains(element: T): Boolean
 }
 
-class ChunkedUniqueImmutableArraySet[T :ClassTag](private val uniqueCheck: Set[T], private val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 1000) extends ImmutableArray[T] with Iterable[T] {
+class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCheck: Set[T], val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 1000) extends ImmutableArray[T] with Iterable[T] {
 
 
   override def remove(element: T): ImmutableArray[T] = this.-(element)
 
   override def addAll(arr: ImmutableArray[T]): ImmutableArray[T] = this.++(arr)
+
+
+  override def fromArray(arr: Array[T]): ImmutableArray[T] = {
+    //https://www.cs.nott.ac.uk/~psarb2/G51MPC/slides/NumberLogic.pdf
+
+    val chunkCount = (arr.length - 1) / chunkSize + 1
+    val newChunks = new Array[Array[T]](chunkCount)
+
+    (0 until chunkCount).foreach(i => {
+      val start = i * chunkSize;
+      val end = Math.min(start + chunkSize, arr.length);
+      val chunk = util.Arrays.copyOfRange[T](arr, start, end)
+      if(chunk.length < chunkSize){
+        newChunks(i) = Array.concat(chunk, new Array[T](chunkSize - chunk.length))
+      }else{
+        newChunks(i) = chunk
+      }
+    })
+
+    val set = Set.from(arr)
+    val lastUsedIndex = arr.length
+    //println("fromArray(" + arr.mkString(",") + ") lastUsedIndex:" + lastUsedIndex + "newChunks=" + newChunks.length + " newChunks(0).length" + newChunks(0).length)
+    new ChunkedUniqueImmutableArraySet[T](set, newChunks, lastUsedIndex, chunkSize)
+  }
 
   override def iterator: Iterator[T] = {
     new Iterator[T] {
@@ -44,6 +73,7 @@ class ChunkedUniqueImmutableArraySet[T :ClassTag](private val uniqueCheck: Set[T
   def countOfChunks: Int = chunks.length
 
   override def +(element: T): ImmutableArray[T] = {
+    //println("Adding element: " + element)
     if (uniqueCheck.contains(element)) {
       this
     } else {
@@ -64,6 +94,7 @@ class ChunkedUniqueImmutableArraySet[T :ClassTag](private val uniqueCheck: Set[T
           newSetAddition(element, newChunks, indexPlusOne())
           //else amend an existing chunk
         } else {
+          //println("activeChunk="+activeChunk + " " + element)
           val newChunk = new Array[T](chunks(activeChunk).length)
           System.arraycopy(chunks(activeChunk), 0, newChunk, 0, chunks(activeChunk).length)
           newChunk(indexInChunk) = element
@@ -77,10 +108,12 @@ class ChunkedUniqueImmutableArraySet[T :ClassTag](private val uniqueCheck: Set[T
   }
 
   private def newSetAddition(element: T, newChunks: Array[Array[T]], lastUsedIndex: Int) = {
+    //println("newSetAddition(...)")
     new ChunkedUniqueImmutableArraySet[T](uniqueCheck = uniqueCheck.+(element), newChunks, lastUsedIndex, chunkSize = this.chunkSize)
   }
 
   private def newSetRemoval(element: T, newChunks: Array[Array[T]], lastUsedIndex: Int) = {
+    //println("newSetRemoval(...)")
     new ChunkedUniqueImmutableArraySet[T](uniqueCheck = uniqueCheck.-(element), newChunks, lastUsedIndex, chunkSize = this.chunkSize)
   }
 

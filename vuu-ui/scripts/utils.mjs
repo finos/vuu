@@ -105,21 +105,18 @@ export const assertFolderExists = (folderName, exitIfFalse) => {
   return true;
 };
 
-export const writeMetaFile = async (meta, outdir) =>
+export const writeJsonFileFile = async (json, path) =>
   new Promise((resolve, reject) => {
-    console.log(`write bundle metafile`);
-    fs.writeFile(
-      `${outdir}/meta.json`,
-      JSON.stringify(meta, null, 2),
-      (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
+    fs.writeFile(path, JSON.stringify(json, null, 2), (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
       }
-    );
+    });
   });
+export const writeMetaFile = async (meta, outdir) =>
+  writeJsonFileFile(meta, `${outdir}/meta.json`);
 
 export const padRight = (str, length) => {
   return (str + Array(length).fill(" ").join("")).slice(0, length);
@@ -161,10 +158,13 @@ export const getCommandLineArg = (argName, expectValue, defaultValue) => {
 };
 
 const args = process.argv.slice(2);
-export const withArgs = (...argNames) =>
-  argNames
+
+export const withArgs = (...argNames) => {
+  const commandLineArgs = argNames
     .map((arg) => (args.includes("--" + arg) ? ` --${arg}` : ""))
     .join("");
+  return commandLineArgs ? ` -- ${commandLineArgs}` : "";
+};
 
 const addSuffix = (target, suffix, pattern) => {
   if (typeof target === "string") {

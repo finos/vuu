@@ -14,6 +14,7 @@ const classBase = "vuuFilterInput";
 export interface FilterInputProps
   extends SuggestionConsumer,
     HTMLAttributes<HTMLDivElement> {
+  iconName?: string;
   existingFilter?: Filter;
   namedFilters?: Map<string, string>;
   onSubmitFilter?: filterSubmissionHandler;
@@ -21,6 +22,7 @@ export interface FilterInputProps
 
 export const FilterInput = ({
   existingFilter,
+  iconName = "filter",
   namedFilters,
   onSubmitFilter,
   suggestionProvider,
@@ -34,7 +36,11 @@ export const FilterInput = ({
 
   return (
     <div {...props} className={classBase}>
-      <Button className={`${classBase}-FilterButton`} data-icon="filter" />
+      <Button
+        className={`${classBase}-FilterButton`}
+        data-icon={iconName}
+        tabIndex={-1}
+      />
       <div className={`${classBase}-Editor`} ref={editorRef} />
       <Button
         className={`${classBase}-ClearButton`}

@@ -6,10 +6,15 @@ node_modules
 
 yarn-error.log*
 
+deployed_apps
+dist
 generated
 public
 packages/*/*.js
 __tests__
+salt
 stories
 storybook-static
+showcase/dist
+target
 packages/shell/src/feature/Feature.jsx

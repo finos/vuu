@@ -5,21 +5,22 @@ import org.finos.vuu.core.table.column.CalculatedColumnClause
 
 object DataType {
 
-  val StringDataType: Class[String] = classOf[String]
-  val BooleanDataType: Class[Boolean] = classOf[Boolean]
-  val IntegerDataType: Class[Int] = classOf[Int]
-  val LongDataType: Class[Long] = classOf[Long]
-  val DoubleDataType: Class[Double] = classOf[Double]
-  val NoDataType: Class[AnyRef] = classOf[AnyRef]
+  final val charDataType: Class[Char] = classOf[Char]
+  final val StringDataType: Class[String] = classOf[String]
+  final val BooleanDataType: Class[Boolean] = classOf[Boolean]
+  final val IntegerDataType: Class[Int] = classOf[Int]
+  final val LongDataType: Class[Long] = classOf[Long]
+  final val DoubleDataType: Class[Double] = classOf[Double]
+  final val NoDataType: Class[AnyRef] = classOf[AnyRef]
 
   def fromString(s: String): Class[_] = {
     s.trim.toLowerCase match {
-      case "char" => classOf[Char]
-      case "string" => classOf[String]
-      case "double" => classOf[Double]
-      case "boolean" => classOf[Boolean]
-      case "int" => classOf[Int]
-      case "long" => classOf[Long]
+      case "char" => charDataType
+      case "string" => StringDataType
+      case "double" => DoubleDataType
+      case "boolean" => BooleanDataType
+      case "int" => IntegerDataType
+      case "long" => LongDataType
     }
   }
 

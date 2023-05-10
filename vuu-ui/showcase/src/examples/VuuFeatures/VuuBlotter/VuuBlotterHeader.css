@@ -1,0 +1,9 @@
+.VuuBlotterHeader {
+    height: 28px;
+}
+
+.VuuBlotterHeader-CommandButton {
+    --vuu-icon-size: 12px;
+    --saltButton-height: 28px;
+    --saltButton-width: 28px;
+}

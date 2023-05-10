@@ -12,7 +12,7 @@ import {
   VuuFeatureMessage,
 } from "@finos/vuu-data";
 import { GridConfig } from "@finos/vuu-datagrid-types";
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
   filterAsQuery,
@@ -47,12 +47,6 @@ const NO_CONFIG: BlotterConfig = {};
 export interface FilteredTableProps extends FeatureProps {
   schema: TableSchema;
 }
-
-type FilterState = {
-  filter: Filter | undefined;
-  filterQuery: string;
-  filterName?: string;
-};
 
 const applyDefaults = (
   { columns, table }: TableSchema,

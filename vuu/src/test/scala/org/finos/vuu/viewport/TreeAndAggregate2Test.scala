@@ -1,14 +1,14 @@
 package org.finos.vuu.viewport
 
-import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.{RowWithData, ViewPortColumnCreator}
-import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
-import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts._
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.table.ViewPortColumnCreator
+import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
+import org.finos.vuu.util.OutboundRowPublishQueue
+import org.finos.vuu.util.table.TableAsserts._
+import org.finos.vuu.viewport.tree.{OnlyRecalculateTreeKeys, TreeBuildOptimizer}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -72,13 +72,15 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val currentUpdateCount = viewPort.getTableUpdateCount()
        */
 
-      viewPortContainer.shouldRebuildTree(viewport, viewport.getStructuralHashCode(), viewport.getTableUpdateCount()) should be(false)
+      TreeBuildOptimizer.optimize(viewport, viewPortContainer.getTreeNodeStateByVp(viewport.id)).getClass should be (classOf[OnlyRecalculateTreeKeys])
 
-      val previousNodeState = viewport.table.asTable.asInstanceOf[TreeSessionTableImpl].getTree.nodeState
+      //viewPortContainer.shouldRebuildTree(viewport, viewport.getStructuralHashCode(), viewport.getTableUpdateCount()) should be(false)
 
-      val currentNodeState = viewPortContainer.getTreeNodeStateByVp(viewport.id)
-
-      viewPortContainer.shouldRecalcKeys(currentNodeState, previousNodeState) should be(true)
+//      val previousNodeState = viewport.table.asTable.asInstanceOf[TreeSessionTableImpl].getTree.nodeState
+//
+//      val currentNodeState = viewPortContainer.getTreeNodeStateByVp(viewport.id)
+//
+//      viewPortContainer.shouldRecalcKeys(currentNodeState, previousNodeState) should be(true)
 
       runContainersOnce(viewPortContainer, joinProvider)
 
@@ -204,7 +206,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val updates = combineQs(viewport)
 
-      val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
+      //val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
 
       assertVpEq(updates) {
         Table(

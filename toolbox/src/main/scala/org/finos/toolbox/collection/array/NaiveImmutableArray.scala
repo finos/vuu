@@ -1,10 +1,15 @@
 package org.finos.toolbox.collection.array
 
+import java.lang.Object
 import scala.reflect.ClassTag
 
 
 
-class NaiveImmutableArray[T :ClassTag](val array: Array[T] = Array.empty) extends ImmutableArray[T]{
+class NaiveImmutableArray[T <: Object :ClassTag](val array: Array[T] = Array.empty) extends ImmutableArray[T]{
+
+  override def fromArray(arr: Array[T]): ImmutableArray[T] = {
+    new NaiveImmutableArray[T](array = arr)
+  }
 
   override def remove(element: T): ImmutableArray[T] = this.-(element)
   override def addAll(arr: ImmutableArray[T]): ImmutableArray[T] = this.++(arr)

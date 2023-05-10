@@ -1,0 +1,120 @@
+.DivElementKeyedWithTranslateInlineScrollbars {
+  position: absolute;
+  left: 95px;
+  top: 45px;
+  width: 715px;
+  height: 645px;
+  background-color: red;
+  position: relative;
+}
+
+.DivElementKeyedWithTranslateInlineScrollbars-scrollbarContainer {
+  --scroll-content-width: 1100px;
+  border-bottom: none !important;
+  border-top: none !important;
+  border-left: solid 1px var(--salt-container-primary-borderColor);
+  /*  a top border */
+  box-shadow: 0px -1px 0px 0px var(--salt-container-primary-borderColor);
+  height: 615px;
+  left: 0px;
+  overflow: auto;
+  position: absolute;
+  top: 30px;
+  width: calc(715px + 1px);
+}
+
+.DivElementKeyedWithTranslateInlineScrollbars-scrollbarContent {
+  height: calc(30000px + 15px);
+  position: absolute;
+  width: 1150px;
+}
+
+.DivElementKeyedWithTranslateInlineScrollbars-contentContainer {
+  --vuuTableHeaderHeight: 30px;
+  background-color: var(--salt-container-primary-background);
+  height: calc(645px - 15px);
+  position: relative;
+  overflow: auto;
+  overscroll-behavior: none;
+  width: calc(715px - 15px);
+}
+
+.DivElementKeyedWithTranslateInlineScrollbars-contentContainer::-webkit-scrollbar {
+  display: none;
+}
+
+ 
+.DivElementKeyedWithTranslateInlineScrollbars-table {
+  position: absolute;
+  top: 0;
+  left: 0;
+  table-layout: fixed;
+  width: 1100px;
+  margin: 0;
+  border: none;
+  background-color: #fff;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-left: 1px solid #ccc;
+
+}
+  
+.DivElementKeyedWithTranslateInlineScrollbars-table [role="cell"] {
+  display: inline-block;
+}
+
+  .DivElementKeyedWithTranslateInlineScrollbars-col-headings {
+    position: sticky;
+    top: 0;
+    /* ensure header row sits atop everything else when scrolling down */
+    z-index: 1;
+  }
+
+  .DivElementKeyedWithTranslateInlineScrollbars-col-headers {
+    white-space: nowrap;
+  }
+
+  .DivElementKeyedWithTranslateInlineScrollbars-col-header {
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    line-height: 29px;
+    background: #777;
+    border-right: 1px solid #999;
+    color: #fff;
+    padding: 0 3px;
+  }
+
+  .DivElementKeyedWithTranslateInlineScrollbarsRow {
+    background: #fff;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    height: 30px;
+    line-height: 29px;
+    position: absolute;
+    top:0;
+    white-space: nowrap;
+  }
+
+  /* make first column sticky when scrolling right */
+  .DivElementKeyedWithTranslateInlineScrollbars-table [role="cell"]:first-child {
+    position: sticky;
+    left: 0;
+    border-right-color: #aaa;
+    background-color: white;
+  }
+
+  /* ensure first header cell sits atop everything else when scrolling right */
+  .DivElementKeyedWithTranslateInlineScrollbars-table  .DivElementKeyedWithTranslateInlineScrollbars-col-header:first-child {
+    background-color: #777;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+  }
+
+  .sizer-cell {
+    background-color: green !important;
+    border: none !important;
+    height: 0px;
+  }
+  

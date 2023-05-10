@@ -7,25 +7,30 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.filter.{FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort.{AntlrBasedFilter, Sort}
 import org.finos.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData}
-import org.finos.vuu.core.tree.{TreeSessionTable, TreeSessionTableImpl}
+import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.viewport.{GroupBy, ViewPortColumns}
 
-import java.util.concurrent.ConcurrentHashMap
 import java.util.{LinkedList => JList}
 import scala.util.{Failure, Success, Try}
 
 trait TreeBuilder {
-  def build(): Tree
+  def buildEntireTree(): Tree
+  def buildOnlyBranches(): Tree
 }
 
+trait BuildType
+
+object BuildTypeFast extends BuildType
+object BuildTypeFull extends BuildType
+
 object TreeBuilder {
-  def create(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, vpColumns: ViewPortColumns, latestTreeNodeState: TreeNodeStateStore, previousTree: Option[Tree], sort: Option[Sort])(implicit timeProvider: Clock): TreeBuilder = {
-    new TreeBuilderImpl(table, groupBy, filter, vpColumns, latestTreeNodeState, previousTree, sort)
+  def create(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, vpColumns: ViewPortColumns, latestTreeNodeState: TreeNodeStateStore, previousTree: Option[Tree], sort: Option[Sort], buildAction: TreeBuildAction)(implicit timeProvider: Clock): TreeBuilder = {
+    new TreeBuilderImpl(table, groupBy, filter, vpColumns, latestTreeNodeState, previousTree, sort, buildAction)
   }
 }
 
-class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val filter: FilterSpec, val vpColumns: ViewPortColumns, val latestTreeNodeState: TreeNodeStateStore, val previousTree: Option[Tree], sort: Option[Sort])(implicit timeProvider: Clock) extends TreeBuilder with StrictLogging {
+class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val filter: FilterSpec, val vpColumns: ViewPortColumns, val latestTreeNodeState: TreeNodeStateStore, val previousTree: Option[Tree], val sort: Option[Sort], val buildAction: TreeBuildAction)(implicit timeProvider: Clock) extends TreeBuilder with StrictLogging {
 
   final val EMPTY_TREE_NODE_STATE = TreeNodeStateStore(Map())
 
@@ -85,7 +90,7 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
     val shouldRebuild = previousUpdateCounter != tableUpdateCounter || previousHashcode != paramsHashcode || previousNodeState.hashCode() != latestNodeState.hashCode()
 
     if(!shouldRebuild) {
-      logger.info(s"[TREE] Should rebuild tree $shouldRebuild, prevUpdateCounter=$previousUpdateCounter updateCounter=$tableUpdateCounter," +
+      logger.debug(s"[TREE] Should rebuild tree $shouldRebuild, prevUpdateCounter=$previousUpdateCounter updateCounter=$tableUpdateCounter," +
         s"previousHashcode=$previousHashcode paramsHashcode=$paramsHashcode, previousNodeState.hashCode()=${previousNodeState.hashCode()}, latestNodeState.hashCode()=${latestNodeState.hashCode()}")
     }
 
@@ -108,8 +113,11 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
   }
 
 
-  override def build(): Tree = {
+  override def buildEntireTree(): Tree = {
+    buildInternal()
+  }
 
+  private def buildInternal(): Tree = {
     logger.debug("In tree build()")
     logger.debug("Applying Filter()")
 
@@ -125,51 +133,67 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
 
     val paramsHashCode = calculateParamsHash()
 
-    val (rebuildTree, updateCounter) = shouldRebuildTree(paramsHashCode, previousNodeState, latestNodeState)
+    val (_, updateCounter) = shouldRebuildTree(paramsHashCode, previousNodeState, latestNodeState)
 
-    if(!rebuildTree){
-      previousTree.get
-    }else {
-
-      //root is always open
-      val tree = new TreeImpl(new TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy)), latestNodeState, groupBy, updateCounter, paramsHashCode)
-
-      var count = 0
-
-      sortedKeys.foreach(key => {
-
-        if (logEvery.shouldLog()) logger.debug(s"Done nodes ${count}")
-
-        val columns = groupBy.columns
-
-        val row = table.sourceTable.pullRow(key, vpColumns)
-
-        row match {
-          case EmptyRowData =>
-            logger.debug(s"Empty row daya for key = $key")
-
-          case rowWithData: RowWithData =>
-
-            val last = columns.foldLeft(tree.root)((parent, column) => {
-              processBranchColumn(tree, parent.asInstanceOf[TreeNodeImpl], column.getData(rowWithData), false, column, rowWithData)
-            } match {
-              case Some(node) => node
-              case None => parent
-            })
-
-            processBranchColumn(tree, last.asInstanceOf[TreeNodeImpl], key, true, null, rowWithData)
-
-            count += 1
-        }
-
-      })
-
-      logger.debug("complete building tree")
-      tree
+    buildAction match {
+      case FastBuildBranchesOfTree(table, oldTreeOption) =>
+        logger.info("[TREE] Fast Building Branches: " + table.name + "@" + table.sourceTable.name)
+        buildEntireTree(sortedKeys, onlyBranches = true, latestNodeState, updateCounter, paramsHashCode)
+      case BuildEntireTree(table, oldTreeOption) =>
+        logger.info("[TREE] Building Entire Tree: " + table.name + "@" + table.sourceTable.name)
+        buildEntireTree(sortedKeys, onlyBranches = false, latestNodeState, updateCounter, paramsHashCode)
+      case OnlyRecalculateTreeKeys(table, oldTreeOption) =>
+        logger.info("[TREE] Only recalcing keys: " + table.name + "@" + table.sourceTable.name)
+        oldTreeOption.get
     }
   }
 
-  def processBranchColumn(tree: TreeImpl, parent: TreeNodeImpl, data: Any, isLeaf: Boolean, column: Column, row: RowData): Option[TreeNode] = {
+  private def buildEntireTree(sortedKeys: ImmutableArray[String], onlyBranches: Boolean, latestNodeState: TreeNodeStateStore, updateCounter: Long, paramsHashCode: Int): Tree = {
+
+    val tree = new TreeImpl(new TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy)), latestNodeState, groupBy, updateCounter, paramsHashCode, buildAction = Some(buildAction))
+
+    var count = 0
+
+    sortedKeys.foreach(key => {
+
+      if (logEvery.shouldLog()) logger.debug(s"Done nodes ${count}")
+
+      val columns = groupBy.columns
+
+      val row = table.sourceTable.pullRow(key, vpColumns)
+
+      row match {
+        case EmptyRowData =>
+          logger.debug(s"Empty row daya for key = $key")
+
+        case rowWithData: RowWithData =>
+
+          val last = columns.foldLeft(tree.root)((parent, column) => {
+            processBranchColumn(tree, parent.asInstanceOf[TreeNodeImpl], column.getData(rowWithData), false, column, rowWithData)
+          } match {
+            case Some(node) => node
+            case None => parent
+          })
+
+          if (!onlyBranches) {
+            processBranchColumn(tree, last.asInstanceOf[TreeNodeImpl], key, true, null, rowWithData)
+          } else {
+            //logger.info("In build count = 0, only building minial tree")
+          }
+          count += 1
+      }
+    })
+    logger.debug("complete building tree")
+
+    tree
+  }
+
+
+  override def buildOnlyBranches(): Tree = {
+    buildInternal()
+  }
+
+  private def processBranchColumn(tree: TreeImpl, parent: TreeNodeImpl, data: Any, isLeaf: Boolean, column: Column, row: RowData): Option[TreeNode] = {
 
     if (data == null)
       None

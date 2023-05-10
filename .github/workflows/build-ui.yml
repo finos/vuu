@@ -10,13 +10,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16"
-      # Enable node module caching only when yarn.lock is available
-      - name: Cache node modules
+      - name: Cache dependencies
         uses: actions/cache@v2
         with:
-          path: node_modules
-          key: yarn-deps-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            yarn-deps-${{ hashFiles('yarn.lock') }}
-      - run: cd ./vuu-ui && yarn
-      - run: cd ./vuu-ui && yarn build
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-
+      - run: cd ./vuu-ui && npm install
+      - run: cd ./vuu-ui && npm run build

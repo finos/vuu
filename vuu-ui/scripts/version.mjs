@@ -38,7 +38,7 @@ export const bumpDependencies = (packagePath) => {
 
 async function bumpPackageVersion(packagePath) {
   try {
-    await execWait("yarn version --patch --no-git-tag-version", packagePath);
+    await execWait("npm version --patch --no-git-tag-version", packagePath);
   } catch (e) {
     console.log(e.message);
     process.exit(1);

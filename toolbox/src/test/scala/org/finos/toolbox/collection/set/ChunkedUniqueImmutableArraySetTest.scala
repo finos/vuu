@@ -53,6 +53,8 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
 
       var array = ImmutableUniqueArraySet.empty[String](3)
 
+      val chunks = array.asInstanceOf[ChunkedUniqueImmutableArraySet[String]].chunks
+
       array = array.+("Chris")
       array = array.+("Was")
       array = array.+("Here")
@@ -84,6 +86,12 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
       result5.map( x => x).toList should equal(List())
       result5.length shouldEqual(0)
     }
+
+//    Scenario("Add from array"){
+//
+//      ImmutableUniqueArraySet.from(Array())
+//
+//    }
 
   }
 }
