@@ -92,6 +92,39 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     }
   }
 
+  override def process(msg: ViewPortDeleteCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcEditDeleteCell(msg.vpId, msg.rowKey, msg.field, ctx.session)) match {
+      case Success(action) =>
+        logger.info("Processed VP Menu Selection RPC call" + msg)
+        vsMsg(ViewPortEditRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortEditRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: ViewPortDeleteRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcEditDeleteRow(msg.vpId, msg.rpcName, msg.rowKey, ctx.session)) match {
+      case Success(action) =>
+        logger.info("Processed VP Menu Selection RPC call" + msg)
+        vsMsg(ViewPortEditRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortEditRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: ViewPortAddRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.callRpcAddRow(msg.vpId, msg.rpcName, msg., ctx.session)) match {
+      case Success(action) =>
+        logger.info("Processed VP Menu Selection RPC call" + msg)
+        vsMsg(ViewPortEditRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+      case Failure(e) =>
+        logger.info("Failed to remove viewport", e)
+        vsMsg(ViewPortEditRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
+    }
+  }
+
   override def process(msg: RemoveViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.removeViewPort(msg.viewPortId)) match {
       case Success(_) =>

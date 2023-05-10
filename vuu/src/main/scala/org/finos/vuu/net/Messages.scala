@@ -137,6 +137,12 @@ case class ViewPortEditRowRpcCall(vpId: String, rpcName: String, rowKey: String,
 case class ViewPortEditCellRpcCall(vpId: String, rpcName: String, rowKey: String, field: String, value: Object) extends MessageBody
 case class ViewPortEditSubmitFormRpcCall(vpId: String, rpcName: String, rowKey: String, field: String, value: Object) extends MessageBody
 
+case class ViewPortEditCloseFormRpcCall(vpId: String, rpcName: String, field: String, value: Object) extends MessageBody
+case class ViewPortAddRowRpcCall(vpId: String, rpcName: String, data: Map[String, Any]) extends MessageBody
+case class ViewPortDeleteCellRpcCall(vpId: String, rpcName: String, rowKey: String, field: String) extends MessageBody{}
+case class ViewPortDeleteRowRpcCall(vpId: String, rpcName: String, rowKey: String) extends MessageBody
+
+
 case class ViewPortEditRpcResponse(vpId: String, rpcName: String, action: ViewPortAction) extends MessageBody
 
 case class ViewPortEditRpcReject(vpId: String, rpcName: String, error: String) extends MessageBody

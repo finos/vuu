@@ -49,5 +49,11 @@ trait ServerApi {
 
   def process(msg: ViewPortEditSubmitFormRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
 
+  def process(msg: ViewPortDeleteCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
+
+  def process(msg: ViewPortDeleteRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
+
+  def process(msg: ViewPortAddRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
+
   def disconnect(session: ClientSessionId): Unit
 }

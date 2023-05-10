@@ -22,6 +22,8 @@ case class CloseDialogViewPortAction(vpId: String) extends ViewPortAction
 @JsonSubTypes(Array(
   new Type(value = classOf[OpenDialogViewPortAction], name = "OPEN_DIALOG_ACTION"),
   new Type(value = classOf[CloseDialogViewPortAction], name = "CLOSE_DIALOG_ACTION"),
-  new Type(value = classOf[NoAction], name = "NO_ACTION")
+  new Type(value = classOf[NoAction], name = "NO_ACTION"),
+  new Type(value = classOf[ViewPortEditSuccess], name = "VP_EDIT_SUCCESS"),
+  new Type(value = classOf[ViewPortEditFailure], name = "VP_EDIT_FAIL"),
 ))
 trait ViewPortActionMixin {}

@@ -94,6 +94,54 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
+  def callRpcEditFormClose(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val service = viewPortDef.service
+
+    service match {
+      case serv: EditRpcHandler => serv.onFormClose().func(viewPort, session)
+      case _ =>
+        throw new Exception(s"Service is not editable rpc")
+    }
+  }
+
+  def callRpcEditDeleteCell(vpId: String, key: String, column: String, session: ClientSessionId): ViewPortAction = {
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val service = viewPortDef.service
+
+    service match {
+      case serv: EditRpcHandler => serv.deleteCellAction().func(key, column, viewPort, session)
+      case _ =>
+        throw new Exception(s"Service is not editable rpc")
+    }
+  }
+
+  def callRpcEditDeleteRow(vpId: String, rpcName: String, key: String, session: ClientSessionId): ViewPortAction = {
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val service = viewPortDef.service
+
+    service match {
+      case serv: EditRpcHandler => serv.deleteRowAction().func(key, viewPort, session)
+      case _ =>
+        throw new Exception(s"Service is not editable rpc")
+    }
+  }
+
+  def callRpcAddRow(vpId: String, rpcName: String, data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val service = viewPortDef.service
+
+    service match {
+      case serv: EditRpcHandler => serv.addRowAction().func("", data, viewPort, session)
+      case _ =>
+        throw new Exception(s"Service is not editable rpc")
+    }
+  }
+
   def callRpcEditFormSubmit(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
