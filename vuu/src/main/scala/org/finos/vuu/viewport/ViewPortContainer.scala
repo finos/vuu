@@ -12,8 +12,9 @@ import org.finos.vuu.api.{Link, NoViewPortDef, ViewPortDef}
 import org.finos.vuu.client.messages.ViewPortId
 import org.finos.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort._
-import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.net.rpc.EditRpcHandler
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.util.PublishQueue
@@ -93,6 +94,40 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
+  def callRpcEditFormSubmit(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val service = viewPortDef.service
+
+    service match {
+      case serv: EditRpcHandler => serv.onFormSubmit().func(viewPort, session)
+      case _ =>
+        throw new Exception(s"Service is not editable rpc")
+    }
+  }
+  def callRpcEditRow(vpId: String, key: String, data: Map[String, Any], session: ClientSessionId): ViewPortEditAction = {
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val service = viewPortDef.service
+
+    service match {
+      case serv: EditRpcHandler => serv.editRowAction().func(key, data, viewPort, session)
+      case _ =>
+        throw new Exception(s"Service is not editable rpc")
+    }
+  }
+  def callRpcEditCell(vpId: String, key: String, column: String, data: AnyRef, session: ClientSessionId): ViewPortEditAction = {
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    val service = viewPortDef.service
+
+    service match {
+      case serv: EditRpcHandler => serv.editCellAction().func(key, column, data, viewPort, session)
+      case _ =>
+        throw new Exception(s"Service is not editable rpc")
+    }
+  }
+
   def callRpcSelection(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
 
     val viewPort = this.getViewPortById(vpId)
@@ -100,14 +135,15 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val asMap = viewPortDef.service.menuMap
 
     asMap.get(rpcName) match {
-      case Some(menuItem) =>
-        menuItem match {
+      case Some(rpcType) =>
+        rpcType match {
           case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection, viewPort), session)
         }
       case None =>
         throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
     }
   }
+
 
   def callRpcTable(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
 
@@ -145,8 +181,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPortDefinitions.put(table, vpDefFunc)
   }
 
-  private def getViewPortDefinition(table: String): (DataTable, Provider, ProviderContainer) => ViewPortDef = {
-    viewPortDefinitions.get(table)
+  private def getViewPortDefinition(table: DataTable): (DataTable, Provider, ProviderContainer) => ViewPortDef = {
+    table match {
+      case session: SessionTable =>
+        viewPortDefinitions.get(table.getTableDef.name)
+      case _ =>
+        viewPortDefinitions.get(table.name)
+    }
   }
 
   def getViewPortById(vpId: String): ViewPort = {
@@ -436,7 +477,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val aTable = ViewPortTableCreator.create(table, clientSession, groupBy, tableContainer)
 
-    val viewPortDefFunc = getViewPortDefinition(table.name)
+    val viewPortDefFunc = getViewPortDefinition(table.asTable)
 
     val viewPortDef = if (viewPortDefFunc == null) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer)
 

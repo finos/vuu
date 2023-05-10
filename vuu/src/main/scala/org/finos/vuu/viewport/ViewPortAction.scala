@@ -9,9 +9,12 @@ import org.finos.vuu.net.rpc.VsJsonTypeResolver
 @JsonTypeIdResolver(classOf[VsJsonTypeResolver])
 trait ViewPortAction {}
 
+
+
 case class NoAction() extends ViewPortAction
 
-case class OpenDialogViewPortAction(table: ViewPortTable) extends ViewPortAction
+case class OpenDialogViewPortAction(table: ViewPortTable, renderComponent: String = "grid") extends ViewPortAction
+
 
 case class CloseDialogViewPortAction(vpId: String) extends ViewPortAction
 

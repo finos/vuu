@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize
 import org.finos.vuu.api.AvailableViewPortVisualLink
 import org.finos.vuu.net.json.{RowUpdateDeserializer, RowUpdateSerializer}
 import org.finos.vuu.net.rpc.VsJsonTypeResolver
-import org.finos.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortRange, ViewPortTable}
+import org.finos.vuu.viewport.{ViewPortAction, ViewPortEditAction, ViewPortMenu, ViewPortRange, ViewPortTable}
 
 trait FailureMessage {
   def error: String
@@ -133,6 +133,16 @@ case class ViewPortMenuRpcResponse(vpId: String, rpcName: String, action: ViewPo
 
 case class ViewPortMenuRpcReject(vpId: String, rpcName: String, error: String) extends MessageBody
 
+case class ViewPortEditRowRpcCall(vpId: String, rpcName: String, rowKey: String, data: Map[String, Object]) extends MessageBody
+case class ViewPortEditCellRpcCall(vpId: String, rpcName: String, rowKey: String, field: String, value: Object) extends MessageBody
+case class ViewPortEditSubmitFormRpcCall(vpId: String, rpcName: String, rowKey: String, field: String, value: Object) extends MessageBody
+
+case class ViewPortEditRpcResponse(vpId: String, rpcName: String, action: ViewPortAction) extends MessageBody
+
+case class ViewPortEditRpcReject(vpId: String, rpcName: String, error: String) extends MessageBody
+
+
+
 case class CloseTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
 
 case class CloseTreeNodeSuccess(vpId: String, treeKey: String) extends MessageBody
@@ -180,6 +190,7 @@ case class CreateVisualLinkSuccess(childVpId: String, parentVpId: String, childC
 case class RemoveVisualLinkRequest(childVpId: String) extends MessageBody
 
 case class RemoveVisualLinkSuccess(childVpId: String) extends MessageBody
+
 
 object UpdateType {
   final val SizeOnly = "SIZE"

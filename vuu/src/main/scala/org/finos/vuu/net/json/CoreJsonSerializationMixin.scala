@@ -69,5 +69,10 @@ import org.finos.vuu.net._
   new Type(value = classOf[ViewPortMenuRpcReject], name = "VIEW_PORT_MENU_REJ"),
   new Type(value = classOf[RemoveVisualLinkRequest], name = "REMOVE_VISUAL_LINK"),
   new Type(value = classOf[RemoveVisualLinkSuccess], name = "REMOVE_VISUAL_LINK_SUCCESS"),
+  new Type(value = classOf[ViewPortEditRowRpcCall], name = "VP_EDIT_ROW_RPC"),
+  new Type(value = classOf[ViewPortEditCellRpcCall], name = "VP_EDIT_CELL_RPC"),
+  new Type(value = classOf[ViewPortEditSubmitFormRpcCall], name = "VP_EDIT_SUBMIT_FORM_RPC"),
+  new Type(value = classOf[ViewPortEditRpcReject], name = "VP_EDIT_RPC_REJECT"),
+  new Type(value = classOf[ViewPortEditRpcResponse], name = "VP_EDIT_RPC_RESPONSE"),
 ))
 trait CoreJsonSerializationMixin {}
