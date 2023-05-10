@@ -42,7 +42,7 @@ object SortBenchmarkHelper {
       else if (i % 4 == 0) "C"
       else "D"
 
-      val row = RowWithData(ric, Map("ask" -> 100, "bid" -> 101, "last" -> 105, "exchange" -> exchange))
+      val row = RowWithData(ric, Map("ric" -> ric, "ask" -> 100, "bid" -> 101, "last" -> 105, "exchange" -> exchange))
 
       table.processUpdate(ric, row, 1l)
     })

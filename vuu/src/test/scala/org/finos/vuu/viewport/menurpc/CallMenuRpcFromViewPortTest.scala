@@ -134,10 +134,10 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
       Try(vpContainer.callRpcSelection(viewPort.id, "FOO_BAR", session)) match {
         case Success(_) =>
-          assert(condition = false, "I should never get here, it should be an exception")
+          assert(false, "I should never get here, it should be an exception")
         case Failure(e) =>
           println("Failed call, as expected:[" + e.getMessage + "]")
-          assert(condition = true, "this is all good")
+          assert(true, "this is all good")
       }
     }
   }
