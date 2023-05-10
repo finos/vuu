@@ -7,7 +7,6 @@ export class ArrayProxy<T = string> {
   constructor(size: number, getRow: RowAtIndexFunc) {
     this.#getItem = getRow;
     this.length = size;
-    console.log(`new ArrayProxy ${size}`);
 
     const handler = {
       get: (target: ArrayProxy<T>, prop: string | symbol): any => {

@@ -1,6 +1,8 @@
 import { Shell } from "@finos/vuu-shell";
 import { AppSidePanel } from "app-vuu-example/src/app-sidepanel";
 import { CSSProperties, useMemo } from "react";
+import { useMockFeatureData } from "../utils/mock-data";
+import { useAutoLoginToVuuServer } from "../utils";
 
 const user = { username: "test-user", token: "test-token" };
 
@@ -70,9 +72,10 @@ export const ShellWithDefaultLayout = () => {
 ShellWithDefaultLayout.displaySequence = displaySequence++;
 
 export const ShellWithLeftPanel = () => {
+  const { features, schemas } = useMockFeatureData();
   return (
     <Shell
-      leftSidePanel={<AppSidePanel />}
+      leftSidePanel={<AppSidePanel features={features} tables={schemas} />}
       loginUrl={window.location.toString()}
       user={user}
       style={
@@ -88,14 +91,9 @@ export const ShellWithLeftPanel = () => {
 ShellWithLeftPanel.displaySequence = displaySequence++;
 
 export const ShellWithDefaultLayoutAndLeftPanel = () => {
-  const tables = useMemo(() => {
-    return {
-      Test1: {},
-      Test2: {},
-      Test3: {},
-    };
-  }, []);
+  const error = useAutoLoginToVuuServer();
 
+  const { features, schemas } = useMockFeatureData();
   const defaultLayout = useMemo(() => {
     return {
       type: "Stack",
@@ -124,10 +122,14 @@ export const ShellWithDefaultLayoutAndLeftPanel = () => {
     };
   }, []);
 
+  if (error) {
+    return error;
+  }
+
   return (
     <Shell
       defaultLayout={defaultLayout}
-      leftSidePanel={<AppSidePanel tables={tables} />}
+      leftSidePanel={<AppSidePanel features={features} tables={schemas} />}
       loginUrl={window.location.toString()}
       user={user}
       style={

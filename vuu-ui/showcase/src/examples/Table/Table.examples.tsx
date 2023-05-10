@@ -5,21 +5,18 @@ import {
 } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
-import { FilterInput } from "@finos/vuu-filters";
+import { Filter } from "@finos/vuu-filter-types";
+import { FilterInput, useFilterSuggestionProvider } from "@finos/vuu-filters";
 import { Flexbox, useViewContext, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
+import { VuuGroupBy, VuuSort, VuuTable } from "@finos/vuu-protocol-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import {
   DatagridSettingsPanel,
   DataSourceStats,
 } from "@finos/vuu-table-extras";
-import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
-import { useTableConfig } from "../utils/useTableConfig";
-
-import { Filter } from "@finos/vuu-filter-types";
-import { useFilterSuggestionProvider } from "@finos/vuu-filters";
-import { VuuGroupBy, VuuSort, VuuTable } from "@finos/vuu-protocol-types";
 import { DragVisualizer } from "@finos/vuu-table/src/DragVisualizer";
+import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
 import {
   Checkbox,
   ToggleButton,
@@ -39,7 +36,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { ErrorDisplay, Schema, useSchemas, useTestDataSource } from "../utils";
+import {
+  ErrorDisplay,
+  Schema,
+  useSchemas,
+  useTableConfig,
+  useTestDataSource,
+} from "../utils";
 
 let displaySequence = 1;
 

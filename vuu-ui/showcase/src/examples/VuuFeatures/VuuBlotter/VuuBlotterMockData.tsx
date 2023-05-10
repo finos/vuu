@@ -1,9 +1,4 @@
-import {
-  DataSource,
-  DataSourceConfig,
-  RemoteDataSource,
-  TableSchema,
-} from "@finos/vuu-data";
+import { DataSourceConfig, TableSchema } from "@finos/vuu-data";
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import { ConfigurableTable } from "@finos/vuu-datatable";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
@@ -19,13 +14,10 @@ import { DataSourceStats } from "@finos/vuu-table-extras";
 import { Toolbar } from "@heswell/salt-lab";
 import { useCallback, useMemo, useState } from "react";
 import { DockLayout } from "../../html/components/DockLayout";
+import { useTableConfig } from "../../utils";
+import { VuuBlotterProps } from "./VuuBlotter";
 
 import "./VuuBlotter.css";
-
-export interface VuuBlotterProps {
-  schema: TableSchema;
-  showFilter?: boolean;
-}
 
 const classBase = "vuuBlotter2";
 
@@ -57,7 +49,7 @@ const applyDefaults = (
   }
 };
 
-export const VuuBlotter = ({
+export const VuuBlotterMockData = ({
   schema,
   showFilter = false,
   ...props
@@ -69,57 +61,62 @@ export const VuuBlotter = ({
     filter: undefined,
     filterQuery: "",
   });
+  const { config, dataSource } = useTableConfig({
+    columnCount: 10,
+    count: 1000,
+    table: schema.table,
+  });
 
   console.log("VuuBlotter render", { props, schema });
 
-  const {
-    "datasource-config": dataSourceConfigFromState,
-    "table-config": tableConfigFromState,
-  } = useMemo(() => (load?.() ?? NO_CONFIG) as BlotterConfig, [load]);
+  // const {
+  //   "datasource-config": dataSourceConfigFromState,
+  //   "table-config": tableConfigFromState,
+  // } = useMemo(() => (load?.() ?? NO_CONFIG) as BlotterConfig, [load]);
 
-  const configColumns = tableConfigFromState?.columns;
+  // const configColumns = tableConfigFromState?.columns;
 
-  const tableConfig = useMemo(
-    () => ({
-      columns: configColumns || applyDefaults(schema, getDefaultColumnConfig),
-    }),
-    [configColumns, getDefaultColumnConfig, schema]
-  );
+  // const tableConfig = useMemo(
+  //   () => ({
+  //     columns: configColumns || applyDefaults(schema, getDefaultColumnConfig),
+  //   }),
+  //   [configColumns, getDefaultColumnConfig, schema]
+  // );
 
   const suggestionProvider = useFilterSuggestionProvider({
     columns: schema.columns,
     table: schema.table,
   });
 
-  const dataSource: DataSource = useMemo(() => {
-    let ds = loadSession?.("data-source") as RemoteDataSource;
-    if (ds) {
-      return ds;
-    }
-    const columns =
-      dataSourceConfigFromState?.columns ??
-      schema.columns.map((col) => col.name);
+  // const dataSource: DataSource = useMemo(() => {
+  //   let ds = loadSession?.("data-source") as RemoteDataSource;
+  //   if (ds) {
+  //     return ds;
+  //   }
+  //   const columns =
+  //     dataSourceConfigFromState?.columns ??
+  //     schema.columns.map((col) => col.name);
 
-    ds = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: schema.table,
-      ...dataSourceConfigFromState,
-      columns,
-      title,
-    });
-    // ds.on("config", handleDataSourceConfigChange);
-    saveSession?.(ds, "data-source");
-    return ds;
-  }, [
-    dataSourceConfigFromState,
-    id,
-    loadSession,
-    saveSession,
-    schema.columns,
-    schema.table,
-    title,
-  ]);
+  //   ds = new RemoteDataSource({
+  //     bufferSize: 200,
+  //     viewport: id,
+  //     table: schema.table,
+  //     ...dataSourceConfigFromState,
+  //     columns,
+  //     title,
+  //   });
+  //   // ds.on("config", handleDataSourceConfigChange);
+  //   saveSession?.(ds, "data-source");
+  //   return ds;
+  // }, [
+  //   dataSourceConfigFromState,
+  //   id,
+  //   loadSession,
+  //   saveSession,
+  //   schema.columns,
+  //   schema.table,
+  //   title,
+  // ]);
 
   const handleTableConfigChange = useCallback(
     (config: Omit<GridConfig, "headings">) => {
@@ -190,16 +187,16 @@ export const VuuBlotter = ({
 
       <ConfigurableTable
         className={classBase}
-        config={tableConfig}
+        config={config}
         data-dock="content"
         dataSource={dataSource}
         onConfigChange={handleTableConfigChange}
       />
       <Toolbar className="vuuBlotter-footer" data-dock="bottom">
-        <DataSourceStats dataSource={dataSource as RemoteDataSource} />
+        <DataSourceStats dataSource={dataSource} />
       </Toolbar>
     </DockLayout>
   );
 };
 
-export default VuuBlotter;
+export default VuuBlotterMockData;

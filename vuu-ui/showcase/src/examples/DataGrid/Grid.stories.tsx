@@ -471,7 +471,6 @@ export const ColumnHeaders1Level = () => {
     ],
     schemas,
     tablename: "instruments",
-    schemas: {},
   });
 
   if (error) {
@@ -501,7 +500,6 @@ export const SizeSpecifiedInProps = () => {
   const { columns, dataSource, error } = useTestDataSource({
     schemas,
     tablename: "instruments",
-    schemas: {},
   });
 
   if (error) {
@@ -595,7 +593,6 @@ export const ColumnHeaders2Levels = () => {
     },
     schemas,
     tablename: "instruments",
-    schemas: {},
   });
 
   if (error) {
@@ -626,7 +623,6 @@ export const BufferVariations = () => {
     bufferSize: 10,
     schemas,
     tablename: "instruments",
-    schemas: {},
   });
 
   const handleConfigChange: ConfigChangeHandler = (config) => {
