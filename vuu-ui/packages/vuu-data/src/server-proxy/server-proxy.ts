@@ -1,4 +1,5 @@
 import {
+  ClientToServerBody,
   ClientToServerMenuRPC,
   ClientToServerMessage,
   LinkDescriptorWithLabel,
@@ -8,6 +9,7 @@ import {
   VuuRow,
   VuuRpcRequest,
   VuuTable,
+  VuuTableMeta,
 } from "@finos/vuu-protocol-types";
 import { logger, partition } from "@finos/vuu-utils";
 import { Connection } from "../connectionTypes";
@@ -70,6 +72,18 @@ const DEFAULT_OPTIONS: MessageOptions = {};
 const isActiveViewport = (viewPort: Viewport) =>
   viewPort.disabled !== true && viewPort.suspended !== true;
 
+const isSessionTable = (table?: unknown): table is VuuTable => {
+  if (
+    table !== null &&
+    typeof table === "object" &&
+    "table" in table &&
+    "module" in table
+  ) {
+    return (table as VuuTable).table.startsWith("session");
+  }
+  return false;
+};
+
 const addTitleToLinks = (
   links: LinkDescriptorWithLabel[],
   serverViewportId: string,
@@ -110,6 +124,11 @@ const byViewportRowIdxTimestamp = (row1: VuuRow, row2: VuuRow) => {
   }
 };
 
+type PendingRequest<T = unknown> = {
+  reject: (err: unknown) => void;
+  resolve: (value: T | PromiseLike<T>) => void;
+};
+
 interface PendingLogin {
   resolve: (value: string) => void; // TODO
   reject: () => void;
@@ -122,6 +141,7 @@ export class ServerProxy {
   private authToken = "";
   private pendingLogin?: PendingLogin;
   private pendingTableMetaRequests = new Map<string, string>();
+  private pendingRequests = new Map<string, PendingRequest>();
   private sessionId?: string;
   private queuedRequests: Array<ClientToServerMessage["body"]> = [];
   private cachedTableMeta: Map<
@@ -548,6 +568,14 @@ export class ServerProxy {
     );
   }
 
+  private awaitResponseToMessage(message: ClientToServerBody): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const requestId = nextRequestId();
+      this.sendMessageToServer(message, requestId);
+      this.pendingRequests.set(requestId, { reject, resolve });
+    });
+  }
+
   public sendIfReady(
     message: ClientToServerMessage["body"],
     requestId: string,
@@ -585,6 +613,14 @@ export class ServerProxy {
     const { body, requestId, sessionId } = message;
 
     // onsole.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (ServerProxy) ${message.type || JSON.stringify(message)}`,"color:white;background-color:blue;font-weight:bold;");
+
+    const pendingRequest = this.pendingRequests.get(requestId);
+    if (pendingRequest) {
+      const { resolve } = pendingRequest;
+      this.pendingRequests.delete(requestId);
+      resolve(body);
+      return;
+    }
 
     const { viewports } = this;
     switch (body.type) {
@@ -946,15 +982,54 @@ export class ServerProxy {
         }
         break;
 
+      case "VP_EDIT_RPC_RESPONSE":
+        {
+          this.postMessageToClient({
+            requestId,
+            type: "VP_EDIT_RPC_RESPONSE",
+          });
+        }
+        break;
+      case "VP_EDIT_RPC_REJECT":
+        {
+          const viewport = this.viewports.get(body.vpId);
+          if (viewport) {
+            this.postMessageToClient({
+              requestId,
+              type: "VP_EDIT_RPC_REJECT",
+              error: body.error,
+            });
+          }
+        }
+        break;
+
       case "VIEW_PORT_MENU_RESP":
         {
           const { action } = body;
-          this.postMessageToClient({
-            type: "VIEW_PORT_MENU_RESP",
-            action,
-            tableAlreadyOpen: this.isTableOpen(action.table),
-            requestId,
-          });
+          if (isSessionTable(action?.table)) {
+            this.awaitResponseToMessage({
+              type: "GET_TABLE_META",
+              table: action.table,
+            }).then(({ columns, dataTypes }: VuuTableMeta) => {
+              this.postMessageToClient({
+                type: "VIEW_PORT_MENU_RESP",
+                action: {
+                  ...action,
+                  columns,
+                  dataTypes,
+                },
+                tableAlreadyOpen: this.isTableOpen(action.table),
+                requestId,
+              });
+            });
+          } else {
+            this.postMessageToClient({
+              type: "VIEW_PORT_MENU_RESP",
+              action,
+              tableAlreadyOpen: this.isTableOpen(action.table),
+              requestId,
+            });
+          }
         }
         break;
 
