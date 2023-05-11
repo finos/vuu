@@ -1,0 +1,21 @@
+.moving-circle {
+    fill:bisque;
+    offset-distance: 0%;
+    offset-path: path("M90,20v120");
+    animation: circle-on-path 2s;
+    animation-fill-mode: forwards;
+    animation-delay: 12s;
+  }
+
+  .moving-circle.move-2 {
+    offset-path: path("M90,35v120");
+}
+  .moving-circle.move-3 {
+    offset-path: path("M90,50v120");
+}
+  .moving-circle.move-4 {
+    offset-path: path("M90,65v120");
+}
+  .moving-circle.move-5 {
+    offset-path: path("M90,80v120");
+}

@@ -2,6 +2,7 @@ import {
   ColumnDescriptor,
   ColumnType,
   ColumnTypeDescriptor,
+  ColumnTypeRenderer,
   ColumnTypeSimple,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
@@ -130,6 +131,11 @@ export const isTypeDescriptor = (
   typeof type !== "undefined" && typeof type !== "string";
 
 const EMPTY_COLUMN_MAP = {} as const;
+
+export const isColumnTypeRenderer = (
+  renderer?: unknown
+): renderer is ColumnTypeRenderer =>
+  typeof (renderer as ColumnTypeRenderer)?.name !== "undefined";
 
 export const isMappedValueTypeRenderer = (
   renderer?: unknown

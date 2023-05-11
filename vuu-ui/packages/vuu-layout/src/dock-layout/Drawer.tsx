@@ -75,7 +75,6 @@ const Drawer = ({
   });
 
   const toggleDrawer = useCallback(() => {
-    console.log("toggleDrawer");
     setOpen(!open);
   }, [open, setOpen]);
 

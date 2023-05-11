@@ -52,17 +52,17 @@ term : atom  | //=foo, or =100
        atom ( operator term)?;
 
 function :
-    ABS LPAREN arguments RPAREN |
-    MIN LPAREN arguments RPAREN |
-    MAX LPAREN arguments RPAREN |
+    ABS LPAREN term (',' term)* RPAREN |
+    ABS LPAREN atom RPAREN |
+    MIN LPAREN term (',' term)* RPAREN |
+    MAX LPAREN term (',' term)* RPAREN |
     OR LPAREN term (',' term)* RPAREN |
     AND LPAREN term (',' term)* RPAREN |
-    ABS LPAREN atom RPAREN |
-    STARTS LPAREN arguments RPAREN |
-    ENDS LPAREN atom RPAREN |
-    LEN LPAREN atom RPAREN |
-    TEXT LPAREN arguments RPAREN |
-    CONCATENATE LPAREN arguments RPAREN |
+    STARTS LPAREN term ',' term RPAREN |
+    ENDS LPAREN term ',' term RPAREN |
+    LEN LPAREN term RPAREN |
+    TEXT LPAREN term (',' term)* RPAREN |
+    CONCATENATE LPAREN term (',' term)* RPAREN |
     LEFT LPAREN term ',' term RPAREN |
     RIGHT LPAREN term ',' term RPAREN |
     UPPER LPAREN term (',' term)* RPAREN |
@@ -76,33 +76,9 @@ atom : ID | INT | FLOAT | STRING | TRUE | FALSE | function;
 
 arguments : atom (',' atom)*;
 
-//operator : LT | GT | EQ | NEQ | IN | STARTS | ENDS | PLUS | MULTIPLY | DIVIDE | SUBTRACT;
-
 STRING : '"'('a'..'z'|'A'..'Z'|'0'..'9'|'.'|'-')* '"';
 ID : ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9')*;
 INT : '0'..'9'+;
 FLOAT : ('0'..'9')+ '.' ('0'..'9')*;
-//STRING : '"'('a'..'z'|'A'..'Z'|'0'..'9'|'.'|'-')* '"';
-//STRING
-//   : '"' SUPPCHAR* '"'
-//   ;
-//
-////this code allows us to support more exotica (unicode, but also rserved chars) in the filter box
-////TODO: CJS Add example of unicode filtering to tests
-//fragment
-//SUPPCHAR
-//    :   ~["\\\r\n]
-//    |   ESC
-//    ;
-//
-//fragment ESC
-//   : '\\' (["\\/bfnrt] | UNICODE)
-//   ;
-//fragment UNICODE
-//   : 'u' HEX HEX HEX HEX
-//   ;
-//fragment HEX
-//   : [0-9a-fA-F]
-//   ;
 
 WS  :   [ \t\r\n]+ -> skip;

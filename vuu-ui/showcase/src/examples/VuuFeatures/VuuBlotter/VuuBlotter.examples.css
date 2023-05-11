@@ -1,0 +1,12 @@
+.vuuBlotterView {
+    border: solid 1px var(--salt-container-primary-borderColor);
+}
+
+
+.vuuBlotterView .vuuHeader {
+    --saltToolbar-alignItems: center;
+    --saltToolbar-height: 32px;
+    border-bottom: solid 1px var(--salt-container-primary-borderColor);
+}
+
+

@@ -1,8 +1,18 @@
-div#page {
-    max-width: 900px; /* just to demonstrate horizontal scrolling & stickiness */
-  }
-  
-  div#chartWrapper {
+.DivElementWithSizers {
+  position: absolute;
+  left: 95px;
+  top: 45px;
+  width: 715px;
+  height: 645px;
+  background-color: red;
+  overflow: auto;
+}
+
+.DivElementWithSizers-table [role="cell"] {
+  display: inline-block;
+}
+
+  .DivElementWithSizers-wrapper {
     position: sticky;
     left: 0px;
     top: 0px;
@@ -11,24 +21,11 @@ div#page {
     overflow: hidden;
   }
   
-  table#chart {
+  .DivElementWithSizers-table {
     position: absolute;
     top: 0;
     left: 0;
     table-layout: fixed;
-  }
-  
-  #scroller {
-    position: absolute;
-    left: 95px;
-    top: 45px;
-    width: 715px;
-    height: 645px;
-    background-color: red;
-    overflow: auto;
-  }
-  
-  table#chart {
     width: 1600px;
     margin: 0;
     border: none;
@@ -36,41 +33,48 @@ div#page {
     border-collapse: separate;
     border-spacing: 0;
     border-left: 1px solid #ccc;
+
   }
-  table#chart th {
-    border-bottom: 1px solid #ccc;
-    box-sizing: border-box;
-    line-height: 29px;
-  }
-  table#chart th {
-    background: #777;
-    border-right: 1px solid #999;
-    color: #fff;
-    padding: 0 3px;
+  
+
+  .DivElementWithSizers-col-headings {
     position: sticky;
     top: 0;
     /* ensure header row sits atop everything else when scrolling down */
     z-index: 1;
   }
-  table#chart td {
+
+  .DivElementWithSizers-col-header {
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    line-height: 29px;
+    background: #777;
+    border-right: 1px solid #999;
+    color: #fff;
+    padding: 0 3px;
+  }
+  .DivElementWithSizersRow {
     background: #fff;
     border-right: 1px solid #ccc;
     border-bottom: 1px solid #ccc;
     box-sizing: border-box;
+    height: 30px;
     line-height: 29px;
-    padding: 0px 5px;
+    white-space: nowrap;
   }
-  /* ensure first header cell sits atop everything else when scrolling right */
-  table#chart th:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 2;
-  }
+
   /* make first column sticky when scrolling right */
-  table#chart td:first-child {
+  .DivElementWithSizers-table [role="cell"]:first-child {
     position: sticky;
     left: 0;
     border-right-color: #aaa;
+  }
+
+  /* ensure first header cell sits atop everything else when scrolling right */
+  .DivElementWithSizers-col-header:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
   }
   
   .sizer-cell {

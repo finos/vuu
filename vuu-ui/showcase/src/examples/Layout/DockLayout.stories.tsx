@@ -1,7 +1,7 @@
 import { SyntheticEvent, useRef, useState } from "react";
 
 import {
-  Chest,
+  DockLayout,
   Component,
   Drawer,
   Flexbox,
@@ -11,7 +11,7 @@ import {
 import { List, ListItem } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
 
-import "./Chest.stories.css";
+import "./DockLayout.stories.css";
 
 let displaySequence = 1;
 
@@ -34,7 +34,7 @@ const InlineDrawer = ({
     }
   };
   return (
-    <Chest style={{ width: "100%", height: "100%" }}>
+    <DockLayout style={{ width: "100%", height: "100%" }}>
       <Drawer
         inline={inline}
         onClick={handleClick}
@@ -62,7 +62,7 @@ const InlineDrawer = ({
         }}
         onClick={handleClick}
       />
-    </Chest>
+    </DockLayout>
   );
 };
 
@@ -133,7 +133,7 @@ export const LeftInlineDrawerStack = () => {
   const handleClick = () => setOpen(!open);
   return (
     <Flexbox style={{ width: 900, height: 700, flexDirection: "column" }}>
-      <Chest style={{ flex: 1, "--hw-chest-bg": "inherit" }}>
+      <DockLayout style={{ flex: 1, "--hw-chest-bg": "inherit" }}>
         <Drawer
           inline
           peekaboo
@@ -157,7 +157,7 @@ export const LeftInlineDrawerStack = () => {
             onClick={handleClick}
           />
         </Stack>
-      </Chest>
+      </DockLayout>
 
       <div style={{ height: 40, backgroundColor: "#ccc" }} />
     </Flexbox>
@@ -167,7 +167,7 @@ export const LeftInlineDrawerFlexbox = () => {
   const [open, setOpen] = useState(false);
   const handleClick = () => setOpen(!open);
   return (
-    <Chest style={{ width: "100vw", height: "100vh" }}>
+    <DockLayout style={{ width: "100vw", height: "100vh" }}>
       <Drawer
         inline
         onClick={handleClick}
@@ -239,7 +239,7 @@ export const LeftInlineDrawerFlexbox = () => {
           ) : null}
         </div>
       </Flexbox>
-    </Chest>
+    </DockLayout>
   );
 };
 
@@ -248,7 +248,7 @@ export const InlineDrawerFlexboxVariants = () => {
   const handleClick = () => setOpen(!open);
   return (
     <>
-      <Chest style={{ width: 700, height: 300, margin: 50 }}>
+      <DockLayout style={{ width: 700, height: 300, margin: 50 }}>
         <Drawer
           inline
           onClick={handleClick}
@@ -303,12 +303,12 @@ export const InlineDrawerFlexboxVariants = () => {
             ) : null}
           </div>
         </Flexbox>
-      </Chest>
+      </DockLayout>
 
       <Flexbox
         style={{ width: 700, height: 300, margin: 50, flexDirection: "column" }}
       >
-        <Chest style={{ flex: 1 }}>
+        <DockLayout style={{ flex: 1 }}>
           <Drawer
             inline
             onClick={handleClick}
@@ -340,7 +340,7 @@ export const InlineDrawerFlexboxVariants = () => {
               onClick={handleClick}
             />
           </Flexbox>
-        </Chest>
+        </DockLayout>
         <div style={{ height: 40, backgroundColor: "#ccc" }}>
           {open ? (
             <Button
@@ -363,7 +363,7 @@ export const InlineDrawerFlexboxVariants = () => {
 
 export const CustomSizeDrawer = () => {
   return (
-    <Chest style={{ width: "100vw", height: "100vh" }}>
+    <DockLayout style={{ width: "100vw", height: "100vh" }}>
       <Drawer
         clickToOpen
         inline
@@ -403,13 +403,13 @@ export const CustomSizeDrawer = () => {
         </Flexbox>
         <div style={{ height: 40, backgroundColor: "#ccc" }}></div>
       </Flexbox>
-    </Chest>
+    </DockLayout>
   );
 };
 
 export const WithToggleButton = () => {
   return (
-    <Chest style={{ width: "100vw", height: "100vh" }}>
+    <DockLayout style={{ width: "100vw", height: "100vh" }}>
       <Drawer
         inline
         position="left"
@@ -433,6 +433,6 @@ export const WithToggleButton = () => {
           />
         </Flexbox>
       </Flexbox>
-    </Chest>
+    </DockLayout>
   );
 };

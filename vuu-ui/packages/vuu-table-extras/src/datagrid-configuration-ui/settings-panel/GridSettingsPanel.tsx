@@ -52,8 +52,6 @@ export const GridSettingsPanel = ({
     [dispatchUpdate]
   );
 
-  console.log(`GridSettingsPanel ${JSON.stringify(config.columns, null, 2)}`);
-
   return (
     <div
       className={classBase}

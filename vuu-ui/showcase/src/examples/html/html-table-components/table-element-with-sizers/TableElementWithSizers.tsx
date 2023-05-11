@@ -1,24 +1,15 @@
-import { HTMLAttributes, UIEventHandler, useRef } from "react";
+import { useRef } from "react";
 import { useScroll } from "./useScroll";
+import { HTMLTableProps } from "../tableTypes";
 
-export interface HTMLTableProps extends HTMLAttributes<HTMLDivElement> {
-  Row: unknown;
-  bufferCount?: number;
-  contentHeight: number;
-  data: unknown[];
-  dataRowCount: number;
-  headerHeight?: number;
-  onScroll: UIEventHandler<HTMLDivElement>;
-  rowHeight?: number;
-  viewportHeight: number;
-  visibleRowCount?: number;
-}
+import "./TableElementWithSizers.css";
+
 export const TableElementWithSizers = ({
   Row,
   bufferCount = 5,
   contentHeight,
   data,
-  dataRowCount,
+  dataRowCount = data.length,
   headerHeight = 30,
   rowHeight = 30,
   viewportHeight,
@@ -73,7 +64,12 @@ export const TableElementWithSizers = ({
               />
             </tr>
             {data.slice(firstRowIndex, lastRowIndex).map((data, i) => (
-              <Row index={firstRowIndex + i} key={data[0]} data={data} />
+              <Row
+                className="TableElementWithSizersRow"
+                index={firstRowIndex + i}
+                key={data[0]}
+                data={data}
+              />
             ))}
             <tr className="sizer-row" key="sizer-end">
               <td

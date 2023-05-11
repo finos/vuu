@@ -2,6 +2,7 @@
 import { ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
+import { ContributionLocation } from "../layout-view";
 
 export interface WithProps {
   props?: { [key: string]: any };
@@ -131,12 +132,12 @@ export type SaveAction = {
 
 export type AddToolbarContributionViewAction = {
   content: ReactElement;
-  location: string;
+  location: ContributionLocation;
   type: "add-toolbar-contribution";
 };
 
 export type RemoveToolbarContributionViewAction = {
-  location: string;
+  location: ContributionLocation;
   type: "remove-toolbar-contribution";
 };
 

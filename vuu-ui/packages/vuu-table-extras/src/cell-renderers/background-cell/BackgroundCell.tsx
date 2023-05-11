@@ -1,8 +1,4 @@
-import {
-  ColumnType,
-  ColumnTypeRenderer,
-  TableCellProps,
-} from "@finos/vuu-datagrid-types";
+import { ColumnType, TableCellProps } from "@finos/vuu-datagrid-types";
 import {
   DOWN1,
   DOWN2,

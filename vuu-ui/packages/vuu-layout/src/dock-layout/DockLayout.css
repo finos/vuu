@@ -1,4 +1,4 @@
-.hwChest {
+.vuuDockLayout {
   --chest-bg: var(--hw-chest-bg, inherit);
   --drawer-bg: var(--hw-drawer-bg, inherit);
   --drawer-size: var(--hw-drawer-size, 200px);
@@ -8,15 +8,15 @@
   display: flex;
 }
 
-.hwChest-horizontal {
+.vuuDockLayout-horizontal {
   flex-direction: row;
 }
 
-.hwChest-vertical {
+.vuuDockLayout-vertical {
   flex-direction: column;
 }
 
-.hwChest-content {
+.vuuDockLayout-content {
   background-color: var(--chest-bg);
   flex-grow: 1;
   flex-shrink: 1;
@@ -27,10 +27,10 @@
   justify-content: center;
 }
 
-.hwChest-horizontal .hwChest-content {
+.vuuDockLayout-horizontal .vuuDockLayout-content {
   flex-basis: 100%;
 }
 
-.hwChest-vertical .hwChest-content {
+.vuuDockLayout-vertical .vuuDockLayout-content {
   flex-basis: 100%;
 }

@@ -158,10 +158,13 @@ export const getCommandLineArg = (argName, expectValue, defaultValue) => {
 };
 
 const args = process.argv.slice(2);
-export const withArgs = (...argNames) =>
-  argNames
+
+export const withArgs = (...argNames) => {
+  const commandLineArgs = argNames
     .map((arg) => (args.includes("--" + arg) ? ` --${arg}` : ""))
     .join("");
+  return commandLineArgs ? ` -- ${commandLineArgs}` : "";
+};
 
 const addSuffix = (target, suffix, pattern) => {
   if (typeof target === "string") {
