@@ -35,6 +35,8 @@ jobs:
           node-version: "16"
       - name: Install dependencies
         run: cd ./vuu-ui && npm install
+      - name: Build Vuu Libraries
+        run: cd ./vuu-ui && npm run build
       - name: Build showcase
         run: cd ./vuu-ui && npm run showcase:build
       - name: Build Vuu app

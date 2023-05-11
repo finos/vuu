@@ -4,7 +4,7 @@ import {
   KeyedColumnDescriptor,
   TableCellProps,
 } from "@finos/vuu-datagrid-types";
-import { metadataKeys } from "@finos/vuu-utils";
+import { getColumnStyle, metadataKeys } from "@finos/vuu-utils";
 import { useCallback } from "react";
 
 import "./TableGroupCell.css";
@@ -38,17 +38,19 @@ export const TableGroupCell = ({ column, onClick, row }: TableCellProps) => {
     onClick?.(column);
   }, [column, onClick]);
 
-  const style = {
-    left: column.pin == "left" ? column.pinnedOffset : undefined,
-  };
+  // const style = {
+  //   left: column.pin == "left" ? column.pinnedOffset : undefined,
+  // };
+  const style = getColumnStyle(column);
   const isLeaf = row[IS_LEAF];
   const spacers = Array(offset)
     .fill(0)
     .map((n, i) => <span className="vuuTableGroupCell-spacer" key={i} />);
   return (
-    <td
+    <div
       className={"vuuTableGroupCell vuuPinLeft"}
       onClick={isLeaf ? undefined : handleClick}
+      role="cell"
       style={style}
     >
       {spacers}
@@ -56,6 +58,6 @@ export const TableGroupCell = ({ column, onClick, row }: TableCellProps) => {
         <span className="vuuTableGroupCell-toggle" data-icon="triangle-right" />
       )}
       <span>{value}</span>
-    </td>
+    </div>
   );
 };

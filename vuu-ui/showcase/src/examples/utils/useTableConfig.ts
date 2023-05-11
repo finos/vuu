@@ -1,9 +1,9 @@
 import { ArrayDataSource } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
 import { useMemo } from "react";
 import { ArrayProxy } from "./ArrayProxy";
-import { VuuRowGenerator } from "./vuu-row-generator";
+import { getColumnAndRowGenerator } from "./vuu-row-generator";
 
 const NO_CONFIG = {} as const;
 export const useTableConfig = ({
@@ -11,32 +11,30 @@ export const useTableConfig = ({
   columnCount = 10,
   count = 1000,
   leftPinnedColumns = [],
+  rangeChangeRowset = "delta",
   rightPinnedColumns = [],
   renderBufferSize = 0,
+  table,
 }: {
   columnConfig?: { [key: string]: Partial<ColumnDescriptor> };
   columnCount?: number;
   count?: number;
   leftPinnedColumns?: number[];
   rightPinnedColumns?: number[];
+  rangeChangeRowset?: "delta" | "full";
   renderBufferSize?: number;
+  table?: VuuTable;
 } = {}) => {
   return useMemo(() => {
+    const [columnGenerator, rowGenerator] = getColumnAndRowGenerator(table);
     const arrayProxy = new ArrayProxy<VuuRowDataItemType[]>(
       count,
-      VuuRowGenerator(columnCount)
+      rowGenerator(columnCount)
     );
 
-    const columns: ColumnDescriptor[] = [
-      { name: "row number", width: 150 },
-    ].concat(
-      Array(columnCount)
-        .fill(true)
-        .map((base, i) => {
-          const name = `column ${i + 1}`;
-          return { name, width: 100, ...columnConfig[name] };
-        })
-    );
+    const columns = table
+      ? columnGenerator([], columnConfig)
+      : columnGenerator(columnCount, columnConfig);
 
     leftPinnedColumns.forEach((index) => (columns[index].pin = "left"));
     rightPinnedColumns.forEach((index) => (columns[index].pin = "right"));
@@ -44,6 +42,7 @@ export const useTableConfig = ({
     const dataSource = new ArrayDataSource({
       columnDescriptors: columns,
       data: arrayProxy,
+      rangeChangeRowset,
     });
 
     return { config: { columns }, dataSource, renderBufferSize };
@@ -52,7 +51,9 @@ export const useTableConfig = ({
     columnCount,
     count,
     leftPinnedColumns,
+    rangeChangeRowset,
     renderBufferSize,
     rightPinnedColumns,
+    table,
   ]);
 };

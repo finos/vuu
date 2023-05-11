@@ -23,7 +23,7 @@ import { GroupCellRenderer } from "./GroupCellRenderer";
 import { ViewportRowModelDataSource } from "./ViewportRowModelDataSource";
 import { buildColumnMap } from "@finos/vuu-utils";
 import { vuuMenuToAgGridMenu } from "./agGridMenuUtils";
-import { AgData, AgDataRow } from "./AgDataWindow";
+import { AgData } from "./AgDataWindow";
 
 type Column = {
   getId: () => string;

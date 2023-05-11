@@ -70,7 +70,7 @@ export const VuuBlotter = ({
     filterQuery: "",
   });
 
-  console.log("VuuBlotter render", { props });
+  console.log("VuuBlotter render", { props, schema });
 
   const {
     "datasource-config": dataSourceConfigFromState,
@@ -201,3 +201,5 @@ export const VuuBlotter = ({
     </DockLayout>
   );
 };
+
+export default VuuBlotter;

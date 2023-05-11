@@ -13,8 +13,6 @@ import {
 } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent } from "react";
 
-export type tableLayoutType = "row" | "column";
-
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   allowConfigEditing?: boolean;
   config: Omit<GridConfig, "headings">;
@@ -38,7 +36,6 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   renderBufferSize?: number;
   rowHeight?: number;
   selectionModel?: TableSelectionModel;
-  tableLayout?: tableLayoutType;
   width?: number;
   zebraStripes?: boolean;
 }
@@ -53,19 +50,20 @@ export interface TableImplementationProps {
   columns: KeyedColumnDescriptor[];
   columnsWithinViewport: KeyedColumnDescriptor[];
   data: DataSourceRow[];
+  getRowOffset: (row: DataSourceRow) => number;
   headerHeight: number;
   headings: TableHeadings;
   onColumnResize?: TableColumnResizeHandler;
   onHeaderCellDragEnd?: () => void;
   onHeaderCellDragStart?: (evt: MouseEvent) => void;
   onContextMenu?: (evt: MouseEvent<HTMLElement>) => void;
-  onRemoveColumnFromGroupBy?: (column: KeyedColumnDescriptor) => void;
+  onRemoveColumnFromGroupBy?: (column?: KeyedColumnDescriptor) => void;
   onRowClick?: RowClickHandler;
   onSort: (column: KeyedColumnDescriptor, isAdditive: boolean) => void;
   onToggleGroup?: (row: DataSourceRow, column: KeyedColumnDescriptor) => void;
+  tableId: string;
   virtualColSpan?: number;
   rowCount: number;
-  rowHeight: number;
 }
 
 type MeasureStatus = "unmeasured" | "measured";
@@ -81,12 +79,11 @@ export interface TableMeasurements {
 }
 
 export interface Viewport {
-  fillerHeight: number;
   maxScrollContainerScrollHorizontal: number;
   maxScrollContainerScrollVertical: number;
   pinnedWidthLeft: number;
   rowCount: number;
-  scrollContentWidth: number;
+  // contentWidth: number;
 }
 
 export type RowClickHandler = (

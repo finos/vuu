@@ -1,48 +1,51 @@
+import { TableProps } from "@finos/vuu-table";
 import { useRef } from "react";
-import { useScroll } from "./useScroll";
-import { HTMLTableProps } from "../tableTypes";
+import { Row } from "../Row";
+import { useTable } from "./useTable";
 
 import "./DivElementWithSizers.css";
 
 const classBase = "DivElementWithSizers";
 
 export const DivElementWithSizers = ({
-  Row,
-  bufferCount = 5,
-  columns,
-  contentHeight,
-  data,
-  dataRowCount = data.length,
+  config,
+  dataSource,
   headerHeight = 30,
+  height,
+  renderBufferSize = 5,
   rowHeight = 30,
-  viewportHeight,
-  visibleRowCount = 20,
-}: HTMLTableProps) => {
+  width,
+}: TableProps) => {
   const tableRef = useRef<HTMLDivElement>(null);
   const {
+    columnMap,
+    columns,
+    containerMeasurements: { containerRef, innerSize, outerSize },
+    data,
     handleScroll,
     firstRowIndex,
     lastRowIndex,
     offscreenContentHeight,
     spacerEndRef,
     spacerStartRef,
-  } = useScroll({
-    bufferCount,
-    dataRowCount,
+    viewportMeasurements,
+  } = useTable({
+    config,
+    dataSource,
+    headerHeight,
+    renderBufferSize,
     rowHeight,
-    table: tableRef,
-    viewportHeight,
-    visibleRowCount,
+    tableRef,
   });
 
   return (
-    <div className={classBase} onScroll={handleScroll}>
+    <div className={classBase} onScroll={handleScroll} ref={containerRef}>
       <div
         className={`${classBase}-scroll-content`}
         style={{
           position: "absolute",
           width: 1600,
-          height: contentHeight + headerHeight,
+          height: viewportMeasurements.contentHeight + headerHeight,
         }}
       />
 
@@ -50,21 +53,21 @@ export const DivElementWithSizers = ({
         <div className={`${classBase}-table`}>
           <div className={`${classBase}-col-headings`}>
             <div className={`${classBase}-col-headers`} role="row">
-              {columns.map((column) => (
+              {columns.map((col) => (
                 <div
                   className={`${classBase}-col-header`}
-                  key={column}
+                  key={col.name}
                   role="cell"
                   style={{ width: 145 }}
                 >
-                  {column}
+                  {col.name}
                 </div>
               ))}
             </div>
           </div>
           <div
             className={`${classBase}-body`}
-            style={{ height: contentHeight }}
+            style={{ height: viewportMeasurements.contentHeight }}
           >
             <div className="sizer-row" key="sizer-start">
               <div
@@ -73,10 +76,11 @@ export const DivElementWithSizers = ({
                 style={{ height: 0 }}
               />
             </div>
-            {data.slice(firstRowIndex, lastRowIndex).map((data, i) => (
+            {data.map((data) => (
               <Row
                 className="DivElementWithSizersRow"
-                index={firstRowIndex + i}
+                columnMap={columnMap}
+                columns={columns}
                 key={data[0]}
                 data={data}
               />

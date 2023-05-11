@@ -1,26 +1,24 @@
-div#page {
-    max-width: 900px; /* just to demonstrate horizontal scrolling & stickiness */
-  }
   
-  div#chartWrapper {
+.TableElementWithSizers {
+  position: absolute;
+  left: 95px;
+  top: 45px;
+  width: 715px;
+  height: 645px;
+  background-color: red;
+  overflow: auto;
+}
+
+.TableElementWithSizers-wrapper {
     position: sticky;
     left: 0px;
     top: 0px;
     width: 700px;
     height: 630px;
     overflow: hidden;
-  }
+}
   
   
-  #scroller {
-    position: absolute;
-    left: 95px;
-    top: 45px;
-    width: 715px;
-    height: 645px;
-    background-color: red;
-    overflow: auto;
-  }
   
   table#chart {
     background-color: #fff;

@@ -6,6 +6,7 @@ import "./DraggableLayout.css";
 
 export interface DraggableLayoutProps extends HTMLAttributes<HTMLDivElement> {
   dropTarget?: boolean;
+  resizeable?: boolean;
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const DraggableLayout = forwardRef(function DraggableLayout(
@@ -13,6 +14,7 @@ export const DraggableLayout = forwardRef(function DraggableLayout(
     children,
     className: classNameProp,
     dropTarget,
+    resizeable: _, // ignore, its just a marker used by the layout system
     ...htmlAttributes
   }: DraggableLayoutProps,
   forwardedRef: ForwardedRef<HTMLDivElement>

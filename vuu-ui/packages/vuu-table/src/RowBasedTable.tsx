@@ -1,5 +1,6 @@
 import {
-  getColumnPinStyle,
+  buildColumnMap,
+  getColumnStyle,
   isGroupColumn,
   metadataKeys,
   notHidden,
@@ -11,6 +12,8 @@ import { TableRow } from "./TableRow";
 import { TableGroupHeaderCell } from "./TableGroupHeaderCell";
 import { TableHeaderCell } from "./TableHeaderCell";
 
+import "./RowBasedTable.css";
+
 const classBase = "vuuTable";
 const { RENDER_IDX } = metadataKeys;
 
@@ -18,6 +21,7 @@ export const RowBasedTable = ({
   columns,
   columnsWithinViewport,
   data,
+  getRowOffset,
   headings,
   onColumnResize,
   onHeaderCellDragStart,
@@ -26,9 +30,9 @@ export const RowBasedTable = ({
   onRowClick,
   onSort,
   onToggleGroup,
+  tableId,
   virtualColSpan = 0,
   rowCount,
-  rowHeight,
 }: TableImplementationProps) => {
   const handleDragStart = useCallback(
     (evt: MouseEvent) => {
@@ -40,6 +44,8 @@ export const RowBasedTable = ({
   const visibleColumns = useMemo(() => {
     return columns.filter(notHidden);
   }, [columns]);
+
+  const columnMap = useMemo(() => buildColumnMap(columns), [columns]);
 
   const handleHeaderClick = useCallback(
     (evt: MouseEvent) => {
@@ -56,25 +62,20 @@ export const RowBasedTable = ({
   );
 
   return (
-    <table aria-rowcount={rowCount} className={`${classBase}-table`}>
-      <colgroup>
-        {visibleColumns.map((column, i) => (
-          <col key={i} width={`${column.width}px`} />
-        ))}
-      </colgroup>
-      <thead>
+    <div aria-rowcount={rowCount} className={`${classBase}-table`} role="table">
+      <div className={`${classBase}-headers`} role="rowGroup">
         {headings.map((colHeaders, i) => (
-          <tr className="vuuTable-heading" key={i}>
-            {colHeaders.map(({ label, span }, j) => (
-              <th colSpan={span} key={j} className="vuuTable-headingCell">
+          <div className="vuuTable-heading" key={i}>
+            {colHeaders.map(({ label, width }, j) => (
+              <div key={j} className="vuuTable-headingCell" style={{ width }}>
                 {label}
-              </th>
+              </div>
             ))}
-          </tr>
+          </div>
         ))}
-        <tr>
+        <div role="row">
           {visibleColumns.map((column, i) => {
-            const style = getColumnPinStyle(column);
+            const style = getColumnStyle(column);
             return isGroupColumn(column) ? (
               <TableGroupHeaderCell
                 column={column}
@@ -82,28 +83,35 @@ export const RowBasedTable = ({
                 key={i}
                 onRemoveColumn={onRemoveColumnFromGroupBy}
                 onResize={onColumnResize}
+                role="columnHeader"
                 style={style}
               />
             ) : (
               <TableHeaderCell
                 column={column}
                 data-idx={i}
+                id={`${tableId}-${i}`}
                 key={i}
                 onClick={handleHeaderClick}
                 onDragStart={handleDragStart}
                 onResize={onColumnResize}
+                role="columnHeader"
                 style={style}
               />
             );
           })}
-        </tr>
-      </thead>
-      <tbody onContextMenu={onContextMenu}>
-        {data?.map((row, i) => (
+        </div>
+      </div>
+      <div
+        className={`${classBase}-body`}
+        onContextMenu={onContextMenu}
+        role="rowGroup"
+      >
+        {data?.map((row) => (
           <TableRow
+            columnMap={columnMap}
             columns={columnsWithinViewport}
-            height={rowHeight}
-            index={i}
+            offset={getRowOffset(row)}
             key={row[RENDER_IDX]}
             onClick={onRowClick}
             virtualColSpan={virtualColSpan}
@@ -111,8 +119,7 @@ export const RowBasedTable = ({
             row={row}
           />
         ))}
-        <tr className={`${classBase}-filler`} />
-      </tbody>
-    </table>
+      </div>
+    </div>
   );
 };

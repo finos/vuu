@@ -34,6 +34,7 @@ export const useMeasuredSize = (
       clientWidth?: number;
       clientHeight?: number;
     }) => {
+      console.log(`onResize ${clientHeight}`);
       // Note: we know here that these values will be returned as numbers, we can enforce
       // this by typing useResizeObserver with generics
       setSize((currentSize) =>

@@ -3,7 +3,20 @@
     user-select: none;
 }
 
-.vuuTable-table td {
+[role="cell"] {
+    display: inline-block;
+}
+
+[data-align="end"] {
+    margin-left: auto;
+}
+
+[data-align="end"] + [data-align="end"] {
+    margin-left: 0;
+}
+
+  
+.vuuTable-table [role="cell"] {
     --saltEditableLabel-height: 17px;
     --saltInput-height: 17px;
     --saltInput-minHeight: 17px;
@@ -16,11 +29,12 @@
     line-height: calc(var(--vuuTable-rowHeight) - 1px);
     overflow: hidden;
     padding: 0 5px;
+    vertical-align: top;
 }
 
 
-.vuuTable th:focus,
-.vuuTable td:focus {
+.vuuTable-headerCell:focus,
+.vuuTable [role="cell"]:focus {
     outline: var(--vuuTableCell-outline, dotted var(--salt-color-blue-400) var(--cell-outline-width));
     outline-offset: calc(var(--cell-outline-width) * -1);
     /** This is to achieve a white background to outline dashes */
@@ -28,30 +42,30 @@
     border-bottom: none;
 }
 
-.vuuTable th:focus .vuuTable-headerCell-inner{
+.vuuTable-headerCell:focus .vuuTable-headerCell-inner{
     /** This is to achieve a white background to outline dashes */
     padding-bottom: var(--cell-outline-width);
 }
 
-.vuuTable th:not(.vuuTable-headerCell-resizing):focus .vuuTable-headerCell-inner{
+.vuuTable-headerCell:not(.vuuTable-headerCell-resizing):focus .vuuTable-headerCell-inner{
     --columnResizer-color: transparent;
 }
 
 
-.vuuTable td:focus {
+.vuuTable [role="cell"]:focus {
     /** This is to achieve a white background to outline dashes */
     border-right: none;
     padding-bottom: 1px;
 }
 
 
-td[data-editable="true"] {
+[role="cell"][data-editable="true"] {
     --salt-text-fontSize: 10px;
     --vuu-icon-size: 5px;
     position: relative;
 }
 
-td[data-editable="true"]:after {
+[role="cell"][data-editable="true"]:after {
     top: 0;
     content: "";
     background-color: var(--salt-text-secondary-foreground, black);
@@ -66,18 +80,23 @@ td[data-editable="true"]:after {
     width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
   }
   
-td:focus[data-editable],
-td:focus-within[data-editable],
-td:has(.saltEditableLabel-editing) {
+  [role="cell"]:focus[data-editable],
+  [role="cell"]:focus-within[data-editable],
+  [role="cell"]:has(.saltEditableLabel-editing) {
     outline: solid var(--salt-color-blue-400) 1px;
     background-color: white;
     outline-offset: -1px;
 }
 
-td:focus[data-editable="true"]:after,
-td:has(.saltEditableLabel):after {
+[role="cell"]:focus[data-editable="true"]:after,
+[role="cell"]:has(.saltEditableLabel):after {
         /* background-color: black; */
     background-color: var(--salt-color-blue-400);
     left: 1px;
     top: 1px;
 }
+
+.vuuAlignRight {
+    text-align: right;
+  }
+  

@@ -15,6 +15,7 @@ import { ReactElement, useMemo, useState } from "react";
 import "./AppSidePanel.css";
 
 const NO_FEATURES: Features = {};
+const NULL_FEATURE = {};
 export interface AppSidePanelProps {
   features?: Features;
   tables?: Map<string, TableSchema>;
@@ -74,7 +75,7 @@ export const AppSidePanel = ({
   );
 
   const [selectedFeature, setSelectedFeature] = useState<FeatureDescriptor>(
-    gridFeatures[0]
+    gridFeatures[0] ?? NULL_FEATURE
   );
   const handleSelectFeature: SelectionChangeHandler<string> = (event, item) => {
     const feature = gridFeatures.find((f) => f.title === item);

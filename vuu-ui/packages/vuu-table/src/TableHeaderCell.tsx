@@ -52,7 +52,7 @@ export const TableHeaderCell = ({
       dragTimerRef.current = window.setTimeout(() => {
         onDragStart?.(evt);
         dragTimerRef.current = null;
-      }, 250);
+      }, 500);
     },
     [onDragStart]
   );
@@ -72,7 +72,7 @@ export const TableHeaderCell = ({
     [`${classBase}-right`]: column.align === "right",
   });
   return (
-    <th
+    <div
       className={className}
       {...props}
       onClick={handleClick}
@@ -89,6 +89,6 @@ export const TableHeaderCell = ({
           <ColumnResizer {...resizeProps} />
         ) : null}
       </div>
-    </th>
+    </div>
   );
 };

@@ -68,5 +68,7 @@ export const ColumnResizer = ({
     [onDragStart, onMouseMove, onMouseUp]
   );
 
-  return <div className={baseClass} onMouseDown={handleMouseDown} />;
+  return (
+    <div className={baseClass} data-align="end" onMouseDown={handleMouseDown} />
+  );
 };

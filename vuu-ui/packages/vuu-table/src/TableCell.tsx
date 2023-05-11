@@ -1,5 +1,5 @@
 import { TableCellProps } from "@finos/vuu-datagrid-types";
-import { getColumnPinStyle, metadataKeys } from "@finos/vuu-utils";
+import { getColumnStyle, metadataKeys } from "@finos/vuu-utils";
 import { EditableLabel } from "@heswell/salt-lab";
 import cx from "classnames";
 import { KeyboardEvent, memo, useCallback, useRef, useState } from "react";
@@ -9,7 +9,13 @@ import "./TableCell.css";
 const { KEY } = metadataKeys;
 
 export const TableCell = memo(
-  ({ className: classNameProp, column, onClick, row }: TableCellProps) => {
+  ({
+    className: classNameProp,
+    column,
+    columnMap,
+    onClick,
+    row,
+  }: TableCellProps) => {
     const labelFieldRef = useRef<HTMLDivElement>(null);
     const {
       align,
@@ -66,12 +72,13 @@ export const TableCell = memo(
         vuuPinRight: pin === "right",
         "vuuTableCell-resizing": resizing,
       }) || undefined;
-    const pinnedStyle = getColumnPinStyle(column);
+    const style = getColumnStyle(column);
     return editable ? (
-      <td
+      <div
         className={className}
         data-editable
-        style={pinnedStyle}
+        role="cell"
+        style={style}
         onKeyDown={handleTitleKeyDown}
       >
         <EditableLabel
@@ -86,11 +93,20 @@ export const TableCell = memo(
           ref={labelFieldRef}
           tabIndex={0}
         />
-      </td>
+      </div>
     ) : (
-      <td className={className} style={pinnedStyle} onClick={handleClick}>
-        {CellRenderer ? <CellRenderer column={column} row={row} /> : value}
-      </td>
+      <div
+        className={className}
+        role="cell"
+        style={style}
+        onClick={handleClick}
+      >
+        {CellRenderer ? (
+          <CellRenderer column={column} columnMap={columnMap} row={row} />
+        ) : (
+          value
+        )}
+      </div>
     );
   },
   cellValuesAreEqual

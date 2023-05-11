@@ -14,12 +14,13 @@ export type SelectionItem = number | RangeTuple;
 export type Selection = SelectionItem[];
 export type SelectionChangeHandler = (selection: Selection) => void;
 
-export type TableHeading = { label: string; span: number };
+export type TableHeading = { label: string; width: number };
 export type TableHeadings = TableHeading[][];
 
 export interface TableCellProps
   extends Omit<HTMLAttributes<HTMLTableCellElement>, "onClick"> {
   column: KeyedColumnDescriptor;
+  columnMap: ColumnMap;
   onClick?: (column: KeyedColumnDescriptor) => void;
   row: DataSourceRow;
 }
