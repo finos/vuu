@@ -29,9 +29,6 @@ export const virtualRowPositioning = (
   (position) => {
     const rowOffset = pctScrollTop.current * additionalPixelsNeeded;
     const result = Math.floor((position + rowOffset) / rowHeight);
-    console.log(
-      `get row at position ${position} = ${result} (scrollTop = ${pctScrollTop.current})`
-    );
     return result;
   },
 ];
