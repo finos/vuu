@@ -72,7 +72,7 @@ const DEFAULT_OPTIONS: MessageOptions = {};
 const isActiveViewport = (viewPort: Viewport) =>
   viewPort.disabled !== true && viewPort.suspended !== true;
 
-const isSessionTable = (table?: unknown): table is VuuTable => {
+const isSessionTable = (table?: unknown) => {
   if (
     table !== null &&
     typeof table === "object" &&
@@ -202,7 +202,12 @@ export class ServerProxy {
   public subscribe(message: ServerProxySubscribeMessage) {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
-      if (!this.hasMetaDataFor(message.table)) {
+      if (
+        !this.hasMetaDataFor(message.table) &&
+        // A Session table is never cached - it is limited to a single workflow interaction
+        // The metadata for a session table is requested even before the subscribe call.
+        !isSessionTable(message.table)
+      ) {
         info?.(
           `subscribe to ${message.table.table}, no metadata yet, request metadata`
         );
@@ -674,7 +679,11 @@ export class ServerProxy {
             if (viewport.disabled) {
               this.disableViewport(viewport);
             }
-            if (viewportStatus === "subscribing") {
+            if (
+              viewportStatus === "subscribing" &&
+              // A session table will never have Visual Links, nor Context Menus
+              !isSessionTable(viewport.table)
+            ) {
               // If status is "resubscribing", the following is unnecessary
               this.sendMessageToServer({
                 type: Message.GET_VP_VISUAL_LINKS,
