@@ -1,6 +1,7 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
 import { RowAtIndexFunc } from "./ArrayProxy";
+import { InstrumentRowGenerator } from "./instrument-row-generator";
 
 export const VuuColumnGenerator = (columnCount: number): string[] =>
   ["Row No"].concat(
@@ -14,7 +15,7 @@ export type RowGenerator = (
 ) => RowAtIndexFunc<VuuRowDataItemType[]>;
 
 export type ColumnGenerator = (
-  columns: number | string[],
+  columns?: number | string[],
   columnConfig?: { [key: string]: Partial<ColumnDescriptor> }
 ) => ColumnDescriptor[];
 
@@ -48,33 +49,25 @@ export const DefaultColumnGenerator: ColumnGenerator = (
   }
 };
 
-export const InstrumentRowGenerator: RowGenerator = (columns) => (index) => {
-  if (typeof columns === "number") {
-    return [`row ${index + 1}`].concat(
-      Array(columns)
-        .fill(true)
-        .map((v, j) => `value ${j + 1} @ ${index + 1}`)
-    );
-  } else {
-    throw Error("DefaultRowGenerator must be passed columns (number)");
-  }
-};
-
 export const InstrumentColumnGenerator: ColumnGenerator = (
-  columns,
+  columns = [],
   columnConfig = {}
 ) => {
+  const instrumentColumns: ColumnDescriptor[] = [
+    { name: "bbg", serverDataType: "string" },
+    { name: "currency", serverDataType: "string" },
+    { name: "description", serverDataType: "string" },
+    { name: "exchange", serverDataType: "string" },
+    { name: "isin", serverDataType: "string" },
+    { name: "lotSize", serverDataType: "int" },
+    { name: "ric", serverDataType: "string" },
+  ];
   if (typeof columns === "number") {
-    return [{ name: "row number", width: 150 }].concat(
-      Array(columns)
-        .fill(true)
-        .map((_, i) => {
-          const name = `column ${i + 1}`;
-          return { name, width: 100, ...columnConfig[name] };
-        })
-    );
+    throw Error("InstrumentColumnGenerator must be passed columns (strings)");
+  } else if (columns.length === 0) {
+    return instrumentColumns;
   } else {
-    throw Error("DefaultColumnGenerator must be passed columns (number)");
+    return instrumentColumns;
   }
 };
 

@@ -32,7 +32,9 @@ export const useTableConfig = ({
       rowGenerator(columnCount)
     );
 
-    const columns = columnGenerator(columnCount, columnConfig);
+    const columns = table
+      ? columnGenerator([], columnConfig)
+      : columnGenerator(columnCount, columnConfig);
 
     leftPinnedColumns.forEach((index) => (columns[index].pin = "left"));
     rightPinnedColumns.forEach((index) => (columns[index].pin = "right"));

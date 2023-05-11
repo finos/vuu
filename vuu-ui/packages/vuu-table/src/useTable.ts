@@ -352,8 +352,8 @@ export const useTable = ({
       const { current: currentData } = dataRef;
       const { current: currentDataSource } = dataSourceRef;
       const target = evt.target as HTMLElement;
-      const cellEl = target?.closest("td");
-      const rowEl = target?.closest("tr");
+      const cellEl = target?.closest("div[role='cell']");
+      const rowEl = target?.closest(".vuuTableRow");
 
       if (cellEl && rowEl && currentData && currentDataSource) {
         const { columns, selectedRowsCount } = currentDataSource;

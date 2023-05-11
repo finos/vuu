@@ -62,7 +62,6 @@ export const VuuBlotterMockData = ({
     filterQuery: "",
   });
   const { config, dataSource } = useTableConfig({
-    columnCount: 10,
     count: 1000,
     table: schema.table,
   });
