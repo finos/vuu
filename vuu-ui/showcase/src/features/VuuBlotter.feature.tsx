@@ -18,9 +18,9 @@ import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 import { Toolbar } from "@heswell/salt-lab";
 import { useCallback, useMemo, useState } from "react";
-import { DockLayout } from "../../html/components/DockLayout";
+import { DockLayout } from "../examples/html/components/DockLayout";
 
-import "./VuuBlotter.css";
+import "./VuuBlotter.feature.css";
 
 export interface VuuBlotterProps {
   schema: TableSchema;

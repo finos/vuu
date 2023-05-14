@@ -11,7 +11,11 @@ import { build } from "../../scripts/esbuild.mjs";
 import fs from "fs";
 import path from "path";
 
-const entryPoints = ["src/index.tsx"];
+const entryPoints = [
+  "src/index.tsx",
+  "src/features/Test.feature.tsx",
+  "src/features/VuuBlotterMockData.feature.tsx",
+];
 
 const HTML_TEMPLATE = `
 <!DOCTYPE html>
