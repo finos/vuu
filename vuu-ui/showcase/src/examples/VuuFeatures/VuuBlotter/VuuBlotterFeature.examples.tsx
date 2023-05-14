@@ -1,8 +1,8 @@
 import { View } from "@finos/vuu-layout";
 import { useTableSchema } from "../../utils";
 import { useAutoLoginToVuuServer } from "../../utils/useAutoLoginToVuuServer";
-import { VuuBlotter } from "./VuuBlotter";
-import { VuuBlotterMockData } from "./VuuBlotterMockData";
+import { VuuBlotter } from "../../../features/VuuBlotter.feature";
+import { VuuBlotterMockData } from "../../../features/VuuBlotterMockData.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 
 import "./VuuBlotterFeature.examples.css";

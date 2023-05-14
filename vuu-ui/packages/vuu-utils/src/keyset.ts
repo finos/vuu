@@ -30,7 +30,7 @@ export class KeySet {
 
     const size = to - from;
     if (this.keys.size + this.free.length > size) {
-      this.free.length = size - this.keys.size;
+      this.free.length = Math.max(0, size - this.keys.size);
     }
 
     for (let rowIndex = from; rowIndex < to; rowIndex++) {

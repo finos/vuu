@@ -1,4 +1,4 @@
-import { DataSourceConfig, TableSchema } from "@finos/vuu-data";
+import { TableSchema } from "@finos/vuu-data";
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import { ConfigurableTable } from "@finos/vuu-datatable";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
@@ -9,53 +9,27 @@ import {
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
-import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 import { Toolbar } from "@heswell/salt-lab";
 import { useCallback, useMemo, useState } from "react";
-import { DockLayout } from "../../html/components/DockLayout";
-import { useTableConfig } from "../../utils";
-import { VuuBlotterProps } from "./VuuBlotter";
+import { DockLayout } from "../examples/html/components/DockLayout";
+import { useTableConfig } from "../examples/utils";
 
-import "./VuuBlotter.css";
+import "./VuuBlotter.feature.css";
 
 const classBase = "vuuBlotter2";
 
-type BlotterConfig = {
-  "datasource-config"?: DataSourceConfig;
-  "table-config"?: Omit<GridConfig, "headings">;
-};
-
-const NO_CONFIG: BlotterConfig = {};
-
-const applyDefaults = (
-  { columns, table }: TableSchema,
-  getDefaultColumnConfig?: ShellContextProps["getDefaultColumnConfig"]
-) => {
-  if (typeof getDefaultColumnConfig === "function") {
-    return columns.map((column) => {
-      const config = getDefaultColumnConfig(table.table, column.name);
-      if (config) {
-        return {
-          ...column,
-          ...config,
-        };
-      } else {
-        return column;
-      }
-    });
-  } else {
-    return columns;
-  }
-};
+interface VuuBlotterProps {
+  schema: TableSchema;
+  showFilter?: boolean;
+}
 
 export const VuuBlotterMockData = ({
   schema,
   showFilter = false,
   ...props
 }: VuuBlotterProps) => {
-  const { id, load, loadSession, save, saveSession, title } = useViewContext();
-  const { getDefaultColumnConfig } = useShellContext();
+  const { save } = useViewContext();
   const namedFilters = useMemo(() => new Map<string, string>(), []);
   const [filterState, setFilterState] = useState<FilterState>({
     filter: undefined,
@@ -68,54 +42,10 @@ export const VuuBlotterMockData = ({
 
   console.log("VuuBlotter render", { props, schema });
 
-  // const {
-  //   "datasource-config": dataSourceConfigFromState,
-  //   "table-config": tableConfigFromState,
-  // } = useMemo(() => (load?.() ?? NO_CONFIG) as BlotterConfig, [load]);
-
-  // const configColumns = tableConfigFromState?.columns;
-
-  // const tableConfig = useMemo(
-  //   () => ({
-  //     columns: configColumns || applyDefaults(schema, getDefaultColumnConfig),
-  //   }),
-  //   [configColumns, getDefaultColumnConfig, schema]
-  // );
-
   const suggestionProvider = useFilterSuggestionProvider({
     columns: schema.columns,
     table: schema.table,
   });
-
-  // const dataSource: DataSource = useMemo(() => {
-  //   let ds = loadSession?.("data-source") as RemoteDataSource;
-  //   if (ds) {
-  //     return ds;
-  //   }
-  //   const columns =
-  //     dataSourceConfigFromState?.columns ??
-  //     schema.columns.map((col) => col.name);
-
-  //   ds = new RemoteDataSource({
-  //     bufferSize: 200,
-  //     viewport: id,
-  //     table: schema.table,
-  //     ...dataSourceConfigFromState,
-  //     columns,
-  //     title,
-  //   });
-  //   // ds.on("config", handleDataSourceConfigChange);
-  //   saveSession?.(ds, "data-source");
-  //   return ds;
-  // }, [
-  //   dataSourceConfigFromState,
-  //   id,
-  //   loadSession,
-  //   saveSession,
-  //   schema.columns,
-  //   schema.table,
-  //   title,
-  // ]);
 
   const handleTableConfigChange = useCallback(
     (config: Omit<GridConfig, "headings">) => {
@@ -174,6 +104,7 @@ export const VuuBlotterMockData = ({
       resize="defer"
       showTopPanel={showFilter}
       showBottomPanel
+      style={{ height: 700 }}
       topPanelSize={28}
     >
       <FilterInput

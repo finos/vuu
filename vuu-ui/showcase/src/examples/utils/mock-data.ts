@@ -1,23 +1,32 @@
 import { TableSchema } from "@finos/vuu-data";
-import { Features } from "@finos/vuu-shell";
+import { FeatureConfig, Features } from "@finos/vuu-shell";
 import { useMemo } from "react";
 import { useSchemas } from "./useSchemas";
+
+type PathMap = { [key: string]: Pick<FeatureConfig, "css" | "url"> };
+
+const componentPaths: { [key: string]: PathMap } = {
+  development: {
+    VuuBlotterMockData: {
+      url: "/src/features/VuuBlotterMockData.feature",
+    },
+  },
+  production: {
+    VuuBlotterMockData: {
+      url: "/features/VuuBlotterMockData.feature.js",
+      css: "/features/VuuBlotterMockData.feature,css",
+    },
+  },
+};
+
+type Environment = keyof typeof componentPaths;
+const env = process.env.NODE_ENV as Environment;
 
 const MOCK_FEATURES: Features = {
   vuuTableMockData: {
     name: "vuuTableMockData",
     title: "Vuu Table (mock test data)",
-    url: "../../../../showcase/src/examples/VuuFeatures/VuuBlotter/VuuBlotterMockData",
-  },
-  vuuDataGrid: {
-    name: "vuuDataGrid",
-    title: "Vuu DataGrid",
-    url: "../../../../showcase/src/examples/VuuFeatures/VuuBlotter/VuuBlotter",
-  },
-  vuuTable: {
-    name: "vuuTable",
-    title: "Vuu Table",
-    url: "../../../../showcase/src/examples/VuuFeatures/VuuBlotter/VuuBlotter",
+    ...componentPaths[env]["VuuBlotterMockData"],
   },
 };
 

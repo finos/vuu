@@ -242,7 +242,7 @@ export class MovingWindow {
   setRange({ from, to }: VuuRange) {
     if (from !== this.range.from || to !== this.range.to) {
       const [overlapFrom, overlapTo] = this.range.overlap(from, to);
-      const newData = new Array(to - from);
+      const newData = new Array(Math.max(0, to - from));
       for (let i = overlapFrom; i < overlapTo; i++) {
         const data = this.getAtIndex(i);
         if (data) {
