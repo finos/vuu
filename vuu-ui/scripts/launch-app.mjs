@@ -1,15 +1,21 @@
 import open from "open";
 import { execWait, getCommandLineArg } from "./utils.mjs";
 
-export const launchApp = async () => {
-  const websocketUrl = getCommandLineArg("--url", true);
+export const launchApp = async (websocket) => {
+  let websocketUrl;
 
-  if (!websocketUrl) {
-    console.log(`No url supplied for websocket, default will be wss://127.0.0.1:8090/websocket
+  if (websocket) {
+    websocketUrl = getCommandLineArg("--url", true);
 
-> yarn launch:app --url=wss://vuu.server.domain:8090/websocket
+    if (!websocketUrl) {
+      console.log(`No url supplied for websocket, default will be wss://127.0.0.1:8090/websocket
 
-`);
+  > yarn launch:app --url=wss://vuu.server.domain:8090/websocket
+
+  `);
+    }
+  } else {
+    websocketUrl = websocket;
   }
 
   const url = websocketUrl ? ` --url ${websocketUrl}` : "";
