@@ -55,10 +55,12 @@ const NullSuggestionFetcher: SuggestionFetcher = async () => [];
 export interface ViewportRowModelHookProps {
   dataSource: DataSource;
   onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  onRpcResponse?: (response: MenuRpcResponse) => void;
 }
 
 export const useViewportRowModel = ({
   dataSource,
+  onRpcResponse,
   onFeatureEnabled,
 }: ViewportRowModelHookProps) => {
   const menuRef = useRef<VuuMenu>();
@@ -85,11 +87,12 @@ export const useViewportRowModel = ({
     }),
     []
   );
-  const handleRpcResponse = useCallback((response?: MenuRpcResponse) => {
-    console.log(`what are we going to do with a MenuRPCResponse`, {
-      response,
-    });
-  }, []);
+  const handleRpcResponse = useCallback(
+    (response: MenuRpcResponse) => {
+      onRpcResponse?.(response);
+    },
+    [onRpcResponse]
+  );
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
     dataSource,

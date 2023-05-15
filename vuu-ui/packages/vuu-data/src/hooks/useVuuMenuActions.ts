@@ -190,7 +190,7 @@ export interface MenuActionConfig {
 export interface VuuMenuActionHookProps {
   dataSource: DataSource;
   menuActionConfig?: MenuActionConfig;
-  onRpcResponse?: (response?: MenuRpcResponse) => void;
+  onRpcResponse?: (response: MenuRpcResponse) => void;
 }
 
 type TableMenuLocation = "grid" | "header" | "filter";
