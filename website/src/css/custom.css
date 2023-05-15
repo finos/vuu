@@ -24,6 +24,7 @@
   --ifm-footer-color: #ffffff;
   --ifm-footer-link-color: #ffffff;
   --ifm-code-font-size: 95%;
+  --main-bg-color: #250154;
 }
 
 .navbar__items {
@@ -47,15 +48,15 @@
   background-size: cover;
 }
 .footer {
-  background-color: #250154;
+  background-color: var(--main-bg-color);
 }
 
 .features_src-pages-styles-module {
-  background-color: #250154;
+  background-color: var(--main-bg-color);
 }
 
 .members_src-pages-styles-module {
-  background-color: #250154;
+  background-color: var(--main-bg-color);
 }
 
 .hero.hero--primary img {
@@ -63,7 +64,7 @@
   width: 50%;
 }
 .navbar {
-  background-color: #250154;
+  background-color: var(--main-bg-color);
   height: 120px;
 }
 
