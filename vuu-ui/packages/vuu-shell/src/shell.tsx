@@ -13,7 +13,7 @@ import {
 import { ShellContextProvider } from "./ShellContextProvider";
 import useLayoutConfig from "./use-layout-config";
 import {
-  Chest,
+  DockLayout,
   DraggableLayout,
   Drawer,
   Flexbox,
@@ -168,7 +168,7 @@ export const Shell = ({
               onNavigate={handleNavigate}
               onSwitchTheme={handleSwitchTheme}
             />
-            <Chest style={{ flex: 1 }}>
+            <DockLayout style={{ flex: 1 }}>
               {getDrawers().concat(
                 <DraggableLayout
                   dropTarget
@@ -176,7 +176,7 @@ export const Shell = ({
                   style={{ width: "100%", height: "100%" }}
                 />
               )}
-            </Chest>
+            </DockLayout>
           </Flexbox>
         </DraggableLayout>
       </LayoutProvider>

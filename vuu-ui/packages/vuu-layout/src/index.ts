@@ -1,4 +1,4 @@
-export * from "./chest-of-drawers";
+export * from "./dock-layout";
 export * from "./common-types";
 export { default as Component } from "./Component";
 export * from "./drag-drop";

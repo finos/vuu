@@ -1,0 +1,77 @@
+div#page {
+    max-width: 900px; /* just to demonstrate horizontal scrolling & stickiness */
+  }
+  
+  div#chartWrapper {
+    position: sticky;
+    left: 0px;
+    top: 0px;
+    width: 700px;
+    height: 630px;
+    overflow: hidden;
+  }
+  
+  
+  #scroller {
+    position: absolute;
+    left: 95px;
+    top: 45px;
+    width: 715px;
+    height: 645px;
+    background-color: red;
+    overflow: auto;
+  }
+  
+  table#chart {
+    background-color: #fff;
+    border: none;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-left: 1px solid #ccc;
+    left: 0;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    table-layout: fixed;
+    width: 1600px;
+  }
+  table#chart th {
+    background: #777;
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #999;
+    box-sizing: border-box;
+    color: #fff;
+    line-height: 29px;
+    padding: 0 3px;
+    position: sticky;
+    top: 0;
+    /* ensure header row sits atop everything else when scrolling down */
+    z-index: 1;
+  }
+  table#chart td {
+    background: #fff;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    line-height: 29px;
+    padding: 0px 5px;
+  }
+  /* ensure first header cell sits atop everything else when scrolling right */
+  table#chart th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+  }
+  /* make first column sticky when scrolling right */
+  table#chart td:first-child {
+    position: sticky;
+    left: 0;
+    border-right-color: #aaa;
+  }
+  
+  .sizer-cell {
+    background-color: green !important;
+    border: none !important;
+    height: 0px;
+  }
+  

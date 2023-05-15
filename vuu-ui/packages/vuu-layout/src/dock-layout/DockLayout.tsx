@@ -1,22 +1,22 @@
-import React, { HTMLAttributes, ReactElement } from "react";
-import cx from "classnames";
-import Drawer from "./Drawer";
 import { partition } from "@finos/vuu-utils";
+import cx from "classnames";
+import { HTMLAttributes, ReactElement } from "react";
 import { registerComponent } from "../registry/ComponentRegistry";
+import Drawer from "./Drawer";
 
-import "./Chest.css";
+import "./DockLayout.css";
 
 const isDrawer = (component: ReactElement) => component.type === Drawer;
 const isVertical = ({ props: { position = "left" } }: ReactElement) =>
   position.match(/top|bottom/);
 
-export interface ChestProps extends HTMLAttributes<HTMLDivElement> {
+export interface DockLayoutProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactElement[];
 }
 
-const Chest = (props: ChestProps) => {
+const DockLayout = (props: DockLayoutProps) => {
   const { children, className: classNameProp, id, style } = props;
-  const classBase = "hwChest";
+  const classBase = "vuuDockLayout";
   const [drawers, content] = partition(children, isDrawer);
   const [verticalDrawers, horizontalDrawers] = partition(drawers, isVertical);
   const orientation =
@@ -35,8 +35,8 @@ const Chest = (props: ChestProps) => {
     </div>
   );
 };
-Chest.displayName = "Chest";
+DockLayout.displayName = "DockLayout";
 
-export default Chest;
+export default DockLayout;
 
-registerComponent("Chest", Chest, "container");
+registerComponent("DockLayout", DockLayout, "container");

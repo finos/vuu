@@ -4,23 +4,39 @@ import React, {
   ForwardedRef,
   forwardRef,
   ReactElement,
+  useCallback,
   useMemo,
   useRef,
+  useState,
 } from "react";
-import { Header } from "../layout-header/Header";
+import { Header as VuuHeader } from "../layout-header/Header";
 import { registerComponent } from "../registry/ComponentRegistry";
 import { useView } from "./useView";
 import { useViewResize } from "./useViewResize";
-import { ViewContext } from "./ViewContext";
+import { ViewContext, ViewContextProps } from "./ViewContext";
 import { ViewProps } from "./viewTypes";
 
 import "./View.css";
+
+const classBase = "vuuView";
+
+type Props = { [key: string]: unknown };
+
+const getProps = (state?: Props, props?: Props) => {
+  if (state && props) {
+    return {
+      ...state,
+      ...props,
+    };
+  } else return state || props;
+};
 
 const View = forwardRef(function View(
   props: ViewProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const {
+    Header = VuuHeader,
     children,
     className,
     collapsed,
@@ -44,7 +60,7 @@ const View = forwardRef(function View(
   const id = useId(idProp);
   const rootRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
-
+  const [componentProps, _setComponentProps] = useState<Props>();
   const {
     contributions,
     dispatchViewAction,
@@ -67,16 +83,21 @@ const View = forwardRef(function View(
 
   useViewResize({ mainRef, resize, rootRef });
 
-  const classBase = "vuuView";
+  const setComponentProps = useCallback((props?: Props) => {
+    _setComponentProps(props);
+  }, []);
 
   const getContent = () => {
-    if (React.isValidElement(children) && restoredState) {
-      return React.cloneElement(children, restoredState);
+    if (React.isValidElement(children) && (restoredState || componentProps)) {
+      return React.cloneElement(
+        children,
+        getProps(restoredState, componentProps)
+      );
     }
     return children;
   };
 
-  const viewContextValue = useMemo(
+  const viewContextValue: ViewContextProps = useMemo(
     () => ({
       dispatch: dispatchViewAction,
       id,
@@ -88,6 +109,7 @@ const View = forwardRef(function View(
       purge,
       save,
       saveSession,
+      setComponentProps,
     }),
     [
       dispatchViewAction,
@@ -99,6 +121,7 @@ const View = forwardRef(function View(
       purge,
       save,
       saveSession,
+      setComponentProps,
       title,
     ]
   );

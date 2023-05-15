@@ -1,0 +1,23 @@
+  
+  :root {
+    --svg-delay: 11s;
+  }
+  
+  body {
+    margin: 0;
+  }
+
+  .svgFun-pathMap {
+    background-color: black;
+    height: calc(100% - 30px);
+  }
+
+  .svgFun-scrollContainer {
+    background-color: black;
+    height: calc(100% - 30px);
+    overflow: auto;
+  }
+
+  .svgFun-scrollingContent {
+    height: 2000px;
+  }

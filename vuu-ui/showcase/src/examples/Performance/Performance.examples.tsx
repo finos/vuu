@@ -1,16 +1,29 @@
-import { RemoteDataSource } from "@finos/vuu-data";
+import { DataSourceRow, RemoteDataSource } from "@finos/vuu-data";
 import { VuuGroupBy } from "@finos/vuu-protocol-types";
 import { Toolbar } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
+import { metadataKeys } from "@finos/vuu-utils";
 
 import "./Performance.examples.css";
 
+const { COUNT } = metadataKeys;
+
 let displaySequence = 1;
 
-const isTreeResponse = (message: any) => {
-  return message.size === 3;
+const zeroCounts = (rows: DataSourceRow[]) =>
+  rows.every((row) => row[COUNT] === 0);
+
+const fullCounts = (rows: DataSourceRow[]) =>
+  rows.every((row) => row[COUNT] > 0);
+
+const isInitialTreeResponse = (message: any) => {
+  return message.size === 3 && zeroCounts(message.rows);
+};
+
+const isFullTreeResponse = (message: any) => {
+  return message.rows.length === 3 && fullCounts(message.rows);
 };
 
 const isClearTreeResponse = (message: any) => {
@@ -24,7 +37,6 @@ export const TreePerformance = () => {
   const [childOrderCount, setChildOrderCount] = useState(0);
   const [operation, setOperation] = useState("");
   const [operationStatus, setOperationStatus] = useState("");
-  const [responseTime, setResponseTime] = useState(0);
 
   const dataResolver = useRef<(value: unknown) => void | undefined>();
   const dataReceived = () =>
@@ -34,10 +46,6 @@ export const TreePerformance = () => {
 
   const treeDataResolver = useRef<(value: unknown) => void | undefined>();
   const treeDataReceived = () =>
-    new Promise((resolve) => {
-      treeDataResolver.current = resolve;
-    });
-  const treeDataCleared = () =>
     new Promise((resolve) => {
       treeDataResolver.current = resolve;
     });
@@ -58,6 +66,19 @@ export const TreePerformance = () => {
       }
     });
 
+    // create a separate viewport to track childORders size, otw size is affected by groupBy, filter
+    const dsChildOrdersSize = new RemoteDataSource({
+      bufferSize: 0,
+      columns: ["id"],
+      table: { table: "childOrders", module: "SIMUL" },
+    });
+
+    dsChildOrdersSize.subscribe({ range: { from: 0, to: 20 } }, (message) => {
+      if (message.type === "viewport-update" && message.size) {
+        setChildOrderCount(message.size);
+      }
+    });
+
     const dsChildOrders = new RemoteDataSource({
       bufferSize: 0,
       columns: [
@@ -74,19 +95,16 @@ export const TreePerformance = () => {
     dsChildOrders.subscribe({ range: { from: 0, to: 20 } }, (message) => {
       switch (message.type) {
         case "viewport-update":
-          if (message.size) {
-            setChildOrderCount(message.size);
-          }
           if (message.rows) {
-            if (isTreeResponse(message)) {
+            if (isInitialTreeResponse(message)) {
+              setOperationStatus("initial response received");
+            } else if (isFullTreeResponse(message)) {
               if (typeof treeDataResolver.current === "function") {
                 treeDataResolver.current(undefined);
-                treeDataResolver.current = undefined;
               }
             } else if (isClearTreeResponse(message)) {
               if (typeof treeDataResolver.current === "function") {
                 treeDataResolver.current(undefined);
-                treeDataResolver.current = undefined;
               }
             } else if (typeof dataResolver.current === "function") {
               dataResolver.current(undefined);
@@ -95,7 +113,6 @@ export const TreePerformance = () => {
           }
           break;
       }
-      console.log({ message });
     });
 
     return [dsParentOrders, dsChildOrders];

@@ -270,7 +270,7 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
               renderBufferSize={80}
               rowHeight={18}
               selectionModel="extended"
-              showLineNumbers
+              // showLineNumbers
             />
           </div>
         </GridProvider>
