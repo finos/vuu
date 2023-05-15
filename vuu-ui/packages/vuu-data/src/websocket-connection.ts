@@ -5,10 +5,16 @@ import {
 import { Connection } from "./connectionTypes";
 import { logger } from "@finos/vuu-utils";
 
-import { ConnectionQualityMetrics, ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
+import {
+  ConnectionQualityMetrics,
+  ConnectionStatus,
+  ConnectionStatusMessage,
+} from "./vuuUIMessageTypes";
 
 export type ConnectionMessage =
-  ServerToClientMessage | ConnectionStatusMessage | ConnectionQualityMetrics;
+  | ServerToClientMessage
+  | ConnectionStatusMessage
+  | ConnectionQualityMetrics;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
 const { debug, debugEnabled, error, info, warn } = logger(
@@ -68,7 +74,9 @@ async function makeConnection(
     const websocketConnection =
       connection ?? new WebsocketConnection(ws, url, callback);
 
-    const status = reconnecting ? "reconnected" : "connected";
+    const status = reconnecting
+      ? "reconnected"
+      : "connection-open-awaiting-session";
     callback({ type: "connection-status", status });
     websocketConnection.status = status;
 
@@ -134,10 +142,18 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   close: () => void = closeWarn;
   requiresLogin = true;
   send: (msg: ClientToServerMessage) => void = sendWarn;
-  status: "closed" | "ready" | "connected" | "reconnected" = "ready";
+  status:
+    | "closed"
+    | "ready"
+    | "connection-open-awaiting-session"
+    | "connected"
+    | "reconnected" = "ready";
 
   public url: string;
   public messagesCount = 0;
+
+  private connectionMetricsInterval: ReturnType<typeof setInterval> | null =
+    null;
 
   constructor(ws: WebSocket, url: string, callback: ConnectionCallback) {
     this.url = url;
@@ -152,20 +168,18 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   [setWebsocket](ws: WebSocket) {
     const callback = this[connectionCallback];
     ws.onmessage = (evt) => {
-      const vuuMessageFromServer = parseMessage(evt.data);
-      this.messagesCount += 1;
-      if (process.env.NODE_ENV === "development") {
-        if (debugEnabled && vuuMessageFromServer.body.type !== "HB") {
-          debug?.(`<<< ${vuuMessageFromServer.body.type}`);
-        }
-      }
-      callback(vuuMessageFromServer);
+      this.status = "connected";
+      ws.onmessage = this.handleWebsocketMessage;
+      this.handleWebsocketMessage(evt);
     };
 
-    setInterval(() => {
-      callback({ type: "connection-metrics", messagesLength: this.messagesCount });
+    this.connectionMetricsInterval = setInterval(() => {
+      callback({
+        type: "connection-metrics",
+        messagesLength: this.messagesCount,
+      });
       this.messagesCount = 0;
-    }, 1000)
+    }, 1000);
 
     ws.onerror = () => {
       error(`⚡ connection error`);
@@ -174,7 +188,19 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
         status: "disconnected",
         reason: "error",
       });
-      if (this.status !== "closed") {
+
+      if (this.connectionMetricsInterval) {
+        clearInterval(this.connectionMetricsInterval);
+        this.connectionMetricsInterval = null;
+      }
+
+      if (this.status === "connection-open-awaiting-session") {
+        // our connection has errored before first server message has been received. This
+        // is not a normal reconnect, more likely a websocket configuration issue
+        error(
+          `Websocket connection lost before Vuu session established, check websocket configuration`
+        );
+      } else if (this.status !== "closed") {
         reconnect(this);
         this.send = queue;
       }
@@ -187,6 +213,12 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
         status: "disconnected",
         reason: "close",
       });
+
+      if (this.connectionMetricsInterval) {
+        clearInterval(this.connectionMetricsInterval);
+        this.connectionMetricsInterval = null;
+      }
+
       if (this.status !== "closed") {
         reconnect(this);
         this.send = queue;
@@ -216,4 +248,15 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
       info?.("close websocket");
     };
   }
+
+  handleWebsocketMessage = (evt) => {
+    const vuuMessageFromServer = parseMessage(evt.data);
+    this.messagesCount += 1;
+    if (process.env.NODE_ENV === "development") {
+      if (debugEnabled && vuuMessageFromServer.body.type !== "HB") {
+        debug?.(`<<< ${vuuMessageFromServer.body.type}`);
+      }
+    }
+    this[connectionCallback](vuuMessageFromServer);
+  };
 }

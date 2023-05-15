@@ -18,6 +18,7 @@ import { Selection } from "@finos/vuu-datagrid-types";
 
 export type ConnectionStatus =
   | "connecting"
+  | "connection-open-awaiting-session"
   | "connected"
   | "disconnected"
   | "reconnected";
@@ -42,7 +43,7 @@ export interface ConnectionQualityMetrics {
 export const isConnectionQualityMetrics = (
   msg: object
 ): msg is ConnectionQualityMetrics =>
-  (msg as ConnectionQualityMetrics).type === "connection-metrics"
+  (msg as ConnectionQualityMetrics).type === "connection-metrics";
 
 export interface ServerProxySubscribeMessage {
   aggregations: VuuAggregation[];
