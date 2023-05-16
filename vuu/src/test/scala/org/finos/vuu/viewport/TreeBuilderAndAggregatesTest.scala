@@ -64,7 +64,8 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         nodeState,
         None,
         None,
-        BuildEntireTree(sessionTable, None)
+        BuildEntireTree(sessionTable, None),
+        None
       ).buildEntireTree()
 
       tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(450.0)
@@ -100,7 +101,8 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         nodeState,
         None,
         None,
-        BuildEntireTree(sessionTable, None)
+        BuildEntireTree(sessionTable, None),
+        None
       ).buildEntireTree()
 
       tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(1000.0)
@@ -136,7 +138,8 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         nodeState,
         None,
         None,
-        BuildEntireTree(sessionTable, None)
+        BuildEntireTree(sessionTable, None),
+        None
       ).buildEntireTree()
 
       tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(100.0)
@@ -174,7 +177,8 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         nodeState,
         None,
         None,
-        BuildEntireTree(sessionTable, None)
+        BuildEntireTree(sessionTable, None),
+        None
       ).buildEntireTree()
 
       tree.root.getAggregationFor(orderPrices.columnForName("quantity")) should equal(3600.0)
@@ -208,7 +212,8 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         nodeState,
         Some(tree),
         None,
-        BuildEntireTree(sessionTable, None)
+        BuildEntireTree(sessionTable, None),
+        None
       ).buildEntireTree()
 
       val tree2Ns = tree2.nodeState.closeAll(tree2).open("$root|chris").open("$root|chris|VOD.L")

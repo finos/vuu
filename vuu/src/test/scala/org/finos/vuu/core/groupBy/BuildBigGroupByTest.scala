@@ -75,7 +75,7 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 
     val columns = ViewPortColumnCreator.create(groupByTable, groupByTable.columns().map(_.name).toList)
 
-    val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None))
+    val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None), None)
 
     logger.info("[PERF] Starting tree build")
 
@@ -85,7 +85,7 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 
     logger.info(s"[PERF] Complete tree build in $millis ms")
 
-    val builder3 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), Some(tree), None, buildAction = BuildEntireTree(groupByTable, None))
+    val builder3 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), Some(tree), None, buildAction = BuildEntireTree(groupByTable, None), None)
 
     logger.info("[PERF] Starting tree build 3")
 
@@ -95,7 +95,7 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 
     logger.info(s"[PERF] Complete tree build in $millis3 ms")
 
-    val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = \"A\""), columns, TreeNodeStateStore(Map()), Some(tree3), None, buildAction = BuildEntireTree(groupByTable, None))
+    val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = \"A\""), columns, TreeNodeStateStore(Map()), Some(tree3), None, buildAction = BuildEntireTree(groupByTable, None), None)
 
     val (sizeMillis, _) = timeIt {
       groupByTable.size()
