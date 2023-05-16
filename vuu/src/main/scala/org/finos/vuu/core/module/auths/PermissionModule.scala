@@ -26,7 +26,7 @@ object PermissionModule extends DefaultModule{
         joinFields = User
       ),
       (table, vs) => new PermissionsProvider(table, vs.sessionContainer),
-      (table, provider, providerContainer) => ViewPortDef(
+      (table, provider, providerContainer, _) => ViewPortDef(
         columns = table.getTableDef.columns,
         service = new PermissionsRpcService(table)
       )
