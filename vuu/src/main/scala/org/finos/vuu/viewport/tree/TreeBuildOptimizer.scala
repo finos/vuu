@@ -98,6 +98,7 @@ object TreeBuildOptimizer extends StrictLogging {
                 OnlyRecalculateTreeKeys(table, Some(tree))
               case Some(action: OnlyRecalculateTreeKeys) if !recalcKeys =>
                 OnlyRecalculateTreeKeys(table, Some(tree))
+              //case _ => logger.error("Got unhandled type" + tree.buildAction)
             }
         }
       case x =>

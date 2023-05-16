@@ -232,10 +232,11 @@ object SimulationModule extends DefaultModule {
             "averagePrice".double(), "status".string(), "lastUpdate".long(), "owner".string(), "mask".int()),
           VisualLinks(),
           indices = Indices(
-            Index("ric")
+            Index("ric"),
+            Index("mask")
           ),
           joinFields = "id", "ric", "owner"
-        ).withPermissions((vp, _) => new OrderPermissionChecker(vp)),
+        ).withPermissions((vp, tableContainer) => new OrderPermissionChecker(vp, tableContainer)),
         (table, _) => new PermissionedOrdersProvider(table, ordersModel)
       )
       .addTable(

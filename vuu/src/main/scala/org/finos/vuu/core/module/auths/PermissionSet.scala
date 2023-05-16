@@ -24,13 +24,13 @@ object PermissionSet {
     if(hasRole(userPermissions, SalesTradingPermission)){ roles = roles ++ List("SALES")}
     if(hasRole(userPermissions, AlgoCoveragePermission)){ roles = roles ++ List("ALGO")}
     if(hasRole(userPermissions, HighTouchPermission)){ roles = roles ++ List("HT")}
-    if(roles.length == 0) roles = roles ++ List("NONE")
+    if(roles.isEmpty) roles = roles ++ List("NONE")
 
     roles.mkString(",")
   }
 
 
-  def toBinaryString(intRepresentation: Int) = {
+  def toBinaryString(intRepresentation: Int): String = {
     val binaryString = Integer.toBinaryString(intRepresentation)
     padWithZeros(binaryString)
   }
