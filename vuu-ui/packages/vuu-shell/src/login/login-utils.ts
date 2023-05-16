@@ -6,7 +6,7 @@ export const getAuthDetailsFromCookies = () => {
   return [username, token];
 };
 
-export const redirectToLogin = (loginUrl = "/login.html") => {
+export const redirectToLogin = (loginUrl = "login.html") => {
   window.location.href = loginUrl;
 };
 
