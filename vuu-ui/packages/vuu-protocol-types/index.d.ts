@@ -190,6 +190,16 @@ export interface ServerToClientRPC {
   method: string;
   result: any;
 }
+export interface ServerToClientEditRPC {
+  type: "VP_EDIT_RPC_RESPONSE";
+  method: string;
+  result: any;
+}
+export interface ServerToClientEditRPCRejected {
+  type: "VP_EDIT_RPC_REJECT";
+  rpcName: string;
+  error: string;
+}
 export interface ServerToClientOpenTreeNodeSuccess {
   type: "OPEN_TREE_SUCCESS";
 }
@@ -239,7 +249,9 @@ export declare type ServerToClientBody =
   | ServerToClientCloseTreeNodeSuccess
   | ServerToClientCreateLinkSuccess
   | ServerToClientRemoveLinkSuccess
-  | ServerToClientError;
+  | ServerToClientError
+  | ServerToClientEditRPC
+  | ServerToClientEditRPC;
 export interface ServerToClientMessage<
   TBody extends ServerToClientBody = ServerToClientBody
 > {
@@ -447,6 +459,8 @@ export interface ClientToServerMessage<
 
 /** Menu RPC services */
 export interface OpenDialogAction {
+  columns?: VuuColumns;
+  dataTypes?: VuuColumnDataType[];
   type: "OPEN_DIALOG_ACTION";
   table: VuuTable;
 }
