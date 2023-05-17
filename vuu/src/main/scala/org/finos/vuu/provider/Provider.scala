@@ -2,7 +2,7 @@ package org.finos.vuu.provider
 
 import org.finos.toolbox.lifecycle.LifecycleEnabled
 
-class NullProvider extends Provider {
+object NullProvider extends Provider {
   override def subscribe(key: String): Unit = {}
 
   override def doStart(): Unit = {}
@@ -13,8 +13,9 @@ class NullProvider extends Provider {
 
   override def doDestroy(): Unit = {}
 
-  override val lifecycleId: String = "NullProvider"
+  override val lifecycleId: String = "NullProvider" + "@" + hashCode()
 }
+
 
 trait Provider extends LifecycleEnabled {
 

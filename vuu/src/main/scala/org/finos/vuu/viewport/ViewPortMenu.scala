@@ -76,3 +76,4 @@ class ViewPortMenuItem(val name: String, val filter: String, val rpcName: String
   }
 
 }
+

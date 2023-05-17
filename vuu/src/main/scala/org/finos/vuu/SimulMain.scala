@@ -16,6 +16,7 @@ import org.finos.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.auths.PermissionModule
+import org.finos.vuu.core.module.editable.EditableModule
 
 /*
 //to allow self signed certs
@@ -74,7 +75,9 @@ object SimulMain extends App with StrictLogging {
     .withModule(VuiStateModule(store))
     .withModule(TypeAheadModule())
     .withModule(AuthNModule(authenticator, loginTokenValidator))
+    .withModule(EditableModule())
     .withModule(PermissionModule())
+
 
   val vuuServer = new VuuServer(config)
 
@@ -82,7 +85,7 @@ object SimulMain extends App with StrictLogging {
 
   lifecycle.start()
 
-  logger.info("[VUU] Ready.");
+  logger.info("[VUU] Ready.")
 
   vuuServer.join()
 }

@@ -94,8 +94,8 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
     (viewPortContainer, instruments, instrumentsProvider, session, outQueue, highPriorityQueue)
   }
 
-  def createViewPortDef(): (DataTable, Provider, ProviderContainer) => ViewPortDef = {
-    val func = (t: DataTable, provider: Provider, pc: ProviderContainer) => ViewPortDef(t.getTableDef.columns, createRpcHandler(provider.asInstanceOf[MockProvider]))
+  def createViewPortDef(): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
+    val func = (t: DataTable, provider: Provider, pc: ProviderContainer, tableContainer: TableContainer) => ViewPortDef(t.getTableDef.columns, createRpcHandler(provider.asInstanceOf[MockProvider]))
     func
   }
 

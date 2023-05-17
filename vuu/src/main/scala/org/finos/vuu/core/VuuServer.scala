@@ -68,7 +68,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
   }else {
       new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threading.viewportThreads}]", config.threading.viewportThreads, () =>  {
-      viewPortContainer.getViewPorts().filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => ViewPortWorkItem(vp, viewPortContainer)) })
+      viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => ViewPortWorkItem(vp, viewPortContainer)) })
     {
       override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortCallable(r, viewPortContainer)
       override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = ViewPortWorkItem(r.get(), viewPortContainer)
@@ -81,7 +81,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce())
   } else {
     new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner-Tree[${config.threading.treeThreads}]", config.threading.treeThreads, () => {
-      viewPortContainer.getViewPorts().filter(vp => vp.isEnabled && vp.hasGroupBy).map(vp => ViewPortTreeWorkItem(vp, viewPortContainer))
+      viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && vp.hasGroupBy).map(vp => ViewPortTreeWorkItem(vp, viewPortContainer))
     }) {
       override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortTreeCallable(r, viewPortContainer)
 
@@ -127,7 +127,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
         module.getProviderForTable(table, viewserver)(time, life)
       }
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
-      override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer) => ViewPortDef] = module.viewPortDefs
+      override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef] = module.viewPortDefs
     }
 
     moduleContainer.register(realized)
