@@ -249,7 +249,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
   }
 
-  handleWebsocketMessage = (evt) => {
+  handleWebsocketMessage = (evt: MessageEvent) => {
     const vuuMessageFromServer = parseMessage(evt.data);
     this.messagesCount += 1;
     if (process.env.NODE_ENV === "development") {

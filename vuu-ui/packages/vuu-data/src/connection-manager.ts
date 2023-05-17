@@ -73,6 +73,7 @@ const pendingRequests = new Map();
 const getWorker = async (
   url: string,
   token = "",
+  username: string | undefined,
   handleConnectionStatusChange: (msg: any) => void
 ) => {
   if (token === "" && pendingWorker === undefined) {
@@ -100,7 +101,7 @@ const getWorker = async (
         const { data: message } = msg;
         if (message.type === "ready") {
           window.clearTimeout(timer);
-          worker.postMessage({ type: "connect", url, token });
+          worker.postMessage({ type: "connect", url, token, username });
         } else if (message.type === "connected") {
           worker.onmessage = handleMessageFromWorker;
           resolve(worker);
@@ -241,10 +242,14 @@ export type ConnectionEvents = {
 class _ConnectionManager extends EventEmitter<ConnectionEvents> {
   // The first request must have the token. We can change this to block others until
   // the request with token is received.
-  async connect(url: string, authToken?: string): Promise<ServerAPI> {
+  async connect(
+    url: string,
+    authToken?: string,
+    username?: string
+  ): Promise<ServerAPI> {
     // By passing handleMessageFromWorker here, we can get connection status
     //messages while we wait for worker to resolve.
-    worker = await getWorker(url, authToken, handleMessageFromWorker);
+    worker = await getWorker(url, authToken, username, handleMessageFromWorker);
     return connectedServerAPI;
   }
 
@@ -265,9 +270,17 @@ export const ConnectionManager = new _ConnectionManager();
  * @param serverUrl
  * @param token
  */
-export const connectToServer = async (serverUrl: string, token?: string) => {
+export const connectToServer = async (
+  serverUrl: string,
+  token?: string,
+  username?: string
+) => {
   try {
-    const serverAPI = await ConnectionManager.connect(serverUrl, token);
+    const serverAPI = await ConnectionManager.connect(
+      serverUrl,
+      token,
+      username
+    );
     resolveServer(serverAPI);
   } catch (err: unknown) {
     console.error("Connection Error", err);

@@ -18,7 +18,6 @@ import {
   DataSourceEnabledMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
-  isSizeOnly,
 } from "../data-source";
 import {
   isVuuMenuRpcRequest,
@@ -139,6 +138,7 @@ export class ServerProxy {
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
   private authToken = "";
+  private user = "user";
   private pendingLogin?: PendingLogin;
   private pendingTableMetaRequests = new Map<string, string>();
   private pendingRequests = new Map<string, PendingRequest>();
@@ -184,12 +184,16 @@ export class ServerProxy {
     }, 2000);
   }
 
-  public async login(authToken?: string): Promise<string | void> {
+  public async login(
+    authToken?: string,
+    user = "user"
+  ): Promise<string | void> {
     if (authToken) {
       this.authToken = authToken;
+      this.user = user;
       return new Promise((resolve, reject) => {
         this.sendMessageToServer(
-          { type: Message.LOGIN, token: this.authToken, user: "user" },
+          { type: Message.LOGIN, token: this.authToken, user },
           ""
         );
         this.pendingLogin = { resolve, reject };
@@ -573,7 +577,9 @@ export class ServerProxy {
     );
   }
 
-  private awaitResponseToMessage(message: ClientToServerBody): Promise<T> {
+  private awaitResponseToMessage(
+    message: ClientToServerBody
+  ): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const requestId = nextRequestId();
       this.sendMessageToServer(message, requestId);
@@ -607,7 +613,7 @@ export class ServerProxy {
         requestId,
         sessionId: this.sessionId,
         token: this.authToken,
-        user: "user",
+        user: this.user,
         module,
         body,
       } as ClientToServerMessage);
@@ -1019,7 +1025,8 @@ export class ServerProxy {
             this.awaitResponseToMessage({
               type: "GET_TABLE_META",
               table: action.table,
-            }).then(({ columns, dataTypes }: VuuTableMeta) => {
+            }).then((response) => {
+              const { columns, dataTypes } = response as VuuTableMeta;
               this.postMessageToClient({
                 type: "VIEW_PORT_MENU_RESP",
                 action: {

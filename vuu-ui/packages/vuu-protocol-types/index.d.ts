@@ -196,9 +196,10 @@ export interface ServerToClientEditRPC {
   result: any;
 }
 export interface ServerToClientEditRPCRejected {
-  type: "VP_EDIT_RPC_REJECT";
-  rpcName: string;
   error: string;
+  rpcName: string;
+  type: "VP_EDIT_RPC_REJECT";
+  vpId: string;
 }
 export interface ServerToClientOpenTreeNodeSuccess {
   type: "OPEN_TREE_SUCCESS";
@@ -251,7 +252,8 @@ export declare type ServerToClientBody =
   | ServerToClientRemoveLinkSuccess
   | ServerToClientError
   | ServerToClientEditRPC
-  | ServerToClientEditRPC;
+  | ServerToClientEditRPC
+  | ServerToClientEditRPCRejected;
 export interface ServerToClientMessage<
   TBody extends ServerToClientBody = ServerToClientBody
 > {
