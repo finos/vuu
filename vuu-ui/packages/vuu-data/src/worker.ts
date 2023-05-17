@@ -20,6 +20,7 @@ const { info, infoEnabled } = logger("worker");
 async function connectToServer(
   url: string,
   token: string,
+  username: string | undefined,
   onConnectionStatusChange: (msg: ConnectionStatusMessage) => void
 ) {
   const connection = await connectWebsocket(
@@ -44,7 +45,7 @@ async function connectToServer(
   server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
   if (connection.requiresLogin) {
     // no handling for failed login
-    await server.login(token);
+    await server.login(token, username);
   }
 }
 
@@ -61,7 +62,12 @@ const handleMessageFromClient = async ({
 >) => {
   switch (message.type) {
     case "connect":
-      await connectToServer(message.url, message.token, postMessage);
+      await connectToServer(
+        message.url,
+        message.token,
+        message.username,
+        postMessage
+      );
       postMessage({ type: "connected" });
       break;
     // If any of the messages below are received BEFORE we have connected and created

@@ -106,7 +106,7 @@ export const Shell = ({
 
   useEffect(() => {
     if (serverUrl && user.token) {
-      connectToServer(serverUrl, user.token);
+      connectToServer(serverUrl, user.token, user.username);
     }
   }, [serverUrl, user.token]);
 

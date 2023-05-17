@@ -83,6 +83,16 @@ export interface VuuUIMessageInRPC {
   type: "RPC_RESP";
 }
 
+export interface VuuUIMessageInRPCEditReject {
+  error: string;
+  requestId: string;
+  type: "VP_EDIT_RPC_REJECT";
+}
+export interface VuuUIMessageInRPCEditSuccess {
+  requestId: string;
+  type: "VP_EDIT_RPC_RESPONSE";
+}
+
 export const messageHasResult = (msg: object): msg is VuuUIMessageInRPC =>
   typeof (msg as VuuUIMessageInRPC).result !== "undefined";
 
@@ -111,12 +121,15 @@ export type VuuUIMessageIn =
   | VuuUIMessageInRPC
   | MenuRpcResponse
   | VuuUIMessageInTableList
-  | VuuUIMessageInTableMeta;
+  | VuuUIMessageInTableMeta
+  | VuuUIMessageInRPCEditReject
+  | VuuUIMessageInRPCEditSuccess;
 
 export interface VuuUIMessageOutConnect {
   type: "connect";
   token: string;
   url: string;
+  username?: string;
 }
 
 export interface VuuUIMessageOutSubscribe extends ServerProxySubscribeMessage {
