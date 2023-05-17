@@ -138,7 +138,7 @@ export class ServerProxy {
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
   private authToken = "";
-  private user = "";
+  private user = "user";
   private pendingLogin?: PendingLogin;
   private pendingTableMetaRequests = new Map<string, string>();
   private pendingRequests = new Map<string, PendingRequest>();
