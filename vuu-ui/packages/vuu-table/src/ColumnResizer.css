@@ -1,7 +1,13 @@
 .vuuColumnResizer {
+    background-color: var(--columnResizer-color);
     cursor: col-resize;
-    margin-left: auto;
+    height: 100%;
+    position: relative;
     width: 4px;
+}
+
+.vuuColumnResizer:hover {
+    --columnResizer-color: var(--salt-color-blue-500);
 }
 
 .vuuColumnResizer:after {
@@ -10,7 +16,7 @@
     width: var(--columnResizer-width, 1px);
     top:0;
     bottom:0;
-    right: 0;
+    right: -1px;
     background-color: var(--columnResizer-color, var(--salt-separable-tertiary-borderColor));
-    height: var(--columnResizer-height, 100%);
+    height: var(--columnResizer-height, calc(100% + 1px));
 }

@@ -66,7 +66,8 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         nodeState,
         None,
         None,
-        buildAction = BuildEntireTree(sessionTable, None)
+        buildAction = BuildEntireTree(sessionTable, None),
+        None
       ).buildEntireTree()
 
       val treeTwice = TreeBuilder.create(sessionTable, GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
@@ -77,7 +78,8 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         nodeState,
         None,
         None,
-        buildAction = BuildEntireTree(sessionTable, None)
+        buildAction = BuildEntireTree(sessionTable, None),
+        None
       ).buildEntireTree()
 
       val diffsOnceAndTwice = diffOldVsNewBranches(treeOnce, treeTwice, TreeNodeStateStore(Map()))
@@ -96,7 +98,8 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         nodeState,
         None,
         None,
-        buildAction = BuildEntireTree(sessionTable, None)
+        buildAction = BuildEntireTree(sessionTable, None),
+        None
       ).buildEntireTree()
 
       val diffsTwiceAndThrice = diffOldVsNewBranches(treeTwice, treeThrice, TreeNodeStateStore(Map()))
@@ -138,7 +141,8 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         nodeState,
         None,
         None,
-        buildAction = BuildEntireTree(sessionTable, None)
+        buildAction = BuildEntireTree(sessionTable, None),
+        None
       ).buildEntireTree()
 
       And("then recreate the same tree, with different node state")
@@ -150,7 +154,8 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         nodeState,
         None,
         None,
-        buildAction = BuildEntireTree(sessionTable, None)
+        buildAction = BuildEntireTree(sessionTable, None),
+        None
       ).buildEntireTree()
 
       Then("Check we get a diff, oldstate was open")

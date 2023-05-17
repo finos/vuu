@@ -1,1 +1,1 @@
-export * as VuuBlotter from "./VuuBlotter.examples";
+export * as VuuBlotterFeature from "./VuuBlotterFeature.examples";

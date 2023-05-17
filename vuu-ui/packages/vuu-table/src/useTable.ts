@@ -30,7 +30,7 @@ import {
   useState,
 } from "react";
 import { useContextMenu } from "./context-menu";
-import { TableColumnResizeHandler, tableLayoutType } from "./dataTableTypes";
+import { TableColumnResizeHandler } from "./dataTableTypes";
 import { useDataSource } from "./useDataSource";
 import { useDraggableColumn } from "./useDraggableColumn";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
@@ -43,7 +43,7 @@ import { useVirtualViewport } from "./useVirtualViewport";
 
 const NO_ROWS = [] as const;
 
-export interface DataTableHookProps extends MeasuredProps {
+export interface TableHookProps extends MeasuredProps {
   config: Omit<GridConfig, "headings">;
   dataSource: DataSource;
   headerHeight: number;
@@ -54,12 +54,11 @@ export interface DataTableHookProps extends MeasuredProps {
   rowHeight: number;
   onSelectionChange?: SelectionChangeHandler;
   selectionModel: TableSelectionModel;
-  tableLayout: tableLayoutType;
 }
 
 const { KEY, IS_EXPANDED, IS_LEAF } = metadataKeys;
 
-export const useDataTable = ({
+export const useTable = ({
   config,
   dataSource,
   headerHeight,
@@ -70,9 +69,8 @@ export const useDataTable = ({
   renderBufferSize = 0,
   rowHeight,
   selectionModel,
-  tableLayout,
   ...measuredProps
-}: DataTableHookProps) => {
+}: TableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(0);
   const expectConfigChangeRef = useRef(false);
 
@@ -109,7 +107,12 @@ export const useDataTable = ({
     onPersistentColumnOperation: handlePersistentColumnOperation,
   });
 
-  const viewportMeasurements = useTableViewport({
+  const {
+    getRowAtPosition,
+    getRowOffset,
+    setPctScrollTop,
+    ...viewportMeasurements
+  } = useTableViewport({
     columns,
     headerHeight,
     headings,
@@ -248,16 +251,22 @@ export const useDataTable = ({
     virtualColSpan,
   } = useVirtualViewport({
     columns,
-    rowHeight,
+    getRowAtPosition,
     setRange,
     viewportMeasurements,
   });
 
+  const handleVerticalScroll = useCallback(
+    (scrollTop: number, pctScrollTop: number) => {
+      setPctScrollTop(pctScrollTop);
+      onVerticalScroll(scrollTop);
+    },
+    [onVerticalScroll, setPctScrollTop]
+  );
+
   const { requestScroll, ...scrollProps } = useTableScroll({
     onHorizontalScroll,
-    // onRangeChange: setRange,
-    onVerticalScroll,
-
+    onVerticalScroll: handleVerticalScroll,
     viewport: viewportMeasurements,
     viewportHeight:
       (containerMeasurements.innerSize?.height ?? 0) - headerHeight,
@@ -273,11 +282,15 @@ export const useDataTable = ({
   });
 
   const handleRemoveColumnFromGroupBy = useCallback(
-    (column: KeyedColumnDescriptor) => {
-      if (dataSource && dataSource.groupBy.includes(column.name)) {
-        dataSource.groupBy = dataSource.groupBy.filter(
-          (columnName) => columnName !== column.name
-        );
+    (column?: KeyedColumnDescriptor) => {
+      if (column) {
+        if (dataSource && dataSource.groupBy.includes(column.name)) {
+          dataSource.groupBy = dataSource.groupBy.filter(
+            (columnName) => columnName !== column.name
+          );
+        }
+      } else {
+        dataSource.groupBy = [];
       }
     },
     [dataSource]
@@ -297,8 +310,6 @@ export const useDataTable = ({
 
   const draggableHook = useDraggableColumn({
     onDrop: handleDropColumn,
-    tableContainerRef: scrollProps.tableContainerRef,
-    tableLayout,
   });
 
   useEffect(() => {
@@ -341,8 +352,8 @@ export const useDataTable = ({
       const { current: currentData } = dataRef;
       const { current: currentDataSource } = dataSourceRef;
       const target = evt.target as HTMLElement;
-      const cellEl = target?.closest("td");
-      const rowEl = target?.closest("tr");
+      const cellEl = target?.closest("div[role='cell']");
+      const rowEl = target?.closest(".vuuTableRow");
 
       if (cellEl && rowEl && currentData && currentDataSource) {
         const { columns, selectedRowsCount } = currentDataSource;
@@ -371,6 +382,7 @@ export const useDataTable = ({
     columnsWithinViewport,
     data,
     dispatchColumnAction,
+    getRowOffset,
     handleContextMenuAction,
     headings,
     onColumnResize: handleColumnResize,

@@ -1,10 +1,11 @@
 import { View } from "@finos/vuu-layout";
 import { useTableSchema } from "../../utils";
 import { useAutoLoginToVuuServer } from "../../utils/useAutoLoginToVuuServer";
-import { VuuBlotter } from "./VuuBlotter";
+import { VuuBlotter } from "../../../features/VuuBlotter.feature";
+import { VuuBlotterMockData } from "../../../features/VuuBlotterMockData.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 
-import "./VuuBlotter.examples.css";
+import "./VuuBlotterFeature.examples.css";
 
 export const DefaultVuuBlotter = () => {
   const error = useAutoLoginToVuuServer();
@@ -24,6 +25,23 @@ export const DefaultVuuBlotter = () => {
       style={{ width: 700, height: 500 }}
     >
       <VuuBlotter schema={schema} />
+    </View>
+  );
+};
+
+export const DefaultVuuBlotterMockData = () => {
+  const schema = useTableSchema("instruments");
+
+  return (
+    <View
+      Header={VuuBlotterHeader}
+      className="vuuBlotterView"
+      closeable
+      header
+      title="Instruments"
+      style={{ width: 700, height: 500 }}
+    >
+      <VuuBlotterMockData schema={schema} />
     </View>
   );
 };

@@ -178,6 +178,7 @@ export class Viewport {
   public links?: LinkDescriptorWithLabel[];
   public linkedParent?: LinkedParent;
   public serverViewportId?: string;
+  // TODO roll disabled/suspended into status
   public status: "" | "subscribing" | "resubscribing" | "subscribed" = "";
   public suspended = false;
   public table: VuuTable;
@@ -754,6 +755,13 @@ export class Viewport {
       }
     }
 
+    if (rows.length === 1 && firstRow.vpSize === 0 && this.disabled) {
+      debug?.(
+        `ignore a SIZE=0 message on disabled viewport (${rows.length} rows)`
+      );
+      return;
+    }
+
     for (const row of rows) {
       if (this.isTree && isLeafUpdate(row)) {
         // Ignore blank rows sent after GroupBy;
@@ -862,8 +870,8 @@ const toClientRow = (
     rowIndex,
     keys.keyFor(rowIndex),
     true,
-    null,
-    null,
+    false,
+    0,
     0,
     rowKey,
     isSelected,
@@ -877,7 +885,7 @@ const toClientRowTree = (
   const [depth, isExpanded /* path */, , isLeaf /* label */, , count, ...rest] =
     data;
 
-  const record = [
+  return [
     rowIndex,
     keys.keyFor(rowIndex),
     isLeaf,
@@ -886,7 +894,5 @@ const toClientRowTree = (
     count,
     rowKey,
     isSelected,
-  ].concat(rest);
-
-  return record as DataSourceRow;
+  ].concat(rest) as DataSourceRow;
 };

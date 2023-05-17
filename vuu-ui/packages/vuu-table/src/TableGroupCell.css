@@ -2,8 +2,9 @@
     --spacer-width: 20px;
     --toggle-icon-transform: var(--row-toggle-icon-transform, none);
     --vuu-icon-width: 18px;
-    display: flex;
+
     align-items: center;
+    display: inline-flex;
 }
 
 .vuuTableGroupCell-spacer {

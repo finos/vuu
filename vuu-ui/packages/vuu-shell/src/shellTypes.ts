@@ -14,5 +14,6 @@ export type Features = {
 };
 export interface VuuConfig {
   features: Features;
+  authUrl?: string;
   websocketUrl: string;
 }

@@ -31,9 +31,11 @@ export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
   columnDescriptors: ColumnDescriptor[];
   data: VuuRowDataItemType[][];
+  rangeChangeRowset?: "delta" | "full";
 }
 
 const { IDX, SELECTED } = metadataKeys;
+const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
 
 const toDataSourceRow = (
   data: VuuRowDataItemType[],
@@ -82,13 +84,14 @@ export class ArrayDataSource
   private clientCallback: SubscribeCallback | undefined;
   private tableMeta: VuuTableMeta;
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
+  private rangeChangeRowset: "delta" | "full";
 
   #aggregations: VuuAggregation[] = [];
   #columns: string[] = [];
   #data: DataSourceRow[];
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
-  #range: VuuRange = { from: 0, to: 0 };
+  #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
@@ -104,6 +107,7 @@ export class ArrayDataSource
     data,
     filter,
     groupBy,
+    rangeChangeRowset = "delta",
     sort,
     title,
     viewport,
@@ -118,6 +122,7 @@ export class ArrayDataSource
 
     this.columnDescriptors = columnDescriptors;
     this.#columns = columnDescriptors.map((column) => column.name);
+    this.rangeChangeRowset = rangeChangeRowset;
     this.tableMeta = buildTableMeta(columnDescriptors);
 
     this.#data = data.map<DataSourceRow>(toDataSourceRow);
@@ -134,6 +139,9 @@ export class ArrayDataSource
     if (sort) {
       this.#sort = sort;
     }
+
+    this.#size = data.length;
+
     this.#title = title;
   }
 
@@ -162,9 +170,6 @@ export class ArrayDataSource
     }
     if (groupBy) {
       this.#groupBy = groupBy;
-    }
-    if (range) {
-      this.#range = range;
     }
     if (sort) {
       this.#sort = sort;
@@ -196,6 +201,13 @@ export class ArrayDataSource
       type: "viewport-update",
       size: this.#data.length,
     });
+
+    if (range) {
+      // set range and trigger dispatch of initial rows
+      this.range = range;
+    } else if (this.#range !== NULL_RANGE) {
+      this.sendRowsToClient();
+    }
   }
 
   unsubscribe() {
@@ -271,20 +283,44 @@ export class ArrayDataSource
   }
 
   set range(range: VuuRange) {
-    this.#range = range;
-    this.keys.reset(range);
-    requestAnimationFrame(() => {
-      const rangeDelta = rangeNewItems(this.lastRangeServed, this.#range);
-      this.clientCallback?.({
-        clientViewportId: this.viewport,
-        rows: this.#data
-          .slice(rangeDelta.from, rangeDelta.to)
-          .map((row) => toClientRow(row, this.keys)),
-        size: this.#data.length,
-        type: "viewport-update",
-      });
-      this.lastRangeServed = this.#range;
+    if (range.from !== this.#range.from || range.to !== this.#range.to) {
+      this.#range = range;
+      this.keys.reset(range);
+      this.sendRowsToClient();
+      // // requestAnimationFrame(() => {
+      // const rowRange =
+      //   this.rangeChangeRowset === "delta"
+      //     ? rangeNewItems(this.lastRangeServed, this.#range)
+      //     : this.#range;
+      // this.clientCallback?.({
+      //   clientViewportId: this.viewport,
+      //   rows: this.#data
+      //     .slice(rowRange.from, rowRange.to)
+      //     .map((row) => toClientRow(row, this.keys)),
+      //   size: this.#data.length,
+      //   type: "viewport-update",
+      // });
+      // this.lastRangeServed = this.#range;
+      // // });
+    }
+  }
+
+  sendRowsToClient() {
+    // requestAnimationFrame(() => {
+    const rowRange =
+      this.rangeChangeRowset === "delta"
+        ? rangeNewItems(this.lastRangeServed, this.#range)
+        : this.#range;
+    this.clientCallback?.({
+      clientViewportId: this.viewport,
+      rows: this.#data
+        .slice(rowRange.from, rowRange.to)
+        .map((row) => toClientRow(row, this.keys)),
+      size: this.#data.length,
+      type: "viewport-update",
     });
+    this.lastRangeServed = this.#range;
+    // });
   }
 
   get columns() {

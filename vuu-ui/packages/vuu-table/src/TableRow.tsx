@@ -1,6 +1,7 @@
 import { DataSourceRow } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
+  ColumnMap,
   isGroupColumn,
   isJsonColumn,
   isJsonGroup,
@@ -20,9 +21,9 @@ const classBase = "vuuTableRow";
 
 export interface RowProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "children" | "onClick"> {
+  columnMap: ColumnMap;
   columns: KeyedColumnDescriptor[];
-  height: number;
-  index: number;
+  offset: number;
   onClick?: RowClickHandler;
   onToggleGroup?: (row: DataSourceRow, column: KeyedColumnDescriptor) => void;
   row: DataSourceRow;
@@ -30,9 +31,9 @@ export interface RowProps
 }
 
 export const TableRow = memo(function Row({
+  columnMap,
   columns,
-  height,
-  index,
+  offset,
   onClick,
   onToggleGroup,
   virtualColSpan = 0,
@@ -49,7 +50,6 @@ export const TableRow = memo(function Row({
     [`${classBase}-expanded`]: isExpanded,
     [`${classBase}-preSelected`]: isSelected === 2,
   });
-  const offset = rowIndex - index;
 
   const handleRowClick = useCallback(
     (evt: MouseEvent) => {
@@ -70,16 +70,19 @@ export const TableRow = memo(function Row({
   );
 
   return (
-    <tr
+    <div
       aria-selected={isSelected === 1 ? true : undefined}
       aria-rowindex={rowIndex}
       className={className}
       onClick={handleRowClick}
+      role="row"
       style={{
-        transform: `translate(0px, ${offset * height}px)`,
+        transform: `translate3d(0px, ${offset}px, 0px)`,
       }}
     >
-      {virtualColSpan > 0 ? <td colSpan={virtualColSpan} /> : null}
+      {virtualColSpan > 0 ? (
+        <div role="cell" style={{ width: virtualColSpan }} />
+      ) : null}
       {columns.filter(notHidden).map((column) => {
         const isGroup = isGroupColumn(column);
         const isJsonCell = isJsonColumn(column);
@@ -87,12 +90,13 @@ export const TableRow = memo(function Row({
         return (
           <Cell
             column={column}
+            columnMap={columnMap}
             key={column.name}
             onClick={isGroup || isJsonCell ? handleGroupCellClick : undefined}
             row={row}
           />
         );
       })}
-    </tr>
+    </div>
   );
 });

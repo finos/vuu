@@ -13,6 +13,7 @@ import org.finos.vuu.provider.{Provider, ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport._
 import org.finos.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.auths.OrderPermissionChecker
 import org.finos.vuu.core.module.simul.service.ParentOrdersService
 
 class PricesService(val table: DataTable, val provider: Provider) extends RpcHandler with StrictLogging {
@@ -166,7 +167,7 @@ object SimulationModule extends DefaultModule {
           joinFields = "ric"
         ),
         (table, vs) => new SimulatedBigInstrumentsProvider(table),
-        (table, provider, providerContainer) => ViewPortDef(
+        (table, provider, providerContainer, _) => ViewPortDef(
           columns = table.getTableDef.columns,
           service = new InstrumentsService(table, providerContainer)
         )
@@ -180,7 +181,7 @@ object SimulationModule extends DefaultModule {
           joinFields = "ric"
         ),
         (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800),
-        (table, provider, providerContainer) => ViewPortDef(
+        (table, provider, providerContainer, _) => ViewPortDef(
           columns = table.getTableDef.columns,
           service = new PricesService(table, provider)
         )
@@ -216,10 +217,27 @@ object SimulationModule extends DefaultModule {
           joinFields = "id", "ric"
         ),
         (table, vs) => new ParentOrdersProvider(table, ordersModel),
-        (table, provider, providerContainer) => ViewPortDef(
+        (table, provider, providerContainer, _) => ViewPortDef(
           columns = table.getTableDef.columns,
           service = new ParentOrdersService(table, provider)
         )
+      )
+      .addTable(
+        TableDef(
+          name = "permissionedOrders",
+          keyField = "id",
+          Columns.fromNames("id".string(), "idAsInt".int(), "ric".string(), "childCount".int(), "price".double(),
+            "quantity".int(), "side".string(), "account".string(), "exchange".string(),
+            "ccy".string(), "algo".string(), "volLimit".double(), "filledQty".int(), "openQty".int(),
+            "averagePrice".double(), "status".string(), "lastUpdate".long(), "owner".string(), "mask".int()),
+          VisualLinks(),
+          indices = Indices(
+            Index("ric"),
+            Index("mask")
+          ),
+          joinFields = "id", "ric", "owner"
+        ).withPermissions((vp, tableContainer) => new OrderPermissionChecker(vp, tableContainer)),
+        (table, _) => new PermissionedOrdersProvider(table, ordersModel)
       )
       .addTable(
         TableDef(

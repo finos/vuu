@@ -190,7 +190,7 @@ export interface MenuActionConfig {
 export interface VuuMenuActionHookProps {
   dataSource: DataSource;
   menuActionConfig?: MenuActionConfig;
-  onRpcResponse?: (response?: MenuRpcResponse) => void;
+  onRpcResponse?: (response: MenuRpcResponse) => void;
 }
 
 type TableMenuLocation = "grid" | "header" | "filter";
@@ -344,7 +344,9 @@ export const useVuuMenuActions = ({
       if (type === "MENU_RPC_CALL") {
         const rpcRequest = getMenuRpcRequest(options as VuuMenuItem);
         dataSource.menuRpcCall(rpcRequest).then((rpcResponse) => {
-          onRpcResponse && onRpcResponse(rpcResponse);
+          if (onRpcResponse && rpcResponse) {
+            onRpcResponse && onRpcResponse(rpcResponse);
+          }
         });
         return true;
       } else if (type === "link-table") {

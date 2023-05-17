@@ -47,7 +47,7 @@ object TestModule{
           )
         ,
         (table, vs) => new MockProvider(table),
-        (table, provider, _) => ViewPortDef(
+        (table, provider, _, _) => ViewPortDef(
             columns = table.getTableDef.columns,
             service = new MyCustomRpcHandler
           )
