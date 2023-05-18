@@ -106,9 +106,13 @@ export const Shell = ({
 
   useEffect(() => {
     if (serverUrl && user.token) {
-      connectToServer(serverUrl, user.token, user.username);
+      connectToServer({
+        authToken: user.token,
+        url: serverUrl,
+        username: user.username,
+      });
     }
-  }, [serverUrl, user.token]);
+  }, [serverUrl, user.token, user.username]);
 
   const getDrawers = () => {
     const drawers: ReactElement[] = [];

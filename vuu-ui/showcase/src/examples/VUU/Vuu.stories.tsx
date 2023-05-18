@@ -3,29 +3,19 @@ import {
   List,
   ListItem,
   Toolbar,
-  ToolbarField
+  ToolbarField,
 } from "@heswell/salt-lab";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-import {
-  authenticate as vuuAuthenticate,
-  connectToServer,
-  useTypeaheadSuggestions,
-  useVuuTables
-} from "@finos/vuu-data";
+import { useTypeaheadSuggestions, useVuuTables } from "@finos/vuu-data";
+import { useAutoLoginToVuuServer } from "../utils";
 
 let displaySequence = 1;
 
 export const VuuTables = () => {
   const tables = useVuuTables();
 
-  useEffect(() => {
-    const connect = async () => {
-      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
-      connectToServer("127.0.0.1:8090/websocket", authToken);
-    };
-    connect();
-  }, []);
+  useAutoLoginToVuuServer();
 
   return (
     <List width={200}>
@@ -46,9 +36,7 @@ export const FilterToolbar = () => {
   const [currencies, setCurrencies] = useState<string[]>([]);
   const getSuggestions = useTypeaheadSuggestions();
 
-  useMemo(() => {
-    connectToServer("wss://127.0.0.1:8090/websocket", "fake-auth-token");
-  }, []);
+  useAutoLoginToVuuServer();
 
   useEffect(() => {
     getSuggestions([

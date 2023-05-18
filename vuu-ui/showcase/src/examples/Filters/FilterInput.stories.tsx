@@ -8,18 +8,12 @@ import {
   updateFilter,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { JsonTable } from "@finos/vuu-datatable";
+import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
 
-import {
-  authenticate as vuuAuthenticate,
-  connectToServer,
-} from "@finos/vuu-data";
 import {} from "@finos/vuu-utils";
-import {
-  ApplyCompletion,
-  FilterSubmissionMode,
-} from "@finos/vuu-filters/src/filter-input/useFilterAutoComplete";
+import { FilterSubmissionMode } from "@finos/vuu-filters/src/filter-input/useFilterAutoComplete";
 
 let displaySequence = 1;
 
@@ -53,13 +47,7 @@ export const DefaultFilterInput = () => {
     table,
   });
 
-  useEffect(() => {
-    const connect = async () => {
-      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
-      connectToServer("127.0.0.1:8090/websocket", authToken);
-    };
-    connect();
-  }, []);
+  useAutoLoginToVuuServer();
 
   const handleSubmitFilter = useCallback(
     (
@@ -137,13 +125,7 @@ export const FilterInputTabs = () => {
     table,
   });
 
-  useEffect(() => {
-    const connect = async () => {
-      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
-      connectToServer("127.0.0.1:8090/websocket", authToken);
-    };
-    connect();
-  }, []);
+  useAutoLoginToVuuServer();
 
   const handleSubmitFilter = useCallback(
     (
@@ -209,13 +191,7 @@ export const FilterInputWithToolbar = () => {
     table,
   });
 
-  useEffect(() => {
-    const connect = async () => {
-      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
-      connectToServer("127.0.0.1:8090/websocket", authToken);
-    };
-    connect();
-  }, []);
+  useAutoLoginToVuuServer();
 
   const handleSubmitFilter = useCallback(
     (
