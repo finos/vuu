@@ -29,6 +29,7 @@ import {
 import { workerSourceCode } from "./inlined-worker";
 import { VuuTableMetaWithTable } from "./hooks";
 import { ConnectionQualityMetrics } from "./vuuUIMessageTypes";
+import { WebSocketProtocol } from "./websocket-connection";
 
 const workerBlob = new Blob([getLoggingConfig() + workerSourceCode], {
   type: "text/javascript",
@@ -67,15 +68,26 @@ const viewports = new Map<
 >();
 const pendingRequests = new Map();
 
+type WorkerOptions = {
+  protocol: WebSocketProtocol;
+  url: string;
+  token?: string;
+  username: string | undefined;
+  handleConnectionStatusChange: (msg: {
+    data: ConnectionStatusMessage;
+  }) => void;
+};
+
 // We do not resolve the worker until we have a connection, but we will get
 // connection status messages before that, so we forward them to caller
 // while they wait for worker.
-const getWorker = async (
-  url: string,
+const getWorker = async ({
+  handleConnectionStatusChange,
+  protocol,
   token = "",
-  username: string | undefined,
-  handleConnectionStatusChange: (msg: any) => void
-) => {
+  username,
+  url,
+}: WorkerOptions) => {
   if (token === "" && pendingWorker === undefined) {
     return new Promise<Worker>((resolve) => {
       pendingWorkerNoToken.push({ resolve });
@@ -101,7 +113,13 @@ const getWorker = async (
         const { data: message } = msg;
         if (message.type === "ready") {
           window.clearTimeout(timer);
-          worker.postMessage({ type: "connect", url, token, username });
+          worker.postMessage({
+            protocol,
+            token,
+            type: "connect",
+            url,
+            username,
+          });
         } else if (message.type === "connected") {
           worker.onmessage = handleMessageFromWorker;
           resolve(worker);
@@ -110,7 +128,7 @@ const getWorker = async (
           }
           pendingWorkerNoToken.length = 0;
         } else if (isConnectionStatusMessage(message)) {
-          handleConnectionStatusChange(msg);
+          handleConnectionStatusChange({ data: message });
         } else {
           console.warn("ConnectionManager: Unexpected message from the worker");
         }
@@ -123,11 +141,7 @@ const getWorker = async (
 function handleMessageFromWorker({
   data: message,
 }: MessageEvent<VuuUIMessageIn | DataSourceCallbackMessage>) {
-  if (isConnectionQualityMetrics(message))
-    ConnectionManager.emit("connection-metrics", message);
-  else if (isConnectionStatusMessage(message))
-    ConnectionManager.emit("connection-status", message);
-  else if (messageShouldBeRoutedToDataSource(message)) {
+  if (messageShouldBeRoutedToDataSource(message)) {
     const viewport = viewports.get(message.clientViewportId);
     if (viewport) {
       viewport.postMessageToClientDataSource(message);
@@ -136,6 +150,10 @@ function handleMessageFromWorker({
         `[ConnectionManager] ${message.type} message received, viewport not found`
       );
     }
+  } else if (isConnectionStatusMessage(message)) {
+    ConnectionManager.emit("connection-status", message);
+  } else if (isConnectionQualityMetrics(message)) {
+    ConnectionManager.emit("connection-metrics", message);
   } else {
     const requestId = (message as VuuUIMessageInRPC).requestId;
     if (pendingRequests.has(requestId)) {
@@ -239,17 +257,33 @@ export type ConnectionEvents = {
   "connection-metrics": (message: ConnectionQualityMetrics) => void;
 };
 
+export type ConnectOptions = {
+  url: string;
+  authToken?: string;
+  username?: string;
+  protocol?: WebSocketProtocol;
+};
+
 class _ConnectionManager extends EventEmitter<ConnectionEvents> {
   // The first request must have the token. We can change this to block others until
   // the request with token is received.
-  async connect(
-    url: string,
-    authToken?: string,
-    username?: string
-  ): Promise<ServerAPI> {
+  async connect({
+    url,
+    authToken,
+    username,
+    protocol,
+  }: ConnectOptions): Promise<ServerAPI> {
     // By passing handleMessageFromWorker here, we can get connection status
     //messages while we wait for worker to resolve.
-    worker = await getWorker(url, authToken, username, handleMessageFromWorker);
+    worker = await getWorker({
+      protocol,
+      url,
+      token: authToken,
+      username,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      handleConnectionStatusChange: handleMessageFromWorker,
+    });
     return connectedServerAPI;
   }
 
@@ -270,17 +304,19 @@ export const ConnectionManager = new _ConnectionManager();
  * @param serverUrl
  * @param token
  */
-export const connectToServer = async (
-  serverUrl: string,
-  token?: string,
-  username?: string
-) => {
+export const connectToServer = async ({
+  url,
+  protocol = undefined,
+  authToken,
+  username,
+}: ConnectOptions) => {
   try {
-    const serverAPI = await ConnectionManager.connect(
-      serverUrl,
-      token,
-      username
-    );
+    const serverAPI = await ConnectionManager.connect({
+      protocol,
+      url,
+      authToken,
+      username,
+    });
     resolveServer(serverAPI);
   } catch (err: unknown) {
     console.error("Connection Error", err);

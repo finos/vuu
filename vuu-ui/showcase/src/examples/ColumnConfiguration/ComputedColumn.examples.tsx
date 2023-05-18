@@ -1,19 +1,15 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ColumnExpressionInput,
   ColumnExpressionInputProps,
   Expression,
-  isCompleteExpression,
   useColumnExpressionSuggestionProvider,
 } from "@finos/vuu-table-extras";
 
 import { JsonTable } from "@finos/vuu-datatable";
 
-import {
-  authenticate as vuuAuthenticate,
-  connectToServer,
-} from "@finos/vuu-data";
 import {} from "@finos/vuu-utils";
+import { useAutoLoginToVuuServer } from "../utils";
 
 let displaySequence = 1;
 
@@ -48,13 +44,7 @@ export const DefaultColumnExpressionInput = () => {
     table,
   });
 
-  useEffect(() => {
-    const connect = async () => {
-      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
-      connectToServer("127.0.0.1:8090/websocket", authToken);
-    };
-    connect();
-  }, []);
+  useAutoLoginToVuuServer();
 
   const handleSubmitExpression: ColumnExpressionInputProps["onSubmitExpression"] =
     useCallback((source: string, expression: Expression | undefined) => {

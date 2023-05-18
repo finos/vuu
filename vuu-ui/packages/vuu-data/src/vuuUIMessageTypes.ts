@@ -15,6 +15,7 @@ import { DataSourceFilter } from "@finos/vuu-data-types";
 import { WithRequestId } from "./message-utils";
 import { WithFullConfig } from "./data-source";
 import { Selection } from "@finos/vuu-datagrid-types";
+import { WebSocketProtocol } from "./websocket-connection";
 
 export type ConnectionStatus =
   | "connecting"
@@ -31,7 +32,7 @@ export interface ConnectionStatusMessage {
 }
 
 export const isConnectionStatusMessage = (
-  msg: object
+  msg: object | ConnectionStatusMessage
 ): msg is ConnectionStatusMessage =>
   (msg as ConnectionStatusMessage).type === "connection-status";
 
@@ -126,6 +127,7 @@ export type VuuUIMessageIn =
   | VuuUIMessageInRPCEditSuccess;
 
 export interface VuuUIMessageOutConnect {
+  protocol: WebSocketProtocol;
   type: "connect";
   token: string;
   url: string;
