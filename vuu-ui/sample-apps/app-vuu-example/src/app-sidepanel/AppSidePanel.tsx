@@ -1,5 +1,5 @@
 import { TableSchema } from "@finos/vuu-data";
-import { Palette, PaletteItem } from "@finos/vuu-layout";
+import { Palette, PaletteItem, ViewProps } from "@finos/vuu-layout";
 import { Feature, Features } from "@finos/vuu-shell";
 import {
   Accordion,
@@ -19,6 +19,7 @@ const NULL_FEATURE = {};
 export interface AppSidePanelProps {
   features?: Features;
   tables?: Map<string, TableSchema>;
+  ViewProps?: Partial<ViewProps>;
 }
 
 type FeatureDescriptor = {
@@ -59,6 +60,7 @@ const classBase = "vuuAppSidePanel";
 export const AppSidePanel = ({
   features = NO_FEATURES,
   tables,
+  ViewProps,
 }: AppSidePanelProps) => {
   const gridFeatures = useMemo(
     () =>
@@ -140,6 +142,7 @@ export const AppSidePanel = ({
             <Palette
               orientation="vertical"
               style={{ width: "100%", height: "100%" }}
+              ViewProps={ViewProps}
             >
               {paletteItems.map((spec) => (
                 <PaletteItem
