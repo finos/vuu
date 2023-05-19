@@ -1,3 +1,4 @@
+export * as Apps from "./Apps";
 export * as ColumnConfiguration from "./ColumnConfiguration";
 export * as DataGrid from "./DataGrid";
 export * as Filters from "./Filters";

@@ -9,7 +9,7 @@ import {
   ReactElement,
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
-import { View } from "../layout-view";
+import { View, ViewProps } from "../layout-view";
 import { registerComponent } from "../registry/ComponentRegistry";
 
 import "./Palette.css";
@@ -57,12 +57,14 @@ export interface PaletteProps
   children: ReactElement[];
   orientation: "horizontal" | "vertical";
   selection?: string;
+  ViewProps?: Partial<ViewProps>;
 }
 
 export const Palette = ({
   children,
   className,
   orientation = "horizontal",
+  ViewProps,
   ...props
 }: PaletteProps) => {
   const dispatch = useLayoutProviderDispatch();
@@ -89,7 +91,7 @@ export const Palette = ({
     const component = template ? (
       payload
     ) : (
-      <View {...identifiers} {...props} title={props.label}>
+      <View {...ViewProps} {...identifiers} {...props} title={props.label}>
         {payload}
       </View>
     );
