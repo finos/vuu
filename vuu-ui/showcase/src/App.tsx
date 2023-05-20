@@ -45,7 +45,7 @@ const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
 };
 
 const sourceFromImports = (
-  stories: Module,
+  stories: any,
   prefix = "",
   icon = "folder"
 ): SourceNode[] =>
@@ -70,7 +70,7 @@ const sourceFromImports = (
     });
 
 export interface AppProps {
-  stories: Module;
+  stories: any;
 }
 
 export const App = ({ stories }: AppProps) => {

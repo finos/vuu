@@ -6,7 +6,11 @@ import {
   VuuTable,
   VuuTableList,
 } from "@finos/vuu-protocol-types";
-import { EventEmitter, getLoggingConfig, uuid } from "@finos/vuu-utils";
+import {
+  EventEmitter,
+  getLoggingConfigForWorker,
+  uuid,
+} from "@finos/vuu-utils";
 import {
   DataSourceCallbackMessage,
   shouldMessageBeRoutedToDataSource as messageShouldBeRoutedToDataSource,
@@ -31,7 +35,7 @@ import { VuuTableMetaWithTable } from "./hooks";
 import { ConnectionQualityMetrics } from "./vuuUIMessageTypes";
 import { WebSocketProtocol } from "./websocket-connection";
 
-const workerBlob = new Blob([getLoggingConfig() + workerSourceCode], {
+const workerBlob = new Blob([getLoggingConfigForWorker() + workerSourceCode], {
   type: "text/javascript",
 });
 const workerBlobUrl = URL.createObjectURL(workerBlob);

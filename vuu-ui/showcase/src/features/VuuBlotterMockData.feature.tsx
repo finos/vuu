@@ -11,7 +11,7 @@ import {
 import { useViewContext } from "@finos/vuu-layout";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 import { Toolbar } from "@heswell/salt-lab";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DockLayout } from "../examples/html/components/DockLayout";
 import { useTableConfig } from "../examples/utils";
 
@@ -35,16 +35,24 @@ export const VuuBlotterMockData = ({
     filter: undefined,
     filterQuery: "",
   });
-  const { config, dataSource } = useTableConfig({
+  const { config, dataSource, typeaheadHook } = useTableConfig({
     count: 1000,
+    lazyData: false,
     table: schema.table,
   });
 
   console.log("VuuBlotter render", { props, schema });
+  useEffect(() => {
+    console.log("%cVuuBlotterMockDataFeature mount", "color: green;");
+    return () => {
+      console.log("%cVuuBlotterMockDataFeature unmount", "color:red;");
+    };
+  }, []);
 
   const suggestionProvider = useFilterSuggestionProvider({
     columns: schema.columns,
     table: schema.table,
+    typeaheadHook,
   });
 
   const handleTableConfigChange = useCallback(

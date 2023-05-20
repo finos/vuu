@@ -11,11 +11,15 @@ import {
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
+  buildColumnMap,
+  ColumnMap,
   EventEmitter,
   isSelected,
   KeySet,
+  logger,
   metadataKeys,
   rangeNewItems,
+  resetRange,
   uuid,
 } from "@finos/vuu-utils";
 import {
@@ -25,7 +29,8 @@ import {
   SubscribeProps,
   DataSourceRow,
   DataSourceEvents,
-} from "./data-source";
+} from "../data-source";
+import { filterPredicate } from "@finos/vuu-filters";
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
@@ -33,6 +38,8 @@ export interface ArrayDataSourceConstructorProps
   data: VuuRowDataItemType[][];
   rangeChangeRowset?: "delta" | "full";
 }
+
+const { debug, debugEnabled } = logger("ArrayDataSource");
 
 const { IDX, SELECTED } = metadataKeys;
 const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
@@ -80,6 +87,7 @@ export class ArrayDataSource
   private columnDescriptors: ColumnDescriptor[];
   private status = "initialising";
   private disabled = false;
+  private filteredData: undefined | DataSourceRow[];
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
   private tableMeta: VuuTableMeta;
@@ -88,6 +96,7 @@ export class ArrayDataSource
 
   #aggregations: VuuAggregation[] = [];
   #columns: string[] = [];
+  #columnMap: ColumnMap;
   #data: DataSourceRow[];
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
@@ -122,6 +131,7 @@ export class ArrayDataSource
 
     this.columnDescriptors = columnDescriptors;
     this.#columns = columnDescriptors.map((column) => column.name);
+    this.#columnMap = buildColumnMap(this.#columns);
     this.rangeChangeRowset = rangeChangeRowset;
     this.tableMeta = buildTableMeta(columnDescriptors);
 
@@ -143,6 +153,8 @@ export class ArrayDataSource
     this.#size = data.length;
 
     this.#title = title;
+
+    debug?.(`columnMap: ${JSON.stringify(this.#columnMap)}`);
   }
 
   async subscribe(
@@ -235,7 +247,10 @@ export class ArrayDataSource
   }
 
   select(selected: Selection) {
+    debug?.(`select ${JSON.stringify(selected)}`);
     const updatedRows: DataSourceRow[] = [];
+    // TODO rewrite this without the loop through entire dataset
+    // store the selection locally and identify the changes
     for (const row of this.#data) {
       const { [IDX]: rowIndex, [SELECTED]: sel } = row;
       const wasSelected = sel === 1;
@@ -284,36 +299,26 @@ export class ArrayDataSource
 
   set range(range: VuuRange) {
     if (range.from !== this.#range.from || range.to !== this.#range.to) {
-      this.#range = range;
-      this.keys.reset(range);
-      this.sendRowsToClient();
-      // // requestAnimationFrame(() => {
-      // const rowRange =
-      //   this.rangeChangeRowset === "delta"
-      //     ? rangeNewItems(this.lastRangeServed, this.#range)
-      //     : this.#range;
-      // this.clientCallback?.({
-      //   clientViewportId: this.viewport,
-      //   rows: this.#data
-      //     .slice(rowRange.from, rowRange.to)
-      //     .map((row) => toClientRow(row, this.keys)),
-      //   size: this.#data.length,
-      //   type: "viewport-update",
-      // });
-      // this.lastRangeServed = this.#range;
-      // // });
+      this.setRange(range);
     }
   }
 
-  sendRowsToClient() {
+  private setRange(range: VuuRange, forceFullRefresh = false) {
+    this.#range = range;
+    this.keys.reset(range);
+    this.sendRowsToClient(forceFullRefresh);
+  }
+
+  sendRowsToClient(forceFullRefresh = false) {
     // requestAnimationFrame(() => {
     const rowRange =
-      this.rangeChangeRowset === "delta"
+      this.rangeChangeRowset === "delta" && !forceFullRefresh
         ? rangeNewItems(this.lastRangeServed, this.#range)
         : this.#range;
+    const data = this.filteredData ?? this.#data;
     this.clientCallback?.({
       clientViewportId: this.viewport,
-      rows: this.#data
+      rows: data
         .slice(rowRange.from, rowRange.to)
         .map((row) => toClientRow(row, this.keys)),
       size: this.#data.length,
@@ -354,9 +359,21 @@ export class ArrayDataSource
   }
 
   set filter(filter: DataSourceFilter) {
+    debug?.(`filter ${JSON.stringify(filter)}`);
     // TODO should we wait until server ACK before we assign #sort ?
     this.#filter = filter;
-    console.log(`RemoteDataSource ${JSON.stringify(filter)}`);
+    const { filterStruct } = filter;
+    if (filterStruct) {
+      const fn = filterPredicate(this.#columnMap, filterStruct);
+      // TODO this is expensive,
+      this.filteredData = this.#data.filter(fn).map((row, i) => {
+        const dolly = row.slice() as DataSourceRow;
+        dolly[0] = i;
+        dolly[1] = i;
+        return dolly;
+      });
+      this.setRange(resetRange(this.#range), true);
+    }
   }
 
   get groupBy() {
