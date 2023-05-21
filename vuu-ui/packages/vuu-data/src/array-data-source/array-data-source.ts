@@ -29,6 +29,8 @@ import {
   SubscribeProps,
   DataSourceRow,
   DataSourceEvents,
+  vanillaConfig,
+  WithFullConfig,
 } from "../data-source";
 import { filterPredicate } from "@finos/vuu-filters";
 
@@ -39,7 +41,7 @@ export interface ArrayDataSourceConstructorProps
   rangeChangeRowset?: "delta" | "full";
 }
 
-const { debug, debugEnabled } = logger("ArrayDataSource");
+const { debug } = logger("ArrayDataSource");
 
 const { IDX, SELECTED } = metadataKeys;
 const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
@@ -94,16 +96,13 @@ export class ArrayDataSource
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
   private rangeChangeRowset: "delta" | "full";
 
-  #aggregations: VuuAggregation[] = [];
   #columns: string[] = [];
   #columnMap: ColumnMap;
-  #data: DataSourceRow[];
-  #filter: DataSourceFilter = { filter: "" };
-  #groupBy: VuuGroupBy = [];
+  #config: WithFullConfig = vanillaConfig;
+  #data: readonly DataSourceRow[];
   #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
   #size = 0;
-  #sort: VuuSort = { sortDefs: [] };
   #title: string | undefined;
 
   public viewport: string;
@@ -129,6 +128,15 @@ export class ArrayDataSource
       );
     }
 
+    this.#config = {
+      ...this.#config,
+      aggregations: aggregations || this.#config.aggregations,
+      columns: columnDescriptors.map((col) => col.name),
+      filter: filter || this.#config.filter,
+      groupBy: groupBy || this.#config.groupBy,
+      sort: sort || this.#config.sort,
+    };
+
     this.columnDescriptors = columnDescriptors;
     this.#columns = columnDescriptors.map((column) => column.name);
     this.#columnMap = buildColumnMap(this.#columns);
@@ -137,18 +145,6 @@ export class ArrayDataSource
 
     this.#data = data.map<DataSourceRow>(toDataSourceRow);
     this.viewport = viewport || uuid();
-    if (aggregations) {
-      this.#aggregations = aggregations;
-    }
-    if (filter) {
-      this.#filter = filter;
-    }
-    if (groupBy) {
-      this.#groupBy = groupBy;
-    }
-    if (sort) {
-      this.#sort = sort;
-    }
 
     this.#size = data.length;
 
@@ -171,20 +167,15 @@ export class ArrayDataSource
   ) {
     this.clientCallback = callback;
 
-    if (aggregations) {
-      this.#aggregations = aggregations;
-    }
-    if (columns) {
-      this.#columns = columns;
-    }
-    if (filter) {
-      this.#filter = filter;
-    }
-    if (groupBy) {
-      this.#groupBy = groupBy;
-    }
-    if (sort) {
-      this.#sort = sort;
+    if (aggregations || columns || filter || groupBy || sort) {
+      this.#config = {
+        ...this.#config,
+        aggregations: aggregations || this.#config.aggregations,
+        columns: columns || this.#config.columns,
+        filter: filter || this.#config.filter,
+        groupBy: groupBy || this.#config.groupBy,
+        sort: sort || this.#config.sort,
+      };
     }
 
     if (this.status !== "initialising") {
@@ -197,14 +188,10 @@ export class ArrayDataSource
     this.status = "subscribed";
 
     this.clientCallback?.({
-      aggregations: this.#aggregations,
+      ...this.#config,
       type: "subscribed",
       clientViewportId: this.viewport,
-      columns: this.#columns,
-      filter: this.#filter,
-      groupBy: this.#groupBy,
       range: this.#range,
-      sort: this.#sort,
       tableMeta: this.tableMeta,
     });
 
@@ -281,6 +268,10 @@ export class ArrayDataSource
     console.log("TODO: close tree node", { key });
   }
 
+  get data() {
+    return this.#data;
+  }
+
   get config() {
     return undefined;
   }
@@ -338,30 +329,39 @@ export class ArrayDataSource
   }
 
   get aggregations() {
-    return this.#aggregations;
+    return this.#config.aggregations;
   }
 
   set aggregations(aggregations: VuuAggregation[]) {
-    this.#aggregations = aggregations;
+    // this.#aggregations = aggregations;
   }
 
   get sort() {
-    return this.#sort;
+    return this.#config.sort;
   }
 
   set sort(sort: VuuSort) {
     // TODO should we wait until server ACK before we assign #sort ?
-    this.#sort = sort;
+    // this.#sort = sort;
   }
 
   get filter() {
-    return this.#filter;
+    return this.#config.filter;
   }
 
   set filter(filter: DataSourceFilter) {
     debug?.(`filter ${JSON.stringify(filter)}`);
     // TODO should we wait until server ACK before we assign #sort ?
-    this.#filter = filter;
+
+    this.#config = {
+      ...this.#config,
+      filter,
+    };
+
+    this.#config = {
+      ...this.#config,
+      filter,
+    };
     const { filterStruct } = filter;
     if (filterStruct) {
       const fn = filterPredicate(this.#columnMap, filterStruct);
@@ -372,16 +372,19 @@ export class ArrayDataSource
         dolly[1] = i;
         return dolly;
       });
-      this.setRange(resetRange(this.#range), true);
+    } else {
+      this.filteredData = undefined;
     }
+    this.setRange(resetRange(this.#range), true);
+    this.emit("config", this.#config);
   }
 
   get groupBy() {
-    return this.#groupBy;
+    return this.#config.groupBy;
   }
 
   set groupBy(groupBy: VuuGroupBy) {
-    this.#groupBy = groupBy;
+    // this.#config.groupBy = groupBy;
   }
 
   get title() {

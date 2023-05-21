@@ -7,6 +7,7 @@ import {
 } from "@finos/vuu-protocol-types";
 import { useMemo } from "react";
 import { ArrayProxy } from "./ArrayProxy";
+import { makeSuggestions } from "./makeSuggestions";
 import { getColumnAndRowGenerator, populateArray } from "./vuu-row-generator";
 
 const NO_CONFIG = {} as const;
@@ -66,11 +67,16 @@ export const useTableConfig = ({
         column,
         pattern,
       });
-      if (table.table === "instruments" && column === "currency") {
-        return ["CAD", "EUR", "GBP", "GBX", "USD"];
-      } else {
+      if (lazyData) {
         return [];
+      } else {
+        return makeSuggestions(dataSource, column, pattern);
       }
+      // } else if (table.table === "instruments" && column === "currency") {
+      //   return ["CAD", "EUR", "GBP", "GBX", "USD"];
+      // } else {
+      //   return [];
+      // }
     };
 
     const typeaheadHook = () => suggestionFetcher;
