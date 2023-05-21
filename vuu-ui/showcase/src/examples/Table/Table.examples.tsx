@@ -81,7 +81,7 @@ export const DefaultTable = () => {
 DefaultTable.displaySequence = displaySequence++;
 
 export const TableLoading = () => {
-  const config = useTableConfig({ count: 0 });
+  const { typeaheadHook: _, ...config } = useTableConfig({ count: 0 });
   return (
     <>
       <Table
@@ -97,7 +97,10 @@ export const TableLoading = () => {
 TableLoading.displaySequence = displaySequence++;
 
 export const SmallTable = () => {
-  const config = useTableConfig({ columnCount: 10, count: 1000 });
+  const { typeaheadHook: _, ...config } = useTableConfig({
+    columnCount: 10,
+    count: 1000,
+  });
   return (
     <>
       <Table
@@ -114,7 +117,10 @@ export const SmallTable = () => {
 SmallTable.displaySequence = displaySequence++;
 
 export const WideTableLowRowcount = () => {
-  const config = useTableConfig({ columnCount: 20, count: 10 });
+  const { typeaheadHook: _, ...config } = useTableConfig({
+    columnCount: 20,
+    count: 10,
+  });
   return (
     <>
       <Table {...config} height={500} renderBufferSize={20} width={700} />
@@ -124,7 +130,7 @@ export const WideTableLowRowcount = () => {
 WideTableLowRowcount.displaySequence = displaySequence++;
 
 export const DefaultTable10Rows = () => {
-  const config = useTableConfig();
+  const { typeaheadHook: _, ...config } = useTableConfig();
   return (
     <>
       <Table {...config} height={240} renderBufferSize={20} width={700} />
@@ -134,7 +140,7 @@ export const DefaultTable10Rows = () => {
 DefaultTable10Rows.displaySequence = displaySequence++;
 
 export const DefaultTable1millionRows = () => {
-  const config = useTableConfig({ count: 1_000_000 });
+  const { typeaheadHook: _, ...config } = useTableConfig({ count: 1_000_000 });
   return (
     <>
       <Table {...config} height={440} renderBufferSize={20} width={700} />
@@ -144,7 +150,7 @@ export const DefaultTable1millionRows = () => {
 DefaultTable1millionRows.displaySequence = displaySequence++;
 
 export const DefaultTable2millionRows = () => {
-  const config = useTableConfig({ count: 2_000_000 });
+  const { typeaheadHook: _, ...config } = useTableConfig({ count: 2_000_000 });
   return (
     <>
       <Table {...config} height={440} renderBufferSize={20} width={700} />
@@ -154,7 +160,7 @@ export const DefaultTable2millionRows = () => {
 DefaultTable2millionRows.displaySequence = displaySequence++;
 
 export const DefaultTable200C0lumns = () => {
-  const config = useTableConfig({ columnCount: 200 });
+  const { typeaheadHook: _, ...config } = useTableConfig({ columnCount: 200 });
   return (
     <>
       <Table {...config} height={600} renderBufferSize={50} width={700} />
@@ -207,7 +213,7 @@ export const ColumnHeaders1Level = () => {
 ColumnHeaders1Level.displaySequence = displaySequence++;
 
 export const ColumnHeadingsMultiLevel = () => {
-  const config = useTableConfig({
+  const { typeaheadHook: _, ...config } = useTableConfig({
     columnConfig: {
       "row number": { heading: ["Level 0 Heading A", "Heading 1"] },
       "column 1": { heading: ["Level 0 Heading A", "Heading 1"] },
@@ -239,7 +245,7 @@ export const LeftPinnedColumns = () => {
     setIsColumnBased((value) => !value);
   }, []);
 
-  const config = useTableConfig({
+  const { typeaheadHook: _, ...config } = useTableConfig({
     leftPinnedColumns: [0, 3],
   });
 
@@ -264,7 +270,7 @@ export const RightPinnedColumns = () => {
   const handleToggleLayout = useCallback(() => {
     setIsColumnBased((value) => !value);
   }, []);
-  const config = useTableConfig({
+  const { typeaheadHook: _, ...config } = useTableConfig({
     rightPinnedColumns: [0, 3],
   });
 
@@ -285,7 +291,7 @@ export const RightPinnedColumns = () => {
 RightPinnedColumns.displaySequence = displaySequence++;
 
 export const BetterTableFillContainer = () => {
-  const config = useTableConfig();
+  const { typeaheadHook: _, ...config } = useTableConfig();
   return (
     <div style={{ height: 700, width: 700 }}>
       <Table {...config} />
@@ -295,7 +301,7 @@ export const BetterTableFillContainer = () => {
 BetterTableFillContainer.displaySequence = displaySequence++;
 
 export const BetterTableWithBorder = () => {
-  const config = useTableConfig();
+  const { typeaheadHook: _, ...config } = useTableConfig();
   return (
     <div style={{ height: 700, width: 700 }}>
       <Table {...config} style={{ border: "solid 2px red" }} />

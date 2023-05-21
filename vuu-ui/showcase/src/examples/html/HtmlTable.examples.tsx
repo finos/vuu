@@ -22,7 +22,7 @@ export type ComponentTypeNoChildren<T = unknown> = (props: T) => JSX.Element;
 export type RowType = ComponentTypeNoChildren<RowProps>;
 
 export const DefaultTableElementWithSizers = () => {
-  const config = useTableConfig({
+  const { typeaheadHook: _, ...config } = useTableConfig({
     columnCount: 10,
     count: 1000,
     rangeChangeRowset: "full",
@@ -41,7 +41,7 @@ export const DefaultTableElementWithSizers = () => {
 DefaultTableElementWithSizers.displaySequence = displaySequence++;
 
 export const DefaultDivElementWithSizers = () => {
-  const config = useTableConfig({
+  const { typeaheadHook: _, ...config } = useTableConfig({
     columnCount: 10,
     count: 1000,
     rangeChangeRowset: "full",
@@ -61,7 +61,7 @@ export const DefaultDivElementWithSizers = () => {
 DefaultDivElementWithSizers.displaySequence = displaySequence++;
 
 export const DefaultDivElementWithTranslate = () => {
-  const config = useTableConfig({
+  const { typeaheadHook: _, ...config } = useTableConfig({
     columnCount: 10,
     count: 1000,
     rangeChangeRowset: "full",
@@ -81,7 +81,7 @@ export const DefaultDivElementWithTranslate = () => {
 DefaultDivElementWithTranslate.displaySequence = displaySequence++;
 
 export const DefaultDivElementKeyedWithTranslate = () => {
-  const config = useTableConfig({
+  const { typeaheadHook: _, ...config } = useTableConfig({
     columnCount: 10,
     count: 1000,
     rangeChangeRowset: "full",
@@ -101,7 +101,7 @@ export const DefaultDivElementKeyedWithTranslate = () => {
 DefaultDivElementKeyedWithTranslate.displaySequence = displaySequence++;
 
 export const DefaultDivElementKeyedWithTranslateInlineScrollbars = () => {
-  const config = useTableConfig({
+  const { typeaheadHook: _, ...config } = useTableConfig({
     columnCount: 10,
     count: 1000,
     rangeChangeRowset: "full",
@@ -123,7 +123,7 @@ DefaultDivElementKeyedWithTranslateInlineScrollbars.displaySequence =
 
 export const DefaultDivElementKeyedWithTranslateInlineScrollbarsCssVariables =
   () => {
-    const config = useTableConfig({
+    const { typeaheadHook: _, ...config } = useTableConfig({
       columnCount: 10,
       count: 1000,
       rangeChangeRowset: "full",

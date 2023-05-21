@@ -71,7 +71,7 @@ export const useTable = ({
   selectionModel,
   ...measuredProps
 }: TableHookProps) => {
-  const [rowCount, setRowCount] = useState<number>(0);
+  const [rowCount, setRowCount] = useState<number>(dataSource.size);
   const expectConfigChangeRef = useRef(false);
 
   // When we detect and respond to changes to config below, we need
@@ -80,7 +80,7 @@ export const useTable = ({
   dataSourceRef.current = dataSource;
 
   if (dataSource === undefined) {
-    throw Error("no data source provided to DataTable");
+    throw Error("no data source provided to Vuu Table");
   }
 
   const containerMeasurements = useMeasuredContainer(measuredProps);
@@ -376,10 +376,10 @@ export const useTable = ({
   );
 
   return {
-    containerMeasurements,
-    containerProps,
     columns,
     columnsWithinViewport,
+    containerMeasurements,
+    containerProps,
     data,
     dispatchColumnAction,
     getRowOffset,
