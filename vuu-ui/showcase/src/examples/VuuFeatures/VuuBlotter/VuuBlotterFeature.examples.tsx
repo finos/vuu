@@ -6,6 +6,7 @@ import { VuuBlotterMockData } from "../../../features/VuuBlotterMockData.feature
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 
 import "./VuuBlotterFeature.examples.css";
+import { Flexbox } from "@finos/vuu-layout";
 
 export const DefaultVuuBlotter = () => {
   const error = useAutoLoginToVuuServer();
@@ -33,15 +34,19 @@ export const DefaultVuuBlotterMockData = () => {
   const schema = useTableSchema("instruments");
 
   return (
-    <View
-      Header={VuuBlotterHeader}
-      className="vuuBlotterView"
-      closeable
-      header
-      title="Instruments"
-      style={{ width: 700, height: 500 }}
-    >
-      <VuuBlotterMockData schema={schema} />
-    </View>
+    <Flexbox style={{ flexDirection: "column", height: 900 }}>
+      <View
+        Header={VuuBlotterHeader}
+        className="vuuBlotterView"
+        closeable
+        header
+        resizeable
+        title="Instruments"
+        style={{ width: 700, height: 500 }}
+      >
+        <VuuBlotterMockData schema={schema} />
+      </View>
+      <div data-resizeable style={{ background: "red", flex: "1 1 300px" }} />
+    </Flexbox>
   );
 };

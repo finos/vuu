@@ -11,9 +11,9 @@ const makeCells = (
 ) => {
   const cells = [];
   for (let i = 0; i < columns.length; i++) {
-    const { key } = columns[i];
+    const { key, width } = columns[i];
     cells.push(
-      <Element key={i} {...attributes}>
+      <Element key={i} {...attributes} style={{ width }}>
         {data[key]}
       </Element>
     );
@@ -22,7 +22,6 @@ const makeCells = (
 };
 
 export type HtmlRowProps = {
-  cellWidth?: number;
   className?: string;
   columnMap: ColumnMap;
   columns: KeyedColumnDescriptor[];
@@ -34,7 +33,6 @@ export type HtmlRowProps = {
 
 export const Row = memo(
   ({
-    cellWidth = 145,
     className,
     columnMap,
     columns,
@@ -65,7 +63,6 @@ export const Row = memo(
       >
         {makeCells(columns, data, Element === "tr" ? "td" : "div", {
           role: "cell",
-          style: { width: cellWidth },
         })}
       </Element>
     );

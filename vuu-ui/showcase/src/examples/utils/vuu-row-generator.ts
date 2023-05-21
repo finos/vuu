@@ -88,3 +88,19 @@ export const getColumnAndRowGenerator = (
 
   return [DefaultColumnGenerator, DefaultRowGenerator];
 };
+
+export const populateArray = (
+  count: number,
+  colGen: ColumnGenerator,
+  rowGen: RowGenerator
+) => {
+  const columns = colGen();
+  console.time("generate data");
+  const generateRow = rowGen(columns.map((col) => col.name));
+  const data = [];
+  for (let i = 0; i < count; i++) {
+    data[i] = generateRow(i);
+  }
+  console.timeEnd("generate data");
+  return data;
+};

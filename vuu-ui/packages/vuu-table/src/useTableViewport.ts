@@ -156,7 +156,7 @@ export const useTableViewport = ({
         pinnedWidthLeft,
         pinnedWidthRight,
         rowCount: count,
-        contentWidth: contentWidth,
+        contentWidth,
         setPctScrollTop,
         totalHeaderHeight,
         verticalScrollbarWidth,

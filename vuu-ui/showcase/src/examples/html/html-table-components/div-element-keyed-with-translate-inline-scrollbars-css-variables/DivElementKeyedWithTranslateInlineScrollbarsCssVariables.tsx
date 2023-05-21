@@ -1,25 +1,38 @@
 import { TableProps } from "@finos/vuu-table";
-import { CSSProperties, useMemo, useRef } from "react";
+import { CSSProperties, useRef } from "react";
 import { Row } from "../Row";
 import { useTable } from "./useTable";
 import { metadataKeys } from "@finos/vuu-utils";
 
 import "./DivElementKeyedWithTranslateInlineScrollbarsCssVariables.css";
+import { useIdMemo } from "@salt-ds/core";
 
 const classBase = "DivElementKeyedWithTranslateInlineScrollbarsCssVariables";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 
 export const DivElementKeyedWithTranslateInlineScrollbarsCssVariables = ({
+  allowConfigEditing: showSettings = false,
+  className: classNameProp,
   config,
   dataSource,
-  headerHeight = 30,
+  headerHeight = 25,
   height,
-  renderBufferSize = 5,
-  rowHeight = 30,
+  id: idProp,
+  onConfigChange,
+  onFeatureEnabled,
+  onFeatureInvocation,
+  onSelectionChange,
+  onShowConfigEditor: onShowSettings,
+  renderBufferSize = 0,
+  rowHeight = 20,
+  selectionModel = "extended",
+  style: styleProp,
   width,
+  zebraStripes = false,
+  ...htmlAttributes
 }: TableProps) => {
-  const tableRef = useRef<HTMLDivElement>(null);
+  const id = useIdMemo(idProp);
   const {
     columnMap,
     columns,
@@ -30,31 +43,35 @@ export const DivElementKeyedWithTranslateInlineScrollbarsCssVariables = ({
   } = useTable({
     config,
     dataSource,
-    headerHeight,
     renderBufferSize,
+    headerHeight,
+    height,
+    onConfigChange,
+    onFeatureEnabled,
+    onFeatureInvocation,
+    onSelectionChange,
     rowHeight,
-    tableRef,
+    selectionModel,
+    width,
   });
-
-  console.log({ viewportMeasurements });
 
   const style = {
     "--content-height": `${viewportMeasurements.contentHeight}px`,
-    "--horizontal-scrollbar-height": "15px",
-    "--content-width": "1100px",
-    "--pinned-width-left": "0px",
-    "--pinned-width-right": "0px",
-    "--header-height": "30px",
-    "--row-height": "30px",
-    "--table-height": "645px",
-    "--table-width": "715px",
-    "--total-header-height": "30px",
-    "--vertical-scrollbar-width": "15px",
-    "--viewport-body-height": "615px",
+    "--horizontal-scrollbar-height": `${viewportMeasurements.horizontalScrollbarHeight}px`,
+    "--content-width": `${viewportMeasurements.contentWidth}px`,
+    "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
+    "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
+    "--header-height": `${headerHeight}px`,
+    "--row-height": `${rowHeight}px`,
+    "--table-height": `${innerSize?.height}px`,
+    "--table-width": `${innerSize?.width}px`,
+    "--total-header-height": `${viewportMeasurements.totalHeaderHeight}px`,
+    "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
+    "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;
 
   return (
-    <div className={classBase} style={style}>
+    <div {...htmlAttributes} className={classBase} style={style}>
       <div
         className={`${classBase}-scrollbarContainer`}
         ref={scrollProps.scrollbarContainerRef}
@@ -73,7 +90,7 @@ export const DivElementKeyedWithTranslateInlineScrollbarsCssVariables = ({
                   className={`${classBase}-col-header`}
                   key={col.name}
                   role="cell"
-                  style={{ width: 100 }}
+                  style={{ width: col.width }}
                 >
                   {col.name}
                 </div>
