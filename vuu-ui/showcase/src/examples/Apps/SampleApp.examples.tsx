@@ -24,6 +24,7 @@ export const SampleApp = () => {
         />
       }
       loginUrl={window.location.toString()}
+      saveLocation="local"
       user={user}
       style={
         {
