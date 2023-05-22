@@ -6,24 +6,24 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @State(Scope.Benchmark)
-public class SortBenchmark {
+public class TreeBenchmark {
 
   public static void main(String[] args) throws Exception {
-    final SortBenchmark bm = new SortBenchmark();
+    final TreeBenchmark bm = new TreeBenchmark();
     bm.tableSize = 10000;
     bm.setup();
-    bm.sortLargeTable();
+    bm.treeLargeTable();
   }
 
-  private org.finos.vuu.benchmark.sort.SortBenchmark benchmark;
+  private org.finos.vuu.benchmark.tree.TreeBenchmark benchmark;
 
   @Param({ "10000", "100000", "500000", "1000000", "2000000", "5000000" })
   public int tableSize;
 
   @Setup
   public void setup(){
-    benchmark = new org.finos.vuu.benchmark.sort.SortBenchmark();
-    System.out.println("Sort Benchmark - Setup: tableSize=" + tableSize);
+    benchmark = new org.finos.vuu.benchmark.tree.TreeBenchmark();
+    System.out.println("Tree Benchmark - Setup: tableSize=" + tableSize);
     benchmark.setup(tableSize);
   }
 
@@ -33,9 +33,9 @@ public class SortBenchmark {
     @Measurement(iterations = 1)
     @Fork(1)
     @BenchmarkMode(Mode.SampleTime)
-    public void sortLargeTable() throws IOException {
-      //System.out.println("Sort: tableSize=" + tableSize);
-      benchmark.sortLargeTable();
+    public void treeLargeTable() throws IOException {
+      System.out.println("TreeBenchmark java - treeLargeTable");
+      benchmark.treeLargeTable();
     }
 }
 

@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 @State(Scope.Benchmark)
 class SortBenchmark {
 
-  import SortBenchmarkHelper._
+  import org.finos.vuu.benchmark.BenchmarkHelper._
 
   var table: SimpleDataTable = null
 
