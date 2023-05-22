@@ -1,21 +1,23 @@
-package org.finos.vuu.benchmark.sort
+package org.finos.vuu.benchmark
 
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
-import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
+import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.core.tree.TreeSessionTable
+import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.JoinTableProviderImpl
+import org.finos.vuu.viewport.GroupBy
+import org.finos.vuu.viewport.tree.{BuildEntireTree, TreeBuilder, TreeNodeStateStore}
 
-object SortBenchmarkHelper {
+object BenchmarkHelper {
+  implicit val clock: Clock = new DefaultClock
+  implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+  implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
+  val joinProvider = JoinTableProviderImpl() // new EsperJoinTableProviderImpl()
   def createBigTable(rows: Int): SimpleDataTable = {
-    implicit val clock: Clock = new DefaultClock
-    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
-    implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
-
-    val joinProvider = JoinTableProviderImpl() // new EsperJoinTableProviderImpl()
-
     val tableContainer = new TableContainer(joinProvider)
 
     //      val outQueue          = new OutboundRowPublishQueue()
@@ -47,5 +49,18 @@ object SortBenchmarkHelper {
       table.processUpdate(ric, row, 1l)
     })
     table
+  }
+
+  def createTreeBuilder(table: SimpleDataTable): TreeBuilder = {
+    val client = ClientSessionId("A", "B")
+
+    val groupByTable = TreeSessionTable(table, client, joinProvider)(metrics, clock)
+    val exchange = table.getTableDef.columnForName("exchange")
+
+    val columns = ViewPortColumnCreator.create(groupByTable, table.columns().map(_.name).toList)
+
+
+    val treeBuilder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None), None)
+    treeBuilder
   }
 }
