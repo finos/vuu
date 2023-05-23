@@ -1,4 +1,8 @@
-import { MenuRpcResponse, useVuuTables } from "@finos/vuu-data";
+import {
+  createSchemaFromTableMetadata,
+  MenuRpcResponse,
+  useVuuTables,
+} from "@finos/vuu-data";
 import { registerComponent } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
@@ -11,6 +15,7 @@ import { ReactElement, useCallback, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 import { getDefaultColumnConfig } from "./columnMetaData";
+import { SessionEditForm } from "./session-edit-form";
 
 import "./App.css";
 // Because we do not render the AppSidePanel directly, the css will not be included in bundle.
@@ -49,14 +54,28 @@ const defaultLayout = {
 
 export const App = ({ user }: { user: VuuUser }) => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
+  const handleClose = () => setDialogContent(undefined);
 
   const tables = useVuuTables();
 
   const handleRpcResponse = useCallback(
     (response?: MenuRpcResponse) => {
       if (response?.action?.type === "OPEN_DIALOG_ACTION") {
-        const { table } = response.action;
-        if (tables) {
+        const { columns, dataTypes, table } = response.action;
+        if (columns && dataTypes) {
+          const schema = createSchemaFromTableMetadata({
+            columns,
+            dataTypes,
+            table,
+          });
+          setDialogContent(
+            <SessionEditForm
+              onClose={handleClose}
+              schema={schema}
+              style={{ height: 300, width: 400 }}
+            />
+          );
+        } else if (tables) {
           const schema = tables.get(table.table);
           if (schema) {
             // If we already have this table open in this viewport, ignore
@@ -76,8 +95,6 @@ export const App = ({ user }: { user: VuuUser }) => {
     },
     [tables]
   );
-
-  const handleClose = () => setDialogContent(undefined);
 
   // TODO get Context from Shell
   return (

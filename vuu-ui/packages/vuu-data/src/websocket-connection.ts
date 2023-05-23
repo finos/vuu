@@ -17,7 +17,9 @@ export type ConnectionMessage =
   | ConnectionQualityMetrics;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
-const { debug, debugEnabled, error, info, warn } = logger(
+export type WebSocketProtocol = string | string[] | undefined;
+
+const { debug, debugEnabled, error, info, infoEnabled, warn } = logger(
   "websocket-connection"
 );
 
@@ -34,18 +36,25 @@ const connectionCallback = Symbol("connectionCallback");
 
 export async function connect(
   connectionString: string,
+  protocol: WebSocketProtocol,
   callback: ConnectionCallback
 ): Promise<Connection> {
-  return makeConnection(connectionString, callback);
+  return makeConnection(connectionString, protocol, callback);
 }
 
 async function reconnect(connection: WebsocketConnection) {
   //TODO it's not enough to reconnect with a new websocket, we have to log back in as well
-  makeConnection(connection.url, connection[connectionCallback], connection);
+  makeConnection(
+    connection.url,
+    connection.protocol,
+    connection[connectionCallback],
+    connection
+  );
 }
 
 async function makeConnection(
   url: string,
+  protocol: WebSocketProtocol,
   callback: ConnectionCallback,
   connection?: WebsocketConnection
 ): Promise<Connection> {
@@ -59,7 +68,7 @@ async function makeConnection(
   try {
     callback({ type: "connection-status", status: "connecting" });
     const reconnecting = typeof connection !== "undefined";
-    const ws = await createWebsocket(url);
+    const ws = await createWebsocket(url, protocol);
 
     console.info(
       "%c⚡ %cconnected",
@@ -72,7 +81,7 @@ async function makeConnection(
     }
 
     const websocketConnection =
-      connection ?? new WebsocketConnection(ws, url, callback);
+      connection ?? new WebsocketConnection(ws, url, protocol, callback);
 
     const status = reconnecting
       ? "reconnected"
@@ -82,6 +91,7 @@ async function makeConnection(
 
     return websocketConnection as Connection;
   } catch (evt) {
+    console.log({ evt });
     const retry = --connectionStatus.attemptsRemaining > 0;
     callback({
       type: "connection-status",
@@ -90,7 +100,7 @@ async function makeConnection(
       retry,
     });
     if (retry) {
-      return makeConnectionIn(url, callback, connection, 10000);
+      return makeConnectionIn(url, protocol, callback, connection, 10000);
     } else {
       throw Error("Failed to establish connection");
     }
@@ -99,24 +109,32 @@ async function makeConnection(
 
 const makeConnectionIn = (
   url: string,
+  protocol: WebSocketProtocol,
   callback: ConnectionCallback,
   connection?: WebsocketConnection,
   delay?: number
 ): Promise<Connection> =>
   new Promise((resolve) => {
     setTimeout(() => {
-      resolve(makeConnection(url, callback, connection));
+      resolve(makeConnection(url, protocol, callback, connection));
     }, delay);
   });
 
-const createWebsocket = (connectionString: string): Promise<WebSocket> =>
+const createWebsocket = (
+  connectionString: string,
+  protocol: WebSocketProtocol
+): Promise<WebSocket> =>
   new Promise((resolve, reject) => {
     //TODO add timeout
-    // const websocketUrl = WS_PATTERN.test(connectionString)
     const websocketUrl = isWebsocketUrl(connectionString)
       ? connectionString
       : `wss://${connectionString}`;
-    const ws = new WebSocket(websocketUrl);
+
+    if (infoEnabled && protocol !== undefined) {
+      info(`WebSocket Protocol ${protocol?.toString()}`);
+    }
+
+    const ws = new WebSocket(websocketUrl, protocol);
     ws.onopen = () => resolve(ws);
     ws.onerror = (evt) => reject(evt);
   });
@@ -149,14 +167,21 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     | "connected"
     | "reconnected" = "ready";
 
+  public protocol: WebSocketProtocol;
   public url: string;
   public messagesCount = 0;
 
   private connectionMetricsInterval: ReturnType<typeof setInterval> | null =
     null;
 
-  constructor(ws: WebSocket, url: string, callback: ConnectionCallback) {
+  constructor(
+    ws: WebSocket,
+    url: string,
+    protocol: WebSocketProtocol,
+    callback: ConnectionCallback
+  ) {
     this.url = url;
+    this.protocol = protocol;
     this[connectionCallback] = callback;
     this[setWebsocket](ws);
   }
@@ -249,7 +274,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
     };
   }
 
-  handleWebsocketMessage = (evt) => {
+  handleWebsocketMessage = (evt: MessageEvent) => {
     const vuuMessageFromServer = parseMessage(evt.data);
     this.messagesCount += 1;
     if (process.env.NODE_ENV === "development") {

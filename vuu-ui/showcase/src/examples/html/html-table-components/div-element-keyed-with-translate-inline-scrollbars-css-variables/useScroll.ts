@@ -1,10 +1,10 @@
-import { RefObject, useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export interface ScrollHookProps {
   bufferCount: number;
   dataRowCount: number;
   rowHeight: number;
-  table: RefObject<HTMLDivElement>;
+  // table: RefObject<HTMLDivElement>;
   viewportHeight: number;
   visibleRowCount: number;
 }
@@ -13,7 +13,7 @@ export const useScroll = ({
   bufferCount,
   dataRowCount,
   rowHeight,
-  table,
+  // table,
   viewportHeight,
   visibleRowCount,
 }: ScrollHookProps) => {
@@ -101,10 +101,10 @@ export const useScroll = ({
         }
       }
 
-      if (table.current) {
-        table.current.scrollLeft = scrollLeft;
-        table.current.scrollTop = scrollTop;
-      }
+      // if (table.current) {
+      //   table.current.scrollLeft = scrollLeft;
+      //   table.current.scrollTop = scrollTop;
+      // }
     },
     [
       bufferCount,
@@ -114,7 +114,7 @@ export const useScroll = ({
       offscreenContentHeight,
       renderedRowsCount,
       rowHeight,
-      table,
+      // table,
     ]
   );
 

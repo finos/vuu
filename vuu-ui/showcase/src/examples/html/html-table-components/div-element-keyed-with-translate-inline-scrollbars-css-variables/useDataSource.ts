@@ -4,14 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 
 export const useDataSource = ({
   dataSource,
-  range,
+  initialRange,
 }: {
   dataSource: DataSource;
-  range: VuuRange;
+  initialRange: VuuRange;
 }) => {
   const [data, setData] = useState<DataSourceRow[]>([]);
   useEffect(() => {
-    dataSource?.subscribe({ range }, (message) => {
+    dataSource?.subscribe({ range: initialRange }, (message) => {
       if (message.type === "viewport-update") {
         // if (message.size) {
         //   console.log(`useDataSourcesize = ${message.size}`);
@@ -21,7 +21,7 @@ export const useDataSource = ({
         }
       }
     });
-  }, [dataSource]);
+  }, [dataSource, initialRange]);
 
   const setRange = useCallback(
     (range: VuuRange) => {

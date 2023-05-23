@@ -1,3 +1,4 @@
+import { isValidNumber } from "@finos/vuu-utils";
 import { RefObject, useCallback, useRef, useState } from "react";
 import { useResizeObserver, ResizeHandler } from "./useResizeObserver";
 
@@ -38,6 +39,22 @@ export interface MeasuredContainerHookResult {
   innerSize?: MeasuredSize;
 }
 
+// If (outer) height and width are known at initialisation (i.e. they
+// were passed as props), use as initial values for inner size. If there
+// is no border on Table, these values will not change. If there is a border,
+// inner values will be updated once measured.
+const getInitialInnerSize = (
+  height: unknown,
+  width: unknown
+): MeasuredSize | undefined => {
+  if (isValidNumber(height) && isValidNumber(width)) {
+    return {
+      height,
+      width,
+    };
+  }
+};
+
 export const useMeasuredContainer = ({
   defaultHeight = 0,
   defaultWidth = 0,
@@ -45,8 +62,8 @@ export const useMeasuredContainer = ({
   width,
 }: MeasuredProps): MeasuredContainerHookResult => {
   const containerRef = useRef<HTMLDivElement>(null);
-
   const [size, setSize] = useState<MeasuredState>({
+    inner: getInitialInnerSize(height, width),
     outer: {
       height: height ?? "100%",
       width: width ?? "100%",

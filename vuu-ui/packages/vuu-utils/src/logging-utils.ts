@@ -1,5 +1,9 @@
 import { getCookieValue } from "./cookie-utils";
 
+declare global {
+  const loggingSettings: loggingSettings;
+}
+
 export interface LogFn {
   (message?: unknown, ...optionalParams: unknown[]): void;
 }
@@ -22,7 +26,13 @@ export interface Logger {
   info: LogFn;
 }
 
-export type LogLevel = "debug" | "info" | "warn" | "error";
+export type LogLevel = keyof Logger;
+
+const logLevels = ["error", "warn", "info", "debug"];
+const isValidLogLevel = (value: unknown): value is LogLevel =>
+  typeof value === "string" && logLevels.includes(value);
+
+const DEFAULT_LOG_LEVEL: LogLevel = "error";
 
 export type BuildEnv = "production" | "development";
 
@@ -31,8 +41,10 @@ const NO_OP = () => undefined;
 const DEFAULT_DEBUG_LEVEL: LogLevel =
   process.env.NODE_ENV === "production" ? "error" : "info";
 
-const { loggingLevel = DEFAULT_DEBUG_LEVEL } =
-  typeof loggingSettings !== "undefined" ? loggingSettings : {};
+const { loggingLevel = DEFAULT_DEBUG_LEVEL } = getLoggingSettings();
+// typeof loggingSettings !== "undefined" ? loggingSettings : {};
+// const { loggingLevel = DEFAULT_DEBUG_LEVEL } =
+//   typeof loggingSettings !== "undefined" ? loggingSettings : {};
 
 export const logger = (category: string) => {
   const debugEnabled = loggingLevel === "debug";
@@ -72,10 +84,25 @@ export const logger = (category: string) => {
   }
 };
 
-export const getLoggingConfig = () => {
-  const loggingLevel = getCookieValue("vuu-logging-level");
-  return `const loggingSettings = { loggingLevel: "${loggingLevel}"};`;
-};
-declare global {
-  const loggingSettings: loggingSettings;
+function getLoggingSettings() {
+  if (typeof loggingSettings !== "undefined") {
+    return loggingSettings;
+  } else {
+    return {
+      loggingLevel: getLoggingLevelFromCookie(),
+    };
+  }
 }
+
+function getLoggingLevelFromCookie(): LogLevel {
+  const value = getCookieValue("vuu-logging-level");
+  if (isValidLogLevel(value)) {
+    return value;
+  } else {
+    return DEFAULT_LOG_LEVEL;
+  }
+}
+
+export const getLoggingConfigForWorker = () => {
+  return `const loggingSettings = { loggingLevel: "${getLoggingLevelFromCookie()}"};`;
+};

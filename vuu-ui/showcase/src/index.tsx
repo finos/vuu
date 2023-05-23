@@ -18,6 +18,9 @@ import "@fontsource/open-sans/800-italic.css";
 
 import "./index.css";
 
+type Environment = "development" | "production";
+const env = process.env.NODE_ENV as Environment;
+
 type ReactExample = () => JSX.Element;
 type Module = { [key: string]: Module | ReactExample };
 const isModule = (entity: Module | ReactExample): entity is Module =>
@@ -41,11 +44,12 @@ const getComponent = (module: Module, paths: string[]) => {
 const pathToExample = (path: string): [string[], string] => {
   const endOfImportPath = path.lastIndexOf("/");
   const importPath = path.slice(0, endOfImportPath);
+  const suffix = env === "development" ? "" : ".js";
   return [
     [
-      `./examples/${importPath}.examples`,
-      `./examples/${importPath}/index`,
-      `./examples/${importPath}.stories`,
+      `./examples/${importPath}.examples${suffix}`,
+      `./examples/${importPath}/index${suffix}`,
+      `./examples/${importPath}.stories${suffix}`,
     ],
     path.slice(endOfImportPath + 1),
   ];
@@ -58,6 +62,7 @@ if (url.searchParams.has("standalone")) {
   const path = [exampleName];
   for (const importPath of targetPaths) {
     try {
+      console.log(`import from ${importPath}`);
       targetExamples = await import(/* @vite-ignore */ importPath);
       if (importPath.endsWith("index")) {
         const parentFolder = importPath.split("/").at(-2);

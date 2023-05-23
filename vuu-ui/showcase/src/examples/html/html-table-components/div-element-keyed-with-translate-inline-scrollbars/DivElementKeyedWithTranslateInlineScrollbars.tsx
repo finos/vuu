@@ -63,7 +63,7 @@ export const DivElementKeyedWithTranslateInlineScrollbars = ({
                   className={`${classBase}-col-header`}
                   key={col.name}
                   role="cell"
-                  style={{ width: 100 }}
+                  style={{ width: col.width }}
                 >
                   {col.name}
                 </div>

@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import { ShellContextProvider } from "./ShellContextProvider";
-import useLayoutConfig from "./use-layout-config";
+import { useLayoutConfig } from "./layout-config";
 import {
   DockLayout,
   DraggableLayout,
@@ -23,13 +23,17 @@ import {
 import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
 import { AppHeader } from "./app-header";
 import { ThemeMode } from "./theme-provider";
+import { logger } from "@finos/vuu-utils";
 
 import "./shell.css";
+import { SaveLocation } from "./shellTypes";
 
 export type VuuUser = {
   username: string;
   token: string;
 };
+
+const { error } = logger("Shell");
 
 const warningLayout = {
   type: "View",
@@ -52,6 +56,8 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   leftSidePanel?: ReactElement;
   loginUrl?: string;
   // paletteConfig: any;
+  saveLocation?: SaveLocation;
+  saveUrl?: string;
   serverUrl?: string;
   user: VuuUser;
 }
@@ -62,6 +68,8 @@ export const Shell = ({
   defaultLayout = warningLayout,
   leftSidePanel,
   loginUrl,
+  saveLocation = "remote",
+  saveUrl,
   serverUrl,
   user,
   ...htmlAttributes
@@ -71,16 +79,21 @@ export const Shell = ({
   const [open, setOpen] = useState(false);
   const layoutId = useRef("latest");
 
-  const [layout, setLayoutConfig, loadLayoutById] = useLayoutConfig(
+  const [layout, saveLayoutConfig, loadLayoutById] = useLayoutConfig({
+    defaultLayout,
+    saveLocation,
     user,
-    defaultLayout
-  );
+  });
 
   const handleLayoutChange = useCallback(
     (layout) => {
-      setLayoutConfig(layout);
+      try {
+        saveLayoutConfig(layout);
+      } catch {
+        error?.("Failed to save layout");
+      }
     },
-    [setLayoutConfig]
+    [saveLayoutConfig]
   );
 
   const handleSwitchTheme = useCallback((mode: ThemeMode) => {
@@ -106,9 +119,13 @@ export const Shell = ({
 
   useEffect(() => {
     if (serverUrl && user.token) {
-      connectToServer(serverUrl, user.token);
+      connectToServer({
+        authToken: user.token,
+        url: serverUrl,
+        username: user.username,
+      });
     }
-  }, [serverUrl, user.token]);
+  }, [serverUrl, user.token, user.username]);
 
   const getDrawers = () => {
     const drawers: ReactElement[] = [];

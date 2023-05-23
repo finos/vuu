@@ -34,7 +34,7 @@ export const Table = ({
   style: styleProp,
   width,
   zebraStripes = false,
-  ...props
+  ...htmlAttributes
 }: TableProps) => {
   const id = useIdMemo(idProp);
   const {
@@ -89,7 +89,7 @@ export const Table = ({
       menuBuilder={buildContextMenuDescriptors(dataSource)}
     >
       <div
-        {...props}
+        {...htmlAttributes}
         {...containerProps}
         className={className}
         id={id}

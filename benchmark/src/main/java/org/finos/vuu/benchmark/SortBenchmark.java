@@ -23,7 +23,7 @@ public class SortBenchmark {
   @Setup
   public void setup(){
     benchmark = new org.finos.vuu.benchmark.sort.SortBenchmark();
-    System.out.println("Setup: tableSize=" + tableSize);
+    System.out.println("Sort Benchmark - Setup: tableSize=" + tableSize);
     benchmark.setup(tableSize);
   }
 

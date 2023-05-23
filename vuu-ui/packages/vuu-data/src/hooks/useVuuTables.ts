@@ -1,5 +1,6 @@
 import {
   VuuColumnDataType,
+  VuuColumns,
   VuuTable,
   VuuTableMeta,
 } from "@finos/vuu-protocol-types";
@@ -20,7 +21,7 @@ export interface VuuTableMetaWithTable extends VuuTableMeta {
   table: VuuTable;
 }
 
-const createSchemaFromTableMetadata = ({
+export const createSchemaFromTableMetadata = ({
   columns,
   dataTypes,
   table,

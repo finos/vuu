@@ -15,6 +15,10 @@ const entryPoints = [
   "src/index.tsx",
   "src/features/Test.feature.tsx",
   "src/features/VuuBlotterMockData.feature.tsx",
+  // TODO automate addition of all example files
+  "src/examples/Table/Table.examples.tsx",
+  "src/examples/Apps/index.ts",
+  "src/examples/html/HtmlTable.examples.tsx",
 ];
 
 const HTML_TEMPLATE = `
@@ -26,12 +30,12 @@ const HTML_TEMPLATE = `
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/manifest.json">    
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="index.css"/>
+    <link rel="stylesheet" href="/index.css"/>
     <title>Vite Showcase</title>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="index.js"></script>
+    <script type="module" src="/index.js"></script>
   </body>
 </html>
 `;

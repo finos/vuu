@@ -1,33 +1,63 @@
-import { DataSource } from "@finos/vuu-data";
-import { GridConfig, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { RefObject, useCallback, useMemo, useState } from "react";
+import {
+  DataSource,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
+} from "@finos/vuu-data";
+import {
+  GridConfig,
+  KeyedColumnDescriptor,
+  SelectionChangeHandler,
+  TableSelectionModel,
+} from "@finos/vuu-datagrid-types";
+import { MeasuredProps, useMeasuredContainer } from "@finos/vuu-table";
+import { useTableModel } from "./useTableModel";
+import { actualRowPositioning, buildColumnMap } from "@finos/vuu-utils";
+import { useCallback, useMemo, useState } from "react";
 import { useDataSource } from "./useDataSource";
-import { useMeasuredContainer } from "./useMeasuredContainer";
 import { useScroll } from "./useScroll";
-import { useTableViewport } from "./useTableViewport";
-import { buildColumnMap } from "@finos/vuu-utils";
 import { useTableScroll } from "./useTableScroll-deprecated";
+import { useTableViewport } from "./useTableViewport";
 import { useVirtualViewport } from "./useVirtualViewport-deprecated";
-import { actualRowPositioning } from "@finos/vuu-utils";
+import { useInitialValue } from "./useInitialValue";
+import { VuuRange } from "@finos/vuu-protocol-types";
+
+export interface TableHookProps extends MeasuredProps {
+  config: Omit<GridConfig, "headings">;
+  dataSource: DataSource;
+  headerHeight: number;
+  onConfigChange?: (config: Omit<GridConfig, "headings">) => void;
+  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
+  renderBufferSize?: number;
+  rowHeight: number;
+  onSelectionChange?: SelectionChangeHandler;
+  selectionModel: TableSelectionModel;
+}
 
 export const useTable = ({
   config,
   dataSource,
   headerHeight,
+  onConfigChange,
+  onFeatureEnabled,
+  onFeatureInvocation,
+  onSelectionChange,
   renderBufferSize = 0,
-  rowHeight = 30,
-  tableRef,
-}: {
-  config: Omit<GridConfig, "headings">;
-  dataSource: DataSource;
-  headerHeight: number;
-  renderBufferSize?: number;
-  rowHeight?: number;
-  tableRef: RefObject<HTMLDivElement>;
-}) => {
+  rowHeight,
+  selectionModel,
+  ...measuredProps
+}: TableHookProps) => {
+  const [rowCount, setRowCount] = useState<number>(dataSource.size);
+
+  if (dataSource === undefined) {
+    throw Error("no data source provided to Vuu Table");
+  }
+
+  const containerMeasurements = useMeasuredContainer(measuredProps);
+
+  const { headings } = useTableModel();
+
   const [getRowOffset, getRowAtPosition] = actualRowPositioning(30);
-  const [rowCount, setRowCount] = useState<number>(0);
-  const containerMeasurements = useMeasuredContainer();
   const columnMap = useMemo(
     () => buildColumnMap(config.columns.map((col) => col.name)),
     [config.columns]
@@ -40,14 +70,21 @@ export const useTable = ({
   const viewportMeasurements = useTableViewport({
     columns: config.columns,
     headerHeight,
+    headings,
     rowCount,
     rowHeight,
-    size: containerMeasurements.innerSize,
+    // Note: innerSize will take border into account, whereas outerSize will not
+    size: containerMeasurements.innerSize ?? containerMeasurements.outerSize,
+  });
+
+  const initialRange = useInitialValue<VuuRange>({
+    from: 0,
+    to: viewportMeasurements.rowCount + 1,
   });
 
   const { data, setRange } = useDataSource({
     dataSource,
-    range: { from: 0, to: viewportMeasurements.visibleRowCount + 1 },
+    initialRange,
   });
 
   const { onVerticalScroll } = useVirtualViewport({
@@ -66,9 +103,8 @@ export const useTable = ({
     bufferCount: 5,
     dataRowCount: dataSource.size,
     rowHeight,
-    table: tableRef,
-    viewportHeight: viewportMeasurements.height,
-    visibleRowCount: viewportMeasurements.visibleRowCount,
+    viewportHeight: viewportMeasurements.viewportBodyHeight,
+    visibleRowCount: viewportMeasurements.rowCount,
   });
 
   // dataSource.range = { from: firstRowIndex, to: lastRowIndex };

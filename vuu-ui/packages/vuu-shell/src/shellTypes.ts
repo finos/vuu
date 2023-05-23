@@ -2,6 +2,7 @@ declare global {
   const vuuConfig: Promise<VuuConfig>;
 }
 
+export type SaveLocation = "local" | "remote";
 export interface FeatureConfig {
   name: string;
   title: string;

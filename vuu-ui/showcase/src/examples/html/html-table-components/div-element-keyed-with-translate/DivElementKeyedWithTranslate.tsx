@@ -64,7 +64,7 @@ export const DivElementKeyedWithTranslate = ({
                   className={`${classBase}-col-header`}
                   key={col.name}
                   role="cell"
-                  style={{ width: 145 }}
+                  style={{ width: col.width }}
                 >
                   {col.name}
                 </div>

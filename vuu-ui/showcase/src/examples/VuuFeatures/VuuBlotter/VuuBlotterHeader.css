@@ -1,4 +1,7 @@
 .VuuBlotterHeader {
+    --saltToolbar-alignItems: center;
+    border-bottom: solid 1px var(--salt-container-primary-borderColor);
+
     height: 28px;
 }
 

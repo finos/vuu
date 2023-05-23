@@ -24,8 +24,6 @@ object EmptyTree extends Tree {
 
   override def getNode(key: String): TreeNode = null
 
-  override def getNodeByOriginalKey(key: String): TreeNode = null
-
   override def hasChild(parent: TreeNode, child: TreeNode): Boolean = false
 
   override def toKeys(): ImmutableArray[String] = ImmutableArray.empty[String]
@@ -60,8 +58,6 @@ trait Tree {
   def root: TreeNode
 
   def getNode(key: String): TreeNode
-
-  def getNodeByOriginalKey(key: String): TreeNode
 
   def hasChild(parent: TreeNode, child: TreeNode): Boolean
 
@@ -190,13 +186,10 @@ class TreeImpl(private val rootNode: TreeNode,
     lookup.get(key)
   }
 
-  def getNodeByOriginalKey(originalKey: String): TreeNode = {
-    lookupOrigKeyToTreeKey.get(originalKey)
-  }
 
   def setNode(node: TreeNode): Unit = {
     lookup.putIfAbsent(node.key, node)
-    lookupOrigKeyToTreeKey.putIfAbsent(node.originalKey, node)
+//    lookupOrigKeyToTreeKey.putIfAbsent(node.originalKey, node)
   }
 
   def hasChild(parent: TreeNode, child: TreeNode): Boolean = parent.getChildren.contains(child)
