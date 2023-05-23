@@ -53,7 +53,7 @@ module.exports = {
       copyright: `Copyright © ${new Date().getFullYear()} ${projectName} - ${copyrightOwner}`,
       logo: {
         alt: "FINOS Logo",
-        src: "img/finos/vuu-text.png",
+        src: "img/finos/vuu-text.png ",
         href: "https://finos.org",
       },
       links: [
