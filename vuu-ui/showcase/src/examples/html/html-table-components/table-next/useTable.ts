@@ -12,15 +12,14 @@ import {
   MeasuredProps,
   useMeasuredContainer,
   useTableContextMenu,
+  useTableModel,
   useTableViewport,
 } from "@finos/vuu-table";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import { buildColumnMap } from "@finos/vuu-utils";
 import { MouseEvent, useCallback, useMemo, useState } from "react";
 import { useDataSource } from "./useDataSource";
-import { useTableModel } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
-// import { useTableViewport } from "./useTableViewport";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { PersistentColumnAction } from "@finos/vuu-table/src/useTableModel";
 import { useInitialValue } from "./useInitialValue";
@@ -68,7 +67,10 @@ export const useTable = ({
 
   const containerMeasurements = useMeasuredContainer(measuredProps);
 
-  const { columns, headings } = useTableModel(config, dataSource.config);
+  const { columns, dispatchColumnAction, headings } = useTableModel(
+    config,
+    dataSource.config
+  );
 
   const columnMap = useMemo(
     () => buildColumnMap(config.columns.map((col) => col.name)),
@@ -100,18 +102,17 @@ export const useTable = ({
     initialRange,
   });
 
-  const handlePersistentColumnOperation = useCallback(
+  const onPersistentColumnOperation = useCallback(
     (action: PersistentColumnAction) => {
-      console.log(`handlePersistentColumnOperation ${JSON.stringify(action)}`);
       // expectConfigChangeRef.current = true;
-      // dispatchColumnAction(action);
+      dispatchColumnAction(action);
     },
-    []
+    [dispatchColumnAction]
   );
 
   const handleContextMenuAction = useTableContextMenu({
     dataSource,
-    onPersistentColumnOperation: handlePersistentColumnOperation,
+    onPersistentColumnOperation,
   });
 
   const { onVerticalScroll } = useVirtualViewport({

@@ -5,7 +5,7 @@ import {
   DivElementKeyedWithTranslateInlineScrollbarsCssVariables,
   DivElementWithSizers,
   DivElementWithTranslate,
-  TableElementWithSizers,
+  TableNext,
 } from "./html-table-components";
 
 import { RowProps } from "@finos/vuu-table/src/TableRow";
@@ -20,25 +20,6 @@ const visibleRowCount = 20;
 
 export type ComponentTypeNoChildren<T = unknown> = (props: T) => JSX.Element;
 export type RowType = ComponentTypeNoChildren<RowProps>;
-
-export const DefaultTableElementWithSizers = () => {
-  const { typeaheadHook: _, ...config } = useTableConfig({
-    columnCount: 10,
-    count: 1000,
-    rangeChangeRowset: "full",
-  });
-  return (
-    <TableElementWithSizers
-      {...config}
-      headerHeight={30}
-      height={645}
-      renderBufferSize={0}
-      rowHeight={30}
-      width={715}
-    />
-  );
-};
-DefaultTableElementWithSizers.displaySequence = displaySequence++;
 
 export const DefaultDivElementWithSizers = () => {
   const { typeaheadHook: _, ...config } = useTableConfig({
@@ -142,3 +123,23 @@ export const DefaultDivElementKeyedWithTranslateInlineScrollbarsCssVariables =
   };
 DefaultDivElementKeyedWithTranslateInlineScrollbarsCssVariables.displaySequence =
   displaySequence++;
+
+export const DefaultTableNext = () => {
+  const { typeaheadHook: _, ...config } = useTableConfig({
+    columnCount: 10,
+    count: 1000,
+    rangeChangeRowset: "full",
+  });
+
+  return (
+    <TableNext
+      {...config}
+      headerHeight={30}
+      height={645}
+      renderBufferSize={0}
+      rowHeight={30}
+      width={715}
+    />
+  );
+};
+DefaultTableNext.displaySequence = displaySequence++;

@@ -33,6 +33,7 @@ export const useVirtualViewport = ({
     contentWidth,
     maxScrollContainerScrollHorizontal,
   } = viewportMeasurements;
+  // double check this ...
   const availableWidth = contentWidth - maxScrollContainerScrollHorizontal;
   const scrollLeftRef = useRef(0);
 

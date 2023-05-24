@@ -1,19 +1,19 @@
+import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
+import { metadataKeys } from "@finos/vuu-utils";
+import { useIdMemo } from "@salt-ds/core";
 import { CSSProperties } from "react";
+import { HeaderCell } from "../HeaderCell";
 import { Row } from "../Row";
 import { useTable } from "./useTable";
-import { metadataKeys } from "@finos/vuu-utils";
 
-import "./DivElementKeyedWithTranslateInlineScrollbarsCssVariables.css";
-import { useIdMemo } from "@salt-ds/core";
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { HeaderCell } from "../HeaderCell";
+import "./TableNext.css";
 
-const classBase = "DivElementKeyedWithTranslateInlineScrollbarsCssVariables";
+const classBase = "TableNext";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 
-export const DivElementKeyedWithTranslateInlineScrollbarsCssVariables = ({
+export const TableNext = ({
   allowConfigEditing: showSettings = false,
   className: classNameProp,
   config,

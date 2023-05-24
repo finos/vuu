@@ -45,7 +45,7 @@ const removeFilterColumn = (
 
 const { Average, Count, High, Low, Sum } = AggregationType;
 
-export const useContextMenu = ({
+export const useTableContextMenu = ({
   dataSource,
   onPersistentColumnOperation,
 }: ContextMenuHookProps) => {

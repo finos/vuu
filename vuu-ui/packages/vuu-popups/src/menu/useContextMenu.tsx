@@ -1,7 +1,6 @@
 // The menuBuilder will always be supplied by the code that will display the local
 // context menu. It will be passed all configured menu descriptors. It is free to
 
-import { VuuServerMenuOptions } from "@finos/vuu-data";
 import { MouseEvent, useCallback, useContext } from "react";
 import { PopupService } from "../popup";
 import {
@@ -14,8 +13,8 @@ import {
 import { ContextMenu } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
 
-// augment, replace or ignore the existing menu descriptors.
-export const useContextMenu = () => {
+// The argument allows a top-level menuBuilder to operate outside the Contect
+export const useContextMenu = (menuBuilder?: MenuBuilder) => {
   const ctx = useContext(ContextMenuContext);
 
   const buildMenuOptions = useCallback(
@@ -34,23 +33,30 @@ export const useContextMenu = () => {
     (e: MouseEvent<HTMLElement>, location: string, options: unknown) => {
       e.stopPropagation();
       e.preventDefault();
-      const menuBuilders = ctx?.menuBuilders ?? [];
-      const menuItemDescriptors = buildMenuOptions(
-        menuBuilders,
-        location,
-        options
-      );
-      console.log({
-        menuItemDescriptors,
-      });
-      if (menuItemDescriptors.length && ctx?.menuActionHandler) {
-        console.log(`showContextMenu ${location}`, {
-          options,
+      const menuBuilders =
+        ctx?.menuBuilders ?? (menuBuilder ? [menuBuilder] : undefined);
+      if (Array.isArray(menuBuilders) && menuBuilders.length > 0) {
+        const menuItemDescriptors = buildMenuOptions(
+          menuBuilders,
+          location,
+          options
+        );
+        console.log({
+          menuItemDescriptors,
         });
-        showContextMenu(e, menuItemDescriptors, ctx.menuActionHandler);
+        if (menuItemDescriptors.length && ctx?.menuActionHandler) {
+          console.log(`showContextMenu ${location}`, {
+            options,
+          });
+          showContextMenu(e, menuItemDescriptors, ctx.menuActionHandler);
+        }
+      } else {
+        console.warn(
+          "useContextMenu, no menuBuilders configured. These should be supplied via the ContextMenuProvider(s)"
+        );
       }
     },
-    [buildMenuOptions, ctx]
+    [buildMenuOptions, ctx?.menuActionHandler, ctx?.menuBuilders, menuBuilder]
   );
 
   return handleShowContextMenu;
