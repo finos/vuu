@@ -1,25 +1,35 @@
-import React from 'react';
+import React from "react";
+import feature from "../css/feature.css";
 
 export const featuresTwo = [
-    {
-        title: <>Feature 1</>,
-        imageUrl: '/img/finos/finos-blue.png',
-        description: (
-            <><span>...</span></>
-        ),
-    },
-    {
-        title: <>Feature 2</>,
-        imageUrl: '/img/finos/finos-blue.png',
-        description: (
-            <><a href='docs'>...</a></>
-        ),
-    },
-    {
-        title: <>Feature 3</>,
-        imageUrl: '/img/finos/finos-blue.png',
-        description: (
-            <><span>...</span></>
-        ),
-    }
+  {
+    title: <div className="feature2-title">View Porting</div>,
+    imageUrl: "/img/finos/view-porting.png",
+    description: (
+      <div className="feature-description">
+        A Viewport is a specific client's view onto an underlying table. It has
+        knowledge of the underlying table that a viewport is looking
+      </div>
+    ),
+  },
+  {
+    title: <div className="feature2-title">Conflation</div>,
+    imageUrl: "/img/finos/conflation.png",
+    description: (
+      <div className="feature-description">
+        A Viewport is a specific client's view onto an underlying table. It has
+        knowledge of the underlying table that a viewport is looking
+      </div>
+    ),
+  },
+  {
+    title: <div className="feature2-title">Joining and Treeing</div>,
+    imageUrl: "/img/finos/joining-treeing.png",
+    description: (
+      <div className="feature-description">
+        A Viewport is a specific client's view onto an underlying table. It has
+        knowledge of the underlying table that a viewport is looking
+      </div>
+    ),
+  },
 ];

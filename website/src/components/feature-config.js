@@ -1,61 +1,30 @@
-import React from 'react';
+import React from "react";
+import feature from "../css/feature.css";
 
 export const features = [
-    {
-        title: <>Feature 1</>,
-        imageUrl: '/img/finos/finos-blue.png',
-        description: (
-            <>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</>
-        ),
-        about: {
-            title: <>Placeholder Link</>,
-            link: 'docs'
-        },        
-        project: {
-            title: '',
-            link: ''
-        },        
-        involved: {
-            title: '',
-            link: ''
-        }  
-    },
-    {
-        title: <>Feature 2</>,
-        imageUrl: '/img/finos/finos-blue.png',
-        description: (
-            <>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</>
-        ),
-        about: {
-            title: <>Placeholder Link</>,
-            link: 'docs'
-        },                
-        project: {
-            title: '',
-            link: ''
-        },        
-        involved: {
-            title: '',
-            link: ''
-        }  
-    },
-    {
-        title: <>Feature 3</>,
-        imageUrl: '/img/finos/finos-blue.png',
-        description: (
-            <>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</>
-        ),
-        about: {
-            title: <>Placeholder Link</>,
-            link: 'docs'
-        },                
-        project: {
-            title: '',
-            link: ''
-        },        
-        involved: {
-            title: '',
-            link: ''
-        }  
-    }
+  {
+    title: (
+      <div className="feature-title">
+        1mil <br />
+        ROWS PER TABLE{" "}
+      </div>
+    ),
+    // imageUrl: "/img/finos/finos-blue.png",
+  },
+  {
+    title: (
+      <div className="feature-title">
+        100k <br />
+        TICKS PER SECOND
+      </div>
+    ),
+  },
+  {
+    title: (
+      <div className="feature-title">
+        100mb <br />
+        MEMORY FOOTPRINT
+      </div>
+    ),
+  },
 ];

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
- 
+
 /* your custom css */
 
 @media only screen and (min-device-width: 360px) and (max-device-width: 736px) {
@@ -23,9 +23,9 @@
 }
 
 header.postHeader:empty {
-    display: none;
-  }
-  
+  display: none;
+}
+
 header.postHeader:empty + article h1 {
   margin-top: 0;
 }
@@ -70,7 +70,7 @@ header.postHeader:empty + article h1 {
 /* CSS added 14 May 2019 */
 
 .navigationSlider .slidingNav ul {
-    /* DO NOT CHANGE - THIS IS THE NAVIGATION BACKGROUND - SHOULD STAY FINOS BLUE */
+  /* DO NOT CHANGE - THIS IS THE NAVIGATION BACKGROUND - SHOULD STAY FINOS BLUE */
   box-sizing: border-box;
   color: #fff;
   display: flex;
@@ -81,14 +81,13 @@ header.postHeader:empty + article h1 {
 }
 
 .navigationSlider .slidingNav ul li a:hover {
-  background: #0033A0;  /* DO NOT CHANGE - THIS IS THE NAVIGATION BACKGROUND - SHOULD STAY FINOS BLUE */
-
+  background: #0033a0; /* DO NOT CHANGE - THIS IS THE NAVIGATION BACKGROUND - SHOULD STAY FINOS BLUE */
 }
 
 body {
   color: #333333;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
-    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 16px;
   line-height: 1.5;
   -ms-text-size-adjust: 100%;
@@ -96,7 +95,7 @@ body {
   word-wrap: break-word;
 }
 
-.inner img{
+.inner img {
   width: 25%;
 }
 
@@ -106,11 +105,11 @@ body {
   background-color: #00b5e2; /* CHANGE THIS TO PRIMARY PROJECT COLOR */
 }
 
-.homeContainer h2{
+.homeContainer h2 {
   color: #ffffff;
 }
 
-.homeContainer a{
+.homeContainer a {
   color: #ffffff;
 }
 
@@ -122,32 +121,31 @@ body {
   padding: 40 0;
 }
 
-.blockImage img{
+.blockImage img {
   fill: #ffffff;
 }
 
-.blockContent h2{
-  color:  #0086bf;  /* DO NOT CHANGE - THIS IS THE TITLE UNDER THE ICONS IN THE 3RD BLOCK - SHOULD STAY FINOS BLUE */
+.blockContent h2 {
+  color: #0086bf; /* DO NOT CHANGE - THIS IS THE TITLE UNDER THE ICONS IN THE 3RD BLOCK - SHOULD STAY FINOS BLUE */
 }
 
 .featureShowcaseSection .logos img {
   width: 200px;
-  
 }
 
-.featureShowcaseSection h2{
+.featureShowcaseSection h2 {
   color: #00b5e2; /* CHANGE THIS TO PRIMARY PROJECT COLOR */
   font-size: 30px;
 }
 
 .featureShowcaseSection {
-  background-color: #F7F7F7; /* CHANGE THIS TO PRIMARY PROJECT COLOR */
+  background-color: #f7f7f7; /* CHANGE THIS TO PRIMARY PROJECT COLOR */
   padding-top: 10px;
   padding-bottom: 40px;
 }
 
 .surveyBanner {
-  background-color: #F7F7F7; /* CHANGE THIS TO PRIMARY PROJECT COLOR */
+  background-color: #f7f7f7; /* CHANGE THIS TO PRIMARY PROJECT COLOR */
   padding-top: 10px;
   padding-bottom: 40px;
   display: inline-flex;
@@ -161,8 +159,8 @@ body {
   flex: none;
 }
 
-.productShowcaseSection h2{
-  color: #0033A0; /* CHANGE THIS TO PRIMARY PROJECT COLOR */
+.productShowcaseSection h2 {
+  color: #0033a0; /* CHANGE THIS TO PRIMARY PROJECT COLOR */
 }
 
 .finosBanner {
@@ -171,13 +169,13 @@ body {
   padding: 0 0;
 }
 
-.finosBanner h2{
+.finosBanner h2 {
   color: #ffffff;
   font-size: 16px;
 }
 
-article p img,FeatureCallout
-article iframe {
+article p img,
+FeatureCallout article iframe {
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -188,11 +186,11 @@ article iframe {
   background-color: #383939;
 }
 
-.nav-footer .sitemap{
+.nav-footer .sitemap {
   margin: 0 auto 1em;
 }
 
-.row--center h2{
+.row--center h2 {
   color: #ffffff;
   font-size: 16px;
   text-align: center;
