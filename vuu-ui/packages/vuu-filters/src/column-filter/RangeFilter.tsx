@@ -1,7 +1,7 @@
 import { Filter } from "@finos/vuu-filter-types";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { Input, ToolbarField } from "@heswell/salt-lab";
-import { getRangeFilter } from "../utils";
+import { getRangeFilter } from "./utils";
 
 export type IRange = {
   start?: number;

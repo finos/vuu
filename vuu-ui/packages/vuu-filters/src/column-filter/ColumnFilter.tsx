@@ -10,8 +10,8 @@ import {
 import { Text } from "@salt-ds/core";
 import { DeleteIcon } from "@salt-ds/icons";
 import { HTMLAttributes } from "react";
-import { RangeFilter } from "./filter-components/RangeFilter";
-import { TypeaheadFilter } from "./filter-components/TypeaheadFilter";
+import { RangeFilter } from "./RangeFilter";
+import { TypeaheadFilter } from "./TypeaheadFilter";
 import { ColumnListItem } from "./ColumnListItem";
 import { useColumnFilterStore } from "./useColumnFilterStore";
 

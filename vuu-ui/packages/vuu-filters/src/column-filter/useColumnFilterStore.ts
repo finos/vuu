@@ -1,7 +1,7 @@
 import { Filter } from "@finos/vuu-filter-types";
 import { useCallback, useState } from "react";
 import { addFilter, AND, filterAsQuery } from "../filter-utils";
-import { IRange } from "./filter-components/RangeFilter";
+import { IRange } from "./RangeFilter";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 type SavedValue<T extends string[] | IRange> = { column: string; value: T };

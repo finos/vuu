@@ -3,8 +3,7 @@ import { useTypeaheadSuggestions } from "@finos/vuu-data";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { ComboBoxDeprecated } from "@heswell/salt-lab";
-import "./TypeaheadFilter.css";
-import { getTypeaheadFilter, isStartsWithValue } from "../utils";
+import { getTypeaheadFilter, isStartsWithValue } from "./utils";
 
 export type TypeaheadFilterProps = {
   defaultTypeaheadParams: TypeaheadParams;
