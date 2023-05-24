@@ -1,22 +1,14 @@
+import { DataSourceRow } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { ColumnMap } from "@finos/vuu-utils";
-import { CSSProperties, HTMLAttributes, memo } from "react";
+import { CSSProperties, memo } from "react";
+import { TableCell } from "./TableCell";
 
-const makeCells = (
-  columns: KeyedColumnDescriptor[],
-  data: unknown[],
-  Element: "td" | "div" = "td",
-  attributes?: HTMLAttributes<HTMLElement>
-) => {
+const makeCells = (columns: KeyedColumnDescriptor[], data: DataSourceRow) => {
   const cells = [];
   for (let i = 0; i < columns.length; i++) {
-    const { key, width } = columns[i];
-    cells.push(
-      <Element key={i} {...attributes} style={{ width }}>
-        {data[key]}
-      </Element>
-    );
+    cells.push(<TableCell key={i} column={columns[i]} row={data} />);
   }
   return cells;
 };
@@ -26,7 +18,6 @@ export type HtmlRowProps = {
   columnMap: ColumnMap;
   columns: KeyedColumnDescriptor[];
   data: VuuRowDataItemType[];
-  Element?: "tr" | "div";
   offset?: number;
   style?: CSSProperties;
 };
@@ -37,7 +28,6 @@ export const Row = memo(
     columnMap,
     columns,
     data,
-    Element = "div",
     offset,
     ...htmlAttributes
   }: HtmlRowProps) => {
@@ -54,17 +44,15 @@ export const Row = memo(
         : undefined;
 
     return (
-      <Element
+      <div
         {...htmlAttributes}
         key={`row-${data[0]}`}
         role="row"
         className={className}
         style={style}
       >
-        {makeCells(columns, data, Element === "tr" ? "td" : "div", {
-          role: "cell",
-        })}
-      </Element>
+        {makeCells(columns, data)}
+      </div>
     );
   }
 );

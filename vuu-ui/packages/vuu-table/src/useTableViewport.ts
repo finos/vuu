@@ -103,6 +103,12 @@ export const useTableViewport = ({
     [columns]
   );
 
+  console.log({
+    pinnedWidthLeft,
+    pinnedWidthRight,
+    unpinnedWidth,
+  });
+
   const [actualRowOffset, actualRowAtPosition] = useMemo<RowPositioning>(
     () => actualRowPositioning(rowHeight),
     [rowHeight]

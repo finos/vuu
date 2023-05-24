@@ -29,7 +29,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useContextMenu } from "./context-menu";
+import { useTableContextMenu } from "./context-menu";
 import { TableColumnResizeHandler } from "./dataTableTypes";
 import { useDataSource } from "./useDataSource";
 import { useDraggableColumn } from "./useDraggableColumn";
@@ -94,19 +94,6 @@ export const useTable = ({
     dataSource.config
   );
 
-  const handlePersistentColumnOperation = useCallback(
-    (action: PersistentColumnAction) => {
-      expectConfigChangeRef.current = true;
-      dispatchColumnAction(action);
-    },
-    [dispatchColumnAction]
-  );
-
-  const handleContextMenuAction = useContextMenu({
-    dataSource,
-    onPersistentColumnOperation: handlePersistentColumnOperation,
-  });
-
   const {
     getRowAtPosition,
     getRowOffset,
@@ -165,6 +152,19 @@ export const useTable = ({
   // needs to be correct at runtime when the row is right clicked.
   const dataRef = useRef<DataSourceRow[]>();
   dataRef.current = data;
+
+  const onPersistentColumnOperation = useCallback(
+    (action: PersistentColumnAction) => {
+      expectConfigChangeRef.current = true;
+      dispatchColumnAction(action);
+    },
+    [dispatchColumnAction]
+  );
+
+  const handleContextMenuAction = useTableContextMenu({
+    dataSource,
+    onPersistentColumnOperation,
+  });
 
   const handleSort = useCallback(
     (
