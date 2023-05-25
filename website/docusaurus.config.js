@@ -20,14 +20,13 @@ module.exports = {
   },
   scripts: ["https://buttons.github.io/buttons.js"],
   stylesheets: [
-    "https://fonts.googleapis.com/css?family=Overpass:400,400i,700",
+    "https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700&display=swap",
   ],
   themeConfig: {
     navbar: {
-      // title: `FINOS ${projectName}`,
       logo: {
         alt: "FINOS Logo",
-        src: "img/favicon/vuu-logo.png",
+        src: "img/vuu/Logo.svg",
       },
       items: [
         {
