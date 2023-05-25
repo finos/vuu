@@ -4,6 +4,7 @@
  * bundles Infima by default. Infima is a CSS framework designed to
  * work well for content-centric websites.
  */
+ @import url(vuu-theme.css);
 
 /* You can override the default Infima variables here. */
 :root {
@@ -15,8 +16,9 @@
   --ifm-color-primary-lighter: #009adc;
   --ifm-color-primary-lightest: #00aef8;
   --ifm-font-color-base: #1c1e21;
-  --ifm-heading-color: #19b6cc;
-  --ifm-navbar-background-color: #0086bf;
+  --ifm-heading-color: var(--vuu-dark-text-primary);
+  --ifm-navbar-background-color: trabsparent;
+  --ifm-navbar-height: 250px;
   --ifm-navbar-link-color: #ffffff;
   --ifm-navbar-shadow: 0;
   --ifm-footer-background-color: #0086bf;
@@ -25,6 +27,110 @@
   --ifm-footer-link-color: #ffffff;
   --ifm-code-font-size: 95%;
   --main-bg-color: #250154;
+}
+
+body {
+  align-items: center;
+  background-color: var(--vuu-dark-body-bg);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--vuu-font-family);
+}
+
+#__docusaurus {
+  align-items: center;;
+  width: var(--vuu-desktop-width);
+}
+
+.navbar {
+  padding: 0;
+  width: 100%;
+}
+
+.navbar__inner {
+  align-items: flex-start;
+  height: 250px;
+  padding: 80px 80px 0 80px;
+}
+
+.navbar .navbar__logo > img {
+  height: 90px;
+}
+
+.navbar__link {
+  color: var(--vuu-dark-text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 30px;
+  border-bottom: solid 3px transparent;
+}
+.navbar__link--active {
+  border-bottom: solid 3px var(--vuu-accent1);
+}
+
+
+
+.navbar [class*="colorModeToggle"] {
+  display: none;
+}
+
+.vuu-scroll-1-bg {
+  background: linear-gradient(180deg, var(--vuu-dark-bg-background2) 0%, var(--vuu-dark-bg-background1) 100%);
+  height: 800px;
+  position: absolute;
+  top:0px;
+  width: var(--vuu-desktop-width);
+  z-index: -1;
+}
+
+.vuu-scroll-1 {
+  display: flex;
+  flex-direction: column;
+  height: 550px;
+}
+
+.vuu-scroll-1-main {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: space-around;
+}
+
+.vuu-scroll-1-scrollArrow {
+  flex: 0 0 65px;
+}
+
+.vuu-chart {
+  height: 400px;
+  width: 400px;
+}
+
+.vuu-frame-10 {
+  background-color: var(--vuu-dark-bg-background1);
+
+  /* content driven, remove later */
+  height: 476px;
+}
+
+.vuu-frame-11 {
+  background: linear-gradient(180deg, var(--vuu-dark-bg-background1) 0%, var(--vuu-dark-bg-background2) 100%);
+
+  /* content driven, remove later */
+  height: 676px;
+}
+
+.vuu-frame-13 {
+  background-color: var(--vuu-dark-bg-background2);
+  /* content driven, remove later */
+  height: 1122px;
+}
+
+.vuu-heading-1 {
+  font-size: var(--vuu-heading1-fontSize);
+  font-weight: var(--vuu-heading1-fontWeight);
+}
+
+.vuu-revolving-caption {
+  color: var(--vuu-accent1);
 }
 
 .navbar__items {
@@ -63,21 +169,11 @@
   margin-bottom: 30px;
   width: 50%;
 }
-.navbar {
-  background-color: var(--main-bg-color);
-  height: 120px;
-}
 
 .navbar__logo img {
   height: 60px;
 }
 
-h1 {
-  color: #ffffff;
-  font-weight: 200;
-  font-size: 4em;
-  margin-top: 35px;
-}
 
 h2 {
   color: #ffffff;
@@ -153,10 +249,6 @@ span {
   color: var(#ffffff);
 }
 
-body {
-  /* we'll worry about fallbacks later */
-  font-family: "Nunito Sans";
-}
 
 .padding {
   margin-top: 25px;
