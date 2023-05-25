@@ -4,9 +4,8 @@ import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import styles from "./styles.module.css";
-import Feature from "../components/feature";
-import { features } from "../components/feature-config";
 import { featuresTwo } from "../components/featuresTwo-config";
+import { SvgArrow } from "../components/SvgArrow";
 import Chart from "../../static/img/finos/chart.png";
 import DemoApp from "../../static/img/finos/demo-app.png";
 import Scroll from "../../static/img/finos/scroll.png";
@@ -21,20 +20,21 @@ function Home() {
       <div className="vuu-scroll-1-bg" />
       <header className={classnames("vuu-section vuu-scroll-1")}>
         <div className="vuu-scroll-1-main">
-          <div className="">
+          <div className="vuu-scroll-1-copy">
             <h1 className="vuu-heading-1">
               Delivering{" "}
               <span className="vuu-revolving-caption">risk data</span>
             </h1>
-            <h2>from trading systems, to human eyes</h2>
-            <p className="p-homepage">
+            <h2 className="vuu-heading-2">
+              from trading systems, to human eyes
+            </h2>
+            <p className="vuu-paragraph-large">
               Vuu deals with the complex task of viewporting, throttling <br />{" "}
               and transmiting your data to clients, so you don't have to.
             </p>
             <Link
               className={classnames(
-                "button button--lg get-started-button",
-                styles.getStarted
+                "vuu-action button vuu-get-started-button button--lg"
               )}
               to={"https://finos.org/"}
             >
@@ -49,29 +49,47 @@ function Home() {
           />
         </div>
         <div className="vuu-scroll-1-scroll-arrow">
-          <img
-            className="home-page-images"
-            src={Scroll}
-            alt="demo-app"
-            style={{ height: "50px" }}
-          />
+          <div className="vuu-scroll-arrow">
+            <div className="vuu-scroll-arrow-title">SCROLL</div>
+            <SvgArrow className="vuu-scroll-arrow-svg" radius={3} />
+            {/* <img
+              className="home-page-images"
+              src={Scroll}
+              alt="demo-app"
+              style={{ height: "50px" }}
+            /> */}
+          </div>
         </div>
       </header>
 
       <main>
-        {features && features.length && (
-          <section className={classnames("vuu-section vuu-frame-10")}>
-            <div className="container">
-              <h1 style={{ textAlign: "center" }}> Why VUU</h1>
-
-              <div className="row">
-                {features.map((props, idx) => (
-                  <Feature key={idx} {...props} />
-                ))}
+        <section className={classnames("vuu-section vuu-frame-10")}>
+          <div className="container">
+            <h1 className="vuu-heading-1" style={{ textAlign: "center" }}>
+              Why VUU ?
+            </h1>
+            <div className="vuu-feature-row">
+              <div className="vuu-feature">
+                <div className="vuu-feature-1">
+                  1<span className="vuu-feature-1-measure">mil</span>
+                </div>
+                <div className="vuu-feature-2">ROWS PER TABLE</div>
+              </div>
+              <div className="vuu-feature">
+                <div className="vuu-feature-1">
+                  100<span className="vuu-feature-1-measure">k</span>
+                </div>
+                <div className="vuu-feature-2">TICKS PER SECOND</div>
+              </div>
+              <div className="vuu-feature">
+                <div className="vuu-feature-1">
+                  100<span className="vuu-feature-1-measure">mb</span>
+                </div>
+                <div className="vuu-feature-2">MEMORY FOOTPRINT</div>
               </div>
             </div>
-          </section>
-        )}
+          </div>
+        </section>
         {featuresTwo && featuresTwo.length && (
           <section
             className={classnames("vuu-section vuu-frame-11", styles.members)}

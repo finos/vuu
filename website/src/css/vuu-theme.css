@@ -2,6 +2,22 @@
 --vuu-font-family: "Nunito Sans";
 --vuu-heading1-fontSize: 60px;
 --vuu-heading1-fontWeight: 300;
+--vuu-heading1-lineHeight: 84px;
+--vuu-heading2-fontSize: 46px;
+--vuu-heading2-fontWeight: 300;
+--vuu-heading3-fontSize: 40px;
+--vuu-heading2-fontWeight: 300;
+/* deviates from figma, needed for alignment, otw we need to use positioning */
+--vuu-heading2-lineHeight: 50px;
+
+--vuu-paragraph-large-fontSize: 28px;
+--vuu-paragraph-large-fontWeight: 400;
+--vuu-paragraph-large-lineHeight: 44px;
+
+--vuu-action-fontSize: 18px;
+--vuu-action-fontWeight: 700;
+--vuu-action-lineHeight: 24px;
+
 
 --vuu-dark-bg-background1: #1D0142;
 --vuu-dark-bg-background2: #2A015F;
