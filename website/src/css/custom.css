@@ -154,9 +154,8 @@ span {
 }
 
 body {
-  font-family: "Overpass", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol";
+  /* we'll worry about fallbacks later */
+  font-family: "Nunito Sans";
 }
 
 .padding {
