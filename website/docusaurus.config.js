@@ -20,7 +20,7 @@ module.exports = {
   },
   scripts: ["https://buttons.github.io/buttons.js"],
   stylesheets: [
-    "https://fonts.googleapis.com/css?family=Overpass:400,400i,700",
+    "https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,700&display=swap",
   ],
   themeConfig: {
     navbar: {
