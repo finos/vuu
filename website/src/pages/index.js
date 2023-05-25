@@ -18,41 +18,50 @@ function Home() {
   const { siteConfig = {} } = context;
   return (
     <Layout title={`${siteConfig.title}`} description={`${siteConfig.tagline}`}>
-      <header className={classnames("hero hero--primary", styles.heroBanner)}>
-        <div className="container">
-          <h1>Delivering risk data </h1>
-          <h2>from trading systems, to human eyes</h2>
-          <p className="p-homepage">
-            Vuu deals with the complex task of viewporting, throttling <br />{" "}
-            and transmiting your data to clients, so you don't have to.
-          </p>
-          <Link
-            className={classnames(
-              "button button--lg get-started-button",
-              styles.getStarted
-            )}
-            to={"https://finos.org/"}
-          >
-            GET STARTED
-          </Link>
+      <div className="vuu-scroll-1-bg" />
+      <header className={classnames("vuu-section vuu-scroll-1")}>
+        <div className="vuu-scroll-1-main">
+          <div className="">
+            <h1 className="vuu-heading-1">
+              Delivering{" "}
+              <span className="vuu-revolving-caption">risk data</span>
+            </h1>
+            <h2>from trading systems, to human eyes</h2>
+            <p className="p-homepage">
+              Vuu deals with the complex task of viewporting, throttling <br />{" "}
+              and transmiting your data to clients, so you don't have to.
+            </p>
+            <Link
+              className={classnames(
+                "button button--lg get-started-button",
+                styles.getStarted
+              )}
+              to={"https://finos.org/"}
+            >
+              GET STARTED
+            </Link>
+          </div>
+          <img
+            className="vuu-chart"
+            src={Chart}
+            alt="chart"
+            // style={{ height: "500px", width: "400px" }}
+          />
         </div>
-        <img
-          src={Chart}
-          alt="chart"
-          // style={{ height: "500px", width: "400px" }}
-        />
+        <div className="vuu-scroll-1-scroll-arrow">
+          <img
+            className="home-page-images"
+            src={Scroll}
+            alt="demo-app"
+            style={{ height: "50px" }}
+          />
+        </div>
       </header>
 
       <main>
         {features && features.length && (
-          <section className={styles.features}>
+          <section className={classnames("vuu-section vuu-frame-10")}>
             <div className="container">
-              <img
-                className="home-page-images"
-                src={Scroll}
-                alt="demo-app"
-                style={{ height: "50px" }}
-              />
               <h1 style={{ textAlign: "center" }}> Why VUU</h1>
 
               <div className="row">
@@ -64,7 +73,9 @@ function Home() {
           </section>
         )}
         {featuresTwo && featuresTwo.length && (
-          <section className={styles.members}>
+          <section
+            className={classnames("vuu-section vuu-frame-11", styles.members)}
+          >
             <Script />
 
             <img
@@ -73,43 +84,45 @@ function Home() {
               alt="demo-app"
               style={{ height: "40px", marginTop: "40px" }}
             />
-            <h1 style={{ textAlign: "center" }}> Demo App</h1>
-            <img
-              src={DemoApp}
-              className="home-page-images"
-              alt="demo-app"
-              style={{ height: "500px", width: "75%", borderRadius: "20px" }}
-            />
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "2vh",
-              }}
-            >
-              <Link
-                className={classnames(
-                  "button button--lg get-started-button",
-                  styles.getStarted
-                )}
-                to={"https://finos.org/"}
-              >
-                GET STARTED
-              </Link>
-              <Link
-                className={classnames(
-                  "button button--lg github-button",
-                  styles.getStarted
-                )}
-                to={"https://finos.org/"}
-              >
-                GITHUB
-              </Link>
-            </div>
           </section>
         )}
+        <section className={classnames("vuu-section vuu-frame-13")}>
+          <h1 style={{ textAlign: "center" }}> Demo App</h1>
+          <img
+            src={DemoApp}
+            className="home-page-images"
+            alt="demo-app"
+            style={{ height: "500px", width: "75%", borderRadius: "20px" }}
+          />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "2vh",
+            }}
+          >
+            <Link
+              className={classnames(
+                "button button--lg get-started-button",
+                styles.getStarted
+              )}
+              to={"https://finos.org/"}
+            >
+              GET STARTED
+            </Link>
+            <Link
+              className={classnames(
+                "button button--lg github-button",
+                styles.getStarted
+              )}
+              to={"https://finos.org/"}
+            >
+              GITHUB
+            </Link>
+          </div>
+        </section>
       </main>
     </Layout>
   );

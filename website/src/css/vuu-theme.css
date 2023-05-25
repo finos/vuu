@@ -1,0 +1,19 @@
+:root {
+--vuu-font-family: "Nunito Sans";
+--vuu-heading1-fontSize: 60px;
+--vuu-heading1-fontWeight: 300;
+
+--vuu-dark-bg-background1: #1D0142;
+--vuu-dark-bg-background2: #2A015F;
+--vuu-accent1: #F37880;
+--vuu-accent2:#6D18BD;
+--vuu-dark-text-primary: #FFFFFF;
+--vuu-dark-text-secondary: rgba(255,255,255.8);
+--vuu-light-text-primary: #15171B;
+--vuu-light-text-secondary: ##606477;
+--vuu-light-icon: #777C94;
+
+--vuu-dark-body-bg: black;
+--vuu-desktop-width: 1440px;
+
+}
