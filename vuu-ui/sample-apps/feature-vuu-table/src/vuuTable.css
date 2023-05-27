@@ -10,7 +10,6 @@
   --vuuDataGrid-font-size: 10px;
   --vuuDataGridCell-border-style: none;
   --vuuDataGridRow-background-odd: var(--salt-palette-neutral-background-high);
-  background-color: ivory;
   display: flex;
   flex-direction: column;
 }

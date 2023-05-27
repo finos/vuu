@@ -1,0 +1,52 @@
+.vuuSessionEditingForm {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 200px;
+    padding: 6px;
+}
+
+.vuuSessionEditingForm-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    gap: 3px;
+}
+
+.vuuSessionEditingForm-field {
+    align-items: center;
+    display: flex;
+    height: 32px;
+}
+
+.vuuSessionEditingForm-fieldLabel {
+    flex: 0 0 50%;
+}
+
+.vuuSessionEditingForm-fieldValue {
+    max-width: 50%;
+}
+
+.vuuSessionEditingForm-fieldValue.vuuReadOnly {
+    font-weight: var(--salt-text-label-fontWeight-strong);
+}
+
+.vuuSessionEditingForm-buttonbar {
+    align-items: center;
+    border-top: solid 1px var(--salt-container-primary-borderColor);
+    display: flex;
+    justify-content: flex-end;
+    flex: 0 0 autox;
+    gap: 6px;
+    padding-top: 6px;
+}
+
+.vuuSessionEditingForm-errorBanner {
+    --vuu-icon-left: 3px;
+    --vuu-icon-size: 18px;
+    --vuu-icon-top: 3px;
+    border: solid 1px var(--salt-status-error-borderColor);
+    line-height: 24px;
+    padding: 0 6px 0 26px;
+    position: relative;
+}

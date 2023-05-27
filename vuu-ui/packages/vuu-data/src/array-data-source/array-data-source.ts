@@ -8,6 +8,7 @@ import {
   VuuTableMeta,
   VuuRowDataItemType,
   ClientToServerMenuRPC,
+  ClientToServerEditRpc,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
@@ -33,6 +34,11 @@ import {
   WithFullConfig,
 } from "../data-source";
 import { filterPredicate } from "@finos/vuu-filters";
+import {
+  MenuRpcResponse,
+  VuuUIMessageInRPCEditReject,
+  VuuUIMessageInRPCEditSuccess,
+} from "../vuuUIMessageTypes";
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
@@ -56,7 +62,7 @@ const toDataSourceRow = (
   false,
   1,
   0,
-  data[0] as string,
+  data[0].toString(),
   0,
   ...data,
 ];
@@ -410,10 +416,49 @@ export class ArrayDataSource
     console.log("remove link");
   }
 
-  async menuRpcCall(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">) {
-    console.log("rmenuRpcCall", {
-      rpcRequest,
+  private findRow(rowKey: number) {
+    const row = this.#data[rowKey];
+    if (row) {
+      return row;
+    } else {
+      throw `no row found for key ${rowKey}`;
+    }
+  }
+
+  private updateRow(
+    rowKey: string,
+    colName: string,
+    value: VuuRowDataItemType
+  ) {
+    const row = this.findRow(parseInt(rowKey));
+  }
+
+  async menuRpcCall(
+    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
+  ): Promise<
+    | MenuRpcResponse
+    | VuuUIMessageInRPCEditReject
+    | VuuUIMessageInRPCEditSuccess
+    | undefined
+  > {
+    return new Promise((resolve) => {
+      const { type } = rpcRequest;
+      switch (type) {
+        case "VP_EDIT_CELL_RPC":
+          {
+            const { rowKey, field, value } = rpcRequest;
+            try {
+              this.updateRow(rowKey, field, value);
+              resolve(undefined);
+            } catch (error) {
+              resolve({ error: String(error), type: "VP_EDIT_RPC_REJECT" });
+            }
+          }
+
+          break;
+        default:
+          resolve(undefined);
+      }
     });
-    return undefined;
   }
 }
