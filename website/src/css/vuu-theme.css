@@ -6,9 +6,14 @@
 --vuu-heading2-fontSize: 46px;
 --vuu-heading2-fontWeight: 300;
 --vuu-heading3-fontSize: 40px;
---vuu-heading2-fontWeight: 300;
+--vuu-heading3-fontWeight: 300;
+--vuu-heading3-lineHeight: 56px;
 /* deviates from figma, needed for alignment, otw we need to use positioning */
 --vuu-heading2-lineHeight: 50px;
+
+--vuu-paragraph-medium-fontSize: 24px;
+--vuu-paragraph-medium-fontWeight: 400;
+--vuu-paragraph-medium-lineHeight: 33.6px;
 
 --vuu-paragraph-large-fontSize: 28px;
 --vuu-paragraph-large-fontWeight: 400;
