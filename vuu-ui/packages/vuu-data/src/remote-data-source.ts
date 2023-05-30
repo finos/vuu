@@ -7,6 +7,7 @@ import {
   VuuTable,
   VuuSort,
   ClientToServerMenuRPC,
+  ClientToServerEditRpc,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 
@@ -583,7 +584,9 @@ export class RemoteDataSource
     }
   }
 
-  async menuRpcCall(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">) {
+  async menuRpcCall(
+    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
+  ) {
     if (this.viewport) {
       return this.server?.rpcCall<MenuRpcResponse>({
         vpId: this.viewport,

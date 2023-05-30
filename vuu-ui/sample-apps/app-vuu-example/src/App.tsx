@@ -11,15 +11,17 @@ import {
   ShellContextProvider,
   VuuUser,
 } from "@finos/vuu-shell";
-import { ReactElement, useCallback, useState } from "react";
+import { ReactElement, useCallback, useRef, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 import { getDefaultColumnConfig } from "./columnMetaData";
-import { SessionEditForm } from "./session-edit-form";
+import { SessionEditingForm } from "@finos/vuu-shell";
+import { getStaticFormConfig } from "./session-editing";
 
 import "./App.css";
 // Because we do not render the AppSidePanel directly, the css will not be included in bundle.
 import "./app-sidepanel/AppSidePanel.css";
+import { RpcResp } from "@finos/vuu-datagrid/src/vuu-messages";
 
 const defaultWebsocketUrl = `wss://${location.hostname}:8090/websocket`;
 const { websocketUrl: serverUrl = defaultWebsocketUrl, features } =
@@ -53,8 +55,11 @@ const defaultLayout = {
 };
 
 export const App = ({ user }: { user: VuuUser }) => {
+  const dialogTitleRef = useRef("");
   const [dialogContent, setDialogContent] = useState<ReactElement>();
-  const handleClose = () => setDialogContent(undefined);
+  const handleClose = () => {
+    setDialogContent(undefined);
+  };
 
   const tables = useVuuTables();
 
@@ -68,11 +73,14 @@ export const App = ({ user }: { user: VuuUser }) => {
             dataTypes,
             table,
           });
+          console.log({ response, schema });
+          const formConfig = getStaticFormConfig(response.rpcName);
+          dialogTitleRef.current = "Set Sequence Number";
           setDialogContent(
-            <SessionEditForm
+            <SessionEditingForm
+              config={formConfig}
               onClose={handleClose}
               schema={schema}
-              style={{ height: 300, width: 400 }}
             />
           );
         } else if (tables) {
@@ -110,7 +118,8 @@ export const App = ({ user }: { user: VuuUser }) => {
           className="vuDialog"
           isOpen={dialogContent !== undefined}
           onClose={handleClose}
-          style={{ height: 500 }}
+          style={{ maxHeight: 500 }}
+          title={dialogTitleRef.current}
         >
           {dialogContent}
         </Dialog>

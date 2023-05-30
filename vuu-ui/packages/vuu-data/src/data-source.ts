@@ -4,6 +4,7 @@ import {
 } from "@finos/vuu-datagrid-types";
 import { EventEmitter } from "@finos/vuu-utils";
 import {
+  ClientToServerEditRpc,
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
@@ -19,7 +20,11 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { MenuRpcResponse } from "./vuuUIMessageTypes";
+import {
+  MenuRpcResponse,
+  VuuUIMessageInRPCEditReject,
+  VuuUIMessageInRPCEditSuccess,
+} from "./vuuUIMessageTypes";
 
 type RowIndex = number;
 type RenderKey = number;
@@ -488,8 +493,13 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   filter: DataSourceFilter;
   groupBy: VuuGroupBy;
   menuRpcCall: (
-    rpcRequest: Omit<ClientToServerMenuRPC, "vpId">
-  ) => Promise<MenuRpcResponse | undefined>;
+    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
+  ) => Promise<
+    | MenuRpcResponse
+    | VuuUIMessageInRPCEditReject
+    | VuuUIMessageInRPCEditSuccess
+    | undefined
+  >;
   openTreeNode: (key: string) => void;
   range: VuuRange;
   select: SelectionChangeHandler;

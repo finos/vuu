@@ -408,6 +408,26 @@ export interface ClientToServerMenuCellRPC extends ClientToServerMenuBaseRPC {
   type: "VIEW_PORT_MENU_CELL_RPC";
 }
 
+export interface ClientToServerEditCellRpc {
+  rowKey: string;
+  type: "VP_EDIT_CELL_RPC";
+  field: string;
+  value: VuuRowDataItemType;
+}
+export interface ClientToServerEditRowRpc {
+  rowKey: string;
+  type: "VP_EDIT_ROW_RPC";
+  row: VuuDataRow;
+}
+export interface ClientToServerSubmitFormRpc {
+  type: "VP_EDIT_SUBMIT_FORM_RPC";
+}
+
+export type ClientToServerEditRpc =
+  | ClientToServerEditCellRpc
+  | ClientToServerEditRowRpc
+  | ClientToServerSubmitFormRpc;
+
 export type ClientToServerMenuRPC =
   | ClientToServerMenuRowRPC
   | ClientToServerMenuCellRPC
@@ -420,13 +440,10 @@ export type ClientToServerMenuRPCType =
   | "VIEW_PORT_MENU_ROW_RPC"
   | "VIEW_PORT_MENU_CELL_RPC";
 
-export type ClientToServerMenuRPC =
+export declare type VuuRpcMessagesOut =
   | ClientToServerMenuSelectRPC
-  | ClientToServerMenuTableRPC
-  | ClientToServerMenuRowRPC
-  | ClientToServerMenuCellRPC;
+  | ClientToServerEditCellRpc;
 
-export declare type VuuRpcMessagesOut = ClientToServerMenuSelectRPC;
 export declare type ClientToServerBody =
   | ClientToServerAuth
   | ClientToServerLogin

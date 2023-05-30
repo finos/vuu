@@ -1020,14 +1020,20 @@ export class ServerProxy {
 
       case "VIEW_PORT_MENU_RESP":
         {
-          const { action } = body;
+          const { action, rpcName } = body;
           if (isSessionTable(action?.table)) {
             this.awaitResponseToMessage({
               type: "GET_TABLE_META",
               table: action.table,
             }).then((response) => {
               const { columns, dataTypes } = response as VuuTableMeta;
+              // Client is going to edit a session table. Ideally, the action
+              // would contain all metadata to allow an appropriate form to
+              // be presented. That is currently not the case, so client may
+              // augment metaData with static data. To do that, client needs
+              // to receive the  rpcName with the response.
               this.postMessageToClient({
+                rpcName,
                 type: "VIEW_PORT_MENU_RESP",
                 action: {
                   ...action,
