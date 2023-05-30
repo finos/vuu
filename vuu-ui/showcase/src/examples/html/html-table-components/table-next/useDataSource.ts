@@ -1,6 +1,6 @@
 import { DataSource, DataSourceRow } from "@finos/vuu-data";
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export const useDataSource = ({
   dataSource,
@@ -10,7 +10,8 @@ export const useDataSource = ({
   initialRange: VuuRange;
 }) => {
   const [data, setData] = useState<DataSourceRow[]>([]);
-  useEffect(() => {
+  // useEffect(() => {
+  useMemo(() => {
     dataSource?.subscribe({ range: initialRange }, (message) => {
       if (message.type === "viewport-update") {
         // if (message.size) {

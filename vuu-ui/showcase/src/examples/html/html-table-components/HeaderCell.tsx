@@ -1,6 +1,7 @@
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent, useCallback } from "react";
 import { useContextMenu } from "@finos/vuu-popups";
+import { useCell } from "./table-next/useCell";
 
 export interface HeaderCellProps extends HTMLAttributes<HTMLDivElement> {
   classBase?: string;
@@ -16,12 +17,14 @@ export const HeaderCell = ({ classBase, column }: HeaderCellProps) => {
     [column, showContextMenu]
   );
 
+  const { className, style } = useCell(column, `${classBase}-col-header`, true);
+
   return (
     <div
-      className={`${classBase}-col-header`}
+      className={className}
       onContextMenu={handleContextMenu}
       role="cell"
-      style={{ width: column.width }}
+      style={style}
     >
       {column.name}
     </div>
