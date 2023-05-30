@@ -1,0 +1,6 @@
+.vuuFeatureLayout {
+    display: flex;
+    gap: 20px;
+    justify-content: space-around;
+    padding: 0 24px;
+}

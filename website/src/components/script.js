@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import "../css/custom.css";
-import VuuLogo from "../../static/img/favicon/vuu-logo.png";
 import ViewPorting from "../../static/img/finos/view-porting.png";
 import Conflation from "../../static/img/finos/conflation.png";
 import JoiningAndTreeing from "../../static/img/finos/joining-treeing.png";

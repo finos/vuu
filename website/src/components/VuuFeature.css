@@ -1,0 +1,52 @@
+.vuuFeature {
+    --vuu-feature-width: 280px;
+    --vuu-feature-animation-container-width: 0px;
+    --vuu-feature-flex-basis: var(--vuu-feature-width);
+    background-color: indigo;
+    display: flex;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: var(--vuu-feature-flex-basis);
+    overflow: hidden;
+    position: relative;
+    transition: flex-basis .25s ease-in-out;
+}
+.vuuFeature-main {
+    width: var(--vuu-feature-width);
+}
+
+.vuuFeature-active {
+    --vuu-feature-animation-container-width: 3px;
+    --vuu-feature-flex-basis: 700px;
+}
+
+.vuuFeature-minimized {
+    --vuu-feature-flex-basis: 100px;
+    --vuu-feature-img-display: none;
+    --vuu-feature-copy-display: none;
+    --vuu-title-position: absolute;
+    --vuu-feature-writing-mode: vertical-rl;
+}
+
+
+.vuuFeature-heroImg-container {
+    display: var(--vuu-feature-img-display, block);
+    height: 100px;
+    width: 100px;
+  }
+
+  .vuuFeature-title {
+    position: var(--vuu-title-position);
+    top: 30px;
+    writing-mode: var(--vuu-feature-writing-mode);
+  }
+
+  .vuuFeature-copy {
+    display: var(--vuu-feature-img-display, block);
+  }
+  
+  .vuuFeature-animation-container {
+    width: var(--vuu-feature-animation-container-width);
+    background-color: red;
+    height: 100%;
+  }
