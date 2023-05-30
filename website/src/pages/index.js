@@ -4,17 +4,20 @@ import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import styles from "./styles.module.css";
-import { featuresTwo } from "../components/featuresTwo-config";
 import { SvgArrow } from "../components/SvgArrow";
 import Chart from "../../static/img/finos/chart.png";
 import DemoApp from "../../static/img/finos/demo-app.png";
-import Scroll from "../../static/img/finos/scroll.png";
-import Effect from "../../static/img/finos/effect.png";
-import Script from "../components/script";
+import ViewPorting from "../../static/img/finos/view-porting.png";
+import Conflation from "../../static/img/finos/conflation.png";
+import JoiningAndTreeing from "../../static/img/finos/joining-treeing.png";
+import { VuuFeatureLayout } from "../components/VuuFeatureLayout";
+import { VuuFeature } from "../components/VuuFeature";
+import { useScrollPosition } from "../hooks/useScrollPosition";
 
 function Home() {
   const context = useDocusaurusContext();
   const { siteConfig = {} } = context;
+  useScrollPosition();
   return (
     <Layout title={`${siteConfig.title}`} description={`${siteConfig.tagline}`}>
       <div className="vuu-scroll-1-bg" />
@@ -62,7 +65,7 @@ function Home() {
         </div>
       </header>
 
-      <main>
+      <main className="vuu-main">
         <section className={classnames("vuu-section vuu-frame-10")}>
           <div className="container">
             <h1 className="vuu-heading-1" style={{ textAlign: "center" }}>
@@ -90,20 +93,25 @@ function Home() {
             </div>
           </div>
         </section>
-        {featuresTwo && featuresTwo.length && (
-          <section
-            className={classnames("vuu-section vuu-frame-11", styles.members)}
-          >
-            <Script />
-
-            <img
-              src={Effect}
-              className="home-page-images"
-              alt="demo-app"
-              style={{ height: "40px", marginTop: "40px" }}
-            />
-          </section>
-        )}
+        <section className={classnames("vuu-section vuu-frame-11")}>
+          <VuuFeatureLayout>
+            <VuuFeature Img={ViewPorting} title="View Porting">
+              A Viewport is a specific client's view onto an underlying table.
+              It has knowledge of the underlying table that a viewport is
+              looking.
+            </VuuFeature>
+            <VuuFeature Img={Conflation} title="Conflation">
+              A Viewport is a specific client's view onto an underlying table.
+              It has knowledge of the underlying table that a viewport is
+              looking.
+            </VuuFeature>
+            <VuuFeature Img={JoiningAndTreeing} title="Joins & Treeing">
+              A Viewport is a specific client's view onto an underlying table.
+              It has knowledge of the underlying table that a viewport is
+              looking.
+            </VuuFeature>
+          </VuuFeatureLayout>
+        </section>
         <section className={classnames("vuu-section vuu-frame-13")}>
           <h1 style={{ textAlign: "center" }}> Demo App</h1>
           <img
