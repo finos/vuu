@@ -42,6 +42,7 @@ export const TableNext = ({
     containerRef,
     data,
     handleContextMenuAction,
+    onHeaderClick,
     menuBuilder,
     scrollProps,
     viewportMeasurements,
@@ -126,11 +127,13 @@ export const TableNext = ({
             <div {...tableProps} className={`${classBase}-table`}>
               <div className={`${classBase}-col-headings`}>
                 <div className={`${classBase}-col-headers`} role="row">
-                  {columns.map((col) => (
+                  {columns.map((col, i) => (
                     <HeaderCell
                       classBase={classBase}
                       column={col}
+                      idx={i}
                       key={col.name}
+                      onClick={onHeaderClick}
                     />
                   ))}
                 </div>

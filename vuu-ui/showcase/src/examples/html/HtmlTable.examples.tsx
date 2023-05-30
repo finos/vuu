@@ -321,3 +321,31 @@ export const TableNextResizeable = () => {
   );
 };
 TableNextResizeable.displaySequence = displaySequence++;
+
+export const TableNext2MillionRows = () => {
+  // const { typeaheadHook: _, ...config } = useTableConfig({ count: 2_000_000 });
+  const { typeaheadHook: _, ...config } = useTableConfig({
+    count: 100_000,
+    rangeChangeRowset: "full",
+  });
+
+  // const { typeaheadHook: _, ...config } = useTableConfig({
+  //   columnCount: 10,
+  //   count: 1000,
+  //   rangeChangeRowset: "full",
+  // });
+
+  return (
+    // <div style={{ height: 600, width: 600, background: "#ccc" }}>
+    <TableNext
+      {...config}
+      headerHeight={30}
+      height={600}
+      renderBufferSize={0}
+      rowHeight={30}
+      width={600}
+    />
+    // </div>
+  );
+};
+TableNext2MillionRows.displaySequence = displaySequence++;

@@ -5,6 +5,7 @@ import {
 } from "@finos/vuu-data";
 import {
   GridConfig,
+  KeyedColumnDescriptor,
   SelectionChangeHandler,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
@@ -16,11 +17,15 @@ import {
   useTableViewport,
 } from "@finos/vuu-table";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
-import { buildColumnMap } from "@finos/vuu-utils";
+import {
+  applySort,
+  buildColumnMap,
+  visibleColumnAtIndex,
+} from "@finos/vuu-utils";
 import { MouseEvent, useCallback, useMemo, useState } from "react";
 import { useDataSource } from "./useDataSource";
 import { useTableScroll } from "./useTableScroll";
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import { PersistentColumnAction } from "@finos/vuu-table/src/useTableModel";
 import { useInitialValue } from "./useInitialValue";
 import { useVirtualViewport } from "./useVirtualViewport";
@@ -186,6 +191,38 @@ export const useTable = ({
     [columns, showContextMenu]
   );
 
+  const handleSort = useCallback(
+    (
+      column: KeyedColumnDescriptor,
+      extendSort = false,
+      sortType?: VuuSortType
+    ) => {
+      if (dataSource) {
+        dataSource.sort = applySort(
+          dataSource.sort,
+          column,
+          extendSort,
+          sortType
+        );
+      }
+    },
+    [dataSource]
+  );
+
+  const onHeaderClick = useCallback(
+    (evt: MouseEvent) => {
+      const targetElement = evt.target as HTMLElement;
+      const headerCell = targetElement.closest(
+        ".TableNext-col-header"
+      ) as HTMLElement;
+      const colIdx = parseInt(headerCell?.dataset.idx ?? "-1");
+      const column = visibleColumnAtIndex(columns, colIdx);
+      const isAdditive = evt.shiftKey;
+      column && handleSort(column, isAdditive);
+    },
+    [columns, handleSort]
+  );
+
   return {
     columnMap,
     columns,
@@ -195,6 +232,7 @@ export const useTable = ({
     handleContextMenuAction,
     menuBuilder,
     onContextMenu,
+    onHeaderClick,
     scrollProps,
     viewportMeasurements,
   };
