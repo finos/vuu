@@ -11,7 +11,9 @@
   --vuu-navbar-height: 200px;
   --vuu-navbar-padding: 80px;
   --vuu-navbar-logo-size: 90px;
+  --vuu-navbar-menu-top: 26px;
   --vuu-navbar-bg: transparent;
+  --vuu-navbar-background-position: 0px;
 
   --ifm-color-primary: #00b5e2;
   --ifm-color-primary-dark: #0079ac;
@@ -55,16 +57,36 @@ body {
 }
 
 .navbar {
-  background: var(--vuu-navbar-bg);
+
+  /* background: var(--vuu-navbar-bg); */
+  overflow: hidden;
   padding: 0;
   position: fixed;
   width: var(--vuu-desktop-width);
 }
 
+.navbar:before {
+  content: '';
+  position: absolute;
+  top:0;
+  left:0;
+  width: 100%;
+  background: linear-gradient(180deg, var(--vuu-dark-bg-background2) 0px, var(--vuu-dark-bg-background1) 800px);
+  background-position-y: var(--vuu-navbar-background-position);
+  height: 800px;
+  z-index: -1;
+}
+
 .navbar__inner {
-  align-items: flex-start;
+  align-items: center;
   height: var(--vuu-navbar-height);
   padding: var(--vuu-navbar-padding) 80px 0 80px;
+}
+
+
+.navbar__logo {
+  height: var(--vuu-navbar-logo-size);
+
 }
 
 .navbar .navbar__logo > img {
@@ -290,12 +312,9 @@ margin-top: 50px;
   width: 50%;
 }
 
-.navbar__logo img {
-  height: 60px;
-}
 .navbar__items--right {
   position: relative;
-  top: 26px
+  top: var(--vuu-navbar-menu-top, 26px);
 }
 
 
