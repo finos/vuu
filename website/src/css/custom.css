@@ -434,23 +434,32 @@ span {
 
 footer {
   width: var(--vuu-desktop-width);
+  border-top: 0.5px solid  rgba(255, 255, 255, 0.2) ;
   /* Rest of your footer styles */
 }
 
 .footer-columns {
   display: flex;
   background-color: var(--vuu-dark-bg-background2);
+  padding-left: 273px;
+  padding-bottom: 168px;
+  padding-top: 133px;
+
+  /* padding-left: 273px; */
+
+
 }
 
 .footer-column {
   flex: 1;
-  padding: 25px;
+  /* padding: 25px; */
 }
 
 .footer-column:first-of-type ,
 .footer-column:nth-of-type(2) {
-  border-right: 0.5px solid  rgba(255, 255, 255, 0.2);; /* Adjust the border width and color as desired */
-  padding-right: 4px; /* Optional: Add padding to create space between the image and border */
+  border-right: 0.5px solid  rgba(255, 255, 255, 0.2); 
+  padding-right: 4px; 
+  height: 50%;
 }
 
 
@@ -473,7 +482,7 @@ footer {
 .copyright{
   opacity: 0.5;
 }
-/* 
-* {
+
+/* * {
   border: 1px solid red;
 } */
