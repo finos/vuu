@@ -22,7 +22,7 @@ import {
   buildColumnMap,
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
-import { MouseEvent, useCallback, useMemo, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useDataSource } from "./useDataSource";
 import { useTableScroll } from "./useTableScroll";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
@@ -82,6 +82,17 @@ export const useTable = ({
     () => buildColumnMap(config.columns.map((col) => col.name)),
     [config.columns]
   );
+
+  useEffect(() => {
+    dataSource.on("config", (config, confirmed) => {
+      // expectConfigChangeRef.current = true;
+      dispatchColumnAction({
+        type: "tableConfig",
+        ...config,
+        confirmed,
+      });
+    });
+  }, [dataSource, dispatchColumnAction]);
 
   const {
     getRowAtPosition,
