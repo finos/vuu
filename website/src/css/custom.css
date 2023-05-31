@@ -432,6 +432,11 @@ span {
 
 /* Footer  */
 
+footer {
+  width: var(--vuu-desktop-width);
+  /* Rest of your footer styles */
+}
+
 .footer-columns {
   display: flex;
   background-color: var(--vuu-dark-bg-background2);
@@ -439,6 +444,7 @@ span {
 
 .footer-column {
   flex: 1;
+  padding: 25px;
 }
 
 .footer-column:first-of-type ,
