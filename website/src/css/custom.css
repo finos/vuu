@@ -14,6 +14,20 @@
   --vuu-navbar-menu-top: 26px;
   --vuu-navbar-bg: transparent;
   --vuu-navbar-background-position: 0px;
+  --vuu-bg-gradient: linear-gradient(
+    180deg, 
+    var(--vuu-dark-bg-background2) 0px, 
+    var(--vuu-dark-bg-background1) 800px, 
+    var(--vuu-dark-bg-background1) 1276px, 
+    var(--vuu-dark-bg-background2) 1952px
+    );
+  /* --vuu-bg-gradient: linear-gradient(
+    180deg, 
+    red 0px, 
+    white 800px, 
+    white 1276px, 
+    red 1952px
+    ); */
 
   --ifm-color-primary: #00b5e2;
   --ifm-color-primary-dark: #0079ac;
@@ -58,7 +72,6 @@ body {
 
 .navbar {
 
-  /* background: var(--vuu-navbar-bg); */
   overflow: hidden;
   padding: 0;
   position: fixed;
@@ -68,12 +81,12 @@ body {
 .navbar:before {
   content: '';
   position: absolute;
-  top:0;
+  top: var(--vuu-navbar-background-position);
   left:0;
   width: 100%;
-  background: linear-gradient(180deg, var(--vuu-dark-bg-background2) 0px, var(--vuu-dark-bg-background1) 800px);
-  background-position-y: var(--vuu-navbar-background-position);
-  height: 800px;
+  /* background: linear-gradient(180deg, var(--vuu-dark-bg-background2) 0px, var(--vuu-dark-bg-background1) 800px); */
+  background: var(--vuu-bg-gradient);
+  height: 3074px;
   z-index: -1;
 }
 
@@ -111,8 +124,9 @@ body {
 }
 
 .vuu-scroll-1-bg {
-  background: linear-gradient(180deg, var(--vuu-dark-bg-background2) 0%, var(--vuu-dark-bg-background1) 100%);
-  height: 800px;
+  /* background: linear-gradient(180deg, var(--vuu-dark-bg-background2) 0%, var(--vuu-dark-bg-background1) 100%); */
+  background: var(--vuu-bg-gradient);
+  height: 3074px;
   left: 0px;
   position: absolute;
   top:0px;
@@ -168,7 +182,7 @@ margin-top: 50px;
 }
 
 .vuu-frame-10 {
-  background-color: var(--vuu-dark-bg-background1);
+  /* background-color: var(--vuu-dark-bg-background1); */
 
   /* content driven, remove later */
   height: 476px;
@@ -181,14 +195,14 @@ margin-top: 50px;
   --vuu-title-marginTop: 40px;
   --vuu-title-height: 88px;
   --vuu-heading3-color: var(--vuu-accent1);
-  background: linear-gradient(180deg, var(--vuu-dark-bg-background1) 0%, var(--vuu-dark-bg-background2) 100%);
+  /* background: linear-gradient(180deg, var(--vuu-dark-bg-background1) 0%, var(--vuu-dark-bg-background2) 100%); */
 
   /* content driven, remove later */
   height: 676px;
 }
 
 .vuu-frame-13 {
-  background-color: var(--vuu-dark-bg-background2);
+  /* background-color: var(--vuu-dark-bg-background2); */
   /* content driven, remove later */
   height: 1122px;
 }
