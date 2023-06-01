@@ -1,0 +1,36 @@
+.vuu-button-bar {
+    display: flex;
+    gap: 25px;
+    position: relative;
+    transform: var(--vuu-button-bar-transform);
+}
+
+.vuu-button {
+    align-items: center;
+    border-radius: 50px;
+    color: var(--vuu-light-text-primary);
+    display: flex;
+    font-weight: 700;
+    height: 45px;
+    padding: 0 40px;
+}
+
+.vuu-button:hover {
+    color: initial;
+    text-decoration: none;
+}
+
+.vuu-button:visited {
+    text-decoration: none;
+}
+
+
+.vuu-button-cta {
+    background-color: var(--vuu-accent1);
+}
+
+.vuu-button-secondary {
+    background-color: var(--vuu-dark-bg-background2);
+    border: solid 2px var(--vuu-accent1);
+    color: var(--vuu-accent1);
+}
