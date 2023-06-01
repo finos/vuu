@@ -30,11 +30,6 @@ const getPctScroll = (container: HTMLElement) => {
   return [pctScrollLeft, pctScrollTop];
 };
 
-const getMaxScroll = (container: HTMLElement) => {
-  const { clientHeight, clientWidth, scrollHeight, scrollWidth } = container;
-  return [scrollWidth - clientWidth, scrollHeight - clientHeight];
-};
-
 interface CallbackRefHookProps<T = HTMLElement> {
   onAttach?: (el: T) => void;
   onDetach: (el: T) => void;
@@ -63,23 +58,33 @@ const useCallbackRef = <T = HTMLElement>({
 };
 
 export interface TableScrollHookProps {
+  maxScrollLeft: number;
+  maxScrollTop: number;
   onHorizontalScroll?: (scrollLeft: number) => void;
   onVerticalScroll?: (scrollTop: number, pctScrollTop: number) => void;
-  viewportHeight: number;
 }
 
 export const useTableScroll = ({
+  // height,
+  // width,
+  // contentHeight,
+  // contentWidth,
+
+  maxScrollLeft,
+  maxScrollTop,
   onHorizontalScroll,
   onVerticalScroll,
 }: TableScrollHookProps) => {
   const contentContainerScrolledRef = useRef(false);
 
+  // console.log(`useTableScroll
+  //   viewport : ${width} x ${height}
+  //   content ${contentWidth} x ${contentHeight}
+  // `);
+
   const scrollPosRef = useRef({ scrollTop: 0, scrollLeft: 0 });
   const scrollbarContainerRef = useRef<HTMLDivElement | null>(null);
   const contentContainerRef = useRef<HTMLDivElement | null>(null);
-
-  const maxScrollLeft = 435;
-  const maxScrollTop = 29400;
 
   const handleScrollbarContainerScroll = useCallback(() => {
     const { current: contentContainer } = contentContainerRef;
@@ -89,7 +94,6 @@ export const useTableScroll = ({
       contentContainerScrolledRef.current = false;
     } else if (contentContainer && scrollbarContainer) {
       const [pctScrollLeft, pctScrollTop] = getPctScroll(scrollbarContainer);
-      const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
       const rootScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
       const rootScrollTop = Math.round(pctScrollTop * maxScrollTop);
       contentContainer.scrollTo({
@@ -98,7 +102,7 @@ export const useTableScroll = ({
         behavior: "auto",
       });
     }
-  }, []);
+  }, [maxScrollLeft, maxScrollTop]);
 
   const handleContentContainerScroll = useCallback(() => {
     const { current: contentContainer } = contentContainerRef;

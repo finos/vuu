@@ -347,8 +347,13 @@ export class ArrayDataSource
   }
 
   set sort(sort: VuuSort) {
-    // TODO should we wait until server ACK before we assign #sort ?
-    // this.#sort = sort;
+    debug?.(`sort ${JSON.stringify(sort)}`);
+    this.#config = {
+      ...this.#config,
+      sort,
+    };
+
+    this.emit("config", this.#config);
   }
 
   get filter() {

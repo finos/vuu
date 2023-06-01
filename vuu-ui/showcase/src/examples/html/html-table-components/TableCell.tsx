@@ -1,6 +1,6 @@
 import { DataSourceRow } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import cx from "classnames";
+import { useCell } from "./table-next/useCell";
 
 export interface TableCellProps {
   column: KeyedColumnDescriptor;
@@ -8,18 +8,11 @@ export interface TableCellProps {
 }
 
 export const TableCell = ({ column, row }: TableCellProps) => {
-  const { align, key, pin, width } = column;
-
-  const className = cx("vuuTableNextCell", {
-    vuuAlignRight: align === "right",
-    vuuPinFloating: pin === "floating",
-    vuuPinLeft: pin === "left",
-    vuuPinRight: pin === "right",
-  });
+  const { className, style } = useCell(column, "vuuTableNextCell");
 
   return (
-    <div className={className} role="cell" style={{ width }}>
-      {row[key]}
+    <div className={className} role="cell" style={style}>
+      {row[column.key]}
     </div>
   );
 };

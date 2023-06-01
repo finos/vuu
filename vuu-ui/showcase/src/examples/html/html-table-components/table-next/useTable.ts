@@ -5,6 +5,7 @@ import {
 } from "@finos/vuu-data";
 import {
   GridConfig,
+  KeyedColumnDescriptor,
   SelectionChangeHandler,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
@@ -16,11 +17,15 @@ import {
   useTableViewport,
 } from "@finos/vuu-table";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
-import { buildColumnMap } from "@finos/vuu-utils";
-import { MouseEvent, useCallback, useMemo, useState } from "react";
+import {
+  applySort,
+  buildColumnMap,
+  visibleColumnAtIndex,
+} from "@finos/vuu-utils";
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useDataSource } from "./useDataSource";
 import { useTableScroll } from "./useTableScroll";
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import { PersistentColumnAction } from "@finos/vuu-table/src/useTableModel";
 import { useInitialValue } from "./useInitialValue";
 import { useVirtualViewport } from "./useVirtualViewport";
@@ -65,7 +70,8 @@ export const useTable = ({
     [dataSource]
   );
 
-  const containerMeasurements = useMeasuredContainer(measuredProps);
+  const { containerRef, ...containerMeasurements } =
+    useMeasuredContainer(measuredProps);
 
   const { columns, dispatchColumnAction, headings } = useTableModel(
     config,
@@ -76,6 +82,17 @@ export const useTable = ({
     () => buildColumnMap(config.columns.map((col) => col.name)),
     [config.columns]
   );
+
+  useEffect(() => {
+    dataSource.on("config", (config, confirmed) => {
+      // expectConfigChangeRef.current = true;
+      dispatchColumnAction({
+        type: "tableConfig",
+        ...config,
+        confirmed,
+      });
+    });
+  }, [dataSource, dispatchColumnAction]);
 
   const {
     getRowAtPosition,
@@ -92,6 +109,10 @@ export const useTable = ({
     size: containerMeasurements.innerSize ?? containerMeasurements.outerSize,
   });
 
+  console.log(
+    `useTable ${viewportMeasurements.maxScrollContainerScrollHorizontal}, ${viewportMeasurements.maxScrollContainerScrollVertical}`
+  );
+
   const initialRange = useInitialValue<VuuRange>({
     from: 0,
     to: viewportMeasurements.rowCount + 1,
@@ -101,6 +122,18 @@ export const useTable = ({
     dataSource,
     initialRange,
   });
+
+  useMemo(() => {
+    const {
+      range: { from, to },
+    } = dataSource;
+    if (viewportMeasurements.rowCount !== to - 1 - from) {
+      dataSource.range = {
+        from,
+        to: from + viewportMeasurements.rowCount + 1,
+      };
+    }
+  }, [dataSource, viewportMeasurements.rowCount]);
 
   const onPersistentColumnOperation = useCallback(
     (action: PersistentColumnAction) => {
@@ -130,8 +163,14 @@ export const useTable = ({
   );
 
   const { requestScroll, ...scrollProps } = useTableScroll({
+    // contentHeight: viewportMeasurements.contentHeight,
+    // contentWidth: viewportMeasurements.contentWidth,
+    // height: containerMeasurements.innerSize?.height ?? 0,
+    // width: containerMeasurements.innerSize?.width ?? 0,
+
+    maxScrollLeft: viewportMeasurements.maxScrollContainerScrollHorizontal,
+    maxScrollTop: viewportMeasurements.maxScrollContainerScrollVertical,
     onVerticalScroll: handleVerticalScroll,
-    viewportHeight: 645 - 30,
   });
 
   // TOSO ship this out into a hook
@@ -144,10 +183,6 @@ export const useTable = ({
       const target = evt.target as HTMLElement;
       const cellEl = target?.closest("div[role='cell']");
       const rowEl = target?.closest("div[role='row']");
-      console.log("onContextMenu", {
-        cellEl,
-        rowEl,
-      });
       if (cellEl && rowEl /*&& currentData && currentDataSource*/) {
         //   const { columns, selectedRowsCount } = currentDataSource;
         const columnMap = buildColumnMap(columns);
@@ -167,14 +202,48 @@ export const useTable = ({
     [columns, showContextMenu]
   );
 
+  const handleSort = useCallback(
+    (
+      column: KeyedColumnDescriptor,
+      extendSort = false,
+      sortType?: VuuSortType
+    ) => {
+      if (dataSource) {
+        dataSource.sort = applySort(
+          dataSource.sort,
+          column,
+          extendSort,
+          sortType
+        );
+      }
+    },
+    [dataSource]
+  );
+
+  const onHeaderClick = useCallback(
+    (evt: MouseEvent) => {
+      const targetElement = evt.target as HTMLElement;
+      const headerCell = targetElement.closest(
+        ".TableNext-col-header"
+      ) as HTMLElement;
+      const colIdx = parseInt(headerCell?.dataset.idx ?? "-1");
+      const column = visibleColumnAtIndex(columns, colIdx);
+      const isAdditive = evt.shiftKey;
+      column && handleSort(column, isAdditive);
+    },
+    [columns, handleSort]
+  );
+
   return {
     columnMap,
     columns,
+    containerRef,
     containerMeasurements,
     data,
     handleContextMenuAction,
     menuBuilder,
     onContextMenu,
+    onHeaderClick,
     scrollProps,
     viewportMeasurements,
   };
