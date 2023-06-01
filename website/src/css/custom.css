@@ -152,6 +152,7 @@ margin-top: 50px;
   align-items: center;
   display: flex;
   justify-content: center;
+  padding-top: 50px;
 }
 
 .vuu-scroll-arrow {
@@ -207,6 +208,7 @@ margin-top: 50px;
   flex-direction: column;
   align-items: center;
   height: 1122px;
+  padding-top: 150px;
 }
 
 .vuu-demo-bg {
@@ -229,6 +231,10 @@ margin-top: 50px;
   height: 422px;
   margin-right: 60px;
   width: 694px;
+}
+
+.vuu-sample-app {
+  transform: translate(100px, 50px);
 }
 
 .vuu-heading-1 {

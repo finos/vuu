@@ -6,7 +6,7 @@ import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import styles from "./styles.module.css";
 import { SvgArrow } from "../components/SvgArrow";
 import Chart from "../../static/img/finos/chart.png";
-import DemoApp from "../../static/img/finos/demo-app.png";
+import SampleApp from "../../static/img/vuu/SampleApp.png";
 import ViewPorting from "../../static/img/finos/view-porting.png";
 import Conflation from "../../static/img/finos/conflation.png";
 import JoiningAndTreeing from "../../static/img/finos/joining-treeing.png";
@@ -55,12 +55,6 @@ function Home() {
           <div className="vuu-scroll-arrow">
             <div className="vuu-scroll-arrow-title">SCROLL</div>
             <SvgArrow className="vuu-scroll-arrow-svg" radius={3} />
-            {/* <img
-              className="home-page-images"
-              src={Scroll}
-              alt="demo-app"
-              style={{ height: "50px" }}
-            /> */}
           </div>
         </div>
       </header>
@@ -115,7 +109,9 @@ function Home() {
         <section className={classnames("vuu-section vuu-frame-13")}>
           <h1 className="vuu-heading-1">Demo App</h1>
           <div className="vuu-demo-bg">
-            <div className="vuu-demo-container"></div>
+            <div className="vuu-demo-container">
+              <img className="vuu-sample-app" src={SampleApp} alt="demo-app" />
+            </div>
             <VuuFeature title="Header">
               A Viewport is a specific client's view onto an underlying table.
               It has knowledge of the underlying table that a viewport is

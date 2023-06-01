@@ -24,7 +24,6 @@
     text-decoration: none;
 }
 
-
 .vuu-button-cta {
     background-color: var(--vuu-accent1);
 }
@@ -32,5 +31,9 @@
 .vuu-button-secondary {
     background-color: var(--vuu-dark-bg-background2);
     border: solid 2px var(--vuu-accent1);
+    color: var(--vuu-accent1);
+}
+
+.vuu-button-secondary:hover {
     color: var(--vuu-accent1);
 }
