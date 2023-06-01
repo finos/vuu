@@ -6,7 +6,7 @@ import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import styles from "./styles.module.css";
 import { SvgArrow } from "../components/SvgArrow";
 import Chart from "../../static/img/finos/chart.png";
-import DemoApp from "../../static/img/finos/demo-app.png";
+import SampleApp from "../../static/img/vuu/SampleApp.png";
 import ViewPorting from "../../static/img/finos/view-porting.png";
 import Conflation from "../../static/img/finos/conflation.png";
 import JoiningAndTreeing from "../../static/img/finos/joining-treeing.png";
@@ -35,14 +35,14 @@ function Home() {
               Vuu deals with the complex task of viewporting, throttling <br />{" "}
               and transmiting your data to clients, so you don't have to.
             </p>
-            <Link
-              className={classnames(
-                "vuu-action button vuu-get-started-button button--lg"
-              )}
-              to={"https://finos.org/"}
-            >
-              GET STARTED
-            </Link>
+            <div className="vuu-button-bar">
+              <Link
+                className="vuu-button vuu-button-cta"
+                to="https://finos.org/"
+              >
+                GET STARTED
+              </Link>
+            </div>
           </div>
           <img
             className="vuu-chart"
@@ -55,12 +55,6 @@ function Home() {
           <div className="vuu-scroll-arrow">
             <div className="vuu-scroll-arrow-title">SCROLL</div>
             <SvgArrow className="vuu-scroll-arrow-svg" radius={3} />
-            {/* <img
-              className="home-page-images"
-              src={Scroll}
-              alt="demo-app"
-              style={{ height: "50px" }}
-            /> */}
           </div>
         </div>
       </header>
@@ -113,37 +107,25 @@ function Home() {
           </VuuFeatureLayout>
         </section>
         <section className={classnames("vuu-section vuu-frame-13")}>
-          <h1 style={{ textAlign: "center" }}> Demo App</h1>
-          <img
-            src={DemoApp}
-            className="home-page-images"
-            alt="demo-app"
-            style={{ height: "500px", width: "75%", borderRadius: "20px" }}
-          />
+          <h1 className="vuu-heading-1">Demo App</h1>
+          <div className="vuu-demo-bg">
+            <div className="vuu-demo-container">
+              <img className="vuu-sample-app" src={SampleApp} alt="demo-app" />
+            </div>
+            <VuuFeature title="Header">
+              A Viewport is a specific client's view onto an underlying table.
+              It has knowledge of the underlying table that a viewport is
+              looking.
+            </VuuFeature>
+          </div>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "2vh",
-            }}
-          >
-            <Link
-              className={classnames(
-                "button button--lg get-started-button",
-                styles.getStarted
-              )}
-              to={"https://finos.org/"}
-            >
+          <div className="vuu-button-bar">
+            <Link className="vuu-button vuu-button-cta" to="https://finos.org/">
               GET STARTED
             </Link>
             <Link
-              className={classnames(
-                "button button--lg github-button",
-                styles.getStarted
-              )}
-              to={"https://finos.org/"}
+              className="vuu-button vuu-button-secondary"
+              to="https://finos.org/"
             >
               GITHUB
             </Link>

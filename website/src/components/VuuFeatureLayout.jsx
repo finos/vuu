@@ -8,6 +8,10 @@ export const useFeatureContext = (id) => {
   return useContext(FeatureContext);
 };
 
+const Separator = () => {
+  return <div className="vuuFeatureLayout-separator" />;
+};
+
 export const VuuFeatureLayout = ({ children }) => {
   const [activeFeatureId, setActiveFeatureId] = useState(-1);
   const toggleFeature = useCallback(
@@ -25,7 +29,13 @@ export const VuuFeatureLayout = ({ children }) => {
 
   return (
     <FeatureContext.Provider value={{ activeFeatureId, toggleFeature }}>
-      <div className="vuuFeatureLayout">{children}</div>
+      <div className="vuuFeatureLayout">
+        {React.Children.toArray(children).reduce((elements, child, i) => {
+          i > 0 && elements.push(<Separator />);
+          elements.push(child);
+          return elements;
+        }, [])}
+      </div>
     </FeatureContext.Provider>
   );
 };

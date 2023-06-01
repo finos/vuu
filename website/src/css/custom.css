@@ -5,9 +5,13 @@
  * work well for content-centric websites.
  */
  @import url(vuu-theme.css);
+ @import url(vuu-components.css);
 
 /* You can override the default Infima variables here. */
 :root {
+
+  --vuu-heading3-color: var(--vuu-accent1);
+
   --vuu-navbar-height: 200px;
   --vuu-navbar-padding: 80px;
   --vuu-navbar-logo-size: 90px;
@@ -21,13 +25,6 @@
     var(--vuu-dark-bg-background1) 1276px, 
     var(--vuu-dark-bg-background2) 1952px
     );
-  /* --vuu-bg-gradient: linear-gradient(
-    180deg, 
-    red 0px, 
-    white 800px, 
-    white 1276px, 
-    red 1952px
-    ); */
 
   --ifm-color-primary: #00b5e2;
   --ifm-color-primary-dark: #0079ac;
@@ -155,6 +152,7 @@ margin-top: 50px;
   align-items: center;
   display: flex;
   justify-content: center;
+  padding-top: 50px;
 }
 
 .vuu-scroll-arrow {
@@ -194,23 +192,56 @@ margin-top: 50px;
   --vuu-heading3-lineHeight: 44px;
   --vuu-title-marginTop: 40px;
   --vuu-title-height: 88px;
-  --vuu-heading3-color: var(--vuu-accent1);
+  --vuu-feature-width: 255px;
   /* background: linear-gradient(180deg, var(--vuu-dark-bg-background1) 0%, var(--vuu-dark-bg-background2) 100%); */
 
   /* content driven, remove later */
   height: 676px;
+  padding: 100px 210px;
 }
 
 .vuu-frame-13 {
-  /* background-color: var(--vuu-dark-bg-background2); */
-  /* content driven, remove later */
+  --vuu-feature-width: 215px;
+  --vuu-button-bar-transform: translateY(-24px);
+  --vuu-heading-text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   height: 1122px;
+  padding-top: 150px;
+}
+
+.vuu-demo-bg {
+  background: linear-gradient(
+    180deg, 
+    var(--vuu-dark-background-bg3) 0%, 
+    var(--vuu-dark-background-bg4) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  display: flex;
+  height: 644px;
+  margin-top: 60px;
+  padding: 64px;
+  width: 1056px;
+}
+
+.vuu-demo-container {
+  background: white;
+  border-radius: 8px;
+  height: 422px;
+  margin-right: 60px;
+  width: 694px;
+}
+
+.vuu-sample-app {
+  transform: translate(100px, 50px);
 }
 
 .vuu-heading-1 {
   font-size: var(--vuu-heading1-fontSize);
   font-weight: var(--vuu-heading1-fontWeight);
   line-height: var(--vuu-heading1-lineHeight);
+  text-align: var(--vuu-heading-text-align);
 }
 
 .vuu-heading-2 {
@@ -284,14 +315,15 @@ margin-top: 50px;
 }
 
 
-.vuu-feature-title {
-  align-items: flex-end;
+/* .vuu-feature-title {
+  align-items: flex-start;
   display: flex;
   height: var(--vuu-title-height);
   margin-top: var(--vuu-title-marginTop);
   max-width: 225px;
+  transform: var(--vuu-feature-title-translate);
 
-}
+} */
 
 .docusaurus-highlight-code-line {
   background-color: #0033a0;
