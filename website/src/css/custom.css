@@ -455,14 +455,17 @@ footer {
 
 .footer-column:first-of-type{
   padding-left: 193px;
+  font-family: 'Raleway'
+
 }
 
 .footer-column:first-of-type img{
   margin-bottom: 16px;
 }
 
+
 .footer-column:nth-of-type(2) {
-  flex: 0.5; 
+  flex: 0.8; 
 }
 
 
