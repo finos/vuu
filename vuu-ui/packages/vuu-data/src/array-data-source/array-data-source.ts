@@ -40,6 +40,8 @@ import {
   VuuUIMessageInRPCEditSuccess,
 } from "../vuuUIMessageTypes";
 
+import { groupRows } from "./group-utils";
+
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
   columnDescriptors: ColumnDescriptor[];
@@ -96,6 +98,7 @@ export class ArrayDataSource
   private status = "initialising";
   private disabled = false;
   private filteredData: undefined | DataSourceRow[];
+  private groupedData: undefined | DataSourceRow[];
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
   private tableMeta: VuuTableMeta;
@@ -312,7 +315,7 @@ export class ArrayDataSource
       this.rangeChangeRowset === "delta" && !forceFullRefresh
         ? rangeNewItems(this.lastRangeServed, this.#range)
         : this.#range;
-    const data = this.filteredData ?? this.#data;
+    const data = this.groupedData ?? this.filteredData ?? this.#data;
     this.clientCallback?.({
       clientViewportId: this.viewport,
       rows: data
@@ -368,11 +371,6 @@ export class ArrayDataSource
       ...this.#config,
       filter,
     };
-
-    this.#config = {
-      ...this.#config,
-      filter,
-    };
     const { filterStruct } = filter;
     if (filterStruct) {
       const fn = filterPredicate(this.#columnMap, filterStruct);
@@ -395,7 +393,28 @@ export class ArrayDataSource
   }
 
   set groupBy(groupBy: VuuGroupBy) {
-    // this.#config.groupBy = groupBy;
+    this.#config = {
+      ...this.#config,
+      groupBy,
+    };
+
+    if (groupBy.length) {
+      console.time("group");
+      this.groupedData = groupRows(this.#data, groupBy, this.#columnMap).map(
+        (row, i) => {
+          const dolly = row.slice() as DataSourceRow;
+          dolly[0] = i;
+          dolly[1] = i;
+          return dolly;
+        }
+      );
+      console.timeEnd("group");
+    } else {
+      this.groupedData = undefined;
+    }
+    this.setRange(resetRange(this.#range), true);
+
+    this.emit("config", this.#config);
   }
 
   get title() {
