@@ -89,17 +89,31 @@ function Home() {
         </section>
         <section className={classnames("vuu-section vuu-frame-11")}>
           <VuuFeatureLayout>
-            <VuuFeature Img={ViewPorting} title="View Porting">
+            <VuuFeature
+              Img={ViewPorting}
+              title="View Porting"
+              DetailImg={SampleApp}
+            >
               A Viewport is a specific client's view onto an underlying table.
               It has knowledge of the underlying table that a viewport is
               looking.
             </VuuFeature>
-            <VuuFeature Img={Conflation} title="Conflation">
+            <VuuFeature
+              className="vuu-conflation"
+              Img={Conflation}
+              title="Conflation"
+              DetailImg={SampleApp}
+            >
               A Viewport is a specific client's view onto an underlying table.
               It has knowledge of the underlying table that a viewport is
               looking.
             </VuuFeature>
-            <VuuFeature Img={JoiningAndTreeing} title="Joins & Treeing">
+            <VuuFeature
+              className="vuu-joining-treeing"
+              Img={JoiningAndTreeing}
+              title="Joins & Treeing"
+              DetailImg={SampleApp}
+            >
               A Viewport is a specific client's view onto an underlying table.
               It has knowledge of the underlying table that a viewport is
               looking.

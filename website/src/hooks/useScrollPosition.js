@@ -6,7 +6,7 @@ export const useScrollPosition = () => {
   const scrollListener = useCallback(() => {
     const root = document.querySelector(":root");
     const scrollTop = Math.round(window.scrollY);
-    console.log(`scrollY = ${scrollY}`);
+    // console.log(`scrollY = ${scrollY}`);
     if (scrollTop < 130) {
       const height = 200 - scrollTop;
       root.style.setProperty("--vuu-navbar-height", `${height}px`);
@@ -28,7 +28,7 @@ export const useScrollPosition = () => {
 
     if (scrollTop < 81) {
       const padding = 80 - scrollTop;
-      console.log(`padding ${padding}`);
+      // console.log(`padding ${padding}`);
       root.style.setProperty("--vuu-navbar-padding", `${padding}px`);
     }
 
