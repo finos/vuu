@@ -2,7 +2,14 @@ import { TableCellProps } from "@finos/vuu-datagrid-types";
 import { getColumnStyle, metadataKeys } from "@finos/vuu-utils";
 import { EditableLabel } from "@heswell/salt-lab";
 import cx from "classnames";
-import { KeyboardEvent, memo, useCallback, useRef, useState } from "react";
+import {
+  KeyboardEvent,
+  memo,
+  MouseEvent,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 
 import "./TableCell.css";
 
@@ -38,9 +45,12 @@ export const TableCell = memo(
       }
     };
 
-    const handleClick = useCallback(() => {
-      onClick?.(column);
-    }, [column, onClick]);
+    const handleClick = useCallback(
+      (evt: MouseEvent) => {
+        onClick?.(evt, column);
+      },
+      [column, onClick]
+    );
 
     const handleEnterEditMode = () => {
       setEditing(true);

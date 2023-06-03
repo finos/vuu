@@ -14,7 +14,7 @@ const componentPaths: { [key: string]: PathMap } = {
   production: {
     VuuBlotterMockData: {
       url: "/features/VuuBlotterMockData.feature.js",
-      css: "/features/VuuBlotterMockData.feature,css",
+      css: "/features/VuuBlotterMockData.feature.css",
     },
   },
 };

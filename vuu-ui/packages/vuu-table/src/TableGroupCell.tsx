@@ -5,7 +5,7 @@ import {
   TableCellProps,
 } from "@finos/vuu-datagrid-types";
 import { getColumnStyle, metadataKeys } from "@finos/vuu-utils";
-import { useCallback } from "react";
+import { MouseEvent, useCallback } from "react";
 
 import "./TableGroupCell.css";
 
@@ -34,9 +34,12 @@ export const TableGroupCell = ({ column, onClick, row }: TableCellProps) => {
   const { columns } = column as GroupColumnDescriptor;
   const [value, offset] = getGroupValueAndOffset(columns, row);
 
-  const handleClick = useCallback(() => {
-    onClick?.(column);
-  }, [column, onClick]);
+  const handleClick = useCallback(
+    (evt: MouseEvent) => {
+      onClick?.(evt, column);
+    },
+    [column, onClick]
+  );
 
   // const style = {
   //   left: column.pin == "left" ? column.pinnedOffset : undefined,
