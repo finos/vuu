@@ -199,7 +199,7 @@ function groupLeafRows(leafRows: readonly DataSourceRow[], groupby: number[]) {
       } else if (!targetNode && level < lastLevel) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        target = target[key] = Object.create(null);
+        target = target[key] = {};
       } else if (!targetNode) {
         (target as GroupMap)[key] = [i];
       }
