@@ -16,9 +16,10 @@ const entryPoints = [
   "src/features/Test.feature.tsx",
   "src/features/VuuBlotterMockData.feature.tsx",
   // TODO automate addition of all example files
-  "src/examples/Table/Table.examples.tsx",
-  "src/examples/Apps/index.ts",
+  "src/examples/Table/TableArrayData.examples.tsx",
+  "src/examples/Table/TableVuuData.examples.tsx",
   "src/examples/html/HtmlTable.examples.tsx",
+  "src/examples/Apps/index.ts",
 ];
 
 const HTML_TEMPLATE = `

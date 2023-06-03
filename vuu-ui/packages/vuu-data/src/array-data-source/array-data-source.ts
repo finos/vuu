@@ -40,7 +40,7 @@ import {
   VuuUIMessageInRPCEditSuccess,
 } from "../vuuUIMessageTypes";
 
-import { groupRows } from "./group-utils";
+import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
@@ -99,11 +99,13 @@ export class ArrayDataSource
   private disabled = false;
   private filteredData: undefined | DataSourceRow[];
   private groupedData: undefined | DataSourceRow[];
+  private groupMap: undefined | GroupMap;
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
   private tableMeta: VuuTableMeta;
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
   private rangeChangeRowset: "delta" | "full";
+  private openTreeNodes: string[] = [];
 
   #columns: string[] = [];
   #columnMap: ColumnMap;
@@ -270,11 +272,21 @@ export class ArrayDataSource
   }
 
   openTreeNode(key: string) {
-    console.log("TODO: open tree node", { key });
+    this.openTreeNodes.push(key);
+    this.groupedData = expandGroup(
+      this.openTreeNodes,
+      this.#data,
+      this.#config.groupBy,
+      this.#columnMap,
+      this.groupMap as GroupMap
+    );
+    this.setRange(resetRange(this.#range), true);
   }
 
   closeTreeNode(key: string) {
-    console.log("TODO: close tree node", { key });
+    this.openTreeNodes = this.openTreeNodes.filter((value) => value !== key);
+    this.groupedData = collapseGroup(key, this.groupedData);
+    this.setRange(resetRange(this.#range), true);
   }
 
   get data() {
@@ -321,7 +333,7 @@ export class ArrayDataSource
       rows: data
         .slice(rowRange.from, rowRange.to)
         .map((row) => toClientRow(row, this.keys)),
-      size: this.#data.length,
+      size: data.length,
       type: "viewport-update",
     });
     this.lastRangeServed = this.#range;
@@ -400,14 +412,13 @@ export class ArrayDataSource
 
     if (groupBy.length) {
       console.time("group");
-      this.groupedData = groupRows(this.#data, groupBy, this.#columnMap).map(
-        (row, i) => {
-          const dolly = row.slice() as DataSourceRow;
-          dolly[0] = i;
-          dolly[1] = i;
-          return dolly;
-        }
+      const [groupedData, groupMap] = groupRows(
+        this.#data,
+        groupBy,
+        this.#columnMap
       );
+      this.groupMap = groupMap;
+      this.groupedData = groupedData;
       console.timeEnd("group");
     } else {
       this.groupedData = undefined;

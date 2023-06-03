@@ -61,8 +61,9 @@ export const TableRow = memo(function Row({
   );
 
   const handleGroupCellClick = useCallback(
-    (column: KeyedColumnDescriptor) => {
+    (evt: MouseEvent, column: KeyedColumnDescriptor) => {
       if (isGroupColumn(column) || isJsonGroup(column, row)) {
+        evt.stopPropagation();
         onToggleGroup?.(row, column);
       }
     },

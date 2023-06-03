@@ -5,7 +5,7 @@ import {
   VuuColumnDataType,
   VuuSortType,
 } from "@finos/vuu-protocol-types";
-import { FunctionComponent, HTMLAttributes } from "react";
+import { FunctionComponent, HTMLAttributes, MouseEvent } from "react";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
@@ -21,7 +21,7 @@ export interface TableCellProps
   extends Omit<HTMLAttributes<HTMLTableCellElement>, "onClick"> {
   column: KeyedColumnDescriptor;
   columnMap: ColumnMap;
-  onClick?: (column: KeyedColumnDescriptor) => void;
+  onClick?: (event: MouseEvent, column: KeyedColumnDescriptor) => void;
   row: DataSourceRow;
 }
 
