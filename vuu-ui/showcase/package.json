@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "build": "vite build",
+    "dev": "vite",
     "copy-preview": "node ./scripts/copy-preview.mjs",
     "preview": "node ./scripts/preview.mjs",
     "showcase": "node ./scripts/showcase.mjs",

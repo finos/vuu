@@ -1,9 +1,7 @@
 import { useTableConfig } from "../utils";
 import {
   DivElementKeyedWithTranslate,
-  DivElementKeyedWithTranslateInlineScrollbars,
   DivElementKeyedWithTranslateInlineScrollbarsCssVariables,
-  DivElementWithSizers,
   DivElementWithTranslate,
   TableNext,
 } from "./html-table-components";
@@ -27,26 +25,6 @@ const visibleRowCount = 20;
 
 export type ComponentTypeNoChildren<T = unknown> = (props: T) => JSX.Element;
 export type RowType = ComponentTypeNoChildren<RowProps>;
-
-export const DefaultDivElementWithSizers = () => {
-  const { typeaheadHook: _, ...config } = useTableConfig({
-    columnCount: 10,
-    count: 1000,
-    rangeChangeRowset: "full",
-  });
-
-  return (
-    <DivElementWithSizers
-      {...config}
-      headerHeight={30}
-      height={645}
-      renderBufferSize={0}
-      rowHeight={30}
-      width={715}
-    />
-  );
-};
-DefaultDivElementWithSizers.displaySequence = displaySequence++;
 
 export const DefaultDivElementWithTranslate = () => {
   const { typeaheadHook: _, ...config } = useTableConfig({
@@ -87,27 +65,6 @@ export const DefaultDivElementKeyedWithTranslate = () => {
   );
 };
 DefaultDivElementKeyedWithTranslate.displaySequence = displaySequence++;
-
-export const DefaultDivElementKeyedWithTranslateInlineScrollbars = () => {
-  const { typeaheadHook: _, ...config } = useTableConfig({
-    columnCount: 10,
-    count: 1000,
-    rangeChangeRowset: "full",
-  });
-
-  return (
-    <DivElementKeyedWithTranslateInlineScrollbars
-      {...config}
-      headerHeight={30}
-      height={645}
-      renderBufferSize={0}
-      rowHeight={30}
-      width={715}
-    />
-  );
-};
-DefaultDivElementKeyedWithTranslateInlineScrollbars.displaySequence =
-  displaySequence++;
 
 export const DefaultDivElementKeyedWithTranslateInlineScrollbarsCssVariables =
   () => {
