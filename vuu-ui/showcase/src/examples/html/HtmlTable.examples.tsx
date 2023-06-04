@@ -4,6 +4,7 @@ import {
   DivElementKeyedWithTranslateInlineScrollbarsCssVariables,
   DivElementWithTranslate,
   TableNext,
+  VuuTable,
 } from "./html-table-components";
 
 import { RowProps } from "@finos/vuu-table/src/TableRow";
@@ -16,12 +17,6 @@ import {
 import { Flexbox } from "@finos/vuu-layout";
 
 let displaySequence = 1;
-
-const bufferCount = 5;
-const rowHeight = 30;
-const headerHeight = 30;
-const viewportHeight = 700;
-const visibleRowCount = 20;
 
 export type ComponentTypeNoChildren<T = unknown> = (props: T) => JSX.Element;
 export type RowType = ComponentTypeNoChildren<RowProps>;
@@ -126,7 +121,7 @@ export const TableNextAutoSize = () => {
     </div>
   );
 };
-DefaultTableNext.displaySequence = displaySequence++;
+TableNextAutoSize.displaySequence = displaySequence++;
 
 export const TableNextStaticBorders = () => {
   const { typeaheadHook: _, ...config } = useTableConfig({
@@ -237,7 +232,7 @@ export const ResizeTableNext = () => {
     </>
   );
 };
-DefaultTableNext.displaySequence = displaySequence++;
+ResizeTableNext.displaySequence = displaySequence++;
 
 export const TableNextResizeable = () => {
   const { typeaheadHook: _, ...config } = useTableConfig({
@@ -279,30 +274,28 @@ export const TableNextResizeable = () => {
 };
 TableNextResizeable.displaySequence = displaySequence++;
 
-export const TableNext2MillionRows = () => {
-  // const { typeaheadHook: _, ...config } = useTableConfig({ count: 2_000_000 });
+export const DefaultVuuTable = () => {
   const { typeaheadHook: _, ...config } = useTableConfig({
-    count: 100_000,
+    columnCount: 10,
+    count: 1000,
+    lazyData: false,
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  return <VuuTable {...config} height={645} renderBufferSize={0} width={750} />;
+};
+DefaultVuuTable.displaySequence = displaySequence++;
+
+export const VuuTable2MillionRows = () => {
+  const { typeaheadHook: _, ...config } = useTableConfig({
+    count: 2_000_000,
     rangeChangeRowset: "full",
   });
 
-  // const { typeaheadHook: _, ...config } = useTableConfig({
-  //   columnCount: 10,
-  //   count: 1000,
-  //   rangeChangeRowset: "full",
-  // });
-
   return (
-    // <div style={{ height: 600, width: 600, background: "#ccc" }}>
-    <TableNext
-      {...config}
-      headerHeight={30}
-      height={600}
-      renderBufferSize={0}
-      rowHeight={30}
-      width={600}
-    />
+    <VuuTable {...config} height={440} renderBufferSize={0} width={700} />
     // </div>
   );
 };
-TableNext2MillionRows.displaySequence = displaySequence++;
+VuuTable2MillionRows.displaySequence = displaySequence++;

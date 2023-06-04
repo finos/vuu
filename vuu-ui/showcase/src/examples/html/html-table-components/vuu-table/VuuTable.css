@@ -1,0 +1,147 @@
+.vuuTable2 {
+  --vuu-table-header-color: #FFFFFF;
+  --vuu-table-header-col-bg: #777C94;
+  --table-background: var(--salt-container-primary-background);
+  height: var(--table-css-height);
+  background-color: red;
+  position: relative;
+  width: var(--table-css-width);
+}
+
+.vuuTable2-scrollbarContainer {
+  --scroll-content-width: 1100px;
+  border-bottom: none !important;
+  border-top: none !important;
+  border-left: solid 1px var(--salt-container-primary-borderColor);
+  /*  a top border */
+  box-shadow: 0px -1px 0px 0px var(--salt-container-primary-borderColor);
+  height: var(--viewport-body-height);
+  left: 0px;
+  overflow: auto;
+  position: absolute;
+  top: var(--total-header-height);
+  width: calc(var(--table-width) + 1px);
+}
+
+.vuuTable2-scrollbarContent {
+  height: calc(var(--content-height) + var(--horizontal-scrollbar-height));
+  position: absolute;
+  width: var(--content-width);
+}
+
+.vuuTable2-contentContainer {
+  background-color: var(--table-background);
+  height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
+  position: relative;
+  overflow: auto;
+  overscroll-behavior: none;
+  width: calc(var(--table-width) - var(--vertical-scrollbar-width));
+}
+
+.vuuTable2-contentContainer::-webkit-scrollbar {
+  display: none;
+}
+
+ 
+.vuuTable2-table {
+  position: absolute;
+  top: 0;
+  left: 0;
+  table-layout: fixed;
+  width: var(--content-width);
+  margin: 0;
+  border: none;
+  background-color: #fff;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-left: 1px solid #ccc;
+}
+
+.vuuTable2-body {
+  height: var(--content-height);
+  position: relative;
+}
+
+.vuuTable2-cell {
+  display: inline-block;
+}
+
+.vuuPinLeft, .vuuPinRight {
+  background-color: var(--table-background);
+  position: sticky;
+  z-index: 1;
+}
+
+.vuuTable2-col-headings {
+    background-color: var(--table-background);
+    position: sticky;
+    top: 0;
+    /* ensure header row sits atop everything else when scrolling down */
+    z-index: 1;
+}
+
+  .vuuTable2-col-headers {
+    white-space: nowrap;
+  }
+
+  .vuuTable2-col-group-header,
+    .vuuTable2-col-header {
+    border-right: 1px solid #999;
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    cursor: default;
+    display: inline-flex;
+    height: var(--header-height);
+    padding: 0 3px;
+  }
+
+  .vuuTable2-col-group-header {
+    align-items: center;
+    vertical-align: top;
+  }
+
+  .vuuTable2-col-group-header-inner {
+    align-items: center;
+    display: flex;
+    gap: 3px;
+    height: 100%;
+    padding-left: 1px;
+  }
+
+  .vuuTable2-col-group-header-col {
+    --vuu-icon-color: white;
+    --vuu-icon-size: 10px;
+
+    align-items: center;
+    background-color: var(--vuu-table-header-col-bg);
+    border-radius: 3px;;
+    color: var(--vuu-table-header-color);
+    display: flex;
+    font-size: 11px;
+    gap: 6px;
+    height: 17px;
+    padding: 0 3px;
+  }
+
+  .vuuTable2-col-header-label {
+    line-height: calc(var(--header-height) - 1px);
+  }
+
+  .vuuTable2Row {
+    background: #fff;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    height: var(--row-height);
+    line-height: calc(var(--row-height) - 1px);
+    position: absolute;
+    top:0;
+    white-space: nowrap;
+  }
+
+  .sizer-cell {
+    background-color: green !important;
+    border: none !important;
+    height: 0px;
+  }
+  

@@ -1,14 +1,17 @@
 import { DataSourceRow } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { ColumnMap } from "@finos/vuu-utils";
+import { ColumnMap, isGroupColumn } from "@finos/vuu-utils";
 import { CSSProperties, memo } from "react";
 import { TableCell } from "./TableCell";
+import { TableGroupCell } from "./TableGroupCell";
 
 const makeCells = (columns: KeyedColumnDescriptor[], data: DataSourceRow) => {
   const cells = [];
-  for (let i = 0; i < columns.length; i++) {
-    cells.push(<TableCell key={i} column={columns[i]} row={data} />);
+  for (const column of columns) {
+    const isGroup = isGroupColumn(column);
+    const Cell = isGroup ? TableGroupCell : TableCell;
+    cells.push(<Cell key={column.key} column={column} row={data} />);
   }
   return cells;
 };
