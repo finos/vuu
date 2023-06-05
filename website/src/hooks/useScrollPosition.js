@@ -51,6 +51,12 @@ export const useScrollPosition = () => {
 
   useEffect(() => {
     addEventListener("scroll", scrollListener);
-    return () => removeEventListener("scroll", scrollListener);
+    return () => {
+      removeEventListener("scroll", scrollListener);
+      const root = document.querySelector(":root");
+      root.style.setProperty("--vuu-navbar-height", null);
+      root.style.setProperty("--vuu-navbar-padding", null);
+      root.style.setProperty("--vuu-navbar-logo-size", null);
+    };
   }, []);
 };

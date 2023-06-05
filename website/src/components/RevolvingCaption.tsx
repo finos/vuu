@@ -56,6 +56,12 @@ export const RevolvingCaption = ({
           "--vuu-revolving-caption-transform": `translateY(-${offset}px)`,
         };
 
+  useEffect(() => () => {
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+    }
+  });
+
   return (
     <div
       {...htmlAttributes}
