@@ -1,0 +1,68 @@
+/* Footer  */
+
+footer {
+    width: var(--vuu-desktop-width);
+    border: 1px solid  rgba(255, 255, 255, 0.2) ;
+    color: var(--vuu-dark-text-secondary);
+    font-family: 'Raleway';
+    font-size: 16px;
+    font-weight: 400;
+    height: 330px;
+  }
+  
+  .footer-columns {
+    align-items: center; 
+    background-color: var(--vuu-dark-bg-background2);
+    display: flex;
+    justify-content: space-between;
+    padding: 100px 193px;
+  }
+  
+  .footer-column-logo {
+    font-weight: 500;
+    width: 217px;
+  }
+ 
+  .footer-column-logo img{
+    margin-bottom: 16px;
+  }
+    
+  .footer-column:nth-of-type(2) {
+    flex: 0.8; 
+  }
+  
+  .footer-column-logo,
+  .footer-column:nth-of-type(2) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+    justify-content: center;
+  }
+  
+  .footer-column ul {
+    list-style: none;
+  }
+  
+  
+.footer-finos-logo {
+    opacity: 0.25;
+}
+
+.vuu-link-list {
+    line-height: 26px;
+    margin: 0;
+    opacity: 0.8;
+    width: 225px;
+}
+
+.vuu-copyright {
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+.vuu-separator {
+    background-color: rgba(255, 255, 255, 0.1);
+    flex: 0 0 1px;
+    height: 62px;
+
+}
