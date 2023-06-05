@@ -16,12 +16,12 @@ export const useFeatureLayout = (id) => {
     const isActive = id === activeFeatureId;
     const isMinimised = !isActive && activeFeatureId !== -1;
     // return {
-    // className: cx({
-    //   [`${classBase}-active`]: id === 1,
-    //   [`${classBase}-minimized`]: id > 1,
-    //   [`${classBase}-swing-title`]: false,
-    //   [`${classBase}-swing-all`]: id > 1,
-    // }),
+    //   className: cx({
+    //     [`${classBase}-active`]: id === 3,
+    //     [`${classBase}-minimized`]: id < 3,
+    //     [`${classBase}-swing-title`]: true,
+    //     [`${classBase}-swing-all`]: true,
+    //   }),
     return {
       className: cx({
         [`${classBase}-active`]: isActive,

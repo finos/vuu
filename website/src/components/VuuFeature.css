@@ -24,7 +24,7 @@
     flex-basis: var(--vuu-feature-flex-basis);
     overflow: hidden;
     position: relative;
-    transition: flex-basis var(--vuu-feature-animation-duration) ease-in;
+    transition: flex-basis var(--vuu-feature-animation-duration) linear;
 }
 .vuuFeature-main {
     position: relative;
@@ -81,7 +81,7 @@
     margin-bottom: 20px;
     opacity: var(--vuu-feature-main-opacity);
     transition-property: opacity, transform;
-    transition-duration: calc(var(--vuu-feature-animation-duration) * 1.2);
+    transition-duration: var(--vuu-feature-animation-duration);
     transition-timing-function: linear;
     transform: var(--vuu-feature-main-item-transform);
     width: 100px;
@@ -97,7 +97,7 @@
     width: 200px;
     top: 30px;
     transition-property: opacity, transform;
-    transition-duration: calc(var(--vuu-feature-animation-duration) * 1.2);
+    transition-duration: var(--vuu-feature-animation-duration);
     transition-timing-function: linear;
     transform: var(--vuu-feature-main-title-transform);
   }
@@ -109,7 +109,7 @@
     position: absolute;
     opacity: var(--vuu-feature-title-vertical-opacity);
     transition-property: opacity;
-    transition-duration: calc(var(--vuu-feature-animation-duration) * 1.2);
+    transition-duration: var(--vuu-feature-animation-duration);
     transition-timing-function: linear;
     transform: var(--vuu-feature-title-vertical-transform);
 
@@ -119,7 +119,7 @@
     display: var(--vuu-feature-img-display, block);
     opacity: var(--vuu-feature-main-opacity);
     transition-property: opacity, transform;
-    transition-duration: calc(var(--vuu-feature-animation-duration) * 1.2);
+    transition-duration: var(--vuu-feature-animation-duration);
     transition-timing-function: linear;
     transform: var(--vuu-feature-main-item-transform);
     width: var(--feature-width);
@@ -140,13 +140,12 @@
     left:0;
     height: calc(100% - 30px);
     transition-property: width;
-    transition-duration: calc(var(--vuu-feature-animation-duration) * 1.2);
-    transition-timing-function: linear;
+        transition-duration: var(--vuu-feature-animation-duration);
+        transition-timing-function: linear;
     width: var(--vuu-feature-animation-background-width);
   }
 
 .vuuFeature-animation-shadow {
-  /* background-color: var(--vuu-dark-bg-background2); */
   background: linear-gradient(180deg, var(--vuu-dark-bg-background1) 0%, var(--vuu-dark-bg-background2) 100%);
   opacity: .8;
   position: absolute;
@@ -157,8 +156,8 @@
   height: var(--vuu-feature-detail-img-height);
   transform: translate(50px, 50px);
   transition-property: width;
-  transition-duration: calc(var(--vuu-feature-animation-duration) * 1.2);
-  transition-timing-function: linear;
+      transition-duration: var(--vuu-feature-animation-duration);
+      transition-timing-function: linear;
 }  
 
 .vuuFeature-detailImg {

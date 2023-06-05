@@ -7,7 +7,6 @@
  @import url(vuu-theme.css);
  @import url(vuu-components.css);
 
-/* You can override the default Infima variables here. */
 :root {
 
   --vuu-heading3-color: var(--vuu-accent1);
@@ -26,6 +25,8 @@
     var(--vuu-dark-bg-background2) 1952px
     );
 
+  --vuu-transition-duration: .3s;  
+
   --ifm-color-primary: #00b5e2;
   --ifm-color-primary-dark: #0079ac;
   --ifm-color-primary-darker: #0072a2;
@@ -38,6 +39,8 @@
   --ifm-heading-font-family: var(--vuu-font-family);
   --ifm-heading-line-height: unset;
   --ifm-heading-margin-bottom: 0;
+  --ifm-link-color: var(--vuu-dark-text-secondary);
+  --ifm-list-left-padding: 0;
   --ifm-navbar-background-color: transparent;
   --ifm-navbar-height: var(--vuu-navbar-height);
   --ifm-navbar-link-color: #ffffff;
@@ -81,7 +84,6 @@ body {
   top: var(--vuu-navbar-background-position);
   left:0;
   width: 100%;
-  /* background: linear-gradient(180deg, var(--vuu-dark-bg-background2) 0px, var(--vuu-dark-bg-background1) 800px); */
   background: var(--vuu-bg-gradient);
   height: 3074px;
   z-index: -1;
@@ -101,7 +103,7 @@ body {
 
 .navbar .navbar__logo > img {
   height: var(--vuu-navbar-logo-size);
-  transition: height .3s;
+  transition: height var(--vuu-transition-duration);
 }
 
 .navbar__link {
@@ -120,8 +122,11 @@ body {
   display: none;
 }
 
+.vuu-section {
+  overflow: hidden;
+}
+
 .vuu-scroll-1-bg {
-  /* background: linear-gradient(180deg, var(--vuu-dark-bg-background2) 0%, var(--vuu-dark-bg-background1) 100%); */
   background: var(--vuu-bg-gradient);
   height: 3074px;
   left: 0px;
@@ -180,9 +185,6 @@ margin-top: 50px;
 }
 
 .vuu-frame-10 {
-  /* background-color: var(--vuu-dark-bg-background1); */
-
-  /* content driven, remove later */
   height: 476px;
   padding-top: 100px;
 }
@@ -191,9 +193,6 @@ margin-top: 50px;
   --vuu-feature-row-marginTop: 0;
   --vuu-title-marginTop: 40px;
   --vuu-title-height: 88px;
-  /* background: linear-gradient(180deg, var(--vuu-dark-bg-background1) 0%, var(--vuu-dark-bg-background2) 100%); */
-
-  /* content driven, remove later */
   height: 676px;
   padding: 100px 210px;
 }
@@ -240,9 +239,6 @@ margin-top: 50px;
   margin-top: 10px;
 }
 
-.vuu-revolving-caption {
-  color: var(--vuu-accent1);
-}
 
 .vuu-feature-row {
   display: flex;
@@ -261,7 +257,6 @@ margin-top: 50px;
 }
 .vuu-feature-1-measure {
   font-size: 50px;
-  
 }
 
 .vuu-feature-2 {
@@ -269,17 +264,6 @@ margin-top: 50px;
   line-height: 33px;
   font-weight: 400;
 }
-
-
-/* .vuu-feature-title {
-  align-items: flex-start;
-  display: flex;
-  height: var(--vuu-title-height);
-  margin-top: var(--vuu-title-marginTop);
-  max-width: 225px;
-  transform: var(--vuu-feature-title-translate);
-
-} */
 
 .docusaurus-highlight-code-line {
   background-color: #0033a0;
@@ -297,9 +281,6 @@ margin-top: 50px;
   background-repeat: no-repeat;
   background-size: cover;
 }
-/* .footer {
-  background-color: var(--main-bg-color);
-} */
 
 .features_src-pages-styles-module {
   background-color: var(--main-bg-color);
@@ -319,14 +300,11 @@ margin-top: 50px;
   top: var(--vuu-navbar-menu-top, 26px);
 }
 
-
 h2 {
   color: #ffffff;
   font-weight: 300;
   font-size: 2em;
 }
-
-
 
 .hero__title {
   color: #ffffff;
@@ -354,11 +332,6 @@ h2 {
   margin: 0 auto;
 }
 
-/* img {
-  display: block;
-  margin: 0 auto;
-} */
-
 .button.button--secondary {
   color: white;
 }
@@ -377,149 +350,4 @@ h2 {
   width: 100%;
 }
 
-span {
-  color: var(#ffffff);
-}
 
-
-.padding {
-  margin-top: 25px;
-  margin-bottom: 25px;
-}
-
-/* * {
-  border: 1px solid red;
-} */
-
-.p-homepage {
-  color: white;
-}
-
-/* Feature3  */
-
-.feature-3-container {
-  display: flex;
-  flex-wrap: wrap;
-  padding-left: 100px;
-}
-
-.column {
-  flex: 1;
-  padding: 20px;
-  transition: flex 0.3s ease-in-out;
-  cursor: pointer;
-  position: relative;
-}
-
-.column.expanded {
-  flex: 3;
-}
-
-.column.expanded p {
-  max-width: 200px;
-}
-
-.column.expanded h2 {
-  max-width: 200px;
-}
-
-.image {
-  max-width: 100px;
-  height: auto;
-}
-
-.expanded-image {
-  width: 100%;
-  max-width: 500px;
-  height: auto;
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-@media (max-width: 996px) {
-  .column {
-    flex-basis: 100%;
-  }
-}
-
-.feature-3-heading {
-  color: #e37f83;
-}
-
-.hidden {
-  display: none;
-}
-
-/* Footer  */
-
-footer {
-  width: var(--vuu-desktop-width);
-  border-top: 0.5px solid  rgba(255, 255, 255, 0.2) ;
-  height: 330px;
-}
-
-.footer-columns {
-  display: flex;
-  align-items: center; /* Vertically center the columns */
-  background-color: var(--vuu-dark-bg-background2);
-  padding-bottom: 100px;
-  padding-top: 100px;
-  padding-right: 64px;
-  color: var(--vuu-dark-text-secondary);
-  font-family: 'Raleway'
-}
-
-.footer-column {
-  flex: 1;
-}
-
-.footer-column:first-of-type{
-  padding-left: 193px;
-  font-family: 'Raleway'
-
-}
-
-.footer-column:first-of-type img{
-  margin-bottom: 16px;
-}
-
-
-.footer-column:nth-of-type(2) {
-  flex: 0.8; 
-}
-
-
-.footer-column:first-of-type,
-.footer-column:nth-of-type(2) {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* Align content to the left */
-  justify-content: center;
-  border-right: 0.5px solid rgba(255, 255, 255, 0.2);
-  padding-right: 4px;
-}
-
-.footer-column:nth-of-type(2) img {
-  display: block;
-  margin: 0 auto;
-}
-
-.footer-column:nth-of-type(3),
-.footer-column:nth-of-type(4) {
-  padding-left: 64px;
-}
-
-
-.footer-column ul {
-  list-style: none;
-}
-
-.footer-column ul li a {
-  color: var(--vuu-dark-text-secondary);
-  opacity: 0.5;
-}
-
- /* *{
-  border: 1px solid red; 
-}  */
