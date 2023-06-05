@@ -5,7 +5,9 @@
  * work well for content-centric websites.
  */
  @import url(vuu-theme.css);
+ @import url(vuu-icons.css);
  @import url(vuu-components.css);
+ @import url(docs-pages.css);
 
 :root {
 
@@ -34,18 +36,26 @@
   --ifm-color-primary-light: #0093d2;
   --ifm-color-primary-lighter: #009adc;
   --ifm-color-primary-lightest: #00aef8;
+  --ifm-container-width-xl: 1060px;  
   --ifm-font-color-base: #1c1e21;
   --ifm-heading-color: var(--vuu-dark-text-primary);
   --ifm-heading-font-family: var(--vuu-font-family);
+  --ifm-heading-font-weight: 300;
   --ifm-heading-line-height: unset;
   --ifm-heading-margin-bottom: 0;
   --ifm-link-color: var(--vuu-dark-text-secondary);
   --ifm-list-left-padding: 0;
+  
+  --ifm-menu-color: var(--vuu-light-text-primary);
+  --ifm-menu-color-active: var(--vuu-light-text-primary);
+  --ifm-menu-color-background-active: transparent;
+  
   --ifm-navbar-background-color: transparent;
   --ifm-navbar-height: var(--vuu-navbar-height);
   --ifm-navbar-link-color: #ffffff;
   --ifm-navbar-item-padding-horizontal: 0;
   --ifm-paragraph-margin-bottom: 0;
+  --ifm-toc-border-color: transparent;
   
   --ifm-navbar-shadow: 0;
   --ifm-footer-background-color: #0086bf;
@@ -300,12 +310,6 @@ margin-top: 50px;
   top: var(--vuu-navbar-menu-top, 26px);
 }
 
-h2 {
-  color: #ffffff;
-  font-weight: 300;
-  font-size: 2em;
-}
-
 .hero__title {
   color: #ffffff;
 }
@@ -349,5 +353,4 @@ h2 {
   margin-right: 0;
   width: 100%;
 }
-
 
