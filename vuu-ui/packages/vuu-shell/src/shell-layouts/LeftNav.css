@@ -1,0 +1,45 @@
+.vuuLeftNav {
+    --vuu-accent-color: #f37880;
+    --vuu-light-text-primary: #15171b;
+    background-color: #2A015F;
+    display: flex;
+    flex-direction: column;
+    transition: width .3s ease-in-out;
+
+}
+
+.vuuLeftNav-logo {
+    display: flex;
+    flex: 0 0 78px;
+    padding-top: 32px;
+    justify-content: center;
+}
+
+.vuuLeftNav-main {
+    flex: 1 1 auto;
+}
+
+.vuuLeftNav-buttonBar {
+    align-items: center;
+    display: flex;
+    flex: 0 0 100px;
+    justify-content: center;;
+}
+
+.vuuLeftNav-toggleButton {
+    --vuu-icon-color: var(--vuu-light-text-primary);
+    --vuu-icon-left: 11px;
+    --vuu-icon-top: 10px;
+    --vuu-icon-size: 16px;
+    background-color: var(--vuu-accent-color);
+    border-width: 0;
+    border-radius: 18px;
+    height: 36px;
+    position: relative;
+    width: 36px
+}
+
+.vuuLeftNav-toggleButton-open {
+    --vuu-icon-left: 9px;
+
+}

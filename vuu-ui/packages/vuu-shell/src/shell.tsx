@@ -2,31 +2,23 @@ import { connectToServer } from "@finos/vuu-data";
 import cx from "classnames";
 import {
   HTMLAttributes,
-  MouseEvent,
   ReactElement,
   ReactNode,
   useCallback,
   useEffect,
   useRef,
-  useState,
 } from "react";
 import { ShellContextProvider } from "./ShellContextProvider";
 import { useLayoutConfig } from "./layout-config";
-import {
-  DockLayout,
-  DraggableLayout,
-  Drawer,
-  Flexbox,
-  LayoutProvider,
-  View,
-} from "@finos/vuu-layout";
+import { DraggableLayout, LayoutProvider } from "@finos/vuu-layout";
 import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
 import { AppHeader } from "./app-header";
 import { ThemeMode } from "./theme-provider";
 import { logger } from "@finos/vuu-utils";
+import { useShellLayout } from "./shell-layouts";
+import { SaveLocation } from "./shellTypes";
 
 import "./shell.css";
-import { SaveLocation } from "./shellTypes";
 
 export type VuuUser = {
   username: string;
@@ -54,6 +46,7 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   defaultLayout?: LayoutJSON;
   leftSidePanel?: ReactElement;
+  leftSidePanelLayout?: "full-height" | "inlay";
   loginUrl?: string;
   // paletteConfig: any;
   saveLocation?: SaveLocation;
@@ -67,6 +60,7 @@ export const Shell = ({
   className: classNameProp,
   defaultLayout = warningLayout,
   leftSidePanel,
+  leftSidePanelLayout,
   loginUrl,
   saveLocation = "remote",
   saveUrl,
@@ -75,9 +69,9 @@ export const Shell = ({
   ...htmlAttributes
 }: ShellProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
-  const paletteView = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
   const layoutId = useRef("latest");
+
+  console.log(`Shell leftSidePanelLayout=${leftSidePanelLayout}`);
 
   const [layout, saveLayoutConfig, loadLayoutById] = useLayoutConfig({
     defaultLayout,
@@ -102,13 +96,6 @@ export const Shell = ({
     }
   }, []);
 
-  const handleDrawerClick = (e: MouseEvent<HTMLElement>) => {
-    const target = e.target as HTMLElement;
-    if (!paletteView.current?.contains(target)) {
-      setOpen(!open);
-    }
-  };
-
   const handleNavigate = useCallback(
     (id) => {
       layoutId.current = id;
@@ -127,42 +114,26 @@ export const Shell = ({
     }
   }, [serverUrl, user.token, user.username]);
 
-  const getDrawers = () => {
-    const drawers: ReactElement[] = [];
-    if (leftSidePanel) {
-      drawers.push(
-        <Drawer
-          key="left-panel"
-          onClick={handleDrawerClick}
-          open={open}
-          position="left"
-          inline
-          peekaboo
-          sizeOpen={200}
-          toggleButton="end"
-        >
-          <View
-            className="vuuShell-palette"
-            id="vw-app-palette"
-            key="app-palette"
-            ref={paletteView}
-            style={{ height: "100%" }}
-          >
-            {leftSidePanel}
-          </View>
-        </Drawer>
-      );
-    }
-
-    return drawers;
-  };
-
   const className = cx(
     "vuuShell",
     classNameProp,
     "salt-theme",
     "salt-density-high"
   );
+
+  const shellLayout = useShellLayout({
+    leftSidePanelLayout,
+    appHeader: (
+      <AppHeader
+        layoutId={layoutId.current}
+        loginUrl={loginUrl}
+        user={user}
+        onNavigate={handleNavigate}
+        onSwitchTheme={handleSwitchTheme}
+      />
+    ),
+    leftSidePanel,
+  });
 
   return (
     // ShellContext TBD
@@ -174,27 +145,7 @@ export const Shell = ({
           ref={rootRef}
           {...htmlAttributes}
         >
-          <Flexbox
-            className="App"
-            style={{ flexDirection: "column", height: "100%", width: "100%" }}
-          >
-            <AppHeader
-              layoutId={layoutId.current}
-              loginUrl={loginUrl}
-              user={user}
-              onNavigate={handleNavigate}
-              onSwitchTheme={handleSwitchTheme}
-            />
-            <DockLayout style={{ flex: 1 }}>
-              {getDrawers().concat(
-                <DraggableLayout
-                  dropTarget
-                  key="main-content"
-                  style={{ width: "100%", height: "100%" }}
-                />
-              )}
-            </DockLayout>
-          </Flexbox>
+          {shellLayout}
         </DraggableLayout>
       </LayoutProvider>
       {children}

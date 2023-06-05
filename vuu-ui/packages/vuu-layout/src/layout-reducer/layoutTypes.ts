@@ -36,10 +36,12 @@ export type LayoutModel = LayoutRoot | ReactElement | WithType;
 
 export type layoutType = "Flexbox" | "View" | "DraggableLayout" | "Stack";
 
+// TODO duplicated in layout-action
 export const LayoutActionType = {
   ADD: "add",
   DRAG_START: "drag-start",
   DRAG_DROP: "drag-drop",
+  LAYOUT_RESIZE: "layout-resize",
   MAXIMIZE: "maximize",
   MINIMIZE: "minimize",
   REMOVE: "remove",
@@ -103,6 +105,12 @@ export type SplitterResizeAction = {
   type: typeof LayoutActionType.SPLITTER_RESIZE;
 };
 
+export type LayoutResizeAction = {
+  path: string;
+  size: number;
+  type: typeof LayoutActionType.LAYOUT_RESIZE;
+};
+
 export type SwitchTabAction = {
   nextIdx: number;
   path: string;
@@ -117,6 +125,7 @@ export type TearoutAction = {
 export type LayoutReducerAction =
   | AddAction
   | DragDropAction
+  | LayoutResizeAction
   | MaximizeAction
   | MinimizeAction
   | RemoveAction

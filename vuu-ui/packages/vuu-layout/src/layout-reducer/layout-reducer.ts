@@ -32,7 +32,7 @@ import {
   swapChild,
   _replaceChild,
 } from "./replace-layout-element";
-import { resizeFlexChildren } from "./resize-flex-children";
+import { resizeFlexChild, resizeFlexChildren } from "./resize-flex-children";
 import { wrap } from "./wrap-layout-element";
 
 export const layoutReducer = (
@@ -54,6 +54,8 @@ export const layoutReducer = (
       return setTitle(state, action);
     case LayoutActionType.SPLITTER_RESIZE:
       return resizeFlexChildren(state, action);
+    case LayoutActionType.LAYOUT_RESIZE:
+      return resizeFlexChild(state, action);
     case LayoutActionType.SWITCH_TAB:
       return switchTab(state, action);
     default:
