@@ -8,6 +8,12 @@
 --vuu-heading3-fontSize: 40px;
 --vuu-heading3-fontWeight: 300;
 --vuu-heading3-lineHeight: 56px;
+
+--vuu-heading5-fontSize: 30px;
+--vuu-heading5-fontWeight: 300;
+--vuu-heading5-lineHeight: 42px;
+
+
 /* deviates from figma, needed for alignment, otw we need to use positioning */
 --vuu-heading2-lineHeight: 50px;
 

@@ -1,0 +1,94 @@
+:root.docs-doc-page {
+    --doc-sidebar-width: 300px;
+    --ifm-heading-color: var(--vuu-light-text-primary);
+    --ifm-link-color: var(--vuu-light-text-primary);;
+    --vuu-footer-display: none;
+    --vuu-navbar-height: 125px;
+    --vuu-navbar-padding: 0px;
+  }
+  
+  .docs-doc-page #__docusaurus {
+    align-items: stretch;
+    background-color: white;
+    color: var(--vuu-light-text-primary);
+    min-height: auto;
+    padding-top: var(--vuu-navbar-height);
+  }
+  
+  .docs-doc-page .container {
+    min-height: calc(100vh - var(--vuu-navbar-height));
+  }
+
+  .theme-doc-sidebar-container {
+    font-size: 18px;
+    font-weight: 400;
+    margin-left: 80px;
+    padding: 40px 0 0 0px;
+  }
+  
+  .menu__link {
+    line-height: 25px;
+    position: relative;
+  }
+  
+  .menu__link--active {
+    font-weight: 700;
+  }
+  
+  .menu__list-item--collapsed .menu__caret:before {
+    transform: none;
+  }
+  
+  .menu__list-item--collapsed .menu__link--sublist:after {
+    transform: none;;
+  }
+  
+  .menu__link--sublist-caret:after {
+    --vuu-icon-left: calc(100% - 18px);
+  }
+  
+  .menu__link {
+    border-radius: 0;
+  }
+  
+  .theme-doc-sidebar-item-link-level-2 {
+    --vuu-menu-indent: -12px;
+  }
+  
+  .menu__link--active:before {
+    content: '';
+    background-color: #6D18BD;
+    position: absolute;
+    height: 100%;
+    top:0;
+    left: var(--vuu-menu-indent,0);
+    width: 4px;
+  }
+  
+  .menu__link--sublist-caret:after,
+  .menu__caret:before {
+    --vuu-icon-size: 12px;
+    background: none;
+    background-color: #777c94;
+    left: auto;
+    height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
+    mask: var(--vuuu-svg-chevron-right) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+    mask-repeat: no-repeat;
+    position: absolute;
+    top: var(--vuu-icon-top, auto);
+    transform: rotate(90deg);
+    width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
+  }
+  
+  :root.docs-doc-page main {
+    padding: 0 32px;
+  }
+
+  .markdown h1:first-child {
+    --ifm-h1-font-size: 60px;
+  }
+
+  .markdown h2 {
+    --ifm-h2-font-size: 46px;
+    white-space: nowrap;
+  }
