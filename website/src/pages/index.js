@@ -3,7 +3,6 @@ import classnames from "classnames";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import styles from "./styles.module.css";
 import { SvgArrow } from "../components/SvgArrow";
 import Chart from "../../static/img/finos/chart.png";
 import SampleApp from "../../static/img/vuu/SampleApp.png";
@@ -13,6 +12,14 @@ import JoiningAndTreeing from "../../static/img/finos/joining-treeing.png";
 import { VuuFeatureLayout } from "../components/VuuFeatureLayout";
 import { VuuFeature } from "../components/VuuFeature";
 import { useScrollPosition } from "../hooks/useScrollPosition";
+import { RevolvingCaption } from "../components/RevolvingCaption";
+
+const revolvingCaptions = [
+  "your data",
+  "risk data",
+  "market data",
+  "order data",
+];
 
 function Home() {
   const context = useDocusaurusContext();
@@ -25,8 +32,8 @@ function Home() {
         <div className="vuu-scroll-1-main">
           <div className="vuu-scroll-1-copy">
             <h1 className="vuu-heading-1">
-              Delivering{" "}
-              <span className="vuu-revolving-caption">risk data</span>
+              Delivering
+              <RevolvingCaption captions={revolvingCaptions} />
             </h1>
             <h2 className="vuu-heading-2">
               from trading systems, to human eyes
@@ -89,17 +96,31 @@ function Home() {
         </section>
         <section className={classnames("vuu-section vuu-frame-11")}>
           <VuuFeatureLayout>
-            <VuuFeature Img={ViewPorting} title="View Porting">
+            <VuuFeature
+              Img={ViewPorting}
+              title="View Porting"
+              DetailImg={SampleApp}
+            >
               A Viewport is a specific client's view onto an underlying table.
               It has knowledge of the underlying table that a viewport is
               looking.
             </VuuFeature>
-            <VuuFeature Img={Conflation} title="Conflation">
+            <VuuFeature
+              className="vuu-conflation"
+              Img={Conflation}
+              title="Conflation"
+              DetailImg={SampleApp}
+            >
               A Viewport is a specific client's view onto an underlying table.
               It has knowledge of the underlying table that a viewport is
               looking.
             </VuuFeature>
-            <VuuFeature Img={JoiningAndTreeing} title="Joins & Treeing">
+            <VuuFeature
+              className="vuu-joining-treeing"
+              Img={JoiningAndTreeing}
+              title="Joins & Treeing"
+              DetailImg={SampleApp}
+            >
               A Viewport is a specific client's view onto an underlying table.
               It has knowledge of the underlying table that a viewport is
               looking.
