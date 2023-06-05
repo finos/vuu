@@ -101,9 +101,8 @@ function Home() {
               title="View Porting"
               DetailImg={SampleApp}
             >
-              A Viewport is a specific client's view onto an underlying table.
-              It has knowledge of the underlying table that a viewport is
-              looking.
+              A Viewport is a virtualized window into an underlying table. It
+              encapsulates the subscription of a single client-side component.
             </VuuFeature>
             <VuuFeature
               className="vuu-conflation"
@@ -111,9 +110,8 @@ function Home() {
               title="Conflation"
               DetailImg={SampleApp}
             >
-              A Viewport is a specific client's view onto an underlying table.
-              It has knowledge of the underlying table that a viewport is
-              looking.
+              UI rendering can be a bottleneck. Vuu manages backpressure,
+              ensuring that the UI is never over-whelmed with too much data.
             </VuuFeature>
             <VuuFeature
               className="vuu-joining-treeing"
@@ -121,9 +119,8 @@ function Home() {
               title="Joins & Treeing"
               DetailImg={SampleApp}
             >
-              A Viewport is a specific client's view onto an underlying table.
-              It has knowledge of the underlying table that a viewport is
-              looking.
+              Vuu tables can be joined. Data can be grouped, filtered, sorted
+              and aggregated. Updates are sent to clients in real time.
             </VuuFeature>
           </VuuFeatureLayout>
         </section>

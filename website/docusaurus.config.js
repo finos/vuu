@@ -31,12 +31,6 @@ module.exports = {
       },
       items: [
         {
-          to: "/",
-          label: "HOME",
-          position: "right",
-        },
-
-        {
           to: "docs/introduction/intro",
           label: "DOCUMENTATION",
           position: "right",
@@ -46,67 +40,6 @@ module.exports = {
           to: "https://github.com/finos/vuu",
           label: "GITHUB",
           position: "right",
-        },
-      ],
-    },
-    footer: {
-      copyright: `Copyright © ${new Date().getFullYear()} ${projectName} - ${copyrightOwner}`,
-      logo: {
-        alt: "FINOS Logo",
-        src: "img/finos/vuu-text.png ",
-        href: "https://finos.org",
-      },
-      links: [
-        {
-          title: "Docs",
-          items: [
-            {
-              label: "Getting Started",
-              to: "docs/introduction/intro",
-            },
-            {
-              label: "Roadmap",
-              to: "docs/roadmap",
-            },
-            {
-              label: "Team",
-              to: "docs/team",
-            },
-            {
-              label: "About FINOS",
-              to: "docs/about-finos",
-            },
-          ],
-        },
-        {
-          title: "FINOS",
-          items: [
-            {
-              label: "FINOS Website",
-              to: "https://www.finos.org",
-            },
-            {
-              label: "Community Handbook",
-              to: "https://community.finos.org",
-            },
-          ],
-        },
-        {
-          title: "About FINOS",
-          items: [
-            {
-              label: "FINOS Projects on GitHub",
-              to: "https://github.com/finos",
-            },
-            {
-              label: "Engage the FINOS Community",
-              to: "https://www.finos.org/engage-with-our-community",
-            },
-            {
-              label: "FINOS News and Events",
-              to: "https://www.finos.org/news-and-events",
-            },
-          ],
         },
       ],
     },
