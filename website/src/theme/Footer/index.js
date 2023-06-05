@@ -2,24 +2,26 @@ import React from "react";
 import VuuLogo from "../../../static/img/finos/vuu-text.png";
 import FinosLogo from "../../../static/img/finos/finos.png";
 
-import "../../css/custom.css";
+import "./Footer.css";
 
 const Footer = () => {
   return (
     <footer>
       <div className="footer-columns">
-        <div className="footer-column">
-          <img src={VuuLogo} alt="Image 1" />
-          <p className="copyright">
+        <div className="footer-column footer-column-logo">
+          <img src={VuuLogo} alt="Image 1" width="80" />
+          <p className="vuu-copyright">
             {" "}
             Copyright &copy; {new Date().getFullYear()} VUU - UBS
           </p>
         </div>
+        <div className="vuu-separator" />
         <div className="footer-column">
-          <img src={FinosLogo} alt="Image 2" />
+          <img className="footer-finos-logo" src={FinosLogo} alt="Image 2" />
         </div>
+        <div className="vuu-separator" />
         <div className="footer-column">
-          <ul>
+          <ul className="vuu-link-list">
             <li>
               <a href="/page1">Docs</a>
             </li>
@@ -38,7 +40,7 @@ const Footer = () => {
           </ul>
         </div>
         <div className="footer-column">
-          <ul>
+          <ul className="vuu-link-list">
             <li>
               <a href="/page1">Docs</a>
             </li>
