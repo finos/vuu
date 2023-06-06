@@ -93,69 +93,6 @@ function Home() {
             </div>
           </div>
         </section>
-
-        <section className={classnames("vuu-section vuu-frame-11")}>
-          <VuuFeatureLayout>
-            <VuuFeature Img={ViewPorting} title="View Porting">
-              A Viewport is a specific client's view onto an underlying table.
-              It has knowledge of the underlying table that a viewport is
-              looking.
-            </VuuFeature>
-          </VuuFeatureLayout>
-
-          <VuuFeatureLayout>
-            <VuuFeature Img={Conflation} title="Conflation">
-              A Viewport is a specific client's view onto an underlying table.
-              It has knowledge of the underlying table that a viewport is
-              looking.
-            </VuuFeature>
-          </VuuFeatureLayout>
-          <VuuFeatureLayout>
-            <VuuFeature Img={JoiningAndTreeing} title="Joins & Treeing">
-              A Viewport is a specific client's view onto an underlying table.
-              It has knowledge of the underlying table that a viewport is
-              looking.
-            </VuuFeature>
-          </VuuFeatureLayout>
-        </section>
-
-        <section className={classnames("vuu-section vuu-frame-13")}>
-          <h1 style={{ textAlign: "center" }}> Demo App</h1>
-          <img
-            src={DemoApp}
-            className="home-page-images"
-            alt="demo-app"
-            style={{ height: "500px", width: "75%", borderRadius: "20px" }}
-          />
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "2vh",
-            }}
-          >
-            <Link
-              className={classnames(
-                "button button--lg get-started-button",
-                styles.getStarted
-              )}
-              to={"https://finos.org/"}
-            >
-              GET STARTED
-            </Link>
-            <Link
-              className={classnames(
-                "button button--lg github-button",
-                styles.getStarted
-              )}
-              to={"https://finos.org/"}
-            >
-              GITHUB
-            </Link>
-          </div>
-        </section>
       </main>
     </Layout>
   );
