@@ -29,6 +29,7 @@
 
   --vuu-transition-duration: .3s;  
 
+  --ifm-color-emphasis-300: transparent;
   --ifm-color-primary: #00b5e2;
   --ifm-color-primary-dark: #0079ac;
   --ifm-color-primary-darker: #0072a2;
@@ -45,6 +46,7 @@
   --ifm-heading-margin-bottom: 0;
   --ifm-link-color: var(--vuu-dark-text-secondary);
   --ifm-list-left-padding: 0;
+  --ifm-list-item-margin: 18px;
   
   --ifm-menu-color: var(--vuu-light-text-primary);
   --ifm-menu-color-active: var(--vuu-light-text-primary);
@@ -54,6 +56,7 @@
   --ifm-navbar-height: var(--vuu-navbar-height);
   --ifm-navbar-link-color: #ffffff;
   --ifm-navbar-item-padding-horizontal: 0;
+  --ifm-pagination-nav-color-hover: transparent;
   --ifm-paragraph-margin-bottom: 0;
   --ifm-toc-border-color: transparent;
   

@@ -57,7 +57,7 @@
   
   .menu__link--active:before {
     content: '';
-    background-color: #6D18BD;
+    background-color: var(--vuu-accent2);
     position: absolute;
     height: 100%;
     top:0;
@@ -69,7 +69,7 @@
   .menu__caret:before {
     --vuu-icon-size: 12px;
     background: none;
-    background-color: #777c94;
+    background-color: var(--vuu-light-icon);
     left: auto;
     height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
     mask: var(--vuuu-svg-chevron-right) center center/var(--vuu-icon-size) var(--vuu-icon-size);
@@ -84,11 +84,86 @@
     padding: 0 32px;
   }
 
+.markdown {
+  font-size: var(--vuu-paragraph-small-fontSize);
+  font-weight: var(--vuu-paragraph-small-fontWeight);
+  line-height: var(--vuu-paragraph-small-line-height);
+}
+
   .markdown h1:first-child {
     --ifm-h1-font-size: 60px;
   }
 
   .markdown h2 {
     --ifm-h2-font-size: 46px;
-    white-space: nowrap;
   }
+
+
+  .markdown ol > li {
+    counter-increment: item;
+    font-size: 20px;
+    line-height: 28px;
+    list-style-type: none;
+    padding-left: 50px;
+    position: relative;
+  }
+  .markdown ol > li:before {
+    align-items: center;
+    border-radius: 16px;
+    border: solid 1px #C7CBDE;
+    content: counter(item);
+    display: inline-flex;
+    font-size: 16px;
+    font-weight: 400;
+    height: 30px;
+    justify-content: center;
+    left: 0;
+    margin-right: 12px;
+    position: absolute;
+    top:0;
+    width: 30px;
+  }
+
+  .pagination-nav {
+    border-top: solid 1px #C7CBDE;
+  }
+
+
+  .pagination-nav__link {
+    position: relative;
+  }
+
+  .pagination-nav__link:hover .pagination-nav__sublabel{
+    text-decoration: underline;
+  }
+
+  .pagination-nav__link + .pagination-nav__link:before {
+    background-color: #C7CBDE;
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    width: 1px;
+    height: 56px;
+
+
+  }
+
+  .pagination-nav__sublabel {
+    color: var(--vuu-accent2);
+    font-size: var(--vuu-action-fontSize);
+    font-weight: var(--vuu-action-fontWeight);
+    line-height: var(--vuu-action-lineHeight);
+  }
+
+  .pagination-nav__label {
+    font-size: var(--vuu-paragraph-small-fontSize);
+    font-weight: var(--vuu-paragraph-small-fontWeight);
+    line-height: var(--vuu-paragraph-small-lineHeight);
+  }
+
+  .pagination-nav__label:before,
+  .pagination-nav__label:after {
+    content: none!important;
+  }
+
