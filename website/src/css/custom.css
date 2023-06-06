@@ -112,17 +112,10 @@ body {
 }
 
 .vuu-scroll-1-copy {
-  margin-top: 50px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;  
-  align-items: center;
-  text-align: center;
-  height: 100%;
+margin-top: 50px;
 }
 
 .vuu-scroll-1-scroll-arrow {
-  margin-top: 45.6px;
   align-items: center;
   display: flex;
   justify-content: center;
@@ -156,13 +149,9 @@ body {
   background-color: var(--vuu-dark-bg-background1);
 
   /* content driven, remove later */
-  /* height: 476px; */
-  padding-top: 400px;
-  height: 1200px;
-
+  height: 476px;
+  padding-top: 100px;
 }
-
-
 
 .vuu-frame-11 {
   --vuu-feature-row-marginTop: 0;
@@ -172,17 +161,8 @@ body {
   --vuu-heading3-color: var(--vuu-accent1);
   background: linear-gradient(180deg, var(--vuu-dark-bg-background1) 0%, var(--vuu-dark-bg-background2) 100%);
 
-  /* background: linear-gradient(180deg, var(--vuu-dark-bg-background1) 0%, var(--vuu-dark-bg-background2) 100%); */
-
   /* content driven, remove later */
-  /* height: 676px; */
-  height: 1676px;
-
-  
-}
-
-.vuuFeatureLayout {
-  margin-bottom: 36.83px;
+  height: 676px;
 }
 
 .vuu-frame-13 {
@@ -353,6 +333,11 @@ h2 {
   margin: 0 auto;
 }
 
+/* img {
+  display: block;
+  margin: 0 auto;
+} */
+
 .button.button--secondary {
   color: white;
 }
@@ -446,6 +431,7 @@ span {
 }
 
 /* Footer  */
+
 footer {
   width: var(--vuu-desktop-width);
   border-top: 0.5px solid  rgba(255, 255, 255, 0.2) ;
@@ -513,8 +499,6 @@ footer {
   opacity: 0.5;
 }
 
-/* 
-*{
+ /* *{
   border: 1px solid red; 
-}   */
-
+}  */

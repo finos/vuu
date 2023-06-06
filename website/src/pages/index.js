@@ -25,20 +25,12 @@ function Home() {
         <div className="vuu-scroll-1-main">
           <div className="vuu-scroll-1-copy">
             <h1 className="vuu-heading-1">
-              Delivering <br />
-              <span className="vuu-revolving-caption">market data</span>
+              Delivering{" "}
+              <span className="vuu-revolving-caption">risk data</span>
             </h1>
             <h2 className="vuu-heading-2">
-              from trading systems, <br />
-              to human eyes
+              from trading systems, to human eyes
             </h2>
-            <img
-              className="vuu-chart"
-              src={Chart}
-              alt="chart"
-              style={{ marginTop: "50px" }}
-            />
-
             <p className="vuu-paragraph-large">
               Vuu deals with the complex task of viewporting, throttling <br />{" "}
               and transmiting your data to clients, so you don't have to.
@@ -52,11 +44,23 @@ function Home() {
               GET STARTED
             </Link>
           </div>
+          <img
+            className="vuu-chart"
+            src={Chart}
+            alt="chart"
+            // style={{ height: "500px", width: "400px" }}
+          />
         </div>
         <div className="vuu-scroll-1-scroll-arrow">
           <div className="vuu-scroll-arrow">
             <div className="vuu-scroll-arrow-title">SCROLL</div>
             <SvgArrow className="vuu-scroll-arrow-svg" radius={3} />
+            {/* <img
+              className="home-page-images"
+              src={Scroll}
+              alt="demo-app"
+              style={{ height: "50px" }}
+            /> */}
           </div>
         </div>
       </header>
@@ -74,16 +78,12 @@ function Home() {
                 </div>
                 <div className="vuu-feature-2">ROWS PER TABLE</div>
               </div>
-            </div>
-            <div className="vuu-feature-row">
               <div className="vuu-feature">
                 <div className="vuu-feature-1">
                   100<span className="vuu-feature-1-measure">k</span>
                 </div>
                 <div className="vuu-feature-2">TICKS PER SECOND</div>
               </div>
-            </div>
-            <div className="vuu-feature-row">
               <div className="vuu-feature">
                 <div className="vuu-feature-1">
                   100<span className="vuu-feature-1-measure">mb</span>
@@ -91,6 +91,62 @@ function Home() {
                 <div className="vuu-feature-2">MEMORY FOOTPRINT</div>
               </div>
             </div>
+          </div>
+        </section>
+        <section className={classnames("vuu-section vuu-frame-11")}>
+          <VuuFeatureLayout>
+            <VuuFeature Img={ViewPorting} title="View Porting">
+              A Viewport is a specific client's view onto an underlying table.
+              It has knowledge of the underlying table that a viewport is
+              looking.
+            </VuuFeature>
+            <VuuFeature Img={Conflation} title="Conflation">
+              A Viewport is a specific client's view onto an underlying table.
+              It has knowledge of the underlying table that a viewport is
+              looking.
+            </VuuFeature>
+            <VuuFeature Img={JoiningAndTreeing} title="Joins & Treeing">
+              A Viewport is a specific client's view onto an underlying table.
+              It has knowledge of the underlying table that a viewport is
+              looking.
+            </VuuFeature>
+          </VuuFeatureLayout>
+        </section>
+        <section className={classnames("vuu-section vuu-frame-13")}>
+          <h1 style={{ textAlign: "center" }}> Demo App</h1>
+          <img
+            src={DemoApp}
+            className="home-page-images"
+            alt="demo-app"
+            style={{ height: "500px", width: "75%", borderRadius: "20px" }}
+          />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "2vh",
+            }}
+          >
+            <Link
+              className={classnames(
+                "button button--lg get-started-button",
+                styles.getStarted
+              )}
+              to={"https://finos.org/"}
+            >
+              GET STARTED
+            </Link>
+            <Link
+              className={classnames(
+                "button button--lg github-button",
+                styles.getStarted
+              )}
+              to={"https://finos.org/"}
+            >
+              GITHUB
+            </Link>
           </div>
         </section>
       </main>
