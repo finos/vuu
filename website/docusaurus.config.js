@@ -49,6 +49,7 @@ module.exports = {
       "@docusaurus/preset-classic",
       {
         docs: {
+          breadcrumbs: false,
           path: "../docs",
           editUrl: "https://github.com/finos/vuu/edit/master/website/",
           sidebarPath: require.resolve("./sidebars.js"),
