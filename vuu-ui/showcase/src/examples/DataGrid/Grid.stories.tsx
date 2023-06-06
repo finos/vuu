@@ -2,6 +2,7 @@ import { ConfigChangeHandler } from "@finos/vuu-data";
 import { Grid } from "@finos/vuu-datagrid";
 import { DatagridSettingsPanel } from "@finos/vuu-table-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
+import { ColumnFilter } from "@finos/vuu-filters";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
@@ -242,6 +243,99 @@ export const DefaultGrid = () => {
   );
 };
 DefaultGrid.displaySequence = displaySequence++;
+
+export const DefaultGridWithFilter = () => {
+  const tables = useMemo(
+    () => ["instruments", "orders", "parentOrders", "prices"],
+    []
+  );
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
+  const { schemas } = useSchemas();
+  const { columns, dataSource, error } = useTestDataSource({
+    schemas,
+    tablename: tables[selectedIndex],
+  });
+
+  const handleChange: ToggleButtonGroupChangeEventHandler = (
+    event,
+    index,
+    toggled
+  ) => {
+    console.log(`onChange [${index}] toggled ${toggled}`);
+    setSelectedIndex(index);
+  };
+
+  const handleConfigChange = useCallback((config: GridConfig) => {
+    console.log("config change", {
+      config,
+    });
+  }, []);
+
+  const showSettings = useCallback(() => {
+    setDialogContent(
+      <DatagridSettingsPanel
+        availableColumns={columns}
+        gridConfig={{
+          columns,
+        }}
+        onConfigChange={handleConfigChange}
+      />
+    );
+  }, [columns, handleConfigChange]);
+
+  const hideSettings = useCallback(() => {
+    setDialogContent(null);
+  }, []);
+
+  if (error) {
+    return <ErrorDisplay>{error}</ErrorDisplay>;
+  }
+
+  function handleFilterSubmit(filterQuery: string) {
+    dataSource.filter = { filter: filterQuery };
+  }
+
+  return (
+    <>
+      <Toolbar style={{ alignItems: "center", width: 700 }}>
+        <ToggleButtonGroup
+          onChange={handleChange}
+          selectedIndex={selectedIndex}
+        >
+          <ToggleButton tooltipText="Alert">Instruments</ToggleButton>
+          <ToggleButton tooltipText="Home">Orders</ToggleButton>
+          <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
+          <ToggleButton tooltipText="Search">Prices</ToggleButton>
+        </ToggleButtonGroup>
+        <ToolbarButton
+          data-align-end
+          data-icon="settings"
+          onClick={showSettings}
+          style={{ width: 28 }}
+        />
+      </Toolbar>
+      <ColumnFilter
+        style={{ width: 700 }}
+        table={schemas[tables[selectedIndex]].table}
+        columns={columns}
+        onFilterSubmit={handleFilterSubmit}
+      />
+      <Grid
+        dataSource={dataSource}
+        columns={columns}
+        height={600}
+        selectionModel="extended"
+        width={900}
+      />
+      <Dialog isOpen={dialogContent !== null} onClose={hideSettings}>
+        {dialogContent}
+      </Dialog>
+    </>
+  );
+};
+
+DefaultGridWithFilter.displaySequence = displaySequence++;
 
 export const BasicGrid = () => {
   const { schemas } = useSchemas();
