@@ -1,5 +1,5 @@
 import cx from "classnames";
-import React, { forwardRef, useRef } from "react";
+import React, { forwardRef, HTMLAttributes, useRef } from "react";
 import { useForkRef, useIdMemo as useId } from "@salt-ds/core";
 import { closestListItemIndex } from "./list-dom-utils";
 import { useItemsWithIds } from "./use-items-with-ids";
@@ -16,6 +16,14 @@ export const TreeNode = ({ children, idx, ...props }) => {
   return <li {...props}>{children}</li>;
 };
 
+export interface TreeProps extends HTMLAttributes<HTMLDivElement> {
+  allowDragDrop?: boolean;
+  defaultSelected?: any;
+  onSelectionChange: any;
+  revealSelected?: boolean;
+  source: any;
+}
+
 const Tree = forwardRef(function Tree(
   {
     allowDragDrop,
@@ -30,7 +38,7 @@ const Tree = forwardRef(function Tree(
     selection = "single",
     source,
     ...htmlAttributes
-  },
+  }: TreeProps,
   forwardedRef
 ) {
   const id = useId(idProp);

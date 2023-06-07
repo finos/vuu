@@ -2,9 +2,11 @@ import {
   ClientToServerTableList,
   ClientToServerTableMeta,
   LinkDescriptorWithLabel,
-  MenuRpcAction,
+  ServerToClientBody,
+  ServerToClientMenuSessionTableAction,
   TypeAheadMethod,
   VuuAggregation,
+  VuuColumnDataType,
   VuuColumns,
   VuuGroupBy,
   VuuRange,
@@ -16,6 +18,19 @@ import { WithRequestId } from "./message-utils";
 import { WithFullConfig } from "./data-source";
 import { Selection } from "@finos/vuu-datagrid-types";
 import { WebSocketProtocol } from "./websocket-connection";
+
+export interface OpenDialogAction {
+  columns: VuuColumns;
+  dataTypes: VuuColumnDataType[];
+  key: string;
+  type: "OPEN_DIALOG_ACTION";
+  table: VuuTable;
+}
+export interface NoAction {
+  type: "NO_ACTION";
+}
+
+export declare type MenuRpcAction = OpenDialogAction | NoAction;
 
 export type ConnectionStatus =
   | "connecting"
@@ -288,3 +303,22 @@ export type VuuUIMessageOut =
   | VuuUIMessageOutViewport
   | WithRequestId<ClientToServerTableList>
   | WithRequestId<ClientToServerTableMeta>;
+
+export const isSessionTableActionMessage = (
+  messageBody: ServerToClientBody
+): messageBody is ServerToClientMenuSessionTableAction =>
+  messageBody.type === "VIEW_PORT_MENU_RESP" &&
+  messageBody.action !== null &&
+  isSessionTable(messageBody.action.table);
+
+export const isSessionTable = (table?: unknown) => {
+  if (
+    table !== null &&
+    typeof table === "object" &&
+    "table" in table &&
+    "module" in table
+  ) {
+    return (table as VuuTable).table.startsWith("session");
+  }
+  return false;
+};

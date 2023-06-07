@@ -92,11 +92,22 @@ if (url.searchParams.has("standalone")) {
     );
   }
 } else {
-  const stories = await import("./examples/index");
-  const { AppRoutes } = await import("./AppRoutes");
+  // import(modulePath)
+  // .then(obj => <module object>)
+  // .catch(err => <loading error, e.g. if no such module>)
 
-  ReactDOM.render(
-    <AppRoutes stories={stories} />,
-    document.getElementById("root")
-  );
+  import("./examples/index")
+    .then((stories) => {
+      import("./AppRoutes")
+        .then(({ AppRoutes }) => {
+          ReactDOM.render(
+            <AppRoutes stories={stories} />,
+            document.getElementById("root")
+          );
+        })
+        .catch((err) =>
+          console.error(`error loading AppRoutes ${err.message}`)
+        );
+    })
+    .catch((err) => console.error(`error loading stories ${err.message}`));
 }

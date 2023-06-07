@@ -27,7 +27,11 @@ import {
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "../data-source";
-import { MenuRpcResponse } from "../vuuUIMessageTypes";
+import {
+  MenuRpcResponse,
+  VuuUIMessageInRPCEditReject,
+  VuuUIMessageInRPCEditSuccess,
+} from "../vuuUIMessageTypes";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
 
@@ -190,7 +194,12 @@ export interface MenuActionConfig {
 export interface VuuMenuActionHookProps {
   dataSource: DataSource;
   menuActionConfig?: MenuActionConfig;
-  onRpcResponse?: (response: MenuRpcResponse) => void;
+  onRpcResponse?: (
+    response:
+      | MenuRpcResponse
+      | VuuUIMessageInRPCEditReject
+      | VuuUIMessageInRPCEditSuccess
+  ) => void;
 }
 
 type TableMenuLocation = "grid" | "header" | "filter";

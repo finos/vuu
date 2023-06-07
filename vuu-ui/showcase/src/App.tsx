@@ -19,7 +19,10 @@ type VuuExample = (() => ReactElement) & {
   displaySequence?: number;
 };
 
-type VuuTuple = [string, VuuExample];
+type VuuTuple = [string, VuuExample | Examples];
+
+const isVuuExample = (item: VuuExample | Examples): item is VuuExample =>
+  typeof item === "function";
 
 interface SourceNode {
   id: string;
@@ -29,23 +32,27 @@ interface SourceNode {
 }
 
 const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
-  const { displaySequence: ds1 } = f1;
-  const { displaySequence: ds2 } = f2;
+  if (isVuuExample(f1) && isVuuExample(f2)) {
+    const { displaySequence: ds1 } = f1;
+    const { displaySequence: ds2 } = f2;
 
-  if (ds1 === undefined && ds2 === undefined) {
+    if (ds1 === undefined && ds2 === undefined) {
+      return 0;
+    }
+    if (ds2 === undefined) {
+      return -1;
+    }
+    if (ds1 === undefined) {
+      return 1;
+    }
+    return ds1 - ds2;
+  } else {
     return 0;
   }
-  if (ds2 === undefined) {
-    return -1;
-  }
-  if (ds1 === undefined) {
-    return 1;
-  }
-  return ds1 - ds2;
 };
 
 const sourceFromImports = (
-  stories: any,
+  stories: Examples,
   prefix = "",
   icon = "folder"
 ): SourceNode[] =>
@@ -69,8 +76,11 @@ const sourceFromImports = (
       };
     });
 
+interface Examples {
+  [key: string]: Examples | VuuExample;
+}
 export interface AppProps {
-  stories: any;
+  stories: Examples;
 }
 
 export const App = ({ stories }: AppProps) => {

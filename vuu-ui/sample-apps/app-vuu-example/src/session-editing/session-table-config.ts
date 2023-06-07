@@ -1,6 +1,12 @@
+import {
+  createSchemaFromTableMetadata,
+  MenuRpcResponse,
+  OpenDialogAction,
+  TableSchema,
+} from "@finos/vuu-data";
 import { FormConfig } from "@finos/vuu-shell";
 
-const config: { [key: string]: FormConfig } = {
+const static_config: { [key: string]: FormConfig } = {
   OPEN_EDIT_RESET_FIX: {
     title: "Reset the Sequence Number",
     key: "process-id",
@@ -22,13 +28,41 @@ const config: { [key: string]: FormConfig } = {
 };
 
 const defaultFormConfig = {
-  title: "",
   fields: [],
+  key: "",
+  title: "",
 };
 
-export const getStaticFormConfig = (key?: keyof typeof config) => {
-  if (key !== undefined) {
-    return config[key];
+const configFromSchema = (schema: TableSchema): FormConfig => ({
+  key: schema.columns[0]?.name ?? "",
+  title: `Parameters for command`,
+  fields: schema.columns.map((col) => ({
+    description: col.name,
+    label: col.name,
+    name: col.name,
+    type: col.serverDataType,
+  })),
+});
+
+export const getFormConfig = ({ action, rpcName }: MenuRpcResponse) => {
+  const { columns, dataTypes, key, table } = action as OpenDialogAction;
+  const schema = createSchemaFromTableMetadata({
+    columns,
+    dataTypes,
+    key,
+    table,
+  });
+
+  if (rpcName !== undefined && rpcName in static_config) {
+    const config = static_config[rpcName];
+    return {
+      config,
+      schema,
+    };
   }
-  return defaultFormConfig;
+
+  return {
+    config: configFromSchema(schema) ?? defaultFormConfig,
+    schema,
+  };
 };

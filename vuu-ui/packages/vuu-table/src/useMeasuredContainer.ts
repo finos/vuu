@@ -98,8 +98,12 @@ export const useMeasuredContainer = ({
         const { height: outerHeight, width: outerWidth } = outer;
 
         if (outerHeight !== height || outerWidth !== width) {
-          const heightDiff = outerHeight - innerHeight;
-          const widthDiff = outerWidth - innerWidth;
+          const heightDiff = isValidNumber(outerHeight)
+            ? outerHeight - innerHeight
+            : 0;
+          const widthDiff = isValidNumber(outerWidth)
+            ? outerWidth - innerWidth
+            : 0;
           return {
             ...currentSize,
             outer: { height, width },

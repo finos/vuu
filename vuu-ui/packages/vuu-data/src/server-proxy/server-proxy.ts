@@ -25,7 +25,10 @@ import {
   WithRequestId,
 } from "../message-utils";
 import {
+  isSessionTable,
+  isSessionTableActionMessage,
   isViewporttMessage as isViewportMessage,
+  NoAction,
   ServerProxySubscribeMessage,
   VuuUIMessageIn,
   VuuUIMessageInTableList,
@@ -71,16 +74,8 @@ const DEFAULT_OPTIONS: MessageOptions = {};
 const isActiveViewport = (viewPort: Viewport) =>
   viewPort.disabled !== true && viewPort.suspended !== true;
 
-const isSessionTable = (table?: unknown) => {
-  if (
-    table !== null &&
-    typeof table === "object" &&
-    "table" in table &&
-    "module" in table
-  ) {
-    return (table as VuuTable).table.startsWith("session");
-  }
-  return false;
+const NO_ACTION: NoAction = {
+  type: "NO_ACTION",
 };
 
 const addTitleToLinks = (
@@ -1020,13 +1015,13 @@ export class ServerProxy {
 
       case "VIEW_PORT_MENU_RESP":
         {
-          const { action, rpcName } = body;
-          if (isSessionTable(action?.table)) {
+          if (isSessionTableActionMessage(body)) {
+            const { action, rpcName } = body;
             this.awaitResponseToMessage({
               type: "GET_TABLE_META",
               table: action.table,
             }).then((response) => {
-              const { columns, dataTypes } = response as VuuTableMeta;
+              const { columns, dataTypes, key } = response as VuuTableMeta;
               // Client is going to edit a session table. Ideally, the action
               // would contain all metadata to allow an appropriate form to
               // be presented. That is currently not the case, so client may
@@ -1039,16 +1034,19 @@ export class ServerProxy {
                   ...action,
                   columns,
                   dataTypes,
+                  key,
                 },
                 tableAlreadyOpen: this.isTableOpen(action.table),
                 requestId,
               });
             });
           } else {
+            const { action } = body;
             this.postMessageToClient({
               type: "VIEW_PORT_MENU_RESP",
-              action,
-              tableAlreadyOpen: this.isTableOpen(action.table),
+              action: action || NO_ACTION,
+              tableAlreadyOpen:
+                action !== null && this.isTableOpen(action.table),
               requestId,
             });
           }
