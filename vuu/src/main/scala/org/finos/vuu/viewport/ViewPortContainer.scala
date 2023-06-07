@@ -845,7 +845,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       }
 
     } else {
-      viewPort.setKeys(ImmutableArray.empty[String])
+      //do not set keys to empty
+      //viewPort.setKeys(ImmutableArray.empty[String])
     }
   }
 

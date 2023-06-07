@@ -36,7 +36,7 @@ class FixSequenceRpcService(implicit clock: Clock) extends RpcHandler with EditR
     val table = vp.table.asTable
     val primaryKeys = table.primaryKeys
     val headKey = primaryKeys.head
-    val sequencerNumber = table.pullRow(headKey).get("sequenceNumber").asInstanceOf[Long]
+    val sequencerNumber = table.pullRow(headKey).get("sequenceNumber").asInstanceOf[Int].toLong
 
     if (sequencerNumber > 0) {
       logger.info("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
