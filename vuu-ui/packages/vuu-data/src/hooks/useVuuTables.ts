@@ -1,6 +1,5 @@
 import {
   VuuColumnDataType,
-  VuuColumns,
   VuuTable,
   VuuTableMeta,
 } from "@finos/vuu-protocol-types";
@@ -14,6 +13,7 @@ export type SchemaColumn = {
 
 export type TableSchema = {
   columns: SchemaColumn[];
+  key: string;
   table: VuuTable;
 };
 
@@ -24,6 +24,7 @@ export interface VuuTableMetaWithTable extends VuuTableMeta {
 export const createSchemaFromTableMetadata = ({
   columns,
   dataTypes,
+  key,
   table,
 }: VuuTableMetaWithTable): TableSchema => {
   return {
@@ -32,6 +33,7 @@ export const createSchemaFromTableMetadata = ({
       name: col,
       serverDataType: dataTypes[idx],
     })),
+    key,
   };
 };
 

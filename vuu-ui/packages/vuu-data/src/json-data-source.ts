@@ -6,6 +6,7 @@ import {
   VuuRange,
   VuuSort,
   ClientToServerMenuRPC,
+  ClientToServerEditRpc,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
@@ -25,6 +26,11 @@ import type {
   SubscribeProps,
   DataSourceRow,
 } from "./data-source";
+import {
+  MenuRpcResponse,
+  VuuUIMessageInRPCEditReject,
+  VuuUIMessageInRPCEditSuccess,
+} from "./vuuUIMessageTypes";
 
 export interface JsonDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
@@ -349,7 +355,14 @@ export class JsonDataSource
     console.log("remove link");
   }
 
-  async menuRpcCall(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">) {
+  async menuRpcCall(
+    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
+  ): Promise<
+    | MenuRpcResponse
+    | VuuUIMessageInRPCEditReject
+    | VuuUIMessageInRPCEditSuccess
+    | undefined
+  > {
     console.log("rmenuRpcCall", {
       rpcRequest,
     });

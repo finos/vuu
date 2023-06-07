@@ -1,8 +1,4 @@
-import {
-  createSchemaFromTableMetadata,
-  MenuRpcResponse,
-  useVuuTables,
-} from "@finos/vuu-data";
+import { MenuRpcResponse, useVuuTables } from "@finos/vuu-data";
 import { registerComponent } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
@@ -16,12 +12,11 @@ import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { SessionEditingForm } from "@finos/vuu-shell";
-import { getStaticFormConfig } from "./session-editing";
+import { getFormConfig } from "./session-editing";
 
 import "./App.css";
 // Because we do not render the AppSidePanel directly, the css will not be included in bundle.
 import "./app-sidepanel/AppSidePanel.css";
-import { RpcResp } from "@finos/vuu-datagrid/src/vuu-messages";
 
 const defaultWebsocketUrl = `wss://${location.hostname}:8090/websocket`;
 const { websocketUrl: serverUrl = defaultWebsocketUrl, features } =
@@ -67,23 +62,13 @@ export const App = ({ user }: { user: VuuUser }) => {
     (response?: MenuRpcResponse) => {
       if (response?.action?.type === "OPEN_DIALOG_ACTION") {
         const { columns, dataTypes, table } = response.action;
-        if (columns && dataTypes) {
-          const schema = createSchemaFromTableMetadata({
-            columns,
-            dataTypes,
-            table,
-          });
-          console.log({ response, schema });
-          const formConfig = getStaticFormConfig(response.rpcName);
-          dialogTitleRef.current = "Set Sequence Number";
+        if (columns && dataTypes && table) {
+          const formConfig = getFormConfig(response);
+          dialogTitleRef.current = formConfig.config.title;
           setDialogContent(
-            <SessionEditingForm
-              config={formConfig}
-              onClose={handleClose}
-              schema={schema}
-            />
+            <SessionEditingForm {...formConfig} onClose={handleClose} />
           );
-        } else if (tables) {
+        } else if (tables && table) {
           const schema = tables.get(table.table);
           if (schema) {
             // If we already have this table open in this viewport, ignore

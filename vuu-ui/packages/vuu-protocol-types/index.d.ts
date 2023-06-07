@@ -110,6 +110,7 @@ export type VuuTableList = Pick<ServerToClientTableList, "tables">;
 export interface VuuTableMeta {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
+  key: string;
 }
 export interface VuuTableMetaWithTable extends VuuTableMeta {
   table: VuuTable;
@@ -132,12 +133,21 @@ export interface ServerToClientMenus {
 export interface ServerToClientMenu {
   rpcName: "ADD_ROWS_TO_ORDERS";
   type: "VIEW_PORT_MENU_RESP";
-  action: {
-    table: VuuTable;
+  action: null | {
+    table?: VuuTable;
     type: "OPEN_DIALOG_ACTION";
   };
   vpId: string;
 }
+
+export interface ServerToClientMenuSessionTableAction
+  extends ServerToClientMenu {
+  action: {
+    table: VuuTable;
+    type: "OPEN_DIALOG_ACTION";
+  };
+}
+
 export interface ServerToClientViewPortVisualLinks {
   type: "VP_VISUAL_LINKS_RESP";
   links: VuuLinkDescriptor[];
@@ -244,6 +254,7 @@ export declare type ServerToClientBody =
   | ServerToClientTableRows
   | ServerToClientMenus
   | ServerToClientMenu
+  | ServerToClientMenuSessionTableAction
   | ServerToClientRPC
   | ServerToClientViewPortVisualLinks
   | ServerToClientOpenTreeNodeSuccess
@@ -477,14 +488,3 @@ export interface ClientToServerMessage<
 }
 
 /** Menu RPC services */
-export interface OpenDialogAction {
-  columns?: VuuColumns;
-  dataTypes?: VuuColumnDataType[];
-  type: "OPEN_DIALOG_ACTION";
-  table: VuuTable;
-}
-export interface NoAction {
-  type: "NO_ACTION";
-}
-
-export declare type MenuRpcAction = OpenDialogAction | NoAction;

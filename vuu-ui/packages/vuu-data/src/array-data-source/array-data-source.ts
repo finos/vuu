@@ -73,6 +73,8 @@ const buildTableMeta = (columns: ColumnDescriptor[]): VuuTableMeta => {
   const meta = {
     columns: [],
     dataTypes: [],
+    // how do we identify the key field ?
+    key: columns[0].name,
   } as VuuTableMeta;
 
   columns.forEach((column) => {
@@ -256,6 +258,8 @@ export class ArrayDataSource
       if (nowSelected !== wasSelected) {
         const selectedRow = row.slice() as DataSourceRow;
         selectedRow[SELECTED] = nowSelected ? 1 : 0;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         this.#data[rowIndex] = selectedRow;
         updatedRows.push(selectedRow);
       }
@@ -285,8 +289,10 @@ export class ArrayDataSource
 
   closeTreeNode(key: string) {
     this.openTreeNodes = this.openTreeNodes.filter((value) => value !== key);
-    this.groupedData = collapseGroup(key, this.groupedData);
-    this.setRange(resetRange(this.#range), true);
+    if (this.groupedData) {
+      this.groupedData = collapseGroup(key, this.groupedData);
+      this.setRange(resetRange(this.#range), true);
+    }
   }
 
   get data() {
@@ -466,6 +472,7 @@ export class ArrayDataSource
     value: VuuRowDataItemType
   ) {
     const row = this.findRow(parseInt(rowKey));
+    console.log({ row, colName, value });
   }
 
   async menuRpcCall(

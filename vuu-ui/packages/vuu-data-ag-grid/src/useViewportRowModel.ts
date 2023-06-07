@@ -9,6 +9,8 @@ import {
   useVuuMenuActions,
   VuuFeatureMessage,
   VuuServerMenuOptions,
+  VuuUIMessageInRPCEditReject,
+  VuuUIMessageInRPCEditSuccess,
 } from "@finos/vuu-data";
 import { VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
 import { useCallback, useMemo, useRef } from "react";
@@ -55,7 +57,12 @@ const NullSuggestionFetcher: SuggestionFetcher = async () => [];
 export interface ViewportRowModelHookProps {
   dataSource: DataSource;
   onFeatureEnabled?: (message: VuuFeatureMessage) => void;
-  onRpcResponse?: (response: MenuRpcResponse) => void;
+  onRpcResponse?: (
+    response:
+      | MenuRpcResponse
+      | VuuUIMessageInRPCEditReject
+      | VuuUIMessageInRPCEditSuccess
+  ) => void;
 }
 
 export const useViewportRowModel = ({
@@ -88,7 +95,12 @@ export const useViewportRowModel = ({
     []
   );
   const handleRpcResponse = useCallback(
-    (response: MenuRpcResponse) => {
+    (
+      response:
+        | MenuRpcResponse
+        | VuuUIMessageInRPCEditReject
+        | VuuUIMessageInRPCEditSuccess
+    ) => {
       onRpcResponse?.(response);
     },
     [onRpcResponse]
