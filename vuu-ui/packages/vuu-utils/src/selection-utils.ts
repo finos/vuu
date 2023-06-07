@@ -190,3 +190,124 @@ function splitRange([from, to]: RangeTuple, itemIndex: number): Selection {
     ];
   }
 }
+
+export type SelectionDiff = {
+  added: SelectionItem[];
+  removed: SelectionItem[];
+};
+
+const selectionItemIndex = (item: SelectionItem): [number, number] =>
+  Array.isArray(item) ? item : [item, 0];
+
+export const getSelectionDiff = (
+  oldSelection: Selection,
+  newSelection: Selection
+): SelectionDiff => {
+  const diff: SelectionDiff = {
+    added: [],
+    removed: [],
+  };
+
+  if (oldSelection.length === 0 && newSelection.length === 0) {
+    // nothing to do
+  } else if (oldSelection.length === 0) {
+    return {
+      added: newSelection,
+      removed: [],
+    };
+  } else if (newSelection.length === 0) {
+    return {
+      added: [],
+      removed: oldSelection,
+    };
+  } else {
+    for (
+      let i = 0, j = 0;
+      i < oldSelection.length || j < newSelection.length;
+
+    ) {
+      const oldItem = oldSelection[i];
+      const [oldIndex, oldRangeEnd] = selectionItemIndex(oldItem);
+      const newItem = newSelection[j];
+      const [newIndex, newRangeEnd] = selectionItemIndex(newItem);
+      if (oldIndex === undefined) {
+        if (newRangeEnd) {
+          diff.added.push([newIndex, newRangeEnd]);
+        } else {
+          diff.added.push(newIndex);
+        }
+        j += 1;
+      } else if (newIndex === undefined) {
+        if (oldRangeEnd) {
+          console.log(
+            `old index ${oldIndex} (part of range) gone from selection`
+          );
+        } else {
+          diff.removed.push(oldIndex);
+        }
+        i += 1;
+      } else if (oldIndex < newIndex) {
+        if (oldRangeEnd) {
+          if (oldRangeEnd < newIndex) {
+            diff.removed.push([oldIndex, oldRangeEnd]);
+          } else {
+            console.log(
+              `old index ${oldIndex} (part of range) gone from selection, but not whole range`
+            );
+          }
+        } else {
+          diff.removed.push(oldIndex);
+        }
+        i += 1;
+      } else if (oldIndex > newIndex) {
+        if (newRangeEnd) {
+          console.log(`new index ${oldIndex} (part of range) in selection`);
+        } else {
+          console.log(`new index ${oldIndex} in selection`);
+          diff.added.push(newIndex);
+        }
+        j += 1;
+      } else {
+        if (newRangeEnd > oldRangeEnd) {
+          if (oldRangeEnd === 0) {
+            console.log("we have a range where we had a single");
+            diff.added.push([newIndex + 1, newRangeEnd]);
+          }
+        } else if (newRangeEnd < oldRangeEnd) {
+          // we've least one selection, possibly more
+          let nextNewItem = newSelection[j + 1];
+          if (nextNewItem === undefined) {
+            diff.removed.push([newRangeEnd + 1, oldRangeEnd]);
+          } else {
+            let [nextNewIndex, nextNewRangeEnd] =
+              selectionItemIndex(nextNewItem);
+            if (nextNewIndex > oldRangeEnd) {
+              diff.removed.push([newRangeEnd + 1, oldRangeEnd]);
+            } else {
+              if (newRangeEnd + 1 === nextNewIndex - 1) {
+                diff.removed.push(newRangeEnd + 1);
+              } else {
+                diff.removed.push([newRangeEnd + 1, nextNewIndex - 1]);
+              }
+
+              // while ?
+              if (nextNewRangeEnd <= oldRangeEnd) {
+                j += 1;
+
+                nextNewItem = newSelection[j + 1];
+                if (nextNewIndex) {
+                  [nextNewIndex, nextNewRangeEnd] =
+                    selectionItemIndex(nextNewItem);
+                }
+              }
+            }
+          }
+        }
+        i += 1;
+        j += 1;
+      }
+    }
+  }
+
+  return diff;
+};

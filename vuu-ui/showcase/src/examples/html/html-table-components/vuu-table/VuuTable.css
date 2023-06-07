@@ -5,6 +5,7 @@
   height: var(--table-css-height);
   background-color: red;
   position: relative;
+  user-select: none;
   width: var(--table-css-width);
 }
 
@@ -129,8 +130,8 @@
 
   .vuuTable2Row {
     background: #fff;
-    border-right: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
+    border-right: 1px solid white;
+    border-bottom: 1px solid #EDEDED;
     box-sizing: border-box;
     height: var(--row-height);
     line-height: calc(var(--row-height) - 1px);
@@ -139,9 +140,47 @@
     white-space: nowrap;
   }
 
+  .vuuTable2Row-selected,
+  .vuuTable2Row-lastSelected {
+    background-color: rgba(133,133,137,.16);
+  }
+
+  .vuuTable2Row-preSelected,
+  .vuuTable2Row-lastSelected {
+    border-bottom-color: #6D18BD;
+  }
+
+ 
+  .vuuTable2Row-expanded {
+    --row-toggle-icon-transform: rotate(90deg);
+  }
+  
+
   .sizer-cell {
     background-color: green !important;
     border: none !important;
     height: 0px;
   }
   
+  .vuuTable2-groupCell {
+    --group-cell-spacer-width: 20px;
+    --toggle-icon-transform: var(--row-toggle-icon-transform, none);
+    --vuu-icon-width: 8px;
+    --vuu-icon-height: 16px;
+    --vuu-icon-color: #777C94;
+    --vuu-icon-size: 16px;
+
+    align-items: center;
+    display: inline-flex;
+    vertical-align: top;
+}
+
+  .vuuTable2-groupCell-spacer {
+    width: var(--group-cell-spacer-width);
+  }
+
+
+.vuuTable2-groupCell-toggle {
+    transition: transform 0.25s;
+    transform: var(--row-toggle-icon-transform, none);
+}

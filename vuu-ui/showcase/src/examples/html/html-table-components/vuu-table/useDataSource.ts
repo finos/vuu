@@ -20,7 +20,16 @@ export const useDataSource = ({
           onSizeChange(message.size);
         }
         if (message.rows) {
-          setData(message.rows);
+          if (message.mode === "update") {
+            setData((existingRows) =>
+              existingRows.map(
+                (row) =>
+                  message.rows?.find(([rowIdx]) => rowIdx === row[0]) ?? row
+              )
+            );
+          } else {
+            setData(message.rows);
+          }
         }
       }
     });

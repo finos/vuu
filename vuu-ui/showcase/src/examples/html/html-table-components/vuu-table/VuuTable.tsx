@@ -45,6 +45,8 @@ export const VuuTable = ({
     getRowOffset,
     handleContextMenuAction,
     onHeaderClick,
+    onRowClick,
+    onToggleGroup,
     menuBuilder,
     scrollProps,
     viewportMeasurements,
@@ -138,14 +140,16 @@ export const VuuTable = ({
                 </div>
               </div>
               <div className={`${classBase}-body`}>
-                {data.map((data) => (
+                {data.map((row) => (
                   <Row
                     className="vuuTable2Row"
                     columnMap={columnMap}
                     columns={columns}
-                    key={data[RENDER_IDX]}
-                    data={data}
-                    offset={getRowOffset(data)}
+                    key={row[RENDER_IDX]}
+                    onClick={onRowClick}
+                    onToggleGroup={onToggleGroup}
+                    row={row}
+                    offset={getRowOffset(row)}
                   />
                 ))}
               </div>

@@ -58,9 +58,8 @@
 
 .vuuMenuItem[aria-haspopup='true']:after {
   content: var(--menu-item-twisty-content);
-  -webkit-mask: var(--svg-chevron-right) center center/12px 12px;
-  mask: var(--svg-chevron-down) center center/12px 12px;
-  mask-repeat: no-repeat;
+  -webkit-mask: var(--vuu-svg-chevron-right) center center/8px 8px no-repeat;
+  mask: var(---vuu-svg-chevron-right) center center/8px 8px no-repeat;
   background-color: var(--menu-item-twisty-color);
   height: 16px;
   left: var(--menu-item-twisty-left);

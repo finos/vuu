@@ -1,34 +1,17 @@
-import { DataSourceRow } from "@finos/vuu-data";
 import {
   GroupColumnDescriptor,
-  KeyedColumnDescriptor,
   TableCellProps,
 } from "@finos/vuu-datagrid-types";
-import { getColumnStyle, metadataKeys } from "@finos/vuu-utils";
+import {
+  getColumnStyle,
+  getGroupValueAndOffset,
+  metadataKeys,
+} from "@finos/vuu-utils";
 import { MouseEvent, useCallback } from "react";
 
 import "./TableGroupCell.css";
 
-const { DEPTH, IS_LEAF } = metadataKeys;
-
-export const getGroupValueAndOffset = (
-  columns: KeyedColumnDescriptor[],
-  row: DataSourceRow
-): [unknown, number] => {
-  const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
-  // Depth can be greater tha group columns when we have just removed a column from groupby
-  // but new data has not yet been received.
-  if (isLeaf || depth > columns.length) {
-    return [null, depth === null ? 0 : Math.max(0, depth - 1)];
-  } else if (depth === 0) {
-    return ["$root", 0];
-  } else {
-    // offset 1 for now to allow for $root
-    const { key, valueFormatter } = columns[depth - 1];
-    const value = valueFormatter(row[key]);
-    return [value, depth - 1];
-  }
-};
+const { IS_LEAF } = metadataKeys;
 
 export const TableGroupCell = ({ column, onClick, row }: TableCellProps) => {
   const { columns } = column as GroupColumnDescriptor;
@@ -41,9 +24,6 @@ export const TableGroupCell = ({ column, onClick, row }: TableCellProps) => {
     [column, onClick]
   );
 
-  // const style = {
-  //   left: column.pin == "left" ? column.pinnedOffset : undefined,
-  // };
   const style = getColumnStyle(column);
   const isLeaf = row[IS_LEAF];
   const spacers = Array(offset)

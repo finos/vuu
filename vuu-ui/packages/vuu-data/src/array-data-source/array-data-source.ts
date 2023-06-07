@@ -15,6 +15,7 @@ import {
   buildColumnMap,
   ColumnMap,
   EventEmitter,
+  getSelectionDiff,
   isSelected,
   KeySet,
   logger,
@@ -28,6 +29,7 @@ import {
   DataSourceConstructorProps,
   DataSourceEvents,
   DataSourceRow,
+  IsSelected,
   SubscribeCallback,
   SubscribeProps,
   vanillaConfig,
@@ -51,8 +53,14 @@ export interface ArrayDataSourceConstructorProps
 
 const { debug } = logger("ArrayDataSource");
 
-const { IDX, SELECTED } = metadataKeys;
+const { SELECTED } = metadataKeys;
 const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
+
+const selectRow = (row: DataSourceRow, isSelected: IsSelected) => {
+  const dolly = row.slice() as DataSourceRow;
+  dolly[SELECTED] = isSelected;
+  return dolly;
+};
 
 const toDataSourceRow = (
   data: VuuRowDataItemType[],
@@ -101,6 +109,7 @@ export class ArrayDataSource
   private groupedData: undefined | DataSourceRow[];
   private sortedData: undefined | DataSourceRow[];
   private groupMap: undefined | GroupMap;
+  private selectedRows: Selection = [];
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
   private tableSchema: TableSchema;
@@ -247,22 +256,51 @@ export class ArrayDataSource
 
   select(selected: Selection) {
     debug?.(`select ${JSON.stringify(selected)}`);
+    const { added, removed } = getSelectionDiff(this.selectedRows, selected);
+
+    // TODO filtered o sortedRows
+    const rows = this.#data;
+
+    this.selectedRows = selected;
+
     const updatedRows: DataSourceRow[] = [];
-    // TODO rewrite this without the loop through entire dataset
-    // store the selection locally and identify the changes
-    for (const row of this.#data) {
-      const { [IDX]: rowIndex, [SELECTED]: sel } = row;
-      const wasSelected = sel === 1;
-      const nowSelected = isSelected(selected, rowIndex);
-      if (nowSelected !== wasSelected) {
-        const selectedRow = row.slice() as DataSourceRow;
-        selectedRow[SELECTED] = nowSelected ? 1 : 0;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        this.#data[rowIndex] = selectedRow;
-        updatedRows.push(selectedRow);
+
+    added.forEach((rowIdx) => {
+      if (typeof rowIdx === "number") {
+        if (rowIdx > 0) {
+          updatedRows.push(selectRow(rows[rowIdx - 1], 2));
+        }
+        updatedRows.push(selectRow(rows[rowIdx], 3));
+      } else {
+        if (rowIdx[0] > 0) {
+          if (!isSelected(selected, rowIdx[0] - 1)) {
+            updatedRows.push(selectRow(rows[rowIdx[0] - 1], 2));
+          }
+        }
+        for (let i = rowIdx[0]; i <= rowIdx[1]; i++) {
+          if (i === rowIdx[1]) {
+            updatedRows.push(selectRow(rows[i], 3));
+          } else {
+            updatedRows.push(selectRow(rows[i], 1));
+          }
+        }
       }
-    }
+    });
+    removed.forEach((rowIdx) => {
+      if (typeof rowIdx === "number") {
+        if (rowIdx > 0) {
+          updatedRows.push(selectRow(rows[rowIdx - 1], 0));
+        }
+        updatedRows.push(selectRow(rows[rowIdx], 0));
+      } else {
+        if (rowIdx[0] > 0) {
+          updatedRows.push(selectRow(rows[rowIdx[0] - 1], 0));
+        }
+        for (let i = rowIdx[0]; i <= rowIdx[1]; i++) {
+          updatedRows.push(selectRow(rows[i], 0));
+        }
+      }
+    });
 
     if (updatedRows.length > 0) {
       this.clientCallback?.({
@@ -336,6 +374,7 @@ export class ArrayDataSource
       this.sortedData ?? this.groupedData ?? this.filteredData ?? this.#data;
     this.clientCallback?.({
       clientViewportId: this.viewport,
+      mode: "batch",
       rows: data
         .slice(rowRange.from, rowRange.to)
         .map((row) => toClientRow(row, this.keys)),

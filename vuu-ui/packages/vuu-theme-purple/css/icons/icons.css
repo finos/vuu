@@ -107,7 +107,7 @@ span[data-icon]{
 }
 
 [data-icon='chevron-right'] {
-  --vuu-icon-svg: var(--svg-chevron-right);
+  --vuu-icon-svg: var(--vuu-svg-chevron-right);
 }
 
 [data-icon='close'] {

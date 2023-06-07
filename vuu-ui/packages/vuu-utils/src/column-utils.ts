@@ -618,3 +618,24 @@ export const visibleColumnAtIndex = (
     return columns.filter(isNotHidden).at(index);
   }
 };
+
+const { DEPTH, IS_LEAF } = metadataKeys;
+// Get the value for a specific columns within a grouped column
+export const getGroupValueAndOffset = (
+  columns: KeyedColumnDescriptor[],
+  row: DataSourceRow
+): [unknown, number] => {
+  const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
+  // Depth can be greater tha group columns when we have just removed a column from groupby
+  // but new data has not yet been received.
+  if (isLeaf || depth > columns.length) {
+    return [null, depth === null ? 0 : Math.max(0, depth - 1)];
+  } else if (depth === 0) {
+    return ["$root", 0];
+  } else {
+    // offset 1 for now to allow for $root
+    const { key, valueFormatter } = columns[depth - 1];
+    const value = valueFormatter(row[key]);
+    return [value, depth - 1];
+  }
+};

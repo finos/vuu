@@ -1,9 +1,14 @@
 import { DataSourceRow } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { MouseEvent } from "react";
 import { useCell } from "./table-next/useCell";
 
 export interface TableCellProps {
   column: KeyedColumnDescriptor;
+  onClick?: (
+    evt: MouseEvent<HTMLDivElement>,
+    column: KeyedColumnDescriptor
+  ) => void;
   row: DataSourceRow;
 }
 

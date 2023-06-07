@@ -1,5 +1,6 @@
 import {
   DataSource,
+  DataSourceRow,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
@@ -12,6 +13,7 @@ import {
 import {
   MeasuredProps,
   useMeasuredContainer,
+  useSelection,
   useTableContextMenu,
   useTableModel,
   useTableViewport,
@@ -20,6 +22,7 @@ import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import {
   applySort,
   buildColumnMap,
+  metadataKeys,
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
@@ -31,6 +34,8 @@ import { useInitialValue } from "./useInitialValue";
 import { useVirtualViewport } from "./useVirtualViewport";
 import { buildContextMenuDescriptors } from "@finos/vuu-table";
 
+const { KEY, IS_EXPANDED } = metadataKeys;
+
 export interface TableHookProps extends MeasuredProps {
   config: Omit<GridConfig, "headings">;
   dataSource: DataSource;
@@ -38,9 +43,9 @@ export interface TableHookProps extends MeasuredProps {
   onConfigChange?: (config: Omit<GridConfig, "headings">) => void;
   onFeatureEnabled?: (message: VuuFeatureMessage) => void;
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
+  onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;
   rowHeight: number;
-  onSelectionChange?: SelectionChangeHandler;
   selectionModel: TableSelectionModel;
 }
 
@@ -241,6 +246,57 @@ export const useTable = ({
     [columns, handleSort]
   );
 
+  const handleSelectionChange: SelectionChangeHandler = useCallback(
+    (selected) => {
+      dataSource.select(selected);
+      onSelectionChange?.(selected);
+    },
+    [dataSource, onSelectionChange]
+  );
+
+  const onRowClick = useSelection({
+    onSelectionChange: handleSelectionChange,
+    selectionModel,
+  });
+
+  const onToggleGroup = useCallback(
+    (row: DataSourceRow /*, column: KeyedColumnDescriptor*/) => {
+      // const isJson = isJsonGroup(column, row);
+      const key = row[KEY];
+
+      if (row[IS_EXPANDED]) {
+        dataSource.closeTreeNode(key, true);
+        // if (isJson) {
+        //   const idx = columns.indexOf(column);
+        //   const rows = (dataSource as JsonDataSource).getRowsAtDepth(idx + 1);
+        //   if (!rows.some((row) => row[IS_EXPANDED] || row[IS_LEAF])) {
+        //     dispatchColumnAction({
+        //       type: "hideColumns",
+        //       columns: columns.slice(idx + 2),
+        //     });
+        //   }
+        // }
+      } else {
+        dataSource.openTreeNode(key);
+        // if (isJson) {
+        //   const childRows = (dataSource as JsonDataSource).getChildRows(key);
+        //   const idx = columns.indexOf(column) + 1;
+        //   const columnsToShow = [columns[idx]];
+        //   if (childRows.some((row) => row[IS_LEAF])) {
+        //     columnsToShow.push(columns[idx + 1]);
+        //   }
+        //   if (columnsToShow.some((col) => col.hidden)) {
+        //     dispatchColumnAction({
+        //       type: "showColumns",
+        //       columns: columnsToShow,
+        //     });
+        //   }
+        // }
+      }
+    },
+    [dataSource]
+  );
+
   return {
     columnMap,
     columns,
@@ -252,6 +308,8 @@ export const useTable = ({
     menuBuilder,
     onContextMenu,
     onHeaderClick,
+    onRowClick,
+    onToggleGroup,
     scrollProps,
     viewportMeasurements,
   };

@@ -33,7 +33,7 @@ type IsExpanded = boolean;
 type Depth = number;
 type ChildCount = number;
 type RowKey = string;
-type IsSelected = 0 | 1 | 2;
+export type IsSelected = 0 | 1 | 2 | 3;
 
 export type DataSourceRow = [
   RowIndex,
@@ -485,7 +485,7 @@ export type DataSourceEvents = {
 
 export interface DataSource extends EventEmitter<DataSourceEvents> {
   aggregations: VuuAggregation[];
-  closeTreeNode: (key: string) => void;
+  closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
   config: DataSourceConfig | undefined;
   enable?: () => void;
