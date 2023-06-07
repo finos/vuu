@@ -32,7 +32,7 @@ object EditableModule extends DefaultModule {
       SessionTableDef(
         name = "fixSequenceReset",
         keyField = "process-id",
-        columns = Columns.fromNames("process-id:String", "sequenceNumber:Long")
+        columns = Columns.fromNames("process-id:String", "sequenceNumber:Int")
       ),
       (table, _, _, _) => ViewPortDef(
         columns = table.getTableDef.columns,
