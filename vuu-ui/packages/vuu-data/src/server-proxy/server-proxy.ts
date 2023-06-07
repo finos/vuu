@@ -29,6 +29,7 @@ import {
   isSessionTableActionMessage,
   isViewporttMessage as isViewportMessage,
   NoAction,
+  OpenDialogAction,
   ServerProxySubscribeMessage,
   VuuUIMessageIn,
   VuuUIMessageInTableList,
@@ -1044,7 +1045,7 @@ export class ServerProxy {
             const { action } = body;
             this.postMessageToClient({
               type: "VIEW_PORT_MENU_RESP",
-              action: action || NO_ACTION,
+              action: (action as OpenDialogAction) || NO_ACTION,
               tableAlreadyOpen:
                 action !== null && this.isTableOpen(action.table),
               requestId,

@@ -73,6 +73,8 @@ const buildTableMeta = (columns: ColumnDescriptor[]): VuuTableMeta => {
   const meta = {
     columns: [],
     dataTypes: [],
+    // how do we identify the key field ?
+    key: columns[0].name,
   } as VuuTableMeta;
 
   columns.forEach((column) => {
