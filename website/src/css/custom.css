@@ -69,6 +69,10 @@
   --ifm-code-font-size: 95%;
 }
 
+.docs-doc-page {
+  --vuu-desktop-width: 100%;  
+}
+
 body {
   align-items: center;
   background-color: var(--vuu-dark-body-bg);
