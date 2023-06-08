@@ -29,17 +29,13 @@ export const useLayoutConfig = ({
   const loadConfig = usingRemote ? loadRemoteConfig : loadLocalConfig;
   const saveConfig = usingRemote ? saveRemoteConfig : saveLocalConfig;
 
-  const setLayout = (layout: LayoutJSON) => {
-    _setLayout(layout);
-  };
-
   const load = useCallback(
     async (id = "latest") => {
       try {
         const layout = await loadConfig(saveUrl, user, id);
-        setLayout(layout);
+        _setLayout(layout);
       } catch {
-        setLayout(defaultLayout);
+        _setLayout(defaultLayout);
       }
     },
     [defaultLayout, loadConfig, saveUrl, user]
@@ -56,12 +52,7 @@ export const useLayoutConfig = ({
     [saveConfig, saveUrl, user]
   );
 
-  const loadLayoutById = useCallback(
-    (id) => {
-      load(id);
-    },
-    [load]
-  );
+  const loadLayoutById = useCallback((id) => load(id), [load]);
 
   return [layout, saveData, loadLayoutById];
 };
