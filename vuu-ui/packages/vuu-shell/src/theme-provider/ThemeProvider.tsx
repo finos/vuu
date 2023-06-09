@@ -25,7 +25,7 @@ export interface ThemeContextProps {
 
 export const ThemeContext = createContext<ThemeContextProps>({
   density: "high",
-  theme: "salt-theme",
+  theme: "salt",
   themeMode: "light",
 });
 
@@ -40,8 +40,8 @@ const createThemedChildren = (
       className: cx(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         children.props?.className,
-        theme,
-        `salt-density-${density}`
+        `${theme}-theme`,
+        `${theme}-density-${density}`
       ),
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
@@ -61,7 +61,6 @@ interface ThemeProviderProps {
   density?: Density;
   theme?: string;
   themeMode?: ThemeMode;
-  applyClassesTo?: TargetElement;
 }
 
 export const ThemeProvider = ({
@@ -75,6 +74,8 @@ export const ThemeProvider = ({
     themeMode: inheritedThemeMode,
     theme: inheritedTheme,
   } = useContext(ThemeContext);
+
+  console.log({ themeProp });
 
   const density = densityProp ?? inheritedDensity ?? DEFAULT_DENSITY;
   const themeMode = themeModeProp ?? inheritedThemeMode ?? DEFAULT_THEME_MODE;

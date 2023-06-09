@@ -1,13 +1,13 @@
-.salt-density-touch {
+.vuu-purple-density-touch {
   --salt-size-icon-base: 16px;
 }
 
-.salt-density-low {
+.vuu-purple-density-low {
   --salt-size-icon-base: 14px;
 }
-.salt-density-medium {
+.vuu-purple-density-medium {
   --salt-size-icon-base: 12px;
 }
-.salt-density-high {
+.vuu-purple-density-high {
   --salt-size-icon-base: 10px;
 }

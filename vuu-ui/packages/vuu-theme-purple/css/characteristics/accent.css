@@ -1,21 +1,21 @@
-.salt-density-high {
+.vuu-purple-density-high {
   --salt-accent-fontSize: 8px;
   --salt-accent-lineHeight: 11px;
 }
-.salt-density-medium {
+.vuu-purple-density-medium {
   --salt-accent-fontSize: 10px;
   --salt-accent-lineHeight: 13px;
 }
-.salt-density-low {
+.vuu-purple-density-low {
   --salt-accent-fontSize: 12px;
   --salt-accent-lineHeight: 16px;
 }
-.salt-density-touch {
+.vuu-purple-density-touch {
   --salt-accent-fontSize: 14px;
   --salt-accent-lineHeight: 18px;
 }
 
-.salt-theme {
+.vuu-purple-theme {
   --salt-accent-background: var(--salt-palette-accent-background);
   --salt-accent-borderColor: var(--salt-palette-accent-border);
   --salt-accent-foreground: var(--salt-palette-accent-foreground);

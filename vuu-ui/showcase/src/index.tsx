@@ -1,6 +1,7 @@
 import ReactDOM from "react-dom";
 
 import "@finos/vuu-theme/index.css";
+import "@finos/vuu-theme-purple/index.css";
 import "@heswell/component-anatomy/esm/index.css";
 
 import "@fontsource/open-sans/300.css";

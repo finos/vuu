@@ -1,3 +1,4 @@
+import { IsSelected } from "@finos/vuu-data";
 import {
   RangeTuple,
   Selection,
@@ -34,6 +35,54 @@ export const deselectItem = (
   return NO_SELECTION;
 };
 
+const newSelectedFillsGap = (
+  selection: Selection,
+  itemIndex: number
+): boolean => {
+  for (let i = 0; i < selection.length; i++) {
+    const item = selection[i];
+    if (typeof item === "number") {
+      if (item === itemIndex - 1) {
+        return true;
+      } else if (item > itemIndex) {
+        return false;
+      }
+    }
+  }
+  return false;
+};
+
+const fillGapInSelection = (
+  selection: Selection,
+  itemIndex: number
+): Selection => {
+  for (let i = 0; i < selection.length; i++) {
+    const item = selection[i];
+    if (typeof item === "number") {
+      if (item === itemIndex - 1) {
+        const nextSelectionItem = selection[i + 1];
+        if (nextSelectionItem === itemIndex + 1) {
+          const newRange: SelectionItem = [item, nextSelectionItem];
+          return selection
+            .slice(0, i)
+            .concat([newRange])
+            .concat(selection.slice(i + 2));
+        } else {
+          const newRange: SelectionItem = [item, itemIndex];
+          return selection
+            .slice(0, i)
+            .concat([newRange])
+            .concat(selection.slice(i + 1));
+        }
+      } else if (item > itemIndex) {
+        break;
+      }
+    }
+  }
+
+  return selection;
+};
+
 export const selectItem = (
   selectionModel: TableSelectionModel,
   selected: Selection,
@@ -65,7 +114,12 @@ export const selectItem = (
       return insertRange(selected, range);
     }
   } else if (!rangeSelect) {
-    return selected?.concat(itemIndex).sort(inAscendingOrder);
+    // what if we now have a range because we just filled  agap between 2
+    if (newSelectedFillsGap(selected, itemIndex)) {
+      return fillGapInSelection(selected, itemIndex);
+    } else {
+      return selected?.concat(itemIndex).sort(inAscendingOrder);
+    }
   } else if (multiSelect) {
     // const [from, to] = idx > active ? [active, idx] : [idx, active];
     // newSelected = selected?.slice();
@@ -138,6 +192,30 @@ const includedInRange = (
 
 const rangeIncludes = (range: RangeTuple, index: number) =>
   index >= range[0] && index <= range[1];
+
+export const getSelectionStatus = (
+  selected: Selection,
+  itemIndex: number
+): IsSelected => {
+  for (const item of selected) {
+    if (typeof item === "number") {
+      if (item === itemIndex) {
+        return 3;
+      } else if (item === itemIndex + 1) {
+        return 2;
+      }
+    } else if (rangeIncludes(item, itemIndex)) {
+      if (itemIndex === item[1]) {
+        return 3;
+      } else {
+        return 1;
+      }
+    } else if (item[0] === itemIndex + 1) {
+      return 2;
+    }
+  }
+  return 0;
+};
 
 export const isSelected = (selected: Selection, itemIndex: number) => {
   for (const item of selected) {
@@ -239,9 +317,7 @@ export const getSelectionDiff = (
         j += 1;
       } else if (newIndex === undefined) {
         if (oldRangeEnd) {
-          console.log(
-            `old index ${oldIndex} (part of range) gone from selection`
-          );
+          diff.removed.push([oldIndex, oldRangeEnd]);
         } else {
           diff.removed.push(oldIndex);
         }
@@ -263,14 +339,12 @@ export const getSelectionDiff = (
         if (newRangeEnd) {
           console.log(`new index ${oldIndex} (part of range) in selection`);
         } else {
-          console.log(`new index ${oldIndex} in selection`);
           diff.added.push(newIndex);
         }
         j += 1;
       } else {
         if (newRangeEnd > oldRangeEnd) {
           if (oldRangeEnd === 0) {
-            console.log("we have a range where we had a single");
             diff.added.push([newIndex + 1, newRangeEnd]);
           }
         } else if (newRangeEnd < oldRangeEnd) {

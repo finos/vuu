@@ -3,10 +3,17 @@ import {
   deselectItem,
   expandSelection,
   getSelectionDiff,
+  getSelectionStatus,
   selectItem,
 } from "../src/selection-utils";
 
 describe("selection-utils", () => {
+  describe("getSelectionStatus", () => {
+    it("returns 0 when no selection at all", () => {
+      expect(getSelectionStatus([], 0)).toEqual(0);
+    });
+  });
+
   describe("getSelectionDiff", () => {
     it("returns no values if there was and is no selection", () => {
       expect(getSelectionDiff([], [])).toEqual({
@@ -69,6 +76,20 @@ describe("selection-utils", () => {
       });
     });
 
+    it("identifies the addition of a new selection range", () => {
+      expect(getSelectionDiff([[4, 9]], [1])).toEqual({
+        added: [1],
+        removed: [[4, 9]],
+      });
+    });
+
+    it("identifies the extension of a single select to a range", () => {
+      expect(getSelectionDiff([3], [[3, 8]])).toEqual({
+        added: [[4, 8]],
+        removed: [],
+      });
+    });
+
     it("identifies the removed items in a selection of single values", () => {
       expect(getSelectionDiff([1, 2], [1])).toEqual({
         added: [],
@@ -93,16 +114,16 @@ describe("selection-utils", () => {
       });
     });
 
-    it.only("identifies a partially removed range in an existing selection", () => {
+    it("identifies a partially removed range in an existing selection", () => {
       // prettier-ignore
       expect(getSelectionDiff([[1, 10]], [[1, 5], [7, 10]])).toEqual({
         added: [],
         removed: [6],
       });
       // prettier-ignore
-      expect(getSelectionDiff([[1, 12]], [[1, 5], [9, 11]])).toEqual({
+      expect(getSelectionDiff([[1, 12]], [[1, 5], [7, 12]])).toEqual({
         added: [],
-        removed: [[[6,8],12]],
+        removed: [6],
       });
     });
 
@@ -158,6 +179,20 @@ describe("selection-utils", () => {
         expect(selectItem("extended", [2, 9], 7, false, true)).toEqual([
           2, 7, 9,
         ]);
+      });
+      it("works correctly when first row is selected", () => {
+        expect(selectItem("extended", [0], 2, false, true)).toEqual([0, 2]);
+      });
+      it("creates a range by joining single items", () => {
+        expect(selectItem("extended", [1], 2, false, true, 2)).toEqual([
+          [1, 2],
+        ]);
+        expect(selectItem("extended", [2, 4], 3, false, true, 3)).toEqual([
+          [2, 4],
+        ]);
+        expect(selectItem("extended", [0, 2, 4, 7], 3, false, true, 3)).toEqual(
+          [0, [2, 4], 7]
+        );
       });
     });
   });

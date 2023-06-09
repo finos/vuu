@@ -2,6 +2,8 @@
   --vuu-table-header-color: #FFFFFF;
   --vuu-table-header-col-bg: #777C94;
   --table-background: var(--salt-container-primary-background);
+  font-size: 12px;
+  font-weight: 500;
   height: var(--table-css-height);
   background-color: red;
   position: relative;
@@ -45,6 +47,7 @@
 
  
 .vuuTable2-table {
+  color: var(--salt-text-primary-foreground);
   position: absolute;
   top: 0;
   left: 0;
@@ -65,6 +68,8 @@
 
 .vuuTable2-cell {
   display: inline-block;
+  line-height: 20px;
+  padding: 0 8px;
 }
 
 .vuuPinLeft, .vuuPinRight {
@@ -142,8 +147,42 @@
 
   .vuuTable2Row-selected,
   .vuuTable2Row-lastSelected {
-    background-color: rgba(133,133,137,.16);
+    /* background-color: rgba(133,133,137,.16); */
+    background-color: black;
   }
+
+  .vuuTable2Row-firstSelected {
+    border-radius: 5px 5px 0 0;
+  }
+  .vuuTable2Row-lastSelected {
+    border-radius: 0 0 5px 5px;
+  }
+
+  /* .vuuTable2Row-lastSelected:before,
+  .vuuTable2Row-selected:before {
+    background: #6D18BD;
+    content: '';
+    height: 20px;
+    position: absolute;
+    top: 0px;
+    left:0;
+    width: 4px;
+  }
+
+  .vuuTable2Row-lastSelected:after,
+  .vuuTable2Row-selected:after {
+    background: #6D18BD;
+    content: '';
+    height: 20px;
+    position: absolute;
+    top:0px;
+    right: -1px;
+    width: 4px;
+  } */
+
+.vuuTable2Row-lastSelected:after {
+  border-radius: 0 0 2px 2px;
+}
 
   .vuuTable2Row-preSelected,
   .vuuTable2Row-lastSelected {

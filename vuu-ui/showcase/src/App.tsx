@@ -6,7 +6,7 @@ import {
   ThemeProvider,
   ThemeSwitch,
 } from "@finos/vuu-shell";
-import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
+import { Dropdown, Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { Text } from "@salt-ds/core";
 
 import { ReactElement, useCallback, useMemo, useState } from "react";
@@ -83,12 +83,20 @@ export interface AppProps {
   stories: Examples;
 }
 
+type ThemeDescriptor = { label?: string; id: string };
+
+const availableThemes: ThemeDescriptor[] = [
+  { id: "vuu-purple", label: "Purple Vuu" },
+  { id: "salt", label: "Salt Classic" },
+];
+
 export const App = ({ stories }: AppProps) => {
   console.log({ stories: Object.entries(stories) });
   const navigate = useNavigate();
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
   const handleChange = (_evt: unknown, [selected]) => navigate(selected.id);
+  const [theme, setTheme] = useState<ThemeDescriptor>(availableThemes[0]);
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
   const [density, setDensity] = useState<Density>("high");
 
@@ -96,8 +104,20 @@ export const App = ({ stories }: AppProps) => {
     window.open(`${location.href}?standalone`, "_blank");
   }, []);
 
+  const handleThemeChange = useCallback(
+    (_evt, theme: ThemeDescriptor | null) => {
+      console.log(`theme change ${theme}`);
+      if (theme) {
+        setTheme(theme);
+      }
+    },
+    []
+  );
+
+  console.log({ theme });
+
   return (
-    <ThemeProvider density="high" themeMode="light" applyClassesTo="child">
+    <ThemeProvider density="high" themeMode="light">
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
@@ -115,10 +135,9 @@ export const App = ({ stories }: AppProps) => {
             source={source}
           />
           <ThemeProvider
-            applyClassesTo="child"
             density={density}
+            theme={theme.id}
             themeMode={themeMode}
-            theme="salt-theme"
           >
             <Flexbox
               className="ShowcaseContentContainer"
@@ -129,7 +148,14 @@ export const App = ({ stories }: AppProps) => {
                 className="ShowcaseContentToolbar salt-theme salt-density-high"
                 data-mode="light"
               >
-                <DensitySwitch onDensityChange={setDensity} />
+                <Dropdown
+                  className="vuu-ThemePicker"
+                  source={availableThemes}
+                  selected={theme}
+                  onSelectionChange={handleThemeChange}
+                />
+
+                <DensitySwitch onChange={setDensity} />
                 <ThemeSwitch onChange={setThemeMode} />
                 <ToolbarButton
                   data-align-end

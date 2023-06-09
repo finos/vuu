@@ -5,7 +5,7 @@ import { useIdMemo } from "@salt-ds/core";
 import { CSSProperties, useEffect } from "react";
 import { HeaderCell } from "../HeaderCell";
 import { HeaderGroupCell } from "../HeaderGroupCell";
-import { Row } from "../Row";
+import { Row } from "./Row";
 import { useTable } from "./useTable";
 
 import "./VuuTable.css";

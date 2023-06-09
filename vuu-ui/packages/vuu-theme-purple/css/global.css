@@ -2,7 +2,7 @@
  * Have some global styles to simulate more realistic app. Currently only for Storybook.
  */
 
- .salt-theme {
+ .vuu-purple-theme {
   color: var(--salt-text-primary-foreground);
   font-family: var(--salt-typography-fontFamily);
   font-size: var(--salt-text-fontSize);
@@ -10,11 +10,11 @@
   line-height: var(--salt-text-lineHeight);
 }
 
-.salt-theme[data-mode="light"] {
+.vuu-purple-theme[data-mode="light"] {
   color-scheme: light;
 }
 
-.salt-theme[data-mode="dark"] {
+.vuu-purple-theme[data-mode="dark"] {
   color-scheme: dark;
 }
 

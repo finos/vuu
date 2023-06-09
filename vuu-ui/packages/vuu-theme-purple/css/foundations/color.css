@@ -1,4 +1,4 @@
-.salt-theme {
+.vuu-purple-theme {
   /* Color palette will stay the same no matter of theming */
   --salt-color-white: rgb(255, 255, 255);
   --salt-color-black: rgb(0, 0, 0);
@@ -110,5 +110,5 @@
   --salt-color-gray-600: rgb(47, 49, 54);
   --salt-color-gray-700: rgb(42, 44, 47);
   --salt-color-gray-800: rgb(36, 37, 38);
-  --salt-color-gray-900: rgb(22, 22, 22);
+  --salt-color-gray-900: rgb(21, 23, 27);
 }

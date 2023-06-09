@@ -15,8 +15,7 @@ import {
   buildColumnMap,
   ColumnMap,
   EventEmitter,
-  getSelectionDiff,
-  isSelected,
+  getSelectionStatus,
   KeySet,
   logger,
   metadataKeys,
@@ -29,7 +28,6 @@ import {
   DataSourceConstructorProps,
   DataSourceEvents,
   DataSourceRow,
-  IsSelected,
   SubscribeCallback,
   SubscribeProps,
   vanillaConfig,
@@ -53,14 +51,8 @@ export interface ArrayDataSourceConstructorProps
 
 const { debug } = logger("ArrayDataSource");
 
-const { SELECTED } = metadataKeys;
+const { RENDER_IDX, SELECTED } = metadataKeys;
 const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
-
-const selectRow = (row: DataSourceRow, isSelected: IsSelected) => {
-  const dolly = row.slice() as DataSourceRow;
-  dolly[SELECTED] = isSelected;
-  return dolly;
-};
 
 const toDataSourceRow = (
   data: VuuRowDataItemType[],
@@ -91,10 +83,16 @@ const buildTableSchema = (columns: ColumnDescriptor[]): TableSchema => {
   return schema;
 };
 
-const toClientRow = (row: DataSourceRow, keys: KeySet) => {
+const toClientRow = (
+  row: DataSourceRow,
+  keys: KeySet,
+  selection: Selection
+) => {
   const [rowIndex] = row;
   const clientRow = row.slice() as DataSourceRow;
-  clientRow[1] = keys.keyFor(rowIndex);
+  clientRow[RENDER_IDX] = keys.keyFor(rowIndex);
+  clientRow[SELECTED] = getSelectionStatus(selection, rowIndex);
+
   return clientRow;
 };
 
@@ -256,60 +254,68 @@ export class ArrayDataSource
 
   select(selected: Selection) {
     debug?.(`select ${JSON.stringify(selected)}`);
-    const { added, removed } = getSelectionDiff(this.selectedRows, selected);
+    // const { added, removed } = getSelectionDiff(this.selectedRows, selected);
 
     // TODO filtered o sortedRows
-    const rows = this.#data;
+    // const rows = this.#data;
 
     this.selectedRows = selected;
 
-    const updatedRows: DataSourceRow[] = [];
+    // const updatedRows: DataSourceRow[] = [];
 
-    added.forEach((rowIdx) => {
-      if (typeof rowIdx === "number") {
-        if (rowIdx > 0) {
-          updatedRows.push(selectRow(rows[rowIdx - 1], 2));
-        }
-        updatedRows.push(selectRow(rows[rowIdx], 3));
-      } else {
-        if (rowIdx[0] > 0) {
-          if (!isSelected(selected, rowIdx[0] - 1)) {
-            updatedRows.push(selectRow(rows[rowIdx[0] - 1], 2));
-          }
-        }
-        for (let i = rowIdx[0]; i <= rowIdx[1]; i++) {
-          if (i === rowIdx[1]) {
-            updatedRows.push(selectRow(rows[i], 3));
-          } else {
-            updatedRows.push(selectRow(rows[i], 1));
-          }
-        }
-      }
-    });
-    removed.forEach((rowIdx) => {
-      if (typeof rowIdx === "number") {
-        if (rowIdx > 0) {
-          updatedRows.push(selectRow(rows[rowIdx - 1], 0));
-        }
-        updatedRows.push(selectRow(rows[rowIdx], 0));
-      } else {
-        if (rowIdx[0] > 0) {
-          updatedRows.push(selectRow(rows[rowIdx[0] - 1], 0));
-        }
-        for (let i = rowIdx[0]; i <= rowIdx[1]; i++) {
-          updatedRows.push(selectRow(rows[i], 0));
-        }
-      }
-    });
+    // added.forEach((rowIdx) => {
+    //   if (typeof rowIdx === "number") {
+    //     if (rowIdx > 0 && !isSelected(selected, rowIdx - 1)) {
+    //       updatedRows.push(selectRow(rows[rowIdx - 1], 2));
+    //       updatedRows.push(selectRow(rows[rowIdx], 3));
+    //     } else {
+    //       if (rowIdx > 0 && isSelected(selected, rowIdx - 1)) {
+    //         updatedRows.push(selectRow(rows[rowIdx - 1], 1));
+    //       }
+    //       updatedRows.push(selectRow(rows[rowIdx], 3));
+    //     }
+    //   } else {
+    //     if (rowIdx[0] > 0) {
+    //       if (!isSelected(selected, rowIdx[0] - 1)) {
+    //         updatedRows.push(selectRow(rows[rowIdx[0] - 1], 2));
+    //       } else if (rowIdx[0] > 0 && isSelected(selected, rowIdx[0] - 1)) {
+    //         updatedRows.push(selectRow(rows[rowIdx[0] - 1], 1));
+    //       }
+    //     }
+    //     for (let i = rowIdx[0]; i <= rowIdx[1]; i++) {
+    //       if (i === rowIdx[1]) {
+    //         updatedRows.push(selectRow(rows[i], 3));
+    //       } else {
+    //         updatedRows.push(selectRow(rows[i], 1));
+    //       }
+    //     }
+    //   }
+    // });
+    // removed.forEach((rowIdx) => {
+    //   if (typeof rowIdx === "number") {
+    //     if (rowIdx > 0) {
+    //       updatedRows.push(selectRow(rows[rowIdx - 1], 0));
+    //     }
+    //     updatedRows.push(selectRow(rows[rowIdx], 0));
+    //   } else {
+    //     if (rowIdx[0] > 0) {
+    //       updatedRows.push(selectRow(rows[rowIdx[0] - 1], 0));
+    //     }
+    //     for (let i = rowIdx[0]; i <= rowIdx[1]; i++) {
+    //       updatedRows.push(selectRow(rows[i], 0));
+    //     }
+    //   }
+    // });
 
-    if (updatedRows.length > 0) {
-      this.clientCallback?.({
-        clientViewportId: this.viewport,
-        mode: "update",
-        type: "viewport-update",
-        rows: updatedRows,
-      });
-    }
+    // if (updatedRows.length > 0) {
+    //   this.clientCallback?.({
+    //     clientViewportId: this.viewport,
+    //     mode: "update",
+    //     type: "viewport-update",
+    //     rows: updatedRows,
+    //   });
+    // }
+    this.setRange(resetRange(this.#range), true);
   }
 
   openTreeNode(key: string) {
@@ -372,12 +378,15 @@ export class ArrayDataSource
         : this.#range;
     const data =
       this.sortedData ?? this.groupedData ?? this.filteredData ?? this.#data;
+
+    const rowsWithinViewport = data
+      .slice(rowRange.from, rowRange.to)
+      .map((row) => toClientRow(row, this.keys, this.selectedRows));
+
     this.clientCallback?.({
       clientViewportId: this.viewport,
       mode: "batch",
-      rows: data
-        .slice(rowRange.from, rowRange.to)
-        .map((row) => toClientRow(row, this.keys)),
+      rows: rowsWithinViewport,
       size: data.length,
       type: "viewport-update",
     });
