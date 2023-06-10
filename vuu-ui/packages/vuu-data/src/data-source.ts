@@ -33,7 +33,7 @@ type IsExpanded = boolean;
 type Depth = number;
 type ChildCount = number;
 type RowKey = string;
-export type IsSelected = 0 | 1 | 2 | 3;
+export type IsSelected = number;
 
 export type DataSourceRow = [
   RowIndex,

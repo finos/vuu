@@ -1,12 +1,26 @@
-import { IsSelected } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data";
 import {
   RangeTuple,
   Selection,
   SelectionItem,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
+import { metadataKeys } from "./column-utils";
 
 const NO_SELECTION: number[] = [];
+
+const { SELECTED } = metadataKeys;
+
+export const RowSelected = {
+  False: 0,
+  PreSelected: 1,
+  True: 4,
+  First: 8,
+  Last: 16,
+};
+
+export const isRowSelected = (row: DataSourceRow): boolean =>
+  (row[SELECTED] & RowSelected.True) === RowSelected.True;
 
 const inAscendingOrder = (item1: SelectionItem, item2: SelectionItem) => {
   const n1: number = typeof item1 === "number" ? item1 : item1[0];
@@ -35,7 +49,7 @@ export const deselectItem = (
   return NO_SELECTION;
 };
 
-const newSelectedFillsGap = (
+const newSelectedFillsGapOrExtends = (
   selection: Selection,
   itemIndex: number
 ): boolean => {
@@ -47,12 +61,16 @@ const newSelectedFillsGap = (
       } else if (item > itemIndex) {
         return false;
       }
+    } else if (item[0] === itemIndex + 1 || item[1] === itemIndex - 1) {
+      return true;
+    } else if (item[0] > itemIndex) {
+      return false;
     }
   }
   return false;
 };
 
-const fillGapInSelection = (
+const fillGapOrExtendSelection = (
   selection: Selection,
   itemIndex: number
 ): Selection => {
@@ -77,6 +95,34 @@ const fillGapInSelection = (
       } else if (item > itemIndex) {
         break;
       }
+    } else if (item[0] === itemIndex + 1) {
+      const newRange: SelectionItem = [itemIndex, item[1]];
+      return selection
+        .slice(0, i)
+        .concat([newRange])
+        .concat(selection.slice(i + 1));
+    } else if (item[1] === itemIndex - 1) {
+      // check to see whether another contiguous range follows
+      const nextItem = selection[i + 1];
+      if (Array.isArray(nextItem) && nextItem[0] === itemIndex + 1) {
+        const newRange: SelectionItem = [item[0], nextItem[1]];
+        return selection
+          .slice(0, i)
+          .concat([newRange])
+          .concat(selection.slice(i + 2));
+      } else if (typeof nextItem === "number" && nextItem === itemIndex + 1) {
+        const newRange: SelectionItem = [item[0], nextItem];
+        return selection
+          .slice(0, i)
+          .concat([newRange])
+          .concat(selection.slice(i + 2));
+      } else {
+        const newRange: SelectionItem = [item[0], itemIndex];
+        return selection
+          .slice(0, i)
+          .concat([newRange])
+          .concat(selection.slice(i + 1));
+      }
     }
   }
 
@@ -91,8 +137,6 @@ export const selectItem = (
   keepExistingSelection = false,
   activeItemIndex = -1
 ): Selection => {
-  //   const { current: active } = lastActive;
-  //   const inactiveRange = active === -1;
   const singleSelect = selectionModel === "single";
   const multiSelect =
     selectionModel === "extended" || selectionModel === "checkbox";
@@ -115,8 +159,8 @@ export const selectItem = (
     }
   } else if (!rangeSelect) {
     // what if we now have a range because we just filled  agap between 2
-    if (newSelectedFillsGap(selected, itemIndex)) {
-      return fillGapInSelection(selected, itemIndex);
+    if (newSelectedFillsGapOrExtends(selected, itemIndex)) {
+      return fillGapOrExtendSelection(selected, itemIndex);
     } else {
       return selected?.concat(itemIndex).sort(inAscendingOrder);
     }
@@ -193,28 +237,35 @@ const includedInRange = (
 const rangeIncludes = (range: RangeTuple, index: number) =>
   index >= range[0] && index <= range[1];
 
+const SINGLE_SELECTED_ROW =
+  RowSelected.True + RowSelected.First + RowSelected.Last;
+const FIRST_SELECTED_ROW_OF_BLOCK = RowSelected.True + RowSelected.First;
+const LAST_SELECTED_ROW_OF_BLOCK = RowSelected.True + RowSelected.Last;
+
 export const getSelectionStatus = (
   selected: Selection,
   itemIndex: number
-): IsSelected => {
+): number => {
   for (const item of selected) {
     if (typeof item === "number") {
       if (item === itemIndex) {
-        return 3;
+        return SINGLE_SELECTED_ROW;
       } else if (item === itemIndex + 1) {
-        return 2;
+        return RowSelected.PreSelected;
       }
     } else if (rangeIncludes(item, itemIndex)) {
-      if (itemIndex === item[1]) {
-        return 3;
+      if (itemIndex === item[0]) {
+        return FIRST_SELECTED_ROW_OF_BLOCK;
+      } else if (itemIndex === item[1]) {
+        return LAST_SELECTED_ROW_OF_BLOCK;
       } else {
-        return 1;
+        return RowSelected.True;
       }
     } else if (item[0] === itemIndex + 1) {
-      return 2;
+      return RowSelected.PreSelected;
     }
   }
-  return 0;
+  return RowSelected.False;
 };
 
 export const isSelected = (selected: Selection, itemIndex: number) => {
@@ -272,116 +323,4 @@ function splitRange([from, to]: RangeTuple, itemIndex: number): Selection {
 export type SelectionDiff = {
   added: SelectionItem[];
   removed: SelectionItem[];
-};
-
-const selectionItemIndex = (item: SelectionItem): [number, number] =>
-  Array.isArray(item) ? item : [item, 0];
-
-export const getSelectionDiff = (
-  oldSelection: Selection,
-  newSelection: Selection
-): SelectionDiff => {
-  const diff: SelectionDiff = {
-    added: [],
-    removed: [],
-  };
-
-  if (oldSelection.length === 0 && newSelection.length === 0) {
-    // nothing to do
-  } else if (oldSelection.length === 0) {
-    return {
-      added: newSelection,
-      removed: [],
-    };
-  } else if (newSelection.length === 0) {
-    return {
-      added: [],
-      removed: oldSelection,
-    };
-  } else {
-    for (
-      let i = 0, j = 0;
-      i < oldSelection.length || j < newSelection.length;
-
-    ) {
-      const oldItem = oldSelection[i];
-      const [oldIndex, oldRangeEnd] = selectionItemIndex(oldItem);
-      const newItem = newSelection[j];
-      const [newIndex, newRangeEnd] = selectionItemIndex(newItem);
-      if (oldIndex === undefined) {
-        if (newRangeEnd) {
-          diff.added.push([newIndex, newRangeEnd]);
-        } else {
-          diff.added.push(newIndex);
-        }
-        j += 1;
-      } else if (newIndex === undefined) {
-        if (oldRangeEnd) {
-          diff.removed.push([oldIndex, oldRangeEnd]);
-        } else {
-          diff.removed.push(oldIndex);
-        }
-        i += 1;
-      } else if (oldIndex < newIndex) {
-        if (oldRangeEnd) {
-          if (oldRangeEnd < newIndex) {
-            diff.removed.push([oldIndex, oldRangeEnd]);
-          } else {
-            console.log(
-              `old index ${oldIndex} (part of range) gone from selection, but not whole range`
-            );
-          }
-        } else {
-          diff.removed.push(oldIndex);
-        }
-        i += 1;
-      } else if (oldIndex > newIndex) {
-        if (newRangeEnd) {
-          console.log(`new index ${oldIndex} (part of range) in selection`);
-        } else {
-          diff.added.push(newIndex);
-        }
-        j += 1;
-      } else {
-        if (newRangeEnd > oldRangeEnd) {
-          if (oldRangeEnd === 0) {
-            diff.added.push([newIndex + 1, newRangeEnd]);
-          }
-        } else if (newRangeEnd < oldRangeEnd) {
-          // we've least one selection, possibly more
-          let nextNewItem = newSelection[j + 1];
-          if (nextNewItem === undefined) {
-            diff.removed.push([newRangeEnd + 1, oldRangeEnd]);
-          } else {
-            let [nextNewIndex, nextNewRangeEnd] =
-              selectionItemIndex(nextNewItem);
-            if (nextNewIndex > oldRangeEnd) {
-              diff.removed.push([newRangeEnd + 1, oldRangeEnd]);
-            } else {
-              if (newRangeEnd + 1 === nextNewIndex - 1) {
-                diff.removed.push(newRangeEnd + 1);
-              } else {
-                diff.removed.push([newRangeEnd + 1, nextNewIndex - 1]);
-              }
-
-              // while ?
-              if (nextNewRangeEnd <= oldRangeEnd) {
-                j += 1;
-
-                nextNewItem = newSelection[j + 1];
-                if (nextNewIndex) {
-                  [nextNewIndex, nextNewRangeEnd] =
-                    selectionItemIndex(nextNewItem);
-                }
-              }
-            }
-          }
-        }
-        i += 1;
-        j += 1;
-      }
-    }
-  }
-
-  return diff;
 };

@@ -2,7 +2,8 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys } from "@finos/vuu-utils";
 import { useIdMemo } from "@salt-ds/core";
-import { CSSProperties, useEffect } from "react";
+import cx from "classnames";
+import { CSSProperties } from "react";
 import { HeaderCell } from "../HeaderCell";
 import { HeaderGroupCell } from "../HeaderGroupCell";
 import { Row } from "./Row";
@@ -121,7 +122,12 @@ export const VuuTable = ({
             className={`${classBase}-contentContainer`}
             ref={scrollProps.contentContainerRef}
           >
-            <div {...tableProps} className={`${classBase}-table`}>
+            <div
+              {...tableProps}
+              className={cx(`${classBase}-table`, {
+                [`${classBase}-stripes`]: zebraStripes,
+              })}
+            >
               <div className={`${classBase}-col-headings`}>
                 <div className={`${classBase}-col-headers`} role="row">
                   {columns.map((column, i) => {

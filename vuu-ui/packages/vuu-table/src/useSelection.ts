@@ -3,7 +3,12 @@ import {
   SelectionChangeHandler,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { deselectItem, metadataKeys, selectItem } from "@finos/vuu-utils";
+import {
+  deselectItem,
+  isRowSelected,
+  metadataKeys,
+  selectItem,
+} from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import { RowClickHandler } from "./dataTableTypes";
 
@@ -26,11 +31,11 @@ export const useSelection = ({
 
   const handleSelectionChange: RowClickHandler = useCallback(
     (row, rangeSelect, keepExistingSelection) => {
-      const { [IDX]: idx, [SELECTED]: isSelected } = row;
+      const { [IDX]: idx } = row;
       const { current: active } = lastActiveRef;
       const { current: selected } = selectedRef;
 
-      const selectOperation = isSelected ? deselectItem : selectItem;
+      const selectOperation = isRowSelected(row) ? deselectItem : selectItem;
 
       const newSelected = selectOperation(
         selectionModel,

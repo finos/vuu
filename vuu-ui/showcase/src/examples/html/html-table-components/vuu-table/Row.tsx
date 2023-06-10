@@ -1,7 +1,12 @@
 import { DataSourceRow } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { RowClickHandler } from "@finos/vuu-table";
-import { ColumnMap, isGroupColumn, metadataKeys } from "@finos/vuu-utils";
+import {
+  ColumnMap,
+  isGroupColumn,
+  metadataKeys,
+  RowSelected,
+} from "@finos/vuu-utils";
 import { CSSProperties, memo, MouseEvent, useCallback } from "react";
 import { TableCell } from "./TableCell";
 import { TableGroupCell } from "../TableGroupCell";
@@ -26,8 +31,7 @@ export const Row = memo(
     className: classNameProp,
     columnMap,
     columns,
-    data, // for compat, to remove
-    row = data,
+    row,
     offset,
     onClick,
     onToggleGroup,
@@ -43,7 +47,7 @@ export const Row = memo(
     const {
       [IDX]: rowIndex,
       [IS_EXPANDED]: isExpanded,
-      [SELECTED]: isSelected,
+      [SELECTED]: selectionStatus,
     } = row;
 
     const handleRowClick = useCallback(
@@ -65,12 +69,16 @@ export const Row = memo(
       [onToggleGroup, row]
     );
 
+    const { PreSelected, True, First, Last } = RowSelected;
+    console.log({ selectionStatus });
+
     const className = cx(classBase, classNameProp, {
       [`${classBase}-even`]: rowIndex % 2 === 0,
       [`${classBase}-expanded`]: isExpanded,
-      [`${classBase}-selected`]: isSelected === 1,
-      [`${classBase}-preSelected`]: isSelected === 2,
-      [`${classBase}-lastSelected`]: isSelected === 3,
+      [`${classBase}-preSelected`]: selectionStatus === PreSelected,
+      [`${classBase}-selected`]: selectionStatus & True,
+      [`${classBase}-selectedStart`]: selectionStatus & First,
+      [`${classBase}-selectedEnd`]: selectionStatus & Last,
     });
 
     const style =

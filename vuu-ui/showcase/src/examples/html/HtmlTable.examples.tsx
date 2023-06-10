@@ -287,6 +287,26 @@ export const DefaultVuuTable = () => {
 };
 DefaultVuuTable.displaySequence = displaySequence++;
 
+export const VuuTableTwentyColumns = () => {
+  const { typeaheadHook: _, ...config } = useTableConfig({
+    columnCount: 20,
+    count: 1000,
+    lazyData: false,
+    rangeChangeRowset: "full",
+  });
+
+  return (
+    <VuuTable
+      {...config}
+      height={645}
+      renderBufferSize={0}
+      width={750}
+      zebraStripes
+    />
+  );
+};
+DefaultVuuTable.displaySequence = displaySequence++;
+
 export const VuuTable2MillionRows = () => {
   const { typeaheadHook: _, ...config } = useTableConfig({
     count: 2_000_000,

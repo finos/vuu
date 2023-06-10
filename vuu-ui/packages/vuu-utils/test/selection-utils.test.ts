@@ -2,136 +2,31 @@ import { describe, expect, it } from "vitest";
 import {
   deselectItem,
   expandSelection,
-  getSelectionDiff,
   getSelectionStatus,
+  RowSelected,
   selectItem,
 } from "../src/selection-utils";
 
 describe("selection-utils", () => {
   describe("getSelectionStatus", () => {
     it("returns 0 when no selection at all", () => {
-      expect(getSelectionStatus([], 0)).toEqual(0);
+      expect(getSelectionStatus([], 0)).toEqual(RowSelected.False);
     });
-  });
-
-  describe("getSelectionDiff", () => {
-    it("returns no values if there was and is no selection", () => {
-      expect(getSelectionDiff([], [])).toEqual({
-        added: [],
-        removed: [],
-      });
+    it("returns False when no rowIndex is not in selection", () => {
+      expect(getSelectionStatus([1, 5, 9], 2)).toEqual(RowSelected.False);
+    });
+    it("returns False when no rowIndex is not in selection", () => {
+      expect(getSelectionStatus([[0, 2], 5, 9], 3)).toEqual(RowSelected.False);
     });
 
-    it("identifies a brand new selection", () => {
-      expect(getSelectionDiff([], [1])).toEqual({
-        added: [1],
-        removed: [],
-      });
-      expect(getSelectionDiff([], [1, 2, 3])).toEqual({
-        added: [1, 2, 3],
-        removed: [],
-      });
-      expect(getSelectionDiff([], [1, [2, 4], 7])).toEqual({
-        added: [1, [2, 4], 7],
-        removed: [],
-      });
+    it("returns True when rowIndex is included in selection", () => {
+      expect(getSelectionStatus([1], 1) & RowSelected.True).toEqual(
+        RowSelected.True
+      );
+      expect(getSelectionStatus([[0, 3]], 1)).toEqual(RowSelected.True);
     });
-
-    it("identifies complete removal of selection", () => {
-      expect(getSelectionDiff([1], [])).toEqual({
-        added: [],
-        removed: [1],
-      });
-      expect(getSelectionDiff([1, 2, 3], [])).toEqual({
-        added: [],
-        removed: [1, 2, 3],
-      });
-      expect(getSelectionDiff([1, [2, 4], 7], [])).toEqual({
-        added: [],
-        removed: [1, [2, 4], 7],
-      });
-    });
-
-    it("identifies the added items in a selection of single values", () => {
-      expect(getSelectionDiff([1], [1, 2])).toEqual({
-        added: [2],
-        removed: [],
-      });
-      expect(getSelectionDiff([1, 3], [1, 3, 7, 9])).toEqual({
-        added: [7, 9],
-        removed: [],
-      });
-      expect(
-        getSelectionDiff([1, 3, 10, 20], [1, 3, 6, 10, 12, 14, 20])
-      ).toEqual({
-        added: [6, 12, 14],
-        removed: [],
-      });
-    });
-
-    it("identifies the addition of a new selection range", () => {
-      expect(getSelectionDiff([1], [1, [3, 5]])).toEqual({
-        added: [[3, 5]],
-        removed: [],
-      });
-    });
-
-    it("identifies the addition of a new selection range", () => {
-      expect(getSelectionDiff([[4, 9]], [1])).toEqual({
-        added: [1],
-        removed: [[4, 9]],
-      });
-    });
-
-    it("identifies the extension of a single select to a range", () => {
-      expect(getSelectionDiff([3], [[3, 8]])).toEqual({
-        added: [[4, 8]],
-        removed: [],
-      });
-    });
-
-    it("identifies the removed items in a selection of single values", () => {
-      expect(getSelectionDiff([1, 2], [1])).toEqual({
-        added: [],
-        removed: [2],
-      });
-      expect(getSelectionDiff([1, 3, 7, 9], [1, 3])).toEqual({
-        added: [],
-        removed: [7, 9],
-      });
-      expect(
-        getSelectionDiff([1, 3, 6, 10, 12, 14, 20], [1, 3, 10, 20])
-      ).toEqual({
-        added: [],
-        removed: [6, 12, 14],
-      });
-    });
-
-    it("identifies a removed range in an existing selection", () => {
-      expect(getSelectionDiff([[1, 5]], [7])).toEqual({
-        added: [7],
-        removed: [[1, 5]],
-      });
-    });
-
-    it("identifies a partially removed range in an existing selection", () => {
-      // prettier-ignore
-      expect(getSelectionDiff([[1, 10]], [[1, 5], [7, 10]])).toEqual({
-        added: [],
-        removed: [6],
-      });
-      // prettier-ignore
-      expect(getSelectionDiff([[1, 12]], [[1, 5], [7, 12]])).toEqual({
-        added: [],
-        removed: [6],
-      });
-    });
-
-    it("identifies a selected item extended to a range", () => {
-      expect(getSelectionDiff([1], [[1, 5]])).toEqual({
-        added: [[2, 5]],
-        removed: [],
-      });
+    it("returns True when rowIndex falls within a range selection", () => {
+      expect(getSelectionStatus([[0, 3]], 1)).toEqual(RowSelected.True);
     });
   });
 
@@ -170,11 +65,31 @@ describe("selection-utils", () => {
           [7, 9],
         ]);
       });
-      it("merges new range into existing range", () => {
+      it("extends existing range with range select", () => {
         expect(selectItem("extended", [[2, 5], 7], 4, true, false, 7)).toEqual([
           [2, 7],
         ]);
       });
+
+      it("extends existing range with extended contiguous select", () => {
+        expect(selectItem("extended", [[8, 12]], 13, false, true, 13)).toEqual([
+          [8, 13],
+        ]);
+      });
+      // prettier-ignore
+      it("joins existing ranges that are separated by single row, when that row is selected", () => {
+        expect(selectItem("extended", [[8, 10],[12,14]], 11, false, true, 13)).toEqual([
+          [8, 14],
+        ]);
+      });
+
+      // prettier-ignore
+      it("joins an existing selection to an existing ranges, when that single row that separated them is selected", () => {
+        expect(selectItem("extended", [[8, 10],12], 11, false, true, 13)).toEqual([
+          [8, 12],
+        ]);
+      });
+
       it("returns selected items in order", () => {
         expect(selectItem("extended", [2, 9], 7, false, true)).toEqual([
           2, 7, 9,

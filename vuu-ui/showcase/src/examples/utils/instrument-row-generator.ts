@@ -84,41 +84,40 @@ console.log({ maxIndex });
 
 console.log(`instruments data-generator created ${data.length} rows`);
 
-export const InstrumentRowGenerator: RowGenerator =
-  (columns) => (index: number) => {
-    if (index > maxIndex) {
-      throw Error("generateRow index val is too high");
-    }
-    const index1 = Math.floor(index / 64000);
-    const remainder1 = index % 64000;
+export const InstrumentRowGenerator: RowGenerator = () => (index: number) => {
+  if (index > maxIndex) {
+    throw Error("generateRow index val is too high");
+  }
+  const index1 = Math.floor(index / 64000);
+  const remainder1 = index % 64000;
 
-    const index2 = Math.floor(remainder1 / 3200);
-    const remainder2 = remainder1 % 3200;
+  const index2 = Math.floor(remainder1 / 3200);
+  const remainder2 = remainder1 % 3200;
 
-    const index3 = Math.floor(remainder2 / 160);
-    const remainder3 = remainder2 % 160;
+  const index3 = Math.floor(remainder2 / 160);
+  const remainder3 = remainder2 % 160;
 
-    const index4 = Math.floor(remainder3 / 8);
-    const remainder4 = remainder3 % 8;
+  const index4 = Math.floor(remainder3 / 8);
+  const remainder4 = remainder3 % 8;
 
-    //   console.log(
-    //     `index = ${index},
-    //         char[0] = ${chars[index1]}, remainder = ${remainder1}
-    //         char[1] = ${chars[index2]}, remainder = ${remainder2}
-    //         char[2] = ${chars[index3]}, remainder = ${remainder3}
-    //         char[4] = ${chars[index4]}, remainder = ${remainder4}
-    //         suffix = -${suffixes[remainder4]}
-    //         `
-    //   );
+  //   console.log(
+  //     `index = ${index},
+  //         char[0] = ${chars[index1]}, remainder = ${remainder1}
+  //         char[1] = ${chars[index2]}, remainder = ${remainder2}
+  //         char[2] = ${chars[index3]}, remainder = ${remainder3}
+  //         char[4] = ${chars[index4]}, remainder = ${remainder4}
+  //         suffix = -${suffixes[remainder4]}
+  //         `
+  //   );
 
-    const suffix = suffixes[remainder4];
+  const suffix = suffixes[remainder4];
 
-    const ric = `${chars[index1]}${chars[index2]}${chars[index3]}${chars[index4]}.${suffix}`;
-    const bbg = `${chars[index1]}${chars[index2]}${chars[index3]}${chars[index4]} ${suffix}`;
-    const isin = `${chars[index1]}${chars[index2]}${chars[index3]}${chars[index4]}`;
-    const description = `${ric} ${locations[suffix][0]}`;
-    const currency = currencies[random(0, 4)];
-    const exchange = locations[suffix][1];
-    const lotSize = random(10, 1000);
-    return [bbg, currency, description, exchange, isin, lotSize, ric];
-  };
+  const ric = `${chars[index1]}${chars[index2]}${chars[index3]}${chars[index4]}.${suffix}`;
+  const bbg = `${chars[index1]}${chars[index2]}${chars[index3]}${chars[index4]} ${suffix}`;
+  const isin = `${chars[index1]}${chars[index2]}${chars[index3]}${chars[index4]}`;
+  const description = `${ric} ${locations[suffix][0]}`;
+  const currency = currencies[random(0, 4)];
+  const exchange = locations[suffix][1];
+  const lotSize = random(10, 1000);
+  return [bbg, currency, description, exchange, isin, lotSize, ric];
+};
