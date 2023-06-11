@@ -101,6 +101,17 @@ body {
   z-index: -1;
 }
 
+.navbar:before {
+  content: '';
+  position: absolute;
+  top: var(--vuu-navbar-background-position);
+  left:0;
+  width: 100%;
+  background: var(--vuu-bg-gradient);
+  height: 3074px;
+  z-index: -1;
+}
+
 .navbar__inner {
   align-items: center;
   height: var(--vuu-navbar-height);
