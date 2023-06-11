@@ -3,15 +3,19 @@ import classnames from "classnames";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import { SvgArrow } from "../components/SvgArrow";
 import Chart from "../../static/img/finos/chart.png";
-import DemoApp from "../../static/img/finos/demo-app.png";
-import ViewPorting from "../../static/img/finos/view-porting.png";
-import Conflation from "../../static/img/finos/conflation.png";
-import JoiningAndTreeing from "../../static/img/finos/joining-treeing.png";
+import { useScrollPosition } from "../hooks/useScrollPosition";
+import "../theme/Footer/Footer-mobile.css";
 import { VuuFeatureLayout } from "../components/VuuFeatureLayout";
 import { VuuFeature } from "../components/VuuFeature";
-import { useScrollPosition } from "../hooks/useScrollPosition";
+import { RevolvingCaption } from "../components/RevolvingCaption";
+
+const revolvingCaptions = [
+  "your data",
+  "risk data",
+  "market data",
+  "order data",
+];
 
 function Home() {
   const context = useDocusaurusContext();
@@ -25,37 +29,27 @@ function Home() {
           <div className="vuu-scroll-1-copy">
             <h1 className="vuu-heading-1">
               Delivering <br />
-              <span className="vuu-revolving-caption">market data</span>
+              <RevolvingCaption captions={revolvingCaptions} />
+              {/* <span className="vuu-revolving-caption">market data</span> */}
             </h1>
             <h2 className="vuu-heading-2">
               from trading systems, <br />
               to human eyes
             </h2>
-            <img
-              className="vuu-chart"
-              src={Chart}
-              alt="chart"
-              style={{ marginTop: "50px" }}
-            />
+            <img className="vuu-chart" src={Chart} alt="chart" />
 
             <p className="vuu-paragraph-large">
               Vuu deals with the complex task of viewporting, throttling <br />{" "}
               and transmiting your data to clients, so you don't have to.
             </p>
-            <Link
-              className={classnames(
-                "vuu-action button vuu-get-started-button button--lg"
-              )}
-              to={"https://finos.org/"}
-            >
-              GET STARTED
-            </Link>
-          </div>
-        </div>
-        <div className="vuu-scroll-1-scroll-arrow">
-          <div className="vuu-scroll-arrow">
-            <div className="vuu-scroll-arrow-title">SCROLL</div>
-            <SvgArrow className="vuu-scroll-arrow-svg" radius={3} />
+            <div className="vuu-button-bar">
+              <Link
+                className="vuu-button vuu-button-cta"
+                to="https://finos.org/"
+              >
+                GET STARTED
+              </Link>
+            </div>
           </div>
         </div>
       </header>
