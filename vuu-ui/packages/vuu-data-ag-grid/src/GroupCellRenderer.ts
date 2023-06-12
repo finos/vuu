@@ -74,7 +74,7 @@ export class GroupCellRenderer {
     this.eContracted = this.eGui.querySelector(".ag-group-contracted");
     this.eExpanded = this.eGui.querySelector(".ag-group-expanded");
     if (params.node.data) {
-      const level = params.node.data.level;
+      const level = params.node.data.level as number;
       if (level) {
         this.eContainer?.classList.add(`ag-row-group-indent-${level}`);
       }
@@ -83,7 +83,7 @@ export class GroupCellRenderer {
       if (!isChild) {
         // prettier-ignore
         const col = params.columnApi
-          .getRowGroupColumns()[params.node.data.level].getColId();
+          .getRowGroupColumns()[level].getColId();
         this.params.node.key = params.node.data[col].toString();
         if (this.eValue) {
           this.eValue.textContent = params.node.data[col].toString();
