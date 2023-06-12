@@ -404,20 +404,24 @@
 @keyframes ta_mo { 0% { offset-distance: 0%; animation-timing-function: cubic-bezier(0.42,0,0.335,1.005); } 12.5% { offset-distance: 0%; animation-timing-function: cubic-bezier(0.42,0,0.335,1.005); } 25% { offset-distance: 44.072%; animation-timing-function: cubic-bezier(0.42,0,0.335,1.025); } 37.5% { offset-distance: 44.072%; animation-timing-function: cubic-bezier(0.42,0,0.335,1.025); } 50% { offset-distance: 44.976%; animation-timing-function: cubic-bezier(0.42,0,0.325,0.995); } 62.5% { offset-distance: 44.976%; animation-timing-function: cubic-bezier(0.42,0,0.325,0.995); } 75% { offset-distance: 48.235%; animation-timing-function: cubic-bezier(0.42,0,0.265,1.005); } 87.5% { offset-distance: 48.235%; animation-timing-function: cubic-bezier(0.42,0,0.265,1.005); } 100% { offset-distance: 100%; } }
 @keyframes tc_mo { 0% { offset-distance: 0%; animation-timing-function: cubic-bezier(0.42,0,0.335,1.005); } 12.5% { offset-distance: 0%; animation-timing-function: cubic-bezier(0.42,0,0.335,1.005); } 25% { offset-distance: 44.146%; animation-timing-function: cubic-bezier(0.42,0,0.335,1.025); } 37.5% { offset-distance: 44.146%; animation-timing-function: cubic-bezier(0.42,0,0.335,1.025); } 50% { offset-distance: 62.389%; animation-timing-function: cubic-bezier(0.42,0,0.325,0.995); } 62.5% { offset-distance: 62.389%; animation-timing-function: cubic-bezier(0.42,0,0.325,0.995); } 75% { offset-distance: 64.249%; animation-timing-function: cubic-bezier(0.42,0,0.265,1.005); } 87.5% { offset-distance: 64.249%; animation-timing-function: cubic-bezier(0.42,0,0.265,1.005); } 100% { offset-distance: 100%; } }
 
-  
-#vuu-chart {
+
+#vuu-data-animation {
     --vuu-animation-override: unset;
-    --vuu-timimng-duration: 10s;
-    background-color: #19053f;
-    height: 700px;
+    height: 400px;
+    opacity: 1;
     shape-rendering: geometricPrecision;
+    transition: opacity 1.5s linear;
     white-space: pre;
-    width: 700px;
+    width: 400px;
+}
+
+#vuu-data-animation.vuu-hidden {
+    opacity: 0;
 }
   
-#vuu-chart g {
+#vuu-data-animation g {
     animation-direction: alternate;
-    animation-duration: var(--vuu-timimng-duration, 6.4s);
+    animation-duration: var(--vuu-animation-duration, 6.4s);
     animation-fill-mode: both;
     animation-name: var(--vuu-animation-override, var(--vuu-animation));
     animation-iteration-count: 1;
@@ -425,9 +429,9 @@
     transform: translate(-1.5px, -1.5px);
 }
   
-#vuu-chart path {
+#vuu-data-animation path {
     animation-direction: alternate;
-    animation-duration: var(--vuu-timimng-duration, 6.4s);
+    animation-duration: var(--vuu-animation-duration, 6.4s);
     animation-fill-mode: both;
     animation-iteration-count: 1;
     animation-name: var(--vuu-animation-override, var(--vuu-animation));
