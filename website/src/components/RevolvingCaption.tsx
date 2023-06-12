@@ -11,13 +11,17 @@ import cx from "classnames";
 import "./RevolvingCaption.css";
 
 export interface RevolvingCaptionProps extends HTMLAttributes<HTMLDivElement> {
+  animationState: "waiting" | "running" | "paused";
   captions: string[];
-  interval?: number;
+  intervals?: number[];
+  loopInterval?: number;
 }
 
 export const RevolvingCaption = ({
+  animationState = "running",
   captions: captionsProp,
-  interval = 5,
+  intervals = Array(captionsProp.length).fill(5),
+  loopInterval = 5,
   style,
   ...htmlAttributes
 }: RevolvingCaptionProps) => {
@@ -29,6 +33,10 @@ export const RevolvingCaption = ({
   const timerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
+    console.log(`RevolvingCaption animationState = ${animationState}`);
+  }, [animationState]);
+
+  useEffect(() => {
     const revolve = () => {
       if (index === captions.length - 1) {
         setIndex(0);
@@ -38,10 +46,18 @@ export const RevolvingCaption = ({
       timerRef.current = undefined;
     };
 
-    if (timerRef.current === undefined) {
-      timerRef.current = window.setTimeout(revolve, interval * 1000);
+    if (timerRef.current === undefined && animationState === "running") {
+      console.log("kick off revolving animations");
+      const interval = intervals[index] ?? loopInterval;
+      timerRef.current = window.setTimeout(
+        revolve,
+        Math.floor(interval * 1000)
+      );
+    } else if (timerRef.current !== undefined && animationState !== "running") {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = undefined;
     }
-  }, [captions, index]);
+  }, [animationState, captions, index]);
 
   const offset = index * 84;
 
@@ -56,11 +72,14 @@ export const RevolvingCaption = ({
           "--vuu-revolving-caption-transform": `translateY(-${offset}px)`,
         };
 
-  useEffect(() => () => {
-    if (timerRef.current) {
-      window.clearTimeout(timerRef.current);
-    }
-  });
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+      }
+    },
+    []
+  );
 
   return (
     <div

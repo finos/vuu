@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
 import "./DataAnimation.css";
 
@@ -7,22 +7,69 @@ declare module "react" {
     [key: `--${string}`]: string | number;
   }
 }
-export const DataAnimation = () => {
-  const [playing, setPlaying] = React.useState<"none" | "unset">("unset");
+
+export interface DataAnimationProps {
+  animationState: "waiting" | "running" | "paused";
+  height?: number;
+  interval?: number;
+  width?: number;
+}
+
+export const DataAnimation = ({
+  animationState = "running",
+  height = 700,
+  interval = 5,
+  width = 700,
+}: DataAnimationProps) => {
+  const svgRef = useRef<SVGElement>(null);
+  const [playing, setPlaying] = React.useState<"none" | "unset">("none");
+
+  const handleTransitionEnd = useCallback(() => {
+    console.log("transition end");
+    if (svgRef.current) {
+      setPlaying("none");
+      if (svgRef.current.classList.contains("vuu-hidden")) {
+        svgRef.current.classList.remove("vuu-hidden");
+      } else {
+        setPlaying("unset");
+      }
+    }
+  }, []);
 
   const handleAnimationEnd = React.useCallback(() => {
-    console.log("animation end");
+    if (svgRef.current) {
+      svgRef.current.addEventListener("transitionend", handleTransitionEnd);
+      svgRef.current.classList.add("vuu-hidden");
+    }
   }, []);
+
+  useEffect(() => {
+    console.log(`DataAnimation animationState = ${animationState}`);
+    if (animationState === "running") {
+      console.log("kick off data animation");
+      setPlaying("unset");
+    } else {
+      setPlaying("none");
+    }
+  }, [animationState]);
+
+  //   useEffect(() => {
+  //     setPlaying("unset");
+  //   }, []);
 
   // prettier-ignore
   return (
     <div>
     <svg
-      id="vuu-chart"
+      id="vuu-data-animation"
+      ref={svgRef}
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 700 700"
+      viewBox="100 100 700 700"
       style={{
-        "--vuu-animation-override": playing
+        height,
+        width,
+        "--vuu-animation-override": playing,
+        "--vuu-animation-duration": `${interval * 4}s`
       }}
     >
      <g  style={{"--vuu-animation":"a_t, a_mo" , offsetPath: "path('M179.5,184.5C179.5,184.5,179.5,184.5,179.5,184.5C179.5,184.5,229.5,280.5,229.5,280.5C229.5,280.5,229.5,280.5,229.5,280.5C229.5,280.5,230.5,301.5,230.5,301.5C230.5,301.5,230.5,301.5,230.5,301.5C230.5,301.5,229.5,314.5,229.5,314.5C229.5,314.5,229.5,314.5,229.5,314.5C229.5,314.5,229.5,284.5,229.5,284.5')"}}>

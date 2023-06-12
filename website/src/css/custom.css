@@ -55,6 +55,7 @@
   --ifm-navbar-background-color: transparent;
   --ifm-navbar-height: var(--vuu-navbar-height);
   --ifm-navbar-link-color: #ffffff;
+  --ifm-navbar-link-hover-color: #ffffff;
   --ifm-navbar-item-padding-horizontal: 0;
   --ifm-pagination-nav-color-hover: transparent;
   --ifm-paragraph-margin-bottom: 0;
@@ -66,6 +67,10 @@
   --ifm-footer-color: #ffffff;
   --ifm-footer-link-color: #ffffff;
   --ifm-code-font-size: 95%;
+}
+
+.docs-doc-page {
+  --vuu-desktop-width: 100%;  
 }
 
 body {
@@ -127,9 +132,15 @@ body {
   line-height: 30px;
   margin: 0 12px;
 }
+
+.navbar__link:hover {
+  border-bottom: solid 3px white;
+}
+
 .navbar__link--active {
   border-bottom: solid 3px var(--vuu-accent1);
 }
+
 
 .navbar [class*="colorModeToggle"] {
   display: none;
@@ -310,7 +321,6 @@ margin-top: 50px;
 
 .navbar__items--right {
   position: relative;
-  top: var(--vuu-navbar-menu-top, 26px);
 }
 
 .hero__title {
