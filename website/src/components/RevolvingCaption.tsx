@@ -33,10 +33,6 @@ export const RevolvingCaption = ({
   const timerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    console.log(`RevolvingCaption animationState = ${animationState}`);
-  }, [animationState]);
-
-  useEffect(() => {
     const revolve = () => {
       if (index === captions.length - 1) {
         setIndex(0);
@@ -47,7 +43,6 @@ export const RevolvingCaption = ({
     };
 
     if (timerRef.current === undefined && animationState === "running") {
-      console.log("kick off revolving animations");
       const interval = intervals[index] ?? loopInterval;
       timerRef.current = window.setTimeout(
         revolve,
