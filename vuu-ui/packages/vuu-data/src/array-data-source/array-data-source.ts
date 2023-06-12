@@ -254,67 +254,7 @@ export class ArrayDataSource
 
   select(selected: Selection) {
     debug?.(`select ${JSON.stringify(selected)}`);
-    // const { added, removed } = getSelectionDiff(this.selectedRows, selected);
-
-    // TODO filtered o sortedRows
-    // const rows = this.#data;
-
     this.selectedRows = selected;
-
-    // const updatedRows: DataSourceRow[] = [];
-
-    // added.forEach((rowIdx) => {
-    //   if (typeof rowIdx === "number") {
-    //     if (rowIdx > 0 && !isSelected(selected, rowIdx - 1)) {
-    //       updatedRows.push(selectRow(rows[rowIdx - 1], 2));
-    //       updatedRows.push(selectRow(rows[rowIdx], 3));
-    //     } else {
-    //       if (rowIdx > 0 && isSelected(selected, rowIdx - 1)) {
-    //         updatedRows.push(selectRow(rows[rowIdx - 1], 1));
-    //       }
-    //       updatedRows.push(selectRow(rows[rowIdx], 3));
-    //     }
-    //   } else {
-    //     if (rowIdx[0] > 0) {
-    //       if (!isSelected(selected, rowIdx[0] - 1)) {
-    //         updatedRows.push(selectRow(rows[rowIdx[0] - 1], 2));
-    //       } else if (rowIdx[0] > 0 && isSelected(selected, rowIdx[0] - 1)) {
-    //         updatedRows.push(selectRow(rows[rowIdx[0] - 1], 1));
-    //       }
-    //     }
-    //     for (let i = rowIdx[0]; i <= rowIdx[1]; i++) {
-    //       if (i === rowIdx[1]) {
-    //         updatedRows.push(selectRow(rows[i], 3));
-    //       } else {
-    //         updatedRows.push(selectRow(rows[i], 1));
-    //       }
-    //     }
-    //   }
-    // });
-    // removed.forEach((rowIdx) => {
-    //   if (typeof rowIdx === "number") {
-    //     if (rowIdx > 0) {
-    //       updatedRows.push(selectRow(rows[rowIdx - 1], 0));
-    //     }
-    //     updatedRows.push(selectRow(rows[rowIdx], 0));
-    //   } else {
-    //     if (rowIdx[0] > 0) {
-    //       updatedRows.push(selectRow(rows[rowIdx[0] - 1], 0));
-    //     }
-    //     for (let i = rowIdx[0]; i <= rowIdx[1]; i++) {
-    //       updatedRows.push(selectRow(rows[i], 0));
-    //     }
-    //   }
-    // });
-
-    // if (updatedRows.length > 0) {
-    //   this.clientCallback?.({
-    //     clientViewportId: this.viewport,
-    //     mode: "update",
-    //     type: "viewport-update",
-    //     rows: updatedRows,
-    //   });
-    // }
     this.setRange(resetRange(this.#range), true);
   }
 
