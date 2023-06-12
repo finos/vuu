@@ -22,6 +22,7 @@ module.exports = {
   stylesheets: [
     "https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700&display=swap",
     "https://fonts.googleapis.com/css?family=Raleway:400,500&display=swap",
+    "/css/DataAnimation.css",
   ],
   themeConfig: {
     navbar: {
