@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import classnames from "classnames";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import { SvgArrow } from "../components/SvgArrow";
-import Chart from "../../static/img/finos/chart.png";
 import SampleApp from "../../static/img/vuu/SampleApp.png";
 import ViewPorting from "../../static/img/finos/view-porting.png";
 import Conflation from "../../static/img/finos/conflation.png";
@@ -13,6 +12,7 @@ import { VuuFeatureLayout } from "../components/VuuFeatureLayout";
 import { VuuFeature } from "../components/VuuFeature";
 import { useScrollPosition } from "../hooks/useScrollPosition";
 import { RevolvingCaption } from "../components/RevolvingCaption";
+import { DataAnimation } from "../components/DataAnimation";
 
 const revolvingCaptions = [
   "your data",
@@ -21,10 +21,17 @@ const revolvingCaptions = [
   "order data",
 ];
 
+const captionIntervals = [3, 5, 5, 5];
+
 function Home() {
   const context = useDocusaurusContext();
+  const [animationState, setAnimationState] = useState("waiting");
   const { siteConfig = {} } = context;
   useScrollPosition();
+  useEffect(() => {
+    console.log("trigger animations");
+    setAnimationState("running");
+  }, []);
   return (
     <Layout title={`${siteConfig.title}`} description={`${siteConfig.tagline}`}>
       <div className="vuu-scroll-1-bg" />
@@ -33,7 +40,12 @@ function Home() {
           <div className="vuu-scroll-1-copy">
             <h1 className="vuu-heading-1">
               Delivering
-              <RevolvingCaption captions={revolvingCaptions} />
+              <RevolvingCaption
+                captions={revolvingCaptions}
+                animationState={animationState}
+                intervals={captionIntervals}
+                loopInterval={5}
+              />
             </h1>
             <h2 className="vuu-heading-2">
               from trading systems, to human eyes
@@ -51,11 +63,11 @@ function Home() {
               </Link>
             </div>
           </div>
-          <img
-            className="vuu-chart"
-            src={Chart}
-            alt="chart"
-            // style={{ height: "500px", width: "400px" }}
+          <DataAnimation
+            animationState={animationState}
+            height={600}
+            interval={5}
+            width={600}
           />
         </div>
         <div className="vuu-scroll-1-scroll-arrow">
