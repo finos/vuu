@@ -276,7 +276,6 @@ TableNextResizeable.displaySequence = displaySequence++;
 
 export const DefaultVuuTable = () => {
   const { typeaheadHook: _, ...config } = useTableConfig({
-    columnCount: 10,
     count: 1000,
     lazyData: false,
     rangeChangeRowset: "full",
