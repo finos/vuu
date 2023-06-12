@@ -1,5 +1,8 @@
 import React, { useCallback, useEffect, useRef } from "react";
 
+// The @keyframe animations required by this component are deployed as a static asset and included in index.html
+// using the styleSheets config attribute. If allowed to be processed by webpack build, they are stripped out.
+
 import "./DataAnimation.css";
 
 declare module "react" {
@@ -25,7 +28,6 @@ export const DataAnimation = ({
   const [playing, setPlaying] = React.useState<"none" | "unset">("none");
 
   const handleTransitionEnd = useCallback(() => {
-    console.log("transition end");
     if (svgRef.current) {
       setPlaying("none");
       if (svgRef.current.classList.contains("vuu-hidden")) {
@@ -44,7 +46,6 @@ export const DataAnimation = ({
   }, []);
 
   useEffect(() => {
-    console.log(`DataAnimation animationState = ${animationState}`);
     if (animationState === "running") {
       console.log("kick off data animation");
       setPlaying("unset");
@@ -52,10 +53,6 @@ export const DataAnimation = ({
       setPlaying("none");
     }
   }, [animationState]);
-
-  //   useEffect(() => {
-  //     setPlaying("unset");
-  //   }, []);
 
   // prettier-ignore
   return (
