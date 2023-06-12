@@ -3,13 +3,9 @@ import classnames from "classnames";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import Chart from "../../static/img/finos/chart.png";
-import { useScrollPosition } from "../hooks/useScrollPosition";
-import "../theme/Footer/Footer-mobile.css";
-import { VuuFeatureLayout } from "../components/VuuFeatureLayout";
-import { VuuFeature } from "../components/VuuFeature";
+// import "../theme/Footer/Footer-mobile.css";
 import { RevolvingCaption } from "../components/RevolvingCaption";
-
+import { ChartMobile } from "../components/ChartMobile";
 const revolvingCaptions = [
   "your data",
   "risk data",
@@ -20,7 +16,6 @@ const revolvingCaptions = [
 function Home() {
   const context = useDocusaurusContext();
   const { siteConfig = {} } = context;
-  useScrollPosition();
   return (
     <Layout title={`${siteConfig.title}`} description={`${siteConfig.tagline}`}>
       <div className="vuu-scroll-1-bg" />
@@ -36,7 +31,8 @@ function Home() {
               from trading systems, <br />
               to human eyes
             </h2>
-            <img className="vuu-chart" src={Chart} alt="chart" />
+            {/* <img className="vuu-chart" src={Ch} alt="chart" /> */}
+            <ChartMobile />
 
             <p className="vuu-paragraph-large">
               Vuu deals with the complex task of viewporting, throttling <br />{" "}
