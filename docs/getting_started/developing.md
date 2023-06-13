@@ -21,7 +21,7 @@ You can install command line maven via any means you please, but sdkman makes it
 sdk install maven
 ```
 
-## Installation - Server - Command Line
+## Installation - Server
 
 ### Prerequisites
 

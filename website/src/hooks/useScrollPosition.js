@@ -1,6 +1,9 @@
 import { useCallback, useEffect } from "react";
 
-const LOGO_SIZE = 90;
+const FULL_LOGO_HEIGHT = 90;
+const FULL_LOGO_WIDTH = 185;
+const SMALL_LOGO_HEIGHT = 60;
+const SMALL_LOGO_WIDTH = 140;
 
 export const useScrollPosition = () => {
   const scrollListener = useCallback(() => {
@@ -32,11 +35,35 @@ export const useScrollPosition = () => {
       root.style.setProperty("--vuu-navbar-padding", `${padding}px`);
     }
 
-    if (scrollTop > 60 && scrollTop < 101) {
-      const size = LOGO_SIZE - (scrollTop - 60);
-      root.style.setProperty("--vuu-navbar-logo-size", `${size}px`);
+    if (scrollTop > 100) {
+      root.style.setProperty(
+        "--vuu-navbar-logo-height",
+        `${SMALL_LOGO_HEIGHT}px`
+      );
+      root.style.setProperty(
+        "--vuu-navbar-logo-width",
+        `${SMALL_LOGO_WIDTH}px`
+      );
+    } else if (scrollTop > 60 && scrollTop < 101) {
+      const scrollPct = (scrollTop - 60) / 40;
+      const maxHeightDiff = FULL_LOGO_HEIGHT - SMALL_LOGO_HEIGHT;
+      const maxWidthDiff = FULL_LOGO_WIDTH - SMALL_LOGO_WIDTH;
+      const heightAdjustment = Math.round(scrollPct * maxHeightDiff);
+      const widthAdjustment = Math.round(scrollPct * maxWidthDiff);
+      console.log(`scrtoll reduction = ${scrollPct}%`);
+      // const size = LOGO_SIZE - (scrollTop - 60);
+      root.style.setProperty(
+        "--vuu-navbar-logo-height",
+        `${FULL_LOGO_HEIGHT - heightAdjustment}px`
+      );
+      root.style.setProperty(
+        "--vuu-navbar-logo-width",
+        `${FULL_LOGO_WIDTH - widthAdjustment}px`
+      );
     } else if (scrollTop <= 60) {
-      root.style.setProperty("--vuu-navbar-logo-size", `${LOGO_SIZE}px`);
+      // prettier-ignore
+      root.style.setProperty("--vuu-navbar-logo-height",`${FULL_LOGO_HEIGHT}px`);
+      root.style.setProperty("--vuu-navbar-logo-width", `${FULL_LOGO_WIDTH}px`);
     }
 
     if (scrollTop > 80) {

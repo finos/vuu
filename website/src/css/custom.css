@@ -13,9 +13,11 @@
 
   --vuu-heading3-color: var(--vuu-accent1);
 
+  --vuu-homepage-height: 3074px;
+  --vuu-navbar-logo-height: 90px;
+  --vuu-navbar-logo-width: 185px;
   --vuu-navbar-height: 200px;
   --vuu-navbar-padding: 80px;
-  --vuu-navbar-logo-size: 90px;
   --vuu-navbar-menu-top: 26px;
   --vuu-navbar-bg: transparent;
   --vuu-navbar-background-position: 0px;
@@ -51,6 +53,7 @@
   --ifm-menu-color: var(--vuu-light-text-primary);
   --ifm-menu-color-active: var(--vuu-light-text-primary);
   --ifm-menu-color-background-active: transparent;
+  --ifm-menu-color-background-hover: transparent;
   
   --ifm-navbar-background-color: transparent;
   --ifm-navbar-height: var(--vuu-navbar-height);
@@ -69,9 +72,6 @@
   --ifm-code-font-size: 95%;
 }
 
-.docs-doc-page {
-  --vuu-desktop-width: 100%;  
-}
 
 body {
   align-items: center;
@@ -80,6 +80,7 @@ body {
   flex-direction: column;
   font-family: var(--vuu-font-family);
 }
+
 
 #__docusaurus {
   align-items: center;
@@ -103,25 +104,32 @@ body {
   left:0;
   width: 100%;
   background: var(--vuu-bg-gradient);
-  height: 3074px;
+  height: var(--vuu-homepage-height);
   z-index: -1;
 }
 
 .navbar__inner {
-  align-items: center;
+  align-items: flex-start;
   height: var(--vuu-navbar-height);
   padding: var(--vuu-navbar-padding) 80px 0 80px;
 }
 
 
 .navbar__logo {
-  height: var(--vuu-navbar-logo-size);
+  height: var(--vuu-navbar-logo-height);
+  width: var(--vuu-navbar-logo-width);
 
 }
 
 .navbar .navbar__logo > img {
-  height: var(--vuu-navbar-logo-size);
+  /* height: var(--vuu-navbar-logo-size); */
+  width: var(--vuu-navbar-logo-width);
   transition: height var(--vuu-transition-duration);
+}
+
+.navbar__items--right {
+  position: relative;
+  top: 30px;
 }
 
 .navbar__link {
@@ -152,7 +160,7 @@ body {
 
 .vuu-scroll-1-bg {
   background: var(--vuu-bg-gradient);
-  height: 3074px;
+  height: var(--vuu-homepage-height);
   left: 0px;
   position: absolute;
   top:0px;
@@ -170,11 +178,19 @@ body {
 .vuu-scroll-1-main {
   display: flex;
   flex: 1 1 auto;
-  justify-content: space-around;
+  justify-content: space-between;
+  padding: 0 80px;
 }
 
 .vuu-scroll-1-copy {
-margin-top: 50px;
+  flex: 0 0 auto;
+  margin-top: 50px;
+}
+
+.vuuDataAnimation {
+  flex: 1 1 auto;
+  height: 450px;
+  overflow: hidden;
 }
 
 .vuu-scroll-1-scroll-arrow {
@@ -249,13 +265,13 @@ margin-top: 50px;
 .vuu-demo-container {
   background: white;
   border-radius: 8px;
-  height: 422px;
+  height: 490px;
   margin-right: 60px;
   width: 694px;
 }
 
 .vuu-sample-app {
-  transform: translate(100px, 50px);
+
 }
 
 
@@ -317,10 +333,6 @@ margin-top: 50px;
 .hero.hero--primary img {
   margin-bottom: 30px;
   width: 50%;
-}
-
-.navbar__items--right {
-  position: relative;
 }
 
 .hero__title {
