@@ -3,7 +3,7 @@ import classnames from "classnames";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-// import "../theme/Footer/Footer-mobile.css";
+import "../theme/Footer/Footer-mobile.css";
 import { RevolvingCaption } from "../components/RevolvingCaption";
 import { ChartMobile } from "../components/ChartMobile";
 const revolvingCaptions = [
