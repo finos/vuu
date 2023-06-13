@@ -20,6 +20,7 @@ import {
   DataSourceVisualLinkRemovedMessage,
 } from "../data-source";
 import {
+  groupRowsByViewport,
   isVuuMenuRpcRequest,
   stripRequestId,
   WithRequestId,
@@ -106,18 +107,6 @@ function addLabelsToLinks(
     }
   });
 }
-
-const byViewportRowIdxTimestamp = (row1: VuuRow, row2: VuuRow) => {
-  if (row1.viewPortId === row2.viewPortId) {
-    if (row1.rowIndex === row2.rowIndex) {
-      return row1.ts > row2.ts ? 1 : -1;
-    } else {
-      return row1.rowIndex > row2.rowIndex ? 1 : -1;
-    }
-  } else {
-    return row1.viewPortId > row2.viewPortId ? 1 : -1;
-  }
-};
 
 type PendingRequest<T = unknown> = {
   reject: (err: unknown) => void;
@@ -786,74 +775,49 @@ export class ServerProxy {
         break;
       case Message.TABLE_ROW:
         {
-          body.rows.sort(byViewportRowIdxTimestamp);
-          let currentViewportId = "";
-          let viewport: Viewport | undefined;
-          let startIdx = 0;
+          const viewportRowMap = groupRowsByViewport(body.rows);
 
-          if (process.env.NODE_ENV === "development") {
-            if (debugEnabled) {
-              const [firstRow, secondRow] = body.rows;
-              if (body.rows.length === 0) {
-                debug("handleMessageFromServer TABLE_ROW 0 rows");
-              } else if (firstRow?.rowIndex === -1) {
-                if (body.rows.length === 1) {
-                  if (firstRow.updateType === "SIZE") {
-                    debug(
-                      `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`
-                    );
-                  } else {
-                    debug(
-                      `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ${firstRow.vpSize} rowIdx ${firstRow.rowIndex}`
-                    );
-                  }
+          if (process.env.NODE_ENV === "development" && debugEnabled) {
+            const [firstRow, secondRow] = body.rows;
+            if (body.rows.length === 0) {
+              debug("handleMessageFromServer TABLE_ROW 0 rows");
+            } else if (firstRow?.rowIndex === -1) {
+              if (body.rows.length === 1) {
+                if (firstRow.updateType === "SIZE") {
+                  debug(
+                    `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`
+                  );
                 } else {
                   debug(
-                    `handleMessageFromServer TABLE_ROW ${
-                      body.rows.length
-                    } rows, SIZE ${firstRow.vpSize}, [${
-                      secondRow?.rowIndex
-                    }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`
+                    `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ${firstRow.vpSize} rowIdx ${firstRow.rowIndex}`
                   );
                 }
               } else {
                 debug(
                   `handleMessageFromServer TABLE_ROW ${
                     body.rows.length
-                  } rows [${firstRow?.rowIndex}] - [${
-                    body.rows[body.rows.length - 1]?.rowIndex
-                  }]`
+                  } rows, SIZE ${firstRow.vpSize}, [${
+                    secondRow?.rowIndex
+                  }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`
                 );
               }
+            } else {
+              debug(
+                `handleMessageFromServer TABLE_ROW ${body.rows.length} rows [${
+                  firstRow?.rowIndex
+                }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`
+              );
             }
           }
 
-          for (
-            let i = 0, count = body.rows.length, isLast = i === count - 1;
-            i < count;
-            i++, isLast = i === count - 1
-          ) {
-            const row = body.rows[i];
-            if (row.viewPortId !== currentViewportId || isLast) {
-              const viewportId =
-                count === 1 ? row.viewPortId : currentViewportId;
-              if (viewportId !== "") {
-                viewport = viewports.get(viewportId);
-                if (viewport) {
-                  if (startIdx === 0 && isLast) {
-                    viewport.updateRows(body.rows);
-                  } else {
-                    const end = isLast ? count : i;
-                    viewport.updateRows(body.rows.slice(startIdx, end));
-                    startIdx = i;
-                  }
-                } else {
-                  warn?.(
-                    `TABLE_ROW message received for non registered viewport ${viewportId}`
-                  );
-                }
-              }
-              currentViewportId = row.viewPortId;
+          for (const [viewportId, rows] of Object.entries(viewportRowMap)) {
+            const viewport = viewports.get(viewportId);
+            if (viewport) {
+              viewport.updateRows(rows);
+            } else {
+              warn?.(
+                `TABLE_ROW message received for non registered viewport ${viewportId}`
+              );
             }
           }
 

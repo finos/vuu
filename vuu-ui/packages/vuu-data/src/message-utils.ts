@@ -43,3 +43,14 @@ export const getFirstAndLastRows = (
   const lastRow = rows.at(-1) as VuuRow;
   return [firstRow, lastRow];
 };
+
+export type ViewportRowMap = { [key: string]: VuuRow[] };
+export const groupRowsByViewport = (rows: VuuRow[]): ViewportRowMap => {
+  const result: ViewportRowMap = {};
+  for (const row of rows) {
+    const rowsForViewport =
+      result[row.viewPortId] || (result[row.viewPortId] = []);
+    rowsForViewport.push(row);
+  }
+  return result;
+};

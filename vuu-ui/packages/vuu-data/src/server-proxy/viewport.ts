@@ -168,8 +168,6 @@ export class Viewport {
   private batchMode = true;
   private useBatchMode = true;
 
-  private ignorePostFilterRepeats = false;
-
   private rangeMonitor = new RangeMonitor("ViewPort");
 
   public clientViewportId: string;
@@ -632,8 +630,6 @@ export class Viewport {
       data: dataSourceFilter,
     });
 
-    this.ignorePostFilterRepeats = true;
-
     if (this.useBatchMode) {
       this.batchMode = true;
     }
@@ -743,16 +739,6 @@ export class Viewport {
     const [firstRow, lastRow] = getFirstAndLastRows(rows);
     if (firstRow && lastRow) {
       this.removePendingRangeRequest(firstRow.rowIndex, lastRow.rowIndex);
-    }
-
-    if (this.ignorePostFilterRepeats) {
-      if (firstRow.vpSize === this.dataWindow?.rowCount) {
-        debug?.(`ignore data, rows are post filter repeats`);
-        this.ignorePostFilterRepeats = false;
-        return;
-      } else {
-        this.ignorePostFilterRepeats = false;
-      }
     }
 
     if (rows.length === 1 && firstRow.vpSize === 0 && this.disabled) {
