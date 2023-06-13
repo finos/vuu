@@ -1663,6 +1663,219 @@ describe("ServerProxy", () => {
     });
   });
 
+  describe("filtering", () => {
+    it("invokes filter on viewport, which stores current filter criteria", () => {
+      const postMessageToClient = vi.fn();
+      const serverProxy =
+        createServerProxyAndSubscribeToViewport(postMessageToClient);
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 10)],
+        },
+      });
+
+      TEST_setRequestId(1);
+      postMessageToClient.mockClear();
+      mockConnection.send.mockClear();
+
+      serverProxy.handleMessageFromClient({
+        viewport: "client-vp-1",
+        type: "filter",
+        filter: { filter: 'ccy = "EUR"' },
+      });
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        requestId: "1",
+        body: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: 'ccy = "EUR"' },
+          groupBy: [],
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
+        },
+      });
+
+      expect(serverProxy["viewports"].get("server-vp-1")?.["filter"]).toEqual({
+        filter: 'ccy = "EUR"',
+      });
+    });
+
+    it("sets batch mode when a filter has been applied", () => {
+      const postMessageToClient = vi.fn();
+      const serverProxy =
+        createServerProxyAndSubscribeToViewport(postMessageToClient);
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 10)],
+        },
+      });
+
+      TEST_setRequestId(1);
+      postMessageToClient.mockClear();
+      mockConnection.send.mockClear();
+
+      serverProxy.handleMessageFromClient({
+        viewport: "client-vp-1",
+        type: "filter",
+        filter: { filter: 'ccy = "EUR"' },
+      });
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        requestId: "1",
+        body: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: 'ccy = "EUR"' },
+          groupBy: [],
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
+        },
+      });
+
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            sizeRow("server-vp-1", 43),
+            updateTableRow("server-vp-1", 0, 1234, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 1, 1234, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 2, 1234, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 3, 1234, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 4, 1234, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 5, 1234, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 6, 1234, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 7, 1234, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 8, 1234, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 9, 1234, { vpSize: 43 }),
+          ],
+        },
+      });
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenNthCalledWith<[DataSourceDataMessage]>(1, {
+            type: "viewport-update",
+            mode: "batch",
+            clientViewportId: "client-vp-1",
+            rows: [
+              [0,0,true,false,0,0,"key-00",0,"key-00","name 00",1234, true],
+              [1,1,true,false,0,0,"key-01",0,"key-01","name 01",1234, true],
+              [2,2,true,false,0,0,"key-02",0,"key-02","name 02",1234, true],
+              [3,3,true,false,0,0,"key-03",0,"key-03","name 03",1234, true],
+              [4,4,true,false,0,0,"key-04",0,"key-04","name 04",1234, true],
+              [5,5,true,false,0,0,"key-05",0,"key-05","name 05",1234, true],
+              [6,6,true,false,0,0,"key-06",0,"key-06","name 06",1234, true],
+              [7,7,true,false,0,0,"key-07",0,"key-07","name 07",1234, true],
+              [8,8,true,false,0,0,"key-08",0,"key-08","name 08",1234, true],
+              [9,9,true,false,0,0,"key-09",0,"key-09","name 09",1234, true],
+            ],
+            size: 43
+          });
+    });
+    it("handles TABLE_ROWS that preceed filter request together with filtered rows, in same batch", () => {
+      const postMessageToClient = vi.fn();
+      const serverProxy =
+        createServerProxyAndSubscribeToViewport(postMessageToClient);
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 10)],
+        },
+      });
+
+      TEST_setRequestId(1);
+      postMessageToClient.mockClear();
+      mockConnection.send.mockClear();
+
+      serverProxy.handleMessageFromClient({
+        viewport: "client-vp-1",
+        type: "filter",
+        filter: { filter: 'ccy = "EUR"' },
+      });
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        requestId: "1",
+        body: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          sort: { sortDefs: [] },
+          filterSpec: { filter: 'ccy = "EUR"' },
+          groupBy: [],
+          type: "CHANGE_VP_SUCCESS",
+          viewPortId: "server-vp-1",
+        },
+      });
+
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            updateTableRow("server-vp-1", 0, 1234, { vpSize: 100 }),
+            updateTableRow("server-vp-1", 1, 1234, { vpSize: 100 }),
+            updateTableRow("server-vp-1", 2, 1234, { vpSize: 100 }),
+            updateTableRow("server-vp-1", 3, 1234, { vpSize: 100 }),
+            updateTableRow("server-vp-1", 4, 1234, { vpSize: 100 }),
+            updateTableRow("server-vp-1", 5, 1234, { vpSize: 100 }),
+            updateTableRow("server-vp-1", 6, 1234, { vpSize: 100 }),
+            updateTableRow("server-vp-1", 7, 1234, { vpSize: 100 }),
+            updateTableRow("server-vp-1", 8, 1234, { vpSize: 100 }),
+            updateTableRow("server-vp-1", 9, 1234, { vpSize: 100 }),
+            sizeRow("server-vp-1", 43),
+            updateTableRow("server-vp-1", 0, 2004, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 1, 2004, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 2, 2004, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 3, 2004, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 4, 2004, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 5, 2004, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 6, 2004, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 7, 2004, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 8, 2004, { vpSize: 43 }),
+            updateTableRow("server-vp-1", 9, 2004, { vpSize: 43 }),
+          ],
+        },
+      });
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenNthCalledWith<[DataSourceDataMessage]>(1, {
+            type: "viewport-update",
+            mode: "batch",
+            clientViewportId: "client-vp-1",
+            rows: [
+              [0,0,true,false,0,0,"key-00",0,"key-00","name 00",2004, true],
+              [1,1,true,false,0,0,"key-01",0,"key-01","name 01",2004, true],
+              [2,2,true,false,0,0,"key-02",0,"key-02","name 02",2004, true],
+              [3,3,true,false,0,0,"key-03",0,"key-03","name 03",2004, true],
+              [4,4,true,false,0,0,"key-04",0,"key-04","name 04",2004, true],
+              [5,5,true,false,0,0,"key-05",0,"key-05","name 05",2004, true],
+              [6,6,true,false,0,0,"key-06",0,"key-06","name 06",2004, true],
+              [7,7,true,false,0,0,"key-07",0,"key-07","name 07",2004, true],
+              [8,8,true,false,0,0,"key-08",0,"key-08","name 08",2004, true],
+              [9,9,true,false,0,0,"key-09",0,"key-09","name 09",2004, true],
+            ],
+            size: 43
+          });
+    });
+  });
+
   describe("GroupBy", () => {
     const [clientSubscription1, serverSubscriptionAck1] = createSubscription();
 
@@ -2966,8 +3179,8 @@ describe("ServerProxy", () => {
         mode: "update",
         clientViewportId: "client-vp-1",
         rows: [
-          [1,1,true,false,0,0,"key-01",0,"key-01","name 01",2003, true],
           [3,3,true,false,0,0,"key-03",0,"key-03","name 03",2003, true],
+          [1,1,true,false,0,0,"key-01",0,"key-01","name 01",2003, true],
         ],
       });
       // prettier-ignore
@@ -2977,8 +3190,8 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-2",
         rows: [
           [3,3,true,false,0,0,"key-03",0,"key-03","name 03",2003, true],
-          [4,4,true,false,0,0,"key-04",0,"key-04","name 04",2003, true],
           [5,5,true,false,0,0,"key-05",0,"key-05","name 05",2003, true],
+          [4,4,true,false,0,0,"key-04",0,"key-04","name 04",2003, true],
         ],
       });
     });
@@ -3045,8 +3258,8 @@ describe("ServerProxy", () => {
         mode: "update",
         clientViewportId: "client-vp-1",
         rows: [
-          [1,1,true,false,0,0,"key-01",0,"key-01","name 01",2003, true],
           [3,3,true,false,0,0,"key-03",0,"key-03","name 03",2003, true],
+          [1,1,true,false,0,0,"key-01",0,"key-01","name 01",2003, true],
         ],
         size: 50
       });
@@ -3057,8 +3270,8 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-2",
         rows: [
           [3,3,true,false,0,0,"key-03",0,"key-03","name 03",2003, true],
-          [4,4,true,false,0,0,"key-04",0,"key-04","name 04",2003, true],
           [5,5,true,false,0,0,"key-05",0,"key-05","name 05",2003, true],
+          [4,4,true,false,0,0,"key-04",0,"key-04","name 04",2003, true],
         ],
         size: undefined
       });
@@ -3087,8 +3300,8 @@ describe("ServerProxy", () => {
         mode: "update",
         clientViewportId: "client-vp-1",
         rows: [
-          [1,1,true,false,0,0,"key-01",0,"key-01","name 01",2004, true],
           [3,3,true,false,0,0,"key-03",0,"key-03","name 03",2004, true],
+          [1,1,true,false,0,0,"key-01",0,"key-01","name 01",2004, true],
         ],
         size: undefined
       });
@@ -3099,8 +3312,8 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-2",
         rows: [
           [3,3,true,false,0,0,"key-03",0,"key-03","name 03",2004, true],
-          [4,4,true,false,0,0,"key-04",0,"key-04","name 04",2004, true],
           [5,5,true,false,0,0,"key-05",0,"key-05","name 05",2004, true],
+          [4,4,true,false,0,0,"key-04",0,"key-04","name 04",2004, true],
         ],
         size: 75
       });
