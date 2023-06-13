@@ -32,7 +32,7 @@ function Home() {
               to human eyes
             </h2>
             {/* <img className="vuu-chart" src={Ch} alt="chart" /> */}
-            <ChartMobile />
+            <ChartMobile className />
 
             <p className="vuu-paragraph-large">
               Vuu deals with the complex task of viewporting, throttling <br />{" "}
