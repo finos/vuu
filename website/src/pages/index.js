@@ -4,6 +4,7 @@ import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import { SvgArrow } from "../components/SvgArrow";
+import DemoApp from "../../static/img/vuu/DemoApp.png";
 import SampleApp from "../../static/img/vuu/SampleApp.png";
 import ViewPorting from "../../static/img/finos/view-porting.png";
 import Conflation from "../../static/img/finos/conflation.png";
@@ -140,12 +141,12 @@ function Home() {
           <h1 className="vuu-heading-1">Demo App</h1>
           <div className="vuu-demo-bg">
             <div className="vuu-demo-container">
-              <img className="vuu-sample-app" src={SampleApp} alt="demo-app" />
+              <img className="vuu-sample-app" src={DemoApp} alt="demo-app" />
             </div>
-            <VuuFeature title="Header">
-              A Viewport is a specific client's view onto an underlying table.
-              It has knowledge of the underlying table that a viewport is
-              looking.
+            <VuuFeature title="Demo">
+              Vuu is in incubation status. Production applications are in
+              development. A fully-featured showcase application will be
+              available for the version 1.0 launch in November 2023.
             </VuuFeature>
           </div>
 
