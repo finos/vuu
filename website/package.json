@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "docusaurus start",
+    "start": "node ./scripts/launch.mjs",
     "swizzle": "docusaurus swizzle",
     "build": "docusaurus build",
     "publish-gh-pages": "docusaurus deploy"
