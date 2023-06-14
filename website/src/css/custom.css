@@ -86,7 +86,8 @@ body {
   align-items: center;
   color: var(--vuu-dark-text-primary);
   position: relative;
-  width: var(--vuu-desktop-width);
+  /* width: var(--vuu-desktop-width); */
+  width: 100%;
 }
 
 .navbar {
@@ -149,13 +150,13 @@ body {
   border-bottom: solid 3px var(--vuu-accent1);
 }
 
-
 .navbar [class*="colorModeToggle"] {
   display: none;
 }
 
 .vuu-section {
   overflow: hidden;
+  width: var(--vuu-desktop-width);
 }
 
 .vuu-scroll-1-bg {
@@ -164,7 +165,8 @@ body {
   left: 0px;
   position: absolute;
   top:0px;
-  width: var(--vuu-desktop-width);
+  /* width: var(--vuu-desktop-width); */
+  width: 100%;
   z-index: -1;
 }
 
