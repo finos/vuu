@@ -23,16 +23,23 @@ export const useScrollPosition = () => {
     if (scrollTop < 120) {
       root.style.setProperty("--vuu-navbar-menu-top", "26px");
     } else if (scrollTop >= 120 && scrollTop < 146) {
-      const menuTop = Math.max(0, 26 - (scrollTop - 120));
+      const menuTop = Math.max(0, 6 - (scrollTop - 120));
       root.style.setProperty("--vuu-navbar-menu-top", `${menuTop}px`);
     } else {
       root.style.setProperty("--vuu-navbar-menu-top", "0px");
     }
 
     if (scrollTop < 81) {
-      const padding = 80 - scrollTop;
+      const padding = Math.max(80 - scrollTop, 12);
       // console.log(`padding ${padding}`);
       root.style.setProperty("--vuu-navbar-padding", `${padding}px`);
+      root.style.setProperty("--vuu-navbar-shadow", "none");
+    } else {
+      root.style.setProperty("--vuu-navbar-padding", "12px");
+      root.style.setProperty(
+        "--vuu-navbar-shadow",
+        "0px 3px 6px rgba(0, 0, 0, 0.2)"
+      );
     }
 
     if (scrollTop > 100) {

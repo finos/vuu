@@ -91,10 +91,11 @@ body {
 }
 
 .navbar {
-
+  box-shadow: var(--vuu-navbar-shadow);
   overflow: hidden;
   padding: 0;
   position: fixed;
+  transition: box-shadow 1s linear;
   width: var(--vuu-desktop-width);
 }
 
