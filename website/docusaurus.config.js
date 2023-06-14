@@ -12,7 +12,7 @@ module.exports = {
   tagline: `FINOS ${projectName}`,
   url: "https://vuu.finos.org",
   baseUrl: "/",
-  favicon: "img/favicon/favicon-finos.ico",
+  favicon: "img/favicon/vuu-logo-favicon.png",
   projectName: `FINOS ${projectName}`,
   organizationName: "FINOS",
   customFields: {
@@ -20,84 +20,34 @@ module.exports = {
   },
   scripts: ["https://buttons.github.io/buttons.js"],
   stylesheets: [
-    "https://fonts.googleapis.com/css?family=Overpass:400,400i,700",
+    "https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700&display=swap",
+    "https://fonts.googleapis.com/css?family=Raleway:400,500&display=swap",
+    "https://fonts.googleapis.com/css?family=Port+Lligat+Sans:400&display=swap",
+    "/css/DataAnimation.css",
   ],
   themeConfig: {
     navbar: {
-      title: `FINOS ${projectName}`,
       logo: {
         alt: "FINOS Logo",
-        src: "img/favicon/favicon-finos.ico",
+        src: "img/vuu/LogoWithName.svg",
       },
       items: [
-        { to: "docs/introduction/intro", label: "Docs", position: "right" },
-        { to: "docs/roadmap", label: "Roadmap", position: "right" },
-        { to: "docs/team", label: "Team", position: "right" },
         {
-          href: "https://github.com/finos/vuu",
-          label: "GitHub",
+          className: "vuu-nav-home",
+          to: "/",
+          label: "HOME",
           position: "right",
         },
-      ],
-    },
-    footer: {
-      copyright: `Copyright © ${new Date().getFullYear()} ${projectName} - ${copyrightOwner}`,
-      logo: {
-        alt: "FINOS Logo",
-        src: "img/favicon/favicon-finos.ico",
-        href: "https://finos.org",
-      },
-      links: [
         {
-          title: "Docs",
-          items: [
-            {
-              label: "Getting Started",
-              to: "docs/introduction/intro",
-            },
-            {
-              label: "Roadmap",
-              to: "docs/roadmap",
-            },
-            {
-              label: "Team",
-              to: "docs/team",
-            },
-            {
-              label: "About FINOS",
-              to: "docs/about-finos",
-            },
-          ],
+          to: "docs/introduction/intro",
+          label: "DOCUMENTATION",
+          position: "right",
         },
+        { to: "docs/roadmap", label: "ROADMAP", position: "right" },
         {
-          title: "FINOS",
-          items: [
-            {
-              label: "FINOS Website",
-              to: "https://www.finos.org",
-            },
-            {
-              label: "Community Handbook",
-              to: "https://community.finos.org",
-            },
-          ],
-        },
-        {
-          title: "About FINOS",
-          items: [
-            {
-              label: "FINOS Projects on GitHub",
-              to: "https://github.com/finos",
-            },
-            {
-              label: "Engage the FINOS Community",
-              to: "https://www.finos.org/engage-with-our-community",
-            },
-            {
-              label: "FINOS News and Events",
-              to: "https://www.finos.org/news-and-events",
-            },
-          ],
+          to: "https://github.com/finos/vuu",
+          label: "GITHUB",
+          position: "right",
         },
       ],
     },
@@ -107,6 +57,7 @@ module.exports = {
       "@docusaurus/preset-classic",
       {
         docs: {
+          breadcrumbs: false,
           path: "../docs",
           editUrl: "https://github.com/finos/vuu/edit/master/website/",
           sidebarPath: require.resolve("./sidebars.js"),
