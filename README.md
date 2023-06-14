@@ -4,7 +4,7 @@
 
 ## The Realtime View Server
 
-Welcome. We maintain a docusaurus book containing all the details of the project. Why not get started there:
+Welcome. We maintain a docusaurus site containing all the details of the project. Why not get started there:
 
 https://vuu.finos.org/docs/introduction/intro
 
@@ -48,6 +48,21 @@ npm run build:app
 ```
 
 You can now open the demo app in your browser at https://127.0.0.1:8443/index.html
+
+Alternatively, you may choose to run the demo app in Electron. First install Electron in the tools/electron folder:
+
+```sh
+#from top-level vuu repo (not vuu child directory in repo)
+cd vuu-ui/tools/electron
+npm install
+```
+
+Then, back in vuu-ui, run the launch script"
+
+```sh
+#from vuu/vuu-ui
+npm run launch:demo:electron
+```
 
 ## Configuring IntelliJ
 

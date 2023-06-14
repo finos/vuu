@@ -12,7 +12,7 @@ const Footer = () => {
           <img src={VuuLogo} alt="Image 1" width="80" />
           <p className="vuu-copyright">
             {" "}
-            Copyright &copy; {new Date().getFullYear()} VUU - UBS
+            Copyright &copy; {new Date().getFullYear()} VUU
           </p>
         </div>
         <div className="vuu-separator" />
