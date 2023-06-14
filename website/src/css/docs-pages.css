@@ -11,13 +11,32 @@
   }
   
   .docs-doc-page #__docusaurus {
-    align-items: stretch;
+    align-items: center;
     background-color: white;
     color: var(--vuu-light-text-primary);
     min-height: auto;
     padding-top: var(--vuu-navbar-height);
   }
+
+  .docs-doc-page .navbar {
+    justify-content: center;;
+    display: flex;
+    width: 100%;
+  }
+
+  .docs-doc-page .vuu-nav-home {
+    border-bottom-color: transparent;
+  }
   
+  .docs-doc-page .navbar__inner {
+    width: var(--vuu-desktop-width);
+  }
+  
+  .docs-doc-page .main-wrapper {
+    width: var(--vuu-desktop-width);
+
+  }
+
   .docs-doc-page .container {
     min-height: calc(100vh - var(--vuu-navbar-height));
   }
@@ -93,6 +112,7 @@
     width: 4px;
   }
   
+
   .menu__link--sublist-caret:after,
   .menu__caret:before {
     --vuu-icon-size: 12px;
