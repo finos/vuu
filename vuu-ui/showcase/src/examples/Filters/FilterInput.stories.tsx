@@ -1,4 +1,4 @@
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
   filterAsQuery,
@@ -30,12 +30,6 @@ const schemaColumns = [
 ];
 
 export const DefaultFilterInput = () => {
-  type FilterState = {
-    filter: Filter | undefined;
-    filterQuery: string;
-    filterName?: string;
-  };
-
   const namedFilters = useMemo(() => new Map<string, string>(), []);
   const [filterState, setFilterState] = useState<FilterState>({
     filter: undefined,
@@ -53,7 +47,7 @@ export const DefaultFilterInput = () => {
     (
       newFilter: Filter | undefined,
       filterQuery: string,
-      mode: "and" | "or" | "replace" = "replace",
+      mode: FilterSubmissionMode = "replace",
       filterName?: string
     ) => {
       let newFilterState: FilterState;
@@ -102,15 +96,9 @@ export const DefaultFilterInput = () => {
 DefaultFilterInput.displaySequence = displaySequence++;
 
 export const FilterInputTabs = () => {
-  type FilterState = {
-    filter: Filter | undefined;
-    filterQuery: string;
-    filterName?: string;
-  };
-
-  // prettier-ignore
   const saveOptions = useMemo<FilterSaveOptions>(
-    () => ({ allowReplace: true, allowSaveAsTab: true,}), []
+    () => ({ allowReplace: true, allowSaveAsTab: true }),
+    []
   );
 
   const namedFilters = useMemo(() => new Map<string, string>(), []);
