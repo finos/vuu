@@ -118,7 +118,7 @@ module.exports = {
         id: "faq/faq",
       },
     },
-    "Team",
-    "Roadmap",
+    "team",
+    "roadmap",
   ],
 };
