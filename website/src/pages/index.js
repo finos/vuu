@@ -18,8 +18,8 @@ import { DataAnimation } from "../components/DataAnimation";
 const revolvingCaptions = [
   "your data",
   "risk data",
-  "market data",
   "order data",
+  "market data",
 ];
 
 const captionIntervals = [3, 5, 5, 5];
@@ -58,7 +58,7 @@ function Home() {
             <div className="vuu-button-bar">
               <Link
                 className="vuu-button vuu-button-cta"
-                to="https://finos.org/"
+                to="/docs/getting_started"
               >
                 GET STARTED
               </Link>
@@ -151,12 +151,15 @@ function Home() {
           </div>
 
           <div className="vuu-button-bar">
-            <Link className="vuu-button vuu-button-cta" to="https://finos.org/">
+            <Link
+              className="vuu-button vuu-button-cta"
+              to="/docs/getting_started"
+            >
               GET STARTED
             </Link>
             <Link
               className="vuu-button vuu-button-secondary"
-              to="https://finos.org/"
+              to="https://github.com/finos/vuu"
             >
               GITHUB
             </Link>
