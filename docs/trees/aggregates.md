@@ -3,7 +3,7 @@
 Aggregates are mathematical operations we perform on the leaf nodes within a tree, that we want to display on the branch
 rows of a tree.
 
-Typically aggregrates are used to display sums or counts of values, we support the following types:
+Typically, aggregrates are used to display sums or counts of values, we support the following types:
 
 | Aggregate Type | Value | Description                                           |
 | -------------- | ----- | ----------------------------------------------------- |

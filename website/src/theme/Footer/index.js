@@ -34,7 +34,7 @@ const Footer = () => {
               <a href="/docs/roadmap">Road Map</a>
             </li>
             <li>
-              <a href="/docs/roadmap">Team</a>
+              <a href="/docs/team">Team</a>
             </li>
             <li>
               <a href="https://www.finos.org/about-us">About FINOS</a>

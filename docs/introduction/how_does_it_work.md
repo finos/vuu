@@ -4,7 +4,7 @@ Let's start with a diagram.
 
 ![](./diagrams-server-internals.png)
 
-This shows the basic flow through the system, there are components whcih have been ommitted for clarity.
+This shows the basic flow through the system, there are components which have been omitted for clarity.
 
 On the left hand side of the screen you can see **providers**. These source data from the external world, or a model in process
 and push them into a table. The table acts like a sink and forwards the event onto any join tables that are composed of

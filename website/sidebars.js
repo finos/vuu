@@ -75,7 +75,6 @@ module.exports = {
       type: "category",
       label: "The UI",
       items: [
-        "ui/fluid_ui",
         "ui/grid",
         "ui/visual_linking",
         "ui/custom_controls",
@@ -119,7 +118,7 @@ module.exports = {
         id: "faq/faq",
       },
     },
-    "team",
-    "roadmap",
+    "Team",
+    "Roadmap",
   ],
 };

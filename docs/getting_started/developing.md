@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-1. Install IntelliJ Community Edition (latest version, tested with 2021).
+1. Install IntelliJ Community Edition (latest version with supported scala plugin).
 2. Install SDKMan from the [website](https://sdkman.io/) or using your own mechanism
 3. type>`sdk install java 11.0.12-open` and then >`sdk d java 11.0.12-open` to make sure you're using the correct one.
 4. Clone the repo into a directory on your machine
@@ -51,7 +51,6 @@ this should be the same as Linux & MacOS just with Windows adjusted paths
 ## Running the Vuu Server Simulation Module from IDE
 
 1. Go to the SimulMain.scala, right click and run (add these into JVM args -Xmx10G -Xms5G)
-2. Go to the SwingClientMain.scala, right click and run
 
 ## Installation - Client
 

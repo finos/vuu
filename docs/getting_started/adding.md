@@ -8,11 +8,22 @@ You can add them to your pom by referencing the parent pom directly.
     <dependency>
         <groupId>org.finos</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>get the latest version</version>
+        <version>{check the latest version}</version>
+    </dependency>    
+    
+        <dependency>
+        <groupId>org.finos</groupId>
+        <artifactId>vuu-ui</artifactId>
+        <version>{check the latest version}</version>
     </dependency>    
 ```
 
+
+
 Adding the javascript components:
 
-TODO:
+
+```
+Work in Progress....
+```
 
