@@ -17,44 +17,27 @@ const Footer = () => {
         </div>
         <div className="vuu-separator" />
         <div className="footer-column">
-          <img className="footer-finos-logo" src={FinosLogo} alt="Image 2" />
+          <a href="https://www.finos.org/about-us">
+            <img className="footer-finos-logo" src={FinosLogo} alt="FINOS" />
+          </a>
         </div>
         <div className="vuu-separator" />
         <div className="footer-column">
           <ul className="vuu-link-list">
             <li>
-              <a href="/page1">Docs</a>
+              <a href="/docs/introduction/intro">Docs</a>
             </li>
             <li>
-              <a href="/page2">Getting Started</a>
+              <a href="/docs/getting_started">Getting Started</a>
             </li>
             <li>
-              <a href="/page2">Road Map</a>
+              <a href="/docs/roadmap">Road Map</a>
             </li>
             <li>
-              <a href="/page2">Team</a>
+              <a href="/docs/roadmap">Team</a>
             </li>
             <li>
-              <a href="/page2">About FINOS</a>
-            </li>
-          </ul>
-        </div>
-        <div className="footer-column">
-          <ul className="vuu-link-list">
-            <li>
-              <a href="/page1">Docs</a>
-            </li>
-            <li>
-              <a href="/page2">Getting Started</a>
-            </li>
-            <li>
-              <a href="/page2">Road Map</a>
-            </li>
-            <li>
-              <a href="/page2">Team</a>
-            </li>
-            <li>
-              <a href="/page2">About FINOS</a>
+              <a href="https://www.finos.org/about-us">About FINOS</a>
             </li>
           </ul>
         </div>
