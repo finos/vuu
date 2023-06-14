@@ -3,6 +3,7 @@ import classnames from "classnames";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+import "../theme/Footer/Footer-mobile.css";
 import { RevolvingCaption } from "../components/RevolvingCaption";
 import { ChartMobile } from "../components/ChartMobile";
 const revolvingCaptions = [
@@ -31,7 +32,7 @@ function Home() {
               to human eyes
             </h2>
             {/* <img className="vuu-chart" src={Ch} alt="chart" /> */}
-            <ChartMobile />
+            <ChartMobile className />
 
             <p className="vuu-paragraph-large">
               Vuu deals with the complex task of viewporting, throttling <br />{" "}
