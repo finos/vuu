@@ -11,8 +11,10 @@ export const useScrollPosition = () => {
     const scrollTop = Math.round(window.scrollY);
     // console.log(`scrollY = ${scrollY}`);
     if (scrollTop < 130) {
-      const height = 200 - scrollTop;
+      const height = Math.max(72, 200 - scrollTop);
       root.style.setProperty("--vuu-navbar-height", `${height}px`);
+    } else {
+      root.style.setProperty("--vuu-navbar-height", `72px`);
     }
 
     root.style.setProperty(
@@ -21,21 +23,21 @@ export const useScrollPosition = () => {
     );
 
     if (scrollTop < 120) {
-      root.style.setProperty("--vuu-navbar-menu-top", "26px");
+      root.style.setProperty("--vuu-navbar-menu-top", "30px");
     } else if (scrollTop >= 120 && scrollTop < 146) {
-      const menuTop = Math.max(0, 6 - (scrollTop - 120));
+      const menuTop = Math.max(15, 6 - (scrollTop - 120));
       root.style.setProperty("--vuu-navbar-menu-top", `${menuTop}px`);
     } else {
-      root.style.setProperty("--vuu-navbar-menu-top", "0px");
+      root.style.setProperty("--vuu-navbar-menu-top", "15px");
     }
 
     if (scrollTop < 81) {
-      const padding = Math.max(80 - scrollTop, 12);
+      const padding = Math.max(80 - scrollTop, 6);
       // console.log(`padding ${padding}`);
       root.style.setProperty("--vuu-navbar-padding", `${padding}px`);
       root.style.setProperty("--vuu-navbar-shadow", "none");
     } else {
-      root.style.setProperty("--vuu-navbar-padding", "12px");
+      root.style.setProperty("--vuu-navbar-padding", "6px");
       root.style.setProperty(
         "--vuu-navbar-shadow",
         "0px 3px 6px rgba(0, 0, 0, 0.2)"

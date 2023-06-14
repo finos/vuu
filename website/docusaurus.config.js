@@ -59,7 +59,7 @@ module.exports = {
         docs: {
           breadcrumbs: false,
           path: "../docs",
-          editUrl: "https://github.com/finos/vuu/edit/master/website/",
+          editUrl: "https://github.com/finos/vuu/edit/main/website/",
           sidebarPath: require.resolve("./sidebars.js"),
         },
         theme: {
