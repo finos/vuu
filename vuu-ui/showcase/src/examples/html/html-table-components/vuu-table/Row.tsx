@@ -70,7 +70,6 @@ export const Row = memo(
     );
 
     const { PreSelected, True, First, Last } = RowSelected;
-    console.log({ selectionStatus });
 
     const className = cx(classBase, classNameProp, {
       [`${classBase}-even`]: rowIndex % 2 === 0,

@@ -1,6 +1,7 @@
 .vuuTable2 {
   --vuu-table-header-color: #FFFFFF;
   --vuu-table-header-col-bg: #777C94;
+  --columnResizer-height: var(--table-height);
   --table-background: var(--salt-container-primary-background);
   font-size: 12px;
   font-weight: 500;

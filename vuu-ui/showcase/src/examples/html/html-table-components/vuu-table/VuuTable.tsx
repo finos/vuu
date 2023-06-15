@@ -46,6 +46,7 @@ export const VuuTable = ({
     getRowOffset,
     handleContextMenuAction,
     onHeaderClick,
+    onHeaderResize,
     onRowClick,
     onToggleGroup,
     menuBuilder,
@@ -132,14 +133,15 @@ export const VuuTable = ({
                 <div className={`${classBase}-col-headers`} role="row">
                   {columns.map((column, i) => {
                     const isGroup = isGroupColumn(column);
-                    const Cell = isGroup ? HeaderGroupCell : HeaderCell;
+                    const Header = isGroup ? HeaderGroupCell : HeaderCell;
                     return (
-                      <Cell
+                      <Header
                         classBase={classBase}
                         column={column}
                         idx={i}
                         key={column.key}
                         onClick={onHeaderClick}
+                        onResize={onHeaderResize}
                       />
                     );
                   })}

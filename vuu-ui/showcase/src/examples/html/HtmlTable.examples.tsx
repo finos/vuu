@@ -8,7 +8,7 @@ import {
 } from "./html-table-components";
 
 import { RowProps } from "@finos/vuu-table/src/TableRow";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ToggleButton,
   ToggleButtonGroup,
@@ -282,7 +282,21 @@ export const DefaultVuuTable = () => {
     table: { module: "SIMUL", table: "instruments" },
   });
 
-  return <VuuTable {...config} height={645} renderBufferSize={0} width={750} />;
+  const handleConfigChange = useCallback((...args) => {
+    console.log(`config change`, {
+      args,
+    });
+  }, []);
+
+  return (
+    <VuuTable
+      {...config}
+      height={645}
+      renderBufferSize={0}
+      onConfigChange={handleConfigChange}
+      width={750}
+    />
+  );
 };
 DefaultVuuTable.displaySequence = displaySequence++;
 

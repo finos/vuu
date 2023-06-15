@@ -20,6 +20,7 @@ import {
   isTypeDescriptor,
   logger,
   metadataKeys,
+  updateColumn,
   sortPinnedColumns,
   stripFilterFromColumns,
 } from "@finos/vuu-utils";
@@ -154,7 +155,7 @@ export type GridModelReducer = Reducer<TableModel, GridModelAction>;
 export type ColumnActionDispatch = (action: GridModelAction) => void;
 
 const columnReducer: GridModelReducer = (state, action) => {
-  info?.(`GridModelReducer ${action.type}`);
+  // info?.(`GridModelReducer ${action.type}`);
   switch (action.type) {
     case "init":
       return init(action);
@@ -346,8 +347,9 @@ function resizeColumn(
 
   switch (phase) {
     case "begin":
-    case "end":
       return updateColumnProp(state, { type, column, resizing });
+    case "end":
+      return updateColumnProp(state, { type, column, resizing, width });
     case "resize":
       return updateColumnProp(state, { type, column, width });
     default:
@@ -386,39 +388,36 @@ function setTableSchema(
 function pinColumn(state: TableModel, action: ColumnActionPin) {
   let { columns } = state;
   const { column, pin } = action;
-  const targetColumn = columns.find((col) => col.name === column.name);
-  if (targetColumn) {
-    columns = replaceColumn(columns, { ...targetColumn, pin });
-    columns = sortPinnedColumns(columns);
-    return {
-      ...state,
-      columns,
-    };
-  } else {
-    return state;
-  }
+  columns = updateColumn(columns, column.name, { pin });
+  columns = sortPinnedColumns(columns);
+  return {
+    ...state,
+    columns,
+  };
 }
 function updateColumnProp(state: TableModel, action: ColumnActionUpdateProp) {
   let { columns } = state;
   const { align, column, hidden, label, resizing, width } = action;
-  const targetColumn = columns.find((col) => col.name === column.name);
-  if (targetColumn) {
-    if (align === "left" || align === "right") {
-      columns = replaceColumn(columns, { ...targetColumn, align });
-    }
-    if (typeof label === "string") {
-      columns = replaceColumn(columns, { ...targetColumn, label });
-    }
-    if (typeof resizing === "boolean") {
-      columns = replaceColumn(columns, { ...targetColumn, resizing });
-    }
-    if (typeof hidden === "boolean") {
-      columns = replaceColumn(columns, { ...targetColumn, hidden });
-    }
-    if (typeof width === "number") {
-      columns = replaceColumn(columns, { ...targetColumn, width });
-    }
+  const options: Partial<KeyedColumnDescriptor> = {};
+
+  if (align === "left" || align === "right") {
+    options.align = align;
   }
+  if (typeof label === "string") {
+    options.label = label;
+  }
+  if (typeof resizing === "boolean") {
+    options.resizing = resizing;
+  }
+  if (typeof hidden === "boolean") {
+    options.hidden = hidden;
+  }
+  if (typeof width === "number") {
+    options.width = width;
+  }
+
+  columns = updateColumn(columns, column.name, options);
+
   return {
     ...state,
     columns,
@@ -497,11 +496,4 @@ function updateTableConfig(
   }
 
   return result;
-}
-
-function replaceColumn(
-  state: KeyedColumnDescriptor[],
-  column: KeyedColumnDescriptor
-) {
-  return state.map((col) => (col.name === column.name ? column : col));
 }

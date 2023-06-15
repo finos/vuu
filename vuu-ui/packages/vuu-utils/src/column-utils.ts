@@ -551,6 +551,36 @@ export const findColumn = (
   }
 };
 
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: KeyedColumnDescriptor
+): KeyedColumnDescriptor[];
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: string,
+  options: Partial<ColumnDescriptor>
+): KeyedColumnDescriptor[];
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: string | KeyedColumnDescriptor,
+  options?: Partial<ColumnDescriptor>
+) {
+  const targetColumn =
+    typeof column === "string"
+      ? columns.find((col) => col.name === column)
+      : column;
+  if (targetColumn) {
+    const replacementColumn = options
+      ? { ...targetColumn, ...options }
+      : targetColumn;
+    return columns.map((col) =>
+      col.name === replacementColumn.name ? replacementColumn : col
+    );
+  } else {
+    throw Error("column-utils.replaceColun, column not found");
+  }
+}
+
 export const toDataSourceColumns = (column: ColumnDescriptor) =>
   column.expression
     ? `${column.name}:${column.serverDataType}:${column.expression}`
