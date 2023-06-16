@@ -41,6 +41,10 @@
     min-height: calc(100vh - var(--vuu-navbar-height));
   }
 
+  .docs-doc-page .col:only-child {
+    max-width: 100% !important;
+  }
+
   .theme-doc-sidebar-container {
     font-size: 18px;
     font-weight: 400;
@@ -255,4 +259,32 @@ left: 0;
 
 .token-line .token.function {
   color: var(--vuu-accent1) !important;
+}
+
+.what-is-a-vuu-server {
+  --vuu-background-image: url(/img/vuu/WhatIsAVuuServer.png)
+}
+.how-does-it-work {
+  --vuu-background-image: url(/img/vuu/HowDoesItWork.png)
+}
+.what-are-the-trade-offs {
+  --vuu-background-image: url(/img/vuu/WhatAreTheTradeOffs.png)
+}
+.lifecycle {
+  --vuu-background-image: url(/img/vuu/Lifecycle.png)
+}
+.providers {
+  --vuu-background-image: url(/img/vuu/Providers.png)
+}
+.tables {
+  --vuu-background-image: url(/img/vuu/Tables.png)
+}
+.viewports {
+  --vuu-background-image: url(/img/vuu/Viewports.png)
+}
+.filters-sorts-trees {
+  --vuu-background-image: url(/img/vuu/FiltersSortsTrees.png)
+}
+.modules {
+  --vuu-background-image: url(/img/vuu/Modules.png)
 }
