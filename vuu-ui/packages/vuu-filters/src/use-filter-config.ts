@@ -5,15 +5,14 @@ import { useCallback, useEffect, useState } from "react";
 
 export interface FilterConfigHookProps {
   user: VuuUser;
-  defaultFilter?: NamedDataSourceFilter; // TODO: Use a default filter
   saveUrl?: string;
-  saveLocation: SaveLocation; // TODO: Make this work for "remote"
+  saveLocation: SaveLocation;
 }
 
 export const useFilterConfig = ({
   user,
-  saveUrl = "api/vui/filters", // TODO: Check this is a sensible choice
-  saveLocation,
+  saveUrl = "api/vui/filters",
+  saveLocation = "local", // TODO: "remote" is not supported yet
 }: FilterConfigHookProps) => {
   const [allFilters, setAllFilters] = useState<NamedDataSourceFilter[]>();
 
