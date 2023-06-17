@@ -1,6 +1,18 @@
 module.exports = {
   mainSidebar: [
-    "introduction/intro",
+    {
+      type: "category",
+      label: "Introduction",
+      items: [
+        "introduction/what_is",
+        "introduction/how_does_it_work",
+        "introduction/trade-offs",
+      ],
+      link: {
+        type: "doc",
+        id: "introduction/intro",
+      },
+    },
     {
       type: "category",
       label: "Getting Started",

@@ -238,6 +238,26 @@ left: 0;
   font-size: 14px;
   font-weight: 400;
   line-height: 25px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.table-of-contents:before {
+  background-image: radial-gradient(circle, #c6c3d3 1.25px, rgba(255,255,255,0) 2.5px);
+  background-position: left;
+  background-size: 5px 15px;
+  background-repeat: repeat-y;
+  content: '';
+  width: 5px;
+  position: absolute;
+  height: calc(100% - 20px);
+  top: 10px;
+  left:0;
+}
+
+.table-of-contents__link {
+  line-height: 16px;
+  padding: 3px 0px;
 }
 
 .table-of-contents__link:hover {
@@ -262,29 +282,29 @@ left: 0;
 }
 
 .what-is-a-vuu-server {
-  --vuu-background-image: url(/img/vuu/WhatIsAVuuServer.png)
+  --vuu-background-image: url(/img/vuu/WhatIsAVuuServer.svg);
 }
 .how-does-it-work {
-  --vuu-background-image: url(/img/vuu/HowDoesItWork.png)
+  --vuu-background-image: url(/img/vuu/HowDoesItWork.png);
 }
 .what-are-the-trade-offs {
-  --vuu-background-image: url(/img/vuu/WhatAreTheTradeoffs.png)
+  --vuu-background-image: url(/img/vuu/WhatAreTheTradeoffs.png);
 }
 .lifecycle {
-  --vuu-background-image: url(/img/vuu/Lifecycle.png)
+  --vuu-background-image: url(/img/vuu/Lifecycle.png);
 }
 .providers {
-  --vuu-background-image: url(/img/vuu/Providers.png)
+  --vuu-background-image: url(/img/vuu/Providers.png);
 }
 .tables {
-  --vuu-background-image: url(/img/vuu/Tables.png)
+  --vuu-background-image: url(/img/vuu/Tables.png);
 }
 .viewports {
-  --vuu-background-image: url(/img/vuu/Viewports.png)
+  --vuu-background-image: url(/img/vuu/Viewports.png);
 }
 .filters-sorts-trees {
-  --vuu-background-image: url(/img/vuu/FiltersSortsTrees.png)
+  --vuu-background-image: url(/img/vuu/FiltersSortsTrees.png);
 }
 .modules {
-  --vuu-background-image: url(/img/vuu/Modules.png)
+  --vuu-background-image: url(/img/vuu/Modules.png);
 }

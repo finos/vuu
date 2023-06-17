@@ -28,11 +28,12 @@
 }
 
 .vuuMdxSection-icon {
-    background-image: var(--vuu-background-image,url(/img/finos/joining-treeing.png));
+    background-image: var(--vuu-background-image);
     background-repeat: no-repeat;
     background-size: contain;
-    height: 50px;
-    width: 50px;
+    background-position: center center;
+    height: 64px;
+    width: 64px;
 }
 
 .vuuMdxSection-title {
