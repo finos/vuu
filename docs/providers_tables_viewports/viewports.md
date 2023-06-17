@@ -1,4 +1,8 @@
+import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
+
 # Viewports
+
+<SvgDottySeparator style={{marginBottom: 32}}/>
 
 A Viewport is a specific client's view onto an underlying table. It has knowledge of the underlying table that a viewport is looking at. It also has knowledge of
 the window of data that a client currently has displayed on her screen. It contains information on any sorts, or filters that a specific client

@@ -1,8 +1,12 @@
+import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
+
 # Tables
 
-Tables are sinks of data. At the lowest form they are wrappers around concurrent maps that offer some value add in propogating updates and deletes for through the system. 
+<SvgDottySeparator style={{marginBottom: 32}}/>
 
-Data tables are represented by the interface org.finos.vuu.core.table.DataTable in the source code. 
+Tables are sinks of data. At the lowest form they are wrappers around concurrent maps that offer some value add in propogating updates and deletes for through the system.
+
+Data tables are represented by the interface org.finos.vuu.core.table.DataTable in the source code.
 
 ```scala
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
@@ -10,15 +14,15 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   def getTableDef: TableDef
 
   //<snip/>
-  
+
   def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit
 
   def processDelete(rowKey: String): Unit
-  
+
   def size(): Long = {
     primaryKeys.length
   }
-  
+
   //<snip/>
 }
 
@@ -30,7 +34,8 @@ The important methods from this trait for these purposes are:
 def processUpdate(...)
 def processDelete(...)
 ```
-These are the methods that you call in a provider to populate data into the underlying map. If you go back to the [Providers](providers.md) example you can see it is indeed the update method being called. 
+
+These are the methods that you call in a provider to populate data into the underlying map. If you go back to the [Providers](providers.md) example you can see it is indeed the update method being called.
 
 processUpdate functions like an upsert in a SQL data (i.e. it is used for both an insert and an update)
 
@@ -39,15 +44,15 @@ processUpdate functions like an upsert in a SQL data (i.e. it is used for both a
 # (Simple) Table
 
 Simple Tables (the default table type, defined by using the TableDef() class) are sinks for data. They are wrappers around
-a concurrent map and are mechanisms to propogate update or delete events to join tables and view ports. 
+a concurrent map and are mechanisms to propogate update or delete events to join tables and view ports.
 
-Currently simple tables are limited to having strings as the key. This is likely to change in future. 
+Currently simple tables are limited to having strings as the key. This is likely to change in future.
 
 # Join Tables
 
-Join tables represent the logical joining of two separate tables into a single merged table. In practice they are mappings of 
-keys from one table to keys from one or more other tables. When data is realised (i.e. sent down to a user's ui via the websocket) 
-the relevant rows are realized by dragging the data from the underlying simple tables. 
+Join tables represent the logical joining of two separate tables into a single merged table. In practice they are mappings of
+keys from one table to keys from one or more other tables. When data is realised (i.e. sent down to a user's ui via the websocket)
+the relevant rows are realized by dragging the data from the underlying simple tables.
 
 # AutoSubscribe Table
 
@@ -60,15 +65,15 @@ autosubscribe table with the product symbol on the order once each time a new or
 
 # Session Tables
 
-Session tables are specific types of tables that live only during the users connected session to Vuu. There are several different types of session table: 
+Session tables are specific types of tables that live only during the users connected session to Vuu. There are several different types of session table:
 
 ### Tree Session Tables
 
-Tree Session tables are created dyanmically whenever there is a request to tree an underlying flat table. THe reason for this is that Tree's are a view ontop of 
+Tree Session tables are created dyanmically whenever there is a request to tree an underlying flat table. THe reason for this is that Tree's are a view ontop of
 and underlying raw table. When we create a tree, we are generating a tree data structure in memory whose leaves are keys that point back to the original rows
-in the underlying table. When your session is closed, the server cleans up these tree tables, freeing up resources. 
+in the underlying table. When your session is closed, the server cleans up these tree tables, freeing up resources.
 
-From a usage perspective you would typically not see these session tables, however its important o know they exist. 
+From a usage perspective you would typically not see these session tables, however its important o know they exist.
 
 ### Input Session Tables
 
@@ -82,11 +87,11 @@ tableContainer.
 
 ### Join Session Tables
 
-Join Session tables are similar in concept to normal join tables, the only caveat is that like all session tables they only exist 
-for the lifetime of the session. 
+Join Session tables are similar in concept to normal join tables, the only caveat is that like all session tables they only exist
+for the lifetime of the session.
 
 Join Session tables are useful when you want to have an input table, such as orders, but you want to show join table in the UI
-beside the orders, such as ticking prices, or static data. 
+beside the orders, such as ticking prices, or static data.
 
 With a declaration like below, you can achieve that:
 
@@ -94,7 +99,6 @@ With a declaration like below, you can achieve that:
 //insert example
 ```
 
-
 # Lucene Table
 
-TODO: Lucene tables are a work in progress, watch this space. 
+TODO: Lucene tables are a work in progress, watch this space.

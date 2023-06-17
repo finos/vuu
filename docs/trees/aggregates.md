@@ -1,4 +1,8 @@
+import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
+
 # Aggregates
+
+<SvgDottySeparator style={{marginBottom: 32}}/>
 
 Aggregates are mathematical operations we perform on the leaf nodes within a tree, that we want to display on the branch
 rows of a tree.

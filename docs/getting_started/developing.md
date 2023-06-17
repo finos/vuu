@@ -1,4 +1,8 @@
+import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
+
 # Developing Vuu
+
+<SvgDottySeparator/>
 
 ## Prerequisites
 
@@ -9,6 +13,8 @@
 5. Open the project as a Maven build by selecting the root pom.xml (make sure you select "enable adding maven modules, auto import etc..)
 6. You should get one root module vuu-parent in a project list, select this
 7. When the project opens you should have 3 sub-modules (vuu, toolbox and vuu-ui)
+
+<SvgDottySeparator style={{marginTop: 32}}/>
 
 ## Developing the client
 

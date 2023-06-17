@@ -1,4 +1,8 @@
+import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
+
 # Lifecycle
+
+<SvgDottySeparator style={{marginBottom: 32}}/>
 
 Vuu has a simple server side lifecycle component built it. The lifecycle is implemented as a DAG (Directed Acyclic Graph)
 which allows components to be started and stopped in a sensible order.
