@@ -39,10 +39,7 @@ object BenchmarkHelper {
 
       val ric = "TST-" + i
 
-      val exchange = if (i % 2 == 0) "A"
-      else if (i % 3 == 0) "B"
-      else if (i % 4 == 0) "C"
-      else "D"
+      val exchange = "exchange-" + i
 
       val row = RowWithData(ric, Map("ric" -> ric, "ask" -> 100, "bid" -> 101, "last" -> 105, "exchange" -> exchange))
 
