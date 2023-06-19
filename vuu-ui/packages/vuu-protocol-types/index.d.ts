@@ -54,12 +54,14 @@ export declare type AggTypeAverage = 2;
 export declare type AggTypeCount = 3;
 export declare type AggTypeHigh = 4;
 export declare type AggTypeLow = 5;
+export declare type AggTypeDistinct = 6;
 export declare type VuuAggType =
   | AggTypeSum
   | AggTypeAverage
   | AggTypeCount
   | AggTypeHigh
-  | AggTypeLow;
+  | AggTypeLow
+  | AggTypeDistinct;
 export declare type VuuAggregation = {
   column: string;
   aggType: VuuAggType;

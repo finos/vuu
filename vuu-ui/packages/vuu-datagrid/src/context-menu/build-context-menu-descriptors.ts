@@ -15,6 +15,7 @@ export type ContextMenuLocation = "header" | "filter" | "grid";
 export type GridContextMenuAction =
   | "agg-avg"
   | "agg-count"
+  | "agg-distinct"
   | "agg-high"
   | "agg-low"
   | "agg-sum"

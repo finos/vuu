@@ -159,7 +159,10 @@ function buildAggregationMenuItems(
   return [
     {
       label: `Aggregate ${label}`,
-      children: [{ label: "Count", action: "agg-count", options }].concat(
+      children: [
+        { label: "Count", action: "agg-count", options },
+        { label: "Distinct", action: "agg-distinct", options },
+      ].concat(
         isNumericColumn(column)
           ? [
               { label: "Sum", action: "agg-sum", options },

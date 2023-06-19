@@ -62,6 +62,7 @@ export const VuuDataTable = () => {
     []
   );
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [selectedGroupIndex, setSelectedGroupIndex] = useState<number>(-1);
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
 
   const { schemas } = useSchemas();
@@ -140,12 +141,15 @@ export const VuuDataTable = () => {
 
   const groupByCurrency = useCallback(() => {
     dataSource.groupBy = [getCcyCol(dataSource)];
+    setSelectedGroupIndex(0);
   }, [dataSource]);
   const groupByCurrencyExchange = useCallback(() => {
     dataSource.groupBy = [getCcyCol(dataSource), "exchange"];
+    setSelectedGroupIndex(1);
   }, [dataSource]);
   const groupByCurrencyExchangeRic = useCallback(() => {
     dataSource.groupBy = [getCcyCol(dataSource), "exchange", "ric"];
+    setSelectedGroupIndex(2);
   }, [dataSource]);
 
   const handleSubmitFilter = useCallback(
@@ -179,11 +183,23 @@ export const VuuDataTable = () => {
         }
       >
         <Tooltray>
-          <Button onClick={groupByCurrency}>Currency</Button>
-          <Button onClick={groupByCurrencyExchange}>Currency, Exchange</Button>
-          <Button onClick={groupByCurrencyExchangeRic}>
-            CCY, Exchange, Ric
-          </Button>
+          <ToggleButtonGroup selectedIndex={selectedGroupIndex}>
+            <ToggleButton onClick={groupByCurrency} tooltipText="Currency">
+              Currency
+            </ToggleButton>
+            <ToggleButton
+              onClick={groupByCurrencyExchange}
+              tooltipText="Currency and Exchange"
+            >
+              Currency, Exchange
+            </ToggleButton>
+            <ToggleButton
+              onClick={groupByCurrencyExchangeRic}
+              tooltipText="Currency, Exchange and Ric"
+            >
+              CCY, Exchange, Ric
+            </ToggleButton>
+          </ToggleButtonGroup>
         </Tooltray>
         <Tooltray>
           <FilterInput

@@ -494,6 +494,7 @@ export class RemoteDataSource
   }
 
   set groupBy(groupBy: VuuGroupBy) {
+    console.log(`set GROUPBY ${groupBy.join()}`);
     const wasGrouped = this.#groupBy.length > 0;
     this.#config = {
       ...this.#config,
@@ -518,6 +519,7 @@ export class RemoteDataSource
         rows: [],
       });
     }
+    console.log("emit config changed");
     this.emit("config", this.#config);
     this.setConfigPending({ groupBy });
   }
