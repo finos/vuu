@@ -100,9 +100,9 @@ class DistinctAggregation(val column: Column) extends NodeAggregation {
     CollectionHasAsScala(values).asScala.mkString(",")
   }
   override def processLeaf(row: RowData): Unit = {
-    val colData = column.getData(row).toString
-    if(colData != null && !values.contains(colData)){
-      values.add(colData)
+    val colData = column.getData(row)
+    if(colData != null && !values.contains(colData.toString)){
+      values.add(colData.toString)
     }
   }
 }
