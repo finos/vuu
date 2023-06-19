@@ -38,6 +38,7 @@ export type SortCriteriaItem = string | [string, "asc"]; // TODO where is 'desc'
 export const AggregationType: { [key: string]: VuuAggType } = {
   Average: 2,
   Count: 3,
+  Distinct: 6,
   Sum: 1,
   High: 4,
   Low: 5,

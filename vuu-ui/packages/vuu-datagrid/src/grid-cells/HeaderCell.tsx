@@ -25,6 +25,7 @@ const AggTypeLabel = {
   [AggregationType.Sum]: "\u03A3",
   [AggregationType.High]: "High",
   [AggregationType.Low]: "Low",
+  [AggregationType.Distinct]: "Distinct",
   none: "",
 };
 

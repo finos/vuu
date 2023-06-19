@@ -43,7 +43,7 @@ const removeFilterColumn = (
   }
 };
 
-const { Average, Count, High, Low, Sum } = AggregationType;
+const { Average, Count, Distinct, High, Low, Sum } = AggregationType;
 
 export const useTableContextMenu = ({
   dataSource,
@@ -73,6 +73,7 @@ export const useTableContextMenu = ({
         case "agg-high": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, High)), true;
         case "agg-low": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Low)), true;
         case "agg-count": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Count)), true;
+        case "agg-distinct": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Distinct)), true;
         case "agg-sum": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Sum)), true;
         case "column-pin-floating": return onPersistentColumnOperation({type: "pinColumn", column, pin: "floating"}), true;
         case "column-pin-left": return onPersistentColumnOperation({type: "pinColumn", column, pin: "left"}), true;
