@@ -4,6 +4,7 @@ import org.finos.vuu.core.table.{Column, RowData}
 import org.finos.vuu.viewport.{AggregationType, GroupBy}
 
 import java.util
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 object Aggregation {
   def createAggregations(groupBy: GroupBy): List[NodeAggregation] = {
@@ -13,6 +14,7 @@ object Aggregation {
       case AggregationType.Average => new AverageAggregation(agg.column)
       case AggregationType.High => new HighAggregation(agg.column)
       case AggregationType.Low => new LowAggregation(agg.column)
+      case AggregationType.Distinct => new DistinctAggregation(agg.column)
     })
   }
 }
@@ -87,6 +89,20 @@ class CountAggregation(val column: Column) extends NodeAggregation {
 
     if (colData != null) {
       if (!hashSet.contains(colData.toString)) hashSet.add(colData.toString)
+    }
+  }
+}
+
+class DistinctAggregation(val column: Column) extends NodeAggregation {
+  private val values: util.HashSet[String] = new util.HashSet[String]()
+
+  override def toValue: Any = {
+    CollectionHasAsScala(values).asScala.mkString(",")
+  }
+  override def processLeaf(row: RowData): Unit = {
+    val colData = column.getData(row).toString
+    if(colData != null && !values.contains(colData)){
+      values.add(colData)
     }
   }
 }
