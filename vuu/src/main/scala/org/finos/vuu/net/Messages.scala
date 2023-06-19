@@ -73,12 +73,6 @@ case class FilterSpec(filter: String)
 
 case class Aggregations(column: String, aggType: Int)
 
-object AggType {
-  val Sum = 1
-  val Average = 2
-  val Count = 3
-}
-
 case class GroupBySpec(columns: Array[String], aggregations: List[AggregationSpec] = List())
 
 case class AggregationSpec(aggregationType: String, column: String)
