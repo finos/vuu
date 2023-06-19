@@ -29,6 +29,26 @@ export const ThemeContext = createContext<ThemeContextProps>({
   themeMode: "light",
 });
 
+export type ThemeClasses = [string, string, string];
+
+const DEFAULT_THEME_ATTRIBUTES: ThemeClasses = [
+  "salt",
+  "salt-density-high",
+  "light",
+];
+
+export const useThemeAttributes = (): [string, string, string] => {
+  const context = useContext(ThemeContext);
+  if (context) {
+    return [
+      `${context.theme}-theme`,
+      `salt-density-${context.density}`,
+      context.themeMode,
+    ];
+  }
+  return DEFAULT_THEME_ATTRIBUTES;
+};
+
 const createThemedChildren = (
   children: ReactNode,
   theme: string,
@@ -57,13 +77,15 @@ const createThemedChildren = (
 };
 
 interface ThemeProviderProps {
-  children: ReactElement;
+  applyThemeClasses?: boolean;
+  children: ReactNode;
   density?: Density;
   theme?: string;
   themeMode?: ThemeMode;
 }
 
 export const ThemeProvider = ({
+  applyThemeClasses = false,
   children,
   theme: themeProp,
   themeMode: themeModeProp,
@@ -75,17 +97,12 @@ export const ThemeProvider = ({
     theme: inheritedTheme,
   } = useContext(ThemeContext);
 
-  console.log({ themeProp });
-
   const density = densityProp ?? inheritedDensity ?? DEFAULT_DENSITY;
   const themeMode = themeModeProp ?? inheritedThemeMode ?? DEFAULT_THEME_MODE;
   const theme = themeProp ?? inheritedTheme ?? DEFAULT_THEME;
-  const themedChildren = createThemedChildren(
-    children,
-    theme,
-    themeMode,
-    density
-  );
+  const themedChildren = applyThemeClasses
+    ? createThemedChildren(children, theme, themeMode, density)
+    : children;
 
   return (
     <ThemeContext.Provider value={{ themeMode, density, theme }}>

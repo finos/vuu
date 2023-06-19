@@ -28,8 +28,8 @@ export const SampleApp = () => {
       user={user}
       style={
         {
-          "--vuuShell-height": "100%",
-          "--vuuShell-width": "100%",
+          "--vuuShell-height": "100vh",
+          "--vuuShell-width": "100vw",
         } as CSSProperties
       }
     />

@@ -48,6 +48,8 @@ export const LayoutActionType = {
   REPLACE: "replace",
   RESTORE: "restore",
   SAVE: "save",
+  SET_PROP: "set-prop",
+  SET_PROPS: "set-props",
   SET_TITLE: "set-title",
   SPLITTER_RESIZE: "splitter-resize",
   SWITCH_TAB: "switch-tab",
@@ -93,6 +95,19 @@ export type RestoreAction = {
   type: typeof LayoutActionType.RESTORE;
 };
 
+export type SetPropAction = {
+  path: string;
+  propName: string;
+  propValue: string | number | boolean;
+  type: typeof LayoutActionType.SET_PROP;
+};
+
+export type SetPropsAction = {
+  path: string;
+  props: { [key: string]: unknown };
+  type: typeof LayoutActionType.SET_PROPS;
+};
+
 export type SetTitleAction = {
   path: string;
   title: string;
@@ -131,6 +146,8 @@ export type LayoutReducerAction =
   | RemoveAction
   | ReplaceAction
   | RestoreAction
+  | SetPropAction
+  | SetPropsAction
   | SetTitleAction
   | SplitterResizeAction
   | SwitchTabAction;

@@ -1,0 +1,110 @@
+.vuuDialog-gridConfig {
+    
+}
+
+    
+
+  .vuuDatagridSettingsPanel {
+    --svg-table-settings: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18"><rect height="3" width="5" x="1" y="10" /><rect height="3" width="5" x="1" y="6" /><rect height="3" width="10" x="7" y="10" /><rect height="3" width="10" x="7" y="6" /><path d="M6,17H1.5a.5.5,0,0,1-.5-.5V14H6Z" /><path d="M16.5,17H7V14H17v2.5A.5.5,0,0,1,16.5,17Z" /><path d="M16.5,1H1.5a.5.5,0,0,0-.5.5V5H17V1.5A.5.5,0,0,0,16.5,1Z" /></svg>');
+    --svg-column-chooser: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18"><path d="M16,1H10V17h6a1,1,0,0,0,1-1V2A1,1,0,0,0,16,1Z" /><path d="M8,1H2A1,1,0,0,0,1,2V16a1,1,0,0,0,1,1H8Z" /></svg>');
+    --svg-column-settings: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18"><path d="M5,17H1.5a.5.5,0,0,1-.5-.5V1.5A.5.5,0,0,1,1.5,1H5Z" /><path d="M8.71,15.4685a1.8065,1.8065,0,0,1-1.11-1.665v-.607a1.806,1.806,0,0,1,1.11-1.665,1.807,1.807,0,0,1,.3875-1.974l.459-.4595a1.792,1.792,0,0,1,1.276-.5285c.057,0,.1115.0115.167.0165V1H7V17H8.773A1.81349,1.81349,0,0,1,8.71,15.4685Z" /><path d="M13.1965,7.6h.607A1.8065,1.8065,0,0,1,15.468,8.7095,1.77249,1.77249,0,0,1,17,8.7815V1.5a.5.5,0,0,0-.5-.5H13V7.63A1.70987,1.70987,0,0,1,13.1965,7.6Z" /><path d="M17.5965,12.893H16.534a3.0709,3.0709,0,0,0-.45-1.0895l.7565-.7565a.3035.3035,0,0,0,0-.429l-.46-.46a.3035.3035,0,0,0-.429,0l-.7555.757a3.07263,3.07263,0,0,0-1.089-.45V9.4035A.3035.3035,0,0,0,13.8035,9.1h-.607a.3035.3035,0,0,0-.3035.3035V10.466a3.07263,3.07263,0,0,0-1.089.45l-.7565-.7565a.3035.3035,0,0,0-.429,0l-.46.46a.3035.3035,0,0,0,0,.429l.7565.7565a3.0709,3.0709,0,0,0-.45,1.0895H9.4035A.3035.3035,0,0,0,9.1,13.198v.607a.3035.3035,0,0,0,.3035.3035H10.466a3.0709,3.0709,0,0,0,.45,1.0895l-.7565.7565a.3035.3035,0,0,0,0,.429l.46.46a.3035.3035,0,0,0,.429,0l.7565-.7565a3.07263,3.07263,0,0,0,1.089.45v1.0625a.3035.3035,0,0,0,.3035.3035h.607a.3035.3035,0,0,0,.3035-.3035V16.534a3.07263,3.07263,0,0,0,1.089-.45l.7565.7565a.3035.3035,0,0,0,.429,0l.46-.46a.3035.3035,0,0,0,0-.429l-.7575-.7555a3.0709,3.0709,0,0,0,.45-1.0895h1.0625a.3035.3035,0,0,0,.3035-.3035v-.6065a.3035.3035,0,0,0-.3035-.3035ZM13.5,15.25a1.75,1.75,0,1,1,1.75-1.75A1.75,1.75,0,0,1,13.5,15.25Z" /></svg>');
+
+
+    
+
+    --saltToolbar-background : transparent;
+    --vuuView-borderStyle: solid;
+    --vuuColumnPicker-width: 100%;
+    --vuuColumnSettings-width: 50%;
+    background-color: var(--salt-container-primary-background);
+    display: flex;
+    flex-direction: column;
+    height: 442px;
+    width: 520px;
+}
+
+[data-icon='column-chooser']{
+  --vuu-icon-svg: var(--svg-column-chooser);
+}
+[data-icon='column-settings']{
+  --vuu-icon-svg: var(--svg-column-settings);
+}
+[data-icon='table-settings']{
+  --vuu-icon-svg: var(--svg-table-settings);
+}
+[data-icon='define-column']{
+  --vuu-icon-svg: var(--svg-function);
+}
+
+.vuuDatagridSettingsPanel-header {
+flex: 0 0 50px;
+}
+
+.vuuDatagridSettingsPanel-stack {
+    flex: 1;
+    gap: 24px;
+    overflow: hidden;
+
+}
+
+.vuuDatagridSettingsPanel-stack > .saltToolbar {
+    --saltToolbar-background: var(--salt-container-secondary-background);
+    --vuu-icon-color: var(--salt-text-secondary-foreground);
+    --vuu-icon-size: 18px;
+    --vuu-icon-height: 36px;
+    --vuu-icon-width: 36px;
+    border-bottom: none;
+}
+
+.vuuDatagridSettingsPanel-stack > .saltToolbar .saltTabstrip {
+    --tabs-activationIndicator-inset: 0px auto 0px 1px;
+}
+
+.vuuDatagridSettingsPanel-stack > .saltToolbar .saltTab[aria-selected='true'],
+.vuuDatagridSettingsPanel-stack > .saltToolbar .saltTab:hover{
+    --vuu-icon-color: var(--salt-text-primary-foreground);
+ 
+}
+
+.vuuDatagridSettingsPanel-stack > .saltToolbar {
+    --saltToolbar-background: var(--salt-container-secondary-background);
+}
+
+.vuuDatagridSettingsPanel-columnPanels {
+    display: flex;
+    flex-flow: nowrap;
+    gap: calc(var(--salt-size-unit) * 1);
+    margin: var(--salt-size-unit) 0;
+    overflow: hidden;
+    position: relative;
+    /* margin: calc(var(--salt-size-unit) * 3); */
+}
+
+.vuuDatagridSettingsPanel-columnPanels > * {
+    transition: .3s transform ease-out;
+    transform: translate3d(0px, 0px, 0px);
+}
+
+.vuuDatagridSettingsPanel-columnPanels[data-align='right'] > * {
+    transform: translate3d(-235px, 0px, 0px);
+}
+
+
+.vuuDatagridSettingsPanel-columnToolbar {
+    --saltButton-width: 60px;
+}
+
+.vuuDatagridSettingsPanel-columnToolbar > .Responsive-inner {
+    align-items: center;
+}
+
+.vuuDatagridSettingsPanel-buttonBar {
+    align-items: center;
+    border-top: solid 1px var(--salt-separable-primary-borderColor);
+    display: flex;
+    flex: 0 0 40px;
+    gap: var(--salt-size-unit);
+    justify-content: flex-end;  
+    padding: 0 var(--salt-size-unit);
+}
+    

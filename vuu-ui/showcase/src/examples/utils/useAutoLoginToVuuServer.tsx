@@ -18,6 +18,7 @@ export const useAutoLoginToVuuServer = (autoLogin = true) => {
         connectToServer({ url: "127.0.0.1:8090/websocket", authToken });
       } catch (e: unknown) {
         if (e instanceof Error) {
+          console.error(e.message);
           setErrorMessage(e.message);
         }
       }

@@ -4,6 +4,11 @@ import { CSSProperties, useMemo } from "react";
 import { useMockFeatureData } from "../utils/mock-data";
 import { useAutoLoginToVuuServer } from "../utils";
 
+import { AutoVuuTable } from "../html/HtmlTable.examples";
+import { registerComponent } from "@finos/vuu-layout";
+
+registerComponent("AutoVuuTable", AutoVuuTable, "view");
+
 const user = { username: "test-user", token: "test-token" };
 
 let displaySequence = 1;
@@ -89,26 +94,6 @@ export const ShellWithLeftPanel = () => {
 };
 
 ShellWithLeftPanel.displaySequence = displaySequence++;
-
-export const ShellWithFullHeightLeftPanel = () => {
-  const { features, schemas } = useMockFeatureData();
-  return (
-    <Shell
-      leftSidePanelLayout="full-height"
-      leftSidePanel={<AppSidePanel features={features} tables={schemas} />}
-      loginUrl={window.location.toString()}
-      user={user}
-      style={
-        {
-          "--vuuShell-height": "100%",
-          "--vuuShell-width": "100%",
-        } as CSSProperties
-      }
-    />
-  );
-};
-
-ShellWithFullHeightLeftPanel.displaySequence = displaySequence++;
 
 export const ShellWithDefaultLayoutAndLeftPanel = () => {
   const error = useAutoLoginToVuuServer();

@@ -1,23 +1,12 @@
 import ReactDOM from "react-dom";
+import { getUrlParameter, hasUrlParameter } from "@finos/vuu-utils";
 
 import "@finos/vuu-theme/index.css";
 import "@finos/vuu-theme-purple/index.css";
 import "@heswell/component-anatomy/esm/index.css";
 
-import "@fontsource/open-sans/300.css";
-import "@fontsource/open-sans/300-italic.css";
-import "@fontsource/open-sans/400.css";
-import "@fontsource/open-sans/400-italic.css";
-import "@fontsource/open-sans/500.css";
-import "@fontsource/open-sans/500-italic.css";
-import "@fontsource/open-sans/600.css";
-import "@fontsource/open-sans/600-italic.css";
-import "@fontsource/open-sans/700.css";
-import "@fontsource/open-sans/700-italic.css";
-import "@fontsource/open-sans/800.css";
-import "@fontsource/open-sans/800-italic.css";
-
 import "./index.css";
+import { ThemeProvider } from "@finos/vuu-shell";
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
@@ -42,6 +31,22 @@ const getComponent = (module: Module, paths: string[]) => {
   }
 };
 
+function addStylesheetURL(url: string) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = url;
+  document.getElementsByTagName("head")[0].appendChild(link);
+}
+
+const themeName = getUrlParameter("theme", "salt");
+console.log({ themeName });
+
+const fontCssUrl =
+  themeName === "salt"
+    ? "https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700,800&display=swap"
+    : "https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,500,600,700&display=swap";
+addStylesheetURL(fontCssUrl);
+
 const pathToExample = (path: string): [string[], string] => {
   const endOfImportPath = path.lastIndexOf("/");
   const importPath = path.slice(0, endOfImportPath);
@@ -56,8 +61,8 @@ const pathToExample = (path: string): [string[], string] => {
   ];
 };
 
-const url = new URL(document.location.href);
-if (url.searchParams.has("standalone")) {
+if (hasUrlParameter("standalone")) {
+  const url = new URL(document.location.href);
   const [targetPaths, exampleName] = pathToExample(url.pathname.slice(1));
   let targetExamples = null;
   const path = [exampleName];
@@ -78,11 +83,14 @@ if (url.searchParams.has("standalone")) {
   }
   if (targetExamples) {
     const root = document.getElementById("root") as HTMLDivElement;
-    root.classList.add("vuu-standalone", "salt-theme", "salt-density-medium");
-    root.dataset.mode = "light";
     const Component = getComponent(targetExamples, path);
     if (Component) {
-      ReactDOM.render(<Component />, root);
+      ReactDOM.render(
+        <ThemeProvider theme={themeName} density="high" themeMode="light">
+          <Component />
+        </ThemeProvider>,
+        root
+      );
     } else {
       console.warn(`Example Component ${exampleName} not found`);
     }
@@ -93,10 +101,6 @@ if (url.searchParams.has("standalone")) {
     );
   }
 } else {
-  // import(modulePath)
-  // .then(obj => <module object>)
-  // .catch(err => <loading error, e.g. if no such module>)
-
   import("./examples/index")
     .then((stories) => {
       import("./AppRoutes")

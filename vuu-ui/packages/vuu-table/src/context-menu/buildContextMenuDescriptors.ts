@@ -27,6 +27,11 @@ export const buildContextMenuDescriptors =
         ...buildAggregationMenuItems(options as MaybeColumn, dataSource)
       );
       descriptors.push(...buildColumnDisplayMenuItems(options as MaybeColumn));
+      descriptors.push({
+        label: `Column Settings ...`,
+        action: "column-settings",
+        options,
+      });
     } else if (location === "filter") {
       const { column, filter } = options as MaybeFilter & MaybeColumn;
       const colIsOnlyFilter = filter?.column === column?.name;

@@ -31,7 +31,10 @@ import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useDataSource } from "./useDataSource";
 import { useTableScroll } from "./useTableScroll";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
-import { PersistentColumnAction } from "@finos/vuu-table/src/useTableModel";
+import {
+  isShowSettings,
+  PersistentColumnAction,
+} from "@finos/vuu-table/src/useTableModel";
 import { useInitialValue } from "./useInitialValue";
 import { useVirtualViewport } from "./useVirtualViewport";
 import { buildContextMenuDescriptors } from "@finos/vuu-table";
@@ -46,6 +49,7 @@ export interface TableHookProps extends MeasuredProps {
   onFeatureEnabled?: (message: VuuFeatureMessage) => void;
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onSelectionChange?: SelectionChangeHandler;
+  onShowConfigEditor: (column?: KeyedColumnDescriptor) => void;
   renderBufferSize?: number;
   rowHeight: number;
   selectionModel: TableSelectionModel;
@@ -59,6 +63,7 @@ export const useTable = ({
   onFeatureEnabled,
   onFeatureInvocation,
   onSelectionChange,
+  onShowConfigEditor,
   renderBufferSize = 0,
   rowHeight,
   selectionModel,
@@ -154,9 +159,13 @@ export const useTable = ({
   const onPersistentColumnOperation = useCallback(
     (action: PersistentColumnAction) => {
       // expectConfigChangeRef.current = true;
-      dispatchColumnAction(action);
+      if (isShowSettings(action)) {
+        onShowConfigEditor?.(action.column);
+      } else {
+        dispatchColumnAction(action);
+      }
     },
-    [dispatchColumnAction]
+    [dispatchColumnAction, onShowConfigEditor]
   );
 
   const handleContextMenuAction = useTableContextMenu({

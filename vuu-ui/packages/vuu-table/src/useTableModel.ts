@@ -132,11 +132,22 @@ export interface ColumnActionTableConfig extends DataSourceConfig {
   confirmed?: boolean;
   type: "tableConfig";
 }
+export interface ColumnActionColumnSettings extends DataSourceConfig {
+  type: "columnSettings";
+  column: KeyedColumnDescriptor;
+}
 
 /**
  * PersistentColumnActions are those actions that require us to persist user changes across sessions
  */
-export type PersistentColumnAction = ColumnActionPin | ColumnActionHide;
+export type PersistentColumnAction =
+  | ColumnActionPin
+  | ColumnActionHide
+  | ColumnActionColumnSettings;
+
+export const isShowSettings = (
+  action: PersistentColumnAction
+): action is ColumnActionColumnSettings => action.type === "columnSettings";
 
 export type GridModelAction =
   | ColumnActionHide

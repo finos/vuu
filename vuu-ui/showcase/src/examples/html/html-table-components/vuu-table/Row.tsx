@@ -94,6 +94,7 @@ export const Row = memo(
         onClick={handleRowClick}
         style={style}
       >
+        <span className="vuuTable2-selectionDecorator vuuStickyLeft" />
         {columns.map((column) => {
           const isGroup = isGroupColumn(column);
           const Cell = isGroup ? TableGroupCell : TableCell;
@@ -109,6 +110,7 @@ export const Row = memo(
             />
           );
         })}
+        <span className="vuuTable2-selectionDecorator vuuStickyRight" />
       </div>
     );
   }

@@ -8,9 +8,10 @@ import {
 } from "@finos/vuu-shell";
 import { Dropdown, Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { Text } from "@salt-ds/core";
+import { IFrame } from "./components";
 
 import { ReactElement, useCallback, useMemo, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Tree } from "./components";
 
 import "./App.css";
@@ -91,7 +92,6 @@ const availableThemes: ThemeDescriptor[] = [
 ];
 
 export const App = ({ stories }: AppProps) => {
-  console.log({ stories: Object.entries(stories) });
   const navigate = useNavigate();
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
@@ -101,7 +101,7 @@ export const App = ({ stories }: AppProps) => {
   const [density, setDensity] = useState<Density>("high");
 
   const launchStandaloneWindow = useCallback(() => {
-    window.open(`${location.href}?standalone`, "_blank");
+    window.open(`${location.href}?standalone&theme=vuu-purple`, "_blank");
   }, []);
 
   const handleThemeChange = useCallback(
@@ -114,10 +114,13 @@ export const App = ({ stories }: AppProps) => {
     []
   );
 
-  console.log({ theme });
-
   return (
-    <ThemeProvider density="high" themeMode="light">
+    <ThemeProvider
+      applyThemeClasses
+      density="high"
+      theme="salt"
+      themeMode="light"
+    >
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
@@ -170,7 +173,7 @@ export const App = ({ stories }: AppProps) => {
                   position: "relative",
                 }}
               >
-                <Outlet />
+                <IFrame />
               </div>
             </Flexbox>
           </ThemeProvider>

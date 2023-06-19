@@ -37,3 +37,14 @@ body {
   background-color: var(--salt-container-primary-background);
   overflow: hidden;
 }
+
+.ShowCaseIFrame-container {
+  height: 100%;
+  width: 100%;
+}
+
+.ShowCaseIFrame {
+  border: none;
+  height: 100%;
+  width: 100%;
+}

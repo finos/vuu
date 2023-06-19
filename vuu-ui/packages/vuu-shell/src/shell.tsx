@@ -8,12 +8,11 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { ShellContextProvider } from "./ShellContextProvider";
 import { useLayoutConfig } from "./layout-config";
 import { DraggableLayout, LayoutProvider } from "@finos/vuu-layout";
 import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
 import { AppHeader } from "./app-header";
-import { ThemeMode } from "./theme-provider";
+import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
 import { logger } from "@finos/vuu-utils";
 import { useShellLayout } from "./shell-layouts";
 import { SaveLocation } from "./shellTypes";
@@ -70,9 +69,6 @@ export const Shell = ({
 }: ShellProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const layoutId = useRef("latest");
-
-  console.log(`Shell leftSidePanelLayout=${leftSidePanelLayout}`);
-
   const [layout, saveLayoutConfig, loadLayoutById] = useLayoutConfig({
     defaultLayout,
     saveLocation,
@@ -114,12 +110,8 @@ export const Shell = ({
     }
   }, [serverUrl, user.token, user.username]);
 
-  const className = cx(
-    "vuuShell",
-    classNameProp,
-    "salt-theme",
-    "salt-density-high"
-  );
+  const [themeClass, densityClass, dataMode] = useThemeAttributes();
+  const className = cx("vuuShell", classNameProp, themeClass, densityClass);
 
   const shellLayout = useShellLayout({
     leftSidePanelLayout,
@@ -137,11 +129,11 @@ export const Shell = ({
 
   return (
     // ShellContext TBD
-    <ShellContextProvider value={undefined}>
+    <ThemeProvider>
       <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
         <DraggableLayout
           className={className}
-          data-mode="light"
+          data-mode={dataMode}
           ref={rootRef}
           {...htmlAttributes}
         >
@@ -149,6 +141,6 @@ export const Shell = ({
         </DraggableLayout>
       </LayoutProvider>
       {children}
-    </ShellContextProvider>
+    </ThemeProvider>
   );
 };

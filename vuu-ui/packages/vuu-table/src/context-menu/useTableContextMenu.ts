@@ -79,6 +79,7 @@ export const useTableContextMenu = ({
         case "column-pin-left": return onPersistentColumnOperation({type: "pinColumn", column, pin: "left"}), true;
         case "column-pin-right": return onPersistentColumnOperation({type: "pinColumn", column, pin: "right"}), true;
         case "column-unpin": return onPersistentColumnOperation({type: "pinColumn", column, pin: undefined}), true
+        case "column-settings": return onPersistentColumnOperation({type: "columnSettings", column}), true
         default:
       }
     }

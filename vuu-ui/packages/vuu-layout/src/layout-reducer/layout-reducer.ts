@@ -22,6 +22,7 @@ import {
   LayoutActionType,
   LayoutReducerAction,
   MaximizeAction,
+  SetPropsAction,
   SetTitleAction,
   SwitchTabAction,
 } from "./layoutTypes";
@@ -50,8 +51,16 @@ export const layoutReducer = (
       return removeChild(state, action);
     case LayoutActionType.REPLACE:
       return replaceChild(state, action);
+    case LayoutActionType.SET_PROP:
+      return setProp(state, action);
+    case LayoutActionType.SET_PROPS:
+      return setProps(state, action);
     case LayoutActionType.SET_TITLE:
-      return setTitle(state, action);
+      return setProp(state, {
+        type: "set-prop",
+        propName: "title",
+        propValue: action.title,
+      });
     case LayoutActionType.SPLITTER_RESIZE:
       return resizeFlexChildren(state, action);
     case LayoutActionType.LAYOUT_RESIZE:
@@ -72,11 +81,20 @@ const switchTab = (state: ReactElement, { path, nextIdx }: SwitchTabAction) => {
   return swapChild(state, target, replacement);
 };
 
-const setTitle = (state: ReactElement, { path, title }: SetTitleAction) => {
+const setProp = (
+  state: ReactElement,
+  { path, propName, propValue }: SetPropAction
+) => {
   const target = followPath(state, path, true);
   const replacement = React.cloneElement(target, {
-    title,
+    [propName]: propValue,
   });
+  return swapChild(state, target, replacement);
+};
+
+const setProps = (state: ReactElement, { path, props }: SetPropsAction) => {
+  const target = followPath(state, path, true);
+  const replacement = React.cloneElement(target, props);
   return swapChild(state, target, replacement);
 };
 

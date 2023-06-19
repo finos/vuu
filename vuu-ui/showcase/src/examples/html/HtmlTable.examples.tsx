@@ -14,7 +14,13 @@ import {
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
 } from "@heswell/salt-lab";
-import { Flexbox } from "@finos/vuu-layout";
+import { Flexbox, useLayoutProviderDispatch } from "@finos/vuu-layout";
+import {
+  LayoutResizeAction,
+  SetPropAction,
+  SetPropsAction,
+} from "@finos/vuu-layout/src/layout-reducer";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 let displaySequence = 1;
 
@@ -299,6 +305,54 @@ export const DefaultVuuTable = () => {
   );
 };
 DefaultVuuTable.displaySequence = displaySequence++;
+
+export const AutoVuuTable = () => {
+  const dispatchLayoutAction = useLayoutProviderDispatch();
+  const { typeaheadHook: _, ...config } = useTableConfig({
+    count: 1000,
+    lazyData: false,
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  const handleShowColumnSettings = useCallback(
+    (column?: KeyedColumnDescriptor) => {
+      // how do we get the path
+      // dispatchLayoutAction({
+      //   type: "set-prop",
+      //   path: "#context-panel",
+      //   propName: "expanded",
+      //   propValue: true,
+      // } as SetPropAction);
+      dispatchLayoutAction({
+        type: "set-props",
+        path: "#context-panel",
+        props: {
+          expanded: true,
+          context: "column-settings",
+          column,
+        },
+      } as SetPropsAction);
+    },
+    [dispatchLayoutAction]
+  );
+
+  const handleConfigChange = useCallback((...args) => {
+    console.log(`config change`, {
+      args,
+    });
+  }, []);
+
+  return (
+    <VuuTable
+      {...config}
+      renderBufferSize={0}
+      onConfigChange={handleConfigChange}
+      onShowConfigEditor={handleShowColumnSettings}
+    />
+  );
+};
+AutoVuuTable.displaySequence = displaySequence++;
 
 export const VuuTableTwentyColumns = () => {
   const { typeaheadHook: _, ...config } = useTableConfig({
