@@ -7,7 +7,7 @@ In order to start working with Docusaurus, please read the [Getting Started guid
 - `website/static` - contains images, PDF and other static assets used in the website; if you add a `file.pdf` in this folder, it will be served as `https://<your_host>/file.pdf`.
 - `docs` - contains the `.md` and `.mdx` files that are served as `https://<your_host>/<file_id>` ; the `file_id` is defined at the top of the file.
 
-## Local run
+## Local run 
 
 Running Docusaurus locally is very simple, just follow these steps:
 
