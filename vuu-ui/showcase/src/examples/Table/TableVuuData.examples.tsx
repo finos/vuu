@@ -140,17 +140,73 @@ export const VuuDataTable = () => {
       : "ccy";
 
   const groupByCurrency = useCallback(() => {
-    dataSource.groupBy = [getCcyCol(dataSource)];
-    setSelectedGroupIndex(0);
-  }, [dataSource]);
+    if (selectedGroupIndex === 0) {
+      dataSource.groupBy = [];
+      setSelectedGroupIndex(-1);
+    } else {
+      dataSource.config = {
+        ...dataSource.config,
+        columns: columns.map((col) => col.name),
+        groupBy: [getCcyCol(dataSource)],
+      };
+      // dataSource.groupBy = [getCcyCol(dataSource)];
+      setSelectedGroupIndex(0);
+    }
+  }, [columns, dataSource, selectedGroupIndex]);
   const groupByCurrencyExchange = useCallback(() => {
-    dataSource.groupBy = [getCcyCol(dataSource), "exchange"];
-    setSelectedGroupIndex(1);
-  }, [dataSource]);
+    if (selectedGroupIndex === 1) {
+      dataSource.groupBy = [];
+      setSelectedGroupIndex(-1);
+    } else {
+      dataSource.config = {
+        ...dataSource.config,
+        columns: columns.map((col) => col.name),
+        groupBy: [getCcyCol(dataSource), "exchange"],
+      };
+
+      // dataSource.groupBy = [getCcyCol(dataSource), "exchange"];
+      setSelectedGroupIndex(1);
+    }
+  }, [columns, dataSource, selectedGroupIndex]);
   const groupByCurrencyExchangeRic = useCallback(() => {
-    dataSource.groupBy = [getCcyCol(dataSource), "exchange", "ric"];
-    setSelectedGroupIndex(2);
-  }, [dataSource]);
+    if (selectedGroupIndex === 2) {
+      dataSource.groupBy = [];
+      setSelectedGroupIndex(-1);
+    } else {
+      dataSource.config = {
+        ...dataSource.config,
+        columns: columns.map((col) => col.name),
+        groupBy: [getCcyCol(dataSource), "exchange", "ric"],
+      };
+      setSelectedGroupIndex(2);
+    }
+  }, [columns, dataSource, selectedGroupIndex]);
+  const groupByAccountAlgo = useCallback(() => {
+    if (selectedGroupIndex === 2) {
+      dataSource.groupBy = [];
+      setSelectedGroupIndex(-1);
+    } else {
+      dataSource.config = {
+        ...dataSource.config,
+        aggregations: [
+          { column: "price", aggType: 1 },
+          { column: "quantity", aggType: 1 },
+          { column: "filledQty", aggType: 1 },
+        ],
+        columns: [
+          "account",
+          "algo",
+          "ccy",
+          "averagePrice",
+          "price",
+          "quantity",
+          "filledQty",
+        ],
+        groupBy: ["account", "algo"],
+      };
+      setSelectedGroupIndex(3);
+    }
+  }, [dataSource, selectedGroupIndex]);
 
   const handleSubmitFilter = useCallback(
     (filterStruct: Filter | undefined, filter: string, filterName?: string) => {
@@ -199,6 +255,16 @@ export const VuuDataTable = () => {
             >
               CCY, Exchange, Ric
             </ToggleButton>
+            {selectedIndex === 2 ? (
+              <ToggleButton
+                onClick={groupByAccountAlgo}
+                tooltipText="Account and Algo"
+              >
+                Account, Algo, 7 columns
+              </ToggleButton>
+            ) : (
+              <ToggleButton>Ignore</ToggleButton>
+            )}
           </ToggleButtonGroup>
         </Tooltray>
         <Tooltray>

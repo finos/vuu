@@ -1,41 +1,7 @@
-import {
-  VuuColumnDataType,
-  VuuTable,
-  VuuTableMeta,
-} from "@finos/vuu-protocol-types";
+import { VuuTableMetaWithTable } from "@finos/vuu-protocol-types";
 import { useCallback, useEffect, useState } from "react";
 import { getServerAPI } from "../connection-manager";
-
-export type SchemaColumn = {
-  name: string;
-  serverDataType: VuuColumnDataType;
-};
-
-export type TableSchema = {
-  columns: SchemaColumn[];
-  key: string;
-  table: VuuTable;
-};
-
-export interface VuuTableMetaWithTable extends VuuTableMeta {
-  table: VuuTable;
-}
-
-export const createSchemaFromTableMetadata = ({
-  columns,
-  dataTypes,
-  key,
-  table,
-}: VuuTableMetaWithTable): TableSchema => {
-  return {
-    table,
-    columns: columns.map((col, idx) => ({
-      name: col,
-      serverDataType: dataTypes[idx],
-    })),
-    key,
-  };
-};
+import { createSchemaFromTableMetadata, TableSchema } from "../message-utils";
 
 export const useVuuTables = () => {
   const [tables, setTables] = useState<Map<string, TableSchema> | undefined>();

@@ -4,9 +4,8 @@ import {
   ClientToServerMessage,
   LinkDescriptorWithLabel,
   ServerToClientMessage,
-  VuuColumnDataType,
+  ServerToClientTableMeta,
   VuuLinkDescriptor,
-  VuuRow,
   VuuRpcRequest,
   VuuTable,
   VuuTableMeta,
@@ -20,9 +19,11 @@ import {
   DataSourceVisualLinkRemovedMessage,
 } from "../data-source";
 import {
+  createSchemaFromTableMetadata,
   groupRowsByViewport,
   isVuuMenuRpcRequest,
   stripRequestId,
+  TableSchema,
   WithRequestId,
 } from "../message-utils";
 import {
@@ -129,10 +130,7 @@ export class ServerProxy {
   private pendingRequests = new Map<string, PendingRequest>();
   private sessionId?: string;
   private queuedRequests: Array<ClientToServerMessage["body"]> = [];
-  private cachedTableMeta: Map<
-    string,
-    { columns: string[]; serverDataTypes: VuuColumnDataType[] }
-  > = new Map();
+  private cachedTableSchemas: Map<string, Readonly<TableSchema>> = new Map();
 
   constructor(connection: Connection, callback: PostMessageToClientCallback) {
     this.connection = connection;
@@ -192,7 +190,7 @@ export class ServerProxy {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
       if (
-        !this.hasMetaDataFor(message.table) &&
+        !this.hasSchemaForTable(message.table) &&
         // A Session table is never cached - it is limited to a single workflow interaction
         // The metadata for a session table is requested even before the subscribe call.
         !isSessionTable(message.table)
@@ -887,7 +885,7 @@ export class ServerProxy {
         // This request may have originated from client or may have been made by
         // ServerProxy whilst creating a new subscription
         {
-          this.cacheTableMeta(body.table, body.columns, body.dataTypes);
+          const tableSchema = this.cacheTableMeta(body);
           const clientViewportId = this.pendingTableMetaRequests.get(requestId);
           if (clientViewportId) {
             this.pendingTableMetaRequests.delete(requestId);
@@ -896,7 +894,7 @@ export class ServerProxy {
             // been acknowledged, the viewport will be stored under serverViewportId;
             const viewport = this.viewports.get(clientViewportId);
             if (viewport) {
-              viewport.setTableMeta(body.columns, body.dataTypes);
+              viewport.setTableSchema(tableSchema);
             } else {
               warn?.(
                 "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
@@ -1040,21 +1038,19 @@ export class ServerProxy {
     }
   }
 
-  private hasMetaDataFor(table: VuuTable) {
-    return this.cachedTableMeta.has(`${table.module}:${table.table}`);
+  private hasSchemaForTable(table: VuuTable) {
+    return this.cachedTableSchemas.has(`${table.module}:${table.table}`);
   }
 
-  private cacheTableMeta(
-    table: VuuTable,
-    columns: string[],
-    serverDataTypes: VuuColumnDataType[]
-  ) {
-    if (!this.hasMetaDataFor(table)) {
-      this.cachedTableMeta.set(`${table.module}:${table.table}`, {
-        columns,
-        serverDataTypes,
-      });
+  private cacheTableMeta(messageBody: ServerToClientTableMeta): TableSchema {
+    const { module, table } = messageBody.table;
+    const key = `${module}:${table}`;
+    let tableSchema = this.cachedTableSchemas.get(key);
+    if (!tableSchema) {
+      tableSchema = createSchemaFromTableMetadata(messageBody);
+      this.cachedTableSchemas.set(key, tableSchema);
     }
+    return tableSchema;
   }
 
   isTableOpen(table?: VuuTable) {

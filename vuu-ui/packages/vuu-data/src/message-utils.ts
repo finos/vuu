@@ -1,7 +1,10 @@
 import {
   ClientToServerMenuRPC,
+  VuuColumnDataType,
   VuuRow,
   VuuRpcRequest,
+  VuuTable,
+  VuuTableMeta,
 } from "@finos/vuu-protocol-types";
 import { VuuUIMessageOut } from "./vuuUIMessageTypes";
 
@@ -53,4 +56,35 @@ export const groupRowsByViewport = (rows: VuuRow[]): ViewportRowMap => {
     rowsForViewport.push(row);
   }
   return result;
+};
+
+export type SchemaColumn = {
+  name: string;
+  serverDataType: VuuColumnDataType;
+};
+
+export interface VuuTableMetaWithTable extends VuuTableMeta {
+  table: VuuTable;
+}
+
+export type TableSchema = {
+  columns: SchemaColumn[];
+  key: string;
+  table: VuuTable;
+};
+
+export const createSchemaFromTableMetadata = ({
+  columns,
+  dataTypes,
+  key,
+  table,
+}: VuuTableMetaWithTable): Readonly<TableSchema> => {
+  return {
+    table,
+    columns: columns.map((col, idx) => ({
+      name: col,
+      serverDataType: dataTypes[idx],
+    })),
+    key,
+  };
 };

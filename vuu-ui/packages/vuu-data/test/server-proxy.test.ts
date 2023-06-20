@@ -74,7 +74,7 @@ describe("ServerProxy", () => {
       const serverProxy = new ServerProxy(mockConnection, callback);
       serverProxy.subscribe(clientSubscription);
       serverProxy.handleMessageFromServer(serverSubscription);
-      //TODO cover tableMeta in test
+      //TODO cover tableSchema in test
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
         aggregations: [],
@@ -89,7 +89,7 @@ describe("ServerProxy", () => {
         sort: {
           sortDefs: [],
         },
-        tableMeta: null,
+        tableSchema: null,
         type: "subscribed",
       });
     });
@@ -2914,7 +2914,7 @@ describe("ServerProxy", () => {
       serverProxy.subscribe(clientSubscription2);
       serverProxy.handleMessageFromServer(serverSubscription1);
       serverProxy.handleMessageFromServer(serverSubscription2);
-      //TODO cover tableMeta in test
+      //TODO cover tableSchema in test
       expect(callback).toHaveBeenCalledTimes(2);
       expect(callback).toHaveBeenNthCalledWith<[DataSourceSubscribedMessage]>(
         1,
@@ -2931,7 +2931,7 @@ describe("ServerProxy", () => {
           sort: {
             sortDefs: [],
           },
-          tableMeta: null,
+          tableSchema: null,
           type: "subscribed",
         }
       );
@@ -2950,7 +2950,7 @@ describe("ServerProxy", () => {
           sort: {
             sortDefs: [],
           },
-          tableMeta: null,
+          tableSchema: null,
           type: "subscribed",
         }
       );

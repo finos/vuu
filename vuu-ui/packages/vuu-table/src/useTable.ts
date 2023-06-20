@@ -109,16 +109,15 @@ export const useTable = ({
   });
 
   const onSubscribed = useCallback(
-    (subscription: DataSourceSubscribedMessage) => {
-      if (subscription.tableMeta) {
-        const { columns: columnNames, dataTypes: serverDataTypes } =
-          subscription.tableMeta;
+    ({ tableSchema }: DataSourceSubscribedMessage) => {
+      if (tableSchema) {
         expectConfigChangeRef.current = true;
         dispatchColumnAction({
-          type: "setTypes",
-          columnNames,
-          serverDataTypes,
+          type: "setTableSchema",
+          tableSchema,
         });
+      } else {
+        console.log("usbscription message with no schema");
       }
     },
     [dispatchColumnAction]

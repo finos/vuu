@@ -27,6 +27,7 @@ import {
 import { Reducer, useReducer } from "react";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { DataSourceConfig } from "@finos/vuu-data";
+import { TableSchema } from "@finos/vuu-data/src/message-utils";
 
 const { info } = logger("useTableModel");
 
@@ -101,10 +102,9 @@ export interface ColumnActionResize {
   width?: number;
 }
 
-export interface ColumnActionSetTypes {
-  type: "setTypes";
-  columnNames: string[];
-  serverDataTypes: VuuColumnDataType[];
+export interface ColumnActionSetTableSchema {
+  type: "setTableSchema";
+  tableSchema: TableSchema;
 }
 
 export interface ColumnActionUpdate {
@@ -138,7 +138,7 @@ export type GridModelAction =
   | ColumnActionMove
   | ColumnActionPin
   | ColumnActionResize
-  | ColumnActionSetTypes
+  | ColumnActionSetTableSchema
   | ColumnActionShow
   | ColumnActionUpdate
   | ColumnActionUpdateProp
@@ -157,8 +157,8 @@ const columnReducer: GridModelReducer = (state, action) => {
       return moveColumn(state, action);
     case "resizeColumn":
       return resizeColumn(state, action);
-    case "setTypes":
-      return setTypes(state, action);
+    case "setTableSchema":
+      return setTableSchema(state, action);
     case "hideColumns":
       return hideColumns(state, action);
     case "showColumns":
@@ -345,9 +345,9 @@ function resizeColumn(
   }
 }
 
-function setTypes(
+function setTableSchema(
   state: GridModel,
-  { columnNames, serverDataTypes }: ColumnActionSetTypes
+  { columnNames, serverDataTypes }: ColumnActionSetTableSchema
 ) {
   const { columns } = state;
   if (columns.some(columnWithoutDataType)) {

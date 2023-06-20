@@ -8,7 +8,6 @@ import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
-  VuuColumnDataType,
   VuuColumns,
   VuuFilter,
   VuuGroupBy,
@@ -25,6 +24,7 @@ import {
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditSuccess,
 } from "./vuuUIMessageTypes";
+import { TableSchema } from "./message-utils";
 
 type RowIndex = number;
 type RenderKey = number;
@@ -299,7 +299,7 @@ export interface DataSourceSubscribedMessage
   groupBy: VuuGroupBy;
   range: VuuRange;
   sort: VuuSort;
-  tableMeta: { columns: string[]; dataTypes: VuuColumnDataType[] } | null;
+  tableSchema: Readonly<TableSchema> | null;
   type: "subscribed";
 }
 
