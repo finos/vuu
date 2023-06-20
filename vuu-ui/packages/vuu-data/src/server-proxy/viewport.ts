@@ -14,7 +14,6 @@ import {
   LinkDescriptorWithLabel,
   ServerToClientCreateViewPortSuccess,
   VuuAggregation,
-  VuuColumnDataType,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
@@ -55,7 +54,7 @@ import {
   DataUpdateMode,
   WithFullConfig,
 } from "../data-source";
-import { getFirstAndLastRows } from "../message-utils";
+import { getFirstAndLastRows, TableSchema } from "../message-utils";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
@@ -161,10 +160,7 @@ export class Viewport {
     requestId: string;
   })[] = [];
   private rowCountChanged = false;
-  private serverTableMeta: {
-    columns: string[];
-    dataTypes: VuuColumnDataType[];
-  } | null = null;
+  private tableSchema: TableSchema | null = null;
   private batchMode = true;
   private useBatchMode = true;
 
@@ -261,6 +257,7 @@ export class Viewport {
       this.bufferSize
     );
 
+    console.log({ schema: this.tableSchema });
     // TODO retrieve the filterStruct
     return {
       aggregations,
@@ -271,7 +268,7 @@ export class Viewport {
       groupBy,
       range,
       sort,
-      tableMeta: this.serverTableMeta,
+      tableSchema: this.tableSchema,
     } as DataSourceSubscribedMessage;
   }
 
@@ -513,8 +510,8 @@ export class Viewport {
     };
   }
 
-  setTableMeta(columns: string[], dataTypes: VuuColumnDataType[]) {
-    this.serverTableMeta = { columns, dataTypes };
+  setTableSchema(tableSchema: TableSchema) {
+    this.tableSchema = tableSchema;
   }
 
   openTreeNode(requestId: string, message: VuuUIMessageOutOpenTreeNode) {

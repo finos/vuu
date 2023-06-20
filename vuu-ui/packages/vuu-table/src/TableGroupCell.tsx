@@ -19,7 +19,7 @@ export const getGroupValueAndOffset = (
   // Depth can be greater tha group columns when we have just removed a column from groupby
   // but new data has not yet been received.
   if (isLeaf || depth > columns.length) {
-    return [null, depth === null ? 0 : depth - 1];
+    return [null, depth === null ? 0 : Math.max(0, depth - 1)];
   } else if (depth === 0) {
     return ["$root", 0];
   } else {

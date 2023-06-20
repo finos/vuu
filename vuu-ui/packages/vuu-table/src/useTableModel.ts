@@ -27,6 +27,7 @@ import {
 import { Reducer, useReducer } from "react";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { DataSourceConfig } from "@finos/vuu-data";
+import { TableSchema } from "@finos/vuu-data/src/message-utils";
 
 const { info } = logger("useTableModel");
 
@@ -42,21 +43,26 @@ const getCellRendererForColumn = (column: ColumnDescriptor) => {
   }
 };
 
-const getDataType = (
+const getServerDataTypeForColumn = (
   column: ColumnDescriptor,
-  columnNames: string[],
-  dataTypes: VuuColumnDataType[]
+  tableSchema?: TableSchema
 ): VuuColumnDataType => {
-  const index = columnNames.indexOf(column.name);
-  if (index !== -1 && dataTypes[index]) {
-    return dataTypes[index];
-  } else {
-    return column.serverDataType ?? "string";
+  if (column.serverDataType) {
+    return column.serverDataType;
+  } else if (tableSchema) {
+    const schemaColumn = tableSchema.columns.find(
+      (col) => col.name === column.name
+    );
+    if (schemaColumn) {
+      return schemaColumn.serverDataType;
+    }
   }
+  return "string";
 };
 
-export interface GridModel extends Omit<GridConfig, "columns"> {
+export interface TableModel extends Omit<GridConfig, "columns"> {
   columns: KeyedColumnDescriptor[];
+  tableSchema?: Readonly<TableSchema>;
 }
 
 const numericTypes = ["int", "long", "double"];
@@ -101,10 +107,9 @@ export interface ColumnActionResize {
   width?: number;
 }
 
-export interface ColumnActionSetTypes {
-  type: "setTypes";
-  columnNames: string[];
-  serverDataTypes: VuuColumnDataType[];
+export interface ColumnActionSetTableSchema {
+  type: "setTableSchema";
+  tableSchema: TableSchema;
 }
 
 export interface ColumnActionUpdate {
@@ -138,13 +143,13 @@ export type GridModelAction =
   | ColumnActionMove
   | ColumnActionPin
   | ColumnActionResize
-  | ColumnActionSetTypes
+  | ColumnActionSetTableSchema
   | ColumnActionShow
   | ColumnActionUpdate
   | ColumnActionUpdateProp
   | ColumnActionTableConfig;
 
-export type GridModelReducer = Reducer<GridModel, GridModelAction>;
+export type GridModelReducer = Reducer<TableModel, GridModelAction>;
 
 export type ColumnActionDispatch = (action: GridModelAction) => void;
 
@@ -157,8 +162,8 @@ const columnReducer: GridModelReducer = (state, action) => {
       return moveColumn(state, action);
     case "resizeColumn":
       return resizeColumn(state, action);
-    case "setTypes":
-      return setTypes(state, action);
+    case "setTableSchema":
+      return setTableSchema(state, action);
     case "hideColumns":
       return hideColumns(state, action);
     case "showColumns":
@@ -196,7 +201,7 @@ type InitialConfig = {
   tableConfig: Omit<GridConfig, "headings">;
 };
 
-function init({ dataSourceConfig, tableConfig }: InitialConfig): GridModel {
+function init({ dataSourceConfig, tableConfig }: InitialConfig): TableModel {
   const columns = tableConfig.columns.map(
     toKeyedColumWithDefaults(tableConfig)
   );
@@ -231,15 +236,19 @@ const getLabel = (
 };
 
 const toKeyedColumWithDefaults =
-  (options: Omit<GridConfig, "headings">) =>
+  (options: Partial<TableModel> | Partial<GridConfig>) =>
   (
     column: ColumnDescriptor & { key?: number },
     index: number
   ): KeyedColumnDescriptor => {
+    const serverDataType = getServerDataTypeForColumn(
+      column,
+      (options as Partial<TableModel>).tableSchema
+    );
     const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
       options;
     const {
-      align = getDefaultAlignment(column.serverDataType),
+      align = getDefaultAlignment(serverDataType),
       key,
       name,
       label = name,
@@ -255,6 +264,7 @@ const toKeyedColumWithDefaults =
       key: key ?? index + KEY_OFFSET,
       name,
       originalIdx: index,
+      serverDataType,
       valueFormatter: getValueFormatter(column),
       width: width,
     };
@@ -269,7 +279,7 @@ const toKeyedColumWithDefaults =
   };
 
 function moveColumn(
-  state: GridModel,
+  state: TableModel,
   { column, moveBy, moveTo }: ColumnActionMove
 ) {
   const { columns } = state;
@@ -292,9 +302,9 @@ function moveColumn(
   return state;
 }
 
-function hideColumns(state: GridModel, { columns }: ColumnActionHide) {
+function hideColumns(state: TableModel, { columns }: ColumnActionHide) {
   if (columns.some((col) => col.hidden !== true)) {
-    return columns.reduce<GridModel>((s, c) => {
+    return columns.reduce<TableModel>((s, c) => {
       if (c.hidden !== true) {
         return updateColumnProp(s, {
           type: "updateColumnProp",
@@ -309,9 +319,9 @@ function hideColumns(state: GridModel, { columns }: ColumnActionHide) {
     return state;
   }
 }
-function showColumns(state: GridModel, { columns }: ColumnActionShow) {
+function showColumns(state: TableModel, { columns }: ColumnActionShow) {
   if (columns.some((col) => col.hidden)) {
-    return columns.reduce<GridModel>((s, c) => {
+    return columns.reduce<TableModel>((s, c) => {
       if (c.hidden) {
         return updateColumnProp(s, {
           type: "updateColumnProp",
@@ -328,7 +338,7 @@ function showColumns(state: GridModel, { columns }: ColumnActionShow) {
 }
 
 function resizeColumn(
-  state: GridModel,
+  state: TableModel,
   { column, phase, width }: ColumnActionResize
 ) {
   const type = "updateColumnProp";
@@ -345,14 +355,14 @@ function resizeColumn(
   }
 }
 
-function setTypes(
-  state: GridModel,
-  { columnNames, serverDataTypes }: ColumnActionSetTypes
+function setTableSchema(
+  state: TableModel,
+  { tableSchema }: ColumnActionSetTableSchema
 ) {
   const { columns } = state;
   if (columns.some(columnWithoutDataType)) {
     const cols = columns.map((column) => {
-      const serverDataType = getDataType(column, columnNames, serverDataTypes);
+      const serverDataType = getServerDataTypeForColumn(column, tableSchema);
       return {
         ...column,
         align: column.align ?? getDefaultAlignment(serverDataType),
@@ -363,13 +373,17 @@ function setTypes(
     return {
       ...state,
       columns: cols,
+      tableSchema,
     };
   } else {
-    return state;
+    return {
+      ...state,
+      tableSchema,
+    };
   }
 }
 
-function pinColumn(state: GridModel, action: ColumnActionPin) {
+function pinColumn(state: TableModel, action: ColumnActionPin) {
   let { columns } = state;
   const { column, pin } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
@@ -384,7 +398,7 @@ function pinColumn(state: GridModel, action: ColumnActionPin) {
     return state;
   }
 }
-function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
+function updateColumnProp(state: TableModel, action: ColumnActionUpdateProp) {
   let { columns } = state;
   const { align, column, hidden, label, resizing, width } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
@@ -412,7 +426,7 @@ function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
 }
 
 function updateTableConfig(
-  state: GridModel,
+  state: TableModel,
   { columns, confirmed, filter, groupBy, sort }: ColumnActionTableConfig
 ) {
   const hasColumns = columns && columns.length > 0;
@@ -429,7 +443,7 @@ function updateTableConfig(
       ...state,
       columns: columns.map((colName, index) => {
         const columnName = getColumnName(colName);
-        const key = index + KEY_OFFSET;
+        const key: number = index + KEY_OFFSET;
         const col = findColumn(result.columns, columnName);
         if (col) {
           if (col.key === key) {
@@ -440,6 +454,16 @@ function updateTableConfig(
               key,
             };
           }
+        } else {
+          // we have a column which was not previously included.
+          // TODO How do we get the serverDataType
+          // TODO it needs to be available in availableCOlumns or allColumns in state
+          return toKeyedColumWithDefaults(state)(
+            {
+              name: colName,
+            },
+            index
+          );
         }
         throw Error(`useTableModel column ${colName} not found`);
       }),
