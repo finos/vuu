@@ -56,27 +56,25 @@ this should be the same as Linux & MacOS just with Windows adjusted paths
 
 ## Running the Vuu Server Simulation Module from IDE
 
-1. Go to the SimulMain.scala, right click and run (add these into JVM args -Xmx10G -Xms5G)
+1. Go to the SimulMain.scala, right click and run (add these into JVM args -Xmx10G -Xms5G, or whatever you have available)
 
 ## Installation - Client
 
-You will need npm at version 16 or greater and yarn installed to build the client.
-
-Please note, while we are in the process of making the ag-grid dependencies optional you will
-need to run this command from the vuu/vuu-ui directory.
+You will need npm at version 16 or greater to build the client.
 
 ```sh
 #in vuu repo (not vuu child directory in repo)
 cd vuu-ui
-yarn
-yarn build
-yarn buid:app
-cd packages/electron
-#this should open an electron window pointing at https://localhost:8443/index.html
-yarn start
+npm install
+npm run build
+npm run buid:app
+#if you would also like to use electron rather than Chrome/Chromium
+cd tools/electron
+npm install #You only need to do this once initially and when the electron version is upgraded
+npm run launch:demo:electron
 ```
 
-You should now be able to use a local browser to see the Vuu demo app. [localhost:8443](https://localhost:8443/index.html)
+If you are using Chrome, you should now be able to use a local browser to see the Vuu demo app. [localhost:8443](https://localhost:8443/index.html)
 
 If you are getting certificate errors when you connect, set this browser setting in chrome:
 
