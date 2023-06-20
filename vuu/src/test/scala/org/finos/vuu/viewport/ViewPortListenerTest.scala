@@ -31,16 +31,16 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
       assertVpEq(combinedUpdates){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0000","chris"   ,"VOD.L"   ,1311544800l,100       ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1311544810l,101       ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1311544820l,102       ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544830l,103       ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544840l,104       ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850l,105       ),
-          ("NYC-0006","chris"   ,"VOD.L"   ,1311544860l,106       ),
-          ("NYC-0007","chris"   ,"VOD.L"   ,1311544870l,107       ),
-          ("NYC-0008","chris"   ,"VOD.L"   ,1311544880l,108       ),
-          ("NYC-0009","chris"   ,"VOD.L"   ,1311544890l,109       )
+          ("NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       ),
+          ("NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ),
+          ("NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544830L,103       ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544840L,104       ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       ),
+          ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,106       ),
+          ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,107       ),
+          ("NYC-0008","chris"   ,"VOD.L"   ,1311544880L,108       ),
+          ("NYC-0009","chris"   ,"VOD.L"   ,1311544890L,109       )
         )
       }
 
@@ -53,16 +53,16 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
       assertVpEq(combinedUpdates2){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0015","chris"   ,"VOD.L"   ,1311544950l,115       ),
-          ("NYC-0016","chris"   ,"VOD.L"   ,1311544960l,116       ),
-          ("NYC-0017","chris"   ,"VOD.L"   ,1311544970l,117       ),
-          ("NYC-0018","chris"   ,"VOD.L"   ,1311544980l,118       ),
-          ("NYC-0019","chris"   ,"VOD.L"   ,1311544990l,119       ),
-          ("NYC-0020","chris"   ,"VOD.L"   ,1311545000l,120       ),
-          ("NYC-0021","chris"   ,"VOD.L"   ,1311545010l,121       ),
-          ("NYC-0022","chris"   ,"VOD.L"   ,1311545020l,122       ),
-          ("NYC-0023","chris"   ,"VOD.L"   ,1311545030l,123       ),
-          ("NYC-0024","chris"   ,"VOD.L"   ,1311545040l,124       )
+          ("NYC-0015","chris"   ,"VOD.L"   ,1311544950L,115       ),
+          ("NYC-0016","chris"   ,"VOD.L"   ,1311544960L,116       ),
+          ("NYC-0017","chris"   ,"VOD.L"   ,1311544970L,117       ),
+          ("NYC-0018","chris"   ,"VOD.L"   ,1311544980L,118       ),
+          ("NYC-0019","chris"   ,"VOD.L"   ,1311544990L,119       ),
+          ("NYC-0020","chris"   ,"VOD.L"   ,1311545000L,120       ),
+          ("NYC-0021","chris"   ,"VOD.L"   ,1311545010L,121       ),
+          ("NYC-0022","chris"   ,"VOD.L"   ,1311545020L,122       ),
+          ("NYC-0023","chris"   ,"VOD.L"   ,1311545030L,123       ),
+          ("NYC-0024","chris"   ,"VOD.L"   ,1311545040L,124       )
         )
       }
 
@@ -75,16 +75,16 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
       assertVpEq(combinedUpdates3){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850l,105       ),
-          ("NYC-0006","chris"   ,"VOD.L"   ,1311544860l,106       ),
-          ("NYC-0007","chris"   ,"VOD.L"   ,1311544870l,107       ),
-          ("NYC-0008","chris"   ,"VOD.L"   ,1311544880l,108       ),
-          ("NYC-0009","chris"   ,"VOD.L"   ,1311544890l,109       ),
-          ("NYC-0010","chris"   ,"VOD.L"   ,1311544900l,110       ),
-          ("NYC-0011","chris"   ,"VOD.L"   ,1311544910l,111       ),
-          ("NYC-0012","chris"   ,"VOD.L"   ,1311544920l,112       ),
-          ("NYC-0013","chris"   ,"VOD.L"   ,1311544930l,113       ),
-          ("NYC-0014","chris"   ,"VOD.L"   ,1311544940l,114       )
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       ),
+          ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,106       ),
+          ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,107       ),
+          ("NYC-0008","chris"   ,"VOD.L"   ,1311544880L,108       ),
+          ("NYC-0009","chris"   ,"VOD.L"   ,1311544890L,109       ),
+          ("NYC-0010","chris"   ,"VOD.L"   ,1311544900L,110       ),
+          ("NYC-0011","chris"   ,"VOD.L"   ,1311544910L,111       ),
+          ("NYC-0012","chris"   ,"VOD.L"   ,1311544920L,112       ),
+          ("NYC-0013","chris"   ,"VOD.L"   ,1311544930L,113       ),
+          ("NYC-0014","chris"   ,"VOD.L"   ,1311544940L,114       )
         )
       }
 
@@ -100,7 +100,6 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
       assertVpEq(combinedUpdates4){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0014","chris"   ,"VOD.L"   ,1311544940L,1014      ),
           ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,1005      ),
           ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,1006      ),
           ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,1007      ),
@@ -109,22 +108,23 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
           ("NYC-0010","chris"   ,"VOD.L"   ,1311544900L,1010      ),
           ("NYC-0011","chris"   ,"VOD.L"   ,1311544910L,1011      ),
           ("NYC-0012","chris"   ,"VOD.L"   ,1311544920L,1012      ),
-          ("NYC-0013","chris"   ,"VOD.L"   ,1311544930L,1013      )
+          ("NYC-0013","chris"   ,"VOD.L"   ,1311544930L,1013      ),
+          ("NYC-0014","chris"   ,"VOD.L"   ,1311544940L,1014      )
         )
       }
 
-      viewPortv3.table.isKeyObserved("NYC-0004") shouldEqual(false)
-      viewPortv3.table.isKeyObserved("NYC-0005") shouldEqual(true)
-      viewPortv3.table.isKeyObserved("NYC-0006") shouldEqual(true)
-      viewPortv3.table.isKeyObserved("NYC-0007") shouldEqual(true)
-      viewPortv3.table.isKeyObserved("NYC-0008") shouldEqual(true)
-      viewPortv3.table.isKeyObserved("NYC-0009") shouldEqual(true)
-      viewPortv3.table.isKeyObserved("NYC-0010") shouldEqual(true)
-      viewPortv3.table.isKeyObserved("NYC-0011") shouldEqual(true)
-      viewPortv3.table.isKeyObserved("NYC-0012") shouldEqual(true)
-      viewPortv3.table.isKeyObserved("NYC-0013") shouldEqual(true)
-      viewPortv3.table.isKeyObserved("NYC-0014") shouldEqual(true)
-      viewPortv3.table.isKeyObserved("NYC-0015") shouldEqual(false)
+      viewPortv3.table.isKeyObserved("NYC-0004") shouldEqual false
+      viewPortv3.table.isKeyObserved("NYC-0005") shouldEqual true
+      viewPortv3.table.isKeyObserved("NYC-0006") shouldEqual true
+      viewPortv3.table.isKeyObserved("NYC-0007") shouldEqual true
+      viewPortv3.table.isKeyObserved("NYC-0008") shouldEqual true
+      viewPortv3.table.isKeyObserved("NYC-0009") shouldEqual true
+      viewPortv3.table.isKeyObserved("NYC-0010") shouldEqual true
+      viewPortv3.table.isKeyObserved("NYC-0011") shouldEqual true
+      viewPortv3.table.isKeyObserved("NYC-0012") shouldEqual true
+      viewPortv3.table.isKeyObserved("NYC-0013") shouldEqual true
+      viewPortv3.table.isKeyObserved("NYC-0014") shouldEqual true
+      viewPortv3.table.isKeyObserved("NYC-0015") shouldEqual false
     }
   }
 

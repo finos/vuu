@@ -429,7 +429,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
 
     //we are not grouped by, but we want to change to a group by
-    val structure = if (viewPort.getGroupBy == NoGroupBy && groupBy != NoGroupBy) {
+    if (viewPort.getGroupBy == NoGroupBy && groupBy != NoGroupBy) {
 
       logger.info("[VP] was flat (or diff), now tree'd, building...")
 
@@ -441,9 +441,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       viewPort.setKeys(keys)
       sessionTable.setTree(EmptyTree, keys)
 
-      //logger.info("[VP] complete setKeys() " + keys.length)
-
-      viewport.ViewPortStructuralFields(table = sessionTable,
+      val structure = viewport.ViewPortStructuralFields(table = sessionTable,
         columns = columns,
         viewPort.getStructure.viewPortDef,
         filtAndSort = filtAndSort,
@@ -452,20 +450,18 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getTreeNodeStateStore,
         permissionChecker
       )
+
+      viewPort.changeStructure(structure)
 
       //we are groupBy but we want to revert to no groupBy
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
 
+      logger.info("[VP] was tree'd, now not tree'd, removing tree info")
+
       val groupByTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl]
       val sourceTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl].sourceTable
-      //delete all observers and references
-      groupByTable.delete()
-      //then remove it from table container
-      tableContainer.removeGroupBySessionTable(groupByTable)
 
-      viewPort.setKeys(ImmutableArray.empty[String])
-
-      viewport.ViewPortStructuralFields(table = sourceTable,
+      val structure = viewport.ViewPortStructuralFields(table = sourceTable,
         columns = columns,
         viewPort.getStructure.viewPortDef,
         filtAndSort = filtAndSort,
@@ -474,6 +470,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getTreeNodeStateStore,
         permissionChecker
       )
+
+      viewPort.changeStructure(structure)
+      tableContainer.removeGroupBySessionTable(groupByTable)
+      groupByTable.delete()
 
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy != NoGroupBy && viewPort.getGroupBy.columns != groupBy.columns) {
 
@@ -484,14 +484,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       groupByTable.setTree(EmptyTree, ImmutableArray.empty)
 
-      //delete all observers and references
-      groupByTable.delete()
-      //then remove it from table container
-      tableContainer.removeGroupBySessionTable(groupByTable)
-
       val sessionTable = tableContainer.createTreeSessionTable(sourceTable, clientSession)
-
-      //val tree = TreeBuilder.create(sessionTable, groupBy, filterSpec, columns, None, Some(aSort)).build()
 
       val keys = ImmutableArray.empty[String]
 
@@ -510,17 +503,20 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         permissionChecker
       )
 
+      //its important that the sequence of these operations is preserved, i.e. we should only remove the table after
+      //the
       viewPort.setKeys(keys)
-
-      structure
+      viewPort.changeStructure(structure)
+      tableContainer.removeGroupBySessionTable(groupByTable)
+      groupByTable.delete()
 
     } else {
-
-      viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, viewPortDef = viewPort.getStructure.viewPortDef, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeStateStore, permissionChecker)
+      logger.info("[VP] default else condition in change() call")
+      val structure = viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, viewPortDef = viewPort.getStructure.viewPortDef, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeStateStore, permissionChecker)
+      viewPort.changeStructure(structure)
     }
 
     viewPort.setRequestId(requestId)
-    viewPort.changeStructure(structure)
 
     viewPort
   }
@@ -544,7 +540,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, groupBy, ClosedTreeNodeState, None)
 
-    val viewPort = ViewPortImpl(id, clientSession, outboundQ, highPriorityQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
+    val viewPort = new ViewPortImpl(id, clientSession, outboundQ, highPriorityQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
 
     val permission = table.asTable.getTableDef.permissionChecker(viewPort, tableContainer)
 
@@ -748,9 +744,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
             updateHistogram(viewPort, treeDiffBranchesHistograms, "tree.branchdiff.", millis)
           }
         )
+        viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
 
       case CantBuildTreeErrorState =>
         logger.error(s"GROUP-BY: table ${table.name} has a groupBy but doesn't have a groupBySessionTable associated. Going to ignore build request.")
+        viewPort.setLastHashAndUpdateCount(-1, 0)
 
       case action: FastBuildBranchesOfTree =>
         val oldTree = action.table.getTree
@@ -778,6 +776,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
             updateHistogram(viewPort, treeDiffBranchesHistograms, "tree.branchdiff.", millis)
           }
         )
+        viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
+
       case action: OnlyRecalculateTreeKeys =>
         val oldTree = action.table.getTree
         val tree = action.table.getTree.applyNewNodeState(latestNodeState, action)
@@ -797,9 +797,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           },
           (millis, _) => {updateHistogram(viewPort, treeDiffBranchesHistograms, "tree.branchdiff.", millis)}
         )
+        viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
     }
 
-    viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
+    //viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
   }
 
   def shouldCalculateKeys(viewPort: ViewPort, currentStructureHash: Int, currentUpdateCount: Long): Boolean = {
@@ -851,8 +852,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def removeForSession(clientSession: ClientSessionId): Unit = {
-
-
     val viewports = SetHasAsScala(viewPorts.entrySet())
       .asScala
       .filter(entry => entry.getValue.session == clientSession).toArray
