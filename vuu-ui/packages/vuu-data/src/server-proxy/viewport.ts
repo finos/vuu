@@ -257,7 +257,6 @@ export class Viewport {
       this.bufferSize
     );
 
-    console.log({ schema: this.tableSchema });
     // TODO retrieve the filterStruct
     return {
       aggregations,

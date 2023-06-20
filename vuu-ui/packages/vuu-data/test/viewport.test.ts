@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { ServerProxySubscribeMessage } from "../src";
 import { Viewport } from "../src/server-proxy/viewport";
 import { createSubscription, createTableRows, sizeRow } from "./test-utils";
+import { TableSchema } from "../src/message-utils";
 
 const config_options = {
   aggregations: [],
@@ -157,11 +158,11 @@ describe("Viewport", () => {
         ...config_options,
         clientViewportId: constructor_options.viewport,
         range: { from: 0, to: 50 },
-        tableMeta: null,
+        tableSchema: null,
         type: "subscribed",
       });
     });
-    it("includes tableMeta, when this has been received", () => {
+    it("includes tableSchema, when this has been received", () => {
       const vp = new Viewport(constructor_options);
       const vuuMessageBody: ServerToClientCreateViewPortSuccess = {
         ...vuu_config_options,
@@ -171,7 +172,13 @@ describe("Viewport", () => {
         viewPortId: "server-vp1",
       };
 
-      vp.setTableMeta(["col1"], ["string"]);
+      const tableSchema: TableSchema = {
+        table: { module: "TEST", table: "testTable" },
+        key: "col1",
+        columns: [{ name: "col1", serverDataType: "string" }],
+      };
+
+      vp.setTableSchema(tableSchema);
 
       const message = vp.handleSubscribed(vuuMessageBody);
 
@@ -179,7 +186,7 @@ describe("Viewport", () => {
         ...config_options,
         clientViewportId: constructor_options.viewport,
         range: { from: 0, to: 50 },
-        tableMeta: { columns: ["col1"], dataTypes: ["string"] },
+        tableSchema,
         type: "subscribed",
       });
     });
