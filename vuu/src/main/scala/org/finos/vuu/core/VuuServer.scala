@@ -61,7 +61,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   private val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
 
-  private val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = 1)
+  private val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = -1)
   lifecycle(handlerRunner).dependsOn(joinProviderRunner)
 
   private val viewPortRunner = if(config.threading.viewportThreads == 1){

@@ -229,11 +229,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
           ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,230       ,222.0     ,null      ,null      ,null      ),
           ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,230       ,222.0     ,null      ,null      ,null      ),
           ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,230       ,222.0     ,null      ,null      ,null      )
+          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      )
         )
       }
 

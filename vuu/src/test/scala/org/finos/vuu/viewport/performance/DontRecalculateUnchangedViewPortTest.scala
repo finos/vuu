@@ -70,12 +70,12 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
       val updateCount3 = viewPort.getTableUpdateCount()
 
       Then("when we compare the hashcodes they should be all equal (i.e. the structure hasn't changed")
-      hashCode3 shouldEqual (hashCode2)
-      hashCode1 shouldEqual (hashCode2)
+      hashCode3 shouldEqual hashCode2
+      hashCode1 shouldEqual hashCode2
 
       And("the updatecount should also be the same")
-      updateCount1 shouldEqual (updateCount2)
-      updateCount2 shouldEqual (updateCount3)
+      updateCount1 shouldEqual updateCount2
+      updateCount2 shouldEqual updateCount3
       viewPortContainer.shouldCalculateKeys(viewPort, viewPort.getStructuralHashCode(), viewPort.getTableUpdateCount()) should be(false)
 
       val vpcolumns2 = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "ric"))
@@ -90,7 +90,7 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
       viewPortContainer.runOnce()
 
       Then("I expect the hashcode to have changed")
-      hashCode4 should not equal (hashCode3)
+      hashCode4 should not equal hashCode3
 
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
@@ -117,8 +117,6 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime"),
-          (0         ,"NYC-0010","chris"   ,"VOD.L"   ,1311545000L),
-          (0         ,"NYC-0011","chris"   ,"VOD.L"   ,1311545010L),
           (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544900L),
           (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544910L),
           (0         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544920L),
@@ -128,7 +126,9 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
           (0         ,"NYC-0006","chris"   ,"VOD.L"   ,1311544960L),
           (0         ,"NYC-0007","chris"   ,"VOD.L"   ,1311544970L),
           (0         ,"NYC-0008","chris"   ,"VOD.L"   ,1311544980L),
-          (0         ,"NYC-0009","chris"   ,"VOD.L"   ,1311544990L)
+          (0         ,"NYC-0009","chris"   ,"VOD.L"   ,1311544990L),
+          (0         ,"NYC-0010","chris"   ,"VOD.L"   ,1311545000L),
+          (0         ,"NYC-0011","chris"   ,"VOD.L"   ,1311545010L)
         )
       }
 

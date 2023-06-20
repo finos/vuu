@@ -161,13 +161,13 @@ case class ViewPortStructuralFields(table: RowSource, columns: ViewPortColumns,
                                     groupBy: GroupBy, theTreeNodeState: TreeNodeState,
                                     permissionChecker: Option[RowPermissionChecker])
 
-case class ViewPortImpl(id: String,
+class ViewPortImpl(val id: String,
                         //table: RowSource,
-                        session: ClientSessionId,
-                        outboundQ: PublishQueue[ViewPortUpdate],
-                        highPriorityQ: PublishQueue[ViewPortUpdate],
-                        structuralFields: AtomicReference[ViewPortStructuralFields],
-                        range: AtomicReference[ViewPortRange]
+                        val session: ClientSessionId,
+                        val outboundQ: PublishQueue[ViewPortUpdate],
+                        @deprecated val highPriorityQ: PublishQueue[ViewPortUpdate],
+                        val structuralFields: AtomicReference[ViewPortStructuralFields],
+                        val range: AtomicReference[ViewPortRange]
                        )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
 
   private val viewPortLock = new Object
@@ -177,7 +177,7 @@ case class ViewPortImpl(id: String,
   @volatile private var requestId: String = ""
 
   override def updateSpecificKeys(keys: ImmutableArray[String]): Unit = {
-    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => highPriorityQ.push(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
+    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => outboundQ.push(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
   }
 
   override def setPermissionChecker(checker: Option[RowPermissionChecker]): Unit = {
@@ -359,7 +359,7 @@ case class ViewPortImpl(id: String,
 
   def setKeysPost(sendSizeUpdate: Boolean, newKeys: ImmutableArray[String]): Unit = {
     if (sendSizeUpdate) {
-      highPriorityQ.push(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
+      outboundQ.push(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
     }
     subscribeToNewKeys(newKeys)
   }
@@ -477,7 +477,7 @@ case class ViewPortImpl(id: String,
   def publishHighPriorityUpdate(key: String, index: Int): Unit = {
     logger.debug(s"publishing update @[$index] = $key ")
     if (this.enabled) {
-      highPriorityQ.push(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
+      outboundQ.push(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
   }
 
