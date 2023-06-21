@@ -14,7 +14,7 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { WithRequestId } from "./message-utils";
+import { TableSchema, WithRequestId } from "./message-utils";
 import { WithFullConfig } from "./data-source";
 import { Selection } from "@finos/vuu-datagrid-types";
 import { WebSocketProtocol } from "./websocket-connection";
@@ -119,10 +119,8 @@ export interface VuuUIMessageInTableList {
   tables: VuuTable[];
 }
 export interface VuuUIMessageInTableMeta {
-  columns: string[];
-  dataTypes: string[];
   requestId: string;
-  table: VuuTable;
+  tableSchema: TableSchema;
   type: "TABLE_META_RESP";
 }
 export interface MenuRpcResponse {

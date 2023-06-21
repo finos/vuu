@@ -36,6 +36,25 @@ export function itemsChanged<T = unknown>(
   }
 }
 
+export function itemsOrOrderChanged<T = unknown>(
+  currentItems: T[],
+  newItems: T[],
+  identityProperty?: string
+) {
+  if (currentItems.length !== newItems.length) {
+    return true;
+  }
+  if (identityProperty === undefined) {
+    return currentItems.some((item, index) => newItems[index] !== item);
+  } else {
+    return currentItems.some(
+      (currentItem, index) =>
+        (newItems[index] as { [key: string]: unknown })[identityProperty] !==
+        (currentItem as { [key: string]: unknown })[identityProperty]
+    );
+  }
+}
+
 export const moveItem = <T = unknown>(
   items: T[],
   item: T,

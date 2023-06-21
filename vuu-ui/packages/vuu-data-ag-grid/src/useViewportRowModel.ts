@@ -1,9 +1,10 @@
 import {
-  DataSource,
+  DataSourceConfig,
   isViewportMenusAction,
   isVisualLinksAction,
   MenuActionConfig,
   MenuRpcResponse,
+  RemoteDataSource,
   SuggestionFetcher,
   useTypeaheadSuggestions,
   useVuuMenuActions,
@@ -12,8 +13,8 @@ import {
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditSuccess,
 } from "@finos/vuu-data";
-import { VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
-import { useCallback, useMemo, useRef } from "react";
+import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { bySortIndex, isSortedColumn, toSortDef } from "./AgGridDataUtils";
 
 import {
@@ -23,9 +24,11 @@ import {
 import { FilterDataProvider } from "./FilterDataProvider";
 import { GroupCellRenderer } from "./GroupCellRenderer";
 import { ViewportRowModelDataSource } from "./ViewportRowModelDataSource";
-import { buildColumnMap } from "@finos/vuu-utils";
+import { buildColumnMap, itemsOrOrderChanged } from "@finos/vuu-utils";
 import { vuuMenuToAgGridMenu } from "./agGridMenuUtils";
 import { AgData } from "./AgDataWindow";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { createColumnDefs } from "./AgGridColumnUtils";
 
 type Column = {
   getId: () => string;
@@ -38,11 +41,23 @@ interface FilterChangedEvent {
     getFilterModel: () => AgGridFilter;
   };
 }
+
+export interface AgGridDataRow {
+  [key: string]: unknown;
+  expanded?: boolean;
+  groupKey: string;
+  groupKeys?: string;
+  groupRow: boolean;
+}
+
+const isAgGridGroupDataRow = (data: unknown): data is AgGridDataRow =>
+  typeof data === "object" &&
+  data !== null &&
+  typeof (data as AgGridDataRow)["groupKey"] === "string";
+
 type RowGroupOpenedEvent = {
-  data: {
-    expanded: boolean;
-    groupKey: string;
-  };
+  data?: AgGridDataRow;
+  expanded: boolean;
   node: { expanded?: boolean };
 };
 type ColumnState = { colId: string; sortIndex: number }[];
@@ -55,7 +70,8 @@ type SortChangedEvent = {
 const NullSuggestionFetcher: SuggestionFetcher = async () => [];
 
 export interface ViewportRowModelHookProps {
-  dataSource: DataSource;
+  columns?: ColumnDescriptor[];
+  dataSource: RemoteDataSource;
   onFeatureEnabled?: (message: VuuFeatureMessage) => void;
   onRpcResponse?: (
     response:
@@ -65,7 +81,16 @@ export interface ViewportRowModelHookProps {
   ) => void;
 }
 
+type GroupByConfigChange = {
+  groupBy: VuuGroupBy;
+};
+
+const hasGroupByChange = (
+  message?: Partial<DataSourceConfig>
+): message is GroupByConfigChange => Array.isArray(message?.groupBy);
+
 export const useViewportRowModel = ({
+  columns,
   dataSource,
   onRpcResponse,
   onFeatureEnabled,
@@ -74,7 +99,11 @@ export const useViewportRowModel = ({
   const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
     NullSuggestionFetcher
   );
+  const groupByRef = useRef<VuuGroupBy>([]);
+  const [groupBy, setGroupBy] = useState<VuuGroupBy>(groupByRef.current);
   getTypeaheadSuggestionsRef.current = useTypeaheadSuggestions();
+
+  const { table } = dataSource;
 
   // It is important that these values are not assigned in advance. They
   // are accessed at the point of construction of ContextMenu
@@ -140,13 +169,45 @@ export const useViewportRowModel = ({
     return new FilterDataProvider(table, getTypeaheadSuggestionsRef);
   }, []);
 
+  const columnDefs = useMemo(() => {
+    return Array.isArray(columns)
+      ? createColumnDefs(createFilterDataProvider(table), columns, groupBy)
+      : undefined;
+  }, [columns, createFilterDataProvider, groupBy, table]);
+
+  useEffect(() => {
+    // We listen to dsataSource config changes to detect changes applied
+    // directly to the dataSource, i.e. not applied via AgGrid and detected via
+    // AgGrid event callbacks. For the former, AgGrid has no knowledge
+    // that a change has occurred, so will not render the subsequent row refresh
+    // correctly. In the case of GroupBy, for example. we need to recompute the
+    // column defs to apply grouping. This will cause AgGrid to re-render columns
+    // taking grouping into account and will enable subsequent refresh of grouped
+    // data to be handled correctly.
+    // Where a config change DOES originate from AgGrid (e.g user has applied
+    // grouping from the Ag Grid context menu), we store latest value in a ref,
+    // so that we can ignore the config change event(s) that will be fired by
+    // the dataSource for this config change.
+    dataSource.on("config", (config) => {
+      if (
+        hasGroupByChange(config) &&
+        itemsOrOrderChanged(groupByRef.current, config.groupBy)
+      ) {
+        setGroupBy(config.groupBy);
+      }
+    });
+  }, [dataSource]);
+
+  // Fired when user has applied grouping from AG Grid, either via the
+  // column menu or by dragging a column onto the group bar.
   const handleColumnRowGroupChanged = useCallback(
     (evt: unknown) => {
       const columnRowGroupChangedEvent = evt as ColumnRowGroupChangedEvent;
       const { columns } = columnRowGroupChangedEvent;
       if (columns !== null) {
-        const colIds = columns.map((c) => c.getId());
-        viewportDatasource.setRowGroups(colIds);
+        const vuuGroupBy: VuuGroupBy = columns.map((c) => c.getId());
+        groupByRef.current = vuuGroupBy;
+        viewportDatasource.setRowGroups(vuuGroupBy);
       }
     },
     [viewportDatasource]
@@ -154,9 +215,11 @@ export const useViewportRowModel = ({
 
   const handleRowGroupOpened = useCallback(
     (evt: RowGroupOpenedEvent) => {
-      const { groupKey } = evt.data;
-      const { expanded = false } = evt.node;
-      viewportDatasource.setExpanded(groupKey, !expanded);
+      if (isAgGridGroupDataRow(evt.data)) {
+        const { groupKey } = evt.data;
+        const { expanded = false } = evt.node;
+        viewportDatasource.setExpanded(groupKey, !expanded);
+      }
     },
     [viewportDatasource]
   );
@@ -238,6 +301,7 @@ export const useViewportRowModel = ({
 
   return {
     autoGroupColumnDef,
+    columnDefs,
     createFilterDataProvider,
     viewportDatasource,
     defaultColDef: {

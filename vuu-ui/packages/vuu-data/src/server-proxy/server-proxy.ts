@@ -903,9 +903,7 @@ export class ServerProxy {
           } else {
             this.postMessageToClient({
               type: Message.TABLE_META_RESP,
-              table: body.table,
-              columns: body.columns,
-              dataTypes: body.dataTypes,
+              tableSchema,
               requestId,
             } as VuuUIMessageInTableMeta);
           }

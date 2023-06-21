@@ -519,7 +519,6 @@ export class RemoteDataSource
         rows: [],
       });
     }
-    console.log("emit config changed");
     this.emit("config", this.#config);
     this.setConfigPending({ groupBy });
   }

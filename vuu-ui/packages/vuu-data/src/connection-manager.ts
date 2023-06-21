@@ -31,9 +31,9 @@ import {
 
 // Note: inlined-worker is a generated file, it must be built
 import { workerSourceCode } from "./inlined-worker";
-import { VuuTableMetaWithTable } from "./hooks";
 import { ConnectionQualityMetrics } from "./vuuUIMessageTypes";
 import { WebSocketProtocol } from "./websocket-connection";
+import { TableSchema } from "./message-utils";
 
 const workerBlob = new Blob([getLoggingConfigForWorker() + workerSourceCode], {
   type: "text/javascript",
@@ -205,7 +205,7 @@ const asyncRequest = <T = unknown>(
 
 export interface ServerAPI {
   destroy: (viewportId?: string) => void;
-  getTableMeta: (table: VuuTable) => Promise<VuuTableMetaWithTable>;
+  getTableSchema: (table: VuuTable) => Promise<TableSchema>;
   getTableList: () => Promise<VuuTableList>;
   rpcCall: <T = unknown>(
     msg: VuuRpcRequest | ClientToServerMenuRPC
@@ -249,8 +249,8 @@ const connectedServerAPI: ServerAPI = {
   getTableList: async () =>
     asyncRequest<VuuTableList>({ type: Message.GET_TABLE_LIST }),
 
-  getTableMeta: async (table) =>
-    asyncRequest<VuuTableMetaWithTable>({
+  getTableSchema: async (table) =>
+    asyncRequest<TableSchema>({
       type: Message.GET_TABLE_META,
       table,
     }),

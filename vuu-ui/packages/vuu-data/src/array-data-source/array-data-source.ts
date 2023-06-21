@@ -41,6 +41,7 @@ import {
 } from "../vuuUIMessageTypes";
 
 import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
+import { TableSchema } from "../message-utils";
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
@@ -69,20 +70,18 @@ const toDataSourceRow = (
   ...data,
 ];
 
-const buildTableMeta = (columns: ColumnDescriptor[]): VuuTableMeta => {
-  const meta = {
-    columns: [],
-    dataTypes: [],
+const buildTableSchema = (columns: ColumnDescriptor[]): TableSchema => {
+  const schema: TableSchema = {
+    columns: columns.map(({ name, serverDataType = "string" }) => ({
+      name,
+      serverDataType,
+    })),
     // how do we identify the key field ?
     key: columns[0].name,
-  } as VuuTableMeta;
+    table: { module: "", table: "Array" },
+  };
 
-  columns.forEach((column) => {
-    meta.columns.push(column.name);
-    meta.dataTypes.push(column.serverDataType ?? "string");
-  });
-
-  return meta;
+  return schema;
 };
 
 const toClientRow = (row: DataSourceRow, keys: KeySet) => {
@@ -104,7 +103,7 @@ export class ArrayDataSource
   private groupMap: undefined | GroupMap;
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
-  private tableMeta: VuuTableMeta;
+  private tableSchema: TableSchema;
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
   private rangeChangeRowset: "delta" | "full";
   private openTreeNodes: string[] = [];
@@ -154,7 +153,7 @@ export class ArrayDataSource
     this.#columns = columnDescriptors.map((column) => column.name);
     this.#columnMap = buildColumnMap(this.#columns);
     this.rangeChangeRowset = rangeChangeRowset;
-    this.tableMeta = buildTableMeta(columnDescriptors);
+    this.tableSchema = buildTableSchema(columnDescriptors);
 
     this.#data = data.map<DataSourceRow>(toDataSourceRow);
     this.viewport = viewport || uuid();
@@ -205,7 +204,7 @@ export class ArrayDataSource
       type: "subscribed",
       clientViewportId: this.viewport,
       range: this.#range,
-      tableMeta: this.tableMeta,
+      tableSchema: this.tableSchema,
     });
 
     this.clientCallback({
