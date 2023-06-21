@@ -53,8 +53,8 @@ const getFilterAttributes = (
 export const createColumnDefs = (
   setFilterDataProvider: FilterDataProvider,
   columns: ColumnDescriptor[]
-) =>
-  columns.map((column) => ({
+) => {
+  return columns.map((column) => ({
     cellRenderer: cellRenderers[column.name],
     enableRowGroup: groupableColumns.has(column.name),
     field: column.name,
@@ -62,3 +62,4 @@ export const createColumnDefs = (
     sortable: true,
     width: 100,
   }));
+};
