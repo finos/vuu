@@ -67,7 +67,7 @@ You will need npm at version 16 or greater to build the client.
 cd vuu-ui
 npm install
 npm run build
-npm run buid:app
+npm run build:app
 #if you would also like to use electron rather than Chrome/Chromium
 cd tools/electron
 npm install #You only need to do this once initially and when the electron version is upgraded
