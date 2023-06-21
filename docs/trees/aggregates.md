@@ -16,6 +16,7 @@ Typically, aggregrates are used to display sums or counts of values, we support 
 | Count          | 3     | Count of distint values (can be used in non numerics) |
 | High           | 4     | Math.max(column)                                      |
 | Low            | 5     | Math.min(column)                                      |
+| Distinct       | 6     | Concatenates distinct column values, comma separated  |
 
 Below is a sample of the UI with a sum aggregate on the filled quantity and quantity columns.
 
