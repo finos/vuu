@@ -31,6 +31,11 @@ const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
     )
   );
 
+/**
+ * This is a custom ViewportRowModelDataSource that complies with the interface
+ * expected by AgGrid. Internally, it interacts with a remote Vuu server to
+ * fetch data. It wraps a Vuu RemoteDataSource.
+ */
 export class ViewportRowModelDataSource {
   private columnMap: ColumnMap;
   private reverseColumnMap: Map<number, string>;
@@ -42,6 +47,7 @@ export class ViewportRowModelDataSource {
     private onFeatureEnabled?: (message: VuuFeatureMessage) => void
   ) {
     this.dataSource.subscribe({}, this.handleMessageFromDataSource);
+    // this.dataSource.on("config", this.handleConfigChange);
     this.columnMap = buildColumnMap(dataSource.columns);
     this.reverseColumnMap = reverseColumnMap(this.columnMap);
   }

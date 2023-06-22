@@ -32,6 +32,8 @@ import {
   VuuUIMessageInRPCEditSuccess,
 } from "./vuuUIMessageTypes";
 
+const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
+
 export interface JsonDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
   data: JsonData;
@@ -165,7 +167,7 @@ export class JsonDataSource
       groupBy: this.#groupBy,
       range: this.#range,
       sort: this.#sort,
-      tableMeta: { columns: [], dataTypes: [] },
+      tableSchema: NULL_SCHEMA,
     });
 
     this.clientCallback({
