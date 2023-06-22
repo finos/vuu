@@ -87,7 +87,9 @@ module.exports = {
       type: "category",
       label: "The UI",
       items: [
-        "ui/grid",
+        "ui/vuu_data",
+        "ui/vuu_data_ag_grid",
+        "ui/vuu_data_table",
         "ui/visual_linking",
         "ui/custom_controls",
         "ui/calculated_columns",
@@ -95,7 +97,7 @@ module.exports = {
 
       link: {
         type: "doc",
-        id: "ui/ui",
+        id: "ui/ui-overview",
       },
     },
     {
