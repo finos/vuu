@@ -158,6 +158,7 @@ export const useViewportRowModel = ({
   );
 
   const viewportDatasource: ViewportRowModelDataSource = useMemo(() => {
+    // TODO call destroy on the dataSource when we dispose of it
     return new ViewportRowModelDataSource(dataSource, handleVuuFeatureEnabled);
   }, [dataSource, handleVuuFeatureEnabled]);
 
