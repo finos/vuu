@@ -74,8 +74,6 @@ export const AgGridTables = () => {
   const [chosenColumns, setChosenColumns] =
     useState<ColumnDescriptor[]>(columns);
 
-  console.log({ columns });
-
   const table = useMemo(
     () => ({ module: "SIMUL", table: tables[selectedIndex] }),
     [selectedIndex, tables]
