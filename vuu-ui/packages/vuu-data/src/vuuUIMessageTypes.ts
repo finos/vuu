@@ -113,6 +113,10 @@ export interface VuuUIMessageInRPCEditSuccess {
 export const messageHasResult = (msg: object): msg is VuuUIMessageInRPC =>
   typeof (msg as VuuUIMessageInRPC).result !== "undefined";
 
+export const isTableSchema = (
+  message: VuuUIMessageIn
+): message is VuuUIMessageInTableMeta => message.type === "TABLE_META_RESP";
+
 export interface VuuUIMessageInTableList {
   requestId: string;
   type: "TABLE_LIST_RESP";

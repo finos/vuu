@@ -20,6 +20,7 @@ import {
   ConnectionStatusMessage,
   isConnectionQualityMetrics,
   isConnectionStatusMessage,
+  isTableSchema,
   messageHasResult,
   ServerProxySubscribeMessage,
   VuuUIMessageIn,
@@ -174,6 +175,8 @@ function handleMessageFromWorker({
 
       if (messageHasResult(message)) {
         resolve(message.result);
+      } else if (isTableSchema(message)) {
+        resolve(message.tableSchema);
       } else {
         resolve(rest);
       }
