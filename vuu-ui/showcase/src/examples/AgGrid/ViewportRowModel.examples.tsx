@@ -151,7 +151,7 @@ export const AgGridTables = () => {
     }
   }, [columns, dataSource, selectedGroupIndex]);
   const groupByAccountAlgo = useCallback(() => {
-    if (selectedGroupIndex === 2) {
+    if (selectedGroupIndex === 3) {
       dataSource.groupBy = [];
       setSelectedGroupIndex(-1);
     } else {
