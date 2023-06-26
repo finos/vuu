@@ -11,7 +11,13 @@ import {
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 
-import { debounce, EventEmitter, throttle, uuid } from "@finos/vuu-utils";
+import {
+  debounce,
+  EventEmitter,
+  itemsOrOrderChanged,
+  throttle,
+  uuid,
+} from "@finos/vuu-utils";
 import {
   DataSource,
   DataSourceCallbackMessage,
@@ -495,32 +501,36 @@ export class RemoteDataSource
 
   set groupBy(groupBy: VuuGroupBy) {
     console.log(`set GROUPBY ${groupBy.join()}`);
-    const wasGrouped = this.#groupBy.length > 0;
-    this.#config = {
-      ...this.#config,
-      groupBy,
-    };
-    if (this.viewport) {
-      const message = {
-        viewport: this.viewport,
-        type: "groupBy",
-        groupBy: this.#config.groupBy,
-      } as const;
+    if (itemsOrOrderChanged(this.groupBy, groupBy)) {
+      const wasGrouped = this.#groupBy.length > 0;
+      this.#config = {
+        ...this.#config,
+        groupBy,
+      };
+      if (this.viewport) {
+        const message = {
+          viewport: this.viewport,
+          type: "groupBy",
+          groupBy: this.#config.groupBy,
+        } as const;
 
-      if (this.server) {
-        this.server.send(message);
+        if (this.server) {
+          this.server.send(message);
+        }
       }
+      if (!wasGrouped && groupBy.length > 0 && this.viewport) {
+        this.clientCallback?.({
+          clientViewportId: this.viewport,
+          type: "viewport-update",
+          size: 0,
+          rows: [],
+        });
+      }
+      this.emit("config", this.#config);
+      this.setConfigPending({ groupBy });
+    } else {
+      console.log(`RemoteDataSource groupBy set, but value not changed`);
     }
-    if (!wasGrouped && groupBy.length > 0 && this.viewport) {
-      this.clientCallback?.({
-        clientViewportId: this.viewport,
-        type: "viewport-update",
-        size: 0,
-        rows: [],
-      });
-    }
-    this.emit("config", this.#config);
-    this.setConfigPending({ groupBy });
   }
 
   get title() {
