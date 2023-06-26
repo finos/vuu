@@ -500,7 +500,6 @@ export class RemoteDataSource
   }
 
   set groupBy(groupBy: VuuGroupBy) {
-    console.log(`set GROUPBY ${groupBy.join()}`);
     if (itemsOrOrderChanged(this.groupBy, groupBy)) {
       const wasGrouped = this.#groupBy.length > 0;
       this.#config = {
@@ -528,8 +527,6 @@ export class RemoteDataSource
       }
       this.emit("config", this.#config);
       this.setConfigPending({ groupBy });
-    } else {
-      console.log(`RemoteDataSource groupBy set, but value not changed`);
     }
   }
 
