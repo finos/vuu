@@ -639,6 +639,10 @@ export class Viewport {
 
     const { filter, ...remainingConfig } = config;
 
+    if (this.useBatchMode) {
+      this.batchMode = true;
+    }
+
     debugEnabled
       ? debug?.(`setConfig ${JSON.stringify(config)}`)
       : info?.(`setConfig`);
