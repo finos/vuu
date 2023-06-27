@@ -12,7 +12,7 @@ import {
 import { useCallback, useRef } from "react";
 import { RowClickHandler } from "./dataTableTypes";
 
-const { IDX, SELECTED } = metadataKeys;
+const { IDX } = metadataKeys;
 
 const NO_SELECTION: Selection = [];
 

@@ -13,10 +13,9 @@ const { SELECTED } = metadataKeys;
 
 export const RowSelected = {
   False: 0,
-  PreSelected: 1,
-  True: 4,
-  First: 8,
-  Last: 16,
+  True: 1,
+  First: 2,
+  Last: 4,
 };
 
 export const isRowSelected = (row: DataSourceRow): boolean =>
@@ -250,8 +249,6 @@ export const getSelectionStatus = (
     if (typeof item === "number") {
       if (item === itemIndex) {
         return SINGLE_SELECTED_ROW;
-      } else if (item === itemIndex + 1) {
-        return RowSelected.PreSelected;
       }
     } else if (rangeIncludes(item, itemIndex)) {
       if (itemIndex === item[0]) {
@@ -261,8 +258,6 @@ export const getSelectionStatus = (
       } else {
         return RowSelected.True;
       }
-    } else if (item[0] === itemIndex + 1) {
-      return RowSelected.PreSelected;
     }
   }
   return RowSelected.False;

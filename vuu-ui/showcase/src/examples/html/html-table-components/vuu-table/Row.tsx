@@ -69,12 +69,11 @@ export const Row = memo(
       [onToggleGroup, row]
     );
 
-    const { PreSelected, True, First, Last } = RowSelected;
+    const { True, First, Last } = RowSelected;
 
     const className = cx(classBase, classNameProp, {
       [`${classBase}-even`]: rowIndex % 2 === 0,
       [`${classBase}-expanded`]: isExpanded,
-      [`${classBase}-preSelected`]: selectionStatus === PreSelected,
       [`${classBase}-selected`]: selectionStatus & True,
       [`${classBase}-selectedStart`]: selectionStatus & First,
       [`${classBase}-selectedEnd`]: selectionStatus & Last,

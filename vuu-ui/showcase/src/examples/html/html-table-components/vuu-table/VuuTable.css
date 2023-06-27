@@ -225,7 +225,7 @@
     left: 4px;
     height: 1px;
     background-color: #6D18BD;
-    width: calc(var(--table-width) - 34px);
+    width: var(--content-width);
   }
 
   .vuuTable2-selectionDecorator {
