@@ -100,8 +100,11 @@ export class ViewportRowModelDataSource {
 
   // Called by Ag Grid whe  user scrolls
   setViewportRange(firstRow: number, lastRow: number): void {
-    this.dataWindow.setRange(firstRow, lastRow + 1);
-    this.dataSource.range = { from: firstRow, to: lastRow + 1 };
+    // we have sometimes seen a call coming in here from AgGrid
+    // where lastRow is (much) less than firstRow.
+    const safeLastRow = Math.max(firstRow, lastRow + 1);
+    this.dataWindow.setRange(firstRow, safeLastRow);
+    this.dataSource.range = { from: firstRow, to: safeLastRow };
   }
 
   setRowGroups(groupBy: VuuGroupBy) {
