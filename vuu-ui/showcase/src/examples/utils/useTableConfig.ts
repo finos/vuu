@@ -15,9 +15,9 @@ const NO_COLUMNS: number[] = [];
 
 export const useTableConfig = ({
   columnConfig = NO_CONFIG,
-  columnCount = 10,
+  columnCount,
   count = 1000,
-  lazyData = true,
+  lazyData = false,
   leftPinnedColumns = NO_COLUMNS,
   rangeChangeRowset = "delta",
   rightPinnedColumns = NO_COLUMNS,
@@ -39,14 +39,31 @@ export const useTableConfig = ({
       "%cuseTableConfig Memo invoked",
       "color: red; font-weight: bold;"
     );
+
+    if (typeof columnCount === "number" && table) {
+      throw Error("if a VuuTable is passed, colunCount should not be provided");
+    }
+
     const [columnGenerator, rowGenerator] = getColumnAndRowGenerator(table);
-    const dataArray = lazyData
-      ? new ArrayProxy<VuuRowDataItemType[]>(count, rowGenerator(columnCount))
-      : populateArray(count, columnGenerator, rowGenerator);
+    const colCount =
+      typeof columnCount === "number"
+        ? columnCount
+        : typeof table === "undefined"
+        ? 10
+        : undefined;
 
     const columns = table
       ? columnGenerator([], columnConfig)
-      : columnGenerator(columnCount, columnConfig);
+      : columnGenerator(colCount, columnConfig);
+
+    const dataArray = lazyData
+      ? new ArrayProxy<VuuRowDataItemType[]>(count, rowGenerator(colCount))
+      : populateArray(
+          count,
+          columnGenerator,
+          rowGenerator,
+          colCount ?? columns?.map((col) => col.name)
+        );
 
     leftPinnedColumns.forEach((index) => (columns[index].pin = "left"));
     rightPinnedColumns.forEach((index) => (columns[index].pin = "right"));

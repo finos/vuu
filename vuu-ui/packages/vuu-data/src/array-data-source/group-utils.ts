@@ -1,4 +1,4 @@
-import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
+import { VuuGroupBy } from "@finos/vuu-protocol-types";
 import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
 import { DataSourceRow } from "../data-source";
 
@@ -6,29 +6,6 @@ export type KeyList = number[];
 export type GroupMap = { [key: string]: GroupMap | KeyList };
 
 const { DEPTH, IS_EXPANDED, KEY } = metadataKeys;
-
-type RowSortComparator = (
-  item1: DataSourceRow,
-  item2: DataSourceRow
-) => 0 | -1 | 1;
-
-const sortComparator =
-  (idx: number): RowSortComparator =>
-  (row1, row2) => {
-    const v1 = row1[idx];
-    const v2 = row2[idx];
-    return v1 > v2 ? 1 : v2 > v1 ? -1 : 0;
-  };
-
-export const sortRows = (
-  rows: readonly DataSourceRow[],
-  { sortDefs }: VuuSort,
-  columnMap: ColumnMap
-) => {
-  const sortIndices = sortDefs.map<number>(({ column }) => columnMap[column]);
-  const comparator = sortComparator(sortIndices[0]);
-  return rows.slice().sort(comparator);
-};
 
 export const collapseGroup = (
   key: string,
@@ -145,11 +122,9 @@ export const groupRows = (
   groupBy: VuuGroupBy,
   columnMap: ColumnMap
 ): [DataSourceRow[], GroupMap] => {
-  console.time("group");
   const groupIndices = groupBy.map<number>((column) => columnMap[column]);
   const groupTree = groupLeafRows(rows, groupIndices);
   const groupedDataRows = dataRowsFromGroups(groupTree, groupIndices);
-  console.timeEnd("group");
   // 2) collapse int groups
 
   return [groupedDataRows, groupTree];

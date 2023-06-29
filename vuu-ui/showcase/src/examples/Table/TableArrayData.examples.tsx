@@ -13,7 +13,7 @@ import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
 let displaySequence = 1;
 
 export const DefaultTable = () => {
-  const config = useTableConfig({ count: 1_000 });
+  const config = useTableConfig({ columns: 10, count: 1_000 });
   const [zebraStripes, setZebraStripes] = useState(true);
   const handleZebraChanged = useCallback((_evt, checked) => {
     setZebraStripes(checked);

@@ -19,17 +19,14 @@ export type ColumnGenerator = (
   columnConfig?: { [key: string]: Partial<ColumnDescriptor> }
 ) => ColumnDescriptor[];
 
-export const DefaultRowGenerator: RowGenerator = (columns) => (index) => {
-  if (typeof columns === "number") {
+export const DefaultRowGenerator: RowGenerator =
+  (columns: string[]) => (index) => {
     return [`row ${index + 1}`].concat(
-      Array(columns)
+      Array(columns.length)
         .fill(true)
         .map((v, j) => `value ${j + 1} @ ${index + 1}`)
     );
-  } else {
-    throw Error("DefaultRowGenerator must be passed columns (number)");
-  }
-};
+  };
 
 export const DefaultColumnGenerator: ColumnGenerator = (
   columns,
@@ -92,11 +89,12 @@ export const getColumnAndRowGenerator = (
 export const populateArray = (
   count: number,
   colGen: ColumnGenerator,
-  rowGen: RowGenerator
+  rowGen: RowGenerator,
+  columns?: number | string[]
 ) => {
-  const columns = colGen();
+  const columnDescriptors = colGen(columns);
   console.time("generate data");
-  const generateRow = rowGen(columns.map((col) => col.name));
+  const generateRow = rowGen(columnDescriptors.map((col) => col.name));
   const data = [];
   for (let i = 0; i < count; i++) {
     data[i] = generateRow(i);

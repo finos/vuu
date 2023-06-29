@@ -1,16 +1,16 @@
-import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
-import {
-  LinkDescriptorWithLabel,
-  VuuGroupBy,
-  VuuAggregation,
-  VuuRange,
-  VuuSort,
-  VuuTableMeta,
-  VuuRowDataItemType,
-  ClientToServerMenuRPC,
-  ClientToServerEditRpc,
-} from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
+import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
+import { filterPredicate } from "@finos/vuu-filters";
+import {
+  ClientToServerEditRpc,
+  ClientToServerMenuRPC,
+  LinkDescriptorWithLabel,
+  VuuAggregation,
+  VuuGroupBy,
+  VuuRange,
+  VuuRowDataItemType,
+  VuuSort,
+} from "@finos/vuu-protocol-types";
 import {
   buildColumnMap,
   ColumnMap,
@@ -26,22 +26,21 @@ import {
 import {
   DataSource,
   DataSourceConstructorProps,
+  DataSourceEvents,
+  DataSourceRow,
   SubscribeCallback,
   SubscribeProps,
-  DataSourceRow,
-  DataSourceEvents,
   vanillaConfig,
   WithFullConfig,
 } from "../data-source";
-import { filterPredicate } from "@finos/vuu-filters";
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditSuccess,
 } from "../vuuUIMessageTypes";
-
 import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
 import { TableSchema } from "../message-utils";
+import { sortRows } from "./sort-utils";
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
@@ -100,6 +99,7 @@ export class ArrayDataSource
   private disabled = false;
   private filteredData: undefined | DataSourceRow[];
   private groupedData: undefined | DataSourceRow[];
+  private sortedData: undefined | DataSourceRow[];
   private groupMap: undefined | GroupMap;
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
@@ -332,7 +332,8 @@ export class ArrayDataSource
       this.rangeChangeRowset === "delta" && !forceFullRefresh
         ? rangeNewItems(this.lastRangeServed, this.#range)
         : this.#range;
-    const data = this.groupedData ?? this.filteredData ?? this.#data;
+    const data =
+      this.sortedData ?? this.groupedData ?? this.filteredData ?? this.#data;
     this.clientCallback?.({
       clientViewportId: this.viewport,
       rows: data
@@ -373,6 +374,15 @@ export class ArrayDataSource
       sort,
     };
 
+    this.sortedData = sortRows(this.#data, sort, this.#columnMap).map(
+      (row, i) => {
+        const dolly = row.slice() as DataSourceRow;
+        dolly[0] = i;
+        dolly[1] = i;
+        return dolly;
+      }
+    );
+    this.setRange(resetRange(this.#range), true);
     this.emit("config", this.#config);
   }
 
