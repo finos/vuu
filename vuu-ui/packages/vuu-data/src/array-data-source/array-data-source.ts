@@ -36,7 +36,7 @@ import {
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditSuccess,
+  VuuUIMessageInRPCEditResponse,
 } from "../vuuUIMessageTypes";
 import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
 import { TableSchema } from "../message-utils";
@@ -489,7 +489,7 @@ export class ArrayDataSource
   ): Promise<
     | MenuRpcResponse
     | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditSuccess
+    | VuuUIMessageInRPCEditResponse
     | undefined
   > {
     return new Promise((resolve) => {

@@ -18,6 +18,7 @@ import { useIdMemo } from "@salt-ds/core";
 import { Button } from "@salt-ds/core";
 import {
   DataSource,
+  hasAction,
   isErrorResponse,
   RemoteDataSource,
   TableSchema,
@@ -236,14 +237,27 @@ export const SessionEditingForm = ({
     [dataSource, fields, keyField, values]
   );
 
+  const applyAction = useCallback(
+    (action: unknown) => {
+      if (typeof action === "object" && action !== null) {
+        if ("type" in action && action.type === "CLOSE_DIALOG_ACTION") {
+          onClose();
+        }
+      }
+    },
+    [onClose]
+  );
+
   const handleSubmit = useCallback(async () => {
     const response = await dataSource.menuRpcCall({
       type: "VP_EDIT_SUBMIT_FORM_RPC",
     });
     if (isErrorResponse(response)) {
       setErrorMessage(response.error);
+    } else if (hasAction(response)) {
+      applyAction(response.action);
     }
-  }, [dataSource]);
+  }, [applyAction, dataSource]);
 
   const handleKeyDown = useCallback(
     (evt) => {
@@ -287,12 +301,19 @@ export const SessionEditingForm = ({
       if (firstInput) {
         setTimeout(() => {
           firstInput.focus();
-          console.log("select item");
           firstInput.select();
         }, 100);
       }
     }
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (dataSource) {
+        dataSource.unsubscribe();
+      }
+    };
+  }, [dataSource]);
 
   const isDirty = dataStatusRef.current === Status.changed;
   return (

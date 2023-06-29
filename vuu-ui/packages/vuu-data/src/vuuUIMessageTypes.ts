@@ -105,8 +105,10 @@ export interface VuuUIMessageInRPCEditReject {
   type: "VP_EDIT_RPC_REJECT";
 }
 
-export interface VuuUIMessageInRPCEditSuccess {
+export interface VuuUIMessageInRPCEditResponse {
+  action: unknown;
   requestId: string;
+  rpcName: string;
   type: "VP_EDIT_RPC_RESPONSE";
 }
 
@@ -144,15 +146,23 @@ export type VuuUIMessageIn =
   | VuuUIMessageInTableList
   | VuuUIMessageInTableMeta
   | VuuUIMessageInRPCEditReject
-  | VuuUIMessageInRPCEditSuccess;
+  | VuuUIMessageInRPCEditResponse;
 
 export const isErrorResponse = (
   response?:
     | MenuRpcResponse
     | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditSuccess
+    | VuuUIMessageInRPCEditResponse
 ): response is VuuUIMessageInRPCEditReject =>
   response !== undefined && "error" in response;
+
+export const hasAction = (
+  response?:
+    | MenuRpcResponse
+    | VuuUIMessageInRPCEditReject
+    | VuuUIMessageInRPCEditResponse
+): response is MenuRpcResponse | VuuUIMessageInRPCEditResponse =>
+  response != undefined && "action" in response;
 
 export interface VuuUIMessageOutConnect {
   protocol: WebSocketProtocol;

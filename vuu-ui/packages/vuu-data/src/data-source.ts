@@ -22,7 +22,7 @@ import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditSuccess,
+  VuuUIMessageInRPCEditResponse,
 } from "./vuuUIMessageTypes";
 import { TableSchema } from "./message-utils";
 
@@ -497,7 +497,7 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   ) => Promise<
     | MenuRpcResponse
     | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditSuccess
+    | VuuUIMessageInRPCEditResponse
     | undefined
   >;
   openTreeNode: (key: string) => void;

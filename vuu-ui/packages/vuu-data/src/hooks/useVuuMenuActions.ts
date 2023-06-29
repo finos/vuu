@@ -30,7 +30,7 @@ import {
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditSuccess,
+  VuuUIMessageInRPCEditResponse,
 } from "../vuuUIMessageTypes";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
@@ -198,7 +198,7 @@ export interface VuuMenuActionHookProps {
     response:
       | MenuRpcResponse
       | VuuUIMessageInRPCEditReject
-      | VuuUIMessageInRPCEditSuccess
+      | VuuUIMessageInRPCEditResponse
   ) => void;
 }
 

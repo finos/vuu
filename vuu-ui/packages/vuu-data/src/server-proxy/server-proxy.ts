@@ -956,7 +956,9 @@ export class ServerProxy {
       case "VP_EDIT_RPC_RESPONSE":
         {
           this.postMessageToClient({
+            action: body.action,
             requestId,
+            rpcName: body.rpcName,
             type: "VP_EDIT_RPC_RESPONSE",
           });
         }

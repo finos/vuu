@@ -29,7 +29,7 @@ import type {
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditSuccess,
+  VuuUIMessageInRPCEditResponse,
 } from "./vuuUIMessageTypes";
 
 const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
@@ -362,7 +362,7 @@ export class JsonDataSource
   ): Promise<
     | MenuRpcResponse
     | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditSuccess
+    | VuuUIMessageInRPCEditResponse
     | undefined
   > {
     console.log("rmenuRpcCall", {
