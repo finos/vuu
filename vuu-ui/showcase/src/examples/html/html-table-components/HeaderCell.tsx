@@ -1,6 +1,5 @@
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent, useCallback, useRef } from "react";
-import { useContextMenu } from "@finos/vuu-popups";
 import { useCell } from "./table-next/useCell";
 import { ColumnMenu } from "./ColumnMenu";
 import { SortIndicator } from "@finos/vuu-table/src/SortIndicator";
@@ -31,8 +30,6 @@ export const HeaderCell = ({
     rootRef,
   });
 
-  const showContextMenu = useContextMenu();
-
   const classBase = `${classBaseProp}-col-header`;
 
   const handleClick = useCallback(
@@ -41,13 +38,6 @@ export const HeaderCell = ({
   );
 
   const { className, style } = useCell(column, classBase, true);
-
-  const showColumnMenu = useCallback(
-    (e: MouseEvent<HTMLElement>) => {
-      showContextMenu(e, "header", { column });
-    },
-    [column, showContextMenu]
-  );
 
   return (
     <div
@@ -58,7 +48,7 @@ export const HeaderCell = ({
       role="cell"
       style={style}
     >
-      <ColumnMenu onClick={showColumnMenu} />
+      <ColumnMenu column={column} />
       <div className={`${classBase}-label`}>{column.name}</div>
       <SortIndicator sorted={column.sorted} />
       {column.resizeable !== false ? <ColumnResizer {...resizeProps} /> : null}

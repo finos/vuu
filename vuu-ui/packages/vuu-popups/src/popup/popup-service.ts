@@ -141,6 +141,8 @@ export class PopupService {
       document.body.appendChild(el);
     }
 
+    // TODO listen for ESC key
+
     const style = { width };
 
     renderPortal(

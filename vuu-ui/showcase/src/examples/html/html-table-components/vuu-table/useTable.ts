@@ -49,7 +49,6 @@ export interface TableHookProps extends MeasuredProps {
   onFeatureEnabled?: (message: VuuFeatureMessage) => void;
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onSelectionChange?: SelectionChangeHandler;
-  onShowConfigEditor: (column?: KeyedColumnDescriptor) => void;
   renderBufferSize?: number;
   rowHeight: number;
   selectionModel: TableSelectionModel;
@@ -63,7 +62,6 @@ export const useTable = ({
   onFeatureEnabled,
   onFeatureInvocation,
   onSelectionChange,
-  onShowConfigEditor,
   renderBufferSize = 0,
   rowHeight,
   selectionModel,
@@ -160,12 +158,12 @@ export const useTable = ({
     (action: PersistentColumnAction) => {
       // expectConfigChangeRef.current = true;
       if (isShowSettings(action)) {
-        onShowConfigEditor?.(action.column);
+        // onShowConfigEditor?.(action.column);
       } else {
         dispatchColumnAction(action);
       }
     },
-    [dispatchColumnAction, onShowConfigEditor]
+    [dispatchColumnAction]
   );
 
   const handleContextMenuAction = useTableContextMenu({

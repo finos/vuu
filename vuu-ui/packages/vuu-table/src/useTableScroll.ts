@@ -28,7 +28,6 @@ const getPctScroll = (container: HTMLElement) => {
   const { clientHeight, clientWidth, scrollHeight, scrollWidth } = container;
   const pctScrollLeft = scrollLeft / (scrollWidth - clientWidth);
   const pctScrollTop = scrollTop / (scrollHeight - clientHeight);
-  console.log(`scrollTop ${scrollTop}`);
 
   return [pctScrollLeft, pctScrollTop];
 };

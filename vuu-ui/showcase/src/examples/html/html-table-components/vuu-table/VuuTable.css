@@ -1,8 +1,13 @@
+@import url(./icons.css);
+
 .vuuTable2 {
   --vuu-table-header-color: #FFFFFF;
   --vuu-table-header-col-bg: #777C94;
+  --vuu-table-selection-bookend-width: 4px;
   --columnResizer-height: var(--table-height);
   --table-background: var(--salt-container-primary-background);
+  --vuu-table2-stripe-even: white;
+  --vuu-selection-accent-color: #6D18BD;
   font-size: 12px;
   font-weight: 500;
   height: var(--table-css-height);
@@ -86,6 +91,7 @@
 
 .vuuTable2-col-headings {
     background-color: var(--table-background);
+    padding: 0 var(--vuu-table-selection-bookend-width, 0);
     position: sticky;
     top: 0;
     /* ensure header row sits atop everything else when scrolling down */
@@ -99,46 +105,105 @@
 
   .vuuTable2-col-group-header,
     .vuuTable2-col-header {
+      --columnResizer-color: #trabsparent;
+
     /* border-right: 1px solid #999; */
+    /* --columnResizer-color: red; */
     border-bottom: 1px solid #ccc;
     box-sizing: border-box;
     cursor: default;
     display: inline-flex;
+    gap: 3px;
     height: var(--header-height);
-    padding: 0 3px;
+    /* padding: 0 3px; */
   }
 
-  .vuuTable2-col-header.vuuPinLeft {
+  .vuuTable2-col-header .vuuColumnResizer:hover {
+    --columnResizer-color: #6D18BD;
+}
+
+
+  /* .vuuTable2-col-header.vuuPinLeft:after {
+    border-top: solid 1px red;
+    border-radius: 6px 0 0 0;
+    content: '';
+    position: absolute;
+    height: 12px;
+    top:0px;
+    left:0px;
+    right: 6px;
+    background-color: transparent;
+} */
+
+.vuuTable2-col-header.vuuPinLeft.vuuEndPin .vuuColumnResizer:before {
+    --height: calc(var(--columnResizer-height) - 15px);
+    --inset-r: calc(var(--pin-width) - 2px);
+    --inset-b: calc(var(--height) - 2px);
+    --clip-path: polygon(
+      0% 0%,                              
+      0% 120%,                            
+      2px 120%,    
+      2px 2px,      
+      var(--inset-r) 2px,      
+      var(--inset-r) var(--inset-b),      
+      2px var(--inset-b),      
+      2px 120%,     
+      120% 120%,    
+      120% 0%       
+    );
+    background-color: transparent;
     border-color: #A9AAAD;
     border-width: 1px;
-    border-style: solid solid none solid;
-    border-radius: 7px 7px 0 0; 
-    box-shadow: 2px 1px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  /* .vuuTable2-cell.vuuPinLeft {
-    box-shadow: 2px 1px 4px rgba(0, 0, 0, 0.1);
-  } */
-
-  /* .vuuTable2-cell.vuuPinLeft:before {
-    background: #A9AAAD;
+    border-style: solid solid solid solid;
+    /* border-radius: 0 6px 6px 0; */
+    border-radius: 4px;
+    box-shadow: 2px 1px 4px 0px rgba(0, 0, 0, 0.10);
+    /* clip-path: inset(10px 10px 10px 10px); */
+    clip-path: var(--clip-path);
     content: '';
-    height: 20px;
     position: absolute;
-    top: 0px;
-    left:0;
-    width: 1px;
-  }
+    width: var(--pin-width);
+    top:0;
+    bottom:0;
+    right: -1px;
+    height: var(--height);
+    z-index: -5;
+}
 
-  .vuuTable2-cell.vuuPinLeft:after {
-    background: #A9AAAD;
-    content: '';
-    height: 20px;
-    position: absolute;
-    top: 0px;
-    right:0;
-    width: 1px;
-  } */
+.vuuTable2-col-header.vuuPinRight.vuuEndPin .vuuColumnResizer:before {
+  --height: calc(var(--columnResizer-height) - 15px);
+  --inset-r: calc(var(--pin-width) - 2px);
+  --inset-b: calc(var(--height) - 2px);
+  --clip-path: polygon(
+    -20% 0%,                              
+    -20% 120%,                            
+    2px 120%,    
+    2px 2px,      
+    var(--inset-r) 2px,      
+    var(--inset-r) var(--inset-b),      
+    2px var(--inset-b),      
+    2px 120%,     
+    120% 120%,    
+    120% 0%       
+  );
+  background-color: transparent;
+  border-color: #A9AAAD;
+  border-width: 1px;
+  border-style: solid solid solid solid;
+  /* border-radius: 0 6px 6px 0; */
+  border-radius: 4px;
+  box-shadow: -2px 1px 4px 0px rgba(0, 0, 0, 0.10);
+  /* clip-path: inset(10px 10px 10px 10px); */
+  clip-path: var(--clip-path);
+  content: '';
+  position: absolute;
+  width: var(--pin-width);
+  top:0;
+  bottom:0;
+  right: 0px;
+  height: var(--height);
+  z-index: -5;
+}
 
   .vuuTable2-col-group-header {
     align-items: center;
@@ -173,8 +238,7 @@
   }
 
   .vuuTable2Row {
-    background: #fff;
-    border-right: 1px solid white;
+    background-color: #fff;
     border-bottom: 1px solid #EDEDED;
     box-sizing: border-box;
     height: var(--row-height);
@@ -190,7 +254,6 @@
 
   .vuuTable2Row-selected,
   .vuuTable2Row-selectedEnd {
-    --vuu-selection-decorator-bg: #6D18BD;
     /* background-color: rgb(133,133,137,.16); */
     background-color: rgb(235,235,236);
   }
@@ -226,26 +289,9 @@
     height: 1px;
     background-color: #6D18BD;
     width: var(--content-width);
+    z-index: 1;
   }
 
-  .vuuTable2-selectionDecorator {
-    background-color: var(--vuu-selection-decorator-bg, transparent);
-    display: inline-block;
-    height: 20px;
-    width: 4px;
-  }
-
-  .vuuTable2-selectionDecorator.vuuStickyLeft {
-    border-radius: var(--vuu-selection-decorator-left-radius, 0);
-    left:0;
-    position: sticky;
-  }
-
-  .vuuTable2-selectionDecorator.vuuStickyRight {
-    border-radius: var(--vuu-selection-decorator-right-radius, 0);
-    right:0;
-    position: sticky;
-  }
 
   /* .vuuTable2Row-preSelected, */
   .vuuTable2Row-selectedEnd {

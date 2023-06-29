@@ -10,6 +10,7 @@ import { Row } from "./Row";
 import { useTable } from "./useTable";
 
 import "./VuuTable.css";
+import "./VuuTableSelectionDecorator.css";
 
 const classBase = "vuuTable2";
 
@@ -63,7 +64,6 @@ export const VuuTable = ({
     onFeatureEnabled,
     onFeatureInvocation,
     onSelectionChange,
-    onShowConfigEditor,
     rowHeight,
     selectionModel,
     width,

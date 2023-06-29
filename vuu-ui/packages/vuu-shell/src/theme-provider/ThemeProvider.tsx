@@ -2,7 +2,6 @@ import React, {
   createContext,
   HTMLAttributes,
   ReactNode,
-  ReactElement,
   isValidElement,
   cloneElement,
   useContext,
@@ -55,6 +54,7 @@ const createThemedChildren = (
   themeMode: ThemeMode,
   density: Density
 ) => {
+  console.log("create themed children");
   if (isValidElement<HTMLAttributes<HTMLElement>>(children)) {
     return cloneElement(children, {
       className: cx(

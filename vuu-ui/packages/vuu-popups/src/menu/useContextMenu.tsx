@@ -10,8 +10,16 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "./context-menu-provider";
-import { ContextMenu } from "./ContextMenu";
+import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
+
+export type ContextMenuOptions = {
+  [key: string]: unknown;
+  ContextMenuProps?: Partial<ContextMenuProps> & {
+    className?: string;
+    "data-mode"?: string;
+  };
+};
 
 // The argument allows a top-level menuBuilder to operate outside the Contect
 export const useContextMenu = (menuBuilder?: MenuBuilder) => {
@@ -30,9 +38,14 @@ export const useContextMenu = (menuBuilder?: MenuBuilder) => {
   );
 
   const handleShowContextMenu = useCallback(
-    (e: MouseEvent<HTMLElement>, location: string, options: unknown) => {
+    (
+      e: MouseEvent<HTMLElement>,
+      location: string,
+      { ContextMenuProps, ...options }: ContextMenuOptions
+    ) => {
       e.stopPropagation();
       e.preventDefault();
+
       const menuBuilders =
         ctx?.menuBuilders ?? (menuBuilder ? [menuBuilder] : undefined);
       if (Array.isArray(menuBuilders) && menuBuilders.length > 0) {
@@ -48,7 +61,12 @@ export const useContextMenu = (menuBuilder?: MenuBuilder) => {
           console.log(`showContextMenu ${location}`, {
             options,
           });
-          showContextMenu(e, menuItemDescriptors, ctx.menuActionHandler);
+          showContextMenu(
+            e,
+            menuItemDescriptors,
+            ctx.menuActionHandler,
+            ContextMenuProps
+          );
         }
       } else {
         console.warn(
@@ -62,12 +80,17 @@ export const useContextMenu = (menuBuilder?: MenuBuilder) => {
   return handleShowContextMenu;
 };
 
+const NO_OPTIONS = {};
+
 const showContextMenu = (
   e: MouseEvent<HTMLElement>,
   menuDescriptors: ContextMenuItemDescriptor[],
-  handleContextMenuAction: MenuActionHandler
+  handleContextMenuAction: MenuActionHandler,
+  {
+    position: positionProp,
+    ...contextMenuProps
+  }: ContextMenuOptions["ContextMenuProps"] = NO_OPTIONS
 ) => {
-  const { clientX: left, clientY: top } = e;
   const menuItems = (menuDescriptors: ContextMenuItemDescriptor[]) => {
     const fromDescriptor = (menuItem: ContextMenuItemDescriptor, i: number) =>
       isGroupMenuItemDescriptor(menuItem) ? (
@@ -93,10 +116,20 @@ const showContextMenu = (
       handleContextMenuAction(menuId, options);
       PopupService.hidePopup();
     }
+    contextMenuProps?.onClose?.(menuId);
+  };
+
+  const position = positionProp ?? {
+    x: e.clientX,
+    y: e.clientY,
   };
 
   const component = (
-    <ContextMenu onClose={handleClose} position={{ x: left, y: top }}>
+    <ContextMenu
+      {...contextMenuProps}
+      onClose={handleClose}
+      position={position}
+    >
       {menuItems(menuDescriptors)}
     </ContextMenu>
   );

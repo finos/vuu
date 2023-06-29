@@ -30,6 +30,7 @@ export declare type GridConfig = {
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
   headings: TableHeadings;
+  selectionBookendWidth?: number;
 };
 
 export declare type TypeFormatting = {

@@ -8,6 +8,16 @@
   font-size: var(--salt-text-fontSize);
   letter-spacing: var(--salt-text-letterSpacing);
   line-height: var(--salt-text-lineHeight);
+
+  /* until we find the right place for these */
+  --vuuMenuItem-height: 21px;
+  --vuuMenuItem-borderColor: #EDEDED;
+  --vuuMenuItem-borderStyle: none none solid none;
+
+  --vuuMenuList-borderColor: #6D18BD;
+  --vuuMenuList-color: #606477;
+  --vuuMenuList-fontSize: 12px;
+  --vuuMenuList-padding: 8px;
 }
 
 .vuu-purple-theme[data-mode="light"] {

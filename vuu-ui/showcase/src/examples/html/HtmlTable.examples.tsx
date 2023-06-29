@@ -15,11 +15,7 @@ import {
   ToggleButtonGroupChangeEventHandler,
 } from "@heswell/salt-lab";
 import { Flexbox, useLayoutProviderDispatch } from "@finos/vuu-layout";
-import {
-  LayoutResizeAction,
-  SetPropAction,
-  SetPropsAction,
-} from "@finos/vuu-layout/src/layout-reducer";
+import { SetPropsAction } from "@finos/vuu-layout/src/layout-reducer";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 let displaySequence = 1;
@@ -281,7 +277,11 @@ export const TableNextResizeable = () => {
 TableNextResizeable.displaySequence = displaySequence++;
 
 export const DefaultVuuTable = () => {
-  const { typeaheadHook: _, ...config } = useTableConfig({
+  const {
+    typeaheadHook: _,
+    config,
+    ...props
+  } = useTableConfig({
     count: 1000,
     lazyData: false,
     rangeChangeRowset: "full",
@@ -295,20 +295,38 @@ export const DefaultVuuTable = () => {
   }, []);
 
   return (
-    <VuuTable
-      {...config}
-      height={645}
-      renderBufferSize={0}
-      onConfigChange={handleConfigChange}
-      width={750}
-    />
+    <div
+      style={{
+        alignItems: "center",
+        display: "flex",
+        justifyContent: "center",
+        width: "100vw",
+        height: "100vh",
+      }}
+    >
+      <VuuTable
+        {...props}
+        config={{
+          ...config,
+          selectionBookendWidth: 4,
+        }}
+        height={645}
+        renderBufferSize={0}
+        onConfigChange={handleConfigChange}
+        width={750}
+      />
+    </div>
   );
 };
 DefaultVuuTable.displaySequence = displaySequence++;
 
 export const AutoVuuTable = () => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
-  const { typeaheadHook: _, ...config } = useTableConfig({
+  const {
+    typeaheadHook: _,
+    config,
+    ...props
+  } = useTableConfig({
     count: 1000,
     lazyData: false,
     rangeChangeRowset: "full",
@@ -345,7 +363,11 @@ export const AutoVuuTable = () => {
 
   return (
     <VuuTable
-      {...config}
+      {...props}
+      config={{
+        ...config,
+        selectionBookendWidth: 4,
+      }}
       renderBufferSize={0}
       onConfigChange={handleConfigChange}
       onShowConfigEditor={handleShowColumnSettings}

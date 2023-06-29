@@ -1,5 +1,4 @@
 import * as ReactDOM from "react-dom";
-import { SaltProvider } from "@salt-ds/core";
 import { ReactElement } from "react";
 
 let containerId = 1;
@@ -24,11 +23,7 @@ export const renderPortal = (
   // check this first to see if position has changed
   container.style.cssText = `left:${x}px; top:${y}px;position: absolute;`;
 
-  ReactDOM.render(
-    <SaltProvider applyClassesTo="child">{component}</SaltProvider>,
-    container,
-    onRender
-  );
+  ReactDOM.render(component, container, onRender);
 };
 
 export const createContainer = createDOMContainer;

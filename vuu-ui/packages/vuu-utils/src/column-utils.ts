@@ -306,7 +306,8 @@ export const sortPinnedColumns = (
   const leftPinnedColumns: KeyedColumnDescriptor[] = [];
   const rightPinnedColumns: KeyedColumnDescriptor[] = [];
   const restColumns: KeyedColumnDescriptor[] = [];
-  let pinnedWidthLeft = 0;
+  // let pinnedWidthLeft = 0;
+  let pinnedWidthLeft = 4;
   for (const column of columns) {
     // prettier-ignore
     switch(column.pin){
@@ -388,13 +389,21 @@ export const getTableHeadings = (
 
 export const getColumnStyle = ({
   pin,
-  pinnedOffset,
+  pinnedOffset = pin === "left" ? 0 : 4,
   width,
 }: KeyedColumnDescriptor) =>
   pin === "left"
-    ? ({ left: pinnedOffset, width } as CSSProperties)
+    ? ({
+        left: pinnedOffset,
+        width,
+        "--pin-width": `${pinnedOffset + width - 5}px`,
+      } as CSSProperties)
     : pin === "right"
-    ? ({ right: pinnedOffset, width } as CSSProperties)
+    ? ({
+        right: pinnedOffset,
+        width,
+        "--pin-width": `${pinnedOffset + width}px`,
+      } as CSSProperties)
     : { width };
 
 export const setAggregations = (

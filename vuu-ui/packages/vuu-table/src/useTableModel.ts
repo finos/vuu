@@ -401,6 +401,7 @@ function pinColumn(state: TableModel, action: ColumnActionPin) {
   const { column, pin } = action;
   columns = updateColumn(columns, column.name, { pin });
   columns = sortPinnedColumns(columns);
+  console.log({ withPins: columns });
   return {
     ...state,
     columns,

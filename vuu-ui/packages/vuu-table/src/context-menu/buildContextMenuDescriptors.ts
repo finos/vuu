@@ -28,8 +28,9 @@ export const buildContextMenuDescriptors =
       );
       descriptors.push(...buildColumnDisplayMenuItems(options as MaybeColumn));
       descriptors.push({
-        label: `Column Settings ...`,
         action: "column-settings",
+        icon: "cog",
+        label: `Column Settings`,
         options,
       });
     } else if (location === "filter") {

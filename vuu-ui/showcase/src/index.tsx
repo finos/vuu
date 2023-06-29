@@ -7,6 +7,7 @@ import "@heswell/component-anatomy/esm/index.css";
 
 import "./index.css";
 import { ThemeProvider } from "@finos/vuu-shell";
+import { addStylesheetURL } from "./utils";
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
@@ -31,15 +32,7 @@ const getComponent = (module: Module, paths: string[]) => {
   }
 };
 
-function addStylesheetURL(url: string) {
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = url;
-  document.getElementsByTagName("head")[0].appendChild(link);
-}
-
 const themeName = getUrlParameter("theme", "salt");
-console.log({ themeName });
 
 const fontCssUrl =
   themeName === "salt"
@@ -86,8 +79,15 @@ if (hasUrlParameter("standalone")) {
     const Component = getComponent(targetExamples, path);
     if (Component) {
       ReactDOM.render(
-        <ThemeProvider theme={themeName} density="high" themeMode="light">
-          <Component />
+        <ThemeProvider
+          applyThemeClasses
+          theme={themeName}
+          density="high"
+          themeMode="light"
+        >
+          <div>
+            <Component />
+          </div>
         </ThemeProvider>,
         root
       );
