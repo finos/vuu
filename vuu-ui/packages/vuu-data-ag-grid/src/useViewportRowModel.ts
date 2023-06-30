@@ -11,7 +11,7 @@ import {
   VuuFeatureMessage,
   VuuServerMenuOptions,
   VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditSuccess,
+  VuuUIMessageInRPCEditResponse,
 } from "@finos/vuu-data";
 import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -77,7 +77,7 @@ export interface ViewportRowModelHookProps {
     response:
       | MenuRpcResponse
       | VuuUIMessageInRPCEditReject
-      | VuuUIMessageInRPCEditSuccess
+      | VuuUIMessageInRPCEditResponse
   ) => void;
 }
 
@@ -128,7 +128,7 @@ export const useViewportRowModel = ({
       response:
         | MenuRpcResponse
         | VuuUIMessageInRPCEditReject
-        | VuuUIMessageInRPCEditSuccess
+        | VuuUIMessageInRPCEditResponse
     ) => {
       onRpcResponse?.(response);
     },

@@ -203,9 +203,10 @@ export interface ServerToClientRPC {
   result: any;
 }
 export interface ServerToClientEditRPC {
+  action: unknown;
   type: "VP_EDIT_RPC_RESPONSE";
-  method: string;
-  result: any;
+  rpcName: string;
+  vpId: string;
 }
 export interface ServerToClientEditRPCRejected {
   error: string;

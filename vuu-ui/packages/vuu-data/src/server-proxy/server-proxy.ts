@@ -956,7 +956,9 @@ export class ServerProxy {
       case "VP_EDIT_RPC_RESPONSE":
         {
           this.postMessageToClient({
+            action: body.action,
             requestId,
+            rpcName: body.rpcName,
             type: "VP_EDIT_RPC_RESPONSE",
           });
         }
@@ -982,7 +984,9 @@ export class ServerProxy {
               type: "GET_TABLE_META",
               table: action.table,
             }).then((response) => {
-              const { columns, dataTypes, key } = response as VuuTableMeta;
+              const tableSchema = createSchemaFromTableMetadata(
+                response as ServerToClientTableMeta
+              );
               // Client is going to edit a session table. Ideally, the action
               // would contain all metadata to allow an appropriate form to
               // be presented. That is currently not the case, so client may
@@ -993,9 +997,7 @@ export class ServerProxy {
                 type: "VIEW_PORT_MENU_RESP",
                 action: {
                   ...action,
-                  columns,
-                  dataTypes,
-                  key,
+                  tableSchema,
                 },
                 tableAlreadyOpen: this.isTableOpen(action.table),
                 requestId,
