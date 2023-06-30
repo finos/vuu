@@ -61,15 +61,15 @@ export const App = ({ user }: { user: VuuUser }) => {
   const handleRpcResponse = useCallback(
     (response?: MenuRpcResponse) => {
       if (response?.action?.type === "OPEN_DIALOG_ACTION") {
-        const { columns, dataTypes, table } = response.action;
-        if (columns && dataTypes && table) {
+        const { tableSchema } = response.action;
+        if (tableSchema) {
           const formConfig = getFormConfig(response);
           dialogTitleRef.current = formConfig.config.title;
           setDialogContent(
             <SessionEditingForm {...formConfig} onClose={handleClose} />
           );
-        } else if (tables && table) {
-          const schema = tables.get(table.table);
+        } else if (tables && response.action.table) {
+          const schema = tables.get(response.action.table.table);
           if (schema) {
             // If we already have this table open in this viewport, ignore
             setDialogContent(

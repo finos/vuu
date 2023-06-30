@@ -6,7 +6,6 @@ import {
   ServerToClientMenuSessionTableAction,
   TypeAheadMethod,
   VuuAggregation,
-  VuuColumnDataType,
   VuuColumns,
   VuuGroupBy,
   VuuRange,
@@ -20,11 +19,9 @@ import { Selection } from "@finos/vuu-datagrid-types";
 import { WebSocketProtocol } from "./websocket-connection";
 
 export interface OpenDialogAction {
-  columns: VuuColumns;
-  dataTypes: VuuColumnDataType[];
-  key: string;
   type: "OPEN_DIALOG_ACTION";
-  table: VuuTable;
+  tableSchema?: TableSchema;
+  table?: VuuTable;
 }
 export interface NoAction {
   type: "NO_ACTION";

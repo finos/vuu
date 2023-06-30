@@ -27,7 +27,8 @@ import { buildColumnMap, isValidNumber, shallowEquals } from "@finos/vuu-utils";
 
 import "./SessionEditingForm.css";
 
-type FormFieldDescriptor = {
+export type FormFieldDescriptor = {
+  isKeyField?: boolean;
   label?: string;
   name: string;
   type: VuuColumnDataType;
@@ -220,9 +221,6 @@ export const SessionEditingForm = ({
     (evt: FocusEvent) => {
       const [field, value] = getFieldNameAndValue(evt);
       const { type } = getField(fields, field);
-      console.log("BLUR", {
-        keyField,
-      });
       const rowKey = values?.[keyField];
       const typedValue = getTypedValue(value, type, true);
       if (typeof rowKey === "string") {
