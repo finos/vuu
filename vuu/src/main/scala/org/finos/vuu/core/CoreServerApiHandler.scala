@@ -163,7 +163,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: GetTableList)(ctx: RequestContext): Option[ViewServerMessage] = {
-    vsMsg(GetTableListResponse(tableContainer.getTables()))(ctx)
+    vsMsg(GetTableListResponse(tableContainer.getNonSessionTables))(ctx)
   }
 
   override def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage] = {
