@@ -9,7 +9,6 @@ export const useFullHeightLeftPanel = ({
   appHeader,
 }: {
   appHeader: ReactElement;
-  leftSidePanel: ReactElement;
 }): ReactElement => {
   return (
     <Flexbox

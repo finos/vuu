@@ -13,7 +13,7 @@ export const useInlayLeftPanel = ({
   leftSidePanel,
 }: {
   appHeader: ReactElement;
-  leftSidePanel: ReactElement;
+  leftSidePanel?: ReactElement;
 }): ReactElement => {
   const paletteView = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(true);

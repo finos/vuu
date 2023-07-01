@@ -150,6 +150,7 @@ export const isShowSettings = (
 ): action is ColumnActionColumnSettings => action.type === "columnSettings";
 
 export type GridModelAction =
+  | ColumnActionColumnSettings
   | ColumnActionHide
   | ColumnActionInit
   | ColumnActionMove

@@ -3,7 +3,7 @@ import { useFullHeightLeftPanel } from "./useFullHeightLeftPanel";
 import { useInlayLeftPanel } from "./useInlayLeftPanel";
 
 export interface ShellLayoutProps {
-  appHeader?: ReactElement;
+  appHeader: ReactElement;
   leftSidePanel?: ReactElement;
   leftSidePanelLayout?: "full-height" | "inlay";
 }

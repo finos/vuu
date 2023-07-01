@@ -22,8 +22,8 @@ import {
   LayoutActionType,
   LayoutReducerAction,
   MaximizeAction,
+  SetPropAction,
   SetPropsAction,
-  SetTitleAction,
   SwitchTabAction,
 } from "./layoutTypes";
 import { LayoutProps } from "./layoutUtils";
@@ -58,6 +58,7 @@ export const layoutReducer = (
     case LayoutActionType.SET_TITLE:
       return setProp(state, {
         type: "set-prop",
+        path: action.path,
         propName: "title",
         propValue: action.title,
       });
