@@ -17,11 +17,9 @@ export interface ContextPanelProps {
 
 export const ContextPanel = ({
   className: classNameProp,
-  context,
   expanded = false,
   overlay = false,
   title,
-  ...props
 }: ContextPanelProps) => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
   const handleClose = useCallback(() => {
@@ -32,17 +30,6 @@ export const ContextPanel = ({
       type: "set-prop",
     });
   }, [dispatchLayoutAction]);
-  // useEffect(() => {
-  //   console.log("context panel mounted");
-  //   return () => {
-  //     console.log("context panel unmounted");
-  //   };
-  // }, []);
-
-  console.log(`context panel context = ${context}`, {
-    props,
-  });
-
   // TODO look up content using context
 
   const className = cx(classBase, classNameProp, {

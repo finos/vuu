@@ -12,10 +12,6 @@ export function resizeFlexChild(
 
   const { style } = getProps(target);
 
-  console.log(`resize ${path} to ${size}`, {
-    style,
-  });
-
   const newStyle = {
     ...style,
     width: size,
