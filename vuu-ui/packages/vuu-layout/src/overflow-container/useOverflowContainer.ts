@@ -1,5 +1,6 @@
+import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { useCallback, useMemo, useRef } from "react";
-import { ResizeHandler, useResizeObserver, WidthOnly } from "@finos/vuu-layout";
+import { ResizeHandler, useResizeObserver, WidthOnly } from "../responsive";
 import {
   applyOverflowClass,
   correctForUnnecessaryOverflowIndicator,
@@ -9,7 +10,6 @@ import {
   switchWrappedItemIntoView,
   unmarkItemsWhichAreNoLongerWrapped,
 } from "./overflow-utils";
-import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 
 export const useOverflowContainer = () => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -33,6 +33,12 @@ export const useOverflowContainer = () => {
 
   useResizeObserver(rootRef, WidthOnly, handleResize);
 
+  const hasIndex = (
+    opt: unknown
+  ): opt is {
+    index: string;
+  } => typeof opt === "object" && opt !== null && "index" in opt;
+
   const [menuBuilder, menuActionHandler] = useMemo((): [
     MenuBuilder,
     MenuActionHandler
@@ -50,8 +56,8 @@ export const useOverflowContainer = () => {
       },
       (type, options) => {
         const { current: container } = rootRef;
-        if (container) {
-          switchWrappedItemIntoView(container, options?.index);
+        if (container && hasIndex(options)) {
+          switchWrappedItemIntoView(container, options.index);
           const wrappedItems = detectOverflow(container);
           unmarkItemsWhichAreNoLongerWrapped(container, wrappedItems);
           wrappedItemsRef.current = wrappedItems;

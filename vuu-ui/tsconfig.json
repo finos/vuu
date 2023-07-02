@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "noImplicitAny": true,
     "target": "es2016",
     "downlevelIteration": true,

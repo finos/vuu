@@ -1,9 +1,8 @@
-import { Flexbox, View } from "@finos/vuu-layout";
+import { Flexbox, OverflowContainer } from "@finos/vuu-layout";
 import { CSSProperties } from "react";
 import { random_1000 } from "../salt/List.data";
-import { OverflowContainer } from "./components/overflow-container";
 
-import "./OverflowExperiments.examples.css";
+import "./OverflowContainer.examples.css";
 
 let displaySequence = 1;
 

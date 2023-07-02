@@ -27,6 +27,8 @@
     "showcase": "cd showcase && npm run showcase",
     "showcase:preview": "cd showcase && npm run preview",
     "showcase:build": " cd showcase && node scripts/build.mjs",
+    "test:cypress": "cypress run --component --browser chrome --headless",
+    "test:cypress:local": "cypress open --component --browser electron",
     "test:vite": "vitest run",
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.mjs",
@@ -49,12 +51,18 @@
   "devDependencies": {
     "@heswell/component-anatomy": "0.0.5",
     "@lezer/generator": "^1.2.2",
+    "@testing-library/cypress": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
+    "@vitejs/plugin-react": "^4.0.2",
     "chalk": "^5.2.0",
+    "cypress": "^12.3.0",
+    "cypress-axe": "^1.2.0",
+    "cypress-real-events": "^1.7.6",
     "esbuild": "0.17.18",
     "esbuild-visualizer": "^0.4.0",
     "eslint": "8.36.0",
     "eslint-config-prettier": "8.7.0",
+    "eslint-plugin-cypress": "^2.13.3",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-react-hooks": "4.6.0",
@@ -62,8 +70,9 @@
     "prettier": "2.8.4",
     "tinycolor2": "1.4.2",
     "typescript": "4.9.5",
-    "vite": "4.1.4",
-    "vitest": "0.29.2"
+    "vite": "4.2.0",
+    "vite-tsconfig-paths": "^4.0.3",
+    "vitest": "0.33.0"
   },
   "engines": {
     "node": ">=16.0.0"

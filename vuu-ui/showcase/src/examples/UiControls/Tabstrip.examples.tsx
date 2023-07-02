@@ -1,20 +1,27 @@
+import { Tab, Tabstrip, TabDescriptor } from "@finos/vuu-ui-controls";
 import {
   Dialog,
-  DialogActions, DialogContent, DialogTitle, Tab,
-  TabDescriptor, TabPanel, Tabstrip
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
-
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
-import "@heswell/component-anatomy/esm/index.css";
 
-export const Default = () => {
+import "./Tabstrip.examples.css";
+
+const SPLITTER_WIDTH = 3;
+
+export const DefaultTabstrip = ({ width = 350 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
   return (
     <LayoutProvider>
-      <FlexboxLayout style={{ height: 200, width: 353 }} path="">
+      <FlexboxLayout
+        style={{ height: 200, width: width + SPLITTER_WIDTH }}
+        path=""
+      >
         <div data-resizeable style={{ flex: 1 }}>
           <Tabstrip onActiveChange={setActiveTabIndex}>
             {tabs.map((label, i) => (
@@ -193,7 +200,6 @@ export const TheFullMontyNoConfirmation = () => {
           <Tab closeable={closeable} label={label} key={label} />
         ))}
       </Tabstrip>
-      <TabPanel tabs={tabs} activeTabIndex={selectedTab} />
     </div>
   );
 };
