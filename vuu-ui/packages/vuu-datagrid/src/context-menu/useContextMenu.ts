@@ -1,5 +1,6 @@
 /* eslint-disable no-sequences */
-import { DataSource, DataSourceFilter } from "@finos/vuu-data";
+import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSource } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { removeColumnFromFilter } from "@finos/vuu-filters";
 import { MenuActionHandler } from "@finos/vuu-popups";

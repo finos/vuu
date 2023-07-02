@@ -1,6 +1,8 @@
 import { ReactElement, useLayoutEffect, useMemo } from "react";
 import * as ReactDOM from "react-dom";
 import { createContainer, renderPortal } from "./render-portal";
+import { useThemeAttributes } from "@finos/vuu-shell";
+import cx from "classnames";
 
 export interface PortalProps {
   children: ReactElement;
@@ -16,8 +18,12 @@ export const Portal = function Portal({
   onRender,
 }: PortalProps) {
   // Do we need to accept container here as a prop ?
+  const [themeClass, densityClass, dataMode] = useThemeAttributes();
   const renderContainer = useMemo(() => {
-    return createContainer();
+    return createContainer({
+      className: cx(themeClass, densityClass),
+      dataMode,
+    });
   }, []);
 
   useLayoutEffect(() => {

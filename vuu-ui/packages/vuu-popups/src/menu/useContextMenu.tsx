@@ -1,6 +1,8 @@
 // The menuBuilder will always be supplied by the code that will display the local
 // context menu. It will be passed all configured menu descriptors. It is free to
 
+import { useThemeAttributes } from "@finos/vuu-shell";
+import cx from "classnames";
 import { MouseEvent, useCallback, useContext } from "react";
 import { PopupService } from "../popup";
 import {
@@ -24,6 +26,7 @@ export type ContextMenuOptions = {
 // The argument allows a top-level menuBuilder to operate outside the Contect
 export const useContextMenu = (menuBuilder?: MenuBuilder) => {
   const ctx = useContext(ContextMenuContext);
+  const [themeClass, densityClass, dataMode] = useThemeAttributes();
 
   const buildMenuOptions = useCallback(
     (menuBuilders: MenuBuilder[], location, options) => {
@@ -61,12 +64,15 @@ export const useContextMenu = (menuBuilder?: MenuBuilder) => {
           console.log(`showContextMenu ${location}`, {
             options,
           });
-          showContextMenu(
-            e,
-            menuItemDescriptors,
-            ctx.menuActionHandler,
-            ContextMenuProps
-          );
+          showContextMenu(e, menuItemDescriptors, ctx.menuActionHandler, {
+            ...ContextMenuProps,
+            className: cx(
+              ContextMenuProps?.className,
+              themeClass,
+              densityClass
+            ),
+            "data-mode": dataMode,
+          });
         }
       } else {
         console.warn(
@@ -74,7 +80,15 @@ export const useContextMenu = (menuBuilder?: MenuBuilder) => {
         );
       }
     },
-    [buildMenuOptions, ctx?.menuActionHandler, ctx?.menuBuilders, menuBuilder]
+    [
+      buildMenuOptions,
+      ctx?.menuActionHandler,
+      ctx?.menuBuilders,
+      dataMode,
+      densityClass,
+      menuBuilder,
+      themeClass,
+    ]
   );
 
   return handleShowContextMenu;

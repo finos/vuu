@@ -11,13 +11,13 @@ import cx from "classnames";
 
 import "./ColumnMenu.css";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { useThemeAttributes } from "@finos/vuu-shell";
+// import { useThemeAttributes } from "@finos/vuu-shell";
 
 export interface ColumnMenuProps extends HTMLAttributes<HTMLSpanElement> {
   column: KeyedColumnDescriptor;
 }
 
-const getPosition = (element?: HTMLElement) => {
+const getPosition = (element: HTMLElement | null) => {
   if (element) {
     const { bottom, left } = element.getBoundingClientRect();
     return { x: left, y: bottom + 6 };
@@ -29,10 +29,10 @@ export const ColumnMenu = ({
   column,
   ...props
 }: ColumnMenuProps) => {
-  const rootRef = useRef<HTMLSpanElement | undefined>(undefined);
+  const rootRef = useRef<HTMLSpanElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const showContextMenu = useContextMenu();
-  const [themeClass, densityClass, dataMode] = useThemeAttributes();
+  // const [themeClass, densityClass, dataMode] = useThemeAttributes();
 
   const handleMenuClose = useCallback(() => {
     setMenuOpen(false);
@@ -44,21 +44,14 @@ export const ColumnMenu = ({
       showContextMenu(e, "header", {
         column,
         ContextMenuProps: {
-          className: cx(themeClass, densityClass),
-          "data-mode": dataMode,
+          // className: cx(themeClass, densityClass),
+          // "data-mode": dataMode,
           onClose: handleMenuClose,
           position: getPosition(rootRef.current),
         },
       });
     },
-    [
-      column,
-      dataMode,
-      densityClass,
-      handleMenuClose,
-      showContextMenu,
-      themeClass,
-    ]
+    [column, handleMenuClose, showContextMenu]
   );
 
   return (
