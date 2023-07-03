@@ -1,8 +1,8 @@
 /* eslint-disable no-restricted-syntax */
-import { useCallback, useLayoutEffect, useRef, RefObject } from 'react';
-export const WidthHeight = ['height', 'width'];
-export const HeightOnly = ['height'];
-export const WidthOnly = ['width'];
+import { useCallback, useLayoutEffect, useRef, RefObject } from "react";
+export const WidthHeight = ["height", "width"];
+export const HeightOnly = ["height"];
+export const WidthOnly = ["width"];
 
 export type measurements<T = string | number> = {
   height?: T;
@@ -26,13 +26,13 @@ const getTargetSize = (
   dimension: measuredDimension
 ): number => {
   switch (dimension) {
-    case 'height':
+    case "height":
       return contentRect.height;
-    case 'scrollHeight':
+    case "scrollHeight":
       return element.scrollHeight;
-    case 'scrollWidth':
+    case "scrollWidth":
       return element.scrollWidth;
-    case 'width':
+    case "width":
       return contentRect.width;
     default:
       return 0;
@@ -77,10 +77,13 @@ export function useResizeObserver(
   const dimensionsRef = useRef(dimensions);
   const measure = useCallback((target: HTMLElement): measurements<number> => {
     const rect = target.getBoundingClientRect();
-    return dimensionsRef.current.reduce((map: { [key: string]: number }, dim) => {
-      map[dim] = getTargetSize(target, rect, dim as measuredDimension);
-      return map;
-    }, {});
+    return dimensionsRef.current.reduce(
+      (map: { [key: string]: number }, dim) => {
+        map[dim] = getTargetSize(target, rect, dim as measuredDimension);
+        return map;
+      },
+      {}
+    );
   }, []);
 
   // TODO use ref to store resizeHandler here
@@ -122,7 +125,9 @@ export function useResizeObserver(
     if (target) {
       // TODO might we want multiple callers to attach a listener to the same element ?
       if (observedMap.has(target)) {
-        throw Error('useResizeObserver attemping to observe same element twice');
+        throw Error(
+          "useResizeObserver attemping to observe same element twice"
+        );
       }
       void registerObserver();
     }
@@ -133,7 +138,7 @@ export function useResizeObserver(
         cleanedUp = true;
       }
     };
-  }, [ref, measure]);
+  }, [ref, measure, reportInitialSize, onResize]);
 
   useLayoutEffect(() => {
     const target = ref.current as HTMLElement;
