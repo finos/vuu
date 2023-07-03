@@ -1,10 +1,10 @@
 import {
   DataSource,
   DataSourceConfig,
-  isVuuFeatureAction,
   SubscribeCallback,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { isVuuFeatureAction } from "@finos/vuu-data-react";
 import {
   buildColumnMap,
   ColumnMap,

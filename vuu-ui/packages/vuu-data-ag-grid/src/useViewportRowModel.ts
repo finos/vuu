@@ -1,18 +1,21 @@
 import {
   DataSourceConfig,
-  isViewportMenusAction,
-  isVisualLinksAction,
-  MenuActionConfig,
-  MenuRpcResponse,
   RemoteDataSource,
-  SuggestionFetcher,
-  useTypeaheadSuggestions,
-  useVuuMenuActions,
   VuuFeatureMessage,
-  VuuServerMenuOptions,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "@finos/vuu-data";
+
+import {
+  isViewportMenusAction,
+  isVisualLinksAction,
+  MenuActionConfig,
+  SuggestionFetcher,
+  useTypeaheadSuggestions,
+  useVuuMenuActions,
+  VuuServerMenuOptions,
+} from "@finos/vuu-data-react";
+
 import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { bySortIndex, isSortedColumn, toSortDef } from "./AgGridDataUtils";

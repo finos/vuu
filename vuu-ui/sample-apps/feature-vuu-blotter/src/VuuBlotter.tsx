@@ -3,7 +3,10 @@ import {
   isVisualLinkCreatedAction,
   isVisualLinkRemovedAction,
   isVisualLinksAction,
-} from "@finos/vuu-data";
+  MenuActionConfig,
+  useVuuMenuActions,
+} from "@finos/vuu-data-react";
+
 import { GridAction } from "@finos/vuu-datagrid-types";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
@@ -20,10 +23,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ConfigChangeMessage,
   DataSourceVisualLinkCreatedMessage,
-  MenuActionConfig,
   RemoteDataSource,
   TableSchema,
-  useVuuMenuActions,
 } from "@finos/vuu-data";
 import { Grid, GridProvider } from "@finos/vuu-datagrid";
 import {

@@ -1,4 +1,5 @@
-import { MenuRpcResponse, useVuuTables } from "@finos/vuu-data";
+import { MenuRpcResponse } from "@finos/vuu-data";
+import { useVuuTables } from "@finos/vuu-data-react";
 import { registerComponent } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {

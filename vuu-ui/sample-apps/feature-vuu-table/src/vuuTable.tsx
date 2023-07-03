@@ -2,15 +2,17 @@ import {
   DataSource,
   DataSourceConfig,
   DataSourceVisualLinkCreatedMessage,
-  isViewportMenusAction,
-  isVisualLinksAction,
-  MenuActionConfig,
   RemoteDataSource,
   TableSchema,
-  useVuuMenuActions,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import {
+  isViewportMenusAction,
+  isVisualLinksAction,
+  MenuActionConfig,
+  useVuuMenuActions,
+} from "@finos/vuu-data-react";
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
@@ -27,11 +29,11 @@ import {
   ShellContextProps,
   useShellContext,
 } from "@finos/vuu-shell";
+import { DataSourceStats } from "@finos/vuu-table-extras";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConfigurableDataTable } from "./ConfigurableDataTable";
-import { DataSourceStats } from "@finos/vuu-table-extras";
 
 import "./vuuTable.css";
 

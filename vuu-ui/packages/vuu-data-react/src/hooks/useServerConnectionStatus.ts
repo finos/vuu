@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ConnectionManager } from "../connection-manager";
-import { ConnectionStatusMessage } from "../vuuUIMessageTypes";
+import { ConnectionManager, ConnectionStatusMessage } from "@finos/vuu-data";
 
 export const useServerConnectionStatus = () => {
   const [connectionStatus, setConnectionStatus] = useState("disconnected");

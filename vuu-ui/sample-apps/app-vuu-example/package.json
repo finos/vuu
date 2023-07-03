@@ -21,6 +21,7 @@
     "@salt-ds/icons": "1.1.0",
     "@heswell/salt-lab": "1.0.0-alpha.2",
     "@finos/vuu-data": "0.0.26",
+    "@finos/vuu-data-react": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
     "@finos/vuu-shell": "0.0.26",
     "@finos/vuu-theme": "0.0.26",

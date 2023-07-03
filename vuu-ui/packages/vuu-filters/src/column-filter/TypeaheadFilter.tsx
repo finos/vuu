@@ -1,8 +1,8 @@
-import { ChangeEventHandler, useCallback, useEffect, useState } from "react";
-import { useTypeaheadSuggestions } from "@finos/vuu-data";
-import { TypeaheadParams } from "@finos/vuu-protocol-types";
+import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
 import { Filter } from "@finos/vuu-filter-types";
+import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { ComboBoxDeprecated } from "@heswell/salt-lab";
+import { ChangeEventHandler, useCallback, useEffect, useState } from "react";
 import { getTypeaheadFilter, isStartsWithValue } from "./utils";
 
 export type TypeaheadFilterProps = {
@@ -26,7 +26,7 @@ export const TypeaheadFilter = ({
       ? [tableName, columnName, searchValue]
       : defaultTypeaheadParams;
 
-    let isSubscribed = true; 
+    let isSubscribed = true;
     getSuggestions(params).then((options) => {
       if (!isSubscribed) {
         return;

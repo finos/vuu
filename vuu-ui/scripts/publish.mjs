@@ -5,6 +5,7 @@ const debug = getCommandLineArg("--debug");
 const packages = [
   "vuu-codemirror",
   "vuu-data",
+  "vuu-data-react",
   "vuu-data-ag-grid",
   "vuu-data-types",
   "vuu-table-extras",

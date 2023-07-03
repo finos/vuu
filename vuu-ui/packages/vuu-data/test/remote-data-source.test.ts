@@ -6,7 +6,7 @@ import * as connectionExports from "../src/connection-manager";
 //----------------------------------------------------
 import { LinkDescriptorWithLabel, VuuSortCol } from "@finos/vuu-protocol-types";
 import { RemoteDataSource } from "../src/remote-data-source";
-import { DataSourceConfig } from "../src";
+import { DataSourceConfig } from "../src/data-source";
 
 const defaultSubscribeOptions = {
   aggregations: [],

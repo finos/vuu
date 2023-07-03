@@ -20,6 +20,7 @@ const wave2 = ["vuu-data", "vuu-filters", "vuu-popups"];
 const wave3 = [
   "vuu-datatable",
   "vuu-table",
+  "vuu-data-react",
   "vuu-data-ag-grid",
   "vuu-table-extras",
   "vuu-layout",

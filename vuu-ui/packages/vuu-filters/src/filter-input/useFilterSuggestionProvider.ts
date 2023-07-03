@@ -11,7 +11,7 @@ import {
   getTypeaheadParams,
   SuggestionFetcher,
   useTypeaheadSuggestions,
-} from "@finos/vuu-data";
+} from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { IFilterSuggestionProvider, SuggestionType } from "@finos/vuu-filters";

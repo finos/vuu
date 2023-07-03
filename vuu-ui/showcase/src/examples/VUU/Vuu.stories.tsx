@@ -7,7 +7,7 @@ import {
 } from "@heswell/salt-lab";
 import { useEffect, useState } from "react";
 
-import { useTypeaheadSuggestions, useVuuTables } from "@finos/vuu-data";
+import { useTypeaheadSuggestions, useVuuTables } from "@finos/vuu-data-react";
 import { useAutoLoginToVuuServer } from "../utils";
 
 let displaySequence = 1;

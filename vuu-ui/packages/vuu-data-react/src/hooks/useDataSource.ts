@@ -1,8 +1,8 @@
 // TODO is this hook needed ? it is currently used only in a vuu salt story
+import { DataSource, DataSourceRow, SubscribeCallback } from "@finos/vuu-data";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { DataSource, DataSourceRow, SubscribeCallback } from "../data-source";
 
 const { SELECTED } = metadataKeys;
 
