@@ -1,7 +1,7 @@
 import { useCallback } from "react";
-import { Filter } from "@finos/vuu-filter-types";
 import { ColumnFilter } from "@finos/vuu-filters";
 import { useSchemas, useTestDataSource } from "../utils";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 
 export const DefaultColumnFilter = () => {
   const { schemas } = useSchemas();
@@ -11,9 +11,9 @@ export const DefaultColumnFilter = () => {
   });
 
   const handleFilterSubmit = useCallback(
-    (filterQuery: string, filter?: Filter) => {
-      console.log("Query:", filterQuery);
-      dataSource.filter = { filterStruct: filter, filter: filterQuery };
+    (filter: DataSourceFilter) => {
+      console.log("Query:", filter.filter);
+      dataSource.filter = filter;
     },
     [dataSource]
   );

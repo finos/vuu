@@ -248,19 +248,19 @@ export const removeFilter = (sourceFilter: Filter, filterToRemove: Filter) => {
 };
 
 export const splitFilterOnColumn = (
-  filter: Filter | null,
-  columnName: string
-): [Filter | null, Filter | null] => {
+  columnName: string,
+  filter?: Filter
+): [Filter | undefined, Filter | undefined] => {
   if (!filter) {
-    return [null, null];
+    return [undefined, undefined];
   }
   if (filter.column === columnName) {
-    return [filter, null];
+    return [filter, undefined];
   }
   if (filter.op !== AND) {
-    return [null, filter];
+    return [undefined, filter];
   }
-  const [[columnFilter = null], filters] = partition(
+  const [[columnFilter = undefined], filters] = partition(
     (filter as AndFilter).filters,
     (f) => f.column === columnName
   );

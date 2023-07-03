@@ -5,7 +5,7 @@ import {
   isVisualLinksAction,
 } from "@finos/vuu-data";
 import { GridAction } from "@finos/vuu-datagrid-types";
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
   filterAsQuery,
@@ -43,12 +43,6 @@ import "./VuuBlotter.css";
 const classBase = "vuuBlotter";
 
 const CONFIG_KEYS = ["filter", "filterQuery", "groupBy", "sort"];
-
-type FilterState = {
-  filter: Filter | undefined;
-  filterQuery: string;
-  filterName?: string;
-};
 
 type BlotterConfig = {
   columns?: KeyedColumnDescriptor[];

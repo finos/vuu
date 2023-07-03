@@ -29,6 +29,7 @@ import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 import { instrumentSchema } from "./columnMetaData";
 
 import "./Grid.stories.css";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 
 let displaySequence = 1;
 
@@ -292,8 +293,8 @@ export const DefaultGridWithFilter = () => {
     return <ErrorDisplay>{error}</ErrorDisplay>;
   }
 
-  function handleFilterSubmit(filterQuery: string) {
-    dataSource.filter = { filter: filterQuery };
+  function handleFilterSubmit(filter: DataSourceFilter) {
+    dataSource.filter = filter;
   }
 
   return (

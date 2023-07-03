@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { addFilter, AND, filterAsQuery } from "../filter-utils";
 import { IRange } from "./RangeFilter";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 
 type SavedValue<T extends string[] | IRange> = { column: string; value: T };
 type SavedFilter = { column: string; filter: Filter | undefined };
@@ -12,7 +13,7 @@ const addOrReplace = <T>(array: T[], newValue: T, key: keyof T): T[] =>
   array.filter((oldValue) => oldValue[key] !== newValue[key]).concat(newValue);
 
 export const useColumnFilterStore = (
-  onFilterSubmit: (filterQuery: string, filter?: Filter) => void
+  onFilterSubmit: (filter: DataSourceFilter) => void
 ) => {
   const [selectedColumnName, setSelectedColumnName] = useState("");
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
@@ -26,7 +27,7 @@ export const useColumnFilterStore = (
     setRangeValues([]);
     setTypeaheadValues([]);
     setSavedFilters([]);
-    onFilterSubmit("");
+    onFilterSubmit({ filter: "" });
   };
 
   const updateFilters = useCallback(
@@ -47,7 +48,7 @@ export const useColumnFilterStore = (
 
       const query =
         combinedFilter === undefined ? "" : filterAsQuery(combinedFilter);
-      onFilterSubmit(query, combinedFilter);
+      onFilterSubmit({ filter: query, filterStruct: combinedFilter });
     },
     [selectedColumnName, onFilterSubmit, savedFilters]
   );

@@ -1,5 +1,4 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { Filter } from "@finos/vuu-filter-types";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import {
   Dropdown,
@@ -14,11 +13,12 @@ import { RangeFilter } from "./RangeFilter";
 import { TypeaheadFilter } from "./TypeaheadFilter";
 import { ColumnListItem } from "./ColumnListItem";
 import { useColumnFilterStore } from "./useColumnFilterStore";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 
 type FilterPanelProps = HTMLAttributes<HTMLDivElement> & {
   table: VuuTable;
   columns: ColumnDescriptor[];
-  onFilterSubmit: (filterQuery: string, filter?: Filter) => void;
+  onFilterSubmit: (filter: DataSourceFilter) => void;
 };
 
 export const ColumnFilter = ({
