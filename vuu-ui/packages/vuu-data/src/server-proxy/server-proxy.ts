@@ -8,7 +8,6 @@ import {
   VuuLinkDescriptor,
   VuuRpcRequest,
   VuuTable,
-  VuuTableMeta,
 } from "@finos/vuu-protocol-types";
 import { logger, partition } from "@finos/vuu-utils";
 import { Connection } from "../connectionTypes";

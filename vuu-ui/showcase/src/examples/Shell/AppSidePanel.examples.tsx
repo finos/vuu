@@ -1,3 +1,4 @@
+import { useVuuTables } from "@finos/vuu-data-react";
 import {
   DraggableLayout,
   Flexbox,
@@ -6,10 +7,8 @@ import {
   View,
 } from "@finos/vuu-layout";
 import { SaltProvider } from "@salt-ds/core";
-import { useMockFeatureData } from "../utils/mock-data";
-
-import { useVuuTables } from "@finos/vuu-data";
 import { AppSidePanel } from "app-vuu-example/src/app-sidepanel";
+import { useMockFeatureData } from "../utils/mock-data";
 import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
 
 export const DefaultAppSidePanel = () => {

@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { RowClickHandler } from "@finos/vuu-table";
 import { ColumnMap, isGroupColumn, metadataKeys } from "@finos/vuu-utils";
@@ -26,8 +26,7 @@ export const Row = memo(
     className: classNameProp,
     columnMap,
     columns,
-    data, // for compat, to remove
-    row = data,
+    row,
     offset,
     onClick,
     onToggleGroup,
@@ -53,16 +52,6 @@ export const Row = memo(
         onClick?.(row, rangeSelect, keepExistingSelection);
       },
       [onClick, row]
-    );
-
-    const handleGroupCellClick = useCallback(
-      (evt: MouseEvent<HTMLDivElement>, column: KeyedColumnDescriptor) => {
-        if (isGroupColumn(column) /* || isJsonGroup(column, row) */) {
-          evt.stopPropagation();
-          onToggleGroup?.(row, column);
-        }
-      },
-      [onToggleGroup, row]
     );
 
     const className = cx(classBase, classNameProp, {
@@ -91,16 +80,7 @@ export const Row = memo(
           const isGroup = isGroupColumn(column);
           const Cell = isGroup ? TableGroupCell : TableCell;
 
-          return (
-            <Cell
-              key={column.key}
-              column={column}
-              row={row}
-              onClick={
-                isGroup /*|| isJsonCell */ ? handleGroupCellClick : undefined
-              }
-            />
-          );
+          return <Cell key={column.key} column={column} row={row} />;
         })}
       </div>
     );

@@ -4,7 +4,7 @@ import {
   styleTags,
   tags as tag,
 } from "@finos/vuu-codemirror";
-import { parser } from "./generated/filter-parser";
+import { parser } from "@finos/vuu-filter-parser";
 
 const filterLanguage = LRLanguage.define({
   name: "VuuFilterQuery",

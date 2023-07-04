@@ -15,6 +15,7 @@ const packages = [
   "vuu-data",
   "vuu-data-react",
   "vuu-data-ag-grid",
+  "vuu-filter-parser",
   "vuu-filters",
   "vuu-popups",
   "vuu-datatable",

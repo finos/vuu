@@ -1,12 +1,12 @@
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { MenuBuilder } from "@finos/vuu-popups";
+import { isNumericColumn } from "@finos/vuu-utils";
 import {
   VuuAggregation,
   VuuGroupBy,
   VuuSort,
   VuuSortCol,
 } from "../../../vuu-protocol-types";
-import { isNumericColumn } from "@finos/vuu-utils";
 import { GridModelType } from "../grid-model/gridModelTypes";
 import { ContextMenuOptions } from "./contextMenuTypes";
 

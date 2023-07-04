@@ -1,4 +1,10 @@
 import {
+  ConfigChangeMessage,
+  DataSourceVisualLinkCreatedMessage,
+  RemoteDataSource,
+  TableSchema,
+} from "@finos/vuu-data";
+import {
   isViewportMenusAction,
   isVisualLinkCreatedAction,
   isVisualLinkRemovedAction,
@@ -6,39 +12,32 @@ import {
   MenuActionConfig,
   useVuuMenuActions,
 } from "@finos/vuu-data-react";
-
-import { GridAction } from "@finos/vuu-datagrid-types";
+import { Grid, GridProvider } from "@finos/vuu-datagrid";
+import { GridAction, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
-  filterAsQuery,
   FilterInput,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
-import {
-  ConfigChangeMessage,
-  DataSourceVisualLinkCreatedMessage,
-  RemoteDataSource,
-  TableSchema,
-} from "@finos/vuu-data";
-import { Grid, GridProvider } from "@finos/vuu-datagrid";
 import {
   LinkDescriptorWithLabel,
   VuuGroupBy,
   VuuMenu,
   VuuSort,
 } from "@finos/vuu-protocol-types";
+import {
+  FeatureProps,
+  ShellContextProps,
+  useShellContext,
+} from "@finos/vuu-shell";
+import { filterAsQuery } from "@finos/vuu-utils";
 import { ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { FeatureProps } from "@finos/vuu-shell";
-
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import "./VuuBlotter.css";
 
 const classBase = "vuuBlotter";

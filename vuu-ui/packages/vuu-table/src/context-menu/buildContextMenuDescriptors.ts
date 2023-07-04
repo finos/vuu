@@ -1,7 +1,8 @@
 import { DataSource } from "@finos/vuu-data";
+import { ContextMenuItemDescriptor } from "@finos/vuu-data-types";
 import { KeyedColumnDescriptor, PinLocation } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
-import { ContextMenuItemDescriptor, MenuBuilder } from "@finos/vuu-popups";
+import { MenuBuilder } from "@finos/vuu-popups";
 import { isNumericColumn } from "@finos/vuu-utils";
 
 export type ContextMenuLocation = "header" | "filter" | "grid";

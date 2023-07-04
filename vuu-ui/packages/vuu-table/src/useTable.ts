@@ -1,11 +1,11 @@
 import {
   DataSource,
-  DataSourceRow,
   DataSourceSubscribedMessage,
   JsonDataSource,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   GridConfig,
   KeyedColumnDescriptor,

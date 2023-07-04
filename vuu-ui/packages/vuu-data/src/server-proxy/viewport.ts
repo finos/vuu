@@ -1,4 +1,4 @@
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import { Selection } from "@finos/vuu-datagrid-types";
 import {
   ClientToServerChangeViewPort,
@@ -29,13 +29,6 @@ import {
   RangeMonitor,
 } from "@finos/vuu-utils";
 import {
-  ServerProxySubscribeMessage,
-  VuuUIMessageOutCloseTreeNode,
-  VuuUIMessageOutOpenTreeNode,
-} from "../vuuUIMessageTypes";
-import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
-import * as Message from "./messages";
-import {
   DataSourceAggregateMessage,
   DataSourceColumnsMessage,
   DataSourceDebounceRequest,
@@ -44,7 +37,6 @@ import {
   DataSourceFilterMessage,
   DataSourceGroupByMessage,
   DataSourceMenusMessage,
-  DataSourceRow,
   DataSourceSetConfigMessage,
   DataSourceSortMessage,
   DataSourceSubscribedMessage,
@@ -55,6 +47,13 @@ import {
   WithFullConfig,
 } from "../data-source";
 import { getFirstAndLastRows, TableSchema } from "../message-utils";
+import {
+  ServerProxySubscribeMessage,
+  VuuUIMessageOutCloseTreeNode,
+  VuuUIMessageOutOpenTreeNode,
+} from "../vuuUIMessageTypes";
+import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
+import * as Message from "./messages";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 

@@ -1,7 +1,6 @@
 import {
   DataSource,
   DataSourceMenusMessage,
-  DataSourceRow,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
@@ -11,13 +10,13 @@ import {
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "@finos/vuu-data";
-import { GridAction } from "@finos/vuu-datagrid-types";
-import { getFilterPredicate } from "@finos/vuu-filters";
 import {
   ContextMenuItemDescriptor,
-  isGroupMenuItemDescriptor,
-  MenuBuilder,
-} from "@finos/vuu-popups";
+  DataSourceRow,
+} from "@finos/vuu-data-types";
+import { GridAction } from "@finos/vuu-datagrid-types";
+import { getFilterPredicate } from "@finos/vuu-filter-parser";
+import { MenuBuilder } from "@finos/vuu-popups";
 import {
   ClientToServerMenuCellRPC,
   ClientToServerMenuRowRPC,
@@ -28,7 +27,12 @@ import {
   VuuMenuItem,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
-import { ColumnMap, getRowRecord, metadataKeys } from "@finos/vuu-utils";
+import {
+  ColumnMap,
+  getRowRecord,
+  isGroupMenuItemDescriptor,
+  metadataKeys,
+} from "@finos/vuu-utils";
 import { useCallback } from "react";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";

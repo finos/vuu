@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   AndFilter,
   Filter,
@@ -7,7 +7,7 @@ import {
   SingleValueFilterClause,
 } from "@finos/vuu-filter-types";
 import { ColumnMap } from "@finos/vuu-utils";
-import { parseFilter } from "./filter-input/filter-language-parser/FilterParser";
+import { parseFilter } from "./FilterParser";
 
 const filterPredicateMap = new Map<string, FilterPredicate>();
 const filterReject = () => false;

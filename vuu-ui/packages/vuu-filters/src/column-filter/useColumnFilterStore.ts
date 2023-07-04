@@ -1,9 +1,10 @@
-import { Filter } from "@finos/vuu-filter-types";
-import { useCallback, useState } from "react";
-import { addFilter, AND, filterAsQuery } from "../filter-utils";
-import { IRange } from "./RangeFilter";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Filter } from "@finos/vuu-filter-types";
+import { filterAsQuery } from "@finos/vuu-utils";
+import { useCallback, useState } from "react";
+import { addFilter, AND } from "../filter-utils";
+import { IRange } from "./RangeFilter";
 
 type SavedValue<T extends string[] | IRange> = { column: string; value: T };
 type SavedFilter = { column: string; filter: Filter | undefined };

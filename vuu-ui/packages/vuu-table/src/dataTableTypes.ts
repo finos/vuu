@@ -1,14 +1,14 @@
 import {
   DataSource,
-  DataSourceRow,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import {
-  KeyedColumnDescriptor,
   GridConfig,
-  TableHeadings,
+  KeyedColumnDescriptor,
   SelectionChangeHandler,
+  TableHeadings,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent } from "react";

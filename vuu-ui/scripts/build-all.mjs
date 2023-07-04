@@ -11,6 +11,7 @@ const wave1 = [
   "vuu-data-types",
   "vuu-datagrid-types",
   "vuu-filter-types",
+  "vuu-filter-parser",
   "vuu-protocol-types",
   "vuu-utils",
   "vuu-codemirror",

@@ -11,7 +11,7 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 
-import { parseFilter } from "@finos/vuu-filters";
+import { parseFilter } from "@finos/vuu-filter-parser";
 import {
   debounce,
   EventEmitter,

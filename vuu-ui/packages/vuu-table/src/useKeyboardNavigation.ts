@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { withinRange } from "@finos/vuu-utils";
 import {

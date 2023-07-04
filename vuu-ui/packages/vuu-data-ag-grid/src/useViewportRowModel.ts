@@ -1,5 +1,6 @@
 import {
   DataSourceConfig,
+  MenuRpcResponse,
   RemoteDataSource,
   VuuFeatureMessage,
   VuuUIMessageInRPCEditReject,
@@ -16,22 +17,21 @@ import {
   VuuServerMenuOptions,
 } from "@finos/vuu-data-react";
 
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
+import { buildColumnMap, itemsOrOrderChanged } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AgData } from "./AgDataWindow";
+import { createColumnDefs } from "./AgGridColumnUtils";
 import { bySortIndex, isSortedColumn, toSortDef } from "./AgGridDataUtils";
-
 import {
   AgGridFilter,
   agGridFilterModelToVuuFilter,
 } from "./AgGridFilterUtils";
+import { vuuMenuToAgGridMenu } from "./agGridMenuUtils";
 import { FilterDataProvider } from "./FilterDataProvider";
 import { GroupCellRenderer } from "./GroupCellRenderer";
 import { ViewportRowModelDataSource } from "./ViewportRowModelDataSource";
-import { buildColumnMap, itemsOrOrderChanged } from "@finos/vuu-utils";
-import { vuuMenuToAgGridMenu } from "./agGridMenuUtils";
-import { AgData } from "./AgDataWindow";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { createColumnDefs } from "./AgGridColumnUtils";
 
 type Column = {
   getId: () => string;

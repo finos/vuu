@@ -17,6 +17,7 @@ export * from "./invariant";
 export * from "./json-utils";
 export * from "./keyset";
 export * from "./logging-utils";
+export * from "./menu-utils";
 export * from "./nanoid";
 export * from "./round-decimal";
 export * from "./perf-utils";

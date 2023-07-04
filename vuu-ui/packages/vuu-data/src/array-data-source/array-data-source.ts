@@ -1,6 +1,6 @@
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
-import { filterPredicate } from "@finos/vuu-filters";
+import { filterPredicate } from "@finos/vuu-filter-parser";
 import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
@@ -27,19 +27,18 @@ import {
   DataSource,
   DataSourceConstructorProps,
   DataSourceEvents,
-  DataSourceRow,
   SubscribeCallback,
   SubscribeProps,
   vanillaConfig,
   WithFullConfig,
 } from "../data-source";
+import { TableSchema } from "../message-utils";
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "../vuuUIMessageTypes";
 import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
-import { TableSchema } from "../message-utils";
 import { sortRows } from "./sort-utils";
 
 export interface ArrayDataSourceConstructorProps

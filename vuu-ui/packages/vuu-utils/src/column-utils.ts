@@ -1,3 +1,4 @@
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   ColumnType,
@@ -10,6 +11,7 @@ import {
   TableHeading,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
+import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import {
   VuuAggregation,
   VuuAggType,
@@ -20,10 +22,6 @@ import {
   VuuSort,
 } from "@finos/vuu-protocol-types";
 import { CSSProperties } from "react";
-
-import { DataSourceRow } from "@finos/vuu-data";
-import { DataSourceFilter } from "@finos/vuu-data-types";
-import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
 export interface ColumnMap {

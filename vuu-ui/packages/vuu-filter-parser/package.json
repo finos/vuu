@@ -1,23 +1,20 @@
 {
-  "name": "@finos/vuu-data-ag-grid",
+  "name": "@finos/vuu-filter-parser",
   "version": "0.0.26",
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "build": "node ../../scripts/run-build.mjs",
+    "lezer-generate:filter": "lezer-generator --output ./src/filter-input/filter-language-parser/generated/filter-parser.js ./src/filter-input/filter-language-parser/grammar/filter.grammar",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@finos/vuu-data": "0.0.26",
-    "@finos/vuu-data-react": "0.0.26",
+    "@lezer/common": "^1.0.2",
+    "@lezer/lr": "^1.3.3",
     "@finos/vuu-data-types": "0.0.26",
-    "@finos/vuu-datagrid-types": "0.0.26",
     "@finos/vuu-filter-types": "0.0.26",
-    "@finos/vuu-protocol-types": "0.0.26",
     "@finos/vuu-utils": "0.0.26"
-  },
-  "peerDependencies": {
-    "react": "^17.0.2"
   }
 }

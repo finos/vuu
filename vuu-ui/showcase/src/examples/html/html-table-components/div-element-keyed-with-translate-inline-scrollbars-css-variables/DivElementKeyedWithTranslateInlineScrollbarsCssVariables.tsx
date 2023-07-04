@@ -5,7 +5,6 @@ import { useTable } from "./useTable";
 import { metadataKeys } from "@finos/vuu-utils";
 
 import "./DivElementKeyedWithTranslateInlineScrollbarsCssVariables.css";
-import { useIdMemo } from "@salt-ds/core";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { HeaderCell } from "../HeaderCell";
 
@@ -14,7 +13,6 @@ const classBase = "DivElementKeyedWithTranslateInlineScrollbarsCssVariables";
 const { IDX, RENDER_IDX } = metadataKeys;
 
 export const DivElementKeyedWithTranslateInlineScrollbarsCssVariables = ({
-  allowConfigEditing: showSettings = false,
   className: classNameProp,
   config,
   dataSource,
@@ -31,14 +29,12 @@ export const DivElementKeyedWithTranslateInlineScrollbarsCssVariables = ({
   selectionModel = "extended",
   style: styleProp,
   width,
-  zebraStripes = false,
   ...htmlAttributes
 }: TableProps) => {
-  const id = useIdMemo(idProp);
   const {
     columnMap,
     columns,
-    containerMeasurements: { containerRef, innerSize, outerSize },
+    containerMeasurements: { innerSize },
     data,
     handleContextMenuAction,
     menuBuilder,
@@ -94,10 +90,11 @@ export const DivElementKeyedWithTranslateInlineScrollbarsCssVariables = ({
           <div {...tableProps} className={`${classBase}-table`}>
             <div className={`${classBase}-col-headings`}>
               <div className={`${classBase}-col-headers`} role="row">
-                {columns.map((col) => (
+                {columns.map((col, i) => (
                   <HeaderCell
                     classBase={classBase}
                     column={col}
+                    idx={i}
                     key={col.name}
                   />
                 ))}

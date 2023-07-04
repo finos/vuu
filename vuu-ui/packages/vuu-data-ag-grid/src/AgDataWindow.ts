@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { WindowRange } from "@finos/vuu-utils";
 
 export type AgDataItem = string | number | boolean;

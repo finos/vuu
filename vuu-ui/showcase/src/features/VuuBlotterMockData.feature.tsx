@@ -4,12 +4,12 @@ import { ConfigurableTable } from "@finos/vuu-datatable";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
-  filterAsQuery,
   FilterInput,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
 import { DataSourceStats } from "@finos/vuu-table-extras";
+import { filterAsQuery } from "@finos/vuu-utils";
 import { Toolbar } from "@heswell/salt-lab";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DockLayout } from "../examples/html/components/DockLayout";

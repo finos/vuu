@@ -14,11 +14,14 @@ import {
 } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
-import { IFilterSuggestionProvider, SuggestionType } from "@finos/vuu-filters";
 import { VuuTable } from "@finos/vuu-protocol-types";
 // import { isMappedValueTypeRenderer, isTypeDescriptor } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import { filterInfo } from "./filterInfo";
+import {
+  IFilterSuggestionProvider,
+  SuggestionType,
+} from "./useCodeMirrorEditor";
 import { ApplyCompletion } from "./useFilterAutoComplete";
 
 const NO_NAMED_FILTERS = [] as Completion[];

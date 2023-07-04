@@ -17,7 +17,6 @@ import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
-  filterAsQuery,
   FilterInput,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
@@ -30,6 +29,7 @@ import {
   useShellContext,
 } from "@finos/vuu-shell";
 import { DataSourceStats } from "@finos/vuu-table-extras";
+import { filterAsQuery } from "@finos/vuu-utils";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

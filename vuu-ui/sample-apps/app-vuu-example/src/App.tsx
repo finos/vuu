@@ -4,6 +4,7 @@ import { registerComponent } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
   Feature,
+  SessionEditingForm,
   Shell,
   ShellContextProvider,
   VuuUser,
@@ -12,7 +13,6 @@ import { ReactElement, useCallback, useRef, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 import { getDefaultColumnConfig } from "./columnMetaData";
-import { SessionEditingForm } from "@finos/vuu-shell";
 import { getFormConfig } from "./session-editing";
 
 import "./App.css";

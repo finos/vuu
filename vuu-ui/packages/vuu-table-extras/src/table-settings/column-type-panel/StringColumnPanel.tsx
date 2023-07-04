@@ -5,5 +5,6 @@ export const StringColumnPanel = ({
   column,
   dispatchColumnAction,
 }: ColumnTypePanelProps) => {
-  return <>String</>;
+  console.log(column, dispatchColumnAction);
+  return <>what</>;
 };

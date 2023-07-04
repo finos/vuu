@@ -12,6 +12,7 @@ const packages = [
   "vuu-datagrid-types",
   "vuu-table",
   "vuu-filter-types",
+  "vuu-filter-parser",
   "vuu-filters",
   "vuu-layout",
   "vuu-popups",

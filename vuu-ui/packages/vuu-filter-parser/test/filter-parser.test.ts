@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parser } from "../src/filter-input/filter-language-parser/generated/filter-parser";
+import { parser } from "../src/generated/filter-parser";
 
 const strictParser = parser.configure({ strict: true });
 

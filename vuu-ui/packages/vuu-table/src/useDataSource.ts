@@ -1,12 +1,13 @@
 import {
   DataSource,
   DataSourceConfigMessage,
-  DataSourceRow,
   DataSourceSubscribedMessage,
   SubscribeCallback,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
+
 import {
   isVuuFeatureAction,
   isVuuFeatureInvocation,

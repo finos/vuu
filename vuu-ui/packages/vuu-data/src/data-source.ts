@@ -1,8 +1,8 @@
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   SelectionChangeHandler,
 } from "@finos/vuu-datagrid-types";
-import { EventEmitter } from "@finos/vuu-utils";
 import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
@@ -14,40 +14,16 @@ import {
   VuuLinkDescriptor,
   VuuMenu,
   VuuRange,
-  VuuRowDataItemType,
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { EventEmitter } from "@finos/vuu-utils";
+import { TableSchema } from "./message-utils";
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "./vuuUIMessageTypes";
-import { TableSchema } from "./message-utils";
-
-type RowIndex = number;
-type RenderKey = number;
-type IsLeaf = boolean;
-type IsExpanded = boolean;
-type Depth = number;
-type ChildCount = number;
-type RowKey = string;
-export type IsSelected = number;
-
-export type DataSourceRow = [
-  RowIndex,
-  RenderKey,
-  IsLeaf,
-  IsExpanded,
-  Depth,
-  ChildCount,
-  RowKey,
-  IsSelected,
-  ...VuuRowDataItemType[]
-];
-
-export type DataSourceRowPredicate = (row: DataSourceRow) => boolean;
 
 export interface MessageWithClientViewportId {
   clientViewportId: string;

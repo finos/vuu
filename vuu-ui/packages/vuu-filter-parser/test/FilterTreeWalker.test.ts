@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parser } from "../src/filter-input/filter-language-parser/generated/filter-parser";
-import { walkTree } from "../src/filter-input/filter-language-parser/FilterTreeWalker";
+import { parser } from "../src/generated/filter-parser";
+import { walkTree } from "../src/FilterTreeWalker";
 
 describe("Filter treeWalker", () => {
   it("parses an eq clause", () => {

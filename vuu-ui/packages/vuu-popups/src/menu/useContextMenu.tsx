@@ -1,14 +1,14 @@
 // The menuBuilder will always be supplied by the code that will display the local
 // context menu. It will be passed all configured menu descriptors. It is free to
 
+import { ContextMenuItemDescriptor } from "@finos/vuu-data-types";
 import { useThemeAttributes } from "@finos/vuu-shell";
+import { isGroupMenuItemDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
 import { MouseEvent, useCallback, useContext } from "react";
 import { PopupService } from "../popup";
 import {
   ContextMenuContext,
-  ContextMenuItemDescriptor,
-  isGroupMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
 } from "./context-menu-provider";

@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
@@ -9,7 +9,7 @@ import { useCell } from "./table-next/useCell";
 
 export interface TableCellProps {
   column: KeyedColumnDescriptor;
-  onClick: (evt: MouseEvent, column: KeyedColumnDescriptor) => void;
+  onClick?: (evt: MouseEvent, column: KeyedColumnDescriptor) => void;
   row: DataSourceRow;
 }
 

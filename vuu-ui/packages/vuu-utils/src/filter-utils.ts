@@ -1,5 +1,6 @@
 //Note these are duplicated in vuu-filter, those should probably be removed.
 
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
   AndFilter,
   Filter,
@@ -20,6 +21,9 @@ const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "starts",
   "ends",
 ]);
+
+export const isNamedFilter = (f?: Filter) =>
+  f !== undefined && f.name !== undefined;
 
 // ... with type constraints
 export const isSingleValueFilter = (
@@ -48,3 +52,32 @@ export function isMultiClauseFilter(
 ): f is MultiClauseFilter {
   return f !== undefined && (f.op === "and" || f.op === "or");
 }
+
+const filterValue = (value: string | number | boolean) =>
+  typeof value === "string" ? `"${value}"` : value;
+
+export const filterAsQuery = (f: Filter): string => {
+  if (isMultiClauseFilter(f)) {
+    return f.filters.map((filter) => filterAsQuery(filter)).join(` ${f.op} `);
+  } else if (isMultiValueFilter(f)) {
+    return `${f.column} ${f.op} [${f.values.join(",")}]`;
+  } else {
+    return `${f.column} ${f.op} ${filterValue(f.value)}`;
+  }
+};
+
+export const removeColumnFromFilter = (
+  column: KeyedColumnDescriptor,
+  filter: Filter
+): [Filter | undefined, string] => {
+  if (isMultiClauseFilter(filter)) {
+    const [clause1, clause2] = filter.filters;
+    if (clause1.column === column.name) {
+      return [clause2, filterAsQuery(clause2)];
+    }
+    if (clause2.column === column.name) {
+      return [clause1, filterAsQuery(clause1)];
+    }
+  }
+  return [undefined, ""];
+};

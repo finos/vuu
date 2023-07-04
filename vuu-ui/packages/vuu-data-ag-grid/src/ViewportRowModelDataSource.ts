@@ -5,16 +5,16 @@ import {
   VuuFeatureMessage,
 } from "@finos/vuu-data";
 import { isVuuFeatureAction } from "@finos/vuu-data-react";
+import { Filter } from "@finos/vuu-filter-types";
+import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import {
   buildColumnMap,
   ColumnMap,
   itemsOrOrderChanged,
   metadataKeys,
 } from "@finos/vuu-utils";
-import { AgViewportRows, convertToAgViewportRows } from "./AgGridDataUtils";
-import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
-import { Filter } from "@finos/vuu-filter-types";
 import { AgDataWindow } from "./AgDataWindow";
+import { AgViewportRows, convertToAgViewportRows } from "./AgGridDataUtils";
 
 const { IDX, IS_LEAF, IS_EXPANDED } = metadataKeys;
 const NO_COLUMNS: string[] = [];
