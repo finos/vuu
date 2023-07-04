@@ -1,5 +1,6 @@
 import { Filter } from "@finos/vuu-filter-types";
 import { addFilter } from "../filter-utils";
+import { NumericOperator } from "../filter-clause/operator-utils";
 
 export const isStartsWithValue = (value: string) => /\.\.\.$/.test(value); // Does the value end in elipsis
 
@@ -46,4 +47,14 @@ export const getRangeFilter = (
 
   if (endFilter === undefined) return startFilter;
   return addFilter(startFilter, endFilter, { combineWith: "and" });
+};
+
+export const getNumericFilter = (
+  column: string,
+  operator?: NumericOperator,
+  value?: number
+): Filter | undefined => {
+  if (operator === undefined) return undefined;
+  if (value === undefined || isNaN(value)) return undefined;
+  return { column, op: operator, value };
 };
