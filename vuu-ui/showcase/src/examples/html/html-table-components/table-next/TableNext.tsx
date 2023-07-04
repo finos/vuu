@@ -1,7 +1,6 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
 import { metadataKeys } from "@finos/vuu-utils";
-import { useIdMemo } from "@salt-ds/core";
 import { CSSProperties, useEffect } from "react";
 import { HeaderCell } from "../HeaderCell";
 import { Row } from "../Row";
@@ -14,7 +13,6 @@ const classBase = "TableNext";
 const { IDX, RENDER_IDX } = metadataKeys;
 
 export const TableNext = ({
-  allowConfigEditing: showSettings = false,
   className: classNameProp,
   config,
   dataSource,
@@ -31,10 +29,8 @@ export const TableNext = ({
   selectionModel = "extended",
   style: styleProp,
   width,
-  zebraStripes = false,
   ...htmlAttributes
 }: TableProps) => {
-  const id = useIdMemo(idProp);
   const {
     columnMap,
     columns,

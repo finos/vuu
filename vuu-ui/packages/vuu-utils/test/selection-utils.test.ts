@@ -2,10 +2,34 @@ import { describe, expect, it } from "vitest";
 import {
   deselectItem,
   expandSelection,
+  getSelectionStatus,
+  RowSelected,
   selectItem,
 } from "../src/selection-utils";
 
 describe("selection-utils", () => {
+  describe("getSelectionStatus", () => {
+    it("returns 0 when no selection at all", () => {
+      expect(getSelectionStatus([], 0)).toEqual(RowSelected.False);
+    });
+    it("returns False when no rowIndex is not in selection", () => {
+      expect(getSelectionStatus([1, 5, 9], 2)).toEqual(RowSelected.False);
+    });
+    it("returns False when no rowIndex is not in selection", () => {
+      expect(getSelectionStatus([[0, 2], 5, 9], 3)).toEqual(RowSelected.False);
+    });
+
+    it("returns True when rowIndex is included in selection", () => {
+      expect(getSelectionStatus([1], 1) & RowSelected.True).toEqual(
+        RowSelected.True
+      );
+      expect(getSelectionStatus([[0, 3]], 1)).toEqual(RowSelected.True);
+    });
+    it("returns True when rowIndex falls within a range selection", () => {
+      expect(getSelectionStatus([[0, 3]], 1)).toEqual(RowSelected.True);
+    });
+  });
+
   describe("selectItem", () => {
     describe("single selection mode", () => {
       it("selects a single item", () => {
@@ -41,15 +65,49 @@ describe("selection-utils", () => {
           [7, 9],
         ]);
       });
-      it("merges new range into existing range", () => {
+      it("extends existing range with range select", () => {
         expect(selectItem("extended", [[2, 5], 7], 4, true, false, 7)).toEqual([
           [2, 7],
         ]);
       });
+
+      it("extends existing range with extended contiguous select", () => {
+        expect(selectItem("extended", [[8, 12]], 13, false, true, 13)).toEqual([
+          [8, 13],
+        ]);
+      });
+      // prettier-ignore
+      it("joins existing ranges that are separated by single row, when that row is selected", () => {
+        expect(selectItem("extended", [[8, 10],[12,14]], 11, false, true, 13)).toEqual([
+          [8, 14],
+        ]);
+      });
+
+      // prettier-ignore
+      it("joins an existing selection to an existing ranges, when that single row that separated them is selected", () => {
+        expect(selectItem("extended", [[8, 10],12], 11, false, true, 13)).toEqual([
+          [8, 12],
+        ]);
+      });
+
       it("returns selected items in order", () => {
         expect(selectItem("extended", [2, 9], 7, false, true)).toEqual([
           2, 7, 9,
         ]);
+      });
+      it("works correctly when first row is selected", () => {
+        expect(selectItem("extended", [0], 2, false, true)).toEqual([0, 2]);
+      });
+      it("creates a range by joining single items", () => {
+        expect(selectItem("extended", [1], 2, false, true, 2)).toEqual([
+          [1, 2],
+        ]);
+        expect(selectItem("extended", [2, 4], 3, false, true, 3)).toEqual([
+          [2, 4],
+        ]);
+        expect(selectItem("extended", [0, 2, 4, 7], 3, false, true, 3)).toEqual(
+          [0, [2, 4], 7]
+        );
       });
     });
   });

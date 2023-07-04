@@ -2,7 +2,7 @@ import { execWait, withArgs } from "./utils.mjs";
 
 const buildPackage = async (packageName) =>
   execWait(
-    `npm run --silent build${withArgs("dev", "cjs", "debug")}`,
+    `npm run --silent build${withArgs("dev", "cjs", "debug", "license")}`,
     `packages/${packageName}`
   );
 
@@ -11,6 +11,7 @@ const wave1 = [
   "vuu-data-types",
   "vuu-datagrid-types",
   "vuu-filter-types",
+  "vuu-filter-parser",
   "vuu-protocol-types",
   "vuu-utils",
   "vuu-codemirror",
@@ -20,6 +21,7 @@ const wave2 = ["vuu-data", "vuu-filters", "vuu-popups"];
 const wave3 = [
   "vuu-datatable",
   "vuu-table",
+  "vuu-data-react",
   "vuu-data-ag-grid",
   "vuu-table-extras",
   "vuu-layout",

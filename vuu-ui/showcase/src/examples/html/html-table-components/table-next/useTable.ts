@@ -31,8 +31,6 @@ import { useInitialValue } from "./useInitialValue";
 import { useVirtualViewport } from "./useVirtualViewport";
 import { buildContextMenuDescriptors } from "@finos/vuu-table";
 
-const NO_ROWS = [] as const;
-
 export interface TableHookProps extends MeasuredProps {
   config: Omit<GridConfig, "headings">;
   dataSource: DataSource;
@@ -54,7 +52,6 @@ export const useTable = ({
   onFeatureEnabled,
   onFeatureInvocation,
   onSelectionChange,
-  renderBufferSize = 0,
   rowHeight,
   selectionModel,
   ...measuredProps

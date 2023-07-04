@@ -1,9 +1,6 @@
-import {
-  DataSourceRow,
-  RemoteDataSource,
-  useDataSource,
-  useTypeaheadSuggestions,
-} from "@finos/vuu-data";
+import { RemoteDataSource } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
+import { useDataSource, useTypeaheadSuggestions } from "@finos/vuu-data-react";
 import { metadataKeys, WindowRange } from "@finos/vuu-utils";
 import {
   CollectionProvider,

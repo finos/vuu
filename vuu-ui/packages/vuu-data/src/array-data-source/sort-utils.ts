@@ -1,6 +1,6 @@
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuSort, VuuSortType } from "@finos/vuu-protocol-types";
 import { ColumnMap } from "@finos/vuu-utils";
-import { DataSourceRow } from "../data-source";
 
 type SortDef = [number, VuuSortType];
 type SortPredicate = (

@@ -4,6 +4,11 @@ import { CSSProperties, useMemo } from "react";
 import { useMockFeatureData } from "../utils/mock-data";
 import { useAutoLoginToVuuServer } from "../utils";
 
+import { AutoVuuTable } from "../html/HtmlTable.examples";
+import { registerComponent } from "@finos/vuu-layout";
+
+registerComponent("AutoVuuTable", AutoVuuTable, "view");
+
 const user = { username: "test-user", token: "test-token" };
 
 let displaySequence = 1;

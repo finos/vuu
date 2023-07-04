@@ -1,0 +1,80 @@
+
+body {
+  overflow: hidden;
+}
+
+.vuuShell-mainTabs {
+  border-top: none !important;
+  position: relative;
+}
+  
+  .vuuShell-mainTabs > .saltToolbar {
+    --saltToolbar-height: 36px;
+    --saltTabs-tabstrip-height: 29px;
+    --tabs-tabstrip-height: 29px;
+    background-color: white;
+    left:-1px;
+    padding-bottom: 7px;
+    position: absolute !important;
+    right: 1px;
+    top: 0;
+    width: calc(100% + 2px) !important;
+  } 
+
+  .vuuShell-mainTabs > .vuuTabHeader {
+    border-bottom: none;
+  } 
+
+  .vuuShell-mainTabs > .vuuTabHeader:before {
+    background-color: transparent;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left:0;
+    right:0;
+    height: 8px;
+    border-radius: 0 6px 0 0;
+    border-left: solid 1px #D6D7DA;
+    border-right: solid 1px #D6D7DA;
+    border-top: solid 1px #D6D7DA;
+  }
+
+  .vuuShell-mainTabs > .vuuTabHeader .saltTab {
+    background-color: #F1F2F4;
+    border-color: #D6D7DA;
+    border-radius: 6px 6px 0 0;
+    border-width: 1px;
+    border-style: solid; 
+    position: relative;
+  }
+
+  .vuuShell-mainTabs > .vuuTabHeader .saltTab[aria-selected="true"] {
+    background-color: white;
+    border-bottom-color: white;
+  }
+
+  .vuuShell-mainTabs > .vuuTabHeader .saltTab[aria-selected="true"]:before{
+    background-color: #6d188b;;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left:0;
+    top:0;
+    border-radius: 6px 0 0 0;
+    width: 6px;
+
+  }
+
+
+  .vuuShell-mainTabs > .vuuTabHeader .saltTab-main {
+    --salt-text-fontSize: 12px;
+    background-color: transparent;
+    font-weight: 700;
+    height: 29px;
+    padding: 0 24px;
+  }
+
+
+  .vuuShell-mainTabs > .saltToolbar[aria-orientation="horizontal"] > .Responsive-inner > *:first-child {
+    margin-left: 0;
+}

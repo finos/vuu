@@ -24,8 +24,8 @@ import {
   highlightSpecialChars,
   keymap,
 } from "@codemirror/view";
+import { SyntaxNode, Tree } from "@lezer/common";
 import { styleTags, tags } from "@lezer/highlight";
-import { LRParser } from "@lezer/lr";
 
 // Autocomplete
 export { autocompletion, closeBrackets, startCompletion };
@@ -49,8 +49,8 @@ export type { Extension };
 export { drawSelection, EditorView, highlightSpecialChars, KeyBinding, keymap };
 // Lezer tags
 export { styleTags, tags };
-// Lezer lr
-export { LRParser };
+// Lezer commons
+export { SyntaxNode, Tree };
 
 export * from "./codemirror-basic-setup";
 export * from "./parser-utils";

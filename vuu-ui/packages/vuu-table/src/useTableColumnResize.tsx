@@ -28,6 +28,7 @@ export const useTableColumnResize = ({
 
   const handleResizeStart = useCallback(() => {
     if (onResize && rootRef.current) {
+      console.log("handleResizeStart");
       const { width } = rootRef.current.getBoundingClientRect();
       widthRef.current = Math.round(width);
       isResizing.current = true;

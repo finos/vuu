@@ -56,12 +56,19 @@
   bottom: -5px;
 }
 
-.Splitter:not(column) .grab-zone {
+.Splitter:not(.column) .grab-zone {
   left: -5px;
   right: -5px;
   top: 0;
   bottom: 0;
 }
+
+.active.Splitter:not(.column) .grab-zone {
+  background-color: rgba(255,255,255,.05);
+  left: -150px;
+  right: -150px;
+}
+
 
 .Splitter:not(.column):before {
   width: 1px;

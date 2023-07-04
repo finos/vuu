@@ -5,7 +5,7 @@ import {
   useContext,
   useEffect,
   useRef,
-  useState
+  useState,
 } from "react";
 import {
   LayoutActionType,
@@ -14,12 +14,12 @@ import {
   layoutReducer,
   LayoutReducerAction,
   layoutToJSON,
-  processLayoutElement
+  processLayoutElement,
 } from "../layout-reducer";
 import { findTarget, getChildProp, getProps, typeOf } from "../utils";
 import {
   LayoutProviderContext,
-  LayoutProviderDispatch
+  LayoutProviderDispatch,
 } from "./LayoutProviderContext";
 import { useLayoutDragDrop } from "./useLayoutDragDrop";
 
@@ -86,15 +86,18 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   const layoutActionDispatcher: LayoutProviderDispatch = useCallback(
     (action) => {
-      switch(action.type) {
+      switch (action.type) {
         case "drag-start": {
-          prepareToDragLayout(action); break
+          prepareToDragLayout(action);
+          break;
         }
         case "save": {
-          serializeState(state.current); break
+          serializeState(state.current);
+          break;
         }
         default: {
-          dispatchLayoutAction(action); break
+          dispatchLayoutAction(action);
+          break;
         }
       }
     },

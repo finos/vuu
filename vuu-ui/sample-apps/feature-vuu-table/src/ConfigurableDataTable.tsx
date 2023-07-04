@@ -1,7 +1,7 @@
-import { DatagridSettingsPanel } from "@finos/vuu-table-extras";
 import { GridConfig } from "@finos/vuu-datagrid-types";
-import { Table, TableProps } from "@finos/vuu-table";
 import { Dialog } from "@finos/vuu-popups";
+import { Table, TableProps } from "@finos/vuu-table";
+import { DatagridSettingsPanel } from "@finos/vuu-table-extras";
 import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
 import { ReactElement, useCallback, useRef, useState } from "react";
 

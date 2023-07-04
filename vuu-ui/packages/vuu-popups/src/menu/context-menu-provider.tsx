@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useCallback, useMemo } from "react";
+import { ContextMenuItemDescriptor } from "@finos/vuu-data-types";
 
 export type MenuActionHandler = (
   type: string,
@@ -17,30 +18,6 @@ export interface ContextMenuContext {
 export const ContextMenuContext = createContext<ContextMenuContext | null>(
   null
 );
-
-export interface ContextMenuItemBase {
-  icon?: string;
-  label: string;
-  location?: string;
-}
-
-export interface ContextMenuLeafItemDescriptor extends ContextMenuItemBase {
-  action: string;
-  options?: unknown;
-}
-
-export interface ContextMenuGroupItemDescriptor extends ContextMenuItemBase {
-  children: ContextMenuItemDescriptor[];
-}
-
-export type ContextMenuItemDescriptor =
-  | ContextMenuLeafItemDescriptor
-  | ContextMenuGroupItemDescriptor;
-
-export const isGroupMenuItemDescriptor = (
-  menuItem?: ContextMenuItemDescriptor
-): menuItem is ContextMenuGroupItemDescriptor =>
-  menuItem !== undefined && "children" in menuItem;
 
 export interface ContextMenuProviderProps {
   children: ReactNode;

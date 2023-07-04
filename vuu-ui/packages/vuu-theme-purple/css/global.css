@@ -1,0 +1,37 @@
+/**
+ * Have some global styles to simulate more realistic app. Currently only for Storybook.
+ */
+
+ .vuu-purple-theme {
+  color: var(--salt-text-primary-foreground);
+  font-family: var(--salt-typography-fontFamily);
+  font-size: var(--salt-text-fontSize);
+  letter-spacing: var(--salt-text-letterSpacing);
+  line-height: var(--salt-text-lineHeight);
+
+  /* until we find the right place for these */
+  --vuuMenuItem-height: 21px;
+  --vuuMenuItem-borderColor: #EDEDED;
+  --vuuMenuItem-borderStyle: none none solid none;
+
+  --vuuMenuList-borderColor: #6D18BD;
+  --vuuMenuList-color: #606477;
+  --vuuMenuList-fontSize: 12px;
+  --vuuMenuList-padding: 8px;
+}
+
+.vuu-purple-theme[data-mode="light"] {
+  color-scheme: light;
+}
+
+.vuu-purple-theme[data-mode="dark"] {
+  color-scheme: dark;
+}
+
+/* Setting every element's box-sizing to border-box ensures the declared width
+of the element is never exceeded due to padding or border. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

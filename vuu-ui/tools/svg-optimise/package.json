@@ -1,0 +1,16 @@
+{
+  "name": "svg-optimize",
+  "version": "0.0.1",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node ./svg-optimise.js"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "module",
+  "license": "ISC",
+  "dependencies": {
+    "svg-parser": "^2.0.4"
+  }
+}

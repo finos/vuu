@@ -10,6 +10,7 @@ const packages = [
   "packages/vuu-layout",
   "packages/vuu-shell",
   "packages/vuu-filters",
+  "packages/vuu-filter-parser",
   "sample-apps/app-vuu-example",
   "sample-apps/feature-filtered-grid",
   "sample-apps/feature-vuu-blotter",
