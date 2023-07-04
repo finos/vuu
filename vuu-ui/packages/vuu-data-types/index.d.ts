@@ -51,3 +51,18 @@ export interface ContextMenuGroupItemDescriptor extends ContextMenuItemBase {
 export type ContextMenuItemDescriptor =
   | ContextMenuLeafItemDescriptor
   | ContextMenuGroupItemDescriptor;
+
+export type MenuBuilder<L = string, O = unknown> = (
+  location: L,
+  options: O
+) => ContextMenuItemDescriptor[];
+
+export type MenuActionHandler = (
+  type: string,
+  options: unknown
+) => boolean | undefined;
+
+export interface ContextMenuContextType {
+  menuBuilders: MenuBuilder[];
+  menuActionHandler: MenuActionHandler;
+}

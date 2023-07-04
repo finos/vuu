@@ -1,21 +1,11 @@
+import type {
+  ContextMenuContextType,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@finos/vuu-data-types";
 import { createContext, ReactNode, useCallback, useMemo } from "react";
-import { ContextMenuItemDescriptor } from "@finos/vuu-data-types";
 
-export type MenuActionHandler = (
-  type: string,
-  options: unknown
-) => boolean | undefined;
-export type MenuBuilder<L = string, O = unknown> = (
-  location: L,
-  options: O
-) => ContextMenuItemDescriptor[];
-
-export interface ContextMenuContext {
-  menuBuilders: MenuBuilder[];
-  menuActionHandler: MenuActionHandler;
-}
-
-export const ContextMenuContext = createContext<ContextMenuContext | null>(
+export const ContextMenuContext = createContext<ContextMenuContextType | null>(
   null
 );
 
@@ -27,7 +17,7 @@ export interface ContextMenuProviderProps {
 }
 
 interface ProviderProps extends ContextMenuProviderProps {
-  context: ContextMenuContext | null;
+  context: ContextMenuContextType | null;
 }
 
 const Provider = ({

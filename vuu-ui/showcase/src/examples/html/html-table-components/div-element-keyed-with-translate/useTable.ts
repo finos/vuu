@@ -11,7 +11,6 @@ export const useTable = ({
   config,
   dataSource,
   headerHeight,
-  renderBufferSize = 0,
   rowHeight = 30,
   tableRef,
 }: {
@@ -22,7 +21,7 @@ export const useTable = ({
   rowHeight?: number;
   tableRef: RefObject<HTMLDivElement>;
 }) => {
-  const [rowCount, setRowCount] = useState<number>(0);
+  const [rowCount] = useState<number>(0);
   const containerMeasurements = useMeasuredContainer();
   const columnMap = useMemo(
     () => buildColumnMap(config.columns.map((col) => col.name)),

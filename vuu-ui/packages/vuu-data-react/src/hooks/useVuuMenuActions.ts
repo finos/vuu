@@ -13,10 +13,10 @@ import {
 import {
   ContextMenuItemDescriptor,
   DataSourceRow,
+  MenuBuilder,
 } from "@finos/vuu-data-types";
 import { GridAction } from "@finos/vuu-datagrid-types";
 import { getFilterPredicate } from "@finos/vuu-filter-parser";
-import { MenuBuilder } from "@finos/vuu-popups";
 import {
   ClientToServerMenuCellRPC,
   ClientToServerMenuRowRPC,
