@@ -17,7 +17,8 @@ const columnExpressionLanguage = LRLanguage.define({
         Operator: tag.operator,
       }),
     ],
-  }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) as any,
 });
 
 export const columnExpressionLanguageSupport = () => {

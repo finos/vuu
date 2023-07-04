@@ -1,4 +1,7 @@
-import { RowGenerator } from "./vuu-row-generator";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ExtendedColumnConfig } from "./useTableConfig";
+import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
+import { schemas } from "./useSchemas";
 
 function random(min: number, max: number) {
   min = Math.ceil(min);
@@ -7,7 +10,7 @@ function random(min: number, max: number) {
 }
 
 const chars = Array.from("ABCDEFGHIJKLMNOPQRST");
-const locations = {
+const locations: { [key: string]: string[] } = {
   L: ["London PLC", "XLON/LSE-SETS"],
   N: ["Corporation", "XNGS/NAS-GSM"],
   AS: ["B.V.", "XAMS/ENA-MAIN"],
@@ -19,8 +22,6 @@ const locations = {
 };
 const suffixes = ["L", "N", "OQ", "AS", "PA", "MI", "FR", "AT"];
 const currencies = ["CAD", "GBX", "USD", "EUR", "GBP"];
-
-const data: any[] = [];
 
 /*
     each top level loop (20 x 'A...') has 64,000 iterations of nested loops, 
@@ -35,54 +36,6 @@ const data: any[] = [];
 */
 
 const maxIndex = 20 * 20 * 20 * 20 * 8;
-console.log({ maxIndex });
-
-// generateRow(1_000);
-// generateRow(1_001);
-// generateRow(1_002);
-// generateRow(1_003);
-// generateRow(1_004);
-// generateRow(1_005);
-// generateRow(1_006);
-// generateRow(1_007);
-// generateRow(1_008);
-// generateRow(1_009);
-// generateRow(50_000);
-// generateRow(50_026);
-// generateRow(100_000);
-
-// console.time("generate");
-// chars.forEach((c0) => {
-//   //first level loop, 20 loops (of 64,000 nested iterations)
-//   chars.forEach((c1) => {
-//     //second level loop,  20 loops (of 3,200 nested iterations))
-//     chars.forEach((c2) => {
-//       //third level loop, 20 loops (of 160 nested iterations)
-//       chars.forEach((c3) => {
-//         //fourth level loop, 20 loops (of 8 nested iterations)
-//         suffixes.forEach((suffix) => {
-//           // fifth level loop, 8 loops, no nested iterations
-//           const ric = `${c0}${c1}${c2}${c3}.${suffix}`;
-//           const bbg = `${c0}${c1}${c2}${c3} ${suffix}`;
-//           const isin = `${c0}${c1}${c2}${c3}`;
-//           const description = `${ric} ${locations[suffix][0]}`;
-//           data.push({
-//             bbg,
-//             ric,
-//             isin,
-//             description,
-//             currency: currencies[random(0, 4)],
-//             exchange: locations[suffix][1],
-//             lotsize: random(10, 1000),
-//           });
-//         });
-//       });
-//     });
-//   });
-// });
-// console.timeEnd("generate");
-
-console.log(`instruments data-generator created ${data.length} rows`);
 
 export const InstrumentRowGenerator: RowGenerator = () => (index: number) => {
   if (index > maxIndex) {
@@ -100,16 +53,6 @@ export const InstrumentRowGenerator: RowGenerator = () => (index: number) => {
   const index4 = Math.floor(remainder3 / 8);
   const remainder4 = remainder3 % 8;
 
-  //   console.log(
-  //     `index = ${index},
-  //         char[0] = ${chars[index1]}, remainder = ${remainder1}
-  //         char[1] = ${chars[index2]}, remainder = ${remainder2}
-  //         char[2] = ${chars[index3]}, remainder = ${remainder3}
-  //         char[4] = ${chars[index4]}, remainder = ${remainder4}
-  //         suffix = -${suffixes[remainder4]}
-  //         `
-  //   );
-
   const suffix = suffixes[remainder4];
 
   const ric = `${chars[index1]}${chars[index2]}${chars[index3]}${chars[index4]}.${suffix}`;
@@ -120,4 +63,20 @@ export const InstrumentRowGenerator: RowGenerator = () => (index: number) => {
   const exchange = locations[suffix][1];
   const lotSize = random(10, 1000);
   return [bbg, currency, description, exchange, isin, lotSize, ric];
+};
+
+export const InstrumentColumnGenerator: ColumnGenerator = (
+  columns = [],
+  columnConfig: ExtendedColumnConfig = {}
+) => {
+  console.log({ columnConfig });
+  const instrumentColumns: ColumnDescriptor[] = schemas.instruments.columns;
+  if (typeof columns === "number") {
+    throw Error("InstrumentColumnGenerator must be passed columns (strings)");
+  } else if (columns.length === 0) {
+    return instrumentColumns;
+  } else {
+    // TODO return just erquested columns and apply extended config
+    return instrumentColumns;
+  }
 };

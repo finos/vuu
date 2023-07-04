@@ -107,7 +107,7 @@ export const DivElementKeyedWithTranslateInlineScrollbarsCssVariables = ({
                   columnMap={columnMap}
                   columns={columns}
                   key={data[RENDER_IDX]}
-                  data={data}
+                  row={data}
                   offset={rowHeight * data[IDX] + headerHeight}
                 />
               ))}
