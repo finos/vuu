@@ -4,10 +4,10 @@ import {
   EditorState,
   getNodeByName,
   getValue,
+  SyntaxNode,
   syntaxTree,
 } from "@finos/vuu-codemirror";
 import { Filter } from "@finos/vuu-filter-types";
-import { SyntaxNode } from "@lezer/common";
 import { MutableRefObject, useCallback } from "react";
 import {
   IFilterSuggestionProvider,

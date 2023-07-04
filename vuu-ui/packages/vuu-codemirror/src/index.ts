@@ -24,7 +24,8 @@ import {
   highlightSpecialChars,
   keymap,
 } from "@codemirror/view";
-import { SyntaxNode, Tree } from "@lezer/common";
+import type { SyntaxNode } from "@lezer/common";
+import { Tree } from "@lezer/common";
 import { styleTags, tags } from "@lezer/highlight";
 
 // Autocomplete

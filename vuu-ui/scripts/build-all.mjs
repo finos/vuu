@@ -17,8 +17,9 @@ const wave1 = [
   "vuu-codemirror",
   "vuu-theme",
 ];
-const wave2 = ["vuu-data", "vuu-filters", "vuu-popups"];
-const wave3 = [
+const wave2 = ["vuu-data"];
+const wave3 = ["vuu-filters", "vuu-popups"];
+const wave4 = [
   "vuu-datatable",
   "vuu-table",
   "vuu-data-react",
@@ -31,3 +32,4 @@ const wave3 = [
 await Promise.all(wave1.map(buildPackage));
 await Promise.all(wave2.map(buildPackage));
 await Promise.all(wave3.map(buildPackage));
+await Promise.all(wave4.map(buildPackage));
