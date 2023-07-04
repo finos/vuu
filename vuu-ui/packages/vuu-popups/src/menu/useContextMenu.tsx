@@ -7,13 +7,10 @@ import { isGroupMenuItemDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
 import { MouseEvent, useCallback, useContext } from "react";
 import { PopupService } from "../popup";
-import {
-  ContextMenuContext,
-  MenuActionHandler,
-  MenuBuilder,
-} from "./context-menu-provider";
+import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
+import { ContextMenuContext } from "./context-menu-provider";
 
 export type ContextMenuOptions = {
   [key: string]: unknown;

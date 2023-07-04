@@ -11,16 +11,14 @@ export const DivElementWithTranslate = ({
   config,
   dataSource,
   headerHeight = 30,
-  height,
   renderBufferSize = 5,
   rowHeight = 30,
-  width,
 }: TableProps) => {
   const tableRef = useRef<HTMLDivElement>(null);
   const {
     columnMap,
     columns,
-    containerMeasurements: { containerRef, innerSize, outerSize },
+    containerMeasurements: { containerRef },
     data,
     handleScroll,
     firstRowIndex,
@@ -75,7 +73,7 @@ export const DivElementWithTranslate = ({
                 columnMap={columnMap}
                 columns={columns}
                 key={data[0]}
-                data={data}
+                row={data}
                 offset={30 * (firstRowIndex + i + 1)}
               />
             ))}

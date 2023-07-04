@@ -1,8 +1,7 @@
 /* eslint-disable no-sequences */
 import { DataSource } from "@finos/vuu-data";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, MenuActionHandler } from "@finos/vuu-data-types";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { MenuActionHandler } from "@finos/vuu-popups";
 import { removeColumnFromFilter, setAggregations } from "@finos/vuu-utils";
 import { AggregationType } from "../constants";
 import { GridModelDispatch } from "../grid-context";

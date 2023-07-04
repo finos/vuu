@@ -5,6 +5,12 @@ import { useSchemas } from "./useSchemas";
 
 type PathMap = { [key: string]: Pick<FeatureConfig, "css" | "url"> };
 
+// This simulates the 'Features' loaded dynamically by the Vuu Shell.
+// See showcase/src/features for the implementations. The Features
+// are loaded from source in dev mode and from a pre-built bundle
+// in prod mode, hence the two sets of config below.
+// Features are dynamically loaded components which can consume Vuu
+// table data.
 const componentPaths: { [key: string]: PathMap } = {
   development: {
     VuuBlotterMockData: {
@@ -32,20 +38,11 @@ const MOCK_FEATURES: Features = {
 
 export const useMockFeatureData = () => {
   const { schemas: vuuSchemas } = useSchemas();
-
   const schemas = useMemo(() => {
     const schemaMap = new Map<string, TableSchema>();
-
     for (const [name, schema] of Object.entries(vuuSchemas)) {
-      schemaMap.set(name, {
-        table: schema.table,
-        columns: schema.columns.map((col) => ({
-          name: col.name,
-          serverDataType: col.serverDataType ?? "string",
-        })),
-      });
+      schemaMap.set(name, schema);
     }
-
     return schemaMap;
   }, [vuuSchemas]);
 
