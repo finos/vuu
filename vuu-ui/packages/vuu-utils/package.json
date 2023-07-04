@@ -11,7 +11,6 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
-    "@finos/vuu-data": "0.0.26",
     "@finos/vuu-datagrid-types": "0.0.26",
     "@finos/vuu-filter-types": "0.0.26",
     "@finos/vuu-protocol-types": "0.0.26"
