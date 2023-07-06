@@ -1,0 +1,31 @@
+digraph regexp { 
+	 rankdir="LR"	 node [fontsize=10, shape=box, height=0.25]	 edge [fontsize=10]	 ne [label="e", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 nj [label="j", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 nf [label="f", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 na [label="a", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 ni [label="i", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 nb [label="b", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 ng [label="g", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 nk [label="k", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 nd [label="d", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 nc [label="c", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 nh [label="h", URL="https://godoc.org/regexp", tooltip="Package regexp implements regular expression search."]; 
+	 na -> nc ; 
+	 nc -> ne ; 
+	 ne -> ng ; 
+	 ne -> nf ; 
+	 ne -> nh ; 
+	 nh -> nk ; 
+	 nc -> nd ; 
+	 nd -> ng ; 
+	 nb -> nc ; 
+	 nc -> ne ; 
+	 ne -> ng ; 
+	 ne -> nf ; 
+	 ne -> nh ; 
+	 nh -> nk ; 
+	 nc -> nd ; 
+	 nd -> ng ; 
+	 nb -> ni ; 
+	 ni -> nj ; 
+}

@@ -7,8 +7,11 @@ import {
   Toolbar,
   ToolbarField,
 } from "@heswell/salt-lab";
-import { CSSProperties, useCallback, useState } from "react";
+import { CSSProperties, useCallback, useMemo, useState } from "react";
 import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
+import { ArrayDataSource } from "@finos/vuu-data";
+import { faker } from '@faker-js/faker';
+import { parseFilter } from "@finos/vuu-filter-parser";
 
 let displaySequence = 1;
 
@@ -309,3 +312,126 @@ export const FlexLayoutTables = () => {
   );
 };
 FlexLayoutTables.displaySequence = displaySequence++;
+
+function createArray(numofrows: number, numofcolumns: number) {
+  const result = [];
+
+  for (let i = 0; i < numofrows; i++) {
+    let FakerDataGenerator = [
+      faker.company.name(),
+      faker.finance.currencyCode(),
+      faker.finance.amount({ min: 5, max: 10, dec: 2}),
+      faker.finance.amount({ min: 100, max: 2000, dec: 0}),
+      faker.finance.transactionType(),
+      faker.finance.transactionDescription(),
+      faker.date.anytime(),
+      faker.finance.accountName(),
+      faker.finance.accountNumber(),
+      faker.commerce.department(),
+      faker.commerce.product(),
+      faker.finance.amount({ min: 5, max: 10, dec: 2}),
+      faker.finance.amount({ min: 5, max: 10, dec: 2}),
+      faker.finance.amount({ min: 5, max: 10, dec: 2}),
+      faker.finance.amount({ min: 5, max: 10, dec: 2}),
+      faker.finance.amount({ min: 5, max: 10, dec: 2}),
+      faker.finance.amount({ min: 5, max: 10, dec: 2}),
+      faker.finance.amount({ min: 5, max: 10, dec: 2}),
+      faker.finance.amount({ min: 5, max: 10, dec: 2}),
+      faker.finance.amount({ min: 5, max: 10, dec: 2}),
+    ]
+    result.push([
+      i+1,
+      FakerDataGenerator[0],
+      FakerDataGenerator[1],
+      FakerDataGenerator[2],
+      FakerDataGenerator[3],
+      String(Math.floor(Number(FakerDataGenerator[2])*Number(FakerDataGenerator[3]))),
+      FakerDataGenerator[4],
+      FakerDataGenerator[5],
+      FakerDataGenerator[6],
+      FakerDataGenerator[7],
+      FakerDataGenerator[8],
+      FakerDataGenerator[9],
+      FakerDataGenerator[10],
+      FakerDataGenerator[11],
+      FakerDataGenerator[12],
+      FakerDataGenerator[13],
+      FakerDataGenerator[14],
+      FakerDataGenerator[15],
+      FakerDataGenerator[16],
+      FakerDataGenerator[17],
+      FakerDataGenerator[18],
+    ]);
+  }
+
+  return result;
+}
+
+
+const columns = [
+  {name: 'row number', width: 150},
+  {name: 'name', width: 100},
+  {name: 'currency', width: 100},
+  {name: 'price', width: 100},
+  {name: 'lot size', width: 100},
+  {name: 'order size', width: 100},
+  {name: 'order type', width: 100},
+  {name: 'order description', width: 100},
+  {name: 'order date', width: 100},
+  {name: 'account name', width: 100},
+  {name: 'account number', width: 100},
+  {name: 'department', width: 100},
+  {name: 'industry', width: 100},
+  {name: 'PE ratio', width: 100},
+  {name: 'EPS', width: 100},
+  {name: 'market cap', width: 100},
+  {name: 'volume', width: 100},
+  {name: 'beta', width: 100},
+  {name: 'dividend', width: 100},
+  {name: 'yield', width: 100},
+  {name: 'return on equity', width: 100},
+  ]
+
+const numofrows = 10000;
+const numofcolumns = columns.length;
+const newArray = createArray(numofrows, numofcolumns);
+
+const config = {columns}
+const data = newArray
+
+export const SmaTable = () => {
+  console.log({config})
+
+  const [inputValue, setInputValue] = useState('');
+
+  const dataSource = useMemo(() => {
+  return new ArrayDataSource({columnDescriptors: columns, data: data})
+  } , [])
+
+  const handleInputChange = useCallback((event) => {
+    setInputValue(event.target.value);
+  }, []);
+
+  const handleOnClick = useCallback(() => {
+    const filter = inputValue//'industry = "Bike"'
+    const filterStruct = parseFilter(filter)
+    dataSource.filter = { filter, filterStruct };
+  }, [dataSource, inputValue]);
+  
+  return (
+    <>
+    <input type="text" value={inputValue} onChange={handleInputChange} />
+    <button onClick={handleOnClick}>filter</button>
+
+      <Table
+        config={config}
+        dataSource={dataSource}
+        headerHeight={30}
+        height={645}
+        renderBufferSize={20}
+        rowHeight={30}
+        width={715} />
+    </>
+  );
+};
+SmaTable.displaySequence = displaySequence++;
