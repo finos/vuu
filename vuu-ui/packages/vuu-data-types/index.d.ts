@@ -52,11 +52,26 @@ export type ContextMenuItemDescriptor =
   | ContextMenuLeafItemDescriptor
   | ContextMenuGroupItemDescriptor;
 
+/**
+ * MenuBuilder describes a factory function that creates
+ * Menu Item Descriptors appropriate to the supplied
+ * location. Location can be any string identifier, it
+ * will be used to determine which Menu Items to include
+ * in the menu. Most often used for ContextMenus.
+ */
 export type MenuBuilder<L = string, O = unknown> = (
   location: L,
   options: O
 ) => ContextMenuItemDescriptor[];
 
+/**
+ * MenuActionHandler describes a function that provides an implementation of
+ * one or more MenuItem actions. It will receive the type from the MenuItem
+ * clicked, plus any options object associated with that MenuItem.
+ *
+ * It should return true if it handled this MenuItem. This allows multiple Menu-
+ * ActionHandlers to be chained.
+ */
 export type MenuActionHandler = (
   type: string,
   options: unknown

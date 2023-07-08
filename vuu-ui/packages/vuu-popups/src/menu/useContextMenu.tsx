@@ -20,8 +20,11 @@ export type ContextMenuOptions = {
   };
 };
 
-// The argument allows a top-level menuBuilder to operate outside the Contect
-export const useContextMenu = (menuBuilder?: MenuBuilder) => {
+// The argument allows a top-level menuBuilder to operate outside the Context
+export const useContextMenu = (
+  menuBuilder?: MenuBuilder,
+  menuActionHandler?: MenuActionHandler
+) => {
   const ctx = useContext(ContextMenuContext);
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
 
@@ -57,11 +60,14 @@ export const useContextMenu = (menuBuilder?: MenuBuilder) => {
         console.log({
           menuItemDescriptors,
         });
-        if (menuItemDescriptors.length && ctx?.menuActionHandler) {
+
+        const menuHandler = menuActionHandler ?? ctx?.menuActionHandler;
+
+        if (menuItemDescriptors.length && menuHandler) {
           console.log(`showContextMenu ${location}`, {
             options,
           });
-          showContextMenu(e, menuItemDescriptors, ctx.menuActionHandler, {
+          showContextMenu(e, menuItemDescriptors, menuHandler, {
             ...ContextMenuProps,
             className: cx(
               ContextMenuProps?.className,
@@ -83,6 +89,7 @@ export const useContextMenu = (menuBuilder?: MenuBuilder) => {
       ctx?.menuBuilders,
       dataMode,
       densityClass,
+      menuActionHandler,
       menuBuilder,
       themeClass,
     ]
