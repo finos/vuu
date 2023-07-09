@@ -1,5 +1,6 @@
 /* Component class applied to the root element */
 .vuuTabstrip {
+  --vuuOverflowContainer-background: transparent;
   --tabs-tabstrip-height: var(--saltTabs-tabstrip-height, var(--salt-size-stackable));
   --tabs-tabstrip-dragging-display: none;
   --tabs-tabstrip-display: inline-flex;

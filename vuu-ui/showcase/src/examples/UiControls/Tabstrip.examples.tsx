@@ -1,4 +1,9 @@
-import { Tab, Tabstrip, TabDescriptor } from "@finos/vuu-ui-controls";
+import {
+  Tab,
+  Tabstrip,
+  TabstripNext,
+  TabDescriptor,
+} from "@finos/vuu-ui-controls";
 import {
   Dialog,
   DialogActions,
@@ -12,6 +17,37 @@ import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
 import "./Tabstrip.examples.css";
 
 const SPLITTER_WIDTH = 3;
+
+export const DefaultTabstripNext = ({ width = 350 }) => {
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
+  return (
+    <LayoutProvider>
+      <FlexboxLayout
+        style={{ height: 200, width: width + SPLITTER_WIDTH }}
+        path=""
+      >
+        <div data-resizeable style={{ flex: 1 }}>
+          <TabstripNext
+            activeTabIndex={activeTabIndex}
+            onActiveChange={setActiveTabIndex}
+          >
+            {tabs.map((label, i) => (
+              <Tab
+                key={label}
+                label={label}
+                ariaControls={
+                  i === activeTabIndex ? `ts-panel-${i}` : undefined
+                }
+              />
+            ))}
+          </TabstripNext>
+        </div>
+        <div data-resizeable />
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
 
 export const DefaultTabstrip = ({ width = 350 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);

@@ -1,7 +1,7 @@
 // TODO close button needs to be a button. Hence tab needs to include 2 buttons
-import { Button, ButtonProps, makePrefixer, useForkRef } from "@salt-ds/core";
-import { CloseIcon, CloseSmallIcon } from "@salt-ds/icons";
-import { clsx } from "clsx";
+import { Button, ButtonProps, useForkRef } from "@salt-ds/core";
+import { CloseIcon } from "@salt-ds/icons";
+import cx from "classnames";
 import {
   FocusEvent,
   ForwardedRef,
@@ -22,28 +22,22 @@ import { EditableLabel, EditableLabelProps } from "../editable-label";
 // import tabCss from "./Tab.css";
 import "./Tab.css";
 
+const classBase = "vuuTab";
+
 const noop = () => undefined;
 
-const withBaseName = makePrefixer("saltTab");
-
-//TODO not ideal - duplicating the Icon then hiding one in css based on density - is there a nicer way ?
 const CloseTabButton = (props: ButtonProps) => (
-  // FIXME: use polymorphic button
   <Button
     {...props}
     aria-label="Close Tab (Delete or Backspace)"
-    className={withBaseName("closeButton")}
+    className={`${classBase}-closeButton`}
     tabIndex={undefined}
     title="Close Tab (Delete or Backspace)"
     variant="secondary"
   >
     <CloseIcon
       aria-label="Close Tab (Delete or Backspace)"
-      className={withBaseName("close-icon")}
-    />
-    <CloseSmallIcon
-      aria-label="Close Tab (Delete or Backspace)"
-      className={withBaseName("close-icon-small")}
+      className={`${classBase}-close-icon`}
     />
   </Button>
 );
@@ -176,12 +170,12 @@ export const Tab = forwardRef(function Tab(
       {...props}
       aria-controls={ariaControls}
       aria-selected={selected}
-      className={clsx(withBaseName(), {
-        [withBaseName("closeable")]: closeable,
-        [withBaseName("closeHover")]: closeHover,
-        [withBaseName("dragAway")]: dragging,
-        [withBaseName("editing")]: editing,
-        [withBaseName("vertical")]: orientation === "vertical",
+      className={cx(classBase, {
+        [`${classBase}-closeable`]: closeable,
+        [`${classBase}-closeHover`]: closeHover,
+        [`${classBase}-dragAway`]: dragging,
+        [`${classBase}-editing`]: editing,
+        [`${classBase}-vertical`]: orientation === "vertical",
         [`saltFocusVisible`]: focusVisible,
       })}
       data-editable={editable || undefined}
@@ -194,9 +188,9 @@ export const Tab = forwardRef(function Tab(
       role="tab"
       tabIndex={tabIndex}
     >
-      <div className={withBaseName("main")}>
+      <div className={`${classBase}-main`}>
         <span
-          className={withBaseName("text")}
+          className={`${classBase}-text`}
           // data-text is important, it determines the width of the tab. A pseudo
           // element assigns data-text as content. This is styled as selected tab
           // text. That means width of tab always corresponds to its selected state,

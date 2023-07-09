@@ -1,0 +1,336 @@
+import { useControlled } from "@salt-ds/core";
+import {
+  FocusEvent,
+  FocusEventHandler,
+  KeyboardEvent,
+  MouseEvent,
+  MouseEventHandler,
+  RefObject,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowLeft,
+  ArrowRight,
+  Home,
+  End,
+} from "../common-hooks";
+
+type orientationType = "horizontal" | "vertical";
+type directionType = "bwd" | "fwd" | "start" | "end";
+type directionMap = { [key: string]: directionType };
+const navigation = {
+  horizontal: {
+    [Home]: "start",
+    [End]: "end",
+    [ArrowLeft]: "bwd",
+    [ArrowRight]: "fwd",
+  } as directionMap,
+  vertical: {
+    [Home]: "start",
+    [End]: "end",
+    [ArrowUp]: "bwd",
+    [ArrowDown]: "fwd",
+  } as directionMap,
+};
+
+const isNavigationKey = (
+  key: string,
+  orientation: orientationType = "horizontal"
+) => navigation[orientation][key] !== undefined;
+
+function nextItemIdx(count: number, direction: directionType, idx: number) {
+  if (direction === "start") {
+    return 0;
+  } else if (direction === "end") {
+    return count - 1;
+  } else if (direction === "bwd") {
+    if (idx > 0) {
+      return idx - 1;
+    } else {
+      return idx;
+    }
+  } else {
+    if (idx === null) {
+      return 0;
+    } else if (idx === count - 1) {
+      return idx;
+    } else {
+      return idx + 1;
+    }
+  }
+}
+
+const isFocusable = (element: HTMLElement | null) =>
+  element !== null && !element.classList.contains("wrapped");
+
+const getElementByPosition = (container: HTMLElement | null, index: number) =>
+  container
+    ? (container.querySelector(`[data-index="${index}"]`) as HTMLElement)
+    : null;
+
+const getFocusableElement = (el: HTMLElement | null) =>
+  el
+    ? el.hasAttribute("tabindex")
+      ? el
+      : (el.querySelector("[tabindex]") as HTMLElement)
+    : null;
+
+export interface ContainerNavigationProps {
+  onBlur: FocusEventHandler;
+  onFocus: FocusEventHandler;
+  onMouseDownCapture: MouseEventHandler;
+  onMouseLeave: MouseEventHandler;
+}
+
+interface TabstripNavigationHookProps {
+  containerRef: RefObject<HTMLElement>;
+  defaultHighlightedIdx?: number;
+  highlightedIdx?: number;
+  keyBoardActivation?: "manual" | "automatic";
+  orientation: orientationType;
+  selectedIndex: number | null;
+}
+
+interface TabstripNavigationHookResult {
+  containerProps: ContainerNavigationProps;
+  highlightedIdx: number;
+  focusTab: (
+    tabIndex: number,
+    immediateFocus?: boolean,
+    withKeyboard?: boolean
+  ) => void;
+  focusVisible: number;
+  focusIsWithinComponent: boolean;
+  onClick: (evt: MouseEvent, tabIndex: number) => void;
+  onFocus: (evt: FocusEvent<HTMLElement>) => void;
+  onKeyDown: (evt: KeyboardEvent) => void;
+}
+
+export const useKeyboardNavigation = ({
+  containerRef,
+  defaultHighlightedIdx = -1,
+  highlightedIdx: highlightedIdxProp,
+  keyBoardActivation,
+  orientation,
+  selectedIndex: selectedTabIndex = 0,
+}: TabstripNavigationHookProps): TabstripNavigationHookResult => {
+  const manualActivation = keyBoardActivation === "manual";
+  const mouseClickPending = useRef(false);
+  const focusedRef = useRef<number>(-1);
+  const [hasFocus, setHasFocus] = useState(false);
+  const [, forceRefresh] = useState({});
+  const [highlightedIdx, _setHighlightedIdx] = useControlled({
+    controlled: highlightedIdxProp,
+    default: defaultHighlightedIdx,
+    name: "UseKeyboardNavigation",
+  });
+
+  const setHighlightedIdx = useCallback(
+    (value: number) => {
+      _setHighlightedIdx((focusedRef.current = value));
+    },
+    [_setHighlightedIdx]
+  );
+
+  const keyboardNavigation = useRef(false);
+
+  const focusTab = useCallback(
+    (tabIndex: number, immediateFocus = false, withKeyboard?: boolean) => {
+      // The timeout is important in two scenarios:
+      // 1) where tab has overflowed and is being selected from overflow menu.
+      // We must not focus it until the overflow mechanism + render has restored
+      // it to the main display.
+      // 2) when we are focussing a new tab
+      // We MUST NOT delay focus when using keyboard nav, else when focus moves from
+      // close button (focus ring styled by :focus-visible) to Tab label (focus ring
+      // styled by css class) focus style will briefly linger on both.
+      console.log(`focusTab ${tabIndex}`);
+      setHighlightedIdx(tabIndex);
+
+      if (withKeyboard === true && !keyboardNavigation.current) {
+        keyboardNavigation.current = true;
+      }
+
+      const setFocus = () => {
+        const element = getElementByPosition(containerRef.current, tabIndex);
+
+        if (element) {
+          const focussableElement = getFocusableElement(element);
+          focussableElement?.focus();
+        }
+      };
+      if (immediateFocus) {
+        setFocus();
+      } else {
+        setTimeout(setFocus, 70);
+      }
+    },
+    [containerRef, setHighlightedIdx]
+  );
+
+  const onFocus = (e: FocusEvent<HTMLElement>) => {
+    // If focus is received by keyboard navigation, item with tabindex 0 will receive
+    // focus. If the item receiving focus has tabindex -1, then focus has been set
+    // programatically. We must respect this and not reset focus to selected tab.
+    if (focusedRef.current === -1) {
+      // Focus is entering tabstrip. Assume keyboard - if it'a actually mouse-driven,
+      // the click event will have set correct value.
+      if (e.target.tabIndex === -1) {
+        // Do nothing, assume focus is being passed back to button by closing dialog. Might need
+        // to revisit this and add code here if we may get focus set programatically in other ways.
+      } else {
+        setTimeout(() => {
+          // The selected tab will have tabIndex 0 make sure our internal state is aligned.
+          if (focusedRef.current === -1 && selectedTabIndex !== null) {
+            setHighlightedIdx(selectedTabIndex);
+          }
+        }, 200);
+      }
+    }
+  };
+
+  const getIndexCount = useCallback(
+    () => containerRef.current?.querySelectorAll(`[data-index]`).length ?? 0,
+    [containerRef]
+  );
+
+  const nextFocusableItemIdx = useCallback(
+    (direction: directionType = "fwd", idx?: number) => {
+      const indexCount = getIndexCount();
+      const index = typeof idx === "number" ? idx : indexCount;
+
+      let nextIdx = nextItemIdx(indexCount, direction, index);
+      const nextDirection =
+        direction === "start" ? "fwd" : direction === "end" ? "bwd" : direction;
+      while (
+        ((nextDirection === "fwd" && nextIdx < indexCount) ||
+          (nextDirection === "bwd" && nextIdx > 0)) &&
+        !isFocusable(getElementByPosition(containerRef.current, nextIdx))
+      ) {
+        const newIdx = nextItemIdx(indexCount, nextDirection, nextIdx);
+        if (newIdx === nextIdx) {
+          break;
+        } else {
+          nextIdx = newIdx;
+        }
+      }
+      return nextIdx;
+    },
+    [containerRef, getIndexCount]
+  );
+
+  // forceFocusVisible supports an edge case - first or last Tab are clicked
+  // then Left or Right Arrow keys are pressed, There will be no navigation
+  // but focusVisible must be applied
+  const navigateChildItems = useCallback(
+    (e: React.KeyboardEvent, forceFocusVisible = false) => {
+      const direction = navigation[orientation][e.key];
+      const nextIdx = nextFocusableItemIdx(direction, highlightedIdx);
+      if (nextIdx !== highlightedIdx) {
+        const immediateFocus = true;
+        if (manualActivation) {
+          focusTab(nextIdx, immediateFocus);
+        } else {
+          // activateTab(newTabIndex);
+        }
+      } else if (forceFocusVisible) {
+        forceRefresh({});
+      }
+    },
+    [
+      highlightedIdx,
+      manualActivation,
+      nextFocusableItemIdx,
+      focusTab,
+      orientation,
+    ]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      console.log(`handleKeyDown`, {
+        e,
+        keyBoardNav: keyboardNavigation.current,
+      });
+      if (getIndexCount() > 0 && isNavigationKey(e.key, orientation)) {
+        e.preventDefault();
+        if (keyboardNavigation.current) {
+          console.log("navigate child items");
+          navigateChildItems(e);
+        } else {
+          keyboardNavigation.current = true;
+          navigateChildItems(e, true);
+        }
+      }
+    },
+    [getIndexCount, navigateChildItems, orientation]
+  );
+
+  // TODO, in common hooks, we use mouse movement to track current highlighted
+  // index, rather than rely on component item reporting it
+  const handleItemClick = (_: MouseEvent, tabIndex: number) => {
+    setHighlightedIdx(tabIndex);
+  };
+
+  const handleFocus = useCallback(() => {
+    if (!hasFocus) {
+      setHasFocus(true);
+      if (!mouseClickPending.current) {
+        keyboardNavigation.current = true;
+      } else {
+        mouseClickPending.current = false;
+      }
+    }
+  }, [hasFocus]);
+
+  const handleContainerMouseDown = useCallback(() => {
+    if (!hasFocus) {
+      mouseClickPending.current = true;
+    }
+    keyboardNavigation.current = false;
+  }, [hasFocus]);
+
+  const containerProps = {
+    onBlur: (e: FocusEvent) => {
+      const sourceTarget = (e.target as HTMLElement).closest(".vuuTabstrip");
+      const destTarget = e.relatedTarget as HTMLElement;
+      if (sourceTarget && !sourceTarget?.contains(destTarget)) {
+        setHighlightedIdx(-1);
+        setHasFocus(false);
+      }
+    },
+    onMouseDownCapture: handleContainerMouseDown,
+    onFocus: handleFocus,
+    onMouseLeave: () => {
+      keyboardNavigation.current = true;
+      setHighlightedIdx(-1);
+      mouseClickPending.current = false;
+    },
+  };
+
+  // useLayoutEffect(() => {
+  //   if (
+  //     hasFocus &&
+  //     typeof selectedTabIndex === "number" &&
+  //     selectedTabIndex !== -1
+  //   ) {
+  //     focusTab(selectedTabIndex);
+  //   }
+  // }, [focusTab, hasFocus, selectedTabIndex]);
+
+  return {
+    containerProps,
+    focusVisible: keyboardNavigation.current ? highlightedIdx : -1,
+    focusIsWithinComponent: hasFocus,
+    highlightedIdx,
+    focusTab,
+    onClick: handleItemClick,
+    onFocus,
+    onKeyDown: handleKeyDown,
+  };
+};

@@ -66,7 +66,7 @@ export function useActivationIndicator({
       }
       return {};
     },
-    [orientation, rootRef]
+    [getTabPos, rootRef]
   );
 
   const onResize = useCallback(() => {

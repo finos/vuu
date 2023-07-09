@@ -1,5 +1,5 @@
 /* Class applied to root Tab element */
-.saltTab {
+.vuuTab {
   --saltEditableLabel-padding: 0;
   --saltEditableLabel-height: var(--tabs-tabstrip-height);
   --saltInputLegacy-minWidth: 4em;
@@ -10,7 +10,7 @@
   --tabs-tab-position: relative;
 }
 
-.saltTab {
+.vuuTab {
   align-items: center;
   align-self: stretch;
   background: var(--saltTabs-tab-background, var(--tabs-tab-background));
@@ -28,29 +28,32 @@
 }
 
 /* Overrides characteristic used in saltFocusVisible */
-.saltTab.saltFocusVisible:after {
+.vuuTab.saltFocusVisible:after {
   inset: 2px 2px 4px 2px;
 }
 
-.saltTab:not(.saltTab-vertical) {
+.vuuTab:not(.vuuTab-vertical) {
   margin: 0 var(--tabs-tab-spacing) 0 0;
 }
 
-.saltTab[aria-selected="true"] {
+.vuuTab[aria-selected="true"] {
+  background-color: pink;;
   color: var(--salt-text-primary-foreground);
   font-weight: var(--salt-navigable-fontWeight-active);
 }
 
-.saltTab-dragAway {
+.vuuTab-dragAway {
   display: none;
 }
 
 /* main content aria of Tab */
-.saltTab-main {
+.vuuTab-main {
+  align-items: center;;
   background: inherit;
   border: none;
   color: inherit;
   cursor: inherit;
+  display: flex;
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -60,32 +63,32 @@
   position: relative;
 }
 
-.saltTab-closeable .saltTab-main {
+.vuuTab-closeable .vuuTab-main {
   border-right: solid transparent var(--salt-size-unit);
 }
 
-.saltTab .saltTab-closeButton {
+.vuuTab .vuuTab-closeButton {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 /* the close Button on a closeable Tab*/
-.saltTab-close-icon {
+.vuuTab-close-icon {
   display: none;
 }
 
-.salt-density-touch .saltTab-close-icon,
-.salt-density-low .saltTab-close-icon {
+.salt-density-touch .vuuTab-close-icon,
+.salt-density-low .vuuTab-close-icon {
   display: block;
 }
 
-.salt-density-touch .saltTab-close-icon-small,
-.salt-density-low .saltTab-close-icon-small {
+.salt-density-touch .vuuTab-close-icon-small,
+.salt-density-low .vuuTab-close-icon-small {
   display: none;
 }
 
-.saltTab .saltTab-text {
+.vuuTab .vuuTab-text {
   display: inline-block;
   position: relative;
   overflow: hidden;
@@ -97,11 +100,11 @@
   z-index: var(--salt-zIndex-default);
 }
 
-.saltTab-vertical .saltTab-text {
+.vuuTab-vertical .vuuTab-text {
   text-align: var(--salt-text-textAlign);
 }
 
-.saltTab .saltTab-text:before {
+.vuuTab .vuuTab-text:before {
   height: 0;
   content: attr(data-text);
   display: block;
@@ -110,7 +113,7 @@
 }
 
 /* FIXME: these are all focusVisible styles, but with a bespoke inset */
-.saltTab-editing:after {
+.vuuTab-editing:after {
   content: "";
   position: absolute;
   top: 0;
@@ -123,23 +126,23 @@
   outline-offset: -2px;
 }
 
-.saltTab-vertical.saltTab-editing:after {
+.vuuTab-vertical.vuuTab-editing:after {
   right: 2px;
   bottom: 0;
 }
 
-.saltTab-vertical .saltFocusVisible:not([aria-selected="true"]):before {
+.vuuTab-vertical .saltFocusVisible:not([aria-selected="true"]):before {
   left: auto;
   height: auto;
   top: 0;
   width: 2px;
 }
 
-.saltTab.saltFocusVisible {
+.vuuTab.saltFocusVisible {
   background: var(--saltTabs-tab-hover-background, var(--salt-navigable-primary-background-hover));
 }
 
-.saltTab:before {
+.vuuTab:before {
   content: var(--tabs-tab-before-content, none);
   background: var(--tabs-tab-before-background);
   height: var(--tabs-tab-before-height);
@@ -149,7 +152,7 @@
   z-index: 1;
 }
 
-.saltTabstrip-draggingTab .saltTab[aria-selected="true"]:before {
+.vuuTabstrip-draggingTab .vuuTab[aria-selected="true"]:before {
   --tabs-tab-before-content: "";
   --tabs-tab-before-background: var(--salt-navigable-indicator-color-active);
   --tabs-tab-before-height: var(--tabs-activationIndicator-thumb-height);
@@ -158,8 +161,8 @@
 }
 
 /* Hover styling */
-.saltTab:not([aria-selected="true"]).saltFocusVisible:before,
-.saltTab:hover:not([aria-selected="true"]):before {
+.vuuTab:not([aria-selected="true"]).saltFocusVisible:before,
+.vuuTab:hover:not([aria-selected="true"]):before {
   --tabs-tab-before-content: "";
   --tabs-tab-before-background: var(--salt-navigable-indicator-hover);
   --tabs-tab-before-height: var(--tabs-activationIndicator-thumb-height);
@@ -167,6 +170,6 @@
   --tabs-tab-before-width: var(--tabs-activationIndicator-thumb-width);
 }
 
-.saltTab:hover:not(.saltTab-closeHover) {
+.vuuTab:hover:not(.vuuTab-closeHover) {
   background: var(--saltTabs-tab-hover-background, var(--salt-navigable-primary-background-hover));
 }

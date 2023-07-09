@@ -74,18 +74,6 @@ export const Tabstrip = forwardRef(function Tabstrip(
   }: TabstripProps,
   forwardedRef: ForwardedRef<FocusAPI>
 ) {
-  // const targetWindow = useWindow();
-  // useComponentCssInjection({
-  //   testId: "salt-tab-strip",
-  //   css: tabstripCss,
-  //   window: targetWindow,
-  // });
-  // useComponentCssInjection({
-  //   testId: "salt-theme-tab-strip",
-  //   css: themeTabstripCss,
-  //   window: targetWindow,
-  // });
-
   const root = useRef<HTMLDivElement>(null);
   // can't use forwardedRef here, can we ?
   // const setForkRef = useForkRef(root, forwardedRef);
