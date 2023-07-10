@@ -751,10 +751,32 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.setLastHashAndUpdateCount(-1, 0)
 
       case action: FastBuildBranchesOfTree =>
-        fastBuildBranchesOfTree(viewPort, latestNodeState, currentUpdateCount, currentStructureHash, action, action.table, action.oldTreeOption)
-
-      case action: FastBuildBranchesOfTreeOfRows =>
-        fastBuildBranchesOfTree(viewPort, latestNodeState, currentUpdateCount, currentStructureHash, action, action.table, action.oldTreeOption)
+        val oldTree = action.table.getTree
+        val tree = timeItThen[Tree](
+          {TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action, viewPort.permissionChecker()).buildOnlyBranches()},
+          (millis, _) => { updateHistogram(viewPort, treeBuildHistograms, "tree.build.", millis)}
+        )
+        val keys = timeItThen[ImmutableArray[String]](
+          {tree.toKeys()},
+          (millis, _) => {updateHistogram(viewPort, treeToKeysHistograms, "tree.keys.", millis)}
+        )
+        timeItThen[Unit](
+          {action.table.setTree(tree, keys)},
+          (millis, _) => {updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)}
+        )
+        timeItThen[Unit]({viewPort.setKeys(keys)},
+          (millis, _) => {updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)}
+        )
+        timeItThen[Unit](
+          {
+            val branchKeys = TreeUtils.diffOldVsNewBranches(oldTree, tree, oldTree.nodeState)
+            viewPort.updateSpecificKeys(branchKeys)
+          },
+          (millis, _) => {
+            updateHistogram(viewPort, treeDiffBranchesHistograms, "tree.branchdiff.", millis)
+          }
+        )
+        viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
 
       case action: OnlyRecalculateTreeKeys =>
         val oldTree = action.table.getTree
@@ -779,51 +801,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
 
     //viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
-  }
-
-  private def fastBuildBranchesOfTree(viewPort: ViewPort, latestNodeState: TreeNodeStateStore, currentUpdateCount: Long, currentStructureHash: Int, action: TreeBuildAction, table: TreeSessionTableImpl, oldTreeOption: Option[Tree]): Unit = {
-    val oldTree = table.getTree
-    val tree = timeItThen[Tree](
-      {
-        TreeBuilder.create(table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action, viewPort.permissionChecker()).buildOnlyBranches()
-      },
-      (millis, _) => {
-        updateHistogram(viewPort, treeBuildHistograms, "tree.build.", millis)
-      }
-    )
-    val keys = timeItThen[ImmutableArray[String]](
-      {
-        tree.toKeys()
-      },
-      (millis, _) => {
-        updateHistogram(viewPort, treeToKeysHistograms, "tree.keys.", millis)
-      }
-    )
-    timeItThen[Unit](
-      {
-        table.setTree(tree, keys)
-      },
-      (millis, _) => {
-        updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)
-      }
-    )
-    timeItThen[Unit]({
-      viewPort.setKeys(keys)
-    },
-      (millis, _) => {
-        updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)
-      }
-    )
-    timeItThen[Unit](
-      {
-        val branchKeys = TreeUtils.diffOldVsNewBranches(oldTree, tree, oldTree.nodeState)
-        viewPort.updateSpecificKeys(branchKeys)
-      },
-      (millis, _) => {
-        updateHistogram(viewPort, treeDiffBranchesHistograms, "tree.branchdiff.", millis)
-      }
-    )
-    viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
   }
 
   def shouldCalculateKeys(viewPort: ViewPort, currentStructureHash: Int, currentUpdateCount: Long): Boolean = {
