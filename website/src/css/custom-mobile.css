@@ -145,10 +145,6 @@ body {
   z-index: -1;
 }
 
-.vuu-paragraph-large {
-  padding-left: 100px;
-  padding-right: 100px;
-}
 
 .vuu-scroll-1 {
   display: flex;
@@ -224,11 +220,9 @@ body {
   /* content driven, remove later */
   /* height: 476px; */
   padding-top: 486px;
-  height: 2600px;
+  height: 2000px;
 
 }
-
-
 
 
 .vuuFeatureLayout {
@@ -354,18 +348,20 @@ body {
   :root {
     --vuu-viewport-width: var(--vuu-mobile-width);
     --vuu-navbar-logo-size: 30px;
-  --ifm-navbar-height: 90px;
-  --vuu-navbar-height: 90px;
+    --ifm-navbar-height: 90px;
+    --vuu-navbar-height: 90px;
 
-  --vuu-navbar-padding: 0px;
+    --vuu-navbar-padding: 0px;
 
   }
 
+    .navbar .navbar__logo > img {
+    display: none;
   }
 
   .navbar__toggle {
     display: inherit;
-    order: 2
+    /* order: 2 */
   }
 
   .navbar {
@@ -377,7 +373,7 @@ body {
     display: flex;
     justify-content: space-between;
     flex: 1;
-    background : url(../../static/img/vuu/vuu-text.png) no-repeat center center;
+    background : url(../../static/img/vuu/vuu-text-logo.png) no-repeat center center;
   }
   
   .navbar__items--right {
@@ -394,6 +390,7 @@ body {
 
 .navbar__inner {
   background-color: var(--vuu-dark-bg-background1);
+  padding:var(--vuu-navbar-padding) 40px 0 40px
 }
 
 
@@ -406,14 +403,18 @@ body {
 
 .image-container img {
   margin: 0 10px;
+  height: 64px;
+  width: 64px;
 }
 
 .content-container {
   text-align: center;
-  padding-left: 100px;
-  padding-right: 100px;
+
 }
 
 .content-container h2 {
  color: var(--vuu-accent1)
 }
+
+  }
+
