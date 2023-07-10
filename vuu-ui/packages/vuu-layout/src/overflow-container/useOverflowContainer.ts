@@ -2,28 +2,49 @@ import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { useCallback, useMemo, useRef } from "react";
 import { ResizeHandler, useResizeObserver, WidthOnly } from "../responsive";
 import {
-  applyOverflowClass,
-  correctForUnnecessaryOverflowIndicator,
-  correctForWrappedOverflowIndicator,
-  detectOverflow,
+  applyOverflowClassToWrappedItems,
+  removeOverflowIndicatorIfNoLongerNeeded,
+  correctForWrappedHighPriorityItems,
+  getNonWrappedAndWrappedItems,
   NO_WRAPPED_ITEMS,
+  highPriorityItemsHaveWrappedButShouldNotHave,
   switchWrappedItemIntoView,
   unmarkItemsWhichAreNoLongerWrapped,
+  OverflowItem,
+  overflowIndicatorHasWrappedButShouldNotHave,
+  correctForWrappedOverflowIndicator,
 } from "./overflow-utils";
 
 export const useOverflowContainer = () => {
   const rootRef = useRef<HTMLDivElement>(null);
-  const wrappedItemsRef = useRef<string[]>(NO_WRAPPED_ITEMS);
+  const wrappedItemsRef = useRef<OverflowItem[]>(NO_WRAPPED_ITEMS);
 
   const handleResize: ResizeHandler = useCallback(async () => {
     const { current: container } = rootRef;
+    console.log(`resize , {
+      container
+    }`);
     if (container) {
-      let wrapped = detectOverflow(container);
-      applyOverflowClass(container, wrapped);
-      if (wrapped.length > 1 && wrapped.at(-1) === "overflow") {
+      let [nonWrapped, wrapped] = getNonWrappedAndWrappedItems(container);
+      console.log(`
+      nonWrapped ${nonWrapped.map((i) => i.index).join(",")}
+      wrapped ${wrapped.map((i) => i.index).join(",")}
+    `);
+
+      applyOverflowClassToWrappedItems(container, wrapped);
+      if (overflowIndicatorHasWrappedButShouldNotHave(wrapped)) {
+        console.log("correct for Wrapped Overflow");
         wrapped = await correctForWrappedOverflowIndicator(container, wrapped);
-      } else if (wrapped.length === 1) {
-        if (correctForUnnecessaryOverflowIndicator(container)) {
+      }
+
+      if (highPriorityItemsHaveWrappedButShouldNotHave(nonWrapped, wrapped)) {
+        console.log("correct for wrapped High Priority");
+
+        wrapped = await correctForWrappedHighPriorityItems(container, wrapped);
+      }
+
+      if (wrapped.length === 1) {
+        if (removeOverflowIndicatorIfNoLongerNeeded(container)) {
           wrapped = NO_WRAPPED_ITEMS;
         }
       }
@@ -31,13 +52,13 @@ export const useOverflowContainer = () => {
     }
   }, []);
 
-  useResizeObserver(rootRef, WidthOnly, handleResize);
+  useResizeObserver(rootRef, WidthOnly, handleResize, true);
 
-  const hasIndex = (
+  const hasOverflowItem = (
     opt: unknown
   ): opt is {
-    index: string;
-  } => typeof opt === "object" && opt !== null && "index" in opt;
+    overflowItem: OverflowItem;
+  } => typeof opt === "object" && opt !== null && "overflowItem" in opt;
 
   const [menuBuilder, menuActionHandler] = useMemo((): [
     MenuBuilder,
@@ -46,19 +67,19 @@ export const useOverflowContainer = () => {
     return [
       () => {
         const { current: menuItems } = wrappedItemsRef;
-        return menuItems.map((index: string) => {
+        return menuItems.map((item: OverflowItem) => {
           return {
-            label: `Item ${parseInt(index) + 1} [${index}]`,
-            action: `activate-item-${index}`,
-            options: { index },
+            label: `Item ${parseInt(item.index) + 1} [${item.index}]`,
+            action: `activate-item-${item.index}`,
+            options: { overflowItem: item },
           };
         });
       },
       (type, options) => {
         const { current: container } = rootRef;
-        if (container && hasIndex(options)) {
-          switchWrappedItemIntoView(container, options.index);
-          const wrappedItems = detectOverflow(container);
+        if (container && hasOverflowItem(options)) {
+          switchWrappedItemIntoView(container, options.overflowItem);
+          const [, wrappedItems] = getNonWrappedAndWrappedItems(container);
           unmarkItemsWhichAreNoLongerWrapped(container, wrappedItems);
           wrappedItemsRef.current = wrappedItems;
         }

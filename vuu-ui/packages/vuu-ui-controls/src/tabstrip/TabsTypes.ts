@@ -111,6 +111,7 @@ export type TabProps = Omit<
   focusVisible?: boolean;
   focusedChildIndex?: number;
   selected?: boolean;
+  showMenuButton?: boolean;
   index?: number;
   label?: EditableLabelProps["defaultValue"];
   onClick?: (e: MouseEvent, index: number) => void;
@@ -119,7 +120,6 @@ export type TabProps = Omit<
   onExitEditMode?: exitEditHandler;
   onKeyUp?: (e: KeyboardEvent, index: number) => void;
   orientation?: "horizontal" | "vertical";
-  tabChildIndex?: number;
 };
 
 export type TabElement = ReactElement<TabProps>;

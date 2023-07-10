@@ -27,6 +27,7 @@
     "react/prop-types": 0,
     "react/react-in-jsx-scope": 0,
     "no-unused-vars": 0,
+    "prefer-const": ["error", {"destructuring": "all"}],
     "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]
   },
   "overrides": [

@@ -1,6 +1,5 @@
 import { Flexbox, OverflowContainer } from "@finos/vuu-layout";
 import { CSSProperties } from "react";
-import { random_1000 } from "../salt/List.data";
 
 import "./OverflowContainer.examples.css";
 
@@ -19,13 +18,45 @@ export const DefaultWrapOverflowContainer = () => {
         } as CSSProperties
       }
     >
-      <OverflowContainer style={{ width: "100%", height: 44 }}>
+      <OverflowContainer height={44} style={{ width: "100%", height: 44 }}>
         <div className="Item" style={{ width: 100 }}></div>
         <div className="Item" style={{ width: 100 }}></div>
         <div className="Item" style={{ width: 100 }}></div>
         <div className="Item" style={{ width: 100 }}></div>
         <div className="Item" style={{ width: 100 }}></div>
         <div className="Item" style={{ width: 100 }}></div>
+      </OverflowContainer>
+    </div>
+  );
+};
+
+DefaultWrapOverflowContainer.displaySequence = displaySequence++;
+
+export const OverflowContainerHighPriorityItem = () => {
+  return (
+    <div
+      style={
+        {
+          height: "100vh",
+          padding: 100,
+          width: "100vw",
+          background: "ivory",
+          "--vuuPopupMenu-background": "red",
+        } as CSSProperties
+      }
+    >
+      <OverflowContainer height={44} style={{ width: "100%", height: 44 }}>
+        <div className="Item" style={{ width: 100 }}></div>
+        <div className="Item" style={{ width: 100 }}></div>
+        <div className="Item" style={{ width: 100 }}></div>
+        <div className="Item" style={{ width: 100 }}></div>
+        <div className="Item" style={{ width: 100 }}></div>
+        <div className="Item" style={{ width: 100 }}></div>
+        <div
+          className="Item"
+          data-overflow-priority={2}
+          style={{ width: 100 }}
+        ></div>
       </OverflowContainer>
     </div>
   );
@@ -60,7 +91,7 @@ export const WrapOverflowContainerFlexLayout = () => {
           style={{ flex: 1, flexDirection: "column", background: "#ccc" }}
         >
           {/* prettier-ignore */}
-          <OverflowContainer  style={{ flex: 0, height: 44 }}>
+          <OverflowContainer height={44} style={{ flex: 0, height: 44 }}>
             <div className="Item" style={{ width: 100 }}>1</div>
             <div className="Item" style={{ width: 100 }}>2</div>
             <div className="Item" style={{ width: 100 }}>3</div>
@@ -69,7 +100,7 @@ export const WrapOverflowContainerFlexLayout = () => {
             <div className="Item" style={{ width: 100 }}>6</div>
           </OverflowContainer>
           {/* prettier-ignore */}
-          <OverflowContainer  style={{ flex: 0, height: 44, marginTop: 20 }}>
+          <OverflowContainer height={44} style={{ flex: 0, height: 44, marginTop: 20 }}>
             <div className="Item" style={{ width: 100 }}>1</div>
             <div className="Item" style={{ width: 100 }}>2</div>
             <div className="Item" style={{ width: 100 }}>3</div>
@@ -79,7 +110,7 @@ export const WrapOverflowContainerFlexLayout = () => {
             <div className="Item" style={{ width: 120 }}>7</div>
           </OverflowContainer>
           {/* prettier-ignore */}
-          <OverflowContainer  style={{ flex: 0, height: 44, marginTop: 20 }}>
+          <OverflowContainer height={44} style={{ flex: 0, height: 44, marginTop: 20 }}>
             <div className="Item" style={{ width: 40 }}>1</div>
             <div className="Item" style={{ width: 40 }}>2</div>
             <div className="Item" style={{ width: 40 }}>3</div>

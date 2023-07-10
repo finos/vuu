@@ -18,6 +18,8 @@ import "./Tabstrip.examples.css";
 
 const SPLITTER_WIDTH = 3;
 
+let displaySequence = 1;
+
 export const DefaultTabstripNext = ({ width = 350 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
@@ -48,6 +50,56 @@ export const DefaultTabstripNext = ({ width = 350 }) => {
     </LayoutProvider>
   );
 };
+
+DefaultTabstripNext.displaySequence = displaySequence++;
+
+export const TabstripNextAddTab = ({ width = 600 }) => {
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [tabs, setTabs] = useState([
+    { label: "Home" },
+    { label: "Transactions" },
+    { label: "Loans" },
+    { label: "Checks" },
+    { label: "Liquidity" },
+  ]);
+
+  const handleAddTab = () => {
+    const count = tabs.length;
+    setTabs((state) => state.concat([{ label: `Tab ${state.length + 1}` }]));
+    setActiveTabIndex(count);
+  };
+
+  return (
+    <LayoutProvider>
+      <FlexboxLayout
+        style={{ height: 200, width: width + SPLITTER_WIDTH }}
+        path=""
+      >
+        <div data-resizeable style={{ flex: 1 }}>
+          <TabstripNext
+            activeTabIndex={activeTabIndex}
+            enableAddTab
+            onActiveChange={setActiveTabIndex}
+            onAddTab={handleAddTab}
+          >
+            {tabs.map(({ label }, i) => (
+              <Tab
+                key={label}
+                label={label}
+                ariaControls={
+                  i === activeTabIndex ? `ts-panel-${i}` : undefined
+                }
+              />
+            ))}
+          </TabstripNext>
+        </div>
+        <div data-resizeable />
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
+
+TabstripNextAddTab.displaySequence = displaySequence++;
 
 export const DefaultTabstrip = ({ width = 350 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);

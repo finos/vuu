@@ -1,5 +1,5 @@
 import { TabstripProps } from "./TabsTypes";
-import { useIdMemo as useId } from "@salt-ds/core";
+import { Button, useIdMemo as useId } from "@salt-ds/core";
 
 import { useTabstripNext } from "./useTabstripNext";
 import cx from "classnames";
@@ -7,7 +7,7 @@ import { asReactElements, OverflowContainer } from "@finos/vuu-layout";
 import { TabActivationIndicator } from "./TabActivationIndicator";
 
 import "./Tabstrip.css";
-import React, { useMemo, useRef } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 
 const classBase = "vuuTabstrip";
 
@@ -19,9 +19,11 @@ export const TabstripNext = ({
   activeTabIndex: activeTabIndexProp,
   children,
   className: classNameProp,
+  enableAddTab,
   id: idProp,
   keyBoardActivation = "manual",
   onActiveChange,
+  onAddTab,
   orientation = "horizontal",
   showActivationIndicator = true,
   ...htmlAttributes
@@ -41,28 +43,60 @@ export const TabstripNext = ({
 
   console.log(`TabstripNext focusVisible = ${focusVisible}`);
 
+  const handleAddTabClick = useCallback(() => {
+    console.log("add tab");
+    // onAddTab?.();
+  }, []);
+
   const [tabs, selectedTabId] = useMemo(() => {
     let selectedTabId: string | null = null;
     return [
-      asReactElements(children).map((child, index) => {
-        const selected = index === activeTabIndex;
-        const tabId = child.props.id ?? `${id}-tab-${index}`;
-        if (selected) {
-          selectedTabId = tabId;
-        }
-        return React.cloneElement(child, {
-          ...tabProps,
-          ...tabstripHook.navigationProps,
-          focusVisible: focusVisible === index,
-          id: tabId,
-          index,
-          selected,
-          tabIndex: selected ? 0 : -1,
-        });
-      }),
+      asReactElements(children)
+        .map((child, index) => {
+          const selected = index === activeTabIndex;
+          const tabId = child.props.id ?? `${id}-tab-${index}`;
+          if (selected) {
+            selectedTabId = tabId;
+          }
+          return React.cloneElement(child, {
+            ...tabProps,
+            ...tabstripHook.navigationProps,
+            focusVisible: focusVisible === index,
+            id: tabId,
+            index,
+            selected,
+            tabIndex: selected ? 0 : -1,
+          });
+        })
+        .concat(
+          enableAddTab ? (
+            <Button
+              {...tabstripHook.navigationProps}
+              aria-label="Create Tab"
+              className={`${classBase}-addTabButton`}
+              data-icon="add"
+              data-priority={2}
+              key="addButton"
+              onClick={handleAddTabClick}
+              variant="secondary"
+              tabIndex={-1}
+            />
+          ) : (
+            []
+          )
+        ),
       selectedTabId,
     ];
-  }, [activeTabIndex, children, focusVisible, id, tabProps]);
+  }, [
+    activeTabIndex,
+    children,
+    enableAddTab,
+    focusVisible,
+    handleAddTabClick,
+    id,
+    tabProps,
+    tabstripHook.navigationProps,
+  ]);
 
   return showActivationIndicator ? (
     <div {...htmlAttributes} className={className}>

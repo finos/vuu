@@ -51,6 +51,7 @@
     height: var(--overflow-container-height);
     height: var(--overflow-container-height);
     order: var(--overflow-order);
+    overflow: hidden;
     left: var(--overflow-left, 100%);
     position: var(--overflow-position, absolute);
     width: var(--overflow-width);

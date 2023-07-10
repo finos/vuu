@@ -1,6 +1,5 @@
 // TODO close button needs to be a button. Hence tab needs to include 2 buttons
 import { Button, ButtonProps, useForkRef } from "@salt-ds/core";
-import { CloseIcon } from "@salt-ds/icons";
 import cx from "classnames";
 import {
   FocusEvent,
@@ -14,33 +13,26 @@ import {
   useState,
 } from "react";
 import { TabProps } from "./TabsTypes";
+import { TabMenu } from "./TabMenu";
 import { EditableLabel, EditableLabelProps } from "../editable-label";
 
-// import { useWindow } from "@salt-ds/window";
-// import { useComponentCssInjection } from "@salt-ds/styles";
-
-// import tabCss from "./Tab.css";
 import "./Tab.css";
 
 const classBase = "vuuTab";
 
 const noop = () => undefined;
 
-const CloseTabButton = (props: ButtonProps) => (
-  <Button
-    {...props}
-    aria-label="Close Tab (Delete or Backspace)"
-    className={`${classBase}-closeButton`}
-    tabIndex={undefined}
-    title="Close Tab (Delete or Backspace)"
-    variant="secondary"
-  >
-    <CloseIcon
-      aria-label="Close Tab (Delete or Backspace)"
-      className={`${classBase}-close-icon`}
-    />
-  </Button>
-);
+// const TabMenuButton = (props: ButtonProps) => (
+//   <Button
+//     {...props}
+//     aria-label="Close Tab (Delete or Backspace)"
+//     className={`${classBase}-closeButton`}
+//     data-icon="more-vert"
+//     tabIndex={undefined}
+//     title="Close Tab (Delete or Backspace)"
+//     variant="secondary"
+//   />
+// );
 
 export const Tab = forwardRef(function Tab(
   {
@@ -64,7 +56,7 @@ export const Tab = forwardRef(function Tab(
     onMouseDown,
     orientation,
     selected,
-    tabChildIndex = 0,
+    showMenuButton = true,
     tabIndex,
     ...props
   }: TabProps,
@@ -75,12 +67,6 @@ export const Tab = forwardRef(function Tab(
       "index, onClick, onKeyUp, onKeyDown are required props, they would nornally be injected by Tabstrip, are you creating a Tab outside of a Tabstrip"
     );
   }
-  // const targetWindow = useWindow();
-  // useComponentCssInjection({
-  //   testId: "salt-tab",
-  //   css: tabCss,
-  //   window: targetWindow,
-  // });
 
   const root = useRef<HTMLDivElement>(null);
   const editableRef = useRef<HTMLDivElement>(null);
@@ -202,11 +188,11 @@ export const Tab = forwardRef(function Tab(
           {children ?? getLabel()}
         </span>
       </div>
-      {closeable ? (
-        <CloseTabButton
-          onClick={handleCloseButtonClick}
-          onMouseEnter={handleCloseButtonEnter}
-          onMouseLeave={handleCloseButtonLeave}
+      {showMenuButton ? (
+        <TabMenu
+        // onClick={handleCloseButtonClick}
+        // onMouseEnter={handleCloseButtonEnter}
+        // onMouseLeave={handleCloseButtonLeave}
         />
       ) : null}
     </div>

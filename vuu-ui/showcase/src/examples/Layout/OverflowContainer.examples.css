@@ -1,53 +1,13 @@
-.WrapContainer {
-    --border-size: calc((var(--flex-height) - 24px) / 2);
-    --overflow-visibility: hidden;
-    align-items: center;
-    background-color: black;;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    height: var(--flex-height);
-    min-width: 44px;
-    padding: 0 10px;
-    width: 100%;
-}
-
-.overflowed.WrapContainer {
-    --overflow-visibility: visible;
-}
-
-.ItemWrapper {
-    --item-bg: yellow;
-    align-items: inherit;
-    display: flex;
-    
-    order: 1;
-    position: relative;
-    height: var(--flex-height);
-}
-
 .Item {
     background-color: var(--item-bg, blue);
     color: white;
     height: 32px;
 }
 
-.wrapped-item {
-    --item-bg: #ccc;
+[data-overflow-priority="2"].Item {
+    background-color: pink;
 }
 
-.OverflowIndicator {
-    background-color: red;
-    border-style: solid none;
-    border-color: black;
-    border-width: var(--border-size);
-    height: 24px;
-    height: var(--flex-height);
-    order: 2;
-    visibility:var(--overflow-visibility);
-    width: 24px;
-}
-
-.wrapped-item {
-    order: 3;
+.vuuOverflowContainer-wrapContainer {
+    /* overflow: visible; */
 }

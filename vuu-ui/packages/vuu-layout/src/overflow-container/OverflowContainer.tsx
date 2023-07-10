@@ -20,6 +20,19 @@ export interface OverflowContainerProps extends HTMLAttributes<HTMLDivElement> {
   height: number;
 }
 
+// export interface OverflowItemProps {
+//   children: ReactElement;
+//   overflowPriority: "0" | "1" | "2";
+// }
+
+// const OverflowItem = ({ children, overflowPriority }: OverflowItemProps) => {
+//   return (
+//     <div className={cx(`${classBase}-item`)}>
+//       {children}
+//     </div>
+//   )
+// };
+
 const InnerContainer = React.memo(
   ({ children, height }: OverflowContainerProps) => {
     const firstTime = useRef(true);
@@ -34,9 +47,16 @@ const InnerContainer = React.memo(
 
     return (
       <div className={`${classBase}-wrapContainer`} ref={rootRef} style={style}>
-        {asReactElements(children).map((childElement, i) => (
-          <div className={cx(`${classBase}-item`)} data-index={i} key={i}>
-            {childElement}
+        {asReactElements(children).map((childEl, i) => (
+          <div
+            className={cx(`${classBase}-item`)}
+            data-index={i}
+            data-overflow-priority={
+              childEl.props["data-overflow-priority"] ?? "0"
+            }
+            key={i}
+          >
+            {childEl}
           </div>
         ))}
         <div className={`${classBase}-OverflowIndicator`} data-index="overflow">
