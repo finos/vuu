@@ -81,7 +81,11 @@ const measurePinnedColumns = (columns: KeyedColumnDescriptor[]) => {
       unpinnedWidth += visibleWidth;
     }
   }
-  return { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth };
+  return {
+    pinnedWidthLeft: pinnedWidthLeft + 4,
+    pinnedWidthRight: pinnedWidthRight + 4,
+    unpinnedWidth,
+  };
 };
 
 export const useTableViewport = ({

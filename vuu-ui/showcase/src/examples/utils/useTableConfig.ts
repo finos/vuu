@@ -1,4 +1,5 @@
-import { ArrayDataSource, SuggestionFetcher } from "@finos/vuu-data";
+import { ArrayDataSource } from "@finos/vuu-data";
+import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
   TypeaheadParams,
@@ -13,6 +14,49 @@ import { getColumnAndRowGenerator, populateArray } from "./vuu-row-generator";
 const NO_CONFIG = {} as const;
 const NO_COLUMNS: number[] = [];
 
+export type ExtendedColumnConfig = { [key: string]: Partial<ColumnDescriptor> };
+
+export interface TableConfigHookProps {
+  /**
+   * Additional column configuration to be applied to the base SchemaColumn
+   * SchemaColumn provides just name and serverDataType. ANy of the attributes
+   * defined on ColumnDescriptor can be added here e.g width, label, type
+   */
+  columnConfig?: ExtendedColumnConfig;
+  /**
+   * When simple column generation is in effect - number of columns to generate
+   */
+  columnCount?: number;
+  /**
+   * number of rows to generate
+   */
+  count?: number;
+  /**
+   * Only intended to generate large datasets to test extreme scrolling (in the
+   * millions of rows). Generates rows of data on demand, no internal state, so
+   * cannot support sorting, grouping etc. Uses an ArrayProxy
+   */
+  lazyData?: boolean;
+  leftPinnedColumns?: number[];
+  rightPinnedColumns?: number[];
+  /**
+   * should a range request respond with the full set of rows for the viewport or
+   * just those rows which have nor previously been returned, the delta, Delta is
+   * the default.
+   */
+  rangeChangeRowset?: "delta" | "full";
+  /**
+   * How many rows to render offscreen for better scroll render performance, without
+   * whiteout
+   */
+  renderBufferSize?: number;
+  /**
+   * An alternative to columnCount, must be a known table, for which a custom data-
+   * generator is available.
+   */
+  table?: VuuTable;
+}
+
 export const useTableConfig = ({
   columnConfig = NO_CONFIG,
   columnCount,
@@ -23,28 +67,21 @@ export const useTableConfig = ({
   rightPinnedColumns = NO_COLUMNS,
   renderBufferSize = 0,
   table,
-}: {
-  columnConfig?: { [key: string]: Partial<ColumnDescriptor> };
-  columnCount?: number;
-  count?: number;
-  lazyData?: boolean;
-  leftPinnedColumns?: number[];
-  rightPinnedColumns?: number[];
-  rangeChangeRowset?: "delta" | "full";
-  renderBufferSize?: number;
-  table?: VuuTable;
-} = {}) => {
+}: TableConfigHookProps = {}) => {
   return useMemo(() => {
-    console.log(
-      "%cuseTableConfig Memo invoked",
-      "color: red; font-weight: bold;"
-    );
-
     if (typeof columnCount === "number" && table) {
-      throw Error("if a VuuTable is passed, colunCount should not be provided");
+      throw Error(
+        `If a VuuTable is passed, columnCount should not be provided. 
+        Only pass a Vuu table if a custom data generator is available 
+        for that table`
+      );
     }
 
+    // Get custom data and column generators (if a table is available) otw the default
+    // data generators will be returned
     const [columnGenerator, rowGenerator] = getColumnAndRowGenerator(table);
+
+    // colCount is only used by the default generators
     const colCount =
       typeof columnCount === "number"
         ? columnCount
@@ -56,8 +93,14 @@ export const useTableConfig = ({
       ? columnGenerator([], columnConfig)
       : columnGenerator(colCount, columnConfig);
 
+    // We use an ArrayProxy in the rare scenario that we want a large dataset with no
+    // support for sorting etc. Normally, we want to use a data generator to produce
+    // test data to populate an ArrayDataSource
     const dataArray = lazyData
-      ? new ArrayProxy<VuuRowDataItemType[]>(count, rowGenerator(colCount))
+      ? new ArrayProxy<VuuRowDataItemType[]>(
+          count,
+          rowGenerator(colCount as number)
+        )
       : populateArray(
           count,
           columnGenerator,
@@ -70,30 +113,27 @@ export const useTableConfig = ({
 
     const dataSource = new ArrayDataSource({
       columnDescriptors: columns,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore yes we know an ArrayProxy is not a real Array, but don't tell the DataSource that
       data: dataArray,
       rangeChangeRowset,
     });
 
+    /* We omit the first array argument, table, not needed here but we must 
+     preserve the function signature. This function will be passed to 
+     another hook which will call it at the right time and will pass three
+     arguments in the array 
+     */
     const suggestionFetcher: SuggestionFetcher = async ([
-      table,
+      ,
       column,
       pattern,
     ]: TypeaheadParams) => {
-      console.log(`suggestionFetcher`, {
-        table,
-        column,
-        pattern,
-      });
       if (lazyData) {
         return [];
       } else {
         return makeSuggestions(dataSource, column, pattern);
       }
-      // } else if (table.table === "instruments" && column === "currency") {
-      //   return ["CAD", "EUR", "GBP", "GBX", "USD"];
-      // } else {
-      //   return [];
-      // }
     };
 
     const typeaheadHook = () => suggestionFetcher;

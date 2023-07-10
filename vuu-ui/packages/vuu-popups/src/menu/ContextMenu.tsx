@@ -1,5 +1,5 @@
 import { useIdMemo as useId } from "@salt-ds/core";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Portal } from "../portal";
 import MenuList, { MenuListProps } from "./MenuList";
 import { getItemId, getMenuId, useCascade } from "./use-cascade";
@@ -24,6 +24,9 @@ export const ContextMenu = ({
   style,
   ...menuListProps
 }: ContextMenuProps) => {
+  const closeHandlerRef = useRef<ContextMenuProps["onClose"]>(onClose);
+  closeHandlerRef.current = onClose;
+
   const id = useId(idProp);
   const closeMenuRef = useRef<(location?: string) => void>(noop);
   const [menus, actions] = useItemsWithIds(childrenProp);
@@ -92,11 +95,14 @@ export const ContextMenu = ({
     }
   };
 
+  useEffect(() => () => onClose?.(), [onClose]);
+
   return (
     <>
       {openMenus.map(({ id: menuId, left, top }, i) => {
         const childMenuIndex = getChildMenuIndex(i);
 
+        // TODO don't need the portal here, vuu popup service takes care of this
         return (
           <Portal key={i} x={left} y={top} onRender={handleRender}>
             <MenuList

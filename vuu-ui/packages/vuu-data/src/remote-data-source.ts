@@ -1,16 +1,17 @@
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { Selection } from "@finos/vuu-datagrid-types";
 import {
-  LinkDescriptorWithLabel,
-  VuuGroupBy,
-  VuuAggregation,
-  VuuRange,
-  VuuTable,
-  VuuSort,
-  ClientToServerMenuRPC,
   ClientToServerEditRpc,
+  ClientToServerMenuRPC,
+  LinkDescriptorWithLabel,
+  VuuAggregation,
+  VuuGroupBy,
+  VuuRange,
+  VuuSort,
+  VuuTable,
 } from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
 
+import { parseFilter } from "@finos/vuu-filter-parser";
 import {
   debounce,
   EventEmitter,
@@ -18,26 +19,25 @@ import {
   throttle,
   uuid,
 } from "@finos/vuu-utils";
+import { getServerAPI, ServerAPI } from "./connection-manager";
 import {
+  configChanged,
   DataSource,
   DataSourceCallbackMessage,
-  DataSourceConstructorProps,
-  SubscribeCallback,
-  SubscribeProps,
   DataSourceConfig,
+  DataSourceConstructorProps,
+  DataSourceDataMessage,
   DataSourceEvents,
   isDataSourceConfigMessage,
   isSizeOnly,
-  DataSourceDataMessage,
   OptimizeStrategy,
-  configChanged,
+  SubscribeCallback,
+  SubscribeProps,
   vanillaConfig,
   withConfigDefaults,
   WithFullConfig,
 } from "./data-source";
-import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
-import { parseFilter } from "@finos/vuu-filters";
 
 type RangeRequest = (range: VuuRange) => void;
 

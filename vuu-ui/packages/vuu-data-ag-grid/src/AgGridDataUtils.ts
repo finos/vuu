@@ -1,7 +1,7 @@
-import { DataSourceRow } from "@finos/vuu-data";
-import { VuuSortCol } from "../../vuu-protocol-types";
-import { AgGridFilter } from "./AgGridFilterUtils";
+import { DataSourceRow } from "@finos/vuu-data-types";
+import { VuuSortCol } from "@finos/vuu-protocol-types";
 import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
+import { AgGridFilter } from "./AgGridFilterUtils";
 
 // export type AgGridDataRow = Record<string, number | string | boolean>;
 export type AgGridDataSet = { [key: number]: AgDataRow };

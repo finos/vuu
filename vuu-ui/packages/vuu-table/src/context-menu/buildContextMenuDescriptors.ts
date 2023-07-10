@@ -1,7 +1,7 @@
 import { DataSource } from "@finos/vuu-data";
+import { ContextMenuItemDescriptor, MenuBuilder } from "@finos/vuu-data-types";
 import { KeyedColumnDescriptor, PinLocation } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
-import { ContextMenuItemDescriptor, MenuBuilder } from "@finos/vuu-popups";
 import { isNumericColumn } from "@finos/vuu-utils";
 
 export type ContextMenuLocation = "header" | "filter" | "grid";
@@ -27,6 +27,12 @@ export const buildContextMenuDescriptors =
         ...buildAggregationMenuItems(options as MaybeColumn, dataSource)
       );
       descriptors.push(...buildColumnDisplayMenuItems(options as MaybeColumn));
+      descriptors.push({
+        action: "column-settings",
+        icon: "cog",
+        label: `Column Settings`,
+        options,
+      });
     } else if (location === "filter") {
       const { column, filter } = options as MaybeFilter & MaybeColumn;
       const colIsOnlyFilter = filter?.column === column?.name;

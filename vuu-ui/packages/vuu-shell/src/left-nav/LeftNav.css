@@ -1,0 +1,106 @@
+.vuuLeftNav {
+
+    --svg-demo: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M11.3333 11C11.52 11 11.6667 10.8533 11.6667 10.6667C11.6667 10.48 11.52 10.3333 11.3333 10.3333C11.1467 10.3333 11 10.48 11 10.6667C11 10.8533 11.1467 11 11.3333 11Z"/><path d="M5.99999 8.66667C6.36818 8.66667 6.66666 8.36819 6.66666 8C6.66666 7.63181 6.36818 7.33334 5.99999 7.33334C5.63181 7.33334 5.33333 7.63181 5.33333 8C5.33333 8.36819 5.63181 8.66667 5.99999 8.66667Z"/><path d="M8.66667 6C9.03486 6 9.33333 5.70152 9.33333 5.33333C9.33333 4.96514 9.03486 4.66667 8.66667 4.66667C8.29848 4.66667 8 4.96514 8 5.33333C8 5.70152 8.29848 6 8.66667 6Z"/><path d="M8.66667 11.3333C9.03486 11.3333 9.33333 11.0349 9.33333 10.6667C9.33333 10.2985 9.03486 10 8.66667 10C8.29848 10 8 10.2985 8 10.6667C8 11.0349 8.29848 11.3333 8.66667 11.3333Z"/><path d="M11.3333 8.33333C11.52 8.33333 11.6667 8.18666 11.6667 8C11.6667 7.81333 11.52 7.66666 11.3333 7.66666C11.1467 7.66666 11 7.81333 11 8C11 8.18666 11.1467 8.33333 11.3333 8.33333Z"/><path d="M8.66667 8.66667C9.03486 8.66667 9.33333 8.36819 9.33333 8C9.33333 7.63181 9.03486 7.33334 8.66667 7.33334C8.29848 7.33334 8 7.63181 8 8C8 8.36819 8.29848 8.66667 8.66667 8.66667Z"/><path d="M2 2H14V3.33333H2V2Z"/><path d="M3.33333 6.33333C3.88561 6.33333 4.33333 5.88562 4.33333 5.33333C4.33333 4.78105 3.88561 4.33333 3.33333 4.33333C2.78104 4.33333 2.33333 4.78105 2.33333 5.33333C2.33333 5.88562 2.78104 6.33333 3.33333 6.33333Z"/><path d="M3.33333 9C3.88561 9 4.33333 8.55228 4.33333 8C4.33333 7.44772 3.88561 7 3.33333 7C2.78104 7 2.33333 7.44772 2.33333 8C2.33333 8.55228 2.78104 9 3.33333 9Z"/><path d="M3.33333 11.6667C3.88561 11.6667 4.33333 11.2189 4.33333 10.6667C4.33333 10.1144 3.88561 9.66666 3.33333 9.66666C2.78104 9.66666 2.33333 10.1144 2.33333 10.6667C2.33333 11.2189 2.78104 11.6667 3.33333 11.6667Z"/><path d="M11.3333 5.66667C11.52 5.66667 11.6667 5.52 11.6667 5.33333C11.6667 5.14667 11.52 5 11.3333 5C11.1467 5 11 5.14667 11 5.33333C11 5.52 11.1467 5.66667 11.3333 5.66667Z"/><path d="M5.99999 11.3333C6.36818 11.3333 6.66666 11.0349 6.66666 10.6667C6.66666 10.2985 6.36818 10 5.99999 10C5.63181 10 5.33333 10.2985 5.33333 10.6667C5.33333 11.0349 5.63181 11.3333 5.99999 11.3333Z"/><path d="M5.99999 6C6.36818 6 6.66666 5.70152 6.66666 5.33333C6.66666 4.96514 6.36818 4.66667 5.99999 4.66667C5.63181 4.66667 5.33333 4.96514 5.33333 5.33333C5.33333 5.70152 5.63181 6 5.99999 6Z"/><path d="M2 12.6667H14V14H2V12.6667Z"/></svg>');
+    --svg-tables: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2 6H4.66667V3.33334H3.33333C2.6 3.33334 2 3.93334 2 4.66667V6ZM2 9.33334H4.66667V6.66667H2V9.33334ZM5.33333 9.33334H8V6.66667H5.33333V9.33334ZM8.66667 9.33334H11.3333V6.66667H8.66667V9.33334ZM5.33333 6H8V3.33334H5.33333V6ZM8.66667 3.33334V6H11.3333V3.33334H8.66667ZM12 9.33334H14.6667V6.66667H12V9.33334ZM3.33333 12.6667H4.66667V10H2V11.3333C2 12.0667 2.6 12.6667 3.33333 12.6667ZM5.33333 12.6667H8V10H5.33333V12.6667ZM8.66667 12.6667H11.3333V10H8.66667V12.6667ZM12 12.6667H13.3333C14.0667 12.6667 14.6667 12.0667 14.6667 11.3333V10H12V12.6667ZM12 3.33334V6H14.6667V4.66667C14.6667 3.93334 14.0667 3.33334 13.3333 3.33334H12Z"/></svg>');
+    --svg-templates: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M15.3333 12.6667H14L14 3.33334H15.3333L15.3333 12.6667ZM12.6667 12.6667H11.3333L11.3333 3.33334H12.6667L12.6667 12.6667ZM1.33333 12.6667L9.33333 12.6667C9.69999 12.6667 9.99999 12.3667 9.99999 12V4.00001C9.99999 3.63334 9.69999 3.33334 9.33333 3.33334L1.33333 3.33334C0.966661 3.33334 0.666661 3.63334 0.666661 4.00001L0.666661 12C0.666661 12.3667 0.966661 12.6667 1.33333 12.6667ZM1.99999 4.66667L8.66666 4.66667V11.3333L1.99999 11.3333L1.99999 4.66667Z"/></svg>');
+    --svg-layouts: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M15.3333 10H14V11.3333H15.3333V10ZM15.3333 12.6667H14V14H15.3333V12.6667ZM15.3333 7.33333H14V8.66667H15.3333V7.33333ZM10 2H8.66667V3.33333H10V2ZM15.3333 4.66667H14V6H15.3333V4.66667ZM0.666672 14H7.33334V10H0.666672V14ZM2.00001 4.66667H0.666672V6H2.00001V4.66667ZM10 12.6667H8.66667V14H10V12.6667ZM12.6667 2H11.3333V3.33333H12.6667V2ZM15.3333 2H14V3.33333H15.3333V2ZM12.6667 12.6667H11.3333V14H12.6667V12.6667ZM2.00001 7.33333H0.666672V8.66667H2.00001V7.33333ZM7.33334 2H6.00001V3.33333H7.33334V2ZM4.66667 2H3.33334V3.33333H4.66667V2ZM2.00001 2H0.666672V3.33333H2.00001V2Z"/></svg>');
+    --vuu-accent-color: #f37880;
+    --vuu-light-text-primary: #15171b;
+    background-color: #2A015F;
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    padding: 32px 16px;
+    transition: width .3s ease-in-out;
+
+}
+
+.vuuLeftNav-logo {
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: center;
+}
+
+.vuuLeftNav-main {
+    flex: 1 1 auto;
+}
+
+.vuuLeftNav-menu {
+    color: white;
+    margin-top: 102px;
+    padding: 0;
+}
+
+.vuuLeftNav-menuitem {
+    --vuu-icon-color: white;
+    align-items: center;
+    border-radius: 6px;
+    display: flex;
+    font-weight: 700;
+    height: 40px;
+   line-height: 24px;
+   list-style: none;
+   padding: 8px 16px 8px 48px;    
+}
+
+.vuuLeftNav-menuitem[data-icon] {
+    --vuu-icon-left: 32px;
+    --vuu-icon-size: 16px;
+}
+
+.vuuLeftNav-menuitem[data-icon='demo'] {
+    --vuu-icon-svg: var(--svg-demo);
+  }
+.vuuLeftNav-menuitem[data-icon='tables'] {
+    --vuu-icon-svg: var(--svg-tables);
+  }
+.vuuLeftNav-menuitem[data-icon='templates'] {
+    --vuu-icon-svg: var(--svg-templates);
+  }
+.vuuLeftNav-menuitem[data-icon='layouts'] {
+    --vuu-icon-svg: var(--svg-layouts);
+  }
+
+  .vuuLeftNav-menuitem-label {
+    white-space: nowrap;
+  }
+
+.vuuLeftNav-menuitem-active {
+   --vuu-icon-color: var(--vuu-accent-color);
+   background: rgba(255, 255, 255, 0.10);
+   border-left: solid 4px var(--vuu-accent-color);
+}
+
+@container (max-width: 100px) {
+    .vuuLeftNav-menuitem {
+        padding-left: 28px;
+    }
+    .vuuLeftNav-menuitem-label {
+        display: none;
+    }
+}
+
+.vuuLeftNav-buttonBar {
+    align-items: center;
+    display: flex;
+    flex: 0 0 100px;
+    justify-content: center;;
+}
+
+.vuuLeftNav-toggleButton {
+    --vuu-icon-color: var(--vuu-light-text-primary);
+    --vuu-icon-left: 11px;
+    --vuu-icon-top: 10px;
+    --vuu-icon-size: 16px;
+    background-color: var(--vuu-accent-color);
+    border-width: 0;
+    border-radius: 18px;
+    height: 36px;
+    position: relative;
+    width: 36px
+}
+
+.vuuLeftNav-toggleButton-open {
+    --vuu-icon-left: 9px;
+
+}

@@ -2,7 +2,6 @@ import React, {
   createContext,
   HTMLAttributes,
   ReactNode,
-  ReactElement,
   isValidElement,
   cloneElement,
   useContext,
@@ -25,9 +24,29 @@ export interface ThemeContextProps {
 
 export const ThemeContext = createContext<ThemeContextProps>({
   density: "high",
-  theme: "salt-theme",
+  theme: "salt",
   themeMode: "light",
 });
+
+export type ThemeClasses = [string, string, string];
+
+const DEFAULT_THEME_ATTRIBUTES: ThemeClasses = [
+  "salt",
+  "salt-density-high",
+  "light",
+];
+
+export const useThemeAttributes = (): [string, string, string] => {
+  const context = useContext(ThemeContext);
+  if (context) {
+    return [
+      `${context.theme}-theme`,
+      `salt-density-${context.density}`,
+      context.themeMode,
+    ];
+  }
+  return DEFAULT_THEME_ATTRIBUTES;
+};
 
 const createThemedChildren = (
   children: ReactNode,
@@ -35,13 +54,14 @@ const createThemedChildren = (
   themeMode: ThemeMode,
   density: Density
 ) => {
+  console.log("create themed children");
   if (isValidElement<HTMLAttributes<HTMLElement>>(children)) {
     return cloneElement(children, {
       className: cx(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         children.props?.className,
-        theme,
-        `salt-density-${density}`
+        `${theme}-theme`,
+        `${theme}-density-${density}`
       ),
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
@@ -57,14 +77,15 @@ const createThemedChildren = (
 };
 
 interface ThemeProviderProps {
-  children: ReactElement;
+  applyThemeClasses?: boolean;
+  children: ReactNode;
   density?: Density;
   theme?: string;
   themeMode?: ThemeMode;
-  applyClassesTo?: TargetElement;
 }
 
 export const ThemeProvider = ({
+  applyThemeClasses = false,
   children,
   theme: themeProp,
   themeMode: themeModeProp,
@@ -79,12 +100,9 @@ export const ThemeProvider = ({
   const density = densityProp ?? inheritedDensity ?? DEFAULT_DENSITY;
   const themeMode = themeModeProp ?? inheritedThemeMode ?? DEFAULT_THEME_MODE;
   const theme = themeProp ?? inheritedTheme ?? DEFAULT_THEME;
-  const themedChildren = createThemedChildren(
-    children,
-    theme,
-    themeMode,
-    density
-  );
+  const themedChildren = applyThemeClasses
+    ? createThemedChildren(children, theme, themeMode, density)
+    : children;
 
   return (
     <ThemeContext.Provider value={{ themeMode, density, theme }}>

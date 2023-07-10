@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import {
+  RefObject,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
 import { useResizeObserver } from "./use-resize-observer";
 
 const HeightOnly = ["height", "scrollHeight"];
 
 export const useViewportTracking = (
-  root,
-  highlightedIdx,
+  root: RefObject<HTMLDivElement>,
+  highlightedIdx: number,
   stickyHeaders = false
 ) => {
   const scrollTop = useRef(0);
@@ -29,7 +35,9 @@ export const useViewportTracking = (
             : t - headerHeight;
 
         scrolling.current = true;
-        root.current.scrollTop = scrollTop.current;
+        if (root.current) {
+          root.current.scrollTop = scrollTop.current;
+        }
         setTimeout(() => {
           scrolling.current = false;
         });
@@ -60,16 +68,18 @@ export const useViewportTracking = (
       highlightedIdx !== -1 &&
       rootScrollHeight.current > rootHeight.current
     ) {
-      const item = root.current.querySelector(`
-      [data-idx='${highlightedIdx}'],
-      [aria-posinset='${highlightedIdx + 1}']
-      `);
-      if (item === null) {
-        console.log(
-          "[useViewportTracking], is this virtualised ?  we're going to have to know rowHeight"
-        );
-      } else {
-        scrollIntoView(item);
+      if (root.current) {
+        const item = root.current.querySelector(`
+        [data-idx='${highlightedIdx}'],
+        [aria-posinset='${highlightedIdx + 1}']
+        `);
+        if (item === null) {
+          console.log(
+            "[useViewportTracking], is this virtualised ?  we're going to have to know rowHeight"
+          );
+        } else {
+          scrollIntoView(item);
+        }
       }
     }
   }, [highlightedIdx, root, scrollIntoView]);

@@ -1,0 +1,6 @@
+.vuu-purple-theme {
+  --salt-delay-instant: 100;
+  --salt-delay-perceptible: 300;
+  --salt-delay-notable: 1000;
+  --salt-delay-cutoff: 10000;
+}

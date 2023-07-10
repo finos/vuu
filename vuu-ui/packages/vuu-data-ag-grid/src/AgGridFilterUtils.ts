@@ -5,9 +5,8 @@ import {
   MultiClauseFilter,
   SingleValueFilterClauseOp,
 } from "@finos/vuu-filter-types";
-import { filterAsQuery } from "@finos/vuu-filters";
-
 import { VuuSortCol } from "@finos/vuu-protocol-types";
+import { filterAsQuery } from "@finos/vuu-utils";
 
 export type AgGridSetFilter = {
   filterType: "set";

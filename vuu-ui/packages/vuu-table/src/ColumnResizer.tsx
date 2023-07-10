@@ -51,7 +51,6 @@ export const ColumnResizer = ({
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       onDragStart(e);
-
       position.current = Math.round(e.clientX);
 
       window.addEventListener("mouseup", onMouseUp);

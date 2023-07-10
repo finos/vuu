@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig-emit-types.json",
-  "compilerOptions": {
-    "outDir": "../../dist/vuu-datatable/types"
-  },
-  "include": [
-    "src"
-  ]
-}

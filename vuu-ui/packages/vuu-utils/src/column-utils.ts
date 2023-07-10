@@ -1,3 +1,4 @@
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   ColumnType,
@@ -10,6 +11,7 @@ import {
   TableHeading,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
+import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import {
   VuuAggregation,
   VuuAggType,
@@ -20,10 +22,6 @@ import {
   VuuSort,
 } from "@finos/vuu-protocol-types";
 import { CSSProperties } from "react";
-
-import { DataSourceRow } from "@finos/vuu-data";
-import { DataSourceFilter } from "@finos/vuu-data-types";
-import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
 export interface ColumnMap {
@@ -306,7 +304,8 @@ export const sortPinnedColumns = (
   const leftPinnedColumns: KeyedColumnDescriptor[] = [];
   const rightPinnedColumns: KeyedColumnDescriptor[] = [];
   const restColumns: KeyedColumnDescriptor[] = [];
-  let pinnedWidthLeft = 0;
+  // let pinnedWidthLeft = 0;
+  let pinnedWidthLeft = 4;
   for (const column of columns) {
     // prettier-ignore
     switch(column.pin){
@@ -388,13 +387,21 @@ export const getTableHeadings = (
 
 export const getColumnStyle = ({
   pin,
-  pinnedOffset,
+  pinnedOffset = pin === "left" ? 0 : 4,
   width,
 }: KeyedColumnDescriptor) =>
   pin === "left"
-    ? ({ left: pinnedOffset, width } as CSSProperties)
+    ? ({
+        left: pinnedOffset,
+        width,
+        "--pin-width": `${pinnedOffset + width - 5}px`,
+      } as CSSProperties)
     : pin === "right"
-    ? ({ right: pinnedOffset, width } as CSSProperties)
+    ? ({
+        right: pinnedOffset,
+        width,
+        "--pin-width": `${pinnedOffset + width}px`,
+      } as CSSProperties)
     : { width };
 
 export const setAggregations = (
@@ -551,6 +558,36 @@ export const findColumn = (
   }
 };
 
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: KeyedColumnDescriptor
+): KeyedColumnDescriptor[];
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: string,
+  options: Partial<ColumnDescriptor>
+): KeyedColumnDescriptor[];
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: string | KeyedColumnDescriptor,
+  options?: Partial<ColumnDescriptor>
+) {
+  const targetColumn =
+    typeof column === "string"
+      ? columns.find((col) => col.name === column)
+      : column;
+  if (targetColumn) {
+    const replacementColumn = options
+      ? { ...targetColumn, ...options }
+      : targetColumn;
+    return columns.map((col) =>
+      col.name === replacementColumn.name ? replacementColumn : col
+    );
+  } else {
+    throw Error("column-utils.replaceColun, column not found");
+  }
+}
+
 export const toDataSourceColumns = (column: ColumnDescriptor) =>
   column.expression
     ? `${column.name}:${column.serverDataType}:${column.expression}`
@@ -616,5 +653,26 @@ export const visibleColumnAtIndex = (
     return columns[index];
   } else {
     return columns.filter(isNotHidden).at(index);
+  }
+};
+
+const { DEPTH, IS_LEAF } = metadataKeys;
+// Get the value for a specific columns within a grouped column
+export const getGroupValueAndOffset = (
+  columns: KeyedColumnDescriptor[],
+  row: DataSourceRow
+): [unknown, number] => {
+  const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
+  // Depth can be greater tha group columns when we have just removed a column from groupby
+  // but new data has not yet been received.
+  if (isLeaf || depth > columns.length) {
+    return [null, depth === null ? 0 : Math.max(0, depth - 1)];
+  } else if (depth === 0) {
+    return ["$root", 0];
+  } else {
+    // offset 1 for now to allow for $root
+    const { key, valueFormatter } = columns[depth - 1];
+    const value = valueFormatter(row[key]);
+    return [value, depth - 1];
   }
 };

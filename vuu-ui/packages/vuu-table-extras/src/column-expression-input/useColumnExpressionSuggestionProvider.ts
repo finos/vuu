@@ -7,14 +7,17 @@ import {
   stringOperators,
   toSuggestions,
 } from "@finos/vuu-codemirror";
-import { getTypeaheadParams, useTypeaheadSuggestions } from "@finos/vuu-data";
+import {
+  getTypeaheadParams,
+  useTypeaheadSuggestions,
+} from "@finos/vuu-data-react";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { VuuTable } from "@finos/vuu-protocol-types";
 import {
   ColumnExpressionOperator,
   ColumnExpressionSuggestionType,
   IExpressionSuggestionProvider,
 } from "@finos/vuu-table-extras";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { VuuTable } from "@finos/vuu-protocol-types";
 import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import {

@@ -8,7 +8,7 @@ import {
   ClientToServerMenuRPC,
   ClientToServerEditRpc,
 } from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
   EventEmitter,
   isSelected,
@@ -24,7 +24,6 @@ import type {
   DataSourceEvents,
   SubscribeCallback,
   SubscribeProps,
-  DataSourceRow,
 } from "./data-source";
 import {
   MenuRpcResponse,

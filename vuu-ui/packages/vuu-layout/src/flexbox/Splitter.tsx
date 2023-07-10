@@ -1,14 +1,21 @@
-import cx from 'classnames';
-import React, { HTMLAttributes, KeyboardEvent, useCallback, useRef, useState } from 'react';
+import cx from "classnames";
+import React, {
+  HTMLAttributes,
+  KeyboardEvent,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 
-import './Splitter.css';
+import "./Splitter.css";
 
 export type SplitterDragStartHandler = (index: number) => void;
 export type SplitterDragHandler = (index: number, distance: number) => void;
 export type SplitterDragEndHandler = () => void;
 
 export interface SplitterProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, 'onDrag' | 'onDragStart'> {
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onDrag" | "onDragStart"> {
+  //TODO change to alignment (vertical | horiz ontal)
   column: boolean;
   index: number;
   onDragStart: SplitterDragStartHandler;
@@ -22,7 +29,7 @@ export const Splitter = React.memo(function Splitter({
   onDrag,
   onDragEnd,
   onDragStart,
-  style
+  style,
 }: SplitterProps) {
   const ignoreClick = useRef<boolean>();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -33,13 +40,13 @@ export const Splitter = React.memo(function Splitter({
   const handleKeyDownDrag = useCallback(
     ({ key, shiftKey }) => {
       const distance = shiftKey ? 10 : 1;
-      if (column && key === 'ArrowDown') {
+      if (column && key === "ArrowDown") {
         onDrag(index, distance);
-      } else if (column && key === 'ArrowUp') {
+      } else if (column && key === "ArrowUp") {
         onDrag(index, -distance);
-      } else if (!column && key === 'ArrowLeft') {
+      } else if (!column && key === "ArrowLeft") {
         onDrag(index, -distance);
-      } else if (!column && key === 'ArrowRight') {
+      } else if (!column && key === "ArrowRight") {
         onDrag(index, distance);
       }
     },
@@ -49,8 +56,8 @@ export const Splitter = React.memo(function Splitter({
   const handleKeyDownInitDrag = useCallback(
     (evt) => {
       const { key } = evt;
-      const horizontalMove = key === 'ArrowLeft' || key === 'ArrowRIght';
-      const verticalMove = key === 'ArrowUp' || key === 'ArrowDown';
+      const horizontalMove = key === "ArrowLeft" || key === "ArrowRIght";
+      const verticalMove = key === "ArrowUp" || key === "ArrowDown";
       if ((column && verticalMove) || (!column && horizontalMove)) {
         onDragStart(index);
         handleKeyDownDrag(evt);
@@ -66,7 +73,7 @@ export const Splitter = React.memo(function Splitter({
   const handleMouseMove = useCallback(
     (e) => {
       ignoreClick.current = true;
-      const pos = e[column ? 'clientY' : 'clientX'];
+      const pos = e[column ? "clientY" : "clientX"];
       const diff = pos - lastPos.current;
       if (pos && pos !== lastPos.current) {
         onDrag(index, diff);
@@ -77,8 +84,8 @@ export const Splitter = React.memo(function Splitter({
   );
 
   const handleMouseUp = useCallback(() => {
-    window.removeEventListener('mousemove', handleMouseMove, false);
-    window.removeEventListener('mouseup', handleMouseUp, false);
+    window.removeEventListener("mousemove", handleMouseMove, false);
+    window.removeEventListener("mouseup", handleMouseUp, false);
     onDragEnd();
     setActive(false);
     rootRef.current?.focus();
@@ -88,8 +95,8 @@ export const Splitter = React.memo(function Splitter({
     (e) => {
       lastPos.current = column ? e.clientY : e.clientX;
       onDragStart(index);
-      window.addEventListener('mousemove', handleMouseMove, false);
-      window.addEventListener('mouseup', handleMouseUp, false);
+      window.addEventListener("mousemove", handleMouseMove, false);
+      window.addEventListener("mouseup", handleMouseUp, false);
       e.preventDefault();
       setActive(true);
     },
@@ -108,7 +115,7 @@ export const Splitter = React.memo(function Splitter({
     keyDownHandlerRef.current = handleKeyDownInitDrag;
   };
 
-  const className = cx('Splitter', 'focusable', { active, column });
+  const className = cx("Splitter", "focusable", { active, column });
   return (
     <div
       className={className}
@@ -120,7 +127,8 @@ export const Splitter = React.memo(function Splitter({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       onMouseDown={handleMouseDown}
-      tabIndex={0}>
+      tabIndex={0}
+    >
       <div className="grab-zone" />
     </div>
   );

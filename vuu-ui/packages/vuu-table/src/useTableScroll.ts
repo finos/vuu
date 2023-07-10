@@ -28,6 +28,7 @@ const getPctScroll = (container: HTMLElement) => {
   const { clientHeight, clientWidth, scrollHeight, scrollWidth } = container;
   const pctScrollLeft = scrollLeft / (scrollWidth - clientWidth);
   const pctScrollTop = scrollTop / (scrollHeight - clientHeight);
+
   return [pctScrollLeft, pctScrollTop];
 };
 
@@ -96,6 +97,10 @@ export const useTableScroll = ({
       const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
       const rootScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
       const rootScrollTop = Math.round(pctScrollTop * maxScrollTop);
+      console.log(
+        `pctScrollTop ${pctScrollTop}, maxScrollTop ${maxScrollTop} rootScrollTop ${rootScrollTop}`
+      );
+
       contentContainer.scrollTo({
         left: rootScrollLeft,
         top: rootScrollTop,

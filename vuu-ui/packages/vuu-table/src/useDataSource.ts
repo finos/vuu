@@ -1,14 +1,17 @@
 import {
   DataSource,
   DataSourceConfigMessage,
-  DataSourceRow,
   DataSourceSubscribedMessage,
   SubscribeCallback,
-  VuuFeatureMessage,
-  isVuuFeatureAction,
   VuuFeatureInvocationMessage,
-  isVuuFeatureInvocation,
+  VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
+
+import {
+  isVuuFeatureAction,
+  isVuuFeatureInvocation,
+} from "@finos/vuu-data-react";
 import { VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

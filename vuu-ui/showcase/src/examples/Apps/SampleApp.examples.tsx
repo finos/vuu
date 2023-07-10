@@ -14,6 +14,7 @@ const viewProps = {
 
 export const SampleApp = () => {
   const { features, schemas } = useMockFeatureData();
+  console.log({ features, schemas });
   return (
     <Shell
       leftSidePanel={
@@ -28,8 +29,8 @@ export const SampleApp = () => {
       user={user}
       style={
         {
-          "--vuuShell-height": "100%",
-          "--vuuShell-width": "100%",
+          "--vuuShell-height": "100vh",
+          "--vuuShell-width": "100vw",
         } as CSSProperties
       }
     />

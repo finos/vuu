@@ -14,7 +14,7 @@ const createRoutes = (stories: ExamplesModule, prefix = ""): JSX.Element[] =>
         ? routes
             .concat(<Route key={label} path={id} element={label} />)
             .concat(createRoutes(Value, `${id}/`))
-        : routes.concat(<Route key={label} path={id} element={<Value />} />);
+        : routes.concat(<Route key={label} path={id} />);
     }, []);
 
 interface AppRoutesProps {

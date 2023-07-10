@@ -1,11 +1,25 @@
+import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   RangeTuple,
   Selection,
   SelectionItem,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
+import { metadataKeys } from "./column-utils";
 
 const NO_SELECTION: number[] = [];
+
+const { SELECTED } = metadataKeys;
+
+export const RowSelected = {
+  False: 0,
+  True: 1,
+  First: 2,
+  Last: 4,
+};
+
+export const isRowSelected = (row: DataSourceRow): boolean =>
+  (row[SELECTED] & RowSelected.True) === RowSelected.True;
 
 const inAscendingOrder = (item1: SelectionItem, item2: SelectionItem) => {
   const n1: number = typeof item1 === "number" ? item1 : item1[0];
@@ -34,6 +48,86 @@ export const deselectItem = (
   return NO_SELECTION;
 };
 
+const newSelectedFillsGapOrExtends = (
+  selection: Selection,
+  itemIndex: number
+): boolean => {
+  for (let i = 0; i < selection.length; i++) {
+    const item = selection[i];
+    if (typeof item === "number") {
+      if (item === itemIndex - 1) {
+        return true;
+      } else if (item > itemIndex) {
+        return false;
+      }
+    } else if (item[0] === itemIndex + 1 || item[1] === itemIndex - 1) {
+      return true;
+    } else if (item[0] > itemIndex) {
+      return false;
+    }
+  }
+  return false;
+};
+
+const fillGapOrExtendSelection = (
+  selection: Selection,
+  itemIndex: number
+): Selection => {
+  for (let i = 0; i < selection.length; i++) {
+    const item = selection[i];
+    if (typeof item === "number") {
+      if (item === itemIndex - 1) {
+        const nextSelectionItem = selection[i + 1];
+        if (nextSelectionItem === itemIndex + 1) {
+          const newRange: SelectionItem = [item, nextSelectionItem];
+          return selection
+            .slice(0, i)
+            .concat([newRange])
+            .concat(selection.slice(i + 2));
+        } else {
+          const newRange: SelectionItem = [item, itemIndex];
+          return selection
+            .slice(0, i)
+            .concat([newRange])
+            .concat(selection.slice(i + 1));
+        }
+      } else if (item > itemIndex) {
+        break;
+      }
+    } else if (item[0] === itemIndex + 1) {
+      const newRange: SelectionItem = [itemIndex, item[1]];
+      return selection
+        .slice(0, i)
+        .concat([newRange])
+        .concat(selection.slice(i + 1));
+    } else if (item[1] === itemIndex - 1) {
+      // check to see whether another contiguous range follows
+      const nextItem = selection[i + 1];
+      if (Array.isArray(nextItem) && nextItem[0] === itemIndex + 1) {
+        const newRange: SelectionItem = [item[0], nextItem[1]];
+        return selection
+          .slice(0, i)
+          .concat([newRange])
+          .concat(selection.slice(i + 2));
+      } else if (typeof nextItem === "number" && nextItem === itemIndex + 1) {
+        const newRange: SelectionItem = [item[0], nextItem];
+        return selection
+          .slice(0, i)
+          .concat([newRange])
+          .concat(selection.slice(i + 2));
+      } else {
+        const newRange: SelectionItem = [item[0], itemIndex];
+        return selection
+          .slice(0, i)
+          .concat([newRange])
+          .concat(selection.slice(i + 1));
+      }
+    }
+  }
+
+  return selection;
+};
+
 export const selectItem = (
   selectionModel: TableSelectionModel,
   selected: Selection,
@@ -42,8 +136,6 @@ export const selectItem = (
   keepExistingSelection = false,
   activeItemIndex = -1
 ): Selection => {
-  //   const { current: active } = lastActive;
-  //   const inactiveRange = active === -1;
   const singleSelect = selectionModel === "single";
   const multiSelect =
     selectionModel === "extended" || selectionModel === "checkbox";
@@ -65,7 +157,12 @@ export const selectItem = (
       return insertRange(selected, range);
     }
   } else if (!rangeSelect) {
-    return selected?.concat(itemIndex).sort(inAscendingOrder);
+    // what if we now have a range because we just filled  agap between 2
+    if (newSelectedFillsGapOrExtends(selected, itemIndex)) {
+      return fillGapOrExtendSelection(selected, itemIndex);
+    } else {
+      return selected?.concat(itemIndex).sort(inAscendingOrder);
+    }
   } else if (multiSelect) {
     // const [from, to] = idx > active ? [active, idx] : [idx, active];
     // newSelected = selected?.slice();
@@ -139,6 +236,33 @@ const includedInRange = (
 const rangeIncludes = (range: RangeTuple, index: number) =>
   index >= range[0] && index <= range[1];
 
+const SINGLE_SELECTED_ROW =
+  RowSelected.True + RowSelected.First + RowSelected.Last;
+const FIRST_SELECTED_ROW_OF_BLOCK = RowSelected.True + RowSelected.First;
+const LAST_SELECTED_ROW_OF_BLOCK = RowSelected.True + RowSelected.Last;
+
+export const getSelectionStatus = (
+  selected: Selection,
+  itemIndex: number
+): number => {
+  for (const item of selected) {
+    if (typeof item === "number") {
+      if (item === itemIndex) {
+        return SINGLE_SELECTED_ROW;
+      }
+    } else if (rangeIncludes(item, itemIndex)) {
+      if (itemIndex === item[0]) {
+        return FIRST_SELECTED_ROW_OF_BLOCK;
+      } else if (itemIndex === item[1]) {
+        return LAST_SELECTED_ROW_OF_BLOCK;
+      } else {
+        return RowSelected.True;
+      }
+    }
+  }
+  return RowSelected.False;
+};
+
 export const isSelected = (selected: Selection, itemIndex: number) => {
   for (const item of selected) {
     if (typeof item === "number") {
@@ -190,3 +314,8 @@ function splitRange([from, to]: RangeTuple, itemIndex: number): Selection {
     ];
   }
 }
+
+export type SelectionDiff = {
+  added: SelectionItem[];
+  removed: SelectionItem[];
+};

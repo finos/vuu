@@ -1,8 +1,8 @@
 import { getCookieValue } from "@finos/vuu-utils";
 
-export const getAuthDetailsFromCookies = () => {
-  const username = getCookieValue("vuu-username");
-  const token = getCookieValue("vuu-auth-token");
+export const getAuthDetailsFromCookies = (): [string, string] => {
+  const username = getCookieValue("vuu-username") as string;
+  const token = getCookieValue("vuu-auth-token") as string;
   return [username, token];
 };
 

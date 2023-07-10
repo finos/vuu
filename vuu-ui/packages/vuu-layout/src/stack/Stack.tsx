@@ -7,7 +7,7 @@ import React, {
   MouseEvent,
   ReactElement,
   ReactNode,
-  useCallback
+  useCallback,
 } from "react";
 import { StackProps } from "./stackTypes";
 
@@ -15,8 +15,7 @@ import "./Stack.css";
 
 const classBase = "Tabs";
 
-const getDefaultTabIcon = () =>
-  undefined;
+const getDefaultTabIcon = () => undefined;
 
 const getDefaultTabLabel = (component: ReactElement, tabIndex: number) =>
   component.props?.title ?? `Tab ${tabIndex + 1}`;
@@ -118,7 +117,7 @@ export const Stack = forwardRef(function Stack(
           key={childId ?? idx}
           id={rootId}
           label={getTabLabel(child, idx)}
-          closeable={closeable}
+          closeable={closeable && TabstripProps?.enableCloseTab !== false}
           editable={TabstripProps?.enableRenameTab !== false}
         />
       );
@@ -148,6 +147,9 @@ export const Stack = forwardRef(function Stack(
           >
             <Tabstrip
               {...TabstripProps}
+              activeTabIndex={
+                TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
+              }
               enableRenameTab={TabstripProps?.enableRenameTab !== false}
               enableAddTab={enableAddTab}
               enableCloseTab={enableCloseTabs}
@@ -157,9 +159,6 @@ export const Stack = forwardRef(function Stack(
               onCloseTab={handleTabClose}
               onExitEditMode={handleExitEditMode}
               onMouseDown={handleMouseDown}
-              activeTabIndex={
-                TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
-              }
             >
               {renderTabs()}
             </Tabstrip>

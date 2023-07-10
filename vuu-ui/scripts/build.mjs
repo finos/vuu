@@ -67,6 +67,7 @@ export default async function main(customConfig) {
       name.match(/^@lezer/)
   );
 
+  const includeLicense = getCommandLineArg("--license");
   const watch = getCommandLineArg("--watch");
   const debug = getCommandLineArg("--debug");
   const development = watch || debug || getCommandLineArg("--dev");
@@ -221,7 +222,10 @@ export default async function main(customConfig) {
       );
     }
   }
-  buildTasks.push(copyLicense());
+
+  if (includeLicense) {
+    buildTasks.push(copyLicense());
+  }
   if (hasReadme) {
     buildTasks.push(copyReadme());
   }

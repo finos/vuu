@@ -1,7 +1,11 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
 import { RowAtIndexFunc } from "./ArrayProxy";
-import { InstrumentRowGenerator } from "./instrument-row-generator";
+import {
+  InstrumentRowGenerator,
+  InstrumentColumnGenerator,
+} from "./instrument-generator";
+import { OrderRowGenerator, OrderColumnGenerator } from "./order-generator";
 
 export const VuuColumnGenerator = (columnCount: number): string[] =>
   ["Row No"].concat(
@@ -10,16 +14,16 @@ export const VuuColumnGenerator = (columnCount: number): string[] =>
       .map((_, i) => `Column ${i + 1}`)
   );
 
-export type RowGenerator = (
-  columns: number | string[]
-) => RowAtIndexFunc<VuuRowDataItemType[]>;
+export type RowGenerator<T = VuuRowDataItemType> = (
+  columns: string[]
+) => RowAtIndexFunc<T[]>;
 
 export type ColumnGenerator = (
   columns?: number | string[],
   columnConfig?: { [key: string]: Partial<ColumnDescriptor> }
 ) => ColumnDescriptor[];
 
-export const DefaultRowGenerator: RowGenerator =
+export const DefaultRowGenerator: RowGenerator<string> =
   (columns: string[]) => (index) => {
     return [`row ${index + 1}`].concat(
       Array(columns.length)
@@ -46,28 +50,6 @@ export const DefaultColumnGenerator: ColumnGenerator = (
   }
 };
 
-export const InstrumentColumnGenerator: ColumnGenerator = (
-  columns = [],
-  columnConfig = {}
-) => {
-  const instrumentColumns: ColumnDescriptor[] = [
-    { name: "bbg", serverDataType: "string" },
-    { name: "currency", serverDataType: "string" },
-    { name: "description", serverDataType: "string" },
-    { name: "exchange", serverDataType: "string" },
-    { name: "isin", serverDataType: "string" },
-    { name: "lotSize", serverDataType: "int" },
-    { name: "ric", serverDataType: "string" },
-  ];
-  if (typeof columns === "number") {
-    throw Error("InstrumentColumnGenerator must be passed columns (strings)");
-  } else if (columns.length === 0) {
-    return instrumentColumns;
-  } else {
-    return instrumentColumns;
-  }
-};
-
 export const getRowGenerator = (table?: VuuTable): RowGenerator => {
   if (table?.table === "instruments") {
     return InstrumentRowGenerator;
@@ -77,10 +59,11 @@ export const getRowGenerator = (table?: VuuTable): RowGenerator => {
 
 export const getColumnAndRowGenerator = (
   table?: VuuTable
-  // columns?: string[]
 ): [ColumnGenerator, RowGenerator] => {
   if (table?.table === "instruments") {
     return [InstrumentColumnGenerator, InstrumentRowGenerator];
+  } else if (table?.table === "orders") {
+    return [OrderColumnGenerator, OrderRowGenerator];
   }
 
   return [DefaultColumnGenerator, DefaultRowGenerator];

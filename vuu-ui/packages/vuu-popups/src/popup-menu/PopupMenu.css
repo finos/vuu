@@ -1,0 +1,30 @@
+.vuuPopupMenu {
+
+    --vuu-icon-color: #606477;
+    --vuu-icon-height: 20px;
+    --vuu-icon-left: 0px;
+    --vuu-icon-size: 16px;
+    --vuu-icon-top: 0px;
+    --vuu-icon-width: 20px;
+
+    background: var(--vuuPopupMenu-background, transparent);
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 2px;
+    padding: 2px;
+}
+
+.vuuPopupMenu:hover {
+    --vuu-icon-color: #15171B;
+    background-color: #F37880;
+}
+
+.vuuPopupMenu-open:hover,
+.vuuPopupMenu-open {
+    background-color: #6D18BD;
+    --vuu-icon-color: white;
+
+}
+
+  

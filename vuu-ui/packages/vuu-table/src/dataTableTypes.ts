@@ -1,14 +1,14 @@
 import {
   DataSource,
-  DataSourceRow,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import {
-  KeyedColumnDescriptor,
   GridConfig,
-  TableHeadings,
+  KeyedColumnDescriptor,
   SelectionChangeHandler,
+  TableHeadings,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent } from "react";
@@ -35,6 +35,11 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;
   rowHeight?: number;
+  /**
+   * Selection Bookends style the left and right edge of a selection block.
+   * They are optional, value defaults to zero.
+   */
+  selectionBookendWidth?: number;
   selectionModel?: TableSelectionModel;
   width?: number;
   zebraStripes?: boolean;

@@ -43,8 +43,8 @@ export const makeSuggestions = (
 ) => {
   const uniqueValues = getUniqueValues(dataSource, column, pattern);
   if (uniqueValues.length > 20) {
-    return uniqueValues?.slice(0, 20);
+    return uniqueValues?.slice(0, 20).map((v) => v.toString());
   } else {
-    return uniqueValues;
+    return uniqueValues.map((v) => v.toString());
   }
 };

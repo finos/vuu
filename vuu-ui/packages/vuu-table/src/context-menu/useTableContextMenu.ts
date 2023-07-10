@@ -2,10 +2,9 @@
 import { DataSource } from "@finos/vuu-data";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
-import { removeColumnFromFilter } from "@finos/vuu-filters";
-import { MenuActionHandler } from "@finos/vuu-popups";
+import { removeColumnFromFilter } from "@finos/vuu-utils";
 import { VuuFilter } from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, MenuActionHandler } from "@finos/vuu-data-types";
 import { PersistentColumnAction } from "../useTableModel";
 import {
   addGroupColumn,
@@ -79,6 +78,7 @@ export const useTableContextMenu = ({
         case "column-pin-left": return onPersistentColumnOperation({type: "pinColumn", column, pin: "left"}), true;
         case "column-pin-right": return onPersistentColumnOperation({type: "pinColumn", column, pin: "right"}), true;
         case "column-unpin": return onPersistentColumnOperation({type: "pinColumn", column, pin: undefined}), true
+        case "column-settings": return onPersistentColumnOperation({type: "columnSettings", column}), true
         default:
       }
     }

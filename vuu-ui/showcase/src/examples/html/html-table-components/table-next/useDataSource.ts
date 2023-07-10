@@ -1,4 +1,5 @@
-import { DataSource, DataSourceRow } from "@finos/vuu-data";
+import { DataSource } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { useCallback, useMemo, useState } from "react";
 

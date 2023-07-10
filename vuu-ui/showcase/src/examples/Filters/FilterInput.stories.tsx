@@ -1,7 +1,8 @@
+import { NamedDataSourceFilter } from "@finos/vuu-data-types";
+import { JsonTable } from "@finos/vuu-datatable";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
-  filterAsQuery,
   FilterInput,
   FilterSaveOptions,
   filterSubmissionHandler,
@@ -9,16 +10,13 @@ import {
   updateFilter,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
-import { useCallback, useMemo, useState } from "react";
-import { JsonTable } from "@finos/vuu-datatable";
-import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
-
-import {} from "@finos/vuu-utils";
 import { FilterSubmissionMode } from "@finos/vuu-filters/src/filter-input/useFilterAutoComplete";
-import { Button } from "@salt-ds/core";
 import { useFilterConfig } from "@finos/vuu-filters/src/use-filter-config";
+import { filterAsQuery } from "@finos/vuu-utils";
 import { Dropdown, SelectionChangeHandler } from "@heswell/salt-lab";
-import { NamedDataSourceFilter } from "@finos/vuu-data-types";
+import { Button } from "@salt-ds/core";
+import { useCallback, useMemo, useState } from "react";
+import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
 
 let displaySequence = 1;
 

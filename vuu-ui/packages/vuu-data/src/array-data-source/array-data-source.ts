@@ -1,6 +1,6 @@
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
-import { filterPredicate } from "@finos/vuu-filters";
+import { filterPredicate } from "@finos/vuu-filter-parser";
 import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
@@ -15,7 +15,7 @@ import {
   buildColumnMap,
   ColumnMap,
   EventEmitter,
-  isSelected,
+  getSelectionStatus,
   KeySet,
   logger,
   metadataKeys,
@@ -27,19 +27,18 @@ import {
   DataSource,
   DataSourceConstructorProps,
   DataSourceEvents,
-  DataSourceRow,
   SubscribeCallback,
   SubscribeProps,
   vanillaConfig,
   WithFullConfig,
 } from "../data-source";
+import { TableSchema } from "../message-utils";
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "../vuuUIMessageTypes";
 import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
-import { TableSchema } from "../message-utils";
 import { sortRows } from "./sort-utils";
 
 export interface ArrayDataSourceConstructorProps
@@ -51,7 +50,7 @@ export interface ArrayDataSourceConstructorProps
 
 const { debug } = logger("ArrayDataSource");
 
-const { IDX, SELECTED } = metadataKeys;
+const { RENDER_IDX, SELECTED } = metadataKeys;
 const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
 
 const toDataSourceRow = (
@@ -83,10 +82,16 @@ const buildTableSchema = (columns: ColumnDescriptor[]): TableSchema => {
   return schema;
 };
 
-const toClientRow = (row: DataSourceRow, keys: KeySet) => {
+const toClientRow = (
+  row: DataSourceRow,
+  keys: KeySet,
+  selection: Selection
+) => {
   const [rowIndex] = row;
   const clientRow = row.slice() as DataSourceRow;
-  clientRow[1] = keys.keyFor(rowIndex);
+  clientRow[RENDER_IDX] = keys.keyFor(rowIndex);
+  clientRow[SELECTED] = getSelectionStatus(selection, rowIndex);
+
   return clientRow;
 };
 
@@ -101,6 +106,7 @@ export class ArrayDataSource
   private groupedData: undefined | DataSourceRow[];
   private sortedData: undefined | DataSourceRow[];
   private groupMap: undefined | GroupMap;
+  private selectedRows: Selection = [];
   private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
   private tableSchema: TableSchema;
@@ -247,31 +253,8 @@ export class ArrayDataSource
 
   select(selected: Selection) {
     debug?.(`select ${JSON.stringify(selected)}`);
-    const updatedRows: DataSourceRow[] = [];
-    // TODO rewrite this without the loop through entire dataset
-    // store the selection locally and identify the changes
-    for (const row of this.#data) {
-      const { [IDX]: rowIndex, [SELECTED]: sel } = row;
-      const wasSelected = sel === 1;
-      const nowSelected = isSelected(selected, rowIndex);
-      if (nowSelected !== wasSelected) {
-        const selectedRow = row.slice() as DataSourceRow;
-        selectedRow[SELECTED] = nowSelected ? 1 : 0;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        this.#data[rowIndex] = selectedRow;
-        updatedRows.push(selectedRow);
-      }
-    }
-
-    if (updatedRows.length > 0) {
-      this.clientCallback?.({
-        clientViewportId: this.viewport,
-        mode: "update",
-        type: "viewport-update",
-        rows: updatedRows,
-      });
-    }
+    this.selectedRows = selected;
+    this.setRange(resetRange(this.#range), true);
   }
 
   openTreeNode(key: string) {
@@ -334,11 +317,15 @@ export class ArrayDataSource
         : this.#range;
     const data =
       this.sortedData ?? this.groupedData ?? this.filteredData ?? this.#data;
+
+    const rowsWithinViewport = data
+      .slice(rowRange.from, rowRange.to)
+      .map((row) => toClientRow(row, this.keys, this.selectedRows));
+
     this.clientCallback?.({
       clientViewportId: this.viewport,
-      rows: data
-        .slice(rowRange.from, rowRange.to)
-        .map((row) => toClientRow(row, this.keys)),
+      mode: "batch",
+      rows: rowsWithinViewport,
       size: data.length,
       type: "viewport-update",
     });

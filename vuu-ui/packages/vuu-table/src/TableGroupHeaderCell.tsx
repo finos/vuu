@@ -2,13 +2,13 @@ import cx from "classnames";
 import { HTMLAttributes, useRef } from "react";
 import { ColumnResizer } from "./ColumnResizer";
 import { TableHeaderCellProps } from "./TableHeaderCell";
-
-import "./TableGroupHeaderCell.css";
 import {
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { useTableColumnResize } from "./useTableColumnResize";
+
+import "./TableGroupHeaderCell.css";
 
 const classBase = "vuuTable-groupHeaderCell";
 
