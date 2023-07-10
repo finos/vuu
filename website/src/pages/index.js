@@ -6,6 +6,10 @@ import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import "../theme/Footer/Footer-mobile.css";
 import { RevolvingCaption } from "../components/RevolvingCaption";
 import { ChartMobile } from "../components/ChartMobile";
+import ViewPorting from "../../static/img/finos/view-porting.png";
+import Conflation from "../../static/img/finos/conflation.png";
+import JoiningAndTreeing from "../../static/img/finos/joining-treeing.png";
+
 const revolvingCaptions = [
   "your data",
   "risk data",
@@ -63,8 +67,6 @@ function Home() {
                 </div>
                 <div className="vuu-feature-2">ROWS PER TABLE</div>
               </div>
-            </div>
-            <div className="vuu-feature-row">
               <div className="vuu-feature">
                 <div className="vuu-feature-1">
                   100<span className="vuu-feature-1-measure">k</span>
@@ -79,6 +81,44 @@ function Home() {
                 </div>
                 <div className="vuu-feature-2">MEMORY FOOTPRINT</div>
               </div>
+            </div>
+          </div>
+        </section>
+        <section className={classnames("vuu-section vuu-frame-11")}>
+          <div className="container">
+            <div className="image-container">
+              <img src={ViewPorting} alt="Image 1" />
+            </div>
+            <div className="content-container">
+              <h2 className="vuu-heading-2">View Porting</h2>
+              <p className="vuu-paragraph-large">
+                A Viewport is a virtualized window into an underlying table. It
+                encapsulates the subscription of a single client-side component.
+              </p>
+            </div>
+          </div>
+          <div className="container">
+            <div className="image-container">
+              <img src={Conflation} alt="Image 1" />
+            </div>
+            <div className="content-container">
+              <h2 className="vuu-heading-2">Conflation</h2>
+              <p className="vuu-paragraph-large">
+                UI rendering can be a bottleneck. Vuu manages backpressure,
+                ensuring that the UI is never over-whelmed with too much data.
+              </p>
+            </div>
+          </div>
+          <div className="container">
+            <div className="image-container">
+              <img src={JoiningAndTreeing} alt="Image 1" />
+            </div>
+            <div className="content-container">
+              <h2 className="vuu-heading-2">Joins & Treeing</h2>
+              <p className="vuu-paragraph-large">
+                Vuu tables can be joined. Data can be grouped, filtered, sorted
+                and aggregated. Updates are sent to clients in real time.
+              </p>
             </div>
           </div>
         </section>
