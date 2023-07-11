@@ -4,7 +4,7 @@
     height: 32px;
 }
 
-[data-overflow-priority="2"].Item {
+[data-overflow-priority="1"].Item {
     background-color: pink;
 }
 

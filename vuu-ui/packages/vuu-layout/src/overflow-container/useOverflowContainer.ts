@@ -1,6 +1,5 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import { useCallback, useMemo, useRef } from "react";
-import { ResizeHandler, useResizeObserver, WidthOnly } from "../responsive";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   applyOverflowClassToWrappedItems,
   removeOverflowIndicatorIfNoLongerNeeded,
@@ -9,40 +8,25 @@ import {
   NO_WRAPPED_ITEMS,
   highPriorityItemsHaveWrappedButShouldNotHave,
   switchWrappedItemIntoView,
-  unmarkItemsWhichAreNoLongerWrapped,
   OverflowItem,
   overflowIndicatorHasWrappedButShouldNotHave,
   correctForWrappedOverflowIndicator,
 } from "./overflow-utils";
 
 export const useOverflowContainer = () => {
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const wrappedItemsRef = useRef<OverflowItem[]>(NO_WRAPPED_ITEMS);
 
-  const handleResize: ResizeHandler = useCallback(async () => {
-    const { current: container } = rootRef;
-    console.log(`resize , {
-      container
-    }`);
+  const handleResize = useCallback(async () => {
     if (container) {
       let [nonWrapped, wrapped] = getNonWrappedAndWrappedItems(container);
-      console.log(`
-      nonWrapped ${nonWrapped.map((i) => i.index).join(",")}
-      wrapped ${wrapped.map((i) => i.index).join(",")}
-    `);
-
       applyOverflowClassToWrappedItems(container, wrapped);
       if (overflowIndicatorHasWrappedButShouldNotHave(wrapped)) {
-        console.log("correct for Wrapped Overflow");
         wrapped = await correctForWrappedOverflowIndicator(container, wrapped);
       }
-
       if (highPriorityItemsHaveWrappedButShouldNotHave(nonWrapped, wrapped)) {
-        console.log("correct for wrapped High Priority");
-
         wrapped = await correctForWrappedHighPriorityItems(container, wrapped);
       }
-
       if (wrapped.length === 1) {
         if (removeOverflowIndicatorIfNoLongerNeeded(container)) {
           wrapped = NO_WRAPPED_ITEMS;
@@ -50,9 +34,7 @@ export const useOverflowContainer = () => {
       }
       wrappedItemsRef.current = wrapped;
     }
-  }, []);
-
-  useResizeObserver(rootRef, WidthOnly, handleResize, true);
+  }, [container]);
 
   const hasOverflowItem = (
     opt: unknown
@@ -76,21 +58,44 @@ export const useOverflowContainer = () => {
         });
       },
       (type, options) => {
-        const { current: container } = rootRef;
         if (container && hasOverflowItem(options)) {
-          switchWrappedItemIntoView(container, options.overflowItem);
-          const [, wrappedItems] = getNonWrappedAndWrappedItems(container);
-          unmarkItemsWhichAreNoLongerWrapped(container, wrappedItems);
+          const wrappedItems = switchWrappedItemIntoView(
+            container,
+            options.overflowItem
+          );
           wrappedItemsRef.current = wrappedItems;
         }
         return true;
       },
     ];
+  }, [container]);
+
+  const resizeObserver = useMemo(() => {
+    let currentWidth = 0;
+    return new ResizeObserver((entries: ResizeObserverEntry[]) => {
+      for (const entry of entries) {
+        const { width } = entry.contentRect;
+        if (currentWidth !== width) {
+          currentWidth = width;
+          handleResize();
+        }
+      }
+    });
+  }, [handleResize]);
+
+  useMemo(() => {
+    if (container) {
+      resizeObserver.observe(container);
+    }
+  }, [container, resizeObserver]);
+
+  const callbackRef = useCallback((el: HTMLDivElement | null) => {
+    setContainer(el);
   }, []);
 
   return {
     menuActionHandler,
     menuBuilder,
-    rootRef,
+    rootRef: callbackRef,
   };
 };

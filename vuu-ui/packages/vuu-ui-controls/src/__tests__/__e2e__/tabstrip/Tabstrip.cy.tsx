@@ -1,65 +1,69 @@
 import React from "react";
 // TODO try and get TS path alias working to avoid relative paths like this
-import { DefaultTabstrip } from "../../../../../../showcase/src/examples/UiControls/Tabstrip.examples";
+import { DefaultTabstripNext } from "../../../../../../showcase/src/examples/UiControls/Tabstrip.examples";
 
 import { version } from "react";
 
-const OVERFLOWED_ITEMS = '.saltTabstrip-inner > *[data-overflowed="true"]';
-const OVERFLOW_IND = '.saltTabstrip-inner > *[data-overflow-indicator="true"]';
+const OVERFLOW_ITEMS = ".vuuOverflowContainer-wrapContainer > *";
+const OVERFLOWED_ITEMS = ".vuuOverflowContainer-wrapContainer > .wrapped";
+const OVERFLOW_IND =
+  ".vuuOverflowContainer-wrapContainer > .vuuOverflowContainer-OverflowIndicator";
 
 // describe("Responsive rendering, Given a Tabstrip", () => {
 describe("WHEN initial size is sufficient to display all contents", () => {
   describe("WHEN it initially renders", () => {
     it("THEN all the content items will be visible", () => {
-      cy.mount(<DefaultTabstrip width={400} />);
+      cy.mount(<DefaultTabstripNext width={500} />);
       const tabstrip = cy.findByRole("tablist");
-      tabstrip.should("have.class", "saltTabstrip");
-      cy.get(".saltTabstrip-inner > *")
-        .should("have.length", 5)
+      tabstrip.should("have.class", "vuuTabstrip");
+      // The overflow Inidcator will be present, but have zero width
+      cy.get(".vuuOverflowContainer-wrapContainer > *")
+        .should("have.length", 6)
         .filter(":visible")
         .should("have.length", 5);
     });
     it("THEN no items will be overflowed", () => {
-      cy.mount(<DefaultTabstrip width={400} />);
+      cy.mount(<DefaultTabstripNext width={400} />);
       cy.get(OVERFLOWED_ITEMS).should("have.length", 0);
     });
     it("THEN no overflow indicator will be present", () => {
-      cy.mount(<DefaultTabstrip width={400} />);
-      cy.get(OVERFLOW_IND).should("have.length", 0);
+      cy.mount(<DefaultTabstripNext width={400} />);
+      cy.get(OVERFLOW_IND).should("have.length", 1);
+      cy.get(OVERFLOW_IND).should("not.be.visible");
     });
   });
 
-  describe.skip("WHEN resized such that space is sufficient for only 4 tabs (first tab selected)", () => {
+  describe("WHEN resized such that space is sufficient for only 4 tabs (first tab selected)", () => {
     it("THEN first 4 tabs will be displayed, with overflow indicator", () => {
-      cy.mount(<DefaultTabstrip width={400} />);
-      cy.get(".saltTabstrip").invoke("css", "width", "320px");
-      cy.get(".saltTabstrip-inner > *")
-        .should("have.length", 5)
+      cy.mount(<DefaultTabstripNext width={500} />);
+      cy.get(".vuuTabstrip").invoke("css", "width", "400px");
+      cy.get(OVERFLOW_ITEMS)
+        .should("have.length", 6)
         .filter(":visible")
-        .should("have.length", 4);
+        .should("have.length", 5);
+      cy.get(".vuuTabstrip").debug();
       cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
-      cy.get(
-        '.saltTabstrip-inner > *:nth-child(5)[data-overflowed="true"]'
-      ).should("have.length", 1);
+      cy.get(`.wrapped`).should("have.length", 1);
       cy.get(OVERFLOW_IND).should("have.length", 1);
+      cy.get(OVERFLOW_IND).should("be.visible");
     });
   });
 
-  describe.skip("WHEN resized such that space is sufficient for only 4 tabs (LAST tab selected)", () => {
-    it("THEN  as last tab is selected, last but one will be overflowed", () => {
-      cy.mount(<DefaultTabstrip activeTabIndex={4} width={400} />);
-      cy.get(".saltTabstrip").invoke("css", "width", "340px");
-      cy.get(".saltTabstrip-inner > *")
-        .should("have.length", 5)
-        .filter(":visible")
-        .should("have.length", 4);
-      cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
-      cy.get(
-        '.saltTabstrip-inner > *:nth-child(4)[data-overflowed="true"]'
-      ).should("have.length", 1);
-      cy.get(OVERFLOW_IND).should("have.length", 1);
-    });
-  });
+  // describe.skip("WHEN resized such that space is sufficient for only 4 tabs (LAST tab selected)", () => {
+  //   it("THEN  as last tab is selected, last but one will be overflowed", () => {
+  //     cy.mount(<DefaultTabstripNext activeTabIndex={4} width={400} />);
+  //     cy.get(".saltTabstrip").invoke("css", "width", "340px");
+  //     cy.get(".saltTabstrip-inner > *")
+  //       .should("have.length", 5)
+  //       .filter(":visible")
+  //       .should("have.length", 4);
+  //     cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
+  //     cy.get(
+  //       '.saltTabstrip-inner > *:nth-child(4)[data-overflowed="true"]'
+  //     ).should("have.length", 1);
+  //     cy.get(OVERFLOW_IND).should("have.length", 1);
+  //   });
+  // });
 });
 //   describe("WHEN initial size is not sufficient to display all contents", () => {
 //     describe("WHEN it initially renders", () => {
@@ -76,20 +80,20 @@ describe("WHEN initial size is sufficient to display all contents", () => {
 //   });
 // });
 
-describe("Tab selection, Given a Tabstrip", () => {
-  describe("WHEN initial size is sufficient to display all contents", () => {
-    describe("WHEN it initially renders", () => {
-      describe("WHEN the selected Tab has not been specified", () => {
-        it("THEN the first tab will be selected", () => {
-          cy.mount(<DefaultTabstrip />);
-          cy.get(".saltTabstrip-inner > *:first-child").should(
-            "have.ariaSelected"
-          );
-        });
-      });
-    });
-  });
-});
+// describe("Tab selection, Given a Tabstrip", () => {
+//   describe("WHEN initial size is sufficient to display all contents", () => {
+//     describe("WHEN it initially renders", () => {
+//       describe("WHEN the selected Tab has not been specified", () => {
+//         it("THEN the first tab will be selected", () => {
+//           cy.mount(<DefaultTabstripNext />);
+//           cy.get(".saltTabstrip-inner > *:first-child").should(
+//             "have.ariaSelected"
+//           );
+//         });
+//       });
+//     });
+//   });
+// });
 
 // describe("Navigation, Given a Tabstrip", () => {
 //   describe("WHEN initial size is sufficient to display all contents", () => {

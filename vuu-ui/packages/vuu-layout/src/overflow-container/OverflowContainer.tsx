@@ -3,8 +3,6 @@ import React, {
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
-  useLayoutEffect,
-  useRef,
 } from "react";
 import cx from "classnames";
 import { PopupMenu } from "@finos/vuu-popups";
@@ -20,25 +18,8 @@ export interface OverflowContainerProps extends HTMLAttributes<HTMLDivElement> {
   height: number;
 }
 
-// export interface OverflowItemProps {
-//   children: ReactElement;
-//   overflowPriority: "0" | "1" | "2";
-// }
-
-// const OverflowItem = ({ children, overflowPriority }: OverflowItemProps) => {
-//   return (
-//     <div className={cx(`${classBase}-item`)}>
-//       {children}
-//     </div>
-//   )
-// };
-
 const InnerContainer = React.memo(
   ({ children, height }: OverflowContainerProps) => {
-    const firstTime = useRef(true);
-    useLayoutEffect(() => {
-      firstTime.current = false;
-    });
     const { menuActionHandler, menuBuilder, rootRef } = useOverflowContainer();
     // TODO measure the height
     const style = {

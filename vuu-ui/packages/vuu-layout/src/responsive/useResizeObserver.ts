@@ -39,30 +39,32 @@ const getTargetSize = (
   }
 };
 
-const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-  for (const entry of entries) {
-    const { target, contentRect } = entry;
-    const observedTarget = observedMap.get(target as HTMLElement);
-    if (observedTarget) {
-      const { onResize, measurements } = observedTarget;
-      let sizeChanged = false;
-      for (const [dimension, size] of Object.entries(measurements)) {
-        const newSize = getTargetSize(
-          target as HTMLElement,
-          contentRect,
-          dimension as measuredDimension
-        );
-        if (newSize !== size) {
-          sizeChanged = true;
-          measurements[dimension as measuredDimension] = newSize;
+export const resizeObserver = new ResizeObserver(
+  (entries: ResizeObserverEntry[]) => {
+    for (const entry of entries) {
+      const { target, contentRect } = entry;
+      const observedTarget = observedMap.get(target as HTMLElement);
+      if (observedTarget) {
+        const { onResize, measurements } = observedTarget;
+        let sizeChanged = false;
+        for (const [dimension, size] of Object.entries(measurements)) {
+          const newSize = getTargetSize(
+            target as HTMLElement,
+            contentRect,
+            dimension as measuredDimension
+          );
+          if (newSize !== size) {
+            sizeChanged = true;
+            measurements[dimension as measuredDimension] = newSize;
+          }
         }
-      }
-      if (sizeChanged) {
-        onResize && onResize(measurements);
+        if (sizeChanged) {
+          onResize && onResize(measurements);
+        }
       }
     }
   }
-});
+);
 
 // TODO use an optional lag (default to false) to ask to fire onResize
 // with initial size

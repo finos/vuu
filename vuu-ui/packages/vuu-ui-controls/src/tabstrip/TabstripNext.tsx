@@ -75,7 +75,7 @@ export const TabstripNext = ({
               aria-label="Create Tab"
               className={`${classBase}-addTabButton`}
               data-icon="add"
-              data-priority={2}
+              data-overflow-priority="1"
               key="addButton"
               onClick={handleAddTabClick}
               variant="secondary"
@@ -99,7 +99,7 @@ export const TabstripNext = ({
   ]);
 
   return showActivationIndicator ? (
-    <div {...htmlAttributes} className={className}>
+    <div {...htmlAttributes} className={className} role="tablist">
       <OverflowContainer
         {...tabstripHook.containerProps}
         height={24}

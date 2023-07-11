@@ -1,3 +1,5 @@
+const NON_WRAPPED_ITEM = ".vuuOverflowContainer-item:not(.wrapped)";
+
 export type OverflowItem = {
   index: string;
   overflowPriority: string;
@@ -34,7 +36,7 @@ export const NO_WRAPPED_ITEMS: OverflowItem[] = [];
     Identify wrapped items by comparing position of each item. Any item
     not to the right of preceeding item has wrapped. Note: on-screen 
     position of items does not necessarily match document position, due
-    to use of css order. This is taken into account.
+    to use of css order. This is taken into account by sorting. 
     TODO support Vertical orientation
  */
 export const getNonWrappedAndWrappedItems = (
@@ -138,21 +140,15 @@ export const highPriorityItemsHaveWrappedButShouldNotHave = (
   full width, it may itself overflow.
 */
 export const correctForWrappedOverflowIndicator = (
-  container: HTMLElement | null,
+  container: HTMLElement,
   overflowedItems: OverflowItem[]
 ): Promise<OverflowItem[]> =>
   new Promise((resolve) => {
     requestAnimationFrame(() => {
-      if (container) {
-        const [, o2] = getNonWrappedAndWrappedItems(container);
-        const newlyOverflowed = getNewItems(overflowedItems, o2);
-        newlyOverflowed.forEach((item) =>
-          markElementAsWrapped(container, item)
-        );
-        resolve(o2);
-      } else {
-        resolve(NO_WRAPPED_ITEMS);
-      }
+      const [, o2] = getNonWrappedAndWrappedItems(container);
+      const newlyOverflowed = getNewItems(overflowedItems, o2);
+      newlyOverflowed.forEach((item) => markElementAsWrapped(container, item));
+      resolve(o2);
     });
   });
 
@@ -163,42 +159,22 @@ export const correctForWrappedOverflowIndicator = (
   full width, it may itself overflow.
 */
 export const correctForWrappedHighPriorityItems = (
-  container: HTMLElement | null,
+  container: HTMLElement,
   overflowedItems: OverflowItem[]
 ): Promise<OverflowItem[]> =>
   new Promise((resolve) => {
     requestAnimationFrame(() => {
-      if (container) {
-        const [o1, o2] = getNonWrappedAndWrappedItems(container);
-        console.log(`
-          nonWrapped ${o1.map((i) => i.index).join(",")}
-          wrapped ${o2.map((i) => i.index).join(",")}
-        `);
-        //TODO can we just call 'switchWrappedItemIntoView'
-        const priority = o1.reduce<number>(maxPriority, 0);
-        const highPriorityWrappedItem = getHigherPriorityItem(o2, priority);
-        if (highPriorityWrappedItem) {
-          console.log({ priority, highPriorityWrappedItem });
-          // last item is overflowIndicator, do we need to check ?
-          // Might be other high priorty items ?
-          const lastUnwrapped = o1.at(-2) as OverflowItem;
-          const lastUnwrappedEl = getElementByIndex(container, lastUnwrapped);
-          const highPriorityEl = getElementByIndex(
-            container,
-            highPriorityWrappedItem
-          );
-          if (lastUnwrapped) {
-            switchWrapOnElements(highPriorityEl, lastUnwrappedEl);
-            console.log({ priority, highPriorityWrappedItem, lastUnwrappedEl });
-            o2.unshift(lastUnwrapped);
-            resolve(o2);
-          }
-        } else {
-          resolve(overflowedItems);
-        }
-        resolve(o2);
+      const [o1, o2] = getNonWrappedAndWrappedItems(container);
+      const priority = o1.reduce<number>(maxPriority, 0);
+      const highPriorityWrappedItem = getHigherPriorityItem(o2, priority);
+      if (highPriorityWrappedItem) {
+        const wrappedItems = switchWrappedItemIntoView(
+          container,
+          highPriorityWrappedItem
+        );
+        resolve(wrappedItems);
       } else {
-        resolve(NO_WRAPPED_ITEMS);
+        resolve(overflowedItems);
       }
     });
   });
@@ -273,63 +249,86 @@ const getAvailableSpace = (
     indicaor were removed ?
  */
 export const removeOverflowIndicatorIfNoLongerNeeded = (
-  container: HTMLElement | null
+  container: HTMLElement
 ): boolean => {
-  if (container) {
-    const overflowIndicator = getOverflowIndicator(container);
-    const availableSpace = getAvailableSpace(container, overflowIndicator);
-    const indicatorWidth = getElementWidth(overflowIndicator);
-    const overflowedItem = getOverflowedItem(container);
-    const overflowWidth = getElementWidth(overflowedItem);
+  const overflowIndicator = getOverflowIndicator(container);
+  const availableSpace = getAvailableSpace(container, overflowIndicator);
+  const indicatorWidth = getElementWidth(overflowIndicator);
+  const overflowedItem = getOverflowedItem(container);
+  const overflowWidth = getElementWidth(overflowedItem);
 
-    if (overflowWidth <= availableSpace + indicatorWidth) {
-      container.classList.remove("overflowed");
-      overflowedItem.classList.remove("wrapped");
-      return true;
-    }
+  if (overflowWidth <= availableSpace + indicatorWidth) {
+    container.classList.remove("overflowed");
+    overflowedItem.classList.remove("wrapped");
+    return true;
   }
   return false;
 };
 
-export const switchWrappedItemIntoView = (
-  container: HTMLElement | null,
-  overflowItem: OverflowItem
-) => {
-  console.log(`switchWrappedItemIntoView [${overflowItem.index}]`);
-  if (container) {
-    const unwrappedItems = Array.from(
-      container.querySelectorAll(".vuuOverflowContainer-item:not(.wrapped)")
-    ) as HTMLElement[];
-    const targetElement = getElementByIndex(container, overflowItem);
-    let pos = -1;
-    let unwrappedItem = unwrappedItems.at(pos) as HTMLElement;
-    const itemWidth = getElementWidth(unwrappedItem);
-    const targetWidth = getElementWidth(targetElement);
-    const overflowIndicator = getOverflowIndicator(container);
-    let availableSpace =
-      getAvailableSpace(container, overflowIndicator) + itemWidth;
-    if (availableSpace >= targetWidth) {
-      switchWrapOnElements(targetElement, unwrappedItem);
-    } else {
-      // we need to wrap multiple items to make space for the switched item
-      const { left: lastLeft } = unwrappedItem.getBoundingClientRect();
-      const baseAvailableSpace = availableSpace;
-      const wrapTargets = [unwrappedItem];
-      while (availableSpace < targetWidth) {
-        pos -= 1;
-        unwrappedItem = unwrappedItems.at(pos) as HTMLElement;
-        wrapTargets.push(unwrappedItem);
-        const { left: nextLeft } = unwrappedItem.getBoundingClientRect();
-        const extraSpace = lastLeft - nextLeft;
-        availableSpace = baseAvailableSpace + extraSpace;
-      }
+const byPriorityDescending = (h1: Element, h2: Element) => {
+  const {
+    dataset: { index: i1 = "0", overflowPriority: p1 = "0" },
+  } = h1 as HTMLElement;
+  const {
+    dataset: { index: i2 = "0", overflowPriority: p2 = "0" },
+  } = h2 as HTMLElement;
 
-      targetElement?.classList.remove("wrapped");
-      wrapTargets.forEach((item) => {
-        item.classList.add("wrapped");
-      });
-    }
+  if (p1 > p2) {
+    return -1;
+  } else if (p1 < p2) {
+    return 1;
+  } else {
+    return parseInt(i1) - parseInt(i2);
   }
+};
+
+const getNonwrappedItemsByPriority = (container: HTMLElement) =>
+  Array.from(container.querySelectorAll(NON_WRAPPED_ITEM)).sort(
+    byPriorityDescending
+  ) as HTMLElement[];
+
+/**
+ * This is used both when an overflow menu is used to select an overflowed item
+ * and when a high priority item has overflowed, whilst lower priority items
+ * remain in view.
+ */
+export const switchWrappedItemIntoView = (
+  container: HTMLElement,
+  overflowItem: OverflowItem
+): OverflowItem[] => {
+  const unwrappedItems = getNonwrappedItemsByPriority(container);
+  const targetElement = getElementByIndex(container, overflowItem);
+  let pos = -1;
+  let unwrappedItem = unwrappedItems.at(pos) as HTMLElement;
+  const itemWidth = getElementWidth(unwrappedItem);
+  const targetWidth = getElementWidth(targetElement);
+  const overflowIndicator = getOverflowIndicator(container);
+  let availableSpace =
+    getAvailableSpace(container, overflowIndicator) + itemWidth;
+  if (availableSpace >= targetWidth) {
+    switchWrapOnElements(targetElement, unwrappedItem);
+  } else {
+    // we need to wrap multiple items to make space for the switched item
+    const { left: lastLeft } = unwrappedItem.getBoundingClientRect();
+    const baseAvailableSpace = availableSpace;
+    const wrapTargets = [unwrappedItem];
+    while (availableSpace < targetWidth) {
+      pos -= 1;
+      unwrappedItem = unwrappedItems.at(pos) as HTMLElement;
+      wrapTargets.push(unwrappedItem);
+      const { left: nextLeft } = unwrappedItem.getBoundingClientRect();
+      const extraSpace = lastLeft - nextLeft;
+      availableSpace = baseAvailableSpace + extraSpace;
+    }
+
+    targetElement?.classList.remove("wrapped");
+    wrapTargets.forEach((item) => {
+      item.classList.add("wrapped");
+    });
+  }
+  const [, wrappedItems] = getNonWrappedAndWrappedItems(container);
+  unmarkItemsWhichAreNoLongerWrapped(container, wrappedItems);
+  return wrappedItems;
 };
 
 const switchWrapOnElements = (

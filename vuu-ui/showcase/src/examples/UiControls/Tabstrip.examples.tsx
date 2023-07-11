@@ -20,7 +20,7 @@ const SPLITTER_WIDTH = 3;
 
 let displaySequence = 1;
 
-export const DefaultTabstripNext = ({ width = 350 }) => {
+export const DefaultTabstripNext = ({ width = 500 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
   return (

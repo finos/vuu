@@ -26,5 +26,5 @@
     "sample-apps/*/index.ts",
     "sample-apps/*/src"
   ],
-  "exclude": ["**/*.cy.*", "**/*.spec.*", "**/*.test.*"]
+  "exclude": ["**/*.cy.*", "**/*.test.*"]
 }
