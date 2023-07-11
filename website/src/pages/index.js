@@ -35,10 +35,8 @@ function Home() {
               from trading systems, <br />
               to human eyes
             </h2>
-            {/* <img className="vuu-chart" src={Ch} alt="chart" /> */}
-            <ChartMobile />
 
-            <p className="vuu-paragraph-large">
+            <p className="vuu-paragraph-small">
               Vuu deals with the complex task of viewporting, throttling <br />{" "}
               and transmiting your data to clients, so you don't have to.
             </p>
@@ -50,6 +48,8 @@ function Home() {
                 GET STARTED
               </Link>
             </div>
+            {/* <img className="vuu-chart" src={Ch} alt="chart" /> */}
+            <ChartMobile />
           </div>
         </div>
       </header>

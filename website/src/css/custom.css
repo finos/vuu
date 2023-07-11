@@ -135,6 +135,18 @@ body {
   display: none;
 }
 
+.vuu-heading-2 {
+  margin-top: 12px;
+}
+
+
+.vuu-paragraph-small{
+  font-size: 22px;
+  line-height: var(--vuu-paragraph-small-lineHeight);
+  font-weight: var(--vuu-paragraph-small-fontWeight);
+  padding: 40px 40px;
+}
+
 .vuu-scroll-1-bg {
   background: linear-gradient(180deg, var(--vuu-dark-bg-background2) 0%, var(--vuu-dark-bg-background1) 100%);
   height: 800px;
@@ -209,8 +221,8 @@ body {
 
   /* content driven, remove later */
   /* height: 476px; */
-  padding-top: 486px;
-  height: 600px;
+  padding-top: 180px;
+  height: 400px;
 
 }
 
@@ -219,8 +231,8 @@ body {
 
   /* content driven, remove later */
   /* height: 476px; */
-  padding-top: 486px;
-  height: 2000px;
+  padding-top: 180px;
+  height: 1200px;
 
 }
 
@@ -248,18 +260,18 @@ body {
 }
 
 .vuu-feature-1 {
-  font-size: 80px;
-  line-height: 80px;
-  font-weight: 300;
+  font-size: 36px;
+  line-height: 34px;
+  font-weight: 400;
 }
 .vuu-feature-1-measure {
-  font-size: 50px;
+  font-size: 36px;
   
 }
 
 .vuu-feature-2 {
-  font-size: 20px;
-  line-height: 33px;
+  font-size: 12px;
+  line-height: 14px;
   font-weight: 400;
 }
 
@@ -352,6 +364,18 @@ body {
     --vuu-navbar-height: 90px;
 
     --vuu-navbar-padding: 0px;
+    --vuu-heading1-fontSize: 38px;
+    --vuu-heading1-fontWeight: 300;
+    --vuu-heading1-lineHeight: 44px;
+
+    --vuu-heading2-fontSize: 26px;
+    --vuu-heading2-lineHeight: 32px;
+    --vuu-heading2-fontWeight: 400;
+
+
+
+
+
 
   }
 
@@ -409,6 +433,14 @@ body {
 
 .content-container {
   text-align: center;
+  font-size: 18px;
+
+}
+
+.content-container p {
+  font-size: 18px;
+  line-height: 25.2px;
+  font-weight: 400;
 
 }
 
