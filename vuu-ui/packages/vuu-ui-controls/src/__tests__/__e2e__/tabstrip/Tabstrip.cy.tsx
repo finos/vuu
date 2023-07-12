@@ -23,11 +23,11 @@ describe("WHEN initial size is sufficient to display all contents", () => {
         .should("have.length", 5);
     });
     it("THEN no items will be overflowed", () => {
-      cy.mount(<DefaultTabstripNext width={400} />);
+      cy.mount(<DefaultTabstripNext width={500} />);
       cy.get(OVERFLOWED_ITEMS).should("have.length", 0);
     });
-    it("THEN no overflow indicator will be present", () => {
-      cy.mount(<DefaultTabstripNext width={400} />);
+    it("THEN no overflow indicator will be visible", () => {
+      cy.mount(<DefaultTabstripNext width={500} />);
       cy.get(OVERFLOW_IND).should("have.length", 1);
       cy.get(OVERFLOW_IND).should("not.be.visible");
     });
@@ -49,21 +49,20 @@ describe("WHEN initial size is sufficient to display all contents", () => {
     });
   });
 
-  // describe.skip("WHEN resized such that space is sufficient for only 4 tabs (LAST tab selected)", () => {
-  //   it("THEN  as last tab is selected, last but one will be overflowed", () => {
-  //     cy.mount(<DefaultTabstripNext activeTabIndex={4} width={400} />);
-  //     cy.get(".saltTabstrip").invoke("css", "width", "340px");
-  //     cy.get(".saltTabstrip-inner > *")
-  //       .should("have.length", 5)
-  //       .filter(":visible")
-  //       .should("have.length", 4);
-  //     cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
-  //     cy.get(
-  //       '.saltTabstrip-inner > *:nth-child(4)[data-overflowed="true"]'
-  //     ).should("have.length", 1);
-  //     cy.get(OVERFLOW_IND).should("have.length", 1);
-  //   });
-  // });
+  describe("WHEN resized such that space is sufficient for only 4 tabs (LAST tab selected)", () => {
+    it("THEN  as last tab is selected, last but one will be overflowed", () => {
+      cy.mount(<DefaultTabstripNext activeTabIndex={4} width={500} />);
+      cy.get(".vuuTabstrip").invoke("css", "width", "400px");
+      cy.get(OVERFLOW_ITEMS)
+        .should("have.length", 6)
+        .filter(":visible")
+        .should("have.length", 5);
+      cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
+      cy.get(`${OVERFLOW_ITEMS}:nth-child(4).wrapped`).should("have.length", 1);
+      cy.get(OVERFLOW_IND).should("have.length", 1);
+      cy.get(OVERFLOW_IND).should("be.visible", 1);
+    });
+  });
 });
 //   describe("WHEN initial size is not sufficient to display all contents", () => {
 //     describe("WHEN it initially renders", () => {
