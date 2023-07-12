@@ -151,16 +151,8 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   ]);
 
   useEffect(() => {
-    console.log(
-      `%cuseEffect MOUNT enable ${id}`,
-      "color: green;font-weight: bold;"
-    );
     dataSource.resume?.();
     return () => {
-      console.log(
-        `%cuseEffect UNMOUNT enable ${id}`,
-        "color: red;font-weight: bold;"
-      );
       // suspend activity on the dataSource when component is unmounted
       dataSource.suspend?.();
     };
