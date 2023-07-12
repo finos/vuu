@@ -16,7 +16,8 @@
     "resolveJsonModule": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "sourceMap": true
+    "sourceMap": true,
+    "types": ["browser"]
   },
   "include": [
     "packages/*/src", 

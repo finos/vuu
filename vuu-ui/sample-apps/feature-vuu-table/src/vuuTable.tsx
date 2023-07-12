@@ -151,10 +151,10 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   ]);
 
   useEffect(() => {
-    dataSource.enable?.();
+    dataSource.resume?.();
     return () => {
       // suspend activity on the dataSource when component is unmounted
-      dataSource.disable?.();
+      dataSource.suspend?.();
     };
   }, [dataSource]);
 

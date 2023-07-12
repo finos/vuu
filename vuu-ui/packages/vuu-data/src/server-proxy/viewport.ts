@@ -174,6 +174,7 @@ export class Viewport {
   // TODO roll disabled/suspended into status
   public status: "" | "subscribing" | "resubscribing" | "subscribed" = "";
   public suspended = false;
+  public suspendTimer: number | null = null;
   public table: VuuTable;
   public title: string | undefined;
 
@@ -604,6 +605,7 @@ export class Viewport {
   disable(requestId: string) {
     this.awaitOperation(requestId, { type: "disable" });
     info?.(`disable: ${this.serverViewportId}`);
+    this.suspended = false;
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
