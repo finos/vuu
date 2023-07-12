@@ -110,7 +110,6 @@ body {
 
 .navbar__logo {
   height: var(--vuu-navbar-logo-size);
-
 }
 
 
@@ -136,7 +135,7 @@ body {
 }
 
 .vuu-heading-2 {
-  margin-top: 12px;
+  margin-top: 28px;
 }
 
 
@@ -145,6 +144,13 @@ body {
   line-height: var(--vuu-paragraph-small-lineHeight);
   font-weight: var(--vuu-paragraph-small-fontWeight);
   padding: 40px 40px;
+  margin:12px 0px 12px 0px;
+  
+}
+
+.vuu-paragraph-large {
+  margin: 30px 0px 30px 0px;
+  padding: 15px 15px;
 }
 
 .vuu-scroll-1-bg {
@@ -221,7 +227,7 @@ body {
 
   /* content driven, remove later */
   /* height: 476px; */
-  padding-top: 180px;
+  padding-top: 300px;
   height: 400px;
 
 }
@@ -408,8 +414,13 @@ body {
 .navbar-sidebar {
   background-color: var(--vuu-dark-bg-background1);
 }
+
+.menu {
+  background-color: #ffffff;
+}
+
 .menu__link {
-  color: white;
+  color: black;
 }
 
 .navbar__inner {
@@ -419,7 +430,7 @@ body {
 
 
 .image-container {
-  display: flex;
+  display: flex; 
   justify-content: center;
   margin-bottom: 20px;
   margin-top: 80px;
