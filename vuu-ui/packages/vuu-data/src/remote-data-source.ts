@@ -16,6 +16,7 @@ import {
   debounce,
   EventEmitter,
   itemsOrOrderChanged,
+  logger,
   throttle,
   uuid,
 } from "@finos/vuu-utils";
@@ -41,6 +42,8 @@ import { MenuRpcResponse } from "./vuuUIMessageTypes";
 
 type RangeRequest = (range: VuuRange) => void;
 
+const { info } = logger("RemoteDataSource");
+
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
@@ -51,8 +54,6 @@ export class RemoteDataSource
   private bufferSize: number;
   private server: ServerAPI | null = null;
   private status = "initialising";
-  private disabled = false;
-  private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
   private configChangePending: DataSourceConfig | undefined;
   private rangeRequest: RangeRequest;
@@ -210,6 +211,7 @@ export class RemoteDataSource
   };
 
   unsubscribe() {
+    info?.(`unsubscribe #${this.viewport}`);
     if (this.viewport) {
       this.server?.unsubscribe(this.viewport);
     }
@@ -218,8 +220,9 @@ export class RemoteDataSource
   }
 
   suspend() {
+    info?.(`suspend #${this.viewport}, current status ${this.status}`);
     if (this.viewport) {
-      this.suspended = true;
+      this.status = "suspended";
       this.server?.send({
         type: "suspend",
         viewport: this.viewport,
@@ -229,21 +232,25 @@ export class RemoteDataSource
   }
 
   resume() {
-    if (this.viewport && this.suspended) {
-      // should we await this ?s
-      this.server?.send({
-        type: "resume",
-        viewport: this.viewport,
-      });
-      this.suspended = false;
+    info?.(`resume #${this.viewport}, current status ${this.status}`);
+    if (this.viewport) {
+      if (this.status === "disabled" || this.status === "disabling") {
+        this.enable();
+      } else if (this.status === "suspended") {
+        this.server?.send({
+          type: "resume",
+          viewport: this.viewport,
+        });
+        this.status = "subscribed";
+      }
     }
     return this;
   }
 
   disable() {
+    info?.(`disable #${this.viewport}, current status ${this.status}`);
     if (this.viewport) {
       this.status = "disabling";
-      this.disabled = true;
       this.server?.send({
         viewport: this.viewport,
         type: "disable",
@@ -253,14 +260,16 @@ export class RemoteDataSource
   }
 
   enable() {
-    if (this.viewport && this.disabled) {
+    info?.(`enable #${this.viewport}, current status ${this.status}`);
+    if (
+      this.viewport &&
+      (this.status === "disabled" || this.status === "disabling")
+    ) {
       this.status = "enabling";
-      // should we await this ?
       this.server?.send({
         viewport: this.viewport,
         type: "enable",
       });
-      this.disabled = false;
     }
     return this;
   }

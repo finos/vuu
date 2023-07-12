@@ -280,6 +280,8 @@ export class ServerProxy {
     );
 
     if (serverRequest) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       if (process.env.NODE_ENV === "development") {
         info?.(
           `CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`
@@ -369,7 +371,19 @@ export class ServerProxy {
     }
   }
 
+  private suspendViewport(viewport: Viewport) {
+    viewport.suspend();
+    viewport.suspendTimer = setTimeout(() => {
+      info?.("suspendTimer expired, escalate suspend to disable");
+      this.disableViewport(viewport);
+    }, 3000);
+  }
   private resumeViewport(viewport: Viewport) {
+    if (viewport.suspendTimer) {
+      debug?.("clear suspend timer");
+      clearTimeout(viewport.suspendTimer);
+      viewport.suspendTimer = null;
+    }
     const rows = viewport.resume();
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,
@@ -515,7 +529,7 @@ export class ServerProxy {
           case "select":
             return this.select(viewport, message);
           case "suspend":
-            return viewport.suspend();
+            return this.suspendViewport(viewport);
           case "resume":
             return this.resumeViewport(viewport);
           case "enable":
