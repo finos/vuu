@@ -1,11 +1,22 @@
 import { useViewContext } from "@finos/vuu-layout";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+  HTMLAttributes,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-export const StatefulComponent = (
+export interface StatefulComponentProps extends HTMLAttributes<HTMLDivElement> {
+  initialState?: string;
+  stateKey?: string;
+}
+
+export const StatefulComponent = ({
   initialState = "",
-  style: React.CSSProperties | undefined,
-  stateKey: any
-) => {
+  style,
+  stateKey = "?",
+}: StatefulComponentProps) => {
   const { load, save } = useViewContext();
   const storedState = useMemo(() => load?.(stateKey), [load, stateKey]);
   const state = useRef(storedState ?? initialState);

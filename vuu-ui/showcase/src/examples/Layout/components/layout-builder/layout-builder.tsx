@@ -1,11 +1,16 @@
 import {
   Component as PlaceHolder,
-  DraggableLayout, Flexbox, Palette,
-  PaletteItem, useViewContext, View
+  DraggableLayout,
+  Flexbox,
+  LayoutProvider,
+  Palette,
+  PaletteItem,
+  View,
 } from "@finos/vuu-layout";
 import { Dropdown } from "@heswell/salt-lab";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { atom, useRecoilValue, useSetRecoilState } from "recoil";
+import { StatefulComponent } from "../stateful-component";
 
 import "./layout-builder.css";
 
@@ -20,18 +25,6 @@ const LayoutPicker = ({ onCommit }) => {
   const availableValues = useRecoilValue(availableLayouts);
   return <Dropdown onSelect={onCommit} values={availableValues} />;
 };
-
-const StatefulComponent = (initialState = "", style: React.CSSProperties | undefined, stateKey: any) => {
-  const { load, save } = useViewContext();
-  const state = useRef(load(stateKey) ?? initialState);
-  const [value, setValue] = useState(state.current);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue((state.current = e.target.value));
-    save(state.current, stateKey);
-  };
-  return <textarea style={style} onChange={handleChange} value={value} />;
-};
-
 
 const BuilderPalette = ({ props }) => {
   return (
@@ -93,38 +86,37 @@ export const LayoutBuilder = () => {
   };
 
   return (
-    <DraggableLayout onLayoutChange={onLayoutModel} layout={state.layoutModel}>
-      <Flexbox
-        className="LayoutBuilder"
-        style={{ flexDirection: "column", width: 900, height: 600 }}
-      >
+    <LayoutProvider onLayoutChange={onLayoutModel} layout={state.layoutModel}>
+      <DraggableLayout style={{ height: "100vh", width: "100vw" }}>
         <Flexbox
-          className="builder-top"
-          style={{
-            height: 60,
-            backgroundColor: "rgb(90,90,90)",
-            flexBasis: "auto",
-            flexGrow: 0,
-            flexShrink: 0,
-          }}
+          className="LayoutBuilder"
+          style={{ flexDirection: "column", width: "100%", height: "100%" }}
         >
-          <BuilderPalette style={{ flex: 1, backgroundColor: "inherit" }} />
-          <div
-            className="layout-edit-controls"
-            style={{ backgroundColor: "red", width: 250 }}
+          <Flexbox
+            className="builder-top"
+            style={{
+              height: 60,
+              backgroundColor: "rgb(90,90,90)",
+              flexBasis: "auto",
+              flexGrow: 0,
+              flexShrink: 0,
+            }}
           >
-            <LayoutPicker onCommit={selectLayout} />
-          </div>
+            <BuilderPalette style={{ flex: 1, backgroundColor: "inherit" }} />
+            <div
+              className="layout-edit-controls"
+              style={{ backgroundColor: "red", width: 250 }}
+            >
+              <LayoutPicker onCommit={selectLayout} />
+            </div>
+          </Flexbox>
+          <DraggableLayout style={{ flex: 1 }} dropTarget>
+            <View resizeable style={{ flex: 1, width: "100%", height: "100%" }}>
+              <PlaceHolder style={{ flex: 1, backgroundColor: "lightgrey" }} />
+            </View>
+          </DraggableLayout>
         </Flexbox>
-        <DraggableLayout
-          style={{ flex: 1 }}
-          dropTarget
-        >
-          <View resizeable style={{ flex: 1, width: "100%", height: "100%" }}>
-            <PlaceHolder style={{ flex: 1, backgroundColor: "lightgrey" }} />
-          </View>
-        </DraggableLayout>
-      </Flexbox>
-    </DraggableLayout>
+      </DraggableLayout>
+    </LayoutProvider>
   );
 };
