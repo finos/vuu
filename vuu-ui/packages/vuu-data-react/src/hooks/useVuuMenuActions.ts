@@ -51,19 +51,6 @@ const { KEY } = metadataKeys;
 
 const NO_CONFIG: MenuActionConfig = {};
 
-// const contextSortPriorities = {
-//   "selected-rows": 0,
-//   cell: 1,
-//   row: 2,
-//   grid: 3,
-// };
-
-// const byContext = (menu1: VuuMenuItem, menu2: VuuMenuItem) => {
-//   return (
-//     contextSortPriorities[menu1.context] - contextSortPriorities[menu2.context]
-//   );
-// };
-
 export const isVisualLinksAction = (
   action: GridAction
 ): action is DataSourceVisualLinksMessage => action.type === "vuu-links";
@@ -179,12 +166,14 @@ const getMenuRpcRequest = (
   }
 };
 
+export type VuuMenuActionHandler = (type: string, options: unknown) => boolean;
+
 export interface ViewServerHookResult {
   buildViewserverMenuOptions: MenuBuilder<
     TableMenuLocation,
     VuuServerMenuOptions
   >;
-  handleMenuAction: (type: string, options: unknown) => boolean;
+  handleMenuAction: VuuMenuActionHandler;
 }
 
 export interface MenuActionConfig {
@@ -194,6 +183,16 @@ export interface MenuActionConfig {
 }
 
 export interface VuuMenuActionHookProps {
+  /**
+   * By default, vuuMenuActions will be handled automatically. When activated, a
+   * message will be sent to server and response will be handled here too.
+   * This prop allows client to provide a custom handler for a menu Item. This will
+   * take priority and if handler returns true, no further processing for the menu
+   * item will be handled by Vuu. This can also be used to prevent an item from being
+   * actioned, even when no custom handling is intended. If the handler returns false,
+   * Vuu will process the menuItem.
+   */
+  clientSideMenuActionHandler?: VuuMenuActionHandler;
   dataSource: DataSource;
   menuActionConfig?: MenuActionConfig;
   onRpcResponse?: (
@@ -308,6 +307,7 @@ const buildMenuDescriptor = (
 };
 
 export const useVuuMenuActions = ({
+  clientSideMenuActionHandler,
   dataSource,
   menuActionConfig = NO_CONFIG,
   onRpcResponse,
@@ -352,7 +352,9 @@ export const useVuuMenuActions = ({
 
   const handleMenuAction = useCallback(
     (type: string, options: unknown) => {
-      if (type === "MENU_RPC_CALL") {
+      if (clientSideMenuActionHandler?.(type, options)) {
+        return true;
+      } else if (type === "MENU_RPC_CALL") {
         const rpcRequest = getMenuRpcRequest(options as VuuMenuItem);
         dataSource.menuRpcCall(rpcRequest).then((rpcResponse) => {
           if (onRpcResponse && rpcResponse) {
@@ -372,7 +374,7 @@ export const useVuuMenuActions = ({
       }
       return false;
     },
-    [dataSource, onRpcResponse]
+    [clientSideMenuActionHandler, dataSource, onRpcResponse]
   );
 
   return {
