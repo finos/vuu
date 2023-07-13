@@ -14,6 +14,7 @@ import {
   SuggestionFetcher,
   useTypeaheadSuggestions,
   useVuuMenuActions,
+  VuuMenuActionHandler,
   VuuServerMenuOptions,
 } from "@finos/vuu-data-react";
 
@@ -82,6 +83,7 @@ export interface ViewportRowModelHookProps {
       | VuuUIMessageInRPCEditReject
       | VuuUIMessageInRPCEditResponse
   ) => void;
+  vuuMenuActionHandler?: VuuMenuActionHandler;
 }
 
 type GroupByConfigChange = {
@@ -97,6 +99,7 @@ export const useViewportRowModel = ({
   dataSource,
   onRpcResponse,
   onFeatureEnabled,
+  vuuMenuActionHandler,
 }: ViewportRowModelHookProps) => {
   const menuRef = useRef<VuuMenu>();
   const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
@@ -139,6 +142,7 @@ export const useViewportRowModel = ({
   );
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+    clientSideMenuActionHandler: vuuMenuActionHandler,
     dataSource,
     menuActionConfig,
     onRpcResponse: handleRpcResponse,
