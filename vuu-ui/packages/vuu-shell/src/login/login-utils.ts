@@ -13,7 +13,7 @@ export const getAuthDetailsFromCookies = (): [string, string] => {
 
 const getDefaultLoginUrl = () => {
   const authMode = getAuthModeFromCookies();
-  return authMode === "demo" ? "demo.html" : "login.html";
+  return authMode === "login" ? "login.html" : "demo.html";
 };
 
 export const redirectToLogin = (loginUrl = getDefaultLoginUrl()) => {
