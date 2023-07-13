@@ -1,12 +1,22 @@
 import { getCookieValue } from "@finos/vuu-utils";
 
+export const getAuthModeFromCookies = (): string => {
+  const mode = getCookieValue("vuu-auth-mode") as string;
+  return mode ?? "";
+};
+
 export const getAuthDetailsFromCookies = (): [string, string] => {
   const username = getCookieValue("vuu-username") as string;
   const token = getCookieValue("vuu-auth-token") as string;
   return [username, token];
 };
 
-export const redirectToLogin = (loginUrl = "login.html") => {
+const getDefaultLoginUrl = () => {
+  const authMode = getAuthModeFromCookies();
+  return authMode === "demo" ? "demo.html" : "login.html";
+};
+
+export const redirectToLogin = (loginUrl = getDefaultLoginUrl()) => {
   window.location.href = loginUrl;
 };
 

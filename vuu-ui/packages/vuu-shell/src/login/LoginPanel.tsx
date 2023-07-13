@@ -9,9 +9,13 @@ const classBase = "vuuLoginPanel";
 export interface LoginPanelProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSubmit"> {
   onSubmit: (username: string, password: string) => void;
+  requirePassword?: boolean;
 }
 
-export const LoginPanel = ({ onSubmit }: LoginPanelProps) => {
+export const LoginPanel = ({
+  requirePassword = true,
+  onSubmit,
+}: LoginPanelProps) => {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
 
@@ -33,7 +37,9 @@ export const LoginPanel = ({ onSubmit }: LoginPanelProps) => {
     setPassword(value);
   };
 
-  const dataIsValid = username.trim() !== "" && password.trim() !== "";
+  const dataIsValid =
+    username.trim() !== "" &&
+    (requirePassword === false || password.trim() !== "");
 
   return (
     <div className={classBase}>
@@ -41,14 +47,16 @@ export const LoginPanel = ({ onSubmit }: LoginPanelProps) => {
         <Input value={username} id="text-username" onChange={handleUsername} />
       </FormField>
 
-      <FormField label="Password" style={{ width: 200 }}>
-        <Input
-          type="password"
-          value={password}
-          id="text-password"
-          onChange={handlePassword}
-        />
-      </FormField>
+      {requirePassword ? (
+        <FormField label="Password" style={{ width: 200 }}>
+          <Input
+            type="password"
+            value={password}
+            id="text-password"
+            onChange={handlePassword}
+          />
+        </FormField>
+      ) : null}
 
       <Button
         className={`${classBase}-login`}
