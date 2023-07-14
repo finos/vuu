@@ -9,9 +9,11 @@ import { useSelection } from "./useSelectionNext";
 import { useKeyboardNavigation } from "./useKeyboardNavigationNext";
 import { orientationType } from "../responsive";
 import { OverflowItem } from "@finos/vuu-layout";
+import { useAnimatedSelectionThumb } from "./useAnimatedSelectionThumb";
 
 export interface TabstripNextHookProps {
   activeTabIndex: number;
+  animateSelectionThumb: boolean;
   onActiveChange?: (tabIndex: number) => void;
   containerRef: RefObject<HTMLElement>;
   orientation: orientationType;
@@ -20,6 +22,7 @@ export interface TabstripNextHookProps {
 
 export const useTabstripNext = ({
   activeTabIndex: activeTabIndexProp,
+  animateSelectionThumb,
   containerRef,
   onActiveChange,
   orientation,
@@ -88,6 +91,11 @@ export const useTabstripNext = ({
     onKeyDown: handleKeyDown,
   };
 
+  const containerStyle = useAnimatedSelectionThumb(
+    containerRef,
+    animateSelectionThumb ? selectionHook.selected : -1
+  );
+
   return {
     activeTabIndex: selectionHook.selected,
     focusVisible: keyboardHook.focusVisible,
@@ -96,6 +104,7 @@ export const useTabstripNext = ({
       onSwitchWrappedItemIntoView,
     },
     navigationProps,
+    containerStyle,
     tabProps,
   };
 };

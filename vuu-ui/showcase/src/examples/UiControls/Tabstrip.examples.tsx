@@ -35,6 +35,7 @@ export const DefaultTabstripNext = ({
         <div data-resizeable style={{ flex: 1 }}>
           <TabstripNext
             activeTabIndex={activeTabIndex}
+            animateSelectionThumb
             onActiveChange={setActiveTabIndex}
           >
             {tabs.map((label, i) => (

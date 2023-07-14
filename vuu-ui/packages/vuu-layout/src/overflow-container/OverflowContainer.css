@@ -13,7 +13,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    height: 100%;
+    height: var(--overflow-container-height);
     min-width: 44px;
     overflow: hidden;
     position: relative;

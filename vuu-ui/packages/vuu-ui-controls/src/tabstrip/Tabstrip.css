@@ -8,10 +8,11 @@
 
   align-items: flex-start;
   align-self: var(--saltTabs-tabstrip-alignSelf, stretch);
+  border-bottom: var(--vuuTabstrip-borderBottom, solid 1px var(--salt-container-primary-borderColor));
   font-size: var(--salt-text-fontSize);
   font-weight: var(--salt-text-fontWeight);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   min-width: 28px;
   width: 100%;

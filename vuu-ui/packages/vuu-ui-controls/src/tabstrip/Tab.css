@@ -175,10 +175,10 @@
   background: var(--salt-navigable-indicator-active);
   height: var(--tab-thumb-height);
   position: absolute;
-  left:0;
+  left: var(--tab-thumb-offset,0);
   bottom:0px; 
-  width: 100%;
-  transition: left 0.3s ease;
+  transition: var(--tab-thumb-transition, none);
+  width: var(--tab-thumb-width, 100%);
 }
 
 .vuuTab:hover:not(.vuuTab-closeHover) {

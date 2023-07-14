@@ -4,7 +4,6 @@ import { Button, useIdMemo as useId } from "@salt-ds/core";
 import { useTabstripNext } from "./useTabstripNext";
 import cx from "classnames";
 import { asReactElements, OverflowContainer } from "@finos/vuu-layout";
-import { TabActivationIndicator } from "./TabActivationIndicator";
 
 import "./Tabstrip.css";
 import React, { useCallback, useMemo, useRef } from "react";
@@ -13,10 +12,12 @@ const classBase = "vuuTabstrip";
 
 export interface TabstripNextProps extends TabstripProps {
   activeTabIndex: number;
+  animateSelectionThumb: boolean;
 }
 
 export const TabstripNext = ({
   activeTabIndex: activeTabIndexProp,
+  animateSelectionThumb = false,
   children,
   className: classNameProp,
   enableAddTab,
@@ -25,21 +26,34 @@ export const TabstripNext = ({
   onActiveChange,
   onAddTab,
   orientation = "horizontal",
-  showActivationIndicator = true,
+  style: styleProp,
   ...htmlAttributes
 }: TabstripNextProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
-  const { activeTabIndex, focusVisible, tabProps, ...tabstripHook } =
-    useTabstripNext({
-      activeTabIndex: activeTabIndexProp,
-      containerRef: rootRef,
-      keyBoardActivation,
-      onActiveChange,
-      orientation,
-    });
+  const {
+    activeTabIndex,
+    focusVisible,
+    containerStyle,
+    tabProps,
+    ...tabstripHook
+  } = useTabstripNext({
+    activeTabIndex: activeTabIndexProp,
+    animateSelectionThumb,
+    containerRef: rootRef,
+    keyBoardActivation,
+    onActiveChange,
+    orientation,
+  });
 
   const id = useId(idProp);
   const className = cx(classBase, `${classBase}-${orientation}`, classNameProp);
+  const style =
+    styleProp || containerStyle
+      ? {
+          ...styleProp,
+          ...containerStyle,
+        }
+      : undefined;
 
   console.log(`TabstripNext focusVisible = ${focusVisible}`);
 
@@ -48,16 +62,12 @@ export const TabstripNext = ({
     // onAddTab?.();
   }, []);
 
-  const [tabs, selectedTabId] = useMemo(() => {
-    let selectedTabId: string | null = null;
-    return [
+  const tabs = useMemo(
+    () =>
       asReactElements(children)
         .map((child, index) => {
           const selected = index === activeTabIndex;
           const tabId = child.props.id ?? `${id}-tab-${index}`;
-          if (selected) {
-            selectedTabId = tabId;
-          }
           return React.cloneElement(child, {
             ...tabProps,
             ...tabstripHook.navigationProps,
@@ -86,33 +96,19 @@ export const TabstripNext = ({
             []
           )
         ),
-      selectedTabId,
-    ];
-  }, [
-    activeTabIndex,
-    children,
-    enableAddTab,
-    focusVisible,
-    handleAddTabClick,
-    id,
-    tabProps,
-    tabstripHook.navigationProps,
-  ]);
+    [
+      activeTabIndex,
+      children,
+      enableAddTab,
+      focusVisible,
+      handleAddTabClick,
+      id,
+      tabProps,
+      tabstripHook.navigationProps,
+    ]
+  );
 
-  return showActivationIndicator ? (
-    <div {...htmlAttributes} className={className} role="tablist">
-      <OverflowContainer
-        {...tabstripHook.containerProps}
-        height={24}
-        overflowIcon="more-horiz"
-        ref={rootRef}
-        id={id}
-      >
-        {tabs}
-      </OverflowContainer>
-      <TabActivationIndicator orientation={orientation} tabId={selectedTabId} />
-    </div>
-  ) : (
+  return (
     <OverflowContainer
       {...htmlAttributes}
       {...tabstripHook.containerProps}
@@ -120,6 +116,7 @@ export const TabstripNext = ({
       height={24}
       id={id}
       ref={rootRef}
+      style={style}
     >
       {tabs}
     </OverflowContainer>
