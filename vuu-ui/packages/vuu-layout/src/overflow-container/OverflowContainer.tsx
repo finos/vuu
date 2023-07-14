@@ -10,17 +10,27 @@ import { useOverflowContainer } from "./useOverflowContainer";
 import { asReactElements } from "../utils";
 
 import "./OverflowContainer.css";
+import { OverflowItem } from "./overflow-utils";
 
 const classBase = "vuuOverflowContainer";
 
 export interface OverflowContainerProps extends HTMLAttributes<HTMLDivElement> {
   debugId?: string;
   height: number;
+  onSwitchWrappedItemIntoView?: (overflowItem: OverflowItem) => void;
+  overflowIcon?: string;
 }
 
 const InnerContainer = React.memo(
-  ({ children, height }: OverflowContainerProps) => {
-    const { menuActionHandler, menuBuilder, rootRef } = useOverflowContainer();
+  ({
+    children,
+    height,
+    onSwitchWrappedItemIntoView,
+    overflowIcon,
+  }: OverflowContainerProps) => {
+    const { menuActionHandler, menuBuilder, rootRef } = useOverflowContainer({
+      onSwitchWrappedItemIntoView,
+    });
     // TODO measure the height
     const style = {
       "--overflow-container-height": `${height}px`,
@@ -28,20 +38,26 @@ const InnerContainer = React.memo(
 
     return (
       <div className={`${classBase}-wrapContainer`} ref={rootRef} style={style}>
-        {asReactElements(children).map((childEl, i) => (
-          <div
-            className={cx(`${classBase}-item`)}
-            data-index={i}
-            data-overflow-priority={
-              childEl.props["data-overflow-priority"] ?? "0"
-            }
-            key={i}
-          >
-            {childEl}
-          </div>
-        ))}
+        {asReactElements(children).map((childEl, i) => {
+          const {
+            "data-overflow-priority": overflowPriority = "0",
+            label = `Item ${i + 1}`,
+          } = childEl.props;
+          return (
+            <div
+              className={cx(`${classBase}-item`)}
+              data-index={i}
+              data-label={label}
+              data-overflow-priority={overflowPriority}
+              key={i}
+            >
+              {childEl}
+            </div>
+          );
+        })}
         <div className={`${classBase}-OverflowIndicator`} data-index="overflow">
           <PopupMenu
+            icon={overflowIcon}
             menuBuilder={menuBuilder}
             menuActionHandler={menuActionHandler}
           />
@@ -58,6 +74,8 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
     children,
     className,
     height = 44,
+    onSwitchWrappedItemIntoView,
+    overflowIcon,
     ...htmlAttributes
   }: OverflowContainerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
@@ -68,7 +86,13 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
       className={cx(cx(classBase, className))}
       ref={forwardedRef}
     >
-      <InnerContainer height={height}>{children}</InnerContainer>
+      <InnerContainer
+        height={height}
+        overflowIcon={overflowIcon}
+        onSwitchWrappedItemIntoView={onSwitchWrappedItemIntoView}
+      >
+        {children}
+      </InnerContainer>
     </div>
   );
 });

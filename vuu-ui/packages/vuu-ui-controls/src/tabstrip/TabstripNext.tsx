@@ -61,6 +61,7 @@ export const TabstripNext = ({
           return React.cloneElement(child, {
             ...tabProps,
             ...tabstripHook.navigationProps,
+            "data-overflow-priority": selected ? "1" : undefined,
             focusVisible: focusVisible === index,
             id: tabId,
             index,
@@ -103,6 +104,7 @@ export const TabstripNext = ({
       <OverflowContainer
         {...tabstripHook.containerProps}
         height={24}
+        overflowIcon="more-horiz"
         ref={rootRef}
         id={id}
       >

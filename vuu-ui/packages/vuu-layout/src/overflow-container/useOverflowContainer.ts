@@ -13,7 +13,11 @@ import {
   correctForWrappedOverflowIndicator,
 } from "./overflow-utils";
 
-export const useOverflowContainer = () => {
+export interface OverflowContainerHookProps {
+  onSwitchWrappedItemIntoView?: (overflowItem: OverflowItem) => void;
+}
+
+export const useOverflowContainer = ({ onSwitchWrappedItemIntoView }) => {
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const wrappedItemsRef = useRef<OverflowItem[]>(NO_WRAPPED_ITEMS);
 
@@ -51,7 +55,7 @@ export const useOverflowContainer = () => {
         const { current: menuItems } = wrappedItemsRef;
         return menuItems.map((item: OverflowItem) => {
           return {
-            label: `Item ${parseInt(item.index) + 1} [${item.index}]`,
+            label: item.label,
             action: `activate-item-${item.index}`,
             options: { overflowItem: item },
           };
@@ -64,11 +68,12 @@ export const useOverflowContainer = () => {
             options.overflowItem
           );
           wrappedItemsRef.current = wrappedItems;
+          onSwitchWrappedItemIntoView?.(options.overflowItem);
         }
         return true;
       },
     ];
-  }, [container]);
+  }, [container, onSwitchWrappedItemIntoView]);
 
   const resizeObserver = useMemo(() => {
     let currentWidth = 0;

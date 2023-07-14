@@ -2,6 +2,7 @@ const NON_WRAPPED_ITEM = ".vuuOverflowContainer-item:not(.wrapped)";
 
 export type OverflowItem = {
   index: string;
+  label: string;
   overflowPriority: string;
 };
 
@@ -52,20 +53,20 @@ export const getNonWrappedAndWrappedItems = (
   for (const child of sortedChildren) {
     const element = child as HTMLElement;
     const {
-      dataset: { index = "?", overflowPriority = "0" },
+      dataset: { index = "?", label = "?", overflowPriority = "0" },
     } = element;
     const { left } = element.getBoundingClientRect();
     if (left <= currentLeft) {
       if (index === "overflow") {
         wrappedItems.push(nonWrappedItems.pop() as OverflowItem);
       } else {
-        wrappedItems.push({ index, overflowPriority });
+        wrappedItems.push({ index, label, overflowPriority });
       }
       overflowed = true;
     } else if (overflowed) {
-      wrappedItems.push({ index, overflowPriority });
+      wrappedItems.push({ index, label, overflowPriority });
     } else {
-      nonWrappedItems.push({ index, overflowPriority });
+      nonWrappedItems.push({ index, label, overflowPriority });
     }
     currentLeft = left;
   }

@@ -12,7 +12,7 @@ import {
   ContainerNavigationProps,
   useKeyboardNavigation,
 } from "./useKeyboardNavigation";
-import { dragStrategy, useDragDrop, DragHookResult } from "./drag-drop";
+import { dragStrategy, useDragDrop, DragHookResult } from "../drag-drop";
 import { useSelection } from "./useSelection";
 import {
   ExitEditModeHandler,

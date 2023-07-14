@@ -14,6 +14,7 @@ import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 const classBase = "vuuPopupMenu";
 
 export interface PopupMenuProps extends HTMLAttributes<HTMLSpanElement> {
+  icon?: string;
   menuActionHandler?: MenuActionHandler;
   menuBuilder?: MenuBuilder;
   menuLocation?: string;
@@ -28,6 +29,7 @@ const getPosition = (element: HTMLElement | null) => {
 
 export const PopupMenu = ({
   className,
+  icon = "more-vert",
   menuActionHandler,
   menuBuilder,
   menuLocation = "header",
@@ -60,7 +62,7 @@ export const PopupMenu = ({
       className={cx(classBase, className, {
         [`${classBase}-open`]: menuOpen,
       })}
-      data-icon="more-vert"
+      data-icon={icon}
       onClick={showColumnMenu}
       ref={rootRef}
     />

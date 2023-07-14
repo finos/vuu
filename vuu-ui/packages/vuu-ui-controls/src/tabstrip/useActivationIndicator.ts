@@ -96,6 +96,17 @@ export function useActivationIndicator({
     }
   }, [createIndicatorStyle, tabId]);
 
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     if (rootRef.current) {
+  //       rootRef.current.style.setProperty(
+  //         "--tab-activationIndicator-transition",
+  //         "left 0.3s ease"
+  //       );
+  //     }
+  //   }, 1000);
+  // }, [rootRef]);
+
   useResizeObserver(rootRef, WidthOnly, onResize);
 
   return style;

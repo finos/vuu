@@ -22,7 +22,7 @@ let displaySequence = 1;
 
 export const DefaultTabstripNext = ({
   activeTabIndex: activeTabIndexProp = 4,
-  width = 500,
+  width = 700,
 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
   const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];

@@ -19,32 +19,32 @@
 
 /* Tabstrip orientation is horizontal */
 .vuuTabstrip-horizontal {
-  --saltTabs-activationIndicator-height: 1px;
-  --saltTabs-activationIndicator-thumb-inset: -1px 0 0 0;
-
-  --tabs-activationIndicator-borderStyle: none none solid none;
-  --tabs-activationIndicator-inset: auto 0px 0px 0px;
-  --tabs-activationIndicator-transitionProperty: left;
-  --tabs-activationIndicator-thumb-height: 2px;
+  --vuuTabActivationIndicator-height: 1px;
+  --vuuTabActivationIndicator-thumb-inset: -1px 0 0 0;
+  --tab-activationIndicator-borderStyle: none none solid none;
+  --tab-activationIndicator-inset: auto 0px 0px 0px;
+  --tab-activationIndicator-transitionProperty: left;
+  --tab-activationIndicator-thumb-height: 0px;
+  --tab-thumb-height: 2px;
 }
 
 /* Tabstrip orientation is vertical */
 .vuuTabstrip-vertical {
-  --saltTabs-activationIndicator-thumb-inset: 0 0 0 -1px;
+  --vuuTabActivationIndicator-thumb-inset: 0 0 0 -1px;
 
-  --tabs-activationIndicator-transition: top 0.3s ease;
-  --tabs-activationIndicator-borderStyle: none solid none none;
-  --tabs-activationIndicator-inset: 0px 0px 0px auto;
-  --tabs-activationIndicator-transitionProperty: top;
-  --tabs-activationIndicator-width: 1px;
-  --tabs-activationIndicator-thumb-width: 2px;
+  --tab-activationIndicator-transition: top 0.3s ease;
+  --tab-activationIndicator-borderStyle: none solid none none;
+  --tab-activationIndicator-inset: 0px 0px 0px auto;
+  --tab-activationIndicator-transitionProperty: top;
+  --tab-activationIndicator-width: 1px;
+  --tab-activationIndicator-thumb-width: 2px;
 
   align-self: flex-start;
   display: inline-flex;
 }
 
 .vuuTabstrip-draggingTab {
-  --saltTabs-activationIndicator-transition: none;
+  --vuuTabs-activationIndicator-transition: none;
 }
 
 .vuuTabstrip-draggingTab .saltTab {
@@ -106,9 +106,9 @@
   --tabs-tab-background: var(--salt-navigable-primary-background-hover);
   --tabs-tab-before-content: "";
   --tabs-tab-before-background: var(--salt-navigable-indicator-hover);
-  --tabs-tab-before-height: var(--tabs-activationIndicator-thumb-height);
-  --tabs-tab-before-inset: var(--tabs-activationIndicator-inset);
-  --tabs-tab-before-width: var(--tabs-activationIndicator-thumb-width);
+  --tabs-tab-before-height: var(--tab-activationIndicator-thumb-height);
+  --tabs-tab-before-inset: var(--tab-activationIndicator-inset);
+  --tabs-tab-before-width: var(--tab-activationIndicator-thumb-width);
   --tabs-tab-cursor: var(--salt-draggable-grab-cursor-active);
   --tabs-tab-position: static;
 
@@ -117,14 +117,14 @@
 
 .saltDraggable-tabstrip-horizontal {
   --tabs-tabstrip-height: var(--saltTabs-tabstrip-height, var(--salt-size-stackable));
-  --tabs-activationIndicator-thumb-height: 2px;
-  --tabs-activationIndicator-inset: auto 0px 0px 0px;
+  --tab-activationIndicator-thumb-height: 2px;
+  --tab-activationIndicator-inset: auto 0px 0px 0px;
 
   line-height: var(--tabs-tabstrip-height);
 }
 .saltDraggable-tabstrip-vertical {
-  --tabs-activationIndicator-inset: 0px 0px 0px auto;
-  --tabs-activationIndicator-thumb-width: 2px;
+  --tab-activationIndicator-inset: 0px 0px 0px auto;
+  --tab-activationIndicator-thumb-width: 2px;
 }
 
 .saltDraggable[class*="tabstrip"] .saltTab[aria-selected="true"]:before {

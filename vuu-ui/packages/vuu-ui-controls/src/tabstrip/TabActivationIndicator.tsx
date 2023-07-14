@@ -23,6 +23,7 @@ export const TabActivationIndicator = ({
     tabId,
     orientation,
   });
+
   return (
     <div className={classBase} ref={rootRef}>
       {hideThumb === false && tabId !== null ? (

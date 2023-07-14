@@ -8,6 +8,7 @@ import {
 import { useSelection } from "./useSelectionNext";
 import { useKeyboardNavigation } from "./useKeyboardNavigationNext";
 import { orientationType } from "../responsive";
+import { OverflowItem } from "@finos/vuu-layout";
 
 export interface TabstripNextHookProps {
   activeTabIndex: number;
@@ -66,6 +67,16 @@ export const useTabstripNext = ({
     [keyboardHook, selectionHook]
   );
 
+  const onSwitchWrappedItemIntoView = useCallback(
+    (item: OverflowItem) => {
+      const index = parseInt(item.index);
+      if (!isNaN(index)) {
+        selectionHook.activateTab(index);
+      }
+    },
+    [selectionHook]
+  );
+
   const navigationProps = {
     onFocus: keyboardHook.onFocus,
     onKeyDown: handleKeyDown,
@@ -80,7 +91,10 @@ export const useTabstripNext = ({
   return {
     activeTabIndex: selectionHook.selected,
     focusVisible: keyboardHook.focusVisible,
-    containerProps: keyboardHook.containerProps,
+    containerProps: {
+      ...keyboardHook.containerProps,
+      onSwitchWrappedItemIntoView,
+    },
     navigationProps,
     tabProps,
   };

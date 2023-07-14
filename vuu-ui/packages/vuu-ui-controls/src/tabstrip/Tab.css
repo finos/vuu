@@ -4,26 +4,27 @@
   --saltEditableLabel-height: var(--tabs-tabstrip-height);
   --saltInputLegacy-minWidth: 4em;
 
-  --tabs-tab-background: var(--salt-navigable-primary-background);
-  --tabs-tab-cursor: pointer;
-  --tabs-tab-spacing: var(--salt-size-unit);
-  --tabs-tab-position: relative;
+  --tab-background: var(--salt-navigable-primary-background);
+  --tab-cursor: pointer;
+  --tab-position: relative;
 }
 
 .vuuTab {
   align-items: center;
   align-self: stretch;
-  background: var(--saltTabs-tab-background, var(--tabs-tab-background));
+  background: var(--vuuTab-background, var(--tab-background));
   border: none;
   border-radius: 0;
   color: var(--salt-text-primary-foreground);
-  cursor: var(--saltTabs-tab-cursor, var(--tabs-tab-cursor));
+  cursor: var(--vuuTab-cursor, var(--tab-cursor));
   display: var(--tabs-tabstrip-display);
-  height: var(--saltTabs-tab-height, var(--tabs-tabstrip-height));
-  letter-spacing: var(--saltTabs-tab-letterSpacing, var(--tabs-tab-letterSpacing, 0));
-  min-width: var(--saltTabs-tab-minWidth, 40px);
+  gap: 8px;
+  height: var(--vuuTab-height, var(--tabs-tabstrip-height));
+  letter-spacing: var(--vuuTab-letterSpacing, var(--tab-letterSpacing, 0));
+  min-width: var(--vuuTab-minWidth, 40px);
   outline: none;
-  position: var(--saltTabs-tab-position, var(--tabs-tab-position));
+  padding: 0 24px;
+  position: var(--vuuTab-position, var(--tab-position));
   user-select: none;
 }
 
@@ -33,10 +34,10 @@
 }
 
 .vuuTab:not(.vuuTab-vertical) {
-  margin: 0 var(--tabs-tab-spacing) 0 0;
+  margin: 0 var(--tab-spacing) 0 0;
 }
 
-.vuuTab[aria-selected="true"] {
+.vuuTab-selected {
   background-color: pink;;
   color: var(--salt-text-primary-foreground);
   font-weight: var(--salt-navigable-fontWeight-active);
@@ -57,9 +58,8 @@
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
-  height: var(--saltTabs-tabstrip-height, var(--salt-size-stackable));
+  height: var(--vuuTabstrip-height, var(--salt-size-stackable));
   outline: none;
-  padding: 0 var(--tabs-tab-spacing);
   position: relative;
 }
 
@@ -94,7 +94,7 @@
   overflow: hidden;
   text-align: var(--salt-text-textAlign-embedded);
   text-overflow: ellipsis;
-  top: var(--saltTabs-tab-top, var(--tabs-tab-top, auto));
+  top: var(--vuuTab-top, var(--tab-top, auto));
   white-space: nowrap;
   /* ensure content sits above focus ring */
   z-index: var(--salt-zIndex-default);
@@ -131,7 +131,7 @@
   bottom: 0;
 }
 
-.vuuTab-vertical .saltFocusVisible:not([aria-selected="true"]):before {
+.vuuTab-vertical .saltFocusVisible:not(.vuuTab-selected):before {
   left: auto;
   height: auto;
   top: 0;
@@ -139,37 +139,48 @@
 }
 
 .vuuTab.saltFocusVisible {
-  background: var(--saltTabs-tab-hover-background, var(--salt-navigable-primary-background-hover));
+  background: var(--vuuTab-hover-background, var(--salt-navigable-primary-background-hover));
 }
 
 .vuuTab:before {
-  content: var(--tabs-tab-before-content, none);
-  background: var(--tabs-tab-before-background);
-  height: var(--tabs-tab-before-height);
-  inset: var(--tabs-tab-before-inset);
+  content: var(--tab-before-content, none);
+  background: var(--tab-before-background);
+  height: var(--tab-before-height);
+  inset: var(--tab-before-inset);
   position: absolute;
-  width: var(--tabs-tab-before-width);
+  width: var(--tab-before-width);
   z-index: 1;
 }
 
-.vuuTabstrip-draggingTab .vuuTab[aria-selected="true"]:before {
-  --tabs-tab-before-content: "";
-  --tabs-tab-before-background: var(--salt-navigable-indicator-color-active);
-  --tabs-tab-before-height: var(--tabs-activationIndicator-thumb-height);
-  --tabs-tab-before-inset: var(--tabs-activationIndicator-inset);
-  --tabs-tab-before-width: var(--tabs-activationIndicator-thumb-width);
+.vuuTabstrip-draggingTab .vuuTab-selected:before {
+  --tab-before-content: "";
+  --tab-before-background: var(--salt-navigable-indicator-color-active);
+  --tab-before-height: var(--tab-thumb-height);
+  --tab-before-inset: var(--tab-activationIndicator-inset);
+  --tab-before-width: var(--tab-activationIndicator-thumb-width);
 }
 
 /* Hover styling */
-.vuuTab:not([aria-selected="true"]).saltFocusVisible:before,
-.vuuTab:hover:not([aria-selected="true"]):before {
-  --tabs-tab-before-content: "";
-  --tabs-tab-before-background: var(--salt-navigable-indicator-hover);
-  --tabs-tab-before-height: var(--tabs-activationIndicator-thumb-height);
-  --tabs-tab-before-inset: var(--tabs-activationIndicator-inset);
-  --tabs-tab-before-width: var(--tabs-activationIndicator-thumb-width);
+.vuuTab:not(.vuuTab-selected).saltFocusVisible:before,
+.vuuTab:hover:not(.vuuTab-selected):before {
+  --tab-before-content: "";
+  --tab-before-background: var(--salt-navigable-indicator-hover);
+  --tab-before-height: var(--tab-thumb-height);
+  --tab-before-inset: var(--tab-activationIndicator-inset);
+  --tab-before-width: var(--tab-activationIndicator-thumb-width);
+}
+
+.vuuTab-selected:before {
+  --tab-before-content: "";
+  background: var(--salt-navigable-indicator-active);
+  height: var(--tab-thumb-height);
+  position: absolute;
+  left:0;
+  bottom:0px; 
+  width: 100%;
+  transition: left 0.3s ease;
 }
 
 .vuuTab:hover:not(.vuuTab-closeHover) {
-  background: var(--saltTabs-tab-hover-background, var(--salt-navigable-primary-background-hover));
+  background: var(--vuuTab-hover-background, var(--salt-navigable-primary-background-hover));
 }

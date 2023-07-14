@@ -1,4 +1,4 @@
-import { orientationType } from "../../responsive";
+import { orientationType } from "../responsive";
 import { Direction, FWD } from "./dragDropTypes";
 
 const LEFT_RIGHT = ["left", "right"];

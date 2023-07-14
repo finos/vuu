@@ -161,6 +161,7 @@ export const Tab = forwardRef(function Tab(
         [`${classBase}-closeHover`]: closeHover,
         [`${classBase}-dragAway`]: dragging,
         [`${classBase}-editing`]: editing,
+        [`${classBase}-selected`]: selected || undefined,
         [`${classBase}-vertical`]: orientation === "vertical",
         [`saltFocusVisible`]: focusVisible,
       })}
