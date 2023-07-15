@@ -15,6 +15,7 @@ import { useCallback, useMemo, useState } from "react";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
 
 import "./Tabstrip.examples.css";
+import { ExitEditModeHandler } from "@heswell/salt-lab/dist-types/tabs/useEditableItem";
 
 const SPLITTER_WIDTH = 3;
 
@@ -99,6 +100,53 @@ export const TabstripNextAddTab = ({ width = 700 }) => {
 };
 
 TabstripNextAddTab.displaySequence = displaySequence++;
+
+export const TabstripNextEditableLabels = ({
+  activeTabIndex: activeTabIndexProp = 0,
+  width = 700,
+}) => {
+  const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
+  const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
+
+  const handleTabLabelChanged = useCallback<ExitEditModeHandler>(
+    (originalValue, newValue) => {
+      console.log(`tab label changed from '${originalValue}' to '${newValue}'`);
+    },
+    []
+  );
+
+  return (
+    <LayoutProvider>
+      <FlexboxLayout
+        style={{ height: 200, width: width + SPLITTER_WIDTH }}
+        path=""
+      >
+        <div data-resizeable style={{ flex: 1 }}>
+          <TabstripNext
+            activeTabIndex={activeTabIndex}
+            allowRenameTab
+            animateSelectionThumb
+            onActiveChange={setActiveTabIndex}
+            onExitEditMode={handleTabLabelChanged}
+          >
+            {tabs.map((label, i) => (
+              <Tab
+                key={label}
+                label={label}
+                ariaControls={
+                  i === activeTabIndex ? `ts-panel-${i}` : undefined
+                }
+              />
+            ))}
+          </TabstripNext>
+        </div>
+        <div data-resizeable />
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
+
+TabstripNextEditableLabels.displaySequence = displaySequence++;
 
 export const DefaultTabstrip = ({ width = 350 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -215,7 +263,7 @@ export const TheFullMonty = () => {
       <Tabstrip
         enableAddTab
         enableCloseTab
-        enableRenameTab
+        allowRenameTab
         onAddTab={handleAddTab}
         onActiveChange={handleTabSelection}
         onCloseTab={onTabShouldClose}
@@ -277,7 +325,7 @@ export const TheFullMontyNoConfirmation = () => {
     <div style={{ height: 300, width: 600 }}>
       <Tabstrip
         enableAddTab
-        enableRenameTab
+        allowRenameTab
         onAddTab={handleAddTab}
         onActiveChange={handleTabSelection}
         onCloseTab={onTabDidClose}

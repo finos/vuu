@@ -16,6 +16,7 @@ export interface TabstripNextProps extends TabstripProps {
 
 export const TabstripNext = ({
   activeTabIndex: activeTabIndexProp,
+  allowRenameTab = false,
   animateSelectionThumb = false,
   children,
   className: classNameProp,
@@ -24,6 +25,7 @@ export const TabstripNext = ({
   keyBoardActivation = "manual",
   onActiveChange,
   onAddTab,
+  onExitEditMode,
   orientation = "horizontal",
   style: styleProp,
   ...htmlAttributes
@@ -41,6 +43,7 @@ export const TabstripNext = ({
     containerRef: rootRef,
     keyBoardActivation,
     onActiveChange,
+    onExitEditMode,
     orientation,
   });
 
@@ -66,12 +69,16 @@ export const TabstripNext = ({
     () =>
       asReactElements(children)
         .map((child, index) => {
+          const {
+            id: tabId = `${id}-tab-${index}`,
+            editable = allowRenameTab,
+          } = child.props;
           const selected = index === activeTabIndex;
-          const tabId = child.props.id ?? `${id}-tab-${index}`;
           return React.cloneElement(child, {
             ...tabProps,
             ...tabstripHook.navigationProps,
             "data-overflow-priority": selected ? "1" : undefined,
+            editable,
             focusVisible: focusVisible === index,
             id: tabId,
             index,
@@ -98,6 +105,7 @@ export const TabstripNext = ({
         ),
     [
       activeTabIndex,
+      allowRenameTab,
       children,
       enableAddTab,
       focusVisible,

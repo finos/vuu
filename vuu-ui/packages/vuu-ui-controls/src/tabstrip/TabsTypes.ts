@@ -34,6 +34,12 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
    * when true Tabs may be re-arranged by dragging individual Tabs to new position within Tabstrip.
    */
   allowDragDrop?: boolean;
+
+  /**
+   * when true Tab labels may be edited by user. This can be overridden on each individual Tab
+   */
+  allowRenameTab?: boolean;
+
   /**
    * Boolean that indicates if tabs are centered on the container
    */
@@ -55,10 +61,6 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
    * Boolean that enables closing tabs
    */
   enableCloseTab?: boolean;
-  /**
-   * Boolean that enables renaming a tab
-   */
-  enableRenameTab?: boolean;
   keyBoardActivation?: "manual" | "automatic";
   onAddTab?: () => void;
   onActiveChange?: (tabIndex: number) => void;
