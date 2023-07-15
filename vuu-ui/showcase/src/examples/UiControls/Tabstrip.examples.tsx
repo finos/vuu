@@ -101,6 +101,56 @@ export const TabstripNextAddTab = ({ width = 700 }) => {
 
 TabstripNextAddTab.displaySequence = displaySequence++;
 
+export const TabstripNextRemoveTab = ({ width = 700 }) => {
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [tabs, setTabs] = useState([{ label: "Home" }]);
+
+  const handleAddTab = () => {
+    const count = tabs.length;
+    setTabs((state) => state.concat([{ label: `Tab ${state.length + 1}` }]));
+    setActiveTabIndex(count);
+  };
+  const handleCloseTab = (tabIndex: number) => {
+    console.log(`remove tab at index ${tabIndex}`);
+    setTabs((state) => state.filter((tab, i) => i !== tabIndex));
+    // setActiveTabIndex(count);
+  };
+
+  return (
+    <LayoutProvider>
+      <FlexboxLayout
+        style={{ height: 200, width: width + SPLITTER_WIDTH }}
+        path=""
+      >
+        <div data-resizeable style={{ flex: 1 }}>
+          <TabstripNext
+            activeTabIndex={activeTabIndex}
+            allowAddTab
+            allowCloseTab
+            animateSelectionThumb
+            onActiveChange={setActiveTabIndex}
+            onAddTab={handleAddTab}
+            onCloseTab={handleCloseTab}
+          >
+            {tabs.map(({ label }, i) => (
+              <Tab
+                key={label}
+                label={label}
+                ariaControls={
+                  i === activeTabIndex ? `ts-panel-${i}` : undefined
+                }
+              />
+            ))}
+          </TabstripNext>
+        </div>
+        <div data-resizeable />
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
+
+TabstripNextRemoveTab.displaySequence = displaySequence++;
+
 export const TabstripNextEditableLabels = ({
   activeTabIndex: activeTabIndexProp = 0,
   width = 700,

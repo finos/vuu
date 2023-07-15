@@ -1,3 +1,5 @@
+import type { MenuActionHandler } from "@finos/vuu-data-types";
+import type { OverflowItem } from "@finos/vuu-layout";
 import {
   KeyboardEvent,
   MouseEvent as ReactMouseEvent,
@@ -5,11 +7,10 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { useSelection } from "./useSelectionNext";
-import { useKeyboardNavigation } from "./useKeyboardNavigationNext";
-import { orientationType } from "../responsive";
-import { OverflowItem } from "@finos/vuu-layout";
+import type { orientationType } from "../responsive";
 import { useAnimatedSelectionThumb } from "./useAnimatedSelectionThumb";
+import { useKeyboardNavigation } from "./useKeyboardNavigationNext";
+import { useSelection } from "./useSelectionNext";
 
 export type ExitEditModeHandler = (
   originalValue: string,
@@ -22,6 +23,7 @@ export interface TabstripNextHookProps {
   activeTabIndex: number;
   animateSelectionThumb: boolean;
   onActiveChange?: (tabIndex: number) => void;
+  onCloseTab?: (tabIndex: number) => void;
   onExitEditMode?: ExitEditModeHandler;
   containerRef: RefObject<HTMLElement>;
   orientation: orientationType;
@@ -36,6 +38,7 @@ export const useTabstripNext = ({
   animateSelectionThumb,
   containerRef,
   onActiveChange,
+  onCloseTab,
   onExitEditMode,
   orientation,
   keyBoardActivation,
@@ -117,6 +120,23 @@ export const useTabstripNext = ({
     [keyboardHookHandleKeyDown, selectionHookHandleKeyDown]
   );
 
+  const handleTabMenuAction = useCallback<MenuActionHandler>(
+    (type, options) => {
+      switch (type) {
+        case "close-tab":
+          onCloseTab?.(options.tabIndex);
+          return true;
+        case "rename-tab":
+          console.log(`rename tab  ${options.tabIndex}`);
+          break;
+        default:
+          console.log(`tab menu action ${type}`);
+      }
+      return false;
+    },
+    [onCloseTab]
+  );
+
   const onSwitchWrappedItemIntoView = useCallback(
     (item: OverflowItem) => {
       const index = parseInt(item.index);
@@ -136,6 +156,7 @@ export const useTabstripNext = ({
     onClick: handleClick,
     onKeyDown: handleKeyDown,
     onExitEditMode: handleExitEditMode,
+    onMenuAction: handleTabMenuAction,
   };
 
   const containerStyle = useAnimatedSelectionThumb(

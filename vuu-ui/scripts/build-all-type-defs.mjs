@@ -23,6 +23,7 @@ const packages = [
   "vuu-table-extras",
   "vuu-layout",
   "vuu-shell",
+  "vuu-ui-controls",
 ];
 
 packages.forEach(buildPackage);

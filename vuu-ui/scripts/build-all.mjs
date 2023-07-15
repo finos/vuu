@@ -14,6 +14,7 @@ const wave1 = [
   "vuu-filter-parser",
   "vuu-protocol-types",
   "vuu-utils",
+  "vuu-ui-controls",
   "vuu-codemirror",
   "vuu-theme",
   "vuu-theme-purple",

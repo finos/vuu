@@ -17,6 +17,7 @@ import { TabMenu } from "./TabMenu";
 import { EditableLabel, EditableLabelProps } from "../editable-label";
 
 import "./Tab.css";
+import { MenuActionHandler } from "packages/vuu-data-types";
 
 const classBase = "vuuTab";
 
@@ -41,6 +42,7 @@ export const Tab = forwardRef(function Tab(
     onFocus: onFocusProp,
     onKeyDown,
     onKeyUp,
+    onMenuAction,
     onMouseDown,
     orientation,
     selected,
@@ -54,6 +56,10 @@ export const Tab = forwardRef(function Tab(
     throw Error(
       "index, onClick, onKeyUp, onKeyDown are required props, they would nornally be injected by Tabstrip, are you creating a Tab outside of a Tabstrip"
     );
+  }
+
+  if (showMenuButton && typeof onMenuAction !== "function") {
+    throw Error("Tab onMenuAction must be provided if showMenuButton is set");
   }
 
   const root = useRef<HTMLDivElement>(null);
@@ -153,7 +159,6 @@ export const Tab = forwardRef(function Tab(
         [`${classBase}-vertical`]: orientation === "vertical",
         [`saltFocusVisible`]: focusVisible,
       })}
-      data-editable={editable || undefined}
       onClick={handleClick}
       onFocus={handleFocus}
       onKeyDown={handleKeyDownMain}
@@ -179,9 +184,9 @@ export const Tab = forwardRef(function Tab(
       </div>
       {showMenuButton ? (
         <TabMenu
-        // onClick={handleCloseButtonClick}
-        // onMouseEnter={handleCloseButtonEnter}
-        // onMouseLeave={handleCloseButtonLeave}
+          allowClose={closeable}
+          onMenuAction={onMenuAction as MenuActionHandler}
+          tabIndex={index}
         />
       ) : null}
     </div>

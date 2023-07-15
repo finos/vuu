@@ -9,6 +9,7 @@ import {
 import { orientationType, OverflowSource } from "../responsive";
 import { EditableLabelProps } from "../editable-label";
 import { ExitEditModeHandler } from "./useEditableItem";
+import { MenuActionHandler } from "packages/vuu-data-types";
 
 export interface FocusAPI {
   focus: () => void;
@@ -31,9 +32,20 @@ export type TabstripVariant = "primary" | "tertiary";
 
 export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
   /**
+   * Boolean that enables add new tab
+   */
+
+  allowAddTab?: boolean;
+
+  /**
    * when true Tabs may be re-arranged by dragging individual Tabs to new position within Tabstrip.
    */
   allowDragDrop?: boolean;
+
+  /**
+   * when true Tabs may be closed by user. This can be overridden on each individual Tab
+   */
+  allowCloseTab?: boolean;
 
   /**
    * when true Tab labels may be edited by user. This can be overridden on each individual Tab
@@ -51,16 +63,6 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
   defaultActiveTabIndex?: number;
 
   editing?: boolean;
-  /**
-   * Boolean that enables add new tab
-   */
-
-  enableAddTab?: boolean;
-  /**
-   * @deprecated
-   * Boolean that enables closing tabs
-   */
-  enableCloseTab?: boolean;
   keyBoardActivation?: "manual" | "automatic";
   onAddTab?: () => void;
   onActiveChange?: (tabIndex: number) => void;
@@ -121,6 +123,7 @@ export type TabProps = Omit<
   onEnterEditMode?: () => void;
   onExitEditMode?: exitEditHandler;
   onKeyUp?: (e: KeyboardEvent, index: number) => void;
+  onMenuAction?: MenuActionHandler;
   orientation?: "horizontal" | "vertical";
 };
 

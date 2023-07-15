@@ -57,9 +57,6 @@ export const useContextMenu = (
           location,
           options
         );
-        console.log({
-          menuItemDescriptors,
-        });
 
         const menuHandler = menuActionHandler ?? ctx?.menuActionHandler;
 

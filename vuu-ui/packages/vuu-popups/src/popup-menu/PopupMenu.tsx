@@ -18,6 +18,7 @@ export interface PopupMenuProps extends HTMLAttributes<HTMLSpanElement> {
   menuActionHandler?: MenuActionHandler;
   menuBuilder?: MenuBuilder;
   menuLocation?: string;
+  menuOptions?: { [key: string]: unknown };
 }
 
 const getPosition = (element: HTMLElement | null) => {
@@ -33,6 +34,7 @@ export const PopupMenu = ({
   menuActionHandler,
   menuBuilder,
   menuLocation = "header",
+  menuOptions,
   ...htmlAttributes
 }: PopupMenuProps) => {
   const rootRef = useRef<HTMLSpanElement>(null);
@@ -43,7 +45,7 @@ export const PopupMenu = ({
     setMenuOpen(false);
   }, []);
 
-  const showColumnMenu = useCallback(
+  const showMenu = useCallback(
     (e: MouseEvent<HTMLElement>) => {
       setMenuOpen(true);
       showContextMenu(e, menuLocation, {
@@ -51,9 +53,10 @@ export const PopupMenu = ({
           onClose: handleMenuClose,
           position: getPosition(rootRef.current),
         },
+        ...menuOptions,
       });
     },
-    [handleMenuClose, menuLocation, showContextMenu]
+    [handleMenuClose, menuLocation, menuOptions, showContextMenu]
   );
 
   return (
@@ -63,7 +66,7 @@ export const PopupMenu = ({
         [`${classBase}-open`]: menuOpen,
       })}
       data-icon={icon}
-      onClick={showColumnMenu}
+      onClick={showMenu}
       ref={rootRef}
     />
   );

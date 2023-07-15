@@ -1,10 +1,10 @@
 import { asReactElements, OverflowContainer, useId } from "@finos/vuu-layout";
 import { Button } from "@salt-ds/core";
 import cx from "classnames";
+import React, { useCallback, useMemo, useRef } from "react";
 import { TabstripProps } from "./TabsTypes";
 import { useTabstripNext } from "./useTabstripNext";
 
-import React, { useCallback, useMemo, useRef } from "react";
 import "./Tabstrip.css";
 
 const classBase = "vuuTabstrip";
@@ -16,15 +16,17 @@ export interface TabstripNextProps extends TabstripProps {
 
 export const TabstripNext = ({
   activeTabIndex: activeTabIndexProp,
+  allowAddTab,
+  allowCloseTab,
   allowRenameTab = false,
   animateSelectionThumb = false,
   children,
   className: classNameProp,
-  enableAddTab,
   id: idProp,
   keyBoardActivation = "manual",
   onActiveChange,
   onAddTab,
+  onCloseTab,
   onExitEditMode,
   orientation = "horizontal",
   style: styleProp,
@@ -43,6 +45,7 @@ export const TabstripNext = ({
     containerRef: rootRef,
     keyBoardActivation,
     onActiveChange,
+    onCloseTab,
     onExitEditMode,
     orientation,
   });
@@ -61,22 +64,20 @@ export const TabstripNext = ({
     onAddTab?.();
   }, [onAddTab]);
 
-  console.log(
-    `TabstripNext activeTabIndexProp = ${activeTabIndexProp} activeTabIndex  =${activeTabIndex}`
-  );
-
   const tabs = useMemo(
     () =>
       asReactElements(children)
         .map((child, index) => {
           const {
             id: tabId = `${id}-tab-${index}`,
+            closeable = allowCloseTab,
             editable = allowRenameTab,
           } = child.props;
           const selected = index === activeTabIndex;
           return React.cloneElement(child, {
             ...tabProps,
             ...tabstripHook.navigationProps,
+            closeable,
             "data-overflow-priority": selected ? "1" : undefined,
             editable,
             focusVisible: focusVisible === index,
@@ -87,7 +88,7 @@ export const TabstripNext = ({
           });
         })
         .concat(
-          enableAddTab ? (
+          allowAddTab ? (
             <Button
               {...tabstripHook.navigationProps}
               aria-label="Create Tab"
@@ -105,9 +106,10 @@ export const TabstripNext = ({
         ),
     [
       activeTabIndex,
+      allowAddTab,
+      allowCloseTab,
       allowRenameTab,
       children,
-      enableAddTab,
       focusVisible,
       handleAddTabClick,
       id,
