@@ -1,12 +1,11 @@
-import { TabstripProps } from "./TabsTypes";
-import { Button, useIdMemo as useId } from "@salt-ds/core";
-
-import { useTabstripNext } from "./useTabstripNext";
+import { asReactElements, OverflowContainer, useId } from "@finos/vuu-layout";
+import { Button } from "@salt-ds/core";
 import cx from "classnames";
-import { asReactElements, OverflowContainer } from "@finos/vuu-layout";
+import { TabstripProps } from "./TabsTypes";
+import { useTabstripNext } from "./useTabstripNext";
 
-import "./Tabstrip.css";
 import React, { useCallback, useMemo, useRef } from "react";
+import "./Tabstrip.css";
 
 const classBase = "vuuTabstrip";
 
