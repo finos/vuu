@@ -1,5 +1,6 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useLayoutEffectSkipFirst } from "../utils";
 import {
   applyOverflowClassToWrappedItems,
   removeOverflowIndicatorIfNoLongerNeeded,
@@ -14,10 +15,14 @@ import {
 } from "./overflow-utils";
 
 export interface OverflowContainerHookProps {
+  itemCount: number;
   onSwitchWrappedItemIntoView?: (overflowItem: OverflowItem) => void;
 }
 
-export const useOverflowContainer = ({ onSwitchWrappedItemIntoView }) => {
+export const useOverflowContainer = ({
+  itemCount,
+  onSwitchWrappedItemIntoView,
+}: OverflowContainerHookProps) => {
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const wrappedItemsRef = useRef<OverflowItem[]>(NO_WRAPPED_ITEMS);
 
@@ -28,8 +33,14 @@ export const useOverflowContainer = ({ onSwitchWrappedItemIntoView }) => {
       if (overflowIndicatorHasWrappedButShouldNotHave(wrapped)) {
         wrapped = await correctForWrappedOverflowIndicator(container, wrapped);
       }
-      if (highPriorityItemsHaveWrappedButShouldNotHave(nonWrapped, wrapped)) {
-        wrapped = await correctForWrappedHighPriorityItems(container, wrapped);
+      while (
+        highPriorityItemsHaveWrappedButShouldNotHave(nonWrapped, wrapped)
+      ) {
+        [nonWrapped, wrapped] = await correctForWrappedHighPriorityItems(
+          container,
+          nonWrapped,
+          wrapped
+        );
       }
       if (wrapped.length === 1) {
         if (removeOverflowIndicatorIfNoLongerNeeded(container)) {
@@ -63,7 +74,8 @@ export const useOverflowContainer = ({ onSwitchWrappedItemIntoView }) => {
       },
       (type, options) => {
         if (container && hasOverflowItem(options)) {
-          const wrappedItems = switchWrappedItemIntoView(
+          // TODO do we always want to switch it into view - leave that to caller
+          const [, wrappedItems] = switchWrappedItemIntoView(
             container,
             options.overflowItem
           );
@@ -87,6 +99,10 @@ export const useOverflowContainer = ({ onSwitchWrappedItemIntoView }) => {
       }
     });
   }, [handleResize]);
+
+  useLayoutEffectSkipFirst(() => {
+    handleResize();
+  }, [handleResize, itemCount]);
 
   useMemo(() => {
     if (container) {

@@ -26,6 +26,13 @@
   "rules": {
     "react/prop-types": 0,
     "react/react-in-jsx-scope": 0,
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "(useLayoutEffectSkipFirst)"
+      }
+    ],
+
     "no-unused-vars": 0,
     "prefer-const": ["error", {"destructuring": "all"}],
     "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]

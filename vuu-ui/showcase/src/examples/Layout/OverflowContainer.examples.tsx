@@ -128,23 +128,23 @@ export const OverflowContainerHighPriorityItem = () => {
           style={{ flex: 1, flexDirection: "column", background: "#ccc" }}
         >
           {/* prettier-ignore */}
-          {/* <OverflowContainer height={44} style={{ flex: 0, height: 44 }}>
+          <OverflowContainer height={44} style={{ flex: 0, height: 44 }}>
             <div className="Item" style={{ width: 100 }}>1</div>
             <div className="Item" style={{ width: 100 }}>2</div>
             <div className="Item" style={{ width: 100 }}>3</div>
             <div className="Item" style={{ width: 100 }}>4</div>
             <div className="Item" style={{ width: 100 }}>5</div>
             <div className="Item" style={{ width: 28 }} data-overflow-priority="1">6</div>
-          </OverflowContainer> */}
+          </OverflowContainer>
           {/* prettier-ignore */}
-          {/* <OverflowContainer height={44} style={{ flex: 0, height: 44, marginTop: 20 }}>
+          <OverflowContainer height={44} style={{ flex: 0, height: 44, marginTop: 20 }}>
             <div className="Item" style={{ width: 100 }}>1</div>
             <div className="Item" style={{ width: 100 }}>2</div>
             <div className="Item" style={{ width: 100 }}>3</div>
             <div className="Item" style={{ width: 100 }}>4</div>
             <div className="Item" style={{ width: 100 }}>5</div>
             <div className="Item" style={{ width: 100 }} data-overflow-priority="1">6</div>
-          </OverflowContainer> */}
+          </OverflowContainer>
           {/* prettier-ignore */}
           <OverflowContainer height={44} style={{ flex: 0, height: 44, marginTop: 20 }}>
             <div className="Item" style={{ width: 40 }}>1</div>
@@ -160,7 +160,7 @@ export const OverflowContainerHighPriorityItem = () => {
             <div className="Item" style={{ width: 120 }} data-overflow-priority="1">11</div>
           </OverflowContainer>
           {/* prettier-ignore */}
-          {/* <OverflowContainer height={44} style={{ flex: 0, height: 44, marginTop: 20 }}>
+          <OverflowContainer height={44} style={{ flex: 0, height: 44, marginTop: 20 }}>
             <div className="Item" style={{ width: 40 }}>1</div>
             <div className="Item" style={{ width: 40 }}>2</div>
             <div className="Item" style={{ width: 40 }}>3</div>
@@ -172,7 +172,7 @@ export const OverflowContainerHighPriorityItem = () => {
             <div className="Item" style={{ width: 40 }}>9</div>
             <div className="Item" style={{ width: 50 }}>10</div>
             <div className="Item" style={{ width: 120 }} >11</div>
-          </OverflowContainer> */}
+          </OverflowContainer>
 
           <div style={{ backgroundColor: "#ccc", flex: 1 }} />
         </Flexbox>

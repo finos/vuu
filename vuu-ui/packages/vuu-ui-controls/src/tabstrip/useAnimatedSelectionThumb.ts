@@ -9,7 +9,7 @@ export const useAnimatedSelectionThumb = (
     containerRef.current?.removeEventListener("transitionend", onTransitionEnd);
   }, [containerRef]);
   const lastSelectedRef = useRef(-1);
-  const containerStyle = useMemo(() => {
+  return useMemo(() => {
     let offset = 0;
     let width = 0;
     if (lastSelectedRef.current !== -1) {
@@ -24,8 +24,7 @@ export const useAnimatedSelectionThumb = (
         const { left: newLeft } = newSelected.getBoundingClientRect();
         offset = oldLeft - newLeft;
         width = oldWidth;
-        const speed = 1100;
-        const duration = Math.abs(offset / speed);
+        const duration = Math.abs(offset / 1100 /* this is our speed */);
         requestAnimationFrame(() => {
           containerRef.current?.style.setProperty("--tab-thumb-offset", "0px");
           containerRef.current?.style.setProperty("--tab-thumb-width", "100%");
@@ -46,5 +45,4 @@ export const useAnimatedSelectionThumb = (
       "--tab-thumb-width": width ? `${width}px` : undefined,
     } as CSSProperties;
   }, [containerRef, onTransitionEnd, activeTabIndex]);
-  return containerStyle;
 };

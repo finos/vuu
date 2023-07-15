@@ -1,27 +1,35 @@
-import { KeyboardEvent, MouseEvent, useCallback, useState } from "react";
+import { useControlled } from "@salt-ds/core";
+import { KeyboardEvent, MouseEvent, useCallback } from "react";
 
 const defaultSelectionKeys = ["Enter", " "];
 
 export const isTabElement = (el: HTMLElement): boolean =>
-  el && el.matches('[class*="vuuTab "]');
+  el && el.matches('[class*="saltTab "]');
 
-export interface SelectionHookProps {
-  highlightedIdx: number;
-  onSelectionChange?: (tabIndex: number) => void;
-  selected: number;
-}
-
+// TODO use SelectionProps
 export const useSelection = ({
+  defaultSelected,
   highlightedIdx,
   onSelectionChange,
   selected: selectedProp,
-}: SelectionHookProps): {
+}: {
+  defaultSelected?: number;
+  highlightedIdx: number;
+  onSelectionChange?: (tabIndex: number) => void;
+  selected?: number;
+}): {
   activateTab: (tabIndex: number) => void;
-  onClick: (evt: MouseEvent<HTMLElement>, tabIndex: number) => void;
+  isControlled: boolean;
+  onClick: (evt: MouseEvent<Element>, tabIndex: number) => void;
   onKeyDown: (evt: KeyboardEvent) => void;
   selected: number;
 } => {
-  const [selected, setSelected] = useState(selectedProp);
+  const [selected, setSelected, isControlled] = useControlled({
+    controlled: selectedProp,
+    default: defaultSelected ?? 0,
+    name: "Tabstrip",
+    state: "value",
+  });
 
   const isSelectionEvent = useCallback(
     (evt: KeyboardEvent) => defaultSelectionKeys.includes(evt.key),
@@ -63,6 +71,7 @@ export const useSelection = ({
 
   return {
     activateTab: selectItem,
+    isControlled,
     onClick,
     onKeyDown: handleKeyDown,
     selected,

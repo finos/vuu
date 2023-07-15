@@ -106,28 +106,34 @@ export const applyOverflowClassToWrappedItems = (
 const maxPriority = (priority: number, { overflowPriority }: OverflowItem) =>
   Math.max(priority, parseInt(overflowPriority));
 
+const minPriority = (priority: number, { overflowPriority }: OverflowItem) =>
+  Math.min(priority, parseInt(overflowPriority));
+
 export const overflowIndicatorHasWrappedButShouldNotHave = (
   wrappedItems: OverflowItem[]
 ) => wrappedItems.length > 1 && wrappedItems.at(-1)?.index === "overflow";
 
-const getHigherPriorityItem = (
-  overflowItems: OverflowItem[],
-  priority: number
-) => {
-  for (const item of overflowItems) {
-    if (parseInt(item.overflowPriority) > priority) {
-      return item;
+const getHighestPriorityItem = (overflowItems: OverflowItem[]) => {
+  let [highestPriorityItem] = overflowItems;
+  for (let i = 1; i < overflowItems.length; i++) {
+    const item = overflowItems[i];
+    if (
+      parseInt(item.overflowPriority) >
+      parseInt(highestPriorityItem.overflowPriority)
+    ) {
+      highestPriorityItem = item;
     }
   }
+  return highestPriorityItem;
 };
 
 export const highPriorityItemsHaveWrappedButShouldNotHave = (
   nonWrappedItems: OverflowItem[],
   wrappedItems: OverflowItem[]
 ) => {
-  const maxNonwrappedPriority = nonWrappedItems.reduce<number>(maxPriority, 0);
+  const minNonwrappedPriority = nonWrappedItems.reduce<number>(minPriority, 0);
   const maxwrappedPriority = wrappedItems.reduce<number>(maxPriority, 0);
-  if (maxwrappedPriority > maxNonwrappedPriority) {
+  if (maxwrappedPriority > minNonwrappedPriority) {
     return true;
   } else {
     return wrappedItems.length > 1 && wrappedItems.at(-1)?.index === "overflow";
@@ -161,21 +167,21 @@ export const correctForWrappedOverflowIndicator = (
 */
 export const correctForWrappedHighPriorityItems = (
   container: HTMLElement,
-  overflowedItems: OverflowItem[]
-): Promise<OverflowItem[]> =>
+  nonWrapped: OverflowItem[],
+  wrapped: OverflowItem[]
+): Promise<[OverflowItem[], OverflowItem[]]> =>
   new Promise((resolve) => {
     requestAnimationFrame(() => {
-      const [o1, o2] = getNonWrappedAndWrappedItems(container);
-      const priority = o1.reduce<number>(maxPriority, 0);
-      const highPriorityWrappedItem = getHigherPriorityItem(o2, priority);
+      const [, o2] = getNonWrappedAndWrappedItems(container);
+      const highPriorityWrappedItem = getHighestPriorityItem(o2);
       if (highPriorityWrappedItem) {
-        const wrappedItems = switchWrappedItemIntoView(
+        const [nonWrappedItems, wrappedItems] = switchWrappedItemIntoView(
           container,
           highPriorityWrappedItem
         );
-        resolve(wrappedItems);
+        resolve([nonWrappedItems, wrappedItems]);
       } else {
-        resolve(overflowedItems);
+        resolve([nonWrapped, wrapped]);
       }
     });
   });
@@ -296,7 +302,7 @@ const getNonwrappedItemsByPriority = (container: HTMLElement) =>
 export const switchWrappedItemIntoView = (
   container: HTMLElement,
   overflowItem: OverflowItem
-): OverflowItem[] => {
+): [OverflowItem[], OverflowItem[]] => {
   const unwrappedItems = getNonwrappedItemsByPriority(container);
   const targetElement = getElementByIndex(container, overflowItem);
   let pos = -1;
@@ -327,9 +333,10 @@ export const switchWrappedItemIntoView = (
       item.classList.add("wrapped");
     });
   }
-  const [, wrappedItems] = getNonWrappedAndWrappedItems(container);
+  const [nonWrappedItems, wrappedItems] =
+    getNonWrappedAndWrappedItems(container);
   unmarkItemsWhichAreNoLongerWrapped(container, wrappedItems);
-  return wrappedItems;
+  return [nonWrappedItems, wrappedItems];
 };
 
 const switchWrapOnElements = (

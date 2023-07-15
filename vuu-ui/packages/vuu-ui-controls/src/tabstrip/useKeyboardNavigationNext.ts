@@ -7,7 +7,6 @@ import {
   MouseEventHandler,
   RefObject,
   useCallback,
-  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -149,7 +148,6 @@ export const useKeyboardNavigation = ({
       // We MUST NOT delay focus when using keyboard nav, else when focus moves from
       // close button (focus ring styled by :focus-visible) to Tab label (focus ring
       // styled by css class) focus style will briefly linger on both.
-      console.log(`focusTab ${tabIndex}`);
       setHighlightedIdx(tabIndex);
 
       if (withKeyboard === true && !keyboardNavigation.current) {
@@ -253,14 +251,9 @@ export const useKeyboardNavigation = ({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      console.log(`handleKeyDown`, {
-        e,
-        keyBoardNav: keyboardNavigation.current,
-      });
       if (getIndexCount() > 0 && isNavigationKey(e.key, orientation)) {
         e.preventDefault();
         if (keyboardNavigation.current) {
-          console.log("navigate child items");
           navigateChildItems(e);
         } else {
           keyboardNavigation.current = true;
@@ -312,16 +305,6 @@ export const useKeyboardNavigation = ({
       mouseClickPending.current = false;
     },
   };
-
-  // useLayoutEffect(() => {
-  //   if (
-  //     hasFocus &&
-  //     typeof selectedTabIndex === "number" &&
-  //     selectedTabIndex !== -1
-  //   ) {
-  //     focusTab(selectedTabIndex);
-  //   }
-  // }, [focusTab, hasFocus, selectedTabIndex]);
 
   return {
     containerProps,

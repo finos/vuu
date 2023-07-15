@@ -12,7 +12,7 @@ const classBase = "vuuTabstrip";
 
 export interface TabstripNextProps extends TabstripProps {
   activeTabIndex: number;
-  animateSelectionThumb: boolean;
+  animateSelectionThumb?: boolean;
 }
 
 export const TabstripNext = ({
@@ -55,12 +55,13 @@ export const TabstripNext = ({
         }
       : undefined;
 
-  console.log(`TabstripNext focusVisible = ${focusVisible}`);
-
   const handleAddTabClick = useCallback(() => {
-    console.log("add tab");
-    // onAddTab?.();
-  }, []);
+    onAddTab?.();
+  }, [onAddTab]);
+
+  console.log(
+    `TabstripNext activeTabIndexProp = ${activeTabIndexProp} activeTabIndex  =${activeTabIndex}`
+  );
 
   const tabs = useMemo(
     () =>
@@ -115,6 +116,7 @@ export const TabstripNext = ({
       className={className}
       height={24}
       id={id}
+      overflowIcon="more-horiz"
       ref={rootRef}
       style={style}
     >

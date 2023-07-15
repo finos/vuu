@@ -1,5 +1,5 @@
 // TODO close button needs to be a button. Hence tab needs to include 2 buttons
-import { Button, ButtonProps, useForkRef } from "@salt-ds/core";
+import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import {
   FocusEvent,
@@ -21,18 +21,6 @@ import "./Tab.css";
 const classBase = "vuuTab";
 
 const noop = () => undefined;
-
-// const TabMenuButton = (props: ButtonProps) => (
-//   <Button
-//     {...props}
-//     aria-label="Close Tab (Delete or Backspace)"
-//     className={`${classBase}-closeButton`}
-//     data-icon="more-vert"
-//     tabIndex={undefined}
-//     title="Close Tab (Delete or Backspace)"
-//     variant="secondary"
-//   />
-// );
 
 export const Tab = forwardRef(function Tab(
   {

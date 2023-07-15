@@ -21,24 +21,26 @@ export interface OverflowContainerProps extends HTMLAttributes<HTMLDivElement> {
   overflowIcon?: string;
 }
 
-const InnerContainer = React.memo(
+const WrapContainer = React.memo(
   ({
     children,
     height,
     onSwitchWrappedItemIntoView,
     overflowIcon,
   }: OverflowContainerProps) => {
+    const childElements = asReactElements(children);
     const { menuActionHandler, menuBuilder, rootRef } = useOverflowContainer({
+      itemCount: childElements.length,
       onSwitchWrappedItemIntoView,
     });
-    // TODO measure the height
+    // TODO measure the height, if not provided
     const style = {
       "--overflow-container-height": `${height}px`,
     } as CSSProperties;
 
     return (
       <div className={`${classBase}-wrapContainer`} ref={rootRef} style={style}>
-        {asReactElements(children).map((childEl, i) => {
+        {childElements.map((childEl, i) => {
           const {
             "data-overflow-priority": overflowPriority = "0",
             label = `Item ${i + 1}`,
@@ -67,7 +69,7 @@ const InnerContainer = React.memo(
   }
 );
 
-InnerContainer.displayName = "OverflowContainer.InnerContainer";
+WrapContainer.displayName = "OverflowContainer.InnerContainer";
 
 export const OverflowContainer = forwardRef(function OverflowContainer(
   {
@@ -86,13 +88,13 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
       className={cx(cx(classBase, className))}
       ref={forwardedRef}
     >
-      <InnerContainer
+      <WrapContainer
         height={height}
         overflowIcon={overflowIcon}
         onSwitchWrappedItemIntoView={onSwitchWrappedItemIntoView}
       >
         {children}
-      </InnerContainer>
+      </WrapContainer>
     </div>
   );
 });

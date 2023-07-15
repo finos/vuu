@@ -57,15 +57,9 @@ export const DefaultTabstripNext = ({
 
 DefaultTabstripNext.displaySequence = displaySequence++;
 
-export const TabstripNextAddTab = ({ width = 600 }) => {
+export const TabstripNextAddTab = ({ width = 700 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [tabs, setTabs] = useState([
-    { label: "Home" },
-    { label: "Transactions" },
-    { label: "Loans" },
-    { label: "Checks" },
-    { label: "Liquidity" },
-  ]);
+  const [tabs, setTabs] = useState([{ label: "Home" }]);
 
   const handleAddTab = () => {
     const count = tabs.length;
@@ -82,6 +76,7 @@ export const TabstripNextAddTab = ({ width = 600 }) => {
         <div data-resizeable style={{ flex: 1 }}>
           <TabstripNext
             activeTabIndex={activeTabIndex}
+            animateSelectionThumb
             enableAddTab
             onActiveChange={setActiveTabIndex}
             onAddTab={handleAddTab}
