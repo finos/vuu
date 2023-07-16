@@ -28,7 +28,7 @@ export const Tab = forwardRef(function Tab(
     ariaControls,
     children,
     className,
-    closeable,
+    closeable = false,
     dragging,
     editable,
     editing,
@@ -99,19 +99,6 @@ export const Tab = forwardRef(function Tab(
     }
   };
 
-  const handleCloseButtonClick = (e: MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    onClose && onClose(index);
-  };
-
-  const handleCloseButtonEnter = () => {
-    setCloseHover(true);
-  };
-
-  const handleCloseButtonLeave = () => {
-    setCloseHover(false);
-  };
-
   const handleMouseDown = (e: MouseEvent<HTMLElement>): void => {
     onMouseDown?.(e);
   };
@@ -138,7 +125,7 @@ export const Tab = forwardRef(function Tab(
     if (editableRef.current) {
       const editable = editableRef.current as HTMLElement;
       const input = editable.querySelector(
-        ".saltEditableLabel-input"
+        ".vuuEditableLabel-input"
       ) as HTMLInputElement;
       input?.focus();
     }

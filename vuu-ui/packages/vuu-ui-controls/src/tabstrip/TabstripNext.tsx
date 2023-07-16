@@ -18,6 +18,7 @@ export const TabstripNext = ({
   activeTabIndex: activeTabIndexProp,
   allowAddTab,
   allowCloseTab,
+  allowDragDrop = false,
   allowRenameTab = false,
   animateSelectionThumb = false,
   children,
@@ -41,6 +42,7 @@ export const TabstripNext = ({
     ...tabstripHook
   } = useTabstripNext({
     activeTabIndex: activeTabIndexProp,
+    allowDragDrop,
     animateSelectionThumb,
     containerRef: rootRef,
     keyBoardActivation,
@@ -123,7 +125,7 @@ export const TabstripNext = ({
       {...htmlAttributes}
       {...tabstripHook.containerProps}
       className={className}
-      height={24}
+      height={28}
       id={id}
       overflowIcon="more-horiz"
       ref={rootRef}

@@ -1,11 +1,13 @@
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@finos/vuu-data-types";
 import { Flexbox } from "@finos/vuu-layout";
 import {
   ContextMenu,
-  ContextMenuItemDescriptor,
   ContextMenuProps,
   ContextMenuProvider,
-  MenuActionHandler,
-  MenuBuilder,
   MenuItem,
   MenuItemGroup,
   Separator,

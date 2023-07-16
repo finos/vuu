@@ -17,6 +17,7 @@ let displaySequence = 1;
 export const ShellWithNewTheme = () => {
   const { features, schemas } = useMockFeatureData();
 
+  //TODO what the App actually receives is an array of layouts
   const layout = useMemo(() => {
     return {
       type: "Stack",
@@ -39,12 +40,36 @@ export const ShellWithNewTheme = () => {
       },
       children: [
         {
-          type: "View",
-          title: "Page 1",
-          style: { height: "calc(100% - 6px)" },
+          type: "Stack",
+          props: {
+            active: 0,
+            showTabs: true,
+            title: "My Instruments",
+          },
           children: [
             {
-              type: "AutoVuuTable",
+              type: "View",
+              props: {
+                title: "European Stock",
+              },
+              style: { height: "calc(100% - 6px)" },
+              children: [
+                {
+                  type: "AutoVuuTable",
+                },
+              ],
+            },
+            {
+              type: "View",
+              props: {
+                title: "Other Stock",
+              },
+              style: { height: "calc(100% - 6px)" },
+              children: [
+                {
+                  type: "AutoVuuTable",
+                },
+              ],
             },
           ],
         },

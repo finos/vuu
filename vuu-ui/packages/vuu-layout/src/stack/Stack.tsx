@@ -1,4 +1,4 @@
-import { Tab, Tabstrip, Toolbar, ToolbarField } from "@heswell/salt-lab";
+import { Tab, TabstripNext as Tabstrip } from "@finos/vuu-ui-controls";
 import { useIdMemo as useId } from "@salt-ds/core";
 import cx from "classnames";
 import React, {
@@ -135,35 +135,25 @@ export const Stack = forwardRef(function Stack(
       ref={ref}
     >
       {showTabs ? (
-        <Toolbar
-          className="vuuTabHeader vuuHeader"
-          orientation={TabstripProps?.orientation}
+        <Tabstrip
+          {...TabstripProps}
+          activeTabIndex={
+            TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
+          }
+          allowRenameTab={TabstripProps?.enableRenameTab !== false}
+          allowAddTab={enableAddTab}
+          allowCloseTab={enableCloseTabs}
+          animateSelectionThumb
+          className="vuuTabHeader"
+          keyBoardActivation={keyBoardActivation}
+          onActiveChange={handleTabSelection}
+          onAddTab={handleAddTab}
+          onCloseTab={handleTabClose}
+          onExitEditMode={handleExitEditMode}
+          onMouseDown={handleMouseDown}
         >
-          <ToolbarField
-            disableFocusRing
-            data-collapsible="dynamic"
-            data-priority="3"
-            style={{ alignSelf: "flex-end" }}
-          >
-            <Tabstrip
-              {...TabstripProps}
-              activeTabIndex={
-                TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
-              }
-              enableRenameTab={TabstripProps?.enableRenameTab !== false}
-              enableAddTab={enableAddTab}
-              enableCloseTab={enableCloseTabs}
-              keyBoardActivation={keyBoardActivation}
-              onActiveChange={handleTabSelection}
-              onAddTab={handleAddTab}
-              onCloseTab={handleTabClose}
-              onExitEditMode={handleExitEditMode}
-              onMouseDown={handleMouseDown}
-            >
-              {renderTabs()}
-            </Tabstrip>
-          </ToolbarField>
-        </Toolbar>
+          {renderTabs()}
+        </Tabstrip>
       ) : null}
       {child}
     </div>

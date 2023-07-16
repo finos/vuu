@@ -1,22 +1,13 @@
-import { Portal } from "../../portal";
+import { Portal } from "@finos/vuu-popups";
 import { forwardRef } from "react";
 import { Rect } from "./dragDropTypes";
 
-import dropIndicatorCss from "./DropIndicator.css";
-import { useWindow } from "@salt-ds/window";
-import { useComponentCssInjection } from "@salt-ds/styles";
+import "./DropIndicator.css";
 
 export const DropIndicator = forwardRef<
   HTMLDivElement,
   { className?: string; rect: Rect }
 >(function DropIndicator({ rect }, forwardedRef) {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "salt-drop-indicator",
-    css: dropIndicatorCss,
-    window: targetWindow,
-  });
-
   const { left, top, width, height } = rect;
   return (
     <Portal>

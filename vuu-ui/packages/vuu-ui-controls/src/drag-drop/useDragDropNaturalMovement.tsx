@@ -140,6 +140,7 @@ export const useDragDropNaturalMovement: DragDropHook = ({
 
   const enterDraggingState = useCallback(
     (evt: MouseEvent) => {
+      debugger;
       const { POS, START } = dimensions(orientation);
       const { [POS]: clientPos } = evt;
 

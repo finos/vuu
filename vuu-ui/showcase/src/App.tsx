@@ -8,7 +8,7 @@ import {
 } from "@finos/vuu-shell";
 import { Dropdown, Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { Text } from "@salt-ds/core";
-import { IFrame } from "./components";
+import { IFrame, TreeSourceNode } from "./components";
 
 import { ReactElement, useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -24,13 +24,6 @@ type VuuTuple = [string, VuuExample | Examples];
 
 const isVuuExample = (item: VuuExample | Examples): item is VuuExample =>
   typeof item === "function";
-
-interface SourceNode {
-  id: string;
-  icon: string;
-  label: string;
-  childNodes?: SourceNode[];
-}
 
 const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
   if (isVuuExample(f1) && isVuuExample(f2)) {
@@ -56,11 +49,11 @@ const sourceFromImports = (
   stories: Examples,
   prefix = "",
   icon = "folder"
-): SourceNode[] =>
+): TreeSourceNode[] =>
   Object.entries(stories)
     .filter(([path]) => path !== "default")
     .sort(byDisplaySequence)
-    .map<SourceNode>(([label, stories]) => {
+    .map<TreeSourceNode>(([label, stories]) => {
       const id = `${prefix}${label}`;
       if (typeof stories === "function") {
         return {

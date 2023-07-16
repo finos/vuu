@@ -181,5 +181,6 @@ export const useOverflowLayout = ({
     }
   }, [collectionVersion, disableOverflow, measureAndInitialize]);
 
+  //TODO where is switchPriorities used ?
   return [overflowContainerRef, switchPriorities];
 };

@@ -11,17 +11,41 @@ import "./Tree.css";
 
 const classBase = "hwTree";
 
+type Indexer = {
+  value: number;
+};
+
+export interface TreeSourceNode {
+  id: string;
+  icon: string;
+  header?: boolean;
+  label: string;
+  childNodes?: TreeSourceNode[];
+}
+export interface NormalisedTreeSourceNode extends TreeSourceNode {
+  childNodes: NormalisedTreeSourceNode[];
+  count: number;
+  expanded?: boolean;
+  index: number;
+  level: number;
+}
+
+export interface TreeNodeProps extends HTMLAttributes<HTMLLIElement> {
+  idx?: number;
+}
+
 // eslint-disable-next-line no-unused-vars
-export const TreeNode = ({ children, idx, ...props }) => {
+export const TreeNode = ({ children, idx, ...props }: TreeNodeProps) => {
   return <li {...props}>{children}</li>;
 };
 
 export interface TreeProps extends HTMLAttributes<HTMLDivElement> {
   allowDragDrop?: boolean;
   defaultSelected?: any;
+  onHighlight: (index: number) => void;
   onSelectionChange: any;
   revealSelected?: boolean;
-  source: any;
+  source: TreeSourceNode[];
 }
 
 const Tree = forwardRef(function Tree(
@@ -106,7 +130,7 @@ const Tree = forwardRef(function Tree(
   /**
    * Add a ListItem from source item
    */
-  function addLeafNode(list, item, idx) {
+  function addLeafNode(list, item, idx: Indexer) {
     list.push(
       <TreeNode
         {...propsCommonToAllListItems}
@@ -193,12 +217,12 @@ const Tree = forwardRef(function Tree(
 });
 
 const getListItemProps = (
-  item,
-  idx,
-  highlightedIdx,
-  selected,
-  focusVisible,
-  className
+  item: NormalisedTreeSourceNode,
+  idx: Indexer,
+  highlightedIdx: number,
+  selected: string[],
+  focusVisible: boolean,
+  className?: string
 ) => ({
   id: item.id,
   key: item.id,

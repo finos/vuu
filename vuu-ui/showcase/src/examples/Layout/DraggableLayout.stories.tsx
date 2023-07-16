@@ -666,9 +666,7 @@ ScrollingLayout.displaySequence = displaySequence++;
 
 export const JsonLayout = () => {
   return (
-    <DraggableLayout
-      dropTarget
-      style={{ width: 600, height: 400 }}
+    <LayoutProvider
       layout={{
         type: "Flexbox",
         props: {
@@ -732,7 +730,9 @@ export const JsonLayout = () => {
           },
         ],
       }}
-    />
+    >
+      <DraggableLayout dropTarget style={{ width: 600, height: 400 }} />
+    </LayoutProvider>
   );
 };
 

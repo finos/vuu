@@ -7,6 +7,11 @@ import { useKeyboardNavigation as useTreeNavigation } from "./use-tree-keyboard-
 
 const EMPTY_ARRAY = [];
 
+export interface TreeHookProps {
+  id: string;
+  totalItemCount: number;
+}
+
 export const useTree = ({
   defaultSelected,
   sourceWithIds,
@@ -17,7 +22,7 @@ export const useTree = ({
   selected: selectedProp,
   selection,
   totalItemCount,
-}) => {
+}: TreeHookProps) => {
   const lastSelection = useRef(EMPTY_ARRAY);
   const dataHook = useHierarchicalData(sourceWithIds);
 

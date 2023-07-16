@@ -78,7 +78,7 @@ export const TabstripNextAddTab = ({ width = 700 }) => {
           <TabstripNext
             activeTabIndex={activeTabIndex}
             animateSelectionThumb
-            enableAddTab
+            allowAddTab
             onActiveChange={setActiveTabIndex}
             onAddTab={handleAddTab}
           >
@@ -197,6 +197,48 @@ export const TabstripNextEditableLabels = ({
 };
 
 TabstripNextEditableLabels.displaySequence = displaySequence++;
+
+export const TabstripNextDragDrop = ({ width = 700 }) => {
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [tabs, setTabs] = useState([
+    "Home",
+    "Transactions",
+    "Loans",
+    "Checks",
+    "Liquidity",
+  ]);
+
+  return (
+    <LayoutProvider>
+      <FlexboxLayout
+        style={{ height: 200, width: width + SPLITTER_WIDTH }}
+        path=""
+      >
+        <div data-resizeable style={{ flex: 1 }}>
+          <TabstripNext
+            activeTabIndex={activeTabIndex}
+            animateSelectionThumb
+            allowDragDrop
+            onActiveChange={setActiveTabIndex}
+          >
+            {tabs.map((label, i) => (
+              <Tab
+                key={label}
+                label={label}
+                ariaControls={
+                  i === activeTabIndex ? `ts-panel-${i}` : undefined
+                }
+              />
+            ))}
+          </TabstripNext>
+        </div>
+        <div data-resizeable />
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
+
+TabstripNextDragDrop.displaySequence = displaySequence++;
 
 export const DefaultTabstrip = ({ width = 350 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);

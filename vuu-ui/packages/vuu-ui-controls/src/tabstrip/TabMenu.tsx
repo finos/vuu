@@ -7,6 +7,7 @@ import {
 import { useMemo } from "react";
 
 import "./TabMenu.css";
+import { closeCommand, MenuOptions, renameCommand } from "./TabMenuOptions";
 
 const classBase = "vuuTabMenu";
 
@@ -15,24 +16,6 @@ export interface TabMenuProps {
   onMenuAction: MenuActionHandler;
   tabIndex: number;
 }
-
-export type MenuOptions = { [key: string]: unknown };
-
-const closeCommand = (options?: MenuOptions) =>
-  ({
-    label: `Close`,
-    location: "tab",
-    action: `close-tab`,
-    options,
-  } as ContextMenuItemDescriptor);
-
-const renameCommand = (options?: MenuOptions) =>
-  ({
-    label: `Rename`,
-    location: "tab",
-    action: `rename-tab`,
-    options,
-  } as ContextMenuItemDescriptor);
 
 export const TabMenu = ({
   allowClose,
