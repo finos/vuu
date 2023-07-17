@@ -10,6 +10,7 @@ export type MeasuredDropTarget = {
   dataIndex?: number;
   element: HTMLElement;
   index: number;
+  order: number | undefined;
   isDraggedElement: boolean;
   isOverflowIndicator?: boolean;
   start: number;
@@ -38,11 +39,11 @@ type ElementDimension = keyof Pick<
   | "scrollLeft"
 >;
 
-export const measureElementSizeAndPosition = (
+export const measureElementSizePositionAndOrder = (
   element: HTMLElement,
   dimension: Dimension = "width",
   includeAutoMargin = false
-) => {
+): [number, number, number | undefined] => {
   const pos = dimension === "width" ? "left" : "top";
   const { [dimension]: size, [pos]: position } =
     element.getBoundingClientRect();
@@ -57,6 +58,7 @@ export const measureElementSizeAndPosition = (
     padEnd && !includeAutoMargin
       ? 0
       : parseInt(style.getPropertyValue(`margin-${end}`), 10);
+  const order = parseInt(style.getPropertyValue("order"));
 
   let minWidth = size;
   const flexShrink = parseInt(style.getPropertyValue("flex-shrink"), 10);
@@ -66,7 +68,11 @@ export const measureElementSizeAndPosition = (
       minWidth = flexBasis;
     }
   }
-  return [position, marginStart + minWidth + marginEnd];
+  return [
+    position,
+    marginStart + minWidth + marginEnd,
+    isNaN(order) ? undefined : order,
+  ];
 };
 
 const DIMENSIONS = {
@@ -146,30 +152,31 @@ export const measureDropTargets = (
 ) => {
   const dragThresholds: MeasuredDropTarget[] = [];
 
-  // TODO need to make sure we're including only the children we should
+  // TODO need to make sure we're including only the children we should.
   const children = Array.from(
     itemQuery ? container.querySelectorAll(itemQuery) : container.children
   );
-  let previousThreshold = null;
   for (let index = 0; index < children.length; index++) {
     const element = children[index] as HTMLElement;
     const dimension = orientation === "horizontal" ? "width" : "height";
-    let [start, size] = measureElementSizeAndPosition(element, dimension);
-
-    dragThresholds.push(
-      (previousThreshold = {
-        currentIndex: index,
-        dataIndex: parseInt(element.dataset.index ?? "-1"),
-        index,
-        isDraggedElement: element === draggedItem,
-        isOverflowIndicator: element.dataset.overflowIndicator === "true",
-        element: element as HTMLElement,
-        start,
-        end: start + size,
-        size,
-        mid: start + size / 2,
-      })
+    const [start, size, order] = measureElementSizePositionAndOrder(
+      element,
+      dimension
     );
+
+    dragThresholds.push({
+      currentIndex: index,
+      dataIndex: parseInt(element.dataset.index ?? "-1"),
+      index,
+      isDraggedElement: element === draggedItem,
+      isOverflowIndicator: element.dataset.overflowIndicator === "true",
+      element: element as HTMLElement,
+      order,
+      start,
+      end: start + size,
+      size,
+      mid: start + size / 2,
+    });
   }
   return dragThresholds;
 };

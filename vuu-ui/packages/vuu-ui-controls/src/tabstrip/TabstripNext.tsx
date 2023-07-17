@@ -29,6 +29,7 @@ export const TabstripNext = ({
   onAddTab,
   onCloseTab,
   onExitEditMode,
+  onMoveTab,
   orientation = "horizontal",
   style: styleProp,
   ...htmlAttributes
@@ -49,6 +50,7 @@ export const TabstripNext = ({
     onActiveChange,
     onCloseTab,
     onExitEditMode,
+    onMoveTab,
     orientation,
   });
 
@@ -81,6 +83,7 @@ export const TabstripNext = ({
             ...tabstripHook.navigationProps,
             closeable,
             "data-overflow-priority": selected ? "1" : undefined,
+            dragging: tabstripHook.draggedItemIndex === index,
             editable,
             focusVisible: focusVisible === index,
             id: tabId,
@@ -121,17 +124,20 @@ export const TabstripNext = ({
   );
 
   return (
-    <OverflowContainer
-      {...htmlAttributes}
-      {...tabstripHook.containerProps}
-      className={className}
-      height={28}
-      id={id}
-      overflowIcon="more-horiz"
-      ref={rootRef}
-      style={style}
-    >
-      {tabs}
-    </OverflowContainer>
+    <>
+      <OverflowContainer
+        {...htmlAttributes}
+        {...tabstripHook.containerProps}
+        className={className}
+        height={28}
+        id={id}
+        overflowIcon="more-horiz"
+        ref={rootRef}
+        style={style}
+      >
+        {tabs}
+      </OverflowContainer>
+      {tabstripHook.draggable}
+    </>
   );
 };

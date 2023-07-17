@@ -3,7 +3,7 @@ import {
   FocusEvent,
   FocusEventHandler,
   KeyboardEvent,
-  MouseEvent,
+  MouseEvent as ReactMouseEvent,
   MouseEventHandler,
   RefObject,
   useCallback,
@@ -41,6 +41,8 @@ const isNavigationKey = (
   key: string,
   orientation: orientationType = "horizontal"
 ) => navigation[orientation][key] !== undefined;
+
+const isMenuActivationKey = (key: string) => key === ArrowDown;
 
 function nextItemIdx(count: number, direction: directionType, idx: number) {
   if (direction === "start") {
@@ -105,7 +107,7 @@ interface TabstripNavigationHookResult {
   ) => void;
   focusVisible: number;
   focusIsWithinComponent: boolean;
-  onClick: (evt: MouseEvent, tabIndex: number) => void;
+  onClick: (evt: ReactMouseEvent, tabIndex: number) => void;
   onFocus: (evt: FocusEvent<HTMLElement>) => void;
   onKeyDown: (evt: KeyboardEvent) => void;
 }
@@ -249,6 +251,28 @@ export const useKeyboardNavigation = ({
     ]
   );
 
+  const highlightedTabHasMenu = useCallback(() => {
+    const el = getElementByPosition(containerRef.current, highlightedIdx);
+    if (el) {
+      return el.querySelector(".vuuPopupMenu") != null;
+    }
+    return false;
+  }, [containerRef, highlightedIdx]);
+
+  const activateTabMenu = useCallback(() => {
+    const el = getElementByPosition(containerRef.current, highlightedIdx);
+    const menuEl = el?.querySelector(".vuuPopupMenu") as HTMLElement;
+    if (menuEl) {
+      const evt = new MouseEvent("click", {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      });
+      menuEl.dispatchEvent(evt);
+    }
+    return false;
+  }, [containerRef, highlightedIdx]);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (getIndexCount() > 0 && isNavigationKey(e.key, orientation)) {
@@ -259,14 +283,22 @@ export const useKeyboardNavigation = ({
           keyboardNavigation.current = true;
           navigateChildItems(e, true);
         }
+      } else if (isMenuActivationKey(e.key) && highlightedTabHasMenu()) {
+        activateTabMenu();
       }
     },
-    [getIndexCount, navigateChildItems, orientation]
+    [
+      activateTabMenu,
+      getIndexCount,
+      highlightedTabHasMenu,
+      navigateChildItems,
+      orientation,
+    ]
   );
 
   // TODO, in common hooks, we use mouse movement to track current highlighted
   // index, rather than rely on component item reporting it
-  const handleItemClick = (_: MouseEvent, tabIndex: number) => {
+  const handleItemClick = (_: ReactMouseEvent, tabIndex: number) => {
     setHighlightedIdx(tabIndex);
   };
 

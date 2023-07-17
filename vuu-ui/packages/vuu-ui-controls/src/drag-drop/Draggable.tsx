@@ -1,31 +1,29 @@
 import { useForkRef } from "@salt-ds/core";
 import { clsx } from "clsx";
-import { forwardRef, MutableRefObject, useCallback } from "react";
-import { Rect } from "./dragDropTypes";
+import {
+  CSSProperties,
+  forwardRef,
+  MutableRefObject,
+  useCallback,
+} from "react";
 import { Portal } from "@finos/vuu-popups";
 
-// import { useComponentCssInjection } from "@salt-ds/styles";
-// import { useWindow } from "@salt-ds/window";
-
-// import draggableCss from "./Draggable.css";
 import "./Draggable.css";
 
 const makeClassNames = (classNames: string) =>
-  classNames.split(" ").map((className) => `saltDraggable-${className}`);
+  classNames.split(" ").map((className) => `vuuDraggable-${className}`);
 export const Draggable = forwardRef<
   HTMLDivElement,
-  { wrapperClassName: string; element: HTMLElement; rect: Rect; scale?: number }
+  {
+    wrapperClassName: string;
+    element: HTMLElement;
+    style: CSSProperties;
+    scale?: number;
+  }
 >(function Draggable(
-  { wrapperClassName, element, rect, scale = 1 },
+  { wrapperClassName, element, style, scale = 1 },
   forwardedRef
 ) {
-  // const targetWindow = useWindow();
-  // useComponentCssInjection({
-  //   testId: "salt-draggable",
-  //   css: draggableCss,
-  //   window: targetWindow,
-  // });
-
   const callbackRef = useCallback(
     (el: HTMLDivElement) => {
       if (el) {
@@ -40,14 +38,12 @@ export const Draggable = forwardRef<
   );
   const forkedRef = useForkRef<HTMLDivElement>(forwardedRef, callbackRef);
 
-  const { left, top, width, height } = rect;
-
   return (
     <Portal>
       <div
-        className={clsx("saltDraggable", ...makeClassNames(wrapperClassName))}
+        className={clsx("vuuDraggable", ...makeClassNames(wrapperClassName))}
         ref={forkedRef}
-        style={{ left, top, width, height }}
+        style={style}
       />
     </Portal>
   );
@@ -57,7 +53,7 @@ export const createDragSpacer = (
   transitioning?: MutableRefObject<boolean>
 ): HTMLElement => {
   const spacer = document.createElement("div");
-  spacer.className = "saltDraggable-spacer";
+  spacer.className = "vuuDraggable-spacer";
   if (transitioning) {
     spacer.addEventListener("transitionend", () => {
       transitioning.current = false;

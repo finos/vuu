@@ -208,6 +208,21 @@ export const TabstripNextDragDrop = ({ width = 700 }) => {
     "Liquidity",
   ]);
 
+  const handleDrop = useCallback(
+    (fromIndex, toIndex) => {
+      console.log(`handleDrop from ${fromIndex} to ${toIndex}`);
+      const newTabs = tabs.slice();
+      const [tab] = newTabs.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        setTabs(newTabs.concat(tab));
+      } else {
+        newTabs.splice(toIndex, 0, tab);
+        setTabs(newTabs);
+      }
+    },
+    [tabs]
+  );
+
   return (
     <LayoutProvider>
       <FlexboxLayout
@@ -220,6 +235,7 @@ export const TabstripNextDragDrop = ({ width = 700 }) => {
             animateSelectionThumb
             allowDragDrop
             onActiveChange={setActiveTabIndex}
+            onMoveTab={handleDrop}
           >
             {tabs.map((label, i) => (
               <Tab

@@ -89,12 +89,7 @@ export const useDragDropNaturalMovement: DragDropHook = ({
               const nextDisplacedItem =
                 newDropTargets[draggedItem.currentIndex + 1];
               if (nextDisplacedItem) {
-                displaceItem(
-                  nextDisplacedItem,
-                  draggedItem.size,
-                  true,
-                  direction
-                );
+                displaceItem(nextDisplacedItem, draggedItem, true, direction);
               } else {
                 const displacedItem =
                   newDropTargets[draggedItem.currentIndex - 1];
@@ -140,7 +135,6 @@ export const useDragDropNaturalMovement: DragDropHook = ({
 
   const enterDraggingState = useCallback(
     (evt: MouseEvent) => {
-      debugger;
       const { POS, START } = dimensions(orientation);
       const { [POS]: clientPos } = evt;
 
@@ -148,7 +142,7 @@ export const useDragDropNaturalMovement: DragDropHook = ({
       const dragElement = evtTarget.closest(itemQuery) as HTMLElement;
       if (dragElement) {
         // TODO this is very specific to responsive Container
-        const query = `:is(${itemQuery}:not([data-overflowed="true"]),[data-overflow-indicator])`;
+        const query = `:is(${itemQuery}:not(.wrapped),.vuuOverflowContainer-OverflowIndicator)`;
         const dropTargets = measureDropTargets(
           containerRef.current as HTMLElement,
           orientation,
@@ -156,13 +150,16 @@ export const useDragDropNaturalMovement: DragDropHook = ({
           query
         );
 
+        console.log({ dropTargets });
+
         const draggedItem = dropTargets.find(isDraggedElement);
         if (draggedItem && containerRef.current) {
           measuredDropTargets.current = dropTargets;
           dropTarget.current = draggedItem;
 
           const containerRect = containerRef.current.getBoundingClientRect();
-          const draggableRect = draggedItem.element.getBoundingClientRect();
+          const { top, left, width, height } =
+            draggedItem.element.getBoundingClientRect();
           mouseOffset.current = clientPos - draggedItem.start;
           const [lastItem] = dropTargets.slice(-1);
           const lastChildEnd = lastItem.end;
@@ -178,14 +175,14 @@ export const useDragDropNaturalMovement: DragDropHook = ({
             <Draggable
               wrapperClassName={`tabstrip-${orientation}`}
               ref={draggableRef}
-              rect={draggableRect}
+              style={{ height, left, top, width }}
               element={dragElement.cloneNode(true) as HTMLElement}
             />
           );
 
           if (draggedItem !== lastItem) {
             const nextItem = dropTargets[draggedItem.index + 1];
-            displaceItem(nextItem, draggedItem.size, false);
+            displaceItem(nextItem, draggedItem, false);
           } else {
             const displacedItem = dropTargets[draggedItem.index];
             displaceLastItem(displacedItem, draggedItem.size, false);

@@ -25,10 +25,11 @@ export interface TabstripNextHookProps {
   activeTabIndex: number;
   allowDragDrop: boolean;
   animateSelectionThumb: boolean;
+  containerRef: RefObject<HTMLElement>;
   onActiveChange?: (tabIndex: number) => void;
   onCloseTab?: (tabIndex: number) => void;
   onExitEditMode?: ExitEditModeHandler;
-  containerRef: RefObject<HTMLElement>;
+  onMoveTab?: (fromIndex: number, toIndex: number) => void;
   orientation: orientationType;
   keyBoardActivation?: "manual" | "automatic";
 }
@@ -44,6 +45,7 @@ export const useTabstripNext = ({
   onActiveChange,
   onCloseTab,
   onExitEditMode,
+  onMoveTab,
   orientation,
   keyBoardActivation,
 }: TabstripNextHookProps) => {
@@ -79,7 +81,7 @@ export const useTabstripNext = ({
       console.log(
         `handleDrop ${fromIndex} - ${toIndex}  ${selectionHookSelected}`
       );
-      // onMoveTab?.(fromIndex, toIndex);
+      onMoveTab?.(fromIndex, toIndex);
       // if (toIndex === -1) {
       //   // nothing to do
       // } else {

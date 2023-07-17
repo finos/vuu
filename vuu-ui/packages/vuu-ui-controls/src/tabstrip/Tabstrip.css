@@ -49,7 +49,7 @@
   --vuuTabs-activationIndicator-transition: none;
 }
 
-.vuuTabstrip-draggingTab .saltTab {
+.vuuTabstrip-draggingTab .vuuTab {
   pointer-events: none;
 }
 
@@ -100,7 +100,7 @@
 }
 
 /* Styling applied to Draggable wrapper when used to drag a Tab */
-.saltDraggable[class*="tabstrip"] {
+.vuuDraggable[class*="tabstrip"] {
   --tabs-tabstrip-display: flex;
   --tabs-tabstrip-height: var(--saltTabs-tabstrip-height, var(--salt-size-stackable));
   --tabs-tabstrip-dragging-display: block;
@@ -117,30 +117,30 @@
   font-size: 12px;
 }
 
-.saltDraggable-tabstrip-horizontal {
+.vuuDraggable-tabstrip-horizontal {
   --tabs-tabstrip-height: var(--saltTabs-tabstrip-height, var(--salt-size-stackable));
   --tab-activationIndicator-thumb-height: 2px;
   --tab-activationIndicator-inset: auto 0px 0px 0px;
 
   line-height: var(--tabs-tabstrip-height);
 }
-.saltDraggable-tabstrip-vertical {
+.vuuDraggable-tabstrip-vertical {
   --tab-activationIndicator-inset: 0px 0px 0px auto;
   --tab-activationIndicator-thumb-width: 2px;
 }
 
-.saltDraggable[class*="tabstrip"] .saltTab[aria-selected="true"]:before {
+.vuuDraggable[class*="tabstrip"] .saltTab[aria-selected="true"]:before {
   --tabs-tab-before-background: var(--salt-navigable-indicator-active);
 }
 
-.saltDraggable[class*="tabstrip"] .saltTab {
+.vuuDraggable[class*="tabstrip"] .saltTab {
   box-shadow: var(--salt-overlayable-shadow-drag);
 }
 
-[data-overflowed] {
+/* [data-overflowed] {
   order: 99;
   visibility: hidden;
-}
+} */
 
 .vuuTabstrip-overflowMenu-dropTarget:after {
   background: var(--salt-selectable-background-selected);

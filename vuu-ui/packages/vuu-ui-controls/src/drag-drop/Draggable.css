@@ -1,11 +1,11 @@
-.saltDraggable {
+.vuuDraggable {
   background: transparent;
   box-shadow: var(--salt-overlayable-shadow-drag);
   cursor: var(--salt-draggable-grab-cursor-active);
   position: absolute;
 }
 
-.saltDraggable-spacer {
+.vuuDraggable-spacer {
   display: inline-block;
   height: var(--tabs-tabstrip-height);
   transition: width 0.4s ease;
