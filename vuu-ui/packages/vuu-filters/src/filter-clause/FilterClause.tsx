@@ -8,20 +8,27 @@ import { VuuTable } from "@finos/vuu-protocol-types";
 import { ComboBox } from "@heswell/salt-lab";
 import { TextInput } from "./TextInput";
 import { NumericInput } from "./NumericInput";
+import "./FilterClause.css";
+import { CloseButton } from "./CloseButton";
 
 export type FilterClauseProps = Omit<
   HTMLAttributes<HTMLDivElement>,
   "onChange"
 > & {
   table: VuuTable;
-  onChange: (filter?: Filter | undefined) => void;
+  onChange: (filter?: Filter) => void;
+  onClose: () => void;
   columns: ColumnDescriptor[];
   defaultFilter?: FilterClauseType;
 };
 
+// Hack to get vuu-purple-theme to apply to dropdowns
+const classBase = "vuu-purple-theme vuuFilterClause";
+
 export const FilterClause = ({
   table,
   onChange,
+  onClose,
   columns,
   defaultFilter,
   ...htmlAttributes
@@ -37,6 +44,7 @@ export const FilterClause = ({
         console.log("returning text input");
         return (
           <TextInput
+            className={classBase}
             table={table}
             column={selectedColumn.name}
             operatorInputRef={inputRef}
@@ -50,6 +58,7 @@ export const FilterClause = ({
         console.log("returning numeric input");
         return (
           <NumericInput
+            className={classBase}
             column={selectedColumn.name}
             operatorInputRef={inputRef}
             onFilterChange={onChange}
@@ -72,23 +81,18 @@ export const FilterClause = ({
   ]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        minWidth: 10,
-        width: "fit-content",
-        border: "5px solid lawngreen",
-      }}
-      {...htmlAttributes}
-    >
+    <div className={classBase} {...htmlAttributes} tabIndex={0}>
       <ComboBox<ColumnDescriptor, "deselectable">
-        style={{ backgroundColor: "red" }}
+        className={`${classBase}-columnSelector`}
         source={columns}
         itemToString={(column) => column.name}
-        InputProps={{ highlightOnFocus: true }}
+        InputProps={{
+          highlightOnFocus: true,
+          inputProps: { autoComplete: "off" },
+        }}
         onSelectionChange={(_event, selectedColumn) => {
-          console.log("setting selected column", selectedColumn);
           setSelectedColumn(selectedColumn || undefined);
+          if (!selectedColumn) return;
           setTimeout(() => {
             inputRef.current?.querySelector("input")?.focus();
           }, 300);
@@ -96,6 +100,7 @@ export const FilterClause = ({
         selectionStrategy="deselectable"
       />
       {getInputElement()}
+      <CloseButton classBase={classBase} onClick={onClose} />
     </div>
   );
 };

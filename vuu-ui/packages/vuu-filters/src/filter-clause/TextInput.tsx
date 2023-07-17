@@ -1,5 +1,6 @@
 import {
   ChangeEventHandler,
+  HTMLAttributes,
   RefObject,
   useCallback,
   useEffect,
@@ -19,7 +20,7 @@ import {
 } from "./operator-utils";
 import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
 
-type TextInputProps = {
+type TextInputProps = HTMLAttributes<HTMLDivElement> & {
   table: VuuTable;
   column: string;
   operatorInputRef: RefObject<HTMLInputElement>;
@@ -33,6 +34,7 @@ export const TextInput = ({
   operatorInputRef,
   onFilterChange,
   defaultFilter,
+  className,
 }: TextInputProps) => {
   const defaultValues = (
     defaultFilter?.op === "in" ? defaultFilter.values : [defaultFilter?.value]
@@ -42,7 +44,6 @@ export const TextInput = ({
     : undefined;
 
   const [valueInputValue, setValueInputValue] = useState("");
-  const [operatorInputValue, setOperatorInputValue] = useState("");
   const [selectedValues, setSelectedValue] = useState(defaultValues);
   const [selectedOperator, setSelectedOperator] = useState<
     TextOperator | undefined
@@ -93,20 +94,28 @@ export const TextInput = ({
         return (
           <ComboBoxDeprecated // The new ComboBox isn't multi-selectable
             multiSelect
-            style={{ backgroundColor: "purple" }}
+            className={`${className}-valueInput`}
             source={typeaheadValues}
             onChange={onMultiSelectValueChange}
             onInputChange={onValueInputChange}
             inputValue={valueInputValue}
             inputRef={valueInputRef}
             selectedItem={selectedValues}
+            InputProps={{
+              inputProps: { autoComplete: "off" },
+            }}
+            ListProps={{
+              className: `${className}-valueInput-list`,
+              borderless: true
+            }}
+            delimiter={","}
             allowFreeText
           />
         );
       default:
         return (
           <ComboBox<string, "deselectable">
-            style={{ backgroundColor: "blue" }}
+            className={`${className}-valueInput`}
             source={typeaheadValues}
             onSelectionChange={(_event, selected) => {
               onMultiSelectValueChange(
@@ -116,9 +125,8 @@ export const TextInput = ({
             }}
             selectionStrategy="deselectable"
             InputProps={{
-              onChange: onValueInputChange,
-              value: valueInputValue,
               highlightOnFocus: true,
+              inputProps: { autoComplete: "off" },
             }}
             ref={valueInputRef}
             openOnFocus
@@ -132,27 +140,27 @@ export const TextInput = ({
     typeaheadValues,
     valueInputValue,
     selectedValues,
+    className,
   ]);
 
   return (
     <>
       <ComboBox<TextOperator, "deselectable">
-        style={{ backgroundColor: "yellow" }}
+        className={`${className}-operatorSelector`}
         selectionStrategy="deselectable"
         source={TEXT_OPERATORS}
         onSelectionChange={(_event, selectedOperator) => {
           setSelectedOperator(selectedOperator || undefined);
+          if(!selectedOperator) return;
           setTimeout(() => {
             valueInputRef.current?.querySelector("input")?.focus();
           }, 100);
         }}
         InputProps={{
-          onChange: (event) => setOperatorInputValue(event.target.value),
-          value: operatorInputValue,
           highlightOnFocus: true,
+          inputProps: { autoComplete: "off" },
         }}
         ref={operatorInputRef}
-        value={selectedOperator}
       />
       {getValueInputField()}
     </>

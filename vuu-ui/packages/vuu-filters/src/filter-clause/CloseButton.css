@@ -1,0 +1,25 @@
+.vuu-purple-theme {
+  --salt-actionable-secondary-background: #ffffff;
+  --salt-actionable-secondary-background-hover: #f37880;
+  --salt-actionable-secondary-background-active: #606477;
+  --salt-actionable-secondary-background-disabled: #ffffff;
+  --salt-actionable-secondary-foreground: #606477;
+  --salt-actionable-secondary-foreground-hover: #15171b;
+  --salt-actionable-secondary-foreground-active: #ffffff;
+  --salt-actionable-secondary-foreground-disabled: #9b9ea8;
+}
+
+.vuuFilterClause-closeButton {
+  height: 16px;
+  width: 16px;
+  border-radius: 6px;
+  padding: 0;
+}
+
+.vuuFilterClause-closeButton:focus-visible {
+  outline: 2px dashed var(--vuuPurple-accent2);
+}
+
+.vuuFilterClause-closeButton:not(:hover) {
+  background: var(--salt-actionable-secondary-background);
+}

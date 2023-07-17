@@ -9,15 +9,18 @@ export const DefaultFilterClause = () => {
     tablename: "instruments",
   });
 
-  const onChange = (filter?: Filter) => {
-    console.log("Filter Change", filter);
-  };
+  const onChange = (filter?: Filter) => console.log("Filter Change", filter);
+
+  const onClose = () => console.log("Closing filter component");
 
   return (
-    <FilterClause
-      onChange={onChange}
-      columns={columns}
-      table={schemas.instruments.table}
-    />
+    <div style={{ padding: "10px" }}>
+      <FilterClause
+        onChange={onChange}
+        onClose={onClose}
+        columns={columns}
+        table={schemas.instruments.table}
+      />
+    </div>
   );
 };

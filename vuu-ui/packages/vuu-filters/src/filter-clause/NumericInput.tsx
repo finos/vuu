@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useRef, useState } from "react";
+import { HTMLAttributes, RefObject, useEffect, useRef, useState } from "react";
 import { Filter, FilterClause } from "@finos/vuu-filter-types";
 import { ComboBox, Input } from "@heswell/salt-lab";
 import {
@@ -9,7 +9,7 @@ import {
 } from "./operator-utils";
 import { getNumericFilter } from "../column-filter/utils";
 
-type NumericInputProps = {
+type NumericInputProps = HTMLAttributes<HTMLDivElement> & {
   column: string;
   operatorInputRef: RefObject<HTMLInputElement>;
   onFilterChange: (filter?: Filter) => void;
@@ -21,6 +21,7 @@ export const NumericInput = ({
   operatorInputRef,
   onFilterChange,
   defaultFilter,
+  className,
 }: NumericInputProps) => {
   const defaultValue =
     defaultFilter?.op !== "in" && isNumber(defaultFilter?.value)
@@ -47,7 +48,7 @@ export const NumericInput = ({
   return (
     <>
       <ComboBox<NumericOperator, "deselectable">
-        style={{ backgroundColor: "yellow" }}
+        className={`${className}-operatorSelector`}
         selectionStrategy="deselectable"
         source={NUMERIC_OPERATORS}
         onSelectionChange={(_event, selectedOperator) => {
@@ -60,25 +61,29 @@ export const NumericInput = ({
           onChange: (event) => setOperatorInputValue(event.target.value),
           value: operatorInputValue,
           highlightOnFocus: true,
+          inputProps: { autoComplete: "off" },
         }}
         ref={operatorInputRef}
         value={selectedOperator}
       />
-      <Input
-        highlightOnFocus
-        value={valueInputValue}
-        ref={valueInputRef}
-        type="number"
-        onChange={(event) => {
-          setValueInputValue(event.target.value);
-          const filter = getNumericFilter(
-            column,
-            selectedOperator,
-            Number.parseFloat(event.target.value)
-          );
-          onFilterChange(filter);
-        }}
-      />
+      {selectedOperator === undefined ? undefined : (
+        <Input
+          className={`${className}-valueInput`}
+          highlightOnFocus
+          value={valueInputValue}
+          ref={valueInputRef}
+          type="text"
+          onChange={(event) => {
+            setValueInputValue(event.target.value);
+            const filter = getNumericFilter(
+              column,
+              selectedOperator,
+              Number.parseFloat(event.target.value)
+            );
+            onFilterChange(filter);
+          }}
+        />
+      )}
     </>
   );
 };
