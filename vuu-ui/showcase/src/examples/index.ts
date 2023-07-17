@@ -4,6 +4,7 @@ export * as DataGrid from "./DataGrid";
 export * as Filters from "./Filters";
 export * as html from "./html";
 export * as Layout from "./Layout";
+export * as Popups from "./Popups";
 export * as salt from "./salt";
 export * as Shell from "./Shell";
 export * as ShowcaseControls from "./ShowcaseControls";
