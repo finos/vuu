@@ -8,6 +8,7 @@ trait TreeBuildAction
 
 case class BuildEntireTree(table: TreeSessionTableImpl, oldTreeOption: Option[Tree]) extends TreeBuildAction
 case class FastBuildBranchesOfTree(table: TreeSessionTableImpl, oldTreeOption: Option[Tree]) extends TreeBuildAction
+case class FastBuildBranchesOfTreeOfRows(table: TreeSessionTableImpl, oldTreeOption: Option[Tree]) extends TreeBuildAction
 case class OnlyRecalculateTreeKeys(table: TreeSessionTableImpl, oldTreeOption: Option[Tree]) extends TreeBuildAction
 object CantBuildTreeErrorState extends TreeBuildAction
 
@@ -80,12 +81,16 @@ object TreeBuildOptimizer extends StrictLogging {
         table.getTree match {
           //if we have no aggregations initially we don't have to build the whole tree
           case EmptyTree if viewPort.getGroupBy.aggregations.isEmpty =>
+            FastBuildBranchesOfTreeOfRows(table, Option(table.getTree))
+          case EmptyTree if viewPort.getGroupBy.aggregations.nonEmpty && viewPort.getGroupBy.aggregations.size != 4 =>
             FastBuildBranchesOfTree(table, Option(table.getTree))
           //however if we do, we do...
-          case EmptyTree if viewPort.getGroupBy.aggregations.nonEmpty =>
+          case EmptyTree if viewPort.getGroupBy.aggregations.nonEmpty && viewPort.getGroupBy.aggregations.size.equals(4) =>
             BuildEntireTree(table, None)
           case tree: TreeImpl =>
             tree.buildAction match {
+              case Some(action: FastBuildBranchesOfTreeOfRows) =>
+                FastBuildBranchesOfTree(table, Some(tree))
               case Some(action:FastBuildBranchesOfTree) =>
                 BuildEntireTree(table, Some(tree))
               case Some(action: OnlyRecalculateTreeKeys) if rebuildTree =>
