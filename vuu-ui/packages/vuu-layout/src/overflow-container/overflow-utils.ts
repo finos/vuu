@@ -131,7 +131,10 @@ export const highPriorityItemsHaveWrappedButShouldNotHave = (
   nonWrappedItems: OverflowItem[],
   wrappedItems: OverflowItem[]
 ) => {
-  const minNonwrappedPriority = nonWrappedItems.reduce<number>(minPriority, 0);
+  const minNonwrappedPriority = nonWrappedItems.reduce<number>(
+    minPriority,
+    Number.MAX_SAFE_INTEGER
+  );
   const maxwrappedPriority = wrappedItems.reduce<number>(maxPriority, 0);
   if (maxwrappedPriority > minNonwrappedPriority) {
     return true;

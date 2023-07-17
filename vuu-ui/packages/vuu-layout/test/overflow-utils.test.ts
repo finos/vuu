@@ -12,7 +12,7 @@ describe("overflow-utils", () => {
       expect(
         highPriorityItemsHaveWrappedButShouldNotHave(
           [],
-          [{ index: "overflow", overflowPriority: "0" }]
+          [{ index: "overflow", label: "", overflowPriority: "0" }]
         )
       ).toEqual(false);
     });
@@ -21,8 +21,8 @@ describe("overflow-utils", () => {
         highPriorityItemsHaveWrappedButShouldNotHave(
           [],
           [
-            { index: "4", overflowPriority: "0" },
-            { index: "overflow", overflowPriority: "0" },
+            { index: "4", label: "", overflowPriority: "0" },
+            { index: "overflow", label: "", overflowPriority: "0" },
           ]
         )
       ).toEqual(true);
@@ -32,13 +32,13 @@ describe("overflow-utils", () => {
       expect(
         highPriorityItemsHaveWrappedButShouldNotHave(
           [
-            { index: "1", overflowPriority: "0" },
-            { index: "2", overflowPriority: "0" },
-            { index: "3", overflowPriority: "0" },
+            { index: "1", label: "", overflowPriority: "0" },
+            { index: "2", label: "", overflowPriority: "0" },
+            { index: "3", label: "", overflowPriority: "0" },
           ],
           [
-            { index: "4", overflowPriority: "1" },
-            { index: "5", overflowPriority: "0" },
+            { index: "4", label: "", overflowPriority: "1" },
+            { index: "5", label: "", overflowPriority: "0" },
           ]
         )
       ).toEqual(true);
@@ -48,13 +48,13 @@ describe("overflow-utils", () => {
       expect(
         highPriorityItemsHaveWrappedButShouldNotHave(
           [
-            { index: "1", overflowPriority: "1" },
-            { index: "2", overflowPriority: "1" },
+            { index: "1", label: "", overflowPriority: "1" },
+            { index: "2", label: "", overflowPriority: "1" },
           ],
           [
-            { index: "3", overflowPriority: "1" },
-            { index: "4", overflowPriority: "0" },
-            { index: "5", overflowPriority: "0" },
+            { index: "3", label: "", overflowPriority: "1" },
+            { index: "4", label: "", overflowPriority: "0" },
+            { index: "5", label: "", overflowPriority: "0" },
           ]
         )
       ).toEqual(false);

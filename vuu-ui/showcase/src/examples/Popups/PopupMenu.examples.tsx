@@ -21,10 +21,8 @@ export const DefaultPopupMenu = () => {
   );
 
   const menuHandler = useMemo<MenuActionHandler>(
-    () => (type, options) => {
-      console.log(`Menu Action ${type} invoked`, {
-        options,
-      });
+    () => (type /* , options */) => {
+      console.log(`Menu Action ${type} invoked`);
       if (type === "action-1" || type === "action-1") {
         // invoke our action here
         return true;
@@ -63,10 +61,8 @@ export const PopupMenuWithMenuOptions = () => {
   );
 
   const menuHandler = useMemo<MenuActionHandler>(
-    () => (type, options) => {
-      console.log(`Menu Action ${type} invoked`, {
-        options,
-      });
+    () => (type /*, options*/) => {
+      console.log(`Menu Action ${type} invoked`);
       if (type === "action-1" || type === "action-1") {
         // invoke our action here
         return true;
@@ -129,10 +125,8 @@ export const PopupMenuUsingLocationAndContext = () => {
   );
 
   const menuHandler = useMemo<MenuActionHandler>(
-    () => (type, options) => {
-      console.log(`Menu Action ${type} invoked`, {
-        options,
-      });
+    () => (type /*, options*/) => {
+      console.log(`Menu Action ${type} invoked`);
       if (type === "action-1" || type === "action-1") {
         // invoke our action here
         return true;
