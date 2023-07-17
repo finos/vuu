@@ -22,9 +22,14 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
 import { buildColumnMap, itemsOrOrderChanged } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AgData } from "./AgDataWindow";
+import { AgData, AgDataRow } from "./AgDataWindow";
 import { createColumnDefs } from "./AgGridColumnUtils";
-import { bySortIndex, isSortedColumn, toSortDef } from "./AgGridDataUtils";
+import {
+  bySortIndex,
+  isSortedColumn,
+  toSortDef,
+  toVuuDataSourceRow,
+} from "./AgGridDataUtils";
 import {
   AgGridFilter,
   agGridFilterModelToVuuFilter,
@@ -277,15 +282,17 @@ export const useViewportRowModel = ({
       const {
         colDef: { field },
       } = column;
-      const { data } = node;
+      const data = node.data as AgData;
       console.log({ field, data });
 
       if (dataSource && dataSource.viewport) {
+        // We have to convert the Ag style row (map) to a Vuu style row (array)
+        // to support Vuu filter evaulation against rows
         const columnMap = buildColumnMap(dataSource.columns);
         const options: VuuServerMenuOptions = {
           columnMap,
           columnName: field,
-          row: data,
+          row: toVuuDataSourceRow(data, columnMap),
           selectedRows: [],
           viewport: dataSource.viewport,
         };
