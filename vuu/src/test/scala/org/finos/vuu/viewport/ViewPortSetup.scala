@@ -1,14 +1,13 @@
 package org.finos.vuu.viewport
 
-import org.finos.vuu.api._
-import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
-import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider, ProviderContainer}
-import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.auths.RowPermissionChecker
+import org.finos.vuu.api._
 import org.finos.vuu.core.module.auths.PermissionSet
+import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
+import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider, ProviderContainer}
+import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.vuu.viewport.auths.TestFriendlyPermissionChecker
 import org.joda.time.LocalDateTime
 
@@ -43,6 +42,7 @@ trait ViewPortSetup {
   def runContainersOnce(viewPortContainer: ViewPortContainer, joinProvider : JoinTableProvider) = {
     joinProvider.runOnce()
     viewPortContainer.runOnce()
+    viewPortContainer.runGroupByOnce()
     viewPortContainer.runGroupByOnce()
   }
 

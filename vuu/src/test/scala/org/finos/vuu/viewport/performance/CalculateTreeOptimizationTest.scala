@@ -110,8 +110,6 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
 
       runContainersOnce(viewPortContainer, joinProvider)
 
-      runContainersOnce(viewPortContainer, joinProvider)
-
       assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
         Table(
           ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
