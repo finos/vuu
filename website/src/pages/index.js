@@ -28,7 +28,11 @@ function Home() {
           <div className="vuu-scroll-1-copy">
             <h1 className="vuu-heading-1">
               Delivering <br />
-              <RevolvingCaption captions={revolvingCaptions} />
+              <RevolvingCaption
+                captions={revolvingCaptions}
+                className="mobileRevolvingCaption"
+                offSetValue={44}
+              />
               {/* <span className="vuu-revolving-caption">market data</span> */}
             </h1>
             <h2 className="vuu-heading-2">

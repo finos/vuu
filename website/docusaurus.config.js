@@ -33,6 +33,11 @@ module.exports = {
       },
       items: [
         {
+          to: "/",
+          label: "HOME",
+          position: "right",
+        },
+        {
           to: "docs/introduction/intro",
           label: "DOCUMENTATION",
           position: "right",
