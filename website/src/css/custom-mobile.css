@@ -411,13 +411,18 @@ body {
   .vuu-revolving-caption-exit {
     opacity: 0;
     transition: opacity s linear;
-}
+  }
   
-.navbar-sidebar__back{
+  .navbar-sidebar__back{
   color: black;
   font-family: var(--vuu-font-family);
-}
+  }
   
+
+  .markdown{
+    color: black;
+  }
+
   .navbar__toggle {
     display: inherit;
     /* order: 2 */
