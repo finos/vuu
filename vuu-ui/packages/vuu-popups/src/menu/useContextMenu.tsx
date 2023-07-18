@@ -49,9 +49,19 @@ export const useContextMenu = (
       e.stopPropagation();
       e.preventDefault();
 
-      const menuBuilders =
-        ctx?.menuBuilders ?? (menuBuilder ? [menuBuilder] : undefined);
-      if (Array.isArray(menuBuilders) && menuBuilders.length > 0) {
+      const menuBuilders: MenuBuilder[] = [];
+      if (menuBuilder) {
+        menuBuilders.push(menuBuilder);
+      }
+      if (
+        ctx &&
+        Array.isArray(ctx?.menuBuilders) &&
+        ctx.menuBuilders.length > 0
+      ) {
+        menuBuilders.push(...ctx.menuBuilders);
+      }
+
+      if (menuBuilders.length > 0) {
         const menuItemDescriptors = buildMenuOptions(
           menuBuilders,
           location,
@@ -82,8 +92,7 @@ export const useContextMenu = (
     },
     [
       buildMenuOptions,
-      ctx?.menuActionHandler,
-      ctx?.menuBuilders,
+      ctx,
       dataMode,
       densityClass,
       menuActionHandler,

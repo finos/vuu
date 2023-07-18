@@ -56,7 +56,7 @@ export type ContextMenuItemDescriptor =
  * MenuBuilder describes a factory function that creates
  * Menu Item Descriptors appropriate to the supplied
  * location. Location can be any string identifier, it
- * will be used to determine which Menu Items to include
+ * can be used to determine which Menu Items to include
  * in the menu. Most often used for ContextMenus.
  */
 export type MenuBuilder<L = string, O = unknown> = (

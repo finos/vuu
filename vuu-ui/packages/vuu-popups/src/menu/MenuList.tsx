@@ -7,7 +7,8 @@ import React, {
   useRef,
 } from "react";
 import cx from "classnames";
-import { useIdMemo as useId } from "@salt-ds/core";
+//TODO do we want this dependency ?
+import { useId } from "@finos/vuu-layout";
 import { useKeyboardNavigation } from "./use-keyboard-navigation";
 import { isMenuItemGroup } from "./use-items-with-ids";
 

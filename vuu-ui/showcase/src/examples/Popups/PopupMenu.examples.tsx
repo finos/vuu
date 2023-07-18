@@ -94,18 +94,18 @@ export const PopupMenuWithMenuOptions = () => {
 PopupMenuWithMenuOptions.displaySequence = displaySequence++;
 
 export const PopupMenuUsingLocationAndContext = () => {
-  const menuDescriptors = [
-    { label: "Sort", action: "sort" },
-    { label: "Filter", action: "sort" },
+  const contextMenuDescriptors = [
+    { label: "Sort", action: "sort", location: "test-location" },
+    { label: "Filter", action: "sort", location: "test-location" },
     { label: "Group", action: "group" },
   ];
 
   const handleContextMenuAction: MenuActionHandler = () => {
-    console.log("handleContextMenu");
     return true;
   };
 
-  const contextMenuBuilder = () => menuDescriptors;
+  const contextMenuBuilder: MenuBuilder = (location) =>
+    contextMenuDescriptors.filter((menuItem) => menuItem.location === location);
 
   const menuBuilder = useMemo<MenuBuilder>(
     () => (_locaction, options) =>
@@ -126,7 +126,6 @@ export const PopupMenuUsingLocationAndContext = () => {
 
   const menuHandler = useMemo<MenuActionHandler>(
     () => (type /*, options*/) => {
-      console.log(`Menu Action ${type} invoked`);
       if (type === "action-1" || type === "action-1") {
         // invoke our action here
         return true;
@@ -158,6 +157,7 @@ export const PopupMenuUsingLocationAndContext = () => {
         <PopupMenu
           menuBuilder={menuBuilder}
           menuActionHandler={menuHandler}
+          menuLocation="test-location"
           menuOptions={menuOptions}
         />
       </div>
