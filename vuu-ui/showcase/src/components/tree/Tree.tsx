@@ -1,15 +1,26 @@
-import cx from "classnames";
-import React, { forwardRef, HTMLAttributes, useRef } from "react";
 import { useForkRef, useIdMemo as useId } from "@salt-ds/core";
+import cx from "classnames";
+import {
+  ForwardedRef,
+  forwardRef,
+  HTMLAttributes,
+  MouseEvent,
+  useRef,
+} from "react";
 import { closestListItemIndex } from "./list-dom-utils";
 import { useItemsWithIds } from "./use-items-with-ids";
-import { groupSelectionEnabled, GROUP_SELECTION_NONE } from "./use-selection";
+import {
+  GroupSelection,
+  groupSelectionEnabled,
+  TreeNodeSelectionHandler,
+  TreeSelection,
+} from "./use-selection";
 import { useViewportTracking } from "./use-viewport-tracking";
 import { useTree } from "./useTree";
 
 import "./Tree.css";
 
-const classBase = "hwTree";
+const classBase = "vuuTree";
 
 type Indexer = {
   value: number;
@@ -23,12 +34,20 @@ export interface TreeSourceNode {
   childNodes?: TreeSourceNode[];
 }
 export interface NormalisedTreeSourceNode extends TreeSourceNode {
-  childNodes: NormalisedTreeSourceNode[];
+  childNodes?: NormalisedTreeSourceNode[];
   count: number;
   expanded?: boolean;
   index: number;
   level: number;
 }
+
+export interface NonLeafNode extends NormalisedTreeSourceNode {
+  childNodes: NormalisedTreeSourceNode[];
+}
+
+export const isExpanded = (
+  node: NormalisedTreeSourceNode
+): node is NonLeafNode => node.expanded === true;
 
 export interface TreeNodeProps extends HTMLAttributes<HTMLLIElement> {
   idx?: number;
@@ -39,12 +58,15 @@ export const TreeNode = ({ children, idx, ...props }: TreeNodeProps) => {
   return <li {...props}>{children}</li>;
 };
 
-export interface TreeProps extends HTMLAttributes<HTMLDivElement> {
+export interface TreeProps extends HTMLAttributes<HTMLUListElement> {
   allowDragDrop?: boolean;
   defaultSelected?: any;
+  groupSelection?: GroupSelection;
   onHighlight: (index: number) => void;
-  onSelectionChange: any;
+  onSelectionChange: (selected: TreeSourceNode[]) => void;
   revealSelected?: boolean;
+  selected?: string[];
+  selection?: TreeSelection;
   source: TreeSourceNode[];
 }
 
@@ -53,7 +75,7 @@ const Tree = forwardRef(function Tree(
     allowDragDrop,
     className,
     defaultSelected,
-    groupSelection = GROUP_SELECTION_NONE,
+    groupSelection = "none",
     id: idProp,
     onHighlight,
     onSelectionChange,
@@ -63,27 +85,25 @@ const Tree = forwardRef(function Tree(
     source,
     ...htmlAttributes
   }: TreeProps,
-  forwardedRef
+  forwardedRef: ForwardedRef<HTMLUListElement>
 ) {
   const id = useId(idProp);
-  const root = useRef(null);
+  const rootRef = useRef<HTMLUListElement>(null);
 
   // returns the full source data
-  const [totalItemCount, sourceWithIds, sourceItemById] = useItemsWithIds(
-    source,
-    id,
-    {
-      revealSelected: revealSelected
-        ? selectedProp ?? defaultSelected ?? false
-        : undefined,
-    }
-  );
+  const [, sourceWithIds, sourceItemById] = useItemsWithIds(source, id, {
+    revealSelected: revealSelected
+      ? selectedProp ?? defaultSelected ?? false
+      : undefined,
+  });
 
-  const handleSelectionChange = (evt, selected) => {
-    onSelectionChange?.(
-      evt,
-      selected.map((id) => sourceItemById(id))
-    );
+  const handleSelectionChange: TreeNodeSelectionHandler = (evt, selected) => {
+    if (onSelectionChange) {
+      const sourceItems = selected
+        .map((id) => sourceItemById(id))
+        .filter((sourceItem) => sourceItem !== undefined) as TreeSourceNode[];
+      onSelectionChange(sourceItems);
+    }
   };
 
   const {
@@ -95,25 +115,23 @@ const Tree = forwardRef(function Tree(
     selected,
     visibleData,
   } = useTree({
-    containerRef: root,
     defaultSelected,
     groupSelection,
-    id,
     onChange: handleSelectionChange,
     onHighlight,
     selected: selectedProp,
     selection,
     sourceWithIds,
-    totalItemCount,
   });
 
   // const isScrolling = useViewportTracking(root, highlightedIdx);
-  useViewportTracking(root, highlightedIdx);
+  useViewportTracking(rootRef, highlightedIdx);
 
   const defaultItemHandlers = {
-    onMouseEnter: (evt) => {
+    onMouseEnter: (evt: MouseEvent) => {
       // if (!isScrolling.current) {
-      const idx = closestListItemIndex(evt.target);
+      const targetEl = evt.target as HTMLElement;
+      const idx = closestListItemIndex(targetEl);
       hiliteItemAtIndex(idx);
       // onMouseEnterListItem && onMouseEnterListItem(evt, idx);
       // }
@@ -130,7 +148,11 @@ const Tree = forwardRef(function Tree(
   /**
    * Add a ListItem from source item
    */
-  function addLeafNode(list, item, idx: Indexer) {
+  function addLeafNode(
+    list: JSX.Element[],
+    item: NormalisedTreeSourceNode,
+    idx: Indexer
+  ) {
     list.push(
       <TreeNode
         {...propsCommonToAllListItems}
@@ -145,7 +167,13 @@ const Tree = forwardRef(function Tree(
     idx.value += 1;
   }
 
-  function addGroupNode(list, child, idx, id, title) {
+  function addGroupNode(
+    list: JSX.Element[],
+    child: NormalisedTreeSourceNode,
+    idx: Indexer,
+    id: string,
+    title: string
+  ) {
     const { value: i } = idx;
     idx.value += 1;
     list.push(
@@ -181,16 +209,19 @@ const Tree = forwardRef(function Tree(
           </div>
         )}
         <ul role="group">
-          {child.expanded ? renderSourceContent(child.childNodes, idx) : ""}
+          {isExpanded(child) ? renderSourceContent(child.childNodes, idx) : ""}
         </ul>
       </TreeNode>
     );
   }
 
-  function renderSourceContent(items, idx = { value: 0 }) {
+  function renderSourceContent(
+    items: NormalisedTreeSourceNode[],
+    idx = { value: 0 }
+  ) {
     if (items?.length > 0) {
-      const listItems = [];
-      for (let item of items) {
+      const listItems: JSX.Element[] = [];
+      for (const item of items) {
         if (item.childNodes) {
           addGroupNode(listItems, item, idx, item.id, item.label);
         } else {
@@ -207,7 +238,7 @@ const Tree = forwardRef(function Tree(
       {...listProps}
       className={cx(classBase, className)}
       id={`Tree-${id}`}
-      ref={useForkRef(root, forwardedRef)}
+      ref={useForkRef<HTMLUListElement>(rootRef, forwardedRef)}
       role="tree"
       tabIndex={0}
     >
@@ -221,7 +252,7 @@ const getListItemProps = (
   idx: Indexer,
   highlightedIdx: number,
   selected: string[],
-  focusVisible: boolean,
+  focusVisible: number,
   className?: string
 ) => ({
   id: item.id,
@@ -230,7 +261,7 @@ const getListItemProps = (
   "aria-selected": selected.includes(item.id) || undefined,
   "data-idx": idx.value,
   "data-highlighted": idx.value === highlightedIdx || undefined,
-  className: cx("hwTreeNode", className, {
+  className: cx("vuuTreeNode", className, {
     focusVisible: focusVisible === idx.value,
   }),
 });

@@ -1,15 +1,10 @@
-import { useCallback, useMemo, useRef } from "react";
+import { KeyboardEvent, useCallback, useMemo, useRef } from "react";
 import { getIndexOfNode } from "./hierarchical-data-utils";
 import { useControlled } from "@salt-ds/core";
-import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
-  isNavigationKey,
-} from "./key-code";
+import { ArrowDown, ArrowLeft, ArrowUp, isNavigationKey } from "./key-code";
+import { NormalisedTreeSourceNode } from "./Tree";
 
-function nextItemIdx(count, key, idx) {
+function nextItemIdx(count: number, key: string, idx: number) {
   if (key === ArrowUp || key === ArrowLeft) {
     if (idx > 0) {
       return idx - 1;
@@ -27,39 +22,42 @@ function nextItemIdx(count, key, idx) {
   }
 }
 
-const isLeaf = (item) => !item.header && !item.childNodes;
-const isFocusable = (item) => isLeaf(item) || item.expanded !== undefined;
+const isLeaf = (item: NormalisedTreeSourceNode) =>
+  !item.header && !item.childNodes;
+const isFocusable = (item: NormalisedTreeSourceNode) =>
+  isLeaf(item) || item.expanded !== undefined;
 
-const ArrowKeys = {
-  horizontal: {
-    bwd: ArrowLeft,
-    fwd: ArrowRight,
-  },
-  vertical: {
-    bwd: ArrowUp,
-    fwd: ArrowDown,
-  },
-};
+export interface KeyboardNavigationHookProps {
+  defaultHighlightedIdx?: number;
+  highlightedIdx?: number;
+  onHighlight: (highlightedIdx: number) => void;
+  onKeyboardNavigation?: (evt: KeyboardEvent, nextIdx: number) => void;
+  selected: string[];
+  treeNodes: NormalisedTreeSourceNode[];
+}
 
 // we need a way to set highlightedIdx when selection changes
 export const useKeyboardNavigation = ({
   defaultHighlightedIdx = -1,
   highlightedIdx: highlightedIdxProp,
-  indexPositions,
+  treeNodes,
   onHighlight,
-  onKeyboardNavigation = null,
-  orientation = "vertical",
+  onKeyboardNavigation,
   selected = [],
-}) => {
+}: KeyboardNavigationHookProps) => {
   const { bwd: ArrowBwd, fwd: ArrowFwd } = useMemo(
-    () => ArrowKeys[orientation],
-    [orientation]
+    () => ({
+      bwd: ArrowUp,
+      fwd: ArrowDown,
+    }),
+    []
   );
 
   const [highlightedIdx, setHighlightedIdx, isControlledHighlighting] =
     useControlled({
       controlled: highlightedIdxProp,
       default: defaultHighlightedIdx,
+      name: "highlightedIdx",
     });
 
   const setHighlightedIndex = useCallback(
@@ -71,36 +69,36 @@ export const useKeyboardNavigation = ({
   );
 
   const nextFocusableItemIdx = useCallback(
-    (key = ArrowFwd, idx = key === ArrowFwd ? -1 : indexPositions.length) => {
-      let nextIdx = nextItemIdx(indexPositions.length, key, idx);
+    (key = ArrowFwd, idx = key === ArrowFwd ? -1 : treeNodes.length) => {
+      let nextIdx = nextItemIdx(treeNodes.length, key, idx);
       while (
         nextIdx !== -1 &&
-        ((key === ArrowFwd && nextIdx < indexPositions.length) ||
+        ((key === ArrowFwd && nextIdx < treeNodes.length) ||
           (key === ArrowBwd && nextIdx > 0)) &&
-        !isFocusable(indexPositions[nextIdx])
+        !isFocusable(treeNodes[nextIdx])
       ) {
-        nextIdx = nextItemIdx(indexPositions.length, key, nextIdx);
+        nextIdx = nextItemIdx(treeNodes.length, key, nextIdx);
       }
       return nextIdx;
     },
-    [ArrowBwd, ArrowFwd, indexPositions]
+    [ArrowBwd, ArrowFwd, treeNodes]
   );
 
   // does this belong here or should it be a method passed in?
   const keyBoardNavigation = useRef(true);
   const ignoreFocus = useRef(false);
-  const setIgnoreFocus = (value) => (ignoreFocus.current = value);
+  const setIgnoreFocus = (value: boolean) => (ignoreFocus.current = value);
 
   const handleFocus = useCallback(() => {
     if (ignoreFocus.current) {
       ignoreFocus.current = false;
     } else if (selected.length > 0) {
-      const idx = getIndexOfNode(indexPositions, selected[0]);
+      const idx = getIndexOfNode(treeNodes, selected[0]);
       setHighlightedIndex(idx);
     } else {
       setHighlightedIndex(nextFocusableItemIdx());
     }
-  }, [indexPositions, nextFocusableItemIdx, selected, setHighlightedIndex]);
+  }, [treeNodes, nextFocusableItemIdx, selected, setHighlightedIndex]);
 
   const navigateChildItems = useCallback(
     (e) => {
@@ -121,14 +119,14 @@ export const useKeyboardNavigation = ({
 
   const handleKeyDown = useCallback(
     (e) => {
-      if (indexPositions.length > 0 && isNavigationKey(e, orientation)) {
+      if (treeNodes.length > 0 && isNavigationKey(e, "vertical")) {
         e.preventDefault();
         e.stopPropagation();
         keyBoardNavigation.current = true;
         navigateChildItems(e);
       }
     },
-    [indexPositions, navigateChildItems, orientation]
+    [treeNodes, navigateChildItems]
   );
 
   const listProps = useMemo(

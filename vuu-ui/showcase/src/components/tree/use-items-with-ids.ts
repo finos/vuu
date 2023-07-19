@@ -13,6 +13,11 @@ type Indexer = {
   index: number;
 };
 
+type SourceItemById = (
+  id: string,
+  target?: NormalisedTreeSourceNode[]
+) => TreeSourceNode | undefined;
+
 export const useItemsWithIds = (
   sourceProp: TreeSourceNode[],
   idRoot = "root",
@@ -21,7 +26,7 @@ export const useItemsWithIds = (
     defaultExpanded = false,
     revealSelected = false,
   } = {}
-) => {
+): [number, NormalisedTreeSourceNode[], SourceItemById] => {
   const countChildItems = (
     item: TreeSourceNode,
     items: TreeSourceNode[],
@@ -78,6 +83,7 @@ export const useItemsWithIds = (
         // hierarchical pattern is consistent
         const normalisedItem: NormalisedTreeSourceNode = {
           ...item,
+          childNodes: undefined,
           id,
           count:
             !isNonCollapsibleGroupNode && expanded === undefined
@@ -94,9 +100,9 @@ export const useItemsWithIds = (
         indexer.index += 1;
 
         // if ((isNonCollapsibleGroupNode || expanded !== undefined) && !isCollapsibleHeader) {
-        if (normalisedItem.childNodes) {
+        if (item.childNodes) {
           const [childCount, children] = normalizeItems(
-            normalisedItem.childNodes,
+            item.childNodes,
             indexer,
             level + 1,
             childPath,
@@ -120,11 +126,8 @@ export const useItemsWithIds = (
     return normalizeItems(sourceProp, { index: 0 });
   }, [normalizeItems, sourceProp]);
 
-  const sourceItemById = useCallback(
-    (
-      id: string,
-      target: NormalisedTreeSourceNode[] = sourceWithIds
-    ): TreeSourceNode | undefined => {
+  const sourceItemById = useCallback<SourceItemById>(
+    (id, target = sourceWithIds): TreeSourceNode | undefined => {
       const sourceWithId = target.find(
         (i) => i.id === id || (i?.childNodes?.length && isParentPath(i.id, id))
       );

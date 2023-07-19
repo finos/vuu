@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import { closestListItem } from "./list-dom-utils";
 import { ArrowLeft, ArrowRight, Enter } from "./key-code";
 import { getNodeById, replaceNode } from "./hierarchical-data-utils";
+import { NormalisedTreeSourceNode } from "./Tree";
 
 const NO_HANDLERS = {};
 const isToggleElement = (element: HTMLElement) =>
@@ -10,20 +11,20 @@ const isToggleElement = (element: HTMLElement) =>
 export interface CollapsibleGroupsHookProps {
   collapsibleHeaders?: boolean;
   highlightedIdx: number;
-  indexPositions: any;
+  treeNodes: NormalisedTreeSourceNode[];
   setVisibleData: any;
-  source: any;
+  source: NormalisedTreeSourceNode[];
 }
 
 export const useCollapsibleGroups = ({
   collapsibleHeaders,
   highlightedIdx,
-  indexPositions,
+  treeNodes,
   setVisibleData,
   source,
 }: CollapsibleGroupsHookProps) => {
-  const fullSource = useRef(source);
-  const stateSource = useRef(fullSource.current);
+  const fullSource = useRef<NormalisedTreeSourceNode[]>(source);
+  const stateSource = useRef<NormalisedTreeSourceNode[]>(fullSource.current);
 
   const setSource = useCallback(
     (value) => {
@@ -33,7 +34,8 @@ export const useCollapsibleGroups = ({
   );
 
   const expandNode = useCallback(
-    (nodeList, { id }) => replaceNode(nodeList, id, { expanded: true }),
+    (nodeList: NormalisedTreeSourceNode[], { id }: NormalisedTreeSourceNode) =>
+      replaceNode(nodeList, id, { expanded: true }),
     []
   );
 
@@ -45,7 +47,7 @@ export const useCollapsibleGroups = ({
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === ArrowRight || e.key === Enter) {
-        const node = indexPositions[highlightedIdx];
+        const node = treeNodes[highlightedIdx];
         if (node) {
           if (node.expanded === false) {
             e.preventDefault();
@@ -55,7 +57,7 @@ export const useCollapsibleGroups = ({
       }
 
       if (e.key === ArrowLeft || e.key === Enter) {
-        const node = indexPositions[highlightedIdx];
+        const node = treeNodes[highlightedIdx];
         if (node) {
           if (node.expanded) {
             e.preventDefault();
@@ -64,7 +66,7 @@ export const useCollapsibleGroups = ({
         }
       }
     },
-    [collapseNode, expandNode, highlightedIdx, indexPositions, setSource]
+    [collapseNode, expandNode, highlightedIdx, treeNodes, setSource]
   );
 
   /**

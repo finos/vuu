@@ -88,7 +88,7 @@ export const App = ({ stories }: AppProps) => {
   const navigate = useNavigate();
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
-  const handleChange = (_evt: unknown, [selected]) => navigate(selected.id);
+  const handleChange = ([selected]: TreeSourceNode[]) => navigate(selected.id);
   const [theme, setTheme] = useState<ThemeDescriptor>(availableThemes[0]);
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
   const [density, setDensity] = useState<Density>("high");
@@ -125,7 +125,7 @@ export const App = ({ stories }: AppProps) => {
             className="ShowcaseNav"
             style={{ flex: "0 0 200px" }}
             data-resizeable
-            defaultSelected={[pathname.slice(1)]}
+            selected={[pathname.slice(1)]}
             onSelectionChange={handleChange}
             revealSelected
             source={source}
