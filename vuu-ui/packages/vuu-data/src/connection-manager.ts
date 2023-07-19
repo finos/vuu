@@ -18,7 +18,6 @@ import {
 import * as Message from "./server-proxy/messages";
 import {
   ConnectionStatusMessage,
-  hasAction,
   isConnectionQualityMetrics,
   isConnectionStatusMessage,
   isTableSchema,
