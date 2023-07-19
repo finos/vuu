@@ -30,6 +30,9 @@ const getComponent = (module: Module, paths: string[]) => {
       }
     }
   }
+  if (importedEntity.default) {
+    return importedEntity.default as ReactExample;
+  }
 };
 
 const themeName = getUrlParameter("theme", "salt");
@@ -42,13 +45,16 @@ addStylesheetURL(fontCssUrl);
 
 const pathToExample = (path: string): [string[], string] => {
   const endOfImportPath = path.lastIndexOf("/");
-  const importPath = path.slice(0, endOfImportPath);
+  const importPath =
+    endOfImportPath === -1 ? path : path.slice(0, endOfImportPath);
   const suffix = env === "development" ? "" : ".js";
+  console.log({ importPath });
   return [
     [
       `./examples/${importPath}.examples${suffix}`,
       `./examples/${importPath}/index${suffix}`,
       `./examples/${importPath}.stories${suffix}`,
+      `./examples/${importPath}/${importPath}${suffix}`,
     ],
     path.slice(endOfImportPath + 1),
   ];
@@ -68,6 +74,12 @@ if (hasUrlParameter("standalone")) {
         if (parentFolder) {
           path.unshift(parentFolder);
         }
+      }
+      if (
+        targetExamples &&
+        Object.values(targetExamples).every((item) => isModule(item as any))
+      ) {
+        throw Error("module file, no components");
       }
       break;
     } catch (err) {

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 let displaySequence = 1;
 
-export const DefaultPopupMenu = () => {
+export const DefaultPopupMenu = ({ height = 300, width = 600 }) => {
   const menuBuilder = useMemo<MenuBuilder>(
     () => () =>
       [
@@ -32,9 +32,7 @@ export const DefaultPopupMenu = () => {
   );
 
   return (
-    <div
-      style={{ border: "solid 1px #ccc", height: 300, padding: 12, width: 600 }}
-    >
+    <div style={{ border: "solid 1px #ccc", height, padding: 12, width }}>
       <PopupMenu menuBuilder={menuBuilder} menuActionHandler={menuHandler} />
     </div>
   );
