@@ -1,10 +1,11 @@
 .vuuPopupMenu {
-
+    --saltButton-height: 24px;
+    --saltButton-width: 24px;
     --vuu-icon-color: #606477;
     --vuu-icon-height: 20px;
-    --vuu-icon-left: 0px;
+    --vuu-icon-left: 2px;
     --vuu-icon-size: 16px;
-    --vuu-icon-top: 0px;
+    --vuu-icon-top: 2px;
     --vuu-icon-width: 20px;
 
     background: var(--vuuPopupMenu-background, transparent);

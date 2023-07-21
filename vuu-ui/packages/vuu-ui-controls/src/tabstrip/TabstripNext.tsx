@@ -119,6 +119,7 @@ export const TabstripNext = ({
       handleAddTabClick,
       id,
       tabProps,
+      tabstripHook.draggedItemIndex,
       tabstripHook.navigationProps,
     ]
   );

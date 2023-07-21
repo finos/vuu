@@ -14,12 +14,14 @@ const classBase = "vuuTabMenu";
 export interface TabMenuProps {
   allowClose: boolean;
   onMenuAction: MenuActionHandler;
+  onMenuClose: () => void;
   tabIndex: number;
 }
 
 export const TabMenu = ({
   allowClose,
   onMenuAction,
+  onMenuClose,
   tabIndex,
 }: TabMenuProps) => {
   const [menuBuilder, menuOptions] = useMemo(
@@ -47,6 +49,8 @@ export const TabMenu = ({
       menuActionHandler={onMenuAction}
       menuLocation="tab"
       menuOptions={menuOptions}
+      onMenuClose={onMenuClose}
+      tabIndex={-1}
     />
   );
 };

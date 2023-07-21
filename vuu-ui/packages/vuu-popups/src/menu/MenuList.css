@@ -83,7 +83,7 @@
   cursor: default;
 }
 
-.vuuMenuList-childMenuShowing .hwMenuItem[data-highlighted] {
+.vuuMenuList-childMenuShowing .vuuMenuItem[data-highlighted] {
   background-color: var(--context-menu-blur-focus-bg);
 }
 
@@ -110,7 +110,7 @@
   background-color: rgb(220, 220, 220);
 }
 .vuuMenuItem-button:active,
-.hwMenuItem-button:hover {
+.vuuMenuItem-button:hover {
   outline: 0;
 }
 

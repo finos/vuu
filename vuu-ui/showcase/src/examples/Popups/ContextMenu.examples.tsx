@@ -18,8 +18,10 @@ import { Button } from "@salt-ds/core";
 
 import {
   HTMLAttributes,
+  MouseEvent,
   MouseEventHandler,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -76,16 +78,10 @@ export const DefaultContextMenu = () => {
 
   const { ref, position } = usePosition();
 
-  console.log({ position });
-
   return (
     <div
       ref={ref}
-      style={{
-        position: "absolute",
-        top: 100,
-        left: 100,
-      }}
+      style={{ background: "ivory", height: "100vh", width: "100vw" }}
     >
       {position.x !== -1 && position.y !== -1 ? (
         <SampleContextMenu position={position} onClose={handleClose} />
@@ -98,38 +94,44 @@ DefaultContextMenu.displaySequence = displaySequence++;
 
 type IdProps = { children: string | JSX.Element };
 const Id = ({ children }: IdProps) => (
-  <span style={{ color: "grey" }}>({children})</span>
+  <span style={{ color: "blue" }}>{children}</span>
 );
 
 export const AdditionalNesting = () => {
   const { ref, position } = usePosition();
+  const handleClose: ContextMenuProps["onClose"] = (menuId?: string) => {
+    console.log(`menu closed ${menuId}`);
+  };
 
   return (
     <div
       ref={ref}
-      style={{ position: "absolute", top: 100, left: 100, display: "flex" }}
+      style={{ background: "ivory", height: "100vh", width: "100vw" }}
     >
       {position.x !== -1 && position.y !== -1 ? (
-        <ContextMenu position={position}>
-          <MenuItemGroup label="Item 1 #0">
-            <MenuItem>
-              Item 1.1 <Id>#0.0</Id>
+        <ContextMenu position={position} id="test" onClose={handleClose}>
+          <MenuItemGroup>
+            <MenuItem.Label>
+              Item 1 <Id>menuitem-test-0</Id>
+            </MenuItem.Label>
+            <MenuItem action="action-0">
+              Item 1.1 <Id>menuitem-test-0-0</Id>
             </MenuItem>
             <MenuItem>
-              Item 1.2 <Id>#0.1</Id>
+              Item 1.2 <Id>#test-0-1</Id>
             </MenuItem>
             <MenuItem>
-              Item 1.3 <Id>#0.2</Id>
+              Item 1.3 <Id>#test-0/2</Id>
             </MenuItem>
             <Separator />
             <MenuItem>
-              Item 1.4 <Id>#0.3</Id>
+              Item 1.4 <Id>#test-0/3</Id>
             </MenuItem>
             <MenuItem>
-              Item 1.5 <Id>#0.4</Id>
+              Item 1.5 <Id>#test-0/4</Id>
             </MenuItem>
           </MenuItemGroup>
-          <MenuItemGroup label="Item 2 #1">
+          <MenuItemGroup label="Item 2 #test-1">
             <MenuItemGroup label="Item 2.1 #1.0">
               <MenuItem>Item 2.1.0</MenuItem>
               <MenuItem>Item 2.1.1</MenuItem>
@@ -143,7 +145,7 @@ export const AdditionalNesting = () => {
             <MenuItem>Item 2.4 #1.0</MenuItem>
             <MenuItem>Item 2.5 #1.0</MenuItem>
           </MenuItemGroup>
-          <MenuItemGroup label="Item 3 #2">
+          <MenuItemGroup label="Item 3 #test-2">
             <MenuItem>Item 3.1</MenuItem>
             <MenuItem>Item 3.2</MenuItem>
             <MenuItem>Item 3.3</MenuItem>
@@ -151,7 +153,7 @@ export const AdditionalNesting = () => {
             <MenuItem>Item 3.4</MenuItem>
             <MenuItem>Item 3.5</MenuItem>
           </MenuItemGroup>
-          <MenuItemGroup label="Item 4 #3">
+          <MenuItemGroup label="Item 4 #test-3">
             <MenuItem>Item 4.1</MenuItem>
             <MenuItem>Item 4.2</MenuItem>
             <MenuItem>Item 4.3</MenuItem>
@@ -159,7 +161,7 @@ export const AdditionalNesting = () => {
             <MenuItem>Item 4.4</MenuItem>
             <MenuItem>Item 4.5</MenuItem>
           </MenuItemGroup>
-          <MenuItemGroup label="Item 5 #4">
+          <MenuItemGroup label="Item 5 #test-4">
             <MenuItemGroup label="Item 5.1 #4.0">
               <MenuItem>Item 5.1.1</MenuItem>
               <MenuItem>Item 5.1.2</MenuItem>
@@ -179,36 +181,13 @@ export const AdditionalNesting = () => {
 AdditionalNesting.displaySequence = displaySequence++;
 
 export const ContextMenuPopup = () => {
-  const [position, setPosition] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
-  });
-  const ref = useRef(null);
-  const keyboardNav = useRef(false);
+  const contextMenu = useMemo(() => {
+    const handleClose = (menuItemId?: string) => {
+      console.log(`closed with menuId ${menuItemId}`);
+    };
 
-  const handleClick = (evt: React.MouseEvent<HTMLElement>) => {
-    if (evt.pageX && evt.pageY) {
-      setPosition({ x: evt.pageX, y: evt.pageY });
-    } else {
-      const { bottom, left, width } = ref.current.getBoundingClientRect();
-      keyboardNav.current = true;
-      setPosition({ x: left + width / 2, y: bottom });
-    }
-  };
-
-  const handleClose = () => {
-    console.log("closed with menuId");
-    setPosition({ x: 0, y: 0 });
-  };
-
-  const getContextMenu = () => {
-    return position ? (
-      <ContextMenu
-        position={position}
-        activatedByKeyboard={keyboardNav.current}
-        onClose={handleClose}
-        withPortal
-      >
+    return (
+      <ContextMenu onClose={handleClose}>
         <MenuItemGroup label="Item 1">
           <MenuItem action="1.1">Item 1.1</MenuItem>
           <MenuItem>Item 1.2</MenuItem>
@@ -230,16 +209,27 @@ export const ContextMenuPopup = () => {
           <MenuItem>Item 3.3</MenuItem>
         </MenuItemGroup>
       </ContextMenu>
-    ) : null;
+    );
+  }, []);
+
+  const showContextMenu = useContextMenu();
+  const ref = useRef(null);
+
+  const handleClick = (evt: MouseEvent<HTMLElement>) => {
+    showContextMenu(evt, "", {
+      contextMenu,
+    });
   };
 
   return (
     <div
       style={{
-        height: "100%",
+        background: "ivory",
+        height: "100vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
+        width: "100vw",
       }}
     >
       <Button
@@ -286,7 +276,6 @@ export const ContextMenuPopup = () => {
       >
         Show Context Menu
       </Button>
-      {getContextMenu()}
     </div>
   );
 };

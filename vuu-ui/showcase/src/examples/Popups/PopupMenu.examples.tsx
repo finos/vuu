@@ -32,7 +32,18 @@ export const DefaultPopupMenu = ({ height = 300, width = 600 }) => {
   );
 
   return (
-    <div style={{ border: "solid 1px #ccc", height, padding: 12, width }}>
+    <div
+      style={{
+        border: "solid 1px #ccc",
+        gap: 24,
+        height,
+        padding: 12,
+        width,
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <input defaultValue="test" />
       <PopupMenu menuBuilder={menuBuilder} menuActionHandler={menuHandler} />
     </div>
   );

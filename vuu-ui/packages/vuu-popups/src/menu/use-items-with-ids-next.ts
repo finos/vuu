@@ -1,5 +1,5 @@
-import React, { ReactElement, useCallback, useMemo } from "react";
-import { MenuItemGroup, Separator } from "./MenuList";
+import React, { ReactElement, ReactNode, useCallback, useMemo } from "react";
+import { isMenuItemLabel, MenuItemGroup, Separator } from "./MenuList";
 
 export const isMenuItemGroup = (child: ReactElement) =>
   child.type === MenuItemGroup || !!child.props["data-group"];
@@ -7,13 +7,42 @@ export const isMenuItemGroup = (child: ReactElement) =>
 type Menus = { [key: string]: ReactElement[] };
 type Actions = { [key: string]: { action: string; options?: unknown } };
 
-export const useItemsWithIds = (
-  childrenProp: ReactElement[]
+const getLabelFromChildren = (children: ReactNode) => {
+  if (Array.isArray(children) && isMenuItemLabel(children[0])) {
+    return children[0];
+  }
+};
+
+const assignId = (
+  child: ReactElement,
+  path: string,
+  group: boolean,
+  hasSeparator = false
+) => {
+  const {
+    props: { children },
+  } = child;
+  // If we have a leaf MenuItem, any children will be label etc
+  // if we have a GroupMenuItem, firet item mat be Label
+  return {
+    childWithId: React.cloneElement(child, {
+      hasSeparator,
+      id: `${path}`,
+      key: path,
+      children: group ? getLabelFromChildren(children) : children,
+    }),
+    grandChildren: group ? children : undefined,
+  };
+};
+
+export const useItemsWithIdsNext = (
+  childrenProp: ReactElement[],
+  rootId: string
 ): [Menus, Actions] => {
   const normalizeChildren = useCallback(() => {
     const collectChildren = (
       children: ReactElement[],
-      path = "root",
+      path = rootId,
       menus: Menus = {},
       actions: Actions = {}
     ) => {
@@ -22,18 +51,21 @@ export const useItemsWithIds = (
       let hasSeparator = false;
 
       React.Children.forEach(children, (child) => {
-        if (child.type === Separator) {
+        if (isMenuItemLabel(child)) {
+          // do nothing
+        } else if (child.type === Separator) {
           hasSeparator = true;
         } else {
-          const group = isMenuItemGroup(child);
-          const childPath = path === "root" ? `${idx}` : `${path}.${idx}`;
+          const hasChildItems = isMenuItemGroup(child);
+          const childPath = `${path}-${idx}`;
           const {
             props: { action, options },
           } = child;
+
           const { childWithId, grandChildren } = assignId(
             child,
             childPath,
-            group,
+            hasChildItems,
             hasSeparator
           );
           list.push(childWithId);
@@ -49,28 +81,8 @@ export const useItemsWithIds = (
       return [menus, actions];
     };
 
-    const assignId = (
-      child: ReactElement,
-      path: string,
-      group: boolean,
-      hasSeparator = false
-    ) => {
-      const {
-        props: { children },
-      } = child;
-      return {
-        childWithId: React.cloneElement(child, {
-          hasSeparator,
-          id: `${path}`,
-          key: path,
-          children: group ? undefined : children,
-        }),
-        grandChildren: group ? children : undefined,
-      };
-    };
-
     return collectChildren(childrenProp);
-  }, [childrenProp]);
+  }, [rootId, childrenProp]);
 
   const [menus, actions] = useMemo(
     () => normalizeChildren(),

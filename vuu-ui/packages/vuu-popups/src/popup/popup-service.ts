@@ -109,39 +109,54 @@ const PopupComponent = ({
 
 let incrementingKey = 1;
 
+export interface ShowPopupProps {
+  depth?: number;
+  /**
+   * if true, focus will be invoked on first focusable element
+   */
+  focus?: boolean;
+  name?: string;
+  group?: string;
+  position?: "above" | "below" | "";
+  left?: number;
+  right?: "auto" | number;
+  top?: number;
+  component: ReactElement;
+  width?: number | "auto";
+}
+
 export class PopupService {
+  static onClose: (() => void) | undefined = undefined;
   static showPopup({
-    name = "anon",
     group = "all",
-    position = "",
+    name = "anon",
     left = 0,
+    position = "",
     right = "auto",
     top = 0,
     width = "auto",
     component,
-  }: {
-    depth?: number;
-    name?: string;
-    group?: string;
-    position?: "above" | "below" | "";
-    left?: number;
-    right?: "auto" | number;
-    top?: number;
-    component: ReactElement;
-    width?: number | "auto";
-  }) {
+  }: ShowPopupProps) {
     if (!component) {
       throw Error(`PopupService showPopup, no component supplied`);
     }
+
+    if (typeof component.props.onClose === "function") {
+      PopupService.onClose = component.props.onClose;
+    } else {
+      PopupService.onClose = undefined;
+    }
+
     popupOpened(name);
+
+    document.addEventListener("keydown", PopupService.escapeKeyListener, true);
+
     let el = document.body.querySelector(".vuuPopup." + group) as HTMLElement;
     if (el === null) {
       el = document.createElement("div") as HTMLElement;
       el.className = "vuuPopup " + group;
       document.body.appendChild(el);
     }
-
-    // TODO listen for ESC key
 
     const style = { width };
 
@@ -160,9 +175,14 @@ export class PopupService {
     );
   }
 
-  static hidePopup(name = "anon", group = "all") {
-    //onsole.log('PopupService.hidePopup name=' + name + ', group=' + group)
+  static escapeKeyListener(evt: KeyboardEvent) {
+    if (evt.key === "Escape") {
+      console.log(`%cESC listener`, "color:green;font-weight:bold;");
+      PopupService.hidePopup();
+    }
+  }
 
+  static hidePopup(name = "anon", group = "all") {
     if (_popups.indexOf(name) !== -1) {
       popupClosed(name);
       const popupRoot = document.body.querySelector(`.vuuPopup.${group}`);
@@ -170,6 +190,12 @@ export class PopupService {
         ReactDOM.unmountComponentAtNode(popupRoot);
       }
     }
+    document.removeEventListener(
+      "keydown",
+      PopupService.escapeKeyListener,
+      true
+    );
+    PopupService?.onClose?.();
   }
 
   static keepWithinThePage(el: HTMLElement, right: number | "auto" = "auto") {

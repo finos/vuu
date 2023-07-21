@@ -62,9 +62,9 @@ export const Tab = forwardRef(function Tab(
     throw Error("Tab onMenuAction must be provided if showMenuButton is set");
   }
 
-  const root = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const editableRef = useRef<HTMLDivElement>(null);
-  const setForkRef = useForkRef(ref, root);
+  const setForkRef = useForkRef(ref, rootRef);
   const [closeHover, setCloseHover] = useState(false);
   const handleClick = useCallback(
     (e: MouseEvent) => {
@@ -99,9 +99,19 @@ export const Tab = forwardRef(function Tab(
     }
   };
 
-  const handleMouseDown = (e: MouseEvent<HTMLElement>): void => {
-    onMouseDown?.(e);
-  };
+  const handleMouseDown = useCallback(
+    () =>
+      (e: MouseEvent<HTMLElement>): void => {
+        onMouseDown?.(e);
+      },
+    [onMouseDown]
+  );
+
+  const handleMenuClose = useCallback(() => {
+    requestAnimationFrame(() => {
+      rootRef.current?.focus();
+    });
+  }, []);
 
   const getLabel = () => {
     if (editable) {
@@ -122,6 +132,7 @@ export const Tab = forwardRef(function Tab(
   };
 
   const handleFocus = (evt: FocusEvent<HTMLElement>) => {
+    console.log("FOCUS TAB");
     if (editableRef.current) {
       const editable = editableRef.current as HTMLElement;
       const input = editable.querySelector(
@@ -173,7 +184,8 @@ export const Tab = forwardRef(function Tab(
         <TabMenu
           allowClose={closeable}
           onMenuAction={onMenuAction as MenuActionHandler}
-          tabIndex={index}
+          onMenuClose={handleMenuClose}
+          tabIndex={-1}
         />
       ) : null}
     </div>
