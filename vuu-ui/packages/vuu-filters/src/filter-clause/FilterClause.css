@@ -37,12 +37,37 @@
   gap: 4px;
   --salt-text-lineHeight: 12px;
   --saltInputLegacy-fontSize: 12px;
+  --saltInputLegacy-minWidth: 12px;
 }
 
 .vuu-purple-density-high .vuuFilterClause .saltInput {
   padding: 0;
   min-height: 16px;
   height: 16px;
+}
+
+.vuuFilterClause-columnSelector {
+  --saltInput-minWidth: 10px;
+  --saltInput-position: absolute;
+  min-width: var(--saltInput-minWidth);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 20px;
+  position: relative;
+}
+
+.vuuFilterClause-columnSelector :before {
+  content: attr(data-text);
+  display: block;
+  height: 0px;
+  visibility: hidden;
+  white-space: pre-wrap;
+  /* position: absolute; */
+}
+
+.saltInput-input {
+  background-color: red;
 }
 
 .vuu-purple-density-high .saltDropdown {

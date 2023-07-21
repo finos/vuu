@@ -5,7 +5,7 @@ import {
   FilterClause as FilterClauseType,
 } from "@finos/vuu-filter-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
-import { ComboBox } from "@heswell/salt-lab";
+import { ComboBox, InputProps } from "@heswell/salt-lab";
 import { TextInput } from "./TextInput";
 import { NumericInput } from "./NumericInput";
 import "./FilterClause.css";
@@ -34,6 +34,7 @@ export const FilterClause = ({
   ...htmlAttributes
 }: FilterClauseProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [columnInputValue, setColumnInputValue] = useState("");
   const [selectedColumn, setSelectedColumn] = useState<ColumnDescriptor>();
 
   const getInputElement = useCallback(() => {
@@ -99,6 +100,7 @@ export const FilterClause = ({
         }}
         selectionStrategy="deselectable"
         getFilterRegex={selectedColumn && (() => /.*/)}
+        data-text="hello"
       />
       {getInputElement()}
       <CloseButton classBase={classBase} onClick={onClose} />
