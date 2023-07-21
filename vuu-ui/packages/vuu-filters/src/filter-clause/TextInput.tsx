@@ -106,7 +106,7 @@ export const TextInput = ({
             }}
             ListProps={{
               className: `${className}-valueInput-list`,
-              borderless: true
+              borderless: true,
             }}
             delimiter={","}
             allowFreeText
@@ -151,7 +151,7 @@ export const TextInput = ({
         source={TEXT_OPERATORS}
         onSelectionChange={(_event, selectedOperator) => {
           setSelectedOperator(selectedOperator || undefined);
-          if(!selectedOperator) return;
+          if (!selectedOperator) return;
           setTimeout(() => {
             valueInputRef.current?.querySelector("input")?.focus();
           }, 100);
@@ -161,6 +161,7 @@ export const TextInput = ({
           inputProps: { autoComplete: "off" },
         }}
         ref={operatorInputRef}
+        getFilterRegex={selectedOperator && (() => /.*/)}
       />
       {getValueInputField()}
     </>

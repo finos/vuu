@@ -65,6 +65,7 @@ export const NumericInput = ({
         }}
         ref={operatorInputRef}
         value={selectedOperator}
+        getFilterRegex={selectedOperator && (() => /.*/)}
       />
       {selectedOperator === undefined ? undefined : (
         <Input

@@ -98,6 +98,7 @@ export const FilterClause = ({
           }, 300);
         }}
         selectionStrategy="deselectable"
+        getFilterRegex={selectedColumn && (() => /.*/)}
       />
       {getInputElement()}
       <CloseButton classBase={classBase} onClick={onClose} />
