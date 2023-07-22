@@ -4,6 +4,7 @@ import {
   CSSProperties,
   forwardRef,
   MutableRefObject,
+  TransitionEventHandler,
   useCallback,
 } from "react";
 import { Portal } from "@finos/vuu-popups";
@@ -17,11 +18,12 @@ export const Draggable = forwardRef<
   {
     wrapperClassName: string;
     element: HTMLElement;
-    style: CSSProperties;
+    onTransitionEnd?: TransitionEventHandler;
     scale?: number;
+    style: CSSProperties;
   }
 >(function Draggable(
-  { wrapperClassName, element, style, scale = 1 },
+  { wrapperClassName, element, onTransitionEnd, style, scale = 1 },
   forwardedRef
 ) {
   const callbackRef = useCallback(
@@ -43,17 +45,42 @@ export const Draggable = forwardRef<
       <div
         className={clsx("vuuDraggable", ...makeClassNames(wrapperClassName))}
         ref={forkedRef}
+        onTransitionEnd={onTransitionEnd}
         style={style}
       />
     </Portal>
   );
 });
 
+// const colors = ["black", "red", "green", "yellow"];
+// let color_idx = 0;
 export const createDragSpacer = (
   transitioning?: MutableRefObject<boolean>
 ): HTMLElement => {
+  // const idx = color_idx++ % 4;
+
   const spacer = document.createElement("div");
   spacer.className = "vuuDraggable-spacer";
+  if (transitioning) {
+    spacer.addEventListener("transitionend", () => {
+      transitioning.current = false;
+    });
+  }
+  return spacer;
+};
+
+export const createDropIndicatorPosition = (): HTMLElement => {
+  const spacer = document.createElement("div");
+  spacer.className = "vuuDraggable-dropIndicatorPosition";
+  return spacer;
+};
+
+export const createDropIndicator = (
+  transitioning?: MutableRefObject<boolean>
+): HTMLElement => {
+  // const idx = color_idx++ % 4;
+  const spacer = document.createElement("div");
+  spacer.className = "vuuDraggable-dropIndicator";
   if (transitioning) {
     spacer.addEventListener("transitionend", () => {
       transitioning.current = false;

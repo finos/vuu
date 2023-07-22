@@ -3,11 +3,50 @@
   box-shadow: var(--salt-overlayable-shadow-drag);
   cursor: var(--salt-draggable-grab-cursor-active);
   position: absolute;
+  opacity: .95;
+  z-index: 2000;
 }
 
 .vuuDraggable-spacer {
-  display: inline-block;
-  height: var(--tabs-tabstrip-height);
-  transition: width 0.4s ease;
-  width: 0;
+  display: var(--saltDraggable-display, inline-block);
+  height: var(--saltDraggable-spacer-height, var(--tabs-tabstrip-height));
+  transition: var(--saltDraggable-transitionProp, width) 0.3s ease;
+  width: var(--saltDraggable-spacer-width, 0);
+}
+
+.vuuDraggable-dropIndicatorPosition {
+  display: var(--saltDraggable-display, inline-block);
+  /* height: var(--saltDraggable-spacer-height, var(--tabs-tabstrip-height)); */
+  /* width: var(--saltDraggable-spacer-width, 0); */
+  height: 0px;
+  width: 100%;
+}
+
+.vuuDraggable-dropIndicatorContainer {
+  transition: var(--saltDraggable-transitionProp, top) 0.2s ease;
+}
+
+.vuuDraggable-dropIndicator {
+  /* height: var(--saltDraggable-spacer-height, var(--tabs-tabstrip-height)); */
+  /* width: var(--saltDraggable-spacer-width, 0); */
+  background-color: var(--salt-palette-accent-background);
+  height: 2px;
+  width: 100%;
+}
+
+.vuuDraggable-dropIndicator:before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--salt-palette-accent-background);
+  position: absolute;
+  top: -2px;
+  left: -3px;
+}
+
+.vuuDraggable-settling {
+  transition-property: left, top;
+  transition-duration: .15s;
+  transition-timing-function: ease-out;
 }
