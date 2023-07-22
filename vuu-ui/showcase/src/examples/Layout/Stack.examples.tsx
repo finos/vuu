@@ -3,27 +3,44 @@ import {
   FlexboxLayout as Flexbox,
   LayoutProvider,
   StackLayout,
-  View
+  View,
 } from "@finos/vuu-layout";
 import { useCallback, useState } from "react";
 
 let displaySequence = 1;
 
-export const FourTabsControlled = () => {
-  const [active, setActive] = useState(0);
+const allowAddTab = true;
+const allowCloseTab = true;
+const allowRenameTab = true;
 
-  const handleTabSelection = useCallback((e, tabIndex) => {
-    console.log(`setActive ${tabIndex}`);
-    setActive(tabIndex);
-  }, []);
+export const FourTabStack = () => {
+  return (
+    <LayoutProvider>
+      <StackLayout active={0} style={{ width: 800, height: 500 }}>
+        <Component
+          title="Rebecca "
+          style={{ backgroundColor: "rebeccapurple" }}
+        />
+        <Component title="Red" style={{ backgroundColor: "red" }} />
+        <Component title="Alice" style={{ backgroundColor: "aliceblue" }} />
+        <Component
+          title="Cornflower"
+          style={{ backgroundColor: "cornflowerblue" }}
+        />
+      </StackLayout>
+    </LayoutProvider>
+  );
+};
 
+FourTabStack.displaySequence = displaySequence++;
+
+export const FourTabStackAllowRename = () => {
   return (
     <LayoutProvider>
       <StackLayout
-        active={active}
-        onTabSelectionChanged={handleTabSelection}
-        showTabs
+        active={0}
         style={{ width: 800, height: 500 }}
+        TabstripProps={{ allowRenameTab }}
       >
         <Component
           title="Rebecca "
@@ -40,7 +57,57 @@ export const FourTabsControlled = () => {
   );
 };
 
-FourTabsControlled.displaySequence = displaySequence++;
+FourTabStackAllowRename.displaySequence = displaySequence++;
+
+export const FourTabStackAllowClose = () => {
+  return (
+    <LayoutProvider>
+      <StackLayout
+        active={0}
+        style={{ width: 800, height: 500 }}
+        TabstripProps={{ allowCloseTab }}
+      >
+        <Component
+          title="Rebecca "
+          style={{ backgroundColor: "rebeccapurple" }}
+        />
+        <Component title="Red" style={{ backgroundColor: "red" }} />
+        <Component title="Alice" style={{ backgroundColor: "aliceblue" }} />
+        <Component
+          title="Cornflower"
+          style={{ backgroundColor: "cornflowerblue" }}
+        />
+      </StackLayout>
+    </LayoutProvider>
+  );
+};
+
+FourTabStackAllowClose.displaySequence = displaySequence++;
+
+export const FourTabStackAllowAddCloseRenameTab = () => {
+  return (
+    <LayoutProvider>
+      <StackLayout
+        active={0}
+        style={{ width: 800, height: 500 }}
+        TabstripProps={{ allowAddTab, allowCloseTab, allowRenameTab }}
+      >
+        <Component
+          title="Rebecca "
+          style={{ backgroundColor: "rebeccapurple" }}
+        />
+        <Component title="Red" style={{ backgroundColor: "red" }} />
+        <Component title="Alice" style={{ backgroundColor: "aliceblue" }} />
+        <Component
+          title="Cornflower"
+          style={{ backgroundColor: "cornflowerblue" }}
+        />
+      </StackLayout>
+    </LayoutProvider>
+  );
+};
+
+FourTabStackAllowAddCloseRenameTab.displaySequence = displaySequence++;
 
 export const VerticalTabsControlled = () => {
   const [active, setActive] = useState(0);
@@ -55,7 +122,6 @@ export const VerticalTabsControlled = () => {
       <StackLayout
         TabstripProps={{ orientation: "vertical" }}
         active={active}
-        onTabSelectionChanged={handleTabSelection}
         showTabs
         style={{ width: 800, height: 500 }}
       >
@@ -75,34 +141,6 @@ export const VerticalTabsControlled = () => {
 };
 
 VerticalTabsControlled.displaySequence = displaySequence++;
-
-export const EnableAddTab = () => {
-  return (
-    <LayoutProvider>
-      <StackLayout
-        showTabs
-        enableAddTab
-        // createNewChild={createContent}
-        style={{ width: 800, height: 500 }}
-        active={0}
-        resizeable
-        preserve
-      >
-        <View title="Rebecca" header>
-          <Component
-            style={{
-              backgroundColor: "rebeccapurple",
-              height: "100%",
-              width: "100%",
-            }}
-          />
-        </View>
-      </StackLayout>
-    </LayoutProvider>
-  );
-};
-
-EnableAddTab.displaySequence = displaySequence++;
 
 export const EmptyStackAddTab = () => {
   const createContent = (index: number) => (
@@ -130,11 +168,7 @@ EmptyStackAddTab.displaySequence = displaySequence++;
 
 export const TabsWithinTabs = () => (
   <LayoutProvider>
-    <StackLayout
-      showTabs
-      style={{ width: 800, height: 500 }}
-      active={0}
-    >
+    <StackLayout showTabs style={{ width: 800, height: 500 }} active={0}>
       <StackLayout showTabs active={0} title="Substack 1">
         <View title="Rebecca" header>
           <Component style={{ backgroundColor: "rebeccapurple", flex: 1 }} />
@@ -147,7 +181,11 @@ export const TabsWithinTabs = () => (
         </View>
       </StackLayout>
 
-      <Flexbox title="Nested Substack" style={{ flexDirection: "column" }} path="">
+      <Flexbox
+        title="Nested Substack"
+        style={{ flexDirection: "column" }}
+        path=""
+      >
         <View title="Red" header>
           <Component title="Red" style={{ backgroundColor: "red", flex: 1 }} />
         </View>
@@ -185,7 +223,11 @@ export const TabsWithFlexChildren = () => {
         active={0}
         onLayoutChange={handleLayoutChange}
       >
-        <Flexbox title="Tower" style={{ flexDirection: "column", flex: 1 }} path="">
+        <Flexbox
+          title="Tower"
+          style={{ flexDirection: "column", flex: 1 }}
+          path=""
+        >
           <View
             title="Red"
             header

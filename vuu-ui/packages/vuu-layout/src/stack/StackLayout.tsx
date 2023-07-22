@@ -58,9 +58,10 @@ export const StackLayout = (props: StackProps) => {
     }
   };
 
-  const handleTabAdd = (e: unknown, tabIndex = React.Children.count(children)) => {
+  const handleTabAdd = () => {
     if (path) {
-      console.log(`[StackLayout] handleTabAdd`);
+      const tabIndex = React.Children.count(children);
+      console.log(`[StackLayout] handleTabAdd at ${tabIndex}`);
       const component = createNewChild(tabIndex);
       console.log({ component });
       dispatch({
@@ -106,7 +107,7 @@ export const StackLayout = (props: StackProps) => {
       id={id}
       getTabLabel={getTabLabel}
       onMouseDown={handleMouseDown}
-      onTabAdd={handleTabAdd}
+      onAddTab={handleTabAdd}
       onTabClose={handleTabClose}
       onTabEdit={handleTabEdit}
       onTabSelectionChanged={handleTabSelection}

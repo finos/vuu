@@ -41,11 +41,9 @@ export const Tab = forwardRef(function Tab(
     onEnterEditMode = noop,
     onExitEditMode = noop,
     onFocus: onFocusProp,
-    onKeyDown,
     onKeyUp,
     onMenuAction,
     onMenuClose,
-    onMouseDown,
     orientation,
     selected,
     showMenuButton = closeable || editable,
@@ -54,12 +52,6 @@ export const Tab = forwardRef(function Tab(
   }: TabProps,
   ref: ForwardedRef<HTMLDivElement>
 ): ReactElement<TabProps> {
-  if (index === undefined || onClick === undefined || onKeyDown === undefined) {
-    throw Error(
-      "index, onClick, onKeyUp, onKeyDown are required props, they would nornally be injected by Tabstrip, are you creating a Tab outside of a Tabstrip"
-    );
-  }
-
   if (showMenuButton && typeof onMenuAction !== "function") {
     throw Error("Tab onMenuAction must be provided if showMenuButton is set");
   }
@@ -69,7 +61,7 @@ export const Tab = forwardRef(function Tab(
   const setForkRef = useForkRef(ref, rootRef);
   const [closeHover, setCloseHover] = useState(false);
   const handleClick = useCallback(
-    (e: MouseEvent) => {
+    (e: MouseEvent<HTMLElement>) => {
       if (!editing) {
         e.preventDefault();
         onClick(e, index);
@@ -77,9 +69,6 @@ export const Tab = forwardRef(function Tab(
     },
     [editing, index, onClick]
   );
-  const handleKeyDownMain = (e: KeyboardEvent<HTMLElement>) => {
-    onKeyDown(e);
-  };
 
   const handleOnExitEditMode: EditableLabelProps["onExitEditMode"] = (
     originalValue = "",
@@ -100,20 +89,6 @@ export const Tab = forwardRef(function Tab(
         onKeyUp && onKeyUp(e, index);
     }
   };
-
-  const handleMouseDown = useCallback(
-    () =>
-      (e: MouseEvent<HTMLElement>): void => {
-        onMouseDown?.(e);
-      },
-    [onMouseDown]
-  );
-
-  // const handleMenuClose = useCallback(() => {
-  //   requestAnimationFrame(() => {
-  //     rootRef.current?.focus();
-  //   });
-  // }, []);
 
   const getLabel = () => {
     if (editable) {
@@ -160,9 +135,7 @@ export const Tab = forwardRef(function Tab(
       })}
       onClick={handleClick}
       onFocus={handleFocus}
-      onKeyDown={handleKeyDownMain}
       onKeyUp={handleKeyUp}
-      onMouseDown={handleMouseDown}
       ref={setForkRef}
       role="tab"
       tabIndex={tabIndex}

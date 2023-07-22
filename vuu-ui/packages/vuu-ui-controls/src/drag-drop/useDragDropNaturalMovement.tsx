@@ -150,8 +150,6 @@ export const useDragDropNaturalMovement: DragDropHook = ({
           query
         );
 
-        console.log({ dropTargets });
-
         const draggedItem = dropTargets.find(isDraggedElement);
         if (draggedItem && containerRef.current) {
           measuredDropTargets.current = dropTargets;
@@ -227,6 +225,7 @@ export const useDragDropNaturalMovement: DragDropHook = ({
         enterDraggingState(evt);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [containerRef, enterDraggingState, orientation]
   );
 

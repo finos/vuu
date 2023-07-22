@@ -80,6 +80,9 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
    * by setting activeTabIndex, if that is the desired behaviour.
    */
   onAddTab?: () => void;
+  /**
+   * callback that fires when tab selection changes
+   */
   onActiveChange?: (tabIndex: number) => void;
   /**
    * callback that fires when user has opted to remove tab.

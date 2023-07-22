@@ -10,6 +10,7 @@ import {
 import { useDragDrop } from "../drag-drop";
 import type { orientationType } from "../responsive";
 import { isTabMenuOptions } from "./TabMenuOptions";
+import { getIndexOfSelectedTab } from "./tabstrip-dom-utils";
 import { useAnimatedSelectionThumb } from "./useAnimatedSelectionThumb";
 import { useKeyboardNavigation } from "./useKeyboardNavigationNext";
 import { useSelection } from "./useSelectionNext";
@@ -38,19 +39,12 @@ export interface TabstripNextHookProps {
 const editKeys = new Set(["Enter", " "]);
 const isEditKey = (key: string) => editKeys.has(key);
 
-const getIndexOfSelectedTab = (container: HTMLElement | null) => {
+const getElementWithIndex = (container: HTMLElement | null, index: number) => {
   if (container) {
-    const selectedTab = container.querySelector(
-      '[data-index]:has([aria-selected="true"])'
-    ) as HTMLElement;
-    if (selectedTab) {
-      const index = parseInt(selectedTab.dataset.index || "");
-      if (!isNaN(index)) {
-        return index;
-      }
-    }
+    return container.querySelector(`[data-index="${index}"]`) as HTMLElement;
+  } else {
+    return null;
   }
-  return -1;
 };
 
 export const useTabstripNext = ({
@@ -73,6 +67,7 @@ export const useTabstripNext = ({
     highlightedIdx,
     onClick: keyboardHookHandleClick,
     onKeyDown: keyboardHookHandleKeyDown,
+    setHighlightedIdx: keyboardHookSetHighlightedIndex,
     ...keyboardHook
   } = useKeyboardNavigation({
     containerRef,
@@ -167,29 +162,56 @@ export const useTabstripNext = ({
     [keyboardHookHandleClick, selectionHookHandleClick]
   );
 
+  const getEditableLabel = useCallback(
+    (tabIndex = highlightedIdx) => {
+      const targetEl = getElementWithIndex(containerRef.current, tabIndex);
+      if (targetEl) {
+        return targetEl.querySelector(".vuuEditableLabel") as HTMLElement;
+      }
+    },
+    [containerRef, highlightedIdx]
+  );
+
+  const tabInEditMode = useCallback(
+    (tabIndex = highlightedIdx) => {
+      const editableLabel = getEditableLabel(tabIndex);
+      if (editableLabel) {
+        return editableLabel.classList.contains("vuuEditableLabel-editing");
+      }
+      return false;
+    },
+    [getEditableLabel, highlightedIdx]
+  );
+
+  const editTab = useCallback(
+    (tabIndex = highlightedIdx) => {
+      const editableLabelEl = getEditableLabel(tabIndex);
+      if (editableLabelEl) {
+        const evt = new MouseEvent("dblclick", {
+          view: window,
+          bubbles: true,
+          cancelable: true,
+        });
+        editableLabelEl.dispatchEvent(evt);
+      }
+    },
+    [getEditableLabel, highlightedIdx]
+  );
+
   const handleKeyDown = useCallback(
     (evt: KeyboardEvent) => {
       keyboardHookHandleKeyDown(evt);
       if (!evt.defaultPrevented) {
         selectionHookHandleKeyDown(evt);
       }
-      if (!evt.defaultPrevented) {
-        const target = evt.target as HTMLElement;
-        const editableLabelEl = target.querySelector(".vuuEditableLabel");
-        if (isEditKey(evt.key) && editableLabelEl) {
-          const evt = new MouseEvent("dblclick", {
-            view: window,
-            bubbles: true,
-            cancelable: true,
-          });
-          editableLabelEl.dispatchEvent(evt);
-        }
+      if (!evt.defaultPrevented && isEditKey(evt.key)) {
+        editTab();
       }
     },
-    [keyboardHookHandleKeyDown, selectionHookHandleKeyDown]
+    [editTab, keyboardHookHandleKeyDown, selectionHookHandleKeyDown]
   );
 
-  const handleCloseTab = useCallback(
+  const handleCloseTabFromMenu = useCallback(
     (tabIndex: number) => {
       const selectedTabIndex = getIndexOfSelectedTab(containerRef.current);
       const newActiveTabIndex =
@@ -205,8 +227,17 @@ export const useTabstripNext = ({
         resumeAnimation();
         // containerRef.current?.classList.remove("vuuTabThumb-noTransition");
       }, 200);
+      return true;
     },
     [containerRef, onCloseTab, resumeAnimation, suspendAnimation]
+  );
+
+  const handleRenameTabFromMenu = useCallback(
+    (tabIndex: number) => {
+      editTab(tabIndex);
+      return true;
+    },
+    [editTab]
   );
 
   const handleTabMenuAction = useCallback<MenuActionHandler>(
@@ -214,23 +245,31 @@ export const useTabstripNext = ({
       if (isTabMenuOptions(options)) {
         switch (type) {
           case "close-tab":
-            handleCloseTab(options.tabIndex);
-            return true;
+            return handleCloseTabFromMenu(options.tabIndex);
           case "rename-tab":
-            console.log(`rename tab  ${options.tabIndex}`);
-            break;
+            return handleRenameTabFromMenu(options.tabIndex);
           default:
             console.log(`tab menu action ${type}`);
         }
       }
       return false;
     },
-    [handleCloseTab]
+    [handleCloseTabFromMenu, handleRenameTabFromMenu]
   );
 
+  //TODO( why do we sometimes see this fired twice  eg following rename)
   const handleTabMenuClose = useCallback(() => {
-    keyboardHookFocusTab(highlightedIdx);
-  }, [highlightedIdx, keyboardHookFocusTab]);
+    if (!tabInEditMode()) {
+      keyboardHookFocusTab(highlightedIdx);
+    } else {
+      keyboardHookSetHighlightedIndex(highlightedIdx);
+    }
+  }, [
+    highlightedIdx,
+    keyboardHookFocusTab,
+    keyboardHookSetHighlightedIndex,
+    tabInEditMode,
+  ]);
 
   const onSwitchWrappedItemIntoView = useCallback(
     (item: OverflowItem) => {
@@ -263,8 +302,6 @@ export const useTabstripNext = ({
     onExitEditMode: handleExitEditMode,
     onMenuAction: handleTabMenuAction,
     onMenuClose: handleTabMenuClose,
-    // TODO do we need to allow for user-provided mouseDown ?
-    // See orihginal TabStrip
     onMouseDown: dragDropHookHandleMouseDown,
   };
 

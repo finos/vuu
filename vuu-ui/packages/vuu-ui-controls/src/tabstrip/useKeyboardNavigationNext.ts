@@ -19,6 +19,7 @@ import {
   Home,
   End,
 } from "../common-hooks";
+import { getIndexOfEditedItem } from "./tabstrip-dom-utils";
 
 type orientationType = "horizontal" | "vertical";
 type directionType = "bwd" | "fwd" | "start" | "end";
@@ -104,6 +105,7 @@ interface TabstripNavigationHookResult {
   onClick: (evt: ReactMouseEvent, tabIndex: number) => void;
   onFocus: (evt: FocusEvent<HTMLElement>) => void;
   onKeyDown: (evt: KeyboardEvent) => void;
+  setHighlightedIdx: (highlightedIndex: number) => void;
 }
 
 export const useKeyboardNavigation = ({
@@ -178,12 +180,19 @@ export const useKeyboardNavigation = ({
         // Do nothing, assume focus is being passed back to button by closing dialog. Might need
         // to revisit this and add code here if we may get focus set programatically in other ways.
       } else {
-        setTimeout(() => {
-          // The selected tab will have tabIndex 0 make sure our internal state is aligned.
-          if (focusedRef.current === -1 && selectedTabIndex !== null) {
-            setHighlightedIdx(selectedTabIndex);
-          }
-        }, 200);
+        const index = getIndexOfEditedItem(containerRef.current);
+        if (index !== -1) {
+          requestAnimationFrame(() => {
+            setHighlightedIdx(index);
+          });
+        } else {
+          setTimeout(() => {
+            // The selected tab will have tabIndex 0 make sure our internal state is aligned.
+            if (focusedRef.current === -1 && selectedTabIndex !== null) {
+              setHighlightedIdx(selectedTabIndex);
+            }
+          }, 200);
+        }
       }
     }
   };
@@ -343,5 +352,6 @@ export const useKeyboardNavigation = ({
     onClick: handleItemClick,
     onFocus,
     onKeyDown: handleKeyDown,
+    setHighlightedIdx,
   };
 };

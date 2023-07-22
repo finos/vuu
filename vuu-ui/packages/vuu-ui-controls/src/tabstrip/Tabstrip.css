@@ -98,9 +98,9 @@
 }
 
 /* Styling applied to Draggable wrapper when used to drag a Tab */
-.vuuDraggable[class*="tabstrip"] {
+.vuuDraggable[class*="vuuTabstrip"] {
   --tabs-tabstrip-display: flex;
-  --tabs-tabstrip-height: var(--saltTabs-tabstrip-height, var(--salt-size-stackable));
+  --tabs-tabstrip-height: 100%;
   --tabs-tabstrip-dragging-display: block;
 
   --tabs-tab-background: var(--salt-navigable-primary-background-hover);
@@ -116,7 +116,8 @@
 }
 
 .vuuDraggable-tabstrip-horizontal {
-  --tabs-tabstrip-height: var(--saltTabs-tabstrip-height, var(--salt-size-stackable));
+  --tab-thumb-height: 2px;
+  --tabs-tabstrip-height: 28px;
   --tab-activationIndicator-thumb-height: 2px;
   --tab-activationIndicator-inset: auto 0px 0px 0px;
 
@@ -127,12 +128,8 @@
   --tab-activationIndicator-thumb-width: 2px;
 }
 
-.vuuDraggable[class*="tabstrip"] .saltTab[aria-selected="true"]:before {
+.vuuDraggable[class*="tabstrip"] .vuuTab[aria-selected="true"]:before {
   --tabs-tab-before-background: var(--salt-navigable-indicator-active);
-}
-
-.vuuDraggable[class*="tabstrip"] .saltTab {
-  box-shadow: var(--salt-overlayable-shadow-drag);
 }
 
 /* [data-overflowed] {

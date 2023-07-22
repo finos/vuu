@@ -1,5 +1,10 @@
-import { Tab, TabstripNext as Tabstrip } from "@finos/vuu-ui-controls";
-import { useIdMemo as useId } from "@salt-ds/core";
+import { useId } from "@finos/vuu-layout";
+import {
+  getElementIndex,
+  Tab,
+  TabstripNext as Tabstrip,
+  TabstripNextProps,
+} from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import React, {
   ForwardedRef,
@@ -34,54 +39,47 @@ const getChildElements = <T extends ReactElement = ReactElement>(
   return elements;
 };
 
+const DefaultTabstripProps: Partial<TabstripNextProps> = {
+  allowAddTab: false,
+  allowCloseTab: false,
+  allowRenameTab: false,
+};
+
 export const Stack = forwardRef(function Stack(
   {
     active = 0,
     children,
     className: classNameProp,
-    enableAddTab,
-    enableCloseTabs,
     getTabIcon = getDefaultTabIcon,
     getTabLabel = getDefaultTabLabel,
     id: idProp,
     keyBoardActivation = "manual",
-    onMouseDown,
-    onTabAdd,
+    // onMouseDown,
+    onAddTab,
     onTabClose,
     onTabEdit,
     onTabSelectionChanged,
-    showTabs,
+    showTabs = true,
     style,
-    TabstripProps,
+    TabstripProps = DefaultTabstripProps,
   }: StackProps,
   ref: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
 
-  const handleTabSelection = (nextIdx: number) => {
-    onTabSelectionChanged?.(nextIdx);
-  };
+  const { allowCloseTab, allowRenameTab } = TabstripProps;
 
-  const handleTabClose = (tabIndex: number) => {
-    onTabClose?.(tabIndex);
-  };
-
-  const handleAddTab = () => {
-    onTabAdd?.(React.Children.count(children));
-  };
-
-  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    const tabElement = target.closest('[role^="tab"]') as HTMLDivElement;
-    const role = tabElement?.getAttribute("role");
-    if (role === "tab") {
-      const tabIndex = parseInt(tabElement.dataset.idx ?? "-1");
-      if (tabIndex === -1) {
-        throw Error("Stack: mousedown on tab with unknown index");
-      }
-      onMouseDown?.(e, tabIndex);
-    }
-  };
+  // TODO integrate with Tabstrip drag drop
+  // const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+  //   const target = e.target as HTMLElement;
+  //   const indexedElement = target.closest("[data-index]") as HTMLDivElement;
+  //   const isTab = indexedElement?.querySelector(".vuuTab");
+  //   if (isTab) {
+  //     const index = getElementIndex(indexedElement);
+  //     console.log(`index = ${index}`);
+  //     onMouseDown?.(e, index);
+  //   }
+  // };
 
   const handleExitEditMode = useCallback(
     (
@@ -108,7 +106,7 @@ export const Stack = forwardRef(function Stack(
   const renderTabs = () =>
     getChildElements(children).map((child, idx) => {
       const rootId = `${id}-${idx}`;
-      const { closeable, id: childId } = child.props;
+      const { closeable = allowCloseTab, id: childId } = child.props;
       return (
         <Tab
           ariaControls={`${rootId}-tab`}
@@ -117,8 +115,8 @@ export const Stack = forwardRef(function Stack(
           key={childId ?? idx}
           id={rootId}
           label={getTabLabel(child, idx)}
-          closeable={closeable && TabstripProps?.enableCloseTab !== false}
-          editable={TabstripProps?.enableRenameTab !== false}
+          closeable={closeable}
+          editable={allowRenameTab}
         />
       );
     });
@@ -140,17 +138,14 @@ export const Stack = forwardRef(function Stack(
           activeTabIndex={
             TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
           }
-          allowRenameTab={TabstripProps?.enableRenameTab !== false}
-          allowAddTab={enableAddTab}
-          allowCloseTab={enableCloseTabs}
           animateSelectionThumb
           className="vuuTabHeader"
           keyBoardActivation={keyBoardActivation}
-          onActiveChange={handleTabSelection}
-          onAddTab={handleAddTab}
-          onCloseTab={handleTabClose}
+          onActiveChange={onTabSelectionChanged}
+          onAddTab={onAddTab}
+          onCloseTab={onTabClose}
           onExitEditMode={handleExitEditMode}
-          onMouseDown={handleMouseDown}
+          // onMouseDown={handleMouseDown}
         >
           {renderTabs()}
         </Tabstrip>

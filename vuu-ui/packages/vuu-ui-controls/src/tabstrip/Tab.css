@@ -160,6 +160,7 @@
 }
 
 /* Hover styling */
+.vuuDraggable .vuuTab:before,
 .vuuTab:not(.vuuTab-selected).saltFocusVisible:before,
 .vuuTab:hover:not(.vuuTab-selected):before {
   --tab-before-content: "";
