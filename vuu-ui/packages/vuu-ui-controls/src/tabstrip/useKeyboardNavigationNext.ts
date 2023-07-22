@@ -1,4 +1,5 @@
 import { useControlled } from "@salt-ds/core";
+import { getFocusableElement } from "@finos/vuu-utils";
 import {
   FocusEvent,
   FocusEventHandler,
@@ -66,19 +67,12 @@ function nextItemIdx(count: number, direction: directionType, idx: number) {
   }
 }
 
-const isFocusable = (element: HTMLElement | null) =>
+const isNonWrappedElement = (element: HTMLElement | null) =>
   element !== null && !element.classList.contains("wrapped");
 
 const getElementByPosition = (container: HTMLElement | null, index: number) =>
   container
     ? (container.querySelector(`[data-index="${index}"]`) as HTMLElement)
-    : null;
-
-const getFocusableElement = (el: HTMLElement | null) =>
-  el
-    ? el.hasAttribute("tabindex")
-      ? el
-      : (el.querySelector("[tabindex]") as HTMLElement)
     : null;
 
 export interface ContainerNavigationProps {
@@ -210,7 +204,9 @@ export const useKeyboardNavigation = ({
       while (
         ((nextDirection === "fwd" && nextIdx < indexCount) ||
           (nextDirection === "bwd" && nextIdx > 0)) &&
-        !isFocusable(getElementByPosition(containerRef.current, nextIdx))
+        !isNonWrappedElement(
+          getElementByPosition(containerRef.current, nextIdx)
+        )
       ) {
         const newIdx = nextItemIdx(indexCount, nextDirection, nextIdx);
         if (newIdx === nextIdx) {

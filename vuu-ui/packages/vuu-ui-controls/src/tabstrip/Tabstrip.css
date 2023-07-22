@@ -59,10 +59,8 @@
 }
 
 .vuuTabstrip-addTabButton {
-  /* margin-left: var(--salt-size-unit); */
-  height: 20px;
-  /* top: -1px; */
-  width: 20px;
+  --saltButton-height: 20px;
+  --saltButton-width: 20px;
 }
 
 .vuuTabstrip-overflowMenu.saltDropdown {

@@ -32,6 +32,11 @@ export type TabstripVariant = "primary" | "tertiary";
 
 export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
   /**
+   *  index value of Active Tab. Set to `null` for no active tab.
+   */
+  activeTabIndex?: number | null;
+
+  /**
    * Boolean that enables add new tab
    */
 
@@ -64,9 +69,26 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
 
   editing?: boolean;
   keyBoardActivation?: "manual" | "automatic";
+  /**
+   * A custom context menu location for TabMenu
+   */
+  location?: string;
+  /**
+   * callback that fires when user has clicked Add Tab button.
+   * client is responsible for re-render with additional tab.
+   * It is also responsibility of client to select tne new tab
+   * by setting activeTabIndex, if that is the desired behaviour.
+   */
   onAddTab?: () => void;
   onActiveChange?: (tabIndex: number) => void;
-  onCloseTab?: (tabIndex: number) => void;
+  /**
+   * callback that fires when user has opted to remove tab.
+   * client is responsible for re-render with tab removed.
+   * It is also responsibility of client to select tne new tab
+   * by setting activeTabIndex, a suggested value for this is
+   * provided by newActiveTabIndex.
+   */
+  onCloseTab?: (tabIndex: number, newActiveTabIndex: number) => void;
   onMoveTab?: (fromIndex: number, toIndex: number) => void;
   orientation?: orientationType;
   onEnterEditMode?: () => void;
@@ -76,11 +98,6 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
    */
   overflowMenu?: boolean;
   promptForNewTabName?: boolean;
-  showActivationIndicator?: boolean;
-  /**
-   *  index value of Active Tab, used in controlled mode. Set to `null` for no active tab.
-   */
-  activeTabIndex?: number | null;
   /**
    * Set variant - defaults 'primary'
    */
@@ -114,16 +131,18 @@ export type TabProps = Omit<
   // DO we need this as well as focussed ?
   focusVisible?: boolean;
   focusedChildIndex?: number;
+  location?: string;
   selected?: boolean;
   showMenuButton?: boolean;
   index?: number;
   label?: EditableLabelProps["defaultValue"];
-  onClick?: (e: MouseEvent, index: number) => void;
+  onClick?: (e: MouseEvent<HTMLElement>, index: number) => void;
   onClose?: (index: number) => void;
   onEnterEditMode?: () => void;
   onExitEditMode?: exitEditHandler;
   onKeyUp?: (e: KeyboardEvent, index: number) => void;
   onMenuAction?: MenuActionHandler;
+  onMenuClose?: () => void;
   orientation?: "horizontal" | "vertical";
 };
 

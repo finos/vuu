@@ -7,12 +7,12 @@ import {
   useCallback,
   useRef,
 } from "react";
+import { useDragDrop } from "../drag-drop";
 import type { orientationType } from "../responsive";
+import { isTabMenuOptions } from "./TabMenuOptions";
 import { useAnimatedSelectionThumb } from "./useAnimatedSelectionThumb";
 import { useKeyboardNavigation } from "./useKeyboardNavigationNext";
-import { useDragDrop } from "../drag-drop";
 import { useSelection } from "./useSelectionNext";
-import { isTabMenuOptions } from "./TabMenuOptions";
 
 export type ExitEditModeHandler = (
   originalValue: string,
@@ -27,7 +27,8 @@ export interface TabstripNextHookProps {
   animateSelectionThumb: boolean;
   containerRef: RefObject<HTMLElement>;
   onActiveChange?: (tabIndex: number) => void;
-  onCloseTab?: (tabIndex: number) => void;
+  onAddTab?: () => void;
+  onCloseTab?: (tabIndex: number, newActiveTabIndex: number) => void;
   onExitEditMode?: ExitEditModeHandler;
   onMoveTab?: (fromIndex: number, toIndex: number) => void;
   orientation: orientationType;
@@ -37,12 +38,28 @@ export interface TabstripNextHookProps {
 const editKeys = new Set(["Enter", " "]);
 const isEditKey = (key: string) => editKeys.has(key);
 
+const getIndexOfSelectedTab = (container: HTMLElement | null) => {
+  if (container) {
+    const selectedTab = container.querySelector(
+      '[data-index]:has([aria-selected="true"])'
+    ) as HTMLElement;
+    if (selectedTab) {
+      const index = parseInt(selectedTab.dataset.index || "");
+      if (!isNaN(index)) {
+        return index;
+      }
+    }
+  }
+  return -1;
+};
+
 export const useTabstripNext = ({
   activeTabIndex: activeTabIndexProp,
   allowDragDrop,
   animateSelectionThumb,
   containerRef,
   onActiveChange,
+  onAddTab,
   onCloseTab,
   onExitEditMode,
   onMoveTab,
@@ -53,6 +70,7 @@ export const useTabstripNext = ({
 
   const {
     focusTab: keyboardHookFocusTab,
+    highlightedIdx,
     onClick: keyboardHookHandleClick,
     onKeyDown: keyboardHookHandleKeyDown,
     ...keyboardHook
@@ -69,12 +87,18 @@ export const useTabstripNext = ({
     onKeyDown: selectionHookHandleKeyDown,
     selected: selectionHookSelected,
   } = useSelection({
-    highlightedIdx: keyboardHook.highlightedIdx,
+    highlightedIdx,
     onSelectionChange: onActiveChange,
     selected: activeTabIndexProp,
   });
   // We need this on reEntry for navigation hook to handle focus
   lastSelection.current = selectionHookSelected;
+
+  const { containerStyle, resumeAnimation, suspendAnimation } =
+    useAnimatedSelectionThumb(
+      containerRef,
+      animateSelectionThumb ? selectionHookSelected : -1
+    );
 
   const handleDrop = useCallback(
     (fromIndex: number, toIndex: number) => {
@@ -102,7 +126,7 @@ export const useTabstripNext = ({
       //   }
       // }
     },
-    [/*onMoveTab, */ selectionHookSelected]
+    [onMoveTab, selectionHookSelected]
   );
 
   const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =
@@ -165,12 +189,32 @@ export const useTabstripNext = ({
     [keyboardHookHandleKeyDown, selectionHookHandleKeyDown]
   );
 
+  const handleCloseTab = useCallback(
+    (tabIndex: number) => {
+      const selectedTabIndex = getIndexOfSelectedTab(containerRef.current);
+      const newActiveTabIndex =
+        selectedTabIndex > tabIndex
+          ? selectedTabIndex - 1
+          : selectedTabIndex === tabIndex
+          ? 0
+          : selectedTabIndex;
+      suspendAnimation();
+      // containerRef.current?.classList.add("vuuTabThumb-noTransition");
+      onCloseTab?.(tabIndex, newActiveTabIndex);
+      setTimeout(() => {
+        resumeAnimation();
+        // containerRef.current?.classList.remove("vuuTabThumb-noTransition");
+      }, 200);
+    },
+    [containerRef, onCloseTab, resumeAnimation, suspendAnimation]
+  );
+
   const handleTabMenuAction = useCallback<MenuActionHandler>(
     (type, options) => {
       if (isTabMenuOptions(options)) {
         switch (type) {
           case "close-tab":
-            onCloseTab?.(options.tabIndex);
+            handleCloseTab(options.tabIndex);
             return true;
           case "rename-tab":
             console.log(`rename tab  ${options.tabIndex}`);
@@ -181,8 +225,12 @@ export const useTabstripNext = ({
       }
       return false;
     },
-    [onCloseTab]
+    [handleCloseTab]
   );
+
+  const handleTabMenuClose = useCallback(() => {
+    keyboardHookFocusTab(highlightedIdx);
+  }, [highlightedIdx, keyboardHookFocusTab]);
 
   const onSwitchWrappedItemIntoView = useCallback(
     (item: OverflowItem) => {
@@ -199,30 +247,37 @@ export const useTabstripNext = ({
     onKeyDown: handleKeyDown,
   };
 
+  const handleAddTabClick = useCallback(() => {
+    onAddTab?.();
+    requestAnimationFrame(() => {
+      const selectedTabIndex = getIndexOfSelectedTab(containerRef.current);
+      if (selectedTabIndex !== -1) {
+        keyboardHookFocusTab(selectedTabIndex);
+      }
+    });
+  }, [containerRef, keyboardHookFocusTab, onAddTab]);
+
   const tabProps = {
     onClick: handleClick,
     onKeyDown: handleKeyDown,
     onExitEditMode: handleExitEditMode,
     onMenuAction: handleTabMenuAction,
+    onMenuClose: handleTabMenuClose,
     // TODO do we need to allow for user-provided mouseDown ?
     // See orihginal TabStrip
     onMouseDown: dragDropHookHandleMouseDown,
   };
 
-  const containerStyle = useAnimatedSelectionThumb(
-    containerRef,
-    animateSelectionThumb ? selectionHookSelected : -1
-  );
-
   return {
     activeTabIndex: selectionHookSelected,
+    containerStyle,
     focusVisible: keyboardHook.focusVisible,
     containerProps: {
       ...keyboardHook.containerProps,
       onSwitchWrappedItemIntoView,
     },
     navigationProps,
-    containerStyle,
+    onClickAddTab: handleAddTabClick,
     tabProps,
     ...dragDropHook,
   };

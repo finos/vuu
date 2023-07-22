@@ -31,7 +31,8 @@ export const ShellWithNewTheme = () => {
           height: "100%",
         },
         TabstripProps: {
-          showActivationIndicator: false,
+          animateSelectionThumb: false,
+          location: "main-tab",
         },
         showTabs: true,
         enableAddTab: true,

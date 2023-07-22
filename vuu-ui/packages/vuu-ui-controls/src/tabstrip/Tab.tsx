@@ -30,11 +30,12 @@ export const Tab = forwardRef(function Tab(
     className,
     closeable = false,
     dragging,
-    editable,
+    editable = false,
     editing,
     focusVisible,
     index,
     label,
+    location,
     onClick,
     onClose,
     onEnterEditMode = noop,
@@ -43,10 +44,11 @@ export const Tab = forwardRef(function Tab(
     onKeyDown,
     onKeyUp,
     onMenuAction,
+    onMenuClose,
     onMouseDown,
     orientation,
     selected,
-    showMenuButton = true,
+    showMenuButton = closeable || editable,
     tabIndex,
     ...props
   }: TabProps,
@@ -107,11 +109,11 @@ export const Tab = forwardRef(function Tab(
     [onMouseDown]
   );
 
-  const handleMenuClose = useCallback(() => {
-    requestAnimationFrame(() => {
-      rootRef.current?.focus();
-    });
-  }, []);
+  // const handleMenuClose = useCallback(() => {
+  //   requestAnimationFrame(() => {
+  //     rootRef.current?.focus();
+  //   });
+  // }, []);
 
   const getLabel = () => {
     if (editable) {
@@ -132,7 +134,6 @@ export const Tab = forwardRef(function Tab(
   };
 
   const handleFocus = (evt: FocusEvent<HTMLElement>) => {
-    console.log("FOCUS TAB");
     if (editableRef.current) {
       const editable = editableRef.current as HTMLElement;
       const input = editable.querySelector(
@@ -183,9 +184,11 @@ export const Tab = forwardRef(function Tab(
       {showMenuButton ? (
         <TabMenu
           allowClose={closeable}
+          allowRename={editable}
+          location={location}
           onMenuAction={onMenuAction as MenuActionHandler}
-          onMenuClose={handleMenuClose}
-          tabIndex={-1}
+          onMenuClose={onMenuClose}
+          index={index}
         />
       ) : null}
     </div>

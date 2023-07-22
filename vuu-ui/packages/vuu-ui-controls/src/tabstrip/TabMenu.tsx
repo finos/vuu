@@ -5,6 +5,7 @@ import {
   MenuBuilder,
 } from "packages/vuu-data-types";
 import { useMemo } from "react";
+import cx from "classnames";
 
 import "./TabMenu.css";
 import { closeCommand, MenuOptions, renameCommand } from "./TabMenuOptions";
@@ -13,33 +14,38 @@ const classBase = "vuuTabMenu";
 
 export interface TabMenuProps {
   allowClose: boolean;
+  allowRename: boolean;
+  location?: string;
   onMenuAction: MenuActionHandler;
-  onMenuClose: () => void;
-  tabIndex: number;
+  onMenuClose?: () => void;
+  index: number;
 }
 
 export const TabMenu = ({
   allowClose,
+  allowRename,
+  location,
   onMenuAction,
   onMenuClose,
-  tabIndex,
+  index,
 }: TabMenuProps) => {
   const [menuBuilder, menuOptions] = useMemo(
     (): [MenuBuilder, MenuOptions] => [
       (_location, options) => {
-        const menuItems: ContextMenuItemDescriptor[] = [
-          renameCommand(options as MenuOptions),
-        ];
+        const menuItems: ContextMenuItemDescriptor[] = [];
+        if (allowRename) {
+          menuItems.push(renameCommand(options as MenuOptions));
+        }
         if (allowClose) {
           menuItems.push(closeCommand(options as MenuOptions));
         }
         return menuItems;
       },
       {
-        tabIndex,
+        tabIndex: index,
       },
     ],
-    [allowClose, tabIndex]
+    [allowClose, allowRename, index]
   );
 
   return (
@@ -47,7 +53,7 @@ export const TabMenu = ({
       className={classBase}
       menuBuilder={menuBuilder}
       menuActionHandler={onMenuAction}
-      menuLocation="tab"
+      menuLocation={cx("tab", location)}
       menuOptions={menuOptions}
       onMenuClose={onMenuClose}
       tabIndex={-1}

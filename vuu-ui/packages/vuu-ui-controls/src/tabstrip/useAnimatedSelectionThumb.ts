@@ -4,6 +4,15 @@ export const useAnimatedSelectionThumb = (
   containerRef: RefObject<HTMLElement>,
   activeTabIndex: number
 ) => {
+  const animationSuspendedRef = useRef(false);
+  const suspendAnimation = useCallback(() => {
+    animationSuspendedRef.current = true;
+  }, []);
+
+  const resumeAnimation = useCallback(() => {
+    animationSuspendedRef.current = false;
+  }, []);
+
   const onTransitionEnd = useCallback(() => {
     containerRef.current?.style.setProperty("--tab-thumb-transition", "none");
     containerRef.current?.removeEventListener("transitionend", onTransitionEnd);
@@ -18,7 +27,7 @@ export const useAnimatedSelectionThumb = (
       const newSelected = containerRef.current?.querySelector(
         `[data-index="${activeTabIndex}"] .vuuTab`
       );
-      if (oldSelected && newSelected) {
+      if (oldSelected && newSelected && !animationSuspendedRef.current) {
         const { left: oldLeft, width: oldWidth } =
           oldSelected.getBoundingClientRect();
         const { left: newLeft } = newSelected.getBoundingClientRect();
@@ -40,9 +49,31 @@ export const useAnimatedSelectionThumb = (
       }
     }
     lastSelectedRef.current = activeTabIndex;
-    return {
-      "--tab-thumb-offset": `${offset}px`,
-      "--tab-thumb-width": width ? `${width}px` : undefined,
-    } as CSSProperties;
-  }, [containerRef, onTransitionEnd, activeTabIndex]);
+    console.log(`return offset = ${offset}`);
+    if (animationSuspendedRef.current) {
+      return {
+        containerStyle: {
+          "--tab-thumb-offset": "0px",
+          "--tab-thumb-width": "100%",
+        } as CSSProperties,
+        resumeAnimation,
+        suspendAnimation,
+      };
+    } else {
+      return {
+        containerStyle: {
+          "--tab-thumb-offset": `${offset}px`,
+          "--tab-thumb-width": width ? `${width}px` : undefined,
+        } as CSSProperties,
+        resumeAnimation,
+        suspendAnimation,
+      };
+    }
+  }, [
+    activeTabIndex,
+    resumeAnimation,
+    suspendAnimation,
+    containerRef,
+    onTransitionEnd,
+  ]);
 };

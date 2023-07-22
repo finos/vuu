@@ -1,17 +1,5 @@
-import {
-  Tab,
-  Tabstrip,
-  TabstripNext,
-  TabDescriptor,
-} from "@finos/vuu-ui-controls";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@heswell/salt-lab";
-import { Button } from "@salt-ds/core";
-import { useCallback, useMemo, useState } from "react";
+import { Tab, TabstripNext } from "@finos/vuu-ui-controls";
+import { useCallback, useState } from "react";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
 
 import "./Tabstrip.examples.css";
@@ -110,11 +98,13 @@ export const TabstripNextRemoveTab = ({ width = 700 }) => {
     setTabs((state) => state.concat([{ label: `Tab ${state.length + 1}` }]));
     setActiveTabIndex(count);
   };
-  const handleCloseTab = (tabIndex: number) => {
-    console.log(`remove tab at index ${tabIndex}`);
-    setTabs((state) => state.filter((tab, i) => i !== tabIndex));
-    // setActiveTabIndex(count);
-  };
+  const handleCloseTab = useCallback(
+    (tabIndex: number, newActiveTabIndex: number) => {
+      setTabs((state) => state.filter((_, i) => i !== tabIndex));
+      setActiveTabIndex(newActiveTabIndex);
+    },
+    []
+  );
 
   return (
     <LayoutProvider>
@@ -256,34 +246,7 @@ export const TabstripNextDragDrop = ({ width = 700 }) => {
 
 TabstripNextDragDrop.displaySequence = displaySequence++;
 
-export const DefaultTabstrip = ({ width = 350 }) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
-  return (
-    <LayoutProvider>
-      <FlexboxLayout
-        style={{ height: 200, width: width + SPLITTER_WIDTH }}
-        path=""
-      >
-        <div data-resizeable style={{ flex: 1 }}>
-          <Tabstrip onActiveChange={setActiveTabIndex}>
-            {tabs.map((label, i) => (
-              <Tab
-                key={label}
-                label={label}
-                ariaControls={
-                  i === activeTabIndex ? `ts-panel-${i}` : undefined
-                }
-              />
-            ))}
-          </Tabstrip>
-        </div>
-        <div data-resizeable />
-      </FlexboxLayout>
-    </LayoutProvider>
-  );
-};
-
+/*
 const CloseTabWarningDialog = ({
   closedTab,
   onCancel,
@@ -540,3 +503,4 @@ export const DraggableTabsWithOverflow = () => {
     </div>
   );
 };
+*/

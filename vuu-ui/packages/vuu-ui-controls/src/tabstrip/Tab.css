@@ -183,3 +183,7 @@
 .vuuTab:hover:not(.vuuTab-closeHover) {
   background: var(--vuuTab-hover-background, var(--salt-navigable-primary-background-hover));
 }
+
+/* .vuuTabstrip.vuuTabThumb-noTransition .vuuTab-selected:before {
+  transition: none; 
+} */
