@@ -1,6 +1,7 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuSortCol } from "@finos/vuu-protocol-types";
 import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
+import { AgData } from "./AgDataWindow";
 import { AgGridFilter } from "./AgGridFilterUtils";
 
 // export type AgGridDataRow = Record<string, number | string | boolean>;
@@ -101,6 +102,20 @@ export const toAgGridRow = (data: DataSourceRow, columnMap: ColumnMap) => {
     row[colName] = data[columnMap[colName]];
   }
   return row;
+};
+
+// Createsa DataSourceRow populated with just data values, no meta data.
+// Used only in Menu filter evaluation
+export const toVuuDataSourceRow = (
+  data: AgData,
+  columnMap: ColumnMap
+): DataSourceRow => {
+  const columnValues = Object.entries(data);
+  const vuuRow: DataSourceRow = Array(columnValues.length) as DataSourceRow;
+  for (const [colName, colValue] of columnValues) {
+    vuuRow[columnMap[colName]] = colValue;
+  }
+  return vuuRow;
 };
 
 export type Changes = {
