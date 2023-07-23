@@ -92,4 +92,5 @@ export interface InternalDragDropProps
   draggableRef: RefObject<HTMLDivElement>;
   isDragSource?: boolean;
   isDropTarget?: boolean;
+  selected?: unknown;
 }

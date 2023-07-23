@@ -49,6 +49,7 @@ export const PopupMenu = ({
   const showContextMenu = useContextMenu(menuBuilder, menuActionHandler);
 
   const handleMenuClose = useCallback(() => {
+    setMenuOpen(false);
     requestAnimationFrame(() => {
       onMenuClose?.();
       if (tabIndex !== -1) {

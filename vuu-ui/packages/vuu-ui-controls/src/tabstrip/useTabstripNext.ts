@@ -128,6 +128,7 @@ export const useTabstripNext = ({
     useDragDrop({
       allowDragDrop,
       containerRef,
+      draggableClassName: `tabstrip-${orientation}`,
       // extendedDropZone: overflowedItems.length > 0,
       onDrop: handleDrop,
       orientation: "horizontal",

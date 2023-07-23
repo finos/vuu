@@ -3,8 +3,8 @@ import {
   InternalDragDropProps,
   InternalDragHookResult,
   MouseOffset,
-} from "./dragDropTypes";
-import { useDragDropNaturalMovement } from "./useDragDropNaturalMovement";
+} from "./dragDropTypesNext";
+import { useDragDropNaturalMovement } from "./useDragDropNaturalMovementNext";
 import { useDragDropIndicator } from "./useDragDropIndicator";
 import { useDragDropProvider } from "./DragDropProvider";
 import {
@@ -61,13 +61,13 @@ const getDraggableElement = (
 
 const getLastElement = (container: HTMLElement): [HTMLElement, boolean] => {
   const childElements = Array.from(
-    container.querySelectorAll(`:not([data-overflowed="true"])`)
+    container.querySelectorAll(`:not(.wrapped)`)
   );
   const lastElement = childElements.pop() as HTMLElement;
   return [lastElement, lastElement.dataset.overflowIndicator === "true"];
 };
 
-export const useDragDrop: DragDropHook = ({
+export const useDragDropNext: DragDropHook = ({
   allowDragDrop,
   containerRef,
   draggableClassName,
@@ -343,7 +343,7 @@ export const useDragDrop: DragDropHook = ({
               element={cloneElement(dragElement)}
               onTransitionEnd={terminateDrag}
               ref={draggableRef}
-              rect={constrainRect(draggableRect, containerRect)}
+              style={constrainRect(draggableRect, containerRect)}
               wrapperClassName={draggableClassName}
             />
           ),
@@ -438,7 +438,7 @@ export const useDragDrop: DragDropHook = ({
         const { top: currentTop, left: currentLeft } =
           settlingItem.getBoundingClientRect();
         if (currentLeft !== targetLeft || currentTop !== targetTop) {
-          settlingItem.classList.add("saltDraggable-settling");
+          settlingItem.classList.add("vuuDraggable-settling");
           settlingItem.style.top = `${targetTop}px`;
           settlingItem.style.left = `${targetLeft}px`;
         } else {

@@ -42,7 +42,9 @@ function outsideClickHandler(e: MouseEvent) {
 }
 
 function closeAllPopups() {
-  if (_popups.length) {
+  if (_popups.length === 1) {
+    PopupService.hidePopup();
+  } else if (_popups.length) {
     // onsole.log(`closeAllPopups`);
     const popupContainers = document.body.querySelectorAll(".vuuPopup");
     for (let i = 0; i < popupContainers.length; i++) {

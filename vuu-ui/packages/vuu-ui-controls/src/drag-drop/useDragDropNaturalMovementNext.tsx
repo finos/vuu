@@ -4,10 +4,8 @@ import {
   Direction,
   InternalDragDropProps,
   InternalDragHookResult,
-} from "./dragDropTypes";
+} from "./dragDropTypesNext";
 import { useDragDisplacers } from "./useDragDisplacers";
-
-// import { useListViz } from "../../../../../../showcase/src/examples/salt/ListVisualizer";
 
 import {
   dimensions,
@@ -19,13 +17,17 @@ import {
   removeDraggedItem,
 } from "./dragUtils";
 
-import { ViewportRange } from "../../list/useScrollPosition";
+type ViewportRange = {
+  atEnd: boolean;
+  atStart: boolean;
+  from: number;
+  to: number;
+};
 
-const NOT_OVERFLOWED = ':not([data-overflowed="true"])';
+const NOT_OVERFLOWED = ":not(.wrapped)";
 const NOT_HIDDEN = ':not([aria-hidden="true"])';
 export const useDragDropNaturalMovement = ({
   draggableRef,
-  id,
   onDrop,
   orientation = "horizontal",
   containerRef,

@@ -17,15 +17,20 @@
 }
 
 .vuuPopupMenu:hover {
-    --vuu-icon-color: #15171B;
-    background-color: #F37880;
+    /* --vuu-icon-color: #15171B; */
+    --vuu-icon-color: var(--saltButton-text-color-hover);
 }
 
-.vuuPopupMenu-open:hover,
 .vuuPopupMenu-open {
-    background-color: #6D18BD;
+    --vuuPopupMenu-background: var(--salt-actionable-secondary-background-active);
     --vuu-icon-color: white;
-
 }
 
-  
+/* temp references to theme until new theme fully incorporated */
+.vuu-theme-purple .vuuPopupMenu:hover {
+    --saltButton-background-hover: #F37880;
+}
+
+.vuu-theme-purple .vuuPopupMenu-open {
+    --saltButton-background: #6D18BD;
+}
