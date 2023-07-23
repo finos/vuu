@@ -1,4 +1,4 @@
-import { Tab, TabstripNext } from "@finos/vuu-ui-controls";
+import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import { useCallback, useState } from "react";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
 
@@ -22,7 +22,7 @@ export const DefaultTabstripNext = ({
         path=""
       >
         <div data-resizeable style={{ flex: 1 }}>
-          <TabstripNext
+          <Tabstrip
             activeTabIndex={activeTabIndex}
             animateSelectionThumb
             onActiveChange={setActiveTabIndex}
@@ -36,7 +36,7 @@ export const DefaultTabstripNext = ({
                 }
               />
             ))}
-          </TabstripNext>
+          </Tabstrip>
         </div>
         <div data-resizeable />
       </FlexboxLayout>
@@ -63,7 +63,7 @@ export const TabstripNextAddTab = ({ width = 700 }) => {
         path=""
       >
         <div data-resizeable style={{ flex: 1 }}>
-          <TabstripNext
+          <Tabstrip
             activeTabIndex={activeTabIndex}
             animateSelectionThumb
             allowAddTab
@@ -79,7 +79,7 @@ export const TabstripNextAddTab = ({ width = 700 }) => {
                 }
               />
             ))}
-          </TabstripNext>
+          </Tabstrip>
         </div>
         <div data-resizeable />
       </FlexboxLayout>
@@ -113,7 +113,7 @@ export const TabstripNextRemoveTab = ({ width = 700 }) => {
         path=""
       >
         <div data-resizeable style={{ flex: 1 }}>
-          <TabstripNext
+          <Tabstrip
             activeTabIndex={activeTabIndex}
             allowAddTab
             allowCloseTab
@@ -131,7 +131,7 @@ export const TabstripNextRemoveTab = ({ width = 700 }) => {
                 }
               />
             ))}
-          </TabstripNext>
+          </Tabstrip>
         </div>
         <div data-resizeable />
       </FlexboxLayout>
@@ -162,7 +162,7 @@ export const TabstripNextEditableLabels = ({
         path=""
       >
         <div data-resizeable style={{ flex: 1 }}>
-          <TabstripNext
+          <Tabstrip
             activeTabIndex={activeTabIndex}
             allowRenameTab
             animateSelectionThumb
@@ -178,7 +178,7 @@ export const TabstripNextEditableLabels = ({
                 }
               />
             ))}
-          </TabstripNext>
+          </Tabstrip>
         </div>
         <div data-resizeable />
       </FlexboxLayout>
@@ -220,7 +220,7 @@ export const TabstripNextDragDrop = ({ width = 700 }) => {
         path=""
       >
         <div data-resizeable style={{ flex: 1 }}>
-          <TabstripNext
+          <Tabstrip
             activeTabIndex={activeTabIndex}
             animateSelectionThumb
             allowDragDrop
@@ -236,7 +236,7 @@ export const TabstripNextDragDrop = ({ width = 700 }) => {
                 }
               />
             ))}
-          </TabstripNext>
+          </Tabstrip>
         </div>
         <div data-resizeable />
       </FlexboxLayout>

@@ -1,4 +1,4 @@
-import {
+import type {
   AriaAttributes,
   HTMLAttributes,
   KeyboardEvent,
@@ -6,19 +6,14 @@ import {
   ReactElement,
 } from "react";
 
-import { orientationType, OverflowSource } from "../responsive";
-import { EditableLabelProps } from "../editable-label";
-import { ExitEditModeHandler } from "./useEditableItem";
-import { MenuActionHandler } from "packages/vuu-data-types";
+import type { orientationType } from "../responsive";
+import type { EditableLabelProps } from "../editable-label";
+import type { ExitEditModeHandler } from "./useEditableItem";
+import type { MenuActionHandler } from "packages/vuu-data-types";
 
 export interface FocusAPI {
   focus: () => void;
 }
-
-export interface TabDescriptor extends OverflowSource {
-  element?: JSX.Element;
-}
-export type TabsSource = string[] | TabDescriptor[];
 
 export type navigationProps = Pick<TabProps, "onFocus" | "onKeyDown">;
 
@@ -32,9 +27,9 @@ export type TabstripVariant = "primary" | "tertiary";
 
 export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
   /**
-   *  index value of Active Tab. Set to `null` for no active tab.
+   *  index value of Active Tab.
    */
-  activeTabIndex?: number | null;
+  activeTabIndex: number;
 
   /**
    * Boolean that enables add new tab
@@ -57,11 +52,12 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
    */
   allowRenameTab?: boolean;
 
+  animateSelectionThumb?: boolean;
+
   /**
    * Boolean that indicates if tabs are centered on the container
    */
   centered?: boolean;
-  defaultSource?: TabsSource;
   /**
    *  index value of Selected Tab, used in uncontrolled mode
    */
@@ -102,9 +98,10 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
   overflowMenu?: boolean;
   promptForNewTabName?: boolean;
   /**
-   * Set variant - defaults 'primary'
+   * Should each tab render a popup menu. Default is false if tab is
+   * not closeable or renameable, otherwise true.
    */
-  variant?: TabstripVariant;
+  showTabMenuButton?: boolean;
 }
 
 export type exitEditHandler = (

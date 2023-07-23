@@ -71,7 +71,7 @@ export interface MenuListProps extends HTMLAttributes<HTMLDivElement> {
   listItemProps?: Partial<MenuItemProps>;
   onActivate?: (menuId: string) => void;
   onCloseMenu: (idx: number) => void;
-  onOpenMenu: (menuItemEl: HTMLElement) => void;
+  onOpenMenu?: (menuItemEl: HTMLElement) => void;
   onHighlightMenuItem?: (idx: number) => void;
 }
 

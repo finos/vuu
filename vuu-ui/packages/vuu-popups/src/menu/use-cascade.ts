@@ -387,7 +387,7 @@ export const useCascade = ({
         const listItemEl = closestListItem(evt.target as HTMLElement);
         const { isGroup, menuItemId } = getMenuItemDetails(listItemEl, rootId);
         if (isGroup) {
-          triggerChildMenu(listItemEl, true);
+          triggerChildMenu(listItemEl);
         } else {
           onActivate(menuItemId);
         }

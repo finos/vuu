@@ -16,7 +16,7 @@ export interface KeyboardNavigationProps {
   onActivate: (idx: number) => void;
   onHighlight?: (idx: number) => void;
   onCloseMenu: (idx: number) => void;
-  onOpenMenu: (menuItemEl: HTMLElement) => void;
+  onOpenMenu?: (menuItemEl: HTMLElement) => void;
 }
 
 export interface KeyboardHookListProps {

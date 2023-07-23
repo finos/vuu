@@ -3,23 +3,13 @@ import { Button } from "@salt-ds/core";
 import cx from "classnames";
 import React, { useMemo, useRef } from "react";
 import { TabProps, TabstripProps } from "./TabsTypes";
-import { useTabstripNext } from "./useTabstripNext";
+import { useTabstrip } from "./useTabstrip";
 
 import "./Tabstrip.css";
 
 const classBase = "vuuTabstrip";
 
-export interface TabstripNextProps extends TabstripProps {
-  activeTabIndex: number;
-  animateSelectionThumb?: boolean;
-  /**
-   * Should each tab render a popup menu. Default is false if tab is
-   * not closeable or renameable, otherwise true.
-   */
-  showTabMenuButton?: boolean;
-}
-
-export const TabstripNext = ({
+export const Tabstrip = ({
   activeTabIndex: activeTabIndexProp,
   allowAddTab,
   allowCloseTab,
@@ -40,7 +30,7 @@ export const TabstripNext = ({
   showTabMenuButton,
   style: styleProp,
   ...htmlAttributes
-}: TabstripNextProps) => {
+}: TabstripProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const {
     activeTabIndex,
@@ -49,7 +39,7 @@ export const TabstripNext = ({
     onClickAddTab,
     tabProps,
     ...tabstripHook
-  } = useTabstripNext({
+  } = useTabstrip({
     activeTabIndex: activeTabIndexProp,
     allowDragDrop,
     animateSelectionThumb,

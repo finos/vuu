@@ -1,4 +1,4 @@
-import { TabstripNextProps as TabstripProps } from "@finos/vuu-ui-controls";
+import { TabstripProps } from "@finos/vuu-ui-controls";
 import { HTMLAttributes, MouseEvent, ReactElement, ReactNode } from "react";
 
 export interface StackProps

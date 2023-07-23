@@ -1,15 +1,13 @@
 import { useId } from "@finos/vuu-layout";
 import {
-  getElementIndex,
   Tab,
-  TabstripNext as Tabstrip,
-  TabstripNextProps,
+  Tabstrip as Tabstrip,
+  TabstripProps,
 } from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import React, {
   ForwardedRef,
   forwardRef,
-  MouseEvent,
   ReactElement,
   ReactNode,
   useCallback,
@@ -39,7 +37,7 @@ const getChildElements = <T extends ReactElement = ReactElement>(
   return elements;
 };
 
-const DefaultTabstripProps: Partial<TabstripNextProps> = {
+const DefaultTabstripProps: Partial<TabstripProps> = {
   allowAddTab: false,
   allowCloseTab: false,
   allowRenameTab: false,

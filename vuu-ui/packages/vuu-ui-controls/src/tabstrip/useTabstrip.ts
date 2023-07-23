@@ -12,8 +12,8 @@ import type { orientationType } from "../responsive";
 import { isTabMenuOptions } from "./TabMenuOptions";
 import { getIndexOfSelectedTab } from "./tabstrip-dom-utils";
 import { useAnimatedSelectionThumb } from "./useAnimatedSelectionThumb";
-import { useKeyboardNavigation } from "./useKeyboardNavigationNext";
-import { useSelection } from "./useSelectionNext";
+import { useKeyboardNavigation } from "./useKeyboardNavigation";
+import { useSelection } from "./useSelection";
 
 export type ExitEditModeHandler = (
   originalValue: string,
@@ -22,7 +22,7 @@ export type ExitEditModeHandler = (
   tabIndex: number
 ) => void;
 
-export interface TabstripNextHookProps {
+export interface TabstripHookProps {
   activeTabIndex: number;
   allowDragDrop: boolean;
   animateSelectionThumb: boolean;
@@ -47,7 +47,7 @@ const getElementWithIndex = (container: HTMLElement | null, index: number) => {
   }
 };
 
-export const useTabstripNext = ({
+export const useTabstrip = ({
   activeTabIndex: activeTabIndexProp,
   allowDragDrop,
   animateSelectionThumb,
@@ -59,7 +59,7 @@ export const useTabstripNext = ({
   onMoveTab,
   orientation,
   keyBoardActivation,
-}: TabstripNextHookProps) => {
+}: TabstripHookProps) => {
   const lastSelection = useRef(activeTabIndexProp);
 
   const {

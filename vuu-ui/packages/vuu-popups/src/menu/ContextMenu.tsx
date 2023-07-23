@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { Portal } from "../portal";
 import MenuList, { MenuListProps } from "./MenuList";
-import { getHostMenuId, useCascade } from "./use-cascade";
+import { useCascade } from "./use-cascade";
 import { useClickAway } from "./use-click-away";
 import { useItemsWithIdsNext } from "./use-items-with-ids-next";
 import { useId } from "@finos/vuu-layout";
