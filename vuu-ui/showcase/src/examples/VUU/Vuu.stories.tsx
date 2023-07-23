@@ -1,10 +1,5 @@
-import {
-  Dropdown,
-  List,
-  ListItem,
-  Toolbar,
-  ToolbarField,
-} from "@heswell/salt-lab";
+import { List, ListItem, Toolbar, ToolbarField } from "@heswell/salt-lab";
+import { Dropdown } from "@salt-ds/lab";
 import { useEffect, useState } from "react";
 
 import { useTypeaheadSuggestions, useVuuTables } from "@finos/vuu-data-react";

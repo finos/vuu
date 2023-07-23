@@ -1,11 +1,12 @@
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import {
   FormField,
+  Panel,
   RadioButton,
   RadioButtonGroup,
-  StepperInput,
-} from "@heswell/salt-lab";
-import { Panel, Text } from "@salt-ds/core";
+  Text,
+} from "@salt-ds/core";
+import { StepperInput } from "@salt-ds/lab";
 import { ChangeEvent, Dispatch, HTMLAttributes, useCallback } from "react";
 
 import "./GridSettingsPanel.css";

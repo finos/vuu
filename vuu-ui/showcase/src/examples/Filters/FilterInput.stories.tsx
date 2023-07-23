@@ -13,7 +13,7 @@ import {
 import { FilterSubmissionMode } from "@finos/vuu-filters/src/filter-input/useFilterAutoComplete";
 import { useFilterConfig } from "@finos/vuu-filters/src/use-filter-config";
 import { filterAsQuery } from "@finos/vuu-utils";
-import { Dropdown, SelectionChangeHandler } from "@heswell/salt-lab";
+import { Dropdown, SelectionChangeHandler } from "@salt-ds/lab";
 import { Button } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";

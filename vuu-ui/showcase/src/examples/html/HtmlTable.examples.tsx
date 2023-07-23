@@ -9,11 +9,7 @@ import {
 
 import { RowProps } from "@finos/vuu-table/src/TableRow";
 import { useCallback, useMemo, useState } from "react";
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
-} from "@heswell/salt-lab";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { Flexbox, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { SetPropsAction } from "@finos/vuu-layout/src/layout-reducer";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";

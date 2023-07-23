@@ -1,10 +1,5 @@
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
-} from "@heswell/salt-lab";
 import cx from "classnames";
-import { useControlled } from "@salt-ds/core";
+import { ToggleButton, ToggleButtonGroup, useControlled } from "@salt-ds/core";
 import { HTMLAttributes, useCallback } from "react";
 
 import "./ThemeSwitch.css";
@@ -36,33 +31,23 @@ export const ThemeSwitch = ({
 
   const selectedIndex = modes.indexOf(mode);
 
-  const handleChangeSecondary: ToggleButtonGroupChangeEventHandler =
-    useCallback(
-      (_evt, index) => {
-        const mode = modes[index];
-        setMode(mode);
-        onChange(mode);
-      },
-      [onChange, setMode]
-    );
+  const handleChangeSecondary = useCallback(
+    (_evt) => {
+      const mode = modes[index];
+      setMode(mode);
+      onChange(mode);
+    },
+    [onChange, setMode]
+  );
   const className = cx(classBase, classNameProp);
   return (
     <ToggleButtonGroup
       className={className}
       {...htmlAttributes}
       onChange={handleChangeSecondary}
-      selectedIndex={selectedIndex}
     >
-      <ToggleButton
-        aria-label="alert"
-        tooltipText="Light Theme"
-        data-icon="light"
-      />
-      <ToggleButton
-        aria-label="home"
-        tooltipText="Dark Theme"
-        data-icon="dark"
-      />
+      <ToggleButton aria-label="alert" data-icon="light" value="dark" />
+      <ToggleButton aria-label="home" data-icon="dark" value="light" />
     </ToggleButtonGroup>
   );
 };

@@ -1,5 +1,5 @@
 import { useControlled } from "@salt-ds/core";
-import { getFocusableElement } from "@finos/vuu-utils";
+import { getFocusableElement, orientationType } from "@finos/vuu-utils";
 import {
   FocusEvent,
   FocusEventHandler,
@@ -21,7 +21,6 @@ import {
 } from "@finos/vuu-utils";
 import { getIndexOfEditedItem } from "./tabstrip-dom-utils";
 
-type orientationType = "horizontal" | "vertical";
 type directionType = "bwd" | "fwd" | "start" | "end";
 type directionMap = { [key: string]: directionType };
 const navigation = {

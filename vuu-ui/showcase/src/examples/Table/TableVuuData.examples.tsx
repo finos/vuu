@@ -16,14 +16,8 @@ import {
   DataSourceStats,
 } from "@finos/vuu-table-extras";
 import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
-  Toolbar,
-  Tooltray,
-} from "@heswell/salt-lab";
-import { Button } from "@salt-ds/core";
+import { Toolbar, Tooltray } from "@heswell/salt-lab";
+import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import {
   CSSProperties,
   ReactElement,

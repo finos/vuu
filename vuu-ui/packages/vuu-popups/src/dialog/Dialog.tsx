@@ -1,4 +1,5 @@
-import { Scrim, Toolbar, ToolbarButton } from "@heswell/salt-lab";
+import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
+import { Scrim } from "@salt-ds/lab";
 import { Text } from "@salt-ds/core";
 import cx from "classnames";
 import { HTMLAttributes, useCallback, useRef, useState } from "react";

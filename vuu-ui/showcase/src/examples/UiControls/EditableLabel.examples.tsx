@@ -1,4 +1,4 @@
-import { EditableLabel } from "@heswell/salt-lab";
+import { EditableLabel } from "@finos/vuu-ui-controls";
 import { useState } from "react";
 
 export const EditableLabelControlledValueUncontrolledEditing = () => {

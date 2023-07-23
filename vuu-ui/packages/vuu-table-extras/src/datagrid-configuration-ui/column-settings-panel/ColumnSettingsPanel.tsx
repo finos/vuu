@@ -1,14 +1,15 @@
 import { ColumnDescriptor, PinLocation } from "@finos/vuu-datagrid-types";
 import { Stack } from "@finos/vuu-layout";
+import { StepperInput } from "@salt-ds/lab";
 import {
   Checkbox,
   FormField,
   Input,
+  Panel,
   RadioButton,
   RadioButtonGroup,
-  StepperInput,
-} from "@heswell/salt-lab";
-import { Panel, Text } from "@salt-ds/core";
+  Text,
+} from "@salt-ds/core";
 import cx from "classnames";
 import {
   ChangeEvent,

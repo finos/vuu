@@ -1,12 +1,8 @@
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Table } from "@finos/vuu-table";
 import { DragVisualizer } from "@finos/vuu-table/src/DragVisualizer";
-import {
-  Checkbox,
-  ToggleButton,
-  Toolbar,
-  ToolbarField,
-} from "@heswell/salt-lab";
+import { Toolbar, ToolbarField } from "@heswell/salt-lab";
+import { Checkbox, ToggleButton } from "@salt-ds/core";
 import { CSSProperties, useCallback, useState } from "react";
 import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
 

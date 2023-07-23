@@ -1,12 +1,7 @@
 // import { Switch } from "@salt-ds/core";
-import { Pill } from "@heswell/salt-lab";
-import {
-  Dropdown,
-  ToggleButton,
-  ToggleButtonToggleEventHandler,
-  Toolbar,
-  ToolbarField,
-} from "@heswell/salt-lab";
+import { Dropdown, Pill } from "@salt-ds/lab";
+import { Toolbar, ToolbarField } from "@heswell/salt-lab";
+import { ToggleButton } from "@salt-ds/core";
 import React, { useCallback, useState } from "react";
 
 import "./FilterToolbar.stories.css";
@@ -27,16 +22,16 @@ export const DefaultFilterToolbar = () => {
   const [testTwoEnabled, enableTestTwo] = useState(true);
   const [testThreeEnabled, enableTestThree] = useState(true);
 
-  const handleToggleTestOne: ToggleButtonToggleEventHandler = useCallback(
-    (evt, toggled) => enableTestOne(toggled),
+  const handleToggleTestOne = useCallback(
+    () => enableTestOne((val) => !val),
     []
   );
-  const handleToggleTestTwo: ToggleButtonToggleEventHandler = useCallback(
-    (evt, toggled) => enableTestTwo(toggled),
+  const handleToggleTestTwo = useCallback(
+    () => enableTestTwo((val) => !val),
     []
   );
-  const handleToggleTestThree: ToggleButtonToggleEventHandler = useCallback(
-    (evt, toggled) => enableTestThree(toggled),
+  const handleToggleTestThree = useCallback(
+    () => enableTestThree((val) => !val),
     []
   );
 
@@ -68,23 +63,25 @@ export const DefaultFilterToolbar = () => {
       </ToolbarField>
       <ToggleButton
         className="vuuToggleButton"
-        onToggle={handleToggleTestOne}
-        toggled={testOneEnabled}
-        variant="secondary"
+        onChange={handleToggleTestOne}
+        selected={testOneEnabled}
+        value="one"
       >
         Test One
       </ToggleButton>
       <ToggleButton
         className="vuuToggleButton"
-        onToggle={handleToggleTestTwo}
-        toggled={testTwoEnabled}
+        onChange={handleToggleTestTwo}
+        selected={testTwoEnabled}
+        value="two"
       >
         Test Two
       </ToggleButton>
       <ToggleButton
         className="vuuToggleButton"
-        onToggle={handleToggleTestThree}
-        toggled={testThreeEnabled}
+        onChange={handleToggleTestThree}
+        selected={testThreeEnabled}
+        value="three"
       >
         Test Three
       </ToggleButton>

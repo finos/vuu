@@ -10,8 +10,7 @@ import {
   useRef,
   HTMLAttributes,
 } from "react";
-import { useControlled } from "@salt-ds/core";
-import { Input } from "@heswell/salt-lab";
+import { Input, useControlled } from "@salt-ds/core";
 
 import "./EditableLabel.css";
 

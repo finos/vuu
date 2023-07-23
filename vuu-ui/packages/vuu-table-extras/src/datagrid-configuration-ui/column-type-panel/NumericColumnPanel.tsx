@@ -1,6 +1,6 @@
 import { ColumnType } from "@finos/vuu-datagrid-types";
-import { FormField, StepperInput, Switch } from "@heswell/salt-lab";
-import { Text } from "@salt-ds/core";
+import { StepperInput, Switch } from "@salt-ds/lab";
+import { FormField, Text } from "@salt-ds/core";
 import { useCallback } from "react";
 import { ColumnTypePanelProps } from "./ColumnTypePanel";
 

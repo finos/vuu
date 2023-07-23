@@ -1,7 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
-import { FormField, Input } from "@heswell/salt-lab";
-import { Button, Panel, Text } from "@salt-ds/core";
+import { Button, FormField, Input, Panel, Text } from "@salt-ds/core";
 import {
   ChangeEventHandler,
   Dispatch,

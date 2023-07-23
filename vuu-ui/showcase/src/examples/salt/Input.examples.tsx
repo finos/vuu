@@ -1,4 +1,4 @@
-import { FormField, Input } from "@heswell/salt-lab";
+import { FormField, Input } from "@salt-ds/core";
 
 export const WithFormField = () => {
   return (

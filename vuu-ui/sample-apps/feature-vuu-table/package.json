@@ -29,8 +29,8 @@
     "@finos/vuu-table-extras": "0.0.26",
     "@finos/vuu-theme": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
-    "@salt-ds/core": "1.2.0",
-    "@salt-ds/icons": "1.1.0",
+    "@salt-ds/core": "1.8.0-rc.5",
+    "@salt-ds/icons": "1.5.1",
     "@heswell/salt-lab": "1.0.0-alpha.2"
   },
   "peerDependencies": {

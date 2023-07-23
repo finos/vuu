@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 
-import { Dropdown, List, SelectionChangeHandler } from "@heswell/salt-lab";
+import { Dropdown, List, SelectionChangeHandler } from "@salt-ds/lab";
 import { Button } from "@salt-ds/core";
 import { ArrowDownIcon, ArrowUpIcon } from "@salt-ds/icons";
 import { usa_states } from "./List.data";

@@ -1,6 +1,5 @@
 import { ChangeEvent, HTMLAttributes, useState } from "react";
-import { Button } from "@salt-ds/core";
-import { FormField, Input } from "@heswell/salt-lab";
+import { Button, FormField, Input } from "@salt-ds/core";
 
 import "./LoginPanel.css";
 

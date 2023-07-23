@@ -1,5 +1,5 @@
 import "./layout-configurator.css";
-import { FormField, Input } from "@heswell/salt-lab";
+import { FormField, Input } from "@salt-ds/core";
 
 const NO_STYLE = {};
 

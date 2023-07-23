@@ -1,9 +1,5 @@
 import { Feature } from "@finos/vuu-shell";
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
-} from "@heswell/salt-lab";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useMemo, useState } from "react";
 import { useTableSchema } from "../utils";
 

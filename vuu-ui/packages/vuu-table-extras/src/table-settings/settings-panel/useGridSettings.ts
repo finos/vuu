@@ -4,7 +4,7 @@ import {
   GridConfig,
 } from "@finos/vuu-datagrid-types";
 import { Reducer, useReducer } from "react";
-import { moveItem } from "@heswell/salt-lab";
+import { moveItem } from "@finos/vuu-ui-controls";
 import { fromServerDataType } from "@finos/vuu-utils";
 
 export type CalculatedColumnExpression = {

@@ -8,7 +8,7 @@ import React, {
   useState,
 } from "react";
 import cx from "classnames";
-import { MeasuredDropTarget } from "@heswell/salt-lab";
+import { MeasuredDropTarget } from "@finos/vuu-ui-controls";
 
 import "./DragVisualizer.css";
 

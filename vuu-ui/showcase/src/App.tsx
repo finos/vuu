@@ -6,7 +6,8 @@ import {
   ThemeProvider,
   ThemeSwitch,
 } from "@finos/vuu-shell";
-import { Dropdown, Toolbar, ToolbarButton } from "@heswell/salt-lab";
+import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
+import { Dropdown } from "@salt-ds/lab";
 import { Text } from "@salt-ds/core";
 import { IFrame, TreeSourceNode } from "./components";
 

@@ -1,9 +1,5 @@
 // import { ComponentAnatomy } from '@heswell/component-anatomy';
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
-} from "@heswell/salt-lab";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useState } from "react";
 
 import "./ToggleButton.examples.css";
@@ -13,11 +9,7 @@ let displaySequence = 1;
 export const ButtonGroupWithTextOnly = () => {
   const [selectedIndex, setSelectedIndex] = useState<number>(1);
 
-  const handleChange: ToggleButtonGroupChangeEventHandler = (
-    event,
-    index,
-    toggled
-  ) => {
+  const handleChange = (event, index, toggled) => {
     console.log(`onChange [${index}] toggled ${toggled}`);
     setSelectedIndex(index);
   };
@@ -40,21 +32,15 @@ export const ButtonGroupWithIconOnly = () => {
   const [selectedIndexSecondary, setSelectedIndexSecondary] =
     useState<number>(1);
 
-  const handleChange: ToggleButtonGroupChangeEventHandler = (event, index) => {
+  const handleChange = (event, index) => {
     setSelectedIndex(index);
   };
 
-  const handleChangeCta: ToggleButtonGroupChangeEventHandler = (
-    event,
-    index
-  ) => {
+  const handleChangeCta = (event, index) => {
     setSelectedIndexCta(index);
   };
 
-  const handleChangeSecondary: ToggleButtonGroupChangeEventHandler = (
-    event,
-    index
-  ) => {
+  const handleChangeSecondary = (event, index) => {
     setSelectedIndexSecondary(index);
   };
 

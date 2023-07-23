@@ -4,13 +4,11 @@ import { useDataSource, useTypeaheadSuggestions } from "@finos/vuu-data-react";
 import { metadataKeys, WindowRange } from "@finos/vuu-utils";
 import {
   CollectionProvider,
-  FormField,
-  Input,
   List,
   ScrollingAPI,
   VirtualizedList,
 } from "@heswell/salt-lab";
-import { Button } from "@salt-ds/core";
+import { Button, FormField, Input } from "@salt-ds/core";
 import { CSSProperties, useCallback, useMemo, useRef, useState } from "react";
 import { useAutoLoginToVuuServer } from "../utils";
 import { ArrayLike } from "../utils/ArrayLike";

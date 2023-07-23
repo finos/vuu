@@ -7,7 +7,7 @@ import {
   PaletteItem,
   View,
 } from "@finos/vuu-layout";
-import { Dropdown } from "@heswell/salt-lab";
+import { Dropdown } from "@salt-ds/lab";
 import { useState } from "react";
 import { atom, useRecoilValue, useSetRecoilState } from "recoil";
 import { StatefulComponent } from "../stateful-component";

@@ -5,17 +5,18 @@ import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
-  FormField,
-  Input,
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
   Toolbar,
   ToolbarButton,
   ToolbarField,
   Tooltray,
 } from "@heswell/salt-lab";
-import { Button } from "@salt-ds/core";
+import {
+  Button,
+  FormField,
+  Input,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@salt-ds/core";
 import {
   ChangeEvent,
   ReactElement,
