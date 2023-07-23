@@ -1,6 +1,6 @@
 import { MouseEventHandler, RefObject } from "react";
 
-import { orientationType } from "../responsive";
+export type orientationType = "horizontal" | "vertical";
 
 export type dragStrategy = "drop-indicator" | "natural-movement";
 

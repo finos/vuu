@@ -4,10 +4,9 @@ import {
   InternalDragDropProps,
   InternalDragHookResult,
   Direction,
-} from "./dragDropTypes";
+  ViewportRange,
+} from "./dragDropTypesNext";
 import { useDropIndicator } from "./useDropIndicator";
-
-// import { useListViz } from "../../../../../../showcase/src/examples/uitk/ListVisualizer";
 
 import {
   dimensions,
@@ -20,7 +19,6 @@ import {
 } from "./dragUtils";
 
 import { createDropIndicator, Draggable } from "./Draggable";
-import { ViewportRange } from "../../list/useScrollPosition";
 
 const NOT_OVERFLOWED = ':not([data-overflowed="true"])';
 const NOT_HIDDEN = ':not([aria-hidden="true"])';
@@ -204,7 +202,7 @@ export const useDragDropIndicator = ({
           setDropIndicator(
             <Draggable
               wrapperClassName="dropIndicatorContainer"
-              rect={dropIndicatorRect}
+              style={dropIndicatorRect}
               ref={dropIndicatorRef}
               element={createDropIndicator()}
             />

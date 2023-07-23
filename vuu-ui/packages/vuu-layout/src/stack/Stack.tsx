@@ -112,6 +112,7 @@ export const Stack = forwardRef(function Stack(
           draggable
           key={childId ?? idx}
           id={rootId}
+          index={idx}
           label={getTabLabel(child, idx)}
           closeable={closeable}
           editable={allowRenameTab}

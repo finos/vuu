@@ -4,6 +4,7 @@ import {
   Direction,
   InternalDragDropProps,
   InternalDragHookResult,
+  ViewportRange,
 } from "./dragDropTypesNext";
 import { useDragDisplacers } from "./useDragDisplacers";
 
@@ -16,13 +17,6 @@ import {
   measureDropTargets,
   removeDraggedItem,
 } from "./dragUtils";
-
-type ViewportRange = {
-  atEnd: boolean;
-  atStart: boolean;
-  from: number;
-  to: number;
-};
 
 const NOT_OVERFLOWED = ":not(.wrapped)";
 const NOT_HIDDEN = ':not([aria-hidden="true"])';

@@ -8,7 +8,7 @@ import {
   useRef,
 } from "react";
 import { useDragDrop } from "../drag-drop";
-import type { orientationType } from "../responsive";
+import type { orientationType } from "./TabsTypes";
 import { isTabMenuOptions } from "./TabMenuOptions";
 import { getIndexOfSelectedTab } from "./tabstrip-dom-utils";
 import { useAnimatedSelectionThumb } from "./useAnimatedSelectionThumb";
@@ -128,7 +128,8 @@ export const useTabstrip = ({
     useDragDrop({
       allowDragDrop,
       containerRef,
-      draggableClassName: `tabstrip-${orientation}`,
+      // this is for useDragDropNext
+      // draggableClassName: `tabstrip-${orientation}`,
       // extendedDropZone: overflowedItems.length > 0,
       onDrop: handleDrop,
       orientation: "horizontal",

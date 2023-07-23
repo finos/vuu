@@ -1,6 +1,5 @@
-import { ViewportRange } from "../../list/useScrollPosition";
-import { orientationType } from "../../responsive";
-import { Rect } from "./dragDropTypes";
+import { ViewportRange } from "./dragDropTypesNext";
+import { orientationType, Rect } from "./dragDropTypes";
 
 const LEFT_RIGHT = ["left", "right"];
 const TOP_BOTTOM = ["top", "bottom"];

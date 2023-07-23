@@ -10,7 +10,6 @@ import {
   ReactElement,
   useCallback,
   useRef,
-  useState,
 } from "react";
 import { TabProps } from "./TabsTypes";
 import { TabMenu } from "./TabMenu";
@@ -59,12 +58,11 @@ export const Tab = forwardRef(function Tab(
   const rootRef = useRef<HTMLDivElement>(null);
   const editableRef = useRef<HTMLDivElement>(null);
   const setForkRef = useForkRef(ref, rootRef);
-  const [closeHover, setCloseHover] = useState(false);
   const handleClick = useCallback(
     (e: MouseEvent<HTMLElement>) => {
       if (!editing) {
         e.preventDefault();
-        onClick(e, index);
+        onClick?.(e, index);
       }
     },
     [editing, index, onClick]
@@ -126,7 +124,6 @@ export const Tab = forwardRef(function Tab(
       aria-selected={selected}
       className={cx(classBase, {
         [`${classBase}-closeable`]: closeable,
-        [`${classBase}-closeHover`]: closeHover,
         [`${classBase}-dragAway`]: dragging,
         [`${classBase}-editing`]: editing,
         [`${classBase}-selected`]: selected || undefined,

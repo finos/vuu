@@ -18,7 +18,7 @@ import {
   ArrowRight,
   Home,
   End,
-} from "../common-hooks";
+} from "@finos/vuu-utils";
 import { getIndexOfEditedItem } from "./tabstrip-dom-utils";
 
 type orientationType = "horizontal" | "vertical";

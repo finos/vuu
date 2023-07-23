@@ -6,10 +6,17 @@ import type {
   ReactElement,
 } from "react";
 
-import type { orientationType } from "../responsive";
 import type { EditableLabelProps } from "../editable-label";
-import type { ExitEditModeHandler } from "./useEditableItem";
 import type { MenuActionHandler } from "packages/vuu-data-types";
+
+export type orientationType = "horizontal" | "vertical";
+
+export type ExitEditModeHandler = (
+  originalValue: string,
+  editedValue: string,
+  allowDeactivation: boolean,
+  tabIndex: number
+) => void;
 
 export interface FocusAPI {
   focus: () => void;
@@ -134,7 +141,7 @@ export type TabProps = Omit<
   location?: string;
   selected?: boolean;
   showMenuButton?: boolean;
-  index?: number;
+  index: number;
   label?: EditableLabelProps["defaultValue"];
   onClick?: (e: MouseEvent<HTMLElement>, index: number) => void;
   onClose?: (index: number) => void;

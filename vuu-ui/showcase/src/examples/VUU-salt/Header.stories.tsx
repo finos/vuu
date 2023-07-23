@@ -1,7 +1,6 @@
 import { Header } from "@finos/vuu-layout";
+import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import {
-  Tab,
-  Tabstrip,
   Toolbar,
   ToolbarButton,
   ToolbarField,
@@ -62,12 +61,13 @@ export const HeaderWithTabs = () => {
             <Tabstrip
               activeTabIndex={activeTabIndex}
               onActiveChange={handleTabSelection}
-              enableAddTab
-              enableRenameTab
+              allowAddTab
+              allowRenameTab
               onAddTab={handleAddTab}
             >
               {tabs.map(({ label }, i) => (
                 <Tab
+                  index={i}
                   key={label}
                   label={label}
                   ariaControls={
