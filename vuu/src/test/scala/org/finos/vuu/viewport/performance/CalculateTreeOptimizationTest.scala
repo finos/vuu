@@ -109,6 +109,7 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
       emptyQueues(viewPort)
 
       runContainersOnce(viewPortContainer, joinProvider)
+      viewPortContainer.runGroupByOnce()
 
       assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
         Table(

@@ -43,7 +43,6 @@ trait ViewPortSetup {
     joinProvider.runOnce()
     viewPortContainer.runOnce()
     viewPortContainer.runGroupByOnce()
-    viewPortContainer.runGroupByOnce()
   }
 
   def tickInData(ordersProvider: MockProvider, pricesProvider: MockProvider): Unit = {

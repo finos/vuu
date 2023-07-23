@@ -82,10 +82,8 @@ object TreeBuildOptimizer extends StrictLogging {
           //if we have no aggregations initially we don't have to build the whole tree
           case EmptyTree if viewPort.getGroupBy.aggregations.isEmpty =>
             FastBuildBranchesOfTreeOfRows(table, Option(table.getTree))
-          case EmptyTree if viewPort.getGroupBy.aggregations.nonEmpty && viewPort.getGroupBy.aggregations.size != 4 =>
-            FastBuildBranchesOfTree(table, Option(table.getTree))
           //however if we do, we do...
-          case EmptyTree if viewPort.getGroupBy.aggregations.nonEmpty && viewPort.getGroupBy.aggregations.size.equals(4) =>
+          case EmptyTree if viewPort.getGroupBy.aggregations.nonEmpty =>
             BuildEntireTree(table, None)
           case tree: TreeImpl =>
             tree.buildAction match {

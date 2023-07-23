@@ -151,11 +151,16 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
     buildAction match {
       case FastBuildBranchesOfTreeOfRows(table, oldTreeOption) =>
         logger.info("[TREE] Fast Building Branches Of Rows: " + table.name + "@" + table.sourceTable.name)
+        logger.info("sorted keys: " + sortedKeys.length)
         val value = ImmutableArray.from(sortedKeys.slice(0, FIRST_TRIAL_BRANCH_THRESHOLD).toArray)
-        buildEntireTree(value, onlyBranches = true, latestNodeState, updateCounter, paramsHashCode)
+        val tree = buildEntireTree(value, onlyBranches = true, latestNodeState, updateCounter, paramsHashCode)
+        logger.info("[TREE] Fast Building Branches Of Rows (Finished): " + tree.toKeys().length)
+        tree
       case FastBuildBranchesOfTree(table, oldTreeOption) =>
         logger.info("[TREE] Fast Building Branches: " + table.name + "@" + table.sourceTable.name)
-        buildEntireTree(sortedKeys, onlyBranches = true, latestNodeState, updateCounter, paramsHashCode)
+        val tree = buildEntireTree(sortedKeys, onlyBranches = true, latestNodeState, updateCounter, paramsHashCode)
+        logger.info("[TREE] Fast Building Branches (Finished): " + + tree.toKeys().length)
+        tree
       case BuildEntireTree(table, oldTreeOption) =>
         logger.info("[TREE] Building Entire Tree: " + table.name + "@" + table.sourceTable.name)
         buildEntireTree(sortedKeys, onlyBranches = false, latestNodeState, updateCounter, paramsHashCode)
