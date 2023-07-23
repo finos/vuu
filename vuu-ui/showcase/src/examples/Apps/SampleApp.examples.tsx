@@ -14,7 +14,6 @@ const viewProps = {
 
 export const SampleApp = () => {
   const { features, schemas } = useMockFeatureData();
-  console.log({ features, schemas });
   return (
     <Shell
       leftSidePanel={

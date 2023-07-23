@@ -373,6 +373,8 @@ export class ServerProxy {
 
   private suspendViewport(viewport: Viewport) {
     viewport.suspend();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore its a number, this isn't node.js
     viewport.suspendTimer = setTimeout(() => {
       info?.("suspendTimer expired, escalate suspend to disable");
       this.disableViewport(viewport);

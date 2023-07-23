@@ -92,7 +92,7 @@ export const DatagridSettingsPanel = ({
 
   const tabstripProps: StackProps["TabstripProps"] = {
     activeTabIndex: selectedTabIndex,
-    enableRenameTab: false,
+    allowRenameTab: false,
     orientation: "vertical",
   };
 

@@ -61,7 +61,7 @@ export const findSplitterAndPlaceholderPositions = (
   const count = childMeta.length;
   const allIntrinsic = childMeta.every(isIntrinsicallySized);
   const splitterPositions = Array(count).fill(0);
-  if (allIntrinsic) {
+  if (allIntrinsic && count > 0) {
     splitterPositions[0] = PLACEHOLDER;
     splitterPositions[count - 1] = PLACEHOLDER;
   }

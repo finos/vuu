@@ -24,7 +24,7 @@ export const Portal = function Portal({
       className: cx(themeClass, densityClass),
       dataMode,
     });
-  }, []);
+  }, [dataMode, densityClass, themeClass]);
 
   useLayoutEffect(() => {
     renderPortal(children, renderContainer, x, y, onRender);

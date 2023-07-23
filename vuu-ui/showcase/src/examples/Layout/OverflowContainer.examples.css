@@ -1,0 +1,13 @@
+.Item {
+    background-color: var(--item-bg, blue);
+    color: white;
+    height: 32px;
+}
+
+[data-overflow-priority="1"].Item {
+    background-color: pink;
+}
+
+.vuuOverflowContainer-wrapContainer {
+    /* overflow: visible; */
+}

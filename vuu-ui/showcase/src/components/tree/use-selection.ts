@@ -1,39 +1,73 @@
-import { useCallback, useRef } from "react";
+import {
+  KeyboardEvent,
+  MouseEvent,
+  SyntheticEvent,
+  useCallback,
+  useRef,
+} from "react";
 import { useControlled } from "@salt-ds/core";
+import { NormalisedTreeSourceNode } from "./Tree";
+
+export type TreeSelection =
+  | "none"
+  | "single"
+  | "checkbox"
+  | "multi"
+  | "extended";
 
 export const SINGLE = "single";
 export const CHECKBOX = "checkbox";
 export const MULTI = "multi";
 export const EXTENDED = "extended";
 
-export const GROUP_SELECTION_NONE = "none";
-export const GROUP_SELECTION_SINGLE = "single";
-export const GROUP_SELECTION_CASCADE = "cascade";
+export type GroupSelection = "none" | "single" | "cascade";
 
 const defaultSelectionKeys = ["Enter", " "];
 
 const NO_HANDLERS = {};
 
-const isCollapsibleItem = (item) => item.expanded !== undefined;
+const isCollapsibleItem = (item: NormalisedTreeSourceNode) =>
+  item.expanded !== undefined;
 
-export const groupSelectionEnabled = (groupSelection) =>
-  groupSelection && groupSelection !== GROUP_SELECTION_NONE;
+export type TreeNodeSelectionHandler = (
+  evt: SyntheticEvent,
+  selected: string[]
+) => void;
+
+export const groupSelectionEnabled = (groupSelection: GroupSelection) =>
+  groupSelection && groupSelection !== "none";
+
+export interface SelectionHookProps {
+  defaultSelected?: string[];
+  highlightedIdx: number;
+  onChange: TreeNodeSelectionHandler;
+  selected?: string[];
+  selection: TreeSelection;
+  selectionKeys?: string[];
+  treeNodes: NormalisedTreeSourceNode[];
+}
+
+export interface SelectionHookResult {
+  listHandlers: {
+    onKeyDown?: (evt: KeyboardEvent) => void;
+    onKeyboardNavigation?: (evt: KeyboardEvent, currentIndex: number) => void;
+  };
+  listItemHandlers: {
+    onClick?: (evt: MouseEvent) => void;
+  };
+  selected: string[];
+  setSelected: (selected: string[]) => void;
+}
 
 export const useSelection = ({
-  count,
   defaultSelected,
-  disableSelection = false,
-  // groupSelection = GROUP_SELECTION_NONE,
   highlightedIdx,
-  indexPositions,
+  treeNodes,
   onChange,
   selected: selectedProp,
   selection = SINGLE,
   selectionKeys = defaultSelectionKeys,
-}) => {
-  // TODO is the count enough ?
-  const prevCount = useRef(count);
-
+}: SelectionHookProps): SelectionHookResult => {
   const singleSelect = selection === SINGLE;
   const multiSelect = selection === MULTI || selection.startsWith(CHECKBOX);
   const extendedSelect = selection === EXTENDED;
@@ -47,21 +81,20 @@ export const useSelection = ({
   const [selected, setSelected] = useControlled({
     controlled: selectedProp,
     default: defaultSelected ?? [],
+    name: "selected",
   });
 
   // const highlightedIdxRef = useRef();
   // highlightedIdxRef.current = highlightedIdx;
 
-  // Get rid of this - if source might change, use controlled mode ?
-  if (count !== prevCount.current) {
-    prevCount.current = count;
-    if (selected.length > 0) {
-      setSelected([]);
-    }
-  }
-
   const selectItemAtIndex = useCallback(
-    (evt, idx, id, rangeSelect, preserveExistingSelection) => {
+    (
+      evt: SyntheticEvent,
+      idx: number,
+      id: string,
+      rangeSelect: boolean,
+      preserveExistingSelection = false
+    ) => {
       const { current: active } = lastActive;
       const isSelected = selected?.includes(id);
       const inactiveRange = active === -1;
@@ -74,7 +107,7 @@ export const useSelection = ({
         multiSelect ||
         (extendedSelect && preserveExistingSelection && !rangeSelect);
 
-      let newSelected;
+      let newSelected: string[] = [];
       if (actsLikeSingleSelect && isSelected) {
         newSelected = [];
       } else if (actsLikeSingleSelect) {
@@ -87,7 +120,7 @@ export const useSelection = ({
         const [from, to] = idx > active ? [active, idx] : [idx, active];
         newSelected = selected.slice();
         for (let i = from; i <= to; i++) {
-          const { id } = indexPositions[i];
+          const { id } = treeNodes[i];
           if (!selected.includes(id)) {
             newSelected.push(id);
           }
@@ -100,7 +133,7 @@ export const useSelection = ({
     },
     [
       extendedSelect,
-      indexPositions,
+      treeNodes,
       multiSelect,
       onChange,
       selected,
@@ -110,10 +143,10 @@ export const useSelection = ({
   );
 
   const handleKeyDown = useCallback(
-    (evt) => {
+    (evt: KeyboardEvent) => {
       if (~highlightedIdx && isSelectionEvent(evt)) {
         evt.preventDefault();
-        const item = indexPositions[highlightedIdx];
+        const item = treeNodes[highlightedIdx];
         selectItemAtIndex(
           evt,
           highlightedIdx,
@@ -129,20 +162,20 @@ export const useSelection = ({
     [
       extendedSelect,
       highlightedIdx,
-      indexPositions,
+      treeNodes,
       isSelectionEvent,
       selectItemAtIndex,
     ]
   );
 
   const handleKeyboardNavigation = useCallback(
-    (evt, currentIndex) => {
+    (evt: KeyboardEvent, currentIndex: number) => {
       if (extendedSelect && evt.shiftKey) {
-        const item = indexPositions[currentIndex];
+        const item = treeNodes[currentIndex];
         selectItemAtIndex(evt, currentIndex, item.id, true);
       }
     },
-    [extendedSelect, indexPositions, selectItemAtIndex]
+    [extendedSelect, treeNodes, selectItemAtIndex]
   );
 
   const listHandlers =
@@ -154,9 +187,9 @@ export const useSelection = ({
         };
 
   const handleClick = useCallback(
-    (evt) => {
-      if (!disableSelection && highlightedIdx !== -1) {
-        const item = indexPositions[highlightedIdx];
+    (evt: MouseEvent) => {
+      if (highlightedIdx !== -1) {
+        const item = treeNodes[highlightedIdx];
         if (!isCollapsibleItem(item)) {
           evt.preventDefault();
           evt.stopPropagation();
@@ -173,13 +206,7 @@ export const useSelection = ({
         }
       }
     },
-    [
-      disableSelection,
-      extendedSelect,
-      highlightedIdx,
-      indexPositions,
-      selectItemAtIndex,
-    ]
+    [extendedSelect, highlightedIdx, treeNodes, selectItemAtIndex]
   );
 
   const listItemHandlers =

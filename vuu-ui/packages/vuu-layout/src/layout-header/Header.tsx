@@ -10,13 +10,13 @@ import React, {
 import { Contribution, useViewDispatch } from "../layout-view";
 
 import {
-  EditableLabel,
   Toolbar,
   ToolbarButton,
   ToolbarField,
   Tooltray,
 } from "@heswell/salt-lab";
 import { CloseIcon } from "@salt-ds/icons";
+import { EditableLabel } from "@finos/vuu-ui-controls";
 
 import "./Header.css";
 

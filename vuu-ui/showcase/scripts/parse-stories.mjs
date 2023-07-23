@@ -1,9 +1,9 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 // import { build } from 'esbuild';
 
-const SRC = './src/examples/';
-const OUT = './src/generated/stories.json';
+const SRC = "./src/examples/";
+const OUT = "./src/generated/stories.json";
 
 // async function loadModule(filePath, exports) {
 //   const { default: module } = await import(filePath);
@@ -22,8 +22,8 @@ function buildPackageTree(dir, tree = {}) {
       if (Object.keys(subTree).length > 0) {
         tree[fileName] = buildPackageTree(filePath);
       }
-    } else if (fileName.endsWith('stories.jsx')) {
-      const [storyName] = fileName.split('.');
+    } else if (fileName.match(/(stories|examples).tsx$/)) {
+      const [storyName] = fileName.split(".");
       tree[storyName] = `${dir}${fileName}`;
     }
   });

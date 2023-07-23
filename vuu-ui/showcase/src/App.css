@@ -4,11 +4,11 @@ body {
 }
 
 .ShowcaseNav {
-  --hwTree-toggle-expand: var(--vuu-svg-chevron-right);
-  --hwTree-toggle-collapse: var(--vuu-svg-chevron-right);
-  --hwTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
-  --hwTree-icon-color: var(--salt-palette-accent-background);
-  --hwTree-font-size: 12px;
+  --vuuTree-toggle-expand: var(--vuu-svg-chevron-right);
+  --vuuTree-toggle-collapse: var(--vuu-svg-chevron-right);
+  --vuuTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
+  --vuuTree-icon-color: var(--salt-palette-accent-background);
+  --vuuTree-font-size: 12px;
 }
 
 .ShowcaseToolbar,

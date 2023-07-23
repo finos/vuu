@@ -1,9 +1,14 @@
 import { useRef, useState } from "react";
 import { isGroupNode, isHeader } from "./hierarchical-data-utils";
+import { isExpanded, NormalisedTreeSourceNode } from "./Tree";
 
-const populateIndices = (nodes, results = [], idx = { value: 0 }) => {
+const populateIndices = (
+  nodes: NormalisedTreeSourceNode[],
+  results: NormalisedTreeSourceNode[] = [],
+  idx = { value: 0 }
+) => {
   let skipToNextHeader = false;
-  for (let node of nodes) {
+  for (const node of nodes) {
     if (skipToNextHeader && !isHeader(node)) {
       continue;
     } else {
@@ -13,7 +18,7 @@ const populateIndices = (nodes, results = [], idx = { value: 0 }) => {
       if (isHeader(node) && node.expanded === false) {
         skipToNextHeader = true;
       } else if (isGroupNode(node)) {
-        if (node.expanded !== false) {
+        if (isExpanded(node)) {
           populateIndices(node.childNodes, results, idx);
         }
       }
@@ -24,7 +29,7 @@ const populateIndices = (nodes, results = [], idx = { value: 0 }) => {
 
 //TODO return a read-only data structure
 // Question: is source changes at runtime, do we lose any current state ?
-export const useHierarchicalData = (source) => {
+export const useHierarchicalData = (source: NormalisedTreeSourceNode[]) => {
   // console.log(`%c[useHierarchicalData<${label}>] entry`, 'color: green; font-weight: bold;');
 
   const externalSource = useRef(source);

@@ -1,0 +1,24 @@
+{
+  "name": "@finos/vuu-ui-controls",
+  "version": "0.0.26",
+  "description": "VUU UI Controls",
+  "main": "src/index.ts",
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/run-build.mjs",
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
+  },
+  "dependencies": {
+    "@salt-ds/core": "1.2.0",
+    "@finos/vuu-data": "0.0.26",
+    "@finos/vuu-data-types": "0.0.26",
+    "@finos/vuu-layout": "0.0.26",
+    "@finos/vuu-utils": "0.0.26"
+  },
+  "peerDependencies": {
+    "classnames": "^2.2.6",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}

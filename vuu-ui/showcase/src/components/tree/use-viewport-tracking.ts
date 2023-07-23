@@ -10,7 +10,7 @@ import { useResizeObserver } from "./use-resize-observer";
 const HeightOnly = ["height", "scrollHeight"];
 
 export const useViewportTracking = (
-  root: RefObject<HTMLDivElement>,
+  root: RefObject<HTMLElement>,
   highlightedIdx: number,
   stickyHeaders = false
 ) => {

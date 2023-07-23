@@ -1,0 +1,190 @@
+/* Class applied to root Tab element */
+.vuuTab {
+  --saltEditableLabel-padding: 0;
+  --saltEditableLabel-height: var(--tabs-tabstrip-height);
+  --saltInputLegacy-minWidth: 4em;
+
+  --tab-background: var(--salt-navigable-primary-background);
+  --tab-cursor: pointer;
+  --tab-position: relative;
+}
+
+.vuuTab {
+  align-items: center;
+  align-self: stretch;
+  background: var(--vuuTab-background, var(--tab-background));
+  border: none;
+  border-radius: 0;
+  color: var(--salt-text-primary-foreground);
+  cursor: var(--vuuTab-cursor, var(--tab-cursor));
+  display: var(--tabs-tabstrip-display);
+  gap: 8px;
+  height: var(--vuuTab-height, var(--tabs-tabstrip-height));
+  letter-spacing: var(--vuuTab-letterSpacing, var(--tab-letterSpacing, 0));
+  min-width: var(--vuuTab-minWidth, 40px);
+  outline: none;
+  padding: 0 24px;
+  position: var(--vuuTab-position, var(--tab-position));
+  user-select: none;
+}
+
+/* Overrides characteristic used in saltFocusVisible */
+.vuuTab.saltFocusVisible:after {
+  inset: 2px 2px 4px 2px;
+}
+
+.vuuTab:not(.vuuTab-vertical) {
+  margin: 0 var(--tab-spacing) 0 0;
+}
+
+.vuuTab-selected {
+  color: var(--salt-text-primary-foreground);
+  font-weight: var(--salt-navigable-fontWeight-active);
+}
+
+.vuuTab-dragAway {
+  display: none;
+}
+
+/* main content aria of Tab */
+.vuuTab-main {
+  align-items: center;;
+  background: inherit;
+  border: none;
+  color: inherit;
+  cursor: inherit;
+  display: flex;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  height: var(--vuuTabstrip-height, var(--salt-size-stackable));
+  outline: none;
+  position: relative;
+}
+
+.vuuTab-closeable .vuuTab-main {
+  border-right: solid transparent var(--salt-size-unit);
+}
+
+.vuuTab .vuuTab-closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* the close Button on a closeable Tab*/
+.vuuTab-close-icon {
+  display: none;
+}
+
+.salt-density-touch .vuuTab-close-icon,
+.salt-density-low .vuuTab-close-icon {
+  display: block;
+}
+
+.salt-density-touch .vuuTab-close-icon-small,
+.salt-density-low .vuuTab-close-icon-small {
+  display: none;
+}
+
+.vuuTab .vuuTab-text {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  text-align: var(--salt-text-textAlign-embedded);
+  text-overflow: ellipsis;
+  top: var(--vuuTab-top, var(--tab-top, auto));
+  white-space: nowrap;
+  /* ensure content sits above focus ring */
+  z-index: var(--salt-zIndex-default);
+}
+
+.vuuTab-vertical .vuuTab-text {
+  text-align: var(--salt-text-textAlign);
+}
+
+.vuuTab .vuuTab-text:before {
+  height: 0;
+  content: attr(data-text);
+  display: block;
+  visibility: hidden;
+  font-weight: var(--salt-navigable-fontWeight-active);
+}
+
+/* FIXME: these are all focusVisible styles, but with a bespoke inset */
+.vuuTab-editing:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  outline-color: var(--salt-focused-outlineColor);
+  outline-style: var(--salt-focused-outlineStyle);
+  outline-width: var(--salt-focused-outlineWidth);
+  outline-offset: -2px;
+}
+
+.vuuTab-vertical.vuuTab-editing:after {
+  right: 2px;
+  bottom: 0;
+}
+
+.vuuTab-vertical .saltFocusVisible:not(.vuuTab-selected):before {
+  left: auto;
+  height: auto;
+  top: 0;
+  width: 2px;
+}
+
+.vuuTab.saltFocusVisible {
+  background: var(--vuuTab-hover-background, var(--salt-navigable-primary-background-hover));
+}
+
+.vuuTab:before {
+  content: var(--tab-before-content, none);
+  background: var(--tab-before-background);
+  height: var(--tab-before-height);
+  inset: var(--tab-before-inset);
+  position: absolute;
+  width: var(--tab-before-width);
+  z-index: 1;
+}
+
+.vuuTabstrip-draggingTab .vuuTab-selected:before {
+  --tab-before-content: "";
+  --tab-before-background: var(--salt-navigable-indicator-color-active);
+  --tab-before-height: var(--tab-thumb-height);
+  --tab-before-inset: var(--tab-activationIndicator-inset);
+  --tab-before-width: var(--tab-activationIndicator-thumb-width);
+}
+
+/* Hover styling */
+.vuuDraggable .vuuTab:before,
+.vuuTab:not(.vuuTab-selected).saltFocusVisible:before,
+.vuuTab:hover:not(.vuuTab-selected):before {
+  --tab-before-content: "";
+  --tab-before-background: var(--salt-navigable-indicator-hover);
+  --tab-before-height: var(--tab-thumb-height);
+  --tab-before-inset: var(--tab-activationIndicator-inset);
+  --tab-before-width: var(--tab-activationIndicator-thumb-width);
+}
+
+.vuuTab-selected:before {
+  --tab-before-content: "";
+  background: var(--salt-navigable-indicator-active);
+  height: var(--tab-thumb-height);
+  position: absolute;
+  left: var(--tab-thumb-offset,0);
+  bottom:0px; 
+  transition: var(--tab-thumb-transition, none);
+  width: var(--tab-thumb-width, 100%);
+}
+
+.vuuTab:hover:not(.vuuTab-closeHover) {
+  background: var(--vuuTab-hover-background, var(--salt-navigable-primary-background-hover));
+}
+
+/* .vuuTabstrip.vuuTabThumb-noTransition .vuuTab-selected:before {
+  transition: none; 
+} */

@@ -36,11 +36,15 @@ const defaultLayout = {
       width: "100%",
       height: "100%",
     },
-    showTabs: true,
     enableAddTab: true,
     enableRemoveTab: true,
     preserve: true,
     active: 0,
+    TabstripProps: {
+      allowAddTab: true,
+      allowCLoseTab: true,
+      allowRenameTab: true,
+    },
   },
   children: [
     {

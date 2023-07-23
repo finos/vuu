@@ -1,6 +1,6 @@
 import { TableCellProps } from "@finos/vuu-datagrid-types";
 import { getColumnStyle, metadataKeys } from "@finos/vuu-utils";
-import { EditableLabel } from "@heswell/salt-lab";
+import { EditableLabel } from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import {
   KeyboardEvent,

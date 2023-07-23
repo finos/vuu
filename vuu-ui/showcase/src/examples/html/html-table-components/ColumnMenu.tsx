@@ -1,3 +1,6 @@
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { useContextMenu } from "@finos/vuu-popups";
+import cx from "classnames";
 import {
   HTMLAttributes,
   MouseEvent,
@@ -5,13 +8,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { useContextMenu } from "@finos/vuu-popups";
-
-import cx from "classnames";
 
 import "./ColumnMenu.css";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-// import { useThemeAttributes } from "@finos/vuu-shell";
 
 export interface ColumnMenuProps extends HTMLAttributes<HTMLSpanElement> {
   column: KeyedColumnDescriptor;
@@ -32,7 +30,6 @@ export const ColumnMenu = ({
   const rootRef = useRef<HTMLSpanElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const showContextMenu = useContextMenu();
-  // const [themeClass, densityClass, dataMode] = useThemeAttributes();
 
   const handleMenuClose = useCallback(() => {
     setMenuOpen(false);
@@ -41,11 +38,9 @@ export const ColumnMenu = ({
   const showColumnMenu = useCallback(
     (e: MouseEvent<HTMLElement>) => {
       setMenuOpen(true);
-      showContextMenu(e, "header", {
+      showContextMenu(e, "column-menu", {
         column,
         ContextMenuProps: {
-          // className: cx(themeClass, densityClass),
-          // "data-mode": dataMode,
           onClose: handleMenuClose,
           position: getPosition(rootRef.current),
         },
