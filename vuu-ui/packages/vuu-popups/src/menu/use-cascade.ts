@@ -279,18 +279,18 @@ export const useCascade = ({
         current: { [hostMenuId]: state },
       } = menuState;
 
-      console.log(
-        `%ctriggerChildMenu 
-        menuItem ${menuItemId}
-        host menu: ${hostMenuId}
-        target menu: ${targetMenuId}
-        item index: ${menuItemId} 
-        state ${state}
-        isGroup ${isGroup} isOpen ${isOpen}
-        openMenus: ${JSON.stringify(openMenus.current)}
-        full state='${JSON.stringify(menuState.current)}`,
-        "color: green; font-weight: bold;"
-      );
+      // console.log(
+      //   `%ctriggerChildMenu
+      //   menuItem ${menuItemId}
+      //   host menu: ${hostMenuId}
+      //   target menu: ${targetMenuId}
+      //   item index: ${menuItemId}
+      //   state ${state}
+      //   isGroup ${isGroup} isOpen ${isOpen}
+      //   openMenus: ${JSON.stringify(openMenus.current)}
+      //   full state='${JSON.stringify(menuState.current)}`,
+      //   "color: green; font-weight: bold;"
+      // );
 
       console.log(`trigger child menu ${menuItemId}`);
       if (state === "no-popup" && isGroup) {

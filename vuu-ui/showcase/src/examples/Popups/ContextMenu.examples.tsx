@@ -100,7 +100,7 @@ const Id = ({ children }: IdProps) => (
 export const AdditionalNesting = () => {
   const { ref, position } = usePosition();
   const handleClose: ContextMenuProps["onClose"] = (menuId?: string) => {
-    console.log(`menu closed ${menuId}`);
+    console.log(`menu closed`);
   };
 
   return (
@@ -183,7 +183,7 @@ AdditionalNesting.displaySequence = displaySequence++;
 export const ContextMenuPopup = () => {
   const contextMenu = useMemo(() => {
     const handleClose = (menuItemId?: string) => {
-      console.log(`closed with menuId ${menuItemId}`);
+      console.log(`closed `);
     };
 
     return (
@@ -345,9 +345,7 @@ export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
     action: string,
     options: unknown
   ) => {
-    console.log(`handleContextMenu ${action}`, {
-      options,
-    });
+    console.log(`handleContextMenu ${action}`);
     return true;
   };
 
