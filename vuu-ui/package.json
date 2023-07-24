@@ -4,6 +4,11 @@
   "author": "heswell <steve@heswell.com>",
   "license": "Apache-2.0",
   "private": true,
+  "main": "./lib/index.js",
+  "bin": {
+    "vuu": "./lib/index.js"
+  },
+  "type": "module",
   "workspaces": [
     "packages/**",
     "sample-apps/**",

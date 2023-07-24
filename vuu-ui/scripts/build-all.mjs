@@ -1,13 +1,14 @@
 import { execWait, withArgs } from "./utils.mjs";
 
-const buildPackage = async (packageName) =>
-  execWait(
-    `npm run --silent build${withArgs("dev", "cjs", "debug", "license")}`,
-    `packages/${packageName}`
-  );
+export const buildAll = async () => {
+  const buildPackage = async (packageName) =>
+    execWait(
+      `yarn --silent build${withArgs("dev", "cjs", "debug")}`,
+      `packages/${packageName}`
+    );
 
-// TODO determine the dependency graph/build order programatically
-const wave1 = [
+  // TODO determine the dependency graph/build order programatically
+  const wave1 = [
   "vuu-data-types",
   "vuu-datagrid-types",
   "vuu-filter-types",
@@ -31,7 +32,10 @@ const wave4 = [
   "vuu-shell",
 ];
 
-await Promise.all(wave1.map(buildPackage));
-await Promise.all(wave2.map(buildPackage));
-await Promise.all(wave3.map(buildPackage));
-await Promise.all(wave4.map(buildPackage));
+  await Promise.all(wave1.map(buildPackage));
+  await Promise.all(wave2.map(buildPackage));
+  await Promise.all(wave3.map(buildPackage));
+  await Promise.all(wave4.map(buildPackage));
+};
+
+buildAll();
