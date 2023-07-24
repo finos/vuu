@@ -17,7 +17,7 @@ import {
   TextOperator,
   isString,
   isTextOperator,
-} from "./operator-utils";
+} from "../operator-utils";
 import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
 
 type TextInputProps = HTMLAttributes<HTMLDivElement> & {
