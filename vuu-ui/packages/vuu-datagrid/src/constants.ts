@@ -7,6 +7,7 @@ export const AggregationType: { [key: string]: VuuAggType } = {
   Sum: 1,
   High: 4,
   Low: 5,
+  Distinct: 6,
 };
 
 export const SortType = {

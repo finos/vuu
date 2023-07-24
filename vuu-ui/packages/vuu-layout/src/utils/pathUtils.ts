@@ -1,4 +1,4 @@
-import React, { ReactElement } from "react";
+import React, { isValidElement, ReactElement } from "react";
 import { LayoutModel } from "../layout-reducer";
 import { isContainer } from "../registry/ComponentRegistry";
 import { getProp, getProps } from "./propUtils";
@@ -95,6 +95,33 @@ export function followPathToComponent(component: ReactElement, path: string) {
   }
 }
 
+const findTargetById = (
+  source: ReactElement,
+  id: string,
+  throwIfNotFound = true
+): ReactElement | undefined => {
+  const { children, id: idProp } = source.props;
+  if (idProp === id) {
+    return source;
+  }
+
+  if (React.Children.count(children) > 0) {
+    const childArray = isValidElement(children) ? [children] : children;
+    for (const child of childArray) {
+      if (isValidElement(child)) {
+        const target = findTargetById(child, id, false);
+        if (target) {
+          return target;
+        }
+      }
+    }
+  }
+
+  if (throwIfNotFound === true) {
+    throw Error(`pathUtils.findTargetById id #${id} not found in source`);
+  }
+};
+
 export function followPath(
   source: LayoutModel,
   path: string
@@ -106,6 +133,10 @@ export function followPath(
 ): ReactElement;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function followPath(source: any, path: any, throwIfNotFound = false) {
+  if (path.startsWith("#")) {
+    return findTargetById(source, path.slice(1), throwIfNotFound);
+  }
+
   const { "data-path": dataPath, path: sourcePath = dataPath } =
     getProps(source);
   if (path.indexOf(sourcePath) !== 0) {

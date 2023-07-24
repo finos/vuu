@@ -31,7 +31,7 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
 
   private var retryExecutor: Option[ResubmitExecutor[T]] = None
   private final val workQueue = new LinkedBlockingQueue[Runnable]()
-  private val selfRef = this;
+  private val selfRef = this
   private final val setOfWork = new ConcurrentSkipListSet[WorkItem[T]]()
 
   override def doStart(): Unit = {
@@ -51,7 +51,7 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
     runInBackground()
   }
 
-  override protected def getRunnable() = {
+  override protected def getRunnable(): Runnable = {
     () => {
 
         while (true) {
@@ -67,12 +67,12 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
           })
 
           addedWork.foreach(item => {
-            //println("Adding" + item.hashCode())
+            println("Adding:" + item)
             setOfWork.add(item)
           })
 
           retryExecutor match {
-            case Some(executor) => {
+            case Some(executor) =>
               addedWork.foreach(work => {
                 executor.submit(new Callable[T] {
                   override def call(): T = {
@@ -81,7 +81,6 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
                   }
                 })
               })
-            }
             case None =>
           }
 
@@ -101,9 +100,8 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
 
   override def doStop(): Unit = {
     retryExecutor match {
-      case Some(executor) => {
+      case Some(executor) =>
         executor.shutdown()
-      }
       case None => //all good
     }
     logger.info(s"[$name] is exiting....")

@@ -27,7 +27,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
   final val clock: Clock = new TestFriendlyClock(TEST_TIME)
   var counter: Int = 0
 
-  def createViewServerModule(theName: String) = {
+  def createViewServerModule(theName: String): ViewServerModule = {
     new ViewServerModule {
       override def name: String = theName
 
@@ -43,7 +43,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
 
       override def restServicesUnrealized: List[VuuServer => RestService] = ???
 
-      override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer) => ViewPortDef] = ???
+      override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef] = ???
     }
   }
 
@@ -91,7 +91,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
   def createDefaultSessionTableInfra(): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue, OutboundRowPublishQueue, DataTable, TableContainer) = {
     implicit val lifecycle = new LifecycleContainer
 
-    val dateTime = 1437728400000l //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+    val dateTime = 1437728400000L //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
     val module = createViewServerModule("TEST")
 
@@ -183,8 +183,8 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
     (viewPortContainer, instruments, instrumentsProvider, prices, pricesProvider, session, outQueue, highPriorityQueue, basketOrders, tableContainer)
   }
 
-  def createViewPortDefFunc(tableContainer: TableContainer, clock: Clock): (DataTable, Provider, ProviderContainer) => ViewPortDef = {
-    val func = (t: DataTable, provider: Provider, pc: ProviderContainer) => ViewPortDef(t.getTableDef.columns, createRpcHandlerInstruments(provider.asInstanceOf[MockProvider], tableContainer, clock))
+  def createViewPortDefFunc(tableContainer: TableContainer, clock: Clock): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
+    val func = (t: DataTable, provider: Provider, pc: ProviderContainer, tableContainer: TableContainer) => ViewPortDef(t.getTableDef.columns, createRpcHandlerInstruments(provider.asInstanceOf[MockProvider], tableContainer, clock))
     func
   }
 

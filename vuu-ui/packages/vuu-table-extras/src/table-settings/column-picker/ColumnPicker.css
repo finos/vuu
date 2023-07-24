@@ -1,0 +1,46 @@
+.vuuColumnPicker {
+
+    --vuu-icon-color: var(--salt-text-primary-foreground);
+    --vuu-icon-left: 0px;
+    --vuu-icon-size: 12px;
+
+    display: flex;
+    flex-shrink: 0;
+
+    gap: calc(var(--salt-size-unit) * 2);
+    width: var(--vuuColumnPicker-width, 100%);
+}
+
+.vuuColumnPicker-listColumn {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.vuuColumnPicker-listContainer {
+    border: solid 1px var(--salt-container-primary-borderColor);
+    margin-right: var(--salt-size-unit)
+}
+
+.vuuColumnPicker-defineColumn {
+    align-items: center;
+    border-top: solid 1px var(--salt-container-primary-borderColor);
+    display: flex;
+    flex: 0 0 calc(100% - var(--salt-size-unit));
+    gap: var(--salt-size-unit);
+    transition: .2s height;
+    margin-top: 12px;
+    height: 48px;
+}
+
+[data-align='right'] .vuuColumnPicker-defineColumn {
+    border-top: none;
+    height: 0;
+}
+
+.vuuColumnPicker-addCalculatedColumn {
+    margin-left: auto;
+    margin-right: var(--salt-size-unit);
+    width: 28px;
+}
+

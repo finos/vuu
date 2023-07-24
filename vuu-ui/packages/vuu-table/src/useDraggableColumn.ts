@@ -1,12 +1,5 @@
 import { useDragDrop } from "@heswell/salt-lab";
-import {
-  MouseEvent,
-  RefObject,
-  useCallback,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { MouseEvent, useCallback, useRef } from "react";
 
 type MousePos = {
   clientX: number;
@@ -16,77 +9,76 @@ type MousePos = {
 
 export interface DraggableColumnHookProps {
   onDrop: (fromIndex: number, toIndex: number) => void;
-  tableContainerRef: RefObject<HTMLDivElement>;
-  tableLayout: "column" | "row";
 }
 
-export const useDraggableColumn = ({
-  onDrop,
-  tableContainerRef,
-  tableLayout: tableLayoutProp,
-}: DraggableColumnHookProps) => {
-  const [tableLayout, setTableLayout] = useState(tableLayoutProp);
+export const useDraggableColumn = ({ onDrop }: DraggableColumnHookProps) => {
   const mousePosRef = useRef<MousePos>();
+  const containerRef = useRef<HTMLElement | null>(null);
 
   const handleDropSettle = useCallback(() => {
     console.log(`handleDropSettle`);
     mousePosRef.current = undefined;
-    setTableLayout("row");
+    containerRef.current = null;
   }, []);
 
   const { draggable, draggedItemIndex, onMouseDown } = useDragDrop({
+    // allowDragDrop: "drop-indicator",
     allowDragDrop: true,
-    draggableClassName: "table-column",
+    draggableClassName: "vuuTable-headerCell",
     orientation: "horizontal",
-    containerRef: tableContainerRef,
-    itemQuery: ".vuuTable-table",
+    containerRef,
+    itemQuery: ".vuuTable-headerCell",
     onDrop,
     onDropSettle: handleDropSettle,
   });
 
-  const handleHeaderCellDragStart = useCallback((evt: MouseEvent) => {
-    const { clientX, clientY } = evt;
-    console.log(
-      `useDraggableColumn handleHeaderCellDragStart means mouseDown fired on a column in RowBasedTable`
-    );
-    const sourceElement = evt.target as HTMLElement;
-    const thElement = sourceElement.closest(".vuuTable-headerCell");
-    const {
-      dataset: { idx = "-1" },
-    } = thElement as HTMLElement;
-    mousePosRef.current = {
-      clientX,
-      clientY,
-      idx,
-    };
-    setTableLayout("column");
-  }, []);
+  const onHeaderCellDragStart = useCallback(
+    (evt: MouseEvent) => {
+      const { clientX, clientY } = evt;
+      console.log(
+        `useDraggableColumn handleHeaderCellDragStart means mouseDown fired on a column in RowBasedTable`
+      );
+      const sourceElement = evt.target as HTMLElement;
+      const columnHeaderCell = sourceElement.closest(".vuuTable-headerCell");
+      containerRef.current = columnHeaderCell?.closest(
+        "[role='row']"
+      ) as HTMLDivElement;
+      const {
+        dataset: { idx = "-1" },
+      } = columnHeaderCell as HTMLElement;
+      mousePosRef.current = {
+        clientX,
+        clientY,
+        idx,
+      };
+      onMouseDown?.(evt);
+    },
+    [onMouseDown]
+  );
 
-  useLayoutEffect(() => {
-    if (tableLayout === "column" && mousePosRef.current && !draggable) {
-      const { clientX, clientY, idx } = mousePosRef.current;
-      const target = tableContainerRef.current?.querySelector(
-        `.vuuTable-table[data-idx="${idx}"]`
-      ) as HTMLElement;
-      if (target) {
-        const evt = {
-          persist: () => undefined,
-          nativeEvent: {
-            clientX,
-            clientY,
-            target,
-          },
-        };
-        onMouseDown?.(evt as unknown as MouseEvent);
-      }
-    }
-  }, [draggable, onMouseDown, tableContainerRef, tableLayout]);
+  // useLayoutEffect(() => {
+  //   if (tableLayout === "column" && mousePosRef.current && !draggable) {
+  //     const { clientX, clientY, idx } = mousePosRef.current;
+  //     const target = tableContainerRef.current?.querySelector(
+  //       `.vuuTable-table[data-idx="${idx}"]`
+  //     ) as HTMLElement;
+  //     if (target) {
+  //       const evt = {
+  //         persist: () => undefined,
+  //         nativeEvent: {
+  //           clientX,
+  //           clientY,
+  //           target,
+  //         },
+  //       };
+  //       onMouseDown?.(evt as unknown as MouseEvent);
+  //     }
+  //   }
+  // }, [draggable, onMouseDown, tableContainerRef, tableLayout]);
 
   return {
     draggable,
     draggedItemIndex,
-    tableLayout,
-    onHeaderCellDragStart:
-      tableLayout === "row" ? handleHeaderCellDragStart : undefined,
+    onHeaderCellDragStart,
   };
 };

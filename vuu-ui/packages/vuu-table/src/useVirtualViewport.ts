@@ -1,12 +1,16 @@
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { getColumnsInViewport, itemsChanged } from "@finos/vuu-utils";
+import {
+  getColumnsInViewport,
+  itemsChanged,
+  RowAtPositionFunc,
+} from "@finos/vuu-utils";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ViewportMeasurements } from "./useTableViewport";
 
 export interface VirtualViewportHookProps {
   columns: KeyedColumnDescriptor[];
-  rowHeight: number;
+  getRowAtPosition: RowAtPositionFunc;
   setRange: (range: VuuRange) => void;
   viewportMeasurements: ViewportMeasurements;
 }
@@ -19,16 +23,17 @@ export interface VirtualViewportHookResult {
 
 export const useVirtualViewport = ({
   columns,
-  rowHeight,
+  getRowAtPosition,
   setRange,
   viewportMeasurements,
 }: VirtualViewportHookProps): VirtualViewportHookResult => {
   const firstRowRef = useRef<number>(-1);
   const {
     rowCount: viewportRowCount,
-    scrollContentWidth: contentWidth,
+    contentWidth,
     maxScrollContainerScrollHorizontal,
   } = viewportMeasurements;
+  // double check this ...
   const availableWidth = contentWidth - maxScrollContainerScrollHorizontal;
   const scrollLeftRef = useRef(0);
 
@@ -70,13 +75,13 @@ export const useVirtualViewport = ({
 
   const handleVerticalScroll = useCallback(
     (scrollTop: number) => {
-      const firstRow = Math.floor(scrollTop / rowHeight);
+      const firstRow = getRowAtPosition(scrollTop);
       if (firstRow !== firstRowRef.current) {
         firstRowRef.current = firstRow;
         setRange({ from: firstRow, to: firstRow + viewportRowCount });
       }
     },
-    [rowHeight, setRange, viewportRowCount]
+    [getRowAtPosition, setRange, viewportRowCount]
   );
 
   return {

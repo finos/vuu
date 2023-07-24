@@ -1,19 +1,17 @@
 import {
   DataSource,
-  DataSourceRow,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import {
-  KeyedColumnDescriptor,
   GridConfig,
-  TableHeadings,
+  KeyedColumnDescriptor,
   SelectionChangeHandler,
+  TableHeadings,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent } from "react";
-
-export type tableLayoutType = "row" | "column";
 
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   allowConfigEditing?: boolean;
@@ -37,8 +35,12 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;
   rowHeight?: number;
+  /**
+   * Selection Bookends style the left and right edge of a selection block.
+   * They are optional, value defaults to zero.
+   */
+  selectionBookendWidth?: number;
   selectionModel?: TableSelectionModel;
-  tableLayout?: tableLayoutType;
   width?: number;
   zebraStripes?: boolean;
 }
@@ -53,19 +55,20 @@ export interface TableImplementationProps {
   columns: KeyedColumnDescriptor[];
   columnsWithinViewport: KeyedColumnDescriptor[];
   data: DataSourceRow[];
+  getRowOffset: (row: DataSourceRow) => number;
   headerHeight: number;
   headings: TableHeadings;
   onColumnResize?: TableColumnResizeHandler;
   onHeaderCellDragEnd?: () => void;
   onHeaderCellDragStart?: (evt: MouseEvent) => void;
   onContextMenu?: (evt: MouseEvent<HTMLElement>) => void;
-  onRemoveColumnFromGroupBy?: (column: KeyedColumnDescriptor) => void;
+  onRemoveColumnFromGroupBy?: (column?: KeyedColumnDescriptor) => void;
   onRowClick?: RowClickHandler;
   onSort: (column: KeyedColumnDescriptor, isAdditive: boolean) => void;
   onToggleGroup?: (row: DataSourceRow, column: KeyedColumnDescriptor) => void;
+  tableId: string;
   virtualColSpan?: number;
   rowCount: number;
-  rowHeight: number;
 }
 
 type MeasureStatus = "unmeasured" | "measured";
@@ -81,12 +84,11 @@ export interface TableMeasurements {
 }
 
 export interface Viewport {
-  fillerHeight: number;
   maxScrollContainerScrollHorizontal: number;
   maxScrollContainerScrollVertical: number;
   pinnedWidthLeft: number;
   rowCount: number;
-  scrollContentWidth: number;
+  // contentWidth: number;
 }
 
 export type RowClickHandler = (

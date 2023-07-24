@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { withinRange } from "@finos/vuu-utils";
 import {
@@ -29,9 +29,12 @@ import { ScrollRequestHandler } from "./useTableScroll";
 
 export type CellPos = [number, number];
 
-const headerCellQuery = (colIdx: number) => `thead th:nth-child(${colIdx + 1})`;
+const headerCellQuery = (colIdx: number) =>
+  `.vuuTable-headers .vuuTable-headerCell:nth-child(${colIdx + 1})`;
 const dataCellQuery = (rowIdx: number, colIdx: number) =>
-  `tbody > tr[aria-rowindex='${rowIdx}'] > td:nth-child(${colIdx + 1})`;
+  `.vuuTable-body > [aria-rowindex='${rowIdx}'] > [role='cell']:nth-child(${
+    colIdx + 1
+  })`;
 
 const NULL_CELL_POS: CellPos = [-1, -1];
 
@@ -110,14 +113,16 @@ export const useKeyboardNavigation = ({
   );
 
   const getFocusedCell = (element: HTMLElement | Element | null) =>
-    element?.closest("th,td") as HTMLTableCellElement | null;
+    element?.closest(
+      "[role='columnHeader'],[role='cell']"
+    ) as HTMLTableCellElement | null;
 
   const getTableCellPos = (tableCell: HTMLTableCellElement): CellPos => {
-    if (tableCell.tagName === "TH") {
+    if (tableCell.role === "columnHeader") {
       const colIdx = parseInt(tableCell.dataset.idx ?? "-1", 10);
       return [-1, colIdx];
     } else {
-      const focusedRow = tableCell.closest("tr");
+      const focusedRow = tableCell.closest("[role='row']");
       if (focusedRow) {
         const rowIdx = parseInt(focusedRow.ariaRowIndex ?? "-1", 10);
         // TODO will get trickier when we introduce horizontal virtualisation

@@ -1,5 +1,5 @@
 import { EditorState } from "@codemirror/state";
-import { SyntaxNode } from "@lezer/common";
+import type { SyntaxNode } from "@lezer/common";
 
 export const getValue = (node: SyntaxNode, state: EditorState) =>
   state.doc.sliceString(node.from, node.to);

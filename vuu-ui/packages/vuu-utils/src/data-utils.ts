@@ -8,6 +8,19 @@ export const DOWN2 = "down2";
 export const isValidNumber = (n: unknown): n is number =>
   typeof n === "number" && isFinite(n);
 
+const EMPTY = {};
+export const shallowEquals = (
+  o1: { [key: string]: unknown } = EMPTY,
+  o2: { [key: string]: unknown } = EMPTY
+) => {
+  const props1 = Object.keys(o1);
+  const props2 = Object.keys(o2);
+  return (
+    props1.length === props2.length &&
+    props1.every((key) => o1[key] === o2[key])
+  );
+};
+
 export function getMovingValueDirection(
   newValue: number,
   direction?: valueChangeDirection,

@@ -5,8 +5,8 @@ import { exec } from "child_process";
 export const readPackageJson = (path = "package.json") => readJson(path);
 
 export const readJson = (path) => {
-  let rawdata = fs.readFileSync(path);
-  let json = JSON.parse(rawdata);
+  const rawdata = fs.readFileSync(path);
+  const json = JSON.parse(rawdata);
   return json;
 };
 
@@ -105,21 +105,18 @@ export const assertFolderExists = (folderName, exitIfFalse) => {
   return true;
 };
 
-export const writeMetaFile = async (meta, outdir) =>
+export const writeJsonFileFile = async (json, path) =>
   new Promise((resolve, reject) => {
-    console.log(`write bundle metafile`);
-    fs.writeFile(
-      `${outdir}/meta.json`,
-      JSON.stringify(meta, null, 2),
-      (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
+    fs.writeFile(path, JSON.stringify(json, null, 2), (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
       }
-    );
+    });
   });
+export const writeMetaFile = async (meta, outdir) =>
+  writeJsonFileFile(meta, `${outdir}/meta.json`);
 
 export const padRight = (str, length) => {
   return (str + Array(length).fill(" ").join("")).slice(0, length);
@@ -130,7 +127,10 @@ export const byFileName = ({ fileName: f1 }, { fileName: f2 }) => {
 
 /**
  * argName can be a simple switch e.g --watch
+ * yarn style args ...
  * argName can also expect a value following eg --features my-feature
+ * npm style args ...
+ * argName can also expect a value following eg -- --features=my-feature
  * if expectValue is true, user MUST provide a value
  * defaultValue, if provided, is returned ONLY if user does not use the switch at all
  * @param {
@@ -141,30 +141,42 @@ export const byFileName = ({ fileName: f1 }, { fileName: f2 }) => {
  * @returns
  */
 export const getCommandLineArg = (argName, expectValue, defaultValue) => {
+  // npm style args --arg=xyz
+  const argEquals = argName + "=";
   const args = process.argv.slice(2);
-  const hasArg = args.includes(argName);
-  if (hasArg && expectValue) {
-    const pos = args.indexOf(argName);
-    const argValue = args[pos + 1];
-    if (argValue === undefined) {
-      console.log(`value expected after arg ${argName}`);
-    } else if (argValue.startsWith("--")) {
-      console.log(`value expected after arg ${argName}, found ${argValue}`);
+  const matchedArg = args.find(
+    (arg) => arg === argName || arg.startsWith(argEquals)
+  );
+  if (matchedArg && expectValue) {
+    if (matchedArg.startsWith(argEquals)) {
+      const posEquals = matchedArg.indexOf("=");
+      return matchedArg.slice(posEquals + 1);
     } else {
-      return argValue;
+      const pos = args.indexOf(argName);
+      const argValue = args[pos + 1];
+      if (argValue === undefined) {
+        console.log(`value expected after arg ${argName}`);
+      } else if (argValue.startsWith("--")) {
+        console.log(`value expected after arg ${argName}, found ${argValue}`);
+      } else {
+        return argValue;
+      }
     }
-  } else if (!hasArg && defaultValue) {
+  } else if (!matchedArg && defaultValue) {
     return defaultValue;
   } else {
-    return hasArg;
+    return matchedArg;
   }
 };
 
 const args = process.argv.slice(2);
-export const withArgs = (...argNames) =>
-  argNames
+
+export const withArgs = (...argNames) => {
+  const commandLineArgs = argNames
     .map((arg) => (args.includes("--" + arg) ? ` --${arg}` : ""))
     .join("");
+  return commandLineArgs ? ` -- ${commandLineArgs}` : "";
+};
 
 const addSuffix = (target, suffix, pattern) => {
   if (typeof target === "string") {

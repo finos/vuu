@@ -1,14 +1,13 @@
 /* eslint-disable no-sequences */
-import { DataSource, DataSourceFilter } from "@finos/vuu-data";
+import { DataSource } from "@finos/vuu-data";
+import { DataSourceFilter, MenuActionHandler } from "@finos/vuu-data-types";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { removeColumnFromFilter } from "@finos/vuu-filters";
-import { MenuActionHandler } from "@finos/vuu-popups";
+import { removeColumnFromFilter, setAggregations } from "@finos/vuu-utils";
 import { AggregationType } from "../constants";
 import { GridModelDispatch } from "../grid-context";
 import { GridModelType } from "../grid-model/gridModelTypes";
 import { GridModel } from "../grid-model/gridModelUtils";
 import { ContextMenuOptions } from "./contextMenuTypes";
-import { setAggregations } from "@finos/vuu-utils";
 
 const { Average, High, Low, Count, Sum } = AggregationType;
 export interface ContextMenuHookProps {

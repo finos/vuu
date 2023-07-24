@@ -1,0 +1,36 @@
+.vuuDockLayout {
+  --chest-bg: var(--hw-chest-bg, inherit);
+  --drawer-bg: var(--hw-drawer-bg, inherit);
+  --drawer-size: var(--hw-drawer-size, 200px);
+  --drawer-peek-size: var(--hw-drawer-peek-size, 32px);
+  --drawer-transition-duration: var(--hw-drawer-transition-duration, 0.4s);
+  background-color: var(--chest-bg);
+  display: flex;
+}
+
+.vuuDockLayout-horizontal {
+  flex-direction: row;
+}
+
+.vuuDockLayout-vertical {
+  flex-direction: column;
+}
+
+.vuuDockLayout-content {
+  background-color: var(--chest-bg);
+  flex-grow: 1;
+  flex-shrink: 1;
+  overflow: hidden;
+  /* position: relative; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vuuDockLayout-horizontal .vuuDockLayout-content {
+  flex-basis: 100%;
+}
+
+.vuuDockLayout-vertical .vuuDockLayout-content {
+  flex-basis: 100%;
+}

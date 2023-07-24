@@ -5,7 +5,7 @@ import {
   VuuColumnDataType,
   VuuSortType,
 } from "@finos/vuu-protocol-types";
-import { FunctionComponent, HTMLAttributes } from "react";
+import { FunctionComponent, HTMLAttributes, MouseEvent } from "react";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
@@ -14,13 +14,14 @@ export type SelectionItem = number | RangeTuple;
 export type Selection = SelectionItem[];
 export type SelectionChangeHandler = (selection: Selection) => void;
 
-export type TableHeading = { label: string; span: number };
+export type TableHeading = { label: string; width: number };
 export type TableHeadings = TableHeading[][];
 
 export interface TableCellProps
   extends Omit<HTMLAttributes<HTMLTableCellElement>, "onClick"> {
   column: KeyedColumnDescriptor;
-  onClick?: (column: KeyedColumnDescriptor) => void;
+  columnMap: ColumnMap;
+  onClick?: (event: MouseEvent, column: KeyedColumnDescriptor) => void;
   row: DataSourceRow;
 }
 
@@ -29,6 +30,7 @@ export declare type GridConfig = {
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
   headings: TableHeadings;
+  selectionBookendWidth?: number;
 };
 
 export declare type TypeFormatting = {

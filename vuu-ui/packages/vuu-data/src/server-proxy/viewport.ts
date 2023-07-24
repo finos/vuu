@@ -1,4 +1,4 @@
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import { Selection } from "@finos/vuu-datagrid-types";
 import {
   ClientToServerChangeViewPort,
@@ -14,7 +14,6 @@ import {
   LinkDescriptorWithLabel,
   ServerToClientCreateViewPortSuccess,
   VuuAggregation,
-  VuuColumnDataType,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
@@ -30,23 +29,14 @@ import {
   RangeMonitor,
 } from "@finos/vuu-utils";
 import {
-  ServerProxySubscribeMessage,
-  VuuUIMessageOutCloseTreeNode,
-  VuuUIMessageOutOpenTreeNode,
-} from "../vuuUIMessageTypes";
-import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
-import * as Message from "./messages";
-import {
   DataSourceAggregateMessage,
   DataSourceColumnsMessage,
-  DataSourceConfig,
   DataSourceDebounceRequest,
   DataSourceDisabledMessage,
   DataSourceEnabledMessage,
   DataSourceFilterMessage,
   DataSourceGroupByMessage,
   DataSourceMenusMessage,
-  DataSourceRow,
   DataSourceSetConfigMessage,
   DataSourceSortMessage,
   DataSourceSubscribedMessage,
@@ -54,9 +44,16 @@ import {
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
   DataUpdateMode,
-  hasGroupBy,
   WithFullConfig,
 } from "../data-source";
+import { getFirstAndLastRows, TableSchema } from "../message-utils";
+import {
+  ServerProxySubscribeMessage,
+  VuuUIMessageOutCloseTreeNode,
+  VuuUIMessageOutOpenTreeNode,
+} from "../vuuUIMessageTypes";
+import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
+import * as Message from "./messages";
 
 const EMPTY_GROUPBY: VuuGroupBy = [];
 
@@ -162,10 +159,7 @@ export class Viewport {
     requestId: string;
   })[] = [];
   private rowCountChanged = false;
-  private serverTableMeta: {
-    columns: string[];
-    dataTypes: VuuColumnDataType[];
-  } | null = null;
+  private tableSchema: TableSchema | null = null;
   private batchMode = true;
   private useBatchMode = true;
 
@@ -177,8 +171,10 @@ export class Viewport {
   public links?: LinkDescriptorWithLabel[];
   public linkedParent?: LinkedParent;
   public serverViewportId?: string;
+  // TODO roll disabled/suspended into status
   public status: "" | "subscribing" | "resubscribing" | "subscribed" = "";
   public suspended = false;
+  public suspendTimer: number | null = null;
   public table: VuuTable;
   public title: string | undefined;
 
@@ -271,7 +267,7 @@ export class Viewport {
       groupBy,
       range,
       sort,
-      tableMeta: this.serverTableMeta,
+      tableSchema: this.tableSchema,
     } as DataSourceSubscribedMessage;
   }
 
@@ -513,8 +509,8 @@ export class Viewport {
     };
   }
 
-  setTableMeta(columns: string[], dataTypes: VuuColumnDataType[]) {
-    this.serverTableMeta = { columns, dataTypes };
+  setTableSchema(tableSchema: TableSchema) {
+    this.tableSchema = tableSchema;
   }
 
   openTreeNode(requestId: string, message: VuuUIMessageOutOpenTreeNode) {
@@ -609,6 +605,7 @@ export class Viewport {
   disable(requestId: string) {
     this.awaitOperation(requestId, { type: "disable" });
     info?.(`disable: ${this.serverViewportId}`);
+    this.suspended = false;
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
@@ -629,6 +626,10 @@ export class Viewport {
       type: "filter",
       data: dataSourceFilter,
     });
+
+    if (this.useBatchMode) {
+      this.batchMode = true;
+    }
     const { filter } = dataSourceFilter;
     info?.(`filterRequest: ${filter}`);
     return this.createRequest({ filterSpec: { filter } });
@@ -638,6 +639,10 @@ export class Viewport {
     this.awaitOperation(requestId, { type: "config", data: config });
 
     const { filter, ...remainingConfig } = config;
+
+    if (this.useBatchMode) {
+      this.batchMode = true;
+    }
 
     debugEnabled
       ? debug?.(`setConfig ${JSON.stringify(config)}`)
@@ -732,10 +737,17 @@ export class Viewport {
   };
 
   updateRows(rows: VuuRow[]) {
-    const [{ rowIndex: firstRowIndex }] = rows;
-    const { rowIndex: lastRowIndex } = rows.at(-1) as VuuRow;
+    const [firstRow, lastRow] = getFirstAndLastRows(rows);
+    if (firstRow && lastRow) {
+      this.removePendingRangeRequest(firstRow.rowIndex, lastRow.rowIndex);
+    }
 
-    this.removePendingRangeRequest(firstRowIndex, lastRowIndex);
+    if (rows.length === 1 && firstRow.vpSize === 0 && this.disabled) {
+      debug?.(
+        `ignore a SIZE=0 message on disabled viewport (${rows.length} rows)`
+      );
+      return;
+    }
 
     for (const row of rows) {
       if (this.isTree && isLeafUpdate(row)) {
@@ -845,8 +857,8 @@ const toClientRow = (
     rowIndex,
     keys.keyFor(rowIndex),
     true,
-    null,
-    null,
+    false,
+    0,
     0,
     rowKey,
     isSelected,
@@ -860,7 +872,7 @@ const toClientRowTree = (
   const [depth, isExpanded /* path */, , isLeaf /* label */, , count, ...rest] =
     data;
 
-  const record = [
+  return [
     rowIndex,
     keys.keyFor(rowIndex),
     isLeaf,
@@ -869,7 +881,5 @@ const toClientRowTree = (
     count,
     rowKey,
     isSelected,
-  ].concat(rest);
-
-  return record as DataSourceRow;
+  ].concat(rest) as DataSourceRow;
 };

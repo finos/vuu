@@ -23,7 +23,10 @@ export const launchApp = async (websocket) => {
   await execWait("yarn --silent build");
   await execWait(`yarn --silent build:app${url}`);
 
-  execWait(`npx serve -p 3010 ./deployed_apps/app-vuu-example`);
+// code from cli branch was following line , replacing 2 lined beneath
+//  execWait(`npx serve -p 3010 ./deployed_apps/app-vuu-example`);
+await execWait("npm run --silent build");
+await execWait(`npm run --silent build:app${url}`);
 
   setTimeout(() => {
     open("http://localhost:3010/demo");

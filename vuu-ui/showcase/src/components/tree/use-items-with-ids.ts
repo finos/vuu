@@ -1,18 +1,37 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from "react";
+import { NormalisedTreeSourceNode, TreeSourceNode } from "./Tree";
 
-const PathSeparators = new Set(['/', '-', '.']);
+const PathSeparators = new Set(["/", "-", "."]);
 // TODO where do we define or identify separators
-const isPathSeparator = (char) => PathSeparators.has(char);
+const isPathSeparator = (char: string) => PathSeparators.has(char);
 
-const isParentPath = (parentPath, childPath) =>
-  childPath.startsWith(parentPath) && isPathSeparator(childPath[parentPath.length]);
+const isParentPath = (parentPath: string, childPath: string) =>
+  childPath.startsWith(parentPath) &&
+  isPathSeparator(childPath[parentPath.length]);
+
+type Indexer = {
+  index: number;
+};
+
+type SourceItemById = (
+  id: string,
+  target?: NormalisedTreeSourceNode[]
+) => TreeSourceNode | undefined;
 
 export const useItemsWithIds = (
-  sourceProp,
-  idRoot = 'root',
-  { collapsibleHeaders, defaultExpanded = false, revealSelected = false } = {}
-) => {
-  const countChildItems = (item, items, idx) => {
+  sourceProp: TreeSourceNode[],
+  idRoot = "root",
+  {
+    collapsibleHeaders = undefined,
+    defaultExpanded = false,
+    revealSelected = false,
+  } = {}
+): [number, NormalisedTreeSourceNode[], SourceItemById] => {
+  const countChildItems = (
+    item: TreeSourceNode,
+    items: TreeSourceNode[],
+    idx: number
+  ) => {
     if (item.childNodes) {
       return item.childNodes.length;
     } else if (item.header) {
@@ -39,30 +58,40 @@ export const useItemsWithIds = (
   );
 
   const normalizeItems = useCallback(
-    (items, indexer, level = 1, path = '', results = [], flattenedSource = []) => {
+    (
+      items: TreeSourceNode[],
+      indexer: Indexer,
+      level = 1,
+      path = "",
+      results: NormalisedTreeSourceNode[] = [],
+      flattenedSource: TreeSourceNode[] = []
+    ): [number, NormalisedTreeSourceNode[], TreeSourceNode[]] => {
       let count = 0;
       // TODO get rid of the Proxy
       items.forEach((item, i, all) => {
         const isCollapsibleHeader = item.header && collapsibleHeaders;
-        const isNonCollapsibleGroupNode = item.childNodes && collapsibleHeaders === false;
+        const isNonCollapsibleGroupNode =
+          item.childNodes && collapsibleHeaders === false;
         const isLeaf = !item.childNodes || item.childNodes.length === 0;
-        const nonCollapsible = isNonCollapsibleGroupNode || (isLeaf && !isCollapsibleHeader);
+        const nonCollapsible =
+          isNonCollapsibleGroupNode || (isLeaf && !isCollapsibleHeader);
         const childPath = path ? `${path}.${i}` : `${i}`;
         const id = item.id ?? `${idRoot}-${childPath}`;
 
         const expanded = nonCollapsible ? undefined : isExpanded(id);
         //TODO dev time check - if id is provided by user, make sure
         // hierarchical pattern is consistent
-        const normalisedItem = {
+        const normalisedItem: NormalisedTreeSourceNode = {
           ...item,
+          childNodes: undefined,
           id,
           count:
             !isNonCollapsibleGroupNode && expanded === undefined
               ? 0
               : countChildItems(item, all, i),
+          expanded,
           index: indexer.index,
           level,
-          expanded
         };
         results.push(normalisedItem);
         flattenedSource.push(items[i]);
@@ -71,9 +100,9 @@ export const useItemsWithIds = (
         indexer.index += 1;
 
         // if ((isNonCollapsibleGroupNode || expanded !== undefined) && !isCollapsibleHeader) {
-        if (normalisedItem.childNodes) {
+        if (item.childNodes) {
           const [childCount, children] = normalizeItems(
-            normalisedItem.childNodes,
+            item.childNodes,
             indexer,
             level + 1,
             childPath,
@@ -91,12 +120,14 @@ export const useItemsWithIds = (
     [collapsibleHeaders, idRoot, isExpanded]
   );
 
-  const [count, sourceWithIds, flattenedSource] = useMemo(() => {
+  const [count, sourceWithIds, flattenedSource] = useMemo<
+    [number, NormalisedTreeSourceNode[], TreeSourceNode[]]
+  >(() => {
     return normalizeItems(sourceProp, { index: 0 });
   }, [normalizeItems, sourceProp]);
 
-  const sourceItemById = useCallback(
-    (id, target = sourceWithIds) => {
+  const sourceItemById = useCallback<SourceItemById>(
+    (id, target = sourceWithIds): TreeSourceNode | undefined => {
       const sourceWithId = target.find(
         (i) => i.id === id || (i?.childNodes?.length && isParentPath(i.id, id))
       );

@@ -58,9 +58,9 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       assertVpEqWithMeta(priceUpdates) {
         Table(
           ("sel"     ,"_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","ric"     ,"bid"     ,"ask"     ,"last"    ,"open"    ,"exchange"),
-          (0         ,false     ,1         ,"$root|XLON",false     ,1         ,"XLON"    ,""        ,""        ,""        ,""        ,""        ,"XLON"    ),
-          (0         ,false     ,1         ,"$root|NYSE",false     ,1         ,"NYSE"    ,""        ,""        ,""        ,""        ,""        ,"NYSE"    ),
-          (0         ,false     ,1         ,"$root|XAMS",false     ,1         ,"XAMS"    ,""        ,""        ,""        ,""        ,""        ,"XAMS"    )
+          (0         ,false     ,1         ,"$root|XLON",false     ,0         ,"XLON"    ,""        ,""        ,""        ,""        ,""        ,"XLON"    ),
+          (0         ,false     ,1         ,"$root|NYSE",false     ,0         ,"NYSE"    ,""        ,""        ,""        ,""        ,""        ,"NYSE"    ),
+          (0         ,false     ,1         ,"$root|XAMS",false     ,0         ,"XAMS"    ,""        ,""        ,""        ,""        ,""        ,"XAMS"    )
         )
       }
 

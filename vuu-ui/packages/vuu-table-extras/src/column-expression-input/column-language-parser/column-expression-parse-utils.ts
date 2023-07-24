@@ -1,4 +1,4 @@
-import { SyntaxNode } from "@lezer/common";
+import type { SyntaxNode } from "@finos/vuu-codemirror";
 import { parser } from "./generated/column-parser";
 
 const strictParser = parser.configure({ strict: true });

@@ -10,13 +10,13 @@ import React, {
 import { Contribution, useViewDispatch } from "../layout-view";
 
 import {
-  EditableLabel,
   Toolbar,
   ToolbarButton,
   ToolbarField,
   Tooltray,
 } from "@heswell/salt-lab";
 import { CloseIcon } from "@salt-ds/icons";
+import { EditableLabel } from "@finos/vuu-ui-controls";
 
 import "./Header.css";
 
@@ -99,8 +99,20 @@ export const Header = ({
   };
 
   const toolbarItems: ReactElement[] = [];
-  const contributedItems: ReactElement[] = [];
+  const postTitleContributedItems: ReactElement[] = [];
   const actionButtons: ReactElement[] = [];
+
+  contributions?.forEach((contribution, i) => {
+    switch (contribution.location) {
+      case "pre-title":
+        toolbarItems.push(React.cloneElement(contribution.content, { key: i }));
+        break;
+      default:
+        postTitleContributedItems.push(
+          React.cloneElement(contribution.content, { key: i })
+        );
+    }
+  });
 
   title &&
     toolbarItems.push(
@@ -120,10 +132,6 @@ export const Header = ({
       </ToolbarField>
     );
 
-  contributions?.forEach((contribution, i) => {
-    contributedItems.push(React.cloneElement(contribution.content, { key: i }));
-  });
-
   closeable &&
     actionButtons.push(
       <ToolbarButton
@@ -135,10 +143,10 @@ export const Header = ({
       </ToolbarButton>
     );
 
-  contributedItems.length > 0 &&
+  postTitleContributedItems.length > 0 &&
     toolbarItems.push(
       <Tooltray data-align-end key="contributions">
-        {contributedItems}
+        {postTitleContributedItems}
       </Tooltray>
     );
 
@@ -152,7 +160,6 @@ export const Header = ({
   return (
     <Toolbar
       className={className}
-      id="stevo"
       orientation={orientationProp}
       style={style}
       onMouseDown={handleMouseDown}

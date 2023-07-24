@@ -10,11 +10,11 @@ import {
   startCompletion,
   VuuCompletion,
 } from "@finos/vuu-codemirror";
+import { walkTree } from "@finos/vuu-filter-parser";
 import { Filter } from "@finos/vuu-filter-types";
 import cx from "classnames";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
-import { filterLanguageSupport } from "./filter-language-parser";
-import { walkTree } from "./filter-language-parser/FilterTreeWalker";
+import { filterLanguageSupport } from "./FilterLanguage";
 import { vuuHighlighting } from "./highlighting";
 import { vuuTheme } from "./theme";
 import {

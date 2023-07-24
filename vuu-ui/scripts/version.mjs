@@ -10,6 +10,7 @@ const packages = [
   "packages/vuu-layout",
   "packages/vuu-shell",
   "packages/vuu-filters",
+  "packages/vuu-filter-parser",
   "sample-apps/app-vuu-example",
   "sample-apps/feature-filtered-grid",
   "sample-apps/feature-vuu-blotter",
@@ -38,7 +39,7 @@ export const bumpDependencies = (packagePath) => {
 
 async function bumpPackageVersion(packagePath) {
   try {
-    await execWait("yarn version --patch --no-git-tag-version", packagePath);
+    await execWait("npm version --patch --no-git-tag-version", packagePath);
   } catch (e) {
     console.log(e.message);
     process.exit(1);

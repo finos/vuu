@@ -4,17 +4,15 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.viewport.GroupBy
 
-import java.util
 import java.util.concurrent.ConcurrentHashMap
-import javax.swing.JList
 import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
-import scala.jdk.CollectionConverters.{CollectionHasAsScala, IteratorHasAsScala, MapHasAsScala}
+import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 object EmptyTree extends Tree {
 
   override def nodeState: TreeNodeStateStore = TreeNodeStateStore(Map())
 
-  override def applyNewNodeState(newNodeState: TreeNodeStateStore): Tree = EmptyTree
+  override def applyNewNodeState(newNodeState: TreeNodeStateStore, action: TreeBuildAction): Tree = EmptyTree
 
   override def paramsHashcode: Int = -2
 
@@ -26,13 +24,13 @@ object EmptyTree extends Tree {
 
   override def getNode(key: String): TreeNode = null
 
-  override def getNodeByOriginalKey(key: String): TreeNode = null
-
   override def hasChild(parent: TreeNode, child: TreeNode): Boolean = false
 
   override def toKeys(): ImmutableArray[String] = ImmutableArray.empty[String]
 
   override def isOpen(latestNode: TreeNode): Boolean = false
+
+  def buildAction: Option[TreeBuildAction] = None
 }
 
 trait Tree {
@@ -43,7 +41,7 @@ trait Tree {
 
   def nodeState: TreeNodeStateStore
 
-  def applyNewNodeState(newNodeState: TreeNodeStateStore): Tree
+  def applyNewNodeState(newNodeState: TreeNodeStateStore, action: TreeBuildAction): Tree
 
 //  def openAll(): Unit
 //
@@ -61,11 +59,11 @@ trait Tree {
 
   def getNode(key: String): TreeNode
 
-  def getNodeByOriginalKey(key: String): TreeNode
-
   def hasChild(parent: TreeNode, child: TreeNode): Boolean
 
   def toKeys(): ImmutableArray[String]
+
+  def buildAction: Option[TreeBuildAction]
 
   def isOpen(latestNode: TreeNode): Boolean
 
@@ -130,10 +128,12 @@ trait Tree {
 //  }
 //}
 
-class TreeImpl(private val rootNode: TreeNode, val nodeState: TreeNodeStateStore, val groupBy: GroupBy, val updateCounter: Long,
+class TreeImpl(private val rootNode: TreeNode,
+               val nodeState: TreeNodeStateStore, val groupBy: GroupBy, val updateCounter: Long,
                val paramsHashcode: Int,
                val lookup: ConcurrentHashMap[String, TreeNode] = new ConcurrentHashMap[String, TreeNode](100_000),
-               val lookupOrigKeyToTreeKey: ConcurrentHashMap[String, TreeNode] = new ConcurrentHashMap[String, TreeNode](100_000)
+               val lookupOrigKeyToTreeKey: ConcurrentHashMap[String, TreeNode] = new ConcurrentHashMap[String, TreeNode](100_000),
+               val buildAction: Option[TreeBuildAction] = None
               ) extends StrictLogging with Tree {
 
   override def nodes(): Iterable[TreeNode] = IteratorHasAsScala(lookup.values().iterator()).asScala.toList
@@ -151,8 +151,8 @@ class TreeImpl(private val rootNode: TreeNode, val nodeState: TreeNodeStateStore
 //  }
 
 
-  override def applyNewNodeState(newNodeState: TreeNodeStateStore): Tree = {
-    val newTree = new TreeImpl(rootNode, newNodeState, groupBy, updateCounter, paramsHashcode, this.lookup, this.lookupOrigKeyToTreeKey)
+  override def applyNewNodeState(newNodeState: TreeNodeStateStore, action: TreeBuildAction): Tree = {
+    val newTree = new TreeImpl(rootNode, newNodeState, groupBy, updateCounter, paramsHashcode, this.lookup, this.lookupOrigKeyToTreeKey, Some(action))
     newTree
   }
 
@@ -186,13 +186,10 @@ class TreeImpl(private val rootNode: TreeNode, val nodeState: TreeNodeStateStore
     lookup.get(key)
   }
 
-  def getNodeByOriginalKey(originalKey: String): TreeNode = {
-    lookupOrigKeyToTreeKey.get(originalKey)
-  }
 
   def setNode(node: TreeNode): Unit = {
     lookup.putIfAbsent(node.key, node)
-    lookupOrigKeyToTreeKey.putIfAbsent(node.originalKey, node)
+//    lookupOrigKeyToTreeKey.putIfAbsent(node.originalKey, node)
   }
 
   def hasChild(parent: TreeNode, child: TreeNode): Boolean = parent.getChildren.contains(child)

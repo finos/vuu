@@ -1,18 +1,36 @@
 import * as ReactDOM from "react-dom";
-import { SaltProvider } from "@salt-ds/core";
 import { ReactElement } from "react";
+import cx from "classnames";
 
 let containerId = 1;
 
-const getPortalContainer = (x = 0, y = 0, win = window) => {
+const getPortalContainer = ({
+  className,
+  dataMode,
+  x = 0,
+  y = 0,
+  win = window,
+}: HTMLContainerProps) => {
   const el = win.document.createElement("div");
-  el.className = "vuuPopup " + containerId++;
+  el.className = cx(`vuuPopup ${containerId++}`, className);
   el.style.cssText = `left:${x}px; top:${y}px;`;
+  if (dataMode) {
+    el.dataset.mode = dataMode;
+  }
   win.document.body.appendChild(el);
   return el;
 };
 
-const createDOMContainer = (x?: number, y?: number) => getPortalContainer(x, y);
+export interface HTMLContainerProps {
+  className?: string;
+  dataMode?: string;
+  x?: number;
+  y?: number;
+  win?: typeof globalThis;
+}
+
+export const createContainer = (props: HTMLContainerProps) =>
+  getPortalContainer(props);
 
 export const renderPortal = (
   component: ReactElement,
@@ -24,11 +42,5 @@ export const renderPortal = (
   // check this first to see if position has changed
   container.style.cssText = `left:${x}px; top:${y}px;position: absolute;`;
 
-  ReactDOM.render(
-    <SaltProvider applyClassesTo="child">{component}</SaltProvider>,
-    container,
-    onRender
-  );
+  ReactDOM.render(component, container, onRender);
 };
-
-export const createContainer = createDOMContainer;

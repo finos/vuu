@@ -1,4 +1,7 @@
-import React, {
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { buildColumnMap, DataRow, metadataKeys } from "@finos/vuu-utils";
+import cx from "classnames";
+import {
   ForwardedRef,
   forwardRef,
   MutableRefObject,
@@ -8,10 +11,16 @@ import React, {
   useReducer,
   useRef,
 } from "react";
-import cx from "classnames";
-import { buildColumnMap, DataRow, metadataKeys } from "@finos/vuu-utils";
-import { useGridContext } from "../grid-context";
 import ColumnGroupHeader, { ColumnGroupHeaderAPI } from "../ColumnGroupHeader";
+import { useGridContext } from "../grid-context";
+import { ColumnGroupType, GridModelType } from "../grid-model/gridModelTypes";
+import { getColumnOffset } from "../grid-model/gridModelUtils";
+import Row from "../grid-row";
+import {
+  ColumnDragStartHandler,
+  ColumnDragState,
+  RowClickHandler,
+} from "../gridTypes";
 import useScroll from "../use-scroll";
 import useUpdate from "../use-update";
 import {
@@ -19,15 +28,6 @@ import {
   canvasReducer,
   initCanvasReducer,
 } from "./canvas-reducer";
-import Row from "../grid-row";
-import { getColumnOffset } from "../grid-model/gridModelUtils";
-import {
-  ColumnDragStartHandler,
-  ColumnDragState,
-  RowClickHandler,
-} from "../gridTypes";
-import { ColumnGroupType, GridModelType } from "../grid-model/gridModelTypes";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 const { IDX, RENDER_IDX, SELECTED } = metadataKeys;
 
@@ -107,8 +107,6 @@ export const Canvas = forwardRef(function Canvas(
   }: CanvasProps,
   forwardedRef: ForwardedRef<CanvasAPI>
 ) {
-  console.log(`Canvas ${gridModel.columns.map((col) => col.name)}`);
-
   const canvasEl = useRef<HTMLDivElement>(null);
   const contentEl = useRef<HTMLDivElement>(null);
   const columnGroupHeader = useRef<ColumnGroupHeaderAPI>(null);
@@ -124,8 +122,6 @@ export const Canvas = forwardRef(function Canvas(
     CanvasReducer,
     ColumnGroupType
   >(canvasReducer, columnGroup, initCanvasReducer);
-
-  console.log(`Canvas ${columns.map((col) => col.name)}`);
 
   const columnMap = useMemo(
     () => buildColumnMap(gridModel.columnNames),

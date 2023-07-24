@@ -1,9 +1,11 @@
+const defaultAuthUrl = "api/authn";
+
 export const authenticate = async (
   username: string,
   password: string,
-  host = ""
+  authUrl = defaultAuthUrl
 ): Promise<string | void> =>
-  fetch(`${host}/api/authn`, {
+  fetch(authUrl, {
     method: "POST",
     credentials: "include",
     headers: {

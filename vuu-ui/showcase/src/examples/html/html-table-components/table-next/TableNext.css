@@ -1,0 +1,110 @@
+.TableNext {
+  height: var(--table-css-height);
+  background-color: red;
+  position: relative;
+  width: var(--table-css-width);
+}
+
+.TableNext-scrollbarContainer {
+  --scroll-content-width: 1100px;
+  border-bottom: none !important;
+  border-top: none !important;
+  border-left: solid 1px var(--salt-container-primary-borderColor);
+  /*  a top border */
+  box-shadow: 0px -1px 0px 0px var(--salt-container-primary-borderColor);
+  height: var(--viewport-body-height);
+  left: 0px;
+  overflow: auto;
+  position: absolute;
+  top: 30px;
+  width: calc(var(--table-width) + 1px);
+}
+
+.TableNext-scrollbarContent {
+  height: calc(var(--content-height) + var(--horizontal-scrollbar-height));
+  position: absolute;
+  width: var(--content-width);
+}
+
+.TableNext-contentContainer {
+  --vuuTableHeaderHeight: 30px;
+  background-color: var(--salt-container-primary-background);
+  height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
+  position: relative;
+  overflow: auto;
+  overscroll-behavior: none;
+  width: calc(var(--table-width) - var(--vertical-scrollbar-width));
+}
+
+.TableNext-contentContainer::-webkit-scrollbar {
+  display: none;
+}
+
+ 
+.TableNext-table {
+  position: absolute;
+  top: 0;
+  left: 0;
+  table-layout: fixed;
+  width: var(--content-width);
+  margin: 0;
+  border: none;
+  background-color: #fff;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-left: 1px solid #ccc;
+}
+
+.TableNext-body {
+  height: var(--content-height)
+}
+
+.TableNext-cell {
+  display: inline-block;
+}
+
+.vuuPinLeft, .vuuPinRight {
+  background-color: inherit;
+  position: sticky;
+  z-index: 1;
+}
+
+.TableNext-col-headings {
+    position: sticky;
+    top: 0;
+    /* ensure header row sits atop everything else when scrolling down */
+    z-index: 1;
+}
+
+  .TableNext-col-headers {
+    white-space: nowrap;
+  }
+
+  .TableNext-col-header {
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+  display: inline-flex;
+    line-height: 29px;
+    border-right: 1px solid #999;
+    cursor: default;
+    padding: 0 3px;
+  }
+
+  .TableNextRow {
+    background: #fff;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    height: 30px;
+    line-height: 29px;
+    position: absolute;
+    top:0;
+    white-space: nowrap;
+  }
+
+  .sizer-cell {
+    background-color: green !important;
+    border: none !important;
+    height: 0px;
+  }
+  

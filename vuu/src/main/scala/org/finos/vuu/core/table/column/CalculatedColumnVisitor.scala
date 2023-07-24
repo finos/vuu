@@ -17,7 +17,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
   }
 
   override def visitTerm(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
-    logger.debug("VISIT TERM:" + ctx.getText)
+    logger.info("VISIT TERM:" + ctx.getText)
 
     val children = CollectionHasAsScala(ctx.children).asScala.toList
 
@@ -189,19 +189,26 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
 
   private def processBracketedOperatorTerm(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
 
+
     val operator = ctx.operator.get(0)
 
     val children = CollectionHasAsScala(ctx.children).asScala.toList
 
-    val leftChild :: op :: rightChild :: _ = children
+    if(children.head.getText == "(" && children.last.getText == ")"){
+      processOperatorTerm(ctx)
+    }
+    else{
+      val leftChild :: op :: rightChild :: _ = children
 
-    logger.debug(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
+      logger.info(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
 
-    val leftClause = processOperatorSideTerm(leftChild)
+      val leftClause = processOperatorSideTerm(leftChild)
 
-    val rightClause = processOperatorSideTerm(rightChild)
+      val rightClause = processOperatorSideTerm(rightChild)
 
-    processOperatorClause(operator, leftClause, rightClause)
+      processOperatorClause(operator, leftClause, rightClause)
+    }
+
   }
 
 

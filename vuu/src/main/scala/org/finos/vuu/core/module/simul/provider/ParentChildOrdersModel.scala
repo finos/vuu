@@ -2,10 +2,11 @@ package org.finos.vuu.core.module.simul.provider
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.auths.PermissionSet
 
 import java.util.concurrent.{ConcurrentHashMap, DelayQueue, Delayed, TimeUnit}
 
-case class ParentOrder(id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String, remainingQty: Int, activeChildren: Int)
+case class ParentOrder(id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String, remainingQty: Int, activeChildren: Int, owner: String = "", permissionMask: Int = 0)
 
 case class ChildOrder(parentId: Int, id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, strategy: String, exchange: String, ccy: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String)
 
@@ -70,6 +71,8 @@ case class Algo(name: String)
 
 case class Strategy(name: String)
 
+case class OrderPermission(name: String, mask: Int)
+
 class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: LifecycleContainer, randomNumbers: RandomNumbers) {
 
   private final val queue = new DelayQueue[DelayQueueAction]()
@@ -122,6 +125,12 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
     Strategy("DarkCond"),
     Strategy("Iceberg"),
     Strategy("")
+  )
+
+  private final val permissions = List(
+    OrderPermission("SALES", PermissionSet.SalesTradingPermission),
+    OrderPermission("ALGO", PermissionSet.AlgoCoveragePermission),
+    OrderPermission("HT", PermissionSet.HighTouchPermission)
   )
 
   def registerOrderListener(listener: OrderListener) = {
@@ -286,10 +295,10 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
     val account = accounts(randomNumbers.seededRand(0, accounts.length - 1))
     val algo = algos(randomNumbers.seededRand(0, algos.length - 1))
     val volLimit = randomNumbers.seededRand(0, 10) * 10
+    val permission = permissions(randomNumbers.seededRand(0, permissions.length - 1))
     val parentId = orderId
     orderId += 1
-    ParentOrder(parentId, instrument.ric, instrument.seedPrice, quantity, side, account.name, instrument.exchange, instrument.ccy, algo.name, volLimit, 0, quantity, 0.0, "NEW", quantity, 0)
-
+    ParentOrder(parentId, instrument.ric, instrument.seedPrice, quantity, side, account.name, instrument.exchange, instrument.ccy, algo.name, volLimit, 0, quantity, 0.0, "NEW", quantity, 0, permission.name, permission.mask)
   }
 
   def createChild(parentOrder: ParentOrder): ChildOrder = {

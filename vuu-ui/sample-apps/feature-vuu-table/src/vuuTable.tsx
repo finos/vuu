@@ -2,20 +2,21 @@ import {
   DataSource,
   DataSourceConfig,
   DataSourceVisualLinkCreatedMessage,
-  isViewportMenusAction,
-  isVisualLinksAction,
-  MenuActionConfig,
   RemoteDataSource,
   TableSchema,
-  useVuuMenuActions,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import {
+  isViewportMenusAction,
+  isVisualLinksAction,
+  MenuActionConfig,
+  useVuuMenuActions,
+} from "@finos/vuu-data-react";
 import { GridConfig } from "@finos/vuu-datagrid-types";
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
-  filterAsQuery,
   FilterInput,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
@@ -27,11 +28,12 @@ import {
   ShellContextProps,
   useShellContext,
 } from "@finos/vuu-shell";
+import { DataSourceStats } from "@finos/vuu-table-extras";
+import { filterAsQuery } from "@finos/vuu-utils";
 import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { LinkedIcon } from "@salt-ds/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConfigurableDataTable } from "./ConfigurableDataTable";
-import { DataSourceStats } from "@finos/vuu-table-extras";
 
 import "./vuuTable.css";
 
@@ -47,12 +49,6 @@ const NO_CONFIG: BlotterConfig = {};
 export interface FilteredTableProps extends FeatureProps {
   schema: TableSchema;
 }
-
-type FilterState = {
-  filter: Filter | undefined;
-  filterQuery: string;
-  filterName?: string;
-};
 
 const applyDefaults = (
   { columns, table }: TableSchema,
@@ -155,10 +151,10 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   ]);
 
   useEffect(() => {
-    dataSource.enable?.();
+    dataSource.resume?.();
     return () => {
       // suspend activity on the dataSource when component is unmounted
-      dataSource.disable?.();
+      dataSource.suspend?.();
     };
   }, [dataSource]);
 

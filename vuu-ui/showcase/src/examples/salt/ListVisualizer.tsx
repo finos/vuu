@@ -7,8 +7,16 @@ const ListVizContext = createContext<unknown>({});
 
 export const useListViz = () => useContext(ListVizContext);
 
+type Measurement = {
+  currentIndex: number;
+  element: HTMLElement;
+  index: number;
+  size: number;
+  start: number;
+};
+
 export const ListVisualizer: React.FC<unknown> = ({ children }) => {
-  const [content, setContent] = useState([]);
+  const [content, setContent] = useState<Measurement[]>([]);
   const [dropTarget, setDropTarget] = useState([]);
   const [dropZone, setDropZone] = useState([]);
   const [vizKey, setVisKey] = useState(1);

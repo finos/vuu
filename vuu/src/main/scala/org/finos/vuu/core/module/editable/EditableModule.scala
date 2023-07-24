@@ -1,13 +1,14 @@
 package org.finos.vuu.core.module.editable
 
-import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{SessionTableDef, TableDef, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 import org.finos.vuu.provider.RpcProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.vui.VuiStateStoreProvider
 
-class EditableModule extends DefaultModule {
+object EditableModule extends DefaultModule {
 
   final val NAME = "EDITABLE"
 
@@ -16,20 +17,27 @@ class EditableModule extends DefaultModule {
     ModuleFactory.withNamespace(NAME)
       .addTable(
         TableDef(
-          name = "editOrders",
-          keyField = "ric",
-          columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(), "currency".string(), "exchange".string(), "lotSize".int()),
+          name = "process",
+          keyField = "id",
+          columns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
           VisualLinks(),
-          joinFields = "ric"
+          joinFields = "id"
         ),
-        (table, vs) => new RpcProvider(table),
-        // this below...
-        (table, provider, _) => {
-          ViewPortDef(
-            columns = table.getTableDef.columns,
-            service = new EditOrdersRpcService(table, provider.asInstanceOf[RpcProvider])
-          )
-        }
-      ).asModule()
+        (table, vs) => new ProcessProvider(table),
+        (table, _, _, tableContainer) => ViewPortDef(
+          columns = table.getTableDef.columns,
+          service = new ProcessRpcService(tableContainer)
+        )
+      ).addSessionTable(
+      SessionTableDef(
+        name = "fixSequenceReset",
+        keyField = "process-id",
+        columns = Columns.fromNames("process-id:String", "sequenceNumber:Int")
+      ),
+      (table, _, _, _) => ViewPortDef(
+        columns = table.getTableDef.columns,
+        service = new FixSequenceRpcService()
+      )
+    ).asModule()
   }
 }

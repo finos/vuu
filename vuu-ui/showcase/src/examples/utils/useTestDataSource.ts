@@ -1,8 +1,4 @@
-import {
-  DataSource,
-  DataSourceConstructorProps,
-  RemoteDataSource,
-} from "@finos/vuu-data";
+import { RemoteDataSource } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
@@ -54,7 +50,6 @@ export const useTestDataSource = ({
   columnConfig,
   filter,
   groupBy,
-  onConfigChange,
   schemas,
   sort,
   tablename = "instruments",
@@ -66,12 +61,11 @@ export const useTestDataSource = ({
   columnNames?: string[];
   filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
-  onConfigChange?: DataSourceConstructorProps["onConfigChange"];
   schemas: { [key: string]: Schema };
   sort?: VuuSort;
   tablename?: string;
 }) => {
-  const dataSourceRef = useRef<DataSource | undefined>();
+  const dataSourceRef = useRef<RemoteDataSource | undefined>();
 
   const [columns, config, columnNames, table] = useMemo(() => {
     const schema = schemas[tablename];
@@ -96,10 +90,8 @@ export const useTestDataSource = ({
       columns: columnNames,
       filter,
       groupBy,
-      onConfigChange,
       sort,
       table,
-      serverUrl: "127.0.0.1:8090/websocket",
     };
 
     const { current: activeTable } = tableRef;
@@ -119,7 +111,7 @@ export const useTestDataSource = ({
     }
 
     return dataSourceRef.current;
-  }, [bufferSize, columnNames, filter, groupBy, onConfigChange, sort, table]);
+  }, [bufferSize, columnNames, filter, groupBy, sort, table]);
 
   const error = useAutoLoginToVuuServer(autoLogin);
 

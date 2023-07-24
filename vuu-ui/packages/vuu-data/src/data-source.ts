@@ -1,48 +1,29 @@
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   SelectionChangeHandler,
 } from "@finos/vuu-datagrid-types";
-import { EventEmitter } from "@finos/vuu-utils";
 import {
+  ClientToServerEditRpc,
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
-  VuuColumnDataType,
   VuuColumns,
   VuuFilter,
   VuuGroupBy,
   VuuLinkDescriptor,
   VuuMenu,
   VuuRange,
-  VuuRowDataItemType,
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
-import { MenuRpcResponse } from "./vuuUIMessageTypes";
-
-type RowIndex = number;
-type RenderKey = number;
-type IsLeaf = boolean;
-type IsExpanded = boolean;
-type Depth = number;
-type ChildCount = number;
-type RowKey = string;
-type IsSelected = 0 | 1 | 2;
-
-export type DataSourceRow = [
-  RowIndex,
-  RenderKey,
-  IsLeaf,
-  IsExpanded,
-  Depth,
-  ChildCount,
-  RowKey,
-  IsSelected,
-  ...VuuRowDataItemType[]
-];
-
-export type DataSourceRowPredicate = (row: DataSourceRow) => boolean;
+import { EventEmitter } from "@finos/vuu-utils";
+import { TableSchema } from "./message-utils";
+import {
+  MenuRpcResponse,
+  VuuUIMessageInRPCEditReject,
+  VuuUIMessageInRPCEditResponse,
+} from "./vuuUIMessageTypes";
 
 export interface MessageWithClientViewportId {
   clientViewportId: string;
@@ -62,13 +43,19 @@ export interface DataSourceDataMessage extends MessageWithClientViewportId {
   type: "viewport-update";
 }
 
+export interface DataSourceDataSizeMessage extends MessageWithClientViewportId {
+  mode: "size-only";
+  size: number;
+  type: "viewport-update";
+}
+
 export interface DataSourceDebounceRequest extends MessageWithClientViewportId {
   type: "debounce-begin";
 }
 
 export const isSizeOnly = (
   message: DataSourceCallbackMessage
-): message is DataSourceDataMessage =>
+): message is DataSourceDataSizeMessage =>
   message.type === "viewport-update" && message.mode === "size-only";
 
 export interface DataSourceDisabledMessage extends MessageWithClientViewportId {
@@ -288,7 +275,7 @@ export interface DataSourceSubscribedMessage
   groupBy: VuuGroupBy;
   range: VuuRange;
   sort: VuuSort;
-  tableMeta: { columns: string[]; dataTypes: VuuColumnDataType[] } | null;
+  tableSchema: Readonly<TableSchema> | null;
   type: "subscribed";
 }
 
@@ -474,16 +461,23 @@ export type DataSourceEvents = {
 
 export interface DataSource extends EventEmitter<DataSourceEvents> {
   aggregations: VuuAggregation[];
-  closeTreeNode: (key: string) => void;
+  closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
   config: DataSourceConfig | undefined;
+  suspend?: () => void;
+  resume?: () => void;
   enable?: () => void;
   disable?: () => void;
   filter: DataSourceFilter;
   groupBy: VuuGroupBy;
   menuRpcCall: (
-    rpcRequest: Omit<ClientToServerMenuRPC, "vpId">
-  ) => Promise<MenuRpcResponse | undefined>;
+    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
+  ) => Promise<
+    | MenuRpcResponse
+    | VuuUIMessageInRPCEditReject
+    | VuuUIMessageInRPCEditResponse
+    | undefined
+  >;
   openTreeNode: (key: string) => void;
   range: VuuRange;
   select: SelectionChangeHandler;

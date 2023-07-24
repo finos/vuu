@@ -1,0 +1,148 @@
+/* Component class applied to the root element */
+.vuuTabstrip {
+  --vuuOverflowContainer-background: transparent;
+  /* --tabs-tabstrip-height: var(--vuuTabstrip-height, var(--salt-size-stackable)); */
+  --tabs-tabstrip-height: var(--vuuTabstrip-height, 28px);
+  --tabs-tabstrip-dragging-display: none;
+  --tabs-tabstrip-display: inline-flex;
+  --tabs-tabstrip-background: transparent;
+
+  align-items: flex-start;
+  align-self: var(--saltTabs-tabstrip-alignSelf, stretch);
+  border-bottom: var(--vuuTabstrip-borderBottom, solid 1px var(--salt-container-primary-borderColor));
+  font-size: var(--salt-text-fontSize);
+  font-weight: var(--salt-text-fontWeight);
+  position: relative;
+  overflow: visible;
+  display: flex;
+  min-width: 28px;
+  width: 100%;
+}
+
+/* Tabstrip orientation is horizontal */
+.vuuTabstrip-horizontal {
+  --vuuTabActivationIndicator-height: 1px;
+  --vuuTabActivationIndicator-thumb-inset: -1px 0 0 0;
+  --tab-activationIndicator-borderStyle: none none solid none;
+  --tab-activationIndicator-inset: auto 0px 0px 0px;
+  --tab-activationIndicator-transitionProperty: left;
+  --tab-activationIndicator-thumb-height: 0px;
+  --tab-thumb-height: 2px;
+}
+
+/* Tabstrip orientation is vertical */
+.vuuTabstrip-vertical {
+  --vuuTabActivationIndicator-thumb-inset: 0 0 0 -1px;
+
+  --tab-activationIndicator-transition: top 0.3s ease;
+  --tab-activationIndicator-borderStyle: none solid none none;
+  --tab-activationIndicator-inset: 0px 0px 0px auto;
+  --tab-activationIndicator-transitionProperty: top;
+  --tab-activationIndicator-width: 1px;
+  --tab-activationIndicator-thumb-width: 2px;
+
+  align-self: flex-start;
+  display: inline-flex;
+}
+
+.vuuTabstrip-draggingTab {
+  --vuuTabs-activationIndicator-transition: none;
+}
+
+.vuuTabstrip-draggingTab .vuuTab {
+  pointer-events: none;
+}
+
+/* Tabstrip orientation is horizontal */
+.vuuTabstrip-horizontal {
+  height: var(--tabs-tabstrip-height);
+}
+
+.vuuTabstrip-addTabButton {
+  --saltButton-height: 20px;
+  --saltButton-width: 20px;
+}
+
+.vuuTabstrip-overflowMenu.saltDropdown {
+  --saltIcon-margin: 2px 0 0 0px;
+}
+
+.vuuTabstrip-overflowMenu-open {
+  --saltButton-background: var(--salt-actionable-secondary-background-active);
+  --saltButton-text-color: var(--salt-actionable-secondary-text-color-active);
+}
+
+.vuuTabstrip-overflowMenu-open .saltButton {
+  --saltIcon-color: var(--salt-actionable-secondary-foreground-active);
+}
+
+.vuuTabstrip-inner {
+  width: 100%;
+  align-items: center;
+  display: flex;
+  flex-basis: auto;
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  line-height: var(--tabs-tabstrip-height);
+}
+
+.vuuTabstrip-vertical .vuuTabstrip-inner {
+  flex-direction: column;
+  height: auto;
+}
+
+.vuuTabstrip-centered .vuuTabstrip-inner {
+  justify-content: center;
+}
+
+/* Styling applied to Draggable wrapper when used to drag a Tab */
+.vuuDraggable[class*="vuuTabstrip"] {
+  --tabs-tabstrip-display: flex;
+  --tabs-tabstrip-height: 100%;
+  --tabs-tabstrip-dragging-display: block;
+
+  --tabs-tab-background: var(--salt-navigable-primary-background-hover);
+  --tabs-tab-before-content: "";
+  --tabs-tab-before-background: var(--salt-navigable-indicator-hover);
+  --tabs-tab-before-height: var(--tab-activationIndicator-thumb-height);
+  --tabs-tab-before-inset: var(--tab-activationIndicator-inset);
+  --tabs-tab-before-width: var(--tab-activationIndicator-thumb-width);
+  --tabs-tab-cursor: var(--salt-draggable-grab-cursor-active);
+  --tabs-tab-position: static;
+
+  font-size: 12px;
+}
+
+.vuuDraggable-tabstrip-horizontal {
+  --tab-thumb-height: 2px;
+  --tabs-tabstrip-height: 28px;
+  --tab-activationIndicator-thumb-height: 2px;
+  --tab-activationIndicator-inset: auto 0px 0px 0px;
+
+  line-height: var(--tabs-tabstrip-height);
+}
+.vuuDraggable-tabstrip-vertical {
+  --tab-activationIndicator-inset: 0px 0px 0px auto;
+  --tab-activationIndicator-thumb-width: 2px;
+}
+
+.vuuDraggable[class*="tabstrip"] .vuuTab[aria-selected="true"]:before {
+  --tabs-tab-before-background: var(--salt-navigable-indicator-active);
+}
+
+/* [data-overflowed] {
+  order: 99;
+  visibility: hidden;
+} */
+
+.vuuTabstrip-overflowMenu-dropTarget:after {
+  background: var(--salt-selectable-background-selected);
+  content: "";
+  position: absolute;
+  height: 2px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}

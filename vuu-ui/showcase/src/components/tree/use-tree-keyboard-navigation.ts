@@ -5,14 +5,22 @@ import {
   getNodeParentPath,
   getIndexOfNode,
 } from "./hierarchical-data-utils";
+import { NormalisedTreeSourceNode } from "./Tree";
+
+export interface TreeKeyboardNavigationHookProps {
+  highlightedIdx: number;
+  hiliteItemAtIndex: (idx: number) => void;
+  indexPositions: NormalisedTreeSourceNode[];
+  source: NormalisedTreeSourceNode[];
+}
 
 // we need a way to set highlightedIdx when selection changes
-export const useKeyboardNavigation = ({
+export const useTreeKeyboardNavigation = ({
   highlightedIdx,
   hiliteItemAtIndex,
   indexPositions,
   source,
-}) => {
+}: TreeKeyboardNavigationHookProps) => {
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === ArrowLeft) {
@@ -21,8 +29,12 @@ export const useKeyboardNavigation = ({
         if (parentId) {
           e.preventDefault();
           const parentNode = getNodeById(source, parentId);
-          const idx = getIndexOfNode(indexPositions, parentNode);
-          hiliteItemAtIndex(idx);
+          if (parentNode) {
+            const idx = getIndexOfNode(indexPositions, parentNode);
+            if (idx !== undefined) {
+              hiliteItemAtIndex(idx);
+            }
+          }
         }
       }
     },

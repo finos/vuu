@@ -7,18 +7,22 @@
   "type": "module",
   "scripts": {
     "build": "node ../../scripts/run-build.mjs",
-    "lezer-generate:filter": "lezer-generator --output ./src/filter-input/filter-language-parser/generated/filter-parser.js ./src/filter-input/filter-language-parser/grammar/filter.grammar",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
     "@finos/vuu-codemirror": "0.0.26",
-    "@finos/vuu-data": "0.0.26",
+    "@finos/vuu-data-react": "0.0.26",
+    "@finos/vuu-data-types": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "@salt-ds/core": "1.2.0",
-    "@heswell/salt-lab": "1.0.0-alpha.2"
+    "@heswell/salt-lab": "1.0.0-alpha.2",
+    "uuid": "9.0.0"
   },
   "peerDependencies": {
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "@types/uuid": "^9.0.2"
   }
 }

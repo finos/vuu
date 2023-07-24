@@ -91,5 +91,8 @@ describe("ColumnExpressionParser", () => {
 
   it("parses nested conditional expressions", () => {
     expect(evaluateExpression('if(ccy="Gbp",1,if(ccy="USD",2,3))')).toEqual(Ok);
+    expect(
+      evaluateExpression("if(quantity=0, 0, min(1, filledQuantity / quantity))")
+    ).toEqual(Ok);
   });
 });

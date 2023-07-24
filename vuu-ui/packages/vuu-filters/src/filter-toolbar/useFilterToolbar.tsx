@@ -1,11 +1,13 @@
 import { Filter } from "@finos/vuu-filter-types";
 import {
-  isMultiValueFilter,
-  isNamedFilter,
-  isSingleValueFilter,
   IFilterSuggestionProvider,
   SuggestionConsumer,
 } from "@finos/vuu-filters";
+import {
+  isMultiValueFilter,
+  isNamedFilter,
+  isSingleValueFilter,
+} from "@finos/vuu-utils";
 import { ToggleButton, ToolbarField } from "@heswell/salt-lab";
 import { ReactElement } from "react";
 import { FilterDropdown } from "./FilterDropdown";

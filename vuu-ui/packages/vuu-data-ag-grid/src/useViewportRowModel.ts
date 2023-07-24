@@ -1,29 +1,43 @@
 import {
-  DataSource,
+  DataSourceConfig,
+  MenuRpcResponse,
+  RemoteDataSource,
+  VuuFeatureMessage,
+  VuuUIMessageInRPCEditReject,
+  VuuUIMessageInRPCEditResponse,
+} from "@finos/vuu-data";
+
+import {
   isViewportMenusAction,
   isVisualLinksAction,
   MenuActionConfig,
-  MenuRpcResponse,
   SuggestionFetcher,
   useTypeaheadSuggestions,
   useVuuMenuActions,
-  VuuFeatureMessage,
+  VuuMenuActionHandler,
   VuuServerMenuOptions,
-} from "@finos/vuu-data";
-import { VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
-import { useCallback, useMemo, useRef } from "react";
-import { bySortIndex, isSortedColumn, toSortDef } from "./AgGridDataUtils";
+} from "@finos/vuu-data-react";
 
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
+import { buildColumnMap, itemsOrOrderChanged } from "@finos/vuu-utils";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AgData, AgDataRow } from "./AgDataWindow";
+import { createColumnDefs } from "./AgGridColumnUtils";
+import {
+  bySortIndex,
+  isSortedColumn,
+  toSortDef,
+  toVuuDataSourceRow,
+} from "./AgGridDataUtils";
 import {
   AgGridFilter,
   agGridFilterModelToVuuFilter,
 } from "./AgGridFilterUtils";
+import { vuuMenuToAgGridMenu } from "./agGridMenuUtils";
 import { FilterDataProvider } from "./FilterDataProvider";
 import { GroupCellRenderer } from "./GroupCellRenderer";
 import { ViewportRowModelDataSource } from "./ViewportRowModelDataSource";
-import { buildColumnMap } from "@finos/vuu-utils";
-import { vuuMenuToAgGridMenu } from "./agGridMenuUtils";
-import { AgData, AgDataRow } from "./AgDataWindow";
 
 type Column = {
   getId: () => string;
@@ -36,11 +50,23 @@ interface FilterChangedEvent {
     getFilterModel: () => AgGridFilter;
   };
 }
+
+export interface AgGridDataRow {
+  [key: string]: unknown;
+  expanded?: boolean;
+  groupKey: string;
+  groupKeys?: string;
+  groupRow: boolean;
+}
+
+const isAgGridGroupDataRow = (data: unknown): data is AgGridDataRow =>
+  typeof data === "object" &&
+  data !== null &&
+  typeof (data as AgGridDataRow)["groupKey"] === "string";
+
 type RowGroupOpenedEvent = {
-  data: {
-    expanded: boolean;
-    groupKey: string;
-  };
+  data?: AgGridDataRow;
+  expanded: boolean;
   node: { expanded?: boolean };
 };
 type ColumnState = { colId: string; sortIndex: number }[];
@@ -53,19 +79,42 @@ type SortChangedEvent = {
 const NullSuggestionFetcher: SuggestionFetcher = async () => [];
 
 export interface ViewportRowModelHookProps {
-  dataSource: DataSource;
+  columns?: ColumnDescriptor[];
+  dataSource: RemoteDataSource;
   onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  onRpcResponse?: (
+    response:
+      | MenuRpcResponse
+      | VuuUIMessageInRPCEditReject
+      | VuuUIMessageInRPCEditResponse
+  ) => void;
+  vuuMenuActionHandler?: VuuMenuActionHandler;
 }
 
+type GroupByConfigChange = {
+  groupBy: VuuGroupBy;
+};
+
+const hasGroupByChange = (
+  message?: Partial<DataSourceConfig>
+): message is GroupByConfigChange => Array.isArray(message?.groupBy);
+
 export const useViewportRowModel = ({
+  columns,
   dataSource,
+  onRpcResponse,
   onFeatureEnabled,
+  vuuMenuActionHandler,
 }: ViewportRowModelHookProps) => {
   const menuRef = useRef<VuuMenu>();
   const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
     NullSuggestionFetcher
   );
+  const groupByRef = useRef<VuuGroupBy>([]);
+  const [groupBy, setGroupBy] = useState<VuuGroupBy>(groupByRef.current);
   getTypeaheadSuggestionsRef.current = useTypeaheadSuggestions();
+
+  const { table } = dataSource;
 
   // It is important that these values are not assigned in advance. They
   // are accessed at the point of construction of ContextMenu
@@ -85,13 +134,20 @@ export const useViewportRowModel = ({
     }),
     []
   );
-  const handleRpcResponse = useCallback((response?: MenuRpcResponse) => {
-    console.log(`what are we going to do with a MenuRPCResponse`, {
-      response,
-    });
-  }, []);
+  const handleRpcResponse = useCallback(
+    (
+      response:
+        | MenuRpcResponse
+        | VuuUIMessageInRPCEditReject
+        | VuuUIMessageInRPCEditResponse
+    ) => {
+      onRpcResponse?.(response);
+    },
+    [onRpcResponse]
+  );
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+    clientSideMenuActionHandler: vuuMenuActionHandler,
     dataSource,
     menuActionConfig,
     onRpcResponse: handleRpcResponse,
@@ -114,6 +170,7 @@ export const useViewportRowModel = ({
   );
 
   const viewportDatasource: ViewportRowModelDataSource = useMemo(() => {
+    // TODO call destroy on the dataSource when we dispose of it
     return new ViewportRowModelDataSource(dataSource, handleVuuFeatureEnabled);
   }, [dataSource, handleVuuFeatureEnabled]);
 
@@ -125,13 +182,45 @@ export const useViewportRowModel = ({
     return new FilterDataProvider(table, getTypeaheadSuggestionsRef);
   }, []);
 
+  const columnDefs = useMemo(() => {
+    return Array.isArray(columns)
+      ? createColumnDefs(createFilterDataProvider(table), columns, groupBy)
+      : undefined;
+  }, [columns, createFilterDataProvider, groupBy, table]);
+
+  useEffect(() => {
+    // We listen to dsataSource config changes to detect changes applied
+    // directly to the dataSource, i.e. not applied via AgGrid and detected via
+    // AgGrid event callbacks. For the former, AgGrid has no knowledge
+    // that a change has occurred, so will not render the subsequent row refresh
+    // correctly. In the case of GroupBy, for example. we need to recompute the
+    // column defs to apply grouping. This will cause AgGrid to re-render columns
+    // taking grouping into account and will enable subsequent refresh of grouped
+    // data to be handled correctly.
+    // Where a config change DOES originate from AgGrid (e.g user has applied
+    // grouping from the Ag Grid context menu), we store latest value in a ref,
+    // so that we can ignore the config change event(s) that will be fired by
+    // the dataSource for this config change.
+    dataSource.on("config", (config) => {
+      if (
+        hasGroupByChange(config) &&
+        itemsOrOrderChanged(groupByRef.current, config.groupBy)
+      ) {
+        setGroupBy(config.groupBy);
+      }
+    });
+  }, [dataSource]);
+
+  // Fired when user has applied grouping from AG Grid, either via the
+  // column menu or by dragging a column onto the group bar.
   const handleColumnRowGroupChanged = useCallback(
     (evt: unknown) => {
       const columnRowGroupChangedEvent = evt as ColumnRowGroupChangedEvent;
       const { columns } = columnRowGroupChangedEvent;
       if (columns !== null) {
-        const colIds = columns.map((c) => c.getId());
-        viewportDatasource.setRowGroups(colIds);
+        const vuuGroupBy: VuuGroupBy = columns.map((c) => c.getId());
+        groupByRef.current = vuuGroupBy;
+        viewportDatasource.setRowGroups(vuuGroupBy);
       }
     },
     [viewportDatasource]
@@ -139,9 +228,11 @@ export const useViewportRowModel = ({
 
   const handleRowGroupOpened = useCallback(
     (evt: RowGroupOpenedEvent) => {
-      const { groupKey } = evt.data;
-      const { expanded = false } = evt.node;
-      viewportDatasource.setExpanded(groupKey, !expanded);
+      if (isAgGridGroupDataRow(evt.data)) {
+        const { groupKey } = evt.data;
+        const { expanded = false } = evt.node;
+        viewportDatasource.setExpanded(groupKey, !expanded);
+      }
     },
     [viewportDatasource]
   );
@@ -191,15 +282,17 @@ export const useViewportRowModel = ({
       const {
         colDef: { field },
       } = column;
-      const { data } = node;
+      const data = node.data as AgData;
       console.log({ field, data });
 
       if (dataSource && dataSource.viewport) {
+        // We have to convert the Ag style row (map) to a Vuu style row (array)
+        // to support Vuu filter evaulation against rows
         const columnMap = buildColumnMap(dataSource.columns);
         const options: VuuServerMenuOptions = {
           columnMap,
           columnName: field,
-          row: data,
+          row: toVuuDataSourceRow(data, columnMap),
           selectedRows: [],
           viewport: dataSource.viewport,
         };
@@ -223,9 +316,11 @@ export const useViewportRowModel = ({
 
   return {
     autoGroupColumnDef,
+    columnDefs,
     createFilterDataProvider,
     viewportDatasource,
     defaultColDef: {
+      resizable: true,
       sortable: true,
     },
     getContextMenuItems,

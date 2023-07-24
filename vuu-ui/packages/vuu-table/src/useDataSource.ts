@@ -1,14 +1,17 @@
 import {
   DataSource,
   DataSourceConfigMessage,
-  DataSourceRow,
   DataSourceSubscribedMessage,
   SubscribeCallback,
-  VuuFeatureMessage,
-  isVuuFeatureAction,
   VuuFeatureInvocationMessage,
-  isVuuFeatureInvocation,
+  VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
+
+import {
+  isVuuFeatureAction,
+  isVuuFeatureInvocation,
+} from "@finos/vuu-data-react";
 import { VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -63,18 +66,10 @@ export function useDataSource({
 
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
-      //     onsole.log(`%c[useDataSource] setData
-      // [${updates.map(d => d[0]).join(',')}]`,'color:blue')
       for (const row of updates) {
         dataWindow.add(row);
       }
-
-      // Why bother with the slice ?
-      // data.current = dataWindow.data.slice().sort(byKey);
       data.current = dataWindow.data;
-      //     onsole.log(`%c[useDataSource] data.current has ${data.current.length} records
-      // [${data.current.map(d => d[0]).join(',')}]
-      //     `, 'color:blue;')
       hasUpdated.current = true;
     },
     [dataWindow]
@@ -145,11 +140,11 @@ export function useDataSource({
       const { from } = dataSource.range;
       const rowRange = { from, to: from + rowCount };
       const fullRange = getFullRange(rowRange, renderBufferSize);
+      dataWindow.setRange(fullRange);
       dataSource.range = rangeRef.current = fullRange;
       // seems a bit naughty to emit from outside, but the datasource doesn't
       // know about the buffer size we add to the base range
       dataSource.emit("range", rowRange);
-      dataWindow.setRange(fullRange);
     },
     [dataSource, dataWindow, renderBufferSize]
   );
@@ -157,8 +152,8 @@ export function useDataSource({
   const setRange = useCallback(
     (range: VuuRange) => {
       const fullRange = getFullRange(range, renderBufferSize);
-      dataSource.range = rangeRef.current = fullRange;
       dataWindow.setRange(fullRange);
+      dataSource.range = rangeRef.current = fullRange;
       dataSource.emit("range", range);
     },
     [dataSource, dataWindow, renderBufferSize]
@@ -250,7 +245,7 @@ export class MovingWindow {
   setRange({ from, to }: VuuRange) {
     if (from !== this.range.from || to !== this.range.to) {
       const [overlapFrom, overlapTo] = this.range.overlap(from, to);
-      const newData = new Array(to - from);
+      const newData = new Array(Math.max(0, to - from));
       for (let i = overlapFrom; i < overlapTo; i++) {
         const data = this.getAtIndex(i);
         if (data) {

@@ -1,16 +1,23 @@
 import {
   DataSource,
-  isVuuFeatureAction,
+  DataSourceConfig,
   SubscribeCallback,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
-import { buildColumnMap, ColumnMap, metadataKeys } from "@finos/vuu-utils";
-import { AgViewportRows, convertToAgViewportRows } from "./AgGridDataUtils";
-import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
+import { isVuuFeatureAction } from "@finos/vuu-data-react";
 import { Filter } from "@finos/vuu-filter-types";
+import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
+import {
+  buildColumnMap,
+  ColumnMap,
+  itemsOrOrderChanged,
+  metadataKeys,
+} from "@finos/vuu-utils";
 import { AgDataWindow } from "./AgDataWindow";
+import { AgViewportRows, convertToAgViewportRows } from "./AgGridDataUtils";
 
 const { IDX, IS_LEAF, IS_EXPANDED } = metadataKeys;
+const NO_COLUMNS: string[] = [];
 
 type AgRow = {
   expanded?: boolean;
@@ -31,7 +38,13 @@ const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
     )
   );
 
+/**
+ * This is a custom ViewportRowModelDataSource that complies with the interface
+ * expected by AgGrid. Internally, it interacts with a remote Vuu server to
+ * fetch data. It wraps a Vuu RemoteDataSource.
+ */
 export class ViewportRowModelDataSource {
+  private columns: string[];
   private columnMap: ColumnMap;
   private reverseColumnMap: Map<number, string>;
 
@@ -42,9 +55,31 @@ export class ViewportRowModelDataSource {
     private onFeatureEnabled?: (message: VuuFeatureMessage) => void
   ) {
     this.dataSource.subscribe({}, this.handleMessageFromDataSource);
+    // this.dataSource.on("config", this.handleConfigChange);
+
+    this.columns = dataSource.columns;
     this.columnMap = buildColumnMap(dataSource.columns);
     this.reverseColumnMap = reverseColumnMap(this.columnMap);
+
+    this.dataSource.on("config", this.handleDataSourceConfigChange);
   }
+
+  destroy() {
+    this.dataSource.removeListener("config", this.handleDataSourceConfigChange);
+  }
+
+  private handleDataSourceConfigChange = (
+    config?: DataSourceConfig,
+    confirmed?: boolean
+  ) => {
+    const columns = config?.columns ?? NO_COLUMNS;
+    if (confirmed === undefined && Array.isArray(config?.columns)) {
+      if (itemsOrOrderChanged(this.columns, columns)) {
+        this.columns = columns;
+        this.columnMap = buildColumnMap(columns);
+      }
+    }
+  };
 
   setAgRowCount: IViewportDatasourceParams["setRowCount"] = () => {
     throw Error("setRowCount called before init");
@@ -65,8 +100,11 @@ export class ViewportRowModelDataSource {
 
   // Called by Ag Grid whe  user scrolls
   setViewportRange(firstRow: number, lastRow: number): void {
-    this.dataWindow.setRange(firstRow, lastRow + 1);
-    this.dataSource.range = { from: firstRow, to: lastRow + 1 };
+    // we have sometimes seen a call coming in here from AgGrid
+    // where lastRow is (much) less than firstRow.
+    const safeLastRow = Math.max(firstRow, lastRow + 1);
+    this.dataWindow.setRange(firstRow, safeLastRow);
+    this.dataSource.range = { from: firstRow, to: safeLastRow };
   }
 
   setRowGroups(groupBy: VuuGroupBy) {

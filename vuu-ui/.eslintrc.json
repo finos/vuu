@@ -26,7 +26,21 @@
   "rules": {
     "react/prop-types": 0,
     "react/react-in-jsx-scope": 0,
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "(useLayoutEffectSkipFirst)"
+      }
+    ],
+
     "no-unused-vars": 0,
-  "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]
-  }
+    "prefer-const": ["error", {"destructuring": "all"}],
+    "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]
+  },
+  "overrides": [
+    {
+      "files": ["*.cy.tsx"],
+      "extends": ["plugin:cypress/recommended"]
+    }
+  ]
 }

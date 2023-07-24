@@ -6,8 +6,9 @@ import {
   VuuRange,
   VuuSort,
   ClientToServerMenuRPC,
+  ClientToServerEditRpc,
 } from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
   EventEmitter,
   isSelected,
@@ -23,8 +24,14 @@ import type {
   DataSourceEvents,
   SubscribeCallback,
   SubscribeProps,
-  DataSourceRow,
 } from "./data-source";
+import {
+  MenuRpcResponse,
+  VuuUIMessageInRPCEditReject,
+  VuuUIMessageInRPCEditResponse,
+} from "./vuuUIMessageTypes";
+
+const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
 
 export interface JsonDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
@@ -159,7 +166,7 @@ export class JsonDataSource
       groupBy: this.#groupBy,
       range: this.#range,
       sort: this.#sort,
-      tableMeta: { columns: [], dataTypes: [] },
+      tableSchema: NULL_SCHEMA,
     });
 
     this.clientCallback({
@@ -349,7 +356,14 @@ export class JsonDataSource
     console.log("remove link");
   }
 
-  async menuRpcCall(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">) {
+  async menuRpcCall(
+    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
+  ): Promise<
+    | MenuRpcResponse
+    | VuuUIMessageInRPCEditReject
+    | VuuUIMessageInRPCEditResponse
+    | undefined
+  > {
     console.log("rmenuRpcCall", {
       rpcRequest,
     });

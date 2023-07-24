@@ -1,16 +1,26 @@
 import cx from "classnames";
-import { SyntheticEvent, useState } from "react";
+import { CSSProperties, HTMLAttributes, SyntheticEvent } from "react";
 import { RecoilRoot } from "recoil";
 
 import {
-  Component, DraggableLayout, FlexboxLayout as Flexbox, LayoutProvider, Palette,
-  PaletteItem, StackLayout, useViewContext, View
+  Component,
+  DraggableLayout,
+  FlexboxLayout as Flexbox,
+  LayoutProvider,
+  Palette,
+  PaletteItem,
+  StackLayout,
+  useViewContext,
+  View,
 } from "@finos/vuu-layout";
 
 import {
-  Brown, DrawerStackLayoutBuilder, LayoutBuilder, StackLayoutBuilder,
+  Brown,
+  DrawerStackLayoutBuilder,
+  LayoutBuilder,
+  StackLayoutBuilder,
   StackLayoutBuilderUitk,
-  StatefulComponent
+  StatefulComponent,
 } from "./components";
 
 import "./DraggableLayout.stories.css";
@@ -22,7 +32,7 @@ export default {
 
 let displaySequence = 1;
 
-const Box = ({ props }) => (
+const Box = (props: HTMLAttributes<HTMLDivElement>) => (
   <div
     style={{
       cursor: "pointer",
@@ -35,38 +45,24 @@ const Box = ({ props }) => (
   />
 );
 
-const DraggableBox = (
-  className: string,
-  flexFill: boolean,
-  small: string,
-  medium: string,
-  large: string,
-  ...props: any[]
-) => {
+export interface DraggableBoxProps extends HTMLAttributes<HTMLDivElement> {
+  flexFill?: boolean;
+  size?: string;
+}
+
+const DraggableBox = ({
+  className,
+  flexFill,
+  size = "small",
+  ...props
+}: DraggableBoxProps) => {
   const DraggableBoxBase = () => {
     const { dispatch, title } = useViewContext();
     const handleMouseDown = (e: SyntheticEvent) => {
       // TODO should be able to just dispatch the event
-      dispatch({ type: "mousedown" }, e);
+      dispatch?.({ type: "mousedown" }, e);
     };
     return <Box onMouseDown={handleMouseDown}>{title}</Box>;
-  };
-
-  const getInitialSize = (s: string, m: string, l: string) =>
-    s ? "small" : l ? "large" : m ? "medium" : undefined;
-
-  const getNextSize = (s: string) =>
-    s === "small"
-      ? "medium"
-      : s === "medium"
-      ? "large"
-      : s === undefined
-      ? "small"
-      : undefined;
-
-  const [size, setSize] = useState(getInitialSize(small, medium, large));
-  const handleClick = (e: SyntheticEvent) => {
-    setSize(getNextSize(e.target.value));
   };
 
   return (
@@ -75,7 +71,6 @@ const DraggableBox = (
         "flex-fill": flexFill,
       })}
       {...props}
-      onClick={handleClick}
     >
       <DraggableBoxBase />
     </View>
@@ -238,7 +233,11 @@ export const SimpleNestingWithOffset = () => {
               <input defaultValue="just a test 2" />
             </div>
           </View>
-          <Flexbox style={{ flex: 1, flexDirection: "column" }} resizeable path="">
+          <Flexbox
+            style={{ flex: 1, flexDirection: "column" }}
+            resizeable
+            path=""
+          >
             <Flexbox
               style={{
                 flex: 2,
@@ -281,125 +280,142 @@ export const SimpleNestingWithOffset = () => {
 SimpleNestingWithOffset.displaySequence = displaySequence++;
 
 export const MultipleDraggableContainers = () => (
-  <DraggableLayout style={{ width: 800, height: 800 }}>
-    <Flexbox style={{ width: "100%", height: "100%", flexDirection: "row" }} path="">
-      <DraggableLayout style={{ flex: 1 }} dropTarget>
-        <Flexbox
-          style={{ width: "100%", height: "100%", flexDirection: "column" }}
-          resizeable
-          path=""
-        >
+  <LayoutProvider>
+    <DraggableLayout style={{ width: 800, height: 800 }}>
+      <Flexbox
+        style={{ width: "100%", height: "100%", flexDirection: "row" }}
+        path=""
+      >
+        <DraggableLayout style={{ flex: 1 }} dropTarget>
           <Flexbox
-            style={{
-              flex: 2,
-              flexGrow: 1,
-              flexShrink: 1,
-              flexDirection: "row",
-            }}
+            style={{ width: "100%", height: "100%", flexDirection: "column" }}
             resizeable
             path=""
           >
-            <View header resizeable title="Test 2a" style={{ flex: 1 }}>
-              <Component
-                style={{ height: "100%", backgroundColor: "orange" }}
+            <Flexbox
+              style={{
+                flex: 2,
+                flexGrow: 1,
+                flexShrink: 1,
+                flexDirection: "row",
+              }}
+              resizeable
+              path=""
+            >
+              <View header resizeable title="Test 2a" style={{ flex: 1 }}>
+                <Component
+                  style={{ height: "100%", backgroundColor: "orange" }}
+                />
+              </View>
+              <View header resizeable title="Test 4a" style={{ flex: 1 }}>
+                <Component
+                  style={{ height: "100%", backgroundColor: "rebeccapurple" }}
+                />
+              </View>
+            </Flexbox>
+            <View header resizeable title="Test 5" style={{ flex: 1 }}>
+              <StatefulComponent
+                style={{ height: "100%", backgroundColor: "#94bff5" }}
               />
             </View>
-            <View header resizeable title="Test 4a" style={{ flex: 1 }}>
-              <Component
-                style={{ height: "100%", backgroundColor: "rebeccapurple" }}
+            <View header resizeable title="Test 6" style={{ flex: 1 }}>
+              <StatefulComponent
+                initialState="I'm a Tree"
+                style={{ height: "100%", backgroundColor: "pink" }}
               />
             </View>
           </Flexbox>
-          <View header resizeable title="Test 5" style={{ flex: 1 }}>
-            <StatefulComponent
-              style={{ height: "100%", backgroundColor: "#94bff5" }}
-            />
-          </View>
-          <View header resizeable title="Test 6" style={{ flex: 1 }}>
-            <StatefulComponent
-              initialState="I'm a Tree"
-              style={{ height: "100%", backgroundColor: "pink" }}
-            />
-          </View>
-        </Flexbox>
-      </DraggableLayout>
-      <DraggableLayout style={{ flex: 1 }} dropTarget>
-        <Flexbox
-          style={{ width: "100%", height: "100%", flexDirection: "column" }}
-          resizeable
-          path=""
-        >
+        </DraggableLayout>
+        <DraggableLayout style={{ flex: 1 }} dropTarget>
           <Flexbox
-            style={{
-              flex: 2,
-              flexGrow: 1,
-              flexShrink: 1,
-              flexDirection: "row",
-            }}
+            style={{ width: "100%", height: "100%", flexDirection: "column" }}
             resizeable
             path=""
           >
-            <View header resizeable title="Test 2b" style={{ flex: 1 }}>
-              <Component
-                style={{ height: "100%", backgroundColor: "orange" }}
+            <Flexbox
+              style={{
+                flex: 2,
+                flexGrow: 1,
+                flexShrink: 1,
+                flexDirection: "row",
+              }}
+              resizeable
+              path=""
+            >
+              <View header resizeable title="Test 2b" style={{ flex: 1 }}>
+                <Component
+                  style={{ height: "100%", backgroundColor: "orange" }}
+                />
+              </View>
+              <View header resizeable title="Test 4b" style={{ flex: 1 }}>
+                <Component
+                  style={{ height: "100%", backgroundColor: "rebeccapurple" }}
+                />
+              </View>
+            </Flexbox>
+            <View header resizeable title="Test 5" style={{ flex: 1 }}>
+              <StatefulComponent
+                style={{ height: "100%", backgroundColor: "#94bff5" }}
               />
             </View>
-            <View header resizeable title="Test 4b" style={{ flex: 1 }}>
-              <Component
-                style={{ height: "100%", backgroundColor: "rebeccapurple" }}
+            <View header resizeable title="Test 6" style={{ flex: 1 }}>
+              <StatefulComponent
+                initialState="I'm a Tree"
+                style={{ height: "100%", backgroundColor: "pink" }}
               />
             </View>
           </Flexbox>
-          <View header resizeable title="Test 5" style={{ flex: 1 }}>
-            <StatefulComponent
-              style={{ height: "100%", backgroundColor: "#94bff5" }}
-            />
-          </View>
-          <View header resizeable title="Test 6" style={{ flex: 1 }}>
-            <StatefulComponent
-              initialState="I'm a Tree"
-              style={{ height: "100%", backgroundColor: "pink" }}
-            />
-          </View>
-        </Flexbox>
-      </DraggableLayout>
-    </Flexbox>
-  </DraggableLayout>
+        </DraggableLayout>
+      </Flexbox>
+    </DraggableLayout>
+  </LayoutProvider>
 );
 
 MultipleDraggableContainers.displaySequence = displaySequence++;
 
 export const CustomDrag = () => (
-  <DraggableLayout className="custom1" style={{ border: "solid 1px grey" }}>
-    <Flexbox splitterSize={1} column className="red-box">
-      <Flexbox gap={5} row className="green-box" path="">
-        <DraggableBox flexFill title="B Component" />
-        <DraggableBox flexFill title="B Component" />
-        <DraggableBox flexFill title="B Component" />
-      </Flexbox>
-      <Flexbox row flexFill path="">
-        <Flexbox column className="red-box" gap={10} path="">
-          <DraggableBox medium size="intrinsic" />
-          <DraggableBox medium size="intrinsic" />
-          <DraggableBox medium size="intrinsic" />
-          <DraggableBox medium size="intrinsic" />
-          <DraggableBox flexFill />
+  <LayoutProvider>
+    <DraggableLayout
+      className="custom1"
+      dropTarget
+      style={{ border: "solid 1px grey", width: 500, height: 600 }}
+    >
+      <Flexbox
+        splitterSize={1}
+        column
+        className="red-box"
+        path=""
+        style={{ height: "100%", width: "100%" }}
+      >
+        <Flexbox gap={5} row className="green-box" path="">
+          <DraggableBox flexFill title="B Component" />
+          <DraggableBox flexFill title="B Component" />
+          <DraggableBox flexFill title="B Component" />
         </Flexbox>
-        <Flexbox
-          column
-          flexFill
-          className="blue-box"
-          gap={6}
-          style={{ padding: 6 }}
-          path=""
-        >
-          <DraggableBox flexFill />
-          <DraggableBox flexFill />
-          <DraggableBox flexFill />
+        <Flexbox row flexFill path="">
+          <Flexbox column className="red-box" gap={10} path="">
+            <DraggableBox size="intrinsic" />
+            <DraggableBox size="intrinsic" />
+            <DraggableBox size="intrinsic" />
+            <DraggableBox size="intrinsic" />
+            <DraggableBox flexFill />
+          </Flexbox>
+          <Flexbox
+            column
+            flexFill
+            className="blue-box"
+            gap={6}
+            style={{ padding: 6 }}
+            path=""
+          >
+            <DraggableBox flexFill />
+            <DraggableBox flexFill />
+            <DraggableBox flexFill />
+          </Flexbox>
         </Flexbox>
       </Flexbox>
-    </Flexbox>
-  </DraggableLayout>
+    </DraggableLayout>
+  </LayoutProvider>
 );
 
 CustomDrag.displaySequence = displaySequence++;
@@ -410,7 +426,7 @@ export const ComplexNestedLayout = () => {
   };
   return (
     <LayoutProvider onLayoutChange={handleLayoutChange}>
-      <DraggableLayout style={{ height: "100%", width: "100%" }}>
+      <DraggableLayout style={{ height: "100vh", width: "100vw" }}>
         <Flexbox column style={{ height: "100%", width: "100%" }} path="">
           <Flexbox style={{ flex: 1 }} path="">
             <View
@@ -457,7 +473,7 @@ export const ComplexNestedLayout = () => {
             </View>
             <DraggableLayout
               dropTarget
-              style={{ flex: 1, "--vuuView-margin": "0px" }}
+              style={{ flex: 1, "--vuuView-margin": "0px" } as CSSProperties}
             >
               <Flexbox
                 resizeable
@@ -650,9 +666,7 @@ ScrollingLayout.displaySequence = displaySequence++;
 
 export const JsonLayout = () => {
   return (
-    <DraggableLayout
-      dropTarget
-      style={{ width: 600, height: 400 }}
+    <LayoutProvider
       layout={{
         type: "Flexbox",
         props: {
@@ -716,7 +730,9 @@ export const JsonLayout = () => {
           },
         ],
       }}
-    />
+    >
+      <DraggableLayout dropTarget style={{ width: 600, height: 400 }} />
+    </LayoutProvider>
   );
 };
 

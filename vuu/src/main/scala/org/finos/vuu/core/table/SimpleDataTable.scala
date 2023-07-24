@@ -84,6 +84,7 @@ case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = fals
 }
 
 trait RowData {
+  def key(): String
   def get(field: String): Any
   def get(column: Column): Any
   def getFullyQualified(column: Column): Any
@@ -140,6 +141,8 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 }
 
 object EmptyRowData extends RowData {
+
+  override def key(): String = null
 
   override def size(): Int = 0
 
@@ -201,6 +204,7 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primary
       SimpleDataTableData(data, ImmutableArray.empty)
     }
   }
+
 }
 
 

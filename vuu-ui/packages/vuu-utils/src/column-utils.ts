@@ -1,7 +1,9 @@
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   ColumnType,
   ColumnTypeDescriptor,
+  ColumnTypeRenderer,
   ColumnTypeSimple,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
@@ -9,6 +11,7 @@ import {
   TableHeading,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
+import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import {
   VuuAggregation,
   VuuAggType,
@@ -19,10 +22,6 @@ import {
   VuuSort,
 } from "@finos/vuu-protocol-types";
 import { CSSProperties } from "react";
-
-import { DataSourceRow } from "@finos/vuu-data";
-import { DataSourceFilter } from "@finos/vuu-data-types";
-import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
 export interface ColumnMap {
@@ -37,6 +36,7 @@ export type SortCriteriaItem = string | [string, "asc"]; // TODO where is 'desc'
 export const AggregationType: { [key: string]: VuuAggType } = {
   Average: 2,
   Count: 3,
+  Distinct: 6,
   Sum: 1,
   High: 4,
   Low: 5,
@@ -130,6 +130,11 @@ export const isTypeDescriptor = (
   typeof type !== "undefined" && typeof type !== "string";
 
 const EMPTY_COLUMN_MAP = {} as const;
+
+export const isColumnTypeRenderer = (
+  renderer?: unknown
+): renderer is ColumnTypeRenderer =>
+  typeof (renderer as ColumnTypeRenderer)?.name !== "undefined";
 
 export const isMappedValueTypeRenderer = (
   renderer?: unknown
@@ -299,7 +304,8 @@ export const sortPinnedColumns = (
   const leftPinnedColumns: KeyedColumnDescriptor[] = [];
   const rightPinnedColumns: KeyedColumnDescriptor[] = [];
   const restColumns: KeyedColumnDescriptor[] = [];
-  let pinnedWidthLeft = 0;
+  // let pinnedWidthLeft = 0;
+  let pinnedWidthLeft = 4;
   for (const column of columns) {
     // prettier-ignore
     switch(column.pin){
@@ -360,12 +366,12 @@ export const getTableHeadings = (
     let tableHeadingsRow: TableHeading[];
     for (let level = 0; level < maxHeadingDepth; level++) {
       tableHeadingsRow = [];
-      columns.forEach(({ heading: columnHeading = NO_HEADINGS }) => {
+      columns.forEach(({ heading: columnHeading = NO_HEADINGS, width }) => {
         const label = columnHeading[level] ?? "";
         if (heading && heading.label === label) {
-          heading.span += 1;
+          heading.width += width;
         } else {
-          heading = { label, span: 1 } as TableHeading;
+          heading = { label, width } as TableHeading;
           tableHeadingsRow.push(heading);
         }
       });
@@ -379,12 +385,24 @@ export const getTableHeadings = (
   return NO_HEADINGS;
 };
 
-export const getColumnPinStyle = (column: KeyedColumnDescriptor) =>
-  column.pin === "left"
-    ? ({ left: column.pinnedOffset } as CSSProperties)
-    : column.pin === "right"
-    ? ({ right: column.pinnedOffset } as CSSProperties)
-    : undefined;
+export const getColumnStyle = ({
+  pin,
+  pinnedOffset = pin === "left" ? 0 : 4,
+  width,
+}: KeyedColumnDescriptor) =>
+  pin === "left"
+    ? ({
+        left: pinnedOffset,
+        width,
+        "--pin-width": `${pinnedOffset + width - 5}px`,
+      } as CSSProperties)
+    : pin === "right"
+    ? ({
+        right: pinnedOffset,
+        width,
+        "--pin-width": `${pinnedOffset + width}px`,
+      } as CSSProperties)
+    : { width };
 
 export const setAggregations = (
   aggregations: VuuAggregation[],
@@ -540,6 +558,36 @@ export const findColumn = (
   }
 };
 
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: KeyedColumnDescriptor
+): KeyedColumnDescriptor[];
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: string,
+  options: Partial<ColumnDescriptor>
+): KeyedColumnDescriptor[];
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: string | KeyedColumnDescriptor,
+  options?: Partial<ColumnDescriptor>
+) {
+  const targetColumn =
+    typeof column === "string"
+      ? columns.find((col) => col.name === column)
+      : column;
+  if (targetColumn) {
+    const replacementColumn = options
+      ? { ...targetColumn, ...options }
+      : targetColumn;
+    return columns.map((col) =>
+      col.name === replacementColumn.name ? replacementColumn : col
+    );
+  } else {
+    throw Error("column-utils.replaceColun, column not found");
+  }
+}
+
 export const toDataSourceColumns = (column: ColumnDescriptor) =>
   column.expression
     ? `${column.name}:${column.serverDataType}:${column.expression}`
@@ -572,13 +620,16 @@ export const getColumnsInViewport = (
 
   for (let offset = 0, i = 0; i < columns.length; i++) {
     const column = columns[i];
+    // TODO we need to measure the pinned columns first
     if (column.hidden) {
       continue;
     } else if (offset + column.width < vpStart) {
-      if (offset + column.width + columns[i + 1]?.width > vpStart) {
+      if (column.pin === "left") {
+        visibleColumns.push(column);
+      } else if (offset + column.width + columns[i + 1]?.width > vpStart) {
         visibleColumns.push(column);
       } else {
-        preSpan += 1;
+        preSpan += column.width;
       }
     } else if (offset > vpEnd) {
       visibleColumns.push(column);
@@ -602,5 +653,26 @@ export const visibleColumnAtIndex = (
     return columns[index];
   } else {
     return columns.filter(isNotHidden).at(index);
+  }
+};
+
+const { DEPTH, IS_LEAF } = metadataKeys;
+// Get the value for a specific columns within a grouped column
+export const getGroupValueAndOffset = (
+  columns: KeyedColumnDescriptor[],
+  row: DataSourceRow
+): [unknown, number] => {
+  const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
+  // Depth can be greater tha group columns when we have just removed a column from groupby
+  // but new data has not yet been received.
+  if (isLeaf || depth > columns.length) {
+    return [null, depth === null ? 0 : Math.max(0, depth - 1)];
+  } else if (depth === 0) {
+    return ["$root", 0];
+  } else {
+    // offset 1 for now to allow for $root
+    const { key, valueFormatter } = columns[depth - 1];
+    const value = valueFormatter(row[key]);
+    return [value, depth - 1];
   }
 };

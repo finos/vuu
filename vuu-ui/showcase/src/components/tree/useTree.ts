@@ -1,33 +1,45 @@
-import { useCallback, useRef } from "react";
+import { KeyboardEvent, useCallback, useRef } from "react";
 import { useKeyboardNavigation } from "./use-keyboard-navigation";
-import { useSelection } from "./use-selection";
+import {
+  GroupSelection,
+  TreeNodeSelectionHandler,
+  TreeSelection,
+  useSelection,
+} from "./use-selection";
 import { useHierarchicalData } from "./use-hierarchical-data";
 import { useCollapsibleGroups } from "./use-collapsible-groups";
-import { useKeyboardNavigation as useTreeNavigation } from "./use-tree-keyboard-navigation";
+import { useTreeKeyboardNavigation } from "./use-tree-keyboard-navigation";
+import { NormalisedTreeSourceNode } from "./Tree";
 
-const EMPTY_ARRAY = [];
+const EMPTY_ARRAY: string[] = [];
+
+export interface TreeHookProps {
+  defaultSelected?: string[];
+  groupSelection: GroupSelection;
+  onChange: TreeNodeSelectionHandler;
+  onHighlight: (index: number) => void;
+  selected?: string[];
+  selection: TreeSelection;
+  sourceWithIds: NormalisedTreeSourceNode[];
+}
 
 export const useTree = ({
   defaultSelected,
   sourceWithIds,
-  groupSelection,
-  id,
   onChange,
   onHighlight: onHighlightProp,
   selected: selectedProp,
   selection,
-  totalItemCount,
-}) => {
-  const lastSelection = useRef(EMPTY_ARRAY);
+}: TreeHookProps) => {
+  const lastSelection = useRef<string[]>(EMPTY_ARRAY);
   const dataHook = useHierarchicalData(sourceWithIds);
 
-  const handleKeyboardNavigation = (evt, nextIdx) => {
+  const handleKeyboardNavigation = (evt: KeyboardEvent, nextIdx: number) => {
     selectionHook.listHandlers.onKeyboardNavigation?.(evt, nextIdx);
   };
 
   const { highlightedIdx, ...keyboardHook } = useKeyboardNavigation({
-    id,
-    indexPositions: dataHook.indexPositions,
+    treeNodes: dataHook.indexPositions,
     onHighlight: onHighlightProp,
     onKeyboardNavigation: handleKeyboardNavigation,
     selected: lastSelection.current,
@@ -35,24 +47,22 @@ export const useTree = ({
 
   const collapsibleHook = useCollapsibleGroups({
     collapsibleHeaders: true,
-    count: totalItemCount,
     highlightedIdx,
-    indexPositions: dataHook.indexPositions,
+    treeNodes: dataHook.indexPositions,
     setVisibleData: dataHook.setData,
     source: dataHook.data,
   });
 
   const selectionHook = useSelection({
     defaultSelected,
-    groupSelection,
     highlightedIdx,
-    indexPositions: dataHook.indexPositions,
+    treeNodes: dataHook.indexPositions,
     onChange,
     selected: selectedProp,
     selection,
   });
 
-  const treeNavigationHook = useTreeNavigation({
+  const treeNavigationHook = useTreeKeyboardNavigation({
     source: dataHook.data,
     highlightedIdx,
     hiliteItemAtIndex: keyboardHook.hiliteItemAtIndex,
@@ -63,7 +73,7 @@ export const useTree = ({
     (evt) => {
       collapsibleHook.listItemHandlers?.onClick(evt);
       if (!evt.defaultPrevented) {
-        selectionHook.listItemHandlers?.onClick(evt);
+        selectionHook.listItemHandlers?.onClick?.(evt);
       }
     },
     [collapsibleHook, selectionHook]

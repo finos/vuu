@@ -1,38 +1,30 @@
 import { connectToServer } from "@finos/vuu-data";
+import cx from "classnames";
 import {
   HTMLAttributes,
-  MouseEvent,
   ReactElement,
   ReactNode,
   useCallback,
   useEffect,
   useRef,
-  useState,
 } from "react";
-import useLayoutConfig from "./use-layout-config";
-import { ShellContextProvider } from "./ShellContextProvider";
-import cx from "classnames";
-
-import {
-  Chest,
-  DraggableLayout,
-  Drawer,
-  Flexbox,
-  LayoutProvider,
-  View,
-} from "@finos/vuu-layout";
-
-import { AppHeader } from "./app-header";
-
+import { useLayoutConfig } from "./layout-config";
+import { DraggableLayout, LayoutProvider } from "@finos/vuu-layout";
 import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
+import { AppHeader } from "./app-header";
+import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
+import { logger } from "@finos/vuu-utils";
+import { useShellLayout } from "./shell-layouts";
+import { SaveLocation } from "./shellTypes";
+
 import "./shell.css";
-import { ThemeMode } from "./theme-switch";
-import { Density } from "@salt-ds/core";
 
 export type VuuUser = {
   username: string;
   token: string;
 };
+
+const { error } = logger("Shell");
 
 const warningLayout = {
   type: "View",
@@ -53,8 +45,11 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   defaultLayout?: LayoutJSON;
   leftSidePanel?: ReactElement;
+  leftSidePanelLayout?: "full-height" | "inlay";
   loginUrl?: string;
   // paletteConfig: any;
+  saveLocation?: SaveLocation;
+  saveUrl?: string;
   serverUrl?: string;
   user: VuuUser;
 }
@@ -64,27 +59,31 @@ export const Shell = ({
   className: classNameProp,
   defaultLayout = warningLayout,
   leftSidePanel,
+  leftSidePanelLayout,
   loginUrl,
+  saveLocation = "remote",
+  saveUrl,
   serverUrl,
   user,
   ...htmlAttributes
 }: ShellProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [density, setDensity] = useState<Density>("medium");
-  const paletteView = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
   const layoutId = useRef("latest");
-
-  const [layout, setLayoutConfig, loadLayoutById] = useLayoutConfig(
+  const [layout, saveLayoutConfig, loadLayoutById] = useLayoutConfig({
+    defaultLayout,
+    saveLocation,
     user,
-    defaultLayout
-  );
+  });
 
   const handleLayoutChange = useCallback(
     (layout) => {
-      setLayoutConfig(layout);
+      try {
+        saveLayoutConfig(layout);
+      } catch {
+        error?.("Failed to save layout");
+      }
     },
-    [setLayoutConfig]
+    [saveLayoutConfig]
   );
 
   const handleSwitchTheme = useCallback((mode: ThemeMode) => {
@@ -92,17 +91,6 @@ export const Shell = ({
       rootRef.current.dataset.mode = mode;
     }
   }, []);
-
-  const handleDensitySwitch = useCallback((density: Density) => {
-    setDensity(density);
-  }, [setDensity])
-
-  const handleDrawerClick = (e: MouseEvent<HTMLElement>) => {
-    const target = e.target as HTMLElement;
-    if (!paletteView.current?.contains(target)) {
-      setOpen(!open);
-    }
-  };
 
   const handleNavigate = useCallback(
     (id) => {
@@ -114,82 +102,45 @@ export const Shell = ({
 
   useEffect(() => {
     if (serverUrl && user.token) {
-      connectToServer(serverUrl, user.token);
+      connectToServer({
+        authToken: user.token,
+        url: serverUrl,
+        username: user.username,
+      });
     }
-  }, [serverUrl, user.token]);
+  }, [serverUrl, user.token, user.username]);
 
-  const getDrawers = () => {
-    const drawers: ReactElement[] = [];
-    if (leftSidePanel) {
-      drawers.push(
-        <Drawer
-          key="left-panel"
-          onClick={handleDrawerClick}
-          open={open}
-          position="left"
-          inline
-          peekaboo
-          sizeOpen={200}
-          toggleButton="end"
-        >
-          <View
-            className="vuuShell-palette"
-            id="vw-app-palette"
-            key="app-palette"
-            ref={paletteView}
-            style={{ height: "100%" }}
-          >
-            {leftSidePanel}
-          </View>
-        </Drawer>
-      );
-    }
+  const [themeClass, densityClass, dataMode] = useThemeAttributes();
+  const className = cx("vuuShell", classNameProp, themeClass, densityClass);
 
-    return drawers;
-  };
-
-  const className = cx(
-    "vuuShell",
-    classNameProp,
-    "salt-theme",
-    `salt-density-${density}`
-  );
+  const shellLayout = useShellLayout({
+    leftSidePanelLayout,
+    appHeader: (
+      <AppHeader
+        layoutId={layoutId.current}
+        loginUrl={loginUrl}
+        user={user}
+        onNavigate={handleNavigate}
+        onSwitchTheme={handleSwitchTheme}
+      />
+    ),
+    leftSidePanel,
+  });
 
   return (
     // ShellContext TBD
-    <ShellContextProvider value={undefined}>
+    <ThemeProvider>
       <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
         <DraggableLayout
           className={className}
-          data-mode="light"
+          data-mode={dataMode}
           ref={rootRef}
           {...htmlAttributes}
         >
-          <Flexbox
-            className="App"
-            style={{ flexDirection: "column", height: "100%", width: "100%" }}
-          >
-            <AppHeader
-              layoutId={layoutId.current}
-              loginUrl={loginUrl}
-              user={user}
-              onNavigate={handleNavigate}
-              onSwitchTheme={handleSwitchTheme}
-              onDensitySwitch={handleDensitySwitch}
-            />
-            <Chest style={{ flex: 1 }}>
-              {getDrawers().concat(
-                <DraggableLayout
-                  dropTarget
-                  key="main-content"
-                  style={{ width: "100%", height: "100%" }}
-                />
-              )}
-            </Chest>
-          </Flexbox>
+          {shellLayout}
         </DraggableLayout>
       </LayoutProvider>
       {children}
-    </ShellContextProvider>
+    </ThemeProvider>
   );
 };

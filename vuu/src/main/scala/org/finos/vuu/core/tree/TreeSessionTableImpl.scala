@@ -1,16 +1,16 @@
 package org.finos.vuu.core.tree
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.toolbox.text.AsciiUtil
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{GroupByColumns, GroupByTableDef, TableDef}
 import org.finos.vuu.core.table._
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport._
-import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.toolbox.jmx.MetricsProvider
-import org.finos.toolbox.text.AsciiUtil
-import org.finos.toolbox.time.Clock
-import org.finos.vuu.viewport.tree.{EmptyTree, Tree, TreeNode, TreeNodeState}
+import org.finos.vuu.viewport.tree.{EmptyTree, Tree, TreeNode}
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 import scala.jdk.CollectionConverters._
@@ -248,17 +248,11 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 //    //this.notifyListeners(treeKey, false)
 //  }
 
-  def mapKeyToTreeKey(rowUpdate: RowKeyUpdate): RowKeyUpdate = {
+  def mapKeyToTreeKey(nodeKey: String, treeKey:String, rowUpdate: RowKeyUpdate): RowKeyUpdate = {
 
-    val node = this.getTree.getNodeByOriginalKey(rowUpdate.key)
-
-    val mapped = if (node != null) {
-      rowUpdate.copy(key = node.key, source = this)
-    } else {
-      null
-    }
+    val mapped = rowUpdate.copy(key = treeKey, source = this)
     if(mapped != null) {
-      logger.debug(s"Found node $node for originalKey ${rowUpdate.key} mapped to ${node.key}")
+      logger.debug(s"Found node for originalKey ${nodeKey} mapped to ${treeKey}")
     }
 
     mapped
@@ -276,7 +270,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
         logger.debug(s"Adding key observer${originalKey} for tree key ${key}")
 
-        val wappedObserver = new WrappedUpdateHandlingKeyObserver[RowKeyUpdate](mapKeyToTreeKey, observer, originalKey)
+        val wappedObserver = new WrappedUpdateHandlingKeyObserver[RowKeyUpdate](mapKeyToTreeKey(originalKey, key, _), observer, originalKey)
 
         wrappedObservers.put(key, wappedObserver)
 

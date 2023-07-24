@@ -54,12 +54,14 @@ export declare type AggTypeAverage = 2;
 export declare type AggTypeCount = 3;
 export declare type AggTypeHigh = 4;
 export declare type AggTypeLow = 5;
+export declare type AggTypeDistinct = 6;
 export declare type VuuAggType =
   | AggTypeSum
   | AggTypeAverage
   | AggTypeCount
   | AggTypeHigh
-  | AggTypeLow;
+  | AggTypeLow
+  | AggTypeDistinct;
 export declare type VuuAggregation = {
   column: string;
   aggType: VuuAggType;
@@ -110,6 +112,7 @@ export type VuuTableList = Pick<ServerToClientTableList, "tables">;
 export interface VuuTableMeta {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
+  key: string;
 }
 export interface VuuTableMetaWithTable extends VuuTableMeta {
   table: VuuTable;
@@ -132,12 +135,21 @@ export interface ServerToClientMenus {
 export interface ServerToClientMenu {
   rpcName: "ADD_ROWS_TO_ORDERS";
   type: "VIEW_PORT_MENU_RESP";
-  action: {
-    table: VuuTable;
+  action: null | {
+    table?: VuuTable;
     type: "OPEN_DIALOG_ACTION";
   };
   vpId: string;
 }
+
+export interface ServerToClientMenuSessionTableAction
+  extends ServerToClientMenu {
+  action: {
+    table: VuuTable;
+    type: "OPEN_DIALOG_ACTION";
+  };
+}
+
 export interface ServerToClientViewPortVisualLinks {
   type: "VP_VISUAL_LINKS_RESP";
   links: VuuLinkDescriptor[];
@@ -190,6 +202,18 @@ export interface ServerToClientRPC {
   method: string;
   result: any;
 }
+export interface ServerToClientEditRPC {
+  action: unknown;
+  type: "VP_EDIT_RPC_RESPONSE";
+  rpcName: string;
+  vpId: string;
+}
+export interface ServerToClientEditRPCRejected {
+  error: string;
+  rpcName: string;
+  type: "VP_EDIT_RPC_REJECT";
+  vpId: string;
+}
 export interface ServerToClientOpenTreeNodeSuccess {
   type: "OPEN_TREE_SUCCESS";
 }
@@ -233,13 +257,17 @@ export declare type ServerToClientBody =
   | ServerToClientTableRows
   | ServerToClientMenus
   | ServerToClientMenu
+  | ServerToClientMenuSessionTableAction
   | ServerToClientRPC
   | ServerToClientViewPortVisualLinks
   | ServerToClientOpenTreeNodeSuccess
   | ServerToClientCloseTreeNodeSuccess
   | ServerToClientCreateLinkSuccess
   | ServerToClientRemoveLinkSuccess
-  | ServerToClientError;
+  | ServerToClientError
+  | ServerToClientEditRPC
+  | ServerToClientEditRPC
+  | ServerToClientEditRPCRejected;
 export interface ServerToClientMessage<
   TBody extends ServerToClientBody = ServerToClientBody
 > {
@@ -394,6 +422,26 @@ export interface ClientToServerMenuCellRPC extends ClientToServerMenuBaseRPC {
   type: "VIEW_PORT_MENU_CELL_RPC";
 }
 
+export interface ClientToServerEditCellRpc {
+  rowKey: string;
+  type: "VP_EDIT_CELL_RPC";
+  field: string;
+  value: VuuRowDataItemType;
+}
+export interface ClientToServerEditRowRpc {
+  rowKey: string;
+  type: "VP_EDIT_ROW_RPC";
+  row: VuuDataRow;
+}
+export interface ClientToServerSubmitFormRpc {
+  type: "VP_EDIT_SUBMIT_FORM_RPC";
+}
+
+export type ClientToServerEditRpc =
+  | ClientToServerEditCellRpc
+  | ClientToServerEditRowRpc
+  | ClientToServerSubmitFormRpc;
+
 export type ClientToServerMenuRPC =
   | ClientToServerMenuRowRPC
   | ClientToServerMenuCellRPC
@@ -406,13 +454,10 @@ export type ClientToServerMenuRPCType =
   | "VIEW_PORT_MENU_ROW_RPC"
   | "VIEW_PORT_MENU_CELL_RPC";
 
-export type ClientToServerMenuRPC =
+export declare type VuuRpcMessagesOut =
   | ClientToServerMenuSelectRPC
-  | ClientToServerMenuTableRPC
-  | ClientToServerMenuRowRPC
-  | ClientToServerMenuCellRPC;
+  | ClientToServerEditCellRpc;
 
-export declare type VuuRpcMessagesOut = ClientToServerMenuSelectRPC;
 export declare type ClientToServerBody =
   | ClientToServerAuth
   | ClientToServerLogin
@@ -446,12 +491,3 @@ export interface ClientToServerMessage<
 }
 
 /** Menu RPC services */
-export interface OpenDialogAction {
-  type: "OPEN_DIALOG_ACTION";
-  table: VuuTable;
-}
-export interface NoAction {
-  type: "NO_ACTION";
-}
-
-export declare type MenuRpcAction = OpenDialogAction | NoAction;

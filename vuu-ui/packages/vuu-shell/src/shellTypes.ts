@@ -2,6 +2,7 @@ declare global {
   const vuuConfig: Promise<VuuConfig>;
 }
 
+export type SaveLocation = "local" | "remote";
 export interface FeatureConfig {
   name: string;
   title: string;
@@ -14,5 +15,6 @@ export type Features = {
 };
 export interface VuuConfig {
   features: Features;
+  authUrl?: string;
   websocketUrl: string;
 }

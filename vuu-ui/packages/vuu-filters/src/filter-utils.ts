@@ -1,20 +1,24 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { extractFilterForColumn, partition } from "@finos/vuu-utils";
 import {
-  isAndFilter,
-  isInFilter,
-  isMultiClauseFilter,
-  isMultiValueFilter,
-  isOrFilter,
-  isSingleValueFilter,
-} from "./filterTypes";
+  ColumnDescriptor,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid-types";
 import {
   AndFilter,
   Filter,
   FilterClause,
   FilterCombinatorOp,
 } from "@finos/vuu-filter-types";
+import {
+  extractFilterForColumn,
+  filterAsQuery,
+  isAndFilter,
+  isInFilter,
+  isMultiClauseFilter,
+  isMultiValueFilter,
+  isOrFilter,
+  isSingleValueFilter,
+  partition,
+} from "@finos/vuu-utils";
 
 export const AND = "and";
 export const EQUALS = "=";
@@ -121,19 +125,6 @@ const includesNoValues = (filter?: Filter | null): boolean => {
   return isAndFilter(filter) && filter.filters.some((f) => includesNoValues(f));
 };
 
-const filterValue = (value: string | number | boolean) =>
-  typeof value === "string" ? `"${value}"` : value;
-
-export const filterAsQuery = (f: Filter): string => {
-  if (isMultiClauseFilter(f)) {
-    return f.filters.map((filter) => filterAsQuery(filter)).join(` ${f.op} `);
-  } else if (isMultiValueFilter(f)) {
-    return `${f.column} ${f.op} [${f.values.join(",")}]`;
-  } else {
-    return `${f.column} ${f.op} ${filterValue(f.value)}`;
-  }
-};
-
 interface CommonFilter {
   colName?: string;
   otherColFilters?: Filter[];
@@ -214,22 +205,6 @@ const combine = (existingFilters: Filter[], replacementFilters: Filter[]) => {
   return existingFilters.filter(stillApplicable).concat(replacementFilters);
 };
 
-export const removeColumnFromFilter = (
-  column: KeyedColumnDescriptor,
-  filter: Filter
-): [Filter | undefined, string] => {
-  if (isMultiClauseFilter(filter)) {
-    const [clause1, clause2] = filter.filters;
-    if (clause1.column === column.name) {
-      return [clause2, filterAsQuery(clause2)];
-    }
-    if (clause2.column === column.name) {
-      return [clause1, filterAsQuery(clause1)];
-    }
-  }
-  return [undefined, ""];
-};
-
 export const removeFilter = (sourceFilter: Filter, filterToRemove: Filter) => {
   if (filterEquals(sourceFilter, filterToRemove, true)) {
     return null;
@@ -248,19 +223,19 @@ export const removeFilter = (sourceFilter: Filter, filterToRemove: Filter) => {
 };
 
 export const splitFilterOnColumn = (
-  filter: Filter | null,
-  columnName: string
-): [Filter | null, Filter | null] => {
+  columnName: string,
+  filter?: Filter
+): [Filter | undefined, Filter | undefined] => {
   if (!filter) {
-    return [null, null];
+    return [undefined, undefined];
   }
   if (filter.column === columnName) {
-    return [filter, null];
+    return [filter, undefined];
   }
   if (filter.op !== AND) {
-    return [null, filter];
+    return [undefined, filter];
   }
-  const [[columnFilter = null], filters] = partition(
+  const [[columnFilter = undefined], filters] = partition(
     (filter as AndFilter).filters,
     (f) => f.column === columnName
   );
@@ -281,7 +256,7 @@ export const overrideColName = (filter: Filter, column: string): Filter => {
 
 export const filterIncludesColumn = (
   filter: Filter,
-  column: KeyedColumnDescriptor
+  column: ColumnDescriptor
 ): boolean => {
   if (!filter) {
     return false;

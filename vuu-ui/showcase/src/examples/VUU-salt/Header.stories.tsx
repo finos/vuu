@@ -1,11 +1,10 @@
 import { Header } from "@finos/vuu-layout";
+import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import {
-  Tab,
-  Tabstrip,
   Toolbar,
   ToolbarButton,
   ToolbarField,
-  Tooltray
+  Tooltray,
 } from "@heswell/salt-lab";
 import { CloseIcon } from "@salt-ds/icons";
 import { CSSProperties, useState } from "react";
@@ -18,13 +17,23 @@ const toolbarStyle = {
 } as CSSProperties;
 
 export const DefaultHeader = () => {
-  return <Header closeable title="Default Header" onEditTitle={() => {return}} />;
+  return (
+    <Header
+      closeable
+      title="Default Header"
+      onEditTitle={() => {
+        return;
+      }}
+    />
+  );
 };
 
 export const HeaderWithTabs = () => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
-  const [tabs, setTabs] = useState([{ label: "Home", closeable: false }]);
+  const [tabs, setTabs] = useState<
+    Array<{ label: string; closeable?: boolean }>
+  >([{ label: "Home", closeable: false }]);
 
   const handleTabSelection = (tabIndex: number) => {
     console.log(`handleTabSelection ${tabIndex}`);
@@ -52,12 +61,13 @@ export const HeaderWithTabs = () => {
             <Tabstrip
               activeTabIndex={activeTabIndex}
               onActiveChange={handleTabSelection}
-              enableAddTab
-              enableRenameTab
+              allowAddTab
+              allowRenameTab
               onAddTab={handleAddTab}
             >
               {tabs.map(({ label }, i) => (
                 <Tab
+                  index={i}
                   key={label}
                   label={label}
                   ariaControls={

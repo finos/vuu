@@ -5,7 +5,7 @@ import {
   SelectionChangeHandler,
 } from "@finos/vuu-datagrid-types";
 import { Table, TableProps } from "@finos/vuu-table";
-import { Chest, Drawer } from "@finos/vuu-layout";
+import { DockLayout, Drawer } from "@finos/vuu-layout";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { List, ListItem } from "@heswell/salt-lab";
@@ -63,21 +63,16 @@ const useTableConfig = ({
   }, [columnConfig, leftPinnedColumns, renderBufferSize, rightPinnedColumns]);
 };
 
-export const Table = (props: Partial<TableProps>) => {
+export const DataTable = (props: Partial<TableProps>) => {
   const config = useTableConfig();
   return (
     <>
-      <Table
-        {...props}
-        {...config}
-        renderBufferSize={20}
-        style={{ height: "100%", width: "100%" }}
-      />
+      <Table {...props} {...config} renderBufferSize={20} />
     </>
   );
 };
 
-Table.displaySequence = displaySequence++;
+DataTable.displaySequence = displaySequence++;
 
 type InlineDrawerProps = {
   inline?: boolean;
@@ -105,7 +100,7 @@ const InlineDrawer = ({
   );
 
   return (
-    <Chest style={{ width: "100%", height: "100%" }}>
+    <DockLayout style={{ width: 500, height: 500 }}>
       <Drawer
         inline={inline}
         open={open}
@@ -128,8 +123,8 @@ const InlineDrawer = ({
           </List>
         </div>
       </Drawer>
-      <Table onSelectionChange={handleSelectionChange} />
-    </Chest>
+      <DataTable onSelectionChange={handleSelectionChange} />
+    </DockLayout>
   );
 };
 

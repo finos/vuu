@@ -5,12 +5,21 @@ import {
 import { Connection } from "./connectionTypes";
 import { logger } from "@finos/vuu-utils";
 
-import { ConnectionStatus, ConnectionStatusMessage } from "./vuuUIMessageTypes";
+import {
+  ConnectionQualityMetrics,
+  ConnectionStatus,
+  ConnectionStatusMessage,
+} from "./vuuUIMessageTypes";
 
-export type ConnectionMessage = ServerToClientMessage | ConnectionStatusMessage;
+export type ConnectionMessage =
+  | ServerToClientMessage
+  | ConnectionStatusMessage
+  | ConnectionQualityMetrics;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
-const { debug, debugEnabled, error, info, warn } = logger(
+export type WebSocketProtocol = string | string[] | undefined;
+
+const { debug, debugEnabled, error, info, infoEnabled, warn } = logger(
   "websocket-connection"
 );
 
@@ -27,18 +36,25 @@ const connectionCallback = Symbol("connectionCallback");
 
 export async function connect(
   connectionString: string,
+  protocol: WebSocketProtocol,
   callback: ConnectionCallback
 ): Promise<Connection> {
-  return makeConnection(connectionString, callback);
+  return makeConnection(connectionString, protocol, callback);
 }
 
 async function reconnect(connection: WebsocketConnection) {
   //TODO it's not enough to reconnect with a new websocket, we have to log back in as well
-  makeConnection(connection.url, connection[connectionCallback], connection);
+  makeConnection(
+    connection.url,
+    connection.protocol,
+    connection[connectionCallback],
+    connection
+  );
 }
 
 async function makeConnection(
   url: string,
+  protocol: WebSocketProtocol,
   callback: ConnectionCallback,
   connection?: WebsocketConnection
 ): Promise<Connection> {
@@ -52,7 +68,7 @@ async function makeConnection(
   try {
     callback({ type: "connection-status", status: "connecting" });
     const reconnecting = typeof connection !== "undefined";
-    const ws = await createWebsocket(url);
+    const ws = await createWebsocket(url, protocol);
 
     console.info(
       "%c⚡ %cconnected",
@@ -65,14 +81,17 @@ async function makeConnection(
     }
 
     const websocketConnection =
-      connection ?? new WebsocketConnection(ws, url, callback);
+      connection ?? new WebsocketConnection(ws, url, protocol, callback);
 
-    const status = reconnecting ? "reconnected" : "connected";
+    const status = reconnecting
+      ? "reconnected"
+      : "connection-open-awaiting-session";
     callback({ type: "connection-status", status });
     websocketConnection.status = status;
 
     return websocketConnection as Connection;
   } catch (evt) {
+    console.log({ evt });
     const retry = --connectionStatus.attemptsRemaining > 0;
     callback({
       type: "connection-status",
@@ -81,7 +100,7 @@ async function makeConnection(
       retry,
     });
     if (retry) {
-      return makeConnectionIn(url, callback, connection, 10000);
+      return makeConnectionIn(url, protocol, callback, connection, 10000);
     } else {
       throw Error("Failed to establish connection");
     }
@@ -90,24 +109,32 @@ async function makeConnection(
 
 const makeConnectionIn = (
   url: string,
+  protocol: WebSocketProtocol,
   callback: ConnectionCallback,
   connection?: WebsocketConnection,
   delay?: number
 ): Promise<Connection> =>
   new Promise((resolve) => {
     setTimeout(() => {
-      resolve(makeConnection(url, callback, connection));
+      resolve(makeConnection(url, protocol, callback, connection));
     }, delay);
   });
 
-const createWebsocket = (connectionString: string): Promise<WebSocket> =>
+const createWebsocket = (
+  connectionString: string,
+  protocol: WebSocketProtocol
+): Promise<WebSocket> =>
   new Promise((resolve, reject) => {
     //TODO add timeout
-    // const websocketUrl = WS_PATTERN.test(connectionString)
     const websocketUrl = isWebsocketUrl(connectionString)
       ? connectionString
       : `wss://${connectionString}`;
-    const ws = new WebSocket(websocketUrl);
+
+    if (infoEnabled && protocol !== undefined) {
+      info(`WebSocket Protocol ${protocol?.toString()}`);
+    }
+
+    const ws = new WebSocket(websocketUrl, protocol);
     ws.onopen = () => resolve(ws);
     ws.onerror = (evt) => reject(evt);
   });
@@ -133,12 +160,28 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   close: () => void = closeWarn;
   requiresLogin = true;
   send: (msg: ClientToServerMessage) => void = sendWarn;
-  status: "closed" | "ready" | "connected" | "reconnected" = "ready";
+  status:
+    | "closed"
+    | "ready"
+    | "connection-open-awaiting-session"
+    | "connected"
+    | "reconnected" = "ready";
 
+  public protocol: WebSocketProtocol;
   public url: string;
+  public messagesCount = 0;
 
-  constructor(ws: WebSocket, url: string, callback: ConnectionCallback) {
+  private connectionMetricsInterval: ReturnType<typeof setInterval> | null =
+    null;
+
+  constructor(
+    ws: WebSocket,
+    url: string,
+    protocol: WebSocketProtocol,
+    callback: ConnectionCallback
+  ) {
     this.url = url;
+    this.protocol = protocol;
     this[connectionCallback] = callback;
     this[setWebsocket](ws);
   }
@@ -150,14 +193,18 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
   [setWebsocket](ws: WebSocket) {
     const callback = this[connectionCallback];
     ws.onmessage = (evt) => {
-      const vuuMessageFromServer = parseMessage(evt.data);
-      if (process.env.NODE_ENV === "development") {
-        if (debugEnabled && vuuMessageFromServer.body.type !== "HB") {
-          debug?.(`<<< ${vuuMessageFromServer.body.type}`);
-        }
-      }
-      callback(vuuMessageFromServer);
+      this.status = "connected";
+      ws.onmessage = this.handleWebsocketMessage;
+      this.handleWebsocketMessage(evt);
     };
+
+    this.connectionMetricsInterval = setInterval(() => {
+      callback({
+        type: "connection-metrics",
+        messagesLength: this.messagesCount,
+      });
+      this.messagesCount = 0;
+    }, 1000);
 
     ws.onerror = () => {
       error(`⚡ connection error`);
@@ -166,7 +213,19 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
         status: "disconnected",
         reason: "error",
       });
-      if (this.status !== "closed") {
+
+      if (this.connectionMetricsInterval) {
+        clearInterval(this.connectionMetricsInterval);
+        this.connectionMetricsInterval = null;
+      }
+
+      if (this.status === "connection-open-awaiting-session") {
+        // our connection has errored before first server message has been received. This
+        // is not a normal reconnect, more likely a websocket configuration issue
+        error(
+          `Websocket connection lost before Vuu session established, check websocket configuration`
+        );
+      } else if (this.status !== "closed") {
         reconnect(this);
         this.send = queue;
       }
@@ -179,6 +238,12 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
         status: "disconnected",
         reason: "close",
       });
+
+      if (this.connectionMetricsInterval) {
+        clearInterval(this.connectionMetricsInterval);
+        this.connectionMetricsInterval = null;
+      }
+
       if (this.status !== "closed") {
         reconnect(this);
         this.send = queue;
@@ -208,4 +273,15 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
       info?.("close websocket");
     };
   }
+
+  handleWebsocketMessage = (evt: MessageEvent) => {
+    const vuuMessageFromServer = parseMessage(evt.data);
+    this.messagesCount += 1;
+    if (process.env.NODE_ENV === "development") {
+      if (debugEnabled && vuuMessageFromServer.body.type !== "HB") {
+        debug?.(`<<< ${vuuMessageFromServer.body.type}`);
+      }
+    }
+    this[connectionCallback](vuuMessageFromServer);
+  };
 }

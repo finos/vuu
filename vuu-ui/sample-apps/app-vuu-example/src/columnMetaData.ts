@@ -130,7 +130,7 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
     label: "Created",
     name: "created",
     type: {
-      name: "timestamp",
+      name: "time",
     },
   },
   currency: {
@@ -194,7 +194,7 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
     label: "Last Update",
     name: "lastUpdate",
     type: {
-      name: "timestamp",
+      name: "time",
     },
   },
   lotSize: {

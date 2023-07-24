@@ -1,11 +1,6 @@
-import {
-  authenticate as vuuAuthenticate,
-  connectToServer,
-  DataSourceRow,
-  RemoteDataSource,
-  useDataSource,
-  useTypeaheadSuggestions,
-} from "@finos/vuu-data";
+import { RemoteDataSource } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
+import { useDataSource, useTypeaheadSuggestions } from "@finos/vuu-data-react";
 import { metadataKeys, WindowRange } from "@finos/vuu-utils";
 import {
   CollectionProvider,
@@ -16,15 +11,9 @@ import {
   VirtualizedList,
 } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
-import {
-  CSSProperties,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { ArrayLike } from "./ArrayLike";
+import { CSSProperties, useCallback, useMemo, useRef, useState } from "react";
+import { useAutoLoginToVuuServer } from "../utils";
+import { ArrayLike } from "../utils/ArrayLike";
 
 const { IDX, KEY } = metadataKeys;
 
@@ -83,14 +72,7 @@ export const DefaultList = () => {
   const collectionHook = useVuuCollectionHook(data2, size, range);
   const selectedRow = data2.find((row) => row[7]) ?? null;
 
-  useEffect(() => {
-    const connect = async () => {
-      console.log(`DataList stories authenticate as steve`);
-      const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
-      connectToServer("127.0.0.1:8090/websocket", authToken);
-    };
-    connect();
-  }, []);
+  useAutoLoginToVuuServer();
 
   const getTypeaheadSuggestions = useTypeaheadSuggestions();
 

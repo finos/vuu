@@ -103,7 +103,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (1, false, "$root|chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
+        (1, false, "$root|chris", false, false, "chris", 0, "", "chris", "", "", "", "", "", "", "")
       )
     }
 
@@ -125,8 +125,8 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
         //(0, true, "$root", false, true, "", 2, "", "", "", "", "", "", "", "", ""),
-        (1, false, "$root|VOD.L", false, false, "VOD.L", 1, "", "", "VOD.L", "", "", "", "", "", ""),
-        (1, false, "$root|BT.L", false, false, "BT.L", 1, "", "", "BT.L", "", "", "", "", "", "")
+        (1, false, "$root|VOD.L", false, false, "VOD.L", 0, "", "", "VOD.L", "", "", "", "", "", ""),
+        (1, false, "$root|BT.L", false, false, "BT.L", 0, "", "", "BT.L", "", "", "", "", "", "")
       )
     }
 
@@ -226,8 +226,8 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
       Table(
         ("_depth"  ,"_isOpen" ,"_treeKey","_isLeaf" ,"_isOpen" ,"_caption","_childCount","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ),
-        (1         ,false     ,"$root|chris",false     ,false     ,"chris"   ,3         ,""        ,"chris"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (1         ,false     ,"$root|steve",false     ,false     ,"steve"   ,2         ,""        ,"steve"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
+        (1         ,false     ,"$root|chris",false     ,false     ,"chris"   ,0         ,""        ,"chris"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        ),
+        (1         ,false     ,"$root|steve",false     ,false     ,"steve"   ,0         ,""        ,"steve"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -277,6 +277,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
         (2         ,true      ,"$root|BT.L|chris",false     ,true      ,"chris"   ,2         ,""        ,"chris"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
         (2         ,false     ,"$root|BT.L|steve",false     ,false     ,"steve"   ,2         ,""        ,"steve"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
         (1         ,true      ,"$root|BT.L",false     ,true      ,"BT.L"    ,2         ,""        ,""        ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
+        (1         ,false     ,"$root|VOD.L",false     ,false     ,"VOD.L"   ,1         ,""        ,""        ,"VOD.L"   ,""        ,""        ,""        ,""        ,""        ,""        ),
         (3         ,false     ,"$root|BT.L|chris|NYC-0002",true      ,false     ,"NYC-0002",0         ,"NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      ),
         (3         ,false     ,"$root|BT.L|chris|NYC-0003",true      ,false     ,"NYC-0003",0         ,"NYC-0003","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      )
       )

@@ -7,8 +7,15 @@ import {
   KeyedColumnDescriptor,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
-import { useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { MeasuredSize } from "./useMeasuredContainer";
+import {
+  actualRowPositioning,
+  RowAtPositionFunc,
+  RowOffsetFunc,
+  RowPositioning,
+  virtualRowPositioning,
+} from "@finos/vuu-utils";
 
 export interface TableViewportHookProps {
   columns: KeyedColumnDescriptor[];
@@ -20,29 +27,43 @@ export interface TableViewportHookProps {
 }
 
 export interface ViewportMeasurements {
-  fillerHeight: number;
+  contentHeight: number;
+  horizontalScrollbarHeight: number;
   maxScrollContainerScrollHorizontal: number;
   maxScrollContainerScrollVertical: number;
   pinnedWidthLeft: number;
   pinnedWidthRight: number;
   rowCount: number;
-  scrollContentHeight: number;
-  scrollbarSize: number;
-  scrollContentWidth: number;
+  contentWidth: number;
   totalHeaderHeight: number;
+  verticalScrollbarWidth: number;
+  viewportBodyHeight: number;
 }
 
-const UNMEASURED_VIEWPORT = {
-  fillerHeight: 0,
+export interface TableViewportHookResult extends ViewportMeasurements {
+  getRowAtPosition: RowAtPositionFunc;
+  getRowOffset: RowOffsetFunc;
+  setPctScrollTop: (scrollPct: number) => void;
+}
+
+// Too simplistic, it depends on rowHeight
+const MAX_RAW_ROWS = 1_500_000;
+
+const UNMEASURED_VIEWPORT: TableViewportHookResult = {
+  contentHeight: 0,
+  contentWidth: 0,
+  getRowAtPosition: () => -1,
+  getRowOffset: () => -1,
+  horizontalScrollbarHeight: 0,
   maxScrollContainerScrollHorizontal: 0,
   maxScrollContainerScrollVertical: 0,
   pinnedWidthLeft: 0,
   pinnedWidthRight: 0,
   rowCount: 0,
-  scrollContentHeight: 0,
-  scrollbarSize: 0,
-  scrollContentWidth: 0,
+  setPctScrollTop: () => undefined,
   totalHeaderHeight: 0,
+  verticalScrollbarWidth: 0,
+  viewportBodyHeight: 0,
 };
 
 const measurePinnedColumns = (columns: KeyedColumnDescriptor[]) => {
@@ -60,7 +81,11 @@ const measurePinnedColumns = (columns: KeyedColumnDescriptor[]) => {
       unpinnedWidth += visibleWidth;
     }
   }
-  return { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth };
+  return {
+    pinnedWidthLeft: pinnedWidthLeft + 4,
+    pinnedWidthRight: pinnedWidthRight + 4,
+    unpinnedWidth,
+  };
 };
 
 export const useTableViewport = ({
@@ -70,55 +95,91 @@ export const useTableViewport = ({
   rowCount,
   rowHeight,
   size,
-}: TableViewportHookProps): ViewportMeasurements => {
+}: TableViewportHookProps): TableViewportHookResult => {
+  const pctScrollTopRef = useRef(0);
+  const appliedRowCount = Math.min(rowCount, MAX_RAW_ROWS);
+  const appliedContentHeight = appliedRowCount * rowHeight;
+  const virtualContentHeight = rowCount * rowHeight;
+  const virtualisedExtent = virtualContentHeight - appliedContentHeight;
+
   const { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth } = useMemo(
     () => measurePinnedColumns(columns),
     [columns]
   );
 
-  const viewportMeasurements = useMemo(() => {
+  const [actualRowOffset, actualRowAtPosition] = useMemo<RowPositioning>(
+    () => actualRowPositioning(rowHeight),
+    [rowHeight]
+  );
+
+  const [getRowOffset, getRowAtPosition] = useMemo<RowPositioning>(() => {
+    if (virtualisedExtent) {
+      return virtualRowPositioning(
+        rowHeight,
+        virtualisedExtent,
+        pctScrollTopRef
+      );
+    } else {
+      return [actualRowOffset, actualRowAtPosition];
+    }
+  }, [actualRowAtPosition, actualRowOffset, virtualisedExtent, rowHeight]);
+
+  const setPctScrollTop = useCallback((scrollPct: number) => {
+    pctScrollTopRef.current = scrollPct;
+  }, []);
+
+  return useMemo(() => {
     if (size) {
       const headingsDepth = headings.length;
       const scrollbarSize = 15;
-      const contentHeight = rowCount * rowHeight;
-      const scrollContentWidth =
-        pinnedWidthLeft + unpinnedWidth + pinnedWidthRight;
+      const contentWidth = pinnedWidthLeft + unpinnedWidth + pinnedWidthRight;
+      const horizontalScrollbarHeight =
+        contentWidth > size.width ? scrollbarSize : 0;
+      const totalHeaderHeight = headerHeight * (1 + headingsDepth);
       const maxScrollContainerScrollVertical =
-        contentHeight +
-        headerHeight -
-        ((size?.height ?? 0) - headerHeight - scrollbarSize);
+        appliedContentHeight -
+        ((size?.height ?? 0) - horizontalScrollbarHeight) +
+        totalHeaderHeight;
       const maxScrollContainerScrollHorizontal =
-        scrollContentWidth - size.width + pinnedWidthLeft;
-
+        contentWidth - size.width + pinnedWidthLeft;
       const visibleRows = (size.height - headerHeight) / rowHeight;
       const count = Number.isInteger(visibleRows)
         ? visibleRows + 1
         : Math.ceil(visibleRows);
+      const viewportBodyHeight = size.height - totalHeaderHeight;
+      const verticalScrollbarWidth =
+        appliedContentHeight > viewportBodyHeight ? scrollbarSize : 0;
+
       return {
-        fillerHeight: (rowCount - count) * rowHeight,
+        contentHeight: appliedContentHeight,
+        getRowAtPosition,
+        getRowOffset,
+        horizontalScrollbarHeight,
         maxScrollContainerScrollHorizontal,
         maxScrollContainerScrollVertical,
         pinnedWidthLeft,
         pinnedWidthRight,
         rowCount: count,
-        scrollContentHeight: headerHeight + contentHeight + scrollbarSize,
-        scrollbarSize,
-        scrollContentWidth,
-        totalHeaderHeight: headerHeight * (1 + headingsDepth),
+        contentWidth,
+        setPctScrollTop,
+        totalHeaderHeight,
+        verticalScrollbarWidth,
+        viewportBodyHeight,
       };
     } else {
       return UNMEASURED_VIEWPORT;
     }
   }, [
-    headerHeight,
+    size,
     headings.length,
     pinnedWidthLeft,
-    pinnedWidthRight,
-    rowCount,
-    rowHeight,
-    size,
     unpinnedWidth,
+    pinnedWidthRight,
+    appliedContentHeight,
+    headerHeight,
+    rowHeight,
+    getRowAtPosition,
+    getRowOffset,
+    setPctScrollTop,
   ]);
-
-  return viewportMeasurements;
 };

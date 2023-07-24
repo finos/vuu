@@ -1,11 +1,11 @@
 import {
+  ClientToServerBody,
   ClientToServerMenuRPC,
   ClientToServerMessage,
   LinkDescriptorWithLabel,
   ServerToClientMessage,
-  VuuColumnDataType,
+  ServerToClientTableMeta,
   VuuLinkDescriptor,
-  VuuRow,
   VuuRpcRequest,
   VuuTable,
 } from "@finos/vuu-protocol-types";
@@ -18,12 +18,19 @@ import {
   DataSourceVisualLinkRemovedMessage,
 } from "../data-source";
 import {
+  createSchemaFromTableMetadata,
+  groupRowsByViewport,
   isVuuMenuRpcRequest,
   stripRequestId,
+  TableSchema,
   WithRequestId,
 } from "../message-utils";
 import {
+  isSessionTable,
+  isSessionTableActionMessage,
   isViewporttMessage as isViewportMessage,
+  NoAction,
+  OpenDialogAction,
   ServerProxySubscribeMessage,
   VuuUIMessageIn,
   VuuUIMessageInTableList,
@@ -69,6 +76,10 @@ const DEFAULT_OPTIONS: MessageOptions = {};
 const isActiveViewport = (viewPort: Viewport) =>
   viewPort.disabled !== true && viewPort.suspended !== true;
 
+const NO_ACTION: NoAction = {
+  type: "NO_ACTION",
+};
+
 const addTitleToLinks = (
   links: LinkDescriptorWithLabel[],
   serverViewportId: string,
@@ -97,16 +108,9 @@ function addLabelsToLinks(
   });
 }
 
-const byViewportRowIdxTimestamp = (row1: VuuRow, row2: VuuRow) => {
-  if (row1.viewPortId === row2.viewPortId) {
-    if (row1.rowIndex === row2.rowIndex) {
-      return row1.ts > row2.ts ? 1 : -1;
-    } else {
-      return row1.rowIndex > row2.rowIndex ? 1 : -1;
-    }
-  } else {
-    return row1.viewPortId > row2.viewPortId ? 1 : -1;
-  }
+type PendingRequest<T = unknown> = {
+  reject: (err: unknown) => void;
+  resolve: (value: T | PromiseLike<T>) => void;
 };
 
 interface PendingLogin {
@@ -119,14 +123,13 @@ export class ServerProxy {
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
   private authToken = "";
+  private user = "user";
   private pendingLogin?: PendingLogin;
   private pendingTableMetaRequests = new Map<string, string>();
+  private pendingRequests = new Map<string, PendingRequest>();
   private sessionId?: string;
   private queuedRequests: Array<ClientToServerMessage["body"]> = [];
-  private cachedTableMeta: Map<
-    string,
-    { columns: string[]; serverDataTypes: VuuColumnDataType[] }
-  > = new Map();
+  private cachedTableSchemas: Map<string, Readonly<TableSchema>> = new Map();
 
   constructor(connection: Connection, callback: PostMessageToClientCallback) {
     this.connection = connection;
@@ -163,12 +166,16 @@ export class ServerProxy {
     }, 2000);
   }
 
-  public async login(authToken?: string): Promise<string | void> {
+  public async login(
+    authToken?: string,
+    user = "user"
+  ): Promise<string | void> {
     if (authToken) {
       this.authToken = authToken;
+      this.user = user;
       return new Promise((resolve, reject) => {
         this.sendMessageToServer(
-          { type: Message.LOGIN, token: this.authToken, user: "user" },
+          { type: Message.LOGIN, token: this.authToken, user },
           ""
         );
         this.pendingLogin = { resolve, reject };
@@ -181,7 +188,12 @@ export class ServerProxy {
   public subscribe(message: ServerProxySubscribeMessage) {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
-      if (!this.hasMetaDataFor(message.table)) {
+      if (
+        !this.hasSchemaForTable(message.table) &&
+        // A Session table is never cached - it is limited to a single workflow interaction
+        // The metadata for a session table is requested even before the subscribe call.
+        !isSessionTable(message.table)
+      ) {
         info?.(
           `subscribe to ${message.table.table}, no metadata yet, request metadata`
         );
@@ -268,6 +280,8 @@ export class ServerProxy {
     );
 
     if (serverRequest) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       if (process.env.NODE_ENV === "development") {
         info?.(
           `CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`
@@ -343,7 +357,6 @@ export class ServerProxy {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
-  //TODO when do we ever check the disabled state ?
   private disableViewport(viewport: Viewport) {
     const requestId = nextRequestId();
     const request = viewport.disable(requestId);
@@ -351,12 +364,28 @@ export class ServerProxy {
   }
 
   private enableViewport(viewport: Viewport) {
-    const requestId = nextRequestId();
-    const request = viewport.enable(requestId);
-    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+    if (viewport.disabled) {
+      const requestId = nextRequestId();
+      const request = viewport.enable(requestId);
+      this.sendIfReady(request, requestId, viewport.status === "subscribed");
+    }
   }
 
+  private suspendViewport(viewport: Viewport) {
+    viewport.suspend();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore its a number, this isn't node.js
+    viewport.suspendTimer = setTimeout(() => {
+      info?.("suspendTimer expired, escalate suspend to disable");
+      this.disableViewport(viewport);
+    }, 3000);
+  }
   private resumeViewport(viewport: Viewport) {
+    if (viewport.suspendTimer) {
+      debug?.("clear suspend timer");
+      clearTimeout(viewport.suspendTimer);
+      viewport.suspendTimer = null;
+    }
     const rows = viewport.resume();
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,
@@ -502,7 +531,7 @@ export class ServerProxy {
           case "select":
             return this.select(viewport, message);
           case "suspend":
-            return viewport.suspend();
+            return this.suspendViewport(viewport);
           case "resume":
             return this.resumeViewport(viewport);
           case "enable":
@@ -546,6 +575,16 @@ export class ServerProxy {
     );
   }
 
+  private awaitResponseToMessage(
+    message: ClientToServerBody
+  ): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      const requestId = nextRequestId();
+      this.sendMessageToServer(message, requestId);
+      this.pendingRequests.set(requestId, { reject, resolve });
+    });
+  }
+
   public sendIfReady(
     message: ClientToServerMessage["body"],
     requestId: string,
@@ -572,7 +611,7 @@ export class ServerProxy {
         requestId,
         sessionId: this.sessionId,
         token: this.authToken,
-        user: "user",
+        user: this.user,
         module,
         body,
       } as ClientToServerMessage);
@@ -583,6 +622,14 @@ export class ServerProxy {
     const { body, requestId, sessionId } = message;
 
     // onsole.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (ServerProxy) ${message.type || JSON.stringify(message)}`,"color:white;background-color:blue;font-weight:bold;");
+
+    const pendingRequest = this.pendingRequests.get(requestId);
+    if (pendingRequest) {
+      const { resolve } = pendingRequest;
+      this.pendingRequests.delete(requestId);
+      resolve(body);
+      return;
+    }
 
     const { viewports } = this;
     switch (body.type) {
@@ -636,7 +683,11 @@ export class ServerProxy {
             if (viewport.disabled) {
               this.disableViewport(viewport);
             }
-            if (viewportStatus === "subscribing") {
+            if (
+              viewportStatus === "subscribing" &&
+              // A session table will never have Visual Links, nor Context Menus
+              !isSessionTable(viewport.table)
+            ) {
               // If status is "resubscribing", the following is unnecessary
               this.sendMessageToServer({
                 type: Message.GET_VP_VISUAL_LINKS,
@@ -710,90 +761,76 @@ export class ServerProxy {
               const rows = viewport.currentData();
               debugEnabled &&
                 debug(
-                  `Enable Response (ServerProxy to Client):
-                  ${JSON.stringify(response)}`
-                );
-              this.postMessageToClient({
-                clientViewportId: viewport.clientViewportId,
-                mode: "batch",
-                rows,
-                size: viewport.size,
-                type: "viewport-update",
-              });
-              debugEnabled &&
-                debug(
-                  `Enable Response (ServerProxy to Client): ${JSON.stringify(
+                  `Enable Response (ServerProxy to Client):  ${JSON.stringify(
                     response
                   )}`
                 );
+
+              if (viewport.size === 0) {
+                debugEnabled &&
+                  debug(`Viewport Enabled but size 0, resend  to server`);
+              } else {
+                this.postMessageToClient({
+                  clientViewportId: viewport.clientViewportId,
+                  mode: "batch",
+                  rows,
+                  size: viewport.size,
+                  type: "viewport-update",
+                });
+                debugEnabled &&
+                  debug(
+                    `Enable Response (ServerProxy to Client): send size ${viewport.size} ${rows.length} rows from cache`
+                  );
+              }
             }
           }
         }
         break;
       case Message.TABLE_ROW:
         {
-          body.rows.sort(byViewportRowIdxTimestamp);
-          let currentViewportId = "";
-          let viewport: Viewport | undefined;
-          let startIdx = 0;
+          const viewportRowMap = groupRowsByViewport(body.rows);
 
-          if (process.env.NODE_ENV === "development") {
-            if (debugEnabled) {
-              const [firstRow, secondRow] = body.rows;
-              if (body.rows.length === 0) {
-                debug("handleMessageFromServer TABLE_ROW 0 rows");
-              } else if (firstRow?.rowIndex === -1) {
-                if (body.rows.length === 1) {
+          if (process.env.NODE_ENV === "development" && debugEnabled) {
+            const [firstRow, secondRow] = body.rows;
+            if (body.rows.length === 0) {
+              debug("handleMessageFromServer TABLE_ROW 0 rows");
+            } else if (firstRow?.rowIndex === -1) {
+              if (body.rows.length === 1) {
+                if (firstRow.updateType === "SIZE") {
                   debug(
-                    `handleMessageFromServer TABLE_ROW SIZE ${firstRow.vpSize}`
+                    `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`
                   );
                 } else {
                   debug(
-                    `handleMessageFromServer TABLE_ROW ${
-                      body.rows.length
-                    } rows, SIZE ${firstRow.vpSize}, [${
-                      secondRow?.rowIndex
-                    }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`
+                    `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ${firstRow.vpSize} rowIdx ${firstRow.rowIndex}`
                   );
                 }
               } else {
                 debug(
                   `handleMessageFromServer TABLE_ROW ${
                     body.rows.length
-                  } rows [${firstRow?.rowIndex}] - [${
-                    body.rows[body.rows.length - 1]?.rowIndex
-                  }]`
+                  } rows, SIZE ${firstRow.vpSize}, [${
+                    secondRow?.rowIndex
+                  }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`
                 );
               }
+            } else {
+              debug(
+                `handleMessageFromServer TABLE_ROW ${body.rows.length} rows [${
+                  firstRow?.rowIndex
+                }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`
+              );
             }
           }
 
-          for (
-            let i = 0, count = body.rows.length, isLast = i === count - 1;
-            i < count;
-            i++, isLast = i === count - 1
-          ) {
-            const row = body.rows[i];
-            if (row.viewPortId !== currentViewportId || isLast) {
-              const viewportId =
-                count === 1 ? row.viewPortId : currentViewportId;
-              if (viewportId !== "") {
-                viewport = viewports.get(viewportId);
-                if (viewport) {
-                  if (startIdx === 0 && isLast) {
-                    viewport.updateRows(body.rows);
-                  } else {
-                    const end = isLast ? count : i;
-                    viewport.updateRows(body.rows.slice(startIdx, end));
-                    startIdx = i;
-                  }
-                } else {
-                  warn?.(
-                    `TABLE_ROW message received for non registered viewport ${viewportId}`
-                  );
-                }
-              }
-              currentViewportId = row.viewPortId;
+          for (const [viewportId, rows] of Object.entries(viewportRowMap)) {
+            const viewport = viewports.get(viewportId);
+            if (viewport) {
+              viewport.updateRows(rows);
+            } else {
+              warn?.(
+                `TABLE_ROW message received for non registered viewport ${viewportId}`
+              );
             }
           }
 
@@ -863,7 +900,7 @@ export class ServerProxy {
         // This request may have originated from client or may have been made by
         // ServerProxy whilst creating a new subscription
         {
-          this.cacheTableMeta(body.table, body.columns, body.dataTypes);
+          const tableSchema = this.cacheTableMeta(body);
           const clientViewportId = this.pendingTableMetaRequests.get(requestId);
           if (clientViewportId) {
             this.pendingTableMetaRequests.delete(requestId);
@@ -872,7 +909,7 @@ export class ServerProxy {
             // been acknowledged, the viewport will be stored under serverViewportId;
             const viewport = this.viewports.get(clientViewportId);
             if (viewport) {
-              viewport.setTableMeta(body.columns, body.dataTypes);
+              viewport.setTableSchema(tableSchema);
             } else {
               warn?.(
                 "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
@@ -881,9 +918,7 @@ export class ServerProxy {
           } else {
             this.postMessageToClient({
               type: Message.TABLE_META_RESP,
-              table: body.table,
-              columns: body.columns,
-              dataTypes: body.dataTypes,
+              tableSchema,
               requestId,
             } as VuuUIMessageInTableMeta);
           }
@@ -933,15 +968,66 @@ export class ServerProxy {
         }
         break;
 
+      case "VP_EDIT_RPC_RESPONSE":
+        {
+          this.postMessageToClient({
+            action: body.action,
+            requestId,
+            rpcName: body.rpcName,
+            type: "VP_EDIT_RPC_RESPONSE",
+          });
+        }
+        break;
+      case "VP_EDIT_RPC_REJECT":
+        {
+          const viewport = this.viewports.get(body.vpId);
+          if (viewport) {
+            this.postMessageToClient({
+              requestId,
+              type: "VP_EDIT_RPC_REJECT",
+              error: body.error,
+            });
+          }
+        }
+        break;
+
       case "VIEW_PORT_MENU_RESP":
         {
-          const { action } = body;
-          this.postMessageToClient({
-            type: "VIEW_PORT_MENU_RESP",
-            action,
-            tableAlreadyOpen: this.isTableOpen(action.table),
-            requestId,
-          });
+          if (isSessionTableActionMessage(body)) {
+            const { action, rpcName } = body;
+            this.awaitResponseToMessage({
+              type: "GET_TABLE_META",
+              table: action.table,
+            }).then((response) => {
+              const tableSchema = createSchemaFromTableMetadata(
+                response as ServerToClientTableMeta
+              );
+              // Client is going to edit a session table. Ideally, the action
+              // would contain all metadata to allow an appropriate form to
+              // be presented. That is currently not the case, so client may
+              // augment metaData with static data. To do that, client needs
+              // to receive the  rpcName with the response.
+              this.postMessageToClient({
+                rpcName,
+                type: "VIEW_PORT_MENU_RESP",
+                action: {
+                  ...action,
+                  tableSchema,
+                },
+                tableAlreadyOpen: this.isTableOpen(action.table),
+                requestId,
+              });
+            });
+          } else {
+            const { action } = body;
+            this.postMessageToClient({
+              type: "VIEW_PORT_MENU_RESP",
+              action: (action as OpenDialogAction) || NO_ACTION,
+              tableAlreadyOpen:
+                action !== null && this.isTableOpen(action.table),
+              requestId,
+            });
+          }
         }
         break;
 
@@ -967,21 +1053,19 @@ export class ServerProxy {
     }
   }
 
-  private hasMetaDataFor(table: VuuTable) {
-    return this.cachedTableMeta.has(`${table.module}:${table.table}`);
+  private hasSchemaForTable(table: VuuTable) {
+    return this.cachedTableSchemas.has(`${table.module}:${table.table}`);
   }
 
-  private cacheTableMeta(
-    table: VuuTable,
-    columns: string[],
-    serverDataTypes: VuuColumnDataType[]
-  ) {
-    if (!this.hasMetaDataFor(table)) {
-      this.cachedTableMeta.set(`${table.module}:${table.table}`, {
-        columns,
-        serverDataTypes,
-      });
+  private cacheTableMeta(messageBody: ServerToClientTableMeta): TableSchema {
+    const { module, table } = messageBody.table;
+    const key = `${module}:${table}`;
+    let tableSchema = this.cachedTableSchemas.get(key);
+    if (!tableSchema) {
+      tableSchema = createSchemaFromTableMetadata(messageBody);
+      this.cachedTableSchemas.set(key, tableSchema);
     }
+    return tableSchema;
   }
 
   isTableOpen(table?: VuuTable) {

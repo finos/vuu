@@ -9,16 +9,17 @@ target/
 /vuu/vuu.iml
 /vuu-parent.iml
 /vuu-book/src/.DS_Store
+.DS_Store
 
 .vscode/**
 node_modules
 yarn-debug.log*
 yarn-error.log*
 
+/vuu-ui/showcase/src/examples/**/*.js
+
 deployed_apps
 dist
-/vuu-ui-legacy/target/
-/vuu-ui-legacy/vuu-ui-legacy.iml
 
 # Docusaurus generated folders
 website/translated_docs/

@@ -1,0 +1,60 @@
+.vuuOverflowContainer {
+    --overflow-width: 0px;
+    --overflow-order: 99;
+    --border-size: calc((var(--overflow-container-height) - 24px) / 2);
+    background-color: var(--vuuOverflowContainer-background, black);
+    height: var(--overflow-container-height);
+    /* padding: 0 10px; */
+
+}
+
+.vuuOverflowContainer-wrapContainer {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    height: var(--overflow-container-height);
+    min-width: 44px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+
+}
+
+.vuuOverflowContainer-wrapContainer.overflowed {
+    --overflow-order: 2;
+    --overflow-left: auto;
+    --overflow-position: relative;
+    --overflow-width: auto;
+}
+
+.vuuOverflowContainer-item {
+    align-items: inherit;
+    display: flex;
+    order: 1;
+    position: relative;
+    height: var(--overflow-container-height);
+}
+
+.vuuOverflowContainer-item.wrapped {
+    --overflow-item-bg: #ccc;
+    order: 3;
+}
+
+.vuuOverflowContainer-OverflowIndicator {
+    /* border-style: solid none;
+    border-color: black;
+    border-width: var(--border-size); */
+    align-items: center;
+    background-color: transparent;
+    display: flex;
+    height: var(--overflow-container-height);
+    height: var(--overflow-container-height);
+    order: var(--overflow-order);
+    overflow: hidden;
+    left: var(--overflow-left, 100%);
+    position: var(--overflow-position, absolute);
+    width: var(--overflow-width);
+
+  
+}

@@ -1,14 +1,14 @@
 package org.finos.vuu.viewport
 
-import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.{RowWithData, ViewPortColumnCreator}
-import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
-import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts._
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.table.ViewPortColumnCreator
+import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
+import org.finos.vuu.util.OutboundRowPublishQueue
+import org.finos.vuu.util.table.TableAsserts._
+import org.finos.vuu.viewport.tree.{OnlyRecalculateTreeKeys, TreeBuildOptimizer}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -72,13 +72,15 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val currentUpdateCount = viewPort.getTableUpdateCount()
        */
 
-      viewPortContainer.shouldRebuildTree(viewport, viewport.getStructuralHashCode(), viewport.getTableUpdateCount()) should be(false)
+      TreeBuildOptimizer.optimize(viewport, viewPortContainer.getTreeNodeStateByVp(viewport.id)).getClass should be (classOf[OnlyRecalculateTreeKeys])
 
-      val previousNodeState = viewport.table.asTable.asInstanceOf[TreeSessionTableImpl].getTree.nodeState
+      //viewPortContainer.shouldRebuildTree(viewport, viewport.getStructuralHashCode(), viewport.getTableUpdateCount()) should be(false)
 
-      val currentNodeState = viewPortContainer.getTreeNodeStateByVp(viewport.id)
-
-      viewPortContainer.shouldRecalcKeys(currentNodeState, previousNodeState) should be(true)
+//      val previousNodeState = viewport.table.asTable.asInstanceOf[TreeSessionTableImpl].getTree.nodeState
+//
+//      val currentNodeState = viewPortContainer.getTreeNodeStateByVp(viewport.id)
+//
+//      viewPortContainer.shouldRecalcKeys(currentNodeState, previousNodeState) should be(true)
 
       runContainersOnce(viewPortContainer, joinProvider)
 
@@ -204,7 +206,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val updates = combineQs(viewport)
 
-      val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
+      //val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
 
       assertVpEq(updates) {
         Table(
@@ -311,7 +313,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
         queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
-        GroupBy(orderPrices, columns.getColumnForName("traderRic").get )
+        GroupBy(orderPrices, columns.getColumnForName("traderRic").get)
           .withSum("quantity")
           .withCount("trader")
           .asClause()
@@ -332,19 +334,139 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       assertVpEq(updates) {
         Table(
+          ("_isOpen", "_depth", "_treeKey", "_isLeaf", "_childCount", "_caption", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close", "traderRic"),
+          (true, 1, "$root|chrisVOD.L", false, 5, "chrisVOD.L", "", 1, "", "", 1500.0, "", "", "", "", "", "chrisVOD.L"),
+          (false, 1, "$root|steveVOD.L", false, 1, "steveVOD.L", "", 1, "", "", 600.0, "", "", "", "", "", "steveVOD.L"),
+          (true, 1, "$root|steveBT.L", false, 1, "steveBT.L", "", 1, "", "", 1000.0, "", "", "", "", "", "steveBT.L"),
+          (false, 2, "$root|chrisVOD.L|NYC-0001", true, 0, "NYC-0001", "NYC-0001", "chris", "VOD.L", 1311544800000L, 100, 220.0, 222.0, null, null, null, "chrisVOD.L"),
+          (false, 2, "$root|chrisVOD.L|NYC-0002", true, 0, "NYC-0002", "NYC-0002", "chris", "VOD.L", 1311544800000L, 200, 220.0, 222.0, null, null, null, "chrisVOD.L"),
+          (false, 2, "$root|chrisVOD.L|NYC-0003", true, 0, "NYC-0003", "NYC-0003", "chris", "VOD.L", 1311544800000L, 300, 220.0, 222.0, null, null, null, "chrisVOD.L"),
+          (false, 2, "$root|chrisVOD.L|NYC-0004", true, 0, "NYC-0004", "NYC-0004", "chris", "VOD.L", 1311544800000L, 400, 220.0, 222.0, null, null, null, "chrisVOD.L"),
+          (false, 2, "$root|chrisVOD.L|NYC-0005", true, 0, "NYC-0005", "NYC-0005", "chris", "VOD.L", 1311544800000L, 500, 220.0, 222.0, null, null, null, "chrisVOD.L"),
+          (false, 2, "$root|steveBT.L|NYC-0007", true, 0, "NYC-0007", "NYC-0007", "steve", "BT.L", 1311544800000L, 1000, 500.0, 501.0, null, null, null, "steveBT.L"),
+          (false, 1, "$root|chrisBT.L", false, 1, "chrisBT.L", "", 1, "", "", 700.0, "", "", "", "", "", "chrisBT.L")
+        )
+      }
+    }
+
+    Scenario("test distinct aggregation") {
+
+      implicit val timeProvider: DefaultClock = new DefaultClock
+      implicit val lifeCycle: LifecycleContainer = new LifecycleContainer
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
+
+      joinProvider.start()
+
+      tickInData(ordersProvider, pricesProvider)
+
+      joinProvider.runOnce()
+
+      val queue = new OutboundRowPublishQueue()
+      val highPriorityQueue = new OutboundRowPublishQueue()
+
+      val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
+
+      val viewport = viewPortContainer.create(RequestId.oneNew(),
+        ClientSessionId("A", "B"),
+        queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns,
+        SortSpec(List()),
+        FilterSpec(""),
+        GroupBy(orderPrices, columns.getColumnForName("traderRic").get)
+          .withDistinct("trader")
+          .asClause()
+      )
+
+      runContainersOnce(viewPortContainer, joinProvider)
+
+      viewPortContainer.openNode(viewport.id, "$root|chrisVOD.L")
+      viewPortContainer.openNode(viewport.id, "$root|steveBT.L")
+
+      runContainersOnce(viewPortContainer, joinProvider)
+
+      ordersProvider.tick("NYC-0008", Map("orderId" -> "NYC-0008", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 700, "ric" -> "BT.L"))
+
+      runContainersOnce(viewPortContainer, joinProvider)
+
+      val updates = combineQs(viewport)
+
+      assertVpEq(updates) {
+        Table(
           ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ,"traderRic"),
-          (true      ,1         ,"$root|chrisVOD.L",false     ,5         ,"chrisVOD.L",""        ,1         ,""        ,""        ,1500.0    ,""        ,""        ,""        ,""        ,""        ,"chrisVOD.L"),
-          (false     ,1         ,"$root|steveVOD.L",false     ,1         ,"steveVOD.L",""        ,1         ,""        ,""        ,600.0     ,""        ,""        ,""        ,""        ,""        ,"steveVOD.L"),
-          (true      ,1         ,"$root|steveBT.L",false     ,1         ,"steveBT.L",""        ,1         ,""        ,""        ,1000.0    ,""        ,""        ,""        ,""        ,""        ,"steveBT.L"),
+          (true      ,1         ,"$root|chrisVOD.L",false     ,5         ,"chrisVOD.L",""        ,"chris"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,"chrisVOD.L"),
+          (false     ,1         ,"$root|steveVOD.L",false     ,1         ,"steveVOD.L",""        ,"steve"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,"steveVOD.L"),
+          (true      ,1         ,"$root|steveBT.L",false     ,1         ,"steveBT.L",""        ,"steve"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,"steveBT.L"),
           (false     ,2         ,"$root|chrisVOD.L|NYC-0001",true      ,0         ,"NYC-0001","NYC-0001","chris"   ,"VOD.L"   ,1311544800000L,100       ,220.0     ,222.0     ,null      ,null      ,null      ,"chrisVOD.L"),
           (false     ,2         ,"$root|chrisVOD.L|NYC-0002",true      ,0         ,"NYC-0002","NYC-0002","chris"   ,"VOD.L"   ,1311544800000L,200       ,220.0     ,222.0     ,null      ,null      ,null      ,"chrisVOD.L"),
           (false     ,2         ,"$root|chrisVOD.L|NYC-0003",true      ,0         ,"NYC-0003","NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,220.0     ,222.0     ,null      ,null      ,null      ,"chrisVOD.L"),
           (false     ,2         ,"$root|chrisVOD.L|NYC-0004",true      ,0         ,"NYC-0004","NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,220.0     ,222.0     ,null      ,null      ,null      ,"chrisVOD.L"),
           (false     ,2         ,"$root|chrisVOD.L|NYC-0005",true      ,0         ,"NYC-0005","NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,220.0     ,222.0     ,null      ,null      ,null      ,"chrisVOD.L"),
           (false     ,2         ,"$root|steveBT.L|NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ,"steveBT.L"),
-          (false     ,1         ,"$root|chrisBT.L",false     ,1         ,"chrisBT.L",""        ,1         ,""        ,""        ,700.0     ,""        ,""        ,""        ,""        ,""        ,"chrisBT.L")
+          (false     ,1         ,"$root|chrisBT.L",false     ,1         ,"chrisBT.L",""        ,"chris"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,"chrisBT.L")
         )
       }
     }
+
+    Scenario("test distinct aggregation multi-value") {
+
+      implicit val timeProvider: DefaultClock = new DefaultClock
+      implicit val lifeCycle: LifecycleContainer = new LifecycleContainer
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
+
+      joinProvider.start()
+
+      tickInData(ordersProvider, pricesProvider)
+
+      joinProvider.runOnce()
+
+      val queue = new OutboundRowPublishQueue()
+      val highPriorityQueue = new OutboundRowPublishQueue()
+
+      val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
+
+      val viewport = viewPortContainer.create(RequestId.oneNew(),
+        ClientSessionId("A", "B"),
+        queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns,
+        SortSpec(List()),
+        FilterSpec(""),
+        GroupBy(orderPrices, columns.getColumnForName("traderRic").get)
+          .withDistinct("orderId")
+          .asClause()
+      )
+
+      runContainersOnce(viewPortContainer, joinProvider)
+
+      viewPortContainer.openNode(viewport.id, "$root|chrisVOD.L")
+      viewPortContainer.openNode(viewport.id, "$root|steveBT.L")
+
+      runContainersOnce(viewPortContainer, joinProvider)
+
+      ordersProvider.tick("NYC-0008", Map("orderId" -> "NYC-0008", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 700, "ric" -> "BT.L"))
+
+      runContainersOnce(viewPortContainer, joinProvider)
+
+      val updates = combineQs(viewport)
+
+      assertVpEq(updates) {
+        Table(
+          ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ,"traderRic"),
+          (true      ,1         ,"$root|chrisVOD.L",false     ,5         ,"chrisVOD.L","NYC-0005,NYC-0004,NYC-0003,NYC-0002,NYC-0001",""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,"chrisVOD.L"),
+          (false     ,1         ,"$root|steveVOD.L",false     ,1         ,"steveVOD.L","NYC-0006",""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,"steveVOD.L"),
+          (true      ,1         ,"$root|steveBT.L",false     ,1         ,"steveBT.L","NYC-0007",""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,"steveBT.L"),
+          (false     ,2         ,"$root|chrisVOD.L|NYC-0001",true      ,0         ,"NYC-0001","NYC-0001","chris"   ,"VOD.L"   ,1311544800000L,100       ,220.0     ,222.0     ,null      ,null      ,null      ,"chrisVOD.L"),
+          (false     ,2         ,"$root|chrisVOD.L|NYC-0002",true      ,0         ,"NYC-0002","NYC-0002","chris"   ,"VOD.L"   ,1311544800000L,200       ,220.0     ,222.0     ,null      ,null      ,null      ,"chrisVOD.L"),
+          (false     ,2         ,"$root|chrisVOD.L|NYC-0003",true      ,0         ,"NYC-0003","NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,220.0     ,222.0     ,null      ,null      ,null      ,"chrisVOD.L"),
+          (false     ,2         ,"$root|chrisVOD.L|NYC-0004",true      ,0         ,"NYC-0004","NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,220.0     ,222.0     ,null      ,null      ,null      ,"chrisVOD.L"),
+          (false     ,2         ,"$root|chrisVOD.L|NYC-0005",true      ,0         ,"NYC-0005","NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,220.0     ,222.0     ,null      ,null      ,null      ,"chrisVOD.L"),
+          (false     ,2         ,"$root|steveBT.L|NYC-0007",true      ,0         ,"NYC-0007","NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ,"steveBT.L"),
+          (false     ,1         ,"$root|chrisBT.L",false     ,1         ,"chrisBT.L","NYC-0008",""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,""        ,"chrisBT.L")
+        )
+      }
+    }
+
+
   }
 }

@@ -1,7 +1,11 @@
+import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
+
 # Wire Protocol
 
+<SvgDottySeparator style={{marginBottom: 32}}/>
+
 The wire protocol is JSON based. It requires a user to authenticate against the server (Athentication provider is pluggable)
-When a user authenticates, a conversation is undertable to send down meta to the client relating to the tables and fields available. 
+When a user authenticates, a conversation is undertable to send down meta to the client relating to the tables and fields available.
 
 Then in general a view port is requested, the server responds as success or failure and then starts streaming data.
 
@@ -19,7 +23,7 @@ Then in general a view port is requested, the server responds as success or fail
 
 11:40:43.363   SVR IN:{"requestId":"NA","sessionId":"e0afa8c4-79bd-484f-9119-c43d8c0ff315","token":"903d591f-8270-4672-aeb5-c6a6cc48463e","user":"user","body":{"type":"HB_RESP","ts":1639654843348},"module":"CORE"}
 
-//Get Meta Data From the Server for the available tables 
+//Get Meta Data From the Server for the available tables
 11:40:43.371   SVR IN:{"requestId":"sAvdxZ6pdU4nrpRv7sb2O","sessionId":"e0afa8c4-79bd-484f-9119-c43d8c0ff315","token":"903d591f-8270-4672-aeb5-c6a6cc48463e","user":"user","body":{"type":"GET_TABLE_LIST"},"module":"CORE"}
 11:40:43.383   SVR OUT:{"requestId":"sAvdxZ6pdU4nrpRv7sb2O","sessionId":"e0afa8c4-79bd-484f-9119-c43d8c0ff315","token":"903d591f-8270-4672-aeb5-c6a6cc48463e","user":"user","body":{"type":"TABLE_LIST_RESP","tables":[{"table":"childOrders","module":"SIMUL"},{"table":"instrumentPrices","module":"SIMUL"},{"table":"instruments","module":"SIMUL"},{"table":"metricsGroupBy","module":"METRICS"},{"table":"metricsTables","module":"METRICS"},{"table":"metricsViewports","module":"METRICS"},{"table":"orderEntry","module":"SIMUL"},{"table":"orderEntryPrices","module":"SIMUL"},{"table":"orders","module":"SIMUL"},{"table":"ordersPrices","module":"SIMUL"},{"table":"parentOrders","module":"SIMUL"},{"table":"prices","module":"SIMUL"},{"table":"uiState","module":"vui"}]},"module":"CORE"}
 11:40:43.422   SVR IN:{"requestId":"YsU4Ez1h2r9M39Znm7M11","sessionId":"e0afa8c4-79bd-484f-9119-c43d8c0ff315","token":"903d591f-8270-4672-aeb5-c6a6cc48463e","user":"user","body":{"type":"GET_TABLE_META","table":{"table":"childOrders","module":"SIMUL"}},"module":"CORE"}
@@ -75,19 +79,153 @@ Then in general a view port is requested, the server responds as success or fail
 //server disconnect
 11:41:03.535 [nioEventLoopGroup-3-2] INFO  i.v.vuu.net.DefaultMessageHandler - Calling disconnect() from future callback
 ```
-Data updates are of the below form: 
 
-```json 
-{"requestId":"NA","sessionId":"e0afa8c4-79bd-484f-9119-c43d8c0ff315","token":"","user":"user","body":
-    {"type":"TABLE_ROW","batch":"36922aea-ad02-4eae-9a09-10f0a4bb1297","isLast":true,"timeStamp":1639654847947,"rows":[
-    {"viewPortId":"user-7d96f487-7cda-49e7-b92c-ba4915318528","vpSize":175760,"rowIndex":-1,"rowKey":"SIZE","updateType":"SIZE","ts":1639654847946,"sel":0,"data":[]},
-    {"viewPortId":"user-7d96f487-7cda-49e7-b92c-ba4915318528","vpSize":175760,"rowIndex":0,"rowKey":"AAA.L","updateType":"U","ts":1639654847947,"sel":0,"data":["AAA LN","USD","AAA.L London PLC","XLON/LSE-SETS","",633,"AAA.L"]},
-    {"viewPortId":"user-7d96f487-7cda-49e7-b92c-ba4915318528","vpSize":175760,"rowIndex":1,"rowKey":"AAA.N","updateType":"U","ts":1639654847947,"sel":0,"data":["AAA US","EUR","AAA.N Corporation","XNGS/NAS-GSM","",220,"AAA.N"]},
-    {"viewPortId":"user-7d96f487-7cda-49e7-b92c-ba4915318528","vpSize":175760,"rowIndex":2,"rowKey":"AAA.OQ","updateType":"U","ts":1639654847947,"sel":0,"data":["AAA OQ","EUR","AAA.OQ Co.","XNYS/NYS-MAIN","",393,"AAA.OQ"]},
-    {"viewPortId":"user-7d96f487-7cda-49e7-b92c-ba4915318528","vpSize":175760,"rowIndex":3,"rowKey":"AAA.AS","updateType":"U","ts":1639654847947,"sel":0,"data":["AAA NL","GBX","AAA.AS B.V","XAMS/ENA-MAIN","",449,"AAA.AS"]},
-    {"viewPortId":"user-7d96f487-7cda-49e7-b92c-ba4915318528","vpSize":175760,"rowIndex":4,"rowKey":"AAA.OE","updateType":"U","ts":1639654847947,"sel":0,"data":["AAA OE","GBX","AAA.OE Co.","XNYS/NYS-MAIN","",37,"AAA.OE"]},
-    {"viewPortId":"user-7d96f487-7cda-49e7-b92c-ba4915318528","vpSize":175760,"rowIndex":5,"rowKey":"AAA.MI","updateType":"U","ts":1639654847947,"sel":0,"data":["AAA MI","CAD","AAA.MI Co.","XNYS/NYS-MAIN","",38,"AAA.MI"]},
-    {"viewPortId":"user-7d96f487-7cda-49e7-b92c-ba4915318528","vpSize":175760,"rowIndex":6,"rowKey":"AAA.A","updateType":"U","ts":1639654847947,"sel":0,"data":["AAA A","GBX","AAA.A Co.","XNYS/NYS-MAIN","",286,"AAA.A"]}
-]},"module":"CORE"}
+Data updates are of the below form:
+
+```json
+{
+  "requestId": "NA",
+  "sessionId": "e0afa8c4-79bd-484f-9119-c43d8c0ff315",
+  "token": "",
+  "user": "user",
+  "body": {
+    "type": "TABLE_ROW",
+    "batch": "36922aea-ad02-4eae-9a09-10f0a4bb1297",
+    "isLast": true,
+    "timeStamp": 1639654847947,
+    "rows": [
+      {
+        "viewPortId": "user-7d96f487-7cda-49e7-b92c-ba4915318528",
+        "vpSize": 175760,
+        "rowIndex": -1,
+        "rowKey": "SIZE",
+        "updateType": "SIZE",
+        "ts": 1639654847946,
+        "sel": 0,
+        "data": []
+      },
+      {
+        "viewPortId": "user-7d96f487-7cda-49e7-b92c-ba4915318528",
+        "vpSize": 175760,
+        "rowIndex": 0,
+        "rowKey": "AAA.L",
+        "updateType": "U",
+        "ts": 1639654847947,
+        "sel": 0,
+        "data": [
+          "AAA LN",
+          "USD",
+          "AAA.L London PLC",
+          "XLON/LSE-SETS",
+          "",
+          633,
+          "AAA.L"
+        ]
+      },
+      {
+        "viewPortId": "user-7d96f487-7cda-49e7-b92c-ba4915318528",
+        "vpSize": 175760,
+        "rowIndex": 1,
+        "rowKey": "AAA.N",
+        "updateType": "U",
+        "ts": 1639654847947,
+        "sel": 0,
+        "data": [
+          "AAA US",
+          "EUR",
+          "AAA.N Corporation",
+          "XNGS/NAS-GSM",
+          "",
+          220,
+          "AAA.N"
+        ]
+      },
+      {
+        "viewPortId": "user-7d96f487-7cda-49e7-b92c-ba4915318528",
+        "vpSize": 175760,
+        "rowIndex": 2,
+        "rowKey": "AAA.OQ",
+        "updateType": "U",
+        "ts": 1639654847947,
+        "sel": 0,
+        "data": [
+          "AAA OQ",
+          "EUR",
+          "AAA.OQ Co.",
+          "XNYS/NYS-MAIN",
+          "",
+          393,
+          "AAA.OQ"
+        ]
+      },
+      {
+        "viewPortId": "user-7d96f487-7cda-49e7-b92c-ba4915318528",
+        "vpSize": 175760,
+        "rowIndex": 3,
+        "rowKey": "AAA.AS",
+        "updateType": "U",
+        "ts": 1639654847947,
+        "sel": 0,
+        "data": [
+          "AAA NL",
+          "GBX",
+          "AAA.AS B.V",
+          "XAMS/ENA-MAIN",
+          "",
+          449,
+          "AAA.AS"
+        ]
+      },
+      {
+        "viewPortId": "user-7d96f487-7cda-49e7-b92c-ba4915318528",
+        "vpSize": 175760,
+        "rowIndex": 4,
+        "rowKey": "AAA.OE",
+        "updateType": "U",
+        "ts": 1639654847947,
+        "sel": 0,
+        "data": [
+          "AAA OE",
+          "GBX",
+          "AAA.OE Co.",
+          "XNYS/NYS-MAIN",
+          "",
+          37,
+          "AAA.OE"
+        ]
+      },
+      {
+        "viewPortId": "user-7d96f487-7cda-49e7-b92c-ba4915318528",
+        "vpSize": 175760,
+        "rowIndex": 5,
+        "rowKey": "AAA.MI",
+        "updateType": "U",
+        "ts": 1639654847947,
+        "sel": 0,
+        "data": [
+          "AAA MI",
+          "CAD",
+          "AAA.MI Co.",
+          "XNYS/NYS-MAIN",
+          "",
+          38,
+          "AAA.MI"
+        ]
+      },
+      {
+        "viewPortId": "user-7d96f487-7cda-49e7-b92c-ba4915318528",
+        "vpSize": 175760,
+        "rowIndex": 6,
+        "rowKey": "AAA.A",
+        "updateType": "U",
+        "ts": 1639654847947,
+        "sel": 0,
+        "data": ["AAA A", "GBX", "AAA.A Co.", "XNYS/NYS-MAIN", "", 286, "AAA.A"]
+      }
+    ]
+  },
+  "module": "CORE"
+}
 ```
-Data is transmitted as an array in JSON as an optimization to allow us to transfer it directly into the grid on the client. 
+
+Data is transmitted as an array in JSON as an optimization to allow us to transfer it directly into the grid on the client.

@@ -33,6 +33,7 @@ object Calculations {
 
   def coerceToInt(clause: CalculatedColumnClause, data: RowData): Int = {
     clause.dataType match {
+      case ClauseDataType.NULL => 0
       case ClauseDataType.INTEGER => clause.calculate(data).asInstanceOf[Int]
       case ClauseDataType.BOOLEAN => clause.calculate(data).asInstanceOf[Int]
     }

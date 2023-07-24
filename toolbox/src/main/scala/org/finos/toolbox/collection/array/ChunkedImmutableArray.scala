@@ -1,20 +1,47 @@
 package org.finos.toolbox.collection.array
 
+import java.util
 import scala.reflect.ClassTag
 import scala.util.control.Breaks
 
 object ChunkedImmutableArray{
-  def empty[T :ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
+
+  def fromArray[T <: Object:ClassTag](arr: Array[T], chunkSize: Int): ImmutableArray[T] = {
+    new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize).fromArray(arr)
+  }
+
+
+
+  def empty[T <: Object:ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
     new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize)
   }
 
-  def from[T :ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
+  def from[T <: Object:ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
     new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize)
   }
 
 }
 
-class ChunkedImmutableArray[T :ClassTag](private val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 1000) extends ImmutableArray[T] with Iterable[T]{
+class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 1000) extends ImmutableArray[T] with Iterable[T]{
+
+
+
+  override def fromArray(arr: Array[T]): ImmutableArray[T] = {
+    //https://www.cs.nott.ac.uk/~psarb2/G51MPC/slides/NumberLogic.pdf
+    val chunkCount = (arr.length - 1) / chunkSize + 1
+    val newChunks = new Array[Array[T]](chunkCount)
+
+    (0 until chunkCount).foreach( i => {
+      val start = i * chunkSize;
+      val end   = Math.min(start + chunkSize, arr.length -1);
+      val chunk = util.Arrays.copyOfRange[T](arr, start, end)
+      newChunks(i) = chunk
+    })
+
+    val lastUsedIndex = arr.length
+    new ChunkedImmutableArray[T](newChunks, lastUsedIndex, chunkSize)
+    //null
+  }
 
   override def remove(element: T): ImmutableArray[T] = this.-(element)
 

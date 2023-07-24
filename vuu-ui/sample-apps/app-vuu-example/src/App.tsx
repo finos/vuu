@@ -1,16 +1,19 @@
-import { MenuRpcResponse, useVuuTables } from "@finos/vuu-data";
+import { MenuRpcResponse } from "@finos/vuu-data";
+import { useVuuTables } from "@finos/vuu-data-react";
 import { registerComponent } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
   Feature,
+  SessionEditingForm,
   Shell,
   ShellContextProvider,
   VuuUser,
 } from "@finos/vuu-shell";
-import { ReactElement, useCallback, useState } from "react";
+import { ReactElement, useCallback, useRef, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 import { getDefaultColumnConfig } from "./columnMetaData";
+import { getFormConfig } from "./session-editing";
 
 import "./App.css";
 // Because we do not render the AppSidePanel directly, the css will not be included in bundle.
@@ -33,11 +36,15 @@ const defaultLayout = {
       width: "100%",
       height: "100%",
     },
-    showTabs: true,
     enableAddTab: true,
     enableRemoveTab: true,
     preserve: true,
     active: 0,
+    TabstripProps: {
+      allowAddTab: true,
+      allowCLoseTab: true,
+      allowRenameTab: true,
+    },
   },
   children: [
     {
@@ -48,16 +55,26 @@ const defaultLayout = {
 };
 
 export const App = ({ user }: { user: VuuUser }) => {
+  const dialogTitleRef = useRef("");
   const [dialogContent, setDialogContent] = useState<ReactElement>();
+  const handleClose = () => {
+    setDialogContent(undefined);
+  };
 
   const tables = useVuuTables();
 
   const handleRpcResponse = useCallback(
     (response?: MenuRpcResponse) => {
       if (response?.action?.type === "OPEN_DIALOG_ACTION") {
-        const { table } = response.action;
-        if (tables) {
-          const schema = tables.get(table.table);
+        const { tableSchema } = response.action;
+        if (tableSchema) {
+          const formConfig = getFormConfig(response);
+          dialogTitleRef.current = formConfig.config.title;
+          setDialogContent(
+            <SessionEditingForm {...formConfig} onClose={handleClose} />
+          );
+        } else if (tables && response.action.table) {
+          const schema = tables.get(response.action.table.table);
           if (schema) {
             // If we already have this table open in this viewport, ignore
             setDialogContent(
@@ -77,8 +94,6 @@ export const App = ({ user }: { user: VuuUser }) => {
     [tables]
   );
 
-  const handleClose = () => setDialogContent(undefined);
-
   // TODO get Context from Shell
   return (
     <ShellContextProvider value={{ getDefaultColumnConfig, handleRpcResponse }}>
@@ -93,7 +108,8 @@ export const App = ({ user }: { user: VuuUser }) => {
           className="vuDialog"
           isOpen={dialogContent !== undefined}
           onClose={handleClose}
-          style={{ height: 500 }}
+          style={{ maxHeight: 500 }}
+          title={dialogTitleRef.current}
         >
           {dialogContent}
         </Dialog>
