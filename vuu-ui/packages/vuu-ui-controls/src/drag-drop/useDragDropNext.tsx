@@ -59,12 +59,17 @@ const getDraggableElement = (
   query: string
 ): HTMLElement => (el as HTMLElement).closest(query) as HTMLElement;
 
-const getLastElement = (container: HTMLElement): [HTMLElement, boolean] => {
+const getLastElement = (
+  container: HTMLElement,
+  itemQuery: string
+): [HTMLElement, boolean] => {
   const childElements = Array.from(
-    container.querySelectorAll(`:not(.wrapped)`)
+    // This will always be false as the vuuOverflowContainer-OverflowIndicator
+    // does not match itemQuery
+    container.querySelectorAll(`${itemQuery}:not(.wrapped)`)
   );
   const lastElement = childElements.pop() as HTMLElement;
-  return [lastElement, lastElement.dataset.overflowIndicator === "true"];
+  return [lastElement, lastElement.dataset.index === "overflow"];
 };
 
 export const useDragDropNext: DragDropHook = ({
@@ -254,10 +259,8 @@ export const useDragDropNext: DragDropHook = ({
             dragBoundaries.current.start,
             Math.min(dragBoundaries.current.end, dragPos)
           );
-
           const START = orientation === "horizontal" ? "left" : "top";
-          draggableRef.current.style[START] = `${dragPos}px`;
-
+          draggableRef.current.style[START] = `${renderDragPos}px`;
           drag(renderDragPos, mouseMoveDirection);
         }
       }
@@ -278,6 +281,7 @@ export const useDragDropNext: DragDropHook = ({
     document.removeEventListener("mousemove", dragMouseMoveHandler, false);
     document.removeEventListener("mouseup", dragMouseUpHandler, false);
     settlingItemRef.current = draggableRef.current;
+    return;
     // The implementation hook is currently invoking the onDrop callback, we should move it into here
     drop();
     setDraggableStatus((status) => ({
@@ -309,8 +313,10 @@ export const useDragDropNext: DragDropHook = ({
           container;
         isScrollableRef.current = scrollSize > clientSize;
 
-        const [lastElement, lastItemIsOverflowIndicator] =
-          getLastElement(container);
+        const [lastElement, lastItemIsOverflowIndicator] = getLastElement(
+          container,
+          itemQuery
+        );
 
         const containerRect = container.getBoundingClientRect();
         const draggableRect = dragElement.getBoundingClientRect();
@@ -330,10 +336,12 @@ export const useDragDropNext: DragDropHook = ({
         dragBoundaries.current.contraStart = containerRect[CONTRA];
         dragBoundaries.current.contraEnd = containerRect[CONTRA_END];
 
+        console.log({ dragBoundaries: dragBoundaries.current });
+
         beginDrag(evt);
 
         const {
-          dataset: { idx = "-1" },
+          dataset: { index = "-1" },
         } = dragElement;
 
         setDraggableStatus({
@@ -347,7 +355,7 @@ export const useDragDropNext: DragDropHook = ({
               wrapperClassName={draggableClassName}
             />
           ),
-          draggedItemIndex: parseInt(idx),
+          draggedItemIndex: parseInt(index),
         });
 
         onDragStart?.();
@@ -430,7 +438,7 @@ export const useDragDropNext: DragDropHook = ({
     if (settlingItem && containerRef.current) {
       const dropPos = dropPosRef.current;
       const droppedItem = containerRef.current.querySelector(
-        `${itemQuery}[data-idx="${dropPos}"]`
+        `${itemQuery}[data-index="${dropPos}"]`
       );
       if (droppedItem) {
         const { top: targetTop, left: targetLeft } =

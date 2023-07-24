@@ -42,10 +42,6 @@
   font-weight: var(--salt-navigable-fontWeight-active);
 }
 
-.vuuTab-dragAway {
-  display: none;
-}
-
 /* main content aria of Tab */
 .vuuTab-main {
   align-items: center;;

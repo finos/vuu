@@ -41,6 +41,10 @@
     order: 3;
 }
 
+.vuuOverflowContainer-item:has(.vuuDraggable-dragAway){
+    display: none;
+}
+
 .vuuOverflowContainer-OverflowIndicator {
     /* border-style: solid none;
     border-color: black;
@@ -58,3 +62,5 @@
 
   
 }
+
+

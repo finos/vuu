@@ -30,9 +30,9 @@ export const cloneElement = <T extends HTMLElement>(element: T): T => {
   const dolly = element.cloneNode(true) as T;
   // TOSO should we care about nested id values - perhaps an additional param, defaulting to false ?
   dolly.removeAttribute("id");
-  // Set idx to -1 in case a moueMove event as we wait for drop to take effect might set highlighted
+  // Set index to -1 in case a moueMove event as we wait for drop to take effect might set highlighted
   // index to wrong value (see useList) -1 will be ignored;
-  dolly.dataset.idx = "-1";
+  dolly.dataset.index = "-1";
   return dolly;
 };
 
@@ -182,6 +182,21 @@ export const removeDraggedItem = (
 
 export type dropZone = "start" | "end";
 
+export const measureGap = (childElement: HTMLElement) => {
+  const container = (childElement as Node).parentElement;
+  if (container) {
+    const style = getComputedStyle(container);
+    const gap = parseInt(style.getPropertyValue("gap"));
+    if (isNaN(gap)) {
+      return 0;
+    } else {
+      return gap;
+    }
+  } else {
+    throw Error("measureGap, child element has no parent");
+  }
+};
+
 export const measureDropTargets = (
   container: HTMLElement,
   orientation: orientationType,
@@ -195,7 +210,6 @@ export const measureDropTargets = (
   );
 
   const itemCount = children.length;
-  // const start = viewportRange?.from ?? 0;
   const start =
     typeof viewportRange?.from === "number"
       ? viewportRange.atEnd
@@ -213,7 +227,7 @@ export const measureDropTargets = (
 
     dragThresholds.push({
       currentIndex: index,
-      dataIndex: parseInt(element.dataset.idx ?? "-1"),
+      dataIndex: parseInt(element.dataset.index ?? "-1"),
       id: element.id,
       index,
       isLast,
@@ -239,6 +253,13 @@ export const getNextDropTarget = (
     const dropTarget = dropTargets[index];
     if (dropTarget.end < dragMid) {
       continue;
+    } else if (dropTarget.isLast) {
+      // We have to treat the last item differently. The mid point of a wider item
+      // will never reach the mid point of a narrower last item. We test the leading
+      // edge of the dragged item instead.
+      const dragEnd = pos + draggedItem.size;
+      const dropZone = dragEnd > dropTarget.mid ? "end" : "start";
+      return [dropTarget, dropZone];
     } else {
       const dropZone = dropTarget.mid > dragMid ? "start" : "end";
       return [dropTarget, dropZone];

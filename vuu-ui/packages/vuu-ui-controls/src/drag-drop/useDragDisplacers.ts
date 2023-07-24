@@ -10,7 +10,8 @@ export type DragDisplacersHookResult = {
     size: number,
     useTransition?: boolean,
     direction?: Direction | "static",
-    orientation?: "horizontal" | "vertical"
+    orientation?: "horizontal" | "vertical",
+    gap?: number
   ) => void;
   displaceLastItem: (
     dropTarget: MeasuredDropTarget,
@@ -74,7 +75,8 @@ export const useDragDisplacers: DragDisplacersHook = () => {
       size: number,
       useTransition = false,
       direction?: Direction | "static",
-      orientation: "horizontal" | "vertical" = "horizontal"
+      orientation: "horizontal" | "vertical" = "horizontal",
+      gap = 0
     ) => {
       if (dropTarget) {
         const propertyName = orientation === "horizontal" ? "width" : "height";
@@ -83,7 +85,7 @@ export const useDragDisplacers: DragDisplacersHook = () => {
         if (useTransition) {
           if (transitioning.current) {
             clearSpacers();
-            spacer1.style.cssText = `${propertyName}: ${size}px`;
+            spacer1.style.cssText = `${propertyName}: ${size - gap}px`;
             spacer2.style.cssText = `${propertyName}: 0px`;
             if (direction === "fwd") {
               dropTarget.element.before(spacer1);

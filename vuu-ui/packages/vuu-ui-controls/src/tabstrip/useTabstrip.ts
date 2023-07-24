@@ -7,7 +7,7 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { useDragDrop } from "../drag-drop";
+import { useDragDropNext as useDragDrop } from "../drag-drop";
 import type { orientationType } from "./TabsTypes";
 import { isTabMenuOptions } from "./TabMenuOptions";
 import { getIndexOfSelectedTab } from "./tabstrip-dom-utils";
@@ -101,27 +101,37 @@ export const useTabstrip = ({
         `handleDrop ${fromIndex} - ${toIndex}  ${selectionHookSelected}`
       );
       onMoveTab?.(fromIndex, toIndex);
-      // if (toIndex === -1) {
-      //   // nothing to do
-      // } else {
-      //   if (selectionHookSelected === null) {
-      //     // do thing
-      //   } else if (selectionHookSelected === fromIndex) {
-      //     selectionHook.activateTab(toIndex);
-      //   } else if (
-      //     fromIndex > selectionHookSelected &&
-      //     toIndex <= selectionHookSelected
-      //   ) {
-      //     selectionHook.activateTab(selectionHookSelected + 1);
-      //   } else if (
-      //     fromIndex < selectionHookSelected &&
-      //     toIndex >= selectionHookSelected
-      //   ) {
-      //     selectionHook.activateTab(selectionHookSelected - 1);
-      //   }
-      // }
+      let nextSelectedTab = -1;
+      if (toIndex === -1) {
+        // nothing to do
+      } else {
+        if (selectionHookSelected === fromIndex) {
+          nextSelectedTab = toIndex;
+        } else if (
+          fromIndex > selectionHookSelected &&
+          toIndex <= selectionHookSelected
+        ) {
+          nextSelectedTab = selectionHookSelected + 1;
+        } else if (
+          fromIndex < selectionHookSelected &&
+          toIndex >= selectionHookSelected
+        ) {
+          nextSelectedTab = selectionHookSelected - 1;
+        }
+      }
+      if (nextSelectedTab !== -1) {
+        suspendAnimation();
+        selectionHookActivateTab(nextSelectedTab);
+        requestAnimationFrame(resumeAnimation);
+      }
     },
-    [onMoveTab, selectionHookSelected]
+    [
+      onMoveTab,
+      resumeAnimation,
+      selectionHookActivateTab,
+      selectionHookSelected,
+      suspendAnimation,
+    ]
   );
 
   const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =
@@ -129,7 +139,7 @@ export const useTabstrip = ({
       allowDragDrop,
       containerRef,
       // this is for useDragDropNext
-      // draggableClassName: `tabstrip-${orientation}`,
+      draggableClassName: `tabstrip-${orientation}`,
       // extendedDropZone: overflowedItems.length > 0,
       onDrop: handleDrop,
       orientation: "horizontal",

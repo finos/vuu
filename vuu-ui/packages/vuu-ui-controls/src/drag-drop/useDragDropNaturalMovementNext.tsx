@@ -15,6 +15,7 @@ import {
   getNextDropTarget,
   MeasuredDropTarget,
   measureDropTargets,
+  measureGap,
   removeDraggedItem,
 } from "./dragUtils";
 
@@ -32,6 +33,7 @@ export const useDragDropNaturalMovement = ({
   const dragDirectionRef = useRef<Direction | undefined>();
   const dropTargetRef = useRef<MeasuredDropTarget | null>(null);
   const dropZoneRef = useRef<dropZone | "">("");
+  const gapRef = useRef(0);
   const insertPosRef = useRef<number>(-1);
 
   const isScrollable = useRef(false);
@@ -94,8 +96,6 @@ export const useDragDropNaturalMovement = ({
 
         if (dropTarget) {
           const targetIndex = indexOf(dropTarget);
-          // const nextInsertPos =
-          //   dropZone === "end" ? targetIndex + 1 : targetIndex;
           const nextInsertPos = targetIndex;
           const nextDropTarget = dropTargets[nextInsertPos];
 
@@ -142,6 +142,7 @@ export const useDragDropNaturalMovement = ({
       const evtTarget = evt.target as HTMLElement;
       const dragElement = evtTarget.closest(itemQuery) as HTMLElement;
       if (
+        //TODO need a different check for selected
         dragElement.ariaSelected &&
         Array.isArray(selected) &&
         selected.length > 1
@@ -162,6 +163,11 @@ export const useDragDropNaturalMovement = ({
           fullItemQuery,
           viewportRange
         ));
+
+        // If flex gap has been applied, the second spacer will incur an additional gap
+        // Need to make sure spacer sizing takes this into account else following
+        // items will shift. First spacer replaces dragged element, so no new gap added.
+        gapRef.current = measureGap(dropTargets[0].element);
 
         const draggedItem = getItemById(dropTargets, draggedItemId);
 
@@ -216,8 +222,6 @@ export const useDragDropNaturalMovement = ({
 
       if (draggedItem) {
         if (draggableRef.current && containerRef.current) {
-          // const START = orientation === "horizontal" ? "left" : "top";
-          // draggableRef.current.style[START] = `${dragPos}px`;
           dragPosRef.current = dragPos;
 
           const { current: dropTargets } = measuredDropTargets;
@@ -226,6 +230,10 @@ export const useDragDropNaturalMovement = ({
             draggedItem,
             dragPos
           );
+
+          if (nextDropTarget?.isLast) {
+            console.log(`over the last target drop-zone ${nextDropZone}`);
+          }
 
           if (
             nextDropTarget &&
@@ -245,7 +253,7 @@ export const useDragDropNaturalMovement = ({
                 if (targetIndex === dropTargets.length - 1) {
                   // because we maintain at least one out-of-viewport row in
                   // the dropTargets, this means we are at the very last item.
-                  const dropTarget = dropTargets[dropTargets.length - 1];
+                  const dropTarget = dropTargets.at(-1) as MeasuredDropTarget;
                   displaceLastItem(
                     dropTarget,
                     size,
@@ -258,12 +266,14 @@ export const useDragDropNaturalMovement = ({
                     mouseMoveDirection === "fwd" ? -size : size
                   );
                 } else {
+                  console.log("displace item");
                   displaceItem(
                     nextDropTarget,
                     size,
                     true,
                     mouseMoveDirection,
-                    orientation
+                    orientation,
+                    gapRef.current
                   );
                   // setVizData?.(dropTargets, nextDropTarget, nextDropZone);
                   const restoredSize =
