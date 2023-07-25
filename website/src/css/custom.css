@@ -82,6 +82,12 @@ body {
   width: var(--vuu-viewport-width);
 }
 
+/* Assuming the correct class name is 'tocCollapsibleButton' */
+.tocCollapsibleButton {
+  display: none;
+}
+
+
 .navbar {
   overflow: hidden;
   padding: 0;
@@ -134,7 +140,7 @@ body {
 }
 
 .vuu-heading-2 {
-  margin-top: 28px;
+  margin-top: 12px;
 }
 
 
@@ -164,7 +170,6 @@ body {
   line-height: var(--vuu-paragraph-small-lineHeight);
   font-weight: var(--vuu-paragraph-small-fontWeight);
   padding: 40px 40px;
-  margin:12px 0px 12px 0px;
   
 }
 
@@ -189,7 +194,7 @@ body {
   flex-direction: column;
   height: 800px;
   padding-top: calc(18px + var(--vuu-navbar-height));
-  background-color: var(--vuu-dark-bg-background1);
+  background-color: var(--vuu-dark-bg-background2);
 
 }
 
@@ -200,14 +205,13 @@ body {
 }
 
 .vuu-scroll-1-copy {
-  margin-top: 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;  
   align-items: center;
   text-align: center;
   height: 100%;
-  background-color: var(--vuu-dark-bg-background1);
+  background-color: var(--vuu-dark-bg-background2);
 
 }
 
@@ -243,7 +247,7 @@ body {
 }
 
 .vuu-frame-10 {
-  background-color: var(--vuu-dark-bg-background1);
+  background-color: var(--vuu-dark-bg-background2);
 
   /* content driven, remove later */
   /* height: 476px; */
@@ -253,7 +257,7 @@ body {
 }
 
 .vuu-frame-11 {
-  background-color: var(--vuu-dark-bg-background1);
+  background-color: var(--vuu-dark-bg-background2);
 
   /* content driven, remove later */
   /* height: 476px; */
@@ -261,6 +265,17 @@ body {
   height: 1300px;
 
 }
+
+.vuu-frame-12 {
+  background-color: #26035b;
+
+  /* content driven, remove later */
+  /* height: 476px; */
+  padding-top: 40px;
+  height: 400px;
+
+}
+
 
 
 .vuuFeatureLayout {
@@ -400,6 +415,11 @@ body {
 
   }
 
+
+  :root.docs-doc-page main {
+    padding: 24px;
+  }
+
   .navbar .navbar__logo > img {
     display: none;
   }
@@ -429,7 +449,9 @@ body {
   }
 
   .navbar {
-   width: var(--vuu-mobile-width) 
+   width: var(--vuu-mobile-width) ;
+   height: 50px;
+
 
   }
 
@@ -460,10 +482,27 @@ body {
     color: black;
   }
 
-  .navbar__inner {
-    background-color: var(--vuu-dark-bg-background1);
-    padding:var(--vuu-navbar-padding) 40px 0 40px
-  }
+
+ .navbar__inner {
+  align-items: center;
+  height: var(--vuu-navbar-height);
+  padding: 12px 24px 12px 24px;
+  height: 55px;
+  background-color: var(--vuu-dark-bg-background2);
+
+ }
+
+ .vuuMdxSection-subTitle {
+  margin-bottom: 24px;
+ }
+ 
+ .pagination-nav__link {
+  margin-top: 16px;
+ }
+
+ div[class*=tocCollapsible_node_modules] {
+  display: none;
+ }
 
 
   .image-container {
@@ -496,7 +535,50 @@ body {
   color: var(--vuu-accent1)
   }
 
-    }
+.footer-mobile{
+
+  font-family: var(--vuu-font-family);
+  font-size: 16px;
+  font-weight: 400;
+  opacity: 80%;
+}
+
+ .vuu-copyright{
+  text-align: center;
+ }
+
+ .footer-column-logo,
+ .footer-finos-logo {
+   display: block;
+   margin: 0 auto;
+ }
+ 
+ .footer-column-logo img{
+  display: block;
+  margin: 10px auto;
+ }
+
+ .footer-finos-logo img {
+   display: block;
+   margin: 10px auto;
+   border-top: 1px solid white;
+   border-bottom: 1px solid white;
+   padding-top: 16px;
+   padding-bottom: 16px;
+
+
+ }
+
+ .vuu-mobile-link-list{
+  text-align: center;
+  display: block;
+  margin: 0 auto;
+  opacity: 80%;
+ }
+ 
+
+
+}
 
 /* * {
   border: 1px solid red;

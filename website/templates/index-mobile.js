@@ -9,6 +9,8 @@ import { ChartMobile } from "../components/ChartMobile";
 import ViewPorting from "../../static/img/finos/view-porting.png";
 import Conflation from "../../static/img/finos/conflation.png";
 import JoiningAndTreeing from "../../static/img/finos/joining-treeing.png";
+import VuuLogo from "../../static/img/finos/vuu-text.png";
+import FinosLogo from "../../static/img/finos/finos.png";
 
 const revolvingCaptions = [
   "your data",
@@ -123,6 +125,40 @@ function Home() {
                 Vuu tables can be joined. Data can be grouped, filtered, sorted
                 and aggregated. Updates are sent to clients in real time.
               </p>
+            </div>
+          </div>
+        </section>
+        <section className={classnames("vuu-section vuu-frame-12")}>
+          <div className="footer-mobile">
+            <div className="footer-column-logo">
+              <img src={VuuLogo} alt="Image 1" />
+            </div>
+            <p className="vuu-copyright">
+              {" "}
+              Copyright &copy; {new Date().getFullYear()} VUU - UBS
+            </p>
+            <div className="footer-finos-logo">
+              <img src={FinosLogo} alt="Image 1" />
+            </div>
+
+            <div className="vuu-mobile-link-list">
+              <ul>
+                <li>
+                  <a href="/page1">Docs</a>
+                </li>
+                <li>
+                  <a href="/page2">Getting Started</a>
+                </li>
+                <li>
+                  <a href="/page2">Road Map</a>
+                </li>
+                <li>
+                  <a href="/page2">Team</a>
+                </li>
+                <li>
+                  <a href="/page2">About FINOS</a>
+                </li>
+              </ul>
             </div>
           </div>
         </section>
