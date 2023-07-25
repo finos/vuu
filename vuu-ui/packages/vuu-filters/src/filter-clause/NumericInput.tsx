@@ -7,7 +7,7 @@ import {
   isNumber,
   isNumericOperator,
 } from "../operator-utils";
-import { getNumericFilter } from "../column-filter/utils";
+import { getNumericFilter } from "../filter-utils";
 
 type NumericInputProps = HTMLAttributes<HTMLDivElement> & {
   column: string;
