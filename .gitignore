@@ -11,6 +11,9 @@ target/
 /vuu-book/src/.DS_Store
 .DS_Store
 
+.bloop/**
+.metals/**
+
 .vscode/**
 node_modules
 yarn-debug.log*
