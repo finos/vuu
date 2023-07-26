@@ -15,7 +15,6 @@ import {
   getNextDropTarget,
   MeasuredDropTarget,
   measureDropTargets,
-  measureGap,
   removeDraggedItem,
 } from "./dragUtils";
 
@@ -33,7 +32,6 @@ export const useDragDropNaturalMovement = ({
   const dragDirectionRef = useRef<Direction | undefined>();
   const dropTargetRef = useRef<MeasuredDropTarget | null>(null);
   const dropZoneRef = useRef<dropZone | "">("");
-  const gapRef = useRef(0);
   const insertPosRef = useRef<number>(-1);
 
   const isScrollable = useRef(false);
@@ -164,11 +162,6 @@ export const useDragDropNaturalMovement = ({
           viewportRange
         ));
 
-        // If flex gap has been applied, the second spacer will incur an additional gap
-        // Need to make sure spacer sizing takes this into account else following
-        // items will shift. First spacer replaces dragged element, so no new gap added.
-        gapRef.current = measureGap(dropTargets[0].element);
-
         const draggedItem = getItemById(dropTargets, draggedItemId);
 
         if (draggedItem && container) {
@@ -272,8 +265,7 @@ export const useDragDropNaturalMovement = ({
                     size,
                     true,
                     mouseMoveDirection,
-                    orientation,
-                    gapRef.current
+                    orientation
                   );
                   // setVizData?.(dropTargets, nextDropTarget, nextDropZone);
                   const restoredSize =
@@ -310,12 +302,19 @@ export const useDragDropNaturalMovement = ({
     const { current: dropTarget } = dropTargetRef;
     if (draggedItem && dropTarget) {
       const { index: fromIndex } = draggedItem;
-      const { currentIndex: toIndex } = dropTarget;
+      // const { currentIndex: toIndex } = dropTarget;
+      const { index: toIndex } = dropTarget;
       dropTargetRef.current = null;
       dragDirectionRef.current = undefined;
       if (overflowMenuShowingRef.current) {
         onDrop(fromIndex, -1);
       } else {
+        console.log(
+          `useDragDropNaturalMovement drop from ${fromIndex} to ${toIndex}`,
+          {
+            dropTarget,
+          }
+        );
         onDrop(fromIndex, toIndex);
       }
     }

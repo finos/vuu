@@ -200,7 +200,6 @@ export const TabstripNextDragDrop = ({ width = 700 }) => {
 
   const handleDrop = useCallback(
     (fromIndex, toIndex) => {
-      console.log(`handleDrop from ${fromIndex} to ${toIndex}`);
       const newTabs = tabs.slice();
       const [tab] = newTabs.splice(fromIndex, 1);
       if (toIndex === -1) {

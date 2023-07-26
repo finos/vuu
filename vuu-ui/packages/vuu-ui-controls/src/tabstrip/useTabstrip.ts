@@ -86,7 +86,10 @@ export const useTabstrip = ({
     onSelectionChange: onActiveChange,
     selected: activeTabIndexProp,
   });
-  // We need this on reEntry for navigation hook to handle focus
+  // We need this on reEntry for navigation hook to handle focus and for dragDropHook
+  // to re-apply selection after drag drop. For some reason the value is stale if we
+  // directly use selectionHookSelected within the drag, even though all dependencies
+  //appear to be correctly declared.
   lastSelection.current = selectionHookSelected;
 
   const { containerStyle, resumeAnimation, suspendAnimation } =
@@ -97,26 +100,21 @@ export const useTabstrip = ({
 
   const handleDrop = useCallback(
     (fromIndex: number, toIndex: number) => {
+      const { current: selected } = lastSelection;
       console.log(
-        `handleDrop ${fromIndex} - ${toIndex}  ${selectionHookSelected}`
+        `useTabstrip handleDrop ${fromIndex} - ${toIndex}  ${selected}`
       );
       onMoveTab?.(fromIndex, toIndex);
       let nextSelectedTab = -1;
       if (toIndex === -1) {
         // nothing to do
       } else {
-        if (selectionHookSelected === fromIndex) {
+        if (selected === fromIndex) {
           nextSelectedTab = toIndex;
-        } else if (
-          fromIndex > selectionHookSelected &&
-          toIndex <= selectionHookSelected
-        ) {
-          nextSelectedTab = selectionHookSelected + 1;
-        } else if (
-          fromIndex < selectionHookSelected &&
-          toIndex >= selectionHookSelected
-        ) {
-          nextSelectedTab = selectionHookSelected - 1;
+        } else if (fromIndex > selected && toIndex <= selected) {
+          nextSelectedTab = selected + 1;
+        } else if (fromIndex < selected && toIndex >= selected) {
+          nextSelectedTab = selected - 1;
         }
       }
       if (nextSelectedTab !== -1) {
@@ -125,13 +123,7 @@ export const useTabstrip = ({
         requestAnimationFrame(resumeAnimation);
       }
     },
-    [
-      onMoveTab,
-      resumeAnimation,
-      selectionHookActivateTab,
-      selectionHookSelected,
-      suspendAnimation,
-    ]
+    [onMoveTab, resumeAnimation, selectionHookActivateTab, suspendAnimation]
   );
 
   const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =

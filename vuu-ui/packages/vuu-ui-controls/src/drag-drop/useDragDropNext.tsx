@@ -124,13 +124,20 @@ export const useDragDropNext: DragDropHook = ({
 
   const terminateDrag = useCallback(() => {
     const { current: toIndex } = dropIndexRef;
+    const droppedItem = containerRef.current?.querySelector(
+      `${itemQuery}[data-index="${toIndex}"]`
+    );
+    if (droppedItem) {
+      droppedItem.classList.remove("vuuDropTarget-settling");
+    }
+
     dropIndexRef.current = -1;
     onDropSettle?.(toIndex);
     setDraggableStatus((status) => ({
       ...status,
       draggable: undefined,
     }));
-  }, [onDropSettle]);
+  }, [containerRef, itemQuery, onDropSettle]);
 
   const getScrollDirection = useCallback(
     (mousePos: number) => {
@@ -180,6 +187,8 @@ export const useDragDropNext: DragDropHook = ({
 
   const handleDrop = useCallback(
     (fromIndex: number, toIndex: number) => {
+      console.log("useDragDropNext handleDrop");
+      //TODO why do we need both this and dropIndexRef ?
       dropPosRef.current = toIndex;
       onDrop?.(fromIndex, toIndex);
       dropIndexRef.current = toIndex;
@@ -223,7 +232,6 @@ export const useDragDropNext: DragDropHook = ({
         : 0;
 
       if (dragOutDistance - dragDistance > 5) {
-        console.log("DRAG AWAY");
         // remove the drag boundaries
         dragBoundaries.current = UNBOUNDED;
         // Need to notify the dragDropHook, so it can clearSpacers
@@ -281,7 +289,6 @@ export const useDragDropNext: DragDropHook = ({
     document.removeEventListener("mousemove", dragMouseMoveHandler, false);
     document.removeEventListener("mouseup", dragMouseUpHandler, false);
     settlingItemRef.current = draggableRef.current;
-    return;
     // The implementation hook is currently invoking the onDrop callback, we should move it into here
     drop();
     setDraggableStatus((status) => ({
@@ -335,8 +342,6 @@ export const useDragDropNext: DragDropHook = ({
           : lastItemEnd - draggableSize;
         dragBoundaries.current.contraStart = containerRect[CONTRA];
         dragBoundaries.current.contraEnd = containerRect[CONTRA_END];
-
-        console.log({ dragBoundaries: dragBoundaries.current });
 
         beginDrag(evt);
 
@@ -441,17 +446,24 @@ export const useDragDropNext: DragDropHook = ({
         `${itemQuery}[data-index="${dropPos}"]`
       );
       if (droppedItem) {
-        const { top: targetTop, left: targetLeft } =
-          droppedItem.getBoundingClientRect();
-        const { top: currentTop, left: currentLeft } =
-          settlingItem.getBoundingClientRect();
-        if (currentLeft !== targetLeft || currentTop !== targetTop) {
-          settlingItem.classList.add("vuuDraggable-settling");
-          settlingItem.style.top = `${targetTop}px`;
-          settlingItem.style.left = `${targetLeft}px`;
-        } else {
-          terminateDrag();
-        }
+        droppedItem.classList.add("vuuDropTarget-settling");
+        requestAnimationFrame(() => {
+          const { top: targetTop, left: targetLeft } =
+            droppedItem.getBoundingClientRect();
+          const { top: currentTop, left: currentLeft } =
+            settlingItem.getBoundingClientRect();
+          // If the droppedItem is already exactly in the drop position, we can just
+          // terminate the drag here and now. Most likely, though, it is out by a few
+          // pixels. We animate the dragged item into the final resting place before
+          // terminating the drag.
+          if (currentLeft !== targetLeft || currentTop !== targetTop) {
+            settlingItem.classList.add("vuuDraggable-settling");
+            settlingItem.style.top = `${targetTop}px`;
+            settlingItem.style.left = `${targetLeft}px`;
+          } else {
+            terminateDrag();
+          }
+        });
       } else {
         console.log(`dont have the dropped item (at ${dropPos})`);
       }

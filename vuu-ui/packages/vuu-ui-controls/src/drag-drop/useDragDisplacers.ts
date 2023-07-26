@@ -10,8 +10,7 @@ export type DragDisplacersHookResult = {
     size: number,
     useTransition?: boolean,
     direction?: Direction | "static",
-    orientation?: "horizontal" | "vertical",
-    gap?: number
+    orientation?: "horizontal" | "vertical"
   ) => void;
   displaceLastItem: (
     dropTarget: MeasuredDropTarget,
@@ -75,8 +74,7 @@ export const useDragDisplacers: DragDisplacersHook = () => {
       size: number,
       useTransition = false,
       direction?: Direction | "static",
-      orientation: "horizontal" | "vertical" = "horizontal",
-      gap = 0
+      orientation: "horizontal" | "vertical" = "horizontal"
     ) => {
       if (dropTarget) {
         const propertyName = orientation === "horizontal" ? "width" : "height";
@@ -85,7 +83,10 @@ export const useDragDisplacers: DragDisplacersHook = () => {
         if (useTransition) {
           if (transitioning.current) {
             clearSpacers();
-            spacer1.style.cssText = `${propertyName}: ${size - gap}px`;
+            // We're introducing two spacers. That will introduce two gap units
+            // even when one of the spacers has zero width. Both gap units need
+            // to be accounted for, else layout shift in following elements
+            spacer1.style.cssText = `${propertyName}: ${size}px`;
             spacer2.style.cssText = `${propertyName}: 0px`;
             if (direction === "fwd") {
               dropTarget.element.before(spacer1);
@@ -103,6 +104,7 @@ export const useDragDisplacers: DragDisplacersHook = () => {
           }
           animateTransition(size, propertyName);
         } else if (direction === "static") {
+          console.log("apply static displacement");
           spacer1.style.cssText = `${propertyName}: ${size}px`;
           dropTarget.element.before(spacer1);
         } else {
