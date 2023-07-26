@@ -18,6 +18,16 @@ import {
   removeDraggedItem,
 } from "./dragUtils";
 
+const applyDisplacementToDropTargets = (
+  dropTargets: MeasuredDropTarget[],
+  id: string,
+  size: number
+) => {
+  console.log(`apply dispalcement of ${size} from ${id}
+    ${dropTargets.map((d) => `\n#${d.id}\t${d.start}`).join("")}
+  `);
+};
+
 const NOT_OVERFLOWED = ":not(.wrapped)";
 const NOT_HIDDEN = ':not([aria-hidden="true"])';
 export const useDragDropNaturalMovement = ({
@@ -259,7 +269,12 @@ export const useDragDropNaturalMovement = ({
                     mouseMoveDirection === "fwd" ? -size : size
                   );
                 } else {
-                  console.log("displace item");
+                  // TODO need to record the current displacement in mesauredDropTargets
+                  applyDisplacementToDropTargets(
+                    dropTargets,
+                    nextDropTarget.id,
+                    size
+                  );
                   displaceItem(
                     nextDropTarget,
                     size,
@@ -302,8 +317,8 @@ export const useDragDropNaturalMovement = ({
     const { current: dropTarget } = dropTargetRef;
     if (draggedItem && dropTarget) {
       const { index: fromIndex } = draggedItem;
-      // const { currentIndex: toIndex } = dropTarget;
-      const { index: toIndex } = dropTarget;
+      const { currentIndex: toIndex } = dropTarget;
+      // const { index: toIndex } = dropTarget;
       dropTargetRef.current = null;
       dragDirectionRef.current = undefined;
       if (overflowMenuShowingRef.current) {
@@ -312,6 +327,7 @@ export const useDragDropNaturalMovement = ({
         console.log(
           `useDragDropNaturalMovement drop from ${fromIndex} to ${toIndex}`,
           {
+            draggedItem,
             dropTarget,
           }
         );

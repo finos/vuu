@@ -6,6 +6,10 @@ const TOP_BOTTOM = ["top", "bottom"];
 // duplicated in repsonsive
 
 export type MeasuredDropTarget = {
+  /** 
+    The index position currently occupied by this item. If draggable 
+    is dropped here, this will be the destination drop position.
+  */
   currentIndex: number;
   dataIndex?: number;
   element: HTMLElement;
@@ -242,16 +246,20 @@ export const measureDropTargets = (
   return dragThresholds;
 };
 
+// TODO this doesn't take into account the current displacement of items caused by spacers
 export const getNextDropTarget = (
   dropTargets: MeasuredDropTarget[],
   draggedItem: MeasuredDropTarget,
   pos: number
 ): [MeasuredDropTarget | null, dropZone] => {
   const len = dropTargets.length;
+  console.log(`mid od drapTargets ${dropTargets.map((d) => d.mid).join(",")}`);
   const dragMid = pos + draggedItem.size / 2;
   for (let index = 0; index < len; index++) {
     const dropTarget = dropTargets[index];
-    if (dropTarget.end < dragMid) {
+    if (index === 0 && pos < dropTarget.mid) {
+      return [dropTarget, "start"];
+    } else if (dropTarget.end < dragMid) {
       continue;
     } else if (dropTarget.isLast) {
       // We have to treat the last item differently. The mid point of a wider item
