@@ -22,7 +22,7 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
 import { buildColumnMap, itemsOrOrderChanged } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AgData, AgDataRow } from "./AgDataWindow";
+import { AgData } from "./AgDataWindow";
 import { createColumnDefs } from "./AgGridColumnUtils";
 import {
   bySortIndex,
@@ -69,14 +69,20 @@ type RowGroupOpenedEvent = {
   expanded: boolean;
   node: { expanded?: boolean };
 };
-type ColumnState = { colId: string; sortIndex: number }[];
-type SortChangedEvent = {
+
+const NullSuggestionFetcher: SuggestionFetcher = async () => [];
+
+export type AgColumnState = { colId: string; sortIndex: number }[];
+export type AgSortChangedEvent = {
   columnApi: {
-    getColumnState: () => ColumnState;
+    getColumnState: () => AgColumnState;
   };
 };
 
-const NullSuggestionFetcher: SuggestionFetcher = async () => [];
+export const agSortChangedEventToVuuSortDef = (evt: AgSortChangedEvent) => {
+  const columnState = evt.columnApi.getColumnState();
+  return columnState.filter(isSortedColumn).sort(bySortIndex).map(toSortDef);
+};
 
 export interface ViewportRowModelHookProps {
   columns?: ColumnDescriptor[];
@@ -239,12 +245,9 @@ export const useViewportRowModel = ({
 
   const handleSortChanged = useCallback(
     (evt: unknown) => {
-      const sortChangedEvent = evt as SortChangedEvent;
-      const columnState = sortChangedEvent.columnApi.getColumnState();
-      const sortDefs = columnState
-        .filter(isSortedColumn)
-        .sort(bySortIndex)
-        .map(toSortDef);
+      const sortDefs = agSortChangedEventToVuuSortDef(
+        evt as AgSortChangedEvent
+      );
       viewportDatasource.sort({ sortDefs: sortDefs });
     },
     [viewportDatasource]
@@ -308,11 +311,15 @@ export const useViewportRowModel = ({
     [buildViewserverMenuOptions, dataSource, menuHandler]
   );
 
-  const autoGroupColumnDef = {
-    headerName: "Group",
-    cellRenderer: GroupCellRenderer,
-    minWidth: 250,
-  };
+  const autoGroupColumnDef = useMemo(
+    () => ({
+      headerName: "Group",
+      cellRenderer: GroupCellRenderer,
+      minWidth: 250,
+      sortable: false,
+    }),
+    []
+  );
 
   return {
     autoGroupColumnDef,
