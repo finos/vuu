@@ -14,15 +14,23 @@ import {
   metadataKeys,
 } from "@finos/vuu-utils";
 import { AgDataWindow } from "./AgDataWindow";
-import { AgViewportRows, convertToAgViewportRows } from "./AgGridDataUtils";
+import {
+  AgViewportRows,
+  AgVuuDataRow,
+  convertToAgViewportRows,
+  toAgViewportRow,
+} from "./AgGridDataUtils";
 
 const { IDX, IS_LEAF, IS_EXPANDED } = metadataKeys;
 const NO_COLUMNS: string[] = [];
 
 type AgRow = {
+  data?: AgVuuDataRow;
   expanded?: boolean;
+  setData: (data: AgVuuDataRow) => void;
   setDataValue: (field: string, value: string | number | boolean) => void;
   setExpanded: (value: boolean) => void;
+  updateData: (data: AgVuuDataRow) => void;
 };
 
 type IViewportDatasourceParams = {
@@ -146,13 +154,17 @@ export class ViewportRowModelDataSource {
               [IS_EXPANDED]: isExpanded,
               [IS_LEAF]: isLeaf,
             } = dataRow;
-            const updates = this.dataWindow.update(dataRow, reverseColumnMap);
             const agRowNode = this.getAgRow(rowIndex);
-
-            if (updates) {
-              for (let i = 0; i < updates.length; i += 2) {
-                agRowNode.setDataValue(updates[i] as string, updates[i + 1]);
+            if (agRowNode.data) {
+              const updates = this.dataWindow.update(dataRow, reverseColumnMap);
+              if (updates) {
+                for (let i = 0; i < updates.length; i += 2) {
+                  agRowNode.setDataValue(updates[i] as string, updates[i + 1]);
+                }
               }
+            } else {
+              const agVuuDataRow = toAgViewportRow(dataRow, columnMap);
+              agRowNode.setData(agVuuDataRow);
             }
 
             if (!isLeaf) {
