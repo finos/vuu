@@ -1,5 +1,5 @@
 import { RefObject, useCallback, useRef } from "react";
-import { dimensions } from "./dragUtils";
+import { dimensions } from "./drop-target-utils";
 
 export type ScrollStopHandler = (
   scrollDirection: "fwd" | "bwd",

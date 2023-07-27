@@ -49,7 +49,6 @@ export const useAnimatedSelectionThumb = (
       }
     }
     lastSelectedRef.current = activeTabIndex;
-    console.log(`return offset = ${offset}`);
     if (animationSuspendedRef.current) {
       return {
         containerStyle: {

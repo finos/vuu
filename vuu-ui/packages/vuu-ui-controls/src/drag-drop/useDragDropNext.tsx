@@ -14,7 +14,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { cloneElement, constrainRect, dimensions } from "./dragUtils";
+import { cloneElement, constrainRect, dimensions } from "./drop-target-utils";
 import { useAutoScroll, ScrollStopHandler } from "./useAutoScroll";
 import { Draggable } from "./Draggable";
 
@@ -263,9 +263,11 @@ export const useDragDropNext: DragDropHook = ({
         }
 
         if (!isScrolling.current) {
-          const renderDragPos = Math.max(
-            dragBoundaries.current.start,
-            Math.min(dragBoundaries.current.end, dragPos)
+          const renderDragPos = Math.round(
+            Math.max(
+              dragBoundaries.current.start,
+              Math.min(dragBoundaries.current.end, dragPos)
+            )
           );
           const START = orientation === "horizontal" ? "left" : "top";
           draggableRef.current.style[START] = `${renderDragPos}px`;

@@ -16,7 +16,7 @@ import {
   getNextDropTarget,
   dropZone,
   removeDraggedItem,
-} from "./dragUtils";
+} from "./drop-target-utils";
 
 import { createDropIndicator, Draggable } from "./Draggable";
 
