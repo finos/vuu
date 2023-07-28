@@ -144,19 +144,19 @@ function Home() {
             <div className="vuu-mobile-link-list">
               <ul>
                 <li>
-                  <a href="/page1">Docs</a>
+                  <a href="/docs/introduction/intro">Docs</a>
                 </li>
                 <li>
-                  <a href="/page2">Getting Started</a>
+                  <a href="/docs/getting_started">Getting Started</a>
                 </li>
                 <li>
-                  <a href="/page2">Road Map</a>
+                  <a href="/docs/roadmap">Road Map</a>
                 </li>
                 <li>
-                  <a href="/page2">Team</a>
+                  <a href="/docs/team">Team</a>
                 </li>
                 <li>
-                  <a href="/page2">About FINOS</a>
+                  <a href="https://www.finos.org/about-us">About FINOS</a>
                 </li>
               </ul>
             </div>
