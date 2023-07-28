@@ -15,13 +15,16 @@ export interface RevolvingCaptionProps extends HTMLAttributes<HTMLDivElement> {
   captions: string[];
   intervals?: number[];
   loopInterval?: number;
+  offSetValue?: number;
 }
 
 export const RevolvingCaption = ({
   animationState = "running",
   captions: captionsProp,
+  className,
   intervals = Array(captionsProp.length).fill(5),
   loopInterval = 5,
+  offSetValue = 84,
   style,
   ...htmlAttributes
 }: RevolvingCaptionProps) => {
@@ -54,7 +57,7 @@ export const RevolvingCaption = ({
     }
   }, [animationState, captions, index]);
 
-  const offset = index * 84;
+  const offset = index * offSetValue;
 
   const transitionStyle =
     offset === 0
@@ -79,7 +82,7 @@ export const RevolvingCaption = ({
   return (
     <div
       {...htmlAttributes}
-      className="vuuRevolvingCaption"
+      className={cx("vuuRevolvingCaption",className)}
       style={
         {
           ...transitionStyle,
@@ -102,3 +105,5 @@ export const RevolvingCaption = ({
     </div>
   );
 };
+
+
