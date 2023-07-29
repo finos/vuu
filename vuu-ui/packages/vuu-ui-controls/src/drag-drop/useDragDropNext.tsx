@@ -75,9 +75,7 @@ const getLastElement = (
 ): [HTMLElement, boolean] => {
   const fullItemQuery = `:is(${itemQuery}${NOT_OVERFLOWED},.vuuOverflowContainer-OverflowIndicator)`;
   const childElements = Array.from(container.querySelectorAll(fullItemQuery));
-  console.log({ childElements, fullItemQuery });
   const lastElement = childElements.pop() as HTMLElement;
-  console.log({ lastElement });
   return [lastElement, isOverflowElement(lastElement)];
 };
 

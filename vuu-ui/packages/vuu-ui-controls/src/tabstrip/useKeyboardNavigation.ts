@@ -98,7 +98,8 @@ interface TabstripNavigationHookResult {
   focusTab: (
     tabIndex: number,
     immediateFocus?: boolean,
-    withKeyboard?: boolean
+    withKeyboard?: boolean,
+    delay?: number
   ) => void;
   focusVisible: number;
   focusIsWithinComponent: boolean;
@@ -137,7 +138,12 @@ export const useKeyboardNavigation = ({
   const keyboardNavigation = useRef(false);
 
   const focusTab = useCallback(
-    (tabIndex: number, immediateFocus = false, withKeyboard?: boolean) => {
+    (
+      tabIndex: number,
+      immediateFocus = false,
+      withKeyboard?: boolean,
+      delay = 70
+    ) => {
       // The timeout is important in two scenarios:
       // 1) where tab has overflowed and is being selected from overflow menu.
       // We must not focus it until the overflow mechanism + render has restored
@@ -154,7 +160,6 @@ export const useKeyboardNavigation = ({
 
       const setFocus = () => {
         const element = getElementByPosition(containerRef.current, tabIndex);
-
         if (element) {
           const focussableElement = getFocusableElement(element);
           focussableElement?.focus();
@@ -163,13 +168,14 @@ export const useKeyboardNavigation = ({
       if (immediateFocus) {
         setFocus();
       } else {
-        setTimeout(setFocus, 70);
+        setTimeout(setFocus, delay);
       }
     },
     [containerRef, setHighlightedIdx]
   );
 
   const onFocus = (e: FocusEvent<HTMLElement>) => {
+    console.log("ONFOCUS");
     // If focus is received by keyboard navigation, item with tabindex 0 will receive
     // focus. If the item receiving focus has tabindex -1, then focus has been set
     // programatically. We must respect this and not reset focus to selected tab.

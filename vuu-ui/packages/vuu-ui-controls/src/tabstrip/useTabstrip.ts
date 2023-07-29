@@ -106,9 +106,7 @@ export const useTabstrip = ({
       );
       onMoveTab?.(fromIndex, toIndex);
       let nextSelectedTab = -1;
-      if (toIndex === -1) {
-        // nothing to do
-      } else {
+      if (toIndex !== -1) {
         if (selected === fromIndex) {
           nextSelectedTab = toIndex;
         } else if (fromIndex > selected && toIndex <= selected) {
@@ -116,14 +114,21 @@ export const useTabstrip = ({
         } else if (fromIndex < selected && toIndex >= selected) {
           nextSelectedTab = selected - 1;
         }
-      }
-      if (nextSelectedTab !== -1) {
-        suspendAnimation();
-        selectionHookActivateTab(nextSelectedTab);
-        requestAnimationFrame(resumeAnimation);
+        if (nextSelectedTab !== -1) {
+          suspendAnimation();
+          selectionHookActivateTab(nextSelectedTab);
+          requestAnimationFrame(resumeAnimation);
+        }
+        keyboardHookFocusTab(toIndex, false, false, 350);
       }
     },
-    [onMoveTab, resumeAnimation, selectionHookActivateTab, suspendAnimation]
+    [
+      keyboardHookFocusTab,
+      onMoveTab,
+      resumeAnimation,
+      selectionHookActivateTab,
+      suspendAnimation,
+    ]
   );
 
   const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =

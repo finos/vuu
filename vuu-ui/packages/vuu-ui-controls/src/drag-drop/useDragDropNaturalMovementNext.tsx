@@ -147,8 +147,6 @@ export const useDragDropNaturalMovement = ({
           draggedItemId
         ));
 
-        console.log({ dropTargets });
-
         const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
         const draggedItem = dropTargets[indexOfDraggedItem];
 
@@ -203,7 +201,6 @@ export const useDragDropNaturalMovement = ({
     };
 
     const hide = (dropTarget: MeasuredDropTarget) => {
-      console.log(`HIDE ${popupShowing}`);
       if (popupShowing) {
         popupShowing = false;
         const button = dropTarget.element.querySelector(".vuuPopupMenu");

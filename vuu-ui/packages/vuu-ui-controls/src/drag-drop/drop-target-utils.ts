@@ -162,8 +162,6 @@ export const measureDropTargets = (
     itemQuery ? container.querySelectorAll(itemQuery) : container.children
   );
 
-  console.log({ itemQuery });
-
   const itemCount = children.length;
   const start =
     typeof viewportRange?.from === "number"
@@ -210,8 +208,8 @@ export const mutateDropTargetsSwitchDropTargetPosition = (
   dropTargets: MeasuredDropTarget[],
   direction: Direction
 ) => {
-  console.log(`switchDropTargetPosition
-    direction: ${direction} ${dropTargetsDebugString(dropTargets)}`);
+  // console.log(`switchDropTargetPosition
+  //   direction: ${direction} ${dropTargetsDebugString(dropTargets)}`);
 
   const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
   const indexOfTarget =
@@ -270,7 +268,7 @@ export const mutateDropTargetsSwitchDropTargetPosition = (
     dropTargets.splice(indexOfTarget, 2, newDraggedItem, newTargetItem);
   }
 
-  console.log(`${direction} ${dropTargetsDebugString(dropTargets)}`);
+  // console.log(`${direction} ${dropTargetsDebugString(dropTargets)}`);
 };
 
 export const getNextDropTarget = (
