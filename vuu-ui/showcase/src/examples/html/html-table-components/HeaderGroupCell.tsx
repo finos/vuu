@@ -40,7 +40,7 @@ export const HeaderGroupCell = ({
   onClick,
   idx,
 }: HeaderCellProps) => {
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
   const handleContextMenu = useCallback(
     (e: MouseEvent<HTMLElement>) => {
       showContextMenu(e, "header", { column });

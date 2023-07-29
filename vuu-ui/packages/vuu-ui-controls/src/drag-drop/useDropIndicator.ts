@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { dropZone, MeasuredDropTarget } from "./dragUtils";
+import { dropZone, MeasuredDropTarget } from "./drop-target-utils";
 import { createDropIndicatorPosition } from "./Draggable";
 
 export const SPACER_SIZE = 0;

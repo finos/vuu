@@ -18,7 +18,7 @@ export interface ThemedPanelProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const ThemedPanel = ({ children, className }: ThemedPanelProps) => {
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
 
   const [mode, setMode] = useState<ThemeMode | undefined>(undefined);
 

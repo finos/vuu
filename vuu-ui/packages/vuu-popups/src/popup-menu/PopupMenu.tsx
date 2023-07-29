@@ -5,7 +5,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { useContextMenu } from "@finos/vuu-popups";
+import {
+  PopupCloseReason,
+  reasonIsClickAway,
+  useContextMenu,
+} from "@finos/vuu-popups";
 import cx from "classnames";
 import { Button } from "@salt-ds/core";
 import { useId } from "@finos/vuu-layout";
@@ -44,31 +48,53 @@ export const PopupMenu = ({
   ...htmlAttributes
 }: PopupMenuProps) => {
   const rootRef = useRef<HTMLButtonElement>(null);
+  const suppressShowMenuRef = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const id = useId(idProp);
-  const showContextMenu = useContextMenu(menuBuilder, menuActionHandler);
+  const [showContextMenu] = useContextMenu(menuBuilder, menuActionHandler);
 
-  const handleMenuClose = useCallback(() => {
-    setMenuOpen(false);
-    requestAnimationFrame(() => {
-      onMenuClose?.();
-      if (tabIndex !== -1) {
-        rootRef.current?.focus();
+  const handleMenuClose = useCallback(
+    (reason?: PopupCloseReason) => {
+      console.log(`PopupMenu popup closed`, {
+        reason,
+      });
+      setMenuOpen(false);
+      // If user has clicked the MenuButton whilst menu is open, we want to close it.
+      // The PopupService will close it for us as a 'click-away' event. We don't want
+      // that click on the button to re-open it.
+      if (reasonIsClickAway(reason)) {
+        const target = reason.mouseEvt.target as HTMLElement;
+        if (target === rootRef.current) {
+          suppressShowMenuRef.current = true;
+        }
+      } else {
+        requestAnimationFrame(() => {
+          onMenuClose?.();
+          if (tabIndex !== -1) {
+            rootRef.current?.focus();
+          }
+        });
       }
-    });
-  }, [onMenuClose, tabIndex]);
+    },
+    [onMenuClose, tabIndex]
+  );
 
   const showMenu = useCallback(
     (e: MouseEvent<HTMLElement>) => {
-      setMenuOpen(true);
-      showContextMenu(e, menuLocation, {
-        ContextMenuProps: {
-          id: `${id}-menu`,
-          onClose: handleMenuClose,
-          position: getPosition(rootRef.current),
-        },
-        ...menuOptions,
-      });
+      console.log("PopupMenu click");
+      if (suppressShowMenuRef.current) {
+        suppressShowMenuRef.current = false;
+      } else {
+        setMenuOpen(true);
+        showContextMenu(e, menuLocation, {
+          ContextMenuProps: {
+            id: `${id}-menu`,
+            onClose: handleMenuClose,
+            position: getPosition(rootRef.current),
+          },
+          ...menuOptions,
+        });
+      }
     },
     [handleMenuClose, id, menuLocation, menuOptions, showContextMenu]
   );
@@ -77,7 +103,8 @@ export const PopupMenu = ({
     <Button
       {...htmlAttributes}
       aria-controls={`${id}-menu-root`}
-      aria-haspopup="true"
+      aria-expanded={menuOpen}
+      aria-haspopup="menu"
       className={cx(classBase, className, {
         [`${classBase}-open`]: menuOpen,
       })}

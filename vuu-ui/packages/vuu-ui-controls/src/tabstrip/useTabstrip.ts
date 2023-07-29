@@ -7,7 +7,7 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { useDragDrop } from "../drag-drop";
+import { useDragDropNext as useDragDrop } from "../drag-drop";
 import type { orientationType } from "./TabsTypes";
 import { isTabMenuOptions } from "./TabMenuOptions";
 import { getIndexOfSelectedTab } from "./tabstrip-dom-utils";
@@ -86,7 +86,10 @@ export const useTabstrip = ({
     onSelectionChange: onActiveChange,
     selected: activeTabIndexProp,
   });
-  // We need this on reEntry for navigation hook to handle focus
+  // We need this on reEntry for navigation hook to handle focus and for dragDropHook
+  // to re-apply selection after drag drop. For some reason the value is stale if we
+  // directly use selectionHookSelected within the drag, even though all dependencies
+  //appear to be correctly declared.
   lastSelection.current = selectionHookSelected;
 
   const { containerStyle, resumeAnimation, suspendAnimation } =
@@ -97,31 +100,35 @@ export const useTabstrip = ({
 
   const handleDrop = useCallback(
     (fromIndex: number, toIndex: number) => {
+      const { current: selected } = lastSelection;
       console.log(
-        `handleDrop ${fromIndex} - ${toIndex}  ${selectionHookSelected}`
+        `useTabstrip handleDrop ${fromIndex} - ${toIndex}  ${selected}`
       );
       onMoveTab?.(fromIndex, toIndex);
-      // if (toIndex === -1) {
-      //   // nothing to do
-      // } else {
-      //   if (selectionHookSelected === null) {
-      //     // do thing
-      //   } else if (selectionHookSelected === fromIndex) {
-      //     selectionHook.activateTab(toIndex);
-      //   } else if (
-      //     fromIndex > selectionHookSelected &&
-      //     toIndex <= selectionHookSelected
-      //   ) {
-      //     selectionHook.activateTab(selectionHookSelected + 1);
-      //   } else if (
-      //     fromIndex < selectionHookSelected &&
-      //     toIndex >= selectionHookSelected
-      //   ) {
-      //     selectionHook.activateTab(selectionHookSelected - 1);
-      //   }
-      // }
+      let nextSelectedTab = -1;
+      if (toIndex !== -1) {
+        if (selected === fromIndex) {
+          nextSelectedTab = toIndex;
+        } else if (fromIndex > selected && toIndex <= selected) {
+          nextSelectedTab = selected + 1;
+        } else if (fromIndex < selected && toIndex >= selected) {
+          nextSelectedTab = selected - 1;
+        }
+        if (nextSelectedTab !== -1) {
+          suspendAnimation();
+          selectionHookActivateTab(nextSelectedTab);
+          requestAnimationFrame(resumeAnimation);
+        }
+        keyboardHookFocusTab(toIndex, false, false, 350);
+      }
     },
-    [onMoveTab, selectionHookSelected]
+    [
+      keyboardHookFocusTab,
+      onMoveTab,
+      resumeAnimation,
+      selectionHookActivateTab,
+      suspendAnimation,
+    ]
   );
 
   const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =
@@ -129,7 +136,7 @@ export const useTabstrip = ({
       allowDragDrop,
       containerRef,
       // this is for useDragDropNext
-      // draggableClassName: `tabstrip-${orientation}`,
+      draggableClassName: `tabstrip-${orientation}`,
       // extendedDropZone: overflowedItems.length > 0,
       onDrop: handleDrop,
       orientation: "horizontal",
@@ -243,15 +250,15 @@ export const useTabstrip = ({
   );
 
   const handleTabMenuAction = useCallback<MenuActionHandler>(
-    (type, options) => {
-      if (isTabMenuOptions(options)) {
-        switch (type) {
+    (action) => {
+      if (isTabMenuOptions(action.options)) {
+        switch (action.menuId) {
           case "close-tab":
-            return handleCloseTabFromMenu(options.tabIndex);
+            return handleCloseTabFromMenu(action.options.tabIndex);
           case "rename-tab":
-            return handleRenameTabFromMenu(options.tabIndex);
+            return handleRenameTabFromMenu(action.options.tabIndex);
           default:
-            console.log(`tab menu action ${type}`);
+            console.log(`tab menu action ${action.menuId}`);
         }
       }
       return false;

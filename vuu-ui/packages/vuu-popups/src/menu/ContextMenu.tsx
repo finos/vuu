@@ -2,12 +2,14 @@ import { useCallback, useRef } from "react";
 import { Portal } from "../portal";
 import MenuList, { MenuListProps } from "./MenuList";
 import { useCascade } from "./use-cascade";
-import { useClickAway } from "./use-click-away";
+// import { useClickAway } from "./use-click-away";
 import { useItemsWithIdsNext } from "./use-items-with-ids-next";
 import { useId } from "@finos/vuu-layout";
+import { PopupCloseCallback } from "../popup";
+import { ContextMenuOptions } from "./useContextMenu";
 
 export interface ContextMenuProps extends Omit<MenuListProps, "onCloseMenu"> {
-  onClose?: (menuId?: string, options?: unknown) => void;
+  onClose?: PopupCloseCallback;
   position?: { x: number; y: number };
   withPortal?: boolean;
 }
@@ -42,7 +44,11 @@ export const ContextMenu = ({
       const actionId = menuItemId.slice(9);
       const { action, options } = actions[actionId];
       closeMenuRef.current(id);
-      onClose(action, options);
+      onClose({
+        type: "menu-action",
+        menuId: action,
+        options: options as ContextMenuOptions,
+      });
     },
     [actions, id, onClose]
   );
@@ -57,18 +63,8 @@ export const ContextMenu = ({
     });
   closeMenuRef.current = closeMenu;
 
-  const handleClose = useCallback(() => {
-    closeMenu();
-    onClose();
-  }, [closeMenu, onClose]);
-
-  useClickAway({
-    containerClassName: "vuuMenuList",
-    onClose: handleClose,
-    isOpen: openMenus.length > 0,
-  });
-
   const handleCloseMenu = () => {
+    console.log("handleCloseMenu");
     navigatingWithKeyboard.current = true;
     closeMenu();
   };
@@ -87,10 +83,6 @@ export const ContextMenu = ({
       return id;
     }
   };
-
-  // useEffect(() => () => onClose?.(), [onClose]);
-
-  console.log({ menus, openMenus });
 
   return (
     <>

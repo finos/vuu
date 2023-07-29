@@ -54,6 +54,7 @@ export const Stack = forwardRef(function Stack(
     keyBoardActivation = "manual",
     // onMouseDown,
     onAddTab,
+    onMoveTab,
     onTabClose,
     onTabEdit,
     onTabSelectionChanged,
@@ -109,7 +110,6 @@ export const Stack = forwardRef(function Stack(
         <Tab
           ariaControls={`${rootId}-tab`}
           data-icon={getTabIcon(child, idx)}
-          draggable
           key={childId ?? idx}
           id={rootId}
           index={idx}
@@ -137,6 +137,7 @@ export const Stack = forwardRef(function Stack(
           activeTabIndex={
             TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
           }
+          allowDragDrop={TabstripProps.allowDragDrop !== false}
           animateSelectionThumb
           className="vuuTabHeader"
           keyBoardActivation={keyBoardActivation}
@@ -144,6 +145,7 @@ export const Stack = forwardRef(function Stack(
           onAddTab={onAddTab}
           onCloseTab={onTabClose}
           onExitEditMode={handleExitEditMode}
+          onMoveTab={onMoveTab}
           // onMouseDown={handleMouseDown}
         >
           {renderTabs()}

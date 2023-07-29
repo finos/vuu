@@ -50,3 +50,7 @@
   transition-duration: .15s;
   transition-timing-function: ease-out;
 }
+
+.vuuDraggable-spacer {
+  order: 1;
+}

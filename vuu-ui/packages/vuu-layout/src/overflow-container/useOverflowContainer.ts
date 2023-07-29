@@ -72,7 +72,7 @@ export const useOverflowContainer = ({
           };
         });
       },
-      (type, options) => {
+      ({ options }) => {
         if (container && hasOverflowItem(options)) {
           // TODO do we always want to switch it into view - leave that to caller
           const [, wrappedItems] = switchWrappedItemIntoView(

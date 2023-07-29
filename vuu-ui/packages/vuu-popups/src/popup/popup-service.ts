@@ -8,12 +8,36 @@ import React, {
   useRef,
 } from "react";
 import ReactDOM from "react-dom";
+import { ContextMenuOptions } from "../menu";
 import { renderPortal } from "../portal";
 
 import "./popup-service.css";
 
 let _dialogOpen = false;
 const _popups: string[] = [];
+
+export type PopupCloseCallback = (reason?: PopupCloseReason) => void;
+
+export type ClickAwayClosePopup = {
+  type: "click-away";
+  mouseEvt: MouseEvent;
+};
+
+export type MenuActionClosePopup = {
+  menuId: string;
+  options: ContextMenuOptions;
+  type: "menu-action";
+};
+
+export type PopupCloseReason = ClickAwayClosePopup | MenuActionClosePopup;
+
+export const reasonIsMenuAction = (
+  reason?: PopupCloseReason
+): reason is MenuActionClosePopup => reason?.type === "menu-action";
+
+export const reasonIsClickAway = (
+  reason?: PopupCloseReason
+): reason is ClickAwayClosePopup => reason?.type === "click-away";
 
 function specialKeyHandler(e: KeyboardEvent) {
   if (e.key === "Esc") {
@@ -30,20 +54,22 @@ function specialKeyHandler(e: KeyboardEvent) {
 
 function outsideClickHandler(e: MouseEvent) {
   if (_popups.length) {
-    // onsole.log(`Popup.outsideClickHandler`);
+    console.log(`Popup.outsideClickHandler ... `);
     const popupContainers = document.body.querySelectorAll(".vuuPopup");
     for (let i = 0; i < popupContainers.length; i++) {
       if (popupContainers[i].contains(e.target as HTMLElement)) {
+        console.log(` ... its ok, he's one of us`);
         return;
       }
     }
-    closeAllPopups();
+    console.log(" ... close all");
+    closeAllPopups({ mouseEvt: e, type: "click-away" });
   }
 }
 
-function closeAllPopups() {
+function closeAllPopups(reason?: PopupCloseReason) {
   if (_popups.length === 1) {
-    PopupService.hidePopup();
+    PopupService.hidePopup(reason, "anon", "all");
   } else if (_popups.length) {
     // onsole.log(`closeAllPopups`);
     const popupContainers = document.body.querySelectorAll(".vuuPopup");
@@ -128,7 +154,7 @@ export interface ShowPopupProps {
 }
 
 export class PopupService {
-  static onClose: (() => void) | undefined = undefined;
+  static onClose: PopupCloseCallback | undefined;
   static showPopup({
     group = "all",
     name = "anon",
@@ -184,7 +210,10 @@ export class PopupService {
     }
   }
 
-  static hidePopup(name = "anon", group = "all") {
+  static hidePopup(reason?: PopupCloseReason, name = "anon", group = "all") {
+    console.log(`PopupService.hidePopup`, {
+      reason,
+    });
     if (_popups.indexOf(name) !== -1) {
       popupClosed(name);
       const popupRoot = document.body.querySelector(`.vuuPopup.${group}`);
@@ -197,7 +226,11 @@ export class PopupService {
       PopupService.escapeKeyListener,
       true
     );
-    PopupService?.onClose?.();
+
+    console.log(
+      `PopupService will call onClose if found ${typeof PopupService?.onClose}`
+    );
+    PopupService?.onClose?.(reason);
   }
 
   static keepWithinThePage(el: HTMLElement, right: number | "auto" = "auto") {
@@ -287,7 +320,7 @@ export const Popup = (props: PopupProps) => {
     }
 
     if (props.close === true) {
-      PopupService.hidePopup(name, group);
+      PopupService.hidePopup(undefined, name, group);
     } else {
       const { position, children: component } = props;
       const {
@@ -330,7 +363,7 @@ export const Popup = (props: PopupProps) => {
     }
 
     return () => {
-      PopupService.hidePopup(props.name, props.group);
+      PopupService.hidePopup(undefined, props.name, props.group);
     };
   }, [props]);
 

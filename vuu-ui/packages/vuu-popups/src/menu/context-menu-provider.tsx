@@ -37,12 +37,12 @@ const Provider = ({
   }, [context, menuBuilder]);
 
   const handleMenuAction = useCallback(
-    (type, options) => {
-      if (menuActionHandler?.(type, options)) {
+    (reason) => {
+      if (menuActionHandler?.(reason)) {
         return true;
       }
 
-      if (context?.menuActionHandler?.(type, options)) {
+      if (context?.menuActionHandler?.(reason)) {
         return true;
       }
     },

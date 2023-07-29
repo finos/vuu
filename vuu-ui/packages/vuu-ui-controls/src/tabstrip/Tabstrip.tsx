@@ -36,6 +36,7 @@ export const Tabstrip = ({
     activeTabIndex,
     focusVisible,
     containerStyle,
+    draggedItemIndex,
     onClickAddTab,
     tabProps,
     ...tabstripHook
@@ -79,7 +80,7 @@ export const Tabstrip = ({
             ...tabstripHook.navigationProps,
             closeable,
             "data-overflow-priority": selected ? "1" : undefined,
-            dragging: tabstripHook.draggedItemIndex === index,
+            dragging: draggedItemIndex === index,
             editable,
             focusVisible: focusVisible === index,
             id: tabId,
@@ -119,7 +120,7 @@ export const Tabstrip = ({
       onClickAddTab,
       showTabMenuButton,
       tabProps,
-      tabstripHook.draggedItemIndex,
+      draggedItemIndex,
       tabstripHook.navigationProps,
     ]
   );

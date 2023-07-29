@@ -49,15 +49,12 @@ export const useTableContextMenu = ({
   onPersistentColumnOperation,
 }: ContextMenuHookProps) => {
   /** return {boolean} used by caller to determine whether to forward to additional installed context menu handlers */
-  const handleContextMenuAction: MenuActionHandler = (
-    type,
-    options
-  ): boolean => {
-    const gridOptions = options as ContextMenuOptions;
+  const handleContextMenuAction: MenuActionHandler = (action): boolean => {
+    const gridOptions = action.options as ContextMenuOptions;
     if (gridOptions.column && dataSource) {
       const { column } = gridOptions;
       // prettier-ignore
-      switch(type){
+      switch(action.menuId){
         case "sort-asc": return (dataSource.sort = setSortColumn(dataSource.sort, column, "A")), true;
         case "sort-dsc": return (dataSource.sort = setSortColumn(dataSource.sort, column, "D")), true;
         case "sort-add-asc": return (dataSource.sort = addSortColumn(dataSource.sort, column, "A")), true;

@@ -260,7 +260,7 @@ export const Viewport = forwardRef(function Viewport(
     scrollCallback
   );
 
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
   const onContextMenu = useCallback(
     (evt: MouseEvent<HTMLElement>) => {
       const { current: currentData } = dataRef;

@@ -1,11 +1,15 @@
 import { useCallback, useMemo, useRef } from "react";
-import { MeasuredDropTarget } from "./dragUtils";
+import {
+  MeasuredDropTarget,
+  mutateDropTargetsSwitchDropTargetPosition,
+} from "./drop-target-utils";
 import { createDragSpacer as createDragDisplacer } from "./Draggable";
 import { Direction } from "./dragDropTypes";
 
 export type DragDisplacersHookResult = {
   clearDisplacedItem: () => void;
   displaceItem: (
+    dropTargets: MeasuredDropTarget[],
     dropTarget: MeasuredDropTarget,
     size: number,
     useTransition?: boolean,
@@ -13,6 +17,7 @@ export type DragDisplacersHookResult = {
     orientation?: "horizontal" | "vertical"
   ) => void;
   displaceLastItem: (
+    dropTargets: MeasuredDropTarget[],
     dropTarget: MeasuredDropTarget,
     size: number,
     useTransition?: boolean,
@@ -70,10 +75,11 @@ export const useDragDisplacers: DragDisplacersHook = () => {
 
   const displaceItem = useCallback(
     (
+      dropTargets: MeasuredDropTarget[],
       dropTarget: MeasuredDropTarget,
       size: number,
       useTransition = false,
-      direction?: Direction | "static",
+      direction: Direction | "static" = "static",
       orientation: "horizontal" | "vertical" = "horizontal"
     ) => {
       if (dropTarget) {
@@ -108,13 +114,16 @@ export const useDragDisplacers: DragDisplacersHook = () => {
             "useDragDisplacers currently only supports noTransition for static displacement"
           );
         }
-        return dropTarget;
+        if (direction !== "static") {
+          mutateDropTargetsSwitchDropTargetPosition(dropTargets, direction);
+        }
       }
     },
     [animateTransition, cancelAnyPendingAnimation, clearSpacers, spacers]
   );
   const displaceLastItem = useCallback(
     (
+      dropTargets: MeasuredDropTarget[],
       dropTarget: MeasuredDropTarget,
       size: number,
       useTransition = false,
@@ -144,6 +153,10 @@ export const useDragDisplacers: DragDisplacersHook = () => {
       } else {
         spacer1.style.cssText = `${propertyName}: ${size}px`;
         dropTarget.element.after(spacer1);
+      }
+
+      if (direction !== "static") {
+        mutateDropTargetsSwitchDropTargetPosition(dropTargets, direction);
       }
     },
     [animateTransition, cancelAnyPendingAnimation, clearSpacers, spacers]

@@ -1,5 +1,6 @@
 import { VuuFilter, VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { Filter } from "@finos/vuu-filter-types";
+import { MenuActionClosePopup } from "@finos/vuu-popups";
 
 export interface DataSourceFilter extends VuuFilter {
   filterStruct?: Filter;
@@ -73,8 +74,7 @@ export type MenuBuilder<L = string, O = unknown> = (
  * ActionHandlers to be chained.
  */
 export type MenuActionHandler = (
-  type: string,
-  options: unknown
+  reason: MenuActionClosePopup
 ) => boolean | undefined;
 
 export interface ContextMenuContextType {
