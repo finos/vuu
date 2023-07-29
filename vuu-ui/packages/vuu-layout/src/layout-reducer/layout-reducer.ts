@@ -16,6 +16,7 @@ import {
   insertBesideChild,
   insertIntoContainer,
 } from "./insert-layout-element";
+import { moveChild } from "./move-layout-element";
 import {
   AddAction,
   DragDropAction,
@@ -68,6 +69,8 @@ export const layoutReducer = (
       return resizeFlexChild(state, action);
     case LayoutActionType.SWITCH_TAB:
       return switchTab(state, action);
+    case LayoutActionType.MOVE_CHILD:
+      return moveChild(state, action);
     default:
       return state;
   }

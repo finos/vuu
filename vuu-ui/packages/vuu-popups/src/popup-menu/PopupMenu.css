@@ -22,7 +22,7 @@
 }
 
 .vuuPopupMenu-open {
-    --vuuPopupMenu-background: var(--salt-actionable-secondary-background-active);
+    --saltButton-background: var(--salt-actionable-secondary-background-active);
     --vuu-icon-color: white;
 }
 

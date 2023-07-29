@@ -1,11 +1,4 @@
-import {
-  ContextMenuItemDescriptor,
-  ContextMenuProvider,
-  Dialog,
-  MenuActionHandler,
-  MenuBuilder,
-  useContextMenu,
-} from "@finos/vuu-popups";
+import { ContextMenuProvider, Dialog, useContextMenu } from "@finos/vuu-popups";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { HTMLAttributes, MouseEventHandler, useMemo, useState } from "react";
 import { SessionEditingForm } from "@finos/vuu-shell";
@@ -18,7 +11,7 @@ const ComponentWithMenu = ({
   location,
   ...props
 }: HTMLAttributes<HTMLDivElement> & { location: "left" | "right" }) => {
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
   const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
     console.log(`ComponentWithMenu<${location}> handleContextMenu`);
     showContextMenu(e, location, { type: "outer" });

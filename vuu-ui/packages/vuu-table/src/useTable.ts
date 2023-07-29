@@ -344,7 +344,7 @@ export const useTable = ({
     }
   }, [columns, config, onConfigChange]);
 
-  const showContextMenu = usePopupContextMenu();
+  const [showContextMenu] = usePopupContextMenu();
 
   const onContextMenu = useCallback(
     (evt: MouseEvent<HTMLElement>) => {

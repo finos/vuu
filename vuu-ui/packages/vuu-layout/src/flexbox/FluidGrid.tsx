@@ -1,7 +1,8 @@
 import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
-import { ForwardedRef, forwardRef } from "react";
+import { ForwardedRef, forwardRef, useMemo } from "react";
 import { useBreakpoints } from "../responsive";
+import { asReactElements } from "../utils";
 import { FlexboxProps } from "./flexboxTypes";
 import "./FluidGrid.css";
 import { useResponsiveSizing } from "./useResponsiveSizing";
@@ -18,7 +19,7 @@ export const FluidGrid = forwardRef(function FluidGrid(
 ) {
   const {
     breakPoints,
-    children,
+    children: childrenProp,
     column,
     cols: colsProp = 12,
     className: classNameProp,
@@ -35,6 +36,12 @@ export const FluidGrid = forwardRef(function FluidGrid(
     style: styleProp,
     ...rest
   } = props;
+
+  //TODO does thie useMemo serve any actual purpose or will childrenProp
+  // always be new anyway ?
+  const children = useMemo(() => {
+    return asReactElements(childrenProp);
+  }, [childrenProp]);
 
   const { cols, content, rootRef } = useResponsiveSizing({
     children,

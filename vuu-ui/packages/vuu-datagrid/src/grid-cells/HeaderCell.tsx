@@ -88,9 +88,9 @@ export const HeaderCell = function HeaderCell({
     }
   }, [column, dispatchGridAction, gridModel, isResizing]);
 
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
 
-  const handleContextMenu = (e: MouseEvent) => {
+  const handleContextMenu = (e: MouseEvent<HTMLElement>) => {
     showContextMenu(e, "header", { column });
   };
 

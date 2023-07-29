@@ -3,7 +3,7 @@ import { useThemeAttributes } from "@finos/vuu-shell";
 import { isGroupMenuItemDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
 import { cloneElement, MouseEvent, useCallback, useContext } from "react";
-import { PopupService } from "../popup";
+import { PopupCloseReason, PopupService, reasonIsMenuAction } from "../popup";
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
@@ -18,11 +18,17 @@ export type ContextMenuOptions = {
   };
 };
 
+export type ShowContextMenu = (
+  e: MouseEvent<HTMLElement>,
+  location: string,
+  options: ContextMenuOptions
+) => void;
+
 // The argument allows a top-level menuBuilder to operate outside the Context
 export const useContextMenu = (
   menuBuilder?: MenuBuilder,
   menuActionHandler?: MenuActionHandler
-) => {
+): [ShowContextMenu, () => void] => {
   const ctx = useContext(ContextMenuContext);
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
 
@@ -103,7 +109,11 @@ export const useContextMenu = (
     ]
   );
 
-  return handleShowContextMenu;
+  const hideContextMenu = useCallback(() => {
+    console.log("hide comnytext menu");
+  }, []);
+
+  return [handleShowContextMenu, hideContextMenu];
 };
 
 const NO_OPTIONS = {};
@@ -154,12 +164,14 @@ const showContextMenu = (
     return menuDescriptors.map(fromDescriptor);
   };
 
-  const handleClose = (menuId?: string, options?: unknown) => {
-    if (menuId) {
-      handleContextMenuAction(menuId, options);
+  const handleClose = (reason?: PopupCloseReason) => {
+    if (reasonIsMenuAction(reason)) {
+      handleContextMenuAction(reason);
+      // TODO this results in onClose being called twice on component
+      // cant simply be removed, some refactoring work needed
       PopupService.hidePopup();
     }
-    contextMenuProps?.onClose?.(menuId);
+    contextMenuProps?.onClose?.(reason);
   };
 
   const position = positionProp ?? {

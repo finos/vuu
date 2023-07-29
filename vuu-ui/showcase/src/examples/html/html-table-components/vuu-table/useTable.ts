@@ -1,6 +1,5 @@
 import {
   DataSource,
-  DataSourceRow,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
@@ -198,7 +197,7 @@ export const useTable = ({
   });
 
   // TOSO ship this out into a hook
-  const showContextMenu = usePopupContextMenu();
+  const [showContextMenu] = usePopupContextMenu();
 
   const onContextMenu = useCallback(
     (evt: MouseEvent<HTMLElement>) => {

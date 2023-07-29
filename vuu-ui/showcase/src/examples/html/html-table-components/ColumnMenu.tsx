@@ -29,7 +29,7 @@ export const ColumnMenu = ({
 }: ColumnMenuProps) => {
   const rootRef = useRef<HTMLSpanElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
 
   const handleMenuClose = useCallback(() => {
     setMenuOpen(false);

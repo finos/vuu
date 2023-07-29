@@ -124,7 +124,7 @@ export const Tab = forwardRef(function Tab(
       aria-selected={selected}
       className={cx(classBase, {
         [`${classBase}-closeable`]: closeable,
-        [`${classBase}-dragAway`]: dragging,
+        "vuuDraggable-dragAway": dragging,
         [`${classBase}-editing`]: editing,
         [`${classBase}-selected`]: selected || undefined,
         [`${classBase}-vertical`]: orientation === "vertical",

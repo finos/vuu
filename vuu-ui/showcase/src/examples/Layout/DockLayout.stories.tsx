@@ -1,4 +1,4 @@
-import { SyntheticEvent, useRef, useState } from "react";
+import { CSSProperties, SyntheticEvent, useRef, useState } from "react";
 
 import {
   DockLayout,
@@ -133,7 +133,9 @@ export const LeftInlineDrawerStack = () => {
   const handleClick = () => setOpen(!open);
   return (
     <Flexbox style={{ width: 900, height: 700, flexDirection: "column" }}>
-      <DockLayout style={{ flex: 1, "--hw-chest-bg": "inherit" }}>
+      <DockLayout
+        style={{ flex: 1, "--hw-chest-bg": "inherit" } as CSSProperties}
+      >
         <Drawer
           inline
           peekaboo
@@ -199,7 +201,9 @@ export const LeftInlineDrawerFlexbox = () => {
               <Button
                 onClick={handleClick}
                 data-icon="chevron-double-left"
-                style={{ "--vuu-icon-size": "12px", width: 28 }}
+                style={
+                  { "--vuu-icon-size": "12px", width: 28 } as CSSProperties
+                }
               />
             ) : null}
           </div>
@@ -234,7 +238,7 @@ export const LeftInlineDrawerFlexbox = () => {
             <Button
               onClick={handleClick}
               data-icon="chevron-double-left"
-              style={{ "--vuu-icon-size": "12px", width: 28 }}
+              style={{ "--vuu-icon-size": "12px", width: 28 } as CSSProperties}
             />
           ) : null}
         </div>
@@ -270,7 +274,9 @@ export const InlineDrawerFlexboxVariants = () => {
                 <Button
                   onClick={handleClick}
                   data-icon="chevron-double-left"
-                  style={{ "--vuu-icon-size": "12px", width: 28 }}
+                  style={
+                    { "--vuu-icon-size": "12px", width: 28 } as CSSProperties
+                  }
                 />
               ) : null}
             </div>
@@ -298,7 +304,9 @@ export const InlineDrawerFlexboxVariants = () => {
               <Button
                 onClick={handleClick}
                 data-icon="chevron-double-left"
-                style={{ "--vuu-icon-size": "12px", width: 28 }}
+                style={
+                  { "--vuu-icon-size": "12px", width: 28 } as CSSProperties
+                }
               />
             ) : null}
           </div>
@@ -346,13 +354,13 @@ export const InlineDrawerFlexboxVariants = () => {
             <Button
               onClick={handleClick}
               data-icon="chevron-double-left"
-              style={{ "--vuu-icon-size": "12px", width: 28 }}
+              style={{ "--vuu-icon-size": "12px", width: 28 } as CSSProperties}
             />
           ) : (
             <Button
               onClick={handleClick}
               data-icon="chevron-double-right"
-              style={{ "--vuu-icon-size": "12px", width: 28 }}
+              style={{ "--vuu-icon-size": "12px", width: 28 } as CSSProperties}
             />
           )}
         </div>

@@ -43,6 +43,7 @@ const WrapContainer = React.memo(
         {childElements.map((childEl, i) => {
           const {
             "data-overflow-priority": overflowPriority = "0",
+            id: itemId,
             label = `Item ${i + 1}`,
           } = childEl.props;
           return (
@@ -51,6 +52,7 @@ const WrapContainer = React.memo(
               data-index={i}
               data-label={label}
               data-overflow-priority={overflowPriority}
+              id={`${itemId}-wrapper`}
               key={i}
             >
               {childEl}
