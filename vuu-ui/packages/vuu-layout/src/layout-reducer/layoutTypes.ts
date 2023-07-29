@@ -151,7 +151,7 @@ export type LayoutReducerAction =
   | LayoutResizeAction
   | MaximizeAction
   | MinimizeAction
-  | MoveTabAction
+  | MoveChildAction
   | RemoveAction
   | ReplaceAction
   | RestoreAction
