@@ -198,19 +198,18 @@ export const TabstripNextDragDrop = ({ width = 700 }) => {
     "Liquidity",
   ]);
 
-  const handleDrop = useCallback(
-    (fromIndex, toIndex) => {
+  const handleDrop = useCallback((fromIndex, toIndex) => {
+    setTabs((tabs) => {
       const newTabs = tabs.slice();
       const [tab] = newTabs.splice(fromIndex, 1);
       if (toIndex === -1) {
-        setTabs(newTabs.concat(tab));
+        return newTabs.concat(tab);
       } else {
         newTabs.splice(toIndex, 0, tab);
-        setTabs(newTabs);
+        return newTabs;
       }
-    },
-    [tabs]
-  );
+    });
+  }, []);
 
   return (
     <LayoutProvider>
@@ -228,6 +227,7 @@ export const TabstripNextDragDrop = ({ width = 700 }) => {
           >
             {tabs.map((label, i) => (
               <Tab
+                index={i}
                 key={label}
                 label={label}
                 ariaControls={

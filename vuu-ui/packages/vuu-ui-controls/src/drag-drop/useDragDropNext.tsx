@@ -14,7 +14,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { cloneElement, constrainRect, dimensions } from "./drop-target-utils";
+import {
+  cloneElement,
+  constrainRect,
+  dimensions,
+  NOT_OVERFLOWED,
+} from "./drop-target-utils";
 import { useAutoScroll, ScrollStopHandler } from "./useAutoScroll";
 import { Draggable } from "./Draggable";
 
@@ -59,17 +64,21 @@ const getDraggableElement = (
   query: string
 ): HTMLElement => (el as HTMLElement).closest(query) as HTMLElement;
 
+const isOverflowElement = (element: HTMLElement) =>
+  element.dataset.index === "overflow" &&
+  element.parentElement !== null &&
+  element.parentElement.classList.contains("overflowed");
+
 const getLastElement = (
   container: HTMLElement,
   itemQuery: string
 ): [HTMLElement, boolean] => {
-  const childElements = Array.from(
-    // This will always be false as the vuuOverflowContainer-OverflowIndicator
-    // does not match itemQuery
-    container.querySelectorAll(`${itemQuery}:not(.wrapped)`)
-  );
+  const fullItemQuery = `:is(${itemQuery}${NOT_OVERFLOWED},.vuuOverflowContainer-OverflowIndicator)`;
+  const childElements = Array.from(container.querySelectorAll(fullItemQuery));
+  console.log({ childElements, fullItemQuery });
   const lastElement = childElements.pop() as HTMLElement;
-  return [lastElement, lastElement.dataset.index === "overflow"];
+  console.log({ lastElement });
+  return [lastElement, isOverflowElement(lastElement)];
 };
 
 export const useDragDropNext: DragDropHook = ({
@@ -187,7 +196,6 @@ export const useDragDropNext: DragDropHook = ({
 
   const handleDrop = useCallback(
     (fromIndex: number, toIndex: number) => {
-      console.log("useDragDropNext handleDrop");
       //TODO why do we need both this and dropIndexRef ?
       dropPosRef.current = toIndex;
       onDrop?.(fromIndex, toIndex);

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import {
   Direction,
@@ -14,10 +14,10 @@ import {
   getNextDropTarget,
   MeasuredDropTarget,
   measureDropTargets,
+  NOT_HIDDEN,
+  NOT_OVERFLOWED,
 } from "./drop-target-utils";
 
-const NOT_OVERFLOWED = ":not(.wrapped)";
-const NOT_HIDDEN = ':not([aria-hidden="true"])';
 export const useDragDropNaturalMovement = ({
   draggableRef,
   onDrop,
@@ -41,7 +41,7 @@ export const useDragDropNaturalMovement = ({
     useDragDisplacers();
 
   const draggedItemRef = useRef<MeasuredDropTarget>();
-  const fullItemQuery = `:is(${itemQuery}${NOT_OVERFLOWED}${NOT_HIDDEN},[data-overflow-indicator])`;
+  const fullItemQuery = `:is(${itemQuery}${NOT_OVERFLOWED}${NOT_HIDDEN},.vuuOverflowContainer-OverflowIndicator)`;
 
   // const { setMeasurements: setVizData } = useListViz();
 
@@ -185,6 +185,42 @@ export const useDragDropNaturalMovement = ({
     ]
   );
 
+  const [showPopup, hidePopup] = useMemo(() => {
+    let popupShowing = false;
+    const show = (dropTarget: MeasuredDropTarget) => {
+      if (!popupShowing) {
+        popupShowing = true;
+        const button = dropTarget.element.querySelector(".vuuPopupMenu");
+        if (button) {
+          const evt = new MouseEvent("click", {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+          });
+          button.dispatchEvent(evt);
+        }
+      }
+    };
+
+    const hide = (dropTarget: MeasuredDropTarget) => {
+      console.log(`HIDE ${popupShowing}`);
+      if (popupShowing) {
+        popupShowing = false;
+        const button = dropTarget.element.querySelector(".vuuPopupMenu");
+        if (button) {
+          const evt = new MouseEvent("click", {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+          });
+          button.dispatchEvent(evt);
+        }
+      }
+    };
+
+    return [show, hide];
+  }, []);
+
   const drag = useCallback(
     (dragPos: number, mouseMoveDirection: "fwd" | "bwd") => {
       const { current: draggedItem } = draggedItemRef;
@@ -200,21 +236,11 @@ export const useDragDropNaturalMovement = ({
             mouseMoveDirection
           );
 
-          const indexOfNextDropTarget = dropTargets.indexOf(nextDropTarget);
-
-          if (nextDropTarget?.isDraggedItem) {
-            console.log(
-              `%cnext drop target [${indexOfNextDropTarget}]`,
-              "color: green; font-weight: bold;"
-            );
-          } else {
-            console.log(`next drop target [${indexOfNextDropTarget}]`);
-          }
-
           if (nextDropTarget && !nextDropTarget.isDraggedItem) {
             if (nextDropTarget.isOverflowIndicator) {
               // Does this belong in here or can we abstract it out
               setShowOverflow((overflowMenuShowingRef.current = true));
+              showPopup(nextDropTarget);
             } else {
               const { size } = draggedItem;
               const targetIndex = indexOf(nextDropTarget);
@@ -234,6 +260,10 @@ export const useDragDropNaturalMovement = ({
               );
               // setVizData?.(dropTargets, nextDropTarget, nextDropZone);
 
+              const overflowIndicator = dropTargets.at(
+                -1
+              ) as MeasuredDropTarget;
+              hidePopup(overflowIndicator);
               setShowOverflow((overflowMenuShowingRef.current = false));
             }
           }
@@ -247,8 +277,9 @@ export const useDragDropNaturalMovement = ({
       displaceItem,
       displaceLastItem,
       draggableRef,
+      hidePopup,
       orientation,
-      // setVizData,
+      showPopup,
     ]
   );
 

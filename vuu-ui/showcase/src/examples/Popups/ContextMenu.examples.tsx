@@ -212,7 +212,7 @@ export const ContextMenuPopup = () => {
     );
   }, []);
 
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
   const ref = useRef(null);
 
   const handleClick = (evt: MouseEvent<HTMLElement>) => {
@@ -286,7 +286,7 @@ const ComponentWithMenu = ({
   location,
   ...props
 }: HTMLAttributes<HTMLDivElement> & { location: "left" | "right" }) => {
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
   const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
     console.log(`ComponentWithMenu<${location}> handleContextMenu`);
     showContextMenu(e, location, { type: "outer" });
@@ -301,8 +301,8 @@ export const SimpleContextMenuProvider = () => {
     { label: "Group", action: "group" },
   ];
 
-  const handleMenuAction: MenuActionHandler = () => {
-    console.log("handleContextMenu");
+  const handleMenuAction: MenuActionHandler = (reason) => {
+    console.log(`handleContextMenu ${reason.menuId}`);
     return true;
   };
 
@@ -341,11 +341,8 @@ export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
     },
   ];
 
-  const handleMenuAction: MenuActionHandler = (
-    action: string,
-    options: unknown
-  ) => {
-    console.log(`handleContextMenu ${action}`);
+  const handleMenuAction: MenuActionHandler = (action) => {
+    console.log(`handleContextMenu ${action.menuId}`);
     return true;
   };
 

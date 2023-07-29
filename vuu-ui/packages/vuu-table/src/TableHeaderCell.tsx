@@ -35,7 +35,7 @@ export const TableHeaderCell = ({
     rootRef,
   });
 
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
   const dragTimerRef = useRef<number | null>(null);
 
   const handleContextMenu = (e: MouseEvent<HTMLElement>) => {

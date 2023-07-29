@@ -5,6 +5,9 @@ const LEFT_RIGHT = ["left", "right"];
 const TOP_BOTTOM = ["top", "bottom"];
 // duplicated in repsonsive
 
+export const NOT_OVERFLOWED = ":not(.wrapped)";
+export const NOT_HIDDEN = ':not([aria-hidden="true"])';
+
 export type MeasuredDropTarget = {
   /** 
     The index position currently occupied by this item. If draggable 
@@ -159,6 +162,8 @@ export const measureDropTargets = (
     itemQuery ? container.querySelectorAll(itemQuery) : container.children
   );
 
+  console.log({ itemQuery });
+
   const itemCount = children.length;
   const start =
     typeof viewportRange?.from === "number"
@@ -176,14 +181,16 @@ export const measureDropTargets = (
     const isLast = index === itemCount - 1;
     const id = element.id;
 
+    const dataIndex = parseInt(element.dataset.index ?? "-1");
+
     dragThresholds.push({
       currentIndex: index,
-      dataIndex: parseInt(element.dataset.index ?? "-1"),
+      dataIndex: isNaN(dataIndex) ? -1 : dataIndex,
       id,
       index,
       isDraggedItem: draggedItemId === id,
       isLast,
-      isOverflowIndicator: element.dataset.overflowIndicator === "true",
+      isOverflowIndicator: element.dataset.index === "overflow",
       element: element as HTMLElement,
       start,
       end: start + size,

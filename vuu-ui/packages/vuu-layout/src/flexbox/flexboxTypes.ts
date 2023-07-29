@@ -15,7 +15,7 @@ export interface FlexboxProps
   extends LayoutContainerProps,
     HTMLAttributes<HTMLDivElement> {
   breakPoints?: BreakPointsProp;
-  children: ReactElement[];
+  children?: ReactNode;
   cols?: number;
   column?: true;
   fullPage?: number;

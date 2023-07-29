@@ -56,9 +56,6 @@
 }
 
 .vuuOverflowContainer-OverflowIndicator {
-    /* border-style: solid none;
-    border-color: black;
-    border-width: var(--border-size); */
     align-items: center;
     background-color: transparent;
     display: flex;

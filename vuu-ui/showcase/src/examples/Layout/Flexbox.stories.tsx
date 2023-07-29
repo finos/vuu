@@ -1,10 +1,10 @@
-
 import {
-  Component, ConfigWrapper,
+  Component,
+  ConfigWrapper,
   Flexbox,
   FlexboxLayout,
   Stack,
-  View
+  View,
 } from "@finos/vuu-layout";
 import { Brown } from "./components";
 
@@ -297,7 +297,11 @@ export const TowerWithinTerrace = () => (
         style={{ flex: 1, backgroundColor: "yellow" }}
         resizeable
       />
-      <FlexboxLayout style={{ flex: 1, flexDirection: "column" }} resizeable path="">
+      <FlexboxLayout
+        style={{ flex: 1, flexDirection: "column" }}
+        resizeable
+        path=""
+      >
         <View
           title="B Component"
           style={{ flex: 1, backgroundColor: "red" }}
@@ -321,7 +325,10 @@ export const TowerWithinTerrace = () => (
 TowerWithinTerrace.displaySequence = displaySequence++;
 
 export const QuadTerraceWithinTower = () => (
-  <FlexboxLayout style={{ flexDirection: "column", width: 500, height: 500 }} path="">
+  <FlexboxLayout
+    style={{ flexDirection: "column", width: 500, height: 500 }}
+    path=""
+  >
     <View header closeable title="W Component" style={{ height: 100 }}>
       <Component style={{ height: "100%", backgroundColor: "rebeccapurple" }} />
     </View>
@@ -363,7 +370,11 @@ export const DeeperNesting = () => (
         header
         resizeable
       />
-      <FlexboxLayout style={{ flex: 1, flexDirection: "column" }} resizeable path="">
+      <FlexboxLayout
+        style={{ flex: 1, flexDirection: "column" }}
+        resizeable
+        path=""
+      >
         <FlexboxLayout
           style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: "row" }}
           resizeable
@@ -467,7 +478,9 @@ export const ComplexNestedLayout = () => (
 
         <FlexboxLayout resizeable style={{ flex: 1 }} path="">
           <Stack
-            enableAddTab
+            TabstripProps={{
+              allowAddTab: true,
+            }}
             showTabs
             style={{ flex: 1 }}
             keyBoardActivation="manual"

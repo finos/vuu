@@ -94,19 +94,12 @@ export const useDragDropIndicator = ({
         const dragPos = dragPosRef.current;
         const midPos = dragPos + size / 2;
         const { current: dropTargets } = measuredDropTargets;
-        const [nextDropTarget, nextDropZone] = getNextDropTarget(
-          dropTargets,
-          draggedItem,
-          midPos
-        );
+        const nextDropTarget = getNextDropTarget(dropTargets, midPos, "fwd");
         if (nextDropTarget) {
           if (atEnd && scrollDirection === "fwd") {
-            positionDropIndicator(
-              dropTargets[dropTargets.length - 1],
-              nextDropZone
-            );
+            positionDropIndicator(dropTargets[dropTargets.length - 1], "start");
           } else {
-            positionDropIndicator(nextDropTarget, nextDropZone);
+            positionDropIndicator(nextDropTarget, "start");
           }
         }
 
@@ -225,7 +218,6 @@ export const useDragDropIndicator = ({
   const drag = useCallback(
     (dragPos: number, mouseMoveDirection: "fwd" | "bwd") => {
       const { current: currentDropTarget } = dropTargetRef;
-      const { current: currentDropZone } = dropZoneRef;
       const { current: draggedItem } = draggedItemRef;
 
       if (draggedItem) {
@@ -234,16 +226,15 @@ export const useDragDropIndicator = ({
           dragPosRef.current = dragPos;
 
           const { current: dropTargets } = measuredDropTargets;
-          const [nextDropTarget, nextDropZone] = getNextDropTarget(
+          const nextDropTarget = getNextDropTarget(
             dropTargets,
-            draggedItem,
-            dragPos
+            dragPos,
+            mouseMoveDirection
           );
 
           if (
             nextDropTarget &&
-            (nextDropTarget.index !== currentDropTarget?.index ||
-              nextDropZone !== currentDropZone)
+            nextDropTarget.index !== currentDropTarget?.index
             // mouseMoveDirection !== dragDirectionRef.current
           ) {
             if (nextDropTarget.isOverflowIndicator) {
@@ -257,7 +248,7 @@ export const useDragDropIndicator = ({
                 const dropTarget = dropTargets[dropTargets.length - 1];
                 const dropIndicatorPosition = positionDropIndicator(
                   dropTarget,
-                  nextDropZone
+                  "start"
                 );
                 const dropIndicatorRect =
                   dropIndicatorPosition.getBoundingClientRect();
@@ -267,7 +258,7 @@ export const useDragDropIndicator = ({
               } else {
                 const dropIndicatorPosition = positionDropIndicator(
                   nextDropTarget,
-                  nextDropZone
+                  "start"
                 ) as unknown as HTMLElement;
                 const dropIndicatorRect =
                   dropIndicatorPosition.getBoundingClientRect();
@@ -281,7 +272,6 @@ export const useDragDropIndicator = ({
             }
 
             dropTargetRef.current = nextDropTarget;
-            dropZoneRef.current = nextDropZone;
             dragDirectionRef.current = mouseMoveDirection;
           }
         }

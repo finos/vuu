@@ -245,15 +245,15 @@ export const useTabstrip = ({
   );
 
   const handleTabMenuAction = useCallback<MenuActionHandler>(
-    (type, options) => {
-      if (isTabMenuOptions(options)) {
-        switch (type) {
+    (action) => {
+      if (isTabMenuOptions(action.options)) {
+        switch (action.menuId) {
           case "close-tab":
-            return handleCloseTabFromMenu(options.tabIndex);
+            return handleCloseTabFromMenu(action.options.tabIndex);
           case "rename-tab":
-            return handleRenameTabFromMenu(options.tabIndex);
+            return handleRenameTabFromMenu(action.options.tabIndex);
           default:
-            console.log(`tab menu action ${type}`);
+            console.log(`tab menu action ${action.menuId}`);
         }
       }
       return false;

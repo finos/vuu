@@ -18,7 +18,7 @@ export interface FilterIndicatorProps extends HTMLAttributes<HTMLDivElement> {
 
 export const FilterIndicator = ({ column, filter }: FilterIndicatorProps) => {
   //TODO handle this at header level
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
 
   const handleClick = useCallback(
     (evt) => {
