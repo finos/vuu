@@ -9,6 +9,7 @@ export interface StackProps
   getTabLabel?: (component: ReactElement, index: number) => string | undefined;
   keyBoardActivation?: "automatic" | "manual";
   onAddTab?: () => void;
+  onMoveTab?: (fromIndex: number, toIndex: number) => void;
   onMouseDown?: (e: MouseEvent, tabIndex: number) => void;
   onTabClose?: (tabIndex: number) => void;
   onTabEdit?: (tabIndex: number, label: string) => void;

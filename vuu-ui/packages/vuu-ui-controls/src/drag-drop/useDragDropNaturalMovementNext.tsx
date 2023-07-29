@@ -147,6 +147,8 @@ export const useDragDropNaturalMovement = ({
           draggedItemId
         ));
 
+        console.log({ dropTargets });
+
         const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
         const draggedItem = dropTargets[indexOfDraggedItem];
 

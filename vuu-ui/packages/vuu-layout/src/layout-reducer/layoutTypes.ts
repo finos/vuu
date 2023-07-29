@@ -44,6 +44,7 @@ export const LayoutActionType = {
   LAYOUT_RESIZE: "layout-resize",
   MAXIMIZE: "maximize",
   MINIMIZE: "minimize",
+  MOVE_CHILD: "move-child",
   REMOVE: "remove",
   REPLACE: "replace",
   RESTORE: "restore",
@@ -77,6 +78,13 @@ export type MaximizeAction = {
 export type MinimizeAction = {
   path?: string;
   type: typeof LayoutActionType.MINIMIZE;
+};
+
+export type MoveChildAction = {
+  fromIndex: number;
+  toIndex: number;
+  path: string;
+  type: typeof LayoutActionType.MOVE_CHILD;
 };
 
 export type RemoveAction = {
@@ -143,6 +151,7 @@ export type LayoutReducerAction =
   | LayoutResizeAction
   | MaximizeAction
   | MinimizeAction
+  | MoveTabAction
   | RemoveAction
   | ReplaceAction
   | RestoreAction
