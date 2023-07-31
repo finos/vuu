@@ -2,8 +2,8 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
 import { metadataKeys } from "@finos/vuu-utils";
 import { CSSProperties, useEffect } from "react";
-import { HeaderCell } from "../HeaderCell";
-import { Row } from "../Row";
+import { HeaderCell } from "./HeaderCell";
+import { Row } from "./Row";
 import { useTable } from "./useTable";
 
 import "./TableNext.css";

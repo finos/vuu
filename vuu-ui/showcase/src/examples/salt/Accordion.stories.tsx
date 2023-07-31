@@ -1,22 +1,18 @@
 import {
   Accordion,
-  AccordionDetails,
-  AccordionSection,
-  AccordionSummary,
-} from "@heswell/salt-lab";
+  AccordionGroup,
+  AccordionHeader,
+  AccordionPanel,
+} from "@salt-ds/core";
 import { Panel } from "@salt-ds/core";
 
 export const DefaultAccordion = () => {
   return (
     <Panel style={{ width: 600, height: 800 }}>
-      <Accordion defaultExpandedSectionIds={["1"]}>
-        <AccordionSection
-          className={"accordion"}
-          key={"mountains-and-hills"}
-          id="1"
-        >
-          <AccordionSummary>Mountains and hills</AccordionSummary>
-          <AccordionDetails>
+      <AccordionGroup>
+        <Accordion className={"accordion"} value={"mountains-and-hills"} id="1">
+          <AccordionHeader>Mountains and hills</AccordionHeader>
+          <AccordionPanel>
             <Panel>
               <p>Scotland: Ben Nevis, 1,345 metres</p>
               <p>Wales: Snowdon (Snowdonia), 1,085 metres</p>
@@ -25,26 +21,22 @@ export const DefaultAccordion = () => {
                 Northern Ireland: Slieve Donard (Mourne Mountains), 852 metres
               </p>
             </Panel>
-          </AccordionDetails>
-        </AccordionSection>
-        <AccordionSection
-          className={"accordion"}
-          key={"rivers-and-lakes"}
-          id="2"
-        >
-          <AccordionSummary>Rivers and lakes</AccordionSummary>
-          <AccordionDetails>
+          </AccordionPanel>
+        </Accordion>
+        <Accordion className={"accordion"} value={"rivers-and-lakes"} id="2">
+          <AccordionHeader>Rivers and lakes</AccordionHeader>
+          <AccordionPanel>
             <Panel>
               <p>England: River Thames (215 mi; 346 km)</p>
               <p>Scotland: River Tay (117 mi; 188 km)</p>
               <p>N. Ireland: River Bann (76 mi; 122 km)</p>
               <p>Wales: River Tywi (64 mi; 103 km)</p>
             </Panel>
-          </AccordionDetails>
-        </AccordionSection>
-        <AccordionSection className={"accordion"} key={"islands"} id="3">
-          <AccordionSummary>Islands</AccordionSummary>
-          <AccordionDetails>
+          </AccordionPanel>
+        </Accordion>
+        <Accordion className={"accordion"} value={"islands"} id="3">
+          <AccordionHeader>Islands</AccordionHeader>
+          <AccordionPanel>
             <Panel>
               <p>Barrow Island</p>
               <p>Bawden Rocks</p>
@@ -53,9 +45,9 @@ export const DefaultAccordion = () => {
               <p>Coquet Island</p>
               <p>Drake`&quot;`s Island</p>
             </Panel>
-          </AccordionDetails>
-        </AccordionSection>
-      </Accordion>
+          </AccordionPanel>
+        </Accordion>
+      </AccordionGroup>
     </Panel>
   );
 };

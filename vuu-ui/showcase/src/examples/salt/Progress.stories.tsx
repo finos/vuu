@@ -1,4 +1,4 @@
-import { CircularProgress, LinearProgress } from "@heswell/salt-lab";
+import { CircularProgress, LinearProgress } from "@salt-ds/lab";
 
 export const LinearDefault = () => (
   <div>

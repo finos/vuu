@@ -1,6 +1,6 @@
 // import { ComponentAnatomy } from '@heswell/component-anatomy';
 import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import { useState } from "react";
+import { SyntheticEvent, useState } from "react";
 
 import "./ToggleButton.examples.css";
 
@@ -9,17 +9,16 @@ let displaySequence = 1;
 export const ButtonGroupWithTextOnly = () => {
   const [selectedIndex, setSelectedIndex] = useState<number>(1);
 
-  const handleChange = (event, index, toggled) => {
-    console.log(`onChange [${index}] toggled ${toggled}`);
-    setSelectedIndex(index);
+  const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    setSelectedIndex(parseInt((evt.target as HTMLButtonElement).value));
   };
 
   return (
-    <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
-      <ToggleButton tooltipText="Alert">Alert</ToggleButton>
-      <ToggleButton tooltipText="Home">Home</ToggleButton>
-      <ToggleButton tooltipText="Search">Search</ToggleButton>
-      <ToggleButton tooltipText="Print">Print</ToggleButton>
+    <ToggleButtonGroup onChange={handleChange} value={selectedIndex}>
+      <ToggleButton value={0}>Alert</ToggleButton>
+      <ToggleButton value={1}>Home</ToggleButton>
+      <ToggleButton value={2}>Search</ToggleButton>
+      <ToggleButton value={3}>Print</ToggleButton>
     </ToggleButtonGroup>
   );
 };
@@ -32,16 +31,18 @@ export const ButtonGroupWithIconOnly = () => {
   const [selectedIndexSecondary, setSelectedIndexSecondary] =
     useState<number>(1);
 
-  const handleChange = (event, index) => {
-    setSelectedIndex(index);
+  const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    setSelectedIndex(parseInt((evt.target as HTMLButtonElement).value));
   };
 
-  const handleChangeCta = (event, index) => {
-    setSelectedIndexCta(index);
+  const handleChangeCta = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    setSelectedIndexCta(parseInt((evt.target as HTMLButtonElement).value));
   };
 
-  const handleChangeSecondary = (event, index) => {
-    setSelectedIndexSecondary(index);
+  const handleChangeSecondary = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    setSelectedIndexSecondary(
+      parseInt((evt.target as HTMLButtonElement).value)
+    );
   };
 
   return (
@@ -58,68 +59,31 @@ export const ButtonGroupWithIconOnly = () => {
     >
       <ToggleButtonGroup
         onChange={handleChangeSecondary}
-        selectedIndex={selectedIndexSecondary}
-        variant="secondary"
+        value={selectedIndexSecondary}
       >
-        <ToggleButton
-          aria-label="alert"
-          data-icon="notifications"
-          tooltipText="Alert"
-        />
-        <ToggleButton aria-label="home" tooltipText="Home" data-icon="home" />
-        <ToggleButton
-          aria-label="search"
-          data-icon="search"
-          tooltipText="Search"
-        />
-        <ToggleButton
-          aria-label="print"
-          tooltipText="Print"
-          data-icon="print"
-        />
+        <ToggleButton value={0} aria-label="alert" data-icon="notifications" />
+        <ToggleButton value={1} aria-label="home" data-icon="home" />
+        <ToggleButton value={2} aria-label="search" data-icon="search" />
+        <ToggleButton value={3} aria-label="print" data-icon="print" />
       </ToggleButtonGroup>
 
-      <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
+      <ToggleButtonGroup onChange={handleChange} value={selectedIndex}>
         <ToggleButton
           aria-label="alert"
           className="saltToggleButton-iconOnly"
-          tooltipText="Alert"
           data-icon="notifications"
+          value={0}
         />
-        <ToggleButton aria-label="home" tooltipText="Home" data-icon="home" />
-        <ToggleButton
-          aria-label="search"
-          tooltipText="Search"
-          data-icon="search"
-        />
-        <ToggleButton
-          aria-label="print"
-          tooltipText="Print"
-          data-icon="print"
-        />
+        <ToggleButton aria-label="home" data-icon="home" value={1} />
+        <ToggleButton aria-label="search" data-icon="search" value={2} />
+        <ToggleButton aria-label="print" data-icon="print" value={3} />
       </ToggleButtonGroup>
 
-      <ToggleButtonGroup
-        onChange={handleChangeCta}
-        selectedIndex={selectedIndexCta}
-        variant="cta"
-      >
-        <ToggleButton
-          aria-label="alert"
-          tooltipText="Alert"
-          data-icon="notifications"
-        />
-        <ToggleButton aria-label="home" tooltipText="Home" data-icon="home" />
-        <ToggleButton
-          aria-label="search"
-          tooltipText="Search"
-          data-icon="search"
-        />
-        <ToggleButton
-          aria-label="print"
-          tooltipText="Print"
-          data-icon="print"
-        />
+      <ToggleButtonGroup onChange={handleChangeCta} value={selectedIndexCta}>
+        <ToggleButton value={0} aria-label="alert" data-icon="notifications" />
+        <ToggleButton aria-label="home" data-icon="home" value={1} />
+        <ToggleButton aria-label="search" data-icon="search" value={2} />
+        <ToggleButton aria-label="print" data-icon="print" value={3} />
       </ToggleButtonGroup>
     </div>
   );

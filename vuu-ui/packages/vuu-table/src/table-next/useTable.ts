@@ -26,7 +26,7 @@ import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useDataSource } from "./useDataSource";
 import { useTableScroll } from "./useTableScroll";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
-import { PersistentColumnAction } from "@finos/vuu-table/src/useTableModel";
+import { PersistentColumnAction } from "../table/useTableModel";
 import { useInitialValue } from "./useInitialValue";
 import { useVirtualViewport } from "./useVirtualViewport";
 import { buildContextMenuDescriptors } from "@finos/vuu-table";

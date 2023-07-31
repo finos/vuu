@@ -7,8 +7,9 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
-  VirtualizedList
+  VirtualizedList,
 } from "@heswell/salt-lab";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usa_states } from "./List.data";
 import { ListVisualizer } from "./ListVisualizer";

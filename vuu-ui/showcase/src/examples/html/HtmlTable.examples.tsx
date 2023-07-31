@@ -3,16 +3,17 @@ import {
   DivElementKeyedWithTranslate,
   DivElementKeyedWithTranslateInlineScrollbarsCssVariables,
   DivElementWithTranslate,
-  TableNext,
   VuuTable,
 } from "./html-table-components";
 
-import { RowProps } from "@finos/vuu-table/src/TableRow";
+import { TableNext } from "@finos/vuu-table";
+
 import { useCallback, useMemo, useState } from "react";
 import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { Flexbox, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { SetPropsAction } from "@finos/vuu-layout/src/layout-reducer";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RowProps } from "packages/vuu-table/src/table/TableRow";
 
 let displaySequence = 1;
 

@@ -33,7 +33,7 @@ import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
   isShowSettings,
   PersistentColumnAction,
-} from "@finos/vuu-table/src/useTableModel";
+} from "@finos/vuu-table/src/table/useTableModel";
 import { useInitialValue } from "./useInitialValue";
 import { useVirtualViewport } from "./useVirtualViewport";
 import { buildContextMenuDescriptors } from "@finos/vuu-table";
