@@ -1,7 +1,6 @@
 import {
   DataSource,
   DataSourceConfig,
-  isSizeOnlyMessage,
   SubscribeCallback,
   VuuFeatureMessage,
 } from "@finos/vuu-data";

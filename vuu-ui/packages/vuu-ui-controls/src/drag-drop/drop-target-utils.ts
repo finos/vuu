@@ -1,5 +1,5 @@
 import { ViewportRange } from "./dragDropTypesNext";
-import { Direction, orientationType, Rect } from "./dragDropTypes";
+import { Direction, orientationType, Rect } from "./dragDropTypesNext";
 
 const LEFT_RIGHT = ["left", "right"];
 const TOP_BOTTOM = ["top", "bottom"];

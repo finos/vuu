@@ -4,7 +4,7 @@ import {
   mutateDropTargetsSwitchDropTargetPosition,
 } from "./drop-target-utils";
 import { createDragSpacer as createDragDisplacer } from "./Draggable";
-import { Direction } from "./dragDropTypes";
+import { Direction } from "./dragDropTypesNext";
 
 export type DragDisplacersHookResult = {
   clearDisplacedItem: () => void;
