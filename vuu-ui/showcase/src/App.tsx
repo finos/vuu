@@ -116,7 +116,7 @@ export const App = ({ stories }: AppProps) => {
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
-        <div className="vuuToolbarProxy ShowcaseToolbar">
+        <div className="vuuToolbarProxy ShowcaseToolbar" style={{ height: 30 }}>
           <Text styleAs="h3">Vuu Showcase</Text>
         </div>
         <Flexbox style={{ flexDirection: "row", flex: 1 }}>
@@ -141,6 +141,10 @@ export const App = ({ stories }: AppProps) => {
             >
               <div
                 className="vuuToolbarProxy ShowcaseContentToolbar salt-theme salt-density-high"
+                style={{
+                  height: 30,
+                  border: "solid 1px var(--salt-container-primary-borderColor)",
+                }}
                 data-mode="light"
               >
                 <Dropdown
@@ -153,9 +157,10 @@ export const App = ({ stories }: AppProps) => {
                 <DensitySwitch onChange={setDensity} />
                 <ThemeSwitch onChange={setThemeMode} />
                 <Button
-                  data-align-end
+                  data-align="end"
                   data-icon="open-in"
                   onClick={launchStandaloneWindow}
+                  variant="secondary"
                 />
               </div>
               <div
