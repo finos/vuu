@@ -35,7 +35,7 @@ export const useHierarchicalData = (source: NormalisedTreeSourceNode[]) => {
   const externalSource = useRef(source);
   const statefulSource = useRef(source);
   const indexPositions = useRef(populateIndices(source));
-  const [, forceUpdate] = useState(null);
+  const [, forceUpdate] = useState({});
 
   // Maintain a mapping between nodes and their current index position within the rendered list.
   // This index position is liable to change with every expand/collapse operation. We require this
@@ -55,7 +55,7 @@ export const useHierarchicalData = (source: NormalisedTreeSourceNode[]) => {
     indexPositions.current = populateIndices(source);
   }
 
-  const setData = (value) => {
+  const setData = (value: NormalisedTreeSourceNode[]) => {
     statefulSource.current = value;
     indexPositions.current = populateIndices(value);
     // console.log(

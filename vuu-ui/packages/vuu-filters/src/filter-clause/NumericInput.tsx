@@ -1,4 +1,11 @@
-import { HTMLAttributes, RefObject, useEffect, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  HTMLAttributes,
+  RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Filter, FilterClause } from "@finos/vuu-filter-types";
 import { Input } from "@salt-ds/core";
 import { ComboBox } from "@salt-ds/lab";
@@ -75,7 +82,7 @@ export const NumericInput = ({
           value={valueInputValue}
           ref={valueInputRef}
           // type="text"
-          onChange={(event) => {
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
             setValueInputValue(event.target.value);
             const filter = getNumericFilter(
               column,

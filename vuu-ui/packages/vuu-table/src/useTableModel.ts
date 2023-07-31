@@ -17,19 +17,17 @@ import {
   isGroupColumn,
   isPinned,
   isTypeDescriptor,
-  logger,
   metadataKeys,
   updateColumn,
   sortPinnedColumns,
   stripFilterFromColumns,
+  moveItem,
 } from "@finos/vuu-utils";
 
 import { Reducer, useReducer } from "react";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { DataSourceConfig } from "@finos/vuu-data";
 import { TableSchema } from "@finos/vuu-data/src/message-utils";
-
-const { info } = logger("useTableModel");
 
 const DEFAULT_COLUMN_WIDTH = 100;
 const KEY_OFFSET = metadataKeys.count;
@@ -305,10 +303,9 @@ function moveColumn(
       columns: newColumns,
     };
   } else if (typeof moveTo === "number") {
-    const index = columns.indexOf(column);
     return {
       ...state,
-      columns: moveItem(columns, index, moveTo),
+      columns: moveItem(columns, column, moveTo),
     };
   }
   return state;

@@ -1,10 +1,10 @@
-import { useCallback, useRef } from "react";
+import { KeyboardEvent, MouseEvent, useCallback, useRef } from "react";
 import { closestListItem } from "./list-dom-utils";
 import { ArrowLeft, ArrowRight, Enter } from "./key-code";
 import { getNodeById, replaceNode } from "./hierarchical-data-utils";
 import { NormalisedTreeSourceNode } from "./Tree";
 
-const NO_HANDLERS = {};
+const NO_HANDLERS: CollapsibleHookResult["listHandlers"] = {};
 const isToggleElement = (element: HTMLElement) =>
   element && element.hasAttribute("aria-expanded");
 
@@ -12,8 +12,17 @@ export interface CollapsibleGroupsHookProps {
   collapsibleHeaders?: boolean;
   highlightedIdx: number;
   treeNodes: NormalisedTreeSourceNode[];
-  setVisibleData: any;
+  setVisibleData: (nodes: NormalisedTreeSourceNode[]) => void;
   source: NormalisedTreeSourceNode[];
+}
+
+export interface CollapsibleHookResult {
+  listHandlers: {
+    onKeyDown?: (e: KeyboardEvent) => void;
+  };
+  listItemHandlers: {
+    onClick: (e: MouseEvent) => void;
+  };
 }
 
 export const useCollapsibleGroups = ({
@@ -22,7 +31,7 @@ export const useCollapsibleGroups = ({
   treeNodes,
   setVisibleData,
   source,
-}: CollapsibleGroupsHookProps) => {
+}: CollapsibleGroupsHookProps): CollapsibleHookResult => {
   const fullSource = useRef<NormalisedTreeSourceNode[]>(source);
   const stateSource = useRef<NormalisedTreeSourceNode[]>(fullSource.current);
 
@@ -45,7 +54,7 @@ export const useCollapsibleGroups = ({
   );
 
   const handleKeyDown = useCallback(
-    (e) => {
+    (e: KeyboardEvent) => {
       if (e.key === ArrowRight || e.key === Enter) {
         const node = treeNodes[highlightedIdx];
         if (node) {
@@ -86,9 +95,9 @@ export const useCollapsibleGroups = ({
         evt.stopPropagation();
         evt.preventDefault();
         const node = getNodeById(source, el.id);
-        if (node.expanded === false) {
+        if (node?.expanded === false) {
           setSource(expandNode(source, node));
-        } else if (node.expanded === true) {
+        } else if (node?.expanded === true) {
           setSource(collapseNode(source, node));
         }
       }

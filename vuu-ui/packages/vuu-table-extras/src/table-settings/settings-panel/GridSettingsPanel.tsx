@@ -1,6 +1,7 @@
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import {
   FormField,
+  FormFieldLabel,
   Panel,
   RadioButton,
   RadioButtonGroup,
@@ -13,8 +14,6 @@ import "./GridSettingsPanel.css";
 import { ColumnAction } from "./useGridSettings";
 
 const classBase = "vuuGridSettingsPanel";
-
-const NullActivationIndicator = () => null;
 
 export interface GridSettingsPanelProps extends HTMLAttributes<HTMLDivElement> {
   config: Omit<GridConfig, "headings">;
@@ -63,15 +62,11 @@ export const GridSettingsPanel = ({
     >
       <Text as="h4">Grid Settings</Text>
       <Panel>
-        <FormField
-          label="Format column labels"
-          labelPlacement="left"
-          ActivationIndicatorComponent={NullActivationIndicator}
-        >
+        <FormField labelPlacement="left">
+          <FormFieldLabel>Format column labels</FormFieldLabel>
           <RadioButtonGroup
             aria-label="Format column labels"
             value={config.columnFormatHeader}
-            legend="Format column labels"
             onChange={handleChangeLabelFormatting}
           >
             <RadioButton label="No Formatting" value={undefined} />
@@ -79,7 +74,8 @@ export const GridSettingsPanel = ({
             <RadioButton label="Uppercase" value="uppercase" />
           </RadioButtonGroup>
         </FormField>
-        <FormField label="Default Column Width" labelPlacement="left">
+        <FormField labelPlacement="left">
+          <FormFieldLabel>Default Column Width</FormFieldLabel>
           <StepperInput
             value={config.columnDefaultWidth ?? 100}
             onChange={handleChangeWidth}

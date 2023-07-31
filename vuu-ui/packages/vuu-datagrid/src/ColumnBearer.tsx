@@ -14,10 +14,11 @@ import useDrag, { DRAG, DRAG_END } from "./use-drag";
 import { getColumnGroup } from "./grid-model/gridModelUtils";
 
 import "./column-bearer.css";
-import { GridModelType, KeyedColumnDescriptor } from "./grid-model";
-import { DataSourceRow } from "@finos/vuu-data";
+import { GridModelType } from "./grid-model";
 import { ColumnDragState, dragPhase } from "./gridTypes";
 import { buildColumnMap } from "@finos/vuu-utils";
+import { KeyedColumnDescriptor } from "packages/vuu-datagrid-types";
+import { DataSourceRow } from "packages/vuu-data-types";
 
 const LEFT = "left";
 const RIGHT = "right";

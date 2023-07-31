@@ -4,6 +4,7 @@ import { StepperInput } from "@salt-ds/lab";
 import {
   Checkbox,
   FormField,
+  FormFieldLabel,
   Input,
   Panel,
   RadioButton,
@@ -28,8 +29,6 @@ const classBase = "vuuColumnSettingsPanel";
 const tabstripProps = {
   className: "salt-density-high",
 };
-
-const NullActivationIndicator = () => null;
 
 export interface ColumnSettingsPanelProps
   extends HTMLAttributes<HTMLDivElement> {
@@ -71,12 +70,14 @@ export const ColumnSettingsPanel = ({
   );
 
   const handleChangeHidden = useCallback(
-    (evt: ChangeEvent, value: boolean) => dispatchUpdate({ hidden: value }),
+    (evt: ChangeEvent<HTMLInputElement>) =>
+      dispatchUpdate({ hidden: evt.target.checked }),
     [dispatchUpdate]
   );
 
   const handleChangeLabel = useCallback(
-    (evt: ChangeEvent, value: string) => dispatchUpdate({ label: value }),
+    (evt: ChangeEvent<HTMLInputElement>) =>
+      dispatchUpdate({ label: evt.target.value }),
     [dispatchUpdate]
   );
 
@@ -103,48 +104,43 @@ export const ColumnSettingsPanel = ({
         TabstripProps={tabstripProps}
       >
         <Panel title="Column">
-          <FormField label="Hidden" labelPlacement="left">
+          <FormField labelPlacement="left">
+            <FormFieldLabel>Hidden</FormFieldLabel>
             <Checkbox
               checked={column.hidden === true}
               onChange={handleChangeHidden}
             />
           </FormField>
-          <FormField label="Label" labelPlacement="left">
+          <FormField labelPlacement="left">
+            <FormFieldLabel>Label</FormFieldLabel>
             <Input
               value={column.label ?? column.name}
               onChange={handleChangeLabel}
             />
           </FormField>
-          <FormField label="Width" labelPlacement="left">
+          <FormField labelPlacement="left">
+            <FormFieldLabel>Width</FormFieldLabel>
             <StepperInput
               value={column.width ?? 100}
               onChange={handleChangeWidth}
             />
           </FormField>
-          <FormField
-            label="Align"
-            labelPlacement="left"
-            ActivationIndicatorComponent={NullActivationIndicator}
-          >
+          <FormField labelPlacement="left">
+            <FormFieldLabel>ALign</FormFieldLabel>
             <RadioButtonGroup
               aria-label="Column Align"
               value={column.align ?? "left"}
-              legend="Align"
               onChange={handleChangeAlign}
             >
               <RadioButton label="Left" value="left" />
               <RadioButton label="Right" value="right" />
             </RadioButtonGroup>
           </FormField>
-          <FormField
-            label="Pin Column"
-            labelPlacement="left"
-            ActivationIndicatorComponent={NullActivationIndicator}
-          >
+          <FormField labelPlacement="left">
+            <FormFieldLabel>Pin Column</FormFieldLabel>
             <RadioButtonGroup
               aria-label="Pin Column"
               value={column.pin ?? ""}
-              legend="Pin Column"
               onChange={handleChangePin}
             >
               <RadioButton label="Do not pin" value={""} />
@@ -159,20 +155,12 @@ export const ColumnSettingsPanel = ({
           title="Data Cell"
         />
         <Panel title="Vuu" variant="secondary">
-          <FormField
-            label="Name"
-            labelPlacement="top"
-            readOnly
-            variant="secondary"
-          >
+          <FormField labelPlacement="top" readOnly>
+            <FormFieldLabel>Name</FormFieldLabel>
             <Input value={column.name} />
           </FormField>
-          <FormField
-            label="Vuu type"
-            labelPlacement="top"
-            readOnly
-            variant="secondary"
-          >
+          <FormField labelPlacement="top" readOnly>
+            <FormFieldLabel>Vuu Type</FormFieldLabel>
             <Input value={column.serverDataType} />
           </FormField>
         </Panel>

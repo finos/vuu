@@ -8,10 +8,10 @@ import {
 } from "@finos/vuu-shell";
 import { Dropdown } from "@salt-ds/lab";
 import { Button, Text } from "@salt-ds/core";
-import { IFrame, TreeSourceNode } from "./components";
+import { IFrame } from "./components";
 import { ReactElement, useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Tree } from "./components";
+import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
 
 import "./App.css";
 

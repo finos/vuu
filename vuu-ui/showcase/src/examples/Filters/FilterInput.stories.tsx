@@ -6,13 +6,11 @@ import {
   FilterInput,
   FilterSaveOptions,
   filterSubmissionHandler,
-  FilterToolbar,
-  updateFilter,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
 import { FilterSubmissionMode } from "@finos/vuu-filters/src/filter-input/useFilterAutoComplete";
 import { useFilterConfig } from "@finos/vuu-filters/src/use-filter-config";
-import { filterAsQuery } from "@finos/vuu-utils";
+import { filterAsQuery, JsonData } from "@finos/vuu-utils";
 import { Dropdown, SelectionChangeHandler } from "@salt-ds/lab";
 import { Button } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
@@ -92,7 +90,10 @@ export const DefaultFilterInput = () => {
       <div>{filterState.filterName}</div>
       <br />
       <br />
-      <JsonTable source={filterState.filter} height={400} />
+      <JsonTable
+        source={filterState.filter as unknown as JsonData}
+        height={400}
+      />
     </>
   );
 };
@@ -265,59 +266,11 @@ export const FilterInputTabs = () => {
       <div>{filterState.filterName}</div>
       <br />
       <br />
-      <JsonTable source={filterState.filter} height={400} />
+      <JsonTable
+        source={filterState.filter as unknown as JsonData}
+        height={400}
+      />
     </>
   );
 };
 FilterInputTabs.displaySequence = displaySequence++;
-
-export const FilterInputWithToolbar = () => {
-  const [filter, setFilter] = useState<Filter>();
-  const [filterQuery, setFilterQuery] = useState<string>("");
-  const [filterName, setFilterName] = useState<string>("");
-  const suggestionProvider = useFilterSuggestionProvider({
-    columns: schemaColumns,
-    table,
-  });
-
-  useAutoLoginToVuuServer();
-
-  const handleSubmitFilter = useCallback(
-    (
-      filter: Filter | undefined,
-      filterQuery: string,
-      filterName?: string,
-      mode = "add"
-    ) => {
-      console.log(`setFilter ${JSON.stringify(filter)}`);
-      setFilter((existingFilter) => updateFilter(existingFilter, filter, mode));
-      setFilterQuery(filterQuery);
-      setFilterName(filterName ?? "");
-    },
-    []
-  );
-
-  return (
-    <>
-      <FilterInput
-        existingFilter={filter}
-        onSubmitFilter={handleSubmitFilter}
-        suggestionProvider={suggestionProvider}
-      />
-      <br />
-      <FilterToolbar
-        id="toolbar-default"
-        filter={filter}
-        suggestionProvider={suggestionProvider}
-      />
-
-      <br />
-      <div>{filterQuery}</div>
-      <br />
-      <div>{filterName}</div>
-      <br />
-      <br />
-    </>
-  );
-};
-FilterInputWithToolbar.displaySequence = displaySequence++;

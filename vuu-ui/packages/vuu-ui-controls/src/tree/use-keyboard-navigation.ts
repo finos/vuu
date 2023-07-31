@@ -1,5 +1,5 @@
 import { KeyboardEvent, useCallback, useMemo, useRef } from "react";
-import { getIndexOfNode } from "./hierarchical-data-utils";
+import { getIndexOfNode, getNodeById } from "./hierarchical-data-utils";
 import { useControlled } from "@salt-ds/core";
 import { ArrowDown, ArrowLeft, ArrowUp, isNavigationKey } from "./key-code";
 import { NormalisedTreeSourceNode } from "./Tree";
@@ -93,8 +93,11 @@ export const useKeyboardNavigation = ({
     if (ignoreFocus.current) {
       ignoreFocus.current = false;
     } else if (selected.length > 0) {
-      const idx = getIndexOfNode(treeNodes, selected[0]);
-      setHighlightedIndex(idx);
+      const node = getNodeById(treeNodes, selected[0]);
+      if (node) {
+        const idx = getIndexOfNode(treeNodes, node);
+        setHighlightedIndex(idx);
+      }
     } else {
       setHighlightedIndex(nextFocusableItemIdx());
     }

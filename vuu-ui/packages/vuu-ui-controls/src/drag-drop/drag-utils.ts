@@ -1,4 +1,5 @@
-import { Direction, FWD, orientationType } from "./dragDropTypesNext";
+import { orientationType } from "@finos/vuu-utils";
+import { Direction, FWD } from "./dragDropTypesNext";
 
 const LEFT_RIGHT = ["left", "right"];
 const TOP_BOTTOM = ["top", "bottom"];

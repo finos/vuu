@@ -1,7 +1,6 @@
-import { ComponentAnatomy } from "@heswell/component-anatomy";
 import { SyntheticEvent } from "react";
 
-import { Tree, useItemsWithIds } from "../../components";
+import { Tree, useItemsWithIds } from "@finos/vuu-ui-controls";
 import { groupByInitialLetter, usa_states_cities } from "./List/List.data";
 import { folderData } from "./Tree.data";
 
@@ -154,38 +153,3 @@ export const RevealSelected = () => {
 };
 
 RevealSelected.displaySequence = displaySequence++;
-
-export const SimpleTreeWithAnatomy = () => {
-  const source = [
-    {
-      label: "Fruits",
-      childNodes: [
-        { label: "Oranges" },
-        { label: "Pineapple" },
-        {
-          label: "Apples",
-          childNodes: [
-            { label: "Macintosh" },
-            { label: "Granny Smith" },
-            { label: "Fuji" },
-          ],
-        },
-        { label: "Bananas" },
-        { label: "Pears" },
-      ],
-    },
-    { label: "Vegatables" },
-    { label: "Grain" },
-  ];
-
-  return (
-    <>
-      <input type="text" />
-      <ComponentAnatomy style={{ width: 1100 }}>
-        <Tree groupSelection="single" source={source} />
-      </ComponentAnatomy>
-    </>
-  );
-};
-
-SimpleTreeWithAnatomy.displaySequence = displaySequence++;

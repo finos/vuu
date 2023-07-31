@@ -56,7 +56,7 @@ export const useTable = ({
   selectionModel,
   ...measuredProps
 }: TableHookProps) => {
-  const [rowCount, setRowCount] = useState<number>(dataSource.size);
+  const [rowCount] = useState<number>(dataSource.size);
 
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
@@ -103,7 +103,8 @@ export const useTable = ({
     rowCount,
     rowHeight,
     // Note: innerSize will take border into account, whereas outerSize will not
-    size: containerMeasurements.innerSize ?? containerMeasurements.outerSize,
+    // size: containerMeasurements.innerSize ?? containerMeasurements.outerSize,
+    size: containerMeasurements.innerSize,
   });
 
   console.log(

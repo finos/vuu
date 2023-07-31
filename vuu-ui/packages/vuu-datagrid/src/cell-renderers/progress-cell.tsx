@@ -5,6 +5,7 @@ import React from "react";
 import { isTypeDescriptor } from "@finos/vuu-utils";
 import { GridCellProps } from "../grid-cells";
 import "./progress-cell.css";
+import { ColumnTypeRenderer } from "packages/vuu-datagrid-types";
 
 const ProgressCell = React.memo(function ProgressCell({
   column,
@@ -15,8 +16,12 @@ const ProgressCell = React.memo(function ProgressCell({
   let showProgress = false;
   let percentage = -1;
   const value = row[column.key];
-  if (isTypeDescriptor(type) && type.renderer?.associatedField) {
-    const { associatedField } = type.renderer;
+  if (
+    isTypeDescriptor(type) &&
+    (type.renderer as ColumnTypeRenderer)?.associatedField
+  ) {
+    const associatedField = (type.renderer as ColumnTypeRenderer)
+      .associatedField as string;
     const associatedValue = row[columnMap[associatedField]];
     if (typeof value === "number" && typeof associatedValue === "number") {
       percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
@@ -42,11 +47,7 @@ const ProgressCell = React.memo(function ProgressCell({
       className={cx("vuuDataGridCell", { vuuProgressCell: showProgress })}
       style={{ marginLeft: column.marginLeft, width }}
     >
-      {showProgress ? (
-        <LinearProgress size="small" value={percentage} />
-      ) : (
-        value
-      )}
+      {showProgress ? <LinearProgress value={percentage} /> : value}
     </div>
   );
 });

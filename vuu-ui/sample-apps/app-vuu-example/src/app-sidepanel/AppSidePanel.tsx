@@ -7,7 +7,7 @@ import {
   AccordionHeader,
   AccordionPanel,
 } from "@salt-ds/core";
-import { Dropdown } from "@salt-ds/lab";
+import { Dropdown, SelectionChangeHandler } from "@salt-ds/lab";
 import cx from "classnames";
 import { ReactElement, useMemo, useState } from "react";
 
@@ -78,7 +78,7 @@ export const AppSidePanel = ({
   const [selectedFeature, setSelectedFeature] = useState<FeatureDescriptor>(
     gridFeatures[0] ?? NULL_FEATURE
   );
-  const handleSelectFeature = (event, item) => {
+  const handleSelectFeature: SelectionChangeHandler = (event, item) => {
     const feature = gridFeatures.find((f) => f.title === item);
     if (feature) {
       setSelectedFeature(feature);

@@ -45,12 +45,13 @@ const getCellRendererForColumn = (column: ColumnDescriptor) => {
 
 const getDataType = (
   column: ColumnDescriptor,
-  columnNames: string[],
-  dataTypes: VuuColumnDataType[]
+  tableSchema: TableSchema
 ): VuuColumnDataType => {
-  const index = columnNames.indexOf(column.name);
-  if (index !== -1 && dataTypes[index]) {
-    return dataTypes[index];
+  const schemaColumn = tableSchema.columns.find(
+    ({ name }) => name === column.name
+  );
+  if (schemaColumn) {
+    return schemaColumn.serverDataType;
   } else {
     return column.serverDataType ?? "string";
   }
@@ -347,12 +348,12 @@ function resizeColumn(
 
 function setTableSchema(
   state: GridModel,
-  { columnNames, serverDataTypes }: ColumnActionSetTableSchema
+  { tableSchema }: ColumnActionSetTableSchema
 ) {
   const { columns } = state;
   if (columns.some(columnWithoutDataType)) {
     const cols = columns.map((column) => {
-      const serverDataType = getDataType(column, columnNames, serverDataTypes);
+      const serverDataType = getDataType(column, tableSchema);
       return {
         ...column,
         align: column.align ?? getDefaultAlignment(serverDataType),

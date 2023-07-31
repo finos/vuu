@@ -44,6 +44,7 @@ const DEFAULT_COLUMN_MIN_WIDTH = 30;
 const DEFAULT_COLUMN_WIDTH = 80;
 const DEFAULT_COLUMN_TYPE = { name: "string" };
 const CHECKBOX_COLUMN: KeyedColumnDescriptor = {
+  label: "",
   name: "",
   key: metadataKeys.SELECTED,
   width: 25,
@@ -55,6 +56,7 @@ const CHECKBOX_COLUMN: KeyedColumnDescriptor = {
       name: "checkbox-cell",
     },
   },
+  valueFormatter: undefined,
 };
 
 const LINE_NUMBER_COLUMN: KeyedColumnDescriptor = {
@@ -64,6 +66,7 @@ const LINE_NUMBER_COLUMN: KeyedColumnDescriptor = {
   label: " ",
   name: "line",
   key: metadataKeys.IDX,
+  valueFormatter: undefined,
   width: 30,
 };
 

@@ -1,6 +1,6 @@
 import cx from "classnames";
 import { ToggleButton, ToggleButtonGroup, useControlled } from "@salt-ds/core";
-import { HTMLAttributes, useCallback } from "react";
+import { HTMLAttributes, SyntheticEvent, useCallback } from "react";
 
 import "./ThemeSwitch.css";
 import { ThemeMode } from "../theme-provider";
@@ -12,8 +12,6 @@ export interface ThemeSwitchProps
   mode?: ThemeMode;
   onChange: (mode: ThemeMode) => void;
 }
-
-const modes: ThemeMode[] = ["light", "dark"];
 
 export const ThemeSwitch = ({
   className: classNameProp,
@@ -29,13 +27,11 @@ export const ThemeSwitch = ({
     state: "mode",
   });
 
-  const selectedIndex = modes.indexOf(mode);
-
   const handleChangeSecondary = useCallback(
-    (_evt) => {
-      const mode = modes[index];
-      setMode(mode);
-      onChange(mode);
+    (evt: SyntheticEvent<HTMLButtonElement>) => {
+      const { value } = evt.target as HTMLButtonElement;
+      setMode(value as ThemeMode);
+      onChange(value as ThemeMode);
     },
     [onChange, setMode]
   );
@@ -45,6 +41,7 @@ export const ThemeSwitch = ({
       className={className}
       {...htmlAttributes}
       onChange={handleChangeSecondary}
+      value={mode}
     >
       <ToggleButton aria-label="alert" data-icon="light" value="dark" />
       <ToggleButton aria-label="home" data-icon="dark" value="light" />
