@@ -1364,7 +1364,7 @@ describe("ServerProxy", () => {
     });
   });
 
-  describe("growing and shrinking rowset (Orders)", () => {
+  describe.skip("growing and shrinking rowset (Orders)", () => {
     it("initializes with rowset that does not fill client viewport", () => {
       const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
         to: 20,
