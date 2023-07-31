@@ -226,6 +226,7 @@ export const useViewportRowModel = ({
       if (columns !== null) {
         const vuuGroupBy: VuuGroupBy = columns.map((c) => c.getId());
         groupByRef.current = vuuGroupBy;
+        console.log(`set GroupBy in respponse to ag grid event`);
         viewportDatasource.setRowGroups(vuuGroupBy);
       }
     },
