@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef } from "react";
 import { MeasuredDropTarget } from "./drag-utils";
 import { createDragSpacer } from "./Draggable";
-import { Direction } from "./dragDropTypes";
+import { Direction } from "./dragDropTypesNext";
 
 export const useDragSpacers = () => {
   const animationFrame = useRef(0);

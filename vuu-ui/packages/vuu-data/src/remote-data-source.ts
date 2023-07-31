@@ -27,7 +27,6 @@ import {
   DataSourceCallbackMessage,
   DataSourceConfig,
   DataSourceConstructorProps,
-  DataSourceDataMessage,
   DataSourceEvents,
   isDataSourceConfigMessage,
   OptimizeStrategy,
@@ -513,6 +512,7 @@ export class RemoteDataSource
       if (!wasGrouped && groupBy.length > 0 && this.viewport) {
         this.clientCallback?.({
           clientViewportId: this.viewport,
+          mode: "batch",
           type: "viewport-update",
           size: 0,
           rows: [],

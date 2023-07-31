@@ -389,6 +389,7 @@ export class ServerProxy {
     const rows = viewport.resume();
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,
+      mode: "batch",
       rows,
       type: "viewport-update",
     });

@@ -20,13 +20,13 @@ export const launchApp = async (websocket) => {
 
   const url = websocketUrl ? ` --url ${websocketUrl}` : "";
 
-  await execWait("yarn --silent build");
-  await execWait(`yarn --silent build:app${url}`);
+  await execWait("npm run --silent build");
+  await execWait(`npm run --silent build:app${url}`);
 
-// code from cli branch was following line , replacing 2 lined beneath
-//  execWait(`npx serve -p 3010 ./deployed_apps/app-vuu-example`);
-await execWait("npm run --silent build");
-await execWait(`npm run --silent build:app${url}`);
+  // code from cli branch was following line , replacing 2 lined beneath
+  //  execWait(`npx serve -p 3010 ./deployed_apps/app-vuu-example`);
+  await execWait("npm run --silent build");
+  await execWait(`npm run --silent build:app${url}`);
 
   setTimeout(() => {
     open("http://localhost:3010/demo");

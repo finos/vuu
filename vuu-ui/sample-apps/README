@@ -5,13 +5,13 @@ By default, the Filtered Grid feature is loaded. This can be overridden by usein
 To build Sample App with just the Vuu Blotter
 
 ```
-yarn build:app --features feature-vuu-blotter
+npm run build:app --features feature-vuu-blotter
 ```
 
 To build Sample App with both the Vuu Blotter and the FilteredGrid
 
 ```
-yarn build:app --features feature-filtered-grid,feature-vuu-blotter
+npm run build:app --features feature-filtered-grid,feature-vuu-blotter
 ```
 
 A Feature must have the following properties
