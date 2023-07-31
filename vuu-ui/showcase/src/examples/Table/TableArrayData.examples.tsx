@@ -1,7 +1,6 @@
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Table } from "@finos/vuu-table";
 import { DragVisualizer } from "@finos/vuu-table/src/DragVisualizer";
-import { Toolbar, ToolbarField } from "@heswell/salt-lab";
 import { Checkbox, ToggleButton } from "@salt-ds/core";
 import { CSSProperties, useCallback, useState } from "react";
 import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
@@ -10,7 +9,7 @@ let displaySequence = 1;
 
 export const DefaultTable = () => {
   const { typeaheadHook, ...config } = useTableConfig({
-    columns: 10,
+    columnCount: 10,
     count: 1_000,
   });
   const [zebraStripes, setZebraStripes] = useState(true);
@@ -27,19 +26,15 @@ export const DefaultTable = () => {
         width={700}
         zebraStripes={zebraStripes}
       />
-      <Toolbar
-        orientation="vertical"
-        style={
-          { height: "unset", "--saltFormField-margin": "6px" } as CSSProperties
-        }
+      <div
+        className="vuuToolbarProxy vuuToolbarProxy-vertical"
+        style={{ height: "unset" } as CSSProperties}
       >
-        <ToolbarField label="Zebra Stripes">
-          <Checkbox
-            checked={zebraStripes === true}
-            onChange={handleZebraChanged}
-          />
-        </ToolbarField>
-      </Toolbar>
+        <Checkbox
+          checked={zebraStripes === true}
+          onChange={handleZebraChanged}
+        />
+      </div>
     </div>
   );
 };
@@ -216,11 +211,11 @@ export const LeftPinnedColumns = () => {
 
   return (
     <div style={{ width: 900, height: 900 }}>
-      <Toolbar>
+      <div className="vuuToolbarProxy">
         <ToggleButton toggled={isColumnBased} onToggle={handleToggleLayout}>
           {isColumnBased ? "Column based table" : "Row based table"}
         </ToggleButton>
-      </Toolbar>
+      </div>
       <DragVisualizer orientation="horizontal">
         <Table {...config} height={700} width={700} />
       </DragVisualizer>
@@ -241,11 +236,11 @@ export const RightPinnedColumns = () => {
 
   return (
     <div style={{ width: 900, height: 900 }}>
-      <Toolbar>
+      <div className="vuuToolbarProxy">
         <ToggleButton toggled={isColumnBased} onToggle={handleToggleLayout}>
           {isColumnBased ? "Column based table" : "Row based table"}
         </ToggleButton>
-      </Toolbar>
+      </div>
       <DragVisualizer orientation="horizontal">
         <Table {...config} height={700} width={700} />
       </DragVisualizer>

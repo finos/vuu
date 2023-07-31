@@ -1,5 +1,5 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { List } from "@heswell/salt-lab";
+import { List } from "@salt-ds/lab";
 import { Button, Text, useIdMemo as useId } from "@salt-ds/core";
 import { Dispatch, HTMLAttributes, useCallback, useState } from "react";
 import { ColumnAction } from "../settings-panel/useGridSettings";

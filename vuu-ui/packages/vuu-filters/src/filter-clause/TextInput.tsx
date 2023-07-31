@@ -9,7 +9,7 @@ import {
 } from "react";
 import { Filter, FilterClause } from "@finos/vuu-filter-types";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
-import { ComboBox, ComboBoxDeprecated } from "@heswell/salt-lab";
+import { ComboBox, ComboBoxDeprecated } from "@salt-ds/lab";
 import { ListChangeHandler } from "@heswell/salt-lab/dist-types/list-deprecated";
 import { getTypeaheadFilter } from "../column-filter/utils";
 import {

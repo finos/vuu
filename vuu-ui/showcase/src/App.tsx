@@ -6,11 +6,9 @@ import {
   ThemeProvider,
   ThemeSwitch,
 } from "@finos/vuu-shell";
-import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
 import { Dropdown } from "@salt-ds/lab";
-import { Text } from "@salt-ds/core";
+import { Button, Text } from "@salt-ds/core";
 import { IFrame, TreeSourceNode } from "./components";
-
 import { ReactElement, useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tree } from "./components";
@@ -118,9 +116,9 @@ export const App = ({ stories }: AppProps) => {
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
-        <Toolbar className="ShowcaseToolbar">
+        <div className="vuuToolbarProxy ShowcaseToolbar">
           <Text styleAs="h3">Vuu Showcase</Text>
-        </Toolbar>
+        </div>
         <Flexbox style={{ flexDirection: "row", flex: 1 }}>
           <Tree
             className="ShowcaseNav"
@@ -141,8 +139,8 @@ export const App = ({ stories }: AppProps) => {
               resizeable
               style={{ flexDirection: "column", flex: "1 1 auto" }}
             >
-              <Toolbar
-                className="ShowcaseContentToolbar salt-theme salt-density-high"
+              <div
+                className="vuuToolbarProxy ShowcaseContentToolbar salt-theme salt-density-high"
                 data-mode="light"
               >
                 <Dropdown
@@ -154,12 +152,12 @@ export const App = ({ stories }: AppProps) => {
 
                 <DensitySwitch onChange={setDensity} />
                 <ThemeSwitch onChange={setThemeMode} />
-                <ToolbarButton
+                <Button
                   data-align-end
                   data-icon="open-in"
                   onClick={launchStandaloneWindow}
                 />
-              </Toolbar>
+              </div>
               <div
                 className={`ShowcaseContent`}
                 style={{

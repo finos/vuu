@@ -2,6 +2,7 @@ import {
   DataSource,
   DataSourceConfig,
   RemoteDataSource,
+  TableSchema,
 } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
@@ -16,23 +17,22 @@ import {
   DataSourceStats,
 } from "@finos/vuu-table-extras";
 import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
-import { Toolbar, Tooltray } from "@heswell/salt-lab";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import {
-  CSSProperties,
   ReactElement,
+  SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { ErrorDisplay, Schema, useSchemas, useTestDataSource } from "../utils";
+import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 
 let displaySequence = 1;
 
 export const VuuDataTable = () => {
-  const [columnConfig, tables] = useMemo(
+  const [columnConfig] = useMemo(
     () => [
       {
         description: { editable: true },
@@ -51,11 +51,10 @@ export const VuuDataTable = () => {
           },
         },
       },
-      ["instruments", "orders", "parentOrders", "childOrders", "prices"],
     ],
     []
   );
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [tablename, setTablename] = useState("instruments");
   const [selectedGroupIndex, setSelectedGroupIndex] = useState<number>(-1);
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
 
@@ -63,12 +62,12 @@ export const VuuDataTable = () => {
   const { columns, config, dataSource, error } = useTestDataSource({
     columnConfig,
     schemas,
-    tablename: tables[selectedIndex],
+    tablename,
   });
 
   const table = useMemo(
-    () => ({ module: "SIMUL", table: tables[selectedIndex] }),
-    [selectedIndex, tables]
+    () => ({ module: "SIMUL", table: tablename }),
+    [tablename]
   );
 
   const configRef = useRef<Omit<GridConfig, "headings">>(config);
@@ -84,8 +83,9 @@ export const VuuDataTable = () => {
     setTableConfig((configRef.current = config));
   }, [config]);
 
-  const handleChange: ToggleButtonGroupChangeEventHandler = (_event, index) => {
-    setSelectedIndex(index);
+  const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    const { value } = evt.target as HTMLButtonElement;
+    setTablename(value);
   };
 
   const handleSettingsConfigChange = useCallback(
@@ -216,60 +216,46 @@ export const VuuDataTable = () => {
 
   return (
     <>
-      <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
-        <ToggleButton tooltipText="Alert">Instruments</ToggleButton>
-        <ToggleButton tooltipText="Home">Orders</ToggleButton>
-        <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
-        <ToggleButton tooltipText="Child Orders">Child Orders</ToggleButton>
-        <ToggleButton tooltipText="Prices">Prices</ToggleButton>
+      <ToggleButtonGroup onChange={handleChange} value={tablename}>
+        <ToggleButton value="instruments">Instruments</ToggleButton>
+        <ToggleButton value="orders">Orders</ToggleButton>
+        <ToggleButton value="parentOrders">Parent Orders</ToggleButton>
+        <ToggleButton value="childOrders">Child Orders</ToggleButton>
+        <ToggleButton value="prices">Prices</ToggleButton>
       </ToggleButtonGroup>
-      <Toolbar
-        className="salt-density-high"
-        style={
-          {
-            "--saltToolbar-height": "28px",
-            "--saltToolbar-alignItems": "center",
-          } as CSSProperties
-        }
+      <div
+        className="vuuToolbarProxy salt-density-high"
+        style={{ display: "flex" }}
       >
-        <Tooltray>
-          <ToggleButtonGroup selectedIndex={selectedGroupIndex}>
-            <ToggleButton onClick={groupByCurrency} tooltipText="Currency">
+        <div className="vuuTooltrayProxy">
+          <ToggleButtonGroup value={selectedGroupIndex}>
+            <ToggleButton onClick={groupByCurrency} value={0}>
               Currency
             </ToggleButton>
-            <ToggleButton
-              onClick={groupByCurrencyExchange}
-              tooltipText="Currency and Exchange"
-            >
+            <ToggleButton onClick={groupByCurrencyExchange} value={1}>
               Currency, Exchange
             </ToggleButton>
-            <ToggleButton
-              onClick={groupByCurrencyExchangeRic}
-              tooltipText="Currency, Exchange and Ric"
-            >
+            <ToggleButton onClick={groupByCurrencyExchangeRic} value={2}>
               CCY, Exchange, Ric
             </ToggleButton>
-            {selectedIndex === 2 ? (
-              <ToggleButton
-                onClick={groupByAccountAlgo}
-                tooltipText="Account and Algo"
-              >
+            {tablename === "parentOrders" ? (
+              <ToggleButton onClick={groupByAccountAlgo} value={3}>
                 Account, Algo, 7 columns
               </ToggleButton>
             ) : (
-              <ToggleButton>Ignore</ToggleButton>
+              <ToggleButton value={4}>Ignore</ToggleButton>
             )}
           </ToggleButtonGroup>
-        </Tooltray>
-        <Tooltray>
+        </div>
+        <div>
           <FilterInput
             existingFilter={dataSource.filter.filterStruct}
             onSubmitFilter={handleSubmitFilter}
             style={{ width: 300 }}
             suggestionProvider={filterSuggestionProvider}
           />
-        </Tooltray>
-      </Toolbar>
+        </div>
+      </div>
       <Table
         allowConfigEditing
         dataSource={dataSource}
@@ -281,21 +267,17 @@ export const VuuDataTable = () => {
         renderBufferSize={20}
         width={750}
       />
-      <Toolbar
-        className="vuuTable-footer"
-        style={
-          {
-            "--saltToolbar-height": "20px",
-            "--saltToolbar-background":
-              "var(--salt-container-primary-background)",
-            borderTop: "solid 1px var(--salt-container-primary-borderColor)",
-            color: "var(--salt-text-secondary-foreground)",
-            width: 750,
-          } as CSSProperties
-        }
+      <div
+        className="vuuToolbarProxy vuuTable-footer"
+        style={{
+          height: 20,
+          borderTop: "solid 1px var(--salt-container-primary-borderColor)",
+          color: "var(--salt-text-secondary-foreground)",
+          width: 750,
+        }}
       >
         <DataSourceStats dataSource={dataSource} />
-      </Toolbar>
+      </div>
       <Dialog
         className="vuuDialog-gridConfig"
         isOpen={dialogContent !== null}
@@ -485,28 +467,25 @@ export const VuuTableCalculatedColumns = () => {
 
   return (
     <>
-      <Toolbar
-        className="salt-density-high"
-        style={
-          {
-            "--saltToolbar-height": "28px",
-            "--saltToolbar-alignItems": "center",
-          } as CSSProperties
-        }
+      <div
+        className="vuuToolbarProxy salt-density-high"
+        style={{
+          height: 28,
+        }}
       >
-        <Tooltray>
+        <div className="vuuTooltrayProxy">
           <Button onClick={groupByCurrency}>Currency</Button>
           <Button onClick={groupByCurrencyExchange}>Currency, Exchange</Button>
-        </Tooltray>
-        <Tooltray>
+        </div>
+        <div className="vuuTooltrayProxy">
           <FilterInput
             existingFilter={dataSource.filter.filterStruct}
             onSubmitFilter={handleSubmitFilter}
             style={{ width: 300 }}
             suggestionProvider={filterSuggestionProvider}
           />
-        </Tooltray>
-      </Toolbar>
+        </div>
+      </div>
       <Table
         allowConfigEditing
         dataSource={dataSource}
@@ -540,15 +519,15 @@ const ConfigurableDataTable = ({
   const { save } = useViewContext();
   const { schemas } = useSchemas();
 
-  const handleDataSourceConfigChange = useCallback(
-    (config?: DataSourceConfig) => {
-      save?.(config, "datasource-config");
-    },
-    [save]
-  );
+  // const handleDataSourceConfigChange = useCallback(
+  //   (config?: DataSourceConfig) => {
+  //     save?.(config, "datasource-config");
+  //   },
+  //   [save]
+  // );
 
   const { columns, config, dataSource, error } = useTestDataSource({
-    onConfigChange: handleDataSourceConfigChange,
+    // onConfigChange: handleDataSourceConfigChange,
     schemas,
     tablename: table.table,
   });
@@ -620,24 +599,21 @@ const ConfigurableDataTable = ({
 
   return (
     <>
-      <Toolbar
-        className="salt-density-high"
-        style={
-          {
-            "--saltToolbar-height": "28px",
-            "--saltToolbar-alignItems": "center",
-          } as CSSProperties
-        }
+      <div
+        className="vuuToolbarProxy salt-density-high"
+        style={{
+          height: 28,
+        }}
       >
-        <Tooltray>
+        <div className="vuuTooltrayProxy">
           <FilterInput
             existingFilter={dataSource.filter.filterStruct}
             onSubmitFilter={handleSubmitFilter}
             style={{ width: 300 }}
             suggestionProvider={filterSuggestionProvider}
           />
-        </Tooltray>
-      </Toolbar>
+        </div>
+      </div>
 
       <Table
         allowConfigEditing
@@ -806,7 +782,7 @@ export const HiddenColumns = () => {
 HiddenColumns.displaySequence = displaySequence++;
 
 export const toColumnDescriptor =
-  (schema: Schema) =>
+  (schema: TableSchema) =>
   (columnName: string): ColumnDescriptor => {
     const column = schema.columns.find(({ name }) => name === columnName);
     if (column) {
@@ -947,8 +923,9 @@ export const SwitchColumns = () => {
     setDialogContent(null);
   }, []);
 
-  const handleChange: ToggleButtonGroupChangeEventHandler = (_event, index) => {
-    setSelectedIndex(index);
+  const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    const { value } = evt.target as HTMLButtonElement;
+    setSelectedIndex(parseInt(value));
   };
 
   if (error) {
@@ -957,11 +934,11 @@ export const SwitchColumns = () => {
 
   return (
     <>
-      <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
-        <ToggleButton tooltipText="Alert">Set 1</ToggleButton>
-        <ToggleButton tooltipText="Home">Set 2</ToggleButton>
-        <ToggleButton tooltipText="Print">Set 3</ToggleButton>
-        <ToggleButton tooltipText="Child Orders">All Columns</ToggleButton>
+      <ToggleButtonGroup onChange={handleChange} value={selectedIndex}>
+        <ToggleButton value={0}>Set 1</ToggleButton>
+        <ToggleButton value={1}>Set 2</ToggleButton>
+        <ToggleButton value={2}>Set 3</ToggleButton>
+        <ToggleButton value={3}>All Columns</ToggleButton>
       </ToggleButtonGroup>
 
       <Table

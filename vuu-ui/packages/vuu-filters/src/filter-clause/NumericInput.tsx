@@ -1,6 +1,7 @@
 import { HTMLAttributes, RefObject, useEffect, useRef, useState } from "react";
 import { Filter, FilterClause } from "@finos/vuu-filter-types";
-import { ComboBox, Input } from "@heswell/salt-lab";
+import { Input } from "@salt-ds/core";
+import { ComboBox } from "@salt-ds/lab";
 import {
   NUMERIC_OPERATORS,
   NumericOperator,
@@ -70,10 +71,10 @@ export const NumericInput = ({
       {selectedOperator === undefined ? undefined : (
         <Input
           className={`${className}-valueInput`}
-          highlightOnFocus
+          // highlightOnFocus
           value={valueInputValue}
           ref={valueInputRef}
-          type="text"
+          // type="text"
           onChange={(event) => {
             setValueInputValue(event.target.value);
             const filter = getNumericFilter(

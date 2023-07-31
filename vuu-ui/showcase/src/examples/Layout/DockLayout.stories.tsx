@@ -8,7 +8,7 @@ import {
   Stack,
   View,
 } from "@finos/vuu-layout";
-import { List, ListItem } from "@heswell/salt-lab";
+import { List, ListItem } from "@salt-ds/lab";
 import { Button } from "@salt-ds/core";
 
 import "./DockLayout.stories.css";
@@ -34,7 +34,7 @@ const InlineDrawer = ({
     }
   };
   return (
-    <DockLayout style={{ width: "100%", height: "100%" }}>
+    <DockLayout style={{ width: "100vw", height: "100vh" }}>
       <Drawer
         inline={inline}
         onClick={handleClick}

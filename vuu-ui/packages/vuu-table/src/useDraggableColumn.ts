@@ -1,4 +1,4 @@
-import { useDragDrop } from "@finos/vuu-ui-controls";
+import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
 import { MouseEvent, useCallback, useRef } from "react";
 
 type MousePos = {

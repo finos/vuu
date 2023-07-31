@@ -4,7 +4,6 @@ import {
   KeyedColumnDescriptor,
   PinLocation,
 } from "@finos/vuu-datagrid-types";
-import { moveItem } from "@finos/vuu-ui-controls";
 import {
   applyFilterToColumns,
   applyGroupByToColumns,

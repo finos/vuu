@@ -1,5 +1,5 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ListItem, ListItemType } from "@heswell/salt-lab";
+import { ListItem, ListItemType } from "@salt-ds/lab";
 import cx from "classnames";
 
 import "./ColumnListItem.css";

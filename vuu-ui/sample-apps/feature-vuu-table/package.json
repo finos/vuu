@@ -31,7 +31,7 @@
     "@finos/vuu-utils": "0.0.26",
     "@salt-ds/core": "1.8.0-rc.5",
     "@salt-ds/icons": "1.5.1",
-    "@heswell/salt-lab": "1.0.0-alpha.2"
+    "@salt-ds/lab": "1.0.0-alpha.14"
   },
   "peerDependencies": {
     "classnames": "^2.3.1",

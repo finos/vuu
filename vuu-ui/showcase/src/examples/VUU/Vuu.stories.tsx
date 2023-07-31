@@ -1,8 +1,6 @@
-import { List, ListItem, Toolbar, ToolbarField } from "@heswell/salt-lab";
-import { Dropdown } from "@salt-ds/lab";
-import { useEffect, useState } from "react";
+import { List, ListItem } from "@salt-ds/lab";
 
-import { useTypeaheadSuggestions, useVuuTables } from "@finos/vuu-data-react";
+import { useVuuTables } from "@finos/vuu-data-react";
 import { useAutoLoginToVuuServer } from "../utils";
 
 let displaySequence = 1;
@@ -26,34 +24,3 @@ export const VuuTables = () => {
 };
 
 VuuTables.displaySequence = displaySequence++;
-
-export const FilterToolbar = () => {
-  const [currencies, setCurrencies] = useState<string[]>([]);
-  const getSuggestions = useTypeaheadSuggestions();
-
-  useAutoLoginToVuuServer();
-
-  useEffect(() => {
-    getSuggestions([
-      { module: "SIMUL", table: "instruments" },
-      "currency",
-    ]).then((response) => setCurrencies(response));
-  }, [getSuggestions]);
-
-  return (
-    <Toolbar id="toolbar-default">
-      <ToolbarField
-        className="vuuFilterDropdown"
-        label="Currency"
-        labelPlacement="top"
-      >
-        <Dropdown
-          defaultSelected={[]}
-          selectionStrategy="multiple"
-          source={currencies}
-          style={{ width: 100 }}
-        />
-      </ToolbarField>
-    </Toolbar>
-  );
-};

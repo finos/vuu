@@ -30,7 +30,7 @@ const isFocusable = (item: NormalisedTreeSourceNode) =>
 export interface KeyboardNavigationHookProps {
   defaultHighlightedIdx?: number;
   highlightedIdx?: number;
-  onHighlight: (highlightedIdx: number) => void;
+  onHighlight?: (highlightedIdx: number) => void;
   onKeyboardNavigation?: (evt: KeyboardEvent, nextIdx: number) => void;
   selected: string[];
   treeNodes: NormalisedTreeSourceNode[];
@@ -62,7 +62,7 @@ export const useKeyboardNavigation = ({
 
   const setHighlightedIndex = useCallback(
     (idx) => {
-      onHighlight && onHighlight(idx);
+      onHighlight?.(idx);
       setHighlightedIdx(idx);
     },
     [onHighlight, setHighlightedIdx]

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FilterClause } from "@finos/vuu-filters/src/filter-clause";
 import { Filter } from "@finos/vuu-filter-types";
 import { useSchemas, useTestDataSource } from "../utils";
-import { Input } from "@heswell/salt-lab";
+import { Input } from "@salt-ds/core";
 import "./NewFiltering.stories.css";
 
 export const DefaultFilterClause = () => {

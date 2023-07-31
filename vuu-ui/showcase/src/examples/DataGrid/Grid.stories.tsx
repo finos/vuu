@@ -5,12 +5,6 @@ import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
-  Toolbar,
-  ToolbarButton,
-  ToolbarField,
-  Tooltray,
-} from "@heswell/salt-lab";
-import {
   Button,
   FormField,
   Input,
@@ -20,6 +14,7 @@ import {
 import {
   ChangeEvent,
   ReactElement,
+  SyntheticEvent,
   useCallback,
   useMemo,
   useRef,
@@ -29,7 +24,7 @@ import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 import { instrumentSchema } from "./columnMetaData";
 
 import "./Grid.stories.css";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { FormLabel } from "@salt-ds/lab";
 
 let displaySequence = 1;
 
@@ -119,13 +114,9 @@ export const DefaultGrid = () => {
     tablename: tables[selectedIndex],
   });
 
-  const handleChange: ToggleButtonGroupChangeEventHandler = (
-    event,
-    index,
-    toggled
-  ) => {
-    console.log(`onChange [${index}] toggled ${toggled}`);
-    setSelectedIndex(index);
+  const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    const { value } = evt.target as HTMLButtonElement;
+    setSelectedIndex(parseInt(value));
   };
 
   const handleConfigChange = useCallback((config: GridConfig) => {
@@ -181,23 +172,20 @@ export const DefaultGrid = () => {
 
   return (
     <>
-      <Toolbar style={{ alignItems: "center", width: 700 }}>
-        <ToggleButtonGroup
-          onChange={handleChange}
-          selectedIndex={selectedIndex}
-        >
-          <ToggleButton tooltipText="Alert">Instruments</ToggleButton>
-          <ToggleButton tooltipText="Home">Orders</ToggleButton>
-          <ToggleButton tooltipText="Print">Parent Orders</ToggleButton>
-          <ToggleButton tooltipText="Search">Prices</ToggleButton>
+      <div className="vuuToolbarProxy" style={{ width: 700 }}>
+        <ToggleButtonGroup onChange={handleChange} value={selectedIndex}>
+          <ToggleButton value={0}>Instruments</ToggleButton>
+          <ToggleButton value={1}>Orders</ToggleButton>
+          <ToggleButton value={2}>Parent Orders</ToggleButton>
+          <ToggleButton value={3}>Prices</ToggleButton>
         </ToggleButtonGroup>
-        <ToolbarButton
-          data-align-end
+        <Button
+          data-align="end"
           data-icon="settings"
           onClick={showSettings}
           style={{ width: 28 }}
         />
-      </Toolbar>
+      </div>
 
       <Grid
         dataSource={dataSource}
@@ -211,20 +199,14 @@ export const DefaultGrid = () => {
       <Dialog isOpen={dialogContent !== null} onClose={hideSettings}>
         {dialogContent}
       </Dialog>
-      <Toolbar style={{ marginTop: 12 }}>
-        <Tooltray>
-          <ToolbarField
-            label="Render Buffer Size"
-            labelPlacement="left"
-            style={{ width: 250 }}
-          >
-            <Input
-              value={String(renderBufferSize ?? "")}
-              onChange={handleRenderBufferSizeChange}
-              style={{ width: 80 }}
-              type="number"
-            />
-          </ToolbarField>
+      <div className="vuuToolbarProxy" style={{ marginTop: 12 }}>
+        <div className="vuuTooltrayProxy">
+          <Input
+            value={String(renderBufferSize ?? "")}
+            onChange={handleRenderBufferSizeChange}
+            style={{ width: 80 }}
+            type="number"
+          />
           {/* <ToolbarField
             label="Buffer Size"
             labelPlacement="left"
@@ -238,8 +220,8 @@ export const DefaultGrid = () => {
             />
           </ToolbarField> */}
           <Button onClick={applyBufferSizes}>Apply</Button>
-        </Tooltray>
-      </Toolbar>
+        </div>
+      </div>
     </>
   );
 };
@@ -636,15 +618,16 @@ export const BufferVariations = () => {
   const [to, setTo] = useState(10);
 
   const handleSetBufferSize = useCallback(
-    (evt, value) => setBufferSize(value),
+    (evt: ChangeEvent<HTMLInputElement>) =>
+      setBufferSize(parseInt(evt.target.value)),
     []
   );
   const handleSetFrom = useCallback(
-    (evt, value) => setFrom(parseInt(value, 10)),
+    (evt: ChangeEvent<HTMLInputElement>) => setFrom(parseInt(evt.target.value)),
     []
   );
   const handleSetTo = useCallback(
-    (evt, value) => setTo(parseInt(value, 10)),
+    (evt: ChangeEvent<HTMLInputElement>) => setTo(parseInt(evt.target.value)),
     []
   );
 
@@ -671,25 +654,28 @@ export const BufferVariations = () => {
         style={{ margin: 10, border: "solid 1px #ccc" }}
       />
       <br />
-      <Toolbar>
-        <Tooltray>
-          <FormField label="buffer size" labelPlacement="left">
+      <div className="vuuToolbarProxy">
+        <div className="vuuTootrayProxy">
+          <FormField labelPlacement="left">
+            <FormLabel>Buffer Size</FormLabel>
             <Input
               onChange={handleSetBufferSize}
               value={`${bufferSize}`}
               style={{ width: 50 }}
             />
           </FormField>
-        </Tooltray>
-        <Tooltray>
-          <FormField label="from" labelPlacement="left">
+        </div>
+        <div className="vuuTootrayProxy">
+          <FormField labelPlacement="left">
+            <FormLabel>from</FormLabel>
             <Input
               onChange={handleSetFrom}
               value={from.toString()}
               style={{ width: 50 }}
             />
           </FormField>
-          <FormField label="to" labelPlacement="left">
+          <FormField labelPlacement="left">
+            <FormLabel>to</FormLabel>
             <Input
               onChange={handleSetTo}
               value={to.toString()}
@@ -697,8 +683,8 @@ export const BufferVariations = () => {
             />
           </FormField>
           <Button onClick={handleSetRange}>set range</Button>
-        </Tooltray>
-      </Toolbar>
+        </div>
+      </div>
     </>
   );
 };

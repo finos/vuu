@@ -3,7 +3,7 @@ import { execWait, withArgs } from "./utils.mjs";
 export const buildAll = async () => {
   const buildPackage = async (packageName) =>
     execWait(
-      `npm run --silent build${withArgs("dev", "cjs", "debug")}`,
+      `npm run --silent build${withArgs("dev", "cjs", "debug", "license")}`,
       `packages/${packageName}`
     );
 

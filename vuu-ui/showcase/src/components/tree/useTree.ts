@@ -17,7 +17,7 @@ export interface TreeHookProps {
   defaultSelected?: string[];
   groupSelection: GroupSelection;
   onChange: TreeNodeSelectionHandler;
-  onHighlight: (index: number) => void;
+  onHighlight?: (index: number) => void;
   selected?: string[];
   selection: TreeSelection;
   sourceWithIds: NormalisedTreeSourceNode[];

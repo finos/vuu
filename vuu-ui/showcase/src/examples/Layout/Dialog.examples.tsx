@@ -7,9 +7,8 @@ let displaySequence = 1;
 
 export const SimpleDialog = () => {
   return (
-    <Dialog isOpen>
+    <Dialog title="Cornflower" isOpen>
       <Component
-        title="Cornflower"
         style={{ backgroundColor: "cornflowerblue", height: 400, width: 300 }}
       />
     </Dialog>
@@ -30,9 +29,8 @@ export const DialogOpenClose = () => {
       <button onClick={open ? closeDialog : openDialog}>{`${
         open ? "Close" : "Open"
       } Dialog`}</button>
-      <Dialog isOpen={open} onClose={closeDialog}>
+      <Dialog title="Cornflower" isOpen={open} onClose={closeDialog}>
         <Component
-          title="Cornflower"
           style={{ backgroundColor: "cornflowerblue", height: 400, width: 300 }}
         />
       </Dialog>
