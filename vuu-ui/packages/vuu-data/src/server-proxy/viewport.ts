@@ -923,7 +923,9 @@ export class Viewport {
   private throttleMessage = (mode: DataUpdateMode) => {
     if (this.shouldThrottleMessage(mode)) {
       if (this.updateThrottleTimer === undefined) {
-        this.updateThrottleTimer = self.setTimeout(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.updateThrottleTimer = setTimeout(
           this.sendThrottledSizeMessage,
           2000
         );
