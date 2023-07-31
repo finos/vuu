@@ -1364,6 +1364,7 @@ describe("ServerProxy", () => {
     });
   });
 
+  // Temp skip until new timer code accounted for
   describe.skip("growing and shrinking rowset (Orders)", () => {
     it("initializes with rowset that does not fill client viewport", () => {
       const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
