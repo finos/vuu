@@ -1,6 +1,7 @@
 import {
   DataSource,
   DataSourceConfig,
+  isSizeOnlyMessage,
   SubscribeCallback,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
@@ -122,8 +123,10 @@ export class ViewportRowModelDataSource {
 
   setExpanded(key: string, expanded: boolean) {
     if (expanded) {
+      console.log("close Tree Node");
       this.dataSource.closeTreeNode(key);
     } else {
+      console.log("open Tree Node");
       this.dataSource.openTreeNode(key);
     }
     this.dataWindow.clear();
@@ -140,12 +143,19 @@ export class ViewportRowModelDataSource {
   handleMessageFromDataSource: SubscribeCallback = (message) => {
     if (message.type === "viewport-update") {
       if (message.size !== undefined) {
+        console.log(
+          `%cViewportRowModelDataSource size change ${message.size} (dataWIndow count ${this.dataWindow.rowCount})`,
+          "color: green;font-weight:bold;"
+        );
         if (message.size !== this.dataWindow.rowCount) {
           this.dataWindow.setRowCount(message.size);
           this.setAgRowCount(message.size);
         }
       }
       if (message.rows) {
+        console.log(
+          `ViewportRowModelDataSource ${message.rows.length} received ${message.mode} mode`
+        );
         const { columnMap, reverseColumnMap } = this;
         if (message.mode === "update") {
           for (const dataRow of message.rows) {

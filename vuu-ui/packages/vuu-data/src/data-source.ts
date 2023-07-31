@@ -37,7 +37,7 @@ export interface DataSourceAggregateMessage
 
 export type DataUpdateMode = "batch" | "update" | "size-only";
 export interface DataSourceDataMessage extends MessageWithClientViewportId {
-  mode?: DataUpdateMode;
+  mode: DataUpdateMode;
   rows?: DataSourceRow[];
   size?: number;
   type: "viewport-update";
