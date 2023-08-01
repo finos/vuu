@@ -1,9 +1,9 @@
 import { ConfigChangeHandler } from "@finos/vuu-data";
 import { Grid } from "@finos/vuu-datagrid";
-import { DatagridSettingsPanel } from "@finos/vuu-table-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
+import { DatagridSettingsPanel } from "@finos/vuu-table-extras";
 import {
   Button,
   FormField,
@@ -11,6 +11,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
+import { FormLabel } from "@salt-ds/lab";
 import {
   ChangeEvent,
   ReactElement,
@@ -23,8 +24,7 @@ import {
 import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 import { instrumentSchema } from "./columnMetaData";
 
-import "./Grid.stories.css";
-import { FormLabel } from "@salt-ds/lab";
+import "./Grid.examples.css";
 
 let displaySequence = 1;
 
@@ -119,11 +119,14 @@ export const DefaultGrid = () => {
     setSelectedIndex(parseInt(value));
   };
 
-  const handleConfigChange = useCallback((config: GridConfig) => {
-    console.log("config change", {
-      config,
-    });
-  }, []);
+  const handleConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      console.log("config change", {
+        config,
+      });
+    },
+    []
+  );
 
   const showSettings = useCallback(() => {
     setDialogContent(
@@ -141,14 +144,17 @@ export const DefaultGrid = () => {
     setDialogContent(null);
   }, []);
 
-  const handleRenderBufferSizeChange = useCallback((evt: ChangeEvent) => {
-    const value = parseInt((evt.target as HTMLInputElement).value || "-1");
-    if (Number.isFinite(value) && value > 0) {
-      setRenderBufferSize(value);
-    } else {
-      setBufferSize(undefined);
-    }
-  }, []);
+  const handleRenderBufferSizeChange = useCallback(
+    (evt: ChangeEvent<HTMLInputElement>) => {
+      const value = parseInt((evt.target as HTMLInputElement).value || "-1");
+      if (Number.isFinite(value) && value > 0) {
+        setRenderBufferSize(value);
+      } else {
+        setBufferSize(undefined);
+      }
+    },
+    []
+  );
 
   // const handleBufferSizeChange = useCallback((evt: ChangeEvent) => {
   //   const value = parseInt((evt.target as HTMLInputElement).value || "-1");
@@ -202,10 +208,12 @@ export const DefaultGrid = () => {
       <div className="vuuToolbarProxy" style={{ marginTop: 12 }}>
         <div className="vuuTooltrayProxy">
           <Input
+            inputProps={{
+              type: "number",
+            }}
             value={String(renderBufferSize ?? "")}
             onChange={handleRenderBufferSizeChange}
             style={{ width: 80 }}
-            type="number"
           />
           {/* <ToolbarField
             label="Buffer Size"

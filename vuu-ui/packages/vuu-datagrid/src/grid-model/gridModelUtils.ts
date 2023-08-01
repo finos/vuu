@@ -8,6 +8,7 @@ import {
 import {
   ColumnDescriptor,
   GroupColumnDescriptor,
+  Heading,
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { ColumnGroupType, GridModelType } from "./gridModelTypes";
@@ -631,6 +632,7 @@ export const assignKeysToColumns = (
       ? column
       : {
           ...column,
+          label: column.label ?? column.name,
           key: start + i,
           width: column.width || defaultWidth,
           valueFormatter: undefined,

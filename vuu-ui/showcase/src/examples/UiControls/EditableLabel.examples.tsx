@@ -1,6 +1,8 @@
 import { EditableLabel } from "@finos/vuu-ui-controls";
 import { useState } from "react";
 
+let displaySequence = 1;
+
 export const EditableLabelControlledValueUncontrolledEditing = () => {
   const [value, setValue] = useState<string>("Initial value");
 
@@ -34,3 +36,5 @@ export const EditableLabelControlledValueUncontrolledEditing = () => {
     </div>
   );
 };
+EditableLabelControlledValueUncontrolledEditing.displaySequence =
+  displaySequence++;

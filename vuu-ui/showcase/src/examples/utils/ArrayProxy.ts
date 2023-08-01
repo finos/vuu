@@ -44,6 +44,8 @@ export class ArrayProxy<T = string> {
 
   map = (func: (item: T, i: number) => unknown) => {
     return new ArrayProxy(this.length, (i: number) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       return func(this.#getItem(i), i);
     });
   };

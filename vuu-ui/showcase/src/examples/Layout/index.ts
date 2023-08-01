@@ -1,4 +1,4 @@
-export * as DockLayout from "./DockLayout.stories";
+export * as DockLayout from "./DockLayout.examples";
 export * as Dialog from "./Dialog.examples";
 export * as DraggableLayout from "./DraggableLayout.stories";
 export * as DropMenu from "./DropMenu.stories";

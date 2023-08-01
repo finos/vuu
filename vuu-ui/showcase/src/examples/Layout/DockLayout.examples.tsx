@@ -11,7 +11,7 @@ import {
 import { List, ListItem } from "@salt-ds/lab";
 import { Button } from "@salt-ds/core";
 
-import "./DockLayout.stories.css";
+import "./DockLayout.examples.css";
 
 let displaySequence = 1;
 
@@ -121,12 +121,16 @@ export const BottomInlineDrawer = () => (
 BottomInlineDrawer.displaySequence = displaySequence++;
 
 export const LeftOverlayDrawer = () => <InlineDrawer position="left" />;
+LeftOverlayDrawer.displaySequence = displaySequence++;
 
 export const RightOverlayDrawer = () => <InlineDrawer position="right" />;
+RightOverlayDrawer.displaySequence = displaySequence++;
 
 export const TopOverlayDrawer = () => <InlineDrawer position="top" />;
+TopOverlayDrawer.displaySequence = displaySequence++;
 
 export const BottomOverlayDrawer = () => <InlineDrawer position="bottom" />;
+BottomOverlayDrawer.displaySequence = displaySequence++;
 
 export const LeftInlineDrawerStack = () => {
   const [open, setOpen] = useState(false);
@@ -165,6 +169,8 @@ export const LeftInlineDrawerStack = () => {
     </Flexbox>
   );
 };
+LeftInlineDrawerStack.displaySequence = displaySequence++;
+
 export const LeftInlineDrawerFlexbox = () => {
   const [open, setOpen] = useState(false);
   const handleClick = () => setOpen(!open);
@@ -246,6 +252,7 @@ export const LeftInlineDrawerFlexbox = () => {
     </DockLayout>
   );
 };
+LeftInlineDrawerFlexbox.displaySequence = displaySequence++;
 
 export const InlineDrawerFlexboxVariants = () => {
   const [open, setOpen] = useState(false);
@@ -368,6 +375,7 @@ export const InlineDrawerFlexboxVariants = () => {
     </>
   );
 };
+InlineDrawerFlexboxVariants.displaySequence = displaySequence++;
 
 export const CustomSizeDrawer = () => {
   return (
@@ -414,6 +422,7 @@ export const CustomSizeDrawer = () => {
     </DockLayout>
   );
 };
+CustomSizeDrawer.displaySequence = displaySequence++;
 
 export const WithToggleButton = () => {
   return (
@@ -444,3 +453,4 @@ export const WithToggleButton = () => {
     </DockLayout>
   );
 };
+WithToggleButton.displaySequence = displaySequence++;

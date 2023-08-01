@@ -28,7 +28,7 @@ type Indexer = {
 
 export interface TreeSourceNode {
   id: string;
-  icon: string;
+  icon?: string;
   header?: boolean;
   label: string;
   childNodes?: TreeSourceNode[];

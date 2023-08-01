@@ -3,6 +3,8 @@ import { useServerConnectionQuality } from "@finos/vuu-data-react";
 import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
 import { useCallback } from "react";
 
+let displaySequence = 1;
+
 export const ConnectionMetrics = () => {
   const pricesTableColumns = [
     "ask",
@@ -34,3 +36,4 @@ export const ConnectionMetrics = () => {
 
   return <div>Connection Speed: {messagesPerSecond} msgs/s</div>;
 };
+ConnectionMetrics.displaySequence = displaySequence++;

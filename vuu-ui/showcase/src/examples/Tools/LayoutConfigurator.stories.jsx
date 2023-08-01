@@ -2,10 +2,7 @@ import { useCallback, useState } from "react";
 
 import { LayoutConfigurator as VuuLayoutConfigurator } from "@finos/vuu-layout";
 
-export default {
-  title: "Layout/Tools",
-  component: VuuLayoutConfigurator,
-};
+let displaySequence = 1;
 
 export const LayoutConfigurator = () => {
   const [style, setStyle] = useState({
@@ -37,3 +34,4 @@ export const LayoutConfigurator = () => {
     </div>
   );
 };
+LayoutConfigurator.displaySequence = displaySequence++;

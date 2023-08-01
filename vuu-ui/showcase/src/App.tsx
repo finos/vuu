@@ -15,13 +15,22 @@ import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
 
 import "./App.css";
 
-type VuuExample = (() => ReactElement) & {
-  displaySequence?: number;
+// export type VuuExample = ((props?: unknown) => ReactElement) & {
+//   displaySequence?: number;
+// };
+
+export type VuuExample = {
+  (props?: any): JSX.Element;
+  displaySequence: number;
 };
 
-type VuuTuple = [string, VuuExample | Examples];
+export interface ExamplesModule {
+  [key: string]: ExamplesModule | VuuExample;
+}
 
-const isVuuExample = (item: VuuExample | Examples): item is VuuExample =>
+type VuuTuple = [string, VuuExample | ExamplesModule];
+
+const isVuuExample = (item: VuuExample | ExamplesModule): item is VuuExample =>
   typeof item === "function";
 
 const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
@@ -45,7 +54,7 @@ const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
 };
 
 const sourceFromImports = (
-  stories: Examples,
+  stories: ExamplesModule,
   prefix = "",
   icon = "folder"
 ): TreeSourceNode[] =>
@@ -69,11 +78,8 @@ const sourceFromImports = (
       };
     });
 
-interface Examples {
-  [key: string]: Examples | VuuExample;
-}
 export interface AppProps {
-  stories: Examples;
+  stories: ExamplesModule;
 }
 
 type ThemeDescriptor = { label?: string; id: string };

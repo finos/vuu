@@ -1,10 +1,26 @@
-import { computeMenuPosition, DropMenu, DropTarget } from "@finos/vuu-layout";
+import {
+  computeMenuPosition,
+  DropMenu,
+  DropPosition,
+  DropTarget,
+} from "@finos/vuu-layout";
 import { PopupService } from "@finos/vuu-popups";
 import { useEffect, useRef } from "react";
 
-export default {
-  title: "Layout/DropMenu",
-  component: DropMenu,
+let displaySequence = 1;
+
+const dropPositionBase: DropPosition = {
+  Absolute: false,
+  Centre: false,
+  East: false,
+  EastOrWest: false,
+  Header: false,
+  North: false,
+  NorthOrSouth: false,
+  offset: 0,
+  South: false,
+  SouthOrEast: false,
+  West: false,
 };
 
 const clientRect = {
@@ -18,20 +34,30 @@ const clientRect = {
 
 const dropTarget2 = new DropTarget({
   component: { type: "Stack" },
-  pos: { position: { East: true } },
+  pos: {
+    position: { ...dropPositionBase, East: true },
+    closeToTheEdge: 0,
+    x: 0,
+    y: 0,
+  },
   clientRect,
   nextDropTarget: null,
 });
 
 const dropTarget1 = new DropTarget({
   component: { type: "View" },
-  pos: { x: 400, y: 210, position: { North: true } },
+  pos: {
+    x: 400,
+    y: 210,
+    position: { ...dropPositionBase, North: true },
+    closeToTheEdge: 0,
+  },
   clientRect,
   nextDropTarget: dropTarget2,
 }).activate();
 
 export const DropMenuTwoOptionsNorth = () => {
-  const rootRef = useRef<HTMLDivElement>();
+  const rootRef = useRef<HTMLDivElement>(null);
   const onHover = (target: any) => {
     console.log(`hover`, target);
   };
@@ -67,3 +93,5 @@ export const DropMenuTwoOptionsNorth = () => {
     />
   );
 };
+
+DropMenuTwoOptionsNorth.displaySequence = displaySequence++;

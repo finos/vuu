@@ -195,7 +195,7 @@ export const DefaultFilterInputWithPersistence = () => {
     </>
   );
 };
-DefaultFilterInput.displaySequence = displaySequence++;
+DefaultFilterInputWithPersistence.displaySequence = displaySequence++;
 
 export const FilterInputTabs = () => {
   const saveOptions = useMemo<FilterSaveOptions>(

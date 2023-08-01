@@ -1,3 +1,10 @@
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Flexbox, useLayoutProviderDispatch } from "@finos/vuu-layout";
+import { SetPropsAction } from "@finos/vuu-layout/src/layout-reducer";
+import { TableNext } from "@finos/vuu-table";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { RowProps } from "packages/vuu-table/src/table/TableRow";
+import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 import { useTableConfig } from "../utils";
 import {
   DivElementKeyedWithTranslate,
@@ -5,15 +12,6 @@ import {
   DivElementWithTranslate,
   VuuTable,
 } from "./html-table-components";
-
-import { TableNext } from "@finos/vuu-table";
-
-import { useCallback, useMemo, useState } from "react";
-import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import { Flexbox, useLayoutProviderDispatch } from "@finos/vuu-layout";
-import { SetPropsAction } from "@finos/vuu-layout/src/layout-reducer";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { RowProps } from "packages/vuu-table/src/table/TableRow";
 
 let displaySequence = 1;
 
@@ -182,40 +180,30 @@ export const ResizeTableNext = () => {
     rangeChangeRowset: "full",
   });
 
-  const handleChangeSize: ToggleButtonGroupChangeEventHandler = (
-    _event,
-    index
-  ) => {
-    setSelectedIndex(index);
+  const handleChangeSize = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    const { value } = evt.target as HTMLButtonElement;
+    setSelectedIndex(parseInt(value));
   };
 
-  const handleChangeBorder: ToggleButtonGroupChangeEventHandler = (
-    _event,
-    index
-  ) => {
-    setSelectedIndex(index);
+  const handleChangeBorder = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    const { value } = evt.target as HTMLButtonElement;
+    setSelectedIndex(parseInt(value));
   };
 
   const { height, width } = tableSize[selectedIndex];
   return (
     <>
-      <ToggleButtonGroup
-        onChange={handleChangeSize}
-        selectedIndex={selectedIndex}
-      >
-        <ToggleButton>715 X 645</ToggleButton>
-        <ToggleButton>915 x 645</ToggleButton>
-        <ToggleButton>715 x 745</ToggleButton>
-        <ToggleButton>915 x 745</ToggleButton>
+      <ToggleButtonGroup onChange={handleChangeSize} value={selectedIndex}>
+        <ToggleButton value={0}>715 X 645</ToggleButton>
+        <ToggleButton value={1}>915 x 645</ToggleButton>
+        <ToggleButton value={2}>715 x 745</ToggleButton>
+        <ToggleButton value={3}>915 x 745</ToggleButton>
       </ToggleButtonGroup>
 
-      <ToggleButtonGroup
-        onChange={handleChangeBorder}
-        selectedIndex={selectedIndex}
-      >
-        <ToggleButton>No border</ToggleButton>
-        <ToggleButton>1px 4 sides</ToggleButton>
-        <ToggleButton>10px 4 sides</ToggleButton>
+      <ToggleButtonGroup onChange={handleChangeBorder} value={selectedIndex}>
+        <ToggleButton value={0}>No border</ToggleButton>
+        <ToggleButton value={1}>1px 4 sides</ToggleButton>
+        <ToggleButton value={2}>10px 4 sides</ToggleButton>
       </ToggleButtonGroup>
 
       <div style={{ height: 800, width: "100%", background: "#ccc" }}>
@@ -391,7 +379,7 @@ export const VuuTableTwentyColumns = () => {
     />
   );
 };
-DefaultVuuTable.displaySequence = displaySequence++;
+VuuTableTwentyColumns.displaySequence = displaySequence++;
 
 export const VuuTable2MillionRows = () => {
   const { typeaheadHook: _, ...config } = useTableConfig({

@@ -2,7 +2,7 @@ import { Flexbox, View } from "@finos/vuu-layout";
 import { Table } from "@finos/vuu-table";
 import { DragVisualizer } from "@finos/vuu-table/src/table/DragVisualizer";
 import { Checkbox, ToggleButton } from "@salt-ds/core";
-import { CSSProperties, useCallback, useState } from "react";
+import { ChangeEvent, CSSProperties, useCallback, useState } from "react";
 import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
 
 let displaySequence = 1;
@@ -13,9 +13,13 @@ export const DefaultTable = () => {
     count: 1_000,
   });
   const [zebraStripes, setZebraStripes] = useState(true);
-  const handleZebraChanged = useCallback((_evt, checked) => {
-    setZebraStripes(checked);
-  }, []);
+  const handleZebraChanged = useCallback(
+    (evt: ChangeEvent<HTMLInputElement>) => {
+      const { checked } = evt.target as HTMLInputElement;
+      setZebraStripes(checked);
+    },
+    []
+  );
   return (
     <div style={{ display: "flex", gap: 12 }}>
       <Table
@@ -212,7 +216,11 @@ export const LeftPinnedColumns = () => {
   return (
     <div style={{ width: 900, height: 900 }}>
       <div className="vuuToolbarProxy">
-        <ToggleButton toggled={isColumnBased} onToggle={handleToggleLayout}>
+        <ToggleButton
+          selected={isColumnBased}
+          onChange={handleToggleLayout}
+          value={0}
+        >
           {isColumnBased ? "Column based table" : "Row based table"}
         </ToggleButton>
       </div>
@@ -237,7 +245,11 @@ export const RightPinnedColumns = () => {
   return (
     <div style={{ width: 900, height: 900 }}>
       <div className="vuuToolbarProxy">
-        <ToggleButton toggled={isColumnBased} onToggle={handleToggleLayout}>
+        <ToggleButton
+          selected={isColumnBased}
+          onChange={handleToggleLayout}
+          value={0}
+        >
           {isColumnBased ? "Column based table" : "Row based table"}
         </ToggleButton>
       </div>

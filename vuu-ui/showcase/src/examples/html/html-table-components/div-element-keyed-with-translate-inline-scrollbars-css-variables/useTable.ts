@@ -22,12 +22,10 @@ import { useTableModel } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 // import { useTableViewport } from "./useTableViewport";
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { PersistentColumnAction } from "@finos/vuu-table/src/useTableModel";
+import { PersistentColumnAction } from "@finos/vuu-table/src/table/useTableModel";
 import { useInitialValue } from "./useInitialValue";
 import { useVirtualViewport } from "./useVirtualViewport";
 import { buildContextMenuDescriptors } from "@finos/vuu-table";
-
-const NO_ROWS = [] as const;
 
 export interface TableHookProps extends MeasuredProps {
   config: Omit<GridConfig, "headings">;
@@ -50,12 +48,11 @@ export const useTable = ({
   onFeatureEnabled,
   onFeatureInvocation,
   onSelectionChange,
-  renderBufferSize = 0,
   rowHeight,
   selectionModel,
   ...measuredProps
 }: TableHookProps) => {
-  const [rowCount, setRowCount] = useState<number>(dataSource.size);
+  const [rowCount] = useState<number>(dataSource.size);
 
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
@@ -87,7 +84,7 @@ export const useTable = ({
     rowCount,
     rowHeight,
     // Note: innerSize will take border into account, whereas outerSize will not
-    size: containerMeasurements.innerSize ?? containerMeasurements.outerSize,
+    size: containerMeasurements.innerSize,
   });
 
   const initialRange = useInitialValue<VuuRange>({

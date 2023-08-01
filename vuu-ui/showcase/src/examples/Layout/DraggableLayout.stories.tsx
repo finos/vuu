@@ -1,6 +1,5 @@
 import cx from "classnames";
 import { CSSProperties, HTMLAttributes, SyntheticEvent } from "react";
-import { RecoilRoot } from "recoil";
 
 import {
   Component,
@@ -14,19 +13,9 @@ import {
   View,
 } from "@finos/vuu-layout";
 
-import {
-  Brown,
-  DrawerStackLayoutBuilder,
-  LayoutBuilder,
-  StatefulComponent,
-} from "./components";
+import { Brown, StatefulComponent } from "./components";
 
 import "./DraggableLayout.stories.css";
-
-export default {
-  title: "Layout/DraggableLayout",
-  component: Flexbox,
-};
 
 let displaySequence = 1;
 
@@ -502,8 +491,10 @@ export const ComplexNestedLayout = () => {
 
                 <Flexbox resizeable style={{ flex: 1 }} path="">
                   <StackLayout
+                    TabstripProps={{
+                      allowAddTab: true,
+                    }}
                     showTabs
-                    enableAddTab
                     style={{ flex: 1 }}
                     keyBoardActivation="manual"
                   >
@@ -561,27 +552,6 @@ export const ComplexNestedLayout = () => {
 };
 
 ComplexNestedLayout.displaySequence = displaySequence++;
-
-export const NestedDragContainerWithPalette = () => (
-  <RecoilRoot>
-    <LayoutBuilder />
-  </RecoilRoot>
-);
-
-NestedDragContainerWithPalette.displaySequence = displaySequence++;
-
-export const NestedDragContainerWithPaletteAndSave = () => (
-  <RecoilRoot>
-    <LayoutBuilder />
-  </RecoilRoot>
-);
-
-NestedDragContainerWithPaletteAndSave.displaySequence = displaySequence++;
-
-export const NestedMultiDragContainerWithPaletteDrawer = () => (
-  <DrawerStackLayoutBuilder />
-);
-NestedMultiDragContainerWithPaletteDrawer.displaySequence = displaySequence++;
 
 export const ScrollingLayout = () => (
   <DraggableLayout>

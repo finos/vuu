@@ -1,2 +1,2 @@
 export * as DataGridSettings from "./DataGridSettings.examples";
-export * from "./Grid.stories";
+export * from "./Grid.examples";

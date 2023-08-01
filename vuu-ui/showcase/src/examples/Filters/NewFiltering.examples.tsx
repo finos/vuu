@@ -1,9 +1,10 @@
-import { useState } from "react";
 import { FilterClause } from "@finos/vuu-filters/src/filter-clause";
 import { Filter } from "@finos/vuu-filter-types";
 import { useSchemas, useTestDataSource } from "../utils";
-import { Input } from "@salt-ds/core";
-import "./NewFiltering.stories.css";
+
+import "./NewFiltering.examples.css";
+
+let displaySequence = 1;
 
 export const DefaultFilterClause = () => {
   const { schemas } = useSchemas();
@@ -27,25 +28,4 @@ export const DefaultFilterClause = () => {
     </div>
   );
 };
-
-// TODO: Delete this before merging
-export const OverridingInputWidthExample = () => {
-  const [inputValue, setInputValue] = useState("hello");
-
-  return (
-    <div style={{ width: "fit-content" }}>
-      <div
-        className="saltInputTest"
-        data-text={inputValue}
-        style={{ border: "2px solid red" }}
-      >
-        <Input
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          style={{ padding: 0 }}
-          textAlign="left"
-        />
-      </div>
-    </div>
-  );
-};
+DefaultFilterClause.displaySequence = displaySequence++;

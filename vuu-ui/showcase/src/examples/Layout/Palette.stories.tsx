@@ -6,15 +6,12 @@ import {
   Palette,
   PaletteItem,
   Placeholder,
-  View
+  View,
 } from "@finos/vuu-layout";
 
 import "./DraggableLayout.stories.css";
 
-export default {
-  title: "Layout/Palette",
-  component: Palette,
-};
+let displaySequence = 1;
 
 export const SimplePalette = () => (
   <LayoutProvider>
@@ -57,6 +54,7 @@ export const SimplePalette = () => (
     </Flexbox>
   </LayoutProvider>
 );
+SimplePalette.displaySequence = displaySequence++;
 
 export const StructuredPalette = () => (
   <View
@@ -71,10 +69,7 @@ export const StructuredPalette = () => (
       width: 200,
     }}
   >
-    <Palette
-      orientation="vertical"
-      style={{ width: "100%", height: "100%" }}
-    >
+    <Palette orientation="vertical" style={{ width: "100%", height: "100%" }}>
       <div data-header>Pages</div>
       <PaletteItem title="Blue Monday" resizeable header>
         <Component
@@ -119,3 +114,4 @@ export const StructuredPalette = () => (
     </Palette>
   </View>
 );
+StructuredPalette.displaySequence = displaySequence++;

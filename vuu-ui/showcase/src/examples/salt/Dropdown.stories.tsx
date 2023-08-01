@@ -5,13 +5,6 @@ import { Button } from "@salt-ds/core";
 import { ArrowDownIcon, ArrowUpIcon } from "@salt-ds/icons";
 import { usa_states } from "./List.data";
 
-const story = {
-  title: "UI Controls/Dropdown",
-  component: List,
-};
-
-export default story;
-
 let displaySequence = 1;
 
 export const DefaultDropdown = () => {

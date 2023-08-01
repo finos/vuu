@@ -134,7 +134,7 @@ export const AppSidePanel = ({
           <AccordionHeader>My Layouts</AccordionHeader>
           <AccordionPanel id="layouts" key={"layouts"}></AccordionPanel>
         </Accordion>
-        <Accordion value="tables">
+        <Accordion defaultExpanded value="tables">
           <AccordionHeader>Vuu Tables</AccordionHeader>
           <AccordionPanel id="tables" key={"tables"}>
             <>

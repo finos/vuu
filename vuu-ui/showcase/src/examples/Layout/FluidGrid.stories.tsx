@@ -1,16 +1,10 @@
-
 import { FluidGrid } from "@finos/vuu-layout";
 
 const RED = "rgba(255,0,0,.4)";
 const ORANGE = "rgba(255,165,0,.7)";
 const VIOLET = "rgba(238,130,238,.7)";
 
-const story = {
-  title: "Layout/FluidGrid",
-  component: FluidGrid,
-};
-
-export default story;
+let displaySequence = 1;
 
 export const ResponsiveDefault = () => (
   <FluidGrid
@@ -36,6 +30,8 @@ export const ResponsiveDefault = () => (
     <div data-xs={12} data-sm={3} style={{ backgroundColor: VIOLET }} />
   </FluidGrid>
 );
+
+ResponsiveDefault.displaySequence = displaySequence++;
 
 const breakPoints = { xs: 0, sm: 600, md: 960, lg: 1280 };
 
@@ -64,6 +60,7 @@ export const WithBreakPoints = () => (
     <div data-xs={12} data-sm={3} style={{ backgroundColor: "violet" }} />
   </FluidGrid>
 );
+WithBreakPoints.displaySequence = displaySequence++;
 
 export const ResponsiveStructure = () => (
   <FluidGrid
@@ -99,3 +96,4 @@ export const ResponsiveStructure = () => (
     <div data-xs={12} style={{ height: 32 }} />
   </FluidGrid>
 );
+ResponsiveStructure.displaySequence = displaySequence++;

@@ -9,7 +9,10 @@ import { useCell } from "./useCell";
 
 export interface TableCellProps {
   column: KeyedColumnDescriptor;
-  onClick?: (evt: MouseEvent, column: KeyedColumnDescriptor) => void;
+  onClick?: (
+    evt: MouseEvent<HTMLDivElement>,
+    column: KeyedColumnDescriptor
+  ) => void;
   row: DataSourceRow;
 }
 
@@ -21,7 +24,7 @@ export const TableGroupCell = ({ column, onClick, row }: TableCellProps) => {
   const { className, style } = useCell(column, "vuuTable2-groupCell");
 
   const handleClick = useCallback(
-    (evt: MouseEvent) => {
+    (evt: MouseEvent<HTMLDivElement>) => {
       onClick?.(evt, column);
     },
     [column, onClick]

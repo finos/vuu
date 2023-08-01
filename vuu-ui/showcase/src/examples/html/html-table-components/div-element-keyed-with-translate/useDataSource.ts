@@ -1,5 +1,6 @@
-import { DataSource, DataSourceRow } from "@finos/vuu-data";
+import { DataSource } from "@finos/vuu-data";
 import { VuuRange } from "@finos/vuu-protocol-types";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { useCallback, useEffect, useState } from "react";
 
 export const useDataSource = ({ dataSource }: { dataSource: DataSource }) => {

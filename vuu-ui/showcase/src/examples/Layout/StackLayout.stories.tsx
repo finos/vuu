@@ -2,14 +2,11 @@ import {
   Component,
   Flexbox,
   StackLayout as Stack,
-  View
+  View,
 } from "@finos/vuu-layout";
 import { StatefulComponent } from "./components";
 
-export default {
-  title: "Layout/StackLayout",
-  component: Stack,
-};
+let displaySequence = 1;
 
 export const FourTabs = () => {
   return (
@@ -29,6 +26,7 @@ export const FourTabs = () => {
     </Stack>
   );
 };
+FourTabs.displaySequence = displaySequence++;
 
 export const RemovableTabs = () => {
   return (
@@ -48,6 +46,7 @@ export const RemovableTabs = () => {
     </Stack>
   );
 };
+RemovableTabs.displaySequence = displaySequence++;
 
 export const EnableAddTab = () => {
   const createContent = (index: number) => (
@@ -63,8 +62,10 @@ export const EnableAddTab = () => {
 
   return (
     <Stack
+      TabstripProps={{
+        allowAddTab: true,
+      }}
       showTabs
-      enableAddTab
       createNewChild={createContent}
       style={{ width: 800, height: 500 }}
       active={0}
@@ -81,6 +82,7 @@ export const EnableAddTab = () => {
     </Stack>
   );
 };
+EnableAddTab.displaySequence = displaySequence++;
 
 export const EmptyStackAddTab = () => {
   const createContent = (index: number) => (
@@ -96,13 +98,16 @@ export const EmptyStackAddTab = () => {
 
   return (
     <Stack
+      TabstripProps={{
+        allowAddTab: true,
+      }}
       showTabs
-      enableAddTab
       createNewChild={createContent}
       style={{ width: 800, height: 500 }}
     ></Stack>
   );
 };
+EmptyStackAddTab.displaySequence = displaySequence++;
 
 export const TabsWithinTabs = () => (
   <Stack showTabs style={{ width: 800, height: 500 }} active={0}>
@@ -139,6 +144,7 @@ export const TabsWithinTabs = () => (
     </View>
   </Stack>
 );
+TabsWithinTabs.displaySequence = displaySequence++;
 
 export const SaveAndRestoreState = () => (
   <Stack showTabs style={{ width: 800, height: 500 }} active={0}>
@@ -165,3 +171,4 @@ export const SaveAndRestoreState = () => (
     </View>
   </Stack>
 );
+SaveAndRestoreState.displaySequence = displaySequence++;

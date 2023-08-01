@@ -5,7 +5,7 @@ import {
   StackLayout,
   View,
 } from "@finos/vuu-layout";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 let displaySequence = 1;
 
@@ -110,12 +110,7 @@ export const FourTabStackAllowAddCloseRenameTab = () => {
 FourTabStackAllowAddCloseRenameTab.displaySequence = displaySequence++;
 
 export const VerticalTabsControlled = () => {
-  const [active, setActive] = useState(0);
-
-  const handleTabSelection = useCallback((e, tabIndex) => {
-    console.log(`setActive ${tabIndex}`);
-    setActive(tabIndex);
-  }, []);
+  const [active] = useState(0);
 
   return (
     <LayoutProvider>
@@ -156,8 +151,10 @@ export const EmptyStackAddTab = () => {
 
   return (
     <StackLayout
+      TabstripProps={{
+        allowAddTab: true,
+      }}
       showTabs
-      enableAddTab
       createNewChild={createContent}
       style={{ width: 800, height: 500 }}
     ></StackLayout>
@@ -216,13 +213,8 @@ export const TabsWithFlexChildren = () => {
   };
 
   return (
-    <LayoutProvider>
-      <StackLayout
-        showTabs
-        style={{ width: 800, height: 500 }}
-        active={0}
-        onLayoutChange={handleLayoutChange}
-      >
+    <LayoutProvider onLayoutChange={handleLayoutChange}>
+      <StackLayout showTabs style={{ width: 800, height: 500 }} active={0}>
         <Flexbox
           title="Tower"
           style={{ flexDirection: "column", flex: 1 }}

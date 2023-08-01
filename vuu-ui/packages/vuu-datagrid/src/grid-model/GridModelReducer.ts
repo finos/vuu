@@ -1,6 +1,7 @@
-import { metadataKeys } from "@finos/vuu-utils";
+import { isSimpleColumnType, metadataKeys } from "@finos/vuu-utils";
 import {
   ColumnDescriptor,
+  ColumnTypeSimple,
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import {
@@ -34,7 +35,8 @@ import {
   GridModelActionResizeColumn,
   GridModelActionResizeHeading,
   GridModelActionRowHeight,
-  GridModelActionSetColumns,
+  GridModelActionSetAvailableColumns,
+  GridModelActionShowColumn,
   GridModelActionSort,
 } from "../grid-context";
 import { isMeasured, MeasuredSize } from "./useMeasuredSize";
@@ -42,7 +44,7 @@ import { Reducer } from "react";
 
 const DEFAULT_COLUMN_MIN_WIDTH = 30;
 const DEFAULT_COLUMN_WIDTH = 80;
-const DEFAULT_COLUMN_TYPE = { name: "string" };
+const DEFAULT_COLUMN_TYPE = { name: "string" as ColumnTypeSimple };
 const CHECKBOX_COLUMN: KeyedColumnDescriptor = {
   label: "",
   name: "",
@@ -319,7 +321,7 @@ function resizeGrid(
 
 function setAvailableColumns(
   state: GridModelType,
-  action: GridModelActionSetColumns
+  action: GridModelActionSetAvailableColumns
 ) {
   if (!state.columnGroups && isMeasured(state)) {
     const { columnNames, columnGroups, headingDepth } = buildColumnGroups(
@@ -494,9 +496,8 @@ function hideColumn(
   };
 }
 
-function showColumn(
-  state: GridModelType /*, action: GridModelActionShowColumn*/
-) {
+function showColumn(state: GridModelType, action: GridModelActionShowColumn) {
+  console.log(`show column ${action.column.name}}`);
   return state;
 }
 
@@ -737,12 +738,12 @@ function buildColumnGroups(
         locked,
         name,
         key,
-        type:
-          typeof type === "string"
-            ? { name: type }
-            : type
-            ? type
-            : DEFAULT_COLUMN_TYPE,
+        type: isSimpleColumnType(type)
+          ? { name: type }
+          : type
+          ? type
+          : DEFAULT_COLUMN_TYPE,
+        valueFormatter: undefined,
         width,
       })
     );

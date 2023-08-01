@@ -136,12 +136,13 @@ export const PopupMenuUsingLocationAndContext = () => {
   );
 
   const menuHandler = useMemo<MenuActionHandler>(
-    () => (type /*, options*/) => {
-      if (type === "action-1" || type === "action-1") {
-        // invoke our action here
-        return true;
-      }
-    },
+    () =>
+      ({ menuId }) => {
+        if (menuId === "action-1" || menuId === "action-1") {
+          // invoke our action here
+          return true;
+        }
+      },
     []
   );
 

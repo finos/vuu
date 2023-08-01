@@ -4,7 +4,6 @@ import {
   ColumnType,
   ColumnTypeDescriptor,
   ColumnTypeRenderer,
-  ColumnTypeSimple,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
   MappedValueTypeRenderer,
@@ -123,6 +122,21 @@ export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
 export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
   name,
 });
+
+export const isSimpleColumnType = (value: unknown): value is ColumnTypeSimple =>
+  typeof value === "string" &&
+  ["string", "number", "boolean", "json", "date", "time", "checkbox"].includes(
+    value
+  );
+
+export declare type ColumnTypeSimple =
+  | "string"
+  | "number"
+  | "boolean"
+  | "json"
+  | "date"
+  | "time"
+  | "checkbox";
 
 export const isTypeDescriptor = (
   type?: ColumnType

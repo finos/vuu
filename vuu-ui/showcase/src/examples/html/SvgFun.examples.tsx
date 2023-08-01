@@ -8,6 +8,8 @@ import {
 import "./SvgFun.keyframes.css";
 import "./SvgFun.examples.css";
 
+let displaySequence = 0;
+
 export const SvgArrowAnimations = () => {
   return (
     <div style={{ display: "flex", gap: 20, height: "100%" }}>
@@ -43,3 +45,5 @@ export const SvgArrowAnimations = () => {
     </div>
   );
 };
+
+SvgArrowAnimations.displaySequence = displaySequence++;

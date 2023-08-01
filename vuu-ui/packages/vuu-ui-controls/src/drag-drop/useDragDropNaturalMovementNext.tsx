@@ -37,8 +37,7 @@ export const useDragDropNaturalMovement = ({
 
   const [showOverflow, setShowOverflow] = useState(false);
 
-  const { clearDisplacedItem, clearSpacers, displaceItem, displaceLastItem } =
-    useDragDisplacers();
+  const { clearSpacers, displaceItem, displaceLastItem } = useDragDisplacers();
 
   const draggedItemRef = useRef<MeasuredDropTarget>();
   const fullItemQuery = `:is(${itemQuery}${NOT_OVERFLOWED}${NOT_HIDDEN},.vuuOverflowContainer-OverflowIndicator)`;
@@ -54,8 +53,8 @@ export const useDragDropNaturalMovement = ({
   rangeRef.current = viewportRange;
 
   const handleScrollStart = useCallback(() => {
-    clearDisplacedItem();
-  }, [clearDisplacedItem]);
+    clearSpacers();
+  }, [clearSpacers]);
 
   const handleScrollStop = useCallback(
     (scrollDirection: "fwd" | "bwd", _scrollPos: number, atEnd: boolean) => {

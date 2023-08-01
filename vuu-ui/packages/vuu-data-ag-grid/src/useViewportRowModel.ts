@@ -267,10 +267,14 @@ export const useViewportRowModel = ({
 
   const menuHandler = useCallback(
     (field: string, row: AgData) => (options?: { [key: string]: unknown }) => {
-      handleMenuAction("MENU_RPC_CALL", {
-        ...options,
-        row,
-        rowKey: row.vuuKey,
+      handleMenuAction({
+        menuId: "MENU_RPC_CALL",
+        options: {
+          ...options,
+          row,
+          rowKey: row.vuuKey,
+        },
+        type: "menu-action",
       });
       console.log("menu action invoked", {
         options,

@@ -1,9 +1,6 @@
 import { Component, View } from "@finos/vuu-layout";
 
-export default {
-  title: "Layout/View",
-  component: View,
-};
+let displaySequence = 1;
 
 export const ComponentWithBorderAndHeader = ({ width = 500, height = 400 }) => (
   <View
@@ -20,3 +17,4 @@ export const ComponentWithBorderAndHeader = ({ width = 500, height = 400 }) => (
     <Component />
   </View>
 );
+ComponentWithBorderAndHeader.displaySequence = displaySequence++;

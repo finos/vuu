@@ -1,2 +1,2 @@
-export * from "./FilterInput.stories";
-export * from "./NewFiltering.stories";
+export * from "./FilterInput.examples";
+export * from "./NewFiltering.examples";

@@ -1,13 +1,8 @@
 import { SyntheticEvent } from "react";
 
-import { Tree, useItemsWithIds } from "@finos/vuu-ui-controls";
+import { Tree, TreeSourceNode, useItemsWithIds } from "@finos/vuu-ui-controls";
 import { groupByInitialLetter, usa_states_cities } from "./List/List.data";
 import { folderData } from "./Tree.data";
-
-export default {
-  title: "UI Controls/Tree",
-  component: Tree,
-};
 
 let displaySequence = 1;
 
@@ -84,6 +79,7 @@ export const SimpleTreeIcons = () => {
     </div>
   );
 };
+SimpleTreeIcons.displaySequence = displaySequence++;
 
 export const DragDropTreeIcons = () => {
   const handleChange = (e: SyntheticEvent, selected: string[]) => {
@@ -114,7 +110,7 @@ export const DragDropTreeIcons = () => {
   );
 };
 
-SimpleTreeIcons.displaySequence = displaySequence++;
+DragDropTreeIcons.displaySequence = displaySequence++;
 
 export const RevealSelected = () => {
   const handleChange = (e: SyntheticEvent, selected: string[]) => {

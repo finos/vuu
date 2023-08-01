@@ -5,6 +5,8 @@ import { CSSProperties, useState } from "react";
 
 import "@heswell/component-anatomy/esm/index.css";
 
+let displaySequence = 1;
+
 const toolbarStyle = {
   "--saltToolbar-background": "white",
 } as CSSProperties;
@@ -20,6 +22,7 @@ export const DefaultHeader = () => {
     />
   );
 };
+DefaultHeader.displaySequence = displaySequence++;
 
 export const HeaderWithTabs = () => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -80,6 +83,7 @@ export const HeaderWithTabs = () => {
     </Flexbox>
   );
 };
+HeaderWithTabs.displaySequence = displaySequence++;
 
 export const HeaderWithTitle = () => {
   return (
@@ -101,3 +105,4 @@ export const HeaderWithTitle = () => {
     </Flexbox>
   );
 };
+HeaderWithTitle.displaySequence = displaySequence++;

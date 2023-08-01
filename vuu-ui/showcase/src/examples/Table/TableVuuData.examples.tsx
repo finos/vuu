@@ -781,7 +781,7 @@ export const HiddenColumns = () => {
 };
 HiddenColumns.displaySequence = displaySequence++;
 
-export const toColumnDescriptor =
+const toColumnDescriptor =
   (schema: TableSchema) =>
   (columnName: string): ColumnDescriptor => {
     const column = schema.columns.find(({ name }) => name === columnName);

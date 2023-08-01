@@ -137,3 +137,4 @@ const InlineDrawer = ({
 export const RightInlineDrawerPeek = () => (
   <InlineDrawer position="right" inline peekaboo />
 );
+RightInlineDrawerPeek.displaySequence = displaySequence++;
