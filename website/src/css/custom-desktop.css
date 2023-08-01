@@ -30,6 +30,7 @@
     );
 
   --vuu-transition-duration: .3s;  
+  --vuu-viewport-width: 1440px;
 
   --ifm-color-emphasis-300: transparent;
   --ifm-color-primary: #00b5e2;
@@ -86,7 +87,7 @@ body {
   align-items: center;
   color: var(--vuu-dark-text-primary);
   position: relative;
-  /* width: var(--vuu-desktop-width); */
+  /* width: var(--vuu-viewport-width); */
   width: 100%;
 }
 
@@ -96,7 +97,7 @@ body {
   padding: 0;
   position: fixed;
   transition: box-shadow 1s linear;
-  width: var(--vuu-desktop-width);
+  width: var(--vuu-viewport-width);
 }
 
 .navbar:before {
@@ -157,7 +158,7 @@ body {
 
 .vuu-section {
   overflow: hidden;
-  width: var(--vuu-desktop-width);
+  width: var(--vuu-viewport-width);
 }
 
 .vuu-scroll-1-bg {
@@ -166,7 +167,7 @@ body {
   left: 0px;
   position: absolute;
   top:0px;
-  /* width: var(--vuu-desktop-width); */
+  /* width: var(--vuu-viewport-width); */
   width: 100%;
   z-index: -1;
 }
@@ -224,7 +225,7 @@ body {
 }
 
 .vuu-main {
-  width: var(--vuu-desktop-width);
+  width: var(--vuu-viewport-width);
 }
 
 .vuu-frame-10 {
@@ -273,9 +274,6 @@ body {
   width: 694px;
 }
 
-.vuu-sample-app {
-
-}
 
 
 .vuu-get-started-button {

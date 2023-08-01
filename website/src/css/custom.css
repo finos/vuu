@@ -27,6 +27,8 @@
     );
 
   --vuu-transition-duration: .3s;  
+  --vuu-viewport-width: 100%;
+
 
   --ifm-color-emphasis-300: transparent;
   --ifm-color-primary: #00b5e2;
@@ -399,7 +401,6 @@ body {
 @media (max-width: 996px){
   
   :root {
-    --vuu-viewport-width: var(--vuu-mobile-width);
     --vuu-navbar-logo-size: 30px;
     --ifm-navbar-height: 90px;
     --vuu-navbar-height: 90px;

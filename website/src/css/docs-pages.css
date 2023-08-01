@@ -29,11 +29,11 @@
   }
   
   .docs-doc-page .navbar__inner {
-    width: var(--vuu-desktop-width);
+    width: var(--vuu-viewport-width);
   }
   
   .docs-doc-page .main-wrapper {
-    width: var(--vuu-desktop-width);
+    width: var(--vuu-viewport-width);
 
   }
 

@@ -47,8 +47,7 @@
 --vuu-light-icon: #777C94;
 
 --vuu-dark-body-bg: black;
---vuu-desktop-width: 1440px;
 --vuu-mobile-width: 100%;
---vuu-viewport-width: var(var(--vuu-desktop-width));
+--vuu-viewport-width: unset;
 
 }

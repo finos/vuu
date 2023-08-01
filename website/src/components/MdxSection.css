@@ -18,6 +18,19 @@
     margin-left: 32px;
 }
 
+@media (max-width: 996px){
+    .vuu-section-2-col-1,
+    .vuu-section-2-col-2 {
+    --vuu-section-width: 100%;
+    }
+
+    .vuu-section-2-col-2 {
+    margin-left: 0px;
+    }
+
+}
+
+
 .vuuMdxSection-heading {
     align-items: center;
     background: linear-gradient(180deg, #2A015F 0%, #1D0041 100%);
