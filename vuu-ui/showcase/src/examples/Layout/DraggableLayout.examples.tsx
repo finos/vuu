@@ -15,7 +15,7 @@ import {
 
 import { Brown, StatefulComponent } from "./components";
 
-import "./DraggableLayout.stories.css";
+import "./DraggableLayout.examples.css";
 
 let displaySequence = 1;
 

@@ -9,7 +9,7 @@ import {
   View,
 } from "@finos/vuu-layout";
 
-import "./DraggableLayout.stories.css";
+import "./DraggableLayout.examples.css";
 
 let displaySequence = 1;
 
