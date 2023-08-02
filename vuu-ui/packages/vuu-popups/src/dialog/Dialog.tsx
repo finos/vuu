@@ -1,5 +1,5 @@
-import { Scrim, Toolbar, ToolbarButton } from "@heswell/salt-lab";
-import { Text } from "@salt-ds/core";
+import { Scrim } from "@salt-ds/lab";
+import { Button, Text } from "@salt-ds/core";
 import cx from "classnames";
 import { HTMLAttributes, useCallback, useRef, useState } from "react";
 import { Portal } from "../portal";
@@ -48,15 +48,15 @@ export const Dialog = ({
     <Portal onRender={handleRender} x={posX} y={posY}>
       <Scrim className={`${classBase}-scrim`} open={isOpen}>
         <div {...props} className={cx(classBase, className)} ref={root}>
-          <Toolbar className={`${classBase}-header`}>
+          <div className={cx("vuuToolbarProxy", `${classBase}-header`)}>
             <Text>{title}</Text>
-            <ToolbarButton
+            <Button
               key="close"
               onClick={close}
-              data-align-end
+              data-align="end"
               data-icon="close"
             />
-          </Toolbar>
+          </div>
           {children}
         </div>
       </Scrim>

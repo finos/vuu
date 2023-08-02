@@ -1,14 +1,9 @@
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
-} from "@heswell/salt-lab";
 import cx from "classnames";
-import { useControlled } from "@salt-ds/core";
-import { HTMLAttributes, useCallback } from "react";
+import { ToggleButton, ToggleButtonGroup, useControlled } from "@salt-ds/core";
+import { HTMLAttributes, SyntheticEvent, useCallback } from "react";
+import { ThemeMode } from "../theme-provider";
 
 import "./ThemeSwitch.css";
-import { ThemeMode } from "../theme-provider";
 
 const classBase = "vuuThemeSwitch";
 export interface ThemeSwitchProps
@@ -17,8 +12,6 @@ export interface ThemeSwitchProps
   mode?: ThemeMode;
   onChange: (mode: ThemeMode) => void;
 }
-
-const modes: ThemeMode[] = ["light", "dark"];
 
 export const ThemeSwitch = ({
   className: classNameProp,
@@ -34,35 +27,24 @@ export const ThemeSwitch = ({
     state: "mode",
   });
 
-  const selectedIndex = modes.indexOf(mode);
-
-  const handleChangeSecondary: ToggleButtonGroupChangeEventHandler =
-    useCallback(
-      (_evt, index) => {
-        const mode = modes[index];
-        setMode(mode);
-        onChange(mode);
-      },
-      [onChange, setMode]
-    );
+  const handleChangeSecondary = useCallback(
+    (evt: SyntheticEvent<HTMLButtonElement>) => {
+      const { value } = evt.target as HTMLButtonElement;
+      setMode(value as ThemeMode);
+      onChange(value as ThemeMode);
+    },
+    [onChange, setMode]
+  );
   const className = cx(classBase, classNameProp);
   return (
     <ToggleButtonGroup
       className={className}
       {...htmlAttributes}
       onChange={handleChangeSecondary}
-      selectedIndex={selectedIndex}
+      value={mode}
     >
-      <ToggleButton
-        aria-label="alert"
-        tooltipText="Light Theme"
-        data-icon="light"
-      />
-      <ToggleButton
-        aria-label="home"
-        tooltipText="Dark Theme"
-        data-icon="dark"
-      />
+      <ToggleButton aria-label="alert" data-icon="light" value="dark" />
+      <ToggleButton aria-label="home" data-icon="dark" value="light" />
     </ToggleButtonGroup>
   );
 };

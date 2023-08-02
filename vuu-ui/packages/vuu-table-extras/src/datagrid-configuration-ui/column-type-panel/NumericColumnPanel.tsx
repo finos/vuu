@@ -1,6 +1,6 @@
 import { ColumnType } from "@finos/vuu-datagrid-types";
-import { FormField, StepperInput, Switch } from "@heswell/salt-lab";
-import { Text } from "@salt-ds/core";
+import { StepperInput, Switch } from "@salt-ds/lab";
+import { FormField, FormFieldLabel, Text } from "@salt-ds/core";
 import { useCallback } from "react";
 import { ColumnTypePanelProps } from "./ColumnTypePanel";
 
@@ -80,7 +80,8 @@ export const NumericColumnPanel = ({
     case "double":
       return (
         <>
-          <FormField label="No of Decimals" labelPlacement="top">
+          <FormField labelPlacement="top">
+            <FormFieldLabel>No of Decimals</FormFieldLabel>
             <StepperInput value={decimals} onChange={handleChangeDecimals} />
           </FormField>
           <Switch

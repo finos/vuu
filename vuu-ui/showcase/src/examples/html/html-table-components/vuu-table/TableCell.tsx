@@ -1,7 +1,7 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { MouseEvent } from "react";
-import { useCell } from "../table-next/useCell";
+import { useCell } from "../useCell";
 
 export interface TableCellProps {
   column: KeyedColumnDescriptor;

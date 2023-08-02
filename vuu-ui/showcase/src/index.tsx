@@ -1,13 +1,14 @@
 import ReactDOM from "react-dom";
 import { getUrlParameter, hasUrlParameter } from "@finos/vuu-utils";
 
+import "@salt-ds/theme/index.css";
 import "@finos/vuu-theme/index.css";
-import "@finos/vuu-theme-purple/index.css";
-import "@heswell/component-anatomy/esm/index.css";
+import "@finos/vuu-icons/index.css";
 
 import "./index.css";
 import { ThemeProvider } from "@finos/vuu-shell";
 import { addStylesheetURL } from "./utils";
+import { ExamplesModule } from "./App";
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
@@ -68,6 +69,8 @@ if (hasUrlParameter("standalone")) {
   for (const importPath of targetPaths) {
     try {
       console.log(`import from ${importPath}`);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       targetExamples = await import(/* @vite-ignore */ importPath);
       if (importPath.endsWith("index")) {
         const parentFolder = importPath.split("/").at(-2);
@@ -114,11 +117,11 @@ if (hasUrlParameter("standalone")) {
   }
 } else {
   import("./examples/index")
-    .then((stories) => {
+    .then((stories: ExamplesModule) => {
       import("./AppRoutes")
         .then(({ AppRoutes }) => {
           ReactDOM.render(
-            <AppRoutes stories={stories} />,
+            <AppRoutes stories={stories as ExamplesModule} />,
             document.getElementById("root")
           );
         })

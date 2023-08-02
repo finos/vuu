@@ -28,7 +28,14 @@ export const useTable = ({
     [config.columns]
   );
   const columns: KeyedColumnDescriptor[] = useMemo(
-    () => config.columns.map((col) => ({ ...col, key: columnMap[col.name] })),
+    () =>
+      config.columns.map((col) => ({
+        ...col,
+        key: columnMap[col.name],
+        label: col.label ?? col.name,
+        valueFormatter: undefined,
+        width: col.width ?? 100,
+      })),
     [columnMap, config.columns]
   );
 

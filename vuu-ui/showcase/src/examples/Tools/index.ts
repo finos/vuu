@@ -1,1 +1,1 @@
-export * from './LayoutConfigurator.stories';
+export * from "./LayoutConfigurator.examples";

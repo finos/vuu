@@ -11,6 +11,8 @@ import { AppSidePanel } from "app-vuu-example/src/app-sidepanel";
 import { useMockFeatureData } from "../utils/mock-data";
 import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
 
+let displaySequence = 1;
+
 export const DefaultAppSidePanel = () => {
   const { features, schemas } = useMockFeatureData();
   return (
@@ -28,6 +30,7 @@ export const DefaultAppSidePanel = () => {
     </LayoutProvider>
   );
 };
+DefaultAppSidePanel.displaySequence = displaySequence++;
 
 export const VuuConnectedAppSidePanel = () => {
   const error = useAutoLoginToVuuServer();
@@ -53,3 +56,4 @@ export const VuuConnectedAppSidePanel = () => {
     </LayoutProvider>
   );
 };
+VuuConnectedAppSidePanel.displaySequence = displaySequence++;

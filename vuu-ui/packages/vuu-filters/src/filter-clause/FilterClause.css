@@ -31,7 +31,7 @@
   border-color: var(--vuuPurple-accent2);
 }
 
-.vuu-purple-density-high .vuuFilterClause {
+.vuu-density-high .vuuFilterClause {
   height: 24px;
   padding: 3px 7px;
   gap: 4px;
@@ -40,7 +40,7 @@
   --saltInputLegacy-minWidth: 12px;
 }
 
-.vuu-purple-density-high .vuuFilterClause .saltInput {
+.vuu-density-high .vuuFilterClause .saltInput {
   padding: 0;
   min-height: 16px;
   height: 16px;
@@ -70,7 +70,7 @@
   background-color: red;
 }
 
-.vuu-purple-density-high .saltDropdown {
+.vuu-density-high .saltDropdown {
   height: 16px;
   padding: 1px 0;
 }
@@ -90,7 +90,7 @@
   color: #ffffff;
 }
 
-.vuu-purple-theme .saltList,
+.vuu-theme .saltList,
 .saltListDeprecated {
   --list-borderWidth: 1px;
   --salt-container-primary-borderColor: var(--vuuPurple-accent2);

@@ -17,7 +17,7 @@ type Measurement = {
 
 export const ListVisualizer: React.FC<unknown> = ({ children }) => {
   const [content, setContent] = useState<Measurement[]>([]);
-  const [dropTarget, setDropTarget] = useState([]);
+  const [dropTarget, setDropTarget] = useState<unknown>();
   const [dropZone, setDropZone] = useState([]);
   const [vizKey, setVisKey] = useState(1);
 

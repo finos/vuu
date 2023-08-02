@@ -7,7 +7,6 @@ import { createDragSpacer as createDragDisplacer } from "./Draggable";
 import { Direction } from "./dragDropTypesNext";
 
 export type DragDisplacersHookResult = {
-  clearDisplacedItem: () => void;
   displaceItem: (
     dropTargets: MeasuredDropTarget[],
     dropTarget: MeasuredDropTarget,
@@ -68,10 +67,6 @@ export const useDragDisplacers: DragDisplacersHook = () => {
       animationFrame.current = 0;
     }
   }, []);
-
-  const clearDisplacedItem = useCallback(() => {
-    clearSpacers();
-  }, [clearSpacers]);
 
   const displaceItem = useCallback(
     (
@@ -163,7 +158,6 @@ export const useDragDisplacers: DragDisplacersHook = () => {
   );
 
   return {
-    clearDisplacedItem,
     displaceItem,
     displaceLastItem,
     clearSpacers,

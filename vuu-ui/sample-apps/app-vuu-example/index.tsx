@@ -3,7 +3,8 @@ import ReactDOM from "react-dom";
 import { App } from "./src/App";
 import { getAuthDetailsFromCookies, redirectToLogin } from "@finos/vuu-shell";
 
-import "@finos/vuu-theme/index.css";
+import "@salt-ds/theme/index.css";
+import "@finos/vuu-icons/icons.css";
 
 const [username, token] = getAuthDetailsFromCookies();
 if (!username || !token) {

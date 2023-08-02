@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { getRegisteredCellRenderers } from "@finos/vuu-utils";
-import { Dropdown } from "@heswell/salt-lab";
+import { Dropdown } from "@salt-ds/lab";
 import { Panel, PanelProps } from "@salt-ds/core";
 import cx from "classnames";
 import { Dispatch, useMemo } from "react";

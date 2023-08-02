@@ -1,5 +1,6 @@
+import { orientationType } from "@finos/vuu-utils";
 import { ViewportRange } from "./dragDropTypesNext";
-import { Direction, orientationType, Rect } from "./dragDropTypesNext";
+import { Direction, Rect } from "./dragDropTypesNext";
 
 const LEFT_RIGHT = ["left", "right"];
 const TOP_BOTTOM = ["top", "bottom"];

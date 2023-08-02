@@ -1,7 +1,6 @@
 import { Flexbox, View } from "@finos/vuu-layout";
-import { Toolbar } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
-import { CSSProperties, HTMLAttributes, useCallback, useState } from "react";
+import { HTMLAttributes, useCallback, useState } from "react";
 import { Box } from "./Box";
 
 interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
@@ -57,11 +56,15 @@ const FlexColStretchContainer = ({ children, size }: ContainerProps) => (
 );
 
 const getContainer = (type: ContainerType) => {
-  switch(type){
-    case "sized": return SizedContainer;
-    case "flex-row-stretch": return FlexRowStretchContainer;
-    case "flex-col-stretch": return FlexColStretchContainer;
-    default:return UnSizedContainer;
+  switch (type) {
+    case "sized":
+      return SizedContainer;
+    case "flex-row-stretch":
+      return FlexRowStretchContainer;
+    case "flex-col-stretch":
+      return FlexColStretchContainer;
+    default:
+      return UnSizedContainer;
   }
 };
 
@@ -80,9 +83,7 @@ export const AdventuresOfA100PercentBox = () => {
 
   return (
     <>
-      <Toolbar
-        style={{ "--saltToolbar-alignItems": "center" } as CSSProperties}
-      >
+      <div className="vuuToolbarProxy">
         <Button onClick={() => setTarget("sized")}>Sized Container</Button>
         <Button onClick={() => setTarget("unsized")}>Unsized Container</Button>
         <Button onClick={() => setTarget("flex-row-stretch")}>
@@ -94,7 +95,7 @@ export const AdventuresOfA100PercentBox = () => {
         <Button onClick={() => toggleSize()} disabled={target === "unsized"}>
           {containerSize === "small" ? "Make Larger" : "Make Smaller"}
         </Button>
-      </Toolbar>
+      </div>
       <Container size={containerSize}>
         <Box />
       </Container>

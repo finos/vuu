@@ -1,7 +1,13 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
-import { FormField, Input } from "@heswell/salt-lab";
-import { Button, Panel, Text } from "@salt-ds/core";
+import {
+  Button,
+  FormField,
+  FormFieldLabel,
+  Input,
+  Panel,
+  Text,
+} from "@salt-ds/core";
 import {
   ChangeEventHandler,
   Dispatch,
@@ -76,7 +82,8 @@ export const CalculatedColumnPanel = ({
   return (
     <Panel className="vuuCalculatedColumnPanel" title="Define Computed Column">
       <Text styleAs="h4">Define Computed Column</Text>
-      <FormField label="Column Name" labelPlacement="left">
+      <FormField labelPlacement="left">
+        <FormFieldLabel>Column Name</FormFieldLabel>
         <Input value={columnName} onChange={handleChangeName} />
       </FormField>
       <ColumnExpressionInput

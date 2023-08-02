@@ -1,4 +1,5 @@
 import { MouseEventHandler, RefObject } from "react";
+import { orientationType } from "@finos/vuu-utils";
 
 //-----------------------------------
 // From useScrollPosition in List
@@ -23,7 +24,6 @@ export type dimensionsType = {
   vertical: dimensions;
 };
 
-export type orientationType = keyof dimensionsType;
 //-----------------------------------
 
 export type dragStrategy = "drop-indicator" | "natural-movement";

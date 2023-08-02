@@ -1,28 +1,27 @@
+import { DataSourceRow } from "@finos/vuu-data-types";
+import { useContextMenu } from "@finos/vuu-popups";
+import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
 import {
   createRef,
+  ForwardedRef,
   forwardRef,
   MouseEvent,
   RefObject,
   useCallback,
-  useImperativeHandle,
   useEffect,
+  useImperativeHandle,
   useLayoutEffect,
   useRef,
-  ForwardedRef,
 } from "react";
-import { useContextMenu } from "@finos/vuu-popups";
-import { useEffectSkipFirst } from "./utils";
-import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
-import useScroll from "./use-scroll";
-import useUpdate from "./use-update";
-import { SubscriptionDetails, useDataSource } from "./grid-hooks";
-import { getColumnGroupColumnIdx } from "./grid-model/gridModelUtils.js";
-
 import { Canvas, CanvasAPI } from "./canvas";
 import { ColumnBearer, ColumnBearerAPI } from "./ColumnBearer";
-import InsertIndicator from "./InsertIndicator";
+import { SubscriptionDetails, useDataSource } from "./grid-hooks";
+import { getColumnGroupColumnIdx } from "./grid-model/gridModelUtils.js";
 import { ViewportProps } from "./gridTypes";
-import { DataSourceRow } from "@finos/vuu-data";
+import InsertIndicator from "./InsertIndicator";
+import useScroll from "./use-scroll";
+import useUpdate from "./use-update";
+import { useEffectSkipFirst } from "./utils";
 
 export interface ViewportScrollApi {
   beginHorizontalScroll: () => void;
@@ -145,7 +144,7 @@ export const Viewport = forwardRef(function Viewport(
   const subscriptionDetails = useRef<SubscriptionDetails>({
     columnNames,
     range: getRoundedRange(0),
-    sort: sort?.sortDefs,
+    sort,
   });
 
   const handleSizeChange = useCallback(

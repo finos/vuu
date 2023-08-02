@@ -1,10 +1,11 @@
-import { DataSourceRow, RemoteDataSource } from "@finos/vuu-data";
+import { RemoteDataSource } from "@finos/vuu-data";
+
 import { VuuGroupBy } from "@finos/vuu-protocol-types";
-import { Toolbar } from "@heswell/salt-lab";
 import { Button } from "@salt-ds/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
 import { metadataKeys } from "@finos/vuu-utils";
+import { DataSourceRow } from "packages/vuu-data-types";
 
 import "./Performance.examples.css";
 
@@ -172,7 +173,7 @@ export const TreePerformance = () => {
     <div
       style={{ display: "flex", width: 900, height: 900, background: "yellow" }}
     >
-      <Toolbar className="vuuPerfExamplesToolbar" orientation="vertical">
+      <div className="vuuToolbarProxy vuuToolbarProxy-vertical vuuPerfExamplesToolbar">
         <Button disabled={disableButtons} onClick={handleAddRows}>
           Add 1 Million rows
         </Button>
@@ -203,7 +204,7 @@ export const TreePerformance = () => {
         <Button disabled={disableButtons} onClick={() => handleGroupBy([])}>
           Clear GroupBy
         </Button>
-      </Toolbar>
+      </div>
       <div style={{ padding: 12 }}>
         <div>Parent Orders: {parentOrderCount}</div>
         <div>Child Orders: {childOrderCount}</div>

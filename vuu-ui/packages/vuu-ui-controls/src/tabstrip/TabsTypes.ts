@@ -5,11 +5,10 @@ import type {
   MouseEvent,
   ReactElement,
 } from "react";
+import { orientationType } from "@finos/vuu-utils";
 
 import type { EditableLabelProps } from "../editable-label";
 import type { MenuActionHandler } from "packages/vuu-data-types";
-
-export type orientationType = "horizontal" | "vertical";
 
 export type ExitEditModeHandler = (
   originalValue: string,

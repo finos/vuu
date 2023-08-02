@@ -34,7 +34,7 @@ import {
   useShellContext,
 } from "@finos/vuu-shell";
 import { filterAsQuery } from "@finos/vuu-utils";
-import { ToolbarButton } from "@heswell/salt-lab";
+import { Button } from "@salt-ds/core";
 import { LinkedIcon } from "@salt-ds/icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -137,9 +137,9 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
           type: "add-toolbar-contribution",
           location: "post-title",
           content: (
-            <ToolbarButton aria-label="remove-link" onClick={removeVisualLink}>
+            <Button aria-label="remove-link" onClick={removeVisualLink}>
               <LinkedIcon />
-            </ToolbarButton>
+            </Button>
           ),
         });
         save?.(action, "visual-link");

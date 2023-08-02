@@ -6,23 +6,31 @@ import {
   ThemeProvider,
   ThemeSwitch,
 } from "@finos/vuu-shell";
-import { Dropdown, Toolbar, ToolbarButton } from "@heswell/salt-lab";
-import { Text } from "@salt-ds/core";
-import { IFrame, TreeSourceNode } from "./components";
-
+import { Dropdown } from "@salt-ds/lab";
+import { Button, Text } from "@salt-ds/core";
+import { IFrame } from "./components";
 import { ReactElement, useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Tree } from "./components";
+import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
 
 import "./App.css";
 
-type VuuExample = (() => ReactElement) & {
-  displaySequence?: number;
+// export type VuuExample = ((props?: unknown) => ReactElement) & {
+//   displaySequence?: number;
+// };
+
+export type VuuExample = {
+  (props?: any): JSX.Element;
+  displaySequence: number;
 };
 
-type VuuTuple = [string, VuuExample | Examples];
+export interface ExamplesModule {
+  [key: string]: ExamplesModule | VuuExample;
+}
 
-const isVuuExample = (item: VuuExample | Examples): item is VuuExample =>
+type VuuTuple = [string, VuuExample | ExamplesModule];
+
+const isVuuExample = (item: VuuExample | ExamplesModule): item is VuuExample =>
   typeof item === "function";
 
 const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
@@ -46,7 +54,7 @@ const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
 };
 
 const sourceFromImports = (
-  stories: Examples,
+  stories: ExamplesModule,
   prefix = "",
   icon = "folder"
 ): TreeSourceNode[] =>
@@ -70,17 +78,14 @@ const sourceFromImports = (
       };
     });
 
-interface Examples {
-  [key: string]: Examples | VuuExample;
-}
 export interface AppProps {
-  stories: Examples;
+  stories: ExamplesModule;
 }
 
 type ThemeDescriptor = { label?: string; id: string };
 
 const availableThemes: ThemeDescriptor[] = [
-  { id: "vuu-purple", label: "Purple Vuu" },
+  { id: "vuu", label: "Vuu Classic" },
   { id: "salt", label: "Salt Classic" },
 ];
 
@@ -94,7 +99,7 @@ export const App = ({ stories }: AppProps) => {
   const [density, setDensity] = useState<Density>("high");
 
   const launchStandaloneWindow = useCallback(() => {
-    window.open(`${location.href}?standalone&theme=vuu-purple`, "_blank");
+    window.open(`${location.href}?standalone&theme=vuu`, "_blank");
   }, []);
 
   const handleThemeChange = useCallback(
@@ -117,9 +122,9 @@ export const App = ({ stories }: AppProps) => {
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
-        <Toolbar className="ShowcaseToolbar">
+        <div className="vuuToolbarProxy ShowcaseToolbar" style={{ height: 30 }}>
           <Text styleAs="h3">Vuu Showcase</Text>
-        </Toolbar>
+        </div>
         <Flexbox style={{ flexDirection: "row", flex: 1 }}>
           <Tree
             className="ShowcaseNav"
@@ -140,8 +145,12 @@ export const App = ({ stories }: AppProps) => {
               resizeable
               style={{ flexDirection: "column", flex: "1 1 auto" }}
             >
-              <Toolbar
-                className="ShowcaseContentToolbar salt-theme salt-density-high"
+              <div
+                className="vuuToolbarProxy ShowcaseContentToolbar salt-theme salt-density-high"
+                style={{
+                  height: 30,
+                  border: "solid 1px var(--salt-container-primary-borderColor)",
+                }}
                 data-mode="light"
               >
                 <Dropdown
@@ -153,12 +162,13 @@ export const App = ({ stories }: AppProps) => {
 
                 <DensitySwitch onChange={setDensity} />
                 <ThemeSwitch onChange={setThemeMode} />
-                <ToolbarButton
-                  data-align-end
+                <Button
+                  data-align="end"
                   data-icon="open-in"
                   onClick={launchStandaloneWindow}
+                  variant="secondary"
                 />
-              </Toolbar>
+              </div>
               <div
                 className={`ShowcaseContent`}
                 style={{

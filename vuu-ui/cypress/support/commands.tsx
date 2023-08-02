@@ -99,7 +99,7 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("mount", function (children, options) {
   return cypressMount(
-    <ThemeProvider density="high" theme="vuu-purple">
+    <ThemeProvider density="high" theme="vuu-theme">
       {children},
     </ThemeProvider>,
     options

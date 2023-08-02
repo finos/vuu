@@ -1,5 +1,6 @@
 import type { MenuActionHandler } from "@finos/vuu-data-types";
 import type { OverflowItem } from "@finos/vuu-layout";
+import type { orientationType } from "@finos/vuu-utils";
 import {
   KeyboardEvent,
   MouseEvent as ReactMouseEvent,
@@ -8,7 +9,6 @@ import {
   useRef,
 } from "react";
 import { useDragDropNext as useDragDrop } from "../drag-drop";
-import type { orientationType } from "./TabsTypes";
 import { isTabMenuOptions } from "./TabMenuOptions";
 import { getIndexOfSelectedTab } from "./tabstrip-dom-utils";
 import { useAnimatedSelectionThumb } from "./useAnimatedSelectionThumb";

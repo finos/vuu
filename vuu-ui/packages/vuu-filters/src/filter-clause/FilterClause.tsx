@@ -1,15 +1,16 @@
-import { HTMLAttributes, useCallback, useRef, useState } from "react";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
   Filter,
   FilterClause as FilterClauseType,
 } from "@finos/vuu-filter-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
-import { ComboBox, InputProps } from "@heswell/salt-lab";
-import { TextInput } from "./TextInput";
-import { NumericInput } from "./NumericInput";
-import "./FilterClause.css";
+import { ComboBox } from "@salt-ds/lab";
+import { HTMLAttributes, useCallback, useRef, useState } from "react";
 import { CloseButton } from "./CloseButton";
+import { NumericInput } from "./NumericInput";
+import { TextInput } from "./TextInput";
+
+import "./FilterClause.css";
 
 export type FilterClauseProps = Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -23,7 +24,7 @@ export type FilterClauseProps = Omit<
 };
 
 // Hack to get vuu-purple-theme to apply to dropdowns
-const classBase = "vuu-purple-theme vuuFilterClause";
+const classBase = "vuu-theme vuuFilterClause";
 
 export const FilterClause = ({
   table,

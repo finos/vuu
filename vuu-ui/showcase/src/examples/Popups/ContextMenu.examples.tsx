@@ -10,6 +10,8 @@ import {
   ContextMenuProvider,
   MenuItem,
   MenuItemGroup,
+  PopupCloseReason,
+  reasonIsMenuAction,
   Separator,
   useContextMenu,
 } from "@finos/vuu-popups";
@@ -99,8 +101,12 @@ const Id = ({ children }: IdProps) => (
 
 export const AdditionalNesting = () => {
   const { ref, position } = usePosition();
-  const handleClose: ContextMenuProps["onClose"] = (menuId?: string) => {
-    console.log(`menu closed`);
+  const handleClose: ContextMenuProps["onClose"] = (
+    reason?: PopupCloseReason
+  ) => {
+    if (reasonIsMenuAction(reason)) {
+      console.log(`menu closed ${reason.menuId}`);
+    }
   };
 
   return (
@@ -182,8 +188,12 @@ AdditionalNesting.displaySequence = displaySequence++;
 
 export const ContextMenuPopup = () => {
   const contextMenu = useMemo(() => {
-    const handleClose = (menuItemId?: string) => {
-      console.log(`closed `);
+    const handleClose: ContextMenuProps["onClose"] = (
+      reason?: PopupCloseReason
+    ) => {
+      if (reasonIsMenuAction(reason)) {
+        console.log(`menu closed ${reason.menuId}`);
+      }
     };
 
     return (

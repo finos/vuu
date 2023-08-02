@@ -1,7 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { App } from "./App";
-
-type ExamplesModule = typeof import("./examples/index");
+import { App, ExamplesModule } from "./App";
 
 import "./index.css";
 

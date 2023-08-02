@@ -57,7 +57,8 @@ export declare type ColumnTypeSimple =
   | "boolean"
   | "json"
   | "date"
-  | "time";
+  | "time"
+  | "checkbox";
 
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;

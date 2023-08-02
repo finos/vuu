@@ -6,7 +6,11 @@ import { useCallback, useMemo, useState } from "react";
 export interface ColumnResizeHookProps {
   columns: KeyedColumnDescriptor[];
   dispatchColumnAction: (action: GridModelAction) => void;
-  onConfigChange: () => void;
+  onConfigChange: (
+    propName: string,
+    colName: string,
+    propValue: unknown
+  ) => void;
 }
 
 export const useColumnResize = ({

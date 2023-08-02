@@ -893,10 +893,6 @@ export class Viewport {
   }
 
   private sendThrottledSizeMessage = () => {
-    console.log(
-      `%csend throttled size message  (${this.lastUpdateStatus.count} accumulated) ${this.lastUpdateStatus.size}`,
-      "color:purple;font-weight: bold;"
-    );
     this.updateThrottleTimer = undefined;
     this.lastUpdateStatus.count = 3;
     this.postMessageToClient({

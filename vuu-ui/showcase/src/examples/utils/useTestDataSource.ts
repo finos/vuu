@@ -1,10 +1,9 @@
-import { RemoteDataSource } from "@finos/vuu-data";
+import { RemoteDataSource, TableSchema } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { useMemo, useRef } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
-import { Schema } from "./useSchemas";
 import { toDataSourceColumns } from "@finos/vuu-utils";
 
 const getRequestedColumns = (
@@ -61,7 +60,7 @@ export const useTestDataSource = ({
   columnNames?: string[];
   filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
-  schemas: { [key: string]: Schema };
+  schemas: { [key: string]: TableSchema };
   sort?: VuuSort;
   tablename?: string;
 }) => {

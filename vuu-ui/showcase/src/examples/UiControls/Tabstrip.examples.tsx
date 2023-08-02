@@ -1,9 +1,8 @@
-import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
+import { ExitEditModeHandler, Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import { useCallback, useState } from "react";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
 
 import "./Tabstrip.examples.css";
-import { ExitEditModeHandler } from "@heswell/salt-lab/dist-types/tabs/useEditableItem";
 
 const SPLITTER_WIDTH = 3;
 
@@ -29,6 +28,7 @@ export const DefaultTabstripNext = ({
           >
             {tabs.map((label, i) => (
               <Tab
+                index={i}
                 key={label}
                 label={label}
                 ariaControls={
@@ -72,6 +72,7 @@ export const TabstripNextAddTab = ({ width = 700 }) => {
           >
             {tabs.map(({ label }, i) => (
               <Tab
+                index={i}
                 key={label}
                 label={label}
                 ariaControls={
@@ -124,6 +125,7 @@ export const TabstripNextRemoveTab = ({ width = 700 }) => {
           >
             {tabs.map(({ label }, i) => (
               <Tab
+                index={i}
                 key={label}
                 label={label}
                 ariaControls={
@@ -171,6 +173,7 @@ export const TabstripNextEditableLabels = ({
           >
             {tabs.map((label, i) => (
               <Tab
+                index={i}
                 key={label}
                 label={label}
                 ariaControls={
