@@ -4,7 +4,7 @@ import { App } from "./src/App";
 import { getAuthDetailsFromCookies, redirectToLogin } from "@finos/vuu-shell";
 
 import "@salt-ds/theme/index.css";
-import "@finos/vuu-icons/icons.css";
+import "@finos/vuu-icons/index.css";
 
 const [username, token] = getAuthDetailsFromCookies();
 if (!username || !token) {
