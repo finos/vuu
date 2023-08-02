@@ -153,7 +153,7 @@ export const EditableLabel = forwardRef(function EditableLabel(
           onBlur={handleBlur}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          ref={inputRef}
+          inputRef={inputRef}
           style={{ padding: 0 }}
           textAlign="left"
         />

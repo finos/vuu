@@ -27,7 +27,7 @@ const { websocketUrl: serverUrl = defaultWebsocketUrl, features } =
   await vuuConfig;
 
 //TODO how do we separate this from the feature
-const vuuBlotterUrl = "./feature-vuu-blotter/index.js";
+const vuuBlotterUrl = "./feature-vuu-table/index.js";
 // const vuuBlotterUrl = "./feature-vuu-table/index.js";
 
 registerComponent("Stack", Stack, "container");
@@ -45,7 +45,7 @@ const defaultLayout = {
     active: 0,
     TabstripProps: {
       allowAddTab: true,
-      allowCLoseTab: true,
+      allowCloseTab: true,
       allowRenameTab: true,
     },
   },
