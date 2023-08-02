@@ -18,7 +18,6 @@ export const buildAll = async () => {
     "vuu-ui-controls",
     "vuu-codemirror",
     "vuu-theme",
-    "vuu-theme-purple",
   ];
   const wave2 = ["vuu-data"];
   const wave3 = ["vuu-filters", "vuu-popups"];

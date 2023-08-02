@@ -20,7 +20,7 @@
     "@finos/vuu-datagrid": "0.0.26",
     "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
-    "@finos/vuu-theme-purple": "0.0.26",
+    "@finos/vuu-theme": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "@salt-ds/core": "1.8.0-rc.5",
     "@salt-ds/lab": "1.0.0-alpha.14",

@@ -85,7 +85,7 @@ export interface AppProps {
 type ThemeDescriptor = { label?: string; id: string };
 
 const availableThemes: ThemeDescriptor[] = [
-  { id: "vuu-purple", label: "Purple Vuu" },
+  { id: "vuu", label: "Vuu Classic" },
   { id: "salt", label: "Salt Classic" },
 ];
 
@@ -99,7 +99,7 @@ export const App = ({ stories }: AppProps) => {
   const [density, setDensity] = useState<Density>("high");
 
   const launchStandaloneWindow = useCallback(() => {
-    window.open(`${location.href}?standalone&theme=vuu-purple`, "_blank");
+    window.open(`${location.href}?standalone&theme=vuu`, "_blank");
   }, []);
 
   const handleThemeChange = useCallback(

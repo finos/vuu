@@ -24,7 +24,7 @@ export type FilterClauseProps = Omit<
 };
 
 // Hack to get vuu-purple-theme to apply to dropdowns
-const classBase = "vuu-purple-theme vuuFilterClause";
+const classBase = "vuu-theme vuuFilterClause";
 
 export const FilterClause = ({
   table,

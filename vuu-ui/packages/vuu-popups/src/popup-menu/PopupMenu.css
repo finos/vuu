@@ -27,10 +27,10 @@
 }
 
 /* temp references to theme until new theme fully incorporated */
-.vuu-theme-purple .vuuPopupMenu:hover {
+.vuu-theme .vuuPopupMenu:hover {
     --saltButton-background-hover: #F37880;
 }
 
-.vuu-theme-purple .vuuPopupMenu-open {
+.vuu-theme .vuuPopupMenu-open {
     --saltButton-background: #6D18BD;
 }

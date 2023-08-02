@@ -1,9 +1,9 @@
 import ReactDOM from "react-dom";
 import { getUrlParameter, hasUrlParameter } from "@finos/vuu-utils";
 
+import "@salt-ds/theme/index.css";
 import "@finos/vuu-theme/index.css";
-import "@finos/vuu-theme-purple/index.css";
-import "@heswell/component-anatomy/esm/index.css";
+import "@finos/vuu-icons/index.css";
 
 import "./index.css";
 import { ThemeProvider } from "@finos/vuu-shell";
