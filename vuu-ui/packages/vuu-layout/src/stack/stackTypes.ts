@@ -16,7 +16,7 @@ export interface StackProps
   onTabEdit?: (tabIndex: number, label: string) => void;
   onTabSelectionChanged?: (nextIndex: number) => void;
   path?: string;
-  /** default top */
+  /** should the Stack display a Tabstrip and where ? default top */
   showTabs?: false | TabPosition;
   toolbarContent?: ReactNode;
   TabstripProps?: Partial<TabstripProps>;

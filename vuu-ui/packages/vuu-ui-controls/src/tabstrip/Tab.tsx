@@ -1,6 +1,7 @@
 // TODO close button needs to be a button. Hence tab needs to include 2 buttons
 import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
+import { MenuActionHandler } from "packages/vuu-data-types";
 import {
   FocusEvent,
   ForwardedRef,
@@ -11,12 +12,11 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { TabProps } from "./TabsTypes";
-import { TabMenu } from "./TabMenu";
 import { EditableLabel, EditableLabelProps } from "../editable-label";
+import { TabMenu } from "./TabMenu";
+import { TabProps } from "./TabsTypes";
 
 import "./Tab.css";
-import { MenuActionHandler } from "packages/vuu-data-types";
 
 const classBase = "vuuTab";
 
@@ -128,7 +128,7 @@ export const Tab = forwardRef(function Tab(
         [`${classBase}-editing`]: editing,
         [`${classBase}-selected`]: selected || undefined,
         [`${classBase}-vertical`]: orientation === "vertical",
-        [`saltFocusVisible`]: focusVisible,
+        [`vuuFocusVisible`]: focusVisible,
       })}
       onClick={handleClick}
       onFocus={handleFocus}

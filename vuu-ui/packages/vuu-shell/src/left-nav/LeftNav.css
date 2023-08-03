@@ -13,13 +13,43 @@
     --svg-templates: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M15.3333 12.6667H14L14 3.33334H15.3333L15.3333 12.6667ZM12.6667 12.6667H11.3333L11.3333 3.33334H12.6667L12.6667 12.6667ZM1.33333 12.6667L9.33333 12.6667C9.69999 12.6667 9.99999 12.3667 9.99999 12V4.00001C9.99999 3.63334 9.69999 3.33334 9.33333 3.33334L1.33333 3.33334C0.966661 3.33334 0.666661 3.63334 0.666661 4.00001L0.666661 12C0.666661 12.3667 0.966661 12.6667 1.33333 12.6667ZM1.99999 4.66667L8.66666 4.66667V11.3333L1.99999 11.3333L1.99999 4.66667Z"/></svg>');
     --svg-layouts: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M15.3333 10H14V11.3333H15.3333V10ZM15.3333 12.6667H14V14H15.3333V12.6667ZM15.3333 7.33333H14V8.66667H15.3333V7.33333ZM10 2H8.66667V3.33333H10V2ZM15.3333 4.66667H14V6H15.3333V4.66667ZM0.666672 14H7.33334V10H0.666672V14ZM2.00001 4.66667H0.666672V6H2.00001V4.66667ZM10 12.6667H8.66667V14H10V12.6667ZM12.6667 2H11.3333V3.33333H12.6667V2ZM15.3333 2H14V3.33333H15.3333V2ZM12.6667 12.6667H11.3333V14H12.6667V12.6667ZM2.00001 7.33333H0.666672V8.66667H2.00001V7.33333ZM7.33334 2H6.00001V3.33333H7.33334V2ZM4.66667 2H3.33334V3.33333H4.66667V2ZM2.00001 2H0.666672V3.33333H2.00001V2Z"/></svg>');
     --vuu-light-text-primary: #15171b;
+
+    display: flex;
+    transition: width .3s ease-in-out;
+
+}
+
+.vuuLeftNav-menu-full {
+    --menu-width: var(--nav-menu-expanded-width);
+}
+
+.vuuLeftNav-menu-icons {
+    --menu-width: var(--nav-menu-collapsed-width);
+}
+
+.vuuLeftNav-menu-content {
+    --menu-width: var(--nav-menu-collapsed-width);
+}
+
+.vuuLeftNav-menu-content .vuuLeftNav-menu-secondary {
+    display: block;
+}
+
+.vuuLeftNav-menu-primary {
     background-color: #2A015F;
     container-type: inline-size;
     display: flex;
     flex-direction: column;
+    height: 100%;
     padding: 32px 16px;
-    transition: width .3s ease-in-out;
+    transition: width ease .3s;
+    width: var(--menu-width, 100%);
+}
 
+.vuuLeftNav-menu-secondary {
+    flex: 1 1 auto;
+    height: 100%;
+    display: none;
 }
 
 .vuuLeftNav .vuuTabstrip {
@@ -27,6 +57,7 @@
 }
 
 .vuuLeftNav .vuuTab {
+    --vuuTab-focusVisible-color: pink;
     --vuu-icon-color: white;
     --vuu-icon-left: 12px;
     --vuu-icon-size: 16px;
