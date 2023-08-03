@@ -42,7 +42,7 @@ const WrapContainer = React.memo(
     const height = orientation === "vertical" ? "100%" : `${heightProp}px`;
     // TODO measure the height, if not provided
     const style = {
-      "--overflow-container-height": `${height}px`,
+      "--overflow-container-height": `${height}`,
     } as CSSProperties;
 
     const className = cx(`${classBase}-wrapContainer`, classNameProp, {

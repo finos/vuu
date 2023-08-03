@@ -7,9 +7,8 @@
   --tabstrip-background: transparent;
 
   align-self: var(--saltTabs-tabstrip-alignSelf, stretch);
-  border-bottom: var(--vuuTabstrip-borderBottom, solid 1px var(--salt-container-primary-borderColor));
   font-size: var(--salt-text-fontSize);
-  font-weight: var(--salt-text-fontWeight);
+  font-weight: var(--vuuTabstrip-fontWeight, var(--salt-text-fontWeight));
   position: relative;
   overflow: visible;
   display: flex;
@@ -21,17 +20,20 @@
 .vuuTabstrip-horizontal {
   --tabstrip-height: var(--vuuTabstrip-height, 28px);
   --tabstrip-width: var(--vuuTabstrip-width, 100%);
+  --tab-width: auto;
   --tab-thumb-height: 2px;
   --tab-thumb-left: var(--tab-thumb-offset, 0);
   --tab-thumb-top: auto;
   --tab-thumb-width: var(--tab-thumb-size, 100%);
   align-items: flex-start;
+  border-bottom: var(--vuuTabstrip-borderBottom, solid 1px var(--salt-container-primary-borderColor));
 }
 
 /* Tabstrip orientation is vertical */
 .vuuTabstrip-vertical {
   --tabstrip-height: var(--vuuTabstrip-height, 100%);
   --tabstrip-width: var(--vuuTabstrip-width, 100px);
+  --tab-width: 100%;
   --tab-thumb-height: var(--tab-thumb-size, 100%);
   --tab-thumb-left: 0;
   --tab-thumb-top: var(--tab-thumb-offset, 0);

@@ -85,6 +85,7 @@ export const Tabstrip = ({
             focusVisible: focusVisible === index,
             id: tabId,
             index,
+            key: index,
             location,
             selected,
             showMenuButton,

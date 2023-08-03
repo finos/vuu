@@ -1,5 +1,5 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import { orientationType } from "@finos/vuu-utils";
+import { isValidNumber, MEASURES, orientationType } from "@finos/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useLayoutEffectSkipFirst } from "../utils";
 import {
@@ -24,7 +24,7 @@ export interface OverflowContainerHookProps {
 export const useOverflowContainer = ({
   itemCount,
   onSwitchWrappedItemIntoView,
-  orientation,
+  orientation = "horizontal",
 }: OverflowContainerHookProps) => {
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const wrappedItemsRef = useRef<OverflowItem[]>(NO_WRAPPED_ITEMS);
@@ -56,7 +56,7 @@ export const useOverflowContainer = ({
       }
       wrappedItemsRef.current = wrapped;
     }
-  }, [container]);
+  }, [container, orientation]);
 
   const hasOverflowItem = (
     opt: unknown
@@ -95,17 +95,18 @@ export const useOverflowContainer = ({
   }, [container, onSwitchWrappedItemIntoView]);
 
   const resizeObserver = useMemo(() => {
-    let currentWidth = 0;
+    const { sizeProp } = MEASURES[orientation];
+    let currentSize = 0;
     return new ResizeObserver((entries: ResizeObserverEntry[]) => {
       for (const entry of entries) {
-        const { width } = entry.contentRect;
-        if (currentWidth !== width) {
-          currentWidth = width;
+        const { [sizeProp]: size } = entry.contentRect;
+        if (isValidNumber(size) && currentSize !== size) {
+          currentSize = size;
           handleResize();
         }
       }
     });
-  }, [handleResize]);
+  }, [handleResize, orientation]);
 
   useLayoutEffectSkipFirst(() => {
     handleResize();

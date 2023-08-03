@@ -4,7 +4,7 @@
   --saltEditableLabel-height: var(--tabstrip-height);
   --saltInputLegacy-minWidth: 4em;
 
-  --tab-background: var(--salt-navigable-primary-background);
+  --tab-background: var(--vuuTab-background, var(--salt-navigable-primary-background));
   --tab-cursor: pointer;
   --tab-position: relative;
 }
@@ -12,9 +12,9 @@
 .vuuTab {
   align-items: center;
   align-self: stretch;
-  background: var(--vuuTab-background, var(--tab-background));
+  background: var(--tab-background);
   border: none;
-  border-radius: 0;
+  border-radius: var(--vuuTab-borderRadius, 0);
   color: var(--salt-text-primary-foreground);
   cursor: var(--vuuTab-cursor, var(--tab-cursor));
   display: var(--tabstrip-display);
@@ -23,9 +23,10 @@
   letter-spacing: var(--vuuTab-letterSpacing, var(--tab-letterSpacing, 0));
   min-width: var(--vuuTab-minWidth, 40px);
   outline: none;
-  padding: 0 24px;
+  padding: var(--vuuTab-padding, 0 24px);
   position: var(--vuuTab-position, var(--tab-position));
   user-select: none;
+  width: var(--tab-width)
 }
 
 /* Overrides characteristic used in saltFocusVisible */
@@ -33,11 +34,12 @@
   inset: 2px 2px 4px 2px;
 }
 
-.vuuTab:not(.vuuTab-vertical) {
+.vuuTab {
   margin: 0 var(--tab-spacing) 0 0;
 }
 
 .vuuTab-selected {
+  background: var(--vuuTab-background-selected, var(--tab-background));
   color: var(--salt-text-primary-foreground);
   font-weight: var(--salt-navigable-fontWeight-active);
 }
@@ -45,7 +47,6 @@
 /* main content aria of Tab */
 .vuuTab-main {
   align-items: center;;
-  background: inherit;
   border: none;
   color: inherit;
   cursor: inherit;
@@ -95,10 +96,6 @@
   z-index: var(--salt-zIndex-default);
 }
 
-.vuuTab-vertical .vuuTab-text {
-  text-align: var(--salt-text-textAlign);
-}
-
 .vuuTab .vuuTab-text:before {
   height: 0;
   content: attr(data-text);
@@ -121,24 +118,12 @@
   outline-offset: -2px;
 }
 
-.vuuTab-vertical.vuuTab-editing:after {
-  right: 2px;
-  bottom: 0;
-}
-
-.vuuTab-vertical .saltFocusVisible:not(.vuuTab-selected):before {
-  left: auto;
-  height: auto;
-  top: 0;
-  width: 2px;
-}
-
 .vuuTab.saltFocusVisible {
   background: var(--vuuTab-hover-background, var(--salt-navigable-primary-background-hover));
 }
 
 .vuuTab:before {
-  content: var(--tab-before-content, none);
+  content: var(--vuuTab-before-content, var(--tab-before-content), none);
   background: var(--tab-before-background);
   height: var(--tab-before-height);
   inset: var(--tab-before-inset);

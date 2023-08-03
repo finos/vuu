@@ -2,10 +2,11 @@ import { Action, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { LayoutResizeAction } from "@finos/vuu-layout/src/layout-reducer";
 import cx from "classnames";
 import { VuuLogo } from "@finos/vuu-icons";
-import { HTMLAttributes, useCallback, useRef } from "react";
+import { HTMLAttributes, useCallback, useRef, useState } from "react";
 
 import "./LeftNav.css";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
+import { useThemeAttributes } from "../theme-provider";
 
 const classBase = "vuuLeftNav";
 
@@ -23,6 +24,16 @@ export const LeftNav = ({
 }: LeftNavProps) => {
   const dispatch = useLayoutProviderDispatch();
   const openRef = useRef(open);
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [themeClass] = useThemeAttributes();
+
+  const handleTabSelection = useCallback((value: number) => {
+    setActiveTabIndex(value);
+    // if (path) {
+    // dispatch({ type: "switch-tab", path, nextIdx });
+    // onTabSelectionChanged?.(nextIdx);
+    // }
+  }, []);
 
   const toggleSize = useCallback(() => {
     openRef.current = !openRef.current;
@@ -33,44 +44,27 @@ export const LeftNav = ({
     } as LayoutResizeAction);
   }, [dispatch, path]);
   return (
-    <div {...htmlAttributes} className={classBase}>
+    <div
+      {...htmlAttributes}
+      className={cx(classBase, themeClass)}
+      data-mode="dark"
+    >
       <div className="vuuLeftNav-logo">
         <VuuLogo />
       </div>
       <div className={`${classBase}-main`}>
         <Tabstrip
-          activeTabIndex={0}
+          activeTabIndex={activeTabIndex}
           animateSelectionThumb={false}
           className={`${classBase}-Tabstrip`}
+          onActiveChange={handleTabSelection}
           orientation="vertical"
         >
-          <Tab label="DEMO"></Tab>
-          <Tab label="VUU TABLES"></Tab>
-          <Tab label="LAYOUT TEMPLATES"></Tab>
-          <Tab label="MY LAYOUTS"></Tab>
+          <Tab data-icon="demo" label="DEMO"></Tab>
+          <Tab data-icon="tables" label="VUU TABLES"></Tab>
+          <Tab data-icon="templates" label="LAYOUT TEMPLATES"></Tab>
+          <Tab data-icon="layouts" label="MY LAYOUTS"></Tab>
         </Tabstrip>
-        <ul className={`${classBase}-menu`}>
-          <li
-            className={cx(
-              `${classBase}-menuitem`,
-              `${classBase}-menuitem-active`
-            )}
-            data-icon="demo"
-          >
-            <span className={`${classBase}-menuitem-label`}>DEMO</span>
-          </li>
-          <li className={`${classBase}-menuitem`} data-icon="tables">
-            <span className={`${classBase}-menuitem-label`}>VUU TABLES</span>
-          </li>
-          <li className={`${classBase}-menuitem`} data-icon="templates">
-            <span className={`${classBase}-menuitem-label`}>
-              LAYOUT TEMPLATES
-            </span>
-          </li>
-          <li className={`${classBase}-menuitem`} data-icon="layouts">
-            <span className={`${classBase}-menuitem-label`}>MY LAYOUTS</span>
-          </li>
-        </ul>
       </div>
       <div className="vuuLeftNav-buttonBar">
         <button
