@@ -1,4 +1,9 @@
 .vuu-theme {
+
+  --vuu-color-purple-10: rgb(109,24,189); /*  #6D18BD */
+
+  --vuu-color-pink-10: rgb(234, 120, 128); /*  #F37880 */
+
   /* Color palette will stay the same no matter of theming */
   --salt-color-white: rgb(255, 255, 255);
   --salt-color-black: rgb(0, 0, 0);

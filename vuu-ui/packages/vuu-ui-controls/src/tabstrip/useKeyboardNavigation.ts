@@ -174,7 +174,6 @@ export const useKeyboardNavigation = ({
   );
 
   const onFocus = (e: FocusEvent<HTMLElement>) => {
-    console.log("ONFOCUS");
     // If focus is received by keyboard navigation, item with tabindex 0 will receive
     // focus. If the item receiving focus has tabindex -1, then focus has been set
     // programatically. We must respect this and not reset focus to selected tab.

@@ -1,3 +1,5 @@
+import { orientationType } from "@salt-ds/lab";
+
 const NON_WRAPPED_ITEM = ".vuuOverflowContainer-item:not(.wrapped)";
 
 export type OverflowItem = {
@@ -41,22 +43,24 @@ export const NO_WRAPPED_ITEMS: OverflowItem[] = [];
     TODO support Vertical orientation
  */
 export const getNonWrappedAndWrappedItems = (
-  container: HTMLElement
+  container: HTMLElement,
+  orientation: orientationType = "horizontal"
 ): [OverflowItem[], OverflowItem[]] => {
   const nonWrappedItems: OverflowItem[] = [];
   const wrappedItems: OverflowItem[] = [];
-  let currentLeft = -1;
+  let currentPosition = -1;
   let overflowed = false;
   const sortedChildren = sortByScreenOrder(
     Array.from(container.children) as HTMLElement[]
   );
+  const positionAttribute = orientation === "vertical" ? "top" : "left";
   for (const child of sortedChildren) {
     const element = child as HTMLElement;
     const {
       dataset: { index = "?", label = "?", overflowPriority = "0" },
     } = element;
-    const { left } = element.getBoundingClientRect();
-    if (left <= currentLeft) {
+    const { [positionAttribute]: position } = element.getBoundingClientRect();
+    if (position <= currentPosition) {
       if (index === "overflow") {
         wrappedItems.push(nonWrappedItems.pop() as OverflowItem);
       } else {
@@ -68,7 +72,7 @@ export const getNonWrappedAndWrappedItems = (
     } else {
       nonWrappedItems.push({ index, label, overflowPriority });
     }
-    currentLeft = left;
+    currentPosition = position;
   }
   return [nonWrappedItems, wrappedItems];
 };

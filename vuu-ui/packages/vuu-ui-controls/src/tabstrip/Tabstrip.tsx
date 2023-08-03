@@ -85,6 +85,7 @@ export const Tabstrip = ({
             focusVisible: focusVisible === index,
             id: tabId,
             index,
+            key: index,
             location,
             selected,
             showMenuButton,
@@ -133,6 +134,7 @@ export const Tabstrip = ({
         className={className}
         height={28}
         id={id}
+        orientation={orientation}
         overflowIcon="more-horiz"
         ref={rootRef}
         style={style}

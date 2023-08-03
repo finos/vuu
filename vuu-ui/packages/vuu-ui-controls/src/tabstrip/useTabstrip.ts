@@ -95,7 +95,8 @@ export const useTabstrip = ({
   const { containerStyle, resumeAnimation, suspendAnimation } =
     useAnimatedSelectionThumb(
       containerRef,
-      animateSelectionThumb ? selectionHookSelected : -1
+      animateSelectionThumb ? selectionHookSelected : -1,
+      orientation
     );
 
   const handleDrop = useCallback(

@@ -3,16 +3,25 @@ body {
   overflow: hidden;
 }
 
+.vuuShell-content {
+  padding: 8px;
+}
+
 .vuuShell-mainTabs {
   --vuuTab-height: 28px;
+  border: solid 1px #D6D7DA;
   border-top: none !important;
+  border-radius: 6;
+  height: 100%;
+  padding: 36px 8px 8px 8px;
   position: relative;
+  width: 100%;
 }
   
   .vuuShell-mainTabs > .vuuTabstrip {
     --vuuTabstrip-height: 28px;
     --saltTabs-tabstrip-height: 29px;
-    --tabs-tabstrip-height: 29px;
+    --tabstrip-height: 29px;
     background-color: white;
     left:-1px;
     padding-bottom: 7px;

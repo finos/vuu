@@ -9,14 +9,14 @@
 
 .vuuDraggable-spacer {
   display: var(--saltDraggable-display, inline-block);
-  height: var(--saltDraggable-spacer-height, var(--tabs-tabstrip-height));
+  height: var(--saltDraggable-spacer-height, var(--tabstrip-height));
   transition: var(--saltDraggable-transitionProp, width) 0.3s ease;
   width: var(--saltDraggable-spacer-width, 0);
 }
 
 .vuuDraggable-dropIndicatorPosition {
   display: var(--saltDraggable-display, inline-block);
-  /* height: var(--saltDraggable-spacer-height, var(--tabs-tabstrip-height)); */
+  /* height: var(--saltDraggable-spacer-height, var(--tabstrip-height)); */
   /* width: var(--saltDraggable-spacer-width, 0); */
   height: 0px;
   width: 100%;
@@ -27,7 +27,7 @@
 }
 
 .vuuDraggable-dropIndicator {
-  /* height: var(--saltDraggable-spacer-height, var(--tabs-tabstrip-height)); */
+  /* height: var(--saltDraggable-spacer-height, var(--tabstrip-height)); */
   /* width: var(--saltDraggable-spacer-width, 0); */
   background-color: var(--salt-palette-accent-background);
   height: 2px;

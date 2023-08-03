@@ -1,6 +1,7 @@
 import { TabstripProps } from "@finos/vuu-ui-controls";
 import { HTMLAttributes, MouseEvent, ReactElement, ReactNode } from "react";
 
+export type TabPosition = "top" | "left" | "right" | "bottom";
 export interface StackProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onMouseDown"> {
   active?: number;
@@ -15,7 +16,8 @@ export interface StackProps
   onTabEdit?: (tabIndex: number, label: string) => void;
   onTabSelectionChanged?: (nextIndex: number) => void;
   path?: string;
-  showTabs?: boolean;
+  /** default top */
+  showTabs?: false | TabPosition;
   toolbarContent?: ReactNode;
   TabstripProps?: Partial<TabstripProps>;
 }

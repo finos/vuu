@@ -95,6 +95,9 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
    */
   onCloseTab?: (tabIndex: number, newActiveTabIndex: number) => void;
   onMoveTab?: (fromIndex: number, toIndex: number) => void;
+  /**
+   * vertical or horizontal (default)
+   */
   orientation?: orientationType;
   onEnterEditMode?: () => void;
   onExitEditMode?: ExitEditModeHandler;
@@ -140,7 +143,10 @@ export type TabProps = Omit<
   location?: string;
   selected?: boolean;
   showMenuButton?: boolean;
-  index: number;
+  /**
+   * index is injected by the Tabstrip is need not be specified by client
+   */
+  index?: number;
   label?: EditableLabelProps["defaultValue"];
   onClick?: (e: MouseEvent<HTMLElement>, index: number) => void;
   onClose?: (index: number) => void;
