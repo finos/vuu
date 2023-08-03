@@ -58,7 +58,7 @@ export const Stack = forwardRef(function Stack(
     onTabClose,
     onTabEdit,
     onTabSelectionChanged,
-    showTabs = true,
+    showTabs = "top",
     style,
     TabstripProps = DefaultTabstripProps,
   }: StackProps,
@@ -121,11 +121,13 @@ export const Stack = forwardRef(function Stack(
     });
 
   const child = activeChild();
+  const isHorizontal = showTabs === "left" || showTabs === "right";
+  const tabstripOrientation = isHorizontal ? "vertical" : "horizontal";
 
   return (
     <div
       className={cx(classBase, classNameProp, {
-        [`${classBase}-horizontal`]: TabstripProps?.orientation === "vertical",
+        [`${classBase}-horizontal`]: isHorizontal,
       })}
       style={style}
       id={id}
@@ -146,6 +148,7 @@ export const Stack = forwardRef(function Stack(
           onCloseTab={onTabClose}
           onExitEditMode={handleExitEditMode}
           onMoveTab={onMoveTab}
+          orientation={tabstripOrientation}
           // onMouseDown={handleMouseDown}
         >
           {renderTabs()}

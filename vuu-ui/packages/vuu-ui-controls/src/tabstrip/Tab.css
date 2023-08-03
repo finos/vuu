@@ -1,7 +1,7 @@
 /* Class applied to root Tab element */
 .vuuTab {
   --saltEditableLabel-padding: 0;
-  --saltEditableLabel-height: var(--tabs-tabstrip-height);
+  --saltEditableLabel-height: var(--tabstrip-height);
   --saltInputLegacy-minWidth: 4em;
 
   --tab-background: var(--salt-navigable-primary-background);
@@ -17,9 +17,9 @@
   border-radius: 0;
   color: var(--salt-text-primary-foreground);
   cursor: var(--vuuTab-cursor, var(--tab-cursor));
-  display: var(--tabs-tabstrip-display);
+  display: var(--tabstrip-display);
   gap: 8px;
-  height: var(--vuuTab-height, var(--tabs-tabstrip-height));
+  height: var(--vuuTab-height, var(--tabstrip-height));
   letter-spacing: var(--vuuTab-letterSpacing, var(--tab-letterSpacing, 0));
   min-width: var(--vuuTab-minWidth, 40px);
   outline: none;
@@ -171,8 +171,9 @@
   background: var(--salt-navigable-indicator-active);
   height: var(--tab-thumb-height);
   position: absolute;
-  left: var(--tab-thumb-offset,0);
-  bottom:0px; 
+  left: var(--tab-thumb-left);
+  bottom: 0px; 
+  top: var(--tab-thumb-top, auto);
   transition: var(--tab-thumb-transition, none);
   width: var(--tab-thumb-width, 100%);
 }

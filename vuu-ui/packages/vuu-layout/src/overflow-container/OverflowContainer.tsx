@@ -1,16 +1,17 @@
+import { PopupMenu } from "@finos/vuu-popups";
+import { orientationType } from "@finos/vuu-utils";
+import cx from "classnames";
 import React, {
   CSSProperties,
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
 } from "react";
-import cx from "classnames";
-import { PopupMenu } from "@finos/vuu-popups";
-import { useOverflowContainer } from "./useOverflowContainer";
 import { asReactElements } from "../utils";
+import { OverflowItem } from "./overflow-utils";
+import { useOverflowContainer } from "./useOverflowContainer";
 
 import "./OverflowContainer.css";
-import { OverflowItem } from "./overflow-utils";
 
 const classBase = "vuuOverflowContainer";
 
@@ -18,28 +19,39 @@ export interface OverflowContainerProps extends HTMLAttributes<HTMLDivElement> {
   debugId?: string;
   height: number;
   onSwitchWrappedItemIntoView?: (overflowItem: OverflowItem) => void;
+  orientation?: orientationType;
   overflowIcon?: string;
 }
 
 const WrapContainer = React.memo(
   ({
     children,
-    height,
+    className: classNameProp,
+    height: heightProp,
     onSwitchWrappedItemIntoView,
+    orientation = "horizontal",
     overflowIcon,
   }: OverflowContainerProps) => {
     const childElements = asReactElements(children);
     const { menuActionHandler, menuBuilder, rootRef } = useOverflowContainer({
       itemCount: childElements.length,
       onSwitchWrappedItemIntoView,
+      orientation,
     });
+
+    const height = orientation === "vertical" ? "100%" : `${heightProp}px`;
     // TODO measure the height, if not provided
     const style = {
       "--overflow-container-height": `${height}px`,
     } as CSSProperties;
 
+    const className = cx(`${classBase}-wrapContainer`, classNameProp, {
+      [`${classBase}-horizontal`]: orientation === "horizontal",
+      [`${classBase}-vertical`]: orientation === "vertical",
+    });
+
     return (
-      <div className={`${classBase}-wrapContainer`} ref={rootRef} style={style}>
+      <div className={className} ref={rootRef} style={style}>
         {childElements.map((childEl, i) => {
           const {
             "data-overflow-priority": overflowPriority = "0",
@@ -79,6 +91,7 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
     className,
     height = 44,
     onSwitchWrappedItemIntoView,
+    orientation,
     overflowIcon,
     ...htmlAttributes
   }: OverflowContainerProps,
@@ -92,6 +105,7 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
     >
       <WrapContainer
         height={height}
+        orientation={orientation}
         overflowIcon={overflowIcon}
         onSwitchWrappedItemIntoView={onSwitchWrappedItemIntoView}
       >

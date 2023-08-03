@@ -8,7 +8,6 @@
   "bin": {
     "vuu": "./lib/index.js"
   },
-  "type": "module",
   "workspaces": [
     "packages/**",
     "sample-apps/**",

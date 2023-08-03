@@ -81,7 +81,6 @@ export const PopupMenu = ({
 
   const showMenu = useCallback(
     (e: MouseEvent<HTMLElement>) => {
-      console.log("PopupMenu click");
       if (suppressShowMenuRef.current) {
         suppressShowMenuRef.current = false;
       } else {

@@ -32,7 +32,7 @@ export const Tab = forwardRef(function Tab(
     editable = false,
     editing,
     focusVisible,
-    index,
+    index = -1,
     label,
     location,
     onClick,

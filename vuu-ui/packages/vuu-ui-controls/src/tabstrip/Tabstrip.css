@@ -1,13 +1,11 @@
 /* Component class applied to the root element */
 .vuuTabstrip {
   --vuuOverflowContainer-background: transparent;
-  /* --tabs-tabstrip-height: var(--vuuTabstrip-height, var(--salt-size-stackable)); */
-  --tabs-tabstrip-height: var(--vuuTabstrip-height, 28px);
-  --tabs-tabstrip-dragging-display: none;
-  --tabs-tabstrip-display: inline-flex;
-  --tabs-tabstrip-background: transparent;
+  /* --tabstrip-height: var(--vuuTabstrip-height, var(--salt-size-stackable)); */
+  --tabstrip-dragging-display: none;
+  --tabstrip-display: inline-flex;
+  --tabstrip-background: transparent;
 
-  align-items: flex-start;
   align-self: var(--saltTabs-tabstrip-alignSelf, stretch);
   border-bottom: var(--vuuTabstrip-borderBottom, solid 1px var(--salt-container-primary-borderColor));
   font-size: var(--salt-text-fontSize);
@@ -16,46 +14,35 @@
   overflow: visible;
   display: flex;
   min-width: 28px;
-  width: 100%;
+  width: var(--tabstrip-width);
 }
 
 /* Tabstrip orientation is horizontal */
 .vuuTabstrip-horizontal {
-  --vuuTabActivationIndicator-height: 1px;
-  --vuuTabActivationIndicator-thumb-inset: -1px 0 0 0;
-  --tab-activationIndicator-borderStyle: none none solid none;
-  --tab-activationIndicator-inset: auto 0px 0px 0px;
-  --tab-activationIndicator-transitionProperty: left;
-  --tab-activationIndicator-thumb-height: 0px;
+  --tabstrip-height: var(--vuuTabstrip-height, 28px);
+  --tabstrip-width: var(--vuuTabstrip-width, 100%);
   --tab-thumb-height: 2px;
+  --tab-thumb-left: var(--tab-thumb-offset, 0);
+  --tab-thumb-top: auto;
+  --tab-thumb-width: var(--tab-thumb-size, 100%);
+  align-items: flex-start;
 }
 
 /* Tabstrip orientation is vertical */
 .vuuTabstrip-vertical {
-  --vuuTabActivationIndicator-thumb-inset: 0 0 0 -1px;
-
-  --tab-activationIndicator-transition: top 0.3s ease;
-  --tab-activationIndicator-borderStyle: none solid none none;
-  --tab-activationIndicator-inset: 0px 0px 0px auto;
-  --tab-activationIndicator-transitionProperty: top;
-  --tab-activationIndicator-width: 1px;
-  --tab-activationIndicator-thumb-width: 2px;
+  --tabstrip-height: var(--vuuTabstrip-height, 100%);
+  --tabstrip-width: var(--vuuTabstrip-width, 100px);
+  --tab-thumb-height: var(--tab-thumb-size, 100%);
+  --tab-thumb-left: 0;
+  --tab-thumb-top: var(--tab-thumb-offset, 0);
+  --tab-thumb-width: 2px;
 
   align-self: flex-start;
   display: inline-flex;
 }
 
-.vuuTabstrip-draggingTab {
-  --vuuTabs-activationIndicator-transition: none;
-}
-
 .vuuTabstrip-draggingTab .vuuTab {
   pointer-events: none;
-}
-
-/* Tabstrip orientation is horizontal */
-.vuuTabstrip-horizontal {
-  height: var(--tabs-tabstrip-height);
 }
 
 .vuuTabstrip-addTabButton {
@@ -85,7 +72,7 @@
   flex-shrink: 1;
   flex-wrap: wrap;
   justify-content: flex-start;
-  line-height: var(--tabs-tabstrip-height);
+  line-height: var(--tabstrip-height);
 }
 
 .vuuTabstrip-vertical .vuuTabstrip-inner {
@@ -99,9 +86,9 @@
 
 /* Styling applied to Draggable wrapper when used to drag a Tab */
 .vuuDraggable[class*="vuuTabstrip"] {
-  --tabs-tabstrip-display: flex;
-  --tabs-tabstrip-height: 100%;
-  --tabs-tabstrip-dragging-display: block;
+  --tabstrip-display: flex;
+  --tabstrip-height: 100%;
+  --tabstrip-dragging-display: block;
 
   --tabs-tab-background: var(--salt-navigable-primary-background-hover);
   --tabs-tab-before-content: "";
@@ -117,16 +104,11 @@
 
 .vuuDraggable-tabstrip-horizontal {
   --tab-thumb-height: 2px;
-  --tabs-tabstrip-height: 28px;
-  --tab-activationIndicator-thumb-height: 2px;
-  --tab-activationIndicator-inset: auto 0px 0px 0px;
+  --tabstrip-height: 28px;
 
-  line-height: var(--tabs-tabstrip-height);
+  line-height: var(--tabstrip-height);
 }
-.vuuDraggable-tabstrip-vertical {
-  --tab-activationIndicator-inset: 0px 0px 0px auto;
-  --tab-activationIndicator-thumb-width: 2px;
-}
+
 
 .vuuDraggable[class*="tabstrip"] .vuuTab[aria-selected="true"]:before {
   --tabs-tab-before-background: var(--salt-navigable-indicator-active);

@@ -5,6 +5,7 @@
 }
 
 .Tabs-horizontal {
+  --vuu-tabs-border-style: none solid none none;
   flex-direction: row;
 }
 
@@ -21,7 +22,9 @@
 .vuuTabHeader {
   --saltTabs-activationIndicator-background: transparent;
   --saltToolbarField-marginTop: calc(var(--salt-size-unit) - 1px);
-  border-bottom: solid 1px var(--salt-container-primary-borderColor);
+  border-color: var(--salt-container-primary-borderColor);
+  border-style: var(--vuu-tabs-border-style, none none solid none);
+  border-width: 1px;
 }
 
 .vuuTabHeader + .hwFlexbox,

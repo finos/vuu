@@ -1,4 +1,5 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
+import { orientationType } from "@finos/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useLayoutEffectSkipFirst } from "../utils";
 import {
@@ -17,18 +18,24 @@ import {
 export interface OverflowContainerHookProps {
   itemCount: number;
   onSwitchWrappedItemIntoView?: (overflowItem: OverflowItem) => void;
+  orientation?: orientationType;
 }
 
 export const useOverflowContainer = ({
   itemCount,
   onSwitchWrappedItemIntoView,
+  orientation,
 }: OverflowContainerHookProps) => {
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const wrappedItemsRef = useRef<OverflowItem[]>(NO_WRAPPED_ITEMS);
 
   const handleResize = useCallback(async () => {
     if (container) {
-      let [nonWrapped, wrapped] = getNonWrappedAndWrappedItems(container);
+      let [nonWrapped, wrapped] = getNonWrappedAndWrappedItems(
+        container,
+        orientation
+      );
+      console.log({ nonWrapped, wrapped });
       applyOverflowClassToWrappedItems(container, wrapped);
       if (overflowIndicatorHasWrappedButShouldNotHave(wrapped)) {
         wrapped = await correctForWrappedOverflowIndicator(container, wrapped);

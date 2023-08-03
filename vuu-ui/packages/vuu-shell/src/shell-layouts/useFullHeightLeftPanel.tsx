@@ -1,15 +1,12 @@
 import { DraggableLayout, Flexbox } from "@finos/vuu-layout";
-import { ContextPanel } from "./context-panel";
-
 import { ReactElement } from "react";
-
-import { LeftNav } from "../left-nav";
+import { ContextPanel } from "./context-panel";
+import { ShellLayoutProps } from "./useShellLayout";
 
 export const useFullHeightLeftPanel = ({
   appHeader,
-}: {
-  appHeader: ReactElement;
-}): ReactElement => {
+  leftSidePanel,
+}: ShellLayoutProps): ReactElement => {
   return (
     <Flexbox
       className="App"
@@ -19,18 +16,10 @@ export const useFullHeightLeftPanel = ({
         width: "100%",
       }}
     >
-      <LeftNav
-        style={{
-          width: 240,
-        }}
-      />
+      {leftSidePanel}
       <Flexbox
         className="vuuShell-content"
-        style={{
-          flexDirection: "column",
-          flex: 1,
-          padding: 8,
-        }}
+        style={{ flex: 1, flexDirection: "column" }}
       >
         {appHeader}
         <DraggableLayout dropTarget key="main-content" style={{ flex: 1 }} />

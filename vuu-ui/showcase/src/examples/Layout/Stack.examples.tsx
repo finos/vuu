@@ -16,7 +16,7 @@ const allowRenameTab = true;
 export const FourTabStack = () => {
   return (
     <LayoutProvider>
-      <StackLayout active={0} style={{ width: 800, height: 500 }}>
+      <StackLayout style={{ width: 800, height: 500 }}>
         <Component
           title="Rebecca "
           style={{ backgroundColor: "rebeccapurple" }}
@@ -34,11 +34,31 @@ export const FourTabStack = () => {
 
 FourTabStack.displaySequence = displaySequence++;
 
+export const FourTabsLeft = () => {
+  return (
+    <LayoutProvider>
+      <StackLayout style={{ width: 800, height: 500 }} showTabs="left">
+        <Component
+          title="Rebecca "
+          style={{ backgroundColor: "rebeccapurple" }}
+        />
+        <Component title="Red" style={{ backgroundColor: "red" }} />
+        <Component title="Alice" style={{ backgroundColor: "aliceblue" }} />
+        <Component
+          title="Cornflower"
+          style={{ backgroundColor: "cornflowerblue" }}
+        />
+      </StackLayout>
+    </LayoutProvider>
+  );
+};
+
+FourTabsLeft.displaySequence = displaySequence++;
+
 export const FourTabStackAllowRename = () => {
   return (
     <LayoutProvider>
       <StackLayout
-        active={0}
         style={{ width: 800, height: 500 }}
         TabstripProps={{ allowRenameTab }}
       >

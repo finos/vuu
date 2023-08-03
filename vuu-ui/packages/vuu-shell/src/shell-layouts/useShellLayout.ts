@@ -2,16 +2,19 @@ import { ReactElement } from "react";
 import { useFullHeightLeftPanel } from "./useFullHeightLeftPanel";
 import { useInlayLeftPanel } from "./useInlayLeftPanel";
 
+export type ShellLayoutType = "full-height" | "inlay";
 export interface ShellLayoutProps {
   appHeader: ReactElement;
   leftSidePanel?: ReactElement;
-  leftSidePanelLayout?: "full-height" | "inlay";
 }
 
 export const useShellLayout = ({
   leftSidePanelLayout = "inlay",
   ...props
-}: ShellLayoutProps) => {
+}:
+  | ShellLayoutProps & {
+      leftSidePanelLayout?: "full-height" | "inlay";
+    }) => {
   const useLayoutHook =
     leftSidePanelLayout === "inlay"
       ? useInlayLeftPanel

@@ -1,5 +1,4 @@
-import { Shell } from "@finos/vuu-shell";
-import { AppSidePanel } from "app-vuu-example/src/app-sidepanel";
+import { LeftNav, Shell } from "@finos/vuu-shell";
 import { CSSProperties, useMemo } from "react";
 import { useMockFeatureData } from "../utils/mock-data";
 import { AutoVuuTable } from "../html/HtmlTable.examples";
@@ -28,7 +27,6 @@ export const ShellWithNewTheme = () => {
     return [
       (location, options) => {
         const locations = location.split(" ");
-        console.log(`BuildMenu at ${location}`);
         const menuDescriptors: ContextMenuItemDescriptor[] = [];
         if (locations.includes("main-tab")) {
           menuDescriptors.push(
@@ -61,13 +59,6 @@ export const ShellWithNewTheme = () => {
       type: "Stack",
       props: {
         className: "vuuShell-mainTabs",
-        style: {
-          border: "solid 1px #D6D7DA",
-          borderRadius: 6,
-          padding: "36px 8px 8px 8px",
-          width: "100%",
-          height: "100%",
-        },
         TabstripProps: {
           allowAddTab: true,
           allowRenameTab: true,
@@ -127,7 +118,7 @@ export const ShellWithNewTheme = () => {
       <Shell
         defaultLayout={layout}
         leftSidePanelLayout="full-height"
-        leftSidePanel={<AppSidePanel features={features} tables={schemas} />}
+        leftSidePanel={<LeftNav style={{ width: 240 }} />}
         loginUrl={window.location.toString()}
         user={user}
         style={
