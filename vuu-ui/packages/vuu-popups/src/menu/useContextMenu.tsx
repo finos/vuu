@@ -3,7 +3,12 @@ import { useThemeAttributes } from "@finos/vuu-shell";
 import { isGroupMenuItemDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
 import { cloneElement, MouseEvent, useCallback, useContext } from "react";
-import { PopupCloseReason, PopupService, reasonIsMenuAction } from "../popup";
+import {
+  MenuActionClosePopup,
+  PopupCloseReason,
+  PopupService,
+  reasonIsMenuAction,
+} from "../popup";
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
@@ -76,7 +81,16 @@ export const useContextMenu = (
           options
         );
 
-        const menuHandler = menuActionHandler ?? ctx?.menuActionHandler;
+        // const menuHandler = menuActionHandler ?? ctx?.menuActionHandler;
+        const menuHandler: MenuActionHandler = (
+          action: MenuActionClosePopup
+        ) => {
+          if (menuActionHandler?.(action) === true) {
+            return true;
+          } else {
+            return ctx?.menuActionHandler(action);
+          }
+        };
 
         if (menuItemDescriptors.length && menuHandler) {
           console.log(`showContextMenu ${location}`, {

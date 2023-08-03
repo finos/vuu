@@ -1,14 +1,24 @@
 import { LeftNav, Shell } from "@finos/vuu-shell";
-import { CSSProperties, useMemo } from "react";
-import { useMockFeatureData } from "../utils/mock-data";
+import {
+  CSSProperties,
+  ReactElement,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import { AutoVuuTable } from "../html/HtmlTable.examples";
 import { registerComponent } from "@finos/vuu-layout";
-import { ContextMenuProvider } from "@finos/vuu-popups";
+import {
+  ContextMenuProvider,
+  Dialog,
+  MenuActionClosePopup,
+} from "@finos/vuu-popups";
 import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
 } from "packages/vuu-data-types";
+import { SaveLayoutPanel } from "@finos/vuu-shell";
 
 import "./NewTheme.examples.css";
 
@@ -19,13 +29,13 @@ const user = { username: "test-user", token: "test-token" };
 let displaySequence = 1;
 
 export const ShellWithNewTheme = () => {
-  const { features, schemas } = useMockFeatureData();
-
+  const [dialogContent, setDialogContent] = useState<ReactElement>();
   const [buildMenuOptions, handleMenuAction] = useMemo<
     [MenuBuilder, MenuActionHandler]
   >(() => {
     return [
       (location, options) => {
+        console.log({ options });
         const locations = location.split(" ");
         const menuDescriptors: ContextMenuItemDescriptor[] = [];
         if (locations.includes("main-tab")) {
@@ -44,13 +54,21 @@ export const ShellWithNewTheme = () => {
         }
         return menuDescriptors;
       },
-      (action: unknown) => {
+      (action: MenuActionClosePopup) => {
         console.log("menu action", {
           action,
         });
+        if (action.menuId === "save-layout") {
+          setDialogContent(<SaveLayoutPanel />);
+          return true;
+        }
         return false;
       },
     ];
+  }, []);
+
+  const handleCloseDialog = useCallback(() => {
+    setDialogContent(undefined);
   }, []);
 
   //TODO what the App actually receives is an array of layouts
@@ -127,7 +145,17 @@ export const ShellWithNewTheme = () => {
             "--vuuShell-width": "100vw",
           } as CSSProperties
         }
-      />
+      >
+        <Dialog
+          className="vuDialog"
+          isOpen={dialogContent !== undefined}
+          onClose={handleCloseDialog}
+          style={{ maxHeight: 500 }}
+          title={"Save Layout"}
+        >
+          {dialogContent}
+        </Dialog>
+      </Shell>
     </ContextMenuProvider>
   );
 };
