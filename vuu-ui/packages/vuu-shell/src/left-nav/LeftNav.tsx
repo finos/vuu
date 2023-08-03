@@ -40,6 +40,7 @@ export const LeftNav = ({
       <div className={`${classBase}-main`}>
         <Tabstrip
           activeTabIndex={0}
+          animateSelectionThumb={false}
           className={`${classBase}-Tabstrip`}
           orientation="vertical"
         >
