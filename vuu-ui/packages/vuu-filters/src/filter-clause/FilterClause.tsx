@@ -23,8 +23,7 @@ export type FilterClauseProps = Omit<
   defaultFilter?: FilterClauseType;
 };
 
-// Hack to get vuu-purple-theme to apply to dropdowns
-const classBase = "vuu-theme vuuFilterClause";
+const classBase = "vuuFilterClause";
 
 export const FilterClause = ({
   table,
@@ -84,27 +83,31 @@ export const FilterClause = ({
 
   return (
     <div className={classBase} {...htmlAttributes} tabIndex={0}>
-      <ComboBox<ColumnDescriptor, "deselectable">
-        className={`${classBase}-columnSelector`}
-        source={columns}
-        itemToString={(column) => column.name}
-        InputProps={{
-          highlightOnFocus: true,
-          inputProps: { autoComplete: "off" },
-        }}
-        onSelectionChange={(_event, selectedColumn) => {
-          setSelectedColumn(selectedColumn || undefined);
-          if (!selectedColumn) return;
-          setTimeout(() => {
-            inputRef.current?.querySelector("input")?.focus();
-          }, 300);
-        }}
-        selectionStrategy="deselectable"
-        getFilterRegex={selectedColumn && (() => /.*/)}
-        data-text="hello"
-      />
+        <ComboBox<ColumnDescriptor, "deselectable">
+          ListProps={{
+            displayedItemCount: 10,
+            width: 200,
+          }}
+          className={`${classBase}-columnSelector`}
+          source={columns}
+          itemToString={(column) => column.name}
+          InputProps={{
+            highlightOnFocus: true,
+            inputProps: { autoComplete: "off" },
+          }}
+          onSelectionChange={(_event, selectedColumn) => {
+            setSelectedColumn(selectedColumn || undefined);
+            if (!selectedColumn) return;
+            setTimeout(() => {
+              inputRef.current?.querySelector("input")?.focus();
+            }, 300);
+          }}
+          selectionStrategy="deselectable"
+          getFilterRegex={selectedColumn && (() => /.*/)}
+          data-text="hello"
+        />
       {getInputElement()}
-      <CloseButton classBase={classBase} onClick={onClose} />
+      <CloseButton classBase={`${classBase}-closeButton`} onClick={onClose} />
     </div>
   );
 };

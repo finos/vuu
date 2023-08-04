@@ -29,6 +29,7 @@
   left: var(--editableLabel-padding, 0);
   padding: 0;
   outline-style: none;
+  position: absolute;
   right: var(--editableLabel-padding, 0);
 }
 

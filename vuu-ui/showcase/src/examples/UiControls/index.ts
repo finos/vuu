@@ -1,2 +1,2 @@
-export * from "./EditableLabel.examples";
-export * from "./Tabstrip.examples";
+export * as EditableLabel from "./EditableLabel.examples";
+export * as Tabstrip from "./Tabstrip.examples";

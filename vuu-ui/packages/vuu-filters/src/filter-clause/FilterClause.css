@@ -46,6 +46,10 @@
   height: 16px;
 }
 
+.vuuFilterClause-column-wrapper {
+  width: 60px;
+}
+
 .vuuFilterClause-columnSelector {
   --saltInput-minWidth: 10px;
   --saltInput-position: absolute;
@@ -53,27 +57,19 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 20px;
+  /* height: 20px; */
   position: relative;
 }
 
-.vuuFilterClause-columnSelector :before {
-  content: attr(data-text);
-  display: block;
-  height: 0px;
-  visibility: hidden;
-  white-space: pre-wrap;
-  /* position: absolute; */
-}
 
 .saltInput-input {
   background-color: red;
 }
 
-.vuu-density-high .saltDropdown {
+/* .vuu-density-high .saltDropdown {
   height: 16px;
   padding: 1px 0;
-}
+} */
 
 .vuuFilterClause :not(.vuuFilterClause-valueInput) .saltInput {
   color: var(--vuuPurple-text-secondary-foreground);

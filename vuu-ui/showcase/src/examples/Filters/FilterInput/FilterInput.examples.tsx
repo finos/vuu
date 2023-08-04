@@ -14,7 +14,7 @@ import { filterAsQuery, JsonData } from "@finos/vuu-utils";
 import { Dropdown, SelectionChangeHandler } from "@salt-ds/lab";
 import { Button } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
-import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
+import { useAutoLoginToVuuServer } from "../../utils/useAutoLoginToVuuServer";
 
 let displaySequence = 1;
 
