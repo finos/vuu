@@ -1,1 +1,2 @@
-export * from "./FilterClause";
+export * from "./ExpandoCombobox";
+export * from "./FilterClauseEditor";

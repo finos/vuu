@@ -1,0 +1,88 @@
+.vuuTableNext-col-header {
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    cursor: default;
+    display: inline-flex;
+    gap: 3px;
+    height: var(--header-height);
+    vertical-align: top;
+  }
+
+  .vuuTableNext-col-header .vuuColumnResizer:hover {
+    --columnResizer-color: var(--vuu-color-purple-10);
+}
+
+.vuuTableNext-col-header-label {
+  line-height: calc(var(--header-height) - 1px);
+}
+
+
+  .vuuTableNext-col-header.vuuPinLeft.vuuEndPin .vuuColumnResizer:before {
+    --height: calc(var(--columnResizer-height) - 15px);
+    --inset-r: calc(var(--pin-width) - 2px);
+    --inset-b: calc(var(--height) - 2px);
+    --clip-path: polygon(
+      0% 0%,                              
+      0% 120%,                            
+      2px 120%,    
+      2px 2px,      
+      var(--inset-r) 2px,      
+      var(--inset-r) var(--inset-b),      
+      2px var(--inset-b),      
+      2px 120%,     
+      120% 120%,    
+      120% 0%       
+    );
+    background-color: transparent;
+    border-color:   var(--vuu-color-gray-40);
+    border-width: 1px;
+    border-style: solid solid solid solid;
+    /* border-radius: 0 6px 6px 0; */
+    border-radius: 4px;
+    box-shadow: 2px 1px 4px 0px rgba(0, 0, 0, 0.10);
+    /* clip-path: inset(10px 10px 10px 10px); */
+    clip-path: var(--clip-path);
+    content: '';
+    position: absolute;
+    width: var(--pin-width);
+    top:0;
+    bottom:0;
+    right: -1px;
+    height: var(--height);
+    z-index: -5;
+}
+
+.vuuTableNext-col-header.vuuPinRight.vuuEndPin .vuuColumnResizer:before {
+  --height: calc(var(--columnResizer-height) - 15px);
+  --inset-r: calc(var(--pin-width) - 2px);
+  --inset-b: calc(var(--height) - 2px);
+  --clip-path: polygon(
+    -20% 0%,                              
+    -20% 120%,                            
+    2px 120%,    
+    2px 2px,      
+    var(--inset-r) 2px,      
+    var(--inset-r) var(--inset-b),      
+    2px var(--inset-b),      
+    2px 120%,     
+    120% 120%,    
+    120% 0%       
+  );
+  background-color: transparent;
+  border-color: #A9AAAD;
+  border-width: 1px;
+  border-style: solid solid solid solid;
+  /* border-radius: 0 6px 6px 0; */
+  border-radius: 4px;
+  box-shadow: -2px 1px 4px 0px rgba(0, 0, 0, 0.10);
+  /* clip-path: inset(10px 10px 10px 10px); */
+  clip-path: var(--clip-path);
+  content: '';
+  position: absolute;
+  width: var(--pin-width);
+  top:0;
+  bottom:0;
+  right: 0px;
+  height: var(--height);
+  z-index: -5;
+}

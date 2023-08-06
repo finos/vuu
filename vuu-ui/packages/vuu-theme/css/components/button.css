@@ -1,0 +1,11 @@
+.saltButton-primary {
+    --saltButton-borderColor: var(--salt-actionable-primary-foreground);
+    --saltButton-borderWidth: 1px;
+    --saltButton-borderRadius: 6px;
+    --saltButton-borderStyle: solid;
+    --vuu-icon-color: var(--saltIcon-color);
+}
+
+.saltButton-primary:hover {
+    --saltButton-borderColor: var(--salt-actionable-primary-background-hover)
+}

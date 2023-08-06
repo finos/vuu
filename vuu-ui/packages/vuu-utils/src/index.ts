@@ -15,6 +15,7 @@ export * from "./getUniqueId";
 export * from "./group-utils";
 export * from "./input-utils";
 export * from "./invariant";
+export * from "./itemToString";
 export * from "./json-utils";
 export * from "./keyboard-utils";
 export * from "./keyset";

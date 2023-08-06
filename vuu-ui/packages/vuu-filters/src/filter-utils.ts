@@ -1,6 +1,4 @@
-import {
-  ColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
   AndFilter,
   Filter,
@@ -17,7 +15,7 @@ import {
   isSingleValueFilter,
   partition,
 } from "@finos/vuu-utils";
-import { NumericOperator } from "./operator-utils";
+import { NumericOperator } from "./filter-clause/operator-utils";
 
 export const AND = "and";
 export const EQUALS = "=";

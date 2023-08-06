@@ -3,6 +3,7 @@
   --saltEditableLabel-padding: 0;
   --saltEditableLabel-height: var(--tabstrip-height);
   --saltInputLegacy-minWidth: 4em;
+  --saltEditableLabel-top: 3px;
 
   --tab-background: var(--vuuTab-background, var(--salt-navigable-primary-background));
   --tab-cursor: pointer;
@@ -30,9 +31,9 @@
 }
 
 /* Overrides characteristic used in saltFocusVisible */
-.vuuTab.saltFocusVisible:after {
+/* .vuuTab.saltFocusVisible:after {
   inset: 2px 2px 4px 2px;
-}
+} */
 
 .vuuTab {
   margin: 0 var(--tab-spacing) 0 0;
@@ -118,12 +119,17 @@
   outline-offset: -2px;
 }
 
-.vuuTab.saltFocusVisible {
+.vuuTab.vuuFocusVisible {
   background: var(--vuuTab-hover-background, var(--salt-navigable-primary-background-hover));
+  outline-color: var(--vuuTab-focusVisible-color, var(--salt-focused-outlineColor));
+  outline-style: dashed;
+  outline-width: 1px;
+  outline-offset: -1px;
 }
 
 .vuuTab:before {
-  content: var(--vuuTab-before-content, var(--tab-before-content), none);
+  content: var(--tab-before-content, none);
+  content: "";
   background: var(--tab-before-background);
   height: var(--tab-before-height);
   inset: var(--tab-before-inset);
@@ -140,8 +146,7 @@
   --tab-before-width: var(--tab-activationIndicator-thumb-width);
 }
 
-/* Hover styling */
-.vuuDraggable .vuuTab:before,
+/* .vuuDraggable .vuuTab:before,
 .vuuTab:not(.vuuTab-selected).saltFocusVisible:before,
 .vuuTab:hover:not(.vuuTab-selected):before {
   --tab-before-content: "";
@@ -149,7 +154,7 @@
   --tab-before-height: var(--tab-thumb-height);
   --tab-before-inset: var(--tab-activationIndicator-inset);
   --tab-before-width: var(--tab-activationIndicator-thumb-width);
-}
+} */
 
 .vuuTab-selected:before {
   --tab-before-content: "";

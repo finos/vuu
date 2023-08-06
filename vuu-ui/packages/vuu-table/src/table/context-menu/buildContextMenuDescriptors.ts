@@ -16,7 +16,8 @@ export const buildContextMenuDescriptors =
     if (dataSource === undefined) {
       return descriptors;
     }
-    if (location === "header") {
+    //TODO which should it be ?
+    if (location === "header" || location === "column-menu") {
       descriptors.push(
         ...buildSortMenuItems(options as MaybeColumn, dataSource)
       );
@@ -31,6 +32,12 @@ export const buildContextMenuDescriptors =
         action: "column-settings",
         icon: "cog",
         label: `Column Settings`,
+        options,
+      });
+      descriptors.push({
+        action: "table-settings",
+        icon: "cog",
+        label: `DataGrid Settings`,
         options,
       });
     } else if (location === "filter") {

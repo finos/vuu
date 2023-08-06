@@ -134,7 +134,7 @@ const NO_OPTIONS = {};
 
 const showContextMenuComponent = (
   e: MouseEvent<HTMLElement>,
-  contextMenu: JSX.Element
+  contextMenu: JSX.Elementfinos
 ) => {
   const position = {
     x: e.clientX,

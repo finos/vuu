@@ -1,11 +1,18 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { RowClickHandler } from "@finos/vuu-table";
-import { ColumnMap, isGroupColumn, metadataKeys } from "@finos/vuu-utils";
+import {
+  ColumnMap,
+  isGroupColumn,
+  metadataKeys,
+  RowSelected,
+} from "@finos/vuu-utils";
+import cx from "classnames";
 import { CSSProperties, memo, MouseEvent, useCallback } from "react";
 import { TableCell } from "./TableCell";
 import { TableGroupCell } from "./TableGroupCell";
-import cx from "classnames";
+
+import "./Row.css";
 
 export type HtmlRowProps = {
   className?: string;
@@ -19,7 +26,7 @@ export type HtmlRowProps = {
 };
 
 const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
-const classBase = "vuuTable2Row";
+const classBase = "vuuTableNextRow";
 
 export const Row = memo(
   ({
@@ -42,7 +49,7 @@ export const Row = memo(
     const {
       [IDX]: rowIndex,
       [IS_EXPANDED]: isExpanded,
-      [SELECTED]: isSelected,
+      [SELECTED]: selectionStatus,
     } = row;
 
     const handleRowClick = useCallback(
@@ -54,12 +61,14 @@ export const Row = memo(
       [onClick, row]
     );
 
+    const { True, First, Last } = RowSelected;
+
     const className = cx(classBase, classNameProp, {
       [`${classBase}-even`]: rowIndex % 2 === 0,
       [`${classBase}-expanded`]: isExpanded,
-      [`${classBase}-selected`]: isSelected === 1,
-      [`${classBase}-preSelected`]: isSelected === 2,
-      [`${classBase}-lastSelected`]: isSelected === 3,
+      [`${classBase}-selected`]: selectionStatus & True,
+      [`${classBase}-selectedStart`]: selectionStatus & First,
+      [`${classBase}-selectedEnd`]: selectionStatus & Last,
     });
 
     const style =
@@ -76,12 +85,14 @@ export const Row = memo(
         onClick={handleRowClick}
         style={style}
       >
+        <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
         {columns.map((column) => {
           const isGroup = isGroupColumn(column);
           const Cell = isGroup ? TableGroupCell : TableCell;
 
           return <Cell key={column.key} column={column} row={row} />;
         })}
+        <span className={`${classBase}-selectionDecorator vuuStickyRight`} />
       </div>
     );
   }

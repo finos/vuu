@@ -1,2 +1,2 @@
-export * from "./FilterInput.examples";
-export * from "./NewFiltering.examples";
+export * as FilterBar from "./FilterBar";
+export * as FilterInput from "./FilterInput";

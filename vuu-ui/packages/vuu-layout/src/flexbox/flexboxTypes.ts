@@ -28,7 +28,7 @@ export interface FlexboxProps
 }
 
 export interface FlexboxLayoutProps extends FlexboxProps {
-  path: string;
+  path?: string;
 }
 
 export interface SplitterHookProps {
