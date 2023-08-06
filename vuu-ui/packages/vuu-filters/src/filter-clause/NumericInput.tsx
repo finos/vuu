@@ -15,8 +15,8 @@ import { FilterClauseValueEditor } from "./filterClauseTypes";
 export interface NumericInputProps
   extends FilterClauseValueEditor,
     HTMLAttributes<HTMLDivElement> {
-  operatorInputRef: RefObject<HTMLInputElement>;
-  onFilterChange: (filter?: Filter) => void;
+  operatorInputRef?: RefObject<HTMLInputElement>;
+  onFilterChange?: (filter?: Filter) => void;
   operator: string;
   ref: RefObject<HTMLDivElement>;
 }

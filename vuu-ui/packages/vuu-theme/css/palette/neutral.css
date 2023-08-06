@@ -20,7 +20,7 @@
   --salt-palette-neutral-tertiary-background-disabled: transparent;
   --salt-palette-neutral-tertiary-border: transparent;
   --salt-palette-neutral-tertiary-border-disabled: transparent;
-  --salt-palette-neutral-tertiary-separator: var(--salt-color-black-fade-separatorOpacity-tertiary);
+  --salt-palette-neutral-tertiary-separator: var(--vuu-color-gray-05);
 }
 
 .vuu-theme[data-mode="dark"] {

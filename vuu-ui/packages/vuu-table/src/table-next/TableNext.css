@@ -1,11 +1,17 @@
-.TableNext {
+.vuuTableNext {
+  --vuu-table-next-selection-bookend-width: 4px;
+  --columnResizer-height: var(--table-height);
+  --columnResizer-color: transparent;
+  --table-background: var(--salt-container-primary-background);
+
   height: var(--table-css-height);
   background-color: red;
   position: relative;
+  user-select: none;
   width: var(--table-css-width);
 }
 
-.TableNext-scrollbarContainer {
+.vuuTableNext-scrollbarContainer {
   --scroll-content-width: 1100px;
   border-bottom: none !important;
   border-top: none !important;
@@ -16,18 +22,17 @@
   left: 0px;
   overflow: auto;
   position: absolute;
-  top: 30px;
-  width: calc(var(--table-width) + 1px);
+  top: var(--total-header-height);
+  width: var(--table-width);
 }
 
-.TableNext-scrollbarContent {
+.vuuTableNext-scrollbarContent {
   height: calc(var(--content-height) + var(--horizontal-scrollbar-height));
   position: absolute;
   width: var(--content-width);
 }
 
-.TableNext-contentContainer {
-  --vuuTableHeaderHeight: 30px;
+.vuuTableNext-contentContainer {
   background-color: var(--salt-container-primary-background);
   height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
   position: relative;
@@ -36,12 +41,12 @@
   width: calc(var(--table-width) - var(--vertical-scrollbar-width));
 }
 
-.TableNext-contentContainer::-webkit-scrollbar {
+.vuuTableNext-contentContainer::-webkit-scrollbar {
   display: none;
 }
 
  
-.TableNext-table {
+.vuuTableNext-table {
   position: absolute;
   top: 0;
   left: 0;
@@ -52,15 +57,16 @@
   background-color: #fff;
   border-collapse: separate;
   border-spacing: 0;
-  border-left: 1px solid #ccc;
 }
 
-.TableNext-body {
+.vuuTableNext-body {
   height: var(--content-height)
 }
 
-.TableNext-cell {
+.vuuTableNextCell {
   display: inline-block;
+  padding: 0 8px;
+  vertical-align: top;
 }
 
 .vuuPinLeft, .vuuPinRight {
@@ -69,38 +75,21 @@
   z-index: 1;
 }
 
-.TableNext-col-headings {
+.vuuTableNext-col-headings {
+  background-color: white;
+  padding: 0 var(--vuu-table-next-selection-bookend-width, 0);
+
     position: sticky;
     top: 0;
     /* ensure header row sits atop everything else when scrolling down */
     z-index: 1;
 }
 
-  .TableNext-col-headers {
+  .vuuTableNext-col-headers {
+    background-color: var(--table-background);
     white-space: nowrap;
   }
 
-  .TableNext-col-header {
-    border-bottom: 1px solid #ccc;
-    box-sizing: border-box;
-  display: inline-flex;
-    line-height: 29px;
-    border-right: 1px solid #999;
-    cursor: default;
-    padding: 0 3px;
-  }
-
-  .TableNextRow {
-    background: #fff;
-    border-right: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
-    box-sizing: border-box;
-    height: 30px;
-    line-height: 29px;
-    position: absolute;
-    top:0;
-    white-space: nowrap;
-  }
 
   .sizer-cell {
     background-color: green !important;

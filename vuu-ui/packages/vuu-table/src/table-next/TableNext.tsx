@@ -4,11 +4,11 @@ import { metadataKeys } from "@finos/vuu-utils";
 import { CSSProperties, useEffect } from "react";
 import { HeaderCell } from "./HeaderCell";
 import { Row } from "./Row";
-import { useTable } from "./useTable";
+import { useTable } from "./useTableNext";
 
 import "./TableNext.css";
 
-const classBase = "TableNext";
+const classBase = "vuuTableNext";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 
@@ -39,6 +39,7 @@ export const TableNext = ({
     data,
     handleContextMenuAction,
     onHeaderClick,
+    onRowClick,
     menuBuilder,
     scrollProps,
     viewportMeasurements,
@@ -137,10 +138,10 @@ export const TableNext = ({
               <div className={`${classBase}-body`}>
                 {data.map((data) => (
                   <Row
-                    className="DivElementKeyedWithTranslateInlineScrollbarsCssVariablesRow"
                     columnMap={columnMap}
                     columns={columns}
                     key={data[RENDER_IDX]}
+                    onClick={onRowClick}
                     row={data}
                     offset={rowHeight * data[IDX] + headerHeight}
                   />

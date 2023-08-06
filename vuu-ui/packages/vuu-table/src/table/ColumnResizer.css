@@ -1,7 +1,7 @@
 .vuuColumnResizer {
     background-color: var(--columnResizer-color);
     cursor: col-resize;
-    height: 100%;
+    height: var(--header-height);
     position: relative;
     width: 4px;
 }

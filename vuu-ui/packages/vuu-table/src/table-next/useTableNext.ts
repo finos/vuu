@@ -9,27 +9,29 @@ import {
   SelectionChangeHandler,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import {
-  MeasuredProps,
-  useMeasuredContainer,
-  useTableContextMenu,
-  useTableModel,
-  useTableViewport,
-} from "@finos/vuu-table";
+import { SetPropsAction, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
+import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
   applySort,
   buildColumnMap,
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  buildContextMenuDescriptors,
+  MeasuredProps,
+  useMeasuredContainer,
+  useSelection,
+  useTableContextMenu,
+  useTableViewport,
+} from "../table";
+import { isShowSettings, PersistentColumnAction } from "../table/useTableModel";
 import { useDataSource } from "./useDataSource";
-import { useTableScroll } from "./useTableScroll";
-import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
-import { PersistentColumnAction } from "../table/useTableModel";
 import { useInitialValue } from "./useInitialValue";
+import { useTableModel } from "./useTableModel";
+import { useTableScroll } from "./useTableScroll";
 import { useVirtualViewport } from "./useVirtualViewport";
-import { buildContextMenuDescriptors } from "@finos/vuu-table";
 
 export interface TableHookProps extends MeasuredProps {
   config: Omit<GridConfig, "headings">;
@@ -57,7 +59,8 @@ export const useTable = ({
   ...measuredProps
 }: TableHookProps) => {
   const [rowCount] = useState<number>(dataSource.size);
-
+  const dispatchLayoutAction = useLayoutProviderDispatch();
+  console.log({ dispatchLayoutAction: dispatchLayoutAction.toString() });
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
@@ -135,10 +138,26 @@ export const useTable = ({
 
   const onPersistentColumnOperation = useCallback(
     (action: PersistentColumnAction) => {
-      // expectConfigChangeRef.current = true;
-      dispatchColumnAction(action);
+      if (isShowSettings(action)) {
+        dispatchLayoutAction({
+          type: "set-props",
+          path: "#context-panel",
+          props: {
+            expanded: true,
+            context: "column-settings",
+            column: action.column,
+            title:
+              action.type === "columnSettings"
+                ? "Column Settings"
+                : "DataGrid Settings",
+          },
+        } as SetPropsAction);
+      } else {
+        // expectConfigChangeRef.current = true;
+        dispatchColumnAction(action);
+      }
     },
-    [dispatchColumnAction]
+    [dispatchColumnAction, dispatchLayoutAction]
   );
 
   const handleContextMenuAction = useTableContextMenu({
@@ -232,6 +251,19 @@ export const useTable = ({
     [columns, handleSort]
   );
 
+  const handleSelectionChange: SelectionChangeHandler = useCallback(
+    (selected) => {
+      dataSource.select(selected);
+      onSelectionChange?.(selected);
+    },
+    [dataSource, onSelectionChange]
+  );
+
+  const onRowClick = useSelection({
+    onSelectionChange: handleSelectionChange,
+    selectionModel,
+  });
+
   return {
     columnMap,
     columns,
@@ -242,6 +274,7 @@ export const useTable = ({
     menuBuilder,
     onContextMenu,
     onHeaderClick,
+    onRowClick,
     scrollProps,
     viewportMeasurements,
   };

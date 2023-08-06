@@ -6,6 +6,7 @@ export * from "./left-nav";
 export * from "./login";
 export * from "./session-editing-form";
 export * from "./shell";
+export * from "./shell-layouts";
 export * from "./shellTypes";
 export * from "./ShellContextProvider";
 export * from "./theme-provider";

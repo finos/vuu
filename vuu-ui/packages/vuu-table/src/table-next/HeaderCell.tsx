@@ -7,7 +7,9 @@ import {
   ColumnResizer,
   TableColumnResizeHandler,
   useTableColumnResize,
-} from "@finos/vuu-table";
+} from "../table";
+
+import "./HeaderCell.css";
 
 export interface HeaderCellProps extends HTMLAttributes<HTMLDivElement> {
   classBase?: string;

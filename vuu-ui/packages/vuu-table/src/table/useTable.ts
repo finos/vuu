@@ -155,6 +155,9 @@ export const useTable = ({
   const onPersistentColumnOperation = useCallback(
     (action: PersistentColumnAction) => {
       expectConfigChangeRef.current = true;
+      console.log(`onPersistentColumnOperation, dispatchColumnAction`, {
+        action,
+      });
       dispatchColumnAction(action);
     },
     [dispatchColumnAction]
