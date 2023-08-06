@@ -48,10 +48,6 @@ export const TextInput = forwardRef(function TextInput(
   const getSuggestions = useTypeaheadSuggestions();
   const valueInputRef = useRef<HTMLInputElement>(null);
 
-  console.log(`TextInput value = ${value}`, {
-    typeaheadValues,
-  });
-
   const handleValueSelectionChange = useCallback(
     (evt: SyntheticEvent, value: string | null) => {
       console.log(`selected value ${value}`);
