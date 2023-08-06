@@ -4,8 +4,8 @@ body {
   height: 100%;
 }
 
-#root.vuu-standalone {
-  height: 100vh;
+#root {
+  min-height: 100vh;
 }
 
 .vuuToolbarProxy {

@@ -41,6 +41,9 @@ const configureColumns = (
 
 const NO_CONCATENATED_COLUMNS: ColumnDescriptor[] = [];
 
+/**
+ * Either pass in a tableSchema or a map of schemas and the tablename
+ */
 export const useTestDataSource = ({
   autoLogin = true,
   bufferSize = 100,
@@ -52,6 +55,7 @@ export const useTestDataSource = ({
   schemas,
   sort,
   tablename = "instruments",
+  tableSchema = schemas[tablename],
 }: {
   autoLogin?: boolean;
   bufferSize?: number;
@@ -63,13 +67,13 @@ export const useTestDataSource = ({
   schemas: { [key: string]: TableSchema };
   sort?: VuuSort;
   tablename?: string;
+  tableSchema?: TableSchema;
 }) => {
   const dataSourceRef = useRef<RemoteDataSource | undefined>();
 
   const [columns, config, columnNames, table] = useMemo(() => {
-    const schema = schemas[tablename];
     const configuredColumns = configureColumns(
-      schema.columns,
+      tableSchema.columns,
       columnConfig,
       columnNamesProp
     ).concat(calculatedColumns);
@@ -77,9 +81,15 @@ export const useTestDataSource = ({
       configuredColumns,
       { columns: configuredColumns },
       configuredColumns.map(toDataSourceColumns),
-      schema.table,
+      tableSchema.table,
     ];
-  }, [calculatedColumns, columnConfig, columnNamesProp, schemas, tablename]);
+  }, [
+    calculatedColumns,
+    columnConfig,
+    columnNamesProp,
+    tableSchema.columns,
+    tableSchema.table,
+  ]);
 
   const tableRef = useRef(table);
 

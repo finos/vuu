@@ -1,2 +1,2 @@
-export * as FilterClause from "./FilterClause";
+export * as FilterBar from "./FilterBar";
 export * as FilterInput from "./FilterInput";

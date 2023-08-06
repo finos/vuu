@@ -1,7 +1,7 @@
 .vuu-theme[data-mode="light"] {
   --salt-palette-interact-background: transparent;
   --salt-palette-interact-background-blurSelected: var(--salt-color-gray-30);
-  --salt-palette-interact-background-hover: var(--salt-color-blue-10);
+  --salt-palette-interact-background-hover: var(--vuu-color-gray-10);
   --salt-palette-interact-background-active: var(--salt-color-blue-30);
   --salt-palette-interact-background-disabled: transparent;
   --salt-palette-interact-background-activeDisabled: var(--salt-color-blue-30-fade-background);
@@ -28,16 +28,16 @@
   --salt-palette-interact-cta-foreground-activeDisabled: var(--salt-color-white-fade-foreground);
   --salt-palette-interact-cta-foreground-disabled: var(--salt-color-white-fade-foreground);
   --salt-palette-interact-cta-foreground-hover: var(--salt-color-white);
-  --salt-palette-interact-primary-background: var(--salt-color-gray-60);
+  --salt-palette-interact-primary-background: var(--vuu-color-white);
   --salt-palette-interact-primary-background-active: var(--salt-color-gray-200);
   --salt-palette-interact-primary-background-activeDisabled: var(--salt-color-gray-200-fade-background);
   --salt-palette-interact-primary-background-disabled: var(--salt-color-gray-60-fade-background);
-  --salt-palette-interact-primary-background-hover: var(--salt-color-gray-40);
-  --salt-palette-interact-primary-foreground: var(--salt-color-gray-900);
+  --salt-palette-interact-primary-background-hover: var(--vuu-color-pink-10);
+  --salt-palette-interact-primary-foreground: var(--vuu-color-gray-50);
   --salt-palette-interact-primary-foreground-active: var(--salt-color-white);
   --salt-palette-interact-primary-foreground-activeDisabled: var(--salt-color-white-fade-foreground);
   --salt-palette-interact-primary-foreground-disabled: var(--salt-color-gray-900-fade-foreground);
-  --salt-palette-interact-primary-foreground-hover: var(--salt-color-gray-900);
+  --salt-palette-interact-primary-foreground-hover: var(--vuu-color-gray-80);
   --salt-palette-interact-secondary-background: transparent;
   --salt-palette-interact-secondary-background-active: var(--salt-color-gray-200);
   --salt-palette-interact-secondary-background-activeDisabled: var(--salt-color-gray-200-fade-background);

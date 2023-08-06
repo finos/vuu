@@ -3,6 +3,7 @@
   --saltEditableLabel-padding: 0;
   --saltEditableLabel-height: var(--tabstrip-height);
   --saltInputLegacy-minWidth: 4em;
+  --saltEditableLabel-top: 3px;
 
   --tab-background: var(--vuuTab-background, var(--salt-navigable-primary-background));
   --tab-cursor: pointer;

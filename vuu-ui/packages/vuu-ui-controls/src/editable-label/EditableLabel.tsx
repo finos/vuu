@@ -156,6 +156,7 @@ export const EditableLabel = forwardRef(function EditableLabel(
           inputRef={inputRef}
           style={{ padding: 0 }}
           textAlign="left"
+          variant="secondary"
         />
       ) : (
         value

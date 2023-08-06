@@ -1,0 +1,56 @@
+.vuuExpandoCombobox {
+    --expando-combobox-height: var(--vuuExpandoCombobox-height, 24px);
+    --expando-combobox-fontSize: var(--vuuExpandoCombobox-fontSizew, 12px);
+
+    --saltInputLegacy-focused-outlineStyle: none;
+    --saltInputLegacy-fontSize: var(--expando-combobox-fontSize);
+    --saltInputLegacy-height: var(--expando-combobox-height);
+    --saltInputLegacy-minWidth: 14px;
+    --saltInputLegacy-position: absolute;
+
+    background-color: rgba(255,0,0,.2);
+    display: inline-flex;
+    flex-direction: column;
+    height: var(--expando-combobox-height);
+    min-width: 32px;
+    padding: 0 6px;
+
+}
+
+.vuuExpandoCombobox .saltDropdown {
+    height: 100%;
+}
+
+.vuuExpandoCombobox .saltInputLegacy {
+    border: none;
+    left:0px;
+    margin:0;
+    min-height: 100%;
+    padding:0;
+    right: 0px;
+    width: auto;
+}
+
+.vuuExpandoCombobox .saltInputLegacy-input {
+  border: none;
+  box-sizing: content-box;
+  display: block;
+  flex: 1;
+  font: inherit;
+  margin:0;
+  min-width:0;
+  outline: none;
+  padding: 0;
+  
+}
+
+.vuuExpandoCombobox:before {
+    content: attr(data-text);
+    display: block;
+    font-size: var(--expando-combobox-fontSize);
+    height: 0px;
+    overflow: hidden;
+    /* visibility: hidden; */
+    white-space: pre-wrap;
+    /* position: absolute; */
+  }

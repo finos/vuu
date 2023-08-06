@@ -1,4 +1,5 @@
 .vuuEditableLabel {
+  --saltInput-background: transparent;
   --saltInput-minWidth: 14px;
   --saltInput-position: absolute;
   --editableLabel-padding: var(--saltEditableLabel-padding, 6px);
@@ -31,8 +32,24 @@
   outline-style: none;
   position: absolute;
   right: var(--editableLabel-padding, 0);
+  top: var(--saltEditableLabel-top, 2px);
+  width: auto;
+}
+
+.vuuEditableLabel .saltInput-activationIndicator {
+  display: none;
 }
 
 .vuuEditableLabel-input {
+  background-color: transparent;
+  border: none;
+  box-sizing: content-box;
+  display: block;
+  flex: 1;
+  font: inherit;
+  height: 20px;
+  margin:0;
+  min-width:0;
   outline: none;
+  padding: 0;
 }

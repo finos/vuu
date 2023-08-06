@@ -6,93 +6,61 @@ import {
   useRef,
   useState,
 } from "react";
-import { Filter, FilterClause } from "@finos/vuu-filter-types";
+import { Filter } from "@finos/vuu-filter-types";
 import { Input } from "@salt-ds/core";
-import { ComboBox } from "@salt-ds/lab";
-import {
-  NUMERIC_OPERATORS,
-  NumericOperator,
-  isNumber,
-  isNumericOperator,
-} from "../operator-utils";
 import { getNumericFilter } from "../filter-utils";
+import { isValidNumber } from "@finos/vuu-utils";
+import { FilterClauseValueEditor } from "./filterClauseTypes";
 
-type NumericInputProps = HTMLAttributes<HTMLDivElement> & {
-  column: string;
+export interface NumericInputProps
+  extends FilterClauseValueEditor,
+    HTMLAttributes<HTMLDivElement> {
   operatorInputRef: RefObject<HTMLInputElement>;
   onFilterChange: (filter?: Filter) => void;
-  defaultFilter?: FilterClause;
-};
+  operator: string;
+  ref: RefObject<HTMLDivElement>;
+}
 
 export const NumericInput = ({
-  column,
-  operatorInputRef,
-  onFilterChange,
-  defaultFilter,
   className,
+  column,
+  filterClause,
+  onFilterChange,
+  operator,
 }: NumericInputProps) => {
   const defaultValue =
-    defaultFilter?.op !== "in" && isNumber(defaultFilter?.value)
-      ? defaultFilter?.value
+    filterClause?.op !== "in" && isValidNumber(filterClause?.value)
+      ? filterClause?.value
       : undefined;
-  const defaultOp = isNumericOperator(defaultFilter?.op)
-    ? defaultFilter?.op
-    : undefined;
+  // const defaultOp = isNumericOperator(defaultFilter?.op)
+  //   ? defaultFilter?.op
+  //   : undefined;
 
   const [valueInputValue, setValueInputValue] = useState<string>(
     defaultValue?.toString() || ""
   );
-  const [operatorInputValue, setOperatorInputValue] = useState("");
-  const [selectedOperator, setSelectedOperator] = useState<
-    NumericOperator | undefined
-  >(defaultOp);
   const valueInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setSelectedOperator(undefined);
     setValueInputValue("");
   }, [column]);
 
   return (
-    <>
-      <ComboBox<NumericOperator, "deselectable">
-        className={`${className}-operatorSelector`}
-        selectionStrategy="deselectable"
-        source={NUMERIC_OPERATORS}
-        onSelectionChange={(_event, selectedOperator) => {
-          setSelectedOperator(selectedOperator || undefined);
-          setTimeout(() => {
-            valueInputRef.current?.querySelector("input")?.focus();
-          }, 100);
-        }}
-        InputProps={{
-          onChange: (event) => setOperatorInputValue(event.target.value),
-          value: operatorInputValue,
-          highlightOnFocus: true,
-          inputProps: { autoComplete: "off" },
-        }}
-        ref={operatorInputRef}
-        value={selectedOperator}
-        getFilterRegex={selectedOperator && (() => /.*/)}
-      />
-      {selectedOperator === undefined ? undefined : (
-        <Input
-          className={`${className}-valueInput`}
-          // highlightOnFocus
-          value={valueInputValue}
-          ref={valueInputRef}
-          // type="text"
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            setValueInputValue(event.target.value);
-            const filter = getNumericFilter(
-              column,
-              selectedOperator,
-              Number.parseFloat(event.target.value)
-            );
-            onFilterChange(filter);
-          }}
-        />
-      )}
-    </>
+    <Input
+      className={`${className}-valueInput`}
+      // highlightOnFocus
+      value={valueInputValue}
+      ref={valueInputRef}
+      // type="text"
+      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+        setValueInputValue(event.target.value);
+        const filter = getNumericFilter(
+          column,
+          operator,
+          Number.parseFloat(event.target.value)
+        );
+        onFilterChange(filter);
+      }}
+    />
   );
 };

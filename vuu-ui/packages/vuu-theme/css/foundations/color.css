@@ -1,8 +1,18 @@
 .vuu-theme {
 
+  --vuu-color-transparent: transparent;
+  --vuu-color-black: black;
+  --vuu-color-white: white;
+
   --vuu-color-purple-10: rgb(109,24,189); /*  #6D18BD */
 
   --vuu-color-pink-10: rgb(234, 120, 128); /*  #F37880 */
+
+
+  --vuu-color-gray-10: rgb(228, 227, 231); /* #E4E3E7 */
+  --vuu-color-gray-20: rgb(245, 242, 248); /* #F5F2F8 */
+  --vuu-color-gray-50: rgb(96, 100, 119);  /* #606477 */
+  --vuu-color-gray-80: rgb(21, 23, 27);    /* #15171B */ 
 
   /* Color palette will stay the same no matter of theming */
   --salt-color-white: rgb(255, 255, 255);
