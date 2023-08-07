@@ -1,14 +1,13 @@
-import ReactDOM from "react-dom";
-import { getUrlParameter, hasUrlParameter } from "@finos/vuu-utils";
-
-import "@salt-ds/theme/index.css";
-import "@finos/vuu-theme/index.css";
 import "@finos/vuu-icons/index.css";
+import { ThemeProvider } from "@finos/vuu-shell";
+import "@finos/vuu-theme/index.css";
+import { getUrlParameter, hasUrlParameter } from "@finos/vuu-utils";
+import "@salt-ds/theme/index.css";
+import ReactDOM from "react-dom";
+import { ExamplesModule } from "./App";
+import { addStylesheetURL } from "./utils";
 
 import "./index.css";
-import { ThemeProvider } from "@finos/vuu-shell";
-import { addStylesheetURL } from "./utils";
-import { ExamplesModule } from "./App";
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
@@ -100,7 +99,7 @@ if (hasUrlParameter("standalone")) {
           density="high"
           themeMode="light"
         >
-          <div>
+          <div style={{ height: "100vh", width: "100vw" }}>
             <Component />
           </div>
         </ThemeProvider>,

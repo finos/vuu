@@ -313,7 +313,6 @@ export const AutoVuuTable = () => {
     ...props
   } = useTableConfig({
     count: 1000,
-    lazyData: false,
     rangeChangeRowset: "full",
     table: { module: "SIMUL", table: "instruments" },
   });

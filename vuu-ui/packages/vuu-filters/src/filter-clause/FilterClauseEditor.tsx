@@ -1,6 +1,11 @@
 import { getColumnByName, TableSchema } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { FilterClause } from "@finos/vuu-filter-types";
+import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
+import {
+  isMultiValueFilter,
+  isSingleValueFilter,
+  isValidFilterClauseOp,
+} from "@finos/vuu-utils";
 import cx from "classnames";
 import {
   HTMLAttributes,
@@ -17,21 +22,45 @@ import { textOperators } from "./operator-utils";
 import { TextInput } from "./TextInput";
 
 import "./FilterClauseEditor.css";
+import { SuggestionFetcher } from "packages/vuu-data-react/src";
 
 export interface FilterClauseEditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   filterClause: Partial<FilterClause>;
   onChange: (filterClause: Partial<FilterClause>) => void;
   onClose: () => void;
+  suggestionProvider?: () => SuggestionFetcher;
   tableSchema: TableSchema;
 }
 
 const classBase = "vuuFilterClause";
 
+// TODO boolean[] makes no sense
+type FilterClauseValue =
+  | boolean
+  | boolean[]
+  | string
+  | string[]
+  | number
+  | number[];
+
+const getFilterClauseValue = (
+  filterClause: Partial<FilterClause>
+): FilterClauseValue | undefined => {
+  if (isMultiValueFilter(filterClause)) {
+    return filterClause.values;
+  } else if (isSingleValueFilter(filterClause)) {
+    return filterClause.value;
+  } else {
+    return undefined;
+  }
+};
+
 export const FilterClauseEditor = ({
   onChange,
   onClose,
   filterClause,
+  suggestionProvider,
   tableSchema,
   ...htmlAttributes
 }: FilterClauseEditorProps) => {
@@ -42,8 +71,12 @@ export const FilterClauseEditor = ({
   const [selectedColumn, setSelectedColumn] = useState<
     ColumnDescriptor | undefined
   >(getColumnByName(tableSchema, filterClause.column));
-  const [operator, setOperator] = useState<string | undefined>(filterClause.op);
-  const [value, setValue] = useState<unknown | undefined>(filterClause.value);
+  const [operator, setOperator] = useState<FilterClauseOp | undefined>(
+    filterClause.op
+  );
+  const [value, setValue] = useState<FilterClauseValue | undefined>(
+    getFilterClauseValue(filterClause)
+  );
 
   const handleColumnSelectionChange = useCallback(
     (evt: SyntheticEvent, column: ColumnDescriptor | null) => {
@@ -53,7 +86,14 @@ export const FilterClauseEditor = ({
   );
   const handleOperatorSelectionChange = useCallback(
     (evt: SyntheticEvent, operator: string | null) => {
-      setOperator(operator ?? undefined);
+      const op = operator ?? undefined;
+      if (op === undefined || isValidFilterClauseOp(op)) {
+        setOperator(op);
+      } else {
+        throw Error(
+          `FilterClauseEditor, invalid value ${op} for filter clause`
+        );
+      }
     },
     []
   );
@@ -105,6 +145,7 @@ export const FilterClauseEditor = ({
             onValueChange={handleValueChange}
             operator={operator}
             ref={valueRef}
+            suggestionProvider={suggestionProvider}
             table={table}
             value={value as string}
           />
@@ -129,7 +170,15 @@ export const FilterClauseEditor = ({
         console.log("returning unsupported");
         return null;
     }
-  }, [selectedColumn, operator, filterClause, handleValueChange, table, value]);
+  }, [
+    selectedColumn,
+    operator,
+    filterClause,
+    handleValueChange,
+    suggestionProvider,
+    table,
+    value,
+  ]);
 
   return (
     <div className={classBase} {...htmlAttributes} tabIndex={0}>

@@ -1,9 +1,13 @@
 import { ExpandoCombobox, FilterClauseEditor } from "@finos/vuu-filters";
 import { Filter, FilterClause } from "@finos/vuu-filter-types";
-import { useAutoLoginToVuuServer, useSchema } from "../../utils";
+import {
+  useAutoLoginToVuuServer,
+  useSchema,
+  useTableConfig,
+} from "../../utils";
 
 import "./FilterClause.examples.css";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SelectionChangeHandler } from "@salt-ds/lab";
 import { ColumnDescriptor } from "packages/vuu-datagrid-types";
 
@@ -55,6 +59,11 @@ export const NewFilterClause = () => {
   useAutoLoginToVuuServer();
   const tableSchema = useSchema("instruments");
 
+  const { typeaheadHook } = useTableConfig({
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
   const onChange = (filterClause: Partial<FilterClause>) =>
     console.log("Filter Change", filterClause);
 
@@ -66,6 +75,7 @@ export const NewFilterClause = () => {
         filterClause={EMPTY_FILTER_CLAUSE}
         onChange={onChange}
         onClose={onClose}
+        suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
     </div>
