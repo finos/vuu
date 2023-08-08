@@ -4,6 +4,7 @@ import {
   Filter,
   FilterClause,
   FilterCombinatorOp,
+  NumericFilterClauseOp,
 } from "@finos/vuu-filter-types";
 import {
   extractFilterForColumn,
@@ -15,7 +16,6 @@ import {
   isSingleValueFilter,
   partition,
 } from "@finos/vuu-utils";
-import { NumericOperator } from "./filter-clause/operator-utils";
 
 export const AND = "and";
 export const EQUALS = "=";
@@ -399,10 +399,10 @@ export const getTypeaheadFilter = (
 
 export const getNumericFilter = (
   column: string,
-  operator?: NumericOperator,
+  op?: NumericFilterClauseOp,
   value?: number
-): Filter | undefined => {
-  if (operator === undefined) return undefined;
+): FilterClause | undefined => {
+  if (op === undefined) return undefined;
   if (value === undefined || isNaN(value)) return undefined;
-  return { column, op: operator, value };
+  return { column, op, value };
 };

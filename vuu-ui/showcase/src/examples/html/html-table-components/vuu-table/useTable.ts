@@ -32,7 +32,8 @@ import { useDataSource } from "./useDataSource";
 import { useTableScroll } from "./useTableScroll";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
-  isShowSettings,
+  isShowColumnSettings,
+  isShowTableSettings,
   PersistentColumnAction,
 } from "@finos/vuu-table/src/table/useTableModel";
 import { useInitialValue } from "./useInitialValue";
@@ -157,8 +158,10 @@ export const useTable = ({
   const onPersistentColumnOperation = useCallback(
     (action: PersistentColumnAction) => {
       // expectConfigChangeRef.current = true;
-      if (isShowSettings(action)) {
+      if (isShowColumnSettings(action)) {
         // onShowConfigEditor?.(action.column);
+      } else if (isShowTableSettings(action)) {
+        console.log("dispatch table settings");
       } else {
         dispatchColumnAction(action);
       }

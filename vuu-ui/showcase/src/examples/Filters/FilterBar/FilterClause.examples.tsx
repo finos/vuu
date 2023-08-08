@@ -1,6 +1,10 @@
 import { ExpandoCombobox, FilterClauseEditor } from "@finos/vuu-filters";
 import { Filter, FilterClause } from "@finos/vuu-filter-types";
-import { useAutoLoginToVuuServer, useSchema } from "../../utils";
+import {
+  useAutoLoginToVuuServer,
+  useSchema,
+  useTableConfig,
+} from "../../utils";
 
 import "./FilterClause.examples.css";
 import { useCallback, useMemo, useState } from "react";
@@ -55,6 +59,11 @@ export const NewFilterClause = () => {
   useAutoLoginToVuuServer();
   const tableSchema = useSchema("instruments");
 
+  const { typeaheadHook } = useTableConfig({
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
   const onChange = (filterClause: Partial<FilterClause>) =>
     console.log("Filter Change", filterClause);
 
@@ -66,6 +75,7 @@ export const NewFilterClause = () => {
         filterClause={EMPTY_FILTER_CLAUSE}
         onChange={onChange}
         onClose={onClose}
+        suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
     </div>
@@ -76,10 +86,11 @@ NewFilterClause.displaySequence = displaySequence++;
 export const PartialFilterClauseColumnOnly = () => {
   useAutoLoginToVuuServer();
   const tableSchema = useSchema("instruments");
-  const [filterClause, setFilterClause] = useState<Partial<FilterClause>>({
+  const [filterClause] = useState<Partial<FilterClause>>({
     column: "currency",
   });
-  const onChange = (filter?: Filter) => console.log("Filter Change", filter);
+  const onChange = (filterClause?: Partial<FilterClause>) =>
+    console.log("Filter Change", filterClause);
 
   const onClose = () => console.log("Closing filter component");
 
@@ -99,12 +110,13 @@ PartialFilterClauseColumnOnly.displaySequence = displaySequence++;
 export const PartialFilterClauseColumnAndOperator = () => {
   useAutoLoginToVuuServer();
   const tableSchema = useSchema("instruments");
-  const [filterClause, setFilterClause] = useState<Partial<FilterClause>>({
+  const [filterClause] = useState<Partial<FilterClause>>({
     column: "currency",
     op: "=",
   });
 
-  const onChange = (filter?: Filter) => console.log("Filter Change", filter);
+  const onChange = (filterClause?: Partial<FilterClause>) =>
+    console.log("Filter Change", filterClause);
 
   const onClose = () => console.log("Closing filter component");
 
@@ -125,14 +137,14 @@ export const CompleteFilterClauseTextEquals = () => {
   useAutoLoginToVuuServer();
   const tableSchema = useSchema("instruments");
 
-  const [filterClause, setFilterClause] = useState<Partial<FilterClause>>({
+  const [filterClause] = useState<Partial<FilterClause>>({
     column: "currency",
     op: "=",
     value: "EUR",
   });
 
-  const onChange = (filterClause?: FilterClause) =>
-    console.log("Filter Clause Change", filterClause);
+  const onChange = (filterClause?: Partial<FilterClause>) =>
+    console.log("Filter Change", filterClause);
 
   const onClose = () => console.log("Closing filter component");
 

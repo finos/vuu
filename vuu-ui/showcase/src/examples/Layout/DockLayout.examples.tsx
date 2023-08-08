@@ -149,7 +149,7 @@ export const LeftInlineDrawerStack = () => {
           title="Rebecca"
           defaultOpen={false}
         ></Drawer>
-        <Stack showTabs style={{ width: "100%", height: "100%" }}>
+        <Stack style={{ width: "100%", height: "100%" }}>
           <Component
             title="Cornflower"
             resizeable

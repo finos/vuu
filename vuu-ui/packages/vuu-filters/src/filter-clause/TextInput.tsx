@@ -14,7 +14,10 @@ import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { ComboBoxDeprecated } from "@salt-ds/lab";
 import { ListChangeHandler } from "@salt-ds/lab/dist-types/list-deprecated";
 import { getTypeaheadFilter } from "../column-filter/utils";
-import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
+import {
+  SuggestionFetcher,
+  useTypeaheadSuggestions,
+} from "@finos/vuu-data-react";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { FilterClauseValueEditor } from "./filterClauseTypes";
 
@@ -24,6 +27,7 @@ export interface TextInputProps
   ref: RefObject<HTMLDivElement>;
   operator: string;
   onValueChange: (value: string) => void;
+  suggestionProvider?: () => SuggestionFetcher;
   value: string;
 }
 
@@ -34,6 +38,7 @@ export const TextInput = forwardRef(function TextInput(
     filterClause,
     onValueChange,
     operator,
+    suggestionProvider = useTypeaheadSuggestions,
     table,
     value,
   }: TextInputProps,
@@ -45,7 +50,7 @@ export const TextInput = forwardRef(function TextInput(
   // const [typeaheadValues, setTypeaheadValues] =
   //   useState<string[]>([defaultValues]);
   const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
-  const getSuggestions = useTypeaheadSuggestions();
+  const getSuggestions = suggestionProvider();
   const valueInputRef = useRef<HTMLInputElement>(null);
 
   const handleValueSelectionChange = useCallback(
