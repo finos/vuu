@@ -27,3 +27,23 @@ export const createColumnDefs = (
     width: 100,
   }));
 };
+
+const firstColIsGroup = (colDefs: { colId: string }[]) => {
+  return colDefs.length > 1 && colDefs[0].colId.startsWith("ag-Grid-Auto");
+};
+
+export const columnsDisordered = (
+  colDefs: { colId: string }[],
+  colState: AgGridColDef[]
+) => {
+  const defs = firstColIsGroup(colDefs) ? colDefs.slice(1) : colDefs;
+  if (defs.length !== colState.length) {
+    return true;
+  }
+  for (let i = 0; i < defs.length; i++) {
+    if (defs[i].colId !== colState[i].field) {
+      return true;
+    }
+  }
+  return false;
+};

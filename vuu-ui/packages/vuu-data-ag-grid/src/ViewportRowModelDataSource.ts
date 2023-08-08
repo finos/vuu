@@ -15,7 +15,6 @@ import {
 } from "@finos/vuu-utils";
 import { AgDataWindow } from "./AgDataWindow";
 import {
-  AgViewportRows,
   AgVuuDataRow,
   convertToAgViewportRows,
   toAgViewportRow,
@@ -33,18 +32,18 @@ type AgRow = {
   updateData: (data: AgVuuDataRow) => void;
 };
 
-type IViewportDatasourceParams = {
-  getRow: (rowIndex: number) => AgRow;
-  setRowCount: (rowCount: number) => void;
-  setRowData: (data: AgViewportRows) => void;
-};
-
 const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
   new Map<number, string>(
     Object.entries(columnMap).map(
       (entry) => entry.reverse() as [number, string]
     )
   );
+
+export interface IViewportDatasourceParams {
+  setRowCount: (count: number, keepRenderedRows: boolean) => void;
+  setRowData: (rowData: { [key: number]: any }) => void;
+  getRow: (rowIndex: number) => AgRow;
+}
 
 /**
  * This is a custom ViewportRowModelDataSource that complies with the interface
@@ -142,7 +141,7 @@ export class ViewportRowModelDataSource {
       if (message.size !== undefined) {
         if (message.size !== this.dataWindow.rowCount) {
           this.dataWindow.setRowCount(message.size);
-          this.setAgRowCount(message.size);
+          this.setAgRowCount(message.size, false);
         }
       }
       if (message.rows) {
