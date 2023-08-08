@@ -12,8 +12,9 @@ import {
   Tooltray,
 } from "@heswell/salt-lab";
 import { SaltProvider } from "@salt-ds/core";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-balham.css";
+// this path to CSS is appropriate for v 25
+import "ag-grid-community/dist/styles/ag-grid.css";
+import "ag-grid-community/dist/styles/ag-theme-balham.css";
 import "ag-grid-enterprise";
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -80,8 +81,7 @@ export const AgGridTables = () => {
   );
 
   const configRef = useRef<Omit<GridConfig, "headings">>(config);
-  const [tableConfig, setTableConfig] =
-    useState<Omit<GridConfig, "headings">>(config);
+  const [, setTableConfig] = useState<Omit<GridConfig, "headings">>(config);
 
   const { createFilterDataProvider, ...gridConfig } = useViewportRowModel({
     columns: chosenColumns,
@@ -248,12 +248,7 @@ export const AgGridTables = () => {
       </Toolbar>
 
       <View style={{ width: 800, height: 500 }} className="ag-theme-balham">
-        <AgGridReact
-          {...gridConfig}
-          headerHeight={24}
-          rowGroupPanelShow="always"
-          rowHeight={18}
-        />
+        <AgGridReact {...gridConfig} rowGroupPanelShow="always" />
       </View>
     </SaltProvider>
   );

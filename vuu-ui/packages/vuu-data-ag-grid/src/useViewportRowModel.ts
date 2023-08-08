@@ -23,7 +23,11 @@ import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
 import { buildColumnMap, itemsOrOrderChanged } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AgData } from "./AgDataWindow";
-import { createColumnDefs } from "./AgGridColumnUtils";
+import {
+  AgGridColDef,
+  columnsDisordered,
+  createColumnDefs,
+} from "./AgGridColumnUtils";
 import {
   bySortIndex,
   isSortedColumn,
@@ -316,7 +320,7 @@ export const useViewportRowModel = ({
     [buildViewserverMenuOptions, dataSource, menuHandler]
   );
 
-  const autoGroupColumnDef = useMemo(
+  const autoGroupColumnDef: AgGridColDef = useMemo(
     () => ({
       headerName: "Group",
       cellRenderer: GroupCellRenderer,
@@ -325,6 +329,20 @@ export const useViewportRowModel = ({
     }),
     []
   );
+
+  const handleGridColumnsChanged = useCallback((evt) => {
+    const allColumns = evt.columnApi.getAllColumns();
+    const colDefs = allColumns.map(
+      (col: { colDef: AgGridColDef }) => col.colDef
+    );
+    const colState = evt.columnApi.getColumnState();
+    // An issue we see when switching dataSource is that AgGrid changes the
+    // position of columns which appear in both original and new table.
+    // Resetting the state when we detect this scenario fixes.
+    if (columnsDisordered(colState, colDefs)) {
+      evt.columnApi.resetColumnState();
+    }
+  }, []);
 
   return {
     autoGroupColumnDef,
@@ -338,6 +356,7 @@ export const useViewportRowModel = ({
     getContextMenuItems,
     onColumnRowGroupChanged: handleColumnRowGroupChanged,
     onFilterChanged: handleFilterChanged,
+    onGridColumnsChanged: handleGridColumnsChanged,
     onGridReady: handleGridReady,
     onRowGroupOpened: handleRowGroupOpened,
     onSortChanged: handleSortChanged,
