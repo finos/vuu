@@ -98,7 +98,6 @@ export const ColumnSettingsPanel = ({
       <Text as="h4">Column Settings</Text>
       <Stack
         active={activeTab}
-        showTabs
         className={cx(`${classBase}-columnTabs`)}
         onTabSelectionChanged={setActiveTab}
         TabstripProps={tabstripProps}

@@ -1,3 +1,11 @@
+export declare type NumericFilterClauseOp =
+  | "="
+  | "!="
+  | ">"
+  | ">="
+  | "<="
+  | "<";
+
 export declare type SingleValueFilterClauseOp =
   | "="
   | "!="

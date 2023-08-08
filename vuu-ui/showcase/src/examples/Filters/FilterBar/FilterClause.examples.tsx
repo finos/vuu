@@ -7,7 +7,7 @@ import {
 } from "../../utils";
 
 import "./FilterClause.examples.css";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { SelectionChangeHandler } from "@salt-ds/lab";
 import { ColumnDescriptor } from "packages/vuu-datagrid-types";
 
@@ -86,10 +86,11 @@ NewFilterClause.displaySequence = displaySequence++;
 export const PartialFilterClauseColumnOnly = () => {
   useAutoLoginToVuuServer();
   const tableSchema = useSchema("instruments");
-  const [filterClause, setFilterClause] = useState<Partial<FilterClause>>({
+  const [filterClause] = useState<Partial<FilterClause>>({
     column: "currency",
   });
-  const onChange = (filter?: Filter) => console.log("Filter Change", filter);
+  const onChange = (filterClause?: Partial<FilterClause>) =>
+    console.log("Filter Change", filterClause);
 
   const onClose = () => console.log("Closing filter component");
 
@@ -109,12 +110,13 @@ PartialFilterClauseColumnOnly.displaySequence = displaySequence++;
 export const PartialFilterClauseColumnAndOperator = () => {
   useAutoLoginToVuuServer();
   const tableSchema = useSchema("instruments");
-  const [filterClause, setFilterClause] = useState<Partial<FilterClause>>({
+  const [filterClause] = useState<Partial<FilterClause>>({
     column: "currency",
     op: "=",
   });
 
-  const onChange = (filter?: Filter) => console.log("Filter Change", filter);
+  const onChange = (filterClause?: Partial<FilterClause>) =>
+    console.log("Filter Change", filterClause);
 
   const onClose = () => console.log("Closing filter component");
 
@@ -135,14 +137,14 @@ export const CompleteFilterClauseTextEquals = () => {
   useAutoLoginToVuuServer();
   const tableSchema = useSchema("instruments");
 
-  const [filterClause, setFilterClause] = useState<Partial<FilterClause>>({
+  const [filterClause] = useState<Partial<FilterClause>>({
     column: "currency",
     op: "=",
     value: "EUR",
   });
 
-  const onChange = (filterClause?: FilterClause) =>
-    console.log("Filter Clause Change", filterClause);
+  const onChange = (filterClause?: Partial<FilterClause>) =>
+    console.log("Filter Change", filterClause);
 
   const onClose = () => console.log("Closing filter component");
 

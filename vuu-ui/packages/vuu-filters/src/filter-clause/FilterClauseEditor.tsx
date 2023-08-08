@@ -99,7 +99,7 @@ export const FilterClauseEditor = ({
   );
 
   const handleValueChange = useCallback(
-    (value: string) => {
+    (value: string | number) => {
       console.log(`handleValueChange ${value}`);
       setValue(value);
       onChange({
@@ -159,6 +159,7 @@ export const FilterClauseEditor = ({
             className={classBase}
             column={selectedColumn}
             filterClause={filterClause}
+            onValueChange={handleValueChange}
             operator={operator}
             ref={valueRef}
           />

@@ -112,7 +112,6 @@ export const DatagridSettingsPanel = ({
         getTabLabel={getTabLabel}
         active={selectedTabIndex === 2 ? 1 : selectedTabIndex}
         onTabSelectionChanged={handleTabSelectionChanged}
-        showTabs
       >
         <GridSettingsPanel
           config={gridSettings}

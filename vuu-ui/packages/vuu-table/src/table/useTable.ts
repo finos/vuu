@@ -158,7 +158,7 @@ export const useTable = ({
       console.log(`onPersistentColumnOperation, dispatchColumnAction`, {
         action,
       });
-      dispatchColumnAction(action);
+      dispatchColumnAction(action as any);
     },
     [dispatchColumnAction]
   );

@@ -26,7 +26,11 @@ import {
   useTableContextMenu,
   useTableViewport,
 } from "../table";
-import { isShowSettings, PersistentColumnAction } from "../table/useTableModel";
+import {
+  isShowColumnSettings,
+  isShowTableSettings,
+  PersistentColumnAction,
+} from "../table/useTableModel";
 import { useDataSource } from "./useDataSource";
 import { useInitialValue } from "./useInitialValue";
 import { useTableModel } from "./useTableModel";
@@ -138,7 +142,7 @@ export const useTable = ({
 
   const onPersistentColumnOperation = useCallback(
     (action: PersistentColumnAction) => {
-      if (isShowSettings(action)) {
+      if (isShowColumnSettings(action)) {
         dispatchLayoutAction({
           type: "set-props",
           path: "#context-panel",
@@ -146,10 +150,17 @@ export const useTable = ({
             expanded: true,
             context: "column-settings",
             column: action.column,
-            title:
-              action.type === "columnSettings"
-                ? "Column Settings"
-                : "DataGrid Settings",
+            title: "Column Settings",
+          },
+        } as SetPropsAction);
+      } else if (isShowTableSettings(action)) {
+        dispatchLayoutAction({
+          type: "set-props",
+          path: "#context-panel",
+          props: {
+            expanded: true,
+            context: "table-settings",
+            title: "DataGrid Settings",
           },
         } as SetPropsAction);
       } else {

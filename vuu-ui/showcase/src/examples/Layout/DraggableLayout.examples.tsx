@@ -494,7 +494,6 @@ export const ComplexNestedLayout = () => {
                     TabstripProps={{
                       allowAddTab: true,
                     }}
-                    showTabs
                     style={{ flex: 1 }}
                     keyBoardActivation="manual"
                   >

@@ -147,10 +147,13 @@ export type PersistentColumnAction =
   | ColumnActionColumnSettings
   | ColumnActionTableSettings;
 
-export const isShowSettings = (
+export const isShowColumnSettings = (
   action: PersistentColumnAction
-): action is ColumnActionColumnSettings =>
-  action.type === "columnSettings" || action.type === "tableSettings";
+): action is ColumnActionColumnSettings => action.type === "columnSettings";
+
+export const isShowTableSettings = (
+  action: PersistentColumnAction
+): action is ColumnActionTableSettings => action.type === "tableSettings";
 
 export type GridModelAction =
   | ColumnActionColumnSettings
