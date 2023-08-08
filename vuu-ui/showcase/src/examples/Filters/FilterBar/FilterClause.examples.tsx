@@ -7,7 +7,7 @@ import {
 } from "../../utils";
 
 import "./FilterClause.examples.css";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { SelectionChangeHandler } from "@salt-ds/lab";
 import { ColumnDescriptor } from "packages/vuu-datagrid-types";
 
