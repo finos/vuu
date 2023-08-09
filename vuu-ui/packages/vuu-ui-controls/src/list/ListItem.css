@@ -1,0 +1,91 @@
+.saltListItem {
+  /* Color */
+  --list-item-text-color: var(--salt-text-primary-foreground);
+  --list-item-background: var(--saltList-item-background, var(--salt-selectable-background));
+  /* --list-item-selected-focus-outlineColor: var(--salt-color-white);  TODO: Check token with design */
+  --list-item-text-color-active: var(--salt-text-primary-foreground);
+  --list-item-background-active: var(--salt-selectable-background-selected);
+  --list-item-alignItems: center;
+}
+
+.saltListItem.saltHighlighted {
+  --saltCheckbox-icon-stroke: var(--salt-selectable-borderColor-hover);
+  --list-item-background: var(--salt-selectable-background-hover);
+}
+
+.saltListItemHeader {
+  font-weight: var(--salt-text-fontWeight-strong); /*  TODO: Check token with design */
+}
+
+.saltListItemHeader[data-sticky] {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.saltListItem {
+  color: var(--list-item-text-color);
+  cursor: var(--saltList-item-cursor, pointer);
+  background: var(--saltList-item-background, var(--list-item-background));
+  font-size: var(--salt-text-fontSize);
+  text-align: var(--salt-text-textAlign);
+  line-height: var(--salt-text-lineHeight);
+  height: var(--saltList-item-height, var(--list-item-height, auto));
+  /* Replaced border-bottom with margin. In design spec, the height of the items should not include gap */
+  margin-bottom: var(--list-item-gap);
+  padding: 0 var(--salt-size-unit);
+  left: 0;
+  right: 0;
+  display: flex;
+  position: relative;
+  align-items: var(--list-item-alignItems);
+  white-space: nowrap;
+}
+
+.saltListItem:last-child {
+  margin-bottom: 0px;
+}
+
+.saltListItem-checkbox {
+  --list-item-background-active: var(--salt-selectable-background);
+  --list-item-text-color-active: var(--salt-text-primary-foreground);
+  --list-item-text-padding: 0 0 0 var(--salt-size-unit);
+}
+
+.saltListItem[aria-selected="true"]:not(.saltListItem-checkbox) {
+  --list-item-background: var(--list-item-background-active);
+  color: var(--list-item-text-color-active);
+}
+
+.saltListItem.saltDisabled {
+  --list-item-text-color: var(--salt-text-primary-foreground-disabled);
+  cursor: var(--salt-selectable-cursor-disabled);
+}
+
+.saltListItem.saltFocusVisible {
+  outline-style: var(--salt-focused-outlineStyle);
+  outline-width: var(--salt-focused-outlineWidth);
+  outline-offset: -2px;
+  outline-color: var(--salt-focused-outlineColor);
+}
+
+.saltListItem.saltFocusVisible:after {
+  content: none;
+}
+
+.saltListItem[aria-selected="true"]:not(.saltListItem-checkbox).saltFocusVisible {
+  outline-color: var(--list-item-selected-focus-outlineColor);
+}
+
+.saltListItem-textWrapper {
+  flex: 1;
+  overflow: hidden;
+  padding: var(--list-item-text-padding, 0px);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.saltListItem-proxy {
+  position: absolute !important;
+  visibility: hidden;
+}

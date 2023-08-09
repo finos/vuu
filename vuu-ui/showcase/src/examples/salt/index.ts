@@ -4,6 +4,6 @@ export * as ComboBox from "./Combobox.examples";
 export * as Input from "./Input.examples";
 export * as Dropdown from "./Dropdown.examples";
 export * as FormField from "./FormField.examples";
-// export * as List from "./List.stories";
+export * as List from "./List.examples";
 export * as Progress from "./Progress.examples";
 export * as ToggleButton from "./ToggleButton.examples";

@@ -1,13 +1,12 @@
 import { Flexbox } from "@finos/vuu-layout";
+import { List, VirtualizedList } from "@finos/vuu-ui-controls";
 import {
   DragDropProvider,
   dragStrategy,
-  List,
   moveItem,
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupChangeEventHandler,
-  VirtualizedList,
 } from "@heswell/salt-lab";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -71,6 +70,7 @@ export const DefaultVirtualisedList = () => {
     />
   );
 };
+DefaultVirtualisedList.displaySequence = displaySequence++;
 
 export const MultiSelectionList = () => {
   return (
@@ -91,12 +91,23 @@ export const MultiSelectionList = () => {
     </div>
   );
 };
+MultiSelectionList.displaySequence = displaySequence++;
 
-export const DraggableListItems = () => {
-  const [data, setData] = useState(usa_states);
+export const DraggableListItemsNoScroll = () => {
+  const [data, setData] = useState(usa_states.slice(0, 10));
 
   const handleDrop = useCallback((fromIndex, toIndex) => {
-    setData((d) => moveItem(d, fromIndex, toIndex));
+    console.log(`drop ${fromIndex} ${toIndex}`);
+    setData((data) => {
+      const newData = data.slice();
+      const [tab] = newData.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        return newData.concat(tab);
+      } else {
+        newData.splice(toIndex, 0, tab);
+        return newData;
+      }
+    });
   }, []);
 
   const handleSelect = useCallback((evt, item) => {
@@ -119,6 +130,47 @@ export const DraggableListItems = () => {
     </ListVisualizer>
   );
 };
+DraggableListItemsNoScroll.displaySequence = displaySequence++;
+
+export const DraggableListItems = () => {
+  const [data, setData] = useState(usa_states);
+
+  const handleDrop = useCallback((fromIndex, toIndex) => {
+    console.log(`drop ${fromIndex} ${toIndex}`);
+    setData((data) => {
+      const newData = data.slice();
+      const [tab] = newData.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        return newData.concat(tab);
+      } else {
+        newData.splice(toIndex, 0, tab);
+        return newData;
+      }
+    });
+  }, []);
+
+  const handleSelect = useCallback((evt, item) => {
+    console.log("select", {
+      item,
+    });
+  }, []);
+
+  return (
+    <ListVisualizer>
+      <List
+        aria-label="Drag Drop Listbox example"
+        allowDragDrop
+        onSelect={handleSelect}
+        maxWidth={292}
+        onMoveListItem={handleDrop}
+        selectionStrategy="multiple"
+        source={data}
+      />
+    </ListVisualizer>
+  );
+};
+DraggableListItems.displaySequence = displaySequence++;
+
 export const DraggableListItemsDropIndicator = () => {
   const dragStrategies: dragStrategy[] = useMemo(
     () => ["natural-movement", "drop-indicator"],

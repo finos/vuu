@@ -2,6 +2,7 @@ import { RefObject, useCallback, useEffect, useRef } from "react";
 
 export const WidthHeight = ["height", "width"];
 export const WidthOnly = ["width"];
+export const HeightOnly = ["height"];
 
 export type measurements<T = string | number> = {
   height?: T;
