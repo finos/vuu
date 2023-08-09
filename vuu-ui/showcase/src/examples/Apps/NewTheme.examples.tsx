@@ -61,7 +61,7 @@ export const ShellWithNewTheme = () => {
           action,
         });
         if (action.menuId === "save-layout") {
-          setDialogContent(<SaveLayoutPanel />);
+          setDialogContent(<SaveLayoutPanel onCancel={handleCloseDialog} onSave={handleSave}/>);
           return true;
         }
         return false;
@@ -71,6 +71,13 @@ export const ShellWithNewTheme = () => {
 
   const handleCloseDialog = useCallback(() => {
     setDialogContent(undefined);
+  }, []);
+
+  const handleSave = useCallback((layoutName: string, layoutGroup: string, checkValues: string[], radioValues: string) => {
+    console.log("Save layout as \"" + layoutName + "\""
+      + " to group \"" + layoutGroup + "\""
+      + " with settings [" + checkValues + "]"
+      + " and " + radioValues);
   }, []);
 
   //TODO what the App actually receives is an array of layouts
@@ -149,11 +156,12 @@ export const ShellWithNewTheme = () => {
         }
       >
         <Dialog
-          className="vuDialog"
           isOpen={dialogContent !== undefined}
           onClose={handleCloseDialog}
-          style={{ maxHeight: 500 }}
+          style={{ maxHeight: 500, borderColor: "#6d188b" }}
           title={"Save Layout"}
+          hideCloseButton
+          headerProps={{className: "dialogHeader"}}
         >
           {dialogContent}
         </Dialog>

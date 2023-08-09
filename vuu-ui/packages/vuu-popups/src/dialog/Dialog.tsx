@@ -1,5 +1,5 @@
 import { Scrim } from "@salt-ds/lab";
-import { Button, Text } from "@salt-ds/core";
+import { Button, Text, TextProps } from "@salt-ds/core";
 import cx from "classnames";
 import { HTMLAttributes, useCallback, useRef, useState } from "react";
 import { Portal } from "../portal";
@@ -11,6 +11,8 @@ const classBase = "vuuDialog";
 export interface DialogProps extends HTMLAttributes<HTMLDivElement> {
   isOpen?: boolean;
   onClose?: () => void;
+  headerProps?: TextProps<"div">;
+  hideCloseButton?: boolean;
 }
 
 export const Dialog = ({
@@ -19,6 +21,8 @@ export const Dialog = ({
   isOpen = false,
   onClose,
   title,
+  hideCloseButton = false,
+  headerProps,
   ...props
 }: DialogProps) => {
   const root = useRef<HTMLDivElement>(null);
@@ -46,16 +50,16 @@ export const Dialog = ({
 
   return (
     <Portal onRender={handleRender} x={posX} y={posY}>
-      <Scrim className={`${classBase}-scrim`} open={isOpen}>
+      <Scrim className={`${classBase}-scrim`} open={isOpen} autoFocusRef={root}>
         <div {...props} className={cx(classBase, className)} ref={root}>
           <div className={cx("vuuToolbarProxy", `${classBase}-header`)}>
-            <Text>{title}</Text>
-            <Button
+            <Text {...headerProps}>{title}</Text>
+            {!hideCloseButton && <Button
               key="close"
               onClick={close}
               data-align="end"
               data-icon="close"
-            />
+            />}
           </div>
           {children}
         </div>
