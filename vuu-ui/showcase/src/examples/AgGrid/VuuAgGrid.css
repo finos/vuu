@@ -1,9 +1,0 @@
-.ag-root-wrapper {
-    background: var(--uitk-container-background-medium);
-    font-size: var(--vuuGrid-fontSize, var(--uitk-text-fontSize));
-    line-height: var(--ag-line-height);
-}
-
-.ag-row-odd {
-    background-color: var(--vuuGrid-rowStripe-odd);
-}
