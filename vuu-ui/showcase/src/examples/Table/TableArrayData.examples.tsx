@@ -1,17 +1,28 @@
-import { Flexbox, View } from "@finos/vuu-layout";
 import { Table } from "@finos/vuu-table";
 import { DragVisualizer } from "@finos/vuu-table/src/DragVisualizer";
+import { Flexbox, View } from "@finos/vuu-layout";
 import {
   Checkbox,
   ToggleButton,
   Toolbar,
   ToolbarField,
 } from "@heswell/salt-lab";
-import { CSSProperties, useCallback, useMemo, useState } from "react";
+import {
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
-import { ArrayDataSource } from "@finos/vuu-data";
-import { faker } from '@faker-js/faker';
+import {
+  ArrayDataSource,
+  DataSourceConfig,
+  WithFullConfig,
+} from "@finos/vuu-data";
+import { faker } from "@faker-js/faker";
 import { parseFilter } from "@finos/vuu-filter-parser";
+import { VuuAggType, VuuAggregation, VuuRowDataItemType } from "@finos/vuu-protocol-types";
 
 let displaySequence = 1;
 
@@ -313,39 +324,46 @@ export const FlexLayoutTables = () => {
 };
 FlexLayoutTables.displaySequence = displaySequence++;
 
-function createArray(numofrows: number, numofcolumns: number) {
+function createArray(
+  numofrows: number,
+  numofcolumns: number
+): VuuRowDataItemType[][] {
   const result = [];
 
   for (let i = 0; i < numofrows; i++) {
     let FakerDataGenerator = [
       faker.company.name(),
       faker.finance.currencyCode(),
-      faker.finance.amount({ min: 5, max: 10, dec: 2}),
-      faker.finance.amount({ min: 100, max: 2000, dec: 0}),
+      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+      faker.finance.amount({ min: 100, max: 2000, dec: 0 }),
       faker.finance.transactionType(),
       faker.finance.transactionDescription(),
-      faker.date.anytime(),
+      faker.date.anytime().getMilliseconds(),
       faker.finance.accountName(),
       faker.finance.accountNumber(),
       faker.commerce.department(),
       faker.commerce.product(),
-      faker.finance.amount({ min: 5, max: 10, dec: 2}),
-      faker.finance.amount({ min: 5, max: 10, dec: 2}),
-      faker.finance.amount({ min: 5, max: 10, dec: 2}),
-      faker.finance.amount({ min: 5, max: 10, dec: 2}),
-      faker.finance.amount({ min: 5, max: 10, dec: 2}),
-      faker.finance.amount({ min: 5, max: 10, dec: 2}),
-      faker.finance.amount({ min: 5, max: 10, dec: 2}),
-      faker.finance.amount({ min: 5, max: 10, dec: 2}),
-      faker.finance.amount({ min: 5, max: 10, dec: 2}),
-    ]
+      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+    ];
     result.push([
-      i+1,
+      i + 1,
       FakerDataGenerator[0],
       FakerDataGenerator[1],
       FakerDataGenerator[2],
       FakerDataGenerator[3],
-      String(Math.floor(Number(FakerDataGenerator[2])*Number(FakerDataGenerator[3]))),
+      String(
+        Math.floor(
+          Number(FakerDataGenerator[2]) * Number(FakerDataGenerator[3])
+        )
+      ),
       FakerDataGenerator[4],
       FakerDataGenerator[5],
       FakerDataGenerator[6],
@@ -367,61 +385,85 @@ function createArray(numofrows: number, numofcolumns: number) {
   return result;
 }
 
-
 const columns = [
-  {name: 'row number', width: 150},
-  {name: 'name', width: 100},
-  {name: 'currency', width: 100},
-  {name: 'price', width: 100},
-  {name: 'lot size', width: 100},
-  {name: 'order size', width: 100},
-  {name: 'order type', width: 100},
-  {name: 'order description', width: 100},
-  {name: 'order date', width: 100},
-  {name: 'account name', width: 100},
-  {name: 'account number', width: 100},
-  {name: 'department', width: 100},
-  {name: 'industry', width: 100},
-  {name: 'PE ratio', width: 100},
-  {name: 'EPS', width: 100},
-  {name: 'market cap', width: 100},
-  {name: 'volume', width: 100},
-  {name: 'beta', width: 100},
-  {name: 'dividend', width: 100},
-  {name: 'yield', width: 100},
-  {name: 'return on equity', width: 100},
-  ]
+  { name: "row number", width: 150 },
+  { name: "name", width: 100 },
+  { name: "currency", width: 100 },
+  { name: "price", width: 100 },
+  { name: "lot size", width: 100 },
+  { name: "order size", width: 100 },
+  { name: "order type", width: 100 },
+  { name: "order description", width: 100 },
+  { name: "order date", width: 100 },
+  { name: "account name", width: 100 },
+  { name: "account number", width: 100 },
+  { name: "department", width: 100 },
+  { name: "industry", width: 100 },
+  { name: "PE ratio", width: 100 },
+  { name: "EPS", width: 100 },
+  { name: "market cap", width: 100 },
+  { name: "volume", width: 100 },
+  { name: "beta", width: 100 },
+  { name: "dividend", width: 100 },
+  { name: "yield", width: 100 },
+  { name: "return on equity", width: 100 },
+];
 
 const numofrows = 10000;
 const numofcolumns = columns.length;
 const newArray = createArray(numofrows, numofcolumns);
 
-const config = {columns}
-const data = newArray
+const config = { columns };
+const data = newArray;
 
 export const SmaTable = () => {
-  console.log({config})
+  console.log({ config });
 
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
+  const [dataSourceConfig, setDataSourceConfig] = useState<WithFullConfig>({
+    groupBy: [],
+    aggregations: [],
+    columns: [],
+    filter: { filter: "" },
+    sort: { sortDefs: [] },
+  });
 
-  const dataSource = useMemo(() => {
-  return new ArrayDataSource({columnDescriptors: columns, data: data})
-  } , [])
+  const dataSource: ArrayDataSource = useMemo(() => {
+    try {
+      console.log("! Init dataSource");
+      const dataSource = new ArrayDataSource({
+        columnDescriptors: columns,
+        data,
+      });
+      dataSource.addListener("config", (config, ...rest) => {
+      });
+      return dataSource;
+      //return new ArrayDataSource({ columnDescriptors: columns, data });
+    } catch (error) {
+      console.log("## error", error);
+      return new ArrayDataSource({ columnDescriptors: columns, data });
+    }
+  }, []);
 
   const handleInputChange = useCallback((event) => {
     setInputValue(event.target.value);
   }, []);
 
-  const handleOnClick = useCallback(() => {
-    const filter = inputValue//'industry = "Bike"'
-    const filterStruct = parseFilter(filter)
+  const handleOnClickFilter = useCallback(() => {
+    const filter = inputValue; //'industry = "Bike"'
+    const filterStruct = parseFilter(filter);
+    console.log("! handleOnClick", { filter, filterStruct });
     dataSource.filter = { filter, filterStruct };
-  }, [dataSource, inputValue]);
-  
+    // setDataSourceConfig((oldConfig) => ({
+    //   ...oldConfig,
+    //   filter: { filter, filterStruct },
+    // }));
+  }, [inputValue, dataSource]);
+
   return (
     <>
-    <input type="text" value={inputValue} onChange={handleInputChange} />
-    <button onClick={handleOnClick}>filter</button>
+      <input type="text" value={inputValue} onChange={handleInputChange} />
+      <button onClick={handleOnClickFilter}>filter</button>
 
       <Table
         config={config}
@@ -430,7 +472,8 @@ export const SmaTable = () => {
         height={645}
         renderBufferSize={20}
         rowHeight={30}
-        width={715} />
+        width={715}
+      />
     </>
   );
 };
