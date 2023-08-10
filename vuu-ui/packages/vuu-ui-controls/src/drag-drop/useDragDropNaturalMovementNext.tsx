@@ -67,6 +67,11 @@ export const useDragDropNaturalMovement = ({
           fullItemQuery,
           rangeRef.current
         );
+        if (scrollDirection === "fwd") {
+          measuredDropTargets.current.push(draggedItem);
+        } else {
+          measuredDropTargets.current.unshift(draggedItem);
+        }
 
         // setVizData?.(measuredDropTargets.current);
 
@@ -146,8 +151,6 @@ export const useDragDropNaturalMovement = ({
           draggedItemId
         ));
 
-        console.log({ dropTargets });
-
         const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
         const draggedItem = dropTargets[indexOfDraggedItem];
 
@@ -159,6 +162,8 @@ export const useDragDropNaturalMovement = ({
             : displaceItem;
 
           // setVizData?.(dropTargets, displacedItem, dropZone);
+
+          console.log({ indexOfDraggedItem, draggedItem });
 
           displaceFunction(
             dropTargets,
@@ -256,6 +261,7 @@ export const useDragDropNaturalMovement = ({
                 mouseMoveDirection,
                 orientation
               );
+
               // setVizData?.(dropTargets, nextDropTarget, nextDropZone);
 
               const overflowIndicator = dropTargets.at(
@@ -283,18 +289,20 @@ export const useDragDropNaturalMovement = ({
 
   const drop = useCallback(() => {
     clearSpacers();
-
     const { current: dropTargets } = measuredDropTargets;
     const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
     const draggedItem = dropTargets[indexOfDraggedItem];
-
     if (draggedItem) {
       dragDirectionRef.current = undefined;
 
       if (overflowMenuShowingRef.current) {
         onDrop(draggedItem.index, -1);
       } else {
-        onDrop(draggedItem.index, indexOfDraggedItem);
+        const absoluteIndexDraggedItem = getIndexOfDraggedItem(
+          dropTargets,
+          true
+        );
+        onDrop(draggedItem.index, absoluteIndexDraggedItem);
       }
     }
     setShowOverflow(false);

@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import cx from "classnames";
 import {
   ChangeEvent,
   KeyboardEvent,
@@ -135,7 +135,7 @@ export const EditableLabel = forwardRef(function EditableLabel(
     }
   };
 
-  const className = clsx(classBase, classNameProp, {
+  const className = cx(classBase, classNameProp, {
     [`${classBase}-editing`]: editing,
   });
   return (

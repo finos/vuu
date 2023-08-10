@@ -1,0 +1,33 @@
+.vuuCheckboxIcon {
+    --vuu-icon-size: 14px;
+    --vuu-icon-left: -1px;
+    --vuu-icon-top: -1px;
+    --vuu-icon-svg: var(--vuu-svg-tick);
+    border-style: solid;
+    border-color: var(--vuuCheckboxIcon-borderColor, var(--salt-selectable-borderColor));
+    border-radius: var(--vuuCheckboxIcon-borderRadius, 3px);
+    border-width: 1px;
+    display: inline-block;
+    height: var(--vuuCheckboxIcon-size, 14px);
+    position: relative;
+    width: var(--vuuCheckboxIcon-size, 14px);
+}
+
+.vuuCheckboxIcon-checked {
+    background-color: var(--vuuCheckboxIcon-background-checked, var(--salt-selectable-background-selected));
+    border-color: var(--vuuCheckboxIcon-borderColor-checked, var(--salt-selectable-borderColor-selected));
+}
+
+.vuuCheckboxIcon-checked:after {
+    content: "";
+    background-color: white;
+    left: var(--vuu-icon-left, auto);
+    height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
+    -webkit-mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+    mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    position: absolute;
+    top: var(--vuu-icon-top, auto);
+    width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
+}

@@ -8,10 +8,10 @@
 }
 
 .vuuDraggable-spacer {
-  display: var(--saltDraggable-display, inline-block);
-  height: var(--saltDraggable-spacer-height, var(--tabstrip-height));
-  transition: var(--saltDraggable-transitionProp, width) 0.3s ease;
-  width: var(--saltDraggable-spacer-width, 0);
+  display: var(--vuuDraggable-display, inline-block);
+  height: var(--vuuDraggable-spacer-height, var(--tabstrip-height));
+  transition: var(--vuuDraggable-transitionProp, width) 0.3s ease;
+  width: var(--vuuDraggable-spacer-width, 0);
 }
 
 .vuuDraggable-dropIndicatorPosition {
@@ -23,7 +23,7 @@
 }
 
 .vuuDraggable-dropIndicatorContainer {
-  transition: var(--saltDraggable-transitionProp, top) 0.2s ease;
+  transition: var(--vuuDraggable-transitionProp, top) 0.2s ease;
 }
 
 .vuuDraggable-dropIndicator {

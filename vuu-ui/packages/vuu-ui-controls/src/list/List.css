@@ -1,4 +1,4 @@
-.saltList {
+.vuuList {
   --list-background: var(--salt-container-primary-background);
   --list-borderStyle: var(--salt-container-borderStyle);
   --list-borderWidth: var(--salt-size-border);
@@ -6,6 +6,10 @@
   --list-item-height: var(--salt-size-stackable);
   --list-item-gap: 0px;
   --list-maxHeight: 100%;
+  --vuuDraggable-display: block;
+  --vuuDraggable-spacer-height: 0;
+  --vuuDraggable-spacer-width: 100%;
+  --vuuDraggable-transitionProp: height;
 
   background: var(--list-background);
   border-color: var(--salt-container-primary-borderColor);
@@ -20,30 +24,30 @@
   width: var(--saltList-width, auto);
 }
 
-.saltList-borderless {
+.vuuList-borderless {
   --list-borderStyle: none;
 }
 
 /* virtualised list */
-.saltList-viewport {
+.vuuList-viewport {
   --list-item-height: 30px;
   max-height: calc(var(--list-maxHeight) - 2 * var(--list-borderWidth));
   overflow: auto;
 }
 
-.saltListItemHeader {
+.vuuListItemHeader {
   --saltList-item-background: var(--list-item-header-background);
   color: var(--list-item-header-color);
 }
 
-.saltListItemHeader[data-sticky="true"] {
+.vuuListItemHeader[data-sticky="true"] {
   --saltList-item-background: var(--list-background);
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
-.saltList-collapsible .saltListItemHeader:after {
+.vuuList-collapsible .vuuListItemHeader:after {
   border-width: var(--checkbox-borderWidth);
   border-color: var(--checkbox-borderColor);
   content: var(--list-item-header-twisty-content);
@@ -59,18 +63,18 @@
   transition: transform 0.3s;
   width: 12px;
 }
-.saltListItemHeader[aria-expanded="false"]:after {
+.vuuListItemHeader[aria-expanded="false"]:after {
   transform: rotate(-90deg);
 }
 
 /* Selection */
 
-.saltList-scrollingContentContainer {
+.vuuList-scrollingContentContainer {
   box-sizing: inherit;
   position: relative;
 }
 
-.saltList-virtualized .saltListItem {
+.vuuList-virtualized .vuuListItem {
   line-height: 30px;
   position: absolute;
   top: 0;
@@ -78,6 +82,6 @@
   right: 0;
   will-change: transform;
 }
-.saltList.saltFocusVisible:after {
+.vuuList.saltFocusVisible:after {
   inset: 2px;
 }

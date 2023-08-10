@@ -1,15 +1,20 @@
 import { Flexbox } from "@finos/vuu-layout";
-import { List, VirtualizedList } from "@finos/vuu-ui-controls";
 import {
   DragDropProvider,
   dragStrategy,
-  moveItem,
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
-} from "@heswell/salt-lab";
+  List,
+  VirtualizedList,
+} from "@finos/vuu-ui-controls";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+
+import {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { usa_states } from "./List.data";
 import { ListVisualizer } from "./ListVisualizer";
 
@@ -181,7 +186,17 @@ export const DraggableListItemsDropIndicator = () => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const handleDrop = useCallback((fromIndex, toIndex) => {
-    setData((data) => moveItem(data, fromIndex, toIndex));
+    console.log(`drop ${fromIndex} ${toIndex}`);
+    setData((data) => {
+      const newData = data.slice();
+      const [tab] = newData.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        return newData.concat(tab);
+      } else {
+        newData.splice(toIndex, 0, tab);
+        return newData;
+      }
+    });
   }, []);
 
   const handleSelect = useCallback((evt, item) => {
@@ -190,20 +205,16 @@ export const DraggableListItemsDropIndicator = () => {
     });
   }, []);
 
-  const handleChange: ToggleButtonGroupChangeEventHandler = (
-    _,
-    index,
-    toggled
-  ) => {
-    console.log(`onChange [${index}] toggled ${toggled}`);
-    setSelectedIndex(index);
+  const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    const { value } = evt.target as HTMLButtonElement;
+    setSelectedIndex(parseInt(value));
   };
 
   return (
     <>
-      <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
-        <ToggleButton>Natural Movement</ToggleButton>
-        <ToggleButton>Drop Indicator</ToggleButton>
+      <ToggleButtonGroup onChange={handleChange} value={selectedIndex}>
+        <ToggleButton value={0}>Natural Movement</ToggleButton>
+        <ToggleButton value={1}>Drop Indicator</ToggleButton>
       </ToggleButtonGroup>
 
       <ListVisualizer>

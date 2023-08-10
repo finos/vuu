@@ -1,5 +1,6 @@
-import { makePrefixer, useForkRef, useIdMemo } from "@salt-ds/core";
-import clsx from "classnames";
+import { useId } from "@finos/vuu-layout";
+import { useForkRef } from "@salt-ds/core";
+import cx from "classnames";
 import {
   cloneElement,
   ForwardedRef,
@@ -30,7 +31,7 @@ import "./List.css";
 
 const defaultEmptyMessage = "No data to display";
 
-const withBaseName = makePrefixer("saltList");
+const classBase = "vuuList";
 
 export const List = forwardRef(function List<
   Item,
@@ -87,7 +88,7 @@ export const List = forwardRef(function List<
   }: ListProps<Item, Selection>,
   forwardedRef?: ForwardedRef<HTMLDivElement>
 ) {
-  const id = useIdMemo(idProp);
+  const id = useId(idProp);
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const rowHeightProxyRef = useRef<HTMLDivElement>(null);
@@ -189,7 +190,7 @@ export const List = forwardRef(function List<
     const header = (
       <ListItem
         {...listItemHeaderHandlers}
-        className={clsx("saltListItemHeader", {
+        className={cx(`${classBase}Header`, {
           focusVisible: collapsibleHeaders && appliedFocusVisible === idx.value,
         })}
         aria-expanded={expanded}
@@ -226,9 +227,10 @@ export const List = forwardRef(function List<
       "data-idx": number;
       "data-index": number;
     } = {
-      className: clsx({
-        saltHighlighted: idx.value === highlightedIndex,
-        saltFocusVisible: appliedFocusVisible === idx.value,
+      className: cx({
+        vuuHighlighted: idx.value === highlightedIndex,
+        vuuFocusVisible: appliedFocusVisible === idx.value,
+        [`vuuDraggable-dragAway`]: draggedItemIndex === idx.value,
       }),
       disabled: disabled || listDisabled,
       id: itemId,
@@ -303,7 +305,7 @@ export const List = forwardRef(function List<
   function renderEmpty() {
     if (emptyMessage || showEmptyMessage) {
       return (
-        <span className={withBaseName("empty-message")}>
+        <span className={`${classBase}-empty-message`}>
           {emptyMessage ?? defaultEmptyMessage}
         </span>
       );
@@ -314,10 +316,11 @@ export const List = forwardRef(function List<
 
   const renderContent = () => {
     if (collectionHook.data.length) {
-      const itemsToRender =
-        typeof draggedItemIndex === "number" && draggedItemIndex >= 0
-          ? collectionHook.data.filter((d) => d.index !== draggedItemIndex)
-          : collectionHook.data;
+      // const itemsToRender =
+      //   typeof draggedItemIndex === "number" && draggedItemIndex >= 0
+      //     ? collectionHook.data.filter((d) => d.index !== draggedItemIndex)
+      //     : collectionHook.data;
+      const itemsToRender = collectionHook.data;
 
       return renderCollectionItems(itemsToRender);
     } else {
@@ -346,12 +349,9 @@ export const List = forwardRef(function List<
       {...htmlAttributes}
       {...listHandlers}
       {...listControlProps}
-      className={clsx(withBaseName(), className, {
-        // TODO low-emphasis
-        [withBaseName("borderless")]: borderless,
-        saltDisabled: listDisabled,
-        [withBaseName("collapsible")]: collapsibleHeaders,
-        saltFocusVisible: highlightedIndex === LIST_FOCUS_VISIBLE,
+      className={cx(classBase, className, {
+        [`${classBase}-collapsible`]: collapsibleHeaders,
+        vuuFocusVisible: highlightedIndex === LIST_FOCUS_VISIBLE,
       })}
       id={`${id}`}
       ref={useForkRef<HTMLDivElement>(rootRef, forwardedRef)}
@@ -367,7 +367,7 @@ export const List = forwardRef(function List<
         </>
       ) : (
         <div
-          className={withBaseName("scrollingContentContainer")}
+          className={`${classBase}-scrollingContentContainer`}
           ref={contentRef}
           style={{ height: contentHeight }}
         >

@@ -1,15 +1,12 @@
 import { ForwardedRef, forwardRef, HTMLAttributes } from "react";
-import { clsx } from "clsx";
-import { CheckboxIcon, makePrefixer } from "@salt-ds/core";
+import cx from "classnames";
 import { ListItemProps, ListItemType } from "./listTypes";
 import { Highlighter } from "./Highlighter";
+import { CheckboxIcon } from "./CheckboxIcon";
 
-import { useWindow } from "@salt-ds/window";
-import { useComponentCssInjection } from "@salt-ds/styles";
+import "./ListItem.css";
 
-import listItemCss from "./ListItem.css";
-
-const withBaseName = makePrefixer("saltListItem");
+const classBase = "vuuListItem";
 
 // A dummy ListItem rendered once and not visible. We measure this to
 // determine height of ListItem and monitor it for size changes (in
@@ -22,7 +19,7 @@ export const ListItemProxy = forwardRef(function ListItemNextProxy(
   return (
     <div
       aria-hidden
-      className={clsx(withBaseName(), withBaseName("proxy"))}
+      className={cx(classBase, `${classBase}-proxy`)}
       ref={forwardedRef}
     />
   );
@@ -50,16 +47,9 @@ export const ListItem = forwardRef<HTMLDivElement, ListItemProps>(
     },
     forwardedRef
   ) {
-    const targetWindow = useWindow();
-    useComponentCssInjection({
-      testId: "salt-list-item",
-      css: listItemCss,
-      window: targetWindow,
-    });
-
-    const className = clsx(withBaseName(), classNameProp, {
+    const className = cx(classBase, classNameProp, {
       saltDisabled: disabled,
-      [withBaseName("checkbox")]: showCheckbox,
+      [`${classBase}-checkbox`]: showCheckbox,
     });
     const style =
       itemHeight !== undefined
@@ -82,7 +72,7 @@ export const ListItem = forwardRef<HTMLDivElement, ListItemProps>(
         {children && typeof children !== "string" ? (
           children
         ) : itemTextHighlightPattern == null ? (
-          <span className={withBaseName("textWrapper")}>
+          <span className={`${classBase}-textWrapper`}>
             {label || children}
           </span>
         ) : (

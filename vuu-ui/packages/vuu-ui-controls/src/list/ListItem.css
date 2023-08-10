@@ -1,36 +1,36 @@
-.saltListItem {
+.vuuListItem {
   /* Color */
   --list-item-text-color: var(--salt-text-primary-foreground);
-  --list-item-background: var(--saltList-item-background, var(--salt-selectable-background));
+  --list-item-background: var(--vuuList-item-background, var(--salt-selectable-background));
   /* --list-item-selected-focus-outlineColor: var(--salt-color-white);  TODO: Check token with design */
   --list-item-text-color-active: var(--salt-text-primary-foreground);
   --list-item-background-active: var(--salt-selectable-background-selected);
   --list-item-alignItems: center;
 }
 
-.saltListItem.saltHighlighted {
+.vuuListItem.saltHighlighted {
   --saltCheckbox-icon-stroke: var(--salt-selectable-borderColor-hover);
   --list-item-background: var(--salt-selectable-background-hover);
 }
 
-.saltListItemHeader {
+.vuuListItemHeader {
   font-weight: var(--salt-text-fontWeight-strong); /*  TODO: Check token with design */
 }
 
-.saltListItemHeader[data-sticky] {
+.vuuListItemHeader[data-sticky] {
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
-.saltListItem {
+.vuuListItem {
   color: var(--list-item-text-color);
-  cursor: var(--saltList-item-cursor, pointer);
-  background: var(--saltList-item-background, var(--list-item-background));
+  cursor: var(--vuuList-item-cursor, pointer);
+  background: var(--vuuList-item-background, var(--list-item-background));
   font-size: var(--salt-text-fontSize);
   text-align: var(--salt-text-textAlign);
   line-height: var(--salt-text-lineHeight);
-  height: var(--saltList-item-height, var(--list-item-height, auto));
+  height: var(--vuuList-item-height, var(--list-item-height, auto));
   /* Replaced border-bottom with margin. In design spec, the height of the items should not include gap */
   margin-bottom: var(--list-item-gap);
   padding: 0 var(--salt-size-unit);
@@ -42,42 +42,42 @@
   white-space: nowrap;
 }
 
-.saltListItem:last-child {
+.vuuListItem:last-child {
   margin-bottom: 0px;
 }
 
-.saltListItem-checkbox {
+.vuuListItem-checkbox {
   --list-item-background-active: var(--salt-selectable-background);
   --list-item-text-color-active: var(--salt-text-primary-foreground);
   --list-item-text-padding: 0 0 0 var(--salt-size-unit);
 }
 
-.saltListItem[aria-selected="true"]:not(.saltListItem-checkbox) {
+.vuuListItem[aria-selected="true"]:not(.vuuListItem-checkbox) {
   --list-item-background: var(--list-item-background-active);
   color: var(--list-item-text-color-active);
 }
 
-.saltListItem.saltDisabled {
+.vuuListItem.saltDisabled {
   --list-item-text-color: var(--salt-text-primary-foreground-disabled);
   cursor: var(--salt-selectable-cursor-disabled);
 }
 
-.saltListItem.saltFocusVisible {
+.vuuListItem.vuuFocusVisible {
   outline-style: var(--salt-focused-outlineStyle);
   outline-width: var(--salt-focused-outlineWidth);
   outline-offset: -2px;
   outline-color: var(--salt-focused-outlineColor);
 }
 
-.saltListItem.saltFocusVisible:after {
+.vuuListItem.vuuFocusVisible:after {
   content: none;
 }
 
-.saltListItem[aria-selected="true"]:not(.saltListItem-checkbox).saltFocusVisible {
+.vuuListItem[aria-selected="true"]:not(.vuuListItem-checkbox).vuuFocusVisible {
   outline-color: var(--list-item-selected-focus-outlineColor);
 }
 
-.saltListItem-textWrapper {
+.vuuListItem-textWrapper {
   flex: 1;
   overflow: hidden;
   padding: var(--list-item-text-padding, 0px);
@@ -85,7 +85,15 @@
   text-overflow: ellipsis;
 }
 
-.saltListItem-proxy {
+.vuuListItem-proxy {
   position: absolute !important;
   visibility: hidden;
+}
+.vuuDraggable-list-item {
+  --vuuList-item-height: 24px;
+  background-color: white;
+}
+
+.vuuListItem.vuuDraggable-dragAway {
+  display: none;
 }

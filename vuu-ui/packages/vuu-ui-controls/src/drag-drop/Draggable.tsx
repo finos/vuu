@@ -1,5 +1,5 @@
 import { useForkRef } from "@salt-ds/core";
-import { clsx } from "clsx";
+import cx from "classnames";
 import {
   CSSProperties,
   forwardRef,
@@ -43,7 +43,7 @@ export const Draggable = forwardRef<
   return (
     <Portal>
       <div
-        className={clsx("vuuDraggable", ...makeClassNames(wrapperClassName))}
+        className={cx("vuuDraggable", ...makeClassNames(wrapperClassName))}
         ref={forkedRef}
         onTransitionEnd={onTransitionEnd}
         style={style}

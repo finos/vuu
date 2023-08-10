@@ -239,7 +239,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     orientation: "vertical",
     containerRef,
     id,
-    itemQuery: ".saltListItem",
+    itemQuery: ".vuuListItem",
     onDragStart: handleDragStart,
     onDrop: handleDrop,
     onDropSettle: handleDropSettle,
