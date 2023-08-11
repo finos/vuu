@@ -6,6 +6,7 @@ vuu-ui/packages/vuu-data/src/array-data-source/group-utils.ts
 vuu-ui/packages/vuu-datagrid-extras/src/column-expression-input/column-language-parser/walkExpressionTree.ts
 vuu-ui/packages/vuu-popups/src/menu/useContextMenu.tsx
 vuu-ui/packages/vuu-ui-controls/src/list/Highlighter.tsx
+vuu-ui/packages/vuu-ui-controls/src/list/common-hooks/utils/filter-utils.ts
 vuu-ui/showcase/src/index.tsx
 vuu-ui/showcase/src/examples/Layout/Menu.examples.tsx
 vuu-ui/tools/websocket-test.html
