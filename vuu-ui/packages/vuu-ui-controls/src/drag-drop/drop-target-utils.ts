@@ -200,8 +200,33 @@ export const measureDropTargets = (
   return dragThresholds;
 };
 
-export const getIndexOfDraggedItem = (dropTargets: MeasuredDropTarget[]) =>
-  dropTargets.findIndex((d) => d.isDraggedItem);
+/**
+  The index of the dropped item is its array offset within the
+  dropTargets. If there is no scrolling involved, this will be
+  the same as the 'absolute' index position. If the dropTargets have
+  been scrolled, though, we will only have a window of the full
+  dataset, corresponding to the current scroll viewport. In that case
+  we need to determine the offset and factor that into the 'absolute'
+  index.
+ */
+export const getIndexOfDraggedItem = (
+  dropTargets: MeasuredDropTarget[],
+  absoluteIndex = false
+) => {
+  const indexOfDraggedItem = dropTargets.findIndex((d) => d.isDraggedItem);
+  const { index: draggedItemOriginalIndex } = dropTargets[indexOfDraggedItem];
+  if (absoluteIndex) {
+    const minIndex = dropTargets
+      .filter((d) => !d.isDraggedItem)
+      .reduce((min, d) => Math.min(min, d.index), Number.MAX_SAFE_INTEGER);
+    const scrolled =
+      minIndex > 0 && !(draggedItemOriginalIndex === 0 && minIndex === 1);
+    if (scrolled) {
+      return minIndex + indexOfDraggedItem;
+    }
+  }
+  return indexOfDraggedItem;
+};
 
 // As the draggedItem is moved, displacing existing items, mirror
 // the movements within the dropTargets collection

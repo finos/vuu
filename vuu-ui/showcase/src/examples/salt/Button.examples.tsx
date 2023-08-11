@@ -1,4 +1,5 @@
 import { Button } from "@salt-ds/core";
+import { Switch } from "@salt-ds/lab";
 import { CSSProperties } from "react";
 
 let displaySequence = 1;
@@ -29,3 +30,7 @@ export const IconButtons = () => {
   );
 };
 IconButtons.displaySequence = displaySequence++;
+
+export const DefaultSwitch = () => {
+  return <Switch label="xyz" checked={false} />;
+};

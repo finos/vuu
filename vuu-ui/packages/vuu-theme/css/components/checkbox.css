@@ -1,0 +1,30 @@
+.saltCheckbox {
+    --vuu-icon-size: 12px;
+    --vuu-icon-left: -1px;
+    --vuu-icon-top: -1px;
+}
+
+.saltCheckboxIcon {
+    border-radius: 3px;
+    height: 12px;
+    width: 12px;
+}
+
+
+.saltCheckboxIcon-checked {
+    background-color: var(--vuuCheckboxIcon-background-checked, var(--salt-selectable-background-selected));
+}
+
+.saltCheckboxIcon-checked:after {
+    content: "";
+    background-color: white;
+    left: var(--vuu-icon-left, auto);
+    height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
+    -webkit-mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+    mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    position: absolute;
+    top: var(--vuu-icon-top, auto);
+    width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
+}

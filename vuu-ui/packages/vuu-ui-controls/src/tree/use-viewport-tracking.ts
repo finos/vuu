@@ -5,7 +5,7 @@ import {
   useLayoutEffect,
   useRef,
 } from "react";
-import { useResizeObserver } from "./use-resize-observer";
+import { useResizeObserver } from "../common-hooks";
 
 const HeightOnly = ["height", "scrollHeight"];
 

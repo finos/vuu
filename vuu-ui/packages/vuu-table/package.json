@@ -9,9 +9,9 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@salt-ds/core": "1.8.0-rc.5",
+    "@salt-ds/core": "1.8.0",
     "@salt-ds/icons": "1.5.1",
-    "@salt-ds/lab": "1.0.0-alpha.14",
+    "@salt-ds/lab": "1.0.0-alpha.15",
     "@finos/vuu-data": "0.0.26",
     "@finos/vuu-data-types": "0.0.26",
     "@finos/vuu-popups": "0.0.26",

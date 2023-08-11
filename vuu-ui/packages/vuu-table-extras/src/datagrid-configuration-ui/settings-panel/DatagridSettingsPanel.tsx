@@ -8,7 +8,6 @@ import {
   useCallback,
   useState,
 } from "react";
-import { ColumnPicker } from "../column-picker";
 import { ColumnSettingsPanel } from "../column-settings-panel";
 import { GridSettingsPanel } from "./GridSettingsPanel";
 import { useGridSettings } from "./useGridSettings";
@@ -119,14 +118,6 @@ export const DatagridSettingsPanel = ({
         />
 
         <div className={`${classBase}-columnPanels`} data-align={panelShift}>
-          <ColumnPicker
-            availableColumns={availableColumns}
-            chosenColumns={gridSettings.columns}
-            dispatchColumnAction={dispatchColumnAction}
-            onSelectionChange={handleColumnSelected}
-            onAddCalculatedColumnClick={handleAddCalculatedColumn}
-            selectedColumn={selectedColumn}
-          />
           {selectedColumn === null ? (
             <Panel className="vuuColumnSettingsPanel">Select a column</Panel>
           ) : (

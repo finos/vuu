@@ -421,7 +421,6 @@ export const useDragDropNext: DragDropHook = ({
 
   const mouseDownHandler: MouseEventHandler = useCallback(
     (evt) => {
-      console.log(`useDragDropNext onMouseDown`);
       const { current: container } = containerRef;
       if (container && !evt.defaultPrevented) {
         const { clientX, clientY } = evt;

@@ -81,9 +81,15 @@ export interface ColumnDescriptor {
   editable?: boolean;
   expression?: string;
   flex?: number;
+  /** 
+   Optional additional level(s) of heading to display above label.
+   May span multiple columns, if multiple adjacent columns declare 
+   same heading at same level.
+  */
   heading?: string[];
   hidden?: boolean;
   isSystemColumn?: boolean;
+  /** The Label to display on column in Table */
   label?: string;
   locked?: boolean;
   minWidth?: number;

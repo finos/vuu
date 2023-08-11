@@ -10,10 +10,11 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@salt-ds/core": "1.8.0-rc.5",
+    "@salt-ds/core": "1.8.0",
     "@finos/vuu-data": "0.0.26",
     "@finos/vuu-data-types": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
+    "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-utils": "0.0.26"
   },
   "peerDependencies": {

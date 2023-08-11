@@ -3,14 +3,18 @@ import {
   DragDropProvider,
   dragStrategy,
   List,
-  moveItem,
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
   VirtualizedList,
-} from "@heswell/salt-lab";
+} from "@finos/vuu-ui-controls";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+
+import {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { usa_states } from "./List.data";
 import { ListVisualizer } from "./ListVisualizer";
 
@@ -71,6 +75,7 @@ export const DefaultVirtualisedList = () => {
     />
   );
 };
+DefaultVirtualisedList.displaySequence = displaySequence++;
 
 export const MultiSelectionList = () => {
   return (
@@ -91,12 +96,23 @@ export const MultiSelectionList = () => {
     </div>
   );
 };
+MultiSelectionList.displaySequence = displaySequence++;
 
-export const DraggableListItems = () => {
-  const [data, setData] = useState(usa_states);
+export const DraggableListItemsNoScroll = () => {
+  const [data, setData] = useState(usa_states.slice(0, 10));
 
   const handleDrop = useCallback((fromIndex, toIndex) => {
-    setData((d) => moveItem(d, fromIndex, toIndex));
+    console.log(`drop ${fromIndex} ${toIndex}`);
+    setData((data) => {
+      const newData = data.slice();
+      const [tab] = newData.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        return newData.concat(tab);
+      } else {
+        newData.splice(toIndex, 0, tab);
+        return newData;
+      }
+    });
   }, []);
 
   const handleSelect = useCallback((evt, item) => {
@@ -119,6 +135,47 @@ export const DraggableListItems = () => {
     </ListVisualizer>
   );
 };
+DraggableListItemsNoScroll.displaySequence = displaySequence++;
+
+export const DraggableListItems = () => {
+  const [data, setData] = useState(usa_states);
+
+  const handleDrop = useCallback((fromIndex, toIndex) => {
+    console.log(`drop ${fromIndex} ${toIndex}`);
+    setData((data) => {
+      const newData = data.slice();
+      const [tab] = newData.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        return newData.concat(tab);
+      } else {
+        newData.splice(toIndex, 0, tab);
+        return newData;
+      }
+    });
+  }, []);
+
+  const handleSelect = useCallback((evt, item) => {
+    console.log("select", {
+      item,
+    });
+  }, []);
+
+  return (
+    <ListVisualizer>
+      <List
+        aria-label="Drag Drop Listbox example"
+        allowDragDrop
+        onSelect={handleSelect}
+        maxWidth={292}
+        onMoveListItem={handleDrop}
+        selectionStrategy="multiple"
+        source={data}
+      />
+    </ListVisualizer>
+  );
+};
+DraggableListItems.displaySequence = displaySequence++;
+
 export const DraggableListItemsDropIndicator = () => {
   const dragStrategies: dragStrategy[] = useMemo(
     () => ["natural-movement", "drop-indicator"],
@@ -129,7 +186,17 @@ export const DraggableListItemsDropIndicator = () => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const handleDrop = useCallback((fromIndex, toIndex) => {
-    setData((data) => moveItem(data, fromIndex, toIndex));
+    console.log(`drop ${fromIndex} ${toIndex}`);
+    setData((data) => {
+      const newData = data.slice();
+      const [tab] = newData.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        return newData.concat(tab);
+      } else {
+        newData.splice(toIndex, 0, tab);
+        return newData;
+      }
+    });
   }, []);
 
   const handleSelect = useCallback((evt, item) => {
@@ -138,20 +205,16 @@ export const DraggableListItemsDropIndicator = () => {
     });
   }, []);
 
-  const handleChange: ToggleButtonGroupChangeEventHandler = (
-    _,
-    index,
-    toggled
-  ) => {
-    console.log(`onChange [${index}] toggled ${toggled}`);
-    setSelectedIndex(index);
+  const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    const { value } = evt.target as HTMLButtonElement;
+    setSelectedIndex(parseInt(value));
   };
 
   return (
     <>
-      <ToggleButtonGroup onChange={handleChange} selectedIndex={selectedIndex}>
-        <ToggleButton>Natural Movement</ToggleButton>
-        <ToggleButton>Drop Indicator</ToggleButton>
+      <ToggleButtonGroup onChange={handleChange} value={selectedIndex}>
+        <ToggleButton value={0}>Natural Movement</ToggleButton>
+        <ToggleButton value={1}>Drop Indicator</ToggleButton>
       </ToggleButtonGroup>
 
       <ListVisualizer>
