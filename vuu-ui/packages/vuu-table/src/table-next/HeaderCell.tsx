@@ -7,7 +7,7 @@ import {
   ColumnResizer,
   TableColumnResizeHandler,
   useTableColumnResize,
-} from "../table";
+} from "./column-resizing";
 
 import "./HeaderCell.css";
 

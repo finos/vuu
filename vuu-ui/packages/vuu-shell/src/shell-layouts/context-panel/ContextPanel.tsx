@@ -1,7 +1,11 @@
 import { Button } from "@salt-ds/core";
 import cx from "classnames";
-import { useCallback } from "react";
-import { useLayoutProviderDispatch } from "@finos/vuu-layout";
+import { useCallback, useMemo } from "react";
+import {
+  layoutFromJson,
+  LayoutJSON,
+  useLayoutProviderDispatch,
+} from "@finos/vuu-layout";
 
 import "./ContextPanel.css";
 
@@ -10,7 +14,7 @@ const classBase = "vuuContextPanel";
 export interface ContextPanelProps {
   [key: string]: unknown;
   className?: string;
-  context?: string;
+  content?: LayoutJSON;
   expanded?: boolean;
   overlay?: boolean;
 }
@@ -18,6 +22,7 @@ export interface ContextPanelProps {
 export const ContextPanel = ({
   className: classNameProp,
   expanded = false,
+  content: contentProp,
   overlay = false,
   title,
 }: ContextPanelProps) => {
@@ -38,6 +43,11 @@ export const ContextPanel = ({
     [`${classBase}-overlay`]: overlay,
   });
 
+  const content = useMemo(
+    () => (contentProp ? layoutFromJson(contentProp, "context-0") : null),
+    [contentProp]
+  );
+
   return (
     <div className={cx(classBase, className)}>
       <div className={`${classBase}-inner`}>
@@ -50,6 +60,7 @@ export const ContextPanel = ({
             variant="secondary"
           />
         </div>
+        <div className={`${classBase}-content`}>{content}</div>
       </div>
     </div>
   );

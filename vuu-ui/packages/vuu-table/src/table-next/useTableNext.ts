@@ -15,6 +15,8 @@ import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
   applySort,
   buildColumnMap,
+  isValidNumber,
+  updateColumn,
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
@@ -31,6 +33,7 @@ import {
   isShowTableSettings,
   PersistentColumnAction,
 } from "../table/useTableModel";
+import { TableColumnResizeHandler } from "./column-resizing";
 import { useDataSource } from "./useDataSource";
 import { useInitialValue } from "./useInitialValue";
 import { useTableModel } from "./useTableModel";
@@ -77,10 +80,20 @@ export const useTable = ({
   const { containerRef, ...containerMeasurements } =
     useMeasuredContainer(measuredProps);
 
-  const { columns, dispatchColumnAction, headings } = useTableModel(
-    config,
-    dataSource.config
-  );
+  const {
+    columns: modelColumns,
+    dispatchColumnAction,
+    headings,
+  } = useTableModel(config, dataSource.config);
+
+  const [stateColumns, setStateColumns] = useState<KeyedColumnDescriptor[]>();
+  const [columns, setColumnSize] = useMemo(() => {
+    const setSize = (columnName: string, width: number) => {
+      const cols = updateColumn(modelColumns, columnName, { width });
+      setStateColumns(cols);
+    };
+    return [stateColumns ?? modelColumns, setSize];
+  }, [modelColumns, stateColumns]);
 
   const columnMap = useMemo(
     () => buildColumnMap(config.columns.map((col) => col.name)),
@@ -159,7 +172,14 @@ export const useTable = ({
           path: "#context-panel",
           props: {
             expanded: true,
-            context: "table-settings",
+            content: {
+              type: "TableSettings",
+              props: {
+                tableConfig: {
+                  defaultColumnWidth: 100,
+                },
+              },
+            },
             title: "DataGrid Settings",
           },
         } as SetPropsAction);
@@ -275,6 +295,36 @@ export const useTable = ({
     selectionModel,
   });
 
+  const onHeaderResize: TableColumnResizeHandler = useCallback(
+    (phase, columnName, width) => {
+      const column = columns.find((column) => column.name === columnName);
+      if (column) {
+        if (phase === "resize") {
+          if (isValidNumber(width)) {
+            setColumnSize(columnName, width);
+          }
+        } else {
+          if (phase === "end") {
+            // TODO
+            // onConfigChange?.("col-size", column.name, width);
+          }
+          setStateColumns(undefined);
+          dispatchColumnAction({
+            type: "resizeColumn",
+            phase,
+            column,
+            width,
+          });
+        }
+      } else {
+        throw Error(
+          `useDataTable.handleColumnResize, column ${columnName} not found`
+        );
+      }
+    },
+    [columns, dispatchColumnAction, setColumnSize]
+  );
+
   return {
     columnMap,
     columns,
@@ -285,6 +335,7 @@ export const useTable = ({
     menuBuilder,
     onContextMenu,
     onHeaderClick,
+    onHeaderResize,
     onRowClick,
     scrollProps,
     viewportMeasurements,

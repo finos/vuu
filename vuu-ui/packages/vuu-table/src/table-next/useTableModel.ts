@@ -3,6 +3,7 @@ import {
   GridConfig,
   KeyedColumnDescriptor,
   PinLocation,
+  TableConfig,
 } from "@finos/vuu-datagrid-types";
 import { moveItem } from "@finos/vuu-ui-controls";
 import {
@@ -71,7 +72,7 @@ const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
 
 export interface ColumnActionInit {
   type: "init";
-  tableConfig: Omit<GridConfig, "headings">;
+  tableConfig: TableConfig;
   dataSourceConfig?: DataSourceConfig;
 }
 
@@ -177,7 +178,7 @@ const columnReducer: GridModelReducer = (state, action) => {
 };
 
 export const useTableModel = (
-  tableConfig: Omit<GridConfig, "headings">,
+  tableConfig: TableConfig,
   dataSourceConfig?: DataSourceConfig
 ) => {
   const [state, dispatchColumnAction] = useReducer<
@@ -194,7 +195,7 @@ export const useTableModel = (
 
 type InitialConfig = {
   dataSourceConfig?: DataSourceConfig;
-  tableConfig: Omit<GridConfig, "headings">;
+  tableConfig: TableConfig;
 };
 
 function init({ dataSourceConfig, tableConfig }: InitialConfig): GridModel {
@@ -337,8 +338,9 @@ function resizeColumn(
 
   switch (phase) {
     case "begin":
-    case "end":
       return updateColumnProp(state, { type, column, resizing });
+    case "end":
+      return updateColumnProp(state, { type, column, resizing, width });
     case "resize":
       return updateColumnProp(state, { type, column, width });
     default:
