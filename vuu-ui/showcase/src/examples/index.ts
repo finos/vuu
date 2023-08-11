@@ -1,4 +1,4 @@
-export * as App from "./Apps";
+export * as Apps from "./Apps";
 export * as AppComponents from "./AppComponents";
 export * as ColumnConfiguration from "./ColumnConfiguration";
 export * as DataGrid from "./DataGrid";
