@@ -2,8 +2,10 @@ import { useControlled } from "@salt-ds/core";
 import { KeyboardEvent, MouseEvent, useCallback, useRef } from "react";
 import { CollectionItem } from "./collectionTypes";
 import {
+  ListHandlers,
   SelectionHookProps,
   SelectionHookResult,
+  selectionIsDisallowed,
   SelectionStrategy,
   SingleSelectionStrategy,
 } from "./selectionTypes";
@@ -13,6 +15,8 @@ export const CHECKBOX = "checkbox";
 export const GROUP_SELECTION_NONE = "none";
 export const GROUP_SELECTION_SINGLE = "single";
 export const GROUP_SELECTION_CASCADE = "cascade";
+
+const NO_SELECTION_HANDLERS: ListHandlers = {};
 
 export type GroupSelectionMode = "none" | "single" | "cascade";
 
@@ -39,7 +43,6 @@ export const useSelection = <
   // groupSelection = GROUP_SELECTION_NONE,
   highlightedIdx,
   indexPositions,
-  label = "",
   onSelect,
   onSelectionChange,
   selected: selectedProp,
@@ -266,11 +269,13 @@ export const useSelection = <
     ]
   );
 
-  const listHandlers = {
-    onClick: handleClick,
-    onKeyDown: handleKeyDown,
-    onKeyboardNavigation: handleKeyboardNavigation,
-  };
+  const listHandlers = selectionIsDisallowed(selectionStrategy)
+    ? NO_SELECTION_HANDLERS
+    : {
+        onClick: handleClick,
+        onKeyDown: handleKeyDown,
+        onKeyboardNavigation: handleKeyboardNavigation,
+      };
 
   return {
     listHandlers,

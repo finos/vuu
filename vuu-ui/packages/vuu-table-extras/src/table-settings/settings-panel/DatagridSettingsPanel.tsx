@@ -8,7 +8,6 @@ import {
   useCallback,
   useState,
 } from "react";
-import { ColumnPicker } from "../column-picker";
 import { ColumnSettingsPanel } from "../column-settings-panel";
 import { GridSettingsPanel } from "./GridSettingsPanel";
 import { useGridSettings } from "./useGridSettings";
@@ -57,16 +56,7 @@ export const DatagridSettingsPanel = ({
 
   const { gridSettings, dispatchColumnAction } = useGridSettings(gridConfig);
 
-  const [selectedColumnName, setSelectedColumnName] = useState<string | null>(
-    null
-  );
-  const handleColumnSelected = useCallback(
-    (selected: ColumnDescriptor | null) => {
-      setSelectedColumnName(selected ? selected.name : null);
-    },
-    []
-  );
-
+  const [selectedColumnName] = useState<string | null>(null);
   const handleApply = useCallback(
     (evt: MouseEvent, closePanel = false) => {
       console.log(`1) DataGridSettingsPanel fire onConfigChange`);
@@ -96,11 +86,6 @@ export const DatagridSettingsPanel = ({
     orientation: "vertical",
   };
 
-  const handleAddCalculatedColumn = useCallback(
-    () => setSelectedTabIndex(3),
-    []
-  );
-
   const panelShift = selectedTabIndex === 2 ? "right" : undefined;
 
   return (
@@ -119,14 +104,6 @@ export const DatagridSettingsPanel = ({
         />
 
         <div className={`${classBase}-columnPanels`} data-align={panelShift}>
-          <ColumnPicker
-            availableColumns={availableColumns}
-            chosenColumns={gridSettings.columns}
-            dispatchColumnAction={dispatchColumnAction}
-            onSelectionChange={handleColumnSelected}
-            onAddCalculatedColumnClick={handleAddCalculatedColumn}
-            selectedColumn={selectedColumn}
-          />
           {selectedColumn === null ? (
             <Panel className="vuuColumnSettingsPanel">Select a column</Panel>
           ) : (

@@ -1,0 +1,45 @@
+
+.vuuColumnList {
+    --vuuList-borderStyle: none;
+    --vuuListItem-padding: 0;
+
+    padding: 0 24px;
+    width: 300px;
+
+}
+
+.vuuColumnListItem {
+    border-bottom: solid 1px var(--salt-separable-tertiary-borderColor);
+    padding: 0 6px 0 0;
+}
+
+.vuuColumnList-switch {
+    flex: 0 0 32px;
+}
+
+.vuuColumnList-text {
+    flex: 1 1 auto;
+}
+
+.vuuColumnList-checkBox {
+    flex: 0 0 20px;
+}
+
+.vuuColumnList-header {
+    border-top: solid 2px var(--vuu-color-gray-30);
+    font-size: 14px;
+    font-weight: 600;
+    padding-top: 24px;
+
+}
+
+.vuuColumnList-colHeadings {
+    border-bottom: solid 2px var(--vuu-color-gray-30);
+    color: var(--vuu-color-gray-50);
+    display: flex;
+    font-size: 10px;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-bottom: 8px;
+
+}

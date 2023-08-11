@@ -48,7 +48,7 @@ export const ListItem = forwardRef<HTMLDivElement, ListItemProps>(
     forwardedRef
   ) {
     const className = cx(classBase, classNameProp, {
-      saltDisabled: disabled,
+      vuuDisabled: disabled,
       [`${classBase}-checkbox`]: showCheckbox,
     });
     const style =

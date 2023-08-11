@@ -223,6 +223,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
 
   useEffect(() => {
     if (hasSelection(lastSelection.current)) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       setSelected(Array.isArray(lastSelection.current) ? [] : null);
     }

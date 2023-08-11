@@ -6,15 +6,16 @@ export const MULTIPLE = "multiple";
 export const EXTENDED = "extended";
 export const DESELECTABLE = "deselectable";
 
-// export type SelectionDisallowed = "none";
+export type SelectionDisallowed = "none";
 export type SingleSelectionStrategy = "default" | "deselectable";
 export type MultiSelectionStrategy =
   | "multiple"
   | "extended"
   | "extended-multi-range";
 export type SelectionStrategy =
-  // | SelectionDisallowed
-  SingleSelectionStrategy | MultiSelectionStrategy;
+  | SelectionDisallowed
+  | SingleSelectionStrategy
+  | MultiSelectionStrategy;
 
 export type selectedType<
   Item,
@@ -34,9 +35,13 @@ export type SelectionChangeHandler<
   selected: Selection extends SingleSelectionStrategy ? Item | null : Item[]
 ) => void;
 
+export const selectionIsDisallowed = (
+  selection?: SelectionStrategy
+): selection is SelectionDisallowed => selection === "none";
+
 export const hasSelection = <Item = unknown>(
   selected: Item | Item[] | null
-): boolean => {
+): selected is Item | Item[] => {
   return Array.isArray(selected)
     ? selected.length > 0
     : selected !== null && selected !== undefined;

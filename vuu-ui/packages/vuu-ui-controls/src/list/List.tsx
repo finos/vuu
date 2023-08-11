@@ -106,6 +106,8 @@ export const List = forwardRef(function List<
     },
   });
 
+  // console.log(collectionHook);
+
   const { listClientHeight, listHeight, listItemHeight } = useListHeight({
     borderless,
     displayedItemCount,
@@ -227,7 +229,9 @@ export const List = forwardRef(function List<
       "data-idx": number;
       "data-index": number;
     } = {
-      className: cx({
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore until we refactor this whole section
+      className: cx(value?.props?.className, {
         vuuHighlighted: idx.value === highlightedIndex,
         vuuFocusVisible: appliedFocusVisible === idx.value,
         [`vuuDraggable-dragAway`]: draggedItemIndex === idx.value,
