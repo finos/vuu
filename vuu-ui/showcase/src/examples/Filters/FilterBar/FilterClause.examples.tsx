@@ -1,5 +1,5 @@
 import { ExpandoCombobox, FilterClauseEditor } from "@finos/vuu-filters";
-import { Filter, FilterClause } from "@finos/vuu-filter-types";
+import { FilterClause } from "@finos/vuu-filter-types";
 import {
   useAutoLoginToVuuServer,
   useSchema,
@@ -54,6 +54,47 @@ export const DefaultExpandoComboBox = () => {
   );
 };
 DefaultExpandoComboBox.displaySequence = displaySequence++;
+
+export const MultiSelectExpandoComboBox = () => {
+  const columns: ColumnDescriptor[] = useMemo(
+    () => [
+      { name: "ccy", serverDataType: "string" },
+      { name: "exchange", serverDataType: "string" },
+      { name: "ric", serverDataType: "string" },
+      { name: "lotSize", serverDataType: "int" },
+      { name: "price", serverDataType: "double" },
+      { name: "quantity", serverDataType: "double" },
+      { name: "bid", serverDataType: "double" },
+      { name: "offer", serverDataType: "double" },
+      { name: "pctComplete", serverDataType: "double" },
+      { name: "trader", serverDataType: "string" },
+      { name: "book", serverDataType: "string" },
+    ],
+    []
+  );
+
+  const getColumnName = useCallback(
+    (column: ColumnDescriptor) => column.name,
+    []
+  );
+
+  const handleSelectionChange: SelectionChangeHandler<ColumnDescriptor> =
+    useCallback((evt, column) => {
+      console.log("select column", {
+        column,
+      });
+    }, []);
+
+  return (
+    <ExpandoCombobox<ColumnDescriptor>
+      allowMultipleSelection
+      itemToString={getColumnName}
+      source={columns}
+      onSelectionChange={handleSelectionChange}
+    />
+  );
+};
+MultiSelectExpandoComboBox.displaySequence = displaySequence++;
 
 export const NewFilterClause = () => {
   useAutoLoginToVuuServer();
