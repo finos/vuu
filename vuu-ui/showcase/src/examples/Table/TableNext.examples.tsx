@@ -1,6 +1,8 @@
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
 import { ContextPanel } from "@finos/vuu-shell";
 import { TableNext } from "@finos/vuu-table";
+import { TableConfig } from "@finos/vuu-datagrid-types";
+import { useCallback, useState } from "react";
 import { useTableConfig } from "../utils";
 
 let displaySequence = 1;
@@ -8,18 +10,25 @@ let displaySequence = 1;
 export const DefaultTableNext = () => {
   const {
     typeaheadHook: _,
-    config,
+    config: configProp,
     ...props
   } = useTableConfig({
     rangeChangeRowset: "full",
     table: { module: "SIMUL", table: "instruments" },
   });
 
+  const [config, setConfig] = useState<TableConfig>(configProp);
+
+  const handleConfigChange = useCallback((config: TableConfig) => {
+    setConfig(config);
+  }, []);
+
   return (
     <TableNext
       {...props}
       config={config}
       height={645}
+      onConfigChange={handleConfigChange}
       renderBufferSize={0}
       width={715}
     />
@@ -51,20 +60,27 @@ TableNextInLayoutWithContextPanel.displaySequence = displaySequence++;
 export const AutoTableNext = () => {
   const {
     typeaheadHook: _,
-    config,
+    config: configProp,
     ...props
   } = useTableConfig({
     rangeChangeRowset: "full",
     table: { module: "SIMUL", table: "instruments" },
   });
 
+  const [config, setConfig] = useState(configProp);
+
+  const handleConfigChange = (config: TableConfig) => {
+    console.log({ config });
+    setConfig(config);
+  };
+
   return (
     <TableNext
       {...props}
       config={{
         ...config,
-        selectionBookendWidth: 4,
       }}
+      onConfigChange={handleConfigChange}
       renderBufferSize={0}
     />
   );

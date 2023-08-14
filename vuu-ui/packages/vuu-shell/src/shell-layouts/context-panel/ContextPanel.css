@@ -18,6 +18,8 @@
 .vuuContextPanel-inner {
     background-color: var(--salt-container-primary-background);
     box-shadow: var(--vuu-side-panel-shadow, none);
+    display: flex;
+    flex-direction: column;
     height: 100%;
     padding-bottom: 24px;
     padding-top: 24px;
@@ -37,7 +39,7 @@
     align-items: center;
     display: flex;
     flex-wrap: nowrap;
-    height: 27px;
+    flex: 0 0 27px;
     justify-content: space-between;
 }
 
@@ -45,4 +47,10 @@
     font-size: 20px;
     font-weight: 700;
     white-space: nowrap;
+}
+
+.vuuContextPanel-content {
+    flex: 1 1 auto;
+    width: 100%;
+
 }

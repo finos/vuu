@@ -25,8 +25,8 @@ export function isView(componentType: string) {
 export const isLayoutComponent = (type: string) =>
   isContainer(type) || isView(type);
 
-export const isRegistered = (className: string) =>
-  !!ComponentRegistry[className];
+// export const isRegistered = (className: string) =>
+//   !!ComponentRegistry[className];
 
 export function registerComponent(
   componentName: string,

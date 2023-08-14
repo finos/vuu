@@ -35,7 +35,6 @@ export const useOverflowContainer = ({
         container,
         orientation
       );
-      console.log({ nonWrapped, wrapped });
       applyOverflowClassToWrappedItems(container, wrapped);
       if (overflowIndicatorHasWrappedButShouldNotHave(wrapped)) {
         wrapped = await correctForWrappedOverflowIndicator(container, wrapped);

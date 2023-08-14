@@ -25,13 +25,15 @@ export interface TableCellProps
   row: DataSourceRow;
 }
 
-export declare type GridConfig = {
+export interface TableConfig {
   columns: ColumnDescriptor[];
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
+}
+export interface GridConfig extends TableConfig {
   headings: TableHeadings;
   selectionBookendWidth?: number;
-};
+}
 
 export declare type TypeFormatting = {
   alignOnDecimals?: boolean;

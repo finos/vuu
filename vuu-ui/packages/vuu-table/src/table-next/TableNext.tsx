@@ -1,7 +1,7 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
-import { metadataKeys } from "@finos/vuu-utils";
-import { CSSProperties, useEffect } from "react";
+import { metadataKeys, notHidden } from "@finos/vuu-utils";
+import { CSSProperties } from "react";
 import { HeaderCell } from "./HeaderCell";
 import { Row } from "./Row";
 import { useTable } from "./useTableNext";
@@ -39,6 +39,7 @@ export const TableNext = ({
     data,
     handleContextMenuAction,
     onHeaderClick,
+    onHeaderResize,
     onRowClick,
     menuBuilder,
     scrollProps,
@@ -85,13 +86,13 @@ export const TableNext = ({
           "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
         } as CSSProperties);
   };
-  console.log(`%cTableNext render`, "color:red;font-weight:bold;");
-  useEffect(() => {
-    console.log(
-      `%cTableNext actual render`,
-      "background-color:red;color: white;font-weight:bold;"
-    );
-  });
+  // console.log(`%cTableNext render`, "color:red;font-weight:bold;");
+  // useEffect(() => {
+  //   console.log(
+  //     `%cTableNext actual render`,
+  //     "background-color:red;color: white;font-weight:bold;"
+  //   );
+  // });
   return (
     <ContextMenuProvider
       menuActionHandler={handleContextMenuAction}
@@ -124,13 +125,14 @@ export const TableNext = ({
             <div {...tableProps} className={`${classBase}-table`}>
               <div className={`${classBase}-col-headings`}>
                 <div className={`${classBase}-col-headers`} role="row">
-                  {columns.map((col, i) => (
+                  {columns.filter(notHidden).map((col, i) => (
                     <HeaderCell
                       classBase={classBase}
                       column={col}
                       idx={i}
                       key={col.name}
                       onClick={onHeaderClick}
+                      onResize={onHeaderResize}
                     />
                   ))}
                 </div>

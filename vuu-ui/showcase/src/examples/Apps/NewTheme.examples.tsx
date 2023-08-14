@@ -6,8 +6,9 @@ import {
   useMemo,
   useState,
 } from "react";
-import { AutoVuuTable } from "../html/HtmlTable.examples";
+import { AutoTableNext } from "../Table/TableNext.examples";
 import { registerComponent } from "@finos/vuu-layout";
+import { TableSettingsPanel } from "@finos/vuu-table-extras";
 import {
   ContextMenuProvider,
   Dialog,
@@ -22,7 +23,8 @@ import { SaveLayoutPanel } from "@finos/vuu-shell";
 
 import "./NewTheme.examples.css";
 
-registerComponent("AutoVuuTable", AutoVuuTable, "view");
+registerComponent("AutoTableNext", AutoTableNext, "view");
+registerComponent("TableSettings", TableSettingsPanel, "view");
 
 const user = { username: "test-user", token: "test-token" };
 
@@ -106,7 +108,7 @@ export const ShellWithNewTheme = () => {
               style: { height: "calc(100% - 6px)" },
               children: [
                 {
-                  type: "AutoVuuTable",
+                  type: "AutoTableNext",
                 },
               ],
             },
@@ -118,7 +120,7 @@ export const ShellWithNewTheme = () => {
               style: { height: "calc(100% - 6px)" },
               children: [
                 {
-                  type: "AutoVuuTable",
+                  type: "AutoTableNext",
                 },
               ],
             },

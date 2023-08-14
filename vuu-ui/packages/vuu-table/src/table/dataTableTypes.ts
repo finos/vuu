@@ -8,6 +8,7 @@ import {
   GridConfig,
   KeyedColumnDescriptor,
   SelectionChangeHandler,
+  TableConfig,
   TableHeadings,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
@@ -15,7 +16,7 @@ import { HTMLAttributes, MouseEvent } from "react";
 
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   allowConfigEditing?: boolean;
-  config: Omit<GridConfig, "headings">;
+  config: TableConfig;
   dataSource: DataSource;
   headerHeight?: number;
   height?: number;
@@ -38,10 +39,12 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   /**
    * Selection Bookends style the left and right edge of a selection block.
    * They are optional, value defaults to zero.
+   * TODO this should just live in CSS
    */
   selectionBookendWidth?: number;
   selectionModel?: TableSelectionModel;
   width?: number;
+  // TODO add to TableConfig
   zebraStripes?: boolean;
 }
 

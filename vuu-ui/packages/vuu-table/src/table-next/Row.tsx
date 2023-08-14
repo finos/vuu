@@ -5,6 +5,7 @@ import {
   ColumnMap,
   isGroupColumn,
   metadataKeys,
+  notHidden,
   RowSelected,
 } from "@finos/vuu-utils";
 import cx from "classnames";
@@ -86,7 +87,7 @@ export const Row = memo(
         style={style}
       >
         <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
-        {columns.map((column) => {
+        {columns.filter(notHidden).map((column) => {
           const isGroup = isGroupColumn(column);
           const Cell = isGroup ? TableGroupCell : TableCell;
 
