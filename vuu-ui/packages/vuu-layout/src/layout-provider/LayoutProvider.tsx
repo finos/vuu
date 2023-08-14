@@ -16,7 +16,7 @@ import {
   layoutToJSON,
   processLayoutElement,
 } from "../layout-reducer";
-import { findTarget, getChildProp, getProps, typeOf } from "../utils";
+import { findTarget, getChildProp, getProp, getProps, typeOf } from "../utils";
 import {
   LayoutProviderContext,
   LayoutProviderDispatch,
@@ -73,6 +73,9 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   const dispatchLayoutAction = useCallback(
     (action: LayoutReducerAction, suppressSave = false) => {
       const nextState = layoutReducer(state.current as ReactElement, action);
+      console.log(`dispatchedLayoutAction ${action.type}`, {
+        nextState,
+      });
       if (nextState !== state.current) {
         state.current = nextState;
         forceRefresh({});
@@ -112,27 +115,43 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   useEffect(() => {
     if (layout) {
+      // If we have a layout container with the dropTarget attribute we're going to inject the loaded layout there
+      // TODO make this a bit more robust/configurable than just using this magic attribute, that sounds like something
+      // else.
+      console.groupCollapsed("loaded layout");
+      console.log(JSON.stringify(layout, null, 2));
+      console.groupEnd();
       const targetContainer = findTarget(
         state.current as never,
         withDropTarget
       ) as ReactElement;
-      const target = getChildProp(targetContainer);
-      const newLayout = layoutFromJson(
-        layout,
-        `${targetContainer.props.path}.0`
-      );
-      const action = target
-        ? {
-            type: LayoutActionType.REPLACE,
-            target,
-            replacement: newLayout,
-          }
-        : {
-            type: LayoutActionType.ADD,
-            path: targetContainer.props.path,
-            component: newLayout,
-          };
-      dispatchLayoutAction(action, true);
+      if (targetContainer) {
+        const target = getChildProp(targetContainer);
+        const newLayout = layoutFromJson(
+          layout,
+          `${targetContainer.props.path}.0`
+        );
+        const action = target
+          ? {
+              type: LayoutActionType.REPLACE,
+              target,
+              replacement: newLayout,
+            }
+          : {
+              type: LayoutActionType.ADD,
+              path: targetContainer.props.path,
+              component: newLayout,
+            };
+        dispatchLayoutAction(action, true);
+      } else if (layout.id === getProp(state.current, "id")) {
+        const newLayout = layoutFromJson(layout, "0");
+        const action = {
+          type: LayoutActionType.REPLACE,
+          target: state.current,
+          replacement: newLayout,
+        };
+        dispatchLayoutAction(action, true);
+      }
     }
   }, [dispatchLayoutAction, layout]);
 

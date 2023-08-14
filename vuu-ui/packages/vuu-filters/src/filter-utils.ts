@@ -4,11 +4,13 @@ import {
   Filter,
   FilterClause,
   FilterCombinatorOp,
+  FilterWithPartialClause,
   NumericFilterClauseOp,
 } from "@finos/vuu-filter-types";
 import {
   extractFilterForColumn,
   isAndFilter,
+  isCompleteFilter,
   isInFilter,
   isMultiClauseFilter,
   isMultiValueFilter,
@@ -40,14 +42,14 @@ export type FilterType =
   | "SW";
 
 export const filterClauses = (
-  filter: Filter | null,
-  clauses: FilterClause[] = []
-) => {
+  filter: Partial<Filter> | FilterWithPartialClause | null,
+  clauses: Partial<FilterClause>[] = []
+): Partial<FilterClause>[] => {
   if (filter) {
     if (isMultiClauseFilter(filter)) {
       filter.filters.forEach((f) => clauses.push(...filterClauses(f)));
     } else {
-      clauses.push(filter);
+      clauses.push(filter as Partial<FilterClause>);
     }
   }
   return clauses;
@@ -59,6 +61,54 @@ type AddFilterOptions = {
 
 const DEFAULT_ADD_FILTER_OPTS: AddFilterOptions = {
   combineWith: "and",
+};
+
+/**
+  Allows an empty FilterClause to be appended to an existing filter - for use
+  in filter editing UI only.
+*/
+export const addClause = (
+  existingFilter: Filter,
+  clause: Partial<Filter>,
+  { combineWith = AND }: AddFilterOptions = DEFAULT_ADD_FILTER_OPTS
+): FilterWithPartialClause => {
+  if (
+    isMultiClauseFilter(existingFilter) &&
+    existingFilter.op === combineWith
+  ) {
+    if (isCompleteFilter(clause)) {
+      return {
+        ...existingFilter,
+        filters: existingFilter.filters.concat(clause),
+      };
+    } else {
+      throw Error(
+        "filter-utils, replaceFilter, only a valid clause can be added to a filter"
+      );
+    }
+  } else {
+    return {
+      op: combineWith,
+      filters: [existingFilter, clause],
+    };
+  }
+};
+
+/**
+  Replaces last clause in an incomplete Filter. Intended for filter editing UI 
+*/
+export const replaceClause = (
+  existingFilter: FilterWithPartialClause | Partial<Filter> | undefined,
+  clause: Filter
+): Filter => {
+  if (isMultiClauseFilter(existingFilter)) {
+    return {
+      ...existingFilter,
+      filters: existingFilter.filters.slice(0, -1).concat(clause),
+    };
+  } else {
+    return clause;
+  }
 };
 
 export const addFilter = (
@@ -186,8 +236,12 @@ const merge = (f1: Filter, f2: Filter): Filter | undefined => {
 };
 
 const combine = (existingFilters: Filter[], replacementFilters: Filter[]) => {
-  const equivalentType = ({ op: t1 }: Filter, { op: t2 }: Filter) => {
-    return t1 === t2 || t1[0] === t2[0];
+  const equivalentType = ({ op: op1 }: Filter, { op: op2 }: Filter) => {
+    return (
+      op1 === op2 ||
+      (op1[0] === ">" && op2[0] === ">") ||
+      (op1[0] === "<" && op2[0] === "<")
+    );
   };
   const replaces = (existingFilter: Filter, replacementFilter: Filter) => {
     return (

@@ -2,7 +2,13 @@ import { SchemaColumn } from "@finos/vuu-data";
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { updateTableConfig } from "@finos/vuu-table";
-import { SyntheticEvent, useCallback, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  SyntheticEvent,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import { ColumnChangeHandler } from "../column-list";
 import { TableSettingsProps } from "./TableSettingsPanel";
 
@@ -80,6 +86,17 @@ export const useTableSettings = ({
     }));
   }, []);
 
+  const handleChangeTableAttribute = useCallback(
+    (evt: ChangeEvent<HTMLInputElement>) => {
+      const { checked, value } = evt.target as HTMLInputElement;
+      setTableConfig((config) => ({
+        ...config,
+        [value]: checked,
+      }));
+    },
+    []
+  );
+
   useLayoutEffectSkipFirst(() => {
     onConfigChange?.(tableConfig);
   }, [onConfigChange, tableConfig]);
@@ -95,6 +112,7 @@ export const useTableSettings = ({
     columnItems,
     columnLabelsValue,
     onChangeColumnLabels: handleChangeColumnLabels,
+    onChangeTableAttribute: handleChangeTableAttribute,
     onColumnChange: handleColumnChange,
     onMoveListItem: handleMoveListItem,
   };

@@ -6,6 +6,20 @@ import {
   InstrumentColumnGenerator,
 } from "./instrument-generator";
 import { OrderRowGenerator, OrderColumnGenerator } from "./order-generator";
+import {
+  ChildOrderRowGenerator,
+  ChildOrderColumnGenerator,
+} from "./child-order-generator";
+import {
+  ParentOrderRowGenerator,
+  ParentOrderColumnGenerator,
+} from "./parent-order-generator";
+import {
+  PricesRowGenerator,
+  PricesColumnGenerator,
+  createPriceUpdateGenerator,
+} from "./prices-generator";
+import { UpdateGenerator } from "./rowUpdates";
 
 export const VuuColumnGenerator = (columnCount: number): string[] =>
   ["Row No"].concat(
@@ -59,14 +73,27 @@ export const getRowGenerator = (table?: VuuTable): RowGenerator => {
 
 export const getColumnAndRowGenerator = (
   table?: VuuTable
-): [ColumnGenerator, RowGenerator] => {
-  if (table?.table === "instruments") {
-    return [InstrumentColumnGenerator, InstrumentRowGenerator];
-  } else if (table?.table === "orders") {
-    return [OrderColumnGenerator, OrderRowGenerator];
+):
+  | [ColumnGenerator, RowGenerator]
+  | [ColumnGenerator, RowGenerator, () => UpdateGenerator] => {
+  switch (table?.table) {
+    case "instruments":
+      return [InstrumentColumnGenerator, InstrumentRowGenerator];
+    case "orders":
+      return [OrderColumnGenerator, OrderRowGenerator];
+    case "childOrders":
+      return [ChildOrderColumnGenerator, ChildOrderRowGenerator];
+    case "parentOrders":
+      return [ParentOrderColumnGenerator, ParentOrderRowGenerator];
+    case "prices":
+      return [
+        PricesColumnGenerator,
+        PricesRowGenerator,
+        createPriceUpdateGenerator,
+      ];
+    default:
+      return [DefaultColumnGenerator, DefaultRowGenerator];
   }
-
-  return [DefaultColumnGenerator, DefaultRowGenerator];
 };
 
 export const populateArray = (
@@ -76,12 +103,10 @@ export const populateArray = (
   columns?: number | string[]
 ) => {
   const columnDescriptors = colGen(columns);
-  console.time("generate data");
   const generateRow = rowGen(columnDescriptors.map((col) => col.name));
-  const data = [];
+  const data: Array<VuuRowDataItemType[]> = [];
   for (let i = 0; i < count; i++) {
-    data[i] = generateRow(i);
+    data[i] = generateRow(i) as VuuRowDataItemType[];
   }
-  console.timeEnd("generate data");
   return data;
 };

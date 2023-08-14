@@ -10,16 +10,17 @@ import {
   useRef,
 } from "react";
 import {
-  CollectionIndexer,
-  CollectionItem,
   isSelected,
-  itemToString as defaultItemToString,
   LIST_FOCUS_VISIBLE,
-  ScrollingAPI,
   useCollectionItems,
   useImperativeScrollingAPI,
 } from "./common-hooks";
-import { SelectionStrategy } from "../common-hooks";
+import {
+  CollectionIndexer,
+  CollectionItem,
+  itemToString as defaultItemToString,
+  SelectionStrategy,
+} from "../common-hooks";
 
 import { ListItem as DefaultListItem, ListItemProxy } from "./ListItem";
 import { ListItemProps, ListProps } from "./listTypes";
@@ -34,7 +35,7 @@ const defaultEmptyMessage = "No data to display";
 const classBase = "vuuList";
 
 export const List = forwardRef(function List<
-  Item,
+  Item = string,
   Selection extends SelectionStrategy = "default"
 >(
   {
@@ -88,10 +89,6 @@ export const List = forwardRef(function List<
   }: ListProps<Item, Selection>,
   forwardedRef?: ForwardedRef<HTMLDivElement>
 ) {
-  console.log("render List", {
-    defaultSelected,
-  });
-
   const id = useId(idProp);
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -109,8 +106,6 @@ export const List = forwardRef(function List<
       itemToString,
     },
   });
-
-  // console.log(collectionHook);
 
   const { listClientHeight, listHeight, listItemHeight } = useListHeight({
     borderless,
@@ -151,7 +146,7 @@ export const List = forwardRef(function List<
     containerRef: rootRef,
     contentRef,
     defaultHighlightedIndex,
-    defaultSelected: collectionHook.itemToCollectionItem<
+    defaultSelected: collectionHook.itemToCollectionItemId<
       Selection,
       typeof defaultSelected
     >(defaultSelected),
@@ -159,16 +154,16 @@ export const List = forwardRef(function List<
     disableTypeToSelect,
     highlightedIndex: highlightedIndexProp,
     id,
-    label: id,
+    label: "List",
     listHandlers: listHandlersProp, // should this be in context ?
     onMoveListItem,
     onSelect,
     onSelectionChange,
     onHighlight,
     restoreLastFocus,
-    selected: collectionHook.itemToCollectionItem<
+    selected: collectionHook.itemToCollectionItemId<
       Selection,
-      typeof defaultSelected
+      typeof selectedProp
     >(selectedProp),
     selectionStrategy,
     selectionKeys,
@@ -230,7 +225,6 @@ export const List = forwardRef(function List<
     const isChildItem = isValidElement(value);
     const listItemProps: ListItemProps<Item> & {
       key: string;
-      "data-idx": number;
       "data-index": number;
     } = {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -246,7 +240,6 @@ export const List = forwardRef(function List<
       itemHeight: getItemHeight(idx.value),
       itemTextHighlightPattern,
       key: itemId,
-      "data-idx": idx.value,
       "data-index": idx.value,
       label,
       role: "option",
@@ -368,7 +361,7 @@ export const List = forwardRef(function List<
       style={{ ...styleProp, ...sizeStyles }}
       tabIndex={listDisabled || disableFocus ? undefined : 0}
     >
-      <ListItemProxy ref={rowHeightProxyRef} />
+      <ListItemProxy ref={rowHeightProxyRef} height={itemHeightProp} />
       {collectionHook.data.length === 0 && ListPlaceholder !== undefined ? (
         <>
           <ListPlaceholder />
@@ -388,6 +381,6 @@ export const List = forwardRef(function List<
   );
 }) as <Item = string, Selection extends SelectionStrategy = "default">(
   props: ListProps<Item, Selection> & {
-    ref?: ForwardedRef<ScrollingAPI<Item>>;
+    ref?: ForwardedRef<HTMLDivElement>;
   }
 ) => ReactElement<ListProps<Item, Selection>>;

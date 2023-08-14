@@ -1,5 +1,6 @@
 import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
+  ColumnAlignment,
   ColumnDescriptor,
   ColumnType,
   ColumnTypeDescriptor,
@@ -7,8 +8,10 @@ import {
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
   MappedValueTypeRenderer,
+  PinLocation,
   TableHeading,
   TableHeadings,
+  TypeFormatting,
 } from "@finos/vuu-datagrid-types";
 import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import {
@@ -20,7 +23,9 @@ import {
   VuuRowRecord,
   VuuSort,
 } from "@finos/vuu-protocol-types";
+import { SchemaColumn } from "packages/vuu-data/src";
 import { CSSProperties } from "react";
+import { CellRendererDescriptor } from "./component-registry";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
 export interface ColumnMap {
@@ -57,6 +62,22 @@ export function mapSortCriteria(
     }
   });
 }
+
+const numericTypes = ["int", "long", "double"];
+export const getDefaultAlignment = (
+  serverDataType?: VuuColumnDataType
+): ColumnAlignment =>
+  serverDataType === undefined
+    ? "left"
+    : numericTypes.includes(serverDataType)
+    ? "right"
+    : "left";
+
+export const isValidColumnAlignment = (v: string): v is ColumnAlignment =>
+  v === "left" || v === "right";
+
+export const isValidPinLocation = (v: string): v is PinLocation =>
+  isValidColumnAlignment(v) || v === "floating";
 
 export const isKeyedColumn = (
   column: ColumnDescriptor
@@ -157,14 +178,14 @@ export const isMappedValueTypeRenderer = (
   typeof (renderer as MappedValueTypeRenderer)?.map !== "undefined";
 
 export function buildColumnMap(
-  columns?: (KeyedColumnDescriptor | string)[]
+  columns?: (KeyedColumnDescriptor | SchemaColumn | string)[]
 ): ColumnMap {
   const start = metadataKeys.count;
   if (columns) {
     return columns.reduce((map, column, i) => {
       if (typeof column === "string") {
         map[column] = start + i;
-      } else if (typeof column.key === "number") {
+      } else if (isKeyedColumn(column)) {
         map[column.name] = column.key;
       } else {
         map[column.name] = start + i;
@@ -408,7 +429,7 @@ export const getColumnStyle = ({
     ? ({
         left: pinnedOffset,
         width,
-        "--pin-width": `${pinnedOffset + width - 5}px`,
+        "--pin-width": `${pinnedOffset + width - 3}px`,
       } as CSSProperties)
     : pin === "right"
     ? ({
@@ -688,5 +709,86 @@ export const getGroupValueAndOffset = (
     const { key, valueFormatter } = columns[depth - 1];
     const value = valueFormatter(row[key]);
     return [value, depth - 1];
+  }
+};
+
+export const getDefaultColumnType = (
+  serverDataType?: VuuColumnDataType
+): ColumnTypeSimple => {
+  switch (serverDataType) {
+    case "int":
+    case "long":
+    case "double":
+      return "number";
+    case "boolean":
+      return "boolean";
+    default:
+      return "string";
+  }
+};
+
+export const updateColumnType = <T extends ColumnDescriptor = ColumnDescriptor>(
+  column: T,
+  formatting: TypeFormatting
+): T => {
+  const { serverDataType, type = getDefaultColumnType(serverDataType) } =
+    column;
+
+  if (typeof type === "string" || type === undefined) {
+    return {
+      ...column,
+      type: {
+        name: type,
+        formatting,
+      },
+    } as T;
+  } else {
+    return {
+      ...column,
+      type: {
+        ...type,
+        formatting,
+      },
+    } as T;
+  }
+};
+
+export const updateColumnRenderer = <
+  T extends ColumnDescriptor = ColumnDescriptor
+>(
+  column: T,
+  cellRenderer: CellRendererDescriptor
+): T => {
+  const { serverDataType, type } = column;
+  if (type === undefined) {
+    return {
+      ...column,
+      type: {
+        name: getDefaultColumnType(serverDataType),
+        renderer: {
+          name: cellRenderer.name,
+        },
+      },
+    };
+  } else if (isSimpleColumnType(type)) {
+    return {
+      ...column,
+      type: {
+        name: type,
+        renderer: {
+          name: cellRenderer.name,
+        },
+      },
+    };
+  } else {
+    return {
+      ...column,
+      type: {
+        ...type,
+        renderer: {
+          name: cellRenderer.name,
+        },
+      },
+    };
   }
 };

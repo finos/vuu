@@ -3,12 +3,12 @@ import { VuuUser } from "../shell";
 
 export const loadLocalConfig = (
   saveUrl: string,
-  user: VuuUser,
+  user?: VuuUser,
   id = "latest"
 ): Promise<LayoutJSON> =>
   new Promise((resolve, reject) => {
     console.log(
-      `load local config at ${saveUrl} for user ${user.username}, id ${id}`
+      `load local config at ${saveUrl} for user ${user?.username}, id ${id}`
     );
     const data = localStorage.getItem(saveUrl);
     if (data) {
@@ -26,6 +26,7 @@ export const saveLocalConfig = (
 ): Promise<undefined> =>
   new Promise((resolve, reject) => {
     try {
+      console.log(`save local config at ${saveUrl}`);
       localStorage.setItem(saveUrl, JSON.stringify(data));
       resolve(undefined);
     } catch {

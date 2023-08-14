@@ -1,17 +1,19 @@
 import { InputProps, useControlled } from "@salt-ds/core";
+import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import {
   ChangeEvent,
   FocusEvent,
   KeyboardEvent,
   MouseEvent,
+  RefObject,
   SyntheticEvent,
   useCallback,
-  useEffect,
   useRef,
   useState,
 } from "react";
 import {
   CollectionItem,
+  hasSelection,
   itemToString as defaultItemToString,
   SelectionChangeHandler,
   SelectionStrategy,
@@ -20,7 +22,6 @@ import {
 import { DropdownHookProps, DropdownHookResult } from "../dropdown";
 import { ListHookProps, ListHookResult, useList } from "../list";
 
-const NULL_REF = { current: null };
 const EnterOnly = ["Enter"];
 
 export interface ComboboxHookProps<Item, Strategy extends SelectionStrategy>
@@ -35,7 +36,9 @@ export interface ComboboxHookProps<Item, Strategy extends SelectionStrategy>
   ariaLabel?: string;
   defaultValue?: string;
   id: string;
+  initialHighlightedIndex?: number;
   itemToString?: (item: Item) => string;
+  listRef: RefObject<HTMLDivElement>;
   stringToItem?: (value?: string) => Item | null | undefined;
   value?: string;
 }
@@ -63,14 +66,15 @@ export const useCombobox = <
   collectionHook,
   defaultIsOpen,
   defaultValue,
-  disabled,
   onBlur,
   onFocus,
   onChange,
   onSelect,
   id,
+  initialHighlightedIndex = -1,
   isOpen: isOpenProp,
   itemToString = defaultItemToString as (item: Item) => string,
+  listRef,
   onOpenChange,
   onSelectionChange,
   selectionStrategy,
@@ -89,9 +93,10 @@ export const useCombobox = <
   const isMultiSelect =
     selectionStrategy === "multiple" || selectionStrategy === "extended";
 
-  const selectedValue = collectionHook.stringToCollectionItem<Selection>(
-    valueProp ?? defaultValue ?? null
-  );
+  const selectedValue =
+    collectionHook.stringToCollectionItem<Selection>(
+      valueProp ?? defaultValue
+    ) ?? null;
 
   const {
     data: indexPositions,
@@ -106,7 +111,7 @@ export const useCombobox = <
   // Input select events are used to identify user navigation within the input text.
   // The initial select event fired on focus is an exception that we ignore.
   const ignoreSelectOnFocus = useRef(true);
-  const selectedRef = useRef<selectedCollectionType>(selectedValue);
+  const selectedRef = useRef<selectedCollectionType | null>(selectedValue);
 
   const [isOpen, setIsOpen] = useControlled<boolean>({
     controlled: isOpenProp,
@@ -115,7 +120,7 @@ export const useCombobox = <
   });
 
   const [value, setValue] = useControlled({
-    controlled: valueProp,
+    controlled: undefined,
     default: defaultValue ?? "",
     name: "ComboBox",
     state: "value",
@@ -145,7 +150,7 @@ export const useCombobox = <
   const [quickSelection, setQuickSelection] = useState(false);
 
   const highlightSelectedItem = useCallback(
-    (selected: selectedCollectionType = selectedRef.current) => {
+    (selected: selectedCollectionType | null = selectedRef.current) => {
       if (Array.isArray(selected)) {
         console.log("TODO multi selection");
       } else if (selected == null) {
@@ -167,7 +172,7 @@ export const useCombobox = <
   );
 
   const reconcileInput = useCallback(
-    (selected: selectedCollectionType = selectedRef.current) => {
+    (selected: selectedCollectionType | null = selectedRef.current) => {
       let value = "";
       if (Array.isArray(selected)) {
         console.log("TODO multi selection");
@@ -268,14 +273,15 @@ export const useCombobox = <
     setSelected,
   } = useList<Item, Selection>({
     collectionHook,
-    defaultHighlightedIndex: -1,
+    containerRef: listRef,
+    defaultHighlightedIndex: initialHighlightedIndex,
     disableAriaActiveDescendant,
     disableHighlightOnFocus: true,
     disableTypeToSelect: true,
+    label: "useComboBox",
     onKeyboardNavigation: handleKeyboardNavigation,
     onKeyDown: handleInputKeyDown,
     onSelectionChange: handleSelectionChange,
-    containerRef: NULL_REF,
     // we are controlling selection from a ref value - is this right ?
     selected: selectedRef.current,
     selectionKeys: EnterOnly,
@@ -304,7 +310,6 @@ export const useCombobox = <
       //TODO use ref
       document.getElementById(`${id}-input`)?.focus();
       // const inputEl = inputRef.current;
-      console.log("handle list click");
       listHandlersOnClick?.(evt);
       // if (inputEl != null) {
       //   inputEl.focus();
@@ -313,8 +318,6 @@ export const useCombobox = <
       // if (restListProps.onClick) {
       //   restListProps.onClick(event as MouseEvent<HTMLDivElement>);
       // }
-
-      // notifyPopper(event);
     },
     [id, listHandlersOnClick]
   );
@@ -417,15 +420,17 @@ export const useCombobox = <
         }
         setDisableAriaActiveDescendant(true);
         ignoreSelectOnFocus.current = true;
+        setIsOpen(false);
       }
     },
     [
-      allowFreeText,
       listFocused,
-      inputOnBlur,
       listOnBlur,
-      reconcileInput,
+      inputOnBlur,
+      allowFreeText,
+      setIsOpen,
       selectInputValue,
+      reconcileInput,
     ]
   );
 
@@ -447,18 +452,28 @@ export const useCombobox = <
   // Relocate highlighted index to the selection whenever this happens,
   // so if we resume keyboard navigation, navigation begins from the selected
   // item.
-  useEffect(() => {
-    highlightSelectedItem();
+  useLayoutEffectSkipFirst(() => {
+    if (hasSelection(selected)) {
+      highlightSelectedItem();
+    } else {
+      setHighlightedIndex(initialHighlightedIndex);
+    }
     // TODO may need to scrollIntoView
     if (indexPositions.length === 0) {
       setIsOpen(false);
     }
-  }, [highlightSelectedItem, indexPositions.length, setIsOpen]);
+  }, [
+    highlightSelectedItem,
+    indexPositions.length,
+    initialHighlightedIndex,
+    selected,
+    setHighlightedIndex,
+    setIsOpen,
+  ]);
 
   // const activeDescendant: string | undefined = selectionChanged
   //   ? ""
   //   : undefined;
-
   const mergedInputProps = {
     ...inputProps.inputProps,
     // "aria-owns": listId,

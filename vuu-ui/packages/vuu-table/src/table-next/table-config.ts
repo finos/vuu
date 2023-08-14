@@ -1,4 +1,4 @@
-import { ColumnDescriptor, TableConfig } from "packages/vuu-datagrid-types";
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 
 export type MoveColumnTableConfigAction = {
   type: "col-move";

@@ -1,13 +1,27 @@
-import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
+import {
+  Flexbox,
+  FlexboxLayout,
+  LayoutProvider,
+  registerComponent,
+  View,
+} from "@finos/vuu-layout";
 import { ContextPanel } from "@finos/vuu-shell";
 import { TableNext } from "@finos/vuu-table";
-import { TableConfig } from "@finos/vuu-datagrid-types";
-import { useCallback, useState } from "react";
-import { useTableConfig } from "../utils";
+import {
+  ColumnSettingsPanel,
+  TableSettingsPanel,
+} from "@finos/vuu-table-extras";
+import { GroupColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
+import { CSSProperties, useCallback, useMemo, useState } from "react";
+import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
+import { GroupHeaderCellNext } from "@finos/vuu-table";
+import { defaultValueFormatter } from "@finos/vuu-utils";
+
+import "./TableNext.examples.css";
 
 let displaySequence = 1;
 
-export const DefaultTableNext = () => {
+export const DefaultTableNextArrayData = () => {
   const {
     typeaheadHook: _,
     config: configProp,
@@ -34,9 +48,80 @@ export const DefaultTableNext = () => {
     />
   );
 };
-DefaultTableNext.displaySequence = displaySequence++;
+DefaultTableNextArrayData.displaySequence = displaySequence++;
+
+export const TableNextVuuInstruments = () => {
+  const { schemas } = useSchemas();
+  const { config, dataSource, error } = useTestDataSource({
+    // bufferSize: 1000,
+    schemas,
+  });
+
+  const [tableConfig] = useState<TableConfig>(config);
+
+  if (error) {
+    return error;
+  }
+
+  return (
+    <TableNext
+      config={tableConfig}
+      dataSource={dataSource}
+      height={645}
+      renderBufferSize={50}
+      width={715}
+    />
+  );
+};
+TableNextVuuInstruments.displaySequence = displaySequence++;
+
+export const FlexLayoutTables = () => {
+  const { typeaheadHook: _1, ...config1 } = useTableConfig({
+    renderBufferSize: 0,
+  });
+  const { typeaheadHook: _2, ...config2 } = useTableConfig({
+    renderBufferSize: 20,
+  });
+  const { typeaheadHook: _3, ...config3 } = useTableConfig({
+    renderBufferSize: 50,
+  });
+  const { typeaheadHook: _4, ...config4 } = useTableConfig({
+    renderBufferSize: 100,
+  });
+  return (
+    <LayoutProvider>
+      <FlexboxLayout
+        style={{ flexDirection: "column", width: "100%", height: "100%" }}
+      >
+        <FlexboxLayout resizeable style={{ flexDirection: "row", flex: 1 }}>
+          <View resizeable style={{ flex: 1 }}>
+            <TableNext {...config1} />
+          </View>
+
+          <View resizeable style={{ flex: 1 }}>
+            <TableNext {...config2} />
+          </View>
+        </FlexboxLayout>
+        <FlexboxLayout resizeable style={{ flexDirection: "row", flex: 1 }}>
+          <View resizeable style={{ flex: 1 }}>
+            <TableNext {...config3} />
+          </View>
+
+          <View resizeable style={{ flex: 1 }}>
+            <TableNext {...config4} />
+          </View>
+        </FlexboxLayout>
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
+FlexLayoutTables.displaySequence = displaySequence++;
 
 export const TableNextInLayoutWithContextPanel = () => {
+  useMemo(() => {
+    registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
+    registerComponent("TableSettings", TableSettingsPanel, "view");
+  }, []);
   const {
     typeaheadHook: _,
     config,
@@ -46,10 +131,21 @@ export const TableNextInLayoutWithContextPanel = () => {
     table: { module: "SIMUL", table: "instruments" },
   });
 
+  const handleConfigChange = useCallback((tableConfig: TableConfig) => {
+    console.log("config changed", {
+      tableConfig,
+    });
+  }, []);
+
   return (
     <LayoutProvider>
-      <FlexboxLayout style={{ height: 645, width: 715 }}>
-        <TableNext {...props} config={config} renderBufferSize={0} />
+      <FlexboxLayout style={{ height: 645, width: "100%" }}>
+        <TableNext
+          {...props}
+          config={config}
+          onConfigChange={handleConfigChange}
+          renderBufferSize={30}
+        />
         <ContextPanel id="context-panel" overlay></ContextPanel>
       </FlexboxLayout>
     </LayoutProvider>
@@ -86,3 +182,165 @@ export const AutoTableNext = () => {
   );
 };
 AutoTableNext.displaySequence = displaySequence++;
+
+export const GroupHeaderCellNextOneColumn = () => {
+  const column: GroupColumnDescriptor = useMemo(() => {
+    const valueFormatter = defaultValueFormatter;
+    return {
+      groupConfirmed: true,
+      key: 0,
+      label: "group-column",
+      name: "group-column",
+      isGroup: true,
+      columns: [
+        {
+          key: 1,
+          name: "currency",
+          label: "currency",
+          valueFormatter,
+          width: 100,
+        },
+      ],
+      valueFormatter,
+      width: 150,
+    };
+  }, []);
+  const handleRemoveColumn = useCallback((column) => {
+    console.log("remove column", {
+      column,
+    });
+  }, []);
+
+  return (
+    <div
+      style={
+        {
+          "--header-height": "24px",
+        } as CSSProperties
+      }
+    >
+      <GroupHeaderCellNext
+        column={column}
+        onRemoveColumn={handleRemoveColumn}
+      />
+    </div>
+  );
+};
+GroupHeaderCellNextOneColumn.displaySequence = displaySequence++;
+
+export const GroupHeaderCellNextTwoColumn = () => {
+  const column: GroupColumnDescriptor = useMemo(() => {
+    const valueFormatter = defaultValueFormatter;
+    return {
+      groupConfirmed: true,
+      key: 0,
+      label: "group-column",
+      name: "group-column",
+      isGroup: true,
+      columns: [
+        {
+          key: 1,
+          name: "currency",
+          label: "currency",
+          valueFormatter,
+          width: 100,
+        },
+        {
+          key: 2,
+          name: "exchange",
+          label: "exchange",
+          valueFormatter,
+          width: 100,
+        },
+      ],
+      valueFormatter,
+      width: 200,
+    };
+  }, []);
+  const handleRemoveColumn = useCallback((column) => {
+    console.log("remove column", {
+      column,
+    });
+  }, []);
+
+  return (
+    <div
+      style={
+        {
+          "--header-height": "24px",
+        } as CSSProperties
+      }
+    >
+      <GroupHeaderCellNext
+        column={column}
+        onRemoveColumn={handleRemoveColumn}
+      />
+    </div>
+  );
+};
+GroupHeaderCellNextTwoColumn.displaySequence = displaySequence++;
+
+export const GroupHeaderCellNextThreeColumn = () => {
+  const valueFormatter = defaultValueFormatter;
+
+  const [column, setColumn] = useState<GroupColumnDescriptor>({
+    groupConfirmed: true,
+    key: 0,
+    label: "group-column",
+    name: "group-column",
+    isGroup: true,
+    columns: [
+      {
+        key: 1,
+        name: "currency",
+        label: "currency",
+        valueFormatter,
+        width: 100,
+      },
+      {
+        key: 2,
+        name: "exchange",
+        label: "exchange",
+        valueFormatter,
+        width: 100,
+      },
+      {
+        key: 3,
+        name: "price",
+        label: "proce",
+        valueFormatter,
+        width: 100,
+      },
+    ],
+    valueFormatter,
+    width: 250,
+  });
+  const handleRemoveColumn = useCallback((column) => {
+    console.log("remove column", {
+      column,
+    });
+  }, []);
+
+  return (
+    <Flexbox
+      style={
+        {
+          flexDirection: "row",
+          width: 400,
+          height: 50,
+          "--header-height": "24px",
+        } as CSSProperties
+      }
+    >
+      <div data-resizeable style={{ flex: "1 1 auto", overflow: "hidden" }}>
+        <GroupHeaderCellNext
+          className="vuuFullWidthExample"
+          column={column}
+          onRemoveColumn={handleRemoveColumn}
+        />
+      </div>
+      <div data-resizeable style={{ background: "yellow", flex: 1 }} />
+    </Flexbox>
+  );
+};
+GroupHeaderCellNextThreeColumn.displaySequence = displaySequence++;

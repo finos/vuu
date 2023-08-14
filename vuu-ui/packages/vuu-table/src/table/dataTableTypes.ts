@@ -5,7 +5,6 @@ import {
 } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
-  GridConfig,
   KeyedColumnDescriptor,
   SelectionChangeHandler,
   TableConfig,
@@ -20,7 +19,12 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   dataSource: DataSource;
   headerHeight?: number;
   height?: number;
-  onConfigChange?: (config: Omit<GridConfig, "headings">) => void;
+  /**
+   * This callback will be invoked any time a config attribute of TableConfig
+   * is changed. By persisting this value and providing it to the Table as a
+   * prop, table state can be persisted across sessions.
+   */
+  onConfigChange?: (config: TableConfig) => void;
   /**
    * Features like context menu actions and visual links are enabled by the Vuu server.
    * This callback allows us to receive a notification when such a feature is available.
@@ -44,8 +48,6 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   selectionBookendWidth?: number;
   selectionModel?: TableSelectionModel;
   width?: number;
-  // TODO add to TableConfig
-  zebraStripes?: boolean;
 }
 
 export type TableColumnResizeHandler = (

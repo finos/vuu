@@ -24,6 +24,7 @@ import {
 import {
   expandSelection,
   getFullRange,
+  getSelectionStatus,
   KeySet,
   logger,
   RangeMonitor,
@@ -156,6 +157,8 @@ const NO_UPDATE_STATUS: LastUpdateStatus = {
 
 export class Viewport {
   private aggregations: VuuAggregation[];
+  /** batchMode is irrelevant for Vuu Table, it was introduced to try and improve rendering performance of AgGrid */
+  private batchMode = true;
   private bufferSize: number;
   /**
    * clientRange is always the range requested by the client. We should assume
@@ -179,8 +182,8 @@ export class Viewport {
   })[] = [];
   private postMessageToClient: (message: DataSourceCallbackMessage) => void;
   private rowCountChanged = false;
+  private selectedRows: Selection = [];
   private tableSchema: TableSchema | null = null;
-  private batchMode = true;
   private useBatchMode = true;
   private lastUpdateStatus: LastUpdateStatus = NO_UPDATE_STATUS;
   private updateThrottleTimer: number | undefined = undefined;
@@ -531,7 +534,7 @@ export class Viewport {
         return [
           serverRequest,
           clientRows.map((row) => {
-            return toClient(row, this.keys);
+            return toClient(row, this.keys, this.selectedRows);
           }),
         ];
       } else if (debounceRequest) {
@@ -641,7 +644,7 @@ export class Viewport {
       const toClient = this.isTree ? toClientRowTree : toClientRow;
       for (const row of records) {
         if (row) {
-          out.push(toClient(row, keys));
+          out.push(toClient(row, keys, this.selectedRows));
         }
       }
     }
@@ -743,8 +746,9 @@ export class Viewport {
   }
 
   selectRequest(requestId: string, selected: Selection) {
-    // TODO we need to do this in the client if we are to raise selection events
-    // TODO is it right to set this here or should we wait for ACK from server ?
+    // This is a simplistic implementation, there is a possibility we might be out of sync with
+    // server if server responses are too slow.
+    this.selectedRows = selected;
     this.awaitOperation(requestId, { type: "selection", data: selected });
     info?.(`selectRequest: ${selected}`);
     return {
@@ -854,7 +858,7 @@ export class Viewport {
     }
 
     if (this.hasUpdates && this.dataWindow) {
-      const { keys } = this;
+      const { keys, selectedRows } = this;
       const toClient = this.isTree ? toClientRowTree : toClientRow;
 
       if (this.updateThrottleTimer) {
@@ -866,7 +870,7 @@ export class Viewport {
         out = [];
         mode = "update";
         for (const row of this.pendingUpdates) {
-          out.push(toClient(row, keys));
+          out.push(toClient(row, keys, selectedRows));
         }
         this.pendingUpdates.length = 0;
       } else {
@@ -877,7 +881,7 @@ export class Viewport {
           out = [];
           mode = "batch";
           for (const row of records) {
-            out.push(toClient(row, keys));
+            out.push(toClient(row, keys, selectedRows));
           }
           this.batchMode = false;
         }
@@ -970,7 +974,8 @@ export class Viewport {
 
 const toClientRow = (
   { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
-  keys: KeySet
+  keys: KeySet,
+  selectedRows: Selection
 ) => {
   return [
     rowIndex,
@@ -980,13 +985,14 @@ const toClientRow = (
     0,
     0,
     rowKey,
-    isSelected,
+    isSelected ? getSelectionStatus(selectedRows, rowIndex) : 0,
   ].concat(data) as DataSourceRow;
 };
 
 const toClientRowTree = (
   { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
-  keys: KeySet
+  keys: KeySet,
+  selectedRows: Selection
 ) => {
   const [depth, isExpanded /* path */, , isLeaf /* label */, , count, ...rest] =
     data;
@@ -999,6 +1005,6 @@ const toClientRowTree = (
     depth,
     count,
     rowKey,
-    isSelected,
+    isSelected ? getSelectionStatus(selectedRows, rowIndex) : 0,
   ].concat(rest) as DataSourceRow;
 };

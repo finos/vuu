@@ -1,10 +1,12 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
-import { metadataKeys, notHidden } from "@finos/vuu-utils";
+import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
+import cx from "classnames";
 import { CSSProperties } from "react";
-import { HeaderCell } from "./HeaderCell";
+import { GroupHeaderCell, HeaderCell } from "./header-cell";
 import { Row } from "./Row";
 import { useTable } from "./useTableNext";
+import { useId } from "@finos/vuu-layout";
 
 import "./TableNext.css";
 
@@ -31,30 +33,34 @@ export const TableNext = ({
   width,
   ...htmlAttributes
 }: TableProps) => {
+  const id = useId(idProp);
   const {
     columnMap,
     columns,
     containerMeasurements: { cssSize, innerSize },
     containerRef,
     data,
+    dragDropHook,
     handleContextMenuAction,
-    onHeaderClick,
-    onHeaderResize,
+    headerProps,
+    onRemoveGroupColumn,
     onRowClick,
+    onToggleGroup,
     menuBuilder,
     scrollProps,
+    tableAttributes,
     viewportMeasurements,
     ...tableProps
   } = useTable({
     config,
     dataSource,
-    renderBufferSize,
     headerHeight,
     height,
     onConfigChange,
     onFeatureEnabled,
     onFeatureInvocation,
     onSelectionChange,
+    renderBufferSize,
     rowHeight,
     selectionModel,
     width,
@@ -86,13 +92,13 @@ export const TableNext = ({
           "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
         } as CSSProperties);
   };
-  // console.log(`%cTableNext render`, "color:red;font-weight:bold;");
-  // useEffect(() => {
-  //   console.log(
-  //     `%cTableNext actual render`,
-  //     "background-color:red;color: white;font-weight:bold;"
-  //   );
-  // });
+  const className = cx(classBase, classNameProp, {
+    [`${classBase}-colLines`]: tableAttributes.columnSeparators,
+    [`${classBase}-rowLines`]: tableAttributes.rowSeparators,
+    [`${classBase}-zebra`]: tableAttributes.zebraStripes,
+    // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
+  });
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleContextMenuAction}
@@ -102,13 +108,14 @@ export const TableNext = ({
         <div
           {...htmlAttributes}
           className={classBase}
+          id={id}
           style={getStyle()}
           ref={containerRef}
         />
       ) : (
         <div
           {...htmlAttributes}
-          className={classBase}
+          className={className}
           style={getStyle()}
           ref={containerRef}
         >
@@ -125,16 +132,30 @@ export const TableNext = ({
             <div {...tableProps} className={`${classBase}-table`}>
               <div className={`${classBase}-col-headings`}>
                 <div className={`${classBase}-col-headers`} role="row">
-                  {columns.filter(notHidden).map((col, i) => (
-                    <HeaderCell
-                      classBase={classBase}
-                      column={col}
-                      idx={i}
-                      key={col.name}
-                      onClick={onHeaderClick}
-                      onResize={onHeaderResize}
-                    />
-                  ))}
+                  {columns.filter(notHidden).map((col, i) =>
+                    isGroupColumn(col) ? (
+                      <GroupHeaderCell
+                        {...headerProps}
+                        column={col}
+                        data-index={i}
+                        key={col.name}
+                        onRemoveColumn={onRemoveGroupColumn}
+                      />
+                    ) : (
+                      <HeaderCell
+                        {...headerProps}
+                        className={cx({
+                          "vuuDraggable-dragAway":
+                            i === dragDropHook.draggedItemIndex,
+                        })}
+                        column={col}
+                        data-index={i}
+                        id={`${id}-col-${i}`}
+                        key={col.name}
+                      />
+                    )
+                  )}
+                  {dragDropHook.draggable}
                 </div>
               </div>
               <div className={`${classBase}-body`}>
@@ -146,6 +167,8 @@ export const TableNext = ({
                     onClick={onRowClick}
                     row={data}
                     offset={rowHeight * data[IDX] + headerHeight}
+                    onToggleGroup={onToggleGroup}
+                    zebraStripes={tableAttributes.zebraStripes}
                   />
                 ))}
               </div>

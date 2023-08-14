@@ -1,4 +1,4 @@
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect, useRef } from "react";
 
 export type ClickawayHook = (props: {
   popperRef: RefObject<HTMLElement>;
@@ -18,6 +18,12 @@ export const useClickAway: ClickawayHook = ({
   isOpen,
   onClose,
 }) => {
+  //TODO usePropBackedRef
+  const openRef = useRef(isOpen);
+  useEffect(() => {
+    openRef.current = isOpen;
+  }, [isOpen]);
+
   useEffect(() => {
     const [clickHandler, escapeKeyHandler] = isOpen
       ? [
@@ -32,7 +38,10 @@ export const useClickAway: ClickawayHook = ({
           },
           (e: KeyboardEvent) => {
             if (e.key === "Escape") {
-              onClose();
+              if (openRef.current) {
+                onClose();
+                e.stopPropagation();
+              }
             }
           },
         ]
@@ -49,5 +58,5 @@ export const useClickAway: ClickawayHook = ({
         document.body.removeEventListener("keydown", escapeKeyHandler, true);
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, popperRef, rootRef]);
 };

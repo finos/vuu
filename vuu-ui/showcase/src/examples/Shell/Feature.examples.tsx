@@ -75,7 +75,7 @@ export const DefaultFeature = () => {
         </ToggleButtonGroup>
       </div>
       <div style={{ flex: "1 1 auto" }}>
-        <Feature css={cssUrl} params={{}} url={jsUrl} />;
+        <Feature css={cssUrl} ComponentProps={{}} url={jsUrl} />;
       </div>
     </div>
   );

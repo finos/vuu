@@ -66,6 +66,7 @@ export interface MenuListProps extends HTMLAttributes<HTMLDivElement> {
   activatedByKeyboard?: boolean;
   children: ReactElement[];
   childMenuShowing?: string;
+  defaultHighlightedIdx?: number;
   highlightedIdx?: number;
   isRoot?: boolean;
   listItemProps?: Partial<MenuItemProps>;
@@ -75,11 +76,12 @@ export interface MenuListProps extends HTMLAttributes<HTMLDivElement> {
   onHighlightMenuItem?: (idx: number) => void;
 }
 
-const MenuList = ({
+export const MenuList = ({
   activatedByKeyboard,
   childMenuShowing,
   children,
   className,
+  defaultHighlightedIdx,
   highlightedIdx: highlightedIdxProp,
   id: idProp,
   isRoot,
@@ -103,6 +105,7 @@ const MenuList = ({
 
   const { focusVisible, highlightedIndex, listProps } = useKeyboardNavigation({
     count: React.Children.count(children),
+    defaultHighlightedIdx,
     highlightedIndex: highlightedIdxProp,
     onActivate: handleActivate,
     onHighlight: onHighlightMenuItem,
@@ -238,4 +241,3 @@ const getMenuItemProps = (
 });
 
 MenuList.displayName = "MenuList";
-export default MenuList;

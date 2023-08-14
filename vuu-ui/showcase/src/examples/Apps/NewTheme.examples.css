@@ -86,7 +86,6 @@ body {
   }
 
   .vuuShell-mainTabs > .vuuTabstrip .vuuTab-main {
-    --salt-text-fontSize: 12px;
     background-color: transparent;
     font-weight: 700;
     height: 29px;

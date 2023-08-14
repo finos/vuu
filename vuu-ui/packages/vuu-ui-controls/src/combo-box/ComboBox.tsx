@@ -1,6 +1,12 @@
 import { useId } from "@finos/vuu-layout";
 import { Input, InputProps } from "@salt-ds/core";
-import { ForwardedRef, forwardRef, ReactElement, useCallback } from "react";
+import {
+  ForwardedRef,
+  forwardRef,
+  ReactElement,
+  useCallback,
+  useRef,
+} from "react";
 import {
   CollectionItem,
   CollectionProvider,
@@ -38,9 +44,12 @@ export interface ComboBoxProps<
   allowFreeText?: boolean;
   defaultValue?: string;
   getFilterRegex?: (inputValue: string) => RegExp;
+  initialHighlightedIndex?: number;
   stringToItem?: (value?: string) => Item | null | undefined;
   value?: string;
 }
+
+//TODO does not cutrrently support controlled vallue
 
 export const ComboBox = forwardRef(function Combobox<
   Item = string,
@@ -62,6 +71,7 @@ export const ComboBox = forwardRef(function Combobox<
     onSelect,
     getFilterRegex,
     id: idProp,
+    initialHighlightedIndex = -1,
     isOpen: isOpenProp,
     itemToString,
     onOpenChange: onOpenChangeProp,
@@ -76,6 +86,7 @@ export const ComboBox = forwardRef(function Combobox<
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const collectionHook = useCollectionItems<Item>({
     id,
@@ -105,6 +116,8 @@ export const ComboBox = forwardRef(function Combobox<
     defaultIsOpen,
     defaultValue,
     disabled,
+    initialHighlightedIndex,
+    listRef,
     onBlur,
     onFocus,
     onChange,
@@ -174,6 +187,7 @@ export const ComboBox = forwardRef(function Combobox<
           id={`${id}-list`}
           listHandlers={listHandlers}
           onSelectionChange={onSelectionChange}
+          ref={listRef}
           selected={collectionItemsToItem(selected)}
           selectionStrategy={selectionStrategy}
         />

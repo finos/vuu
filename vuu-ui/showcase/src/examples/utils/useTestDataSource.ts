@@ -82,14 +82,9 @@ export const useTestDataSource = ({
       { columns: configuredColumns },
       configuredColumns.map(toDataSourceColumns),
       tableSchema.table,
+      tableSchema,
     ];
-  }, [
-    calculatedColumns,
-    columnConfig,
-    columnNamesProp,
-    tableSchema.columns,
-    tableSchema.table,
-  ]);
+  }, [calculatedColumns, columnConfig, columnNamesProp, tableSchema]);
 
   const tableRef = useRef(table);
 
@@ -129,5 +124,6 @@ export const useTestDataSource = ({
     columns,
     config,
     error,
+    tableSchema,
   };
 };

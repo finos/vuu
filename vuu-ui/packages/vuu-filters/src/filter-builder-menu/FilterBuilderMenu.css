@@ -1,0 +1,30 @@
+.vuuFilterBuilderMenu {
+    margin: 0;    
+}
+
+.vuuFilterBuilderMenu-trigger {
+    display: inline-block;
+    height: 26px;
+    width: 0px;
+}
+
+.vuuFilterBuilderMenuList {
+    --vuuList-borderStyle: none;    
+}
+
+.vuuListItem.vuuMenuButton {
+    color: var(--vuu-color-gray-50);
+    font-size: 9px;
+    padding: 0 8px;
+  }
+  
+  .vuuListItem.vuuMenuButton:after {
+    border-radius: 6px;
+    content: '';
+    position: absolute;
+    height: 16px;
+    background-color: transparent;
+    left: 4px;
+    right: 4px;
+    border: solid 1px var(--salt-actionable-primary-foreground);
+  }

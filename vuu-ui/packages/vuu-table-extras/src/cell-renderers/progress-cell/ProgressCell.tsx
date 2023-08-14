@@ -62,5 +62,7 @@ const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
 };
 
 registerComponent("vuu.progress", ProgressCell, "cell-renderer", {
+  description: "Progress formatter",
+  label: "Progress formatter",
   serverDataType: ["long", "int", "double"],
 });

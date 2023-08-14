@@ -1,4 +1,5 @@
 import cx from "classnames";
+import { escape } from "querystring";
 import React, {
   createElement,
   CSSProperties,
@@ -9,7 +10,7 @@ import React, {
 } from "react";
 import ReactDOM from "react-dom";
 import { ContextMenuOptions } from "../menu";
-import { renderPortal } from "../portal";
+import { renderPortal } from "../portal-deprecated";
 
 import "./popup-service.css";
 
@@ -23,13 +24,21 @@ export type ClickAwayClosePopup = {
   mouseEvt: MouseEvent;
 };
 
+export type EscapeClosePopup = {
+  type: "escape";
+  event: KeyboardEvent;
+};
+
 export type MenuActionClosePopup = {
   menuId: string;
   options: ContextMenuOptions;
   type: "menu-action";
 };
 
-export type PopupCloseReason = ClickAwayClosePopup | MenuActionClosePopup;
+export type PopupCloseReason =
+  | ClickAwayClosePopup
+  | EscapeClosePopup
+  | MenuActionClosePopup;
 
 export const reasonIsMenuAction = (
   reason?: PopupCloseReason
@@ -54,15 +63,12 @@ function specialKeyHandler(e: KeyboardEvent) {
 
 function outsideClickHandler(e: MouseEvent) {
   if (_popups.length) {
-    console.log(`Popup.outsideClickHandler ... `);
     const popupContainers = document.body.querySelectorAll(".vuuPopup");
     for (let i = 0; i < popupContainers.length; i++) {
       if (popupContainers[i].contains(e.target as HTMLElement)) {
-        console.log(` ... its ok, he's one of us`);
         return;
       }
     }
-    console.log(" ... close all");
     closeAllPopups({ mouseEvt: e, type: "click-away" });
   }
 }
@@ -205,15 +211,11 @@ export class PopupService {
 
   static escapeKeyListener(evt: KeyboardEvent) {
     if (evt.key === "Escape") {
-      console.log(`%cESC listener`, "color:green;font-weight:bold;");
-      PopupService.hidePopup();
+      PopupService.hidePopup({ type: "escape", event: evt });
     }
   }
 
   static hidePopup(reason?: PopupCloseReason, name = "anon", group = "all") {
-    console.log(`PopupService.hidePopup`, {
-      reason,
-    });
     if (_popups.indexOf(name) !== -1) {
       popupClosed(name);
       const popupRoot = document.body.querySelector(`.vuuPopup.${group}`);
@@ -227,9 +229,6 @@ export class PopupService {
       true
     );
 
-    console.log(
-      `PopupService will call onClose if found ${typeof PopupService?.onClose}`
-    );
     PopupService?.onClose?.(reason);
   }
 

@@ -94,6 +94,31 @@ export const DefaultContextMenu = () => {
 
 DefaultContextMenu.displaySequence = displaySequence++;
 
+export const ContextMenuControlledHighlighting = () => {
+  const handleClose: ContextMenuProps["onClose"] = () => {
+    console.log(`clicked menu action`);
+  };
+
+  const { ref, position } = usePosition();
+
+  return (
+    <div
+      ref={ref}
+      style={{ background: "ivory", height: "100vh", width: "100vw" }}
+    >
+      {position.x !== -1 && position.y !== -1 ? (
+        <SampleContextMenu
+          defaultHighlightedIdx={1}
+          position={position}
+          onClose={handleClose}
+        />
+      ) : null}
+    </div>
+  );
+};
+
+ContextMenuControlledHighlighting.displaySequence = displaySequence++;
+
 type IdProps = { children: string | JSX.Element };
 const Id = ({ children }: IdProps) => (
   <span style={{ color: "blue" }}>{children}</span>

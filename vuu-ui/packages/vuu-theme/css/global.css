@@ -21,6 +21,7 @@
 
 ::selection {
   background: var(--salt-text-background-selected);
+  color: var(--salt-text-color-selected, inherit);
 }
 
 .vuu-theme[data-mode="light"] {

@@ -17,7 +17,6 @@
 }
 
 .vuuFilterClause-closeButton:focus-visible {
-  outline: 2px dashed var(--vuuPurple-accent2);
 }
 
 .vuuFilterClause-closeButton:not(:hover) {

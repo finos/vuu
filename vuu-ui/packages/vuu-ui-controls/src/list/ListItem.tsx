@@ -13,14 +13,21 @@ const classBase = "vuuListItem";
 // case of runtime density switch). This allows ListItem height to
 // be controlled purely through CSS.
 export const ListItemProxy = forwardRef(function ListItemNextProxy(
-  props: HTMLAttributes<HTMLDivElement>,
+  {
+    height,
+    ...htmlAttributes
+  }: HTMLAttributes<HTMLDivElement> & {
+    height: number;
+  },
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   return (
     <div
+      {...htmlAttributes}
       aria-hidden
       className={cx(classBase, `${classBase}-proxy`)}
       ref={forwardedRef}
+      style={{ height }}
     />
   );
 });

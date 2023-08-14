@@ -51,4 +51,8 @@ const JsonCell = ({ column, row }: TableCellProps) => {
   }
 };
 
-registerComponent("json", JsonCell, "cell-renderer", {});
+registerComponent("json", JsonCell, "cell-renderer", {
+  description: "JSON formatter",
+  label: "JSON formatter",
+  serverDataType: "json",
+});

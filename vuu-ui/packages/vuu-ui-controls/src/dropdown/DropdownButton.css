@@ -5,6 +5,8 @@
   --saltButton-textAlign: left;
   --saltButton-textTransform: none;
   --saltButton-width: 100%;
+
+  --vuu-icon-size: 16px;
 }
 
 .vuuDropdownButton:active {

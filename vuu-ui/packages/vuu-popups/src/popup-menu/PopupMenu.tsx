@@ -25,7 +25,7 @@ export interface PopupMenuProps extends HTMLAttributes<HTMLButtonElement> {
   menuBuilder?: MenuBuilder;
   menuLocation?: string;
   menuOptions?: { [key: string]: unknown };
-  onMenuClose?: () => void;
+  onMenuClose?: (reason?: PopupCloseReason) => void;
 }
 
 const getPosition = (element: HTMLElement | null) => {
@@ -55,9 +55,6 @@ export const PopupMenu = ({
 
   const handleMenuClose = useCallback(
     (reason?: PopupCloseReason) => {
-      console.log(`PopupMenu popup closed`, {
-        reason,
-      });
       setMenuOpen(false);
       // If user has clicked the MenuButton whilst menu is open, we want to close it.
       // The PopupService will close it for us as a 'click-away' event. We don't want
@@ -69,7 +66,7 @@ export const PopupMenu = ({
         }
       } else {
         requestAnimationFrame(() => {
-          onMenuClose?.();
+          onMenuClose?.(reason);
           if (tabIndex !== -1) {
             rootRef.current?.focus();
           }
@@ -87,6 +84,7 @@ export const PopupMenu = ({
         setMenuOpen(true);
         showContextMenu(e, menuLocation, {
           ContextMenuProps: {
+            className: "vuuPopupMenuList",
             id: `${id}-menu`,
             onClose: handleMenuClose,
             position: getPosition(rootRef.current),

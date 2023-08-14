@@ -248,56 +248,53 @@ export const useKeyboardNavigation = <
   const ignoreFocus = useRef<boolean>(false);
   const setIgnoreFocus = (value: boolean) => (ignoreFocus.current = value);
 
-  const handleFocus = useCallback(
-    (e: FocusEvent) => {
-      // Ignore focus if mouse has been used
-      if (ignoreFocus.current) {
-        ignoreFocus.current = false;
-      } else {
-        // If mouse wan't used, then keyboard must have been
-        keyboardNavigation.current = true;
-        if (indexPositions.length === 0) {
-          setHighlightedIndex(LIST_FOCUS_VISIBLE);
-        } else if (highlightedIndex !== -1) {
-          // We need to force a render here. We're not changing the highlightedIdx, but we want to
-          // make sure we render with the correct focusVisible value. We don't store focusVisible
-          // in state, as there are places where we would double render, as highlightedIdx also changes.
-          forceRender({});
-        } else if (restoreLastFocus) {
-          if (lastFocus.current !== -1) {
-            setHighlightedIndex(lastFocus.current);
-          } else {
-            const selectedItemIdx = getIndexOfSelectedItem(
-              indexPositions,
-              selected
-            );
-            if (selectedItemIdx !== -1) {
-              setHighlightedIndex(selectedItemIdx);
-            } else {
-              setHighlightedIndex(0);
-            }
-          }
-        } else if (hasSelection(selected)) {
+  const handleFocus = useCallback(() => {
+    // Ignore focus if mouse has been used
+    if (ignoreFocus.current) {
+      ignoreFocus.current = false;
+    } else {
+      // If mouse wan't used, then keyboard must have been
+      keyboardNavigation.current = true;
+      if (indexPositions.length === 0) {
+        setHighlightedIndex(LIST_FOCUS_VISIBLE);
+      } else if (highlightedIndex !== -1) {
+        // We need to force a render here. We're not changing the highlightedIdx, but we want to
+        // make sure we render with the correct focusVisible value. We don't store focusVisible
+        // in state, as there are places where we would double render, as highlightedIdx also changes.
+        forceRender({});
+      } else if (restoreLastFocus) {
+        if (lastFocus.current !== -1) {
+          setHighlightedIndex(lastFocus.current);
+        } else {
           const selectedItemIdx = getIndexOfSelectedItem(
             indexPositions,
             selected
           );
-          setHighlightedIndex(selectedItemIdx);
-        } else if (disableHighlightOnFocus !== true) {
-          setHighlightedIndex(nextFocusableItemIdx());
+          if (selectedItemIdx !== -1) {
+            setHighlightedIndex(selectedItemIdx);
+          } else {
+            setHighlightedIndex(0);
+          }
         }
+      } else if (hasSelection(selected)) {
+        const selectedItemIdx = getIndexOfSelectedItem(
+          indexPositions,
+          selected
+        );
+        setHighlightedIndex(selectedItemIdx);
+      } else if (disableHighlightOnFocus !== true) {
+        setHighlightedIndex(nextFocusableItemIdx());
       }
-    },
-    [
-      disableHighlightOnFocus,
-      highlightedIndex,
-      indexPositions,
-      nextFocusableItemIdx,
-      restoreLastFocus,
-      selected,
-      setHighlightedIndex,
-    ]
-  );
+    }
+  }, [
+    disableHighlightOnFocus,
+    highlightedIndex,
+    indexPositions,
+    nextFocusableItemIdx,
+    restoreLastFocus,
+    selected,
+    setHighlightedIndex,
+  ]);
 
   const navigateChildItems = useCallback(
     async (e: KeyboardEvent) => {
@@ -341,7 +338,7 @@ export const useKeyboardNavigation = <
     return {
       onBlur: (e: FocusEvent) => {
         //TODO no direct ref to List
-        const sourceTarget = (e.target as HTMLElement).closest(".saltList");
+        const sourceTarget = (e.target as HTMLElement).closest(".vuuList");
         const destTarget = e.relatedTarget as HTMLElement;
         if (sourceTarget && !sourceTarget?.contains(destTarget)) {
           keyboardNavigation.current = false;

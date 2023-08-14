@@ -1,11 +1,12 @@
 .vuuExpandoInput {
-    --expandoInput-height: var(--saltExpandoInput-height, 26px);
+
+    --salt-editable-secondary-background: white;
+    --expandoInput-height: var(--vuuExpandoInput-height, 26px);
     --expandoInput-padding: var(--vuuExpandoInput-padding, 6px);
 
-    --saltInput-height: calc(var(--saltExpandoInput-height) - 4px);
+    --saltInput-height: calc(var(--vuuExpandoInput-height) - 4px);
     --saltInput-minWidth: var(--vuuExpandoInput-minWidth, 8px);
   
-    background-color: yellow;;
     color: inherit;
     cursor: default;
     display: inline-block;
@@ -33,7 +34,7 @@
     outline-style: none;
     position: absolute;
     right: var(--expandoInput-padding, 0);
-    top: var(--saltExpandoInput-top, 2px);
+    top: var(--vuuExpandoInput-top, 2px);
     width: auto;
   }
   

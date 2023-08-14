@@ -1,5 +1,9 @@
 import { useControlled } from "@salt-ds/core";
-import { getFocusableElement, orientationType } from "@finos/vuu-utils";
+import {
+  dispatchMouseEvent,
+  getFocusableElement,
+  orientationType,
+} from "@finos/vuu-utils";
 import {
   FocusEvent,
   FocusEventHandler,
@@ -272,12 +276,7 @@ export const useKeyboardNavigation = ({
     const el = getElementByPosition(containerRef.current, highlightedIdx);
     const menuEl = el?.querySelector(".vuuPopupMenu") as HTMLElement;
     if (menuEl) {
-      const evt = new MouseEvent("click", {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-      });
-      menuEl.dispatchEvent(evt);
+      dispatchMouseEvent(menuEl, "click");
     }
     return false;
   }, [containerRef, highlightedIdx]);

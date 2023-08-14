@@ -8,10 +8,12 @@ import {
 } from "react";
 import { hasPopup, isRoot } from "./utils";
 import { isNavigationKey } from "./key-code";
+import { isValidNumber } from "@finos/vuu-utils";
 
 export interface KeyboardNavigationProps {
   autoHighlightFirstItem?: boolean;
   count: number;
+  defaultHighlightedIdx?: number;
   highlightedIndex?: number;
   onActivate: (idx: number) => void;
   onHighlight?: (idx: number) => void;
@@ -42,6 +44,7 @@ export interface NavigationHookResult {
 export const useKeyboardNavigation = ({
   autoHighlightFirstItem = false,
   count,
+  defaultHighlightedIdx,
   highlightedIndex: highlightedIndexProp,
   onActivate,
   onHighlight,
@@ -49,11 +52,22 @@ export const useKeyboardNavigation = ({
   onCloseMenu,
   onOpenMenu,
 }: KeyboardNavigationProps): NavigationHookResult => {
+  if (
+    isValidNumber(highlightedIndexProp) &&
+    isValidNumber(defaultHighlightedIdx)
+  ) {
+    throw Error(
+      "useKeyboardNavigation do not pass values for both highlightedIndex and defaultHighlightedIdx"
+    );
+  }
+
+  const controlledHighlighting = isValidNumber(highlightedIndexProp);
   const highlightedIndexRef = useRef(
-    highlightedIndexProp ?? autoHighlightFirstItem ? 0 : -1
+    defaultHighlightedIdx ??
+      highlightedIndexProp ??
+      (autoHighlightFirstItem ? 0 : -1)
   );
   const [, forceRender] = useState<unknown>(null);
-  const controlledHighlighting = highlightedIndexProp !== undefined;
 
   const setHighlightedIdx = useCallback(
     (idx) => {
@@ -116,6 +130,8 @@ export const useKeyboardNavigation = ({
       } else if (e.key === "ArrowLeft" && !isRoot(e.target as HTMLElement)) {
         onCloseMenu(highlightedIndex);
       } else if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
         onActivate && onActivate(highlightedIndex);
       } else if (e.key === "Tab") {
         onCloseMenu(-1);

@@ -67,18 +67,6 @@ export const Stack = forwardRef(function Stack(
   const id = useId(idProp);
   const { allowCloseTab, allowRenameTab } = TabstripProps;
 
-  // TODO integrate with Tabstrip drag drop
-  // const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-  //   const target = e.target as HTMLElement;
-  //   const indexedElement = target.closest("[data-index]") as HTMLDivElement;
-  //   const isTab = indexedElement?.querySelector(".vuuTab");
-  //   if (isTab) {
-  //     const index = getElementIndex(indexedElement);
-  //     console.log(`index = ${index}`);
-  //     onMouseDown?.(e, index);
-  //   }
-  // };
-
   const handleExitEditMode = useCallback(
     (
       _oldText: string,

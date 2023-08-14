@@ -279,6 +279,8 @@ export class ServerProxy {
       message.range
     );
 
+    info?.(`setViewRange ${message.range.from} - ${message.range.to}`);
+
     if (serverRequest) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -294,6 +296,7 @@ export class ServerProxy {
       );
     }
     if (rows) {
+      info?.(`setViewRange ${rows.length} rows returned from cache`);
       this.postMessageToClient({
         mode: "batch",
         type: "viewport-update",

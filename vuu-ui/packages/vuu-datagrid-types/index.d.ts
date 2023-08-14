@@ -25,10 +25,22 @@ export interface TableCellProps
   row: DataSourceRow;
 }
 
-export interface TableConfig {
-  columns: ColumnDescriptor[];
+export interface TableAttributes {
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
+  columnSeparators?: boolean;
+  rowSeparators?: boolean;
+  zebraStripes?: boolean;
+}
+
+/**
+ * TableConfig describes the configuration used to render a Table. It is
+ * a required prop for Table and provided initially by user. It can be
+ * edited using Settings Editors (Table and Column) and can be persisted
+ * across sessions.
+ */
+export interface TableConfig extends TableAttributes {
+  columns: ColumnDescriptor[];
 }
 export interface GridConfig extends TableConfig {
   headings: TableHeadings;
@@ -74,11 +86,13 @@ export type ColumnSort = VuuSortType | number;
 
 export type PinLocation = "left" | "right" | "floating";
 
+export type ColumnAlignment = "left" | "right";
+
 /** This is a public description of a Column, defining all the
  * column attributes that can be defined by client. */
 export interface ColumnDescriptor {
   aggregate?: VuuAggType;
-  align?: "left" | "right";
+  align?: ColumnAlignment;
   className?: string;
   editable?: boolean;
   expression?: string;

@@ -293,7 +293,6 @@ export const DefaultVuuTable = () => {
         {...props}
         config={{
           ...config,
-          selectionBookendWidth: 4,
         }}
         height={645}
         renderBufferSize={0}
@@ -350,7 +349,6 @@ export const AutoVuuTable = () => {
       {...props}
       config={{
         ...config,
-        selectionBookendWidth: 4,
       }}
       renderBufferSize={0}
       onConfigChange={handleConfigChange}

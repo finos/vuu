@@ -3,7 +3,7 @@ export const listItemElement = (listEl: HTMLElement, listItemIdx: number) =>
 
 export function listItemIndex(listItemEl?: HTMLElement) {
   if (listItemEl) {
-    let idx: string | null | undefined = listItemEl.dataset.idx;
+    let idx: string | null | undefined = listItemEl.dataset.index;
     if (idx) {
       return parseInt(idx, 10);
       // eslint-disable-next-line no-cond-assign
@@ -16,8 +16,8 @@ export function listItemIndex(listItemEl?: HTMLElement) {
 
 export const listItemId = (el: HTMLElement | null) => el?.id;
 
-export const closestListItem = (el: HTMLElement) =>
-  el.closest("[data-idx],[aria-posinset]") as HTMLElement;
+const closestListItem = (el: HTMLElement) =>
+  el.closest("[data-index],[aria-posinset]") as HTMLElement;
 
 export const closestListItemId = (el: HTMLElement) =>
   listItemId(closestListItem(el));

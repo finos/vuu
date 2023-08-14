@@ -2,7 +2,6 @@
     --item-gap : 4px;
     --overflow-direction: row; 
     --overflow-width: 0px;
-    --overflow-order: 99;
     --border-size: calc((var(--overflow-container-height) - 24px) / 2);
     background-color: var(--vuuOverflowContainer-background, black);
     height: var(--overflow-container-height);
@@ -58,12 +57,17 @@
     margin: var(--item-margin);
 }
 
+.vuuOverflowContainer-item[data-align="right"] {
+    margin-left: auto;
+}
+
 
 .vuuOverflowContainer-item.wrapped {
     --overflow-item-bg: #ccc;
     order: 3;
 }
 
+.vuuOverflowContainer-item.vuuDraggable-dragAway,
 .vuuOverflowContainer-item:has(.vuuDraggable-dragAway){
     display: none;
 }
@@ -78,7 +82,7 @@
     display: flex;
     height: var(--overflow-container-height);
     height: var(--overflow-container-height);
-    order: var(--overflow-order);
+    order: var(--overflow-order, 99);
     overflow: hidden;
     left: var(--overflow-left, 100%);
     position: var(--overflow-position, absolute);
@@ -87,4 +91,10 @@
   
 }
 
+
+.vuuDraggable-vuuOverflowContainer {
+    align-items: center;
+    display: flex;
+    height: 44px;
+}
 

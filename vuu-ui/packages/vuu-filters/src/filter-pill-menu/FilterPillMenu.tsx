@@ -10,46 +10,63 @@ import cx from "classnames";
 import "./FilterPillMenu.css";
 import {
   closeCommand,
+  deleteCommand,
+  editCommand,
   MenuOptions,
   renameCommand,
 } from "./FilterPillMenuOptions";
+import { Filter } from "@finos/vuu-filter-types";
 
 const classBase = "vuuFilterPillMenu";
 
+export interface FilterMenuOptions extends MenuOptions {
+  filter: Filter;
+}
+
 export interface FilterPillMenuProps {
   allowClose?: boolean;
+  allowDelete?: boolean;
+  allowEdit?: boolean;
   allowRename?: boolean;
+  filter: Filter;
   location?: string;
   onMenuAction: MenuActionHandler;
   onMenuClose?: () => void;
-  index: number;
 }
 
 export const FilterPillMenu = ({
   allowClose = true,
+  allowDelete = true,
+  allowEdit = true,
   allowRename = true,
+  filter,
   location,
   onMenuAction,
   onMenuClose,
-  index,
 }: FilterPillMenuProps) => {
   const [menuBuilder, menuOptions] = useMemo(
-    (): [MenuBuilder, MenuOptions] => [
+    (): [MenuBuilder, FilterMenuOptions] => [
       (_location, options) => {
         const menuItems: ContextMenuItemDescriptor[] = [];
         if (allowRename) {
           menuItems.push(renameCommand(options as MenuOptions));
         }
+        if (allowEdit) {
+          menuItems.push(editCommand(options as MenuOptions));
+        }
         if (allowClose) {
           menuItems.push(closeCommand(options as MenuOptions));
+        }
+        if (allowDelete) {
+          menuItems.push(deleteCommand(options as MenuOptions));
         }
         return menuItems;
       },
       {
-        tabIndex: index,
+        filter,
       },
     ],
-    [allowClose, allowRename, index]
+    [allowClose, allowDelete, allowEdit, allowRename, filter]
   );
 
   return (

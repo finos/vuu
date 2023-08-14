@@ -6,10 +6,10 @@ import { loadLocalConfig, saveLocalConfig } from "./local-config";
 import { loadRemoteConfig, saveRemoteConfig } from "./remote-config";
 
 export interface LayoutConfigHookProps {
-  defaultLayout: LayoutJSON;
+  defaultLayout?: LayoutJSON;
   saveLocation: SaveLocation;
   saveUrl?: string;
-  user: VuuUser;
+  user?: VuuUser;
 }
 
 export type LayoutHookResult = [

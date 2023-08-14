@@ -1,14 +1,14 @@
 import cx from "classnames";
 import { useForkRef } from "@salt-ds/core";
 import { Children, cloneElement, forwardRef, useRef } from "react";
-import { forwardCallbackProps } from "./forwardCallbackProps";
+import { forwardCallbackProps } from "../utils";
 import { DropdownBaseProps } from "./dropdownTypes";
 import { useDropdownBase } from "./useDropdownBase";
 import { useId } from "@finos/vuu-layout";
-import { Portal } from "./Portal";
-import { PopupComponent as Popup } from "@finos/vuu-popups";
+import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
 
 import "./Dropdown.css";
+
 // Any component may be passed as our trigger or popup component.
 // Define the common props that we will act on, if present,
 // so we can type them.
@@ -100,6 +100,7 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
         width: ownWidth,
         ...ownProps
       } = popupComponent.props as MaybeChildProps;
+
       return cloneElement(popupComponent, {
         ...ownProps,
         ...restComponentProps,

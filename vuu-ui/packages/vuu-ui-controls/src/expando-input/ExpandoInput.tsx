@@ -7,14 +7,14 @@ import "./ExpandoInput.css";
 const classBase = "vuuExpandoInput";
 
 export const ExpandoInput = forwardRef(function ExpandoInput(
-  { className: classNameProp, value, ...inputProps }: InputProps,
+  { className: classNameProp, value, inputProps, ...InputProps }: InputProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   return (
     <div className={cx(classBase, classNameProp)} data-text={value}>
       <Input
-        {...inputProps}
-        inputProps={{ className: `${classBase}-input` }}
+        {...InputProps}
+        inputProps={{ ...inputProps, className: `${classBase}-input` }}
         ref={forwardedRef}
         style={{ padding: 0 }}
         textAlign="left"

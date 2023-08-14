@@ -1,8 +1,9 @@
 import { Heading, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { RefObject, useCallback, useRef } from "react";
+import { RefObject, useCallback, useRef, useState } from "react";
+import { ResizePhase } from "../useTableModel";
 
 export type TableColumnResizeHandler = (
-  phase: "begin" | "resize" | "end",
+  phase: ResizePhase,
   columnName: string,
   width?: number
 ) => void;
@@ -10,11 +11,9 @@ export type TableColumnResizeHandler = (
 export type ResizeHandler = (evt: MouseEvent, moveBy: number) => void;
 export interface CellResizeHookProps {
   column: KeyedColumnDescriptor | Heading;
-  onResize?: (phase: resizePhase, columnName: string, width?: number) => void;
+  onResize?: (phase: ResizePhase, columnName: string, width?: number) => void;
   rootRef: RefObject<HTMLDivElement>;
 }
-
-type resizePhase = "begin" | "resize" | "end";
 
 export interface CellResizeHookResult {
   isResizing: boolean;
@@ -29,15 +28,17 @@ export const useTableColumnResize = ({
   rootRef,
 }: CellResizeHookProps): CellResizeHookResult => {
   const widthRef = useRef(0);
-  const isResizing = useRef(false);
+  const [isResizing, setResizing] = useState(false);
   const { name } = column;
 
   const handleResizeStart = useCallback(() => {
+    console.log("onResizeStart");
+
     if (onResize && rootRef.current) {
       console.log("handleResizeStart");
       const { width } = rootRef.current.getBoundingClientRect();
       widthRef.current = Math.round(width);
-      isResizing.current = true;
+      setResizing(true);
       onResize?.("begin", name);
     }
   }, [name, onResize, rootRef]);
@@ -62,14 +63,16 @@ export const useTableColumnResize = ({
     if (onResize) {
       onResize("end", name, widthRef.current);
       setTimeout(() => {
-        // set in a timeout to prevent the click event from firing and triggering a sort
-        isResizing.current = false;
-      }, 100);
+        // clickHandler in HeaderCell checks isResizing before firing. Because onMouseUp
+        // fires before click, we need to delay setting isResizing back to false, just
+        // long enough that the click ghandler will have fired.
+        setResizing(false);
+      }, 80);
     }
   }, [name, onResize]);
 
   return {
-    isResizing: isResizing.current,
+    isResizing,
     onDrag: handleResize,
     onDragStart: handleResizeStart,
     onDragEnd: handleResizeEnd,

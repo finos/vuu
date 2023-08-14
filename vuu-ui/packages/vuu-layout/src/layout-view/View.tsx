@@ -13,7 +13,7 @@ import { Header as VuuHeader } from "../layout-header/Header";
 import { registerComponent } from "../registry/ComponentRegistry";
 import { useView } from "./useView";
 import { useViewResize } from "./useViewResize";
-import { ViewContext, ViewContextProps } from "./ViewContext";
+import { ViewContext, ViewContextAPI } from "./ViewContext";
 import { ViewProps } from "./viewTypes";
 
 import "./View.css";
@@ -31,6 +31,10 @@ const getProps = (state?: Props, props?: Props) => {
   } else return state || props;
 };
 
+/**
+ * View is the leaf-level entity managed by the Vuu layout system. It may represent a component
+ * or a group of components. It also offers an API (via useViewContext) for persistence.
+ */
 const View = forwardRef(function View(
   props: ViewProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
@@ -98,7 +102,7 @@ const View = forwardRef(function View(
     return children;
   };
 
-  const viewContextValue: ViewContextProps = useMemo(
+  const viewContextValue: ViewContextAPI = useMemo(
     () => ({
       dispatch: dispatchViewAction,
       id,
