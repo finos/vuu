@@ -1,4 +1,4 @@
-import { LeftNav, Shell } from "@finos/vuu-shell";
+import { LeftNav, SaveLayoutPanel, Shell } from "@finos/vuu-shell";
 import {
   CSSProperties,
   ReactElement,
@@ -19,9 +19,9 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "packages/vuu-data-types";
-import { SaveLayoutPanel } from "@finos/vuu-shell";
 
 import "./NewTheme.examples.css";
+import { takeScreenshot } from "@finos/vuu-utils/src/screenshot-utils";
 
 registerComponent("AutoTableNext", AutoTableNext, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
@@ -32,6 +32,26 @@ let displaySequence = 1;
 
 export const ShellWithNewTheme = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
+
+  const handleCloseDialog = useCallback(() => {
+    setDialogContent(undefined);
+  }, []);
+
+  const handleSave = useCallback((layoutName: string, layoutGroup: string, checkValues: string[], radioValues: string) => {
+    console.log("Save layout as \"" + layoutName + "\""
+      + " to group \"" + layoutGroup + "\""
+      + " with settings [" + checkValues + "]"
+      + " and " + radioValues);
+  }, []);
+
+  const handleScreenshot = async () => {
+    await takeScreenshot(
+      document.getElementsByClassName("vuuShell-content")[0] as HTMLElement
+    );
+
+    return localStorage.getItem("layout-screenshot") || undefined;
+  };
+
   const [buildMenuOptions, handleMenuAction] = useMemo<
     [MenuBuilder, MenuActionHandler]
   >(() => {
@@ -56,29 +76,24 @@ export const ShellWithNewTheme = () => {
         }
         return menuDescriptors;
       },
-      (action: MenuActionClosePopup) => {
+      async (action: MenuActionClosePopup) => {
         console.log("menu action", {
           action,
         });
         if (action.menuId === "save-layout") {
-          setDialogContent(<SaveLayoutPanel onCancel={handleCloseDialog} onSave={handleSave}/>);
+          setDialogContent(
+            <SaveLayoutPanel
+              onCancel={handleCloseDialog}
+              onSave={handleSave}
+              screenshot={await handleScreenshot()}
+            />
+          );
           return true;
         }
         return false;
       },
     ];
-  }, []);
-
-  const handleCloseDialog = useCallback(() => {
-    setDialogContent(undefined);
-  }, []);
-
-  const handleSave = useCallback((layoutName: string, layoutGroup: string, checkValues: string[], radioValues: string) => {
-    console.log("Save layout as \"" + layoutName + "\""
-      + " to group \"" + layoutGroup + "\""
-      + " with settings [" + checkValues + "]"
-      + " and " + radioValues);
-  }, []);
+  }, [handleCloseDialog, handleSave]);
 
   //TODO what the App actually receives is an array of layouts
   const layout = useMemo(() => {
