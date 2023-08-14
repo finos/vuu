@@ -15,7 +15,7 @@ export type SplitterDragEndHandler = () => void;
 
 export interface SplitterProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onDrag" | "onDragStart"> {
-  //TODO change to alignment (vertical | horiz ontal)
+  //TODO change to alignment (vertical | horizontal)
   column: boolean;
   index: number;
   onDragStart: SplitterDragStartHandler;

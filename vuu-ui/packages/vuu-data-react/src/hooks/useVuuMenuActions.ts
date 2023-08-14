@@ -13,6 +13,7 @@ import {
 import {
   ContextMenuItemDescriptor,
   DataSourceRow,
+  MenuActionHandler,
   MenuBuilder,
 } from "@finos/vuu-data-types";
 import { GridAction } from "@finos/vuu-datagrid-types";
@@ -33,6 +34,7 @@ import {
   isGroupMenuItemDescriptor,
   metadataKeys,
 } from "@finos/vuu-utils";
+import type { MenuActionClosePopup } from "@finos/vuu-popups";
 import { useCallback } from "react";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
@@ -50,19 +52,6 @@ export interface VuuRowMenuItem extends VuuMenuItem {
 const { KEY } = metadataKeys;
 
 const NO_CONFIG: MenuActionConfig = {};
-
-// const contextSortPriorities = {
-//   "selected-rows": 0,
-//   cell: 1,
-//   row: 2,
-//   grid: 3,
-// };
-
-// const byContext = (menu1: VuuMenuItem, menu2: VuuMenuItem) => {
-//   return (
-//     contextSortPriorities[menu1.context] - contextSortPriorities[menu2.context]
-//   );
-// };
 
 export const isVisualLinksAction = (
   action: GridAction
@@ -179,12 +168,11 @@ const getMenuRpcRequest = (
   }
 };
 
+export type VuuMenuActionHandler = (type: string, options: unknown) => boolean;
+
 export interface ViewServerHookResult {
-  buildViewserverMenuOptions: MenuBuilder<
-    TableMenuLocation,
-    VuuServerMenuOptions
-  >;
-  handleMenuAction: (type: string, options: unknown) => boolean;
+  buildViewserverMenuOptions: MenuBuilder;
+  handleMenuAction: MenuActionHandler;
 }
 
 export interface MenuActionConfig {
@@ -193,18 +181,33 @@ export interface MenuActionConfig {
   visualLinks?: LinkDescriptorWithLabel[];
 }
 
+export type RpcResponseHandler = (
+  response:
+    | MenuRpcResponse
+    | VuuUIMessageInRPCEditReject
+    | VuuUIMessageInRPCEditResponse
+) => void;
+
 export interface VuuMenuActionHookProps {
+  /**
+   * By default, vuuMenuActions will be handled automatically. When activated, a
+   * message will be sent to server and response will be handled here too.
+   * This prop allows client to provide a custom handler for a menu Item. This will
+   * take priority and if handler returns true, no further processing for the menu
+   * item will be handled by Vuu. This can also be used to prevent an item from being
+   * actioned, even when no custom handling is intended. If the handler returns false,
+   * Vuu will process the menuItem.
+   */
+  clientSideMenuActionHandler?: VuuMenuActionHandler;
   dataSource: DataSource;
   menuActionConfig?: MenuActionConfig;
-  onRpcResponse?: (
-    response:
-      | MenuRpcResponse
-      | VuuUIMessageInRPCEditReject
-      | VuuUIMessageInRPCEditResponse
-  ) => void;
+  onRpcResponse?: RpcResponseHandler;
 }
 
 type TableMenuLocation = "grid" | "header" | "filter";
+
+const isTableLocation = (location: string): location is TableMenuLocation =>
+  ["grid", "header", "filter"].includes(location);
 
 export type VuuServerMenuOptions = {
   columnMap: ColumnMap;
@@ -308,19 +311,17 @@ const buildMenuDescriptor = (
 };
 
 export const useVuuMenuActions = ({
+  clientSideMenuActionHandler,
   dataSource,
   menuActionConfig = NO_CONFIG,
   onRpcResponse,
 }: VuuMenuActionHookProps): ViewServerHookResult => {
-  const buildViewserverMenuOptions: MenuBuilder<
-    TableMenuLocation,
-    VuuServerMenuOptions
-  > = useCallback(
-    (tableLocation, options) => {
+  const buildViewserverMenuOptions: MenuBuilder = useCallback(
+    (location, options) => {
       const { visualLink, visualLinks, vuuMenu } = menuActionConfig;
       const descriptors: ContextMenuItemDescriptor[] = [];
 
-      if (tableLocation === "grid" && visualLinks && !visualLink) {
+      if (location === "grid" && visualLinks && !visualLink) {
         visualLinks.forEach((linkDescriptor: LinkDescriptorWithLabel) => {
           const { link, label: linkLabel } = linkDescriptor;
           const label = linkLabel ? linkLabel : link.toTable;
@@ -332,11 +333,11 @@ export const useVuuMenuActions = ({
         });
       }
 
-      if (vuuMenu) {
+      if (vuuMenu && isTableLocation(location)) {
         const menuDescriptor = buildMenuDescriptor(
           vuuMenu,
-          tableLocation,
-          options
+          location,
+          options as VuuServerMenuOptions
         );
         if (isRoot(vuuMenu) && isGroupMenuItemDescriptor(menuDescriptor)) {
           descriptors.push(...menuDescriptor.children);
@@ -351,28 +352,30 @@ export const useVuuMenuActions = ({
   );
 
   const handleMenuAction = useCallback(
-    (type: string, options: unknown) => {
-      if (type === "MENU_RPC_CALL") {
-        const rpcRequest = getMenuRpcRequest(options as VuuMenuItem);
+    ({ menuId, options }: MenuActionClosePopup) => {
+      if (clientSideMenuActionHandler?.(menuId, options)) {
+        return true;
+      } else if (menuId === "MENU_RPC_CALL") {
+        const rpcRequest = getMenuRpcRequest(options as unknown as VuuMenuItem);
         dataSource.menuRpcCall(rpcRequest).then((rpcResponse) => {
           if (onRpcResponse && rpcResponse) {
             onRpcResponse && onRpcResponse(rpcResponse);
           }
         });
         return true;
-      } else if (type === "link-table") {
+      } else if (menuId === "link-table") {
         // return dataSource.createLink(options as LinkDescriptorWithLabel), true;
         return (
           (dataSource.visualLink = options as LinkDescriptorWithLabel), true
         );
       } else {
         console.log(
-          `useViewServer handleMenuAction,  can't handle action type ${type}`
+          `useViewServer handleMenuAction,  can't handle action type ${menuId}`
         );
       }
       return false;
     },
-    [dataSource, onRpcResponse]
+    [clientSideMenuActionHandler, dataSource, onRpcResponse]
   );
 
   return {

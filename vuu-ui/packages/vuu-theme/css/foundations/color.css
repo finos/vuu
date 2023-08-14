@@ -1,4 +1,26 @@
-.salt-theme {
+.vuu-theme {
+
+  --vuu-color-transparent: transparent;
+  --vuu-color-black: black;
+  --vuu-color-white: white;
+
+  --vuu-color-purple-10: rgb(109,24,189); /*  #6D18BD */
+
+  --vuu-color-pink-10: rgb(234, 120, 128); /*  #F37880 */
+
+
+  --vuu-color-gray-05: rgb(237, 237, 237);  /* #EDEDED */
+  --vuu-color-gray-10: rgb(228, 227, 231);  /* #E4E3E7 */
+  --vuu-color-gray-20: rgb(245, 242, 248);  /* #F5F2F8 */
+  --vuu-color-gray-30: rgb(214, 215, 218);  /* #D6D7Da */
+  --vuu-color-gray-35: rgb(155, 158, 168);  /* #9B9EA8; */
+  --vuu-color-gray-40: rgb(169, 170, 173);  /* #A9AAAD */ 
+  --vuu-color-gray-45: rgb(119, 124, 148);  /* #777C94 */ 
+  --vuu-color-gray-50: rgb(96, 100, 119);   /* #606477 */
+  --vuu-color-gray-80: rgb(21, 23, 27);     /* #15171B */ 
+
+
+
   /* Color palette will stay the same no matter of theming */
   --salt-color-white: rgb(255, 255, 255);
   --salt-color-black: rgb(0, 0, 0);

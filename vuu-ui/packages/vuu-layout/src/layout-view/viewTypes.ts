@@ -27,6 +27,7 @@ export interface ViewProps extends HTMLAttributes<HTMLDivElement> {
   Header?: FunctionComponent<HeaderProps>;
   closeable?: boolean;
   collapsed?: boolean;
+  "data-path"?: string;
   "data-resizeable"?: boolean;
   dropTargets?: string[];
   expanded?: boolean;

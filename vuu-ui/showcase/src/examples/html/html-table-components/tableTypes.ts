@@ -1,6 +1,6 @@
 import { HTMLAttributes, UIEventHandler } from "react";
 import { ArrayProxy } from "../../utils";
-import { HtmlRowProps } from "../HtmlTable.examples";
+import { HtmlRowProps } from "./Row";
 
 export interface HTMLTableProps extends HTMLAttributes<HTMLDivElement> {
   Row: React.FunctionComponent<HtmlRowProps>;

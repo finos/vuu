@@ -1,0 +1,9 @@
+.vuuFilterPill {
+    align-items: center;
+    border: solid 1px var(--salt-taggable-foreground);
+    border-radius: 26px;
+    display: flex;
+    height: 26px;
+    padding: 0 8px;
+    position: relative;
+}

@@ -37,7 +37,7 @@ export interface DataSourceAggregateMessage
 
 export type DataUpdateMode = "batch" | "update" | "size-only";
 export interface DataSourceDataMessage extends MessageWithClientViewportId {
-  mode?: DataUpdateMode;
+  mode: DataUpdateMode;
   rows?: DataSourceRow[];
   size?: number;
   type: "viewport-update";
@@ -464,6 +464,8 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
   config: DataSourceConfig | undefined;
+  suspend?: () => void;
+  resume?: () => void;
   enable?: () => void;
   disable?: () => void;
   filter: DataSourceFilter;

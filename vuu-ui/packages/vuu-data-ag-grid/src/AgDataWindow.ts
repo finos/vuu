@@ -6,12 +6,6 @@ export type AgData = { [key: string]: AgDataItem };
 export type AgDataRow = [number, AgData];
 export type RangeLike = { from: number; to: number };
 
-// const log = (message: string, ...args: unknown[]) =>
-//   console.log(
-//     `%c[AgDataWindow] ${message}`,
-//     "color: purple;font-weight: bold;",
-//     ...args
-//   );
 export class AgDataWindow {
   private range: WindowRange;
   public data: DataSourceRow[];

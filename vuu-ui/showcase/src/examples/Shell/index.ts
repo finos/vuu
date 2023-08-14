@@ -1,6 +1,6 @@
 export * as AppSidePanel from "./AppSidePanel.examples";
-export * as ConnectionStatus from "./ConnectionStatus.stories";
-export * as ConnectionMetrics from "./ConnectionMetrics.stories";
+export * as ConnectionStatus from "./ConnectionStatus.examples";
+export * as ConnectionMetrics from "./ConnectionMetrics.examples";
 export * as Feature from "./Feature.examples";
 export * as SessionTableEditing from "./SessionTableEditing.examples";
 export * as Shell from "./Shell.examples";

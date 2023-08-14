@@ -1,5 +1,5 @@
 export const IFrame = () => {
-  const src = `${location.href}?standalone&theme=vuu-purple`;
+  const src = `${location.href}?standalone&theme=vuu`;
   return (
     <div className="ShowCaseIFrame-container">
       <iframe

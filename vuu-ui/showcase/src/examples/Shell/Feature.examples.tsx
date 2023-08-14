@@ -1,11 +1,9 @@
 import { Feature } from "@finos/vuu-shell";
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupChangeEventHandler,
-} from "@heswell/salt-lab";
-import { useMemo, useState } from "react";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { SyntheticEvent, useMemo, useState } from "react";
 import { useTableSchema } from "../utils";
+
+let displaySequence = 1;
 
 type PathMap = { [key: string]: { jsUrl: string; cssUrl?: string } };
 
@@ -38,12 +36,12 @@ export const DefaultFeature = () => {
 
   const schema = useTableSchema("instruments");
 
-  const handleChange: ToggleButtonGroupChangeEventHandler = (_event, index) => {
-    console.log({ index });
-    setSelectedIndex(index);
+  const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
+    const { value } = evt.target as HTMLButtonElement;
+    setSelectedIndex(parseInt(value));
   };
 
-  const { cssUrl, jsUrl, params } = useMemo(() => {
+  const { cssUrl, jsUrl } = useMemo(() => {
     switch (selectedIndex) {
       case 0:
         return {
@@ -68,20 +66,18 @@ export const DefaultFeature = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div style={{ flex: "0 0 24px" }}>
-        <ToggleButtonGroup
-          onChange={handleChange}
-          selectedIndex={selectedIndex}
-        >
-          <ToggleButton>Test aqua</ToggleButton>
-          <ToggleButton>Test yellow</ToggleButton>
-          <ToggleButton>Vuu Blotter (Mock Data)</ToggleButton>
-          <ToggleButton>Child Orders</ToggleButton>
-          <ToggleButton>Prices</ToggleButton>
+        <ToggleButtonGroup onChange={handleChange} value={selectedIndex}>
+          <ToggleButton value={0}>Test aqua</ToggleButton>
+          <ToggleButton value={1}>Test yellow</ToggleButton>
+          <ToggleButton value={2}>Vuu Blotter (Mock Data)</ToggleButton>
+          <ToggleButton value={3}>Child Orders</ToggleButton>
+          <ToggleButton value={4}>Prices</ToggleButton>
         </ToggleButtonGroup>
       </div>
       <div style={{ flex: "1 1 auto" }}>
-        <Feature css={cssUrl} params={params} url={jsUrl} />;
+        <Feature css={cssUrl} params={{}} url={jsUrl} />;
       </div>
     </div>
   );
 };
+DefaultFeature.displaySequence = displaySequence++;

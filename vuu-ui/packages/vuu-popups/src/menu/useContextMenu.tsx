@@ -1,12 +1,14 @@
-// The menuBuilder will always be supplied by the code that will display the local
-// context menu. It will be passed all configured menu descriptors. It is free to
-
 import { ContextMenuItemDescriptor } from "@finos/vuu-data-types";
 import { useThemeAttributes } from "@finos/vuu-shell";
 import { isGroupMenuItemDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
-import { MouseEvent, useCallback, useContext } from "react";
-import { PopupService } from "../popup";
+import { cloneElement, MouseEvent, useCallback, useContext } from "react";
+import {
+  MenuActionClosePopup,
+  PopupCloseReason,
+  PopupService,
+  reasonIsMenuAction,
+} from "../popup";
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
@@ -14,14 +16,24 @@ import { ContextMenuContext } from "./context-menu-provider";
 
 export type ContextMenuOptions = {
   [key: string]: unknown;
+  contextMenu?: JSX.Element;
   ContextMenuProps?: Partial<ContextMenuProps> & {
     className?: string;
     "data-mode"?: string;
   };
 };
 
-// The argument allows a top-level menuBuilder to operate outside the Contect
-export const useContextMenu = (menuBuilder?: MenuBuilder) => {
+export type ShowContextMenu = (
+  e: MouseEvent<HTMLElement>,
+  location: string,
+  options: ContextMenuOptions
+) => void;
+
+// The argument allows a top-level menuBuilder to operate outside the Context
+export const useContextMenu = (
+  menuBuilder?: MenuBuilder,
+  menuActionHandler?: MenuActionHandler
+): [ShowContextMenu, () => void] => {
   const ctx = useContext(ContextMenuContext);
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
 
@@ -41,27 +53,50 @@ export const useContextMenu = (menuBuilder?: MenuBuilder) => {
     (
       e: MouseEvent<HTMLElement>,
       location: string,
-      { ContextMenuProps, ...options }: ContextMenuOptions
+      { ContextMenuProps, contextMenu, ...options }: ContextMenuOptions
     ) => {
       e.stopPropagation();
       e.preventDefault();
 
-      const menuBuilders =
-        ctx?.menuBuilders ?? (menuBuilder ? [menuBuilder] : undefined);
-      if (Array.isArray(menuBuilders) && menuBuilders.length > 0) {
+      if (contextMenu) {
+        return showContextMenuComponent(e, contextMenu);
+      }
+
+      const menuBuilders: MenuBuilder[] = [];
+      if (menuBuilder) {
+        menuBuilders.push(menuBuilder);
+      }
+      if (
+        ctx &&
+        Array.isArray(ctx?.menuBuilders) &&
+        ctx.menuBuilders.length > 0
+      ) {
+        menuBuilders.push(...ctx.menuBuilders);
+      }
+
+      if (menuBuilders.length > 0) {
         const menuItemDescriptors = buildMenuOptions(
           menuBuilders,
           location,
           options
         );
-        console.log({
-          menuItemDescriptors,
-        });
-        if (menuItemDescriptors.length && ctx?.menuActionHandler) {
+
+        // const menuHandler = menuActionHandler ?? ctx?.menuActionHandler;
+        const menuHandler: MenuActionHandler = (
+          action: MenuActionClosePopup
+        ) => {
+          if (menuActionHandler?.(action) === true) {
+            return true;
+          } else {
+            return ctx?.menuActionHandler(action);
+          }
+        };
+
+        if (menuItemDescriptors.length && menuHandler) {
           console.log(`showContextMenu ${location}`, {
             options,
           });
-          showContextMenu(e, menuItemDescriptors, ctx.menuActionHandler, {
+          showContextMenu(e, menuItemDescriptors, menuHandler, {
             ...ContextMenuProps,
             className: cx(
               ContextMenuProps?.className,
@@ -79,19 +114,40 @@ export const useContextMenu = (menuBuilder?: MenuBuilder) => {
     },
     [
       buildMenuOptions,
-      ctx?.menuActionHandler,
-      ctx?.menuBuilders,
+      ctx,
       dataMode,
       densityClass,
+      menuActionHandler,
       menuBuilder,
       themeClass,
     ]
   );
 
-  return handleShowContextMenu;
+  const hideContextMenu = useCallback(() => {
+    console.log("hide comnytext menu");
+  }, []);
+
+  return [handleShowContextMenu, hideContextMenu];
 };
 
 const NO_OPTIONS = {};
+
+const showContextMenuComponent = (
+  e: MouseEvent<HTMLElement>,
+  contextMenu: JSX.Element
+) => {
+  const position = {
+    x: e.clientX,
+    y: e.clientY,
+  };
+
+  PopupService.showPopup({
+    focus: true,
+    left: 0,
+    top: 0,
+    component: cloneElement(contextMenu, { position }),
+  });
+};
 
 const showContextMenu = (
   e: MouseEvent<HTMLElement>,
@@ -122,12 +178,14 @@ const showContextMenu = (
     return menuDescriptors.map(fromDescriptor);
   };
 
-  const handleClose = (menuId?: string, options?: unknown) => {
-    if (menuId) {
-      handleContextMenuAction(menuId, options);
+  const handleClose = (reason?: PopupCloseReason) => {
+    if (reasonIsMenuAction(reason)) {
+      handleContextMenuAction(reason);
+      // TODO this results in onClose being called twice on component
+      // cant simply be removed, some refactoring work needed
       PopupService.hidePopup();
     }
-    contextMenuProps?.onClose?.(menuId);
+    contextMenuProps?.onClose?.(reason);
   };
 
   const position = positionProp ?? {
@@ -144,5 +202,5 @@ const showContextMenu = (
       {menuItems(menuDescriptors)}
     </ContextMenu>
   );
-  PopupService.showPopup({ left: 0, top: 0, component });
+  PopupService.showPopup({ left: 0, top: 0, component, focus: true });
 };

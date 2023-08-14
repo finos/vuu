@@ -25,13 +25,15 @@ export interface TableCellProps
   row: DataSourceRow;
 }
 
-export declare type GridConfig = {
+export interface TableConfig {
   columns: ColumnDescriptor[];
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
+}
+export interface GridConfig extends TableConfig {
   headings: TableHeadings;
   selectionBookendWidth?: number;
-};
+}
 
 export declare type TypeFormatting = {
   alignOnDecimals?: boolean;
@@ -57,7 +59,8 @@ export declare type ColumnTypeSimple =
   | "boolean"
   | "json"
   | "date"
-  | "time";
+  | "time"
+  | "checkbox";
 
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
@@ -80,9 +83,15 @@ export interface ColumnDescriptor {
   editable?: boolean;
   expression?: string;
   flex?: number;
+  /** 
+   Optional additional level(s) of heading to display above label.
+   May span multiple columns, if multiple adjacent columns declare 
+   same heading at same level.
+  */
   heading?: string[];
   hidden?: boolean;
   isSystemColumn?: boolean;
+  /** The Label to display on column in Table */
   label?: string;
   locked?: boolean;
   minWidth?: number;

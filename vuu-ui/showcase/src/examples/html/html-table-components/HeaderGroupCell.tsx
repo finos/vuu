@@ -1,7 +1,7 @@
 import { MouseEvent, useCallback } from "react";
 import { useContextMenu } from "@finos/vuu-popups";
-import { useCell } from "./table-next/useCell";
-import { SortIndicator } from "@finos/vuu-table/src/SortIndicator";
+import { useCell } from "./useCell";
+import { SortIndicator } from "@finos/vuu-table/src/table/SortIndicator";
 import { HeaderCellProps } from "./HeaderCell";
 import {
   GroupColumnDescriptor,
@@ -40,7 +40,7 @@ export const HeaderGroupCell = ({
   onClick,
   idx,
 }: HeaderCellProps) => {
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
   const handleContextMenu = useCallback(
     (e: MouseEvent<HTMLElement>) => {
       showContextMenu(e, "header", { column });

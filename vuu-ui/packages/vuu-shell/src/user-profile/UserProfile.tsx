@@ -1,5 +1,5 @@
 import { Button } from "@salt-ds/core";
-import { DropdownBase } from "@heswell/salt-lab";
+import { DropdownBase } from "@salt-ds/lab";
 import { UserSolidIcon } from "@salt-ds/icons";
 import { UserPanel } from "./UserPanel";
 

@@ -54,7 +54,7 @@ import {
 } from "../vuuUIMessageTypes";
 import * as Message from "./messages";
 import { getRpcServiceModule } from "./rpc-services";
-import { Viewport } from "./viewport";
+import { NO_DATA_UPDATE, Viewport } from "./viewport";
 
 export type PostMessageToClientCallback = (
   message: VuuUIMessageIn | DataSourceCallbackMessage
@@ -204,7 +204,7 @@ export class ServerProxy {
         );
         this.pendingTableMetaRequests.set(requestId, message.viewport);
       }
-      const viewport = new Viewport(message);
+      const viewport = new Viewport(message, this.postMessageToClient);
       this.viewports.set(message.viewport, viewport);
       // use client side viewport id as request id, so that when we process the response,
       // which will provide the serverside viewport id, we can establish a mapping between
@@ -280,6 +280,8 @@ export class ServerProxy {
     );
 
     if (serverRequest) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       if (process.env.NODE_ENV === "development") {
         info?.(
           `CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`
@@ -369,10 +371,25 @@ export class ServerProxy {
     }
   }
 
+  private suspendViewport(viewport: Viewport) {
+    viewport.suspend();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore its a number, this isn't node.js
+    viewport.suspendTimer = setTimeout(() => {
+      info?.("suspendTimer expired, escalate suspend to disable");
+      this.disableViewport(viewport);
+    }, 3000);
+  }
   private resumeViewport(viewport: Viewport) {
+    if (viewport.suspendTimer) {
+      debug?.("clear suspend timer");
+      clearTimeout(viewport.suspendTimer);
+      viewport.suspendTimer = null;
+    }
     const rows = viewport.resume();
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,
+      mode: "batch",
       rows,
       type: "viewport-update",
     });
@@ -515,7 +532,7 @@ export class ServerProxy {
           case "select":
             return this.select(viewport, message);
           case "suspend":
-            return viewport.suspend();
+            return this.suspendViewport(viewport);
           case "resume":
             return this.resumeViewport(viewport);
           case "enable":
@@ -1074,24 +1091,36 @@ export class ServerProxy {
   processUpdates() {
     this.viewports.forEach((viewport) => {
       if (viewport.hasUpdatesToProcess) {
-        const [rows, mode] = viewport.getClientRows();
-        const size = viewport.getNewRowCount();
-        if (size !== undefined || (rows && rows.length > 0)) {
-          debugEnabled &&
-            debug(
-              `postMessageToClient #${
-                viewport.clientViewportId
-              } viewport-update ${mode}, ${
-                rows?.length ?? "no"
-              } rows, size ${size}`
-            );
-          this.postMessageToClient({
-            clientViewportId: viewport.clientViewportId,
-            mode,
-            rows,
-            size,
-            type: "viewport-update",
-          });
+        const result = viewport.getClientRows();
+        if (result !== NO_DATA_UPDATE) {
+          const [rows, mode] = result;
+          const size = viewport.getNewRowCount();
+          if (size !== undefined || (rows && rows.length > 0)) {
+            debugEnabled &&
+              debug(
+                `postMessageToClient #${
+                  viewport.clientViewportId
+                } viewport-update ${mode}, ${
+                  rows?.length ?? "no"
+                } rows, size ${size}`
+              );
+
+            if (size) {
+              console.log(
+                `send size to client (along with ${rows?.length} rows)`
+              );
+            }
+
+            if (mode) {
+              this.postMessageToClient({
+                clientViewportId: viewport.clientViewportId,
+                mode,
+                rows,
+                size,
+                type: "viewport-update",
+              });
+            }
+          }
         }
       }
     });

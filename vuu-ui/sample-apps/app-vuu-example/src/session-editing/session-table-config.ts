@@ -69,19 +69,24 @@ const defaultFormConfig = {
 const keyFirst = (c1: FormFieldDescriptor, c2: FormFieldDescriptor) =>
   c1.isKeyField ? -1 : c2.isKeyField ? 1 : 0;
 
-const configFromSchema = ({ columns, key }: TableSchema): FormConfig => ({
-  key,
-  title: `Parameters for command`,
-  fields: columns
-    .map((col) => ({
-      description: col.name,
-      label: col.name,
-      name: col.name,
-      type: col.serverDataType,
-      isKeyField: col.name === key,
-    }))
-    .sort(keyFirst),
-});
+const configFromSchema = (schema?: TableSchema): FormConfig | undefined => {
+  if (schema) {
+    const { columns, key } = schema;
+    return {
+      key,
+      title: `Parameters for command`,
+      fields: columns
+        .map((col) => ({
+          description: col.name,
+          label: col.name,
+          name: col.name,
+          type: col.serverDataType,
+          isKeyField: col.name === key,
+        }))
+        .sort(keyFirst),
+    };
+  }
+};
 
 export const getFormConfig = ({ action, rpcName }: MenuRpcResponse) => {
   const { tableSchema: schema } = action as OpenDialogAction;

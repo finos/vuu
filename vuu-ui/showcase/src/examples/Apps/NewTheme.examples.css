@@ -3,15 +3,25 @@ body {
   overflow: hidden;
 }
 
+.vuuShell-content {
+  padding: 8px;
+}
+
 .vuuShell-mainTabs {
+  --vuuTab-height: 28px;
+  border: solid 1px #D6D7DA;
   border-top: none !important;
+  border-radius: 6;
+  height: 100%;
+  padding: 36px 8px 8px 8px;
   position: relative;
+  width: 100%;
 }
   
-  .vuuShell-mainTabs > .saltToolbar {
-    --saltToolbar-height: 36px;
+  .vuuShell-mainTabs > .vuuTabstrip {
+    --vuuTabstrip-height: 28px;
     --saltTabs-tabstrip-height: 29px;
-    --tabs-tabstrip-height: 29px;
+    --tabstrip-height: 29px;
     background-color: white;
     left:-1px;
     padding-bottom: 7px;
@@ -25,7 +35,7 @@ body {
     border-bottom: none;
   } 
 
-  .vuuShell-mainTabs > .vuuTabHeader:before {
+  .vuuShell-mainTabs > .vuuTabstrip:before {
     background-color: transparent;
     content: '';
     position: absolute;
@@ -39,7 +49,7 @@ body {
     border-top: solid 1px #D6D7DA;
   }
 
-  .vuuShell-mainTabs > .vuuTabHeader .saltTab {
+  .vuuShell-mainTabs > .vuuTabstrip .vuuTab {
     background-color: #F1F2F4;
     border-color: #D6D7DA;
     border-radius: 6px 6px 0 0;
@@ -48,33 +58,37 @@ body {
     position: relative;
   }
 
-  .vuuShell-mainTabs > .vuuTabHeader .saltTab[aria-selected="true"] {
+  .vuuShell-mainTabs > .vuuTabstrip .vuuTab-selected {
     background-color: white;
     border-bottom-color: white;
   }
 
-  .vuuShell-mainTabs > .vuuTabHeader .saltTab[aria-selected="true"]:before{
+  .vuuShell-mainTabs > .vuuTabstrip .vuuTab-selected:before{
     background-color: #6d188b;;
     content: '';
     position: absolute;
-    bottom: 0;
+    height: 100%;
     left:0;
     top:0;
     border-radius: 6px 0 0 0;
     width: 6px;
-
   }
 
+  .vuuShell-mainTabs > .vuuTabstrip .vuuTab:hover:not(.vuuTab-selected):before{
+    background-color: #F37880;
+    content: '';
+    position: absolute;
+    height: 100%;
+    left:0;
+    top:0;
+    border-radius: 6px 0 0 0;
+    width: 6px;
+  }
 
-  .vuuShell-mainTabs > .vuuTabHeader .saltTab-main {
+  .vuuShell-mainTabs > .vuuTabstrip .vuuTab-main {
     --salt-text-fontSize: 12px;
     background-color: transparent;
     font-weight: 700;
     height: 29px;
     padding: 0 24px;
   }
-
-
-  .vuuShell-mainTabs > .saltToolbar[aria-orientation="horizontal"] > .Responsive-inner > *:first-child {
-    margin-left: 0;
-}

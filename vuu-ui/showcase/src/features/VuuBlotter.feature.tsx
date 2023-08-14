@@ -16,7 +16,6 @@ import { useViewContext } from "@finos/vuu-layout";
 import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 import { filterAsQuery } from "@finos/vuu-utils";
-import { Toolbar } from "@heswell/salt-lab";
 import { useCallback, useMemo, useState } from "react";
 import { DockLayout } from "../examples/html/components/DockLayout";
 
@@ -195,9 +194,9 @@ export const VuuBlotter = ({
         dataSource={dataSource}
         onConfigChange={handleTableConfigChange}
       />
-      <Toolbar className="vuuBlotter-footer" data-dock="bottom">
+      <div className="vuuToolbarProxy vuuBlotter-footer" data-dock="bottom">
         <DataSourceStats dataSource={dataSource as RemoteDataSource} />
-      </Toolbar>
+      </div>
     </DockLayout>
   );
 };

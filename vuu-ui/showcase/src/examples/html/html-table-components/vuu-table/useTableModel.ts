@@ -4,7 +4,7 @@ import {
   KeyedColumnDescriptor,
   PinLocation,
 } from "@finos/vuu-datagrid-types";
-import { moveItem } from "@heswell/salt-lab";
+import { moveItem } from "@finos/vuu-ui-controls";
 import {
   applyFilterToColumns,
   applyGroupByToColumns,

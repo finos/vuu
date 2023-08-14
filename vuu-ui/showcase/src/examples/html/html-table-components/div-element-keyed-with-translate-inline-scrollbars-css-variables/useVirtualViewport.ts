@@ -1,8 +1,8 @@
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { RowAtPositionFunc } from "@finos/vuu-utils";
+import { ViewportMeasurements } from "@finos/vuu-table";
 import { useCallback, useRef } from "react";
-import { ViewportMeasurements } from "./useTableViewport";
 
 export interface VirtualViewportHookProps {
   columns: KeyedColumnDescriptor[];
@@ -12,13 +12,12 @@ export interface VirtualViewportHookProps {
 }
 
 export const useVirtualViewport = ({
-  columns,
   getRowAtPosition,
   setRange,
   viewportMeasurements,
 }: VirtualViewportHookProps) => {
   const firstRowRef = useRef<number>(-1);
-  const { contentWidth, rowCount: viewportRowCount } = viewportMeasurements;
+  const { rowCount: viewportRowCount } = viewportMeasurements;
 
   const handleVerticalScroll = useCallback(
     (scrollTop: number) => {

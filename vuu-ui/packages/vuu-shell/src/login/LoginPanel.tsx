@@ -1,6 +1,5 @@
 import { ChangeEvent, HTMLAttributes, useState } from "react";
-import { Button } from "@salt-ds/core";
-import { FormField, Input } from "@heswell/salt-lab";
+import { Button, FormField, FormFieldLabel, Input } from "@salt-ds/core";
 
 import "./LoginPanel.css";
 
@@ -9,9 +8,13 @@ const classBase = "vuuLoginPanel";
 export interface LoginPanelProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSubmit"> {
   onSubmit: (username: string, password: string) => void;
+  requirePassword?: boolean;
 }
 
-export const LoginPanel = ({ onSubmit }: LoginPanelProps) => {
+export const LoginPanel = ({
+  requirePassword = true,
+  onSubmit,
+}: LoginPanelProps) => {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
 
@@ -19,36 +22,38 @@ export const LoginPanel = ({ onSubmit }: LoginPanelProps) => {
     onSubmit(username, password);
   };
 
-  const handleUsername = (
-    _event: ChangeEvent<HTMLInputElement>,
-    value: string
-  ) => {
-    setUserName(value);
+  const handleUsername = (evt: ChangeEvent<HTMLInputElement>) => {
+    setUserName(evt.target.value);
   };
 
-  const handlePassword = (
-    _event: ChangeEvent<HTMLInputElement>,
-    value: string
-  ) => {
-    setPassword(value);
+  const handlePassword = (evt: ChangeEvent<HTMLInputElement>) => {
+    setPassword(evt.target.value);
   };
 
-  const dataIsValid = username.trim() !== "" && password.trim() !== "";
+  const dataIsValid =
+    username.trim() !== "" &&
+    (requirePassword === false || password.trim() !== "");
 
   return (
     <div className={classBase}>
-      <FormField label="Username" style={{ width: 200 }}>
+      <FormField style={{ width: 200 }}>
+        <FormFieldLabel>Username</FormFieldLabel>
         <Input value={username} id="text-username" onChange={handleUsername} />
       </FormField>
 
-      <FormField label="Password" style={{ width: 200 }}>
-        <Input
-          type="password"
-          value={password}
-          id="text-password"
-          onChange={handlePassword}
-        />
-      </FormField>
+      {requirePassword ? (
+        <FormField style={{ width: 200 }}>
+          <FormFieldLabel>Password</FormFieldLabel>
+          <Input
+            inputProps={{
+              type: "password",
+            }}
+            value={password}
+            id="text-password"
+            onChange={handlePassword}
+          />
+        </FormField>
+      ) : null}
 
       <Button
         className={`${classBase}-login`}

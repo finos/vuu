@@ -2,6 +2,7 @@ import React, { Suspense, useEffect } from "react";
 import { registerComponent } from "@finos/vuu-layout";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Loader } from "./Loader";
+import { importCSS } from "./css-module-loader";
 
 const componentsMap = new Map();
 
@@ -46,15 +47,23 @@ function RawFeature<Params extends object | undefined>({
   }, []);
 
   if (css) {
-    import(/* @vite-ignore */ css, { assert: { type: "css" } }).then(
-      (cssModule) => {
-        console.log("%cInject Styles", "color: blue;font-weight: bold");
-        document.adoptedStyleSheets = [
-          ...document.adoptedStyleSheets,
-          cssModule.default,
-        ];
-      }
-    );
+    //   import(/* @vite-ignore */ css, { assert: { type: "css" } }).then(
+    //     (cssModule) => {
+    //       console.log("%cInject Styles", "color: blue;font-weight: bold");
+    //       document.adoptedStyleSheets = [
+    //         ...document.adoptedStyleSheets,
+    //         cssModule.default,
+    //       ];
+    //     }
+    //   );
+    // Polyfill until cypress build supports import assertions
+    // Note: already fully supported in esbuild and vite
+    importCSS(css).then((styleSheet) => {
+      document.adoptedStyleSheets = [
+        ...document.adoptedStyleSheets,
+        styleSheet,
+      ];
+    });
   }
 
   const LazyFeature = useCachedFeature(url);

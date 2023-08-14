@@ -30,6 +30,7 @@ import {
 } from "@finos/vuu-utils";
 import {
   DataSourceAggregateMessage,
+  DataSourceCallbackMessage,
   DataSourceColumnsMessage,
   DataSourceDebounceRequest,
   DataSourceDisabledMessage,
@@ -132,8 +133,26 @@ type LinkedParent = {
   parentColName: string;
 };
 
+type LastUpdateStatus = {
+  count: number;
+  mode?: DataUpdateMode;
+  size: number;
+  ts: number;
+};
+
 const isLeafUpdate = ({ rowKey, updateType }: VuuRow) =>
   updateType === "U" && !rowKey.startsWith("$root");
+
+export const NO_DATA_UPDATE: Readonly<[undefined, undefined]> = [
+  undefined,
+  undefined,
+];
+const NO_UPDATE_STATUS: LastUpdateStatus = {
+  count: 0,
+  mode: undefined,
+  size: 0,
+  ts: 0,
+};
 
 export class Viewport {
   private aggregations: VuuAggregation[];
@@ -158,10 +177,13 @@ export class Viewport {
     acked?: boolean;
     requestId: string;
   })[] = [];
+  private postMessageToClient: (message: DataSourceCallbackMessage) => void;
   private rowCountChanged = false;
   private tableSchema: TableSchema | null = null;
   private batchMode = true;
   private useBatchMode = true;
+  private lastUpdateStatus: LastUpdateStatus = NO_UPDATE_STATUS;
+  private updateThrottleTimer: number | undefined = undefined;
 
   private rangeMonitor = new RangeMonitor("ViewPort");
 
@@ -174,22 +196,31 @@ export class Viewport {
   // TODO roll disabled/suspended into status
   public status: "" | "subscribing" | "resubscribing" | "subscribed" = "";
   public suspended = false;
+  public suspendTimer: number | null = null;
   public table: VuuTable;
   public title: string | undefined;
 
-  constructor({
-    aggregations,
-    bufferSize = 50,
-    columns,
-    filter,
-    groupBy = [],
-    table,
-    range,
-    sort,
-    title,
-    viewport,
-    visualLink,
-  }: ServerProxySubscribeMessage) {
+  constructor(
+    {
+      aggregations,
+      bufferSize = 50,
+      columns,
+      filter,
+      groupBy = [],
+      table,
+      range,
+      sort,
+      title,
+      viewport,
+      visualLink,
+    }: ServerProxySubscribeMessage,
+    /**
+     * Viewport is given access to postMessageToClient in the event that it needs
+     * to send 'out of band' messageg, e.g cached SIZE messages when a timer
+     * expires
+     */
+    postMessageToClient: (message: DataSourceCallbackMessage) => void
+  ) {
     this.aggregations = aggregations;
     this.bufferSize = bufferSize;
     this.clientRange = range;
@@ -206,7 +237,32 @@ export class Viewport {
       info?.(
         `constructor #${viewport} ${table.table} bufferSize=${bufferSize}`
       );
+    this.postMessageToClient = postMessageToClient;
   }
+
+  // Records SIZE only updates
+  private setLastSizeOnlyUpdateSize = (size: number) => {
+    this.lastUpdateStatus.size = size;
+  };
+  private setLastUpdate = (mode: DataUpdateMode) => {
+    const { ts: lastTS, mode: lastMode } = this.lastUpdateStatus;
+    let elapsedTime = 0;
+
+    if (lastMode === mode) {
+      const ts = Date.now();
+      this.lastUpdateStatus.count += 1;
+      this.lastUpdateStatus.ts = ts;
+      elapsedTime = lastTS === 0 ? 0 : ts - lastTS;
+    } else {
+      this.lastUpdateStatus.count = 1;
+      this.lastUpdateStatus.ts = 0;
+      elapsedTime = 0;
+    }
+
+    this.lastUpdateStatus.mode = mode;
+
+    return elapsedTime;
+  };
 
   get hasUpdatesToProcess() {
     if (this.suspended) {
@@ -604,6 +660,7 @@ export class Viewport {
   disable(requestId: string) {
     this.awaitOperation(requestId, { type: "disable" });
     info?.(`disable: ${this.serverViewportId}`);
+    this.suspended = false;
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
@@ -740,11 +797,17 @@ export class Viewport {
       this.removePendingRangeRequest(firstRow.rowIndex, lastRow.rowIndex);
     }
 
-    if (rows.length === 1 && firstRow.vpSize === 0 && this.disabled) {
-      debug?.(
-        `ignore a SIZE=0 message on disabled viewport (${rows.length} rows)`
-      );
-      return;
+    if (rows.length === 1) {
+      if (firstRow.vpSize === 0 && this.disabled) {
+        debug?.(
+          `ignore a SIZE=0 message on disabled viewport (${rows.length} rows)`
+        );
+        return;
+      } else if (firstRow.updateType === "SIZE") {
+        // record all size only updates, we may throttle them and always need
+        // to know the value of last update received.
+        this.setLastSizeOnlyUpdateSize(firstRow.vpSize);
+      }
     }
 
     for (const row of rows) {
@@ -780,13 +843,24 @@ export class Viewport {
 
   // This is called only after new data has been received from server - data
   // returned direcly from buffer does not use this.
-  getClientRows(): [undefined | DataSourceRow[], DataUpdateMode] {
+  getClientRows(): Readonly<
+    [DataSourceRow[] | undefined, DataUpdateMode | undefined]
+  > {
     let out: DataSourceRow[] | undefined = undefined;
     let mode: DataUpdateMode = "size-only";
+
+    if (!this.hasUpdates && !this.rowCountChanged) {
+      return NO_DATA_UPDATE;
+    }
 
     if (this.hasUpdates && this.dataWindow) {
       const { keys } = this;
       const toClient = this.isTree ? toClientRowTree : toClientRow;
+
+      if (this.updateThrottleTimer) {
+        self.clearTimeout(this.updateThrottleTimer);
+        this.updateThrottleTimer = undefined;
+      }
 
       if (this.pendingUpdates.length > 0) {
         out = [];
@@ -810,8 +884,55 @@ export class Viewport {
       }
       this.hasUpdates = false;
     }
-    return [out, mode];
+
+    if (this.throttleMessage(mode)) {
+      return NO_DATA_UPDATE;
+    } else {
+      return [out, mode];
+    }
   }
+
+  private sendThrottledSizeMessage = () => {
+    this.updateThrottleTimer = undefined;
+    this.lastUpdateStatus.count = 3;
+    this.postMessageToClient({
+      clientViewportId: this.clientViewportId,
+      mode: "size-only",
+      size: this.lastUpdateStatus.size,
+      type: "viewport-update",
+    });
+  };
+
+  // If we are receiving multiple SIZE updates but no data, table is loading rows
+  // outside of our viewport. We can safely throttle these requests. Doing so will
+  // alleviate pressure on UI DataTable.
+  private shouldThrottleMessage = (mode: DataUpdateMode) => {
+    const elapsedTime = this.setLastUpdate(mode);
+    return (
+      mode === "size-only" &&
+      elapsedTime > 0 &&
+      elapsedTime < 500 &&
+      this.lastUpdateStatus.count > 3
+    );
+  };
+
+  private throttleMessage = (mode: DataUpdateMode) => {
+    if (this.shouldThrottleMessage(mode)) {
+      if (this.updateThrottleTimer === undefined) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.updateThrottleTimer = setTimeout(
+          this.sendThrottledSizeMessage,
+          2000
+        );
+      }
+      return true;
+    } else if (this.updateThrottleTimer !== undefined) {
+      clearTimeout(this.updateThrottleTimer);
+      this.updateThrottleTimer = undefined;
+    }
+    return false;
+  };
 
   getNewRowCount = () => {
     if (this.rowCountChanged && this.dataWindow) {

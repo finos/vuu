@@ -1,6 +1,6 @@
 import { DataSource } from "@finos/vuu-data";
 import { GridConfig, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { RefObject, useMemo, useState } from "react";
+import { RefObject, useMemo } from "react";
 import { useDataSource } from "./useDataSource";
 import { useMeasuredContainer } from "./useMeasuredContainer";
 import { useScroll } from "./useScroll";
@@ -10,7 +10,6 @@ import { buildColumnMap } from "@finos/vuu-utils";
 export const useTable = ({
   config,
   dataSource,
-  headerHeight,
   rowHeight = 30,
   tableRef,
 }: {
@@ -21,26 +20,26 @@ export const useTable = ({
   rowHeight?: number;
   tableRef: RefObject<HTMLDivElement>;
 }) => {
-  const [rowCount] = useState<number>(0);
   const containerMeasurements = useMeasuredContainer();
   const columnMap = useMemo(
     () => buildColumnMap(config.columns.map((col) => col.name)),
     [config.columns]
   );
   const columns: KeyedColumnDescriptor[] = useMemo(
-    () => config.columns.map((col) => ({ ...col, key: columnMap[col.name] })),
+    () =>
+      config.columns.map((col) => ({
+        ...col,
+        key: columnMap[col.name],
+        label: col.name,
+        valueFormatter: undefined,
+        width: col.width ?? 100,
+      })),
     [columnMap, config.columns]
   );
 
-  const viewportMeasurements = useTableViewport({
-    columns: config.columns,
-    headerHeight,
-    rowCount,
-    rowHeight,
-    size: containerMeasurements.innerSize,
-  });
+  const viewportMeasurements = useTableViewport();
 
-  const { data, setRange } = useDataSource({
+  const { data } = useDataSource({
     dataSource,
   });
 

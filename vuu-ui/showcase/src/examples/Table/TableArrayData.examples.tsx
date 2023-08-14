@@ -14,6 +14,9 @@ import {
   useMemo,
   useState,
 } from "react";
+import { DragVisualizer } from "@finos/vuu-table/src/table/DragVisualizer";
+import { Checkbox, ToggleButton } from "@salt-ds/core";
+import { ChangeEvent, CSSProperties, useCallback, useState } from "react";
 import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
 import {
   ArrayDataSource,
@@ -32,13 +35,17 @@ let displaySequence = 1;
 
 export const DefaultTable = () => {
   const { typeaheadHook, ...config } = useTableConfig({
-    columns: 10,
+    columnCount: 10,
     count: 1_000,
   });
   const [zebraStripes, setZebraStripes] = useState(true);
-  const handleZebraChanged = useCallback((_evt, checked) => {
-    setZebraStripes(checked);
-  }, []);
+  const handleZebraChanged = useCallback(
+    (evt: ChangeEvent<HTMLInputElement>) => {
+      const { checked } = evt.target as HTMLInputElement;
+      setZebraStripes(checked);
+    },
+    []
+  );
   return (
     <div style={{ display: "flex", gap: 12 }}>
       <Table
@@ -49,19 +56,15 @@ export const DefaultTable = () => {
         width={700}
         zebraStripes={zebraStripes}
       />
-      <Toolbar
-        orientation="vertical"
-        style={
-          { height: "unset", "--saltFormField-margin": "6px" } as CSSProperties
-        }
+      <div
+        className="vuuToolbarProxy vuuToolbarProxy-vertical"
+        style={{ height: "unset" } as CSSProperties}
       >
-        <ToolbarField label="Zebra Stripes">
-          <Checkbox
-            checked={zebraStripes === true}
-            onChange={handleZebraChanged}
-          />
-        </ToolbarField>
-      </Toolbar>
+        <Checkbox
+          checked={zebraStripes === true}
+          onChange={handleZebraChanged}
+        />
+      </div>
     </div>
   );
 };
@@ -238,11 +241,15 @@ export const LeftPinnedColumns = () => {
 
   return (
     <div style={{ width: 900, height: 900 }}>
-      <Toolbar>
-        <ToggleButton toggled={isColumnBased} onToggle={handleToggleLayout}>
+      <div className="vuuToolbarProxy">
+        <ToggleButton
+          selected={isColumnBased}
+          onChange={handleToggleLayout}
+          value={0}
+        >
           {isColumnBased ? "Column based table" : "Row based table"}
         </ToggleButton>
-      </Toolbar>
+      </div>
       <DragVisualizer orientation="horizontal">
         <Table {...config} height={700} width={700} />
       </DragVisualizer>
@@ -263,11 +270,15 @@ export const RightPinnedColumns = () => {
 
   return (
     <div style={{ width: 900, height: 900 }}>
-      <Toolbar>
-        <ToggleButton toggled={isColumnBased} onToggle={handleToggleLayout}>
+      <div className="vuuToolbarProxy">
+        <ToggleButton
+          selected={isColumnBased}
+          onChange={handleToggleLayout}
+          value={0}
+        >
           {isColumnBased ? "Column based table" : "Row based table"}
         </ToggleButton>
-      </Toolbar>
+      </div>
       <DragVisualizer orientation="horizontal">
         <Table {...config} height={700} width={700} />
       </DragVisualizer>

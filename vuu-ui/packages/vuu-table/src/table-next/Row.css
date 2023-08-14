@@ -1,0 +1,103 @@
+.vuuTableNextRow {
+    background: #fff;
+    border-bottom: 1px solid var(--salt-separable-tertiary-borderColor);
+    box-sizing: border-box;
+    height: var(--row-height);
+    line-height: calc(var(--row-height) - 1px);
+    position: absolute;
+    top:0;
+    white-space: nowrap;
+    }
+    
+    .vuuTableNextRow-selected,
+    .vuuTableNextRow-selectedEnd {
+      /* background-color: rgb(133,133,137,.16); */
+      background-color: rgb(235,235,236);
+    }
+  
+    .vuuTableNextRow-selectedStart {
+        --vuu-selection-decorator-left-radius: 5px 0 0 0;
+        --vuu-selection-decorator-right-radius: 0 5px 0 0;
+        border-radius: 5px 5px 0 0;
+      }
+    
+      .vuuTableNextRow-selectedEnd {
+        --vuu-selection-decorator-left-radius: 0 0 0 5px;
+        --vuu-selection-decorator-right-radius: 0 0 5px 0;
+        border-radius: 0 0 5px 5px;
+      }
+    
+      .vuuTableNextRow-selectedStart.vuuTableNexRow-selectedEnd {
+        --vuu-selection-decorator-left-radius: 5px 0 0 5px;
+        --vuu-selection-decorator-right-radius: 0 5px 5px 0;
+        border-radius: 5px 5px 5px 5px;
+    
+      }
+    
+    .vuuTableNextRow-selectedStart:after {
+        content: '';
+        position: absolute;
+        top:0;
+        left: 4px;
+        height: 1px;
+        background-color: var(--vuu-color-purple-10);
+        width: calc(var(--content-width) - 8px);
+        z-index: 1;
+      }
+    
+    .vuuTableNextRow-selectedEnd {
+        border-bottom-color: var(--vuu-color-purple-10);
+      }
+    
+      .vuuTableNextRow-selectionDecorator {
+        background-color: var(--vuu-selection-decorator-bg, inherit);
+        display: inline-block;
+        position: relative;
+        height: var(--row-height);
+        width: 4px;
+        z-index: 2;
+      }
+    
+      .vuuTableNextRow-selectionDecorator.vuuStickyLeft {
+        left:0;
+        position: sticky;
+      }
+    
+      .vuuTableNextRow-selectionDecorator.vuuStickyRight {
+        right:0;
+        position: sticky;
+      }
+    
+      .vuuTableNextRow-selected {
+        --vuu-selection-decorator-bg: var(--vuu-color-purple-10);
+    
+      }
+      
+      .vuuTableNextRow-selectedStart {
+        --vuu-selection-decorator-bg: white;
+      }
+      
+      .vuuTableNextRow-selectedEnd {
+        --vuu-selection-decorator-bg: white;
+      }
+    
+      .vuuTableNextRow-selectedStart.vuuTableNextRow-selectedEnd {
+    
+      }
+    
+      .vuuTableNextRow-selectedStart .vuuTableNextRow-selectionDecorator:before,
+      .vuuTableNextRow-selectedEnd .vuuTableNextRow-selectionDecorator:before {
+        content: '';
+        inset: 0;
+        position: absolute;
+        background-color: var(--vuu-color-purple-10);
+      }
+    
+    
+      .vuuTableNextRow-selectionDecorator.vuuStickyLeft:before {
+        border-radius: var(--vuu-selection-decorator-left-radius, 0);
+      }
+    
+      .vuuTableNextRow-selectionDecorator.vuuStickyRight:before {
+        border-radius: var(--vuu-selection-decorator-right-radius, 0);
+      }

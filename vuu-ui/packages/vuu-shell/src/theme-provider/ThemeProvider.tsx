@@ -54,7 +54,6 @@ const createThemedChildren = (
   themeMode: ThemeMode,
   density: Density
 ) => {
-  console.log("create themed children");
   if (isValidElement<HTMLAttributes<HTMLElement>>(children)) {
     return cloneElement(children, {
       className: cx(
@@ -96,7 +95,6 @@ export const ThemeProvider = ({
     themeMode: inheritedThemeMode,
     theme: inheritedTheme,
   } = useContext(ThemeContext);
-
   const density = densityProp ?? inheritedDensity ?? DEFAULT_DENSITY;
   const themeMode = themeModeProp ?? inheritedThemeMode ?? DEFAULT_THEME_MODE;
   const theme = themeProp ?? inheritedTheme ?? DEFAULT_THEME;

@@ -5,7 +5,7 @@
   --splitter-border-color: white;
 
   align-items: center;
-  background-color: var(--grey60);
+  background-color: var(--salt-palette-neutral-secondary-separator);
   border-color: var(--splitter-border-color);
   border-style: var(--splitter-border-style);
   box-sizing: border-box;
@@ -17,10 +17,10 @@
 }
 
 .Splitter:hover {
-  background-color: var(--grey40);
+  background-color: var(--salt-palette-neutral-primary-separator);
 }
 .active.Splitter {
-  background-color: var(--blue500);
+  background-color: var(--salt-palette-interact-outline);
 }
 
 .Splitter.column {

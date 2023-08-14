@@ -99,7 +99,7 @@ export const useTableConfig = ({
     const dataArray = lazyData
       ? new ArrayProxy<VuuRowDataItemType[]>(
           count,
-          rowGenerator(colCount as number)
+          rowGenerator(columns?.map((col) => col.name))
         )
       : populateArray(
           count,

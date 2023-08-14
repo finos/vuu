@@ -19,6 +19,7 @@ const packages = [
   "vuu-protocol-types",
   "vuu-shell",
   "vuu-theme",
+  "vuu-ui-controls",
   "vuu-utils",
 ];
 

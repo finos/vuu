@@ -1,1 +1,2 @@
-export * from "./column-settings-panel";
+export * from "./TableSettingsPanel";
+export * from "./useTableSettings";

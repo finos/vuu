@@ -1,4 +1,4 @@
-import { DataSource, DataSourceFilter } from "@finos/vuu-data";
+import { DataSource } from "@finos/vuu-data";
 import { DataRow } from "@finos/vuu-utils";
 import React, { ReactNode, useContext, useMemo } from "react";
 import { VuuAggregation, VuuGroupBy, VuuSort } from "../../vuu-protocol-types";
@@ -14,6 +14,7 @@ import {
   GridAction,
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
+import { DataSourceFilter } from "packages/vuu-data-types";
 
 export interface GridActionGroup {
   type: "group";

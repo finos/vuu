@@ -25,7 +25,11 @@ const getFlashStyle = (colType?: ColumnType) => {
     return FlashStyle.BackgroundOnly;
   } else if (colType) {
     const { renderer } = colType;
-    return (renderer && renderer.flashStyle) || FlashStyle.BackgroundOnly;
+    if (renderer && "flashStyle" in renderer) {
+      return renderer.flashStyle;
+    } else {
+      return FlashStyle.BackgroundOnly;
+    }
   }
 };
 

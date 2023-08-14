@@ -222,6 +222,7 @@ export class ArrayDataSource
 
     this.clientCallback({
       clientViewportId: this.viewport,
+      mode: "size-only",
       type: "viewport-update",
       size: this.#data.length,
     });

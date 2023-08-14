@@ -1,10 +1,13 @@
-import { Tab, Tabstrip, Toolbar, ToolbarField } from "@heswell/salt-lab";
-import { useIdMemo as useId } from "@salt-ds/core";
+import { useId } from "@finos/vuu-layout";
+import {
+  Tab,
+  Tabstrip as Tabstrip,
+  TabstripProps,
+} from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import React, {
   ForwardedRef,
   forwardRef,
-  MouseEvent,
   ReactElement,
   ReactNode,
   useCallback,
@@ -34,54 +37,48 @@ const getChildElements = <T extends ReactElement = ReactElement>(
   return elements;
 };
 
+const DefaultTabstripProps: Partial<TabstripProps> = {
+  allowAddTab: false,
+  allowCloseTab: false,
+  allowRenameTab: false,
+};
+
 export const Stack = forwardRef(function Stack(
   {
     active = 0,
     children,
     className: classNameProp,
-    enableAddTab,
-    enableCloseTabs,
     getTabIcon = getDefaultTabIcon,
     getTabLabel = getDefaultTabLabel,
     id: idProp,
     keyBoardActivation = "manual",
-    onMouseDown,
-    onTabAdd,
+    // onMouseDown,
+    onAddTab,
+    onMoveTab,
     onTabClose,
     onTabEdit,
     onTabSelectionChanged,
-    showTabs,
+    showTabs = "top",
     style,
-    TabstripProps,
+    TabstripProps = DefaultTabstripProps,
   }: StackProps,
   ref: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
 
-  const handleTabSelection = (nextIdx: number) => {
-    onTabSelectionChanged?.(nextIdx);
-  };
+  const { allowCloseTab, allowRenameTab } = TabstripProps;
 
-  const handleTabClose = (tabIndex: number) => {
-    onTabClose?.(tabIndex);
-  };
-
-  const handleAddTab = () => {
-    onTabAdd?.(React.Children.count(children));
-  };
-
-  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    const tabElement = target.closest('[role^="tab"]') as HTMLDivElement;
-    const role = tabElement?.getAttribute("role");
-    if (role === "tab") {
-      const tabIndex = parseInt(tabElement.dataset.idx ?? "-1");
-      if (tabIndex === -1) {
-        throw Error("Stack: mousedown on tab with unknown index");
-      }
-      onMouseDown?.(e, tabIndex);
-    }
-  };
+  // TODO integrate with Tabstrip drag drop
+  // const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+  //   const target = e.target as HTMLElement;
+  //   const indexedElement = target.closest("[data-index]") as HTMLDivElement;
+  //   const isTab = indexedElement?.querySelector(".vuuTab");
+  //   if (isTab) {
+  //     const index = getElementIndex(indexedElement);
+  //     console.log(`index = ${index}`);
+  //     onMouseDown?.(e, index);
+  //   }
+  // };
 
   const handleExitEditMode = useCallback(
     (
@@ -108,62 +105,54 @@ export const Stack = forwardRef(function Stack(
   const renderTabs = () =>
     getChildElements(children).map((child, idx) => {
       const rootId = `${id}-${idx}`;
-      const { closeable, id: childId } = child.props;
+      const { closeable = allowCloseTab, id: childId } = child.props;
       return (
         <Tab
           ariaControls={`${rootId}-tab`}
           data-icon={getTabIcon(child, idx)}
-          draggable
           key={childId ?? idx}
           id={rootId}
+          index={idx}
           label={getTabLabel(child, idx)}
-          closeable={closeable && TabstripProps?.enableCloseTab !== false}
-          editable={TabstripProps?.enableRenameTab !== false}
+          closeable={closeable}
+          editable={allowRenameTab}
         />
       );
     });
 
   const child = activeChild();
+  const isHorizontal = showTabs === "left" || showTabs === "right";
+  const tabstripOrientation = isHorizontal ? "vertical" : "horizontal";
 
   return (
     <div
       className={cx(classBase, classNameProp, {
-        [`${classBase}-horizontal`]: TabstripProps?.orientation === "vertical",
+        [`${classBase}-horizontal`]: isHorizontal,
       })}
       style={style}
       id={id}
       ref={ref}
     >
       {showTabs ? (
-        <Toolbar
-          className="vuuTabHeader vuuHeader"
-          orientation={TabstripProps?.orientation}
+        <Tabstrip
+          {...TabstripProps}
+          activeTabIndex={
+            TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
+          }
+          allowDragDrop={TabstripProps.allowDragDrop !== false}
+          animateSelectionThumb
+          className="vuuTabHeader"
+          keyBoardActivation={keyBoardActivation}
+          onActiveChange={onTabSelectionChanged}
+          onAddTab={onAddTab}
+          onCloseTab={onTabClose}
+          onExitEditMode={handleExitEditMode}
+          onMoveTab={onMoveTab}
+          orientation={tabstripOrientation}
+          // onMouseDown={handleMouseDown}
         >
-          <ToolbarField
-            disableFocusRing
-            data-collapsible="dynamic"
-            data-priority="3"
-            style={{ alignSelf: "flex-end" }}
-          >
-            <Tabstrip
-              {...TabstripProps}
-              activeTabIndex={
-                TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
-              }
-              enableRenameTab={TabstripProps?.enableRenameTab !== false}
-              enableAddTab={enableAddTab}
-              enableCloseTab={enableCloseTabs}
-              keyBoardActivation={keyBoardActivation}
-              onActiveChange={handleTabSelection}
-              onAddTab={handleAddTab}
-              onCloseTab={handleTabClose}
-              onExitEditMode={handleExitEditMode}
-              onMouseDown={handleMouseDown}
-            >
-              {renderTabs()}
-            </Tabstrip>
-          </ToolbarField>
-        </Toolbar>
+          {renderTabs()}
+        </Tabstrip>
       ) : null}
       {child}
     </div>
