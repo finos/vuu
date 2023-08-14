@@ -49,7 +49,7 @@ function Home() {
             <div className="vuu-button-bar">
               <Link
                 className="vuu-button vuu-button-cta"
-                to="https://finos.org/"
+                to="/docs/getting_started"
               >
                 GET STARTED
               </Link>

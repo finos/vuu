@@ -253,8 +253,8 @@ body {
 
   /* content driven, remove later */
   /* height: 476px; */
-  padding-top: 300px;
-  height: 400px;
+  padding-top: 200px;
+  height: 300px;
 
 }
 
@@ -418,12 +418,19 @@ body {
 
 
   :root.docs-doc-page main {
-    padding: 24px;
+    padding: 16px;
+  }
+
+  .docs-doc-page #__docusaurus {
+    padding-top: 24px;
   }
 
   .navbar .navbar__logo > img {
     display: none;
   }
+
+ 
+  
 
   .vuuRevolvingCaption.mobileRevolvingCaption {
     margin-left: 0 ;
@@ -498,7 +505,12 @@ body {
  }
  
  .pagination-nav__link {
-  margin-top: 16px;
+  margin-top: 5px;
+  border:none
+ }
+
+ .pagination-nav__link + .pagination-nav__link:before {
+  display: none;
  }
 
  div[class*=tocCollapsible_node_modules] {
