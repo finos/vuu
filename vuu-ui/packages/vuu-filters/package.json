@@ -9,10 +9,18 @@
     "build": "node ../../scripts/run-build.mjs",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
+  "devDependencies": {
+    "@finos/vuu-data-types": "0.0.26",
+    "@finos/vuu-datagrid-types": "0.0.26",
+    "@finos/vuu-filter-types": "0.0.26",
+    "@types/uuid": "^9.0.2"
+  },
   "dependencies": {
     "@finos/vuu-codemirror": "0.0.26",
+    "@finos/vuu-data": "0.0.26",
     "@finos/vuu-data-react": "0.0.26",
-    "@finos/vuu-data-types": "0.0.26",
+    "@finos/vuu-popups": "0.0.26",
+    "@finos/vuu-ui-controls": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "@salt-ds/core": "1.8.0",
     "@salt-ds/lab": "1.0.0-alpha.15",
@@ -21,8 +29,5 @@
   "peerDependencies": {
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
-  },
-  "devDependencies": {
-    "@types/uuid": "^9.0.2"
   }
 }

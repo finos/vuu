@@ -1,7 +1,7 @@
 import { NamedFilter } from "@finos/vuu-filter-types";
 import { Button } from "@salt-ds/core";
 import cx from "classnames";
-import { TableSchema } from "packages/vuu-data/src";
+import { TableSchema } from "@finos/vuu-data";
 import { HTMLAttributes, ReactElement, useCallback, useState } from "react";
 import { FilterPill } from "../filter-pill";
 

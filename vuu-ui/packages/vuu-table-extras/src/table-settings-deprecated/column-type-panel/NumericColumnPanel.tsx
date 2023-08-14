@@ -1,12 +1,7 @@
 import { ColumnType } from "@finos/vuu-datagrid-types";
 import { StepperInput, Switch } from "@salt-ds/lab";
-import {
-  FormField,
-  FormFieldHelperText,
-  FormFieldLabel,
-  Text,
-} from "@salt-ds/core";
-import { useCallback } from "react";
+import { FormField, FormFieldLabel, Text } from "@salt-ds/core";
+import { ChangeEventHandler, useCallback } from "react";
 import { ColumnTypePanelProps } from "./ColumnTypePanel";
 
 import "./ColumnTypePanel.css";
@@ -69,15 +64,19 @@ export const NumericColumnPanel = ({
 
   const handleChangeDecimals = useCallback(
     (value: string | number) =>
-      dispatchUpdate({ decimals: parseInt(value.toString(), 10) }),
+      dispatchUpdate({
+        decimals: typeof value === "number" ? value : parseInt(value),
+      }),
     [dispatchUpdate]
   );
-  const handleChangeAlignOnDecimals = useCallback(
-    (evt, value) => dispatchUpdate({ alignOnDecimals: value }),
+  const handleChangeAlignOnDecimals = useCallback<
+    ChangeEventHandler<HTMLInputElement>
+  >(
+    (evt) => dispatchUpdate({ alignOnDecimals: Boolean(evt.target.value) }),
     [dispatchUpdate]
   );
-  const handleChangeZeroPad = useCallback(
-    (evt, value) => dispatchUpdate({ zeroPad: value }),
+  const handleChangeZeroPad = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (evt) => dispatchUpdate({ zeroPad: Boolean(evt.target.value) }),
     [dispatchUpdate]
   );
 
@@ -92,13 +91,11 @@ export const NumericColumnPanel = ({
           <Switch
             checked={alignOnDecimals}
             label="Align on decimals"
-            LabelProps={{ className: "vuuColumnPanelSwitch" }}
             onChange={handleChangeAlignOnDecimals}
           />
           <Switch
             checked={zeroPad}
             label="Zero pad"
-            LabelProps={{ className: "vuuColumnPanelSwitch" }}
             onChange={handleChangeZeroPad}
           />
         </>
