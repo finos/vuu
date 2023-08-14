@@ -513,6 +513,13 @@ body {
   display: none;
  }
 
+.table-of-contents,
+.tocCollapsibleButton_TO0P:after,
+.tocCollapsibleButton_TO0P {
+  display: none;
+}
+
+
  div[class*=tocCollapsible_node_modules] {
   display: none;
  }
