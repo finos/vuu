@@ -265,7 +265,6 @@ export class ArrayDataSource
   }
 
   openTreeNode(key: string) {
-    console.log("openTreeNode before", this.processedData);
     this.openTreeNodes.push(key);
     this.processedData = expandGroup(
       this.openTreeNodes,
@@ -275,7 +274,6 @@ export class ArrayDataSource
       this.groupMap as GroupMap,
       this.processedData as readonly DataSourceRow[]
     );
-    console.log("openTreeNode after", this.processedData);
     this.setRange(resetRange(this.#range), true);
   }
 
@@ -293,56 +291,6 @@ export class ArrayDataSource
 
   get config() {
     return undefined;
-  }
-
-  set config(config: DataSourceConfig | undefined) {
-    console.log("! entering the setter", { old: this.#config, new: config });
-    if (configChanged(this.#config, config)) {
-      console.log("! config change is detected", this.#config);
-      if (config) {
-        console.log("! config is truthy", this.#config);
-        const newConfig: DataSourceConfig =
-          config?.filter?.filter && config?.filter.filterStruct === undefined
-            ? {
-                ...config,
-                filter: {
-                  filter: config.filter.filter,
-                  filterStruct: parseFilter(config.filter.filter),
-                },
-              }
-            : config;
-
-        this.#config = withConfigDefaults(newConfig);
-
-        console.log("&current config", this.#config);
-        console.log("& config.filter", config.filter?.filter);
-        console.log("& config.sort", !!config.sort?.sortDefs);
-        if (Boolean(config.filter?.filter)) {
-          console.log("% config has filter");
-          this.filter = config.filter;
-        }
-        console.log("$$ config sort", config.sort?.sortDefs?.length);
-        if (config.sort?.sortDefs?.length) {
-          console.log("% config has sort!");
-          const targetData = this.processedData ?? this.#data;
-          console.table(targetData);
-          this.processedData = sortRows(
-            targetData,
-            this.sort,
-            this.#columnMap
-          ).map((row, i) => {
-            const dolly = row.slice() as DataSourceRow;
-            dolly[0] = i;
-            dolly[1] = i;
-            return dolly;
-          });
-          this.setRange(resetRange(this.#range), true);
-          this.emit("config", this.#config);
-        }
-
-        this.emit("config", this.#config);
-      }
-    }
   }
 
   get selectedRowsCount() {
@@ -403,7 +351,6 @@ export class ArrayDataSource
 
   set columns(columns: string[]) {
     this.#columns = columns;
-    console.log(`ArrayDataSource setColumns ${columns.join(",")}`);
   }
 
   get aggregations() {
@@ -411,8 +358,6 @@ export class ArrayDataSource
   }
 
   set aggregations(aggregations: VuuAggregation[]) {
-    // this.#aggregations = aggregations;
-    console.log("!!!! aggregations setter", aggregations);
     this.#config = {
       ...this.#config,
       aggregations,
@@ -420,7 +365,6 @@ export class ArrayDataSource
 
     const targetData = this.processedData ?? this.#data;
     const leafData = this.#data;
-    console.log("!!!! targetData before", targetData);
 
     aggregateData(
       aggregations,
@@ -431,17 +375,6 @@ export class ArrayDataSource
       this.groupMap as GroupMap
     );
     this.setRange(resetRange(this.#range), true);
-    // this.processedData = sortRows(
-    //   targetData,
-    //   this.sort,
-    //   this.#columnMap
-    // ).map((row, i) => {
-    //   const dolly = row.slice() as DataSourceRow;
-    //   dolly[0] = i;
-    //   dolly[1] = i;
-    //   return dolly;
-    // });
-    // this.setRange(resetRange(this.#range), true);
 
     this.emit("config", this.#config);
   }
@@ -452,10 +385,21 @@ export class ArrayDataSource
 
   set sort(sort: VuuSort) {
     debug?.(`sort ${JSON.stringify(sort)}`);
-    this.config = {
+    this.#config = {
       ...this.#config,
       sort,
     };
+    const targetData = this.processedData ?? this.#data;
+    this.processedData = sortRows(targetData, this.sort, this.#columnMap).map(
+      (row, i) => {
+        const dolly = row.slice() as DataSourceRow;
+        dolly[0] = i;
+        dolly[1] = i;
+        return dolly;
+      }
+    );
+    this.setRange(resetRange(this.#range), true);
+    this.emit("config", this.#config);
   }
 
   get filter() {
@@ -465,7 +409,6 @@ export class ArrayDataSource
   set filter(filter: DataSourceFilter) {
     debug?.(`filter ${JSON.stringify(filter)}`);
     // TODO should we wait until server ACK before we assign #sort ?
-    console.log("## in set filter");
     this.#config = {
       ...this.#config,
       filter,
@@ -473,7 +416,6 @@ export class ArrayDataSource
     const { filterStruct } = filter;
 
     if (filterStruct) {
-      console.log("%% in filterStruct", filterStruct);
       const fn = filterPredicate(this.#columnMap, filterStruct);
       // TODO this is expensive,
       const targetData = this.processedData ?? this.#data;
@@ -501,7 +443,6 @@ export class ArrayDataSource
     };
 
     if (groupBy.length) {
-      console.time("group");
       const [groupedData, groupMap] = groupRows(
         this.processedData ?? this.#data,
         groupBy,
@@ -509,7 +450,6 @@ export class ArrayDataSource
       );
       this.groupMap = groupMap;
       this.processedData = groupedData;
-      console.timeEnd("group");
     } else {
       this.groupedData = undefined;
       this.processedData = undefined;
