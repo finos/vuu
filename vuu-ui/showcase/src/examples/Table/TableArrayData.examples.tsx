@@ -22,7 +22,11 @@ import {
 } from "@finos/vuu-data";
 import { faker } from "@faker-js/faker";
 import { parseFilter } from "@finos/vuu-filter-parser";
-import { VuuAggType, VuuAggregation, VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import {
+  VuuAggType,
+  VuuAggregation,
+  VuuRowDataItemType,
+} from "@finos/vuu-protocol-types";
 
 let displaySequence = 1;
 
@@ -334,7 +338,7 @@ function createArray(
     let FakerDataGenerator = [
       faker.company.name(),
       faker.finance.currencyCode(),
-      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
+      Number(faker.finance.amount({ min: 5, max: 10, dec: 2 })),
       faker.finance.amount({ min: 100, max: 2000, dec: 0 }),
       faker.finance.transactionType(),
       faker.finance.transactionDescription(),
@@ -357,9 +361,9 @@ function createArray(
       i + 1,
       FakerDataGenerator[0],
       FakerDataGenerator[1],
-      FakerDataGenerator[2],
-      FakerDataGenerator[3],
-      String(
+      Number(FakerDataGenerator[2]),
+      FakerDataGenerator[3] as number,
+      Number(
         Math.floor(
           Number(FakerDataGenerator[2]) * Number(FakerDataGenerator[3])
         )
@@ -378,7 +382,7 @@ function createArray(
       FakerDataGenerator[15],
       FakerDataGenerator[16],
       FakerDataGenerator[17],
-      FakerDataGenerator[18],
+      Number(FakerDataGenerator[18]),
     ]);
   }
 
@@ -389,9 +393,9 @@ const columns = [
   { name: "row number", width: 150 },
   { name: "name", width: 100 },
   { name: "currency", width: 100 },
-  { name: "price", width: 100 },
-  { name: "lot size", width: 100 },
-  { name: "order size", width: 100 },
+  { name: "price", width: 100, serverDataType: "double" },
+  { name: "lot size", width: 100, serverDataType: "double"  },
+  { name: "order size", width: 100, serverDataType: "double"  },
   { name: "order type", width: 100 },
   { name: "order description", width: 100 },
   { name: "order date", width: 100 },
@@ -399,25 +403,25 @@ const columns = [
   { name: "account number", width: 100 },
   { name: "department", width: 100 },
   { name: "industry", width: 100 },
-  { name: "PE ratio", width: 100 },
-  { name: "EPS", width: 100 },
-  { name: "market cap", width: 100 },
-  { name: "volume", width: 100 },
+  { name: "PE ratio", width: 100, serverDataType: "double"  },
+  { name: "EPS", width: 100, serverDataType: "double"  },
+  { name: "market cap", width: 100, serverDataType: "double"  },
+  { name: "volume", width: 100, serverDataType: "double"  },
   { name: "beta", width: 100 },
-  { name: "dividend", width: 100 },
-  { name: "yield", width: 100 },
-  { name: "return on equity", width: 100 },
+  { name: "dividend", width: 100, serverDataType: "double" },
+  { name: "yield", width: 100, serverDataType: "double"  },
+  { name: "return on equity", width: 100, serverDataType: "double"  },
 ];
 
-const numofrows = 10000;
+const numofrows = 100000;
 const numofcolumns = columns.length;
+
 const newArray = createArray(numofrows, numofcolumns);
 
 const config = { columns };
 const data = newArray;
 
 export const SmaTable = () => {
-  console.log({ config });
 
   const [inputValue, setInputValue] = useState("");
   const [dataSourceConfig, setDataSourceConfig] = useState<WithFullConfig>({
@@ -430,17 +434,14 @@ export const SmaTable = () => {
 
   const dataSource: ArrayDataSource = useMemo(() => {
     try {
-      console.log("! Init dataSource");
       const dataSource = new ArrayDataSource({
         columnDescriptors: columns,
         data,
       });
-      dataSource.addListener("config", (config, ...rest) => {
-      });
+      dataSource.addListener("config", (config, ...rest) => {});
       return dataSource;
       //return new ArrayDataSource({ columnDescriptors: columns, data });
     } catch (error) {
-      console.log("## error", error);
       return new ArrayDataSource({ columnDescriptors: columns, data });
     }
   }, []);
@@ -452,12 +453,8 @@ export const SmaTable = () => {
   const handleOnClickFilter = useCallback(() => {
     const filter = inputValue; //'industry = "Bike"'
     const filterStruct = parseFilter(filter);
-    console.log("! handleOnClick", { filter, filterStruct });
+
     dataSource.filter = { filter, filterStruct };
-    // setDataSourceConfig((oldConfig) => ({
-    //   ...oldConfig,
-    //   filter: { filter, filterStruct },
-    // }));
   }, [inputValue, dataSource]);
 
   return (
