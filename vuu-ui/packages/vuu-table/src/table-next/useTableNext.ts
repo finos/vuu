@@ -7,9 +7,14 @@ import {
   GridConfig,
   KeyedColumnDescriptor,
   SelectionChangeHandler,
+  TableConfig,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { SetPropsAction, useLayoutProviderDispatch } from "@finos/vuu-layout";
+import {
+  SetPropsAction,
+  useLayoutEffectSkipFirst,
+  useLayoutProviderDispatch,
+} from "@finos/vuu-layout";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
@@ -19,24 +24,24 @@ import {
   updateColumn,
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { MouseEvent, useCallback, useMemo, useState } from "react";
 import {
-  buildContextMenuDescriptors,
   MeasuredProps,
   useMeasuredContainer,
   useSelection,
-  useTableContextMenu,
   useTableViewport,
 } from "../table";
+import { buildContextMenuDescriptors, useTableContextMenu } from "../table";
+import { TableColumnResizeHandler } from "./column-resizing";
+import { updateTableConfig } from "./table-config";
+import { useDataSource } from "./useDataSource";
+import { useInitialValue } from "./useInitialValue";
 import {
   isShowColumnSettings,
   isShowTableSettings,
   PersistentColumnAction,
-} from "../table/useTableModel";
-import { TableColumnResizeHandler } from "./column-resizing";
-import { useDataSource } from "./useDataSource";
-import { useInitialValue } from "./useInitialValue";
-import { useTableModel } from "./useTableModel";
+  useTableModel,
+} from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useVirtualViewport } from "./useVirtualViewport";
 
@@ -44,7 +49,7 @@ export interface TableHookProps extends MeasuredProps {
   config: Omit<GridConfig, "headings">;
   dataSource: DataSource;
   headerHeight: number;
-  onConfigChange?: (config: Omit<GridConfig, "headings">) => void;
+  onConfigChange?: (config: TableConfig) => void;
   onFeatureEnabled?: (message: VuuFeatureMessage) => void;
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   renderBufferSize?: number;
@@ -67,7 +72,6 @@ export const useTable = ({
 }: TableHookProps) => {
   const [rowCount] = useState<number>(dataSource.size);
   const dispatchLayoutAction = useLayoutProviderDispatch();
-  console.log({ dispatchLayoutAction: dispatchLayoutAction.toString() });
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
@@ -86,6 +90,14 @@ export const useTable = ({
     headings,
   } = useTableModel(config, dataSource.config);
 
+  useLayoutEffectSkipFirst(() => {
+    dispatchColumnAction({
+      type: "init",
+      dataSourceConfig: dataSource.config,
+      tableConfig: config,
+    });
+  }, [config, dataSource.config, dispatchColumnAction]);
+
   const [stateColumns, setStateColumns] = useState<KeyedColumnDescriptor[]>();
   const [columns, setColumnSize] = useMemo(() => {
     const setSize = (columnName: string, width: number) => {
@@ -99,17 +111,6 @@ export const useTable = ({
     () => buildColumnMap(config.columns.map((col) => col.name)),
     [config.columns]
   );
-
-  useEffect(() => {
-    dataSource.on("config", (config, confirmed) => {
-      // expectConfigChangeRef.current = true;
-      dispatchColumnAction({
-        type: "tableConfig",
-        ...config,
-        confirmed,
-      });
-    });
-  }, [dataSource, dispatchColumnAction]);
 
   const {
     getRowAtPosition,
@@ -126,10 +127,6 @@ export const useTable = ({
     // size: containerMeasurements.innerSize ?? containerMeasurements.outerSize,
     size: containerMeasurements.innerSize,
   });
-
-  console.log(
-    `useTable ${viewportMeasurements.maxScrollContainerScrollHorizontal}, ${viewportMeasurements.maxScrollContainerScrollVertical}`
-  );
 
   const initialRange = useInitialValue<VuuRange>({
     from: 0,
@@ -175,9 +172,12 @@ export const useTable = ({
             content: {
               type: "TableSettings",
               props: {
-                tableConfig: {
-                  defaultColumnWidth: 100,
-                },
+                // TODO get this from dataSource
+                availableColumns: config.columns.map(
+                  ({ name, serverDataType }) => ({ name, serverDataType })
+                ),
+                onConfigChange,
+                tableConfig: config,
               },
             },
             title: "DataGrid Settings",
@@ -188,7 +188,7 @@ export const useTable = ({
         dispatchColumnAction(action);
       }
     },
-    [dispatchColumnAction, dispatchLayoutAction]
+    [config, dispatchColumnAction, dispatchLayoutAction, onConfigChange]
   );
 
   const handleContextMenuAction = useTableContextMenu({
@@ -303,11 +303,17 @@ export const useTable = ({
           if (isValidNumber(width)) {
             setColumnSize(columnName, width);
           }
-        } else {
-          if (phase === "end") {
-            // TODO
-            // onConfigChange?.("col-size", column.name, width);
+        } else if (phase === "end") {
+          if (isValidNumber(width)) {
+            onConfigChange?.(
+              updateTableConfig(config, {
+                type: "col-size",
+                column,
+                width,
+              })
+            );
           }
+        } else {
           setStateColumns(undefined);
           dispatchColumnAction({
             type: "resizeColumn",
@@ -322,7 +328,7 @@ export const useTable = ({
         );
       }
     },
-    [columns, dispatchColumnAction, setColumnSize]
+    [columns, config, dispatchColumnAction, onConfigChange, setColumnSize]
   );
 
   return {

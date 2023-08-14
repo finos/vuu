@@ -10,10 +10,17 @@
     width: 12px;
 }
 
-
 .saltCheckboxIcon-checked {
     background-color: var(--vuuCheckboxIcon-background-checked, var(--salt-selectable-background-selected));
 }
+
+
+.saltCheckboxIcon-checked.saltCheckboxIcon-disabled, 
+.saltCheckbox:hover .saltCheckboxIcon-checked.saltCheckboxIcon-disabled {
+    background-color: var(--salt-selectable-background-disabled);
+    border-color: transparent;;
+}
+
 
 .saltCheckboxIcon-checked:after {
     content: "";

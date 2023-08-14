@@ -34,7 +34,6 @@ export function registerComponent(
   component: FunctionComponent<any>,
   type: layoutComponentType = "component"
 ) {
-  console.log(`register ${componentName}`);
   ComponentRegistry[componentName] = component;
 
   if (type === "container") {

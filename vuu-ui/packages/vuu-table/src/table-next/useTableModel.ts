@@ -58,7 +58,8 @@ const getDataType = (
   }
 };
 
-export interface GridModel extends Omit<GridConfig, "columns"> {
+// TODO should headings live here and this extend TableConfig ?
+export interface TableModel extends Omit<GridConfig, "columns"> {
   columns: KeyedColumnDescriptor[];
 }
 
@@ -129,10 +130,31 @@ export interface ColumnActionTableConfig extends DataSourceConfig {
   type: "tableConfig";
 }
 
+export interface ColumnActionColumnSettings extends DataSourceConfig {
+  type: "columnSettings";
+  column: KeyedColumnDescriptor;
+}
+
+export interface ColumnActionTableSettings extends DataSourceConfig {
+  type: "tableSettings";
+}
+
+export const isShowColumnSettings = (
+  action: PersistentColumnAction
+): action is ColumnActionColumnSettings => action.type === "columnSettings";
+
+export const isShowTableSettings = (
+  action: PersistentColumnAction
+): action is ColumnActionTableSettings => action.type === "tableSettings";
+
 /**
  * PersistentColumnActions are those actions that require us to persist user changes across sessions
  */
-export type PersistentColumnAction = ColumnActionPin | ColumnActionHide;
+export type PersistentColumnAction =
+  | ColumnActionPin
+  | ColumnActionHide
+  | ColumnActionColumnSettings
+  | ColumnActionTableSettings;
 
 export type GridModelAction =
   | ColumnActionHide
@@ -146,7 +168,7 @@ export type GridModelAction =
   | ColumnActionUpdateProp
   | ColumnActionTableConfig;
 
-export type GridModelReducer = Reducer<GridModel, GridModelAction>;
+export type GridModelReducer = Reducer<TableModel, GridModelAction>;
 
 export type ColumnActionDispatch = (action: GridModelAction) => void;
 
@@ -198,7 +220,7 @@ type InitialConfig = {
   tableConfig: TableConfig;
 };
 
-function init({ dataSourceConfig, tableConfig }: InitialConfig): GridModel {
+function init({ dataSourceConfig, tableConfig }: InitialConfig): TableModel {
   const columns = tableConfig.columns.map(
     toKeyedColumWithDefaults(tableConfig)
   );
@@ -271,7 +293,7 @@ const toKeyedColumWithDefaults =
   };
 
 function moveColumn(
-  state: GridModel,
+  state: TableModel,
   { column, moveBy, moveTo }: ColumnActionMove
 ) {
   const { columns } = state;
@@ -294,9 +316,9 @@ function moveColumn(
   return state;
 }
 
-function hideColumns(state: GridModel, { columns }: ColumnActionHide) {
+function hideColumns(state: TableModel, { columns }: ColumnActionHide) {
   if (columns.some((col) => col.hidden !== true)) {
-    return columns.reduce<GridModel>((s, c) => {
+    return columns.reduce<TableModel>((s, c) => {
       if (c.hidden !== true) {
         return updateColumnProp(s, {
           type: "updateColumnProp",
@@ -311,9 +333,9 @@ function hideColumns(state: GridModel, { columns }: ColumnActionHide) {
     return state;
   }
 }
-function showColumns(state: GridModel, { columns }: ColumnActionShow) {
+function showColumns(state: TableModel, { columns }: ColumnActionShow) {
   if (columns.some((col) => col.hidden)) {
-    return columns.reduce<GridModel>((s, c) => {
+    return columns.reduce<TableModel>((s, c) => {
       if (c.hidden) {
         return updateColumnProp(s, {
           type: "updateColumnProp",
@@ -330,7 +352,7 @@ function showColumns(state: GridModel, { columns }: ColumnActionShow) {
 }
 
 function resizeColumn(
-  state: GridModel,
+  state: TableModel,
   { column, phase, width }: ColumnActionResize
 ) {
   const type = "updateColumnProp";
@@ -349,7 +371,7 @@ function resizeColumn(
 }
 
 function setTableSchema(
-  state: GridModel,
+  state: TableModel,
   { tableSchema }: ColumnActionSetTableSchema
 ) {
   const { columns } = state;
@@ -372,7 +394,7 @@ function setTableSchema(
   }
 }
 
-function pinColumn(state: GridModel, action: ColumnActionPin) {
+function pinColumn(state: TableModel, action: ColumnActionPin) {
   let { columns } = state;
   const { column, pin } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
@@ -387,7 +409,7 @@ function pinColumn(state: GridModel, action: ColumnActionPin) {
     return state;
   }
 }
-function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
+function updateColumnProp(state: TableModel, action: ColumnActionUpdateProp) {
   let { columns } = state;
   const { align, column, hidden, label, resizing, width } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
@@ -415,7 +437,7 @@ function updateColumnProp(state: GridModel, action: ColumnActionUpdateProp) {
 }
 
 function updateTableConfig(
-  state: GridModel,
+  state: TableModel,
   { columns, confirmed, filter, groupBy, sort }: ColumnActionTableConfig
 ) {
   const hasColumns = columns && columns.length > 0;

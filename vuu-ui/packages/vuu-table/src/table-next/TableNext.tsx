@@ -1,6 +1,6 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
-import { metadataKeys } from "@finos/vuu-utils";
+import { metadataKeys, notHidden } from "@finos/vuu-utils";
 import { CSSProperties } from "react";
 import { HeaderCell } from "./HeaderCell";
 import { Row } from "./Row";
@@ -125,7 +125,7 @@ export const TableNext = ({
             <div {...tableProps} className={`${classBase}-table`}>
               <div className={`${classBase}-col-headings`}>
                 <div className={`${classBase}-col-headers`} role="row">
-                  {columns.map((col, i) => (
+                  {columns.filter(notHidden).map((col, i) => (
                     <HeaderCell
                       classBase={classBase}
                       column={col}
