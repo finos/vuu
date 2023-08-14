@@ -1,4 +1,5 @@
 import { getColumnByName, TableSchema } from "@finos/vuu-data";
+import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
 import {
@@ -22,7 +23,6 @@ import { textOperators } from "./operator-utils";
 import { TextInput } from "./TextInput";
 
 import "./FilterClauseEditor.css";
-import { SuggestionFetcher } from "packages/vuu-data-react/src";
 
 export interface FilterClauseEditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {

@@ -1,4 +1,4 @@
-import { ContextMenuItemDescriptor } from "packages/vuu-data-types";
+import { ContextMenuItemDescriptor } from "@finos/vuu-data-types";
 
 export type MenuOptions = { [key: string]: unknown };
 

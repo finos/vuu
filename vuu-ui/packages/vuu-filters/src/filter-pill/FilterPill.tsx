@@ -1,11 +1,11 @@
-import { NamedFilter } from "packages/vuu-filter-types";
-import { HTMLAttributes, useCallback } from "react";
-import cx from "classnames";
+import { NamedFilter } from "@finos/vuu-filter-types";
 import { EditableLabel, EditableLabelProps } from "@finos/vuu-ui-controls";
+import cx from "classnames";
+import { HTMLAttributes, useCallback } from "react";
 import { FilterPillMenu } from "../filter-pill-menu";
 
+import { MenuActionHandler } from "@finos/vuu-data-types";
 import "./FilterPill.css";
-import { MenuActionHandler } from "packages/vuu-data-types";
 
 const classBase = "vuuFilterPill";
 

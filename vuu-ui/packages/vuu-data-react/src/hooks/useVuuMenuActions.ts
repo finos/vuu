@@ -34,7 +34,7 @@ import {
   isGroupMenuItemDescriptor,
   metadataKeys,
 } from "@finos/vuu-utils";
-import { MenuActionClosePopup } from "packages/vuu-popups/src";
+import type { MenuActionClosePopup } from "@finos/vuu-popups";
 import { useCallback } from "react";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";

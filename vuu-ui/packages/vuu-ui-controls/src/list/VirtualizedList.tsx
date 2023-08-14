@@ -1,6 +1,6 @@
 import { makePrefixer, useForkRef, useIdMemo } from "@salt-ds/core";
-import cx from "classnames";
-import { ForwardedRef, forwardRef, ReactElement, useRef } from "react";
+import { clsx } from "clsx";
+import { ForwardedRef, forwardRef, memo, ReactElement, useRef } from "react";
 import {
   CollectionIndexer,
   isSelected,
@@ -10,16 +10,19 @@ import {
 } from "./common-hooks";
 import { useListHeight } from "./useListHeight";
 
-import { ListItem, ListItemProxy } from "./ListItem";
+import { ListItem as DefaultListItem, ListItemProxy } from "./ListItem";
 import { ListProps } from "./listTypes";
 import { useList } from "./useList";
 import { Row, useVirtualization } from "./useVirtualization";
+import { useScrollPosition } from "./useScrollPosition";
 
 import "./List.css";
 
 const defaultEmptyMessage = "No data to display";
 
 const withBaseName = makePrefixer("saltList");
+
+const ListItem = memo(DefaultListItem);
 
 export const VirtualizedList = forwardRef(function List<
   Item,
@@ -52,6 +55,7 @@ export const VirtualizedList = forwardRef(function List<
     minWidth,
     onSelect,
     onSelectionChange,
+    onViewportScroll,
     onHighlight,
     restoreLastFocus,
     selected: selectedProp,
@@ -85,15 +89,17 @@ export const VirtualizedList = forwardRef(function List<
     },
   });
 
-  const { preferredHeight } = useListHeight({
+  const { contentHeight, listItemHeight, listHeight } = useListHeight({
     borderless,
     displayedItemCount,
     height,
     itemCount: collectionHook.data.length,
     itemGapSize,
     itemHeight: itemHeightProp,
+    rootRef,
     rowHeightRef: rowHeightProxyRef,
   });
+
   const {
     focusVisible,
     highlightedIndex,
@@ -128,19 +134,23 @@ export const VirtualizedList = forwardRef(function List<
     tabToSelect,
   });
 
-  // TODO move into useList
-  const {
-    rows: data,
-    contentHeight,
-    onVerticalScroll: onScroll,
-  } = useVirtualization<Item>({
-    viewportRef: rootRef,
-    data: collectionHook.data,
-    itemGapSize,
+  const { onVerticalScroll, viewportRange } = useScrollPosition({
+    containerSize: typeof listHeight === "number" ? listHeight : 0,
+    itemCount: collectionHook.data.length,
+    itemGapSize: itemGapSize,
+    itemSize: listItemHeight,
   });
 
-  // FIXME: useImperativeScrollingAPI doesn't work when element is not rendered beyond `renderBuffer`
-  // One potential way: pass `scrollIntoView` to `useVirtualization` and update rows before original `scrollIntoView` been called
+  console.log({ viewPortRange: viewportRange });
+
+  // TODO move into useList
+  const data = useVirtualization<Item>({
+    data: collectionHook.data,
+    listItemGapSize: itemGapSize,
+    listItemHeight,
+    viewportRange,
+  });
+
   useImperativeScrollingAPI({
     collectionHook,
     forwardedRef: scrollingApiRef,
@@ -159,22 +169,23 @@ export const VirtualizedList = forwardRef(function List<
       <ListItem
         aria-setsize={collectionHook.data.length}
         aria-posinset={pos}
-        className={cx(className, {
+        className={clsx(className, {
           saltHighlighted: index === highlightedIndex,
           saltFocusVisible: focusVisible === index,
         })}
         data-idx={index}
+        item={item}
         key={key}
+        label={item.label}
         data-offset={offset}
         role="option"
         selected={isSelected<Item>(selected, item)}
         id={item.id}
-        style={{
-          transform: `translate3d(0px, ${offset}px, 0px)`,
-        }}
-      >
-        {item.label}
-      </ListItem>
+        translate3d={offset}
+        // style={{
+        //   transform: `translate3d(0px, ${offset}px, 0px)`
+        // }}
+      />
     );
     idx.value += 1;
   }
@@ -219,18 +230,19 @@ export const VirtualizedList = forwardRef(function List<
     width: width ?? "100%",
     height: height ?? "100%",
     maxWidth: maxWidth ?? width,
-    maxHeight: maxHeight ?? preferredHeight,
+    maxHeight: maxHeight ?? listHeight,
   };
+
   return (
     <div
       {...htmlAttributes}
       {...listHandlers}
       {...listControlProps}
-      className={cx(withBaseName(), className, withBaseName("virtualized"))}
+      className={clsx(withBaseName(), className, withBaseName("virtualized"))}
       id={`${id}`}
       ref={useForkRef<HTMLDivElement>(rootRef, forwardedRef)}
       role="listbox"
-      onScroll={onScroll}
+      onScroll={onVerticalScroll}
       style={{ ...styleProp, ...sizeStyles }}
       tabIndex={listDisabled || disableFocus ? undefined : 0}
     >
