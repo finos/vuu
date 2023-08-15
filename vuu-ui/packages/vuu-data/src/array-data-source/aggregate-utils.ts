@@ -88,25 +88,6 @@ export const aggregateData = (
       );
   }
 
-  // console.log("!!!! inside aggregateData");
-  // console.log("!!!! groupmap", groupMap);
-  // console.log("!!!! targetData", targetData);
-  // console.log("!!!! leaf rows", leafData);
-  // console.log("!!!! columnMap", columnMap);
-  // console.log("!!!! aggregations", aggregations);
-
-  // let count = aggregateCount(groupMap);
-  // console.log("!!!! count", count);
-  // let sum = aggregateSum(groupMap, leafData, columnMap, aggregations);
-  // console.log("!!!! sum", sum);
-  // let average = aggregateAverage(groupMap, leafData, columnMap, aggregations);
-  // console.log("!!!! average", average);
-  // let distinct = aggregateDistinct(groupMap, leafData, columnMap, aggregations);
-  // console.log("!!!! distinct", distinct);
-  // let high = aggregateHigh(groupMap, leafData, columnMap, aggregations);
-  // console.log("!!!! high", high);
-  // let low = aggregateLow(groupMap, leafData, columnMap, aggregations);
-  // console.log("!!!! low", low);
 };
 
 function aggregateCount(
