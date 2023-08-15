@@ -2,15 +2,15 @@ package org.finos.vuu.core.module.metrics
 
 import com.codahale.metrics.Histogram
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.{DataTable, RowWithData}
-import org.finos.vuu.provider.Provider
-import org.finos.vuu.viewport.ViewPortContainer
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.feature.spec.table.DataTable
+import org.finos.vuu.provider.Provider
+import org.finos.vuu.viewport.ViewPortContainer
 
-import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters.MapHasAsScala
 
 class MetricsGroupByProvider(table: DataTable, viewPortContainer: ViewPortContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,

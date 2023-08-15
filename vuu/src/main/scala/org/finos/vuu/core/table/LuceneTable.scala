@@ -1,9 +1,5 @@
 package org.finos.vuu.core.table
 
-import org.finos.vuu.api.{LuceneTableDef, TableDef}
-import org.finos.vuu.core.index.IndexedField
-import org.finos.vuu.provider.JoinTableProvider
-import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.{Document, Field, TextField}
 import org.apache.lucene.index.{DirectoryReader, IndexWriter, IndexWriterConfig, Term}
@@ -12,6 +8,11 @@ import org.apache.lucene.store.MMapDirectory
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.vuu.api.{LuceneTableDef, TableDef}
+import org.finos.vuu.core.index.IndexedField
+import org.finos.vuu.feature.spec.table.DataTable
+import org.finos.vuu.provider.JoinTableProvider
+import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 
 import java.nio.file.Paths
 

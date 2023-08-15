@@ -2,13 +2,14 @@ package org.finos.vuu.core.module.auths.service
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.table.{DataTable, EmptyRowData, RowWithData}
-import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.RpcHandler
-import org.finos.vuu.viewport.{NoAction, SelectionViewPortMenuItem, ViewPortAction, ViewPortMenu, ViewPortSelection}
 import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames._
 import org.finos.vuu.core.module.auths.PermissionSet
-import org.finos.vuu.core.module.auths.PermissionSet.{AlgoCoveragePermission, HighTouchPermission, SalesTradingPermission, SalesTradingPermissionString}
+import org.finos.vuu.core.module.auths.PermissionSet.{AlgoCoveragePermission, HighTouchPermission, SalesTradingPermission}
+import org.finos.vuu.core.table.{EmptyRowData, RowWithData}
+import org.finos.vuu.feature.spec.table.DataTable
+import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.net.rpc.RpcHandler
+import org.finos.vuu.viewport._
 
 class PermissionsRpcService(val table: DataTable)(implicit clock: Clock) extends RpcHandler with StrictLogging {
 

@@ -1,9 +1,10 @@
 package org.finos.vuu.core.module.editable
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.thread.{LifeCycleRunner, RunOnceLifeCycleRunner}
+import org.finos.toolbox.thread.RunOnceLifeCycleRunner
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.table.{DataTable, RowWithData}
+import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.provider.Provider
 
 class ProcessProvider(val table: DataTable)(implicit lifecycle: LifecycleContainer, clock: Clock) extends Provider {

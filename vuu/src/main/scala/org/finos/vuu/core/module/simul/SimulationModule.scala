@@ -1,20 +1,21 @@
 package org.finos.vuu.core.module.simul
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.module.auths.OrderPermissionChecker
 import org.finos.vuu.core.module.simul.provider._
+import org.finos.vuu.core.module.simul.service.ParentOrdersService
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
-import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
+import org.finos.vuu.core.table.{Columns, TableContainer}
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
 import org.finos.vuu.provider.{Provider, ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport._
-import org.finos.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
-import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.module.auths.OrderPermissionChecker
-import org.finos.vuu.core.module.simul.service.ParentOrdersService
 
 class PricesService(val table: DataTable, val provider: Provider) extends RpcHandler with StrictLogging {
 

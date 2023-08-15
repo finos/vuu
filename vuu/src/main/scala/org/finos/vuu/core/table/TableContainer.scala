@@ -1,13 +1,14 @@
 package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.toolbox.jmx.{JmxAble, MetricsProvider}
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinSessionTableDef, JoinTableDef, SessionTableDef, TableDef}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowSource, ViewPortTable}
-import org.finos.toolbox.jmx.{JmxAble, MetricsProvider}
-import org.finos.toolbox.time.Clock
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._

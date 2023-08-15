@@ -1,12 +1,13 @@
 package org.finos.vuu.core.module.metrics
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
-import org.finos.vuu.provider.Provider
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.table.{RowWithData, TableContainer}
+import org.finos.vuu.feature.spec.table.DataTable
+import org.finos.vuu.provider.Provider
 
 class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
                                                                              metrics: MetricsProvider) extends Provider with StrictLogging {

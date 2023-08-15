@@ -1,9 +1,10 @@
 package org.finos.vuu.provider.simulation
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.{DataTable, RowWithData}
-import org.finos.vuu.provider.Provider
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.feature.spec.table.DataTable
+import org.finos.vuu.provider.Provider
 
 class SimulatedInstrumentProvider(instruments: Array[Array[String]], table: DataTable)(implicit timeProvider: Clock) extends Provider with StrictLogging {
 

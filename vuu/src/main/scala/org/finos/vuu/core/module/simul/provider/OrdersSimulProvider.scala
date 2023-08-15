@@ -1,10 +1,11 @@
 package org.finos.vuu.core.module.simul.provider
 
-import org.finos.vuu.core.table.{DataTable, RowWithData}
-import org.finos.vuu.provider.Provider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.feature.spec.table.DataTable
+import org.finos.vuu.provider.Provider
 
 import java.util
 import java.util.Random

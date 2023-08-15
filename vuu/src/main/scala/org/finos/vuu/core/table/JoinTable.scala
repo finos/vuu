@@ -1,12 +1,13 @@
 package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.{JoinTableDef, TableDef}
-import org.finos.vuu.core.index.IndexedField
-import org.finos.vuu.provider.JoinTableProvider
-import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 import org.finos.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
 import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.vuu.api.{JoinTableDef, TableDef}
+import org.finos.vuu.core.index.IndexedField
+import org.finos.vuu.feature.spec.table.DataTable
+import org.finos.vuu.provider.JoinTableProvider
+import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap

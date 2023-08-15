@@ -12,8 +12,9 @@ import org.finos.vuu.api.{Link, NoViewPortDef, ViewPortDef}
 import org.finos.vuu.client.messages.ViewPortId
 import org.finos.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort._
-import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
+import org.finos.vuu.core.table.{SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.net.rpc.EditRpcHandler
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -25,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, IteratorHasAsScala, SetHasAsScala}
 import scala.util.{Failure, Success, Try}
-
 trait ViewPortContainerMBean {
   def listViewPorts: String
 

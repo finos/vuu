@@ -1,7 +1,8 @@
 package org.finos.vuu.provider
 
-import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.feature.spec.table.DataTable
 
 class RpcProvider(table: DataTable)(implicit timeProvider: Clock) extends Provider {
 

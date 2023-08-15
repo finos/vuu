@@ -3,11 +3,9 @@ package org.finos.vuu.core.module.auths
 import org.finos.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.VuuServer
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames.Bitmask
-import org.finos.vuu.core.sort.UserDefinedFilterAndSort
-import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
+import org.finos.vuu.core.table.{RowData, RowWithData, TableContainer}
 import org.finos.vuu.viewport.ViewPort
 
 class OrderPermissionChecker(val vp: ViewPort, tableContainer: TableContainer)(implicit lifecycle: LifecycleContainer, clock: Clock) extends DefaultLifecycleEnabled with RowPermissionChecker {

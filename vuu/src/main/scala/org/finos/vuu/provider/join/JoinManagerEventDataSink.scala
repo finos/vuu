@@ -1,9 +1,9 @@
 package org.finos.vuu.provider.join
 
-import org.finos.vuu.api.JoinTableDef
-import org.finos.vuu.core.table.DataTable
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.collection.set.ImmutableUniqueArraySet
+import org.finos.vuu.api.JoinTableDef
+import org.finos.vuu.feature.spec.table.DataTable
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap

@@ -1,16 +1,7 @@
 package org.finos.vuu.viewport
 
-import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.{Column, DataTable, RowData}
-import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.vuu.viewport.tree.NodeAggregation
-
-import java.util
-import java.util.concurrent.ConcurrentHashMap
-import java.util.{LinkedList => JList}
-import scala.jdk.CollectionConverters._
-
-
+import org.finos.vuu.core.table.Column
+import org.finos.vuu.feature.spec.table.DataTable
 
 
 object GroupBy {

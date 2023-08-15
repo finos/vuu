@@ -83,6 +83,7 @@
         <module>vuu</module>
         <module>vuu-ui</module>
         <module>benchmark</module>
+        <module>feature/table-hypersql</module>
     </modules>
 
     <dependencies>

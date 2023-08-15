@@ -2,6 +2,7 @@ package org.finos.vuu.viewport
 
 import org.finos.vuu.core.table._
 import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.vuu.feature.spec.table.DataTable
 
 trait RowProcessor {
   def processColumn(column: Column, value: Any): Unit

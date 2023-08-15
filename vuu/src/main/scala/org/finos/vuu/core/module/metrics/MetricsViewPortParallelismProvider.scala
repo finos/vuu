@@ -6,8 +6,8 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.metrics.MetricsSchema.ViewPortParallelism
-import org.finos.vuu.core.table.DataTable
 import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPortContainer
 

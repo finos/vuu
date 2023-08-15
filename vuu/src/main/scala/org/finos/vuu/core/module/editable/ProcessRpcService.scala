@@ -1,10 +1,10 @@
 package org.finos.vuu.core.module.editable
 
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
+import org.finos.vuu.core.table.{RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
-import org.finos.vuu.viewport.{OpenDialogViewPortAction, RenderComponent, SelectionViewPortMenuItem, ViewPortAction, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortDeleteRowAction, ViewPortEditCellAction, ViewPortEditRowAction, ViewPortFormCloseAction, ViewPortFormSubmitAction, ViewPortMenu, ViewPortSelection, ViewPortTable}
+import org.finos.vuu.net.rpc.RpcHandler
+import org.finos.vuu.viewport._
 
 class ProcessRpcService(val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler{
 

@@ -5,7 +5,8 @@ import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames
 import org.finos.vuu.core.module.auths.PermissionSet
-import org.finos.vuu.core.table.{DataTable, EmptyRowData, RowWithData}
+import org.finos.vuu.core.table.{EmptyRowData, RowWithData}
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.net.ClientSessionContainer
 import org.finos.vuu.provider.Provider
 

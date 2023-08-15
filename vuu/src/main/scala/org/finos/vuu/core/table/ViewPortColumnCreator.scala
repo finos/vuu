@@ -2,6 +2,7 @@ package org.finos.vuu.core.table
 
 import org.finos.vuu.core.table.column.CalculatedColumnFactory
 import org.finos.vuu.viewport.ViewPortColumns
+import org.finos.vuu.feature.spec.table.DataTable
 
 object ViewPortColumnCreator {
 

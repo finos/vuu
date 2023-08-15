@@ -1,7 +1,8 @@
 package org.finos.vuu.core.module.typeahead
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.{Column, DataTable, TableContainer}
+import org.finos.vuu.core.table.{Column, TableContainer}
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.net.RequestContext
 import org.finos.vuu.net.rpc.RpcHandler
 

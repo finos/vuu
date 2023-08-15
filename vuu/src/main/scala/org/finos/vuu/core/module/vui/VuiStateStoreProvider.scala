@@ -1,11 +1,12 @@
 package org.finos.vuu.core.module.vui
 
-import org.finos.vuu.core.table.{DataTable, RowWithData}
-import org.finos.vuu.provider.Provider
-import org.finos.vuu.state.{VuiHeader, VuiStateStore}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.feature.spec.table.DataTable
+import org.finos.vuu.provider.Provider
+import org.finos.vuu.state.{VuiHeader, VuiStateStore}
 
 class VuiStateStoreProvider(val table: DataTable, val store: VuiStateStore)(implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
 

@@ -1,26 +1,21 @@
 package org.finos.vuu.viewport.sessiontable
 
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.api._
-import org.finos.vuu.client.messages.{ClientOrderId, RequestId}
 import org.finos.vuu.core.VuuServer
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, ViewServerModule}
-import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
-import org.finos.vuu.core.table.{Columns, DataTable, RowWithData, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Columns, TableContainer}
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts.assertVpEq
+import org.finos.vuu.viewport.ViewPortContainer
 import org.finos.vuu.viewport.ViewPortTestFns.setupViewPort
-import org.finos.vuu.viewport.{AbstractViewPortTestCase, CellViewPortMenuItem, DefaultRange, NoAction, OpenDialogViewPortAction, RowViewPortMenuItem, SelectionViewPortMenuItem, TableViewPortMenuItem, ViewPortAction, ViewPortContainer, ViewPortMenu, ViewPortSelectedIndices, ViewPortSelection, ViewPortTable}
-import org.scalatest.GivenWhenThen
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.prop.Tables.Table
 
 trait AbstractSessionTestCase {
 

@@ -1,8 +1,9 @@
 package org.finos.vuu.provider
 
-import org.finos.vuu.core.table.{DataTable, JoinTableUpdate}
 import org.finos.toolbox.lifecycle.LifecycleEnabled
 import org.finos.toolbox.thread.RunInThread
+import org.finos.vuu.core.table.JoinTableUpdate
+import org.finos.vuu.feature.spec.table.DataTable
 
 trait JoinTableProvider extends RunInThread with LifecycleEnabled {
   def hasJoins(tableName: String): Boolean

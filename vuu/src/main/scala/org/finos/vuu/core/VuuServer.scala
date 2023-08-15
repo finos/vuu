@@ -7,7 +7,8 @@ import org.finos.toolbox.thread.{LifeCycleRunOncePerThreadExecutorRunner, LifeCy
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, ViewServerModule}
-import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.core.table.TableContainer
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.net._
 import org.finos.vuu.net.http.{Http2Server, VuuHttp2Server}
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}

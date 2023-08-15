@@ -15,6 +15,5 @@ trait Condition {
 //
 
 class MultiConditionFilter extends Filter {
-
   override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns): ImmutableArray[String] = ???
 }

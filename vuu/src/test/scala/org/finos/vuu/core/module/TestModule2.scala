@@ -1,7 +1,8 @@
 package org.finos.vuu.core.module
 
 import org.finos.vuu.api._
-import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
+import org.finos.vuu.core.table.{Columns, TableContainer}
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.provider.Provider
 

@@ -1,18 +1,19 @@
 package org.finos.vuu.viewport.menurpc
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module.ModuleFactory.stringToString
-import org.finos.vuu.core.table.{Columns, DataTable, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport._
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table

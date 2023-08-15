@@ -5,10 +5,10 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.table.DataTable
+import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPortContainer
-import org.finos.vuu.core.table.{DataTable, RowWithData}
 
 import java.lang.management.{ManagementFactory, MemoryUsage}
 

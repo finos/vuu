@@ -1,21 +1,22 @@
 package org.finos.vuu.viewport
 
+import org.finos.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.json.JsonUtil
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.thread.{LifeCycleRunner, Runner}
+import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.ClientHelperFns._
 import org.finos.vuu.core.module.simul.SimulationModule
-import org.finos.vuu.core.table.{Columns, DataTable}
+import org.finos.vuu.core.table.Columns
 import org.finos.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import org.finos.vuu.feature.spec.table.DataTable
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{CreateViewPortSuccess, TableRowUpdates, WebSocketViewServerClient}
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
-import org.finos.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.json.JsonUtil
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.thread.{LifeCycleRunner, Runner}
-import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
