@@ -30,6 +30,7 @@ import {
   VuuAggregation,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
+import { createArray} from "packages/vuu-data/src/array-data-source/generate-data-utils";
 
 let displaySequence = 1;
 
@@ -339,67 +340,6 @@ export const FlexLayoutTables = () => {
 };
 FlexLayoutTables.displaySequence = displaySequence++;
 
-function createArray(
-  numofrows: number,
-  numofcolumns: number
-): VuuRowDataItemType[][] {
-  const result = [];
-
-  for (let i = 0; i < numofrows; i++) {
-    let FakerDataGenerator = [
-      faker.company.name(),
-      faker.finance.currencyCode(),
-      Number(faker.finance.amount({ min: 5, max: 10, dec: 2 })),
-      faker.finance.amount({ min: 100, max: 2000, dec: 0 }),
-      faker.finance.transactionType(),
-      faker.finance.transactionDescription(),
-      faker.date.anytime().getMilliseconds(),
-      faker.finance.accountName(),
-      faker.finance.accountNumber(),
-      faker.commerce.department(),
-      faker.commerce.product(),
-      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
-      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
-      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
-      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
-      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
-      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
-      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
-      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
-      faker.finance.amount({ min: 5, max: 10, dec: 2 }),
-    ];
-    result.push([
-      i + 1,
-      FakerDataGenerator[0],
-      FakerDataGenerator[1],
-      Number(FakerDataGenerator[2]),
-      FakerDataGenerator[3] as number,
-      Number(
-        Math.floor(
-          Number(FakerDataGenerator[2]) * Number(FakerDataGenerator[3])
-        )
-      ),
-      FakerDataGenerator[4],
-      FakerDataGenerator[5],
-      FakerDataGenerator[6],
-      FakerDataGenerator[7],
-      FakerDataGenerator[8],
-      FakerDataGenerator[9],
-      FakerDataGenerator[10],
-      FakerDataGenerator[11],
-      FakerDataGenerator[12],
-      FakerDataGenerator[13],
-      FakerDataGenerator[14],
-      FakerDataGenerator[15],
-      FakerDataGenerator[16],
-      FakerDataGenerator[17],
-      Number(FakerDataGenerator[18]),
-    ]);
-  }
-
-  return result;
-}
-
 const columns = [
   { name: "row number", width: 150 },
   { name: "name", width: 100 },
@@ -425,9 +365,8 @@ const columns = [
 ];
 
 const numofrows = 100000;
-const numofcolumns = columns.length;
 
-const newArray = createArray(numofrows, numofcolumns);
+const newArray = createArray(numofrows, columns.length);
 
 const config = { columns };
 const data = newArray;
