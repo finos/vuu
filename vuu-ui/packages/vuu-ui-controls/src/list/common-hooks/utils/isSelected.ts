@@ -1,4 +1,4 @@
-import { CollectionItem } from "../collectionTypes";
+import { CollectionItem } from "../../../common-hooks/collectionTypes";
 
 export function isSelected<Item>(
   selected: CollectionItem<Item> | CollectionItem<Item>[] | null,

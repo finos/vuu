@@ -1,5 +1,5 @@
 import { MutableRefObject, RefObject, useCallback, useRef } from "react";
-import { CollectionItem } from "./collectionTypes";
+import { CollectionItem } from "../../common-hooks/collectionTypes";
 import { ResizeHandler, useResizeObserver } from "../../common-hooks";
 import { useIsomorphicLayoutEffect } from "@salt-ds/core";
 

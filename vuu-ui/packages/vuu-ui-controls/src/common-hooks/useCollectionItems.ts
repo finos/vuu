@@ -18,7 +18,7 @@ import {
   isParentPath,
   replaceCollectionItem,
   sourceItems,
-} from "./utils";
+} from "../list/common-hooks/utils";
 import { itemToString as defaultItemToString } from "./itemToString";
 
 import { SelectionStrategy, SingleSelectionStrategy } from "./selectionTypes";

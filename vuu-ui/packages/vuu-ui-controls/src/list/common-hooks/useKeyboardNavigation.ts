@@ -17,13 +17,14 @@ import {
   PageDown,
   PageUp,
 } from "./keyUtils";
-import { CollectionItem } from "./collectionTypes";
-import { NavigationHookProps, NavigationHookResult } from "./navigationTypes";
 import {
+  CollectionItem,
+  NavigationHookProps,
+  NavigationHookResult,
   getFirstSelectedItem,
   hasSelection,
   SelectionStrategy,
-} from "./selectionTypes";
+} from "../../common-hooks";
 
 export const LIST_FOCUS_VISIBLE = -2;
 

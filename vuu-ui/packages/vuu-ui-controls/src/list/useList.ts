@@ -8,19 +8,21 @@ import {
 } from "react";
 import {
   closestListItemIndex,
-  hasSelection,
   CollectionItem,
-  ListHandlers,
-  selectedType,
-  SelectHandler,
-  SelectionChangeHandler,
-  SelectionStrategy,
   useCollapsibleGroups,
   useKeyboardNavigation,
   useSelection,
   useTypeahead,
   useViewportTracking,
 } from "./common-hooks";
+import {
+  hasSelection,
+  ListHandlers,
+  selectedType,
+  SelectHandler,
+  SelectionChangeHandler,
+  SelectionStrategy,
+} from "../common-hooks";
 import { useDragDropNext as useDragDrop } from "../drag-drop";
 
 import { ListHookProps, ListHookResult, ListControlProps } from "./listTypes";
