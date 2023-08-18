@@ -7,7 +7,8 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:cypress/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -17,7 +18,10 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["react", "react-hooks"],
+  "plugins": [
+    "react",
+    "react-hooks"
+  ],
   "settings": {
     "react": {
       "version": "detect"
@@ -32,15 +36,27 @@
         "additionalHooks": "(useLayoutEffectSkipFirst)"
       }
     ],
-
     "no-unused-vars": 0,
-    "prefer-const": ["error", {"destructuring": "all"}],
-    "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]
+    "prefer-const": [
+      "error",
+      {
+        "destructuring": "all"
+      }
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "ignoreRestSiblings": true
+      }
+    ]
   },
   "overrides": [
     {
-      "files": ["*.cy.tsx"],
-      "extends": ["plugin:cypress/recommended"]
+      "files": [
+        "*.cy.tsx"
+      ],
+      "extends": [
+      ]
     }
   ]
 }
