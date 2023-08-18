@@ -1,4 +1,4 @@
-import {toPng} from "html-to-image";
+import { toPng } from "html-to-image";
 
 /**
  * Takes a screenshot of the given node and returns the base64 encoded image url

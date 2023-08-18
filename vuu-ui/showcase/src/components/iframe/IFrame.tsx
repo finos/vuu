@@ -3,6 +3,7 @@ export const IFrame = () => {
   return (
     <div className="ShowCaseIFrame-container">
       <iframe
+        id={"showcase-iframe"}
         className="ShowCaseIFrame"
         src={src}
         // ref={iframeRef}
