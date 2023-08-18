@@ -1,5 +1,5 @@
 import "cypress-iframe";
-import { SHELL_WITH_NEW_THEME_URL } from "../../support/constants";
+import { SHELL_WITH_NEW_THEME_URL } from "../../support/e2e/constants";
 
 context("Screenshot", () => {
   beforeEach(() => {
