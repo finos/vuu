@@ -26,9 +26,6 @@ export const PopupComponent = ({
   useLayoutEffect(() => {
     if (anchorElement.current) {
       const { left, bottom } = anchorElement.current.getBoundingClientRect();
-      console.log(`position element at ${placement}`, {
-        el: anchorElement.current,
-      });
       setPosition({ x: left, y: bottom });
     }
   }, [anchorElement, placement]);
