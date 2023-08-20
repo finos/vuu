@@ -10,19 +10,19 @@ import React, {
   RefObject,
 } from "react";
 
+import { ScrollingAPI, ViewportTrackingResult } from "./common-hooks";
+
 import {
   CollectionHookResult,
   CollectionItem,
   ListHandlers,
   NavigationHookResult,
-  ScrollingAPI,
   SelectHandler,
   SelectionChangeHandler,
   SelectionHookResult,
   SelectionProps,
   SelectionStrategy,
-  ViewportTrackingResult,
-} from "./common-hooks";
+} from "../common-hooks";
 import { DragHookResult, dragStrategy } from "../drag-drop";
 import { ViewportRange } from "./useScrollPosition";
 

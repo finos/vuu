@@ -8,7 +8,7 @@
   --list-item-alignItems: center;
 }
 
-.vuuListItem.saltHighlighted {
+.vuuListItem.vuuHighlighted {
   --saltCheckbox-icon-stroke: var(--salt-selectable-borderColor-hover);
   --list-item-background: var(--salt-selectable-background-hover);
 }
@@ -57,7 +57,7 @@
   color: var(--list-item-text-color-active);
 }
 
-.vuuListItem.saltDisabled {
+.vuuListItem.vuuDisabled {
   --list-item-text-color: var(--salt-text-primary-foreground-disabled);
   cursor: var(--salt-selectable-cursor-disabled);
 }

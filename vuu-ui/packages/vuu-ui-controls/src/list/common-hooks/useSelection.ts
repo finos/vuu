@@ -1,14 +1,14 @@
 import { useControlled } from "@salt-ds/core";
 import { KeyboardEvent, MouseEvent, useCallback, useRef } from "react";
-import { CollectionItem } from "./collectionTypes";
 import {
+  CollectionItem,
   ListHandlers,
   SelectionHookProps,
   SelectionHookResult,
   selectionIsDisallowed,
   SelectionStrategy,
   SingleSelectionStrategy,
-} from "./selectionTypes";
+} from "../../common-hooks";
 
 export const CHECKBOX = "checkbox";
 

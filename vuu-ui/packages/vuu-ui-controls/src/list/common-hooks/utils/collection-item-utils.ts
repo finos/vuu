@@ -4,11 +4,11 @@ import {
   CollectionItem,
   CollectionOptions,
   SourceGroup,
-} from "../collectionTypes";
+} from "../../../common-hooks/collectionTypes";
 // TODO how do we configure these
 import { ListItemGroup } from "../../ListItemGroup";
 import { ListItemHeader } from "../../ListItemHeader";
-import { itemToString as defaultItemToString } from "../itemToString";
+import { itemToString as defaultItemToString } from "../../../common-hooks/itemToString";
 
 type NonFocusableElement = ReactElement<{ focusable: false }>;
 type DisablableElement = ReactElement<{ disabled: boolean }>;

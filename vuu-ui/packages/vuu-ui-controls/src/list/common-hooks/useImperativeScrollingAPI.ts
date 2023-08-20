@@ -4,7 +4,10 @@ import {
   useImperativeHandle,
   useMemo,
 } from "react";
-import { CollectionHookResult, CollectionItem } from "./collectionTypes";
+import {
+  CollectionHookResult,
+  CollectionItem,
+} from "../../common-hooks/collectionTypes";
 
 export interface ScrollingAPI<Item> {
   scrollToIndex: (itemIndex: number) => void;

@@ -16,10 +16,10 @@ import {
   itemToString as defaultItemToString,
   LIST_FOCUS_VISIBLE,
   ScrollingAPI,
-  SelectionStrategy,
   useCollectionItems,
   useImperativeScrollingAPI,
 } from "./common-hooks";
+import { SelectionStrategy } from "../common-hooks";
 
 import { ListItem as DefaultListItem, ListItemProxy } from "./ListItem";
 import { ListItemProps, ListProps } from "./listTypes";
@@ -88,6 +88,10 @@ export const List = forwardRef(function List<
   }: ListProps<Item, Selection>,
   forwardedRef?: ForwardedRef<HTMLDivElement>
 ) {
+  console.log("render List", {
+    defaultSelected,
+  });
+
   const id = useId(idProp);
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);

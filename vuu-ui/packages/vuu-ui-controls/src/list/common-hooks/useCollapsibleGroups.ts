@@ -1,7 +1,10 @@
 import { MouseEvent, useCallback } from "react";
 import { ArrowLeft, ArrowRight, Enter } from "./keyUtils";
-import { ListHandlers } from "./selectionTypes";
-import { CollectionHookResult, CollectionItem } from "./collectionTypes";
+import { ListHandlers } from "../../common-hooks";
+import {
+  CollectionHookResult,
+  CollectionItem,
+} from "../../common-hooks/collectionTypes";
 
 const NO_HANDLERS = {};
 const canToggleItem = (item: CollectionItem<unknown>) =>
