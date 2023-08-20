@@ -1,6 +1,6 @@
 import { MouseEvent, useCallback } from "react";
 import { ArrowLeft, ArrowRight, Enter } from "./keyUtils";
-import { ListHandlers } from "./selectionTypes";
+import { ListHandlers } from "../../common-hooks";
 import {
   CollectionHookResult,
   CollectionItem,

@@ -126,7 +126,7 @@ export const useDropdownBase = ({
 
   return {
     componentProps: dropdownComponentProps,
-    popperRef: popperCallbackRef,
+    popupComponentRef: popperCallbackRef,
     isOpen,
     label: "Dropdown Button",
     triggerProps,

@@ -1,4 +1,4 @@
-import { Button, ButtonProps, makePrefixer } from "@salt-ds/core";
+import { Button, ButtonProps } from "@salt-ds/core";
 import { ChevronDownIcon, IconProps, DEFAULT_ICON_SIZE } from "@salt-ds/icons";
 import { clsx } from "clsx";
 import { AriaAttributes, ComponentType, ForwardedRef, forwardRef } from "react";
@@ -51,7 +51,7 @@ export interface DropdownButtonProps extends ButtonProps {
   >;
 }
 
-const withBaseName = makePrefixer("saltDropdownButton");
+const classBase = "vuuDropdownButton";
 
 export const DropdownButton = forwardRef(function DropdownButton(
   {
@@ -77,9 +77,9 @@ export const DropdownButton = forwardRef(function DropdownButton(
   return (
     <Button
       className={clsx(
-        withBaseName(),
+        classBase,
         {
-          [withBaseName("fullwidth")]: fullWidth,
+          [`${classBase}-fullWidth`]: fullWidth,
         },
         className
       )}
@@ -89,12 +89,12 @@ export const DropdownButton = forwardRef(function DropdownButton(
       {...rest}
       ref={ref}
     >
-      <div className={withBaseName("content")}>
+      <div className={`${classBase}-content`}>
         <span
           // 'hidden' so that screen reader won't be confused the additional 'option' which is just a label
           aria-hidden={ariaHideOptionRole ? "true" : undefined}
           {...labelAriaAttributes}
-          className={withBaseName("buttonLabel")}
+          className={`${classBase}-buttonLabel`}
           id={labelId}
           // 'option' role here is to suppress accessibility testing tool warning about 'listbox' missing children role.
           role="option"
@@ -102,7 +102,7 @@ export const DropdownButton = forwardRef(function DropdownButton(
           {label}
         </span>
         <IconComponent
-          className={withBaseName("icon")}
+          className={`${classBase}-buttonIcon`}
           size={iconSize}
           aria-label={null}
           aria-hidden="true"

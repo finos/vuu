@@ -1,4 +1,4 @@
-.saltDropdownButton {
+.vuuDropdownButton {
   --saltButton-background-hover: var(--salt-actionable-secondary-background);
   --saltButton-background-active: var(--salt-actionable-secondary-background);
   --saltButton-fontWeight: var(--salt-text-fontWeight-strong); /* TODO: Check with design */
@@ -7,16 +7,16 @@
   --saltButton-width: 100%;
 }
 
-.saltDropdownButton:active {
+.vuuDropdownButton:active {
   --saltIcon-color: var(--salt-actionable-secondary-foreground);
   --saltButton-text-color-active: var(--salt-actionable-secondary-foreground);
 }
 
-.saltDropdownButton-fullwidth {
+.vuuDropdownButton-fullwidth {
   width: 100%;
 }
 
-.saltDropdownButton-content {
+.vuuDropdownButton-content {
   align-items: center;
   flex: 1;
   width: 100%;
@@ -24,7 +24,7 @@
   white-space: nowrap;
 }
 
-.saltDropdownButton-buttonLabel {
+.vuuDropdownButton-buttonLabel {
   display: inline-block;
   letter-spacing: 0;
   overflow: hidden;
@@ -32,7 +32,7 @@
   width: 100%;
 }
 
-.saltDropdownButton-formField.saltButton:focus,
-.saltDropdownButton-formField.saltButton:focus-visible {
+.vuuDropdownButton-formField.saltButton:focus,
+.vuuDropdownButton-formField.saltButton:focus-visible {
   outline: none;
 }

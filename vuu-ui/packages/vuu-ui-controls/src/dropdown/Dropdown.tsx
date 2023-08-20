@@ -1,4 +1,4 @@
-import { useForkRef, useIdMemo as useId } from "@salt-ds/core";
+import { useForkRef } from "@salt-ds/core";
 import {
   cloneElement,
   ForwardedRef,
@@ -8,6 +8,7 @@ import {
   useRef,
 } from "react";
 
+import { useId } from "@finos/vuu-layout";
 import {
   CollectionItem,
   CollectionProvider,
@@ -17,13 +18,12 @@ import {
   SingleSelectionStrategy,
   useCollectionItems,
 } from "../common-hooks";
-import { List } from "../list/List";
-import { ListProps } from "../list/listTypes";
+import { List, ListProps } from "../list";
 import { DropdownBase, MaybeChildProps } from "./DropdownBase";
 import { DropdownButton } from "./DropdownButton";
 import { DropdownBaseProps } from "./dropdownTypes";
-import { useDropdown } from "./useDropdown";
 import { forwardCallbackProps } from "./forwardCallbackProps";
+import { useDropdown } from "./useDropdown";
 
 export interface DropdownProps<
   Item = string,
@@ -154,6 +154,8 @@ export const Dropdown = forwardRef(function Dropdown<
     }
   };
 
+  console.log({ selected, selectedItem: collectionItemsToItem(selected) });
+
   return (
     <CollectionProvider<Item> collectionHook={collectionHook}>
       <DropdownBase
@@ -167,6 +169,7 @@ export const Dropdown = forwardRef(function Dropdown<
         {getTriggerComponent()}
         <List<Item, Selection>
           ListItem={ListItem}
+          height={500}
           itemToString={itemToString}
           {...ListProps}
           highlightedIndex={highlightedIndex}
@@ -175,7 +178,6 @@ export const Dropdown = forwardRef(function Dropdown<
           onSelect={onSelect}
           selected={collectionItemsToItem(selected)}
           selectionStrategy={selectionStrategy}
-          data-testid="dropdown-list"
         />
       </DropdownBase>
     </CollectionProvider>

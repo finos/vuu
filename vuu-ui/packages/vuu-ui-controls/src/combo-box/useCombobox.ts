@@ -1,4 +1,4 @@
-import { useControlled } from "@salt-ds/core";
+import { InputProps, useControlled } from "@salt-ds/core";
 import {
   ChangeEvent,
   FocusEvent,
@@ -10,8 +10,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { ListHookProps, ListHookResult, useList } from "../list";
-import { DropdownHookResult, DropdownHookProps } from "../dropdown";
 import {
   CollectionItem,
   itemToString as defaultItemToString,
@@ -19,7 +17,8 @@ import {
   SelectionStrategy,
   SingleSelectionStrategy,
 } from "../common-hooks";
-import { InputLegacyProps as InputProps } from "../input-legacy";
+import { DropdownHookProps, DropdownHookResult } from "../dropdown";
+import { ListHookProps, ListHookResult, useList } from "../list";
 
 const NULL_REF = { current: null };
 const EnterOnly = ["Enter"];

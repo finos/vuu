@@ -4,10 +4,10 @@ import { ForwardedRef, forwardRef, memo, ReactElement, useRef } from "react";
 import {
   CollectionIndexer,
   isSelected,
-  SelectionStrategy,
   useCollectionItems,
   useImperativeScrollingAPI,
 } from "./common-hooks";
+import { SelectionStrategy } from "../common-hooks";
 import { useListHeight } from "./useListHeight";
 
 import { ListItem as DefaultListItem, ListItemProxy } from "./ListItem";

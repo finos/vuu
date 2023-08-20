@@ -1,3 +1,4 @@
+import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import {
   isValidElement,
   KeyboardEvent,
@@ -7,15 +8,6 @@ import {
   useRef,
 } from "react";
 import {
-  closestListItemIndex,
-  CollectionItem,
-  useCollapsibleGroups,
-  useKeyboardNavigation,
-  useSelection,
-  useTypeahead,
-  useViewportTracking,
-} from "./common-hooks";
-import {
   hasSelection,
   ListHandlers,
   selectedType,
@@ -24,8 +16,17 @@ import {
   SelectionStrategy,
 } from "../common-hooks";
 import { useDragDropNext as useDragDrop } from "../drag-drop";
+import {
+  closestListItemIndex,
+  CollectionItem,
+  useCollapsibleGroups,
+  useKeyboardNavigation,
+  useSelection,
+  useTypeahead,
+  useViewportTracking,
+} from "./common-hooks";
 
-import { ListHookProps, ListHookResult, ListControlProps } from "./listTypes";
+import { ListControlProps, ListHookProps, ListHookResult } from "./listTypes";
 
 export const useList = <Item, Selection extends SelectionStrategy = "default">({
   allowDragDrop = false,
@@ -218,12 +219,13 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
         ? selectedByIndex.map((i) => dataHook.data[i])
         : dataHook.data[selectedByIndex];
 
+      selectedByIndexRef.current = null;
       // TODO gave up trying to figure out how to type this correctly
       setSelected(postDropSelected as any);
     }
   }, [dataHook.data, setSelected]);
 
-  useEffect(() => {
+  useLayoutEffectSkipFirst(() => {
     if (hasSelection(lastSelection.current)) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

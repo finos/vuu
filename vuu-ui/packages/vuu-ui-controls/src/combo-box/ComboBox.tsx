@@ -1,8 +1,6 @@
-import { useIdMemo as useId, Input, InputProps } from "@salt-ds/core";
+import { useId } from "@finos/vuu-layout";
+import { Input, InputProps } from "@salt-ds/core";
 import { ForwardedRef, forwardRef, ReactElement, useCallback } from "react";
-import { DropdownBase, DropdownBaseProps } from "../dropdown";
-import { List, ListProps } from "../list";
-
 import {
   CollectionItem,
   CollectionProvider,
@@ -11,6 +9,8 @@ import {
   SingleSelectionStrategy,
   useCollectionItems,
 } from "../common-hooks";
+import { DropdownBase, DropdownBaseProps } from "../dropdown";
+import { List, ListProps } from "../list";
 import { useCombobox } from "./useCombobox";
 
 export interface ComboBoxProps<
@@ -163,7 +163,7 @@ export const ComboBox = forwardRef(function Combobox<
           ListItem={ListItem}
           focusVisible={focusVisible}
           highlightedIndex={highlightedIndex}
-          itemTextHighlightPattern={inputProps.value || undefined}
+          itemTextHighlightPattern={String(inputProps.value) || undefined}
           id={`${id}-list`}
           listHandlers={listHandlers}
           onSelectionChange={onSelectionChange}

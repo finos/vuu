@@ -1,4 +1,3 @@
-import { PortalProps } from "../portal";
 import { HTMLAttributes, KeyboardEvent, ReactElement, RefObject } from "react";
 
 export type DropdownPlacement =
@@ -8,8 +7,7 @@ export type DropdownPlacement =
   | "top-end"; // do any others make sense ?
 
 export interface DropdownBaseProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect">,
-    Pick<PortalProps, "disablePortal" | "container"> {
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   defaultIsOpen?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
@@ -64,6 +62,6 @@ export interface DropdownHookResult {
   componentProps: ComponentProps;
   isOpen: boolean;
   label: string;
-  popperRef: (node: HTMLElement | null) => void;
+  popupComponentRef: (node: HTMLElement | null) => void;
   triggerProps: DropdownHookTriggerProps;
 }

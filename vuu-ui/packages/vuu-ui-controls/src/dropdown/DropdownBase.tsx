@@ -1,9 +1,12 @@
-import { makePrefixer, useForkRef, useIdMemo as useId } from "@salt-ds/core";
-import { clsx } from "clsx";
+import cx from "classnames";
+import { useForkRef } from "@salt-ds/core";
 import { Children, cloneElement, forwardRef, useRef } from "react";
 import { forwardCallbackProps } from "./forwardCallbackProps";
 import { DropdownBaseProps } from "./dropdownTypes";
 import { useDropdownBase } from "./useDropdownBase";
+import { useId } from "@finos/vuu-layout";
+import { Portal } from "./Portal";
+import { PopupComponent as Popup } from "@finos/vuu-popups";
 
 import "./Dropdown.css";
 // Any component may be passed as our trigger or popup component.
@@ -16,7 +19,7 @@ export type MaybeChildProps = {
   width: number | string;
 };
 
-const withBaseName = makePrefixer("saltDropdown");
+const classBase = "vuuDropdown";
 
 export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
   function Dropdown(
@@ -24,10 +27,8 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
       "aria-labelledby": ariaLabelledByProp,
       children,
       className: classNameProp,
-      container,
       defaultIsOpen,
       disabled,
-      disablePortal,
       fullWidth,
       id: idProp,
       isOpen: isOpenProp,
@@ -42,17 +43,17 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
     forwardedRef
   ) {
     const rootRef = useRef<HTMLDivElement>(null);
-    const className = clsx(withBaseName(), classNameProp, {
-      [withBaseName("fullWidth")]: fullWidth,
-      [withBaseName("disabled")]: disabled,
+    const className = cx(classBase, classNameProp, {
+      [`${classBase}-fullWidth`]: fullWidth,
+      [`${classBase}-disabled`]: disabled,
     });
     const [trigger, popupComponent] = Children.toArray(
       children
     ) as JSX.Element[];
     const id = useId(idProp);
 
-    const { componentProps, popperRef, isOpen, triggerProps } = useDropdownBase(
-      {
+    const { componentProps, isOpen, popupComponentRef, triggerProps } =
+      useDropdownBase({
         ariaLabelledBy: ariaLabelledByProp,
         defaultIsOpen,
         disabled,
@@ -66,38 +67,7 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
         popupWidth,
         rootRef,
         width,
-      }
-    );
-    // const [maxPopupHeight, setMaxPopupHeight] = useState<number | undefined>(
-    //   undefined
-    // );
-
-    // const middleware = isDesktop
-    //   ? []
-    //   : [
-    //       flip({
-    //         fallbackPlacements: ["bottom-start", "top-start"],
-    //       }),
-    //       shift({ limiter: limitShift() }),
-    //       size({
-    //         apply({ availableHeight }) {
-    //           setMaxPopupHeight(availableHeight);
-    //         },
-    //       }),
-    //     ];
-
-    // const { reference, floating, x, y, strategy } = useFloatingUI({
-    //   placement,
-    //   middleware,
-    // });
-
-    const handlePopperListAdapterRef = useForkRef<HTMLDivElement>(
-      reference,
-      forwardedRef
-    );
-    const handleRootRef = useForkRef(rootRef, handlePopperListAdapterRef);
-    const handleFloatingRef = useForkRef<HTMLDivElement>(floating, popperRef);
-    // TODO maybe we should pass style, with maxHeight, to the popupComponent
+      });
 
     const getTriggerComponent = () => {
       const {
@@ -133,39 +103,25 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
       return cloneElement(popupComponent, {
         ...ownProps,
         ...restComponentProps,
-        className: clsx(className, withBaseName("popup-component")),
+        className: cx(className, `${classBase}-popup-component`),
         id,
+        ref: popupComponentRef,
         width: ownWidth ?? width,
       });
     };
 
+    const ref = useForkRef(rootRef, forwardedRef);
+
     return (
-      <div
-        {...htmlAttributes}
-        className={className}
-        data-testid="dropdown"
-        id={idProp}
-        ref={handleRootRef}
-      >
+      <div {...htmlAttributes} className={className} id={idProp} ref={ref}>
         {getTriggerComponent()}
-        {
-          isOpen &&
-            // <Portal disablePortal={disablePortal} container={container}>
-            //   <Window
-            //     className={clsx(withBaseName("popup"), classNameProp)}
-            //     id={`${id}-popup`}
-            //     style={{
-            //       top: y ?? 0,
-            //       left: x ?? 0,
-            //       position: strategy,
-            //       maxHeight: maxPopupHeight ?? undefined,
-            //     }}
-            //     ref={handleFloatingRef}
-            //   >
-            getPopupComponent()
-          //   </Window>
-          // </Portal>
-        }
+        {isOpen && (
+          <Portal>
+            <Popup anchorElement={rootRef} placement="below">
+              {getPopupComponent()}
+            </Popup>
+          </Portal>
+        )}
       </div>
     );
   }
