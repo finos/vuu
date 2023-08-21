@@ -30,7 +30,7 @@ import {
   VuuAggregation,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
-import { createArray} from "/Users/joachim/Desktop/UBS/vuu-my-copy/vuu/vuu-ui/packages/vuu-data/src/array-data-source/generate-data-utils";
+import { createArray} from "../../../../packages/vuu-data/src/array-data-source/generate-data-utils";
 
 let displaySequence = 1;
 
