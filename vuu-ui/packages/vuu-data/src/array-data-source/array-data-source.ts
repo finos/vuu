@@ -44,7 +44,6 @@ import {
 } from "../vuuUIMessageTypes";
 import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
 import { sortRows } from "./sort-utils";
-import { el } from "@faker-js/faker";
 import { aggregateData } from "./aggregate-utils";
 
 export interface ArrayDataSourceConstructorProps
