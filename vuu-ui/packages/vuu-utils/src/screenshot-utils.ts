@@ -3,6 +3,7 @@ import { toPng } from "html-to-image";
 /**
  * Takes a screenshot of the given node and returns the base64 encoded image url
  * @param node Node to take screenshot of
+ * @returns Base64 encoded image url
  */
 export async function takeScreenshot(node: HTMLElement) {
   localStorage.removeItem("layout-screenshot");
@@ -16,5 +17,10 @@ export async function takeScreenshot(node: HTMLElement) {
       return undefined;
     });
 
-  if (screenshot) localStorage.setItem("layout-screenshot", screenshot);
+  if (!screenshot) {
+    return undefined;
+  }
+
+  localStorage.setItem("layout-screenshot", screenshot);
+  return screenshot;
 }
