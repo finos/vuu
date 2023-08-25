@@ -77,8 +77,9 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
           <FormField>
             <FormFieldLabel>Some Layout Setting</FormFieldLabel>
             <div className="settingsGroup">
-              {checkboxValues.map(value =>
+              {checkboxValues.map((value, i) =>
                 <Checkbox
+                  key={i}
                   className="setting"
                   onToggle={() => setCheckValues((prev) => prev.includes(value) ? prev.filter(entry => entry !== value) : [...prev, value])}
                   checked={checkValues.includes(value)}
@@ -92,6 +93,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
             <div className="settingsGroup">
               {radioValues.map((value, i) =>
                 <RadioButton
+                  key={i}
                   onClick={() => setRadioValue(value)}
                   checked={radioValue === value}
                   label={value}
@@ -109,7 +111,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
         <Button className="cancelButton" onClick={onCancel}>
           Cancel
         </Button>
-        <Button className="saveButton" onClick={() => onSave(layoutName, group, checkValues, radioValue)}
+        <Button className="saveButton" onClick={() => onSave(layoutName, group, checkValues, radioValue || "")}
           disabled={layoutName === "" || group === ""}>
           Save
         </Button>
