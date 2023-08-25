@@ -18,10 +18,7 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": [
-    "react",
-    "react-hooks"
-  ],
+  "plugins": ["react", "react-hooks"],
   "settings": {
     "react": {
       "version": "detect"
@@ -36,27 +33,14 @@
         "additionalHooks": "(useLayoutEffectSkipFirst)"
       }
     ],
+
     "no-unused-vars": 0,
-    "prefer-const": [
-      "error",
-      {
-        "destructuring": "all"
-      }
-    ],
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      {
-        "ignoreRestSiblings": true
-      }
-    ]
+    "prefer-const": ["error", {"destructuring": "all"}],
+    "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]
   },
   "overrides": [
     {
-      "files": [
-        "*.cy.tsx"
-      ],
-      "extends": [
-      ]
+      "files": ["*.cy.tsx"]
     }
   ]
 }

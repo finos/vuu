@@ -50,7 +50,6 @@ export default defineConfig({
   viewportWidth: 1280,
   viewportHeight: 1024,
   video: false,
-
   component: {
     setupNodeEvents(on, config) {
       // installCoverageTask(on, config);
