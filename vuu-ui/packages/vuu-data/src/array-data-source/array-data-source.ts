@@ -1,6 +1,6 @@
 import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
-import { filterPredicate } from "@finos/vuu-filter-parser";
+import { filterPredicate, parseFilter } from "@finos/vuu-filter-parser";
 import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
@@ -21,15 +21,19 @@ import {
   metadataKeys,
   rangeNewItems,
   resetRange,
+  setAggregations,
   uuid,
 } from "@finos/vuu-utils";
 import {
+  configChanged,
   DataSource,
+  DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceEvents,
   SubscribeCallback,
   SubscribeProps,
   vanillaConfig,
+  withConfigDefaults,
   WithFullConfig,
 } from "../data-source";
 import { TableSchema } from "../message-utils";
@@ -40,6 +44,7 @@ import {
 } from "../vuuUIMessageTypes";
 import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
 import { sortRows } from "./sort-utils";
+import { aggregateData } from "./aggregate-utils";
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
@@ -126,6 +131,7 @@ export class ArrayDataSource
   public viewport: string;
 
   private keys = new KeySet(this.#range);
+  processedData: readonly DataSourceRow[] | undefined = undefined;
 
   constructor({
     aggregations,
@@ -260,20 +266,21 @@ export class ArrayDataSource
 
   openTreeNode(key: string) {
     this.openTreeNodes.push(key);
-    this.groupedData = expandGroup(
+    this.processedData = expandGroup(
       this.openTreeNodes,
       this.#data,
       this.#config.groupBy,
       this.#columnMap,
-      this.groupMap as GroupMap
+      this.groupMap as GroupMap,
+      this.processedData as readonly DataSourceRow[]
     );
     this.setRange(resetRange(this.#range), true);
   }
 
   closeTreeNode(key: string) {
     this.openTreeNodes = this.openTreeNodes.filter((value) => value !== key);
-    if (this.groupedData) {
-      this.groupedData = collapseGroup(key, this.groupedData);
+    if (this.processedData) {
+      this.processedData = collapseGroup(key, this.processedData);
       this.setRange(resetRange(this.#range), true);
     }
   }
@@ -317,7 +324,11 @@ export class ArrayDataSource
         ? rangeNewItems(this.lastRangeServed, this.#range)
         : this.#range;
     const data =
-      this.sortedData ?? this.groupedData ?? this.filteredData ?? this.#data;
+      this.processedData ??
+      this.#data ??
+      this.sortedData ??
+      this.groupedData ??
+      this.filteredData;
 
     const rowsWithinViewport = data
       .slice(rowRange.from, rowRange.to)
@@ -340,7 +351,6 @@ export class ArrayDataSource
 
   set columns(columns: string[]) {
     this.#columns = columns;
-    console.log(`ArrayDataSource setColumns ${columns.join(",")}`);
   }
 
   get aggregations() {
@@ -348,7 +358,25 @@ export class ArrayDataSource
   }
 
   set aggregations(aggregations: VuuAggregation[]) {
-    // this.#aggregations = aggregations;
+    this.#config = {
+      ...this.#config,
+      aggregations,
+    };
+
+    const targetData = this.processedData ?? this.#data;
+    const leafData = this.#data;
+
+    aggregateData(
+      aggregations,
+      targetData,
+      this.#config.groupBy,
+      leafData,
+      this.#columnMap,
+      this.groupMap as GroupMap
+    );
+    this.setRange(resetRange(this.#range), true);
+
+    this.emit("config", this.#config);
   }
 
   get sort() {
@@ -361,8 +389,8 @@ export class ArrayDataSource
       ...this.#config,
       sort,
     };
-
-    this.sortedData = sortRows(this.#data, sort, this.#columnMap).map(
+    const targetData = this.processedData ?? this.#data;
+    this.processedData = sortRows(targetData, this.sort, this.#columnMap).map(
       (row, i) => {
         const dolly = row.slice() as DataSourceRow;
         dolly[0] = i;
@@ -381,16 +409,17 @@ export class ArrayDataSource
   set filter(filter: DataSourceFilter) {
     debug?.(`filter ${JSON.stringify(filter)}`);
     // TODO should we wait until server ACK before we assign #sort ?
-
     this.#config = {
       ...this.#config,
       filter,
     };
     const { filterStruct } = filter;
+
     if (filterStruct) {
       const fn = filterPredicate(this.#columnMap, filterStruct);
       // TODO this is expensive,
-      this.filteredData = this.#data.filter(fn).map((row, i) => {
+      const targetData = this.processedData ?? this.#data;
+      this.processedData = targetData.filter(fn).map((row, i) => {
         const dolly = row.slice() as DataSourceRow;
         dolly[0] = i;
         dolly[1] = i;
@@ -414,17 +443,16 @@ export class ArrayDataSource
     };
 
     if (groupBy.length) {
-      console.time("group");
       const [groupedData, groupMap] = groupRows(
-        this.#data,
+        this.processedData ?? this.#data,
         groupBy,
         this.#columnMap
       );
       this.groupMap = groupMap;
-      this.groupedData = groupedData;
-      console.timeEnd("group");
+      this.processedData = groupedData;
     } else {
       this.groupedData = undefined;
+      this.processedData = undefined;
     }
     this.setRange(resetRange(this.#range), true);
 
