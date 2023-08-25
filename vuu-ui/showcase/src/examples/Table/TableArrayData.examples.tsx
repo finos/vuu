@@ -1,30 +1,18 @@
-import { Table } from "@finos/vuu-table";
-import { DragVisualizer } from "@finos/vuu-table/src/DragVisualizer";
+import { ArrayDataSource, WithFullConfig } from "@finos/vuu-data";
+import { parseFilter } from "@finos/vuu-filter-parser";
 import { Flexbox, View } from "@finos/vuu-layout";
+import { Table } from "@finos/vuu-table";
+import { DragVisualizer } from "@finos/vuu-table/src/table/DragVisualizer";
+import { Checkbox, ToggleButton } from "@salt-ds/core";
 import {
-  Checkbox,
-  ToggleButton,
-  Toolbar,
-  ToolbarField,
-} from "@heswell/salt-lab";
-import {
+  ChangeEvent,
   CSSProperties,
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from "react";
-import { DragVisualizer } from "@finos/vuu-table/src/table/DragVisualizer";
-import { Checkbox, ToggleButton } from "@salt-ds/core";
-import { ChangeEvent, CSSProperties, useCallback, useState } from "react";
 import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
-import {
-  ArrayDataSource,
-  DataSourceConfig,
-  WithFullConfig,
-} from "@finos/vuu-data";
-import { parseFilter } from "@finos/vuu-filter-parser";
-import { createArray} from "../../../../packages/vuu-data/src/array-data-source/generate-data-utils";
+import { createArray } from "../utils/generate-data-utils";
 
 let displaySequence = 1;
 
@@ -339,8 +327,8 @@ const columns = [
   { name: "name", width: 100 },
   { name: "currency", width: 100 },
   { name: "price", width: 100, serverDataType: "double" },
-  { name: "lot size", width: 100, serverDataType: "double"  },
-  { name: "order size", width: 100, serverDataType: "double"  },
+  { name: "lot size", width: 100, serverDataType: "double" },
+  { name: "order size", width: 100, serverDataType: "double" },
   { name: "order type", width: 100 },
   { name: "order description", width: 100 },
   { name: "order date", width: 100 },
@@ -348,14 +336,14 @@ const columns = [
   { name: "account number", width: 100 },
   { name: "department", width: 100 },
   { name: "industry", width: 100 },
-  { name: "PE ratio", width: 100, serverDataType: "double"  },
-  { name: "EPS", width: 100, serverDataType: "double"  },
-  { name: "market cap", width: 100, serverDataType: "double"  },
-  { name: "volume", width: 100, serverDataType: "double"  },
+  { name: "PE ratio", width: 100, serverDataType: "double" },
+  { name: "EPS", width: 100, serverDataType: "double" },
+  { name: "market cap", width: 100, serverDataType: "double" },
+  { name: "volume", width: 100, serverDataType: "double" },
   { name: "beta", width: 100 },
   { name: "dividend", width: 100, serverDataType: "double" },
-  { name: "yield", width: 100, serverDataType: "double"  },
-  { name: "return on equity", width: 100, serverDataType: "double"  },
+  { name: "yield", width: 100, serverDataType: "double" },
+  { name: "return on equity", width: 100, serverDataType: "double" },
 ];
 
 const numofrows = 100000;
@@ -366,7 +354,6 @@ const config = { columns };
 const data = newArray;
 
 export const SmaTable = () => {
-
   const [inputValue, setInputValue] = useState("");
   const [dataSourceConfig, setDataSourceConfig] = useState<WithFullConfig>({
     groupBy: [],
