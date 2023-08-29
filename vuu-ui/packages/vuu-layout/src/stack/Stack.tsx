@@ -65,7 +65,6 @@ export const Stack = forwardRef(function Stack(
   ref: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
-
   const { allowCloseTab, allowRenameTab } = TabstripProps;
 
   // TODO integrate with Tabstrip drag drop
@@ -93,6 +92,9 @@ export const Stack = forwardRef(function Stack(
   );
 
   const activeChild = () => {
+    //TODO need to inject an id if child does not have one, so we can
+    // establish the aria-controls relationship. In a Vuu layout, there
+    // will always be an id.
     if (React.isValidElement(children)) {
       return children;
     }
@@ -104,14 +106,14 @@ export const Stack = forwardRef(function Stack(
 
   const renderTabs = () =>
     getChildElements(children).map((child, idx) => {
-      const rootId = `${id}-${idx}`;
-      const { closeable = allowCloseTab, id: childId } = child.props;
+      const { closeable = allowCloseTab, id: childId = `${id}-${idx}` } =
+        child.props;
       return (
         <Tab
-          ariaControls={`${rootId}-tab`}
+          ariaControls={childId}
           data-icon={getTabIcon(child, idx)}
-          key={childId ?? idx}
-          id={rootId}
+          key={childId}
+          id={`${childId}-tab`}
           index={idx}
           label={getTabLabel(child, idx)}
           closeable={closeable}

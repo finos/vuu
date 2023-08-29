@@ -15,15 +15,20 @@ const classBase = "vuuTabMenu";
 export interface TabMenuProps {
   allowClose: boolean;
   allowRename: boolean;
+  index: number;
   location?: string;
   onMenuAction: MenuActionHandler;
   onMenuClose?: () => void;
-  index: number;
+  /**
+   * The id of associated component, if available
+   */
+  controlledComponentId?: string;
 }
 
 export const TabMenu = ({
   allowClose,
   allowRename,
+  controlledComponentId,
   location,
   onMenuAction,
   onMenuClose,
@@ -42,10 +47,11 @@ export const TabMenu = ({
         return menuItems;
       },
       {
+        controlledComponentId,
         tabIndex: index,
       },
     ],
-    [allowClose, allowRename, index]
+    [allowClose, allowRename, controlledComponentId, index]
   );
 
   return (
