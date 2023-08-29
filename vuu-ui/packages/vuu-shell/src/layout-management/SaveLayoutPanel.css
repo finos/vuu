@@ -64,7 +64,8 @@
 }
 
 .screenshot {
-  background: url(<path-to-image>), lightgray 50% / cover no-repeat;
+  /* Uncomment once screenshot functionality is implemented */
+  /* background: url(<path-to-image>), lightgray 50% / cover no-repeat; */
   width: 273px;
   height: 186px;
   flex-shrink: 0;
