@@ -37,17 +37,22 @@ export const ShellWithNewTheme = () => {
     setDialogContent(undefined);
   }, []);
 
-  const handleSave = useCallback((layoutName: string, layoutGroup: string, checkValues: string[], radioValues: string) => {
-    console.log("Save layout as \"" + layoutName + "\""
-      + " to group \"" + layoutGroup + "\""
-      + " with settings [" + checkValues + "]"
-      + " and " + radioValues);
-  }, []);
+  const handleSave = useCallback(
+    (
+      layoutName: string,
+      layoutGroup: string,
+      checkValues: string[],
+      radioValues: string
+    ) => {
+      console.log(
+        `Save Layout as ${layoutName} to group ${layoutGroup} with settings [${checkValues}] and ${radioValues}`
+      );
+    },
+    []
+  );
 
-  const handleScreenshot = async () => {
-    await takeScreenshot(
-      document.getElementsByClassName("vuuShell-content")[0] as HTMLElement
-    );
+  const handleScreenshot = async (nodeId: string) => {
+    await takeScreenshot(document.getElementById(nodeId) as HTMLElement);
 
     return localStorage.getItem("layout-screenshot") || undefined;
   };
@@ -85,7 +90,9 @@ export const ShellWithNewTheme = () => {
             <SaveLayoutPanel
               onCancel={handleCloseDialog}
               onSave={handleSave}
-              screenshot={await handleScreenshot()}
+              screenshot={await handleScreenshot(
+                action.options.controlledComponentId as string
+              )}
             />
           );
           return true;
@@ -176,7 +183,7 @@ export const ShellWithNewTheme = () => {
           style={{ maxHeight: 500, borderColor: "#6d188b" }}
           title={"Save Layout"}
           hideCloseButton
-          headerProps={{className: "dialogHeader"}}
+          headerProps={{ className: "dialogHeader" }}
         >
           {dialogContent}
         </Dialog>
