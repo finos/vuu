@@ -111,7 +111,9 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
         <Button className="cancelButton" onClick={onCancel}>
           Cancel
         </Button>
-        <Button className="saveButton" onClick={() => onSave(layoutName, group, checkValues, radioValue || "")}
+        <Button
+          className="saveButton"
+          onClick={() => onSave(layoutName, group, checkValues, radioValue || "")}
           disabled={layoutName === "" || group === ""}>
           Save
         </Button>

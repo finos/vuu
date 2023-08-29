@@ -101,10 +101,6 @@
   background: var(--actionable-primary-background-default, #FFF);
 }
 
-.cancelButton.saveButton.saltButton:hover {
-  border: none;
-}
-
 .saveButton {
   background: #6D18BD;
   border-color: #6D18BD;
