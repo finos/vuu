@@ -12,7 +12,7 @@ import {
 import { DropdownBase, DropdownBaseProps } from "../dropdown";
 import { List, ListProps } from "../list";
 import { useCombobox } from "./useCombobox";
-import { ChevronDownIcon } from "../list/ChevronDownIcon";
+import { ChevronIcon } from "../list/ChevronIcon";
 
 export interface ComboBoxProps<
   Item = string,
@@ -158,7 +158,10 @@ export const ComboBox = forwardRef(function Combobox<
           // ref={useForkRef(setInputRef, setHookInputRef)}
           {...controlProps}
           endAdornment={
-            <ChevronDownIcon onClick={() => {onOpenChange(!isOpen)}} />
+            <ChevronIcon
+              direction={isOpen ? "up" : "down"}
+              onClick={() => { onOpenChange(!isOpen) }}
+            />
           }
         />
 

@@ -1,15 +1,14 @@
-.vuuChevronDownIcon {
+.vuuChevronIcon {
     --vuu-icon-size: 14px;
     --vuu-icon-left: -1px;
     --vuu-icon-top: -1px;
-    --vuu-icon-svg: var(--vuu-svg-chevron-down);
-    height: var(--vuuChevronDownIcon-size, 14px);
+    height: var(--vuuChevronIcon-size, 14px);
     position: relative;
-    width: var(--vuuChevronDownIcon-size, 14px);
+    width: var(--vuuChevronIcon-size, 14px);
     cursor: pointer;
 }
 
-.vuuChevronDownIcon:after {
+.vuuChevronIcon:after {
     content: "";
     background-color: #777C94;
     left: var(--vuu-icon-left, auto);
@@ -21,4 +20,20 @@
     position: absolute;
     top: var(--vuu-icon-top, auto);
     width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
+}
+
+.vuuChevronIcon.up {
+  --vuu-icon-svg: var(--vuu-svg-chevron-up);
+}
+
+.vuuChevronIcon.down {
+  --vuu-icon-svg: var(--vuu-svg-chevron-down);
+}
+
+.vuuChevronIcon.left {
+  --vuu-icon-svg: var(--vuu-svg-chevron-left);
+}
+
+.vuuChevronIcon.right {
+  --vuu-icon-svg: var(--vuu-svg-chevron-right);
 }
