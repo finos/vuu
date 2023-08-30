@@ -26,7 +26,7 @@ const radioValues = [
   "Value 3"
 ] as const;
 
-type RadioValue = typeof radioValues[number] | undefined;
+type RadioValue = typeof radioValues[number];
 
 type SaveLayoutPanelProps = {
   onCancel: () => void;
