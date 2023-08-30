@@ -1,0 +1,55 @@
+.vuuLayoutList-header {
+    color: var(--light-text-primary, #15171B);
+    font-weight: 700;
+    letter-spacing: 0.48px;
+    text-transform: uppercase;
+    display: flex;
+    padding: 16px 0px;
+    align-items: center;
+    align-self: stretch;
+    border-bottom: 1px solid rgba(119, 124, 148, 0.10);
+    line-height: 200%;
+}
+
+.vuuLayoutList-groupName {
+    display: flex;
+    padding-top: 24px;
+    align-items: center;
+    align-self: stretch;
+    color: var(--light-text-secondary, #606477);
+    font-weight: 700;
+    letter-spacing: 0.48px;
+    text-transform: uppercase;
+    line-height: 200%;
+}
+
+.vuuLayoutList-layoutContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0px;
+    align-self: stretch;
+    flex: 1 1 auto;
+}
+
+.vuuLayoutList-layoutName {
+    color: var(--light-text-primary, #15171B);
+    font-weight: 600;
+    line-height: 133.333%;
+    text-transform: capitalize;
+}
+
+.vuuLayoutList-screenshot {
+    width: 60px;
+    height: 45.6px;
+    border: 1px solid #D6D7DA;
+    /* background: url(<path-to-image>), lightgray 50% / cover no-repeat; */
+}
+
+.vuuLayoutList-layoutDetails {
+    color: var(--light-text-secondary, #606477);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 150%;
+    text-transform: capitalize;
+}

@@ -91,13 +91,16 @@
 
 .vuuLeftNav [data-icon='demo'] {
     --vuu-icon-svg: var(--svg-demo);
-  }
+}
+
 .vuuLeftNav [data-icon='tables'] {
     --vuu-icon-svg: var(--svg-tables);
-  }
+}
+
 .vuuLeftNav [data-icon='templates'] {
     --vuu-icon-svg: var(--svg-templates);
-  }
+}
+
 .vuuLeftNav [data-icon='layouts'] {
     --vuu-icon-svg: var(--svg-layouts);
 }
@@ -108,6 +111,7 @@
         /* --vuu-icon-left: 12px !important; */
         --vuuTab-padding: 0 0 0 42px;
     }
+
     .vuuTab-main {
         display: none !important;
     }
@@ -117,7 +121,7 @@
     align-items: center;
     display: flex;
     flex: 0 0 100px;
-    justify-content: center;;
+    justify-content: center;
 }
 
 .vuuLeftNav-toggleButton {
@@ -135,5 +139,16 @@
 
 .vuuLeftNav-toggleButton-open {
     --vuu-icon-left: 9px;
+}
 
+.vuuLeftNav-drawer {
+    display: flex;
+    padding: 40px 32px 0px 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-shrink: 0;
+    align-self: stretch;
+    background: #FFF;
+    box-shadow: 3px 4px 4px 0px rgba(0, 0, 0, 0.15);
+    height: 100%
 }

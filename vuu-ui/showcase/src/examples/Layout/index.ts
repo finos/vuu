@@ -11,3 +11,4 @@ export * as Stack from "./Stack.examples";
 export * as Toolbar from "./Toolbar.examples";
 export * as View from "./View.examples";
 export * as SavePanel from "./SavePanel.examples";
+export * as LayoutsBrowser from "./LayoutsBrowser.examples"
