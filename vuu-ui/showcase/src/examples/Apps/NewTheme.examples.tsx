@@ -28,6 +28,7 @@ import {
 import { AutoTableNext } from "../Table/TableNext.examples";
 
 import "./NewTheme.examples.css";
+
 registerComponent("AutoTableNext", AutoTableNext, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
 

@@ -53,7 +53,7 @@ export const Dialog = ({
       <Scrim className={`${classBase}-scrim`} open={isOpen} autoFocusRef={root}>
         <div {...props} className={cx(classBase, className)} ref={root}>
           <div className={cx("vuuToolbarProxy", `${classBase}-header`)}>
-            <Text {...headerProps}>{title}</Text>
+            <Text className="dialogHeader" {...headerProps}>{title}</Text>
             {!hideCloseButton && <Button
               key="close"
               onClick={close}
