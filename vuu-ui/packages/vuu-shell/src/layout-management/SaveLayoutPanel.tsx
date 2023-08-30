@@ -99,7 +99,6 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
               {checkboxValues.map((value, i) =>
                 <Checkbox
                   key={i}
-                  className="setting"
                   onToggle={() => setCheckValues((prev) => prev.includes(value) ? prev.filter(entry => entry !== value) : [...prev, value])}
                   checked={checkValues.includes(value)}
                   label={value}

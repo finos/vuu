@@ -10,7 +10,7 @@ type CheckboxProps = {
 }
 
 export const Checkbox = (props: CheckboxProps): JSX.Element => {
-  const {onToggle, className, checked, label} = props;
+  const {onToggle, checked, label} = props;
 
   return (
     <div

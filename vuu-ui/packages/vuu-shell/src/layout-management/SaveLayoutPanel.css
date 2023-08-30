@@ -41,17 +41,6 @@
   line-height: 16px;
 }
 
-.setting {
-  display: flex;
-  height: 24px;
-  align-items: center;
-  gap: 6px;
-  color: var(--light-text-primary, #15171B);
-  font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
-  font-size: 12px;
-  font-weight: 400;
-}
-
 .screenshotContainer {
   display: flex;
   width: 304px;
