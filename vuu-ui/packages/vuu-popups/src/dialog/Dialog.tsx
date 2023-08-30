@@ -11,7 +11,6 @@ const classBase = "vuuDialog";
 export interface DialogProps extends HTMLAttributes<HTMLDivElement> {
   isOpen?: boolean;
   onClose?: () => void;
-  headerProps?: TextProps<"div">;
   hideCloseButton?: boolean;
 }
 
@@ -22,7 +21,6 @@ export const Dialog = ({
   onClose,
   title,
   hideCloseButton = false,
-  headerProps,
   ...props
 }: DialogProps) => {
   const root = useRef<HTMLDivElement>(null);
@@ -53,7 +51,7 @@ export const Dialog = ({
       <Scrim className={`${classBase}-scrim`} open={isOpen} autoFocusRef={root}>
         <div {...props} className={cx(classBase, className)} ref={root}>
           <div className={cx("vuuToolbarProxy", `${classBase}-header`)}>
-            <Text className="dialogHeader" {...headerProps}>
+            <Text className="dialogHeader">
               {title}
             </Text>
             {!hideCloseButton && (
