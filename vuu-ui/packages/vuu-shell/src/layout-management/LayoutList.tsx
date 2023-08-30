@@ -26,7 +26,7 @@ export const LayoutsList = (props: { layouts: LayoutMetadata[] }) => {
                     <div className="vuuLayoutList-groupName">{item?.[0]}</div>
                     <List<LayoutMetadata>
                         height='fit-content'
-                        source={layouts}
+                        source={item?.[1]}
                         ListItem={({ item }) =>
                             <div
                                 className="vuuLayoutList-layoutContainer"
