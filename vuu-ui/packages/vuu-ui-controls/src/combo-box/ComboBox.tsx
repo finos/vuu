@@ -158,7 +158,7 @@ export const ComboBox = forwardRef(function Combobox<
           // ref={useForkRef(setInputRef, setHookInputRef)}
           {...controlProps}
           endAdornment={
-            <ChevronDownIcon style={{ cursor: "pointer" }} onClick={() => {onOpenChange(!isOpen)}} />
+            <ChevronDownIcon onClick={() => {onOpenChange(!isOpen)}} />
           }
         />
 
