@@ -1,5 +1,5 @@
 .vuuCheckboxIcon {
-    --vuu-icon-size: 14px;
+    --vuu-icon-size: 12px;
     --vuu-icon-left: -1px;
     --vuu-icon-top: -1px;
     --vuu-icon-svg: var(--vuu-svg-tick);
@@ -8,9 +8,9 @@
     border-radius: var(--vuuCheckboxIcon-borderRadius, 3px);
     border-width: 1px;
     display: inline-block;
-    height: var(--vuuCheckboxIcon-size, 14px);
+    height: var(--vuuCheckboxIcon-size, 12px);
     position: relative;
-    width: var(--vuuCheckboxIcon-size, 14px);
+    width: var(--vuuCheckboxIcon-size, 12px);
 }
 
 .vuuCheckboxIcon-checked {

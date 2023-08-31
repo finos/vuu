@@ -8,15 +8,15 @@
     border-radius: 50%;
     border-width: 1px;
     display: inline-block;
-    height: var(--vuuRadioIcon-size, 14px);
+    height: var(--vuuRadioIcon-size, 12px);
     position: relative;
-    width: var(--vuuRadioIcon-size, 14px);
+    width: var(--vuuRadioIcon-size, 12px);
 }
 
 .vuuRadioIcon-checked {
-    background-color: var(--vuuRadioIcon-background-checked, var(--salt-selectable-background-selected));
     background-image: var(--vuu-svg-radio);
-    border-color: var(--vuuRadioIcon-borderColor-checked, var(--salt-selectable-borderColor-selected));
+    border: none;
+    background-repeat: no-repeat;
 }
 
 .vuuRadioIcon-checked:after {
