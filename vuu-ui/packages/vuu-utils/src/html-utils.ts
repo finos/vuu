@@ -47,6 +47,9 @@ export const getElementDataIndex = (el: HTMLElement | null) => {
   return -1;
 };
 
+export const getClosestIndexItem = (el: HTMLElement) =>
+  el.closest("[data-index]") as HTMLElement;
+
 export function getElementByDataIndex(
   c: HTMLElement | null,
   i: number | string,
@@ -90,6 +93,20 @@ export const focusFirstFocusableElement = (
       focusableElement.focus();
     }
   });
+};
+
+export const isSelectableElement = (el?: HTMLElement) => {
+  const item = el?.closest("[data-index]") as HTMLElement;
+  if (
+    !item ||
+    item.ariaDisabled ||
+    item.dataset.selectable === "false" ||
+    item.querySelector('[data-selectable="false"],[aria-disabled="true"]')
+  ) {
+    return false;
+  } else {
+    return true;
+  }
 };
 
 let size: number;

@@ -6,3 +6,11 @@
 .vuuToolbarItem {
     height: 100%;
 }
+
+.vuuToolbarItem.vuuFocusVisible {
+    outline-color: var(--vuuToolbarItem-outlineColor, var(--salt-focused-outlineColor));
+    outline-style: dashed;
+    outline-width: 1px;
+    outline-offset: -1px;
+  }
+  

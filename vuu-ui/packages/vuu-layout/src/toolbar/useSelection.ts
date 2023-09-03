@@ -1,18 +1,13 @@
-import { useControlled } from "@salt-ds/core";
+import { isSelectableElement, getClosestIndexItem } from "@finos/vuu-utils";
 import {
   allowMultipleSelection,
   deselectionIsAllowed,
   selectionIsDisallowed,
   SelectionStrategy,
   SpecialKeyMultipleSelection,
+  useControlled,
 } from "@finos/vuu-ui-controls";
-import {
-  KeyboardEvent,
-  MouseEvent,
-  RefObject,
-  useCallback,
-  useMemo,
-} from "react";
+import { KeyboardEvent, MouseEvent, RefObject, useCallback } from "react";
 
 const defaultSelectionKeys = ["Enter", " "];
 
@@ -57,12 +52,12 @@ export const useSelection = ({
     state: "selected",
   });
 
-  const isSelectableElement = useMemo(
-    () =>
-      (el: HTMLElement): boolean =>
-        el && el.matches(`[class*="${itemQuery} "]`),
-    [itemQuery]
-  );
+  // const isSelectableElement = useMemo(
+  //   () =>
+  //     (el: HTMLElement): boolean =>
+  //       el && el.matches(`[class*="${itemQuery} "]`),
+  //   [itemQuery]
+  // );
 
   const isSelectionEvent = useCallback(
     (evt: KeyboardEvent) => defaultSelectionKeys.includes(evt.key),
@@ -96,8 +91,7 @@ export const useSelection = ({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      const targetElement = e.target as HTMLElement;
-      if (isSelectionEvent(e) && isSelectableElement(targetElement)) {
+      if (isSelectionEvent(e) && isSelectableElement(e.target as HTMLElement)) {
         if (!selected.includes(highlightedIdx)) {
           e.stopPropagation();
           e.preventDefault();
@@ -111,7 +105,6 @@ export const useSelection = ({
     },
     [
       isSelectionEvent,
-      isSelectableElement,
       selected,
       highlightedIdx,
       selectionStrategy,
@@ -120,12 +113,15 @@ export const useSelection = ({
     ]
   );
 
-  const onClick = useCallback(
+  const handleClick = useCallback(
     (e: MouseEvent, itemIndex: number) => {
-      if (!selected.includes(itemIndex)) {
-        selectItem(itemIndex, e.shiftKey);
-      } else if (deselectionIsAllowed(selectionStrategy)) {
-        deselectItem(itemIndex, e.shiftKey);
+      const element = getClosestIndexItem(e.target as HTMLElement);
+      if (isSelectableElement(element)) {
+        if (!selected.includes(itemIndex)) {
+          selectItem(itemIndex, e.shiftKey);
+        } else if (deselectionIsAllowed(selectionStrategy)) {
+          deselectItem(itemIndex, e.shiftKey);
+        }
       }
     },
     [deselectItem, selectItem, selected, selectionStrategy]
@@ -134,7 +130,7 @@ export const useSelection = ({
   const itemHandlers = selectionIsDisallowed(selectionStrategy)
     ? NO_SELECTION_HANDLERS
     : {
-        onClick,
+        onClick: handleClick,
         onKeyDown: handleKeyDown,
       };
 
