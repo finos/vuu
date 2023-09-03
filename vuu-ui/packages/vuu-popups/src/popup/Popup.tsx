@@ -1,14 +1,17 @@
 import cx from "classnames";
 import { useThemeAttributes } from "@finos/vuu-shell";
-import { HTMLAttributes, RefObject, useLayoutEffect, useState } from "react";
+import { HTMLAttributes, RefObject } from "react";
+import { useAnchoredPosition } from "./useAnchoredPosition";
 
 import "./Popup.css";
 
-export type PopupPlacement = "above" | "below";
+export type PopupPlacement = "below" | "below-center" | "center" | "right";
 
 export interface PopupComponentProps extends HTMLAttributes<HTMLDivElement> {
   placement: PopupPlacement;
   anchorElement: RefObject<HTMLElement>;
+  offsetLeft?: number;
+  offsetTop?: number;
 }
 
 export const PopupComponent = ({
@@ -18,26 +21,13 @@ export const PopupComponent = ({
   placement,
 }: PopupComponentProps) => {
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
-  const [position, setPosition] = useState<
-    { x: number; y: number } | undefined
-  >();
-
-  // maybe better as useMemo ?
-  useLayoutEffect(() => {
-    if (anchorElement.current) {
-      const { left, bottom } = anchorElement.current.getBoundingClientRect();
-      setPosition({ x: left, y: bottom });
-    }
-  }, [anchorElement, placement]);
+  const position = useAnchoredPosition({ anchorElement, placement });
 
   return position === undefined ? null : (
     <div
       className={cx(`vuuPortal`, className, themeClass, densityClass)}
       data-mode={dataMode}
-      style={{
-        left: position.x,
-        top: position.y,
-      }}
+      style={position}
     >
       {children}
     </div>
