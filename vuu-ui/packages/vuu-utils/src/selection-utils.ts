@@ -241,6 +241,11 @@ const SINGLE_SELECTED_ROW =
 const FIRST_SELECTED_ROW_OF_BLOCK = RowSelected.True + RowSelected.First;
 const LAST_SELECTED_ROW_OF_BLOCK = RowSelected.True + RowSelected.Last;
 
+/**
+ *  Determine the value for selected. We use a bitmap to represent a number of selection states
+ * a row might exhibit. selected/not-selected is the fundamental value. We also identify first
+ * row of a selected block, last row of a selected block;
+ */
 export const getSelectionStatus = (
   selected: Selection,
   itemIndex: number
@@ -280,7 +285,10 @@ export const isSelected = (selected: Selection, itemIndex: number) => {
 
   return false;
 };
-
+/**
+ * Vuu server expects a full list if indexes of selected rows. Client represents selection in a more
+ * efficient structure. This converts client structure to full server format.
+ */
 export const expandSelection = (selected: Selection): number[] => {
   if (selected.every((selectedItem) => typeof selectedItem === "number")) {
     return selected as number[];

@@ -15,6 +15,7 @@ export * from "./placeholder";
 export * from "./registry";
 export * from "./responsive";
 export * from "./stack";
+export * from "./toolbar";
 export * from "./tools";
 export * from "./use-persistent-state";
 export * from "./utils";

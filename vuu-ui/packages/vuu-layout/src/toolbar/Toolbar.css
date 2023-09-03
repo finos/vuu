@@ -1,0 +1,8 @@
+.vuuToolbar {
+    background: var(--vuuToolbar-background, inherit);
+    height: var(--vuuToolbar-height, 36px);
+}
+
+.vuuToolbarItem {
+    height: 100%;
+}

@@ -1,10 +1,4 @@
-import { SyntheticEvent } from "react";
-import { CollectionItem } from "./collectionTypes";
-
-export const SINGLE = "default";
-export const MULTIPLE = "multiple";
-export const EXTENDED = "extended";
-export const DESELECTABLE = "deselectable";
+import { RefObject, SyntheticEvent } from "react";
 
 export type SelectionDisallowed = "none";
 export type SingleSelectionStrategy = "default" | "deselectable";
@@ -12,6 +6,14 @@ export type MultiSelectionStrategy =
   | "multiple"
   | "extended"
   | "extended-multi-range";
+
+/**
+ * SpecialKeyMultiple works as deselectable unless a special key
+ * (default SHIFT) is also pressed, then it allows multiple selection.
+ * Useful for column sorting, filters etc
+ */
+export type SpecialKeyMultipleSelection = "multiple-special-key";
+
 export type SelectionStrategy =
   | SelectionDisallowed
   | SingleSelectionStrategy
@@ -38,6 +40,18 @@ export type SelectionChangeHandler<
 export const selectionIsDisallowed = (
   selection?: SelectionStrategy
 ): selection is SelectionDisallowed => selection === "none";
+
+export const allowMultipleSelection = (
+  selectionStrategy: SelectionStrategy | SpecialKeyMultipleSelection,
+  specialKey = false
+) =>
+  selectionStrategy === "multiple" ||
+  (selectionStrategy === "multiple-special-key" && specialKey);
+
+export const deselectionIsAllowed = (
+  selection?: SelectionStrategy | SpecialKeyMultipleSelection
+): selection is "deselectable" | MultiSelectionStrategy =>
+  selection !== "none" && selection !== "default";
 
 export const hasSelection = <Item = unknown>(
   selected: Item | Item[] | null
@@ -76,28 +90,27 @@ export interface ListHandlers {
   onMouseMove?: (event: React.MouseEvent) => void;
 }
 export interface SelectionHookProps<
-  Item,
   Selection extends SelectionStrategy = "default"
-> extends SelectionProps<CollectionItem<Item>, Selection> {
+> extends SelectionProps<string, Selection> {
+  containerRef: RefObject<HTMLElement>;
   disableSelection?: boolean;
   highlightedIdx: number;
-  indexPositions: CollectionItem<Item>[];
+  itemQuery: string;
   label?: string;
   selectionKeys?: string[];
   tabToSelect?: boolean;
 }
 
 export interface SelectionHookResult<
-  Item,
   Selection extends SelectionStrategy = "default"
 > {
   listHandlers: ListHandlers;
   selected: Selection extends SingleSelectionStrategy
-    ? CollectionItem<Item> | null
-    : CollectionItem<Item>[];
+    ? string | null
+    : string[];
   setSelected: (
     selected: Selection extends SingleSelectionStrategy
-      ? CollectionItem<Item> | null
-      : CollectionItem<Item>[]
+      ? string | null
+      : string[]
   ) => void;
 }

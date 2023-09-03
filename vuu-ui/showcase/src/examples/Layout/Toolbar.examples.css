@@ -1,0 +1,35 @@
+.vuuToolbar {
+    padding: 0 6px;
+}
+
+.Item {
+    background-color: var(--item-bg, blue);
+    color: white;
+    height: 32px;
+}
+
+.Item[aria-selected="true"] {
+    background-color: purple;;
+}
+
+
+.vuuToolbarItem {
+    box-sizing: border-box;
+}
+
+.vuuToolbarItem:focus-visible {
+    outline: none;
+}
+
+
+.vuuToolbarItem-focusVisible {
+    border: dashed cyan 2px;
+}
+
+/* [data-overflow-priority="1"].Item {
+    background-color: pink;
+} */
+
+.vuuOverflowContainer-wrapContainer {
+    /* overflow: visible; */
+}

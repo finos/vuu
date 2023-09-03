@@ -8,4 +8,5 @@ export * as Header from "./Header.examples";
 export * as OverflowContainer from "./OverflowContainer.examples";
 export * as Palette from "./Palette.examples";
 export * as Stack from "./Stack.examples";
+export * as Toolbar from "./Toolbar.examples";
 export * as View from "./View.examples";
