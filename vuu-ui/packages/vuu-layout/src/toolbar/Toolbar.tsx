@@ -45,8 +45,6 @@ export const Toolbar = ({
       selectionStrategy,
     });
 
-  console.log(`Toolbar sctiveItemIndex ${activeItemIndex.join(",")}`);
-
   const id = useId(idProp);
   const className = cx(classBase, `${classBase}-${orientation}`, classNameProp);
 
@@ -62,7 +60,7 @@ export const Toolbar = ({
         return React.cloneElement(child, {
           ...forwardCallbackProps(ownProps, itemProps),
           className: cx("vuuToolbarItem", itemClassName, {
-            "vuuToolbarItem-focusVisible": focusVisible === index,
+            vuuFocusVisible: focusVisible === index,
           }),
           "data-overflow-priority": selected ? "1" : undefined,
           id: itemId,

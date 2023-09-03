@@ -98,8 +98,8 @@ interface TabstripNavigationHookProps {
 interface TabstripNavigationHookResult {
   containerProps: ContainerNavigationProps;
   highlightedIdx: number;
-  focusTab: (
-    tabIndex: number,
+  focusItem: (
+    itemIndex: number,
     immediateFocus?: boolean,
     withKeyboard?: boolean,
     delay?: number
@@ -140,13 +140,14 @@ export const useKeyboardNavigation = ({
 
   const keyboardNavigation = useRef(false);
 
-  const focusTab = useCallback(
+  const focusItem = useCallback(
     (
-      tabIndex: number,
+      itemIndex: number,
       immediateFocus = false,
       withKeyboard?: boolean,
       delay = 70
     ) => {
+      console.log("focus item");
       // The timeout is important in two scenarios:
       // 1) where tab has overflowed and is being selected from overflow menu.
       // We must not focus it until the overflow mechanism + render has restored
@@ -155,14 +156,14 @@ export const useKeyboardNavigation = ({
       // We MUST NOT delay focus when using keyboard nav, else when focus moves from
       // close button (focus ring styled by :focus-visible) to Tab label (focus ring
       // styled by css class) focus style will briefly linger on both.
-      setHighlightedIdx(tabIndex);
+      setHighlightedIdx(itemIndex);
 
       if (withKeyboard === true && !keyboardNavigation.current) {
         keyboardNavigation.current = true;
       }
 
       const setFocus = () => {
-        const element = getElementByPosition(containerRef.current, tabIndex);
+        const element = getElementByPosition(containerRef.current, itemIndex);
         if (element) {
           const focussableElement = getFocusableElement(element);
           focussableElement?.focus();
@@ -248,7 +249,7 @@ export const useKeyboardNavigation = ({
       if (nextIdx !== highlightedIdx) {
         const immediateFocus = true;
         if (manualActivation) {
-          focusTab(nextIdx, immediateFocus);
+          focusItem(nextIdx, immediateFocus);
         } else {
           // activateTab(newTabIndex);
         }
@@ -260,7 +261,7 @@ export const useKeyboardNavigation = ({
       highlightedIdx,
       manualActivation,
       nextFocusableItemIdx,
-      focusTab,
+      focusItem,
       orientation,
     ]
   );
@@ -320,8 +321,8 @@ export const useKeyboardNavigation = ({
 
   // TODO, in common hooks, we use mouse movement to track current highlighted
   // index, rather than rely on component item reporting it
-  const handleItemClick = (_: ReactMouseEvent, tabIndex: number) => {
-    setHighlightedIdx(tabIndex);
+  const handleItemClick = (_: ReactMouseEvent, itemIndex: number) => {
+    setHighlightedIdx(itemIndex);
   };
 
   const handleFocus = useCallback(() => {
@@ -365,7 +366,7 @@ export const useKeyboardNavigation = ({
     focusVisible: keyboardNavigation.current ? highlightedIdx : -1,
     focusIsWithinComponent: hasFocus,
     highlightedIdx,
-    focusTab,
+    focusItem,
     onClick: handleItemClick,
     onFocus,
     onKeyDown: handleKeyDown,

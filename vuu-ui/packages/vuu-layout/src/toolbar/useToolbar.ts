@@ -71,12 +71,12 @@ export const useToolbar = ({
       if (toolbarItem) {
         const index = parseInt(toolbarItem.dataset.index ?? "-1");
         if (index !== -1 && isValidNumber(index)) {
-          console.log(`on click itemIndex ${index}`);
+          keyboardHookHandleClick(evt, index);
           onClick?.(evt, index);
         }
       }
     },
-    [onClick]
+    [keyboardHookHandleClick, onClick]
   );
 
   const handleKeyDown = useCallback(

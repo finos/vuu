@@ -5,3 +5,4 @@ export * from "./use-resize-observer";
 export * from "./navigationTypes";
 export * from "./selectionTypes";
 export * from "./useCollectionItems";
+export * from "./useControlled";
