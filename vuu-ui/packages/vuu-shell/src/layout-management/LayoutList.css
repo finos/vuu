@@ -19,7 +19,6 @@
     color: var(--light-text-secondary, #606477);
     font-weight: 700;
     letter-spacing: 0.48px;
-    text-transform: uppercase;
     line-height: 200%;
 }
 
@@ -43,7 +42,6 @@
     width: 60px;
     height: 45.6px;
     border: 1px solid #D6D7DA;
-    /* background: url(<path-to-image>), lightgray 50% / cover no-repeat; */
 }
 
 .vuuLayoutList-layoutDetails {
@@ -51,5 +49,4 @@
     font-size: 10px;
     font-weight: 600;
     line-height: 150%;
-    text-transform: capitalize;
 }
