@@ -1,14 +1,27 @@
-
 import { List } from '@finos/vuu-ui-controls';
 import { LayoutMetadata } from './layoutTypes';
 
 import './LayoutList.css'
 
-export const LayoutsList = (props: { layouts: LayoutMetadata[] }) => {
+type LayoutGroups = {
+    [groupName: string]: LayoutMetadata[]
+}
 
+export const LayoutsList = (props: { layouts: LayoutMetadata[] }) => {
     const { layouts } = props;
 
-    const layoutsByGroup = layouts.reduce((acc: { [groupName: string]: LayoutMetadata[] }, cur) => acc[cur.group] ? { ...acc, [cur.group]: [...acc[cur.group], cur] } : { ...acc, [cur.group]: [cur] }, {})
+    const layoutsByGroup = layouts.reduce((acc: LayoutGroups, cur) => {
+        if (acc[cur.group]) {
+            return {
+                ...acc,
+                [cur.group]: [...acc[cur.group], cur]
+            }
+        }
+        return {
+            ...acc,
+            [cur.group]: [cur]
+        }
+    }, {})
 
     return (
         <>
