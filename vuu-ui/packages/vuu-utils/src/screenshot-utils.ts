@@ -6,7 +6,6 @@ import { toPng } from "html-to-image";
  * @returns Base64 encoded image url
  */
 export async function takeScreenshot(node: HTMLElement) {
-  localStorage.removeItem("layout-screenshot");
 
   const screenshot = await toPng(node, { cacheBust: true })
     .then((dataUrl) => {
@@ -20,7 +19,5 @@ export async function takeScreenshot(node: HTMLElement) {
   if (!screenshot) {
     return undefined;
   }
-
-  localStorage.setItem("layout-screenshot", screenshot);
   return screenshot;
 }

@@ -1,4 +1,3 @@
-import { LeftNav, SaveLayoutPanel, Shell } from "@finos/vuu-shell";
 import {
   CSSProperties,
   ReactElement,
@@ -6,7 +5,14 @@ import {
   useMemo,
   useState,
 } from "react";
-import { AutoTableNext } from "../Table/TableNext.examples";
+import {
+  LayoutMetadata,
+  LeftNav,
+  SaveLayoutPanel,
+  Shell,
+  LayoutManagementProvider,
+  useLayoutManager
+} from "@finos/vuu-shell";
 import { registerComponent } from "@finos/vuu-layout";
 import { TableSettingsPanel } from "@finos/vuu-table-extras";
 import {
@@ -18,11 +24,10 @@ import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "packages/vuu-data-types";
+} from "@finos/vuu-data-types";
+import { AutoTableNext } from "../Table/TableNext.examples";
 
 import "./NewTheme.examples.css";
-import { takeScreenshot } from "@finos/vuu-utils/src/screenshot-utils";
-
 registerComponent("AutoTableNext", AutoTableNext, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
 
@@ -30,32 +35,20 @@ const user = { username: "test-user", token: "test-token" };
 
 let displaySequence = 1;
 
-export const ShellWithNewTheme = () => {
+const ShellWithNewTheme = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
 
   const handleCloseDialog = useCallback(() => {
     setDialogContent(undefined);
   }, []);
 
-  const handleSave = useCallback(
-    (
-      layoutName: string,
-      layoutGroup: string,
-      checkValues: string[],
-      radioValues: string
-    ) => {
-      console.log(
-        `Save Layout as ${layoutName} to group ${layoutGroup} with settings [${checkValues}] and ${radioValues}`
-      );
-    },
-    []
-  );
+  const { saveLayout } = useLayoutManager();
 
-  const handleScreenshot = async (nodeId: string) => {
-    await takeScreenshot(document.getElementById(nodeId) as HTMLElement);
-
-    return localStorage.getItem("layout-screenshot") || undefined;
-  };
+  const handleSave = useCallback((layoutMetadata: Omit<LayoutMetadata, "id">) => {
+    console.log(`Save layout as ${layoutMetadata.name} to group ${layoutMetadata.group}`);
+    saveLayout(layoutMetadata)
+    setDialogContent(undefined)
+  }, []);
 
   const [buildMenuOptions, handleMenuAction] = useMemo<
     [MenuBuilder, MenuActionHandler]
@@ -81,7 +74,7 @@ export const ShellWithNewTheme = () => {
         }
         return menuDescriptors;
       },
-      async (action: MenuActionClosePopup) => {
+      (action: MenuActionClosePopup) => {
         console.log("menu action", {
           action,
         });
@@ -90,9 +83,6 @@ export const ShellWithNewTheme = () => {
             <SaveLayoutPanel
               onCancel={handleCloseDialog}
               onSave={handleSave}
-              screenshot={await handleScreenshot(
-                action.options.controlledComponentId as string
-              )}
             />
           );
           return true;
@@ -170,6 +160,7 @@ export const ShellWithNewTheme = () => {
         leftSidePanel={<LeftNav style={{ width: 240 }} />}
         loginUrl={window.location.toString()}
         user={user}
+        saveLocation="local"
         style={
           {
             "--vuuShell-height": "100vh",
@@ -192,4 +183,12 @@ export const ShellWithNewTheme = () => {
   );
 };
 
-ShellWithNewTheme.displaySequence = displaySequence++;
+export const ShellWithNewThemeAndLayoutManagement = () => {
+  return (
+    <LayoutManagementProvider>
+      <ShellWithNewTheme />
+    </LayoutManagementProvider>
+  )
+}
+
+ShellWithNewThemeAndLayoutManagement.displaySequence = displaySequence++;

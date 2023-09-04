@@ -1,5 +1,6 @@
 import { List } from '@finos/vuu-ui-controls';
 import { LayoutMetadata } from './layoutTypes';
+import { useLayoutManager } from './useLayoutManager';
 
 import './LayoutList.css'
 
@@ -7,10 +8,12 @@ type LayoutGroups = {
     [groupName: string]: LayoutMetadata[]
 }
 
-export const LayoutsList = (props: { layouts: LayoutMetadata[] }) => {
-    const { layouts } = props;
+export const LayoutsList = () => {
+    const { layouts } = useLayoutManager();
 
-    const layoutsByGroup = layouts.reduce((acc: LayoutGroups, cur) => {
+    const layoutMetadata = layouts.map(layout=> layout.metadata)
+
+    const layoutsByGroup = layoutMetadata.reduce((acc: LayoutGroups, cur) => {
         if (acc[cur.group]) {
             return {
                 ...acc,

@@ -1,6 +1,8 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Input, Button, FormField, FormFieldLabel, Text } from "@salt-ds/core";
-import { ComboBox, Checkbox, RadioButton, RadioIcon } from "@finos/vuu-ui-controls";
+import { ComboBox, Checkbox, RadioButton } from "@finos/vuu-ui-controls";
+import { formatDate, takeScreenshot } from "@finos/vuu-utils";
+import { LayoutMetadata } from "./layoutTypes";
 
 import "./SaveLayoutPanel.css";
 
@@ -28,17 +30,33 @@ type RadioValue = typeof radioValues[number] | undefined;
 
 type SaveLayoutPanelProps = {
   onCancel: () => void;
-  onSave: (layoutName: string, group: string, checkValues: string[], radioValue: string) => void;
-  screenshot: string | undefined;
+  onSave: (layoutMetadata: Omit<LayoutMetadata, "id">) => void;
 };
 
 export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
-  const { onCancel, onSave, screenshot } = props;
+  const { onCancel, onSave } = props;
 
   const [layoutName, setLayoutName] = useState<string>("");
   const [group, setGroup] = useState<string>("");
   const [checkValues, setCheckValues] = useState<string[]>([]);
   const [radioValue, setRadioValue] = useState<RadioValue>(radioValues[0]);
+  const [screenshot, setScreenshot] = useState<string | undefined>();
+
+  useEffect(() => {
+    takeScreenshot(document.getElementsByClassName("vuuShell-content")[0] as HTMLElement).then(screenshot =>
+      setScreenshot(screenshot)
+    )
+  }, [])
+
+  const handleSubmit = () => {
+    onSave({
+      name: layoutName,
+      group,
+      screenshot: screenshot ?? "",
+      user: "User",
+      date: formatDate(new Date(), "dd.mm.yyyy")
+    })
+  }
 
   return (
     <div className="panelContainer">
@@ -117,14 +135,16 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
         </div>
       </div>
       <div className="buttonsContainer">
-        <Button className="cancelButton" onClick={onCancel}>
-          Cancel
+        <Button
+          className="cancelButton"
+          onClick={onCancel}
+        >Cancel
         </Button>
         <Button
           className="saveButton"
-          onClick={() => onSave(layoutName, group, checkValues, radioValue || "")}
-          disabled={layoutName === "" || group === ""}>
-          Save
+          onClick={handleSubmit}
+          disabled={layoutName === "" || group === ""}
+        >Save
         </Button>
       </div>
     </div>
