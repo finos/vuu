@@ -1,14 +1,8 @@
 
 import { List } from '@finos/vuu-ui-controls';
-import './LayoutList.css'
+import { LayoutMetadata } from './layoutTypes';
 
-export type LayoutMetadata = {
-    name: string,
-    group: string,
-    screenshot: string,
-    user: string,
-    date: string
-}
+import './LayoutList.css'
 
 export const LayoutsList = (props: { layouts: LayoutMetadata[] }) => {
 
@@ -27,16 +21,16 @@ export const LayoutsList = (props: { layouts: LayoutMetadata[] }) => {
                     <List<LayoutMetadata>
                         height='fit-content'
                         source={item?.[1]}
-                        ListItem={({ item }) =>
+                        ListItem={({ item: layout }) =>
                             <div
                                 className="vuuLayoutList-layoutContainer"
-                                key={`${item?.group} ${item?.name}`}
+                                key={`${layout?.group} ${layout?.name}`}
                             >
-                                <img className="vuuLayoutList-screenshot" src={item?.screenshot} />
+                                <img className="vuuLayoutList-screenshot" src={layout?.screenshot} />
                                 <div>
-                                    <div className="vuuLayoutList-layoutName">{item?.name}</div>
+                                    <div className="vuuLayoutList-layoutName">{layout?.name}</div>
                                     <div className="vuuLayoutList-layoutDetails">
-                                        <div>{`${item?.user}, ${item?.date}`}</div>
+                                        <div>{`${layout?.user}, ${layout?.date}`}</div>
                                     </div>
                                 </div>
                             </div>
