@@ -37,7 +37,7 @@ export const LayoutsList = (props: { layouts: LayoutMetadata[] }) => {
                         ListItem={({ item: layout }) =>
                             <div
                                 className="vuuLayoutList-layoutContainer"
-                                key={`${layout?.group} ${layout?.name}`}
+                                key={layout?.id}
                             >
                                 <img className="vuuLayoutList-screenshot" src={layout?.screenshot} />
                                 <div>
