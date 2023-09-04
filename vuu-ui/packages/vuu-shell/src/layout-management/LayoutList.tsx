@@ -11,7 +11,13 @@ type LayoutGroups = {
 export const LayoutsList = () => {
     const { layouts } = useLayoutManager();
 
-    const layoutMetadata = layouts.map(layout=> layout.metadata)
+    const layoutMetadata = layouts.map(layout => layout.metadata)
+
+    const handleLoadLayout = (layoutId?: string) => {
+        // TODO load layout   
+        console.log("loading layout with id", layoutId)
+        console.log("json:", layouts.find(layout => layout.metadata.id === layoutId))
+    }
 
     const layoutsByGroup = layoutMetadata.reduce((acc: LayoutGroups, cur) => {
         if (acc[cur.group]) {
@@ -41,6 +47,7 @@ export const LayoutsList = () => {
                             <div
                                 className="vuuLayoutList-layoutContainer"
                                 key={layout?.id}
+                                onClick={() => handleLoadLayout(layout?.id)}
                             >
                                 <img className="vuuLayoutList-screenshot" src={layout?.screenshot} />
                                 <div>
