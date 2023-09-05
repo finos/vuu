@@ -8,13 +8,15 @@ type LayoutGroups = {
     [groupName: string]: LayoutMetadata[]
 }
 
-export const LayoutsList = () => {
+const classBase = "vuuLayoutList";
+
+export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
     const { layouts } = useLayoutManager();
 
     const layoutMetadata = layouts.map(layout => layout.metadata)
 
     const handleLoadLayout = (layoutId?: string) => {
-        // TODO load layout   
+        // TODO load layout
         console.log("loading layout with id", layoutId)
         console.log("json:", layouts.find(layout => layout.metadata.id === layoutId))
     }
@@ -34,25 +36,25 @@ export const LayoutsList = () => {
 
     return (
         <>
-            <div className='vuuLayoutList-header'>My Layouts</div>
+            <div className={`${classBase}-header`}>My Layouts</div>
             <List<[string, LayoutMetadata[]]>
                 height='fit-content'
                 source={Object.entries(layoutsByGroup)}
                 ListItem={({ item }) => <>
-                    <div className="vuuLayoutList-groupName">{item?.[0]}</div>
+                    <div className={`${classBase}-groupName`}>{item?.[0]}</div>
                     <List<LayoutMetadata>
                         height='fit-content'
                         source={item?.[1]}
                         ListItem={({ item: layout }) =>
                             <div
-                                className="vuuLayoutList-layoutContainer"
+                                className={`${classBase}-layoutContainer`}
                                 key={layout?.id}
                                 onClick={() => handleLoadLayout(layout?.id)}
                             >
-                                <img className="vuuLayoutList-screenshot" src={layout?.screenshot} />
+                                <img className={`${classBase}-screenshot`} src={layout?.screenshot} />
                                 <div>
-                                    <div className="vuuLayoutList-layoutName">{layout?.name}</div>
-                                    <div className="vuuLayoutList-layoutDetails">
+                                    <div className={`${classBase}-layoutName`}>{layout?.name}</div>
+                                    <div className={`${classBase}-layoutDetails`}>
                                         <div>{`${layout?.user}, ${layout?.date}`}</div>
                                     </div>
                                 </div>
