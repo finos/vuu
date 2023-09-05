@@ -10,6 +10,29 @@
   font-family: Nunito Sans;
 }
 
+@font-face {
+  font-family: 'Nunito Sans';
+  src:
+      url('NunitoSans-Regular.ttf') 
+      format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.saveLayoutPanel-inputText {
+  color: var(--light-text-secondary, #606477);
+  font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
+  font-family: Nunito Sans;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  border: none;
+  padding-left: 4px;
+  width: 100%;
+  outline: none;
+}
+
 .saveLayoutPanel-panelContainer {
   display: flex;
   padding: 16px;

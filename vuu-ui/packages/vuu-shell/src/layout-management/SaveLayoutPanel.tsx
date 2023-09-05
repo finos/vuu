@@ -83,6 +83,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
               allowFreeText={true}
               InputProps={{
                 inputProps: {
+                  className: `${classBase}-inputText`,
                   placeholder: "Select Group or Enter New Name",
                   onChange: (event: ChangeEvent<HTMLInputElement>) => setGroup(event.target.value),
                 },
@@ -94,7 +95,10 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
           <FormField className={formField}>
             <FormFieldLabel style={{fontWeight: 400}}>Layout Name</FormFieldLabel>
             <Input
-              inputProps={{ placeholder: "Enter Layout Name" }}
+              inputProps={{
+                className: `${classBase}-inputText`,
+                placeholder: "Enter Layout Name"
+              }}
               onChange={(event: ChangeEvent<HTMLInputElement>) => setLayoutName(event.target.value)}
               value={layoutName}
             />
