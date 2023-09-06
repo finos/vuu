@@ -69,7 +69,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
       <div className={`${classBase}-panelContent`}>
         <div className={`${classBase}-formContainer`}>
           <FormField className={formField}>
-            <FormFieldLabel style={{fontWeight: 400}}>Group</FormFieldLabel>
+            <FormFieldLabel>Group</FormFieldLabel>
             <ComboBox
               ListProps={{
                 style: {
@@ -93,7 +93,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
             />
           </FormField>
           <FormField className={formField}>
-            <FormFieldLabel style={{fontWeight: 400}}>Layout Name</FormFieldLabel>
+            <FormFieldLabel>Layout Name</FormFieldLabel>
             <Input
               inputProps={{
                 className: `${classBase}-inputText`,
@@ -104,7 +104,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
             />
           </FormField>
           <FormField className={formField}>
-            <FormFieldLabel style={{fontWeight: 400}}>Some Layout Setting</FormFieldLabel>
+            <FormFieldLabel>Some Layout Setting</FormFieldLabel>
             <div className={`${classBase}-settingsGroup`}>
               {checkboxValues.map((value, i) =>
                 <Checkbox
@@ -117,7 +117,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
             </div>
           </FormField>
           <FormField className={formField}>
-            <FormFieldLabel style={{fontWeight: 400}}>Some Layout Setting</FormFieldLabel>
+            <FormFieldLabel>Some Layout Setting</FormFieldLabel>
             <div className={`${classBase}-settingsGroup`}>
               {radioValues.map((value, i) =>
                 <RadioButton
