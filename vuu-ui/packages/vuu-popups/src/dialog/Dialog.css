@@ -1,7 +1,7 @@
 @font-face {
   font-family: 'Nunito Sans OTF';
   src:
-      url('../../../vuu-shell/src/layout-management/NunitoSans-Regular.ttf')
+      url('../../../vuu-shell/src/layout-management/NunitoSans-Regular.woff')
       format('opentype');
   font-weight: normal;
   font-style: normal;
