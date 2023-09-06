@@ -31,10 +31,11 @@ type RadioValue = typeof radioValues[number];
 type SaveLayoutPanelProps = {
   onCancel: () => void;
   onSave: (layoutMetadata: Omit<LayoutMetadata, "id">) => void;
+  componentId?: string
 };
 
 export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
-  const { onCancel, onSave } = props;
+  const { onCancel, onSave, componentId } = props;
 
   const [layoutName, setLayoutName] = useState<string>("");
   const [group, setGroup] = useState<string>("");
@@ -43,9 +44,11 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
   const [screenshot, setScreenshot] = useState<string | undefined>();
 
   useEffect(() => {
-    takeScreenshot(document.getElementsByClassName("vuuShell-content")[0] as HTMLElement).then(screenshot =>
-      setScreenshot(screenshot)
-    )
+    if (componentId) {
+      takeScreenshot(document.getElementById(componentId) as HTMLElement).then(screenshot =>
+        setScreenshot(screenshot)
+      )
+    }
   }, [])
 
   const handleSubmit = () => {
