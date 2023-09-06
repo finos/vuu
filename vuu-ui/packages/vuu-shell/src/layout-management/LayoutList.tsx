@@ -1,3 +1,4 @@
+import { HTMLAttributes } from 'react';
 import { List } from '@finos/vuu-ui-controls';
 import { LayoutMetadata } from './layoutTypes';
 import { useLayoutManager } from './useLayoutManager';
@@ -35,7 +36,7 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
     }, {})
 
     return (
-        <>
+        <div className={classBase} {...props}>
             <div className={`${classBase}-header`}>My Layouts</div>
             <List<[string, LayoutMetadata[]]>
                 height='fit-content'
@@ -64,7 +65,7 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
                 </>
                 }
             />
-        </>
+        </div>
     );
 };
 
