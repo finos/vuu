@@ -2,6 +2,15 @@
  * Have some global styles to simulate more realistic app. Currently only for Storybook.
  */
 
+ @font-face {
+  font-family: 'Nunito Sans Regular';
+  src:
+      url('../NunitoSans-Regular.woff') 
+      format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
  .vuu-theme {
   color: var(--salt-text-primary-foreground);
   font-family: var(--salt-typography-fontFamily);
