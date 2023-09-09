@@ -1,4 +1,8 @@
-import { ContextMenuItemDescriptor } from "@finos/vuu-data-types";
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@finos/vuu-data-types";
 import { useThemeAttributes } from "@finos/vuu-shell";
 import { isGroupMenuItemDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
@@ -9,7 +13,6 @@ import {
   PopupService,
   reasonIsMenuAction,
 } from "../popup";
-import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
 import { ContextMenuContext } from "./context-menu-provider";
@@ -21,6 +24,7 @@ export type ContextMenuOptions = {
     className?: string;
     "data-mode"?: string;
   };
+  controlledComponentId?: string;
 };
 
 export type ShowContextMenu = (

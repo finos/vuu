@@ -8,3 +8,4 @@ export * from "./list";
 export * from "./tabstrip";
 export * from "./tree";
 export * from "./utils";
+export * from "./inputs";

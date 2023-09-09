@@ -1,10 +1,10 @@
 import "cypress-real-events";
 // import "@cypress/code-coverage/support";
-import "./assertions";
-import "./commands";
+import "./component/assertions";
+import "./component/commands";
 
-import "./cypress.css";
-import "./index.css";
+import "./component/cypress.css";
+import "./component/index.css";
 
 beforeEach(() => {
   cy.window({ log: false }).focus({ log: false });

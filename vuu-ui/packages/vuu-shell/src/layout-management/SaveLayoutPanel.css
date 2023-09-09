@@ -1,5 +1,132 @@
-.vuuSaveLayoutPanel {
-    background-color: aqua;
-    height: 400px;
-    width: 600px;
+* {
+  --salt-selectable-foreground-hover: #6d18bdc3;
+  --salt-selectable-foreground-selected: #6D18BD;
+  --salt-selectable-borderColor-selected: #6D18BD;
+  --saltInputLegacy-fontFamily: Nunito Sans;
+  --salt-text-fontFamily: Nunito Sans;
+  --saltInputLegacy-fontSize: 12px;
+  --salt-text-label-fontSize: 10px;
+  --saltFormFieldLegacy-label-paddingLeft: 0;
+  --saltFormField-label-fontWeight: 400;
+  font-family: Nunito Sans Regular;
+}
+
+.saveLayoutPanel-panelContainer {
+  display: flex;
+  padding: 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.saveLayoutPanel-panelContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.saveLayoutPanel-formContainer {
+  display: flex;
+  width: 217px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.saveLayoutPanel-formField {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.saveLayoutPanel-inputText {
+  color: var(--light-text-secondary, #606477);
+  font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  border: none;
+  padding-left: 4px;
+  width: 100%;
+  outline: none;
+}
+
+.saveLayoutPanel-settingsGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+  line-height: 16px;
+}
+
+.saveLayoutPanel-screenshotContainer {
+  display: flex;
+  width: 304px;
+  height: 208px;
+  padding: 11px 15.5px;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #E8E8E8;
+  background: var(--dark-text-primary, #FFF);
+}
+
+.saveLayoutPanel-screenshot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: lightgray 50% / cover no-repeat;
+  width: 273px;
+  height: 186px;
+  flex-shrink: 0;
+}
+
+.saveLayoutPanel-buttonsContainer {
+  display: flex;
+  padding-top: 8px;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.saveLayoutPanel-cancelButton,
+.saveLayoutPanel-saveButton {
+  display: flex;
+  height: fit-content;
+  padding: 4px 8px;
+  align-items: flex-start;
+  gap: 8px;
+  border-radius: 6px;
+  font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 133.333%;
+  letter-spacing: 0.48px;
+  text-transform: uppercase;
+}
+
+.saveLayoutPanel-cancelButton {
+  color: var(--actionable-primary-foreground-default, #606477);
+  background: var(--actionable-primary-background-default, #FFF);
+}
+
+.saveLayoutPanel-saveButton {
+  background: #6D18BD;
+  border-color: #6D18BD;
+  color: white;
+}
+
+.saveLayoutPanel-saveButton.saltButton:disabled {
+  background: #6D18BD;
+  border-color: #6D18BD;
+  color: white;
+  opacity: 0.3;
+}
+
+.saveLayoutPanel-saveButton.saltButton:hover {
+  background: #F37880;
+  border-color: #F37880;
+  color: white;
 }

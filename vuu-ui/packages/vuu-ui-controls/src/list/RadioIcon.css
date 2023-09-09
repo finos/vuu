@@ -1,26 +1,26 @@
-.vuuCheckboxIcon {
+.vuuRadioIcon {
     --vuu-icon-size: 12px;
     --vuu-icon-left: -1px;
     --vuu-icon-top: -1px;
-    --vuu-icon-svg: var(--vuu-svg-tick);
+    --vuu-icon-svg: var(--vuu-svg-radio);
     border-style: solid;
-    border-color: var(--vuuCheckboxIcon-borderColor, var(--salt-selectable-borderColor));
-    border-radius: var(--vuuCheckboxIcon-borderRadius, 3px);
+    border-color: var(--vuuRadioIcon-borderColor, var(--salt-selectable-borderColor));
+    border-radius: 50%;
     border-width: 1px;
     display: inline-block;
-    height: var(--vuuCheckboxIcon-size, 12px);
+    height: var(--vuuRadioIcon-size, 12px);
     position: relative;
-    width: var(--vuuCheckboxIcon-size, 12px);
+    width: var(--vuuRadioIcon-size, 12px);
 }
 
-.vuuCheckboxIcon-checked {
-    background-color: var(--vuuCheckboxIcon-background-checked, var(--salt-selectable-background-selected));
-    border-color: var(--vuuCheckboxIcon-borderColor-checked, var(--salt-selectable-borderColor-selected));
+.vuuRadioIcon-checked {
+    background-image: var(--vuu-svg-radio);
+    border: none;
+    background-repeat: no-repeat;
 }
 
-.vuuCheckboxIcon-checked:after {
+.vuuRadioIcon-checked:after {
     content: "";
-    background-color: white;
     left: var(--vuu-icon-left, auto);
     height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
     -webkit-mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);

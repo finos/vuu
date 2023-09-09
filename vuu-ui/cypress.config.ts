@@ -1,15 +1,10 @@
 import { defineConfig } from "cypress";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
-// import IstanbulPlugin from "vite-plugin-istanbul";
-import { isCI } from "ci-info";
-import path from "path";
-import { mergeConfig, UserConfig } from "vite";
+import { UserConfig } from "vite";
 import { version as reactVersion } from "react";
-// @ts-ignore
-// import installCoverageTask from "@cypress/code-coverage/task";
 
-let viteConfig: UserConfig = {
+const viteConfig: UserConfig = {
   plugins: [react(), tsconfigPaths() /*, IstanbulPlugin()*/],
   server: {
     watch: {
@@ -74,5 +69,15 @@ export default defineConfig({
       viteConfig,
     },
     specPattern: "packages/**/src/**/*.cy.{js,ts,jsx,tsx}",
+  },
+
+  e2e: {
+    baseUrl: "http://127.0.0.1:5173/",
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setupNodeEvents(on, config) {
+      // implement node event listeners here
+    },
+    chromeWebSecurity: false,
+    defaultCommandTimeout: 10000,
   },
 });

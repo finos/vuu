@@ -1,4 +1,3 @@
-import { LeftNav, Shell } from "@finos/vuu-shell";
 import {
   CSSProperties,
   ReactElement,
@@ -6,7 +5,14 @@ import {
   useMemo,
   useState,
 } from "react";
-import { AutoTableNext } from "../Table/TableNext.examples";
+import {
+  LayoutMetadata,
+  LeftNav,
+  SaveLayoutPanel,
+  Shell,
+  LayoutManagementProvider,
+  useLayoutManager
+} from "@finos/vuu-shell";
 import { registerComponent } from "@finos/vuu-layout";
 import { TableSettingsPanel } from "@finos/vuu-table-extras";
 import {
@@ -18,8 +24,8 @@ import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "packages/vuu-data-types";
-import { SaveLayoutPanel } from "@finos/vuu-shell";
+} from "@finos/vuu-data-types";
+import { AutoTableNext } from "../Table/TableNext.examples";
 
 import "./NewTheme.examples.css";
 
@@ -30,8 +36,21 @@ const user = { username: "test-user", token: "test-token" };
 
 let displaySequence = 1;
 
-export const ShellWithNewTheme = () => {
+const ShellWithNewTheme = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
+
+  const handleCloseDialog = useCallback(() => {
+    setDialogContent(undefined);
+  }, []);
+
+  const { saveLayout } = useLayoutManager();
+
+  const handleSave = useCallback((layoutMetadata: Omit<LayoutMetadata, "id">) => {
+    console.log(`Save layout as ${layoutMetadata.name} to group ${layoutMetadata.group}`);
+    saveLayout(layoutMetadata)
+    setDialogContent(undefined)
+  }, []);
+
   const [buildMenuOptions, handleMenuAction] = useMemo<
     [MenuBuilder, MenuActionHandler]
   >(() => {
@@ -61,17 +80,19 @@ export const ShellWithNewTheme = () => {
           action,
         });
         if (action.menuId === "save-layout") {
-          setDialogContent(<SaveLayoutPanel />);
+          setDialogContent(
+            <SaveLayoutPanel
+              onCancel={handleCloseDialog}
+              onSave={handleSave}
+              componentId={action.options.controlledComponentId}
+            />
+          );
           return true;
         }
         return false;
       },
     ];
-  }, []);
-
-  const handleCloseDialog = useCallback(() => {
-    setDialogContent(undefined);
-  }, []);
+  }, [handleCloseDialog, handleSave]);
 
   //TODO what the App actually receives is an array of layouts
   const layout = useMemo(() => {
@@ -141,6 +162,7 @@ export const ShellWithNewTheme = () => {
         leftSidePanel={<LeftNav style={{ width: 240 }} />}
         loginUrl={window.location.toString()}
         user={user}
+        saveLocation="local"
         style={
           {
             "--vuuShell-height": "100vh",
@@ -149,11 +171,12 @@ export const ShellWithNewTheme = () => {
         }
       >
         <Dialog
-          className="vuDialog"
           isOpen={dialogContent !== undefined}
           onClose={handleCloseDialog}
-          style={{ maxHeight: 500 }}
+          style={{ maxHeight: 500, borderColor: "#6d188b" }}
           title={"Save Layout"}
+          hideCloseButton
+          headerProps={{ className: "dialogHeader" }}
         >
           {dialogContent}
         </Dialog>
@@ -162,4 +185,12 @@ export const ShellWithNewTheme = () => {
   );
 };
 
-ShellWithNewTheme.displaySequence = displaySequence++;
+export const ShellWithNewThemeAndLayoutManagement = () => {
+  return (
+    <LayoutManagementProvider>
+      <ShellWithNewTheme />
+    </LayoutManagementProvider>
+  )
+}
+
+ShellWithNewThemeAndLayoutManagement.displaySequence = displaySequence++;

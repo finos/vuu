@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { LayoutsList } from "../layout-management";
 import { useThemeAttributes } from "../theme-provider";
 
 import "./LeftNav.css";
@@ -144,7 +145,9 @@ export const LeftNav = ({
         <div style={{ background: "green", height: "100%" }}>
           Layout Templates
         </div>
-        <div style={{ background: "red", height: "100%" }}>My Layouts</div>
+        <div className="vuuLeftNav-drawer">
+          <LayoutsList layouts={[]} />
+        </div>
       </Stack>
     </div>
   );

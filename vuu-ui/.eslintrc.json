@@ -7,7 +7,8 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:cypress/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -39,8 +40,7 @@
   },
   "overrides": [
     {
-      "files": ["*.cy.tsx"],
-      "extends": ["plugin:cypress/recommended"]
+      "files": ["*.cy.tsx"]
     }
   ]
 }
