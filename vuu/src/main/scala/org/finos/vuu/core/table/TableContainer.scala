@@ -156,4 +156,22 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     sessionTables.foreach(sessTable => tables.remove(sessTable.name))
   }
 
+  def createBasketTable(tableDef: TableDef): DataTable = {
+
+    val table = new BasketTable(tableDef, joinTableProvider)
+
+    tables.put(table.getTableDef.name, table)
+
+    table
+  }
+
+  def createBasketConstituentTable(tableDef: TableDef): DataTable = {
+
+    val table = new BasketConstituentTable(tableDef, joinTableProvider)
+
+    tables.put(table.getTableDef.name, table)
+
+    table
+  }
+
 }

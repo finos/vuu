@@ -828,7 +828,7 @@ export const SwitchColumns = () => {
         "table-config": { columns: apColumns.map(toColumnDescriptor(parentOrdersSchema))},
       },
       {
-        "datasource-config": { 
+        "datasource-config": {
           columns: parentOrdersSchema.columns.map((col) => col.name),
           filter: { filter: 'algo = "TWAP"' },
         },
