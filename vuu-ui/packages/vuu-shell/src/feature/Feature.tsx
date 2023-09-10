@@ -97,6 +97,6 @@ function RawFeature<Params extends object | undefined>({
   from the given url. That url must resolve to a javascript bundle with a
   single default export. That export must be a React component.
  */
-export const Feature = React.memo(RawFeature) as typeof RawFeature;
-// Feature.displayName = "Feature";
+export const Feature = React.memo(RawFeature);
+Feature.displayName = "Feature";
 registerComponent("Feature", Feature, "view");

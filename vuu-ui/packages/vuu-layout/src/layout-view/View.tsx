@@ -63,6 +63,7 @@ const View = forwardRef(function View(
   } = props;
 
   const id = useId(idProp);
+  console.log(`View idProp: ${idProp} id ${id}`);
   const rootRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
   const [componentProps, _setComponentProps] = useState<Props>();

@@ -27,7 +27,6 @@ export const ColumnFormattingPanel = ({
   column,
   onChangeFormatting,
   onChangeRenderer,
-  renderer,
   ...props
 }: ColumnFormattingPanelProps) => {
   const content = useMemo(() => {

@@ -16,6 +16,8 @@ export const FeatureList = ({
 }: FeatureListProps) => {
   const ViewProps = {};
 
+  console.log({ features });
+
   return (
     <div {...htmlAttributes} className={classBase}>
       <div className={`${classBase}-header`}>VUU TABLES</div>

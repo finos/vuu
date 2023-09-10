@@ -4,11 +4,7 @@ import { FilterBarProps } from "@finos/vuu-filters";
 // import { useViewContext, View } from "@finos/vuu-layout";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { TableConfig } from "@finos/vuu-datagrid-types";
-import {
-  FlexboxLayout,
-  LayoutProvider,
-  useViewContext,
-} from "@finos/vuu-layout";
+import { FlexboxLayout, useViewContext } from "@finos/vuu-layout";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 import { useCallback, useEffect, useMemo } from "react";
 import { useTableConfig } from "../examples/utils";
@@ -21,8 +17,7 @@ export interface TableNextFeatureProps {
 }
 
 export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
-  const { id, dispatch, load, save, loadSession, saveSession } =
-    useViewContext();
+  const { load, save } = useViewContext();
   // const namedFilters = useMemo(() => new Map<string, string>(), []);
   // const [filterState, setFilterState] = useState<FilterState>({
   //   filter: undefined,
@@ -31,9 +26,6 @@ export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
 
   const { "datasource-config": dataSourceConfig, "table-config": tableConfig } =
     useMemo(() => load?.() ?? ({} as any), [load]);
-  console.log("TableNextFeature", {
-    dataSourceConfig,
-  });
 
   const handleDataSourceConfigChange = useCallback(
     (config: DataSourceConfig | undefined, confirmed?: boolean) => {

@@ -792,3 +792,14 @@ export const updateColumnRenderer = <
     };
   }
 };
+
+const NO_TYPE_SETTINGS = {};
+export const getTypeSettingsFromColumn = (
+  column: ColumnDescriptor
+): TypeFormatting => {
+  if (isTypeDescriptor(column.type)) {
+    return column.type.formatting ?? NO_TYPE_SETTINGS;
+  } else {
+    return NO_TYPE_SETTINGS;
+  }
+};

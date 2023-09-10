@@ -72,7 +72,7 @@ const features: FeatureProps<TableNextFeatureProps>[] = Object.values(schemas)
     ...featurePaths[env].TableNextFeature,
   }));
 
-export const ShellWithNewTheme = () => {
+const ShellWithNewTheme = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
 
   const handleCloseDialog = useCallback(() => {

@@ -156,8 +156,10 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   }, [dispatchLayoutAction, layout]);
 
   if (state.current === undefined) {
+    console.log("process 1");
     state.current = processLayoutElement(children);
   } else if (children !== childrenRef.current) {
+    console.log("process 2");
     state.current = processLayoutElement(children, state.current);
     childrenRef.current = children;
   }
