@@ -10,11 +10,23 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useTableConfig } from "../examples/utils";
 
 import "./TableNext.feature.css";
+import { Filter } from "packages/vuu-filter-types";
 
 export interface TableNextFeatureProps {
   schema: TableSchema;
   showFilter?: boolean;
 }
+
+type FilterbarConfig = Pick<FilterBarProps, "filters">;
+const getFilterbarProps = (config?: FilterbarConfig) => {
+  if (config === undefined) {
+    return {
+      filters: [],
+    };
+  } else {
+    return config;
+  }
+};
 
 export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
   const { load, save } = useViewContext();
@@ -24,8 +36,11 @@ export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
   //   filterQuery: "",
   // });
 
-  const { "datasource-config": dataSourceConfig, "table-config": tableConfig } =
-    useMemo(() => load?.() ?? ({} as any), [load]);
+  const {
+    "datasource-config": dataSourceConfig,
+    "filterbar-config": filterbarConfig,
+    "table-config": tableConfig,
+  } = useMemo(() => load?.() ?? ({} as any), [load]);
 
   const handleDataSourceConfigChange = useCallback(
     (config: DataSourceConfig | undefined, confirmed?: boolean) => {
@@ -63,12 +78,23 @@ export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
     [dataSource]
   );
 
+  const handleChangeFilter = useCallback(
+    (filter: Filter, newFilter: Filter) => {
+      console.log("change filter", {
+        filter,
+        newFilter,
+      });
+    },
+    []
+  );
+
   const filterBarProps: FilterBarProps = {
+    ...getFilterbarProps(filterbarConfig as FilterbarConfig),
     FilterClauseEditorProps: {
       suggestionProvider: typeaheadHook,
     },
-    filters: [],
     onApplyFilter: handleApplyFilter,
+    onChangeFilter: handleChangeFilter,
     tableSchema: schema,
   };
 

@@ -153,15 +153,6 @@ export class ArrayDataSource
       );
     }
 
-    this.#config = {
-      ...this.#config,
-      aggregations: aggregations || this.#config.aggregations,
-      columns: columnDescriptors.map((col) => col.name),
-      filter: filter || this.#config.filter,
-      groupBy: groupBy || this.#config.groupBy,
-      sort: sort || this.#config.sort,
-    };
-
     this.columnDescriptors = columnDescriptors;
     this.#columns = columnDescriptors.map((column) => column.name);
     this.#columnMap = buildColumnMap(this.#columns);
@@ -174,6 +165,15 @@ export class ArrayDataSource
     this.#size = data.length;
 
     this.#title = title;
+
+    this.config = {
+      ...this.#config,
+      aggregations: aggregations || this.#config.aggregations,
+      columns: columnDescriptors.map((col) => col.name),
+      filter: filter || this.#config.filter,
+      groupBy: groupBy || this.#config.groupBy,
+      sort: sort || this.#config.sort,
+    };
 
     debug?.(`columnMap: ${JSON.stringify(this.#columnMap)}`);
   }

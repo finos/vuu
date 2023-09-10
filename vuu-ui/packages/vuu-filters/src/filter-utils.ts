@@ -99,11 +99,13 @@ export const addClause = (
 */
 export const replaceClause = (
   existingFilter: FilterWithPartialClause | Partial<Filter> | undefined,
-  clause: Filter
-): Filter => {
+  clause: Partial<FilterClause>
+): Filter | Partial<Filter> => {
   if (isMultiClauseFilter(existingFilter)) {
     return {
       ...existingFilter,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       filters: existingFilter.filters.slice(0, -1).concat(clause),
     };
   } else {

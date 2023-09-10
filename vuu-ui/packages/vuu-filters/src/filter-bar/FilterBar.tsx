@@ -1,6 +1,6 @@
 import { TableSchema } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { Filter, FilterClause } from "@finos/vuu-filter-types";
+import { Filter } from "@finos/vuu-filter-types";
 import { Toolbar } from "@finos/vuu-layout";
 import { Prompt } from "@finos/vuu-popups";
 import { Button } from "@salt-ds/core";
@@ -16,10 +16,13 @@ import "./FilterBar.css";
 
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseEditorProps>;
+  activeFilterIndex?: number[];
   filters: Filter[];
-  filterClause?: Partial<FilterClause>;
+  onAddFilter?: (filter: Filter) => void;
   onApplyFilter: (filter: DataSourceFilter) => void;
   onChangeFilter?: (filter: Filter, newFilter: Filter) => void;
+  onDeleteFilter?: (filter: Filter) => void;
+  onRemoveFilter?: (filter: Filter) => void;
   showMenu?: boolean;
   tableSchema: TableSchema;
 }
@@ -30,7 +33,6 @@ export const FilterBar = ({
   FilterClauseEditorProps,
   className: classNameProp,
   filters: filtersProp,
-  filterClause,
   onApplyFilter,
   onChangeFilter,
   showMenu: showMenuProp = false,
@@ -54,7 +56,6 @@ export const FilterBar = ({
   } = useFilterBar({
     containerRef: rootRef,
     filters: filtersProp,
-    filterClause,
     onApplyFilter,
     onChangeFilter,
     showMenu: showMenuProp,

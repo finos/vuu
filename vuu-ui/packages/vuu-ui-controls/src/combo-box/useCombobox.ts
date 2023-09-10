@@ -251,10 +251,6 @@ export const useCombobox = <
       }
 
       handleFirstItemSelection(evt);
-
-      // if (inputProps.onKeyDown) {
-      //   inputProps.onKeyDown(event as KeyboardEvent<HTMLInputElement>);
-      // }
     },
     [allowFreeText, handleFirstItemSelection, reconcileInput, setTextValue]
   );
@@ -283,6 +279,8 @@ export const useCombobox = <
     onKeyDown: handleInputKeyDown,
     onSelectionChange: handleSelectionChange,
     // we are controlling selection from a ref value - is this right ?
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     selected: selectedRef.current,
     selectionKeys: EnterOnly,
     selectionStrategy,
@@ -343,15 +341,11 @@ export const useCombobox = <
       setIsOpen(true);
 
       setQuickSelection(newValue.length > 0 && !allowFreeText);
-
-      // if (inputProps.onChange) {
-      //   inputProps.onChange(event, "");
-      // }
     },
     [allowFreeText, onSelectionChange, setFilterPattern, setIsOpen, setValue]
   );
 
-  const { onFocus: inputOnFocus } = inputProps;
+  const { onFocus: inputOnFocus = onFocus } = inputProps;
   const { onFocus: listOnFocus } = listControlProps;
   const handleInputFocus = useCallback(
     (evt: FocusEvent<HTMLInputElement>) => {
@@ -366,7 +360,6 @@ export const useCombobox = <
     (evt: FocusEvent) => {
       const element = evt.relatedTarget as HTMLElement;
       return element?.id === `${id}-list`;
-      return true;
     },
     [id]
   );
@@ -404,7 +397,7 @@ export const useCombobox = <
     [onSelectionChange, selected, stringToItem, stringToCollectionItem, value]
   );
 
-  const { onBlur: inputOnBlur } = inputProps;
+  const { onBlur: inputOnBlur = onBlur } = inputProps;
   const { onBlur: listOnBlur } = listControlProps;
   const handleInputBlur = useCallback(
     (evt: FocusEvent<HTMLInputElement>) => {

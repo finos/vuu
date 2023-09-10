@@ -24,7 +24,8 @@
     height: 100%;
 }
 
-.vuuExpandoCombobox-Input {
+/** double up the selector just to increase specificity, won't need when we use cascade layers */
+.vuuExpandoCombobox-Input.saltInput {
     border: none;
     left:0px;
     margin:0;

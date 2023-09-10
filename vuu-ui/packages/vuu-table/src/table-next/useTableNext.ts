@@ -5,6 +5,7 @@ import {
   KeyedColumnDescriptor,
   SelectionChangeHandler,
   TableConfig,
+  TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
 import {
   SetPropsAction,
@@ -53,28 +54,29 @@ export interface TableHookProps
       TableProps,
       | "config"
       | "dataSource"
-      | "headerHeight"
       | "onConfigChange"
       | "onFeatureEnabled"
       | "onFeatureInvocation"
       | "onSelectionChange"
       | "renderBufferSize"
-      | "rowHeight"
-      | "selectionModel"
-    > {}
+    > {
+  headerHeight: number;
+  rowHeight: number;
+  selectionModel: TableSelectionModel;
+}
 
 const { KEY, IS_EXPANDED, IS_LEAF } = metadataKeys;
 
 export const useTable = ({
   config,
   dataSource,
-  headerHeight,
+  headerHeight = 25,
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
   onSelectionChange,
   renderBufferSize = 0,
-  rowHeight,
+  rowHeight = 20,
   selectionModel,
   ...measuredProps
 }: TableHookProps) => {

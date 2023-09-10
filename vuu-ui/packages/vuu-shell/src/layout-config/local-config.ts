@@ -21,7 +21,7 @@ export const loadLocalConfig = (
 
 export const saveLocalConfig = (
   saveUrl: string,
-  user: VuuUser,
+  user: VuuUser | undefined,
   data: LayoutJSON
 ): Promise<undefined> =>
   new Promise((resolve, reject) => {

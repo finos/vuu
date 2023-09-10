@@ -22,7 +22,8 @@ export const useLayoutConfig = ({
   saveLocation,
   saveUrl = "api/vui",
   user,
-  defaultLayout,
+  // TOSO this should be an error panel
+  defaultLayout = { type: "Placeholder" },
 }: LayoutConfigHookProps): LayoutHookResult => {
   const [layout, _setLayout] = useState(defaultLayout);
   const usingRemote = saveLocation === "remote";

@@ -90,13 +90,30 @@ ComboboxDefaultValue.displaySequence = displaySequence++;
 export const ComboboxFormField = () => {
   return (
     <FormField labelPlacement="top" style={{ width: 120 }}>
-      <FormFieldLabel>US Sattes</FormFieldLabel>
+      <FormFieldLabel>US States</FormFieldLabel>
       <ComboBox source={usa_states} width={120} />
     </FormField>
   );
 };
 
 ComboboxFormField.displaySequence = displaySequence++;
+
+export const ComboboxFormFieldNoAdornment = () => {
+  return (
+    <FormField labelPlacement="top" style={{ width: 120 }}>
+      <FormFieldLabel>US States</FormFieldLabel>
+      <ComboBox
+        InputProps={{
+          endAdornment: null,
+        }}
+        source={usa_states}
+        width={120}
+      />
+    </FormField>
+  );
+};
+
+ComboboxFormFieldNoAdornment.displaySequence = displaySequence++;
 
 export const MultiSelectCombobox = () => {
   const handleInputChange = useCallback((evt: FormEvent<HTMLInputElement>) => {

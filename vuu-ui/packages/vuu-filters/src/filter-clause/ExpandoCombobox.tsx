@@ -62,6 +62,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       {
         ...restInputProps,
         className: `${classBase}-Input`,
+        endAdornment: null,
         inputProps: {
           ...inputProps,
           autoComplete: "off",
@@ -92,18 +93,10 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     [itemToString, onSelectionChange]
   );
 
-  const [multiSelectText, setMultiSelectText] = useState<string>("");
   const [selected, setSelected] = useState<any[]>([]);
   const handleMultiSelectChange = useCallback((evt, selected) => {
     setSelected(selected);
   }, []);
-  const handleMultiSelectInputChange = useCallback(
-    (evt: ChangeEvent<HTMLInputElement>) => {
-      const { value } = evt.target as HTMLInputElement;
-      setMultiSelectText(value);
-    },
-    []
-  );
 
   return (
     <div
@@ -112,27 +105,13 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       ref={forwardedRef}
     >
       {allowMultipleSelection ? (
-        <ComboBox // The new ComboBox isn't multi-selectable
-          multiSelect
-          source={props.source || []}
-          onChange={handleMultiSelectChange}
-          onInputChange={handleMultiSelectInputChange}
-          inputValue={multiSelectText}
-          itemToString={props.itemToString}
-          selectedItem={selected}
-          // InputProps={{
-          //   inputProps: { autoComplete: "off" },
-          // }}
-          ListProps={{
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            "data-mode": "light",
-            displayedItemCount: 15,
-            itemHeight: 20,
-            width: "auto",
-          }}
-          // delimiter={","}
-          // allowFreeText
+        <ComboBox<Item>
+          {...props}
+          defaultValue={initialValue.current}
+          // ListItem={() => <span>{"blah"}</span>}
+          ListProps={ListProps}
+          InputProps={InputProps}
+          onSelectionChange={handleSelectionChange}
         />
       ) : (
         <ComboBox<Item>

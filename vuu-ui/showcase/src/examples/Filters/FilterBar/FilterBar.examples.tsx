@@ -1,6 +1,6 @@
 import { FilterBar } from "@finos/vuu-filters";
-import { Filter, FilterClause } from "@finos/vuu-filter-types";
-import { useCallback, useMemo, useState } from "react";
+import { Filter } from "@finos/vuu-filter-types";
+import { useCallback, useMemo } from "react";
 import { useSchema, useTableConfig } from "../../utils";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 
@@ -53,12 +53,17 @@ export const FilterBarOneSimpleFilter = () => {
     []
   );
 
+  const handleApplyFilter = useCallback((filter: DataSourceFilter) => {
+    console.log(`apply filter ${filter.filter}`);
+  }, []);
+
   return (
     <FilterBar
       FilterClauseEditorProps={{
         suggestionProvider: typeaheadHook,
       }}
       filters={filters}
+      onApplyFilter={handleApplyFilter}
       tableSchema={tableSchema}
     />
   );
@@ -99,50 +104,3 @@ export const FilterBarMultipleFilters = () => {
   );
 };
 FilterBarMultipleFilters.displaySequence = displaySequence++;
-
-export const FilterBarCompleteFilterClause = () => {
-  const filters: Filter[] = useMemo(
-    () => [{ column: "currency", name: "Filter One", op: "=", value: "EUR" }],
-    []
-  );
-  const tableSchema = useSchema("instruments");
-
-  const [filterClause] = useState<Partial<FilterClause>>({
-    column: "currency",
-    op: "=",
-    value: "EUR",
-  });
-
-  return (
-    <FilterBar
-      filterClause={filterClause}
-      filters={filters}
-      tableSchema={tableSchema}
-    />
-  );
-};
-FilterBarCompleteFilterClause.displaySequence = displaySequence++;
-
-export const FilterBarCompleteFilterClauseAndMenu = () => {
-  const filters: Filter[] = useMemo(
-    () => [{ column: "currency", name: "Filter One", op: "=", value: "EUR" }],
-    []
-  );
-  const tableSchema = useSchema("instruments");
-
-  const [filterClause] = useState<Partial<FilterClause>>({
-    column: "currency",
-    op: "=",
-    value: "EUR",
-  });
-
-  return (
-    <FilterBar
-      filterClause={filterClause}
-      filters={filters}
-      showMenu
-      tableSchema={tableSchema}
-    />
-  );
-};
-FilterBarCompleteFilterClauseAndMenu.displaySequence = displaySequence++;

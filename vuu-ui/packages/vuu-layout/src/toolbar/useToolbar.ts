@@ -32,7 +32,7 @@ export const useToolbar = ({
   const lastSelection = useRef(activeItemIndexProp);
 
   const {
-    focusTab: keyboardHookFocusTab,
+    focusItem: keyboardHookFocusItem,
     highlightedIdx,
     onClick: keyboardHookHandleClick,
     onKeyDown: keyboardHookHandleKeyDown,

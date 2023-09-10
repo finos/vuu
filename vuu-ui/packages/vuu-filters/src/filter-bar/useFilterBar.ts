@@ -23,7 +23,7 @@ import { FilterBarProps } from "./FilterBar";
 export interface FilterBarHookProps
   extends Pick<
     FilterBarProps,
-    "filters" | "filterClause" | "onApplyFilter" | "onChangeFilter" | "showMenu"
+    "filters" | "onApplyFilter" | "onChangeFilter" | "showMenu"
   > {
   containerRef: RefObject<HTMLDivElement>;
 }
@@ -33,7 +33,6 @@ const EMPTY_FILTER_CLAUSE: Partial<Filter> = {};
 export const useFilterBar = ({
   containerRef,
   filters: filtersProp,
-  filterClause,
   onApplyFilter,
   onChangeFilter,
   showMenu: showMenuProp,
@@ -44,7 +43,7 @@ export const useFilterBar = ({
   const [filters, setFilters] = useState<Filter[]>(filtersProp);
   const [editFilter, setEditFilter] = useState<
     Partial<Filter> | FilterWithPartialClause | undefined
-  >(filterClause);
+  >();
   const [promptProps, setPromptProps] = useState<PromptProps | null>(null);
 
   const editPillLabel = useCallback(
@@ -275,7 +274,7 @@ export const useFilterBar = ({
     onExitEditMode: handleExitEditFilterName,
   };
 
-  const handleChangeFilterClause = (filterClause?: Partial<FilterClause>) => {
+  const handleChangeFilterClause = (filterClause: Partial<FilterClause>) => {
     if (filterClause !== undefined) {
       setEditFilter((filter) => replaceClause(filter, filterClause));
       setShowMenu(true);

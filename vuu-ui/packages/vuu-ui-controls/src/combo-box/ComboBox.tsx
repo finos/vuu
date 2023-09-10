@@ -102,7 +102,7 @@ export const ComboBox = forwardRef(function Combobox<
   const {
     focusVisible,
     highlightedIndex,
-    inputProps,
+    inputProps: { endAdornment: endAdornmentProp, ...inputProps },
     isOpen,
     listHandlers,
     listControlProps: controlProps,
@@ -133,6 +133,8 @@ export const ComboBox = forwardRef(function Combobox<
     value: valueProp,
   });
 
+  console.log({ inputProps, endAdornmentProp });
+
   const collectionItemsToItem = useCallback(
     (
       sel?: CollectionItem<Item> | null | CollectionItem<Item>[]
@@ -153,6 +155,18 @@ export const ComboBox = forwardRef(function Combobox<
     []
   );
 
+  const endAdornment =
+    endAdornmentProp === null ? null : (
+      <ChevronIcon
+        direction={isOpen ? "up" : "down"}
+        onClick={() => {
+          onOpenChange(!isOpen);
+        }}
+      />
+    );
+
+  console.log({ endAdornment });
+
   return (
     <CollectionProvider<Item> collectionHook={collectionHook}>
       <DropdownBase
@@ -170,12 +184,7 @@ export const ComboBox = forwardRef(function Combobox<
           disabled={disabled}
           // ref={useForkRef(setInputRef, setHookInputRef)}
           {...controlProps}
-          endAdornment={
-            <ChevronIcon
-              direction={isOpen ? "up" : "down"}
-              onClick={() => { onOpenChange(!isOpen) }}
-            />
-          }
+          endAdornment={endAdornment}
         />
 
         <List<Item, Selection>
