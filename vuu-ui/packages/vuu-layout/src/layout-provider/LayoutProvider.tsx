@@ -73,9 +73,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   const dispatchLayoutAction = useCallback(
     (action: LayoutReducerAction, suppressSave = false) => {
       const nextState = layoutReducer(state.current as ReactElement, action);
-      console.log(`dispatchedLayoutAction ${action.type}`, {
-        nextState,
-      });
       if (nextState !== state.current) {
         state.current = nextState;
         forceRefresh({});
@@ -118,9 +115,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
       // If we have a layout container with the dropTarget attribute we're going to inject the loaded layout there
       // TODO make this a bit more robust/configurable than just using this magic attribute, that sounds like something
       // else.
-      console.groupCollapsed("loaded layout");
-      console.log(JSON.stringify(layout, null, 2));
-      console.groupEnd();
       const targetContainer = findTarget(
         state.current as never,
         withDropTarget
@@ -156,10 +150,8 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   }, [dispatchLayoutAction, layout]);
 
   if (state.current === undefined) {
-    console.log("process 1");
     state.current = processLayoutElement(children);
   } else if (children !== childrenRef.current) {
-    console.log("process 2");
     state.current = processLayoutElement(children, state.current);
     childrenRef.current = children;
   }
@@ -179,7 +171,6 @@ export const useLayoutProviderDispatch = () => {
 };
 
 export const useLayoutProviderVersion = () => {
-  console.log({ LayoutProviderContext });
   const { version } = useContext(LayoutProviderContext);
   return version;
 };
