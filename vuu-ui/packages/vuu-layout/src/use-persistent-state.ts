@@ -76,9 +76,6 @@ export const usePersistentState = () => {
 
   const saveState = useCallback(
     (id: string, key: string | undefined, data: unknown) => {
-      console.log(`saveState #${id} [${key}]`, {
-        data,
-      });
       if (key === undefined) {
         persistentState.set(id, data);
       } else if (persistentState.has(id)) {
