@@ -1,11 +1,13 @@
 import React, { Suspense, useEffect } from "react";
 import { registerComponent } from "@finos/vuu-layout";
-import { ErrorBoundary } from "./ErrorBoundary";
+import { FeatureErrorBoundary } from "./FeatureErrorBoundary";
 import { Loader } from "./Loader";
 import { importCSS } from "./css-module-loader";
 
-const componentsMap = new Map();
-
+/**
+ * Ensure we never lazy load the same component more than once
+ */
+const componentsMap = new Map<string, ReturnType<typeof React.lazy>>();
 const useCachedFeature = (url: string) => {
   useEffect(
     () => () => {
@@ -21,24 +23,38 @@ const useCachedFeature = (url: string) => {
     );
   }
 
-  return componentsMap.get(url);
+  const lazyFeature = componentsMap.get(url);
+
+  if (!lazyFeature) {
+    throw Error(`Unable to load Lazy Feature at url ${url}`);
+  } else {
+    return lazyFeature;
+  }
 };
 
-export interface FeatureProps<Params extends object | undefined = undefined> {
-  height?: number;
-  url: string;
+export interface FeatureProps<P extends object | undefined = any> {
+  /**
+    props that will be passed to the lazily loaded component.
+   */
+  ComponentProps?: P;
   css?: string;
+  height?: number;
+  title?: string;
+  /** 
+   The url of javascript bundle to lazily load. Bundle must provide a default export
+   and that export must be a React component.
+   */
+  url: string;
   width?: number;
-  params: Params;
 }
 
 function RawFeature<Params extends object | undefined>({
   url,
   css,
-  params,
+  ComponentProps: params,
   ...props
 }: FeatureProps<Params>) {
-  console.log("Feature render", { css, url, props });
+  console.log("Feature render", { css, url, props, params });
   useEffect(() => {
     console.log("%cFeature mount", "color: green;");
     return () => {
@@ -68,14 +84,19 @@ function RawFeature<Params extends object | undefined>({
 
   const LazyFeature = useCachedFeature(url);
   return (
-    <ErrorBoundary>
+    <FeatureErrorBoundary url={url}>
       <Suspense fallback={<Loader />}>
         <LazyFeature {...props} {...params} />
       </Suspense>
-    </ErrorBoundary>
+    </FeatureErrorBoundary>
   );
 }
 
+/**
+  Feature is a wrapper around React Lazy Loading. It will load a component
+  from the given url. That url must resolve to a javascript bundle with a
+  single default export. That export must be a React component.
+ */
 export const Feature = React.memo(RawFeature);
 Feature.displayName = "Feature";
 registerComponent("Feature", Feature, "view");

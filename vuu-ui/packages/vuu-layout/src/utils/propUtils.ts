@@ -2,7 +2,10 @@ import { ReactElement } from "react";
 import { LayoutModel } from "../layout-reducer";
 
 const NO_PROPS = {};
-export const getProp = (component: LayoutModel, propName: string) => {
+export const getProp = (
+  component: LayoutModel | undefined,
+  propName: string
+) => {
   const props = getProps(component);
   return props[propName] ?? props[`data-${propName}`];
 };

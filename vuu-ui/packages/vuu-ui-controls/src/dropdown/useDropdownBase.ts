@@ -1,6 +1,5 @@
-import { useControlled } from "@salt-ds/core";
+import { useControlled, useForkRef } from "@salt-ds/core";
 import { KeyboardEvent, useCallback, useRef, useState } from "react";
-
 import { measurements, useResizeObserver, WidthOnly } from "../common-hooks";
 import { DropdownHookProps, DropdownHookResult } from "./dropdownTypes";
 import { useClickAway } from "./useClickAway";
@@ -17,6 +16,7 @@ export const useDropdownBase = ({
   onOpenChange,
   onKeyDown: onKeyDownProp,
   openOnFocus,
+  popupComponent,
   popupWidth: popupWidthProp,
   rootRef,
   width,
@@ -86,7 +86,11 @@ export const useDropdownBase = ({
   const handleKeydown = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => {
       if ((evt.key === "Tab" || evt.key === "Escape") && isOpen) {
-        // No preventDefault here, this behaviour does not need to be exclusive
+        // No preventDefault for Tab, but if we've handled Escape, we should own it
+        if (evt.key === "Escape") {
+          evt.stopPropagation();
+          evt.preventDefault();
+        }
         hideDropdown();
       } else if (
         (evt.key === "Enter" || evt.key === "ArrowDown" || evt.key === " ") &&
@@ -124,9 +128,11 @@ export const useDropdownBase = ({
     width: popup.width,
   };
 
+  const popupComponentRef = useForkRef(popperCallbackRef, popupComponent.ref);
+
   return {
     componentProps: dropdownComponentProps,
-    popupComponentRef: popperCallbackRef,
+    popupComponentRef,
     isOpen,
     label: "Dropdown Button",
     triggerProps,

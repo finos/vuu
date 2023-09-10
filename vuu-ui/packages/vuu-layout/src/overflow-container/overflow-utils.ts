@@ -1,4 +1,4 @@
-import { orientationType } from "@salt-ds/lab";
+import { getElementByDataIndex, orientationType } from "@finos/vuu-utils";
 
 const NON_WRAPPED_ITEM = ".vuuOverflowContainer-item:not(.wrapped)";
 
@@ -193,14 +193,11 @@ export const correctForWrappedHighPriorityItems = (
     });
   });
 
-const getElementByIndex = (container: HTMLElement, item: OverflowItem) =>
-  container.querySelector(`[data-index="${item.index}"]`) as HTMLElement;
-
 export const markElementAsWrapped = (
   container: HTMLElement,
   item: OverflowItem
 ) => {
-  const el = getElementByIndex(container, item);
+  const el = getElementByDataIndex(container, item.index);
   if (el) {
     el.classList.add("wrapped");
   } else {
@@ -311,7 +308,11 @@ export const switchWrappedItemIntoView = (
   overflowItem: OverflowItem
 ): [OverflowItem[], OverflowItem[]] => {
   const unwrappedItems = getNonwrappedItemsByPriority(container);
-  const targetElement = getElementByIndex(container, overflowItem);
+  const targetElement = getElementByDataIndex(
+    container,
+    overflowItem.index,
+    true
+  );
   let pos = -1;
   let unwrappedItem = unwrappedItems.at(pos) as HTMLElement;
   const itemWidth = getElementWidth(unwrappedItem);

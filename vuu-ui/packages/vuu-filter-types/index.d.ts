@@ -77,6 +77,13 @@ export interface OrFilter extends MultiClauseFilter {
  */
 export declare type Filter = FilterClause | MultiClauseFilter;
 
+/**
+ This interface is only valid for a Filter that is being edioted
+ */
+export interface FilterWithPartialClause extends MultiClauseFilter {
+  filters: Array<Filter | Partial<Filter>>;
+}
+
 export declare type FilterState = {
   filter: Filter | undefined;
   filterQuery: string;

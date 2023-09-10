@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
-import { Portal } from "../portal";
-import MenuList, { MenuListProps } from "./MenuList";
+import { PortalDeprecated } from "../portal-deprecated";
+import { MenuList, MenuListProps } from "./MenuList";
 import { useCascade } from "./use-cascade";
 // import { useClickAway } from "./use-click-away";
 import { useItemsWithIdsNext } from "./use-items-with-ids-next";
@@ -37,8 +37,6 @@ export const ContextMenu = ({
     navigatingWithKeyboard.current = false;
   }, []);
 
-  console.log({ actions, menus });
-
   const handleActivate = useCallback(
     (menuItemId: string) => {
       const actionId = menuItemId.slice(9);
@@ -64,7 +62,6 @@ export const ContextMenu = ({
   closeMenuRef.current = closeMenu;
 
   const handleCloseMenu = () => {
-    console.log("handleCloseMenu");
     navigatingWithKeyboard.current = true;
     closeMenu();
   };
@@ -90,7 +87,7 @@ export const ContextMenu = ({
         const childMenuId = getChildMenuId(i);
         // TODO don't need the portal here, vuu popup service takes care of this
         return (
-          <Portal key={i} x={left} y={top} onRender={handleRender}>
+          <PortalDeprecated key={i} x={left} y={top} onRender={handleRender}>
             <MenuList
               {...menuListProps}
               activatedByKeyboard={navigatingWithKeyboard.current}
@@ -109,7 +106,7 @@ export const ContextMenu = ({
             >
               {menus[menuId]}
             </MenuList>
-          </Portal>
+          </PortalDeprecated>
         );
       })}
     </>

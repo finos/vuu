@@ -1,5 +1,7 @@
 import { PopupMenu } from "@finos/vuu-popups";
 import { orientationType } from "@finos/vuu-utils";
+import { useId } from "@finos/vuu-layout";
+
 import cx from "classnames";
 import React, {
   CSSProperties,
@@ -16,25 +18,41 @@ import "./OverflowContainer.css";
 const classBase = "vuuOverflowContainer";
 
 export interface OverflowContainerProps extends HTMLAttributes<HTMLDivElement> {
+  allowDragDrop?: boolean;
   debugId?: string;
   height: number;
+  onMoveItem?: (fromIndex: number, toIndex: number) => void;
   onSwitchWrappedItemIntoView?: (overflowItem: OverflowItem) => void;
   orientation?: orientationType;
   overflowIcon?: string;
+  overflowPosition?: "start" | "end" | number;
 }
 
 const WrapContainer = React.memo(
   ({
+    allowDragDrop,
     children,
     className: classNameProp,
     height: heightProp,
+    id,
+    onMoveItem,
     onSwitchWrappedItemIntoView,
     orientation = "horizontal",
     overflowIcon,
+    overflowPosition = "end",
   }: OverflowContainerProps) => {
     const childElements = asReactElements(children);
-    const { menuActionHandler, menuBuilder, rootRef } = useOverflowContainer({
+    const {
+      draggable,
+      draggedItemIndex,
+      menuActionHandler,
+      menuBuilder,
+      onItemMouseDown,
+      rootRef,
+    } = useOverflowContainer({
+      allowDragDrop,
       itemCount: childElements.length,
+      onMoveItem,
       onSwitchWrappedItemIntoView,
       orientation,
     });
@@ -50,34 +68,51 @@ const WrapContainer = React.memo(
       [`${classBase}-vertical`]: orientation === "vertical",
     });
 
+    const content = childElements.map((childEl, i) => {
+      const {
+        "data-align": align,
+        "data-overflow-priority": overflowPriority = "0",
+        id: itemId = `${id}-${i}`,
+        label = `Item ${i + 1}`,
+      } = childEl.props;
+      return (
+        <div
+          className={cx(`${classBase}-item`, {
+            "vuuDraggable-dragAway": draggedItemIndex === i,
+          })}
+          data-index={i}
+          data-align={align}
+          data-label={label}
+          data-overflow-priority={overflowPriority}
+          id={`${itemId}-wrapper`}
+          key={i}
+          onMouseDown={onItemMouseDown}
+        >
+          {childEl}
+        </div>
+      );
+    });
+
+    const overflowIndicator = (
+      <div
+        className={`${classBase}-OverflowIndicator`}
+        data-index="overflow"
+        key="overflow"
+      >
+        <PopupMenu
+          icon={overflowIcon}
+          menuBuilder={menuBuilder}
+          menuActionHandler={menuActionHandler}
+        />
+      </div>
+    );
+
+    content.push(overflowIndicator);
+
     return (
       <div className={className} ref={rootRef} style={style}>
-        {childElements.map((childEl, i) => {
-          const {
-            "data-overflow-priority": overflowPriority = "0",
-            id: itemId,
-            label = `Item ${i + 1}`,
-          } = childEl.props;
-          return (
-            <div
-              className={cx(`${classBase}-item`)}
-              data-index={i}
-              data-label={label}
-              data-overflow-priority={overflowPriority}
-              id={`${itemId}-wrapper`}
-              key={i}
-            >
-              {childEl}
-            </div>
-          );
-        })}
-        <div className={`${classBase}-OverflowIndicator`} data-index="overflow">
-          <PopupMenu
-            icon={overflowIcon}
-            menuBuilder={menuBuilder}
-            menuActionHandler={menuActionHandler}
-          />
-        </div>
+        {content}
+        {draggable}
       </div>
     );
   }
@@ -87,26 +122,36 @@ WrapContainer.displayName = "OverflowContainer.InnerContainer";
 
 export const OverflowContainer = forwardRef(function OverflowContainer(
   {
+    allowDragDrop = false,
     children,
     className,
     height = 44,
+    id: idProp,
+    onMoveItem,
     onSwitchWrappedItemIntoView,
     orientation,
     overflowIcon,
+    overflowPosition,
     ...htmlAttributes
   }: OverflowContainerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const id = useId(idProp);
   return (
     <div
       {...htmlAttributes}
       className={cx(cx(classBase, className))}
+      id={id}
       ref={forwardedRef}
     >
       <WrapContainer
+        allowDragDrop={allowDragDrop}
         height={height}
+        id={id}
         orientation={orientation}
         overflowIcon={overflowIcon}
+        overflowPosition={overflowPosition}
+        onMoveItem={onMoveItem}
         onSwitchWrappedItemIntoView={onSwitchWrappedItemIntoView}
       >
         {children}

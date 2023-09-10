@@ -1,26 +1,15 @@
-import { getColumnByName, TableSchema } from "@finos/vuu-data";
+import { TableSchema } from "@finos/vuu-data";
 import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
-import {
-  isMultiValueFilter,
-  isSingleValueFilter,
-  isValidFilterClauseOp,
-} from "@finos/vuu-utils";
+import { FilterClause } from "@finos/vuu-filter-types";
 import cx from "classnames";
-import {
-  HTMLAttributes,
-  SyntheticEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { HTMLAttributes, useCallback, useEffect, useRef } from "react";
 import { CloseButton } from "./CloseButton";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { NumericInput } from "./NumericInput";
-import { textOperators } from "./operator-utils";
+import { getOperators } from "./operator-utils";
 import { TextInput } from "./TextInput";
+import { useFilterClauseEditor } from "./useFilterClauseEditor";
 
 import "./FilterClauseEditor.css";
 
@@ -35,28 +24,8 @@ export interface FilterClauseEditorProps
 
 const classBase = "vuuFilterClause";
 
-// TODO boolean[] makes no sense
-type FilterClauseValue =
-  | boolean
-  | boolean[]
-  | string
-  | string[]
-  | number
-  | number[];
-
-const getFilterClauseValue = (
-  filterClause: Partial<FilterClause>
-): FilterClauseValue | undefined => {
-  if (isMultiValueFilter(filterClause)) {
-    return filterClause.values;
-  } else if (isSingleValueFilter(filterClause)) {
-    return filterClause.value;
-  } else {
-    return undefined;
-  }
-};
-
 export const FilterClauseEditor = ({
+  className,
   onChange,
   onClose,
   filterClause,
@@ -65,54 +34,29 @@ export const FilterClauseEditor = ({
   ...htmlAttributes
 }: FilterClauseEditorProps) => {
   const { table, columns } = tableSchema;
+  const columnRef = useRef<HTMLDivElement>(null);
   const operatorRef = useRef<HTMLDivElement>(null);
   const valueRef = useRef<HTMLDivElement>(null);
 
-  const [selectedColumn, setSelectedColumn] = useState<
-    ColumnDescriptor | undefined
-  >(getColumnByName(tableSchema, filterClause.column));
-  const [operator, setOperator] = useState<FilterClauseOp | undefined>(
-    filterClause.op
-  );
-  const [value, setValue] = useState<FilterClauseValue | undefined>(
-    getFilterClauseValue(filterClause)
-  );
-
-  const handleColumnSelectionChange = useCallback(
-    (evt: SyntheticEvent, column: ColumnDescriptor | null) => {
-      setSelectedColumn(column ?? undefined);
-    },
-    []
-  );
-  const handleOperatorSelectionChange = useCallback(
-    (evt: SyntheticEvent, operator: string | null) => {
-      const op = operator ?? undefined;
-      if (op === undefined || isValidFilterClauseOp(op)) {
-        setOperator(op);
-      } else {
-        throw Error(
-          `FilterClauseEditor, invalid value ${op} for filter clause`
-        );
-      }
-    },
-    []
-  );
-
-  const handleValueChange = useCallback(
-    (value: string | number) => {
-      console.log(`handleValueChange ${value}`);
-      setValue(value);
-      onChange({
-        column: selectedColumn?.name,
-        op: operator,
-        value,
-      });
-    },
-    [onChange, operator, selectedColumn?.name]
-  );
+  const {
+    InputProps,
+    onChangeValue,
+    onSelectionChangeColumn,
+    onSelectionChangeOperator,
+    operator,
+    selectedColumn,
+    value,
+  } = useFilterClauseEditor({
+    filterClause,
+    onChange,
+    tableSchema,
+  });
 
   useEffect(() => {
-    if (
+    if (selectedColumn === undefined) {
+      const columnInput = columnRef.current?.querySelector("input");
+      columnInput?.focus();
+    } else if (
       selectedColumn !== undefined &&
       operator === undefined &&
       operatorRef.current
@@ -139,10 +83,11 @@ export const FilterClauseEditor = ({
       case "char":
         return (
           <TextInput
-            className={classBase}
+            InputProps={InputProps}
+            className={cx(`${classBase}Field`, `${classBase}Value`)}
             column={selectedColumn}
             filterClause={filterClause}
-            onValueChange={handleValueChange}
+            onInputComplete={onChangeValue}
             operator={operator}
             ref={valueRef}
             suggestionProvider={suggestionProvider}
@@ -153,13 +98,13 @@ export const FilterClauseEditor = ({
       case "int":
       case "long":
       case "double":
-        console.log("returning numeric input");
         return (
           <NumericInput
-            className={classBase}
+            InputProps={InputProps}
+            className={cx(`${classBase}Field`, `${classBase}Value`)}
             column={selectedColumn}
             filterClause={filterClause}
-            onValueChange={handleValueChange}
+            onInputComplete={onChangeValue}
             operator={operator}
             ref={valueRef}
           />
@@ -174,32 +119,43 @@ export const FilterClauseEditor = ({
   }, [
     selectedColumn,
     operator,
+    InputProps,
     filterClause,
-    handleValueChange,
+    onChangeValue,
     suggestionProvider,
     table,
     value,
   ]);
 
   return (
-    <div className={classBase} {...htmlAttributes} tabIndex={0}>
+    <div className={cx(classBase, className)} {...htmlAttributes} tabIndex={0}>
       <ExpandoCombobox<ColumnDescriptor>
+        InputProps={InputProps}
+        className={cx(`${classBase}Field`, `${classBase}Column`)}
+        initialHighlightedIndex={0}
         itemToString={(column) => column.name}
+        ref={columnRef}
         source={columns}
-        onSelectionChange={handleColumnSelectionChange}
+        onSelectionChange={onSelectionChangeColumn}
         value={selectedColumn?.name ?? ""}
       />
-      <ExpandoCombobox<string>
-        className={cx(`${classBase}-operator`, {
-          [`${classBase}-operator-hidden`]: selectedColumn === null,
-        })}
-        ref={operatorRef}
-        source={textOperators}
-        onSelectionChange={handleOperatorSelectionChange}
-        value={operator ?? ""}
-      />
+      {selectedColumn?.name ? (
+        <ExpandoCombobox<string>
+          InputProps={InputProps}
+          className={cx(`${classBase}Field`, `${classBase}Operator`, {
+            [`${classBase}Operator-hidden`]: selectedColumn === null,
+          })}
+          initialHighlightedIndex={0}
+          ref={operatorRef}
+          source={getOperators(selectedColumn)}
+          onSelectionChange={onSelectionChangeOperator}
+          value={operator ?? ""}
+        />
+      ) : null}
       {getInputElement()}
-      <CloseButton classBase={`${classBase}-closeButton`} onClick={onClose} />
+      {value !== undefined ? (
+        <CloseButton className={`${classBase}-closeButton`} onClick={onClose} />
+      ) : null}
     </div>
   );
 };

@@ -214,9 +214,9 @@ export const useCascade = ({
       // do we need to set target state to pending-open ?s
 
       menuOpenPendingTimeout.current = window.setTimeout(() => {
-        console.log(
-          `scheduleOpen<timeout> opening menu ${targetMenuId} from menu ${hostMenuId} via menuitem ${menuItemId}`
-        );
+        // console.log(
+        //   `scheduleOpen<timeout> opening menu ${targetMenuId} from menu ${hostMenuId} via menuitem ${menuItemId}`
+        // );
         closeMenus(menuItemId);
         menuState.current[hostMenuId] = "popup-open";
         menuState.current[targetMenuId] = "no-popup";
@@ -228,9 +228,9 @@ export const useCascade = ({
 
   const scheduleClose = useCallback(
     (hostMenuId: string, openMenuId: string, itemId: string) => {
-      console.log(
-        `scheduleClose openMenuId ${openMenuId} from parent menu ${hostMenuId} itemId ${itemId}`
-      );
+      // console.log(
+      //   `scheduleClose openMenuId ${openMenuId} from parent menu ${hostMenuId} itemId ${itemId}`
+      // );
       menuState.current[openMenuId] = "pending-close";
       menuClosePendingTimeout.current = window.setTimeout(() => {
         closeMenus(itemId);
@@ -243,9 +243,6 @@ export const useCascade = ({
     const { current: menus } = openMenus;
     const [menu] = menus.slice(-1);
     const el = document.getElementById(menu.id);
-    console.log(
-      `handle render ${JSON.stringify(menu)} tabindex ${el?.tabIndex}`
-    );
     if (el) {
       const { right, bottom } = el.getBoundingClientRect();
       const { clientHeight, clientWidth } = document.body;
@@ -261,7 +258,6 @@ export const useCascade = ({
       }
 
       if (typeof el.tabIndex === "number") {
-        console.log(`focus el ${el.id}`);
         el.focus();
       }
     } else {
@@ -292,7 +288,6 @@ export const useCascade = ({
       //   "color: green; font-weight: bold;"
       // );
 
-      console.log(`trigger child menu ${menuItemId}`);
       if (state === "no-popup" && isGroup) {
         menuState.current[hostMenuId] = "popup-pending";
         scheduleOpen(hostMenuId, targetMenuId, menuItemId);
@@ -306,7 +301,6 @@ export const useCascade = ({
       } else if (state === "popup-open") {
         if (menuIsOpen(targetMenuId)) {
           const menuStatus = getOpenMenuStatus(targetMenuId);
-          console.log({ menuStatus });
           // Close any child menus of the target menu. This can happen if we have
           // opened child menus, then moused out of the menu entirely, to re-enter
           // at a higher level

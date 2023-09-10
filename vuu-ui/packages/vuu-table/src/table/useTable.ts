@@ -108,6 +108,10 @@ export const useTable = ({
     size: containerMeasurements.innerSize,
   });
 
+  console.log(
+    `rowCount from viewportMeasurements ${viewportMeasurements.rowCount}`
+  );
+
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
       if (tableSchema) {

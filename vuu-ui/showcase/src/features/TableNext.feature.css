@@ -1,0 +1,10 @@
+.TableNextFeature {
+    background-color: antiquewhite;
+    height: 400px;
+    width: 600px;
+}
+
+.TableNextFeature-footer {
+    --saltToolbar-alignItems: center;
+    --saltToolbar-height: 24px;
+}

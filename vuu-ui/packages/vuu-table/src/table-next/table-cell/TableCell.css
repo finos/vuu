@@ -1,0 +1,12 @@
+.vuuTableNextCell {
+    display: inline-block;
+    overflow:hidden;
+    padding: 0 8px;
+    text-overflow: ellipsis;;
+    vertical-align: top;
+  }
+
+  .vuuTableNextCell-right {
+    text-align: right;
+  }
+  

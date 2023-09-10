@@ -1,6 +1,6 @@
 import type { MenuActionHandler } from "@finos/vuu-data-types";
 import type { OverflowItem } from "@finos/vuu-layout";
-import type { orientationType } from "@finos/vuu-utils";
+import { dispatchMouseEvent, orientationType } from "@finos/vuu-utils";
 import {
   KeyboardEvent,
   MouseEvent as ReactMouseEvent,
@@ -197,12 +197,7 @@ export const useTabstrip = ({
     (tabIndex = highlightedIdx) => {
       const editableLabelEl = getEditableLabel(tabIndex);
       if (editableLabelEl) {
-        const evt = new MouseEvent("dblclick", {
-          view: window,
-          bubbles: true,
-          cancelable: true,
-        });
-        editableLabelEl.dispatchEvent(evt);
+        dispatchMouseEvent(editableLabelEl, "dblclick");
       }
     },
     [getEditableLabel, highlightedIdx]

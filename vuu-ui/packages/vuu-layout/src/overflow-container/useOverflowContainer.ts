@@ -1,5 +1,6 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import { isValidNumber, MEASURES, orientationType } from "@finos/vuu-utils";
+import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
+import { isValidNumber, MEASURES } from "@finos/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useLayoutEffectSkipFirst } from "../utils";
 import {
@@ -14,20 +15,28 @@ import {
   overflowIndicatorHasWrappedButShouldNotHave,
   correctForWrappedOverflowIndicator,
 } from "./overflow-utils";
+import { OverflowContainerProps } from "./OverflowContainer";
 
-export interface OverflowContainerHookProps {
+export interface OverflowContainerHookProps
+  extends Pick<
+    OverflowContainerProps,
+    "allowDragDrop" | "onMoveItem" | "orientation"
+  > {
   itemCount: number;
   onSwitchWrappedItemIntoView?: (overflowItem: OverflowItem) => void;
-  orientation?: orientationType;
 }
 
 export const useOverflowContainer = ({
+  allowDragDrop = false,
   itemCount,
+  onMoveItem,
   onSwitchWrappedItemIntoView,
   orientation = "horizontal",
 }: OverflowContainerHookProps) => {
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const wrappedItemsRef = useRef<OverflowItem[]>(NO_WRAPPED_ITEMS);
+  // Drag drop needs a ref to container
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const handleResize = useCallback(async () => {
     if (container) {
@@ -118,12 +127,33 @@ export const useOverflowContainer = ({
   }, [container, resizeObserver]);
 
   const callbackRef = useCallback((el: HTMLDivElement | null) => {
-    setContainer(el);
+    setContainer((containerRef.current = el));
   }, []);
+
+  const handleDrop = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      onMoveItem?.(fromIndex, toIndex);
+    },
+    [onMoveItem]
+  );
+
+  const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =
+    useDragDrop({
+      allowDragDrop,
+      containerRef,
+      // this is for useDragDropNext
+      draggableClassName: `vuuOverflowContainer`,
+      // extendedDropZone: overflowedItems.length > 0,
+      onDrop: handleDrop,
+      orientation: "horizontal",
+      itemQuery: ".vuuOverflowContainer-item",
+    });
 
   return {
     menuActionHandler,
     menuBuilder,
+    onItemMouseDown: dragDropHookHandleMouseDown,
     rootRef: callbackRef,
+    ...dragDropHook,
   };
 };

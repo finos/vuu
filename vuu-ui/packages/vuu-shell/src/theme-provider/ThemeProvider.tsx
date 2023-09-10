@@ -24,15 +24,15 @@ export interface ThemeContextProps {
 
 export const ThemeContext = createContext<ThemeContextProps>({
   density: "high",
-  theme: "salt",
+  theme: "vuu",
   themeMode: "light",
 });
 
 export type ThemeClasses = [string, string, string];
 
 const DEFAULT_THEME_ATTRIBUTES: ThemeClasses = [
-  "salt",
-  "salt-density-high",
+  "vuu",
+  "vuu-density-high",
   "light",
 ];
 
@@ -41,7 +41,7 @@ export const useThemeAttributes = (): [string, string, string] => {
   if (context) {
     return [
       `${context.theme}-theme`,
-      `salt-density-${context.density}`,
+      `vuu-density-${context.density}`,
       context.themeMode,
     ];
   }

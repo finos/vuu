@@ -1,8 +1,8 @@
 import { Scrim } from "@salt-ds/lab";
-import { Button, Text, TextProps } from "@salt-ds/core";
+import { Button, Text } from "@salt-ds/core";
 import cx from "classnames";
 import { HTMLAttributes, useCallback, useRef, useState } from "react";
-import { Portal } from "../portal";
+import { PortalDeprecated } from "../portal-deprecated";
 
 import "./Dialog.css";
 
@@ -47,13 +47,11 @@ export const Dialog = ({
   }
 
   return (
-    <Portal onRender={handleRender} x={posX} y={posY}>
+    <PortalDeprecated onRender={handleRender} x={posX} y={posY}>
       <Scrim className={`${classBase}-scrim`} open={isOpen} autoFocusRef={root}>
         <div {...props} className={cx(classBase, className)} ref={root}>
           <div className={cx("vuuToolbarProxy", `${classBase}-header`)}>
-            <Text className="dialogHeader">
-              {title}
-            </Text>
+            <Text className="dialogHeader">{title}</Text>
             {!hideCloseButton && (
               <Button
                 key="close"
@@ -66,6 +64,6 @@ export const Dialog = ({
           {children}
         </div>
       </Scrim>
-    </Portal>
+    </PortalDeprecated>
   );
 };

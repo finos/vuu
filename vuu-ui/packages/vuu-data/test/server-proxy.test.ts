@@ -2512,8 +2512,8 @@ describe("ServerProxy", () => {
     });
   });
 
-  describe("on single row selection, visual linking", () => {
-    it("returns selected row and link table rows", () => {
+  describe("on visual linking", () => {
+    it("returns link table rows", () => {
       const [clientSubscription1, serverSubscriptionAck1] =
         createSubscription();
       const [clientSubscription2, serverSubscriptionAck2] = createSubscription({
@@ -2579,7 +2579,7 @@ describe("ServerProxy", () => {
           {
             mode: "update",
             rows: [
-              [0,0,true,false,0,0,'key-00', 1,'key-00', 'name 00',1000,true],
+              [0,0,true,false,0,0,'key-00', 0,'key-00', 'name 00',1000,true],
           ],
             type: 'viewport-update',
             clientViewportId: 'client-vp-1'

@@ -20,6 +20,7 @@
 .vuuTabstrip-horizontal {
   --tabstrip-height: var(--vuuTabstrip-height, 28px);
   --tabstrip-width: var(--vuuTabstrip-width, 100%);
+  --tab-height: var(--tabstrip-height);
   --tab-width: auto;
   --tab-thumb-height: 2px;
   --tab-thumb-left: var(--tab-thumb-offset, 0);
@@ -33,8 +34,9 @@
 .vuuTabstrip-vertical {
   --tabstrip-height: var(--vuuTabstrip-height, 100%);
   --tabstrip-width: var(--vuuTabstrip-width, 100px);
+  --tab-height: 50px;
   --tab-width: 100%;
-  --tab-thumb-height: var(--tab-thumb-size, 100%);
+  --tab-thumb-height: 0;
   --tab-thumb-left: 0;
   --tab-thumb-top: var(--tab-thumb-offset, 0);
   --tab-thumb-width: 2px;
@@ -52,7 +54,7 @@
   --saltButton-width: 20px;
 }
 
-.vuuTabstrip-overflowMenu.saltDropdown {
+.vuuTabstrip-overflowMenu.vuuDropdown {
   --saltIcon-margin: 2px 0 0 0px;
 }
 

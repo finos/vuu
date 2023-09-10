@@ -1,4 +1,4 @@
-import { TableSchema } from "@finos/vuu-data";
+import { byModule, TableSchema } from "@finos/vuu-data";
 import { Palette, PaletteItem, ViewProps } from "@finos/vuu-layout";
 import { Feature, Features } from "@finos/vuu-shell";
 import {
@@ -27,22 +27,6 @@ type FeatureDescriptor = {
   js: string;
   name: string;
   title: string;
-};
-
-const byModule = (schema1: TableSchema, schema2: TableSchema) => {
-  const m1 = schema1.table.module.toLowerCase();
-  const m2 = schema2.table.module.toLowerCase();
-  if (m1 < m2) {
-    return -1;
-  } else if (m1 > m2) {
-    return 1;
-  } else if (schema1.table.table < schema2.table.table) {
-    return -1;
-  } else if (schema1.table.table > schema2.table.table) {
-    return 1;
-  } else {
-    return 0;
-  }
 };
 
 const capitalize = (text: string) =>
@@ -96,7 +80,7 @@ export const AppSidePanel = ({
               component: (
                 <Feature
                   css={css}
-                  params={{
+                  ComponentProps={{
                     className,
                     schema,
                     style: { height: "100%" },

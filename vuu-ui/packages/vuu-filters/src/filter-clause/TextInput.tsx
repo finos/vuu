@@ -1,23 +1,24 @@
 import {
   ChangeEventHandler,
+  FormEvent,
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
+  KeyboardEvent,
   RefObject,
   SyntheticEvent,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
-import { ComboBoxDeprecated } from "@salt-ds/lab";
-import { ListChangeHandler } from "@salt-ds/lab/dist-types/list-deprecated";
-import { getTypeaheadFilter } from "../column-filter/utils";
 import {
   SuggestionFetcher,
   useTypeaheadSuggestions,
 } from "@finos/vuu-data-react";
+import { ExpandoInput } from "@finos/vuu-ui-controls";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { FilterClauseValueEditor } from "./filterClauseTypes";
 
@@ -26,17 +27,17 @@ export interface TextInputProps
     HTMLAttributes<HTMLDivElement> {
   ref: RefObject<HTMLDivElement>;
   operator: string;
-  onValueChange: (value: string) => void;
   suggestionProvider?: () => SuggestionFetcher;
   value: string;
 }
 
 export const TextInput = forwardRef(function TextInput(
   {
+    InputProps: InputPropsProp = {},
     className,
     column,
     filterClause,
-    onValueChange,
+    onInputComplete,
     operator,
     suggestionProvider = useTypeaheadSuggestions,
     table,
@@ -46,20 +47,17 @@ export const TextInput = forwardRef(function TextInput(
 ) {
   const [valueInputValue, setValueInputValue] = useState(value ?? "");
   // const [selectedValues, setSelectedValue] = useState(defaultValues);
-  const [selectedValues, setSelectedValue] = useState<string[]>([]);
   // const [typeaheadValues, setTypeaheadValues] =
   //   useState<string[]>([defaultValues]);
   const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
   const getSuggestions = suggestionProvider();
-  const valueInputRef = useRef<HTMLInputElement>(null);
 
   const handleValueSelectionChange = useCallback(
     (evt: SyntheticEvent, value: string | null) => {
-      console.log(`selected value ${value}`);
       // setOperator(operator ?? undefined);
-      onValueChange(value ?? "");
+      onInputComplete(value ?? "");
     },
-    [onValueChange]
+    [onInputComplete]
   );
 
   useEffect(() => {
@@ -71,12 +69,8 @@ export const TextInput = forwardRef(function TextInput(
       const params: TypeaheadParams = valueInputValue
         ? [table, column.name, valueInputValue]
         : [table, column.name];
-      console.log(`getTYpeahead suggestions`);
       getSuggestions(params)
         .then((suggestions) => {
-          console.log(`suggestions `, {
-            suggestions,
-          });
           setTypeaheadValues(suggestions);
         })
         .catch((err) => {
@@ -85,66 +79,105 @@ export const TextInput = forwardRef(function TextInput(
     }
   }, [table, column, valueInputValue, getSuggestions]);
 
-  const onValueInputChange: ChangeEventHandler<HTMLInputElement> = (event) => {
-    console.log("onValueInputChange", event.target.value);
-    setValueInputValue(event.target.value);
-  };
+  const handleInputChange = useCallback((evt: FormEvent<HTMLInputElement>) => {
+    const { value } = evt.target as HTMLInputElement;
+    setValueInputValue(value);
+  }, []);
 
-  const onMultiSelectValueChange: ListChangeHandler<string, "multiple"> =
-    useCallback(
-      (_event, selected) => {
-        console.log("onValueChange", selected);
-        setValueInputValue("");
-        setSelectedValue(selected || []);
-        const filter = getTypeaheadFilter(column.name, selected || [], false);
-        // onFilterChange(filter);
-      },
-      [column]
-    );
+  const InputProps = useMemo(() => {
+    if (operator === "starts" || operator === "ends") {
+      const { inputProps, ...restInputProps } = InputPropsProp;
+      return {
+        ...restInputProps,
+        inputProps: {
+          ...inputProps,
+          onKeyDown: (evt: KeyboardEvent<HTMLInputElement>) => {
+            if (evt.key === "Enter" && valueInputValue !== "") {
+              evt.stopPropagation();
+              evt.preventDefault();
+              onInputComplete(valueInputValue);
+            } else {
+              inputProps?.onKeyDown?.(evt);
+            }
+          },
+        },
+      };
+    } else {
+      return InputPropsProp;
+    }
+  }, [InputPropsProp, onInputComplete, operator, valueInputValue]);
 
   const getValueInputField = useCallback(() => {
     switch (operator) {
       case "in":
-        return (
-          <ComboBoxDeprecated // The new ComboBox isn't multi-selectable
-            multiSelect
-            className={`${className}-valueInput`}
-            source={typeaheadValues}
-            onChange={onMultiSelectValueChange}
-            onInputChange={onValueInputChange}
-            inputValue={valueInputValue}
-            inputRef={valueInputRef}
-            selectedItem={selectedValues}
-            InputProps={{
-              inputProps: { autoComplete: "off" },
-            }}
-            ListProps={{
-              className: `${className}-valueInput-list`,
-              borderless: true,
-            }}
-            delimiter={","}
-            allowFreeText
-          />
-        );
-      default:
+        //TODO multiselect
         return (
           <ExpandoCombobox<string>
+            InputProps={InputProps}
+            className={className}
+            initialHighlightedIndex={0}
             source={typeaheadValues}
+            onInputChange={handleInputChange}
             onSelectionChange={handleValueSelectionChange}
             ref={forwardedRef}
+            value={value}
+          />
+        );
+      case "starts":
+        return (
+          <ExpandoCombobox<string>
+            InputProps={InputProps}
+            ListProps={{
+              className: "vuuIllustrationsOnly",
+              disabled: true,
+            }}
+            allowFreeText
+            className={className}
+            initialHighlightedIndex={0}
+            source={typeaheadValues}
+            onInputChange={handleInputChange}
+            onSelectionChange={handleValueSelectionChange}
+            ref={forwardedRef}
+            value={value}
+          />
+        );
+
+      case "ends":
+        return (
+          <ExpandoInput
+            {...InputProps}
+            className={className}
             value={valueInputValue}
+            ref={forwardedRef}
+            onChange={handleInputChange}
+          />
+        );
+
+      default:
+        //TODO get a ref to input and listen to changes - connect these to typeahead
+        return (
+          <ExpandoCombobox<string>
+            InputProps={InputProps}
+            className={className}
+            initialHighlightedIndex={0}
+            source={typeaheadValues}
+            onInputChange={handleInputChange}
+            onSelectionChange={handleValueSelectionChange}
+            ref={forwardedRef}
+            value={value}
           />
         );
     }
   }, [
     operator,
+    InputProps,
     className,
     typeaheadValues,
-    onMultiSelectValueChange,
-    valueInputValue,
-    selectedValues,
+    handleInputChange,
     handleValueSelectionChange,
     forwardedRef,
+    value,
+    valueInputValue,
   ]);
 
   return getValueInputField();

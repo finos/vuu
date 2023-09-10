@@ -78,6 +78,7 @@ export const useVirtualViewport = ({
       const firstRow = getRowAtPosition(scrollTop);
       if (firstRow !== firstRowRef.current) {
         firstRowRef.current = firstRow;
+        console.log("setRange from handleVerticalScroll");
         setRange({ from: firstRow, to: firstRow + viewportRowCount });
       }
     },

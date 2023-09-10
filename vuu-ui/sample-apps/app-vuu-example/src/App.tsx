@@ -98,7 +98,7 @@ export const App = ({ user }: { user: VuuUser }) => {
             setDialogContent(
               <Feature
                 height={400}
-                params={{ schema }}
+                ComponentProps={{ schema }}
                 url={vuuBlotterUrl}
                 width={700}
               />

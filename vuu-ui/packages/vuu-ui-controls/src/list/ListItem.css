@@ -33,7 +33,7 @@
   height: var(--vuuList-item-height, var(--list-item-height, auto));
   /* Replaced border-bottom with margin. In design spec, the height of the items should not include gap */
   margin-bottom: var(--list-item-gap);
-  padding: 0 var(--salt-size-unit);
+  padding: 0 var(--vuuListItem-padding, var(--salt-size-unit));
   left: 0;
   right: 0;
   display: flex;

@@ -4,18 +4,19 @@ import { RowClickHandler } from "@finos/vuu-table";
 import {
   ColumnMap,
   isGroupColumn,
+  isJsonColumn,
+  isJsonGroup,
   metadataKeys,
   notHidden,
   RowSelected,
 } from "@finos/vuu-utils";
 import cx from "classnames";
 import { CSSProperties, memo, MouseEvent, useCallback } from "react";
-import { TableCell } from "./TableCell";
-import { TableGroupCell } from "./TableGroupCell";
+import { TableCell, TableGroupCell } from "./table-cell";
 
 import "./Row.css";
 
-export type HtmlRowProps = {
+export type RowProps = {
   className?: string;
   columnMap: ColumnMap;
   columns: KeyedColumnDescriptor[];
@@ -24,11 +25,13 @@ export type HtmlRowProps = {
   onClick?: RowClickHandler;
   onToggleGroup?: (row: DataSourceRow, column: KeyedColumnDescriptor) => void;
   style?: CSSProperties;
+  zebraStripes?: boolean;
 };
 
 const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
 const classBase = "vuuTableNextRow";
 
+// export const Row = memo(
 export const Row = memo(
   ({
     className: classNameProp,
@@ -38,15 +41,9 @@ export const Row = memo(
     offset,
     onClick,
     onToggleGroup,
+    zebraStripes = false,
     ...htmlAttributes
-  }: HtmlRowProps) => {
-    // useEffect(() => {
-    //   console.log("row mounted");
-    //   return () => {
-    //     console.log("row unmounted");
-    //   };
-    // }, []);
-
+  }: RowProps) => {
     const {
       [IDX]: rowIndex,
       [IS_EXPANDED]: isExpanded,
@@ -65,7 +62,7 @@ export const Row = memo(
     const { True, First, Last } = RowSelected;
 
     const className = cx(classBase, classNameProp, {
-      [`${classBase}-even`]: rowIndex % 2 === 0,
+      [`${classBase}-even`]: zebraStripes && rowIndex % 2 === 0,
       [`${classBase}-expanded`]: isExpanded,
       [`${classBase}-selected`]: selectionStatus & True,
       [`${classBase}-selectedStart`]: selectionStatus & First,
@@ -76,6 +73,16 @@ export const Row = memo(
       typeof offset === "number"
         ? { transform: `translate3d(0px, ${offset}px, 0px)` }
         : undefined;
+
+    const handleGroupCellClick = useCallback(
+      (evt: MouseEvent, column: KeyedColumnDescriptor) => {
+        if (isGroupColumn(column) || isJsonGroup(column, row)) {
+          evt.stopPropagation();
+          onToggleGroup?.(row, column);
+        }
+      },
+      [onToggleGroup, row]
+    );
 
     return (
       <div
@@ -89,9 +96,19 @@ export const Row = memo(
         <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
         {columns.filter(notHidden).map((column) => {
           const isGroup = isGroupColumn(column);
+          const isJsonCell = isJsonColumn(column);
+
           const Cell = isGroup ? TableGroupCell : TableCell;
 
-          return <Cell key={column.key} column={column} row={row} />;
+          return (
+            <Cell
+              column={column}
+              columnMap={columnMap}
+              key={column.key}
+              onClick={isGroup || isJsonCell ? handleGroupCellClick : undefined}
+              row={row}
+            />
+          );
         })}
         <span className={`${classBase}-selectionDecorator vuuStickyRight`} />
       </div>

@@ -79,7 +79,7 @@ export const Table = ({
   } as CSSProperties;
 
   const className = cx(classBase, classNameProp, {
-    [`${classBase}-zebra`]: zebraStripes,
+    [`${classBase}-zebra`]: config.zebraStripes,
     [`${classBase}-loading`]: isDataLoading(tableProps.columns),
   });
 

@@ -33,6 +33,7 @@
     "react-router-dom": "^6.2.1"
   },
   "devDependencies": {
-    "@mdx-js/esbuild": "^2.3.0"
+    "@mdx-js/esbuild": "^2.3.0",
+    "@thomaschaplin/isin-generator": "^1.0.3"
   }
 }

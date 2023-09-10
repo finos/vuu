@@ -2,8 +2,8 @@ import React from "react";
 
 function union<T>(set1: Set<T>, ...sets: Set<T>[]) {
   const result = new Set(set1);
-  for (let set of sets) {
-    for (let element of set) {
+  for (const set of sets) {
+    for (const element of set) {
       result.add(element);
     }
   }
@@ -21,7 +21,6 @@ export const End = "End";
 export const PageUp = "PageUp";
 export const PageDown = "PageDown";
 export const Space = " ";
-export const Tab = "Tab";
 
 const actionKeys = new Set(["Enter", "Delete", " "]);
 const focusKeys = new Set(["Tab"]);

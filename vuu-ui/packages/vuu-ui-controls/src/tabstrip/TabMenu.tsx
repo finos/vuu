@@ -3,7 +3,7 @@ import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "packages/vuu-data-types";
+} from "@finos/vuu-data-types";
 import { useMemo } from "react";
 import cx from "classnames";
 

@@ -3,14 +3,10 @@ import { Action, Stack, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { LayoutResizeAction } from "@finos/vuu-layout/src/layout-reducer";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import cx from "classnames";
-import {
-  CSSProperties,
-  HTMLAttributes,
-  useCallback,
-  useRef,
-  useState,
-} from "react";
 import { LayoutsList } from "../layout-management";
+import { CSSProperties, HTMLAttributes, useCallback, useState } from "react";
+import { FeatureProps } from "../feature";
+import { FeatureList } from "../feature-list";
 import { useThemeAttributes } from "../theme-provider";
 
 import "./LeftNav.css";
@@ -19,14 +15,19 @@ const classBase = "vuuLeftNav";
 
 interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
   "data-path"?: string;
+  features: FeatureProps[];
   onResize?: (size: number) => void;
-  open?: boolean;
   sizeCollapsed?: number;
   sizeContent?: number;
   sizeExpanded?: number;
 }
 
-type NavStatus = "menu-full" | "menu-icons" | "menu-content";
+type NavStatus =
+  | "menu-full"
+  | "menu-icons"
+  | "menu-full-content"
+  | "menu-icons-content";
+
 type NavState = {
   activeTabIndex: number;
   navStatus: NavStatus;
@@ -34,8 +35,8 @@ type NavState = {
 
 export const LeftNav = ({
   "data-path": path,
+  features,
   onResize,
-  open = true,
   sizeCollapsed = 80,
   sizeContent = 240,
   sizeExpanded = 240,
@@ -43,22 +44,64 @@ export const LeftNav = ({
   ...htmlAttributes
 }: LeftNavProps) => {
   const dispatch = useLayoutProviderDispatch();
-  const openRef = useRef(open);
   const [navState, setNavState] = useState<NavState>({
     activeTabIndex: 0,
     navStatus: "menu-full",
   });
   const [themeClass] = useThemeAttributes();
 
+  const toggleNavWidth = useCallback(
+    (navStatus: NavStatus) => {
+      switch (navStatus) {
+        case "menu-icons":
+          return sizeExpanded;
+        case "menu-full":
+          return sizeCollapsed;
+        case "menu-full-content":
+          return sizeCollapsed + sizeContent;
+        case "menu-icons-content":
+          return sizeExpanded + sizeContent;
+      }
+    },
+    [sizeCollapsed, sizeContent, sizeExpanded]
+  );
+
+  const toggleNavStatus = (navStatus: NavStatus) => {
+    switch (navStatus) {
+      case "menu-icons":
+        return "menu-full";
+      case "menu-full":
+        return "menu-icons";
+      case "menu-full-content":
+        return "menu-icons-content";
+      case "menu-icons-content":
+        return "menu-full-content";
+    }
+  };
+
   const getWidthAndStatus = useCallback(
-    (isOpen: boolean, tabIndex: number): [number, NavStatus] => {
-      switch (tabIndex) {
-        case 0:
-          return isOpen
-            ? [sizeExpanded, "menu-full"]
-            : [sizeCollapsed, "menu-icons"];
-        default:
-          return [sizeCollapsed + sizeContent, "menu-content"];
+    (navState: NavStatus, tabIndex: number): [number, NavStatus] => {
+      if (tabIndex === 0) {
+        const newNavState =
+          navState === "menu-full-content"
+            ? "menu-full"
+            : navState === "menu-icons-content"
+            ? "menu-icons"
+            : navState;
+
+        return newNavState === "menu-icons"
+          ? [sizeCollapsed, newNavState]
+          : [sizeExpanded, newNavState];
+      } else {
+        const newNavState =
+          navState === "menu-full"
+            ? "menu-full-content"
+            : navState === "menu-icons"
+            ? "menu-icons-content"
+            : navState;
+        return newNavState === "menu-icons-content"
+          ? [sizeCollapsed + sizeContent, newNavState]
+          : [sizeExpanded + sizeContent, newNavState];
       }
     },
     [sizeCollapsed, sizeContent, sizeExpanded]
@@ -66,7 +109,7 @@ export const LeftNav = ({
 
   const handleTabSelection = useCallback(
     (value: number) => {
-      const [width, navStatus] = getWidthAndStatus(openRef.current, value);
+      const [width, navStatus] = getWidthAndStatus(navState.navStatus, value);
       setNavState({
         activeTabIndex: value,
         navStatus,
@@ -77,27 +120,28 @@ export const LeftNav = ({
         size: width,
       } as LayoutResizeAction);
     },
-    [dispatch, getWidthAndStatus, path]
+    [dispatch, getWidthAndStatus, navState, path]
   );
 
   const toggleSize = useCallback(() => {
-    openRef.current = !openRef.current;
-    setNavState(({ activeTabIndex, navStatus }) => ({
+    const { activeTabIndex, navStatus: currentNavStatus } = navState;
+    setNavState({
       activeTabIndex,
-      navStatus: navStatus === "menu-icons" ? "menu-full" : "menu-icons",
-    }));
+      navStatus: toggleNavStatus(currentNavStatus),
+    });
     dispatch({
       type: Action.LAYOUT_RESIZE,
       path,
-      size: openRef.current ? 240 : 80,
+      size: toggleNavWidth(currentNavStatus),
     } as LayoutResizeAction);
-  }, [dispatch, path]);
+  }, [dispatch, navState, path, toggleNavWidth]);
 
   const style = {
     ...styleProp,
     "--nav-menu-collapsed-width": `${sizeCollapsed}px`,
     "--nav-menu-expanded-width": `${sizeExpanded}px`,
   } as CSSProperties;
+
   return (
     <div
       {...htmlAttributes}
@@ -128,10 +172,16 @@ export const LeftNav = ({
         <div className="vuuLeftNav-buttonBar">
           <button
             className={cx("vuuLeftNav-toggleButton", {
-              "vuuLeftNav-toggleButton-open": openRef.current,
-              "vuuLeftNav-toggleButton-closed": !openRef.current,
+              "vuuLeftNav-toggleButton-open":
+                navState.navStatus.startsWith("menu-full"),
+              "vuuLeftNav-toggleButton-closed":
+                navState.navStatus.startsWith("menu-icons"),
             })}
-            data-icon={openRef.current ? "chevron-left" : "chevron-right"}
+            data-icon={
+              navState.navStatus.startsWith("menu-full")
+                ? "chevron-left"
+                : "chevron-right"
+            }
             onClick={toggleSize}
           />
         </div>
@@ -141,12 +191,12 @@ export const LeftNav = ({
         className={`${classBase}-menu-secondary`}
         showTabs={false}
       >
-        <div style={{ background: "yellow", height: "100%" }}>VUU Tables</div>
+        <FeatureList features={features} />
         <div style={{ background: "green", height: "100%" }}>
           Layout Templates
         </div>
         <div className="vuuLeftNav-drawer">
-          <LayoutsList layouts={[]} />
+          <LayoutsList />
         </div>
       </Stack>
     </div>

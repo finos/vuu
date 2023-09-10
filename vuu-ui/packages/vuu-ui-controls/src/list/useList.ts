@@ -1,6 +1,5 @@
 import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import {
-  isValidElement,
   KeyboardEvent,
   MouseEvent,
   useCallback,
@@ -8,9 +7,9 @@ import {
   useRef,
 } from "react";
 import {
+  CollectionItem,
   hasSelection,
   ListHandlers,
-  selectedType,
   SelectHandler,
   SelectionChangeHandler,
   SelectionStrategy,
@@ -18,7 +17,6 @@ import {
 import { useDragDropNext as useDragDrop } from "../drag-drop";
 import {
   closestListItemIndex,
-  CollectionItem,
   useCollapsibleGroups,
   useKeyboardNavigation,
   useSelection,
@@ -58,8 +56,6 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
   tabToSelect,
   viewportRange,
 }: ListHookProps<Item, Selection>): ListHookResult<Item, Selection> => {
-  type selectedItem = selectedType<Item, Selection>;
-
   // Used to preserve selection across a drop event.
   const selectedByIndexRef = useRef<number | null | number[]>(null);
   const lastSelection = useRef<typeof selected>(selected || defaultSelected);
@@ -69,38 +65,38 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
   };
 
   // TODO where do these belong ?
-  const handleSelect = useCallback<SelectHandler<CollectionItem<Item>>>(
-    (evt, selectedItem) => {
+  const handleSelect = useCallback<SelectHandler>(
+    (evt, selectedId) => {
       if (onSelect) {
-        if (isValidElement(selectedItem.value)) {
-          onSelect(evt, selectedItem.label as any);
-        } else if (selectedItem.value !== null) {
-          onSelect(evt, selectedItem.value);
+        if (selectedId !== null) {
+          onSelect(evt, dataHook.itemById(selectedId));
         }
       }
     },
-    [onSelect]
+    [dataHook, onSelect]
   );
 
+  // TODO should we leave the id to item conversion to List ?
+  // consider the use case where we use this hook from dropdown etc
   const handleSelectionChange = useCallback<
-    SelectionChangeHandler<CollectionItem<Item>, Selection>
+    SelectionChangeHandler<string, Selection>
   >(
     (evt, selected) => {
+      console.log(`useList handleSelectionChange`, {
+        selectionStrategy,
+        selected,
+      });
       if (onSelectionChange) {
-        onSelectionChange(
-          evt,
-          Array.isArray(selected)
-            ? (selected.map((s) =>
-                isValidElement(s.value) ? s.label : s.value
-              ) as selectedItem)
-            : selected &&
-                ((isValidElement(selected.value)
-                  ? selected.label
-                  : selected.value) as any)
-        );
+        if (Array.isArray(selected)) {
+          const selectedItems = selected.map((id) => dataHook.itemById(id));
+          onSelectionChange(evt, selectedItems as any);
+        } else if (selected) {
+          const item = dataHook.itemById(selected);
+          onSelectionChange(evt, item as any);
+        }
       }
     },
-    [onSelectionChange]
+    [dataHook, onSelectionChange]
   );
 
   const {
@@ -135,11 +131,12 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     setHighlightedIndex(-1);
   }, [setHighlightedIndex]);
 
-  const selectionHook = useSelection<Item, Selection>({
+  const selectionHook = useSelection<Selection>({
+    containerRef,
     defaultSelected,
     highlightedIdx: highlightedIndex,
-    indexPositions: dataHook.data,
-    label,
+    itemQuery: ".vuuListItem",
+    label: `${label}:useList`,
     onSelect: handleSelect,
     onSelectionChange: handleSelectionChange,
     selected,
@@ -170,11 +167,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
 
   // Used after a drop event, to calculate wht the new selected indices will be
   const reorderSelectedIndices = useCallback(
-    (
-      selected: CollectionItem<Item> | CollectionItem<Item>[],
-      fromIndex: number,
-      toIndex: number
-    ) => {
+    (selected: string | string[], fromIndex: number, toIndex: number) => {
       if (Array.isArray(selected)) {
         return selected.map((item) => adjustIndex(item, fromIndex, toIndex));
       } else {

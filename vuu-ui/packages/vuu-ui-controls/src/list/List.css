@@ -1,6 +1,6 @@
 .vuuList {
   --list-background: var(--salt-container-primary-background);
-  --list-borderStyle: var(--vuuList-borderStyle,--salt-container-borderStyle);
+  --list-borderStyle: var(--vuuList-borderStyle,var(--salt-container-borderStyle));
   --list-borderWidth: var(--salt-size-border);
   --list-height: auto;
   --list-item-height: var(--salt-size-stackable);

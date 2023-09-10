@@ -38,7 +38,7 @@ export type SelectionChangeHandler<
 ) => void;
 
 export const selectionIsDisallowed = (
-  selection?: SelectionStrategy
+  selection?: SelectionStrategy | SpecialKeyMultipleSelection
 ): selection is SelectionDisallowed => selection === "none";
 
 export const allowMultipleSelection = (
