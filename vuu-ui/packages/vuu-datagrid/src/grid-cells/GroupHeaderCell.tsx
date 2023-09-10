@@ -93,8 +93,8 @@ export const GroupHeaderCell = ({
     [groupCol, onClick]
   );
 
-  const showContextMenu = useContextMenu();
-  const handleContextMenu = (e: React.MouseEvent) => {
+  const [showContextMenu] = useContextMenu();
+  const handleContextMenu = (e: React.MouseEvent<HTMLElement>) => {
     showContextMenu(e, "header", { column });
   };
 

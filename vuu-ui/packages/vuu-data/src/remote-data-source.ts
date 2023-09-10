@@ -27,10 +27,8 @@ import {
   DataSourceCallbackMessage,
   DataSourceConfig,
   DataSourceConstructorProps,
-  DataSourceDataMessage,
   DataSourceEvents,
   isDataSourceConfigMessage,
-  isSizeOnly,
   OptimizeStrategy,
   SubscribeCallback,
   SubscribeProps,
@@ -102,7 +100,6 @@ export class RemoteDataSource
 
     this.#title = title;
     this.rangeRequest = this.throttleRangeRequest;
-    // this.rangeRequest = this.rawRangeRequest;
   }
 
   async subscribe(
@@ -193,19 +190,9 @@ export class RemoteDataSource
       if (this.configChangePending) {
         this.setConfigPending();
       }
-      if (isSizeOnly(message)) {
-        if (message.size > 100) {
-          // this prevents excessive rebuilding of the table because of size changes,
-          // when a table is still in initial loading stage
-          this.throttleSizeCallback(message);
-        } else {
-          this.clientCallback?.(message);
-        }
-      } else {
-        this.clientCallback?.(message);
-        if (this.optimize === "debounce") {
-          this.revertDebounce();
-        }
+      this.clientCallback?.(message);
+      if (this.optimize === "debounce") {
+        this.revertDebounce();
       }
     }
   };
@@ -338,10 +325,6 @@ export class RemoteDataSource
   get size() {
     return this.#size;
   }
-
-  private throttleSizeCallback = throttle((message: DataSourceDataMessage) => {
-    this.clientCallback?.(message);
-  }, 2000);
 
   get range() {
     return this.#range;
@@ -529,6 +512,7 @@ export class RemoteDataSource
       if (!wasGrouped && groupBy.length > 0 && this.viewport) {
         this.clientCallback?.({
           clientViewportId: this.viewport,
+          mode: "batch",
           type: "viewport-update",
           size: 0,
           rows: [],

@@ -1,5 +1,6 @@
 import { VuuFilter, VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { Filter } from "@finos/vuu-filter-types";
+import { MenuActionClosePopup } from "@finos/vuu-popups";
 
 export interface DataSourceFilter extends VuuFilter {
   filterStruct?: Filter;
@@ -56,7 +57,7 @@ export type ContextMenuItemDescriptor =
  * MenuBuilder describes a factory function that creates
  * Menu Item Descriptors appropriate to the supplied
  * location. Location can be any string identifier, it
- * will be used to determine which Menu Items to include
+ * can be used to determine which Menu Items to include
  * in the menu. Most often used for ContextMenus.
  */
 export type MenuBuilder<L = string, O = unknown> = (
@@ -73,8 +74,7 @@ export type MenuBuilder<L = string, O = unknown> = (
  * ActionHandlers to be chained.
  */
 export type MenuActionHandler = (
-  type: string,
-  options: unknown
+  reason: MenuActionClosePopup
 ) => boolean | undefined;
 
 export interface ContextMenuContextType {

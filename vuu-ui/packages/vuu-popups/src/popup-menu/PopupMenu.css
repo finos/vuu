@@ -1,10 +1,11 @@
 .vuuPopupMenu {
-
+    --saltButton-height: 24px;
+    --saltButton-width: 24px;
     --vuu-icon-color: #606477;
     --vuu-icon-height: 20px;
-    --vuu-icon-left: 0px;
+    --vuu-icon-left: 2px;
     --vuu-icon-size: 16px;
-    --vuu-icon-top: 0px;
+    --vuu-icon-top: 2px;
     --vuu-icon-width: 20px;
 
     background: var(--vuuPopupMenu-background, transparent);
@@ -16,15 +17,20 @@
 }
 
 .vuuPopupMenu:hover {
-    --vuu-icon-color: #15171B;
-    background-color: #F37880;
+    /* --vuu-icon-color: #15171B; */
+    --vuu-icon-color: var(--saltButton-text-color-hover);
 }
 
-.vuuPopupMenu-open:hover,
 .vuuPopupMenu-open {
-    background-color: #6D18BD;
+    --saltButton-background: var(--salt-actionable-secondary-background-active);
     --vuu-icon-color: white;
-
 }
 
-  
+/* temp references to theme until new theme fully incorporated */
+.vuu-theme .vuuPopupMenu:hover {
+    --saltButton-background-hover: #F37880;
+}
+
+.vuu-theme .vuuPopupMenu-open {
+    --saltButton-background: #6D18BD;
+}

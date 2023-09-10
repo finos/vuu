@@ -1,1 +1,1 @@
-export * as Tree from "./Tree.stories";
+export * as Tree from "./Tree.examples";

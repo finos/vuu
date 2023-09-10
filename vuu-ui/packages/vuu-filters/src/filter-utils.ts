@@ -1,16 +1,13 @@
-import {
-  ColumnDescriptor,
-  KeyedColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
   AndFilter,
   Filter,
   FilterClause,
   FilterCombinatorOp,
+  NumericFilterClauseOp,
 } from "@finos/vuu-filter-types";
 import {
   extractFilterForColumn,
-  filterAsQuery,
   isAndFilter,
   isInFilter,
   isMultiClauseFilter,
@@ -372,4 +369,40 @@ export const updateFilter = (
     return newFilter;
   }
   return filter;
+};
+
+export const getTypeaheadFilter = (
+  column: string,
+  filterValues: string[],
+  isStartsWithFilter?: boolean
+): Filter | undefined => {
+  if (filterValues.length === 0) {
+    return undefined;
+  }
+
+  if (isStartsWithFilter) {
+    // multiple starts with filters not currently supported
+    const startsWith = filterValues[0].substring(0, filterValues[0].length - 3);
+    return {
+      column,
+      op: "starts",
+      value: `"${startsWith}"`,
+    };
+  }
+
+  return {
+    column,
+    op: "in",
+    values: filterValues.map((value) => `"${value}"`),
+  };
+};
+
+export const getNumericFilter = (
+  column: string,
+  op?: NumericFilterClauseOp,
+  value?: number
+): FilterClause | undefined => {
+  if (op === undefined) return undefined;
+  if (value === undefined || isNaN(value)) return undefined;
+  return { column, op, value };
 };

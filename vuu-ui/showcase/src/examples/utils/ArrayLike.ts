@@ -27,6 +27,8 @@ export class ArrayLike<T = string> {
             return target.getItem(index);
           }
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return target.data[prop];
       },
       set: (target: ArrayLike<T>, prop: string, newVal: any) => {

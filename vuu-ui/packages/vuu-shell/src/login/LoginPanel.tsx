@@ -1,6 +1,5 @@
 import { ChangeEvent, HTMLAttributes, useState } from "react";
-import { Button } from "@salt-ds/core";
-import { FormField, Input } from "@heswell/salt-lab";
+import { Button, FormField, FormFieldLabel, Input } from "@salt-ds/core";
 
 import "./LoginPanel.css";
 
@@ -23,18 +22,12 @@ export const LoginPanel = ({
     onSubmit(username, password);
   };
 
-  const handleUsername = (
-    _event: ChangeEvent<HTMLInputElement>,
-    value: string
-  ) => {
-    setUserName(value);
+  const handleUsername = (evt: ChangeEvent<HTMLInputElement>) => {
+    setUserName(evt.target.value);
   };
 
-  const handlePassword = (
-    _event: ChangeEvent<HTMLInputElement>,
-    value: string
-  ) => {
-    setPassword(value);
+  const handlePassword = (evt: ChangeEvent<HTMLInputElement>) => {
+    setPassword(evt.target.value);
   };
 
   const dataIsValid =
@@ -43,14 +36,18 @@ export const LoginPanel = ({
 
   return (
     <div className={classBase}>
-      <FormField label="Username" style={{ width: 200 }}>
+      <FormField style={{ width: 200 }}>
+        <FormFieldLabel>Username</FormFieldLabel>
         <Input value={username} id="text-username" onChange={handleUsername} />
       </FormField>
 
       {requirePassword ? (
-        <FormField label="Password" style={{ width: 200 }}>
+        <FormField style={{ width: 200 }}>
+          <FormFieldLabel>Password</FormFieldLabel>
           <Input
-            type="password"
+            inputProps={{
+              type: "password",
+            }}
             value={password}
             id="text-password"
             onChange={handlePassword}

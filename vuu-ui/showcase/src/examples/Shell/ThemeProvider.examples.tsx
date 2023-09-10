@@ -1,7 +1,10 @@
-import { ContextMenuProvider, MenuActionHandler } from "@finos/vuu-popups";
+import { ContextMenuProvider } from "@finos/vuu-popups";
+import { MenuActionHandler } from "packages/vuu-data-types";
 import { ThemedPanel } from "./components/ThemedPanel";
 
 import "./ThemeProvider.examples.css";
+
+let displaySequence = 1;
 
 const menuDescriptors = [
   { label: "Sort", action: "sort" },
@@ -30,3 +33,4 @@ export const NestedThemeProviders = () => {
     </ContextMenuProvider>
   );
 };
+NestedThemeProviders.displaySequence = displaySequence++;

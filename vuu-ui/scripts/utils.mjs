@@ -5,8 +5,8 @@ import { exec } from "child_process";
 export const readPackageJson = (path = "package.json") => readJson(path);
 
 export const readJson = (path) => {
-  let rawdata = fs.readFileSync(path);
-  let json = JSON.parse(rawdata);
+  const rawdata = fs.readFileSync(path);
+  const json = JSON.parse(rawdata);
   return json;
 };
 

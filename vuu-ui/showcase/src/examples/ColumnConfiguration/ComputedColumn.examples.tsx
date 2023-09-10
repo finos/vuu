@@ -37,8 +37,8 @@ const columns = [
 
 export const DefaultColumnExpressionInput = () => {
   const [expression, setExpression] = useState<Expression>();
-  const [source, setSource] = useState<string>("");
-  const [isValid, setIsValid] = useState(false);
+  const [, setSource] = useState<string>("");
+  const [isValid] = useState(false);
   const suggestionProvider = useColumnExpressionSuggestionProvider({
     columns,
     table,
@@ -55,6 +55,7 @@ export const DefaultColumnExpressionInput = () => {
 
   const handleChange: ColumnExpressionInputProps["onChange"] = useCallback(
     (source: string, expression: Expression | undefined) => {
+      console.log(`source ${source}, expression ${expression}`);
       // const isValidExpression = isCompleteExpression(source);
       // console.log(`is valid ${isValidExpression}`);
       // setIsValid(isCompleteExpression(source));
@@ -73,7 +74,7 @@ export const DefaultColumnExpressionInput = () => {
       <br />
       <br />
       {/* <div>{source}</div> */}
-      <JsonTable source={expression} height={400} />
+      <JsonTable source={expression as any} height={400} />
     </>
   );
 };

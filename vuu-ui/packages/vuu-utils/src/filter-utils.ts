@@ -4,6 +4,7 @@ import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
   AndFilter,
   Filter,
+  FilterClauseOp,
   MultiClauseFilter,
   MultiValueFilterClause,
   OrFilter,
@@ -21,6 +22,9 @@ const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "starts",
   "ends",
 ]);
+
+export const isValidFilterClauseOp = (op?: string): op is FilterClauseOp =>
+  op === "in" || singleValueFilterOps.has(op as SingleValueFilterClauseOp);
 
 export const isNamedFilter = (f?: Filter) =>
   f !== undefined && f.name !== undefined;

@@ -48,3 +48,19 @@ body {
 .vuDialog .Grid {
   --hw-grid-flex-size: 1 1 auto;
 }
+
+/** Temp, until we create Toolbar */
+.vuuToolbarProxy {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  height: 36px;
+}
+
+.vuuToolbarProxy > [data-align="end"]{
+  margin-left: auto;
+}
+
+.vuuToolbarProxy-vertical {
+  flex-direction: column;
+}

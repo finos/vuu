@@ -30,7 +30,7 @@ import {
 } from "@finos/vuu-shell";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 import { filterAsQuery } from "@finos/vuu-utils";
-import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
+import { Button } from "@salt-ds/core";
 import { LinkedIcon } from "@salt-ds/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConfigurableDataTable } from "./ConfigurableDataTable";
@@ -180,9 +180,9 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
           type: "add-toolbar-contribution",
           location: "post-title",
           content: (
-            <ToolbarButton aria-label="remove-link" onClick={removeVisualLink}>
+            <Button aria-label="remove-link" onClick={removeVisualLink}>
               <LinkedIcon />
-            </ToolbarButton>
+            </Button>
           ),
         });
       } else {
@@ -286,9 +286,9 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
             rowHeight={18}
           />
         </div>
-        <Toolbar className="vuuTable-footer">
+        <div className="vuuToolbarProxy vuuTable-footer">
           <DataSourceStats dataSource={dataSource as RemoteDataSource} />
-        </Toolbar>
+        </div>
       </div>
     </ContextMenuProvider>
   );

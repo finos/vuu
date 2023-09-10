@@ -76,4 +76,4 @@ export const PackageJsonTable = () => {
     </>
   );
 };
-DefaultJsonTable.displaySequence = displaySequence++;
+PackageJsonTable.displaySequence = displaySequence++;

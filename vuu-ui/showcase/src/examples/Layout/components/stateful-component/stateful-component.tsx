@@ -1,4 +1,5 @@
 import { useViewContext } from "@finos/vuu-layout";
+import { registerComponent } from "@finos/vuu-layout";
 import React, {
   HTMLAttributes,
   useCallback,
@@ -35,3 +36,5 @@ export const StatefulComponent = ({
     <textarea style={style} onChange={handleChange} value={value.toString()} />
   );
 };
+
+registerComponent("StatefulComponent", StatefulComponent, "view");

@@ -1,7 +1,7 @@
-.salt-density-touch,
-.salt-density-low,
-.salt-density-medium,
-.salt-density-high {
+.vuu-density-touch,
+.vuu-density-low,
+.vuu-density-medium,
+.vuu-density-high {
   --salt-animation-opacity-start: 0;
   --salt-animation-opacity-end: 1;
   --salt-animation-scale-start: 0;
@@ -17,10 +17,10 @@
   --salt-animation-slide-in-right: slide-in-right var(--salt-animation-duration) var(--salt-animation-timing-function);
   --salt-animation-slide-in-bottom: slide-in-bottom var(--salt-animation-duration) var(--salt-animation-timing-function);
 
-  --salt-animation-slide-out-top: slide-out-top var(--salt-animation-duration) var(--salt-animation-timing-function);
-  --salt-animation-slide-out-left: slide-out-left var(--salt-animation-duration) var(--salt-animation-timing-function);
-  --salt-animation-slide-out-right: slide-out-right var(--salt-animation-duration) var(--salt-animation-timing-function);
-  --salt-animation-slide-out-bottom: slide-out-bottom var(--salt-animation-duration) var(--salt-animation-timing-function);
+  --salt-animation-slide-out-top: slide-out-top var(--salt-animation-duration) var(--salt-animation-timing-function) both;
+  --salt-animation-slide-out-left: slide-out-left var(--salt-animation-duration) var(--salt-animation-timing-function) both;
+  --salt-animation-slide-out-right: slide-out-right var(--salt-animation-duration) var(--salt-animation-timing-function) both;
+  --salt-animation-slide-out-bottom: slide-out-bottom var(--salt-animation-duration) var(--salt-animation-timing-function) both;
 
   /* Fade Animations */
   --salt-animation-fade-in-back: fade-in-back var(--salt-animation-duration) var(--salt-animation-timing-function);

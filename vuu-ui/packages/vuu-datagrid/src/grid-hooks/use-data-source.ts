@@ -1,24 +1,20 @@
-import {
-  ConfigChangeHandler,
-  DataSourceRow,
-  SubscribeCallback,
-} from "@finos/vuu-data";
-import { VuuDataRow, VuuRange, VuuSort } from "@finos/vuu-protocol-types";
+import { ConfigChangeHandler, SubscribeCallback } from "@finos/vuu-data";
+import { useViewContext } from "@finos/vuu-layout";
+import { VuuRange, VuuSort } from "@finos/vuu-protocol-types";
 import {
   getFullRange,
   metadataKeys,
   toColumnDescriptor,
   WindowRange,
 } from "@finos/vuu-utils";
-import { useViewContext } from "@finos/vuu-layout";
+import { DataSourceRow } from "packages/vuu-data-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import { useGridContext } from "../grid-context";
 import { GridModelType } from "../grid-model/gridModelTypes";
 
 const { RENDER_IDX } = metadataKeys;
 
-const byKey = (row1: VuuDataRow, row2: VuuDataRow) =>
+const byKey = (row1: DataSourceRow, row2: DataSourceRow) =>
   row1[RENDER_IDX] - row2[RENDER_IDX];
 
 export type SubscriptionDetails = {

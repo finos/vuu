@@ -1,0 +1,38 @@
+.vuuDropdownButton {
+  --saltButton-background-hover: var(--salt-actionable-secondary-background);
+  --saltButton-background-active: var(--salt-actionable-secondary-background);
+  --saltButton-fontWeight: var(--salt-text-fontWeight-strong); /* TODO: Check with design */
+  --saltButton-textAlign: left;
+  --saltButton-textTransform: none;
+  --saltButton-width: 100%;
+}
+
+.vuuDropdownButton:active {
+  --saltIcon-color: var(--salt-actionable-secondary-foreground);
+  --saltButton-text-color-active: var(--salt-actionable-secondary-foreground);
+}
+
+.vuuDropdownButton-fullwidth {
+  width: 100%;
+}
+
+.vuuDropdownButton-content {
+  align-items: center;
+  flex: 1;
+  width: 100%;
+  display: flex;
+  white-space: nowrap;
+}
+
+.vuuDropdownButton-buttonLabel {
+  display: inline-block;
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.vuuDropdownButton-formField.saltButton:focus,
+.vuuDropdownButton-formField.saltButton:focus-visible {
+  outline: none;
+}

@@ -1,6 +1,5 @@
 import {
   DataSource,
-  DataSourceRow,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
@@ -23,6 +22,7 @@ import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import {
   applySort,
   buildColumnMap,
+  isValidNumber,
   metadataKeys,
   updateColumn,
   visibleColumnAtIndex,
@@ -32,12 +32,14 @@ import { useDataSource } from "./useDataSource";
 import { useTableScroll } from "./useTableScroll";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
-  isShowSettings,
+  isShowColumnSettings,
+  isShowTableSettings,
   PersistentColumnAction,
-} from "@finos/vuu-table/src/useTableModel";
+} from "@finos/vuu-table/src/table/useTableModel";
 import { useInitialValue } from "./useInitialValue";
 import { useVirtualViewport } from "./useVirtualViewport";
 import { buildContextMenuDescriptors } from "@finos/vuu-table";
+import { DataSourceRow } from "packages/vuu-data-types";
 
 const { KEY, IS_EXPANDED } = metadataKeys;
 
@@ -62,7 +64,6 @@ export const useTable = ({
   onFeatureEnabled,
   onFeatureInvocation,
   onSelectionChange,
-  renderBufferSize = 0,
   rowHeight,
   selectionModel,
   ...measuredProps
@@ -91,9 +92,9 @@ export const useTable = ({
     headings,
   } = useTableModel(config, dataSource.config);
 
-  const [stateColumns, setStateColumns] = useState(undefined);
+  const [stateColumns, setStateColumns] = useState<KeyedColumnDescriptor[]>();
   const [columns, setColumnSize] = useMemo(() => {
-    const setSize = (columnName, width) => {
+    const setSize = (columnName: string, width: number) => {
       const cols = updateColumn(modelColumns, columnName, { width });
       setStateColumns(cols);
     };
@@ -128,7 +129,7 @@ export const useTable = ({
     rowCount,
     rowHeight,
     // Note: innerSize will take border into account, whereas outerSize will not
-    size: containerMeasurements.innerSize ?? containerMeasurements.outerSize,
+    size: containerMeasurements.innerSize,
   });
 
   const initialRange = useInitialValue<VuuRange>({
@@ -157,8 +158,10 @@ export const useTable = ({
   const onPersistentColumnOperation = useCallback(
     (action: PersistentColumnAction) => {
       // expectConfigChangeRef.current = true;
-      if (isShowSettings(action)) {
+      if (isShowColumnSettings(action)) {
         // onShowConfigEditor?.(action.column);
+      } else if (isShowTableSettings(action)) {
+        console.log("dispatch table settings");
       } else {
         dispatchColumnAction(action);
       }
@@ -198,7 +201,7 @@ export const useTable = ({
   });
 
   // TOSO ship this out into a hook
-  const showContextMenu = usePopupContextMenu();
+  const [showContextMenu] = usePopupContextMenu();
 
   const onContextMenu = useCallback(
     (evt: MouseEvent<HTMLElement>) => {
@@ -321,10 +324,12 @@ export const useTable = ({
       const column = columns.find((column) => column.name === columnName);
       if (column) {
         if (phase === "resize") {
-          setColumnSize(columnName, width);
+          if (isValidNumber(width)) {
+            setColumnSize(columnName, width);
+          }
         } else {
           if (phase === "end") {
-            onConfigChange?.("col-size", column.name, width);
+            // onConfigChange?.("col-size", column.name, width);
           }
           setStateColumns(undefined);
           dispatchColumnAction({
@@ -340,7 +345,7 @@ export const useTable = ({
         );
       }
     },
-    [columns, dispatchColumnAction, onConfigChange, setColumnSize]
+    [columns, dispatchColumnAction, setColumnSize]
   );
 
   return {

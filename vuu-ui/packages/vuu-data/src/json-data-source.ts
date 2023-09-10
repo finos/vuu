@@ -171,6 +171,7 @@ export class JsonDataSource
 
     this.clientCallback({
       clientViewportId: this.viewport,
+      mode: "size-only",
       type: "viewport-update",
       size: this.visibleRows.length,
     });
@@ -230,6 +231,8 @@ export class JsonDataSource
     const { from, to } = this.#range;
     this.clientCallback?.({
       clientViewportId: this.viewport,
+
+      mode: "batch",
       rows: this.visibleRows
         .slice(from, to)
         .map((row) => toClientRow(row, this.keys)),
@@ -281,6 +284,7 @@ export class JsonDataSource
     const { from, to } = this.#range;
     this.clientCallback?.({
       clientViewportId: this.viewport,
+      mode: "batch",
       rows: this.visibleRows
         .slice(from, to)
         .map((row) => toClientRow(row, this.keys)),

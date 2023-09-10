@@ -8,7 +8,7 @@ import { Table, TableProps } from "@finos/vuu-table";
 import { DockLayout, Drawer } from "@finos/vuu-layout";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { List, ListItem } from "@heswell/salt-lab";
+import { List, ListItem } from "@salt-ds/lab";
 
 let displaySequence = 1;
 
@@ -67,7 +67,13 @@ export const DataTable = (props: Partial<TableProps>) => {
   const config = useTableConfig();
   return (
     <>
-      <Table {...props} {...config} renderBufferSize={20} />
+      <Table
+        {...props}
+        {...config}
+        height={500}
+        renderBufferSize={20}
+        width={600}
+      />
     </>
   );
 };
@@ -131,3 +137,4 @@ const InlineDrawer = ({
 export const RightInlineDrawerPeek = () => (
   <InlineDrawer position="right" inline peekaboo />
 );
+RightInlineDrawerPeek.displaySequence = displaySequence++;

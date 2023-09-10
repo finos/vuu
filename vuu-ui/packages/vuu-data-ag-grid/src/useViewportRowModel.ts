@@ -22,8 +22,12 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
 import { buildColumnMap, itemsOrOrderChanged } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AgData, AgDataRow } from "./AgDataWindow";
-import { createColumnDefs } from "./AgGridColumnUtils";
+import { AgData } from "./AgDataWindow";
+import {
+  AgGridColDef,
+  columnsDisordered,
+  createColumnDefs,
+} from "./AgGridColumnUtils";
 import {
   bySortIndex,
   isSortedColumn,
@@ -69,14 +73,20 @@ type RowGroupOpenedEvent = {
   expanded: boolean;
   node: { expanded?: boolean };
 };
-type ColumnState = { colId: string; sortIndex: number }[];
-type SortChangedEvent = {
+
+const NullSuggestionFetcher: SuggestionFetcher = async () => [];
+
+export type AgColumnState = { colId: string; sortIndex: number }[];
+export type AgSortChangedEvent = {
   columnApi: {
-    getColumnState: () => ColumnState;
+    getColumnState: () => AgColumnState;
   };
 };
 
-const NullSuggestionFetcher: SuggestionFetcher = async () => [];
+export const agSortChangedEventToVuuSortDef = (evt: AgSortChangedEvent) => {
+  const columnState = evt.columnApi.getColumnState();
+  return columnState.filter(isSortedColumn).sort(bySortIndex).map(toSortDef);
+};
 
 export interface ViewportRowModelHookProps {
   columns?: ColumnDescriptor[];
@@ -220,6 +230,7 @@ export const useViewportRowModel = ({
       if (columns !== null) {
         const vuuGroupBy: VuuGroupBy = columns.map((c) => c.getId());
         groupByRef.current = vuuGroupBy;
+        console.log(`set GroupBy in respponse to ag grid event`);
         viewportDatasource.setRowGroups(vuuGroupBy);
       }
     },
@@ -239,12 +250,9 @@ export const useViewportRowModel = ({
 
   const handleSortChanged = useCallback(
     (evt: unknown) => {
-      const sortChangedEvent = evt as SortChangedEvent;
-      const columnState = sortChangedEvent.columnApi.getColumnState();
-      const sortDefs = columnState
-        .filter(isSortedColumn)
-        .sort(bySortIndex)
-        .map(toSortDef);
+      const sortDefs = agSortChangedEventToVuuSortDef(
+        evt as AgSortChangedEvent
+      );
       viewportDatasource.sort({ sortDefs: sortDefs });
     },
     [viewportDatasource]
@@ -263,10 +271,14 @@ export const useViewportRowModel = ({
 
   const menuHandler = useCallback(
     (field: string, row: AgData) => (options?: { [key: string]: unknown }) => {
-      handleMenuAction("MENU_RPC_CALL", {
-        ...options,
-        row,
-        rowKey: row.vuuKey,
+      handleMenuAction({
+        menuId: "MENU_RPC_CALL",
+        options: {
+          ...options,
+          row,
+          rowKey: row.vuuKey,
+        },
+        type: "menu-action",
       });
       console.log("menu action invoked", {
         options,
@@ -308,11 +320,29 @@ export const useViewportRowModel = ({
     [buildViewserverMenuOptions, dataSource, menuHandler]
   );
 
-  const autoGroupColumnDef = {
-    headerName: "Group",
-    cellRenderer: GroupCellRenderer,
-    minWidth: 250,
-  };
+  const autoGroupColumnDef: AgGridColDef = useMemo(
+    () => ({
+      headerName: "Group",
+      cellRenderer: GroupCellRenderer,
+      minWidth: 250,
+      sortable: false,
+    }),
+    []
+  );
+
+  const handleGridColumnsChanged = useCallback((evt) => {
+    const allColumns = evt.columnApi.getAllColumns();
+    const colDefs = allColumns.map(
+      (col: { colDef: AgGridColDef }) => col.colDef
+    );
+    const colState = evt.columnApi.getColumnState();
+    // An issue we see when switching dataSource is that AgGrid changes the
+    // position of columns which appear in both original and new table.
+    // Resetting the state when we detect this scenario fixes.
+    if (columnsDisordered(colState, colDefs)) {
+      evt.columnApi.resetColumnState();
+    }
+  }, []);
 
   return {
     autoGroupColumnDef,
@@ -326,6 +356,7 @@ export const useViewportRowModel = ({
     getContextMenuItems,
     onColumnRowGroupChanged: handleColumnRowGroupChanged,
     onFilterChanged: handleFilterChanged,
+    onGridColumnsChanged: handleGridColumnsChanged,
     onGridReady: handleGridReady,
     onRowGroupOpened: handleRowGroupOpened,
     onSortChanged: handleSortChanged,

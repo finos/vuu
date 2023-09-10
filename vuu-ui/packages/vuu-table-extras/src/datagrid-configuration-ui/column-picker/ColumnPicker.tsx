@@ -1,5 +1,5 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { List } from "@heswell/salt-lab";
+import { List } from "@salt-ds/lab";
 import { Button, Text, useIdMemo as useId } from "@salt-ds/core";
 import { Dispatch, HTMLAttributes, useCallback, useState } from "react";
 import { ColumnAction } from "../settings-panel/useGridSettings";
@@ -79,12 +79,12 @@ export const ColumnPicker = ({
     [onSelectionChange]
   );
 
-  const handleDrop = useCallback(
-    (moveFrom: number, moveTo: number) => {
-      dispatch({ type: "moveColumn", moveFrom, moveTo });
-    },
-    [dispatch]
-  );
+  // const handleDrop = useCallback(
+  //   (moveFrom: number, moveTo: number) => {
+  //     dispatch({ type: "moveColumn", moveFrom, moveTo });
+  //   },
+  //   [dispatch]
+  // );
 
   return (
     <div className={classBase} id={id}>
@@ -133,13 +133,13 @@ export const ColumnPicker = ({
         >
           <List<ColumnDescriptor>
             ListItem={ColumnListItem}
-            allowDragDrop
+            // allowDragDrop
             borderless
             height="100%"
             id={`selected-${id}`}
             itemHeight={24}
             itemToString={(item) => item.name}
-            onMoveListItem={handleDrop}
+            // onMoveListItem={handleDrop}
             onSelectionChange={handleSelectionChange2}
             selected={selectedColumn}
             style={{ flex: 1 }}

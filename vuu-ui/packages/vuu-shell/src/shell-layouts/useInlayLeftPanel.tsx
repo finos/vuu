@@ -7,14 +7,12 @@ import {
 } from "@finos/vuu-layout";
 
 import { MouseEvent, ReactElement, useCallback, useRef, useState } from "react";
+import { ShellLayoutProps } from "./useShellLayout";
 
 export const useInlayLeftPanel = ({
   appHeader,
   leftSidePanel,
-}: {
-  appHeader: ReactElement;
-  leftSidePanel?: ReactElement;
-}): ReactElement => {
+}: ShellLayoutProps): ReactElement => {
   const paletteView = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(true);
 

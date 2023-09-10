@@ -8,6 +8,8 @@ import { VuuBlotterHeader } from "./VuuBlotterHeader";
 import "./VuuBlotterFeature.examples.css";
 import { Flexbox } from "@finos/vuu-layout";
 
+let displaySequence = 1;
+
 export const DefaultVuuBlotter = () => {
   const error = useAutoLoginToVuuServer();
 
@@ -29,6 +31,7 @@ export const DefaultVuuBlotter = () => {
     </View>
   );
 };
+DefaultVuuBlotter.displaySequence = displaySequence++;
 
 export const DefaultVuuBlotterMockData = () => {
   const schema = useTableSchema("instruments");
@@ -50,3 +53,4 @@ export const DefaultVuuBlotterMockData = () => {
     </Flexbox>
   );
 };
+DefaultVuuBlotterMockData.displaySequence = displaySequence++;

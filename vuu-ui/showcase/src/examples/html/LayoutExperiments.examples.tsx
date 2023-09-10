@@ -1,15 +1,14 @@
-import { DockLayout } from "./components/DockLayout";
-
-const classBase = "DockLayout";
-
-import { Toolbar } from "@heswell/salt-lab";
+import { Table } from "@finos/vuu-table";
 import { Button } from "@salt-ds/core";
 import { useState } from "react";
-import "./LayoutExperiments.examples.css";
 import { useTableConfig } from "../utils/useTableConfig";
-import { Table } from "@finos/vuu-table";
+import { DockLayout } from "./components/DockLayout";
+
+import "./LayoutExperiments.examples.css";
 
 let displaySequence = 1;
+
+const classBase = "DockLayout";
 
 const CONTENT = 2;
 const TOP = 4;
@@ -41,9 +40,8 @@ export const DefaultDockLayout = () => {
           style={{ backgroundColor: "yellow" }}
         />
       </DockLayout>
-      <Toolbar
-        className="DockToolbar"
-        orientation="vertical"
+      <div
+        className="vuuToolbarProxy vuuToolbarProxy-vertical DockToolbar"
         style={{ flex: "0 0 200px" }}
       >
         <Button onClick={() => setOpenPanels(CONTENT_ONLY)}>
@@ -60,7 +58,7 @@ export const DefaultDockLayout = () => {
           Left, Top and Bottom
         </Button>
         <Button onClick={() => setOpenPanels(CONTENT + RIGHT)}>Right</Button>
-      </Toolbar>
+      </div>
     </div>
   );
 };
@@ -92,9 +90,8 @@ export const DockLayoutWithTable = () => {
           zebraStripes
         />
       </DockLayout>
-      <Toolbar
-        className="DockToolbar"
-        orientation="vertical"
+      <div
+        className="vuuToolbarProxy vuuToolbarProxy-vertical DockToolbar"
         style={{ flex: "0 0 200px" }}
       >
         <Button onClick={() => setOpenPanels(CONTENT_ONLY)}>
@@ -111,7 +108,7 @@ export const DockLayoutWithTable = () => {
           Left, Top and Bottom
         </Button>
         <Button onClick={() => setOpenPanels(CONTENT + RIGHT)}>Right</Button>
-      </Toolbar>
+      </div>
     </div>
   );
 };

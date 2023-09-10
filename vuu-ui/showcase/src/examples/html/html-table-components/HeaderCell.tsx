@@ -1,8 +1,8 @@
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent, useCallback, useRef } from "react";
-import { useCell } from "./table-next/useCell";
+import { useCell } from "./useCell";
 import { ColumnMenu } from "./ColumnMenu";
-import { SortIndicator } from "@finos/vuu-table/src/SortIndicator";
+import { SortIndicator } from "@finos/vuu-table/src/table/SortIndicator";
 import {
   ColumnResizer,
   TableColumnResizeHandler,

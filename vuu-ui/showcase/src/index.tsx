@@ -1,13 +1,13 @@
-import ReactDOM from "react-dom";
-import { getUrlParameter, hasUrlParameter } from "@finos/vuu-utils";
-
+import "@finos/vuu-icons/index.css";
+import { ThemeProvider } from "@finos/vuu-shell";
 import "@finos/vuu-theme/index.css";
-import "@finos/vuu-theme-purple/index.css";
-import "@heswell/component-anatomy/esm/index.css";
+import { getUrlParameter, hasUrlParameter } from "@finos/vuu-utils";
+import "@salt-ds/theme/index.css";
+import ReactDOM from "react-dom";
+import { ExamplesModule } from "./App";
+import { addStylesheetURL } from "./utils";
 
 import "./index.css";
-import { ThemeProvider } from "@finos/vuu-shell";
-import { addStylesheetURL } from "./utils";
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
@@ -30,6 +30,9 @@ const getComponent = (module: Module, paths: string[]) => {
       }
     }
   }
+  if (importedEntity.default) {
+    return importedEntity.default as ReactExample;
+  }
 };
 
 const themeName = getUrlParameter("theme", "salt");
@@ -42,13 +45,16 @@ addStylesheetURL(fontCssUrl);
 
 const pathToExample = (path: string): [string[], string] => {
   const endOfImportPath = path.lastIndexOf("/");
-  const importPath = path.slice(0, endOfImportPath);
+  const importPath =
+    endOfImportPath === -1 ? path : path.slice(0, endOfImportPath);
   const suffix = env === "development" ? "" : ".js";
+  console.log({ importPath });
   return [
     [
       `./examples/${importPath}.examples${suffix}`,
       `./examples/${importPath}/index${suffix}`,
       `./examples/${importPath}.stories${suffix}`,
+      `./examples/${importPath}/${importPath}${suffix}`,
     ],
     path.slice(endOfImportPath + 1),
   ];
@@ -62,12 +68,20 @@ if (hasUrlParameter("standalone")) {
   for (const importPath of targetPaths) {
     try {
       console.log(`import from ${importPath}`);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       targetExamples = await import(/* @vite-ignore */ importPath);
       if (importPath.endsWith("index")) {
         const parentFolder = importPath.split("/").at(-2);
         if (parentFolder) {
           path.unshift(parentFolder);
         }
+      }
+      if (
+        targetExamples &&
+        Object.values(targetExamples).every((item) => isModule(item as any))
+      ) {
+        throw Error("module file, no components");
       }
       break;
     } catch (err) {
@@ -85,7 +99,7 @@ if (hasUrlParameter("standalone")) {
           density="high"
           themeMode="light"
         >
-          <div>
+          <div style={{ height: "100vh", width: "100vw" }}>
             <Component />
           </div>
         </ThemeProvider>,
@@ -102,11 +116,11 @@ if (hasUrlParameter("standalone")) {
   }
 } else {
   import("./examples/index")
-    .then((stories) => {
+    .then((stories: ExamplesModule) => {
       import("./AppRoutes")
         .then(({ AppRoutes }) => {
           ReactDOM.render(
-            <AppRoutes stories={stories} />,
+            <AppRoutes stories={stories as ExamplesModule} />,
             document.getElementById("root")
           );
         })

@@ -1,26 +1,34 @@
+import { ArrayDataSource, WithFullConfig } from "@finos/vuu-data";
+import { parseFilter } from "@finos/vuu-filter-parser";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Table } from "@finos/vuu-table";
-import { DragVisualizer } from "@finos/vuu-table/src/DragVisualizer";
+import { DragVisualizer } from "@finos/vuu-table/src/table/DragVisualizer";
+import { Checkbox, ToggleButton } from "@salt-ds/core";
 import {
-  Checkbox,
-  ToggleButton,
-  Toolbar,
-  ToolbarField,
-} from "@heswell/salt-lab";
-import { CSSProperties, useCallback, useState } from "react";
+  ChangeEvent,
+  CSSProperties,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
+import { createArray } from "../utils/generate-data-utils";
 
 let displaySequence = 1;
 
 export const DefaultTable = () => {
   const { typeaheadHook, ...config } = useTableConfig({
-    columns: 10,
+    columnCount: 10,
     count: 1_000,
   });
   const [zebraStripes, setZebraStripes] = useState(true);
-  const handleZebraChanged = useCallback((_evt, checked) => {
-    setZebraStripes(checked);
-  }, []);
+  const handleZebraChanged = useCallback(
+    (evt: ChangeEvent<HTMLInputElement>) => {
+      const { checked } = evt.target as HTMLInputElement;
+      setZebraStripes(checked);
+    },
+    []
+  );
   return (
     <div style={{ display: "flex", gap: 12 }}>
       <Table
@@ -31,19 +39,15 @@ export const DefaultTable = () => {
         width={700}
         zebraStripes={zebraStripes}
       />
-      <Toolbar
-        orientation="vertical"
-        style={
-          { height: "unset", "--saltFormField-margin": "6px" } as CSSProperties
-        }
+      <div
+        className="vuuToolbarProxy vuuToolbarProxy-vertical"
+        style={{ height: "unset" } as CSSProperties}
       >
-        <ToolbarField label="Zebra Stripes">
-          <Checkbox
-            checked={zebraStripes === true}
-            onChange={handleZebraChanged}
-          />
-        </ToolbarField>
-      </Toolbar>
+        <Checkbox
+          checked={zebraStripes === true}
+          onChange={handleZebraChanged}
+        />
+      </div>
     </div>
   );
 };
@@ -220,11 +224,15 @@ export const LeftPinnedColumns = () => {
 
   return (
     <div style={{ width: 900, height: 900 }}>
-      <Toolbar>
-        <ToggleButton toggled={isColumnBased} onToggle={handleToggleLayout}>
+      <div className="vuuToolbarProxy">
+        <ToggleButton
+          selected={isColumnBased}
+          onChange={handleToggleLayout}
+          value={0}
+        >
           {isColumnBased ? "Column based table" : "Row based table"}
         </ToggleButton>
-      </Toolbar>
+      </div>
       <DragVisualizer orientation="horizontal">
         <Table {...config} height={700} width={700} />
       </DragVisualizer>
@@ -245,11 +253,15 @@ export const RightPinnedColumns = () => {
 
   return (
     <div style={{ width: 900, height: 900 }}>
-      <Toolbar>
-        <ToggleButton toggled={isColumnBased} onToggle={handleToggleLayout}>
+      <div className="vuuToolbarProxy">
+        <ToggleButton
+          selected={isColumnBased}
+          onChange={handleToggleLayout}
+          value={0}
+        >
           {isColumnBased ? "Column based table" : "Row based table"}
         </ToggleButton>
-      </Toolbar>
+      </div>
       <DragVisualizer orientation="horizontal">
         <Table {...config} height={700} width={700} />
       </DragVisualizer>
@@ -309,3 +321,88 @@ export const FlexLayoutTables = () => {
   );
 };
 FlexLayoutTables.displaySequence = displaySequence++;
+
+const columns = [
+  { name: "row number", width: 150 },
+  { name: "name", width: 100 },
+  { name: "currency", width: 100 },
+  { name: "price", width: 100, serverDataType: "double" },
+  { name: "lot size", width: 100, serverDataType: "double" },
+  { name: "order size", width: 100, serverDataType: "double" },
+  { name: "order type", width: 100 },
+  { name: "order description", width: 100 },
+  { name: "order date", width: 100 },
+  { name: "account name", width: 100 },
+  { name: "account number", width: 100 },
+  { name: "department", width: 100 },
+  { name: "industry", width: 100 },
+  { name: "PE ratio", width: 100, serverDataType: "double" },
+  { name: "EPS", width: 100, serverDataType: "double" },
+  { name: "market cap", width: 100, serverDataType: "double" },
+  { name: "volume", width: 100, serverDataType: "double" },
+  { name: "beta", width: 100 },
+  { name: "dividend", width: 100, serverDataType: "double" },
+  { name: "yield", width: 100, serverDataType: "double" },
+  { name: "return on equity", width: 100, serverDataType: "double" },
+];
+
+const numofrows = 100000;
+
+const newArray = createArray(numofrows, columns.length);
+
+const config = { columns };
+const data = newArray;
+
+export const SmaTable = () => {
+  const [inputValue, setInputValue] = useState("");
+  const [dataSourceConfig, setDataSourceConfig] = useState<WithFullConfig>({
+    groupBy: [],
+    aggregations: [],
+    columns: [],
+    filter: { filter: "" },
+    sort: { sortDefs: [] },
+  });
+
+  const dataSource: ArrayDataSource = useMemo(() => {
+    try {
+      const dataSource = new ArrayDataSource({
+        columnDescriptors: columns,
+        data,
+      });
+      dataSource.addListener("config", (config, ...rest) => {});
+      return dataSource;
+      //return new ArrayDataSource({ columnDescriptors: columns, data });
+    } catch (error) {
+      return new ArrayDataSource({ columnDescriptors: columns, data });
+    }
+  }, []);
+
+  const handleInputChange = useCallback((event) => {
+    setInputValue(event.target.value);
+  }, []);
+
+  const handleOnClickFilter = useCallback(() => {
+    const filter = inputValue; //'industry = "Bike"'
+    const filterStruct = parseFilter(filter);
+
+    dataSource.filter = { filter, filterStruct };
+  }, [inputValue, dataSource]);
+
+  return (
+    <>
+      <input type="text" value={inputValue} onChange={handleInputChange} />
+      <button onClick={handleOnClickFilter}>filter</button>
+
+      <Table
+        config={config}
+        dataSource={dataSource}
+        headerHeight={30}
+        height={645}
+        renderBufferSize={20}
+        rowHeight={30}
+        width={715}
+      />
+    </>
+  );
+};
+SmaTable.displaySequence = displaySequence++;

@@ -1,4 +1,4 @@
-import { Dropdown } from "@heswell/salt-lab";
+import { Dropdown } from "@salt-ds/lab";
 import { Density } from "@salt-ds/core";
 import { HTMLAttributes, useCallback } from "react";
 import cx from "classnames";

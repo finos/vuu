@@ -1,5 +1,5 @@
 import { formatDate } from "@finos/vuu-utils";
-import { List, ListItem, ListItemProps } from "@heswell/salt-lab";
+import { List, ListItem, ListItemProps } from "@salt-ds/lab";
 import { Button } from "@salt-ds/core";
 import { ExportIcon } from "@salt-ds/icons";
 import {

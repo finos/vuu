@@ -1,5 +1,5 @@
 import { uuid } from "@finos/vuu-utils";
-import { List, ListItem, ListItemProps } from "@heswell/salt-lab";
+import { List, ListItem, ListItemProps } from "@salt-ds/lab";
 import cx from "classnames";
 import {
   cloneElement,
